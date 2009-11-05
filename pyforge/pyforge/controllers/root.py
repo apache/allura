@@ -35,22 +35,6 @@ class RootController(BaseController):
         """Handle the front-page."""
         return dict(page='index')
 
-    @expose('pyforge.templates.about')
-    def about(self):
-        """Handle the 'about' page."""
-        return dict(page='about')
-
-    @expose('pyforge.templates.environ')
-    def environ(self):
-        """This method showcases TG's access to the wsgi environment."""
-        return dict(environment=request.environ)
-
-    @expose('pyforge.templates.data')
-    @expose('json')
-    def data(self, **kw):
-        """This method showcases how you can use the same controller for a data page and a display page"""
-        return dict(params=kw)
-
     def _dispatch(self, state, remainder):
         return _dispatch(self, state, remainder)
         
