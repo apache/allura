@@ -32,8 +32,11 @@ def make_app(global_conf, full_stack=True, **app_conf):
     
    
     """
+    # Create base app
     app = make_base_app(global_conf, full_stack=True, **app_conf)
-    
+    # Configure MongoDB
+    import ming
+    ming.configure(**app_conf)
     # Wrap your base TurboGears 2 application with custom middleware here
     
     return app

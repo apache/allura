@@ -4,6 +4,7 @@ from base import Cursor, Object
 
 class Session(object):
     _registry = {}
+    _datastores = {}
 
     def __init__(self, bind=None):
         self.bind = bind
@@ -13,7 +14,7 @@ class Session(object):
         if name in cls._registry:
             result = cls._registry[name]
         else:
-            result = cls._registry[name] = cls()
+            result = cls._registry[name] = cls(cls._datastores.get(name))
         return result
 
     def _impl(self, cls):
