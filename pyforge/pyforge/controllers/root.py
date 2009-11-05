@@ -5,9 +5,7 @@ from tg import expose, flash, require, url, request, redirect
 from pylons.i18n import ugettext as _, lazy_ugettext as l_
 
 from pyforge.lib.base import BaseController
-from pyforge.model import DBSession, metadata
 from pyforge.controllers.error import ErrorController
-from pyforge import model as M
 
 from pyforge.lib.dispatch import _dispatch, default
 
