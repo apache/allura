@@ -14,7 +14,7 @@
 <body>
     <h1>All objects from locals():</h1>
 
-    <div py:for="item in sorted(locals()['data'].keys())">
-      ${item}: ${repr(locals()['data'][item])}</div>
+    <div py:for="item in sorted(locals()['__data__'].keys())">
+      ${item}: ${repr(locals()['__data__'][item])}</div>
 </body>
 </html>
