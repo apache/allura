@@ -14,6 +14,7 @@ from pyforge.controllers.error import ErrorController
 from pymongo.bson import ObjectId
 
 from pyforge.lib.dispatch import _dispatch
+from pyforge import model as M
 
 
 __all__ = ['RootController']
@@ -61,7 +62,6 @@ class ProjectController(object):
 
     @expose()
     def configure(self, _id=None, **kw):
-        log.info('Configuring apps: %s', kw)
         app = M.AppConfig.m.get(_id=ObjectId.url_decode(_id))
         for k,v in kw.iteritems():
             app.config[k] = v
