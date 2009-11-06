@@ -3,14 +3,22 @@
 
 import logging
 from tg import config
-from pyforge import model
+from pyforge import model as M
 
-import transaction
-
+log = logging.getLogger(__name__)
 
 def bootstrap(command, conf, vars):
     """Place any commands to setup pyforge here"""
-
-    # <websetup.bootstrap.before.auth
-
-    # <websetup.bootstrap.after.auth>
+    dburi='mongo://localhost:27017/project:test'
+    M.Project.m.remove({})
+    p0 = M.Project.make(dict(_id='test/', dburi=dburi, is_root=True))
+    p1 = M.Project.make(dict(_id='test/sub1/', dburi=dburi, is_root=False))
+    p0.m.save()
+    p1.m.save()
+    from pylons import c
+    c.project = p0
+    M.AppConfig.m.remove({})
+    a = M.AppConfig.make(dict(name='hello_forge', project_id='test/',
+                              config=dict(message='This is the message')))
+    a.m.save()
+            

@@ -88,7 +88,7 @@ class Migrate(SchemaItem):
         then value must be an object and the result will be a list
         [ { key_name: key, **value } ].
         '''
-        from sf.gutenberg.model import base
+        from . import base
         def migrate_scalars(value):
             return [
                 base.Object({ key_name: k, value_name: v})
@@ -173,7 +173,7 @@ class Object(FancySchemaItem):
             raise
 
     def _validate(self, d, allow_extra=False, strip_extra=False):
-        from sf.gutenberg.model import base
+        from . import base
         cls = self.managed_class
         if self.polymorphic_registry:
             disc = d.get(self.polymorphic_on, Missing)

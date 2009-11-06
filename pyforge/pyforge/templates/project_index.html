@@ -1,0 +1,37 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" 
+                      "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:py="http://genshi.edgewall.org/"
+      xmlns:xi="http://www.w3.org/2001/XInclude">
+
+  <xi:include href="master.html" />
+
+  <head>
+    <meta content="text/html; charset=UTF-8" http-equiv="content-type" py:replace="''"/>
+    <title>ProjectController for $c.project._id</title>
+  </head>
+  
+  <body>
+    <h1>ProjectController for $c.project._id</h1>
+    <h2>SubProjects</h2>
+    <ul>
+      <li py:for="p in c.project.subprojects">
+        <a href="${p._id[len(c.project._id):]}">$p.shortname</a>
+      </li>
+    </ul>
+    <h2>Plugins</h2>
+    <ul>
+      <li py:for="app in apps">
+        <a href="app/$app.name/">$app.name</a>
+        <form method="post" action="configure">
+          <input type="hidden" name="_id" value="${app._id.url_encode()}"/>
+          <py:for each="k,v in app.config.iteritems()">
+            <label for="$k">$k</label><br/>
+            <input name="$k" value="$v"/><br/>
+          </py:for>
+          <input type="submit" value="Update Config for $app.name" />
+        </form>
+      </li>
+    </ul>
+  </body>
+</html>
