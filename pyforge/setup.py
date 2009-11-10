@@ -16,8 +16,8 @@ setup(
     install_requires=[
         "TurboGears2 >= 2.0b7",
         "Babel >=0.9.4",
-        "zope.sqlalchemy >= 0.4 ",
-        "repoze.tm2 >= 1.0a4",
+        "Celery",
+        "pymongo",
                         ],
     setup_requires=["PasteScript >= 1.7"],
     paster_plugins=['PasteScript', 'Pylons', 'TurboGears2', 'tg.devtools'],
