@@ -5,7 +5,6 @@
 #   Git (Already done on sandobxes)
 yum install rabbitmq-server
 
-
 #
 # Install everything (python) into a virtual environment.
 # Maybe not important for sandboxes, but important locally.
