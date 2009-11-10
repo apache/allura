@@ -1,10 +1,9 @@
 #!/bin/bash
 
 # Install RPMs.
-#   Python 2.6
-#   Rabbit MQ
-#   Git
-# Can this be conditional?  This script might be useful locally, too, if we can skip this part.
+#   Python 2.6  (Already done on sandobxes)
+#   Git (Already done on sandobxes)
+yum install rabbitmq-server
 
 
 #
