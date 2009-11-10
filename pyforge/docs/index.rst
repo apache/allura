@@ -10,7 +10,13 @@ Contents:
 
 .. toctree::
    :maxdepth: 2
-
+   
+   intro
+   platform
+   plugins
+   email
+   message_bus
+   
 Indices and tables
 ==================
 
