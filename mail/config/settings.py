@@ -11,4 +11,9 @@ router_defaults = {'host': 'localhost'}
 
 template_config = {'dir': 'app', 'module': 'templates'}
 
+# this is for when you run the config.queue boot
+queue_config = {'queue': 'run/posts', 'sleep': 10}
+
+queue_handlers = ['app.handlers.index']
+
 # the config/boot.py will turn these values into variables set in settings
