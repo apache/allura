@@ -3,9 +3,9 @@ CELERY_BACKEND = "mongodb"
 
 AMQP_SERVER = "localhost"
 AMQP_PORT = 5672
-AMQP_VHOST = "/"
-AMQP_USER = "guest"
-AMQP_PASSWORD = "guest"
+AMQP_VHOST = "celeryvhost"
+AMQP_USER = "celeryuser"
+AMQP_PASSWORD = "celerypw"
 
 CELERYD_LOG_FILE = "celeryd.log"
 CELERYD_PID_FILE = "celeryd.pid"
