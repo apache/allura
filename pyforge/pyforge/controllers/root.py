@@ -5,7 +5,6 @@ import pkg_resources
 
 from tg import expose, flash, require, url, request, redirect
 from pylons.i18n import ugettext as _, lazy_ugettext as l_
-
 from pylons import c
 from webob import exc
 
@@ -72,41 +71,28 @@ class ProjectController(object):
 
     @expose()
     def configure(self, _id=None, **kw):
-        app = M.AppConfig.m.get(_id=ObjectId.url_decode(_id))
+        app_config = M.AppConfig.m.get(_id=ObjectId.url_decode(_id))
         if kw.pop('delete', False):
-            app.m.delete()
+            self.project.uninstall_app(app_config.name)
             redirect('.')
         for k,v in kw.iteritems():
-            app.config[k] = v
-        app.m.save()
+            app_config.config[k] = v
+        app_config.m.save()
         redirect('.')
 
     @expose()
     def install(self, ep_name):
-        for ep in pkg_resources.iter_entry_points('pyforge', ep_name):
-            App = ep.load()
-        cfg = M.AppConfig.make(dict(project_id=self.project._id,
-                                    name=ep_name,
-                                    config=App.default_config))
-        cfg.m.save()
+        self.project.install_app(ep_name)
         redirect('.')
 
     @expose()
     def new_subproject(self, sp_name):
-        sp = M.Project.make(dict(
-                _id = self.project._id + sp_name + '/',
-                dburi=self.project.dburi,
-                is_root=False,
-                members=self.project.members))
-        sp.m.save()
+        sp = self.project.new_subproject(sp_name)
         redirect('.')
 
     @expose()
     def delete_project(self):
-        # Cascade to subprojects
-        for sp in self.project.subprojects:
-            sp.m.delete()
-        self.project.m.delete()
+        self.project.delete()
         redirect('..')
 
 class ProjectAppsController(object):
@@ -115,14 +101,11 @@ class ProjectAppsController(object):
         self.project = project
 
     def _lookup(self, app_name, *remainder):
-        app_config = self.project.app_config(app_name)
-        if app_config is None:
+        app = self.project.app_instance(app_name)
+        if app is None:
             raise exc.HTTPNotFound, app_name
-        for ep in pkg_resources.iter_entry_points('pyforge', app_name):
-            App = ep.load()
-            app = App(app_config.config)
-            return app.root, remainder
-        return None
+        c.app = app
+        return app.root, remainder
 
 class DummyProjectAppController(object):
     'Dummy Pluggable Application Controller'

@@ -4,22 +4,18 @@
       xmlns:py="http://genshi.edgewall.org/"
       xmlns:xi="http://www.w3.org/2001/XInclude">
 
+  <xi:include href="lib.html"/>
+
   <head>
     <meta content="text/html; charset=UTF-8" http-equiv="content-type" py:replace="''"/>
-    <title>HelloForge Index Page</title>
+    <title>$page.title</title>
   </head>
   
   <body>
-    <h1>Welcome to HelloForge</h1>
-    <h2>Project: $c.project.shortname</h2>
-    <h2>The message is <span style="background-color:#fdd">$message</span></h2>
-    <a href="Root/">Root Page</a>
-    <p>The app config follows</p>
-    <dl>
-      <py:for each="name, value in c.app.config.config.iteritems()">
-        <dt>$name</dt>
-        <dd>$value</dd>
-      </py:for>
-    </dl>
+    <h1>$page.title</h1>
+    <form method="post" action="update">
+      <textarea cols="80" rows="40" name="text">$page.text</textarea><br/>
+      <input type="submit" value="Save Changes"/>
+    </form>
   </body>
 </html>

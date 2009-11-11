@@ -16,13 +16,6 @@
     <ul>
       <li py:for="p in roots">
         <a href="$p._id">$p.shortname</a>
-        <py:with vars="subs = p.subprojects">
-          <ul py:if="subs">
-            <li py:for="sp in subs">
-              <a href="$sp._id">$sp.shortname</a>
-            </li>
-          </ul>
-        </py:with>
       </li>
     </ul>
   </body>

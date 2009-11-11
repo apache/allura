@@ -1,0 +1,14 @@
+<html xmlns:py="http://genshi.edgewall.org/"
+      xmlns:xi="http://www.w3.org/2001/XInclude"
+      py:strip="">
+
+  <ul py:def="project_tree(project)">
+    <li py:for="p in project.direct_subprojects">
+      <a href="${'/' + p._id}">$p.shortname</a>
+      <py:if test="p.direct_subprojects">
+        ${project_tree(p)}
+      </py:if>
+    </li>
+  </ul>
+
+</html>

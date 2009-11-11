@@ -1,8 +1,11 @@
 import logging
+
 import pylons
+import pkg_resources
+from webob import exc
+
 from ming import Document, Session, datastore
 from ming import schema as S
-
 
 log = logging.getLogger(__name__)
 
@@ -54,8 +57,55 @@ class Project(Document):
     def project_bind(self):
         return datastore.DataStore(self.dburi)
 
+    def install_app(self, ep_name):
+        for ep in pkg_resources.iter_entry_points('pyforge', ep_name):
+            App = ep.load()
+            break
+        else:
+            raise exc.HTTPNotFound, ep_name
+        config = App.default_config
+        cfg = AppConfig.make(dict(project_id=self._id,
+                                  name=ep_name,
+                                  config=config))
+        app = App(cfg)
+        app.install(self)
+        cfg.m.save()
+        return app
+
+    def uninstall_app(self, app_name):
+        app = self.app_instance(app_name)
+        if app is None: return
+        app.uninstall(self)
+        app.config.m.delete()
+
+    def app_instance(self, app_name):
+        app_config = self.app_config(app_name)
+        if app_config is None:
+            return None
+        for ep in pkg_resources.iter_entry_points('pyforge', app_name):
+            App = ep.load()
+            return App(app_config)
+        else:
+            return None
+
     def app_config(self, app_name):
         return AppConfig.m.get(project_id=self._id, name=app_name)
+
+
+    def new_subproject(self, name):
+        sp = self.make(dict(
+                _id = self._id + name + '/',
+                dburi=self.dburi,
+                is_root=False,
+                members=self.members))
+        sp.m.save()
+        return sp
+
+    def delete(self):
+        # Cascade to subprojects
+        for sp in self.subprojects:
+            sp.m.delete()
+        self.m.delete()
 
 class AppConfig(Document):
     class __mongometa__:
@@ -66,5 +116,3 @@ class AppConfig(Document):
             project_id=str,
             name=str,
             config=None)
-            
-        

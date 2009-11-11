@@ -1,3 +1,5 @@
 *.db
 *.egg-info
 *.pyc
+pyforge/docs/_build/*
+
