@@ -23,6 +23,6 @@ setup(name='HelloForge',
       entry_points="""
       # -*- Entry points: -*-
       [pyforge]
-      hello_forge=helloforge.main:App
+      hello_forge=helloforge.main:HelloForgeApp
       """,
       )

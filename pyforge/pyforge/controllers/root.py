@@ -7,6 +7,7 @@ from tg import expose, flash, require, url, request, redirect
 from pylons.i18n import ugettext as _, lazy_ugettext as l_
 
 from pylons import c
+from webob import exc
 
 from pyforge.lib.base import BaseController
 from pyforge.controllers.error import ErrorController
@@ -56,20 +57,57 @@ class ProjectController(object):
         self.app = ProjectAppsController(p)
         c.project = p
 
+    def _lookup(self, subproject, *remainder):
+        return ProjectController(self.project._id + subproject + '/'), remainder
+
     @expose('pyforge.templates.project_index')
     def index(self):
-        return dict(apps=M.AppConfig.m.find(dict(project_id=self.project._id)))
+        apps = M.AppConfig.m.find(dict(project_id=self.project._id)).all()
+        installed_names = set(a.name for a in apps)
+        available_apps = [
+            (ep.name, ep.load()) for ep in pkg_resources.iter_entry_points('pyforge')
+            if ep.name not in installed_names ]
+        return dict(available_apps=available_apps,
+                    apps=apps)
 
     @expose()
     def configure(self, _id=None, **kw):
         app = M.AppConfig.m.get(_id=ObjectId.url_decode(_id))
+        if kw.pop('delete', False):
+            app.m.delete()
+            redirect('.')
         for k,v in kw.iteritems():
             app.config[k] = v
         app.m.save()
         redirect('.')
 
-    def _lookup(self, subproject, *remainder):
-        return ProjectController(self.project._id + subproject + '/'), remainder
+    @expose()
+    def install(self, ep_name):
+        for ep in pkg_resources.iter_entry_points('pyforge', ep_name):
+            App = ep.load()
+        cfg = M.AppConfig.make(dict(project_id=self.project._id,
+                                    name=ep_name,
+                                    config=App.default_config))
+        cfg.m.save()
+        redirect('.')
+
+    @expose()
+    def new_subproject(self, sp_name):
+        sp = M.Project.make(dict(
+                _id = self.project._id + sp_name + '/',
+                dburi=self.project.dburi,
+                is_root=False,
+                members=self.project.members))
+        sp.m.save()
+        redirect('.')
+
+    @expose()
+    def delete_project(self):
+        # Cascade to subprojects
+        for sp in self.project.subprojects:
+            sp.m.delete()
+        self.project.m.delete()
+        redirect('..')
 
 class ProjectAppsController(object):
 
@@ -77,11 +115,12 @@ class ProjectAppsController(object):
         self.project = project
 
     def _lookup(self, app_name, *remainder):
-        '''This should be replaced with something that looks up the pluggable
-        app, configures it, and returns its root controller.'''
+        app_config = self.project.app_config(app_name)
+        if app_config is None:
+            raise exc.HTTPNotFound, app_name
         for ep in pkg_resources.iter_entry_points('pyforge', app_name):
             App = ep.load()
-            app = App(self.project.app_config(app_name).get('config'))
+            app = App(app_config.config)
             return app.root, remainder
         return None
 

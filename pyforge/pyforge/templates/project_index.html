@@ -12,13 +12,23 @@
   </head>
   
   <body>
-    <h1>ProjectController for $c.project._id</h1>
+    <h1 py:with="parts=c.project._id.split('/')">
+      ProjectController for 
+      <py:for each="i, part in enumerate(parts[:-1])"
+         py:with="prefix='/'.join(parts[:i+1])">
+        <a href="/$prefix/">$part</a> /
+      </py:for>
+    </h1>
+    <form py:if="not c.project.is_root" method="post" action="delete_project">
+      <input type="submit" value="Delete project $c.project._id"/>
+    </form>
     <h2>SubProjects</h2>
-    <ul>
-      <li py:for="p in c.project.subprojects">
-        <a href="${p._id[len(c.project._id):]}">$p.shortname</a>
-      </li>
-    </ul>
+    <form method="post" action="new_subproject">
+      <label for="sp_name">New Subproject:</label>
+      <input name="sp_name"/><br/>
+      <input type="submit" value="Create"/>
+    </form>
+    ${project_tree(c.project)}
     <h2>Plugins</h2>
     <ul>
       <li py:for="app in apps">
@@ -30,6 +40,18 @@
             <input name="$k" value="$v"/><br/>
           </py:for>
           <input type="submit" value="Update Config for $app.name" />
+          <input type="submit" name="delete" value="Delete Plugin $app.name" />
+        </form>
+      </li>
+    </ul>
+    <h2>Available Plugins</h2>
+    <ul>
+      <li py:for="name, app in available_apps">
+        <form method="post" action="install">
+          <h3>$app.__name__</h3>
+          <p>$app.__doc__</p>
+          <input type="hidden" name="ep_name" value="$name"/>
+          <input type="submit" value="Install $name"/>
         </form>
       </li>
     </ul>

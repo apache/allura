@@ -1,7 +1,11 @@
 from tg import expose
 from pyforge.app import Application
 
-class App(Application):
+class HelloForgeApp(Application):
+    '''This is the HelloWorld application for PyForge, showing
+    all the rich, creamy goodness that is installable apps.
+    '''
+    default_config = dict(message='Custom message goes here')
 
     def __init__(self, config):
         self.config = config

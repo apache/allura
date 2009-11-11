@@ -44,6 +44,13 @@ class Project(Document):
                 break
 
     @property
+    def direct_subprojects(self):
+        depth = self._id.count('/')
+        for sp in self.subprojects:
+            if sp._id.count('/') - depth == 1:
+                yield sp
+
+    @property
     def project_bind(self):
         return datastore.DataStore(self.dburi)
 
