@@ -16,6 +16,7 @@ setup(
     install_requires=[
         "TurboGears2 >= 2.0b7",
         "Babel >=0.9.4",
+        "Django",
         "Celery",
         "pymongo",
                         ],
