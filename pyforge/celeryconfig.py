@@ -1,6 +1,11 @@
 # -*- coding: utf-8 -*-
 CELERY_BACKEND = "mongodb"
 
+# We shouldn't need to supply these because we're using Mongo,
+# but Celery gives us errors if we don't.
+DATABASE_ENGINE = "sqlite3"
+DATABASE_NAME = "celery.db"
+
 AMQP_SERVER = "localhost"
 AMQP_PORT = 5672
 AMQP_VHOST = "celeryvhost"
