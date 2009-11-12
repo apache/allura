@@ -3,7 +3,7 @@ from docutils.core import publish_parts
 import re
 
 import pymongo
-from ming import Document
+from ming import Document, Session
 from ming import schema as S
 
 from pyforge.model import ProjectSession
@@ -20,7 +20,7 @@ wikiwords = [
 
 class Page(Document):
     class __mongometa__:
-        session = ProjectSession()
+        session = ProjectSession(Session.by_name('main'))
         name='page'
         schema=dict(
             _id=S.ObjectId(),

@@ -23,8 +23,7 @@ class HelloForgeApp(Application):
         p.m.save()
 
     def uninstall(self, project):
-        for p in M.Page.m.find(dict(project_id=c.project._id)):
-            p.m.delete()
+        M.Page.m.remove(dict(project_id=c.project._id))
 
 class RootController(object):
 
@@ -72,6 +71,7 @@ class PageController(object):
 
     @expose()
     def update(self, text):
-        self.page.text = text
-        self.page.m.save()
+        page = self.page()
+        page.text = text
+        page.m.save()
         redirect('.')

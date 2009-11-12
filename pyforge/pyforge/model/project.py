@@ -9,14 +9,15 @@ from ming import schema as S
 
 log = logging.getLogger(__name__)
 
-class ProjectSession(object):
+class ProjectSession(Session):
 
-    @property
-    def _impl(self):
-        return Session(bind=pylons.c.project.project_bind)
+    def __init__(self, main_session):
+        self.main_session = main_session
 
-    def __getattr__(self, name):
-        return getattr(self._impl, name)
+    def _impl(self, cls):
+        from pylons import c
+        db = getattr(self.main_session.bind.conn, c.project.database)
+        return db[cls.__mongometa__.name]
 
 class Project(Document):
     class __mongometa__:
@@ -29,7 +30,7 @@ class Project(Document):
         schema=dict(
             _id=str,
             name=str,
-            dburi=str,
+            database=str,
             is_root=bool,
             members=[_member])
 
@@ -109,7 +110,7 @@ class Project(Document):
 
 class AppConfig(Document):
     class __mongometa__:
-        session = ProjectSession()
+        session = ProjectSession(Session.by_name('main'))
         name='config'
         schema=dict(
             _id=S.ObjectId(),
