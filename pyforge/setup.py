@@ -15,9 +15,11 @@ setup(
     #url='',
     install_requires=[
         "TurboGears2 >= 2.0b7",
-        "Babel >=0.9.4",
+        "Babel >= 0.9.4",
+        "Lamson >= 1.0",
         "Django",
-        "Celery",
+        "Carrot",
+        "Celery >= 0.8.0",
         "pymongo",
                         ],
     setup_requires=["PasteScript >= 1.7"],
