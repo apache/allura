@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 CELERY_BACKEND = "mongodb"
+CARROT_BACKEND = "amqp"
 
 # We shouldn't need to supply these because we're using Mongo,
 # but Celery gives us errors if we don't.
