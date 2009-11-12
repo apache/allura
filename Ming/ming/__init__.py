@@ -2,7 +2,7 @@ from formencode.variabledecode import variable_decode
 import pymongo
 
 from session import Session
-from base import Document
+from base import Document, Field
 
 # Re-export direction keys
 ASCENDING = pymongo.ASCENDING

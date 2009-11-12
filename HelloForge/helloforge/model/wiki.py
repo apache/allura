@@ -1,12 +1,14 @@
+from datetime import datetime
+
 from pylons import c
 from docutils.core import publish_parts
 import re
 
 import pymongo
-from ming import Document, Session
 from ming import schema as S
+from ming import Field
 
-from pyforge.model import ProjectSession
+from pyforge.model import Artifact
 
 wikiwords = [
     (r'\b([A-Z]\w+[A-Z]+\w+)', r'<a href="../\1/">\1</a>'),
@@ -18,17 +20,15 @@ wikiwords = [
     (re.compile(pattern), replacement)
     for pattern, replacement in wikiwords ]
 
-class Page(Document):
+class Page(Artifact):
     class __mongometa__:
-        session = ProjectSession(Session.by_name('main'))
         name='page'
-        schema=dict(
-            _id=S.ObjectId(),
-            project_id=str,
-            version=int,
-            title=str,
-            text=str,
-            )
+
+    title=Field(str)
+    version=Field(int, if_missing=0)
+    author=Field(str, if_missing='*anonymous')
+    timestamp=Field(S.DateTime, if_missing=datetime.utcnow)
+    text=Field(S.String, if_missing='')
 
     @classmethod
     def upsert(cls, title, version=None):

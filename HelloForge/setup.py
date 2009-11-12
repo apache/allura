@@ -1,10 +1,11 @@
+
+from helloforge.version import __version__
+
 from setuptools import setup, find_packages
 import sys, os
 
-version = '0.0'
-
 setup(name='HelloForge',
-      version=version,
+      version=__version__,
       description="",
       long_description="""\
 """,

@@ -3,6 +3,7 @@
 
 import logging
 from tg import config
+from pylons import c
 from pyforge import model as M
 
 log = logging.getLogger(__name__)
@@ -16,7 +17,6 @@ def bootstrap(command, conf, vars):
     p1 = M.Project.make(dict(_id='test/sub1/', database=database, is_root=False))
     p0.m.save()
     p1.m.save()
-    from pylons import c
     c.project = p0
     M.AppConfig.m.remove({})
     a = M.AppConfig.make(dict(name='hello_forge', project_id='test/',

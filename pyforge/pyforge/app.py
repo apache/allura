@@ -1,5 +1,6 @@
 class Application(object):
     'base pyforge pluggable application'
+    __version__ = None
     default_config = {}
 
     def __init__(self, config):

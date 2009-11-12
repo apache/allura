@@ -1,3 +1,4 @@
+import types
 import logging
 
 from copy import deepcopy
@@ -33,7 +34,7 @@ class SchemaItem(object):
         raise NotImplemented, 'validate'
 
     @classmethod
-    def make(cls, field):
+    def make(cls, field, *args, **kwargs):
         '''Build a SchemaItem from a "shorthand" schema (summarized below)
 
         int - int or long
@@ -61,7 +62,7 @@ class SchemaItem(object):
         elif field in SHORTHAND:
             field = SHORTHAND[field]
         if isinstance(field, type):
-            field = field()
+            field = field(*args, **kwargs)
         return field
 
 class Migrate(SchemaItem):
@@ -132,6 +133,8 @@ class FancySchemaItem(SchemaItem):
             else:
                 if self.if_missing is Missing:
                     return self.if_missing
+                elif isinstance(self.if_missing, (types.FunctionType, types.MethodType)):
+                    return self.if_missing()
                 else:
                     return deepcopy(self.if_missing) # handle mutable defaults
         elif value == self.if_missing:

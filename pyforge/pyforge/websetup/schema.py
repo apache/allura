@@ -10,7 +10,7 @@ log = logging.getLogger(__name__)
 def setup_schema(command, conf, vars):
     """Place any commands to setup pyforge here"""
     import ming
-    pylons.c = EmptyClass()
+    pylons.c._push_object(EmptyClass())
     ming.configure(**conf)
     from pyforge import model
     # Nothing to do

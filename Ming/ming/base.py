@@ -36,6 +36,26 @@ class Object(dict):
         safe_self = _safe_bson(self)
         self.update(safe_self)
 
+class Field(object):
+
+    def __init__(self, field_type, *args, **kwargs):
+        self.type = field_type
+        self.args = args
+        self.kwargs = kwargs
+        self.name = None
+
+    def __get__(self, instance, cls):
+        try:
+            return instance[self.name]
+        except KeyError:
+            raise AttributeError, self.name
+
+    def __set__(self, instance, value):
+        instance[self.name] = value
+
+    def __delete__(self, instance):
+        del instance[self.name]
+
 class ManagerDescriptor(object):
     '''Python descriptor to provide a way to add the .m. attribute to mapped
     classes (which is a Manager - see below) such that the object at the
@@ -203,6 +223,12 @@ class DocumentMeta(type):
                     my_schema.extend(schema.SchemaItem.make(base.schema))
         if mm.schema:
             my_schema.extend(schema.SchemaItem.make(mm.schema))
+        # Collect fields
+        for k,v in dct.iteritems():
+            if isinstance(v, Field):
+                v.name = k
+                si = schema.SchemaItem.make(v.type, *v.args, **v.kwargs)
+                my_schema.fields[k] = si
         if not my_schema.fields:
             mm.schema = None
         else:
@@ -227,7 +253,8 @@ class Document(Object):
         session - Session object managing the object (link to a DataStore)
         indexes - list of field name tuples specifying which indexes should exist
                   for the document
-        schema - (optional) schema object
+        schema - (optional) schema object (augmented with any SchemaItems in the
+                                           class dict)
         polymorphic_on - (optional) field name that specifies the concrete class
                          of each document in a polymorphic collection
         polymorphic_identity - (optional) value that should be in the

@@ -1,14 +1,18 @@
+from pprint import pformat
+
 from pylons import c
 from tg import expose, redirect
 from pyforge.app import Application
 from pyforge.lib.dispatch import _dispatch
 
 from helloforge import model as M
+from helloforge import version
 
 class HelloForgeApp(Application):
     '''This is the HelloWorld application for PyForge, showing
     all the rich, creamy goodness that is installable apps.
     '''
+    __version__ = version.__version__
     default_config = dict(project_name='NoProject',
                           message='Custom message goes here')
 
@@ -60,6 +64,10 @@ class PageController(object):
     def history(self):
         pages = M.Page.history(self.title)
         return dict(title=self.title, pages=pages)
+
+    @expose(content_type='text/plain')
+    def raw(self):
+        return pformat(self.page())
 
     @expose()
     def revert(self, version):
