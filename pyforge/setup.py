@@ -16,7 +16,7 @@ setup(
     install_requires=[
         "TurboGears2 >= 2.0b7",
         "Babel >= 0.9.4",
-        "Lamson >= 1.0",
+        "Lamson",
         "Django",
         "Carrot",
         "Celery >= 0.8.0",
