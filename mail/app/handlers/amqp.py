@@ -20,7 +20,7 @@ def POSTING(message, post_name=None, host=None):
 
     publisher = Publisher(connection=conn,
                             exchange="forge", routing_key="mail")
-    publisher.send({"message": message})
+    publisher.send({"message": message}, serializer="pickle")
     publisher.close()
 
     #index_q = queue.Queue("run/posts")
