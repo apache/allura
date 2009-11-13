@@ -50,6 +50,12 @@ class TestSchemaItem(TestCase):
         self.assertEqual(si.validate(dict(a=10)),
                          dict(a=10, b=5))
 
+    def test_validation(self):
+        si = S.SchemaItem.make({str:int})
+        self.assertEqual(si.validate(dict(a=5)), dict(a=5))
+        self.assertRaises(S.Invalid, si.validate, dict(a='as'))
+        self.assertRaises(S.Invalid, si.validate, {5:5})
+
 if __name__ == '__main__':
     main()
 
