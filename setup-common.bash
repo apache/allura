@@ -8,11 +8,13 @@
 echo '# installing base tools'
 sudo easy_install -U setuptools
 
+echo
 echo '# setting up a virtual environment'
 sudo easy_install -U virtualenv
 virtualenv --no-site-packages sandbox-env
 . sandbox-env/bin/activate
 
+echo
 echo '# installing turbogears'
 easy_install ipython
 easy_install -i http://www.turbogears.org/2.1/downloads/current/index tg.devtools
@@ -20,6 +22,7 @@ easy_install -i http://www.turbogears.org/2.1/downloads/current/index tg.devtool
 #
 # Install _our_ code.
 #
+echo
 echo '# cloning forge repo'
 git clone ssh://engr.geek.net/forge
 
@@ -29,12 +32,15 @@ git clone ssh://engr.geek.net/forge
 #
 cd forge
 
+echo
 echo '# installing pyforge dependencies'
 python pyforge/setup.py develop
 
+echo
 echo '# installing Ming dependencies'
 python Ming/setup.py develop
 
+echo
 echo '# installing HelloForge dependencies'
 python HelloForge/setup.py develop
 
