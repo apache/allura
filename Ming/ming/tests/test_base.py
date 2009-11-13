@@ -169,6 +169,38 @@ class TestCursor(TestCase):
         obj = dict(a=None, b=dict(a=None))
         self.assertEqual(self.cursor.one(), obj)
 
+class TestPolymorphic(TestCase):
+
+    def setUp(self):
+        self.MockSession = mock.Mock()
+        class Base(Document):
+            class __mongometa__:
+                name='test_doc'
+                session = self.MockSession
+                polymorphic_registry={}
+                polymorphic_on='type'
+                polymorphic_identity='base'
+            type=Field(str)
+            a=Field(int)
+        class Derived(Base):
+            class __mongometa__:
+                name='test_doc'
+                session = self.MockSession
+                polymorphic_identity='derived'
+            b=Field(int)
+        self.Base = Base
+        self.Derived = Derived
+
+    def test_polymorphic(self):
+        self.assertEqual(self.Base.make(dict(type='base')),
+                         dict(type='base', a=None))
+        self.assertEqual(self.Base.make(dict(type='derived')),
+                         dict(type='derived', a=None, b=None))
+        
+
+    
+        
+
 if __name__ == '__main__':
     main()
 

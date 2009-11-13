@@ -221,15 +221,13 @@ class DocumentMeta(type):
             mm.polymorphic_on = None
             mm.polymorphic_registry = None
         # Make sure mongometa's schema incorporates base schemas
-        fields = dict()
+        my_schema = schema.Object()
         for base in mm_bases:
             if hasattr(base, 'schema'):
                 if base.schema:
-                    fields.update(base.schema.fields)
+                    my_schema.extend(schema.SchemaItem.make(base.schema))
         if mm.schema:
-            my_schema = schema.SchemaItem.make(mm.schema, inherited_fields=fields)
-        else:
-            my_schema = schema.SchemaItem.make(fields)
+            my_schema.extend(schema.SchemaItem.make(mm.schema))
         # Collect fields
         for k,v in dct.iteritems():
             if isinstance(v, Field):

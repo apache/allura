@@ -142,8 +142,11 @@ class FancySchemaItem(SchemaItem):
                     return self.if_missing()
                 else:
                     return deepcopy(self.if_missing) # handle mutable defaults
-        elif value == self.if_missing:
-            return value
+        try:
+            if value == self.if_missing:
+                return value
+        except Invalid:
+            pass
         return self._validate(value, **kw)
 
     def _validate(self, value, **kw): return value
