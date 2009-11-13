@@ -29,10 +29,11 @@ class Project(Document):
     name=Field(str)
     database=Field(str)
     is_root=Field(bool)
-    members=Field(dict(
-            id=int,
-            uname=str,
-            display=str))
+    members=Field([
+            dict(
+                id=int,
+                uname=str,
+                display=str)])
 
     @property
     def shortname(self):
@@ -69,6 +70,7 @@ class Project(Document):
                                   name=ep_name,
                                   config=config))
         app = App(cfg)
+        c.app = app
         app.install(self)
         cfg.m.save()
         return app

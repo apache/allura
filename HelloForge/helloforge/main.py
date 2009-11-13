@@ -1,3 +1,4 @@
+import difflib
 from pprint import pformat
 
 from pylons import c
@@ -64,6 +65,15 @@ class PageController(object):
     def history(self):
         pages = M.Page.history(self.title)
         return dict(title=self.title, pages=pages)
+
+    @expose('helloforge.templates.page_diff')
+    def diff(self, v1, v2):
+        p1 = self.page(int(v1))
+        p2 = self.page(int(v2))
+        diff=difflib.unified_diff(
+            p1.text.split('\n'),
+            p2.text.split('\n'))
+        return dict(p1=p1, p2=p2, diff=diff)
 
     @expose(content_type='text/plain')
     def raw(self):

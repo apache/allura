@@ -16,12 +16,27 @@
       <a href="..">PluginRoot</a>
     </div>
     <hr/>
-    <ul>
-      <li py:for="p in pages">
-        $p.version
-        <a href="./?version=$p.version">View Revision</a>
-        <a href="./revert?version=$p.version">Revert to version $p.version</a>
-      </li>
-    </ul>
+    <form method="get" action="diff">
+      <input type="submit" value="Compare revisions"/>
+      <table>
+        <thead>
+          <tr>
+            <th>Version</th>
+            <th>V1</th><th>V2</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr py:for="p in pages">
+            <td>$p.version</td>
+            <td><input name="v1" type="radio" value="$p.version"/></td>
+            <td><input name="v2" type="radio" value="$p.version"/></td>
+            <td>
+              <a href="./?version=$p.version">View Revision</a>
+              <a href="./revert?version=$p.version">Revert to version $p.version</a>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </form>
   </body>
 </html>

@@ -133,7 +133,10 @@ class FancySchemaItem(SchemaItem):
             else:
                 if self.if_missing is Missing:
                     return self.if_missing
-                elif isinstance(self.if_missing, (types.FunctionType, types.MethodType)):
+                elif isinstance(self.if_missing, (
+                        types.FunctionType,
+                        types.MethodType,
+                        types.BuiltinFunctionType)):
                     return self.if_missing()
                 else:
                     return deepcopy(self.if_missing) # handle mutable defaults

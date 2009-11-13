@@ -20,6 +20,8 @@ setup(name='HelloForge',
       zip_safe=False,
       install_requires=[
           # -*- Extra requirements: -*-
+        'pyforge',
+        'docutils',
       ],
       entry_points="""
       # -*- Entry points: -*-

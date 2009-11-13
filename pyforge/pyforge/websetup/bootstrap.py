@@ -19,7 +19,5 @@ def bootstrap(command, conf, vars):
     p1.m.save()
     c.project = p0
     M.AppConfig.m.remove({})
-    a = M.AppConfig.make(dict(name='hello_forge', project_id='test/',
-                              config=dict(message='This is the message')))
-    a.m.save()
+    p0.install_app('hello_forge')
             
