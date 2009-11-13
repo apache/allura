@@ -1,7 +1,7 @@
 import difflib
 from pprint import pformat
 
-from pylons import c
+from pylons import c, request
 from tg import expose, redirect
 from pyforge.app import Application
 from pyforge.lib.dispatch import _dispatch
@@ -29,6 +29,7 @@ class HelloForgeApp(Application):
 
     def uninstall(self, project):
         M.Page.m.remove(dict(project_id=c.project._id))
+        M.Comment.m.remove(dict(project_id=c.project._id))
 
 class RootController(object):
 
@@ -46,6 +47,7 @@ class PageController(object):
 
     def __init__(self, title):
         self.title = title
+        self.comments = CommentController(self.title)
 
     def page(self, version=None):
         if version is None:
@@ -93,3 +95,45 @@ class PageController(object):
         page.text = text
         page.m.save()
         redirect('.')
+
+class CommentController(object):
+
+    def __init__(self, page_title, comment_id=None):
+        self.page_title = page_title
+        self.comment_id = comment_id
+
+    def page(self):
+        return M.Page.upsert(self.page_title)
+
+    def comment(self):
+        return M.Comment.m.get(_id=self.comment_id)
+
+    @expose()
+    def reply(self, text):
+        if self.comment_id:
+            c = self.comment().reply()
+            c.text = text
+        else:
+            c = self.page().reply()
+            c.text = text
+        c.m.save()
+        redirect(request.referer)
+
+    @expose()
+    def delete(self):
+        self.comment().m.delete()
+        redirect(request.referer)
+
+    def _dispatch(self, state, remainder):
+        return _dispatch(self, state, remainder)
+        
+    def _lookup(self, next, *remainder):
+        if self.comment_id:
+            return CommentController(
+                self.page_title,
+                self.comment_id + '/' + next), remainder
+        else:
+            return CommentController(
+                self.page_title, next), remainder
+
+    

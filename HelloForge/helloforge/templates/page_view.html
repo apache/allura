@@ -3,6 +3,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml"
       xmlns:py="http://genshi.edgewall.org/"
       xmlns:xi="http://www.w3.org/2001/XInclude">
+  <xi:include href="../../helloforge/templates/lib.html" />
 
   <head>
     <meta content="text/html; charset=UTF-8" http-equiv="content-type" py:replace="''"/>
@@ -21,5 +22,16 @@
     <div>
       ${Markup(page.html_text)}
     </div>
+
+    <hr/>
+    <h2>Comments</h2>
+    <form method="post" action="comments/reply">
+      <h3>Make a comment</h3>
+      <textarea rows="4" cols="60" name="text"></textarea><br/>
+      <input type="submit"/>
+    </form>
+    <py:for each="cmt in page.root_comments()">
+      ${display_comment(cmt)}
+    </py:for>
   </body>
 </html>

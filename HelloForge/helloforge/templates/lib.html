@@ -1,10 +1,28 @@
 <html xmlns="http://www.w3.org/1999/xhtml"
       xmlns:py="http://genshi.edgewall.org/"
       xmlns:xi="http://www.w3.org/2001/XInclude">
+
   <div py:def="navigation(page)">
     <a href="..">PluginRoot</a>
     <a href="edit">Edit Page</a>
     <a href="history">Page History</a>
   </div>
+
+  <py:def function="display_comment(comment)">
+    <div style="padding-left: 10px; border-left: 1px solid grey">
+      Posted by <em>${comment.author().display_name}</em> at ${comment.timestamp} 
+      <a py:if="comment.author_id==c.user._id" href="comments/$comment._id/delete">[X]</a>
+      <br/>
+      <p py:content="comment.text"/>
+      <form method="post" action="comments/$comment._id/reply">
+        <h3>Reply</h3>
+        <textarea rows="4" cols="60" name="text"></textarea><br/>
+        <input type="submit"/>
+      </form>
+      <py:for each="cc in comment.replies()">
+        ${display_comment(cc)}
+      </py:for>
+    </div>
+  </py:def>
 
 </html>

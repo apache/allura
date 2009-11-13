@@ -1,1 +1,1 @@
-from wiki import Page
+from wiki import Page, Comment

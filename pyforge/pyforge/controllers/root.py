@@ -47,6 +47,7 @@ class RootController(BaseController):
         return _dispatch(self, state, remainder)
         
     def _lookup(self, pname, *remainder):
+        c.user = M.User.m.get(_id=None)
         return ProjectController(pname + '/'), remainder
 
 class ProjectController(object):

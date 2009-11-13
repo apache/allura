@@ -1,7 +1,8 @@
+from time import sleep
 from datetime import datetime
 from hashlib import sha1
 
-from pylons import c, g
+from pylons import c
 from ming import Document, Session, Field
 from ming import schema as S
 from pymongo.bson import ObjectId
@@ -54,11 +55,14 @@ class Message(Artifact):
     parent_id=Field(str)
     app_id=Field(S.ObjectId, if_missing=lambda:c.app.config._id)
     timestamp=Field(datetime, if_missing=datetime.utcnow)
-    author_id=Field(S.ObjectId, if_missing=g.user._id)
+    author_id=Field(S.ObjectId, if_missing=lambda:c.user._id)
     text=Field(str)
 
+    def author(self):
+        from .auth import User
+        return User.m.get(_id=self.author_id)
+
     def reply(self):
-        import time
         while True:
             try:
                 new_id = self._id + '/' + nonce()
@@ -67,11 +71,11 @@ class Message(Artifact):
                         _id=new_id,
                         parent_id=self._id,
                         timestamp=datetime.utcnow(),
-                        author_id=g.user._id))
+                        author_id=c.user._id))
                 msg.m.insert()
-                break
+                return msg
             except OperationFailure:
-                time.sleep(0.1)
+                sleep(0.1)
                 continue
 
     def descendants(self):

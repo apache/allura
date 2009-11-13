@@ -8,6 +8,7 @@ class User(Document):
 
     _id=Field(S.ObjectId)
     login=Field(str)
+    display_name=Field(str)
     groups=Field([str], if_empty=['*anonymous', '*authenticated' ])
 
     def roles(self):

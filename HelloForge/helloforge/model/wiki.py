@@ -1,10 +1,13 @@
 from datetime import datetime
+from time import sleep
 
-from pylons import c, g
+from pylons import c
 from docutils.core import publish_parts
 import re
 
 import pymongo
+from pymongo.errors import OperationFailure
+
 from ming import schema as S
 from ming import Field
 
@@ -26,7 +29,7 @@ class Page(Artifact):
 
     title=Field(str)
     version=Field(int, if_missing=0)
-    author_id=Field(S.ObjectId, if_missing=g.user._id)
+    author_id=Field(S.ObjectId, if_missing=lambda:c.user._id)
     timestamp=Field(S.DateTime, if_missing=datetime.utcnow)
     text=Field(S.String, if_missing='')
 
@@ -63,10 +66,20 @@ class Page(Artifact):
             content = pattern.sub(replacement, content)
         return content
 
-    def comment(self):
-        return Comment.make(dict(page_id=self._id))
+    def reply(self):
+        while True:
+            try:
+                c = Comment.make(dict(page_title=self.title))
+                c.m.insert()
+                return c
+            except OperationFailure:
+                sleep(0.1)
+                continue
+
+    def root_comments(self):
+        return Comment.m.find(dict(page_title=self.title, parent_id=None))
 
 class Comment(Message):
     class __mongometa__:
         name='comment'
-    page_id=Field(S.ObjectId)
+    page_title=Field(str)

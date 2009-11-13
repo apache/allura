@@ -16,4 +16,4 @@ class Globals(object):
 
     def __init__(self):
         """Do nothing, by default."""
-        user = M.User.make(login='test_user')
+        pass
