@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from pylons import c
+from pylons import c, g
 from docutils.core import publish_parts
 import re
 
@@ -8,7 +8,7 @@ import pymongo
 from ming import schema as S
 from ming import Field
 
-from pyforge.model import Artifact
+from pyforge.model import Artifact, Message
 
 wikiwords = [
     (r'\b([A-Z]\w+[A-Z]+\w+)', r'<a href="../\1/">\1</a>'),
@@ -26,7 +26,7 @@ class Page(Artifact):
 
     title=Field(str)
     version=Field(int, if_missing=0)
-    author=Field(str, if_missing='*anonymous')
+    author_id=Field(S.ObjectId, if_missing=g.user._id)
     timestamp=Field(S.DateTime, if_missing=datetime.utcnow)
     text=Field(S.String, if_missing='')
 
@@ -63,3 +63,10 @@ class Page(Artifact):
             content = pattern.sub(replacement, content)
         return content
 
+    def comment(self):
+        return Comment.make(dict(page_id=self._id))
+
+class Comment(Message):
+    class __mongometa__:
+        name='comment'
+    page_id=Field(S.ObjectId)

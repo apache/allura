@@ -1,4 +1,7 @@
 # -*- coding: utf-8 -*-
 """The application's model objects"""
 
-from project import Project, ProjectSession, AppConfig, Artifact
+from .session import ProjectSession
+from .project import Project, AppConfig
+from .artifact import Artifact, Message
+from .auth import User

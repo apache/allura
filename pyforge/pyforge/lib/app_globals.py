@@ -4,6 +4,7 @@
 
 __all__ = ['Globals']
 
+from pyforge import model as M
 
 class Globals(object):
     """Container for objects available throughout the life of the application.
@@ -15,4 +16,4 @@ class Globals(object):
 
     def __init__(self):
         """Do nothing, by default."""
-        pass
+        user = M.User.make(login='test_user')
