@@ -4,7 +4,7 @@ import urllib
 def parse_uri(uri, **kwargs):
     scheme, rest = urllib.splittype(uri)
     host, rest = urllib.splithost(rest)
-    user, rest = urllib.splituser(rest)
+    user, host = urllib.splituser(host)
     if user:
         username, password = urllib.splitpasswd(user)
     else:

@@ -197,10 +197,6 @@ class TestPolymorphic(TestCase):
         self.assertEqual(self.Base.make(dict(type='derived')),
                          dict(type='derived', a=None, b=None))
         
-
-    
-        
-
 if __name__ == '__main__':
     main()
 
