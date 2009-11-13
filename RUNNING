@@ -1,0 +1,73 @@
+# Did you run setup-common.bash?
+# Did you activate sandbox-env?
+
+
+
+#
+# Starting MongoDB
+#
+# from the directory...
+
+...
+
+#
+# Stopping MongoDB
+#
+
+...
+
+
+
+#
+# Starting RabbitMQ
+#
+# from the directory containing rabbitmqctl
+
+sudo ./rabbitmq-server
+./rabbitmqctl add_user celeryuser celerypw
+./rabbitmqctl add_vhost celeryvhost
+./rabbitmqctl set_permissions -p celeryvhost celeryuser "" ".*" ".*"
+
+#
+# Stopping RabbitMQ
+#
+
+./rabbitmqctl stop
+
+
+
+#
+# Starting Celery
+#
+# from forge/pyforge, where celeryconfig.py lives
+
+celeryinit
+celeryd --detach
+
+
+
+#
+# Starting Lamson
+#
+# from forge/mail
+
+mkdir run logs
+lamson start
+lamson status
+lamson log
+
+#
+# Stopping Lamson
+#
+
+lamson stop -ALL run
+rm -rf run/*
+ 
+
+
+#
+# Starting the forge
+#
+# from forge, where development.ini lives
+
+paster serve development.ini
