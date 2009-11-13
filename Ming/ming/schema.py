@@ -175,7 +175,8 @@ class Object(FancySchemaItem):
         if self._if_missing is NoDefault:
             self._if_missing = base.Object(
                 (k, v.validate(Missing))
-                for k,v in self.fields.iteritems())
+                for k,v in self.fields.iteritems()
+                if isinstance(k, basestring))
         return self._if_missing
     def _set_if_missing(self, value):
         self._if_missing = value
