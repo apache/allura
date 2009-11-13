@@ -2,5 +2,6 @@
 *.egg-info
 *.log
 *.pyc
+*/.coverage
 pyforge/docs/_build/*
 

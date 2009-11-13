@@ -19,6 +19,7 @@ setup(name='Ming',
       zip_safe=True,
       install_requires=[
           # -*- Extra requirements: -*-
+        "mock >= 0.6.0",
       ],
       entry_points="""
       # -*- Entry points: -*-

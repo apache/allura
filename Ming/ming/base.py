@@ -17,7 +17,10 @@ class Object(dict):
             raise AttributeError, name
 
     def __setattr__(self, name, value):
-        self.__setitem__(name, value)
+        if name in self.__class__.__dict__:
+            dict.__setattr__(self, name, value)
+        else:
+            self.__setitem__(name, value)
 
     @classmethod
     def from_bson(cls, bson):
@@ -78,7 +81,9 @@ class Manager(object):
 
     def __call__(self, session):
         '''In order to use an alternate session, just use Class.mgr(other_session)'''
-        return Manager(session, self.instance, self.cls)
+        result = Manager(self.instance, self.cls)
+        result.session = session
+        return result
 
     def get(self, **kwargs):
         """
@@ -216,13 +221,15 @@ class DocumentMeta(type):
             mm.polymorphic_on = None
             mm.polymorphic_registry = None
         # Make sure mongometa's schema incorporates base schemas
-        my_schema = schema.Object()
+        fields = dict()
         for base in mm_bases:
             if hasattr(base, 'schema'):
                 if base.schema:
-                    my_schema.extend(schema.SchemaItem.make(base.schema))
+                    fields.update(base.schema.fields)
         if mm.schema:
-            my_schema.extend(schema.SchemaItem.make(mm.schema))
+            my_schema = schema.SchemaItem.make(mm.schema, inherited_fields=fields)
+        else:
+            my_schema = schema.SchemaItem.make(fields)
         # Collect fields
         for k,v in dct.iteritems():
             if isinstance(v, Field):
@@ -280,55 +287,6 @@ class Document(Object):
         else:
             return cls(data)
 
-class VersionedDocument(Document):
-    '''Special Document allowing snapshot and rollback.'''
-
-    class __mongometa__:
-        '''Extension of the Document class providing
-
-        snapshot - class to be used as snapshots of the current class
-        snapshot_untracked - field names to be skipped when snapshotting
-        '''
-        name=None
-        session=None
-        indexes=[]
-        snapshot=None
-        snapshot_untracked=set()
-        schema=dict(
-            _last_snapshot_id=str)
-
-    def snapshot(self, author):
-        '''Create a snapshot object of the current object with the specified
-        author field.
-        '''
-        mm = self.__mongometa__
-        # Get last snapshot
-        snapshot = mm.snapshot(dict(
-            (k,v) for k,v in self.iteritems()
-            if k not in mm.snapshot_untracked))
-        snapshot._original_id = self._id
-        snapshot._author = author
-        del snapshot['_id']
-        snapshot._id = hashlib.sha1(str(snapshot)).hexdigest()
-        if snapshot._id == self.get('_last_snapshot_id', None):
-            return
-        snapshot.m.save()
-        self._last_snapshot_id = snapshot._id
-
-    def rollback(self):
-        '''Revert one snapshot operation, restoring the values from the most
-        recent snapshot and destroying the most recent snapshot in the process.
-        '''
-        mm = self.__mongometa__
-        snapshot = mm.snapshot.m.find(
-            dict(_id=self._last_snapshot_id)).one()
-        fields = dict(snapshot)
-        del fields['_author']
-        self.update(fields)
-        if '_last_snapshot_id' not in snapshot:
-            del self['_last_snapshot_id']
-        snapshot.m.delete()
-
 class Cursor(object):
     '''Python class proxying a MongoDB cursor, constructing and validating
     objects that it tracks
@@ -346,10 +304,8 @@ class Cursor(object):
 
     def next(self):
         bson = self.cursor.next()
-        if bson:
-            return self.cls.make(bson, allow_extra=False, strip_extra=True)
-        else:
-            return None
+        if bson is None: return None
+        return self.cls.make(bson, allow_extra=False, strip_extra=True)
 
     def count(self):
         return self.cursor.count()

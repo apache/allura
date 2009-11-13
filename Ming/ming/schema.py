@@ -14,12 +14,14 @@ log = logging.getLogger(__name__)
 class Missing(tuple):
     '''Missing is a sentinel used to indicate a missing key or missing keyword
     argument (used since None sometimes has meaning)'''
-    pass
+    def __repr__(self):
+        return '<Missing>'
 class NoDefault(tuple):
     '''NoDefault is a sentinel used to indicate a keyword argument was not
     specified.  Used since None and Missing mean something else
     '''
-    pass
+    def __repr__(self):
+        return '<NoDefault>'
 Missing = Missing()
 NoDefault = NoDefault()
 
@@ -161,11 +163,20 @@ class Object(FancySchemaItem):
         FancySchemaItem.__init__(self, required, if_missing)
         self.fields = dict((name, SchemaItem.make(field))
                            for name, field in fields.iteritems())
-        if self.if_missing is NoDefault:
-            self.if_missing = dict((k, v.validate(Missing))
-                                   for k,v in self.fields.iteritems())
         self.polymorphic_on = self.polymorphic_registry = None
         self.managed_class=None
+        self._if_missing = NoDefault
+
+    def _get_if_missing(self):
+        from . import base
+        if self._if_missing is NoDefault:
+            self._if_missing = base.Object(
+                (k, v.validate(Missing))
+                for k,v in self.fields.iteritems())
+        return self._if_missing
+    def _set_if_missing(self, value):
+        self._if_missing = value
+    if_missing = property(_get_if_missing, _set_if_missing)
 
     def validate(self, value, **kw):
         try:

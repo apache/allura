@@ -21,7 +21,7 @@ setup(
         "Carrot",
         "Celery >= 0.8.0",
         "pymongo",
-                        ],
+        ],
     setup_requires=["PasteScript >= 1.7"],
     paster_plugins=['PasteScript', 'Pylons', 'TurboGears2', 'tg.devtools'],
     packages=find_packages(exclude=['ez_setup']),
