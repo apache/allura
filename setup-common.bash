@@ -18,6 +18,7 @@ echo
 echo '# installing turbogears'
 easy_install ipython
 easy_install -i http://www.turbogears.org/2.1/downloads/current/index tg.devtools
+easy_install beautifulsoup
 
 #
 # Install _our_ code.

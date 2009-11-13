@@ -17,14 +17,11 @@ __all__ = ['setup_db', 'teardown_db', 'TestController', 'url_for']
 
 def setup_db():
     """Method used to build a database"""
-    engine = config['pylons.app_globals'].sa_engine 
-    model.init_model(engine)
-    model.metadata.create_all(engine)
+    pass
 
 def teardown_db():
     """Method used to destroy a database"""
-    engine = config['pylons.app_globals'].sa_engine
-    model.metadata.drop_all(engine)
+    pass
 
 
 class TestController(object):
@@ -60,5 +57,4 @@ class TestController(object):
     
     def tearDown(self):
         """Method called by nose after running each test"""
-        # Cleaning up the database:
-        teardown_db()
+        pass
