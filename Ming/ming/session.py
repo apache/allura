@@ -25,8 +25,8 @@ class Session(object):
 
     def get(self, cls, **kwargs):
         bson = self._impl(cls).find_one(kwargs)
-        if bson: return cls.make(bson)
-        else: return None
+        if bson is None: return None
+        return cls.make(bson)
 
     def find(self, cls, *args, **kwargs):
         cursor = self._impl(cls).find(*args, **kwargs)
@@ -114,7 +114,7 @@ class Session(object):
         key = kwargs.keys()[0]
         value = kwargs[key]
         if value is None:
-            raise "%s=%s" % (key, value)
+            raise ValueError, "%s=%s" % (key, value)
         
         if key not in doc:
             self._impl(doc).update(
