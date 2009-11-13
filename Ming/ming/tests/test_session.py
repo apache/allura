@@ -38,6 +38,11 @@ class TestSession(TestCase):
         self.TestDoc = TestDoc
         self.TestDocNoSchema = TestDocNoSchema
 
+    def testByName(self):
+        session0 = Session.by_name('foo')
+        session1 = Session.by_name('foo')
+        self.assert_(session0 is session1)
+
     def test_base_session(self):
         impl = self.bind.db['test_doc']
         sess = self.session

@@ -11,31 +11,11 @@ from .utils import parse_uri
 
 log = logging.getLogger(__name__)
 
-class tl_property(object):
-
-    def __init__(self, tl_attr='_tl_value'):
-        self.tl_attr = tl_attr
-        self.name = self.func = None
-
-    def __call__(self, func):
-        self.func = func
-        self.name = func.__name__
-        return self
-
-    def __get__(self, obj, type=None):
-        tl = getattr(obj, self.tl_attr)
-        try:
-            value = getattr(tl, self.name)
-        except AttributeError:
-            value = self.func(obj)
-            setattr(tl, self.name, value)
-        return value
-
 class DataStore(object):
     """Manages a connections to Mongo, with seprate connections per thread."""
 
     def __init__(self, master='mongo://localhost:27017/gutenberg', slave=None,
-                 connect_retry=10):
+                 connect_retry=3):
         # self._tl_value = ThreadLocal()
         self._conn = None
         self._lock = Lock()
@@ -50,6 +30,8 @@ class DataStore(object):
         log.disabled = 0 # @%#$@ logging fileconfig disables our logger
         if isinstance(master, basestring):
             master = [ master ]
+        if isinstance(slave, basestring):
+            slave = [ slave ]
         if slave is None: slave = []
         assert master, 'You MUST supply at least one master mongo connection'
         self.master_args = [ parse_uri(s) for s in master if s ]
@@ -86,20 +68,17 @@ class DataStore(object):
                     (str(self.master_args[1]['host']), int(self.master_args[1]['port'])),
                     pool_size=16)
             else:
-                if self.master_args:
-                    try:
-                        master = Connection(str(self.master_args[0]['host']), int(self.master_args[0]['port']),
-                                            pool_size=8)
-                    except:
-                        if self.slave_args:
-                            log.exception('Cannot connect to master: %s will use slave: %s' % (self.master_args, self.slave_args))
+                assert self.master_args, 'You must specify a master connection'
+                try:
+                    master = Connection(str(self.master_args[0]['host']), int(self.master_args[0]['port']),
+                                        pool_size=8)
+                except:
+                    if self.slave_args:
+                        log.exception('Cannot connect to master: %s will use slave: %s' % (self.master_args, self.slave_args))
                             # and continue... to use the slave only
-                            master = None
-                        else:
-                            raise
-                else:
-                    log.info('No master connection specified, using slaves only: %s' % self.slave_args)
-                    master = None
+                        master = None
+                    else:
+                        raise
 
                 if self.slave_args:
                     slave = [ Connection(str(a['host']), int(a['port']), pool_size=16, slave_okay=True)
