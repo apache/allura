@@ -6,15 +6,9 @@
 #
 # Starting MongoDB
 #
-# from the directory...
+# from the directory containing mongod
 
-...
-
-#
-# Stopping MongoDB
-#
-
-...
+mongod
 
 
 
