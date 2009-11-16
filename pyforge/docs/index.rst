@@ -19,7 +19,7 @@ Writing a PyForge based app
    
    tutorials/wiki-plugin
 
-Inside the Platform Components: 
+Inside the Platform Components
 =====================================================================
 
 .. toctree::
@@ -30,7 +30,14 @@ Inside the Platform Components:
    plugins
    email
    message_bus
+
+Frequently Asked Questions
+=====================================================================
+.. toctree::
+   :maxdepth: 1
    
+   faq
+
 Project References: 
 =====================================================================
 
