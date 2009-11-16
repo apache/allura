@@ -35,15 +35,21 @@ cd forge
 
 echo
 echo '# installing pyforge dependencies'
-python pyforge/setup.py develop
+cd pyforge
+python setup.py develop
+cd ..
 
 echo
 echo '# installing Ming dependencies'
-python Ming/setup.py develop
+cd Ming
+python setup.py develop
+cd ..
 
 echo
 echo '# installing HelloForge dependencies'
-python HelloForge/setup.py develop
+cd HelloForge
+python setup.py develop
+cd ..
 
 
 # Start up the server?
