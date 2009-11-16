@@ -3,20 +3,36 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Welcome to pyforge's documentation!
-===================================
-
-Contents:
+Introducing the new *Forge Platform:*
+======================================
 
 .. toctree::
    :maxdepth: 2
    
    intro
+
+Inside the Platform Components: 
+=================================
+
+.. toctree::
+   :maxdepth: 2
+   
+
    platform
    plugins
    email
    message_bus
    
+Project References: 
+================================= 
+
+.. toctree::
+   :maxdepth: 2
+   
+   online
+   
+   bibleography
+  
 Indices and tables
 ==================
 
