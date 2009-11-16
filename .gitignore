@@ -3,5 +3,6 @@
 *.log
 *.pyc
 */.coverage
+*~
 pyforge/docs/_build/*
 
