@@ -1,3 +1,7 @@
+Introducing the new *Forge Platform:*
+======================================
+
+Rather than build yet another forge, we decided to do something new.   We wanted to build a new kind of extensible forge, and a new set of highly integrated forge tools. 
 
 Pyforge is an **open** platform for **open** software development tools
 ----------------------------------------------------------------------

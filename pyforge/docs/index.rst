@@ -4,18 +4,26 @@
    contain the root `toctree` directive.
 
 Introducing the new *Forge Platform:*
-======================================
+=====================================================================
 
 .. toctree::
    :maxdepth: 2
    
    intro
 
-Inside the Platform Components: 
-=================================
+Writing a PyForge based app
+=====================================================================
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 3
+   
+   tutorials/wiki-plugin
+
+Inside the Platform Components: 
+=====================================================================
+
+.. toctree::
+   :maxdepth: 3
    
 
    platform
@@ -24,17 +32,16 @@ Inside the Platform Components:
    message_bus
    
 Project References: 
-================================= 
+=====================================================================
 
 .. toctree::
    :maxdepth: 2
    
    online
-   
    bibleography
   
 Indices and tables
-==================
+=====================================================================
 
 * :ref:`genindex`
 * :ref:`modindex`
