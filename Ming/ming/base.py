@@ -78,6 +78,7 @@ class Manager(object):
         self.session = cls.__mongometa__.session
         self.instance = instance
         self.cls = cls
+        self.ensure_indexes()
 
     def __call__(self, session):
         '''In order to use an alternate session, just use Class.mgr(other_session)'''
