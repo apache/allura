@@ -1,7 +1,6 @@
-
 Rather than build yet another forge, we decided to do something new.   We wanted to build a new kind of extensible forge, and a new set of highly integrated forge tools. 
 
-Pyforge is an **open** platform for **open** software development tools
+Pyforge is an **open** platform for **open** processes
 ----------------------------------------------------------------------
 
 It's easy to get frustrated with existing development tools.   Too often they are overbearing, complex, and make assumptions that get in your way.  And even if they are open source, it's often difficult to get them to work the way you need them too. 
