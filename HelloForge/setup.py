@@ -22,6 +22,8 @@ setup(name='HelloForge',
           # -*- Extra requirements: -*-
         'pyforge',
         'docutils',
+        "ElementTree >= 1.2.7",
+        "Markdown >= 2.0.3",
       ],
       entry_points="""
       # -*- Entry points: -*-

@@ -2,8 +2,8 @@ from datetime import datetime
 from time import sleep
 
 from pylons import c
-from docutils.core import publish_parts
 import re
+import markdown
 
 import pymongo
 from pymongo.errors import OperationFailure
@@ -61,7 +61,7 @@ class Page(Artifact):
 
     @property
     def html_text(self):
-        content = publish_parts(self.text, writer_name='html')['html_body']
+        content = markdown.markdown(self.text)
         for pattern, replacement in wikiwords:
             content = pattern.sub(replacement, content)
         return content
