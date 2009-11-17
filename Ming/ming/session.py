@@ -41,15 +41,17 @@ class Session(object):
     def count(self, cls):
         return self._impl(cls).count()
 
-    def ensure_index(self, cls, fields):
+    def ensure_index(self, cls, fields, **kwargs):
         if not isinstance(fields, (list, tuple)):
             fields = [ fields ]
         index_fields = [(f, pymongo.ASCENDING) for f in fields]
-        return self._impl(cls).ensure_index(index_fields)
+        return self._impl(cls).ensure_index(index_fields, **kwargs)
 
     def ensure_indexes(self, cls):
         for idx in getattr(cls.__mongometa__, 'indexes', []):
             self.ensure_index(cls, idx)
+        for idx in getattr(cls.__mongometa__, 'unique_indexes', []):
+            self.ensure_index(cls, idx, unique=True)
 
     def group(self, cls, *args, **kwargs):
         return self._impl(cls).group(*args, **kwargs)

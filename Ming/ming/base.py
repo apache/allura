@@ -121,8 +121,8 @@ class Manager(object):
     def count(self):
         return self.session.count(self.cls)
 
-    def ensure_index(self, fields):
-        return self.session.ensure_index(self.cls, fields)
+    def ensure_index(self, fields, **kwargs):
+        return self.session.ensure_index(self.cls, fields, **kwargs)
 
     def ensure_indexes(self):
         return self.session.ensure_indexes(self.cls)
