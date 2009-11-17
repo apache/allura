@@ -15,4 +15,9 @@ Potential pitfalls for groupware development:
 
 http://research.microsoft.com/en-us/um/people/jgrudin/past/papers/cacm94/cacm94.html
 
+AMQP Online References:
+
+http://blogs.digitar.com/jjww/2009/01/rabbits-and-warrens/
+http://www.igvita.com/2009/10/08/advanced-messaging-routing-with-amqp/
+
 
