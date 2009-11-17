@@ -7,6 +7,6 @@ User/Group model
 Artifacts and ACL's 
 ---------------------------------------------------------------------
 
-The magic of **predicates88
+The magic of **predicates**
 ---------------------------------------------------------------------
 
