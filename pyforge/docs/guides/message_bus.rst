@@ -1,3 +1,6 @@
+Guide to the PyForge event system
+====================================================================
+
 Writing event listeners
 ---------------------------------------------------------------------
 
@@ -25,17 +28,4 @@ There's no reason a event listener can't call out over HTTP to some web
 service...
 
 TODO: Document reactors that implement web-hooks after we write some ;) 
-
-
-Extending the pyforge markup
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-There is a special kind of queue based pluging that allows you to
-extend the standard artifact reference system to add new artifact
-types (eg: sf:tg:ticket:149) and extend the syntax of our markup
-language (based on  Waylan Limberg's excellent markdown implementation
-for python). 
-
-http://www.freewisdom.org/projects/python-markdown
-
 

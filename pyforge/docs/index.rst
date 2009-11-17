@@ -25,11 +25,11 @@ Inside the Platform Components
 .. toctree::
    :maxdepth: 3
    
-
    platform
-   plugins
-   email
-   message_bus
+   guides/message_bus
+   guides/email
+   guides/markup
+   guides/permissions
 
 Frequently Asked Questions
 =====================================================================
@@ -38,7 +38,7 @@ Frequently Asked Questions
    
    faq
 
-Project References: 
+Project References
 =====================================================================
 
 .. toctree::
