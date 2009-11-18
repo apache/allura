@@ -50,8 +50,8 @@ def test_message():
     m.reply()
     assert_true('PyForge message has reply')
 
-    m.descendents()
-    assert_true('PyForge message has descendents')
+    m.descendants()
+    assert_true('PyForge message has descendants')
 
     m.replies()
     assert_true('PyForge message has replies')
