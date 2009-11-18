@@ -23,6 +23,7 @@ class HelloForgeApp(Application):
 
     def install(self, project):
         self.config.config['project_name'] = project._id
+        self.uninstall(project)
         p = M.Page.upsert('Root')
         p.text = 'This is the root page.'
         p.m.save()

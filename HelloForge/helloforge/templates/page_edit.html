@@ -4,6 +4,7 @@
       xmlns:py="http://genshi.edgewall.org/"
       xmlns:xi="http://www.w3.org/2001/XInclude">
 
+  <xi:include href="${g.pyforge_templates}/master.html"/>
   <xi:include href="lib.html"/>
 
   <head>
@@ -14,7 +15,7 @@
   <body>
     <h1>$page.title</h1>
     <form method="post" action="update">
-      <textarea cols="80" rows="40" name="text">$page.text</textarea><br/>
+      <textarea cols="80" rows="24" name="text">$page.text</textarea><br/>
       <input type="submit" value="Save Changes"/>
     </form>
   </body>

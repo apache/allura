@@ -13,29 +13,28 @@ convert them into boolean, for example, you should use the
  
 """
 
-from tg.configuration import AppConfig
+from tg.configuration import AppConfig, config
 
 import pyforge
 from pyforge import model
-from pyforge.lib import app_globals, helpers 
+from pyforge.lib import app_globals, helpers
+from pylons.middleware import StatusCodeRedirect
 
-base_config = AppConfig()
-base_config.renderers = []
+class ForgeConfig(AppConfig):
 
-base_config.package = pyforge
+    def __init__(self):
+        AppConfig.__init__(self)
+        self.package = pyforge
+        self.renderers = [ 'json', 'genshi' ]
+        self.default_renderer = 'genshi'
+        self.use_sqlalchemy = False
+        self.use_toscawidgets = False
+        self.use_transaction_manager = False
+        self.handle_status_codes = [ 403, 404 ]
 
-#Enable json in expose
-base_config.renderers.append('json')
-#Set the default renderer
-base_config.default_renderer = 'genshi'
-base_config.renderers.append('genshi')
-# if you want raw speed and have installed chameleon.genshi
-# you should try to use this renderer instead.
-# warning: for the moment chameleon does not handle i18n translations
-#base_config.renderers.append('chameleon_genshi')
+    def add_error_middleware(self, global_conf, app):
+        app = AppConfig.add_error_middleware(self, global_conf, app)
+        app = StatusCodeRedirect(app, [401], '/login')
+        return app
 
-#Configure the base SQLALchemy Setup
-base_config.use_sqlalchemy = False
-base_config.use_toscawidgets = False
-base_config.use_transaction_manager = False
-
+base_config = ForgeConfig()

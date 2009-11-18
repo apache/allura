@@ -16,4 +16,6 @@ class Globals(object):
 
     def __init__(self):
         """Do nothing, by default."""
-        pass
+        self.pyforge_templates = '/home/rick446/src/forge/pyforge/pyforge/templates'
+
+        

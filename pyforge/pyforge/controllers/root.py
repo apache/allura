@@ -3,12 +3,13 @@
 import logging
 import pkg_resources
 
-from tg import expose, flash, require, url, request, redirect
+from tg import expose, flash, require, url, request, redirect, session
 from pylons.i18n import ugettext as _, lazy_ugettext as l_
 from pylons import c
 from webob import exc
 
 from pyforge.lib.base import BaseController
+from pyforge.lib.security import require_forge_access, require_project_access
 from pyforge.controllers.error import ErrorController
 
 from pymongo.bson import ObjectId
@@ -38,6 +39,14 @@ class RootController(BaseController):
     
     error = ErrorController()
 
+    def __init__(self):
+        # Lookup user
+        uid = session.get('userid', None)
+        if uid:
+            c.user = M.User.m.get(_id=uid)
+        else:
+            c.user = None
+
     @expose('pyforge.templates.index')
     def index(self):
         """Handle the front-page."""
@@ -47,8 +56,33 @@ class RootController(BaseController):
         return _dispatch(self, state, remainder)
         
     def _lookup(self, pname, *remainder):
-        c.user = M.User.m.get(_id=None)
         return ProjectController(pname + '/'), remainder
+
+    @expose('pyforge.templates.login')
+    def login(self):
+        return dict()
+
+    @expose()
+    def logout(self):
+        session['userid'] = None
+        session.save()
+        redirect('/')
+
+    @expose()
+    def do_login(self, username, password):
+        user = M.User.m.get(username=username)
+        if user is None:
+            session['userid'] = None
+            session.save()
+            raise exc.HTTPUnauthorized()
+        if not user.validate_password(password):
+            session['userid'] = None
+            session.save()
+            raise exc.HTTPUnauthorized()
+        session['userid'] = user._id
+        session.save()
+        flash('Welcome back, %s' % user.display_name)
+        redirect('/')
 
 class ProjectController(object):
 
@@ -62,6 +96,7 @@ class ProjectController(object):
 
     @expose('pyforge.templates.project_index')
     def index(self):
+        require_forge_access(self.project, 'read')
         apps = M.AppConfig.m.find(dict(project_id=self.project._id)).all()
         installed_names = set(a.name for a in apps)
         available_apps = [
@@ -72,6 +107,7 @@ class ProjectController(object):
 
     @expose()
     def configure(self, _id=None, **kw):
+        require_forge_access(self.project, 'plugin')
         app_config = M.AppConfig.m.get(_id=ObjectId.url_decode(_id))
         if kw.pop('delete', False):
             self.project.uninstall_app(app_config.name)
@@ -83,16 +119,19 @@ class ProjectController(object):
 
     @expose()
     def install(self, ep_name):
+        require_forge_access(self.project, 'plugin')
         self.project.install_app(ep_name)
         redirect('.')
 
     @expose()
     def new_subproject(self, sp_name):
+        require_forge_access(self.project, 'create')
         sp = self.project.new_subproject(sp_name)
         redirect('.')
 
     @expose()
     def delete_project(self):
+        require_forge_access(self.project, 'delete')
         self.project.delete()
         redirect('..')
 
@@ -108,13 +147,3 @@ class ProjectAppsController(object):
         c.app = app
         return app.root, remainder
 
-class DummyProjectAppController(object):
-    'Dummy Pluggable Application Controller'
-
-    def __init__(self, project_name, app_name):
-        self.project_name = project_name
-        self.app_name = app_name
-
-    @expose()
-    def index(self):
-        return 'ProjectAppController(%s, %s)' % (repr(self.project_name), repr(self.app_name))

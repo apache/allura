@@ -4,6 +4,8 @@
       xmlns:py="http://genshi.edgewall.org/"
       xmlns:xi="http://www.w3.org/2001/XInclude">
 
+  <xi:include href="${g.pyforge_templates}/master.html"/>
+
   <head>
     <meta content="text/html; charset=UTF-8" http-equiv="content-type" py:replace="''"/>
     <title>$title</title>
@@ -27,7 +29,7 @@
         </thead>
         <tbody>
           <tr py:for="p in pages">
-            <td>$p.version</td>
+            <td>$p.version by $p.author.display_name</td>
             <td><input name="v1" type="radio" value="$p.version"/></td>
             <td><input name="v2" type="radio" value="$p.version"/></td>
             <td>

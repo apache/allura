@@ -11,7 +11,7 @@ from pymongo.errors import OperationFailure
 from ming import schema as S
 from ming import Field
 
-from pyforge.model import Artifact, Message
+from pyforge.model import Artifact, Message, User
 
 wikiwords = [
     (r'\b([A-Z]\w+[A-Z]+\w+)', r'<a href="../\1/">\1</a>'),
@@ -65,6 +65,11 @@ class Page(Artifact):
         for pattern, replacement in wikiwords:
             content = pattern.sub(replacement, content)
         return content
+
+    @property
+    def author(self):
+        return User.m.get(_id=self.author_id)
+    
 
     def reply(self):
         while True:

@@ -21,12 +21,26 @@ class Project(Document):
     name=Field(str)
     database=Field(str)
     is_root=Field(bool)
-    members=Field([
-            dict(
-                id=int,
-                uname=str,
-                display=str)])
+    acl = Field({
+            'create':[S.ObjectId],    # create subproject
+            'read':[S.ObjectId],      # read project
+            'delete':[S.ObjectId],    # delete project, subprojects
+            'plugin':[S.ObjectId],    # install/delete/configure plugins
+            'security':[S.ObjectId],  # update ACL
+            })
 
+    def allow_user(self, user, *permissions):
+        for p in permissions:
+            acl = set(self.acl[p])
+            acl.add(user._id)
+            self.acl[p] = list(acl)
+
+    def deny_user(self, user, *permissions):
+        for p in permissions:
+            acl = set(self.acl[p])
+            acl.discard(user._id)
+            self.acl[p] = list(acl)
+            
     @property
     def shortname(self):
         return self._id.split('/')[-2]
@@ -92,7 +106,7 @@ class Project(Document):
                 _id = self._id + name + '/',
                 dburi=self.dburi,
                 is_root=False,
-                members=self.members))
+                acl=self.acl))
         sp.m.save()
         return sp
 
@@ -113,4 +127,7 @@ class AppConfig(Document):
     name=Field(str)
     version=Field(str)
     config=Field(None)
+
+    permissions=Field([str])
+    acl = Field({str:[str]}) # acl[permission] = [ role1, role2, ... ]
 

@@ -25,26 +25,7 @@ class Artifact(Document):
         S.Object,
         { str: str },
         if_missing=lambda:{c.app.config.name:c.app.__version__})
-    acl = Field(
-        S.Object,
-        dict(
-            read=[str],
-            write=[str],
-            delete=[str],
-            comment=[str]),
-        if_missing=dict(
-            read=['*anonymous', '*authenticated'],
-            write=['*authenticated'],
-            delete=['*authenticated'],
-            comment=['*anonymous', '*authenticated']))
-
-    def has_access(self, access_type):
-        roles = [ '*anonymous' ]
-        # Add other roles based on the username and groups
-        acl = set(self.acl[access_type])
-        for r in roles:
-            if r in acl: return True
-        return False
+    acl = Field({str:[str]})
 
 class Message(Artifact):
     class __mongometa__:
