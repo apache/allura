@@ -63,7 +63,11 @@ class Page(Artifact):
 
     @property
     def html_text(self):
-        content = markdown.markdown(self.text)
+        md = markdown.Markdown(
+            extensions=['codehilite'],
+            output_format='html4'
+        )
+        content = md.convert(self.text)
         for pattern, replacement in wikiwords:
             content = pattern.sub(replacement, content)
         return content

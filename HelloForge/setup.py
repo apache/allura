@@ -24,6 +24,7 @@ setup(name='HelloForge',
         'docutils',
         "ElementTree >= 1.2.7",
         "Markdown >= 2.0.3",
+        "Pygments >= 1.1.1",
       ],
       entry_points="""
       # -*- Entry points: -*-
