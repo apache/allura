@@ -1,6 +1,7 @@
 import difflib
 from pprint import pformat
 
+import pkg_resources
 from pylons import c, request
 from tg import expose, redirect
 from pyforge.app import Application
@@ -20,6 +21,10 @@ class HelloForgeApp(Application):
     def __init__(self, config):
         self.config = config
         self.root = RootController()
+
+    @property
+    def templates(self):
+        return pkg_resources.resource_filename('helloforge', 'templates')
 
     def install(self, project):
         self.config.config['project_name'] = project._id

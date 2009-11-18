@@ -2,6 +2,7 @@ class Application(object):
     'base pyforge pluggable application'
     __version__ = None
     default_config = {}
+    templates=None
 
     def __init__(self, config):
         self.config = config

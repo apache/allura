@@ -147,3 +147,11 @@ class ProjectAppsController(object):
         c.app = app
         return app.root, remainder
 
+class ProjectAuthController(object):
+
+    def __init__(self, project):
+        self.project = project
+
+    @expose('pyforge.templates.project_auth_index')
+    def index(self):
+        return dict(project=self.project)

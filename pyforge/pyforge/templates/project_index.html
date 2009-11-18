@@ -3,6 +3,9 @@
 <html xmlns="http://www.w3.org/1999/xhtml"
       xmlns:py="http://genshi.edgewall.org/"
       xmlns:xi="http://www.w3.org/2001/XInclude">
+  <?python 
+  from pyforge.lib.security import has_forge_access
+  ?>
 
   <xi:include href="master.html" />
 
@@ -19,21 +22,23 @@
         <a href="/$prefix/">$part</a> /
       </py:for>
     </h1>
-    <form py:if="not c.project.is_root" method="post" action="delete_project">
+    <a py:if="has_forge_access(c.project, 'security')" href="auth">Auth</a>
+    <form py:if="not c.project.is_root and has_forge_access(c.project, 'delete')" 
+          method="post" action="delete_project">
       <input type="submit" value="Delete project $c.project._id"/>
     </form>
     <h2>SubProjects</h2>
-    <form method="post" action="new_subproject">
+    ${project_tree(c.project)}
+    <form py:if="has_forge_access(c.project, 'create')" method="post" action="new_subproject">
       <label for="sp_name">New Subproject:</label>
-      <input name="sp_name"/><br/>
+      <input name="sp_name"/>
       <input type="submit" value="Create"/>
     </form>
-    ${project_tree(c.project)}
     <h2>Plugins</h2>
     <ul>
       <li py:for="app in apps">
         <a href="app/$app.name/">$app.name</a>
-        <form method="post" action="configure">
+        <form py:if="has_forge_access(c.project, 'plugin')" method="post" action="configure">
           <input type="hidden" name="_id" value="${app._id.url_encode()}"/>
           <py:for each="k,v in app.config.iteritems()">
             <label for="$k">$k</label><br/>
@@ -44,16 +49,18 @@
         </form>
       </li>
     </ul>
-    <h2>Available Plugins</h2>
-    <ul>
-      <li py:for="name, app in available_apps">
-        <form method="post" action="install">
-          <h3>$app.__name__</h3>
-          <p>$app.__doc__</p>
-          <input type="hidden" name="ep_name" value="$name"/>
-          <input type="submit" value="Install $name"/>
-        </form>
-      </li>
-    </ul>
+    <py:if test="has_forge_access(c.project, 'plugin')">
+      <h2>Available Plugins</h2>
+      <ul>
+        <li py:for="name, app in available_apps">
+          <form method="post" action="install">
+            <h3>$app.__name__</h3>
+            <p>$app.__doc__</p>
+            <input type="hidden" name="ep_name" value="$name"/>
+            <input type="submit" value="Install $name"/>
+          </form>
+        </li>
+      </ul>
+    </py:if>
   </body>
 </html>
