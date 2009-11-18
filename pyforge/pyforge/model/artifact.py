@@ -57,7 +57,7 @@ class Message(Artifact):
                 return msg
             except OperationFailure:
                 sleep(0.1)
-                continue
+                continue # pragma: no cover
 
     def descendants(self):
         q = self.m.find(dict(_id={'$gt':self._id}))
