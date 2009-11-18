@@ -35,7 +35,6 @@ def has_project_access(obj, access_type):
     for r in c.user.role_iter():
         if r in acl: return True
     return False
-    
 
 def require_forge_access(obj, access_type):
     if has_forge_access(obj, access_type): return
@@ -49,4 +48,8 @@ def require_project_access(obj, access_type):
     if c.user:
         raise exc.HTTPForbidden()
     else:
+        raise exc.HTTPUnauthorized()
+
+def require_authenticated():
+    if not c.user:
         raise exc.HTTPUnauthorized()

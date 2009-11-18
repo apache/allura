@@ -10,8 +10,10 @@ log = logging.getLogger(__name__)
 
 def bootstrap(command, conf, vars):
     """Place any commands to setup pyforge here"""
-    dburi='mongo://localhost:27017/project:test'
     database='project:test'
+    conn = M.User.m.session.bind.conn
+    if database in conn.database_names():
+        conn.drop_database(database)
     M.User.m.remove({})
     M.Project.m.remove({})
     u0 = M.User.make(dict(username='test_admin', display_name='Test Admin'))
@@ -21,16 +23,14 @@ def bootstrap(command, conf, vars):
     u0.m.save()
     u1.m.save()
     p0 = M.Project.make(dict(_id='test/', database=database, is_root=True))
+    p0.install_app('admin', 'admin')
     p0.allow_user(u0, 'create', 'read', 'delete', 'plugin', 'security')
     p0.allow_user(u1, 'read')
     p1 = p0.new_subproject('sub1')
     p0.m.save()
     p1.m.save()
-    c.project = p0
     c.user = u0
-    M.AppConfig.m.remove({})
-    p0.uninstall_app('hello_forge')
-    p0.install_app('hello_forge')
+    p0.install_app('hello_forge', 'wiki')
 
 def pm(etype, value, tb):
     import pdb, traceback
@@ -42,6 +42,7 @@ def pm(etype, value, tb):
         p.reset()
         p.setup(None, tb)
         p.print_stack_trace()
+        sys.stderr.write('%s: %s\n' % ( etype, value))
         p.cmdloop()
         p.forget()
         # p.interaction(None, tb)

@@ -152,8 +152,13 @@ class FancySchemaItem(SchemaItem):
     def _validate(self, value, **kw): return value
 
 class Anything(FancySchemaItem):
-    'Anything goes - always passes validation unchanged'
-    pass
+    'Anything goes - always passes validation unchanged except dict=>Object'
+
+    def validate(self, value, **kw):
+        from . import base
+        if isinstance(value, dict) and not isinstance(value, base.Object):
+            return base.Object(value)
+        return value
     
 class Object(FancySchemaItem):
     '''Used for dict-like validation.  Also ensures that the incoming object does

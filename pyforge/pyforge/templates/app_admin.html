@@ -1,0 +1,55 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+                    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:py="http://genshi.edgewall.org/"
+      xmlns:xi="http://www.w3.org/2001/XInclude">
+  
+  <xi:include href="master.html" />
+  
+  <head>
+    <meta content="text/html; charset=UTF-8" http-equiv="content-type" py:replace="''"/>
+    <title>Admin for $c.project._id $c.app.config.options.mount_point</title>
+  </head>
+  
+  <body>
+    <h1>Admin for 
+      ${project_links(c.project)} $c.app.config.options.mount_point </h1>
+    <h2>App type: $c.app.config.plugin_name</h2>
+    <div id="app-config">
+      <h3>Config Options</h3>
+      <form method="post" action="configure">
+        <div py:for="o in c.app.config_options">
+          <label for="$o.name">$o.name</label><br/>
+          <input name="$o.name" value="${c.app.config.options[o.name]}"/>
+        </div>
+        <input type="submit" value="Update config"/>
+        <input type="submit" name="delete" value="Delete Plugin"/>
+      </form>
+    </div>
+    <div id="app-acl">
+      <h3>ACL Config</h3>
+      <div py:for="p in c.app.permissions" >
+        <h4>$p</h4>
+        <ul>
+          <li py:for="role in c.app.config.acl[p]">
+            $role 
+            <form method="POST" action="del_perm" style="display:inline">
+              <input type="hidden" name="permission" value="$p"/>
+              <input type="hidden" name="role" value="$role"/>
+              <input type="submit" value="Remove"/>
+            </form>
+          </li>
+        </ul>
+        <form method="POST" action="add_perm">
+          <input type="hidden" name="permission" value="$p"/>
+          <select name="role">
+            <option py:for="role in c.project.roles"
+                    value="$role._id"
+                    >$role._id</option>
+          </select>
+          <input type="submit" value="Add role"/>
+        </form>
+      </div>
+    </div>
+  </body>
+</html>

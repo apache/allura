@@ -4,7 +4,7 @@ from pprint import pformat
 import pkg_resources
 from pylons import c, request
 from tg import expose, redirect
-from pyforge.app import Application
+from pyforge.app import Application, ConfigOption, DefaultAdminController
 from pyforge.lib.dispatch import _dispatch
 
 from helloforge import model as M
@@ -15,19 +15,22 @@ class HelloForgeApp(Application):
     all the rich, creamy goodness that is installable apps.
     '''
     __version__ = version.__version__
-    default_config = dict(project_name='NoProject',
-                          message='Custom message goes here')
+    config_options = Application.config_options + [
+        ConfigOption('project_name', str, 'pname'),
+        ConfigOption('message', str, 'Custom message goes here') ]
+    permissions = [ 'read', 'create', 'edit', 'delete', 'comment' ]
 
     def __init__(self, config):
         self.config = config
         self.root = RootController()
+        self.admin = DefaultAdminController()
 
     @property
     def templates(self):
         return pkg_resources.resource_filename('helloforge', 'templates')
 
     def install(self, project):
-        self.config.config['project_name'] = project._id
+        self.config.options['project_name'] = project._id
         self.uninstall(project)
         p = M.Page.upsert('Root')
         p.text = 'This is the root page.'
@@ -41,7 +44,7 @@ class RootController(object):
 
     @expose('helloforge.templates.index')
     def index(self):
-        return dict(message=c.app.config.config['message'])
+        return dict(message=c.app.config.options['message'])
 
     def _dispatch(self, state, remainder):
         return _dispatch(self, state, remainder)

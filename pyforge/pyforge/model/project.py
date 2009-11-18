@@ -65,41 +65,57 @@ class Project(Document):
     def project_bind(self):
         return datastore.DataStore(self.dburi)
 
-    def install_app(self, ep_name):
+    @property
+    def app_configs(self):
+        return AppConfig.m.find(dict(project_id=self._id)).all()
+
+    @property
+    def roles(self):
+        from . import auth
+        return auth.ProjectRole.m.find().sort('_id').all()
+
+    def install_app(self, ep_name, mount_point):
         for ep in pkg_resources.iter_entry_points('pyforge', ep_name):
             App = ep.load()
             break
         else:
             raise exc.HTTPNotFound, ep_name
-        config = App.default_config
-        cfg = AppConfig.make(dict(project_id=self._id,
-                                  name=ep_name,
-                                  config=config))
+        options = App.default_options()
+        options['mount_point'] = mount_point
+        cfg = AppConfig.make(dict(
+                project_id=self._id,
+                plugin_name=ep_name,
+                options=options,
+                acl=dict((p,[]) for p in App.permissions)))
         app = App(cfg)
+        c.project = self
         c.app = app
         app.install(self)
         cfg.m.save()
+        c.app = None
         return app
 
-    def uninstall_app(self, app_name):
-        app = self.app_instance(app_name)
+    def uninstall_app(self, mount_point):
+        app = self.app_instance(mount_point)
         if app is None: return
         app.uninstall(self)
         app.config.m.delete()
 
-    def app_instance(self, app_name):
-        app_config = self.app_config(app_name)
+    def app_instance(self, mount_point):
+        app_config = self.app_config(mount_point)
         if app_config is None:
             return None
-        for ep in pkg_resources.iter_entry_points('pyforge', app_name):
+        for ep in pkg_resources.iter_entry_points(
+            'pyforge', app_config.plugin_name):
             App = ep.load()
             return App(app_config)
         else:
             return None
 
-    def app_config(self, app_name):
-        return AppConfig.m.get(project_id=self._id, name=app_name)
-
+    def app_config(self, mount_point):
+        return AppConfig.m.find({
+                'project_id':self._id,
+                'options.mount_point':mount_point}).one()
 
     def new_subproject(self, name):
         sp = self.make(dict(
@@ -107,6 +123,7 @@ class Project(Document):
                 database=self.database,
                 is_root=False,
                 acl=self.acl))
+        sp.install_app('admin', 'admin')
         sp.m.save()
         return sp
 
@@ -124,10 +141,9 @@ class AppConfig(Document):
     # AppConfig schema
     _id=Field(S.ObjectId)
     project_id=Field(str)
-    name=Field(str)
+    plugin_name=Field(str)
     version=Field(str)
-    config=Field(None)
+    options=Field(None)
 
-    permissions=Field([str])
     acl = Field({str:[str]}) # acl[permission] = [ role1, role2, ... ]
 

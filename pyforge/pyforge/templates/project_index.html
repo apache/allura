@@ -17,45 +17,13 @@
   
   <body>
     <h1>ProjectController for ${project_links(c.project)}</h1>
-    <a py:if="has_forge_access(c.project, 'security')" href="admin/">Admin</a>
-    <form py:if="not c.project.is_root and has_forge_access(c.project, 'delete')" 
-          method="post" action="delete_project">
-      <input type="submit" value="Delete project $c.project._id"/>
-    </form>
     <h2>SubProjects</h2>
     ${project_tree(c.project)}
-    <form py:if="has_forge_access(c.project, 'create')" method="post" action="new_subproject">
-      <label for="sp_name">New Subproject:</label>
-      <input name="sp_name"/>
-      <input type="submit" value="Create"/>
-    </form>
     <h2>Plugins</h2>
     <ul>
-      <li py:for="app in apps">
-        <a href="app/$app.name/">$app.name</a>
-        <form py:if="has_forge_access(c.project, 'plugin')" method="post" action="configure">
-          <input type="hidden" name="_id" value="${app._id.url_encode()}"/>
-          <py:for each="k,v in app.config.iteritems()">
-            <label for="$k">$k</label><br/>
-            <input name="$k" value="$v"/><br/>
-          </py:for>
-          <input type="submit" value="Update Config for $app.name" />
-          <input type="submit" name="delete" value="Delete Plugin $app.name" />
-        </form>
+      <li py:for="config in c.project.app_configs">
+        <a href="$config.options.mount_point/">$config.options.mount_point</a>
       </li>
     </ul>
-    <py:if test="has_forge_access(c.project, 'plugin')">
-      <h2>Available Plugins</h2>
-      <ul>
-        <li py:for="name, app in available_apps">
-          <form method="post" action="install">
-            <h3>$app.__name__</h3>
-            <p>$app.__doc__</p>
-            <input type="hidden" name="ep_name" value="$name"/>
-            <input type="submit" value="Install $name"/>
-          </form>
-        </li>
-      </ul>
-    </py:if>
   </body>
 </html>

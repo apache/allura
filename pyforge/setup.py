@@ -6,9 +6,11 @@ except ImportError:
     use_setuptools()
     from setuptools import setup, find_packages
 
+from pyforge.version import __version__
+
 setup(
     name='pyforge',
-    version='0.1',
+    version=__version__,
     description='',
     author='',
     author_email='',
@@ -43,5 +45,8 @@ setup(
 
     [paste.app_install]
     main = pylons.util:PylonsInstaller
+
+    [pyforge]
+    admin = pyforge.ext.admin:AdminApp
     """,
 )

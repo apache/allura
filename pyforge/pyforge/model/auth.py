@@ -11,7 +11,7 @@ SALT_LENGTH=8
 
 def encode_password(password, salt=None):
     if salt is None:
-        salt = ''.join(chr(randint(0, 0x7f))
+        salt = ''.join(chr(randint(1, 0x7f))
                        for i in xrange(SALT_LENGTH))
     hashpass = sha256(salt + password.encode('utf-8')).digest()
     return 'sha256' + salt + b64encode(hashpass)

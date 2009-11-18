@@ -18,7 +18,7 @@
     <a href="Root/">Root Page</a>
     <p>The app config follows</p>
     <dl>
-      <py:for each="name, value in c.app.config.config.iteritems()">
+      <py:for each="name, value in c.app.config.options.iteritems()">
         <dt>$name</dt>
         <dd>$value</dd>
       </py:for>
