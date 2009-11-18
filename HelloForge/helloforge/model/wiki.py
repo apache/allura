@@ -50,6 +50,8 @@ class Page(Artifact):
         latest = max(versions, key=lambda v:v.version)
         new_obj=dict(latest, version=latest.version + 1)
         del new_obj['_id']
+        del new_obj['author_id']
+        del new_obj['timestamp']
         return cls.make(new_obj)
 
     @classmethod
