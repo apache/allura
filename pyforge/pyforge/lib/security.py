@@ -32,7 +32,6 @@ def has_project_access(obj, access_type):
     if not c.user:
         return False
     if '*authenticated' in acl: return True
-    roles_checked = set()
     for r in c.user.role_iter():
         if r in acl: return True
     return False

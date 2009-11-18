@@ -3,6 +3,8 @@ class Application(object):
     __version__ = None
     default_config = {}
     templates=None
+    root=None  # root controller
+    admin=None # admin controller
 
     def __init__(self, config):
         self.config = config

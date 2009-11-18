@@ -43,12 +43,19 @@ class ProjectRole(Document):
         name='user'
     
     _id = Field(str)
-    user_id = Field(S.ObjectId) # if role is a user
+    user_id = Field(S.ObjectId, if_missing=None) # if role is a user
     roles = Field([str])
 
-    def role_iter(self):
-        yield self._id
-        for r in self.roles:
-            for rr in ProjectRole.m.get(r).role_iter():
-                yield rr
+    @property
+    def user(self):
+        return User.m.get(_id=self.user_id)
+
+    def role_iter(self, visited=None):
+        if visited is None: visited = set()
+        if self._id not in visited: 
+            yield self._id
+            visited.add(self._id)
+            for r in self.roles:
+                for rr in ProjectRole.m.get(r).role_iter(visited):
+                    yield rr
     

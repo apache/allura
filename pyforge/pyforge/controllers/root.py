@@ -89,6 +89,7 @@ class ProjectController(object):
     def __init__(self, name):
         self.project = p = M.Project.m.get(_id=name)
         self.app = ProjectAppsController(p)
+        self.admin = ProjectAdminController(p)
         c.project = p
 
     def _lookup(self, subproject, *remainder):
@@ -147,11 +148,74 @@ class ProjectAppsController(object):
         c.app = app
         return app.root, remainder
 
-class ProjectAuthController(object):
+class ProjectAdminController(object):
+
+    def __init__(self, project):
+        self.project = project
+        self.app = ProjectAppAdminController(project)
+
+    @expose('pyforge.templates.project_admin_index')
+    def index(self):
+        return dict(roles=M.ProjectRole.m.find().sort('_id').all(),
+                    users=[M.User.m.get(_id=id) for id in self.project.acl.read ],
+                    project=self.project)
+
+    @expose()
+    def add_group_role(self, name):
+        r = M.ProjectRole.make(dict(_id=name))
+        r.m.save()
+        redirect('.')
+
+    @expose()
+    def add_user_role(self, id):
+        u = M.User.m.get(_id=ObjectId.url_decode(id))
+        name = u.username or u.display_name or u._id
+        r = M.ProjectRole.make(dict(_id='*user-%s' % name, user_id=u._id))
+        r.m.save()
+        redirect('.')
+
+    @expose()
+    def add_role(self, role, subrole):
+        role = M.ProjectRole.m.get(_id=role)
+        role.roles.append(subrole)
+        role.m.save()
+        redirect('.')
+
+    @expose()
+    def del_role(self, role, subrole=None):
+        role = M.ProjectRole.m.get(_id=role)
+        if subrole:
+            role.roles.remove(subrole)
+            role.m.save()
+        else:
+            role.m.delete()
+        redirect('.')
+
+    @expose()
+    def add_perm(self, permission, username):
+        u = M.User.m.get(username=username)
+        if not u:
+            flash('No such user: %s', username)
+            redirect('.')
+        c.project.acl[permission].append(u._id)
+        c.project.m.save()
+        redirect('.')
+
+    @expose()
+    def del_perm(self, permission, user):
+        c.project.acl[permission].remove(ObjectId.url_decode(user))
+        c.project.m.save()
+        redirect('.')
+
+class ProjectAppAdminController(object):
 
     def __init__(self, project):
         self.project = project
 
-    @expose('pyforge.templates.project_auth_index')
-    def index(self):
-        return dict(project=self.project)
+    def _lookup(self, app_name, *remainder):
+        app = self.project.app_instance(app_name)
+        if app is None:
+            raise exc.HTTPNotFound, app_name
+        c.app = app
+        return app.admin, remainder
+

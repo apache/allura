@@ -8,6 +8,7 @@
   ?>
 
   <xi:include href="master.html" />
+  <xi:include href="lib.html" />
 
   <head>
     <meta content="text/html; charset=UTF-8" http-equiv="content-type" py:replace="''"/>
@@ -15,14 +16,8 @@
   </head>
   
   <body>
-    <h1 py:with="parts=c.project._id.split('/')">
-      ProjectController for 
-      <py:for each="i, part in enumerate(parts[:-1])"
-         py:with="prefix='/'.join(parts[:i+1])">
-        <a href="/$prefix/">$part</a> /
-      </py:for>
-    </h1>
-    <a py:if="has_forge_access(c.project, 'security')" href="auth">Auth</a>
+    <h1>ProjectController for ${project_links(c.project)}</h1>
+    <a py:if="has_forge_access(c.project, 'security')" href="admin/">Admin</a>
     <form py:if="not c.project.is_root and has_forge_access(c.project, 'delete')" 
           method="post" action="delete_project">
       <input type="submit" value="Delete project $c.project._id"/>

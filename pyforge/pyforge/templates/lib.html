@@ -2,6 +2,14 @@
       xmlns:xi="http://www.w3.org/2001/XInclude"
       py:strip="">
 
+  <py:def function="project_links(p)" 
+          py:with="parts=p._id.split('/')">
+      <py:for each="i, part in enumerate(parts[:-1])"
+         py:with="prefix='/'.join(parts[:i+1])">
+        <a href="/$prefix/">$part</a> /
+      </py:for>
+  </py:def>
+
   <ul py:def="project_tree(project)">
     <li py:for="p in project.direct_subprojects">
       <a href="${'/' + p._id}">$p.shortname</a>

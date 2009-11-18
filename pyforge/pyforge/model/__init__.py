@@ -4,4 +4,4 @@
 from .session import ProjectSession
 from .project import Project, AppConfig
 from .artifact import Artifact, Message
-from .auth import User
+from .auth import User, ProjectRole
