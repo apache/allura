@@ -7,12 +7,12 @@ class Application(object):
     admin=None # admin controller
 
     def __init__(self, config):
-        self.config = config
+        self.config = config # pragma: no cover
 
     def install(self, project):
         'Whatever logic is required to initially set up a plugin'
-        pass
+        pass # pragma: no cover
 
     def uninstall(self, project):
         'Whatever logic is required to tear down a plugin'
-        pass
+        pass # pragma: no cover

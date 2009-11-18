@@ -42,3 +42,17 @@ def test_message():
 
     assert_true('PyForge has available model::Message class')
 
+    m = Checkmessage.make(dict(page_title='test_title'))
+
+    m.author()
+    assert_true('PyForge message has author')
+
+    m.reply()
+    assert_true('PyForge message has reply')
+
+    m.descendents()
+    assert_true('PyForge message has descendents')
+
+    m.replies()
+    assert_true('PyForge message has replies')
+
