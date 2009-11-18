@@ -104,7 +104,7 @@ class Project(Document):
     def new_subproject(self, name):
         sp = self.make(dict(
                 _id = self._id + name + '/',
-                dburi=self.dburi,
+                database=self.database,
                 is_root=False,
                 acl=self.acl))
         sp.m.save()
