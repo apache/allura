@@ -28,8 +28,9 @@ def test_user():
     assert_true('PyForge has available model::User class')
 
 def test_user_make():
-    User.make
-    user = User.make(dict(_id=None, login='nosetest_user', display_name='Nosetest User'))
+    user = User.make(dict(username='nosetest_user', display_name='Nosetest Admin'))
+    user.set_password('foo')
+    user.m.save()
 
     assert_true('PyForge model user can add a user')
 
