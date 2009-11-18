@@ -17,6 +17,7 @@ setup(
     #url='',
     install_requires=[
         "TurboGears2 >= 2.0b7",
+        "PasteScript",
         "Babel >= 0.9.4",
         "Lamson",
         "Django",
@@ -48,5 +49,9 @@ setup(
 
     [pyforge]
     admin = pyforge.ext.admin:AdminApp
+    
+    [paste.paster_create_template]
+    forgeapp=pyforge.pastetemplate:ForgeAppTemplate
     """,
 )
+
