@@ -66,7 +66,13 @@ class PageController(object):
 
     @expose('helloforge.templates.page_view')
     def index(self, version=None):
-        return dict(page=self.page(version))
+        page = self.page(version)
+        cur = page.version - 1
+        if cur > 0: prev = cur-1
+        else: prev = None
+        next = cur+1
+        return dict(page=self.page(version),
+                    cur=cur, prev=prev, next=next)
 
     @expose('helloforge.templates.page_edit')
     def edit(self):
@@ -88,7 +94,7 @@ class PageController(object):
             p1_lines, p2_lines,
             '<a href=".?version=%s">Version %s</a>' % (v1, v1),
             '<a href=".?version=%s">Version %s</a>' % (v2, v2),
-            context=True,
+            context=False,
             numlines=2)
         return dict(p1=p1, p2=p2, tbl=tbl)
 
