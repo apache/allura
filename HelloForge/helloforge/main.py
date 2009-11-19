@@ -81,10 +81,16 @@ class PageController(object):
     def diff(self, v1, v2):
         p1 = self.page(int(v1))
         p2 = self.page(int(v2))
-        diff=difflib.unified_diff(
-            p1.text.split('\n'),
-            p2.text.split('\n'))
-        return dict(p1=p1, p2=p2, diff=diff)
+        p1_lines = p1.text.splitlines(True)
+        p2_lines = p2.text.splitlines(True)
+        hdiff=difflib.HtmlDiff()
+        tbl = hdiff.make_table(
+            p1_lines, p2_lines,
+            '<a href=".?version=%s">Version %s</a>' % (v1, v1),
+            '<a href=".?version=%s">Version %s</a>' % (v2, v2),
+            context=True,
+            numlines=2)
+        return dict(p1=p1, p2=p2, tbl=tbl)
 
     @expose(content_type='text/plain')
     def raw(self):
