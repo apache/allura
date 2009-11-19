@@ -5,4 +5,4 @@
 */.coverage
 *~
 pyforge/docs/_build/*
-
+mail/logs/*
