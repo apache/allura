@@ -7,11 +7,11 @@ CARROT_BACKEND = "amqp"
 DATABASE_ENGINE = "sqlite3"
 DATABASE_NAME = "celery.db"
 
-AMQP_SERVER = "localhost"
-AMQP_PORT = 5672
-AMQP_VHOST = "celeryvhost"
-AMQP_USER = "celeryuser"
-AMQP_PASSWORD = "celerypw"
+BROKER_HOST = "localhost"
+BROKER_PORT = 5672
+BROKER_VHOST = "celeryvhost"
+BROKER_USER = "celeryuser"
+BROKER_PASSWORD = "celerypw"
 
 CELERYD_LOG_FILE = "celeryd.log"
 CELERYD_PID_FILE = "celeryd.pid"
@@ -29,4 +29,4 @@ CELERY_AMQP_EXCHANGE_TYPE = "topic"
 CELERY_AMQP_CONSUMER_QUEUE = "forge_tasks"
 CELERY_AMQP_CONSUMER_ROUTING_KEY = "forge.#"
 
-CELERY_IMPORTS = ("pyforge.tasks.MailTask")
+CELERY_IMPORTS = ["pyforge.tasks.MailTask"]
