@@ -3,6 +3,7 @@
 
 from pyforge.config.app_cfg import base_config
 from pyforge.config.environment import load_environment
+from pyforge.config.app_cfg import ForgeConfig
 from webob import exc
 from tg import redirect
 
@@ -40,3 +41,17 @@ def make_app(global_conf, full_stack=True, **app_conf):
     ming.configure(**app_conf)
     # Wrap your base TurboGears 2 application with custom middleware here
     return app
+
+def make_plugin_test_app(global_conf, full_stack=True, **app_conf):
+    base_config = ForgeConfig('test')
+    load_environment = base_config.make_load_environment()
+    make_base_app = base_config.setup_tg_wsgi_app(load_environment)
+
+    # Create base app
+    app = make_base_app(global_conf, full_stack=True, **app_conf)
+    # Configure MongoDB
+    import ming
+    ming.configure(**app_conf)
+    # Wrap your base TurboGears 2 application with custom middleware here
+    return app
+    

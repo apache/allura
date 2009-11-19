@@ -41,12 +41,13 @@ class TestController(object):
     
     """
     
-    application_under_test = 'main_without_authn'
+    application_under_test = 'main'
     
     def setUp(self):
         """Method called by nose before running each test"""
         # Loading the application:
-        conf_dir = config.here
+        conf_dir = config.here = path.abspath(
+            path.dirname(__file__) + '/../..')
         wsgiapp = loadapp('config:test.ini#%s' % self.application_under_test,
                           relative_to=conf_dir)
         self.app = TestApp(wsgiapp)

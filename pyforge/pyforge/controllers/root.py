@@ -1,10 +1,8 @@
 # -*- coding: utf-8 -*-
 """Main Controller"""
 import logging
-import pkg_resources
 
-from tg import expose, flash, require, url, request, redirect, session
-from pylons.i18n import ugettext as _, lazy_ugettext as l_
+from tg import expose, flash, redirect, session
 from pylons import c
 from webob import exc
 
@@ -113,7 +111,6 @@ class ProjectController(object):
             return ProjectController(), remainder
         app = c.project.app_instance(name)
         if app is None:
-            import pdb; pdb.set_trace()
             raise exc.HTTPNotFound, name
         c.app = app
         return app.root, remainder

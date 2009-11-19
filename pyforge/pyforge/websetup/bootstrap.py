@@ -10,7 +10,7 @@ log = logging.getLogger(__name__)
 
 def bootstrap(command, conf, vars):
     """Place any commands to setup pyforge here"""
-    database='project:test'
+    database=conf.get('db_prefix', '') + 'project:test'
     conn = M.User.m.session.bind.conn
     if database in conn.database_names():
         conn.drop_database(database)

@@ -14,16 +14,18 @@ convert them into boolean, for example, you should use the
 """
 
 from tg.configuration import AppConfig, config
+from pylons.middleware import StatusCodeRedirect
+from routes import Mapper
 
 import pyforge
 from pyforge import model
 from pyforge.lib import app_globals, helpers
-from pylons.middleware import StatusCodeRedirect
 
 class ForgeConfig(AppConfig):
 
-    def __init__(self):
+    def __init__(self, root_controller='root'):
         AppConfig.__init__(self)
+        self.root_controller = root_controller
         self.package = pyforge
         self.renderers = [ 'json', 'genshi' ]
         self.default_renderer = 'genshi'
@@ -36,5 +38,14 @@ class ForgeConfig(AppConfig):
         app = AppConfig.add_error_middleware(self, global_conf, app)
         app = StatusCodeRedirect(app, [401], '/login')
         return app
+
+    def setup_routes(self):
+        map = Mapper(directory=config['pylons.paths']['controllers'],
+                     always_scan=config['debug'])
+        # Setup a default route for the root of object dispatch
+        map.connect('*url', controller=self.root_controller,
+                    action='routes_placeholder')
+        config['routes.map'] = map
+
 
 base_config = ForgeConfig()

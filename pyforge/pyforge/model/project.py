@@ -115,7 +115,7 @@ class Project(Document):
     def app_config(self, mount_point):
         return AppConfig.m.find({
                 'project_id':self._id,
-                'options.mount_point':mount_point}).one()
+                'options.mount_point':mount_point}).first()
 
     def new_subproject(self, name):
         sp = self.make(dict(
