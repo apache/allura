@@ -105,12 +105,11 @@ class Project(Document):
         app_config = self.app_config(mount_point)
         if app_config is None:
             return None
-        for ep in pkg_resources.iter_entry_points(
-            'pyforge', app_config.plugin_name):
-            App = ep.load()
-            return App(app_config)
-        else:
+        App = app_config.load()
+        if App is None:
             return None
+        else:
+            return App(app_config)
 
     def app_config(self, mount_point):
         return AppConfig.m.find({
@@ -147,3 +146,8 @@ class AppConfig(Document):
 
     acl = Field({str:[str]}) # acl[permission] = [ role1, role2, ... ]
 
+    def load(self):
+        for ep in pkg_resources.iter_entry_points(
+            'pyforge', self.plugin_name):
+            return ep.load()
+        return None

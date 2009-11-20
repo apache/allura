@@ -33,6 +33,17 @@ class Page(Artifact):
     timestamp=Field(S.DateTime, if_missing=datetime.utcnow)
     text=Field(S.String, if_missing='')
 
+    def index(self):
+        result = Artifact.index(self)
+        author = self.author
+        result.update(
+            author_user_name_t=author.username,
+            author_display_name_t=author.display_name,
+            timestamp_dt=self.timestamp,
+            version_i=self.version,
+            text=self.text)
+        return result
+
     @classmethod
     def upsert(cls, title, version=None):
         q = dict(
@@ -75,7 +86,6 @@ class Page(Artifact):
     @property
     def author(self):
         return User.m.get(_id=self.author_id)
-    
 
     def reply(self):
         while True:
@@ -94,3 +104,12 @@ class Comment(Message):
     class __mongometa__:
         name='comment'
     page_title=Field(str)
+
+    def index(self):
+        result = Message.index(self)
+        author = self.author
+        result.update(
+            page_title_t=self.page_title)
+        return result
+
+    

@@ -12,6 +12,7 @@ from pyforge.controllers.error import ErrorController
 
 from pyforge.lib.dispatch import _dispatch
 from pyforge import model as M
+from .search import SearchController
 
 
 __all__ = ['RootController']
@@ -34,6 +35,7 @@ class RootController(BaseController):
     """
     
     error = ErrorController()
+    search = SearchController()
 
     def __init__(self):
         # Lookup user

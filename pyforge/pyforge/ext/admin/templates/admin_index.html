@@ -30,6 +30,16 @@
             $config.plugin_name (at $config.options.mount_point)</a>
         </li>
       </ul>
+      <form method="post" action="install">
+        <fieldset><legend>Install Plugins</legend>
+          Plugin name: 
+          <select name="ep_name">
+            <option py:for="name in plugin_names" value="$name">$name</option>
+          </select><br/>
+          Mount Point: <input name="mount_point"/><br/>
+          <input type="submit" value="Install" />
+        </fieldset>
+      </form>
     </div>
     <div id="acl-admin">
       <h2>Project ACL Admin</h2>

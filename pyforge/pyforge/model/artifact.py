@@ -10,12 +10,50 @@ from pymongo.errors import OperationFailure
 
 from .session import ProjectSession
 
+from pyforge.lib import search
+
 def nonce(length=4):
     return sha1(ObjectId().binary).hexdigest()[:4]
 
+class ArtifactSession(ProjectSession):
+
+    def remove(self, cls, *args, **kwargs):
+        for a in self.find(cls, *args, **kwargs):
+            search.remove_artifact(a)
+        ProjectSession.remove(self, cls, *args, **kwargs)
+
+    def update_partial(self, cls, spec, fields, upsert):
+        ProjectSession.update_partial(self, cls, spec, fields, upsert)
+        for a in self.find(cls, spec):
+            search.add_artifact(a)
+
+    def save(self, doc, *args):
+        ProjectSession.save(self, doc, *args)
+        search.add_artifact(doc)
+
+    def insert(self, doc):
+        ProjectSession.insert(self, doc)
+        search.add_artifact(doc)
+
+    def update(self, doc, spec, upsert=False):
+        ProjectSession.update(self, doc, spec, upsert)
+        search.add_artifact(doc)
+
+    def delete(self, doc):
+        ProjectSession.delete(self, doc)
+        search.remove_artifact(doc)
+
+    def set(self, doc, fields_values):
+        ProjectSession.set(self, doc, fields_values)
+        search.add_artifact(doc)
+
+    def increase_field(self, doc, **kwargs):
+        ProjectSession.increase_field(self, doc, **kwargs)
+        search.add_artifact(doc)
+
 class Artifact(Document):
     class __mongometa__:
-        session = ProjectSession(Session.by_name('main'))
+        session = ArtifactSession(Session.by_name('main'))
         name='artifact'
 
     # Artifact base schema
@@ -27,9 +65,24 @@ class Artifact(Document):
         if_missing=lambda:{c.app.config.name:c.app.__version__})
     acl = Field({str:[str]})
 
+    def index(self):
+        from .project import Project
+        project = Project.m.get(_id=self.project_id)
+        if hasattr(self._id, 'url_encode'):
+            _id = self._id.url_encode()
+        id = '%s.%s#%s' % (
+            self.__class__.__module__,
+            self.__class__.__name__,
+            _id)
+        return dict(
+            id=id,
+            project_id_s=self.project_id,
+            project_name_t=project.name,
+            project_shortname_t=project.shortname,)
+
 class Message(Artifact):
     class __mongometa__:
-        session = ProjectSession(Session.by_name('main'))
+        session = ArtifactSession(Session.by_name('main'))
         name='message'
 
     _id=Field(str, if_missing=nonce)
@@ -72,3 +125,12 @@ class Message(Artifact):
         for msg in self.descendants():
             if msg._id.count('/') - depth == 1:
                 yield msg
+
+    def index(self):
+        result = Artifact.index(self)
+        author = self.author
+        result.update(
+            author_user_name_t=author.username,
+            author_display_name_t=author.display_name,
+            timestamp_dt=self.timestamp,
+            text=self.text)

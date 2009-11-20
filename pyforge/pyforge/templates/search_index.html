@@ -1,0 +1,29 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" 
+                      "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:py="http://genshi.edgewall.org/"
+      xmlns:xi="http://www.w3.org/2001/XInclude">
+  <?python from pprint import pformat ?>
+
+  <xi:include href="master.html" />
+  <xi:include href="lib.html" />
+
+  <head>
+    <meta content="text/html; charset=UTF-8" http-equiv="content-type" py:replace="''"/>
+    <title>Search</title>
+  </head>
+  <body>
+    <h1>Search</h1>
+    <form method="GET" action=".">
+      <input type="text" name="q" value="$q"/><br/>
+      <input type="submit" value="Search"/>
+    </form>
+    <p py:if="count==0 and q">No results.</p>
+    <p py:if="count!=0 and q">$count results.</p>
+    <div py:for="doc in results">
+      <pre>${pformat(doc)}</pre>
+      <hr/>
+    </div>
+  </body>
+  
+</html>

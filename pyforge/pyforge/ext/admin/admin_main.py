@@ -39,8 +39,12 @@ class ProjectAdminController(object):
 
     @expose('pyforge.ext.admin.templates.admin_index')
     def index(self):
-        return dict(roles=M.ProjectRole.m.find().sort('_id').all(),
-                    users=[M.User.m.get(_id=id) for id in c.project.acl.read ])
+        plugin_names = [
+            ep.name for ep in pkg_resources.iter_entry_points('pyforge') ]
+        return dict(
+            plugin_names=plugin_names,
+            roles=M.ProjectRole.m.find().sort('_id').all(),
+            users=[M.User.m.get(_id=id) for id in c.project.acl.read ])
 
     def _dispatch(self, state, remainder):
         return _dispatch(self, state, remainder)
@@ -53,21 +57,21 @@ class ProjectAdminController(object):
         return app.admin, remainder
 
     @expose()
-    def install(self, ep_name):
+    def install(self, ep_name, mount_point):
         require_forge_access(c.project, 'plugin')
-        self.project.install_app(ep_name)
+        c.project.install_app(ep_name, mount_point)
         redirect('.')
 
     @expose()
     def new_subproject(self, sp_name):
-        require_forge_access(self.project, 'create')
-        sp = self.project.new_subproject(sp_name)
+        require_forge_access(c.project, 'create')
+        sp = c.project.new_subproject(sp_name)
         redirect('.')
 
     @expose()
     def delete_project(self):
-        require_forge_access(self.project, 'delete')
-        self.project.delete()
+        require_forge_access(c.project, 'delete')
+        c.project.delete()
         redirect('..')
 
     @expose()

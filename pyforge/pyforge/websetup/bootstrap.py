@@ -3,7 +3,8 @@
 import sys
 import logging
 from tg import config
-from pylons import c
+from pylons import c, g
+import pyforge
 from pyforge import model as M
 
 log = logging.getLogger(__name__)
@@ -16,6 +17,8 @@ def bootstrap(command, conf, vars):
         conn.drop_database(database)
     M.User.m.remove({})
     M.Project.m.remove({})
+    g._push_object(pyforge.lib.app_globals.Globals())
+    g.solr.delete(q='*:*')
     u0 = M.User.make(dict(username='test_admin', display_name='Test Admin'))
     u1 = M.User.make(dict(username='test_user', display_name='Test User'))
     u0.set_password('foo')
