@@ -1,3 +1,5 @@
+"""Ming Base module.  Good stuff here.
+"""
 import decimal
 import hashlib
 from datetime import datetime
