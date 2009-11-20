@@ -33,6 +33,8 @@ class Session(object):
         return Cursor(cls, cursor)
 
     def remove(self, cls, *args, **kwargs):
+        if 'safe' not in kwargs:
+            kwargs['safe'] = True
         self._impl(cls).remove(*args, **kwargs)
 
     def find_by(self, cls, **kwargs):
@@ -68,7 +70,7 @@ class Session(object):
         doc.update(data)
         if args:
             values = dict((arg, data[arg]) for arg in args)
-            result = self._impl(doc).update(dict(_id=doc._id), {'$set':values})
+            result = self._impl(doc).update(dict(_id=doc._id), {'$set':values}, safe=True)
         else:
             result = self._impl(doc).save(data, safe=True)
         if result:
@@ -95,7 +97,7 @@ class Session(object):
         self._impl(doc).update(doc, spec, upsert, safe=True)
 
     def delete(self, doc):
-        self._impl(doc).remove({'_id':doc._id})
+        self._impl(doc).remove({'_id':doc._id}, safe=True)
 
     def set(self, doc, fields_values):
         """
@@ -105,7 +107,7 @@ class Session(object):
         fields_values.make_safe()
         doc.update(fields_values)
         impl = self._impl(doc)
-        impl.update({'_id':doc._id}, {'$set':fields_values})
+        impl.update({'_id':doc._id}, {'$set':fields_values}, safe=True)
         
     def increase_field(self, doc, **kwargs):
         """
@@ -121,12 +123,14 @@ class Session(object):
         if key not in doc:
             self._impl(doc).update(
                 {'_id': doc._id, key: None},
-                {'$set': {key: value}}
+                {'$set': {key: value}},
+                safe = True,
             )
         self._impl(doc).update(
             {'_id': doc._id, key: {'$lt': value}},
             # failed attempt at doing it all in one operation
             #{'$where': "this._id == '%s' && (!(%s in this) || this.%s < '%s')"
             #    % (doc._id.url_encode(), key, key, value)},
-            {'$set': {key: value}}
+            {'$set': {key: value}},
+            safe = True,
         )
