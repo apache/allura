@@ -24,6 +24,7 @@ setup(
         "Carrot",
         "Celery >= 0.8.0",
         "pymongo",
+        "pysolr",
         ],
     setup_requires=["PasteScript >= 1.7"],
     paster_plugins=['PasteScript', 'Pylons', 'TurboGears2', 'tg.devtools'],
