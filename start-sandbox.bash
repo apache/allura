@@ -1,3 +1,5 @@
+#!/bin/bash
+
 # Start SOLR, as per SOG-sandbox location
 pushd /usr/local/solr
 java -jar start.jar &
