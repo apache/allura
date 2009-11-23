@@ -18,7 +18,10 @@ def bootstrap(command, conf, vars):
     M.User.m.remove({})
     M.Project.m.remove({})
     g._push_object(pyforge.lib.app_globals.Globals())
-    g.solr.delete(q='*:*')
+    try:
+        g.solr.delete(q='*:*')
+    except:
+        log.exception('Error clearing solr index')
     u0 = M.User.make(dict(username='test_admin', display_name='Test Admin'))
     u1 = M.User.make(dict(username='test_user', display_name='Test User'))
     u0.set_password('foo')
