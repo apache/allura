@@ -73,12 +73,18 @@ class Artifact(Document):
         id = '%s.%s#%s' % (
             self.__class__.__module__,
             self.__class__.__name__,
-            _id)
+            self._id)
         return dict(
             id=id,
+            title_s='Artifact %s' % self._id,
             project_id_s=self.project_id,
             project_name_t=project.name,
-            project_shortname_t=project.shortname,)
+            project_shortname_t=project.shortname,
+            url_s=self.url(),
+            type_s='Generic Artifact')
+
+    def url(self):
+        raise NotImplementedError, 'url'
 
 class Message(Artifact):
     class __mongometa__:
@@ -90,7 +96,7 @@ class Message(Artifact):
     app_id=Field(S.ObjectId, if_missing=lambda:c.app.config._id)
     timestamp=Field(datetime, if_missing=datetime.utcnow)
     author_id=Field(S.ObjectId, if_missing=lambda:c.user._id)
-    text=Field(str)
+    text=Field(str, if_missing='')
 
     def author(self):
         from .auth import User
@@ -128,9 +134,11 @@ class Message(Artifact):
 
     def index(self):
         result = Artifact.index(self)
-        author = self.author
+        author = self.author()
         result.update(
             author_user_name_t=author.username,
             author_display_name_t=author.display_name,
             timestamp_dt=self.timestamp,
-            text=self.text)
+            text=self.text,
+            type_s='Generic Message')
+        return result

@@ -20,10 +20,10 @@ class AdminApp(Application):
     '''
     __version__ = version.__version__
 
-    def __init__(self, config):
+    def __init__(self, project, config):
+        Application.__init__(self, project, config)
         self.root = ProjectAdminController()
         self.admin = AdminAppAdminController()
-        Application.__init__(self, config)
 
     @property
     def templates(self):

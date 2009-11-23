@@ -19,8 +19,10 @@
       <input type="submit" value="Search"/>
     </form>
     <p py:if="count==0 and q">No results.</p>
-    <p py:if="count!=0 and q">$count results.</p>
+    <p py:if="count==1 and q">$count result.</p>
+    <p py:if="count > 1 and q">$count results.</p>
     <div py:for="doc in results">
+      <a href="${doc['url_s']}">$doc.title_s</a><br/>
       <pre>${pformat(doc)}</pre>
       <hr/>
     </div>

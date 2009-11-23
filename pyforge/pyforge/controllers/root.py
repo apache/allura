@@ -3,6 +3,7 @@
 import logging
 
 from tg import expose, flash, redirect, session
+from tg.decorators import with_trailing_slash, without_trailing_slash
 from pylons import c
 from webob import exc
 
@@ -46,6 +47,7 @@ class RootController(BaseController):
             c.user = None
 
     @expose('pyforge.templates.index')
+    @with_trailing_slash
     def index(self):
         """Handle the front-page."""
         return dict(roots=M.Project.m.find(dict(is_root=True)).all())
@@ -61,6 +63,7 @@ class RootController(BaseController):
         return ProjectController(), remainder
 
     @expose('pyforge.templates.login')
+    @without_trailing_slash
     def login(self, *args, **kwargs):
         return dict()
 
@@ -118,6 +121,7 @@ class ProjectController(object):
         return app.root, remainder
 
     @expose('pyforge.templates.project_index')
+    @with_trailing_slash
     def index(self):
         require_forge_access(c.project, 'read')
         return dict()

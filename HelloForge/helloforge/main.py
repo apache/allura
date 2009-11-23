@@ -4,7 +4,7 @@ from pprint import pformat
 import pkg_resources
 from pylons import c, request
 from tg import expose, redirect
-from pyforge.app import Application, ConfigOption, DefaultAdminController
+from pyforge.app import Application, ConfigOption
 from pyforge.lib.dispatch import _dispatch
 
 from helloforge import model as M
@@ -20,10 +20,9 @@ class HelloForgeApp(Application):
         ConfigOption('message', str, 'Custom message goes here') ]
     permissions = [ 'read', 'create', 'edit', 'delete', 'comment' ]
 
-    def __init__(self, config):
-        self.config = config
+    def __init__(self, project, config):
+        Application.__init__(self, project, config)
         self.root = RootController()
-        self.admin = DefaultAdminController()
 
     @property
     def templates(self):

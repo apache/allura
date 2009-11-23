@@ -40,6 +40,10 @@ class Project(Document):
             acl = set(self.acl[p])
             acl.discard(user._id)
             self.acl[p] = list(acl)
+
+    @property
+    def script_name(self):
+        return '/' + self._id
             
     @property
     def shortname(self):
@@ -87,7 +91,7 @@ class Project(Document):
                 plugin_name=ep_name,
                 options=options,
                 acl=dict((p,[]) for p in App.permissions)))
-        app = App(cfg)
+        app = App(self, cfg)
         c.project = self
         c.app = app
         app.install(self)
@@ -109,7 +113,7 @@ class Project(Document):
         if App is None:
             return None
         else:
-            return App(app_config)
+            return App(self, app_config)
 
     def app_config(self, mount_point):
         return AppConfig.m.find({

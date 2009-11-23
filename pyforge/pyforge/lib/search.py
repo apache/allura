@@ -16,6 +16,8 @@ def try_solr(func):
 def _solarize(obj):
     doc = obj.index()
     text = doc.pop('text', '')
+    if text is None:
+        import pdb; pdb.set_trace()
     text = text + pformat(doc.values())
     doc['text'] = text
     return doc

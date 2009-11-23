@@ -57,7 +57,12 @@ lamson log
 lamson stop -ALL run
 rm -rf run/*
  
+#
+# Starting SOLR
+# 
 
+cd install/apache-solr-1.4.0/example
+java -jar start.jar
 
 #
 # Starting the forge

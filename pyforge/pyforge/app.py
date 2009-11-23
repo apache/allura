@@ -20,13 +20,16 @@ class Application(object):
     __version__ = None
     config_options = [
         ConfigOption('mount_point', str, 'app') ]
-    templates=None # path to templates 
+    templates=None # path to templates
+    script_name=None
     root=None  # root controller
     permissions=[]
 
-    def __init__(self, app_config_object):
+    def __init__(self, project, app_config_object):
+        self.project = project
         self.config = app_config_object # pragma: no cover
         self.admin = DefaultAdminController()
+        self.script_name = project.script_name + self.config.options.mount_point
 
     @classmethod
     def default_options(cls):

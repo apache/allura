@@ -29,18 +29,23 @@ class Page(Artifact):
 
     title=Field(str)
     version=Field(int, if_missing=0)
-    author_id=Field(S.ObjectId, if_missing=lambda:c.user._id)
+    author_id=Field(S.ObjectId, if_missing=lambda:c.user and c.user._id)
     timestamp=Field(S.DateTime, if_missing=datetime.utcnow)
     text=Field(S.String, if_missing='')
+
+    def url(self):
+        return c.app.script_name + '/' + self.title + '/'
 
     def index(self):
         result = Artifact.index(self)
         author = self.author
         result.update(
+            title_s=self.title,
             author_user_name_t=author.username,
             author_display_name_t=author.display_name,
             timestamp_dt=self.timestamp,
             version_i=self.version,
+            type_s='WikiPage',
             text=self.text)
         return result
 
@@ -107,9 +112,21 @@ class Comment(Message):
 
     def index(self):
         result = Message.index(self)
-        author = self.author
+        author = self.author()
         result.update(
+            title_s='Comment on page %s by %s' % (
+                self.page_title, author.display_name),
+            type_s='Comment on WikiPage',
             page_title_t=self.page_title)
         return result
+
+    @property
+    def page(self):
+        versions = Page.m.find(dict(title=self.page_title)).all()
+        pg = max(versions, key=lambda p:p.version)
+        return pg
+
+    def url(self):
+        return self.page.url() + '#comment-' + self._id
 
     
