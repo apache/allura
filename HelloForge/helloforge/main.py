@@ -3,7 +3,9 @@ from pprint import pformat
 
 import pkg_resources
 from pylons import c, request
-from tg import expose, redirect
+from tg import expose, redirect, validate
+from formencode import validators as V
+
 from pyforge.app import Application, ConfigOption
 from pyforge.lib.dispatch import _dispatch
 
@@ -61,11 +63,18 @@ class PageController(object):
         if version is None:
             return M.Page.upsert(self.title)
         else:
-            return M.Page.upsert(self.title, version=int(version))
+            try:
+                return M.Page.upsert(self.title, version=int(version))
+            except ValueError:
+                return None
 
     @expose('helloforge.templates.page_view')
+    @validate(dict(version=V.Int()))
     def index(self, version=None):
         page = self.page(version)
+        if page is None:
+            if version: redirect('.?version=%d' % (version-1))
+            else: redirect('.')
         cur = page.version - 1
         if cur > 0: prev = cur-1
         else: prev = None
