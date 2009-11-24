@@ -11,14 +11,14 @@ Users can be members of many groups, and both `users` and `groups` can
 be assigned a list of `permissions` like `"add_subproject"`, 
 `"commit_to_master"`or "admin_users".   Plugins can define their own 
 set of permissions, for their artifacts.   Plugins are encouraged to 
-prefix their permissionswith the plugin name so for a pluging called 
-"tracker" a good permissin name would be `"tracker_edit_ticket"`
+prefix their permissions with the plugin name so for a pluging called 
+"tracker" a good permission name would be `"tracker_edit_ticket"`
 
 Artifacts and ACL's 
 ---------------------------------------------------------------------
 
 There are also likely to be some permissions that you want to assign
-to particular people or roles for a particular `Artifiact` such as 
+to particular people or roles for a particular `Artifact` such as 
 a particular bug in the ticket tracker.   PyForge supports this via
 an acl field on every `Artifact` instance. 
 
@@ -27,12 +27,21 @@ Permission calculation
 
 Projects and subprojects can define user `groups`, but for any particular
 subproject the groups the user belongs too is additive.  This follows
-the basic principle that sub-project permissions and artifiact permissions
+the basic principle that sub-project permissions and artifact permissions
 can *allow* additional access, but can't *restrict* it beyond 
 what permissions are allowed by a higher level project. 
 
 The magic of **predicates**
 ---------------------------------------------------------------------
+
+Predicates are simple functions, several of which are defined in PyForge 
+itself, and which can be added by any plugin, which return `true` if 
+permission is granted, and false if it is not. 
+
+An example predicate function `has_project_access` takes two params, an object
+and an `permission` string.  It then checks to see if the current user 
+(picked up from the environment) has permission to perform that action on 
+that object, following the above rules. 
 
 
 
