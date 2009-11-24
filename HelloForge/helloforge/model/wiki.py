@@ -11,7 +11,7 @@ from pymongo.errors import OperationFailure
 from ming import schema as S
 from ming import Field
 
-from pyforge.model import Artifact, Message, User
+from pyforge.model import VersionedArtifact, Snapshot, Message
 
 wikiwords = [
     (r'\b([A-Z]\w+[A-Z]+\w+)', r'<a href="../\1/">\1</a>'),
@@ -23,27 +23,40 @@ wikiwords = [
     (re.compile(pattern), replacement)
     for pattern, replacement in wikiwords ]
 
-class Page(Artifact):
+class PageHistory(Snapshot):
+    class __mongometa__:
+        name='page_history'
+
+    def original(self):
+        return Page.m.get(_id=self.artifact_id)
+        
+    def url(self):
+        return self.original().url() + '?version=%d' % self.version
+
+    def index(self):
+        result = Snapshot.index(self)
+        result.update(
+            title_s='Version %d of %s' % (
+                self.version,self.original().title),
+            type_s='WikiPage Snapshot',
+            text=self.data.text)
+        return result
+
+class Page(VersionedArtifact):
     class __mongometa__:
         name='page'
+        history_class = PageHistory
 
     title=Field(str)
-    version=Field(int, if_missing=0)
-    author_id=Field(S.ObjectId, if_missing=lambda:c.user and c.user._id)
-    timestamp=Field(S.DateTime, if_missing=datetime.utcnow)
     text=Field(S.String, if_missing='')
 
     def url(self):
         return c.app.script_name + '/' + self.title + '/'
 
     def index(self):
-        result = Artifact.index(self)
-        author = self.author
+        result = VersionedArtifact.index(self)
         result.update(
             title_s=self.title,
-            author_user_name_t=author.username,
-            author_display_name_t=author.display_name,
-            timestamp_dt=self.timestamp,
             version_i=self.version,
             type_s='WikiPage',
             text=self.text)
@@ -51,31 +64,22 @@ class Page(Artifact):
 
     @classmethod
     def upsert(cls, title, version=None):
-        q = dict(
-            project_id=c.project._id,
-            title=title)
-        if version is not None:
-            q['version'] = version
-        versions = cls.m.find(q)
-        if not versions.count():
-            return cls.make(dict(
-                    project_id=c.project._id,
-                    title=title,
-                    text='',
-                    version=0))
-        latest = max(versions, key=lambda v:v.version)
-        new_obj=dict(latest, version=latest.version + 1)
-        del new_obj['_id']
-        del new_obj['author_id']
-        del new_obj['timestamp']
-        return cls.make(new_obj)
-
-    @classmethod
-    def history(cls, title):
-        history = cls.m.find(
-            dict(project_id=c.project._id, title=title))
-        history = history.sort('version', pymongo.DESCENDING)
-        return history
+        if version is None:
+            q = dict(
+                project_id=c.project._id,
+                title=title)
+            obj = cls.m.get(
+                app_config_id=c.app.config._id,
+                title=title)
+            if obj is None:
+                obj = cls.make(dict(title=title))
+            new_obj = dict(obj, version=obj.version + 1)
+            return cls.make(new_obj)
+        else:
+            HC = cls.__mongometa__.history_class
+            ss = HC.m.find({'data.title':title, 'version':int(version)}).one()
+            new_obj = dict(ss.data, version=version + 1)
+            return cls.make(new_obj)
 
     @property
     def html_text(self):
@@ -87,10 +91,6 @@ class Page(Artifact):
         for pattern, replacement in wikiwords:
             content = pattern.sub(replacement, content)
         return content
-
-    @property
-    def author(self):
-        return User.m.get(_id=self.author_id)
 
     def reply(self):
         while True:

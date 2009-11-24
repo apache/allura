@@ -93,9 +93,9 @@ class Project(Document):
                 acl=dict((p,[]) for p in App.permissions)))
         app = App(self, cfg)
         c.project = self
+        cfg.m.save()
         c.app = app
         app.install(self)
-        cfg.m.save()
         c.app = None
         return app
 
@@ -150,6 +150,10 @@ class AppConfig(Document):
 
     acl = Field({str:[str]}) # acl[permission] = [ role1, role2, ... ]
 
+    @property
+    def project(self):
+        return Project.m.get(_id=self.project_id)
+    
     def load(self):
         for ep in pkg_resources.iter_entry_points(
             'pyforge', self.plugin_name):

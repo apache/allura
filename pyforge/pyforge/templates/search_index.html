@@ -16,6 +16,7 @@
     <h1>Search</h1>
     <form method="GET" action=".">
       <input type="text" name="q" value="$q"/><br/>
+      Search history? <input type="checkbox" name="history" checked="${history or None}"/><br/>
       <input type="submit" value="Search"/>
     </form>
     <p py:if="count==0 and q">No results.</p>

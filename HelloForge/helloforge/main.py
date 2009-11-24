@@ -33,7 +33,7 @@ class HelloForgeApp(Application):
         self.uninstall(project)
         p = M.Page.upsert('Root')
         p.text = 'This is the root page.'
-        p.m.save()
+        p.commit()
 
     def uninstall(self, project):
         M.Page.m.remove(dict(project_id=c.project._id))
@@ -79,7 +79,7 @@ class PageController(object):
 
     @expose('helloforge.templates.page_history')
     def history(self):
-        pages = M.Page.history(self.title)
+        pages = self.page().history()
         return dict(title=self.title, pages=pages)
 
     @expose('helloforge.templates.page_diff')
@@ -106,14 +106,14 @@ class PageController(object):
         orig = self.page(version)
         current = self.page()
         current.text = orig.text
-        current.m.save()
+        current.commit()
         redirect('.')
 
     @expose()
     def update(self, text):
         page = self.page()
         page.text = text
-        page.m.save()
+        page.commit()
         redirect('.')
 
 class CommentController(object):
