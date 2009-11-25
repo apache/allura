@@ -12,6 +12,11 @@
     <meta content="text/html; charset=UTF-8" http-equiv="content-type" py:replace="''"/>
     <title py:replace="''">Your title goes here</title>
     <meta py:replace="select('*')"/>
+    <link rel="stylesheet" type="text/css" media="screen, projection" href="${tg.url('/css/blueprint/screen.css')}" />
+    <link rel="stylesheet" type="text/css" media="print" href="${tg.url('/css/blueprint/print.css')}" />
+    <!--[if lt IE 8]>
+      <link rel="stylesheet" type="text/css" media="screen, projection" href="${tg.url('/css/blueprint/ie.css')}" />
+    <![endif]-->
     <link rel="stylesheet" type="text/css" media="screen" href="${tg.url('/css/style.css')}" />
   </head>
   

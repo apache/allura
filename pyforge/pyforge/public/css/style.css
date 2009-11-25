@@ -6,6 +6,7 @@ html {
 }
 
 body {
+    background: inherit;
 	text-align: left;
 	width: 960px;
 	margin: 0 auto;
@@ -20,7 +21,7 @@ a {
 
 #header {
 	height: 132px;
-	margin: 10px 10px 0 10px;
+	margin: 10px 0 0 0;
 	background: url('../images/headerbg.png') top left no-repeat;
 }
 
@@ -42,7 +43,7 @@ a {
 }
 
 ul#mainmenu {
-	margin: 0;
+	margin: 0 0 0 -10px;
 	padding: 0 10px;
 	background: url('../images/menubg.png') top left no-repeat;
 	height: 38px;
@@ -95,7 +96,7 @@ ul#mainmenu li.loginlogout a:hover
 
 #content {
 	background: #fff url('../images/contentbg.png') left bottom no-repeat;
-	margin : 0 10px 10px 10px;
+	margin : 0 20px 10px 0;
 	padding: 0 10px;
 	overflow: hidden;
 }
@@ -246,7 +247,7 @@ form.loginfields input#submit
 
 /* Other and footer */
 #footer {
-	background: #fff;
+	/*background: #fff;*/
 	padding: 10px;
 	color:#888888;
 	font-size:90%;
