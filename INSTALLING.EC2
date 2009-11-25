@@ -1,0 +1,31 @@
+create instance: Getting Started on Fedora Core 8 (AMI Id: ami-3c47a355)
+
+---
+s
+yum install gcc
+yum -y install git mercurial
+yum -y install tcsh scons gcc-c++ glibc-devel
+yum -y install boost-devel pcre-devel js-devel readline-devel
+yum -y install boost-devel-static readline-static ncurses-static
+yum -y install scons
+yum -y install python-setuptools python-setuptools-devel
+yum -y install erlang
+ln -s /usr/lib/erlang/bin/escript /usr/bin/escript
+#yum install rabbitmq-server
+hg clone http://hg.rabbitmq.com/rabbitmq-codegen
+hg clone http://hg.rabbitmq.com/rabbitmq-server
+cd rabbitmq-server
+make
+cd ..
+git clone git://github.com/mongodb/mongo.git
+cd mongo
+scons all
+scons --prefix=/opt/mongo install
+cd ..
+
+---
+
+copy geek.net keys to ~/.ssh
+
+follow wolf's standard installation & run instructions
+
