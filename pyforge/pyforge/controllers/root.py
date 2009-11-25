@@ -43,10 +43,7 @@ class RootController(BaseController):
     def __init__(self):
         # Lookup user
         uid = session.get('userid', None)
-        if uid:
-            c.user = M.User.m.get(_id=uid)
-        else:
-            c.user = None
+        c.user = M.User.m.get(_id=uid) or M.User.anonymous
 
     @expose('pyforge.templates.index')
     @with_trailing_slash

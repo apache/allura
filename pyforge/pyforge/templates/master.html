@@ -27,8 +27,8 @@
       <li class="first"><a href="${tg.url('/')}" class="${('', 'active')[defined('page') and page=='index']}">Welcome</a></li>
       <li><a href="${tg.url('/about')}" class="${('', 'active')[defined('page') and page=='about']}">About</a></li>
       <li><a href="/search/">Search</a></li>
-      <li py:if="c.user"><a href="/logout">Logout</a></li>
-    <li py:if="not c.user"><a href="/login">Login</a></li>
+      <li py:if="c.user._id"><a href="/logout">Logout</a></li>
+    <li py:if="not c.user._id"><a href="/login">Login</a></li>
     </ul>
     <div id="content">
       <p py:if="c.user" style="float:right">Welcome, $c.user.display_name!</p>

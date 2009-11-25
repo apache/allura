@@ -37,6 +37,9 @@ class User(Document):
         check = encode_password(password, salt)
         return check == self.password
 
+User.anonymous = User.make(dict(
+        _id=None, username='*anonymous', display_name='Anonymous Coward'))
+
 class ProjectRole(Document):
     class __mongometa__:
         session = ProjectSession(Session.by_name('main'))

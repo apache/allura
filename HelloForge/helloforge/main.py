@@ -57,7 +57,7 @@ class PageController(object):
 
     def __init__(self, title):
         self.title = title
-        self.comments = CommentController(self.title)
+        self.comments = CommentController(self.page())
 
     def page(self, version=None):
         if version is None:
@@ -141,12 +141,9 @@ class PageController(object):
 
 class CommentController(object):
 
-    def __init__(self, page_title, comment_id=None):
-        self.page_title = page_title
+    def __init__(self, page, comment_id=None):
+        self.page = page
         self.comment_id = comment_id
-
-    def page(self):
-        return M.Page.upsert(self.page_title)
 
     def comment(self):
         return M.Comment.m.get(_id=self.comment_id)
@@ -157,7 +154,7 @@ class CommentController(object):
             c = self.comment().reply()
             c.text = text
         else:
-            c = self.page().reply()
+            c = self.page.reply()
             c.text = text
         c.m.save()
         redirect(request.referer)
@@ -173,10 +170,10 @@ class CommentController(object):
     def _lookup(self, next, *remainder):
         if self.comment_id:
             return CommentController(
-                self.page_title,
+                self.page,
                 self.comment_id + '/' + next), remainder
         else:
             return CommentController(
-                self.page_title, next), remainder
+                self.page, next), remainder
 
     

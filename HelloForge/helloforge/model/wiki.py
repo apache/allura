@@ -83,7 +83,10 @@ class Page(VersionedArtifact):
                 app_config_id=c.app.config._id,
                 title=title)
             if obj is None:
-                obj = cls.make(dict(title=title))
+                obj = cls.make(dict(
+                        title=title,
+                        app_config_id=c.app.config._id,
+                        ))
             new_obj = dict(obj, version=obj.version + 1)
             return cls.make(new_obj)
         else:
@@ -99,7 +102,7 @@ class Page(VersionedArtifact):
     def reply(self):
         while True:
             try:
-                c = Comment.make(dict(page_title=self.title))
+                c = Comment.make(dict(page_id=self._id))
                 c.m.insert()
                 return c
             except OperationFailure:
@@ -107,28 +110,26 @@ class Page(VersionedArtifact):
                 continue
 
     def root_comments(self):
-        return Comment.m.find(dict(page_title=self.title, parent_id=None))
+        return Comment.m.find(dict(page_id=self._id, parent_id=None))
 
 class Comment(Message):
     class __mongometa__:
         name='comment'
-    page_title=Field(str)
+    page_id=Field(S.ObjectId)
 
     def index(self):
         result = Message.index(self)
         author = self.author()
         result.update(
             title_s='Comment on page %s by %s' % (
-                self.page_title, author.display_name),
+                self.page.title, author.display_name),
             type_s='Comment on WikiPage',
-            page_title_t=self.page_title)
+            page_title_t=self.page.title)
         return result
 
     @property
     def page(self):
-        versions = Page.m.find(dict(title=self.page_title)).all()
-        pg = max(versions, key=lambda p:p.version)
-        return pg
+        return Page.m.get(_id=self.page_id)
 
     def url(self):
         return self.page.url() + '#comment-' + self._id

@@ -196,7 +196,7 @@ class Message(Artifact):
 
     def author(self):
         from .auth import User
-        return User.m.get(_id=self.author_id)
+        return User.m.get(_id=self.author_id) or User.anonymous
 
     def reply(self):
         while True:
