@@ -15,11 +15,13 @@
       <a py:if="comment.author_id==c.user._id" href="comments/$comment._id/delete">[X]</a>
       <br/>
       <p py:content="comment.text"/>
-      <form method="post" action="comments/$comment._id/reply">
+      <div class="reply">
         <h3>Reply</h3>
-        <textarea rows="4" cols="60" name="text"></textarea><br/>
-        <input type="submit"/>
-      </form>
+        <form class="hidden" method="post" action="comments/$comment._id/reply">
+          <textarea rows="4" cols="60" name="text"></textarea><br/>
+          <input type="submit"/>
+        </form>
+      </div>
       <py:for each="cc in comment.replies()">
         ${display_comment(cc)}
       </py:for>
