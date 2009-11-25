@@ -4,12 +4,16 @@
       xmlns:py="http://genshi.edgewall.org/"
       xmlns:xi="http://www.w3.org/2001/XInclude">
 
+  <xi:include href="${g.pyforge_templates}/master.html"/>
+  <xi:include href="${c.app.templates}/lib.html" />
   <head>
     <meta content="text/html; charset=UTF-8" http-equiv="content-type" py:replace="''"/>
     <title>$p1.title</title>
     <style type="text/css">
       .diff_add { text-decoration: underline; background-color: #0f0; }
       .diff_sub { text-decoration: line-through; background-color: #f00; }
+      ins { text-decoration: none; background-color: lightgreen; }
+      del { text-decoration: none; background-color: pink; }
     </style>
   </head>
   
@@ -20,7 +24,9 @@
       <a href="edit">Edit Page</a>
       <a href="history">Page History</a>
     </div>
+    <p>Comparing <a href=".?version=$p1.version">Version $p1.version</a>
+      with <a href=".?version=$p2.version">Version $p2.version</a></p>
     <hr/>
-    ${Markup(tbl)}
+    ${Markup(edits)}
   </body>
 </html>

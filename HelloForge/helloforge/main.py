@@ -95,6 +95,20 @@ class PageController(object):
     def diff(self, v1, v2):
         p1 = self.page(int(v1))
         p2 = self.page(int(v2))
+        t1 = p1.text
+        t2 = p2.text
+        differ = difflib.SequenceMatcher(None, p1.text, p2.text)
+        result = []
+        for tag, i1, i2, j1, j2 in differ.get_opcodes():
+            if tag in ('delete', 'replace'):
+                result += [ '<del>', t1[i1:i2], '</del>' ]
+            if tag in ('insert', 'replace'):
+                result += [ '<ins>', t2[j1:j2], '</del>' ]
+            if tag == 'equal':
+                result += t1[i1:i2]
+        result = M.to_html(''.join(result))
+        return dict(p1=p1, p2=p2, edits=result)
+            
         p1_lines = p1.text.splitlines(True)
         p2_lines = p2.text.splitlines(True)
         hdiff=difflib.HtmlDiff()

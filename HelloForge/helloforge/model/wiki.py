@@ -23,6 +23,17 @@ wikiwords = [
     (re.compile(pattern), replacement)
     for pattern, replacement in wikiwords ]
 
+MD = markdown.Markdown(
+    extensions=['codehilite'],
+    output_format='html4'
+    )
+
+def to_html(text):
+    content = MD.convert(text)
+    for pattern, replacement in wikiwords:
+        content = pattern.sub(replacement, content)
+    return content
+
 class PageHistory(Snapshot):
     class __mongometa__:
         name='page_history'
@@ -83,14 +94,7 @@ class Page(VersionedArtifact):
 
     @property
     def html_text(self):
-        md = markdown.Markdown(
-            extensions=['codehilite'],
-            output_format='html4'
-        )
-        content = md.convert(self.text)
-        for pattern, replacement in wikiwords:
-            content = pattern.sub(replacement, content)
-        return content
+        return to_html(self.text)
 
     def reply(self):
         while True:
