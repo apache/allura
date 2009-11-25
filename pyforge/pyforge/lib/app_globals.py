@@ -24,3 +24,11 @@ class Globals(object):
         self.pyforge_templates = pkg_resources.resource_filename('pyforge', 'templates')
         self.solr =  pysolr.Solr(config['solr.server'])
         
+    def app_static(self, resource, app=None):
+        from pylons import c
+        app = app or c.app
+        return ''.join(
+            [ config['static_root'],
+              app.config.plugin_name,
+              '/',
+              resource ])

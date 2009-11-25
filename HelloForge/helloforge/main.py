@@ -103,7 +103,7 @@ class PageController(object):
             if tag in ('delete', 'replace'):
                 result += [ '<del>', t1[i1:i2], '</del>' ]
             if tag in ('insert', 'replace'):
-                result += [ '<ins>', t2[j1:j2], '</del>' ]
+                result += [ '<ins>', t2[j1:j2], '</ins>' ]
             if tag == 'equal':
                 result += t1[i1:i2]
         result = M.to_html(''.join(result))

@@ -33,12 +33,12 @@ def _dispatch(self, state, remainder):
                 getattr(current_controller, next), remainder)
             return state
         # Check subcontroller
-        stack.append(current_controller)
+        stack.append((current_controller, remainder))
         try:
             current_controller = getattr(current_controller, next)
             state.add_controller(next, current_controller)
         except AttributeError, err:
-            handler, stack = _find_error_handler(stack)
+            handler, remainder, stack = _find_error_handler(stack)
             if not handler:
                 raise exc.HTTPNotFound
             current_controller, remainder = handler(next, *remainder)
@@ -47,7 +47,7 @@ def _dispatch(self, state, remainder):
 
 def _find_error_handler(stack):
     while stack:
-        cur = stack.pop()
+        cur, remainder = stack.pop()
         if hasattr(cur, '_lookup'):
-            return cur._lookup, stack
-    return None, []
+            return cur._lookup, remainder, stack
+    return None, [], []
