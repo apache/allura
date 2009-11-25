@@ -95,6 +95,8 @@ class PageController(object):
     def diff(self, v1, v2):
         p1 = self.page(int(v1))
         p2 = self.page(int(v2))
+        p1.version -= 1
+        p2.version -= 1
         t1 = p1.text
         t2 = p2.text
         differ = difflib.SequenceMatcher(None, p1.text, p2.text)
@@ -106,7 +108,7 @@ class PageController(object):
                 result += [ '<ins>', t2[j1:j2], '</ins>' ]
             if tag == 'equal':
                 result += t1[i1:i2]
-        result = M.to_html(''.join(result))
+        result = ''.join(result).replace('\n', '<br/>\n')
         return dict(p1=p1, p2=p2, edits=result)
             
         p1_lines = p1.text.splitlines(True)

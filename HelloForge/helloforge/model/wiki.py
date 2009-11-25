@@ -90,9 +90,10 @@ class Page(VersionedArtifact):
             new_obj = dict(obj, version=obj.version + 1)
             return cls.make(new_obj)
         else:
+            pg = cls.upsert(title)
             HC = cls.__mongometa__.history_class
-            ss = HC.m.find({'data.title':title, 'version':int(version)}).one()
-            new_obj = dict(ss.data, version=version + 1)
+            ss = HC.m.find({'artifact_id':pg._id, 'version':int(version)}).one()
+            new_obj = dict(ss.data, version=version+1)
             return cls.make(new_obj)
 
     @property
