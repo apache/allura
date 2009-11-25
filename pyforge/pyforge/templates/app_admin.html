@@ -43,9 +43,15 @@
         <form method="POST" action="add_perm">
           <input type="hidden" name="permission" value="$p"/>
           <select name="role">
-            <option py:for="role in c.project.roles"
-                    value="$role._id"
-                    >$role._id</option>
+            <optgroup label="General Roles">
+              <option value="*anonymous">*anonymous</option>
+              <option value="*authenticated">*authenticated</option>
+            </optgroup>
+            <optgroup label="Project Roles">
+              <option py:for="role in c.project.roles"
+                      value="$role._id"
+                      >$role._id</option>
+            </optgroup>p
           </select>
           <input type="submit" value="Add role"/>
         </form>

@@ -28,6 +28,8 @@ def has_project_access(obj, access_type):
     '''
 
     acl = set(obj.acl.get(access_type, []))
+    if not acl:
+        acl = set(c.app.config.acl.get(access_type, []))
     if '*anonymous' in acl: return True
     if not c.user:
         return False

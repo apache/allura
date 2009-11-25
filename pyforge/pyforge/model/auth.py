@@ -2,6 +2,8 @@ from base64 import b64encode
 from random import randint
 from hashlib import sha256
 
+from pylons import c
+
 from ming import Document, Session, Field
 from ming import schema as S
 
@@ -28,6 +30,18 @@ class User(Document):
     open_ids=Field([str])
     password=Field(str)
 
+    def role_iter(self):
+        yield '*anonymous'
+        if self._id:
+            yield '*authenticated'
+        if self._id:
+            for pr in ProjectRole.m.find(dict(user_id=self._id)):
+                for role in pr.role_iter():
+                    yield role
+
+    def project_role(self):
+        return ProjectRole.m.get(user_id=self._id)
+
     def set_password(self, password):
         self.password = encode_password(password)
 
@@ -36,6 +50,19 @@ class User(Document):
         salt = str(self.password[6:6+self.SALT_LEN])
         check = encode_password(password, salt)
         return check == self.password
+
+    def register_project(self, pid):
+        from .project import Project
+        p = Project.make(dict(
+                _id=pid + '/', name=pid,
+                database='project:%s' % pid,
+                is_root=True))
+        c.project = p
+        p.allow_user(self, 'create', 'read', 'delete', 'plugin', 'security')
+        p.install_app('admin', 'admin')
+        p.m.insert()
+        p.add_user_role(self)
+        return p
 
 User.anonymous = User.make(dict(
         _id=None, username='*anonymous', display_name='Anonymous Coward'))
@@ -59,6 +86,8 @@ class ProjectRole(Document):
             yield self._id
             visited.add(self._id)
             for r in self.roles:
-                for rr in ProjectRole.m.get(r).role_iter(visited):
+                pr = ProjectRole.m.get(_id=r)
+                if pr is None: continue
+                for rr in pr.role_iter(visited):
                     yield rr
     

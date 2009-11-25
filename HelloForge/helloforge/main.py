@@ -8,6 +8,7 @@ from formencode import validators as V
 
 from pyforge.app import Application, ConfigOption
 from pyforge.lib.dispatch import _dispatch
+from pyforge.lib.security import require_project_access
 
 from helloforge import model as M
 from helloforge import version
@@ -33,6 +34,10 @@ class HelloForgeApp(Application):
     def install(self, project):
         self.config.options['project_name'] = project._id
         self.uninstall(project)
+        pr = c.user.project_role()
+        if pr: 
+            for perm in self.permissions:
+                self.config.acl[perm] = [ pr ]
         p = M.Page.upsert('Root')
         p.text = 'This is the root page.'
         p.commit()
@@ -57,21 +62,21 @@ class PageController(object):
 
     def __init__(self, title):
         self.title = title
-        self.comments = CommentController(self.page())
+        self.page = M.Page.upsert(title)
+        self.comments = CommentController(self.page)
 
-    def page(self, version=None):
-        if version is None:
-            return M.Page.upsert(self.title)
-        else:
-            try:
-                return M.Page.upsert(self.title, version=int(version))
-            except ValueError:
-                return None
+    def get_version(self, version):
+        if not version: return self.page
+        try:
+            return M.Page.upsert(self.title, version=int(version))
+        except ValueError:
+            return None
 
     @expose('helloforge.templates.page_view')
     @validate(dict(version=V.Int()))
     def index(self, version=None):
-        page = self.page(version)
+        require_project_access(self.page, 'read')
+        page = self.get_version(version)
         if page is None:
             if version: redirect('.?version=%d' % (version-1))
             else: redirect('.')
@@ -79,22 +84,28 @@ class PageController(object):
         if cur > 0: prev = cur-1
         else: prev = None
         next = cur+1
-        return dict(page=self.page(version),
+        return dict(page=page,
                     cur=cur, prev=prev, next=next)
 
     @expose('helloforge.templates.page_edit')
     def edit(self):
-        return dict(page=self.page())
+        if self.page.version == 1:
+            require_project_access(self.page, 'create')
+        else:
+            require_project_access(self.page, 'edit')
+        return dict(page=self.page)
 
     @expose('helloforge.templates.page_history')
     def history(self):
-        pages = self.page().history()
+        require_project_access(self.page, 'read')
+        pages = self.page.history()
         return dict(title=self.title, pages=pages)
 
     @expose('helloforge.templates.page_diff')
     def diff(self, v1, v2):
-        p1 = self.page(int(v1))
-        p2 = self.page(int(v2))
+        require_project_access(self.page, 'read')
+        p1 = self.get_version(int(v1))
+        p2 = self.get_version(int(v2))
         p1.version -= 1
         p2.version -= 1
         t1 = p1.text
@@ -110,35 +121,25 @@ class PageController(object):
                 result += t1[i1:i2]
         result = ''.join(result).replace('\n', '<br/>\n')
         return dict(p1=p1, p2=p2, edits=result)
-            
-        p1_lines = p1.text.splitlines(True)
-        p2_lines = p2.text.splitlines(True)
-        hdiff=difflib.HtmlDiff()
-        tbl = hdiff.make_table(
-            p1_lines, p2_lines,
-            '<a href=".?version=%s">Version %s</a>' % (v1, v1),
-            '<a href=".?version=%s">Version %s</a>' % (v2, v2),
-            context=False,
-            numlines=2)
-        return dict(p1=p1, p2=p2, tbl=tbl)
 
     @expose(content_type='text/plain')
     def raw(self):
-        return pformat(self.page())
+        require_project_access(self.page, 'read')
+        return pformat(self.page)
 
     @expose()
     def revert(self, version):
-        orig = self.page(version)
-        current = self.page()
-        current.text = orig.text
-        current.commit()
+        require_project_access(self.page, 'edit')
+        orig = self.get_version(version)
+        self.page.text = orig.text
+        self.page.commit()
         redirect('.')
 
     @expose()
     def update(self, text):
-        page = self.page()
-        page.text = text
-        page.commit()
+        require_project_access(self.page, 'edit')
+        self.page.text = text
+        self.page.commit()
         redirect('.')
 
 class CommentController(object):
@@ -146,14 +147,13 @@ class CommentController(object):
     def __init__(self, page, comment_id=None):
         self.page = page
         self.comment_id = comment_id
-
-    def comment(self):
-        return M.Comment.m.get(_id=self.comment_id)
+        self.comment = M.Comment.m.get(_id=self.comment_id)
 
     @expose()
     def reply(self, text):
+        require_project_access(self.page, 'comment')
         if self.comment_id:
-            c = self.comment().reply()
+            c = self.comment.reply()
             c.text = text
         else:
             c = self.page.reply()
@@ -163,7 +163,7 @@ class CommentController(object):
 
     @expose()
     def delete(self):
-        self.comment().m.delete()
+        self.comment.m.delete()
         redirect(request.referer)
 
     def _dispatch(self, state, remainder):

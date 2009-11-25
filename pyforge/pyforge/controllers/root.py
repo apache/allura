@@ -91,15 +91,8 @@ class RootController(BaseController):
     @expose()
     def register_project(self, pid):
         require_authenticated()
-        p = M.Project.make(dict(
-                _id=pid + '/', name=pid,
-                database='project:%s' % pid,
-                is_root=True))
-        c.project = p
-        p.allow_user(c.user, 'create', 'read', 'delete', 'plugin', 'security')
-        p.install_app('admin', 'admin')
         try:
-            p.m.insert()
+            p = c.user.register_app(pid)
         except Exception, ex:
             flash('%s: %s' % (ex.__class__, str(ex)), 'error')
             redirect('/')

@@ -83,9 +83,7 @@ class ProjectAdminController(object):
     @expose()
     def add_user_role(self, id):
         u = M.User.m.get(_id=ObjectId.url_decode(id))
-        name = u.username or u.display_name or u._id
-        r = M.ProjectRole.make(dict(_id='*user-%s' % name, user_id=u._id))
-        r.m.save()
+        c.project.add_user_role(u)
         redirect('.')
 
     @expose()

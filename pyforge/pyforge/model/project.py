@@ -30,16 +30,26 @@ class Project(Document):
             })
 
     def allow_user(self, user, *permissions):
+        if not user.project_role():
+            self.add_user_role(user)
         for p in permissions:
             acl = set(self.acl[p])
             acl.add(user._id)
             self.acl[p] = list(acl)
 
     def deny_user(self, user, *permissions):
+        if not user.project_role():
+            self.add_user_role(user)
         for p in permissions:
             acl = set(self.acl[p])
             acl.discard(user._id)
             self.acl[p] = list(acl)
+
+    def add_user_role(self, user):
+        from . import auth
+        name = user.username or user.display_name or user._id
+        r = auth.ProjectRole.make(dict(_id='*user-%s' % name, user_id=user._id))
+        r.m.save()
 
     @property
     def script_name(self):
