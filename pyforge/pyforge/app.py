@@ -1,7 +1,7 @@
 from tg import expose, redirect, flash
 from pylons import c
 
-from pyforge.lib.security import require_forge_access
+from pyforge.lib.security import require, has_project_access
 
 class ConfigOption(object):
 
@@ -53,7 +53,7 @@ class DefaultAdminController(object):
 
     @expose()
     def configure(self, **kw):
-        require_forge_access(c.project, 'plugin')
+        require(has_project_access('plugin'))
         is_admin = c.app.config.plugin_name == 'admin'
         if kw.pop('delete', False):
             if is_admin:

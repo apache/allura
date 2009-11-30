@@ -31,16 +31,20 @@ class User(Document):
     password=Field(str)
 
     def role_iter(self):
-        yield '*anonymous'
+        yield ProjectRole.m.get(name='*anonymous')
         if self._id:
-            yield '*authenticated'
+            yield ProjectRole.m.get(name='*authenticated')
         if self._id:
-            for pr in ProjectRole.m.find(dict(user_id=self._id)):
-                for role in pr.role_iter():
-                    yield role
+            pr = self.project_role()
+            for role in pr.role_iter():
+                yield role
 
     def project_role(self):
-        return ProjectRole.m.get(user_id=self._id)
+        obj = ProjectRole.m.get(user_id=self._id)
+        if obj is None:
+            obj = ProjectRole.make(dict(user_id=self._id))
+            obj.m.save()
+        return obj
 
     def set_password(self, password):
         self.password = encode_password(password)
@@ -58,10 +62,13 @@ class User(Document):
                 database='project:%s' % pid,
                 is_root=True))
         c.project = p
-        p.allow_user(self, 'create', 'read', 'delete', 'plugin', 'security')
+        pr = self.project_role()
+        for roles in p.acl.itervalues():
+            roles.append(pr._id)
+        ProjectRole.make(dict(name='*anonymous')).m.save()
+        ProjectRole.make(dict(name='*authenticated')).m.save()
         p.install_app('admin', 'admin')
         p.m.insert()
-        p.add_user_role(self)
         return p
 
 User.anonymous = User.make(dict(
@@ -72,9 +79,18 @@ class ProjectRole(Document):
         session = ProjectSession(Session.by_name('main'))
         name='user'
     
-    _id = Field(str)
+    _id = Field(S.ObjectId)
+    name = Field(str)
     user_id = Field(S.ObjectId, if_missing=None) # if role is a user
-    roles = Field([str])
+    roles = Field([S.ObjectId])
+
+    @classmethod
+    def for_user(cls, user):
+        obj = cls.m.get(user_id=user._id)
+        if obj is None:
+            obj = cls.make(user_id=user._id)
+            obj.m.save()
+        return obj
 
     @property
     def user(self):
@@ -83,11 +99,11 @@ class ProjectRole(Document):
     def role_iter(self, visited=None):
         if visited is None: visited = set()
         if self._id not in visited: 
-            yield self._id
+            yield self
             visited.add(self._id)
-            for r in self.roles:
-                pr = ProjectRole.m.get(_id=r)
+            for rid in self.roles:
+                pr = ProjectRole.m.get(_id=rid)
                 if pr is None: continue
                 for rr in pr.role_iter(visited):
                     yield rr
-    
+

@@ -8,7 +8,7 @@ from formencode import validators as V
 
 from pyforge.app import Application, ConfigOption
 from pyforge.lib.dispatch import _dispatch
-from pyforge.lib.security import require_project_access
+from pyforge.lib.security import require, has_artifact_access
 
 from helloforge import model as M
 from helloforge import version
@@ -37,7 +37,8 @@ class HelloForgeApp(Application):
         pr = c.user.project_role()
         if pr: 
             for perm in self.permissions:
-                self.config.acl[perm] = [ pr ]
+                self.config.acl[perm] = [ pr._id ]
+        self.config.m.save()
         p = M.Page.upsert('Root')
         p.text = 'This is the root page.'
         p.commit()
@@ -75,7 +76,7 @@ class PageController(object):
     @expose('helloforge.templates.page_view')
     @validate(dict(version=V.Int()))
     def index(self, version=None):
-        require_project_access(self.page, 'read')
+        require(has_artifact_access('read', self.page))
         page = self.get_version(version)
         if page is None:
             if version: redirect('.?version=%d' % (version-1))
@@ -90,20 +91,20 @@ class PageController(object):
     @expose('helloforge.templates.page_edit')
     def edit(self):
         if self.page.version == 1:
-            require_project_access(self.page, 'create')
+            require(has_artifact_access('create', self.page))
         else:
-            require_project_access(self.page, 'edit')
+            require(has_artifact_access('edit', self.page))
         return dict(page=self.page)
 
     @expose('helloforge.templates.page_history')
     def history(self):
-        require_project_access(self.page, 'read')
+        require(has_artifact_access('read', self.page))
         pages = self.page.history()
         return dict(title=self.title, pages=pages)
 
     @expose('helloforge.templates.page_diff')
     def diff(self, v1, v2):
-        require_project_access(self.page, 'read')
+        require(has_artifact_access('read', self.page))
         p1 = self.get_version(int(v1))
         p2 = self.get_version(int(v2))
         p1.version -= 1
@@ -124,12 +125,12 @@ class PageController(object):
 
     @expose(content_type='text/plain')
     def raw(self):
-        require_project_access(self.page, 'read')
+        require(has_artifact_access('read', self.page))
         return pformat(self.page)
 
     @expose()
     def revert(self, version):
-        require_project_access(self.page, 'edit')
+        require(has_artifact_access('edit', self.page))
         orig = self.get_version(version)
         self.page.text = orig.text
         self.page.commit()
@@ -137,7 +138,7 @@ class PageController(object):
 
     @expose()
     def update(self, text):
-        require_project_access(self.page, 'edit')
+        require(has_artifact_access('edit', self.page))
         self.page.text = text
         self.page.commit()
         redirect('.')
@@ -151,7 +152,7 @@ class CommentController(object):
 
     @expose()
     def reply(self, text):
-        require_project_access(self.page, 'comment')
+        require(has_artifact_access('comment', self.page))
         if self.comment_id:
             c = self.comment.reply()
             c.text = text

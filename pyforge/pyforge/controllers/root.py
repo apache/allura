@@ -8,7 +8,7 @@ from pylons import c
 from webob import exc
 
 from pyforge.lib.base import BaseController
-from pyforge.lib.security import require_forge_access, require_authenticated
+from pyforge.lib.security import require, require_authenticated, has_project_access
 from pyforge.controllers.error import ErrorController
 
 from pyforge.lib.dispatch import _dispatch
@@ -92,7 +92,7 @@ class RootController(BaseController):
     def register_project(self, pid):
         require_authenticated()
         try:
-            p = c.user.register_app(pid)
+            p = c.user.register_project(pid)
         except Exception, ex:
             flash('%s: %s' % (ex.__class__, str(ex)), 'error')
             redirect('/')
@@ -115,6 +115,6 @@ class ProjectController(object):
     @expose('pyforge.templates.project_index')
     @with_trailing_slash
     def index(self):
-        require_forge_access(c.project, 'read')
+        require(has_project_access('read'))
         return dict()
 

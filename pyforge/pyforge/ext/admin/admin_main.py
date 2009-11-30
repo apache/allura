@@ -12,7 +12,7 @@ from pyforge.app import Application, DefaultAdminController
 from pyforge.lib.dispatch import _dispatch
 from pyforge import version
 from pyforge import model as M
-from pyforge.lib.security import require_forge_access
+from pyforge.lib.security import require, has_project_access
 
 class AdminApp(Application):
     '''This is the admin app.  It is pretty much required for
@@ -58,36 +58,39 @@ class ProjectAdminController(object):
 
     @expose()
     def install(self, ep_name, mount_point):
-        require_forge_access(c.project, 'plugin')
+        require(has_project_access('plugin'))
         c.project.install_app(ep_name, mount_point)
         redirect('.')
 
     @expose()
     def new_subproject(self, sp_name):
-        require_forge_access(c.project, 'create')
+        require(has_project_access('create'))
         sp = c.project.new_subproject(sp_name)
         redirect('.')
 
     @expose()
     def delete_project(self):
-        require_forge_access(c.project, 'delete')
+        require(has_project_access('delete'))
         c.project.delete()
         redirect('..')
 
     @expose()
     def add_group_role(self, name):
+        require(has_project_access('security'))
         r = M.ProjectRole.make(dict(_id=name))
         r.m.save()
         redirect('.')
 
     @expose()
     def add_user_role(self, id):
+        require(has_project_access('security'))
         u = M.User.m.get(_id=ObjectId.url_decode(id))
         c.project.add_user_role(u)
         redirect('.')
 
     @expose()
     def add_role(self, role, subrole):
+        require(has_project_access('security'))
         role = M.ProjectRole.m.get(_id=role)
         role.roles.append(subrole)
         role.m.save()
@@ -95,6 +98,7 @@ class ProjectAdminController(object):
 
     @expose()
     def del_role(self, role, subrole=None):
+        require(has_project_access('security'))
         role = M.ProjectRole.m.get(_id=role)
         if subrole:
             role.roles.remove(subrole)
@@ -104,18 +108,16 @@ class ProjectAdminController(object):
         redirect('.')
 
     @expose()
-    def add_perm(self, permission, username):
-        u = M.User.m.get(username=username)
-        if not u:
-            flash('No such user: %s', username)
-            redirect('.')
-        c.project.acl[permission].append(u._id)
+    def add_perm(self, permission, role):
+        require(has_project_access('security'))
+        c.project.acl[permission].append(role)
         c.project.m.save()
         redirect('.')
 
     @expose()
-    def del_perm(self, permission, user):
-        c.project.acl[permission].remove(ObjectId.url_decode(user))
+    def del_perm(self, permission, role):
+        require(has_project_access('security'))
+        c.project.acl[permission].remove(role)
         c.project.m.save()
         redirect('.')
 

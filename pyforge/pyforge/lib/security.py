@@ -4,54 +4,35 @@ This module provides the security predicates used in decorating various models.
 from pylons import c
 from webob import exc
 
-def has_forge_access(obj, access_type):
-    '''Verify that the current user has the required permissions to perform
-    project-level operations (create/delete project, install/remove plugins,
-    modify security).
-    '''
-
-    if not c.user:
+def has_project_access(access_type, project=None):
+    def result(project=project):
+        if project is None: project = c.project
+        user_roles = set(r._id for r in c.user.role_iter())
+        for proj in project.parent_iter():
+            acl = set(proj.acl.get(access_type, []))
+            if acl & user_roles: return True
         return False
-    for role in obj.acl[access_type]:
-        if c.user._id == role:
-            return True
-    return False
-    
-def has_project_access(obj, access_type):
-    '''Verify that the current user has the required permissions to perform
-    plugin- and artifact- level operations.  Plugin- and artifact- level
-    operations are defined by each plugin in its permissions field.
+    return result
 
-    We also provide special psuedo-roles '*anonymous' and '*authenticated' to allow
-    any user and any authenticated user access to the given resource.  Note that
-    *authenticated is implied by *anonymous.
-    '''
-
-    acl = set(obj.acl.get(access_type, []))
-    if not acl:
+def has_artifact_access(access_type, obj=None):
+    def result():
+        user_roles = set(r._id for r in c.user.role_iter())
         acl = set(c.app.config.acl.get(access_type, []))
-    if '*anonymous' in acl: return True
-    if not c.user:
+        if obj is not None:
+            acl |= set(obj.acl.get(access_type, []))
+        if acl & user_roles: return True
         return False
-    if '*authenticated' in acl: return True
-    for r in c.user.role_iter():
-        if r in acl: return True
-    return False
+    return result
 
-def require_forge_access(obj, access_type):
-    if has_forge_access(obj, access_type): return
-    if c.user:
-        raise exc.HTTPForbidden()
-    else:
-        raise exc.HTTPUnauthorized()
-
-def require_project_access(obj, access_type):
-    if has_project_access(obj, access_type): return
-    if c.user:
+def require(predicate):
+    from pyforge import model as M
+    if predicate(): return
+    if c.user != M.User.anonymous:
         raise exc.HTTPForbidden()
     else:
         raise exc.HTTPUnauthorized()
 
 def require_authenticated():
-    if not c.user:
+    from pyforge import model as M
+    if c.user == M.User.anonymous:
         raise exc.HTTPUnauthorized()

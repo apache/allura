@@ -29,17 +29,18 @@ def bootstrap(command, conf, vars):
     u0.m.save()
     u1.m.save()
     p0 = u0.register_project('test')
-    p0.allow_user(u1, 'read')
+    p0.acl['read'].append(u1.project_role()._id)
     p1 = p0.new_subproject('sub1')
     p0.m.save()
     p1.m.save()
     c.user = u0
     p0.install_app('hello_forge', 'wiki')
-    for ur in M.ProjectRole.m.find():
-        ur.roles.append('developer')
-        ur.m.save()
-    dev = M.ProjectRole.make(dict(_id='developer'))
+    dev = M.ProjectRole.make(dict(name='developer'))
     dev.m.save()
+    for ur in M.ProjectRole.m.find():
+        if ur.name and ur.name[:1] == '*': continue
+        ur.roles.append(dev._id)
+        ur.m.save()
 
 def pm(etype, value, tb):
     import pdb, traceback

@@ -7,6 +7,7 @@ __all__ = ['Globals']
 import pkg_resources
 
 from tg import config
+from pylons import c
 import pysolr
 
 from pyforge import model as M
@@ -25,10 +26,15 @@ class Globals(object):
         self.solr =  pysolr.Solr(config['solr.server'])
         
     def app_static(self, resource, app=None):
-        from pylons import c
         app = app or c.app
         return ''.join(
             [ config['static_root'],
               app.config.plugin_name,
               '/',
               resource ])
+
+    def set_project(self, pid):
+        c.project = M.Project.m.get(_id=pid + '/')
+
+    def set_app(self, name):
+        c.app = c.project.app_instance(name)

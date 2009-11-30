@@ -26,30 +26,8 @@ class Project(Document):
             'read':[S.ObjectId],      # read project
             'delete':[S.ObjectId],    # delete project, subprojects
             'plugin':[S.ObjectId],    # install/delete/configure plugins
-            'security':[S.ObjectId],  # update ACL
+            'security':[S.ObjectId],  # update ACL, roles
             })
-
-    def allow_user(self, user, *permissions):
-        if not user.project_role():
-            self.add_user_role(user)
-        for p in permissions:
-            acl = set(self.acl[p])
-            acl.add(user._id)
-            self.acl[p] = list(acl)
-
-    def deny_user(self, user, *permissions):
-        if not user.project_role():
-            self.add_user_role(user)
-        for p in permissions:
-            acl = set(self.acl[p])
-            acl.discard(user._id)
-            self.acl[p] = list(acl)
-
-    def add_user_role(self, user):
-        from . import auth
-        name = user.username or user.display_name or user._id
-        r = auth.ProjectRole.make(dict(_id='*user-%s' % name, user_id=user._id))
-        r.m.save()
 
     @property
     def script_name(self):
@@ -58,6 +36,19 @@ class Project(Document):
     @property
     def shortname(self):
         return self._id.split('/')[-2]
+
+    @property
+    def parent_project(self):
+        if self.is_root: return None
+        parent_id, shortname, empty = self._id.rsplit('/', 2)
+        return self.get(_id=parent_id)
+
+    def parent_iter(self):
+        yield self
+        pp = self.parent_project
+        if pp:
+            for p in pp.parent_iter():
+                yield p
 
     @property
     def subprojects(self):
@@ -158,7 +149,7 @@ class AppConfig(Document):
     version=Field(str)
     options=Field(None)
 
-    acl = Field({str:[str]}) # acl[permission] = [ role1, role2, ... ]
+    acl = Field({str:[S.ObjectId]}) # acl[permission] = [ role1, role2, ... ]
 
     @property
     def project(self):

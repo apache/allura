@@ -64,7 +64,7 @@ class Artifact(Document):
         S.Object,
         { str: str },
         if_missing=lambda:{c.app.config.name:c.app.__version__})
-    acl = Field({str:[str]})
+    acl = Field({str:[S.ObjectId]})
 
     @property
     def app_config(self):
