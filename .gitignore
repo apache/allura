@@ -1,5 +1,6 @@
 *.db
 *.egg-info
+*-py2.6.egg
 *.log
 *.pyc
 */.coverage
