@@ -41,7 +41,7 @@ class Project(Document):
     def parent_project(self):
         if self.is_root: return None
         parent_id, shortname, empty = self._id.rsplit('/', 2)
-        return self.get(_id=parent_id)
+        return self.m.get(_id=parent_id)
 
     def parent_iter(self):
         yield self
@@ -77,7 +77,8 @@ class Project(Document):
     @property
     def roles(self):
         from . import auth
-        return auth.ProjectRole.m.find().sort('_id').all()
+        roles = auth.ProjectRole.m.find().all()
+        return sorted(roles, key=lambda r:r.display())
 
     def install_app(self, ep_name, mount_point):
         for ep in pkg_resources.iter_entry_points('pyforge', ep_name):

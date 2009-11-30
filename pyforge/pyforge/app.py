@@ -1,7 +1,8 @@
 from tg import expose, redirect, flash
 from pylons import c
+from pymongo.bson import ObjectId
 
-from pyforge.lib.security import require, has_project_access
+from pyforge.lib.security import require, has_project_access, has_artifact_access
 
 class ConfigOption(object):
 
@@ -53,7 +54,7 @@ class DefaultAdminController(object):
 
     @expose()
     def configure(self, **kw):
-        require(has_project_access('plugin'))
+        require(has_artifact_access('configure'))
         is_admin = c.app.config.plugin_name == 'admin'
         if kw.pop('delete', False):
             if is_admin:
@@ -77,13 +78,15 @@ class DefaultAdminController(object):
 
     @expose()
     def add_perm(self, permission, role):
-        c.app.config.acl[permission].append(role)
+        require(has_artifact_access('configure'))
+        c.app.config.acl[permission].append(ObjectId.url_decode(role))
         c.app.config.m.save()
         redirect('.#app-acl')
 
     @expose()
     def del_perm(self, permission, role):
-        c.app.config.acl[permission].remove(role)
+        require(has_artifact_access('configure'))
+        c.app.config.acl[permission].remove(ObjectId.url_decode(role))
         c.app.config.m.save()
         redirect('.#app-acl')
         

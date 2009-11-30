@@ -31,11 +31,11 @@
       <div py:for="p in c.app.permissions" >
         <h4>$p</h4>
         <ul>
-          <li py:for="role in c.app.config.acl[p]">
-            $role 
+          <li py:for="role in h.make_roles(c.app.config.acl[p])">
+            ${role.display()}
             <form method="POST" action="del_perm" style="display:inline">
               <input type="hidden" name="permission" value="$p"/>
-              <input type="hidden" name="role" value="$role"/>
+              <input type="hidden" name="role" value="${role._id}"/>
               <input type="submit" value="Remove"/>
             </form>
           </li>
@@ -43,15 +43,9 @@
         <form method="POST" action="add_perm">
           <input type="hidden" name="permission" value="$p"/>
           <select name="role">
-            <optgroup label="General Roles">
-              <option value="*anonymous">*anonymous</option>
-              <option value="*authenticated">*authenticated</option>
-            </optgroup>
-            <optgroup label="Project Roles">
-              <option py:for="role in c.project.roles"
-                      value="$role._id"
-                      >$role._id</option>
-            </optgroup>p
+            <option py:for="role in c.project.roles"
+                    value="$role._id"
+                    >${role.display()}</option>
           </select>
           <input type="submit" value="Add role"/>
         </form>

@@ -37,6 +37,10 @@ class AdminApp(Application):
 
 class ProjectAdminController(object):
 
+    def _check_security(self):
+        require(has_project_access('read'),
+                'Read access required')
+
     @expose('pyforge.ext.admin.templates.admin_index')
     def index(self):
         plugin_names = [
@@ -58,68 +62,95 @@ class ProjectAdminController(object):
 
     @expose()
     def install(self, ep_name, mount_point):
+        'install a plugin a the given mount point'
         require(has_project_access('plugin'))
         c.project.install_app(ep_name, mount_point)
-        redirect('.')
+        redirect('.#plugin-admin')
 
     @expose()
     def new_subproject(self, sp_name):
+        'add a subproject for the current project'
         require(has_project_access('create'))
         sp = c.project.new_subproject(sp_name)
-        redirect('.')
+        redirect('.#project-admin')
 
     @expose()
     def delete_project(self):
+        'delete the current project'
         require(has_project_access('delete'))
         c.project.delete()
         redirect('..')
 
     @expose()
     def add_group_role(self, name):
+        'add a named role to the project'
         require(has_project_access('security'))
-        r = M.ProjectRole.make(dict(_id=name))
+        r = M.ProjectRole.make(dict(name=name))
         r.m.save()
-        redirect('.')
+        redirect('.#role-admin')
 
     @expose()
-    def add_user_role(self, id):
+    def del_role(self, role):
+        'Delete a role'
         require(has_project_access('security'))
-        u = M.User.m.get(_id=ObjectId.url_decode(id))
-        c.project.add_user_role(u)
-        redirect('.')
-
-    @expose()
-    def add_role(self, role, subrole):
-        require(has_project_access('security'))
-        role = M.ProjectRole.m.get(_id=role)
-        role.roles.append(subrole)
-        role.m.save()
-        redirect('.')
-
-    @expose()
-    def del_role(self, role, subrole=None):
-        require(has_project_access('security'))
-        role = M.ProjectRole.m.get(_id=role)
-        if subrole:
-            role.roles.remove(subrole)
-            role.m.save()
-        else:
+        role = M.ProjectRole.m.get(_id=ObjectId.url_decode(role))
+        if not role.special:
             role.m.delete()
-        redirect('.')
+        redirect('.#role-admin')
+
+    @expose()
+    def add_subrole(self, role, subrole):
+        'Add a subrole to a role'
+        require(has_project_access('security'))
+        role = M.ProjectRole.m.get(_id=ObjectId.url_decode(role))
+        role.roles.append(ObjectId.url_decode(subrole))
+        role.m.save()
+        redirect('.#role-admin')
+
+    @expose()
+    def add_role_to_user(self, role, username):
+        'Add a subrole to a role'
+        require(has_project_access('security'))
+        user = M.User.m.get(username=username)
+        pr = user.project_role()
+        pr.roles.append(ObjectId.url_decode(role))
+        pr.m.save()
+        redirect('.#role-admin')
+
+    @expose()
+    def del_subrole(self, role, subrole):
+        'Remove a subrole from a role'
+        require(has_project_access('security'))
+        role = M.ProjectRole.m.get(_id=ObjectId.url_decode(role))
+        role.roles.remove(ObjectId.url_decode(subrole))
+        role.m.save()
+        redirect('.#role-admin')
 
     @expose()
     def add_perm(self, permission, role):
         require(has_project_access('security'))
-        c.project.acl[permission].append(role)
+        c.project.acl[permission].append(ObjectId.url_decode(role))
         c.project.m.save()
-        redirect('.')
+        redirect('.#acl-admin')
+
+    @expose()
+    def add_user_perm(self, permission, username):
+        require(has_project_access('security'))
+        user = M.User.m.get(username=username)
+        if user is None:
+            flash('No user %s' % username, 'error')
+            redirect('.')
+        role = user.project_role()
+        c.project.acl[permission].append(role._id)
+        c.project.m.save()
+        redirect('.#acl-admin')
 
     @expose()
     def del_perm(self, permission, role):
         require(has_project_access('security'))
-        c.project.acl[permission].remove(role)
+        c.project.acl[permission].remove(ObjectId.url_decode(role))
         c.project.m.save()
-        redirect('.')
+        redirect('.#acl-admin')
 
 class AdminAppAdminController(DefaultAdminController):
     '''Administer the admin app'''

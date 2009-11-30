@@ -84,6 +84,22 @@ class ProjectRole(Document):
     user_id = Field(S.ObjectId, if_missing=None) # if role is a user
     roles = Field([S.ObjectId])
 
+    def display(self):
+        if self.name: return self.name
+        if self.user_id:
+            u = self.user
+            if u.username: uname = u.username
+            elif u.display_name: uname = u.display_name
+            else: uname = u._id
+            return '*user-%s' % uname
+        return '**unknown name role: %s' % self._id
+
+    @property
+    def special(self):
+        if self.name: return '*' == self.name[0]
+        if self.user_id: return True
+        return False
+
     @classmethod
     def for_user(cls, user):
         obj = cls.m.get(user_id=user._id)

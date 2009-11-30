@@ -112,6 +112,10 @@ class ProjectController(object):
         c.app = app
         return app.root, remainder
 
+    def _check_security(self):
+        require(has_project_access('read'),
+                'Read access required')
+
     @expose('pyforge.templates.project_index')
     @with_trailing_slash
     def index(self):

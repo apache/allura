@@ -7,16 +7,6 @@ __all__ = ['ErrorController']
 
 
 class ErrorController(object):
-    """
-    Generates error documents as and when they are required.
-
-    The ErrorDocuments middleware forwards to ErrorController when error
-    related status codes are returned from the application.
-
-    This behaviour can be altered by changing the parameters to the
-    ErrorDocuments middleware in your config/middleware.py file.
-    
-    """
 
     @expose('pyforge.templates.error')
     def document(self, *args, **kwargs):
@@ -24,7 +14,5 @@ class ErrorController(object):
         resp = request.environ.get('pylons.original_response')
         default_message = ("<p>We're sorry but we weren't able to process "
                            " this request.</p>")
-        values = dict(prefix=request.environ.get('SCRIPT_NAME', ''),
-                      code=request.params.get('code', resp.status_int),
-                      message=request.params.get('message', default_message))
-        return values
+        return dict(code=resp.status_int,
+                    message=request.environ.get('error_message', default_message))

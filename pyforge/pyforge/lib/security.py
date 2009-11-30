@@ -1,7 +1,7 @@
 """
 This module provides the security predicates used in decorating various models.
 """
-from pylons import c
+from pylons import c, response, request
 from webob import exc
 
 def has_project_access(access_type, project=None):
@@ -24,11 +24,12 @@ def has_artifact_access(access_type, obj=None):
         return False
     return result
 
-def require(predicate):
+def require(predicate, message='Forbidden'):
     from pyforge import model as M
     if predicate(): return
     if c.user != M.User.anonymous:
-        raise exc.HTTPForbidden()
+        request.environ['error_message'] = message
+        raise exc.HTTPForbidden(detail=message)
     else:
         raise exc.HTTPUnauthorized()
 

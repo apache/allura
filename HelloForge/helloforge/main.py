@@ -7,6 +7,7 @@ from tg import expose, redirect, validate
 from formencode import validators as V
 
 from pyforge.app import Application, ConfigOption
+from pyforge.model import ProjectRole
 from pyforge.lib.dispatch import _dispatch
 from pyforge.lib.security import require, has_artifact_access
 
@@ -21,7 +22,7 @@ class HelloForgeApp(Application):
     config_options = Application.config_options + [
         ConfigOption('project_name', str, 'pname'),
         ConfigOption('message', str, 'Custom message goes here') ]
-    permissions = [ 'read', 'create', 'edit', 'delete', 'comment' ]
+    permissions = [ 'configure', 'read', 'create', 'edit', 'delete', 'comment' ]
 
     def __init__(self, project, config):
         Application.__init__(self, project, config)
@@ -38,6 +39,10 @@ class HelloForgeApp(Application):
         if pr: 
             for perm in self.permissions:
                 self.config.acl[perm] = [ pr._id ]
+        self.config.acl['read'].append(
+            ProjectRole.m.get(name='*anonymous')._id)
+        self.config.acl['comment'].append(
+            ProjectRole.m.get(name='*authenticated')._id)
         self.config.m.save()
         p = M.Page.upsert('Root')
         p.text = 'This is the root page.'

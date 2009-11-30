@@ -7,9 +7,18 @@
   <xi:include href="master.html" />
   <xi:include href="lib.html" />
 
+  <?python from pyforge.lib.security import has_project_access ?>
+
   <head>
     <meta content="text/html; charset=UTF-8" http-equiv="content-type" py:replace="''"/>
     <title>Project Admin for $c.project._id</title>
+
+    <py:def function="role_select(name)">
+      <select name="$name">
+        <option py:for="r in c.project.roles"
+                value="$r._id">${r.display()}</option>
+      </select>
+    </py:def>
   </head>
   
   <body>
@@ -22,7 +31,8 @@
         </li>
       </ul>
     </div>
-    <div id="subproject-admin">
+    <div id="plugin-admin" 
+         py:if="has_project_access('plugin')()">
       <h2>Plugin Admin</h2>
       <ul>
         <li py:for="config in c.project.app_configs">
@@ -30,7 +40,8 @@
             $config.plugin_name (at $config.options.mount_point)</a>
         </li>
       </ul>
-      <form method="post" action="install">
+      <form method="post" action="install"
+            py:if="has_project_access('plugin')()">
         <fieldset><legend>Install Plugins</legend>
           Plugin name: 
           <select name="ep_name">
@@ -41,64 +52,72 @@
         </fieldset>
       </form>
     </div>
-    <div id="acl-admin">
+    <div id="acl-admin" py:if="has_project_access('security')()">
       <h2>Project ACL Admin</h2>
       <p>The project ACL determines project-level permissions.</p>
-      <div py:for="permission, users in c.project.acl.iteritems()"
+      <div py:for="permission, role_ids in c.project.acl.iteritems()"
            style="border:1px solid black">
         <h3>Permission: $permission</h3>
         <ul>
-          <li py:for="u in h.make_users(users)">
-            $u.display_name
+          <li py:for="r in h.make_roles(role_ids)">
+            ${r.display()}
             <form 
-               py:if="c.user != u or permission != 'security'"
+               py:if="c.user != r.user or permission != 'security'"
                method="post" 
                action="del_perm" 
                style="display:inline">
               <input type="hidden" name="permission" value="$permission"/>
-              <input type="hidden" name="user" value="${u._id.url_encode()}"/>
+              <input type="hidden" name="role" value="${r._id.url_encode()}"/>
               <input type="submit" value="Remove Permission"/>
             </form>
           </li>
         </ul>
         <form method="post" action="add_perm">
           <input type="hidden" name="permission" value="$permission"/>
-          User Name: <input type="text" name="username"/>
+          <label for="role">Role:</label>
+          ${role_select('role')}
+          <input type="submit" value="Add Permission"/>
+        </form>
+        <form method="post" action="add_user_perm">
+          <input type="hidden" name="permission" value="$permission"/>
+          <label for="username">Username:</label>
+          <input name="username"/>
           <input type="submit" value="Add Permission"/>
         </form>
       </div>
     </div>
-    <div id="role-admin" py:if="c.project.is_root">
+    <div id="role-admin" 
+         py:if="c.project.is_root and has_project_access('security')()">
       <h2>Role Admin</h2>
       <p>
-        Each user on the project should have a private role.  
+        Each user on the project has a private role.  
         Each role can have subroles.  A role inherits all the permissions 
-        that its subroles have.
+        that its subroles have.  All users who have read access should 
+        automatically appear here.
       </p>
       <div py:for="r in c.project.roles" style="border:1px solid black">
-        <h3>$r._id 
-          <span py:if="r.user_id">($r.user.display_name)</span>
-        </h3>
-        <form method="post" action="del_role">
+        <h3>${r.display()}</h3>
+        <form method="post" action="del_role" py:if="not r.special">
           <input type="hidden" name="role" value="$r._id"/>
           <input type="submit" value="Remove Role"/>
         </form>
+        <p>Acts as:</p>
         <ul>
-          <li py:for="rr in r.roles">
-            $rr 
-            <form method="post" action="del_role" style="display:inline">
+          <li py:for="rr in h.make_roles(r.roles)">
+            ${rr.display()}
+            <form method="post" action="del_subrole" style="display:inline">
               <input type="hidden" name="role" value="$r._id"/>
-              <input type="hidden" name="subrole" value="$rr"/>
-              <input type="submit" value="Remove Role"/>
+              <input type="hidden" name="subrole" value="$rr._id"/>
+              <input type="submit" value="Remove Subrole"/>
             </form>
           </li>
         </ul>
-        <form method="post" action="add_role">
+        <form method="post" action="add_subrole">
           <input type="hidden" name="role" value="$r._id"/>
-          New role
+          Acts as
           <select name="subrole">
-            <option py:for="r in roles" value="$r._id">
-              $r._id
+            <option py:for="r in roles" py:if="not r.special" value="$r._id">
+              ${r.display()}
             </option>
           </select>
           <input type="submit" value="Add"/>
@@ -107,14 +126,6 @@
       <form method="post" action="add_group_role">
         <label for="name">New group role</label>
         <input type="text" name="name"/>
-        <input type="submit" value="Add"/>
-      </form>
-      <form method="post" action="add_user_role">
-        <label for="name">New user role</label>
-        <select name="id">
-          <option py:for="u in users" 
-                  value="${u._id.url_encode()}">$u.display_name</option>
-        </select>
         <input type="submit" value="Add"/>
       </form>
     </div>
