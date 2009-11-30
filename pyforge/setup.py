@@ -25,6 +25,8 @@ setup(
         "Celery >= 0.8.0",
         "pymongo",
         "pysolr",
+        "repoze.what-quickstart",
+        "sqlalchemy-migrate",
         ],
     setup_requires=["PasteScript >= 1.7"],
     paster_plugins=['PasteScript', 'Pylons', 'TurboGears2', 'tg.devtools'],
