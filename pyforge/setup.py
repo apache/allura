@@ -16,7 +16,7 @@ setup(
     author_email='',
     #url='',
     install_requires=[
-        "TurboGears2 >= 2.0b7",
+        "TurboGears2 >= 2.1a1",
         "PasteScript",
         "Babel >= 0.9.4",
         "Lamson",
