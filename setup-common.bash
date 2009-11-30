@@ -20,7 +20,7 @@ virtualenv --no-site-packages sandbox-env
 echo
 echo '# installing turbogears'
 easy_install ipython
-easy_install -i http://www.turbogears.org/2.1/downloads/current/index tg.devtools
+easy_install -UZ -i http://www.turbogears.org/2.1/downloads/current/index tg.devtools==2.1a3
 easy_install beautifulsoup
 
 #
