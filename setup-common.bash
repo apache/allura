@@ -57,7 +57,11 @@ cd HelloForge
 python setup.py develop
 cd ..
 
-echo 
+echo
+echo '# creating data directory for mongo'
+mkdir -p /data/db
+
+echo
 echo '# downloading and untarring solr'
 mkdir download install
 cd download
