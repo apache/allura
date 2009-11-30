@@ -10,6 +10,6 @@ mongod &
 
 . sandbox-env/bin/activate
 cd pyforge
-paster setup-app development.ini
-paster serve development.ini &
+paster setup-app sandbox.ini
+paster serve sandbox.ini &
 
