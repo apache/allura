@@ -122,3 +122,8 @@ class ProjectController(object):
         require(has_project_access('read'))
         return dict()
 
+    @expose('pyforge.templates.project_sitemap')
+    @without_trailing_slash
+    def sitemap(self):
+        require(has_project_access('read'))
+        return dict()

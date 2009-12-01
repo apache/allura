@@ -111,7 +111,10 @@ class Page(VersionedArtifact):
                 continue
 
     def root_comments(self):
-        return Comment.m.find(dict(page_id=self._id, parent_id=None))
+        if '_id' in self:
+            return Comment.m.find(dict(page_id=self._id, parent_id=None))
+        else:
+            return []
 
 class Comment(Message):
     class __mongometa__:

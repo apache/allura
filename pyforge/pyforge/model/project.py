@@ -43,6 +43,16 @@ class Project(Document):
         parent_id, shortname, empty = self._id.rsplit('/', 2)
         return self.m.get(_id=parent_id)
 
+    def sitemap(self):
+        from pyforge.app import SitemapEntry
+        sitemap = SitemapEntry('root')
+        for ac in self.app_configs:
+            App = ac.load()
+            app = App(self, ac)
+            app_sitemap = [ sm.bind_app(app) for sm in app.sitemap ]
+            sitemap.extend(app_sitemap)
+        return sitemap.children
+
     def parent_iter(self):
         yield self
         pp = self.parent_project

@@ -6,9 +6,10 @@ from pylons import c, request
 from tg import expose, redirect, validate
 from formencode import validators as V
 
-from pyforge.app import Application, ConfigOption
+from pyforge.app import Application, ConfigOption, SitemapEntry
 from pyforge.model import ProjectRole
 from pyforge.lib.dispatch import _dispatch
+from pyforge.lib.helpers import push_config
 from pyforge.lib.security import require, has_artifact_access
 
 from helloforge import model as M
@@ -23,10 +24,26 @@ class HelloForgeApp(Application):
         ConfigOption('project_name', str, 'pname'),
         ConfigOption('message', str, 'Custom message goes here') ]
     permissions = [ 'configure', 'read', 'create', 'edit', 'delete', 'comment' ]
-
     def __init__(self, project, config):
         Application.__init__(self, project, config)
         self.root = RootController()
+
+    @property
+    def sitemap(self):
+        with push_config(c, app=self):
+            pages = [
+                SitemapEntry(p.title, p.url())
+                for p in M.Page.m.find(dict(
+                        app_config_id=self.config._id)) ]
+        return [
+            SitemapEntry('HelloForge')[
+                SitemapEntry(lambda a:a.config.options.mount_point)[
+                    SitemapEntry('Pages')[pages]
+                    ]
+                ]
+            ]
+        
+
 
     @property
     def templates(self):

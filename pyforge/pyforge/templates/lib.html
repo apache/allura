@@ -19,4 +19,14 @@
     </li>
   </ul>
 
+  <py:def function="nav(s)">
+    <li>
+      <a py:if="s.url" href="$s.url">$s.label</a>
+      <span py:if="not s.url">$s.label</span>
+      <ul py:if="s.children">
+        <py:for each="ss in s.children">${nav(ss)}</py:for>
+      </ul>
+    </li>
+  </py:def>
+
 </html>

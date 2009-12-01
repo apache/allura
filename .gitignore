@@ -5,6 +5,7 @@
 *.pyc
 */.coverage
 *~
+.dbshell
 pyforge/docs/_build/*
 mail/logs/*
 sandbox-env/*

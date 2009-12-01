@@ -2,7 +2,7 @@ from tg import expose, redirect, flash
 from pylons import c
 from pymongo.bson import ObjectId
 
-from pyforge.lib.security import require, has_project_access, has_artifact_access
+from pyforge.lib.security import require, has_artifact_access
 
 class ConfigOption(object):
 
@@ -16,6 +16,44 @@ class ConfigOption(object):
             return self._default()
         return self._default
 
+class SitemapEntry(object):
+
+    def __init__(self, label, url=None, children=None):
+        self.label = label
+        self.url = url
+        if children is None:
+            children = []
+        self.children = children
+
+    def __getitem__(self, x):
+        if isinstance(x, (list, tuple)):
+            self.children.extend(list(x))
+        else:
+            self.children.append(x)
+        return self
+
+    def bind_app(self, app):
+        lbl = self.label
+        url = self.url
+        if callable(lbl):
+            lbl = lbl(app)
+        if url and not url.startswith('/'):
+            url = app.script_name + '/' + url
+        return SitemapEntry(lbl, url, [
+                ch.bind_app(app) for ch in self.children])
+
+    def extend(self, sitemap):
+        child_index = dict(
+            (ch.label, ch) for ch in self.children)
+        for e in sitemap:
+            lbl = e.label
+            match = child_index.get(e.label)
+            if match and match.url == e.url:
+                match.extend(e.children)
+            else:
+                self.children.append(e)
+                child_index[lbl] = e
+
 class Application(object):
     'base pyforge pluggable application'
     __version__ = None
@@ -25,6 +63,7 @@ class Application(object):
     script_name=None
     root=None  # root controller
     permissions=[]
+    sitemap = [ ]
 
     def __init__(self, project, app_config_object):
         self.project = project
