@@ -95,6 +95,7 @@ class Artifact(Document):
             project_name_t=project.name,
             project_shortname_t=project.shortname,
             plugin_name_s=self.app_config.plugin_name,
+            mount_point_s=self.app_config.options.mount_point,
             is_history_b=False,
             url_s=self.url(),
             type_s='Generic Artifact')

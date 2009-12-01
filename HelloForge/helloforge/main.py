@@ -11,6 +11,7 @@ from pyforge.model import ProjectRole
 from pyforge.lib.dispatch import _dispatch
 from pyforge.lib.helpers import push_config
 from pyforge.lib.security import require, has_artifact_access
+from pyforge.lib import search
 
 from helloforge import model as M
 from helloforge import version
@@ -84,6 +85,24 @@ class RootController(object):
         
     def _lookup(self, pname, *remainder):
         return PageController(pname), remainder
+
+    @expose('helloforge.templates.search')
+    @validate(dict(q=V.UnicodeString(if_empty=None),
+                   history=V.StringBool(if_empty=False)))
+    def search(self, q=None, history=None):
+        'local wiki search'
+        results = []
+        count=0
+        if q is None:
+            q = ''
+        else:
+            search_query = '''%s
+            AND is_history_b:%s
+            AND mount_point_s:%s''' % (
+                q, history, c.app.config.options.mount_point)
+            results = search.search(search_query)
+            if results: count=results.hits
+        return dict(q=q, history=history, results=results or [], count=count)
 
 class PageController(object):
 
