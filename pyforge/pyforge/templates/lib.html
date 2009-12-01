@@ -49,8 +49,19 @@
   </py:def>
 
   <py:def function="sidebar_menu()">
+    <pre>
+      c.project = ${repr(c.project)}
+      c.app = ${repr(getattr(c, 'app', None))}
+    </pre>
     <ul id="sidebarmenu" py:if="getattr(c, 'app', None)">
       <li py:for="s in c.app.sidebar_menu()">
+        <a py:if="s.url" href="$s.url">$s.label</a>
+        <span py:if="not s.url">$s.label</span>
+      </li> 
+    </ul>
+    <ul id="sidebarmenu" 
+        py:if="getattr(c, 'project', None) and not getattr(c, 'app', None)">
+      <li py:for="s in c.project.sidebar_menu()">
         <a py:if="s.url" href="$s.url">$s.label</a>
         <span py:if="not s.url">$s.label</span>
       </li> 

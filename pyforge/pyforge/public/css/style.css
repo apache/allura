@@ -58,9 +58,10 @@ ul#sidebarmenu
 
 
 ul#sidebarmenu li {
-	list-style-type: none;
-	margin: 0;
-	padding: 0;
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+    font-weight: bold;
 }
 
 ul#sidebarmenu li a {
@@ -69,6 +70,7 @@ ul#sidebarmenu li a {
     color: #000;
     font-size: 12px;
     text-decoration: none;
+    font-weight: normal;
 }
 
 ul#sidebarmenu li a:hover {

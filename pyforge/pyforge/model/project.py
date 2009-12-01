@@ -29,6 +29,21 @@ class Project(Document):
             'security':[S.ObjectId],  # update ACL, roles
             })
 
+    def sidebar_menu(self):
+        from pyforge.app import SitemapEntry
+        result = []
+        if not self.is_root:
+            p = self.parent_project
+            result.append(SitemapEntry('Parent Project'))
+            result.append(SitemapEntry(p.name or p.script_name, p.script_name))
+        sps = self.direct_subprojects
+        if sps:
+            result.append(SitemapEntry('Child Projects'))
+            result += [
+                SitemapEntry(p.name or p.script_name, p.script_name)
+                for p in sps ]
+        return result
+
     @property
     def script_name(self):
         return '/' + self._id
@@ -41,7 +56,7 @@ class Project(Document):
     def parent_project(self):
         if self.is_root: return None
         parent_id, shortname, empty = self._id.rsplit('/', 2)
-        return self.m.get(_id=parent_id)
+        return self.m.get(_id=parent_id + '/')
 
     def sitemap(self):
         from pyforge.app import SitemapEntry
