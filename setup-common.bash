@@ -35,6 +35,13 @@ easy_install beautifulsoup
 # This already happened just to get this file to run;
 # now assume we run it in-place.
 
+echo '# installing Ming and dependencies'
+pushd ..
+git clone git://merciless.git.sourceforge.net/gitroot/merciless/merciless Ming
+cd Ming
+python setup.py develop
+popd
+
 
 #
 # Install all our (formal) dependencies.
@@ -42,21 +49,15 @@ easy_install beautifulsoup
 
 echo
 echo '# installing pyforge dependencies'
-cd pyforge
+pushd pyforge
 python setup.py develop
-cd ..
-
-echo
-echo '# installing Ming dependencies'
-cd Ming
-python setup.py develop
-cd ..
+popd
 
 echo
 echo '# installing HelloForge dependencies'
-cd HelloForge
+pushd HelloForge
 python setup.py develop
-cd ..
+popd
 
 echo
 echo '# creating data directory for mongo'
@@ -65,9 +66,10 @@ mkdir -p /data/db
 echo
 echo '# downloading and untarring solr'
 mkdir download install
-cd download
+pushd download
 wget http://apache.mirrors.tds.net/lucene/solr/1.4.0/apache-solr-1.4.0.tgz
 cd ../install
 tar xzf ../download/apache-solr-1.4.0.tgz
+popd
 
 # Start up the server?
