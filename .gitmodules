@@ -1,0 +1,3 @@
+[submodule "Ming"]
+	path = Ming
+	url = git://merciless.git.sourceforge.net/gitroot/merciless/merciless
