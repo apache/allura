@@ -1,9 +1,11 @@
-body { margin:1in }
+/* body { margin:1in } */
 
-ul#mainmenu {
-	margin: 0 0 0 -10px;
-	padding: 0 10px;
-	height: 38px;
+ul#mainmenu 
+{
+    margin: 0 0 0 -10px;
+    padding: 0 10px;
+    height: 38px;
+    background-color: #ddd;
 }
 
 ul#mainmenu li {
@@ -11,8 +13,10 @@ ul#mainmenu li {
 	margin: 0;
 	padding: 0;
 	position: relative;
-	display: inline;
 	float: left;
+}
+
+ul#mainmenu li:hover {
 }
 
 ul#mainmenu li a {
@@ -21,10 +25,52 @@ ul#mainmenu li a {
 	display: block;
 	padding: 0 10px;
 	font-size: 12px;
-	text-decoration: none;
+        height: 38px;
+        text-decoration: none;
 }
+
+ul#mainmenu li a:hover {
+    background-color: #aaa
+}
+
 ul#mainmenu li.loginlogout
 {
     float: right;
     right: 10px;
+}
+
+div#content
+{
+    margin-left: 120px;
+    margin-right: 1in;
+}
+
+ul#sidebarmenu
+{
+    position: absolute;
+    left: 0;
+    top: 38px;
+    width: 110px;
+    padding: 0;
+    margin: 0;
+    background-color: #aaa;
+}
+
+
+ul#sidebarmenu li {
+	list-style-type: none;
+	margin: 0;
+	padding: 0;
+}
+
+ul#sidebarmenu li a {
+    display:block;
+    width: 110px;
+    color: #000;
+    font-size: 12px;
+    text-decoration: none;
+}
+
+ul#sidebarmenu li a:hover {
+    background-color: #ddd;
 }

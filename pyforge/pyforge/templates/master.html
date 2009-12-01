@@ -22,14 +22,8 @@
   </head>
   
   <body py:match="body" py:attrs="select('@*')">
-    ${header()}
-    <ul id="mainmenu">
-      <li class="first"><a href="${tg.url('/')}" class="${('', 'active')[defined('page') and page=='index']}">Welcome</a></li>
-      <li><a href="${tg.url('/about')}" class="${('', 'active')[defined('page') and page=='about']}">About</a></li>
-      <li><a href="/search/">Search</a></li>
-      <li py:if="c.user._id"><a href="/logout">Logout</a></li>
-    <li py:if="not c.user._id"><a href="/login">Login</a></li>
-    </ul>
+    ${main_menu()}
+    <!-- ${header()} -->
     <div id="content">
       <p py:if="c.user" style="float:right">Welcome, $c.user.display_name!</p>
       <p py:if="not c.user" style="float:right">Welcome, Anonymous Coward!</p>
@@ -40,5 +34,6 @@
       <!-- End of main_content -->
       ${footer()}
     </div>
+    ${sidebar_menu()}
   </body>
 </html>

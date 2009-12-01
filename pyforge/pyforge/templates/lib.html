@@ -29,4 +29,32 @@
     </li>
   </py:def>
 
+  <py:def function="main_menu()">
+    <ul id="mainmenu">
+      <li><a href="/">Welcome</a></li>
+      <li><a href="/search/">Search</a></li>
+      <py:if test="hasattr(c, 'project')">
+        <li py:for="s in c.project.sitemap()">
+          <a py:if="s.url" href="$s.url">$s.label</a>
+          <span py:if="not s.url">$s.label</span>
+        </li> 
+      </py:if>       
+      <li class="loginlogout" py:if="c.user._id">
+        <a href="/logout">Logout</a>
+      </li>
+      <li class="loginlogout" py:if="not c.user._id">
+        <a href="/login">Login</a>
+      </li>
+    </ul>
+  </py:def>
+
+  <py:def function="sidebar_menu()">
+    <ul id="sidebarmenu" py:if="getattr(c, 'app', None)">
+      <li py:for="s in c.app.sidebar_menu()">
+        <a py:if="s.url" href="$s.url">$s.label</a>
+        <span py:if="not s.url">$s.label</span>
+      </li> 
+    </ul>
+  </py:def>
+
 </html>

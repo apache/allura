@@ -35,15 +35,19 @@ class HelloForgeApp(Application):
                 SitemapEntry(p.title, p.url())
                 for p in M.Page.m.find(dict(
                         app_config_id=self.config._id)) ]
-        return [
-            SitemapEntry('HelloForge')[
-                SitemapEntry(lambda a:a.config.options.mount_point)[
+            return [
+                SitemapEntry(
+                    'HelloForge (%s)' % self.config.options.mount_point,
+                    '.')[
                     SitemapEntry('Pages')[pages]
-                    ]
                 ]
             ]
-        
 
+    def sidebar_menu(self):
+        return [
+                SitemapEntry(p.title, p.url())
+                for p in M.Page.m.find(dict(
+                        app_config_id=self.config._id)) ]
 
     @property
     def templates(self):

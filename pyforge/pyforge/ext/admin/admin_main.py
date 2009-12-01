@@ -8,7 +8,7 @@ from webob import exc
 from pymongo.bson import ObjectId
 
 
-from pyforge.app import Application, DefaultAdminController
+from pyforge.app import Application, DefaultAdminController, SitemapEntry
 from pyforge.lib.dispatch import _dispatch
 from pyforge import version
 from pyforge import model as M
@@ -23,7 +23,19 @@ class AdminApp(Application):
     def __init__(self, project, config):
         Application.__init__(self, project, config)
         self.root = ProjectAdminController()
-        self.admin = AdminAppAdminController()
+        self.admin = AdminAppAdminController(self)
+        self.sitemap = [ SitemapEntry('Admin', '.')[
+                SitemapEntry('Plugins', '#plugin-admin'),
+                SitemapEntry('ACLs', '#acl-admin'),
+                SitemapEntry('Roles', '#role-admin'),
+                ]]
+
+    def sidebar_menu(self):
+        return [
+            SitemapEntry('Admin %s' % ac.options.mount_point,
+                         ac.options.mount_point + '/').bind_app(self)
+            for ac in c.project.app_configs
+            ]
 
     @property
     def templates(self):
@@ -57,7 +69,6 @@ class ProjectAdminController(object):
         app = c.project.app_instance(name)
         if app is None:
             raise exc.HTTPNotFound, name
-        c.app = app
         return app.admin, remainder
 
     @expose()
@@ -77,7 +88,7 @@ class ProjectAdminController(object):
     @expose()
     def delete_project(self):
         'delete the current project'
-        require(has_project_access('delete'))
+        require(has_project_access('delete'), 'Must have delete access')
         c.project.delete()
         redirect('..')
 
