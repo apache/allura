@@ -54,6 +54,7 @@ setup(
 
     [pyforge]
     admin = pyforge.ext.admin:AdminApp
+    search = pyforge.ext.search:SearchApp
     
     [paste.paster_create_template]
     forgeapp=pyforge.pastetemplate:ForgeAppTemplate

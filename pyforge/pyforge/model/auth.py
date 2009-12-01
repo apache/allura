@@ -68,6 +68,7 @@ class User(Document):
         ProjectRole.make(dict(name='*anonymous')).m.save()
         ProjectRole.make(dict(name='*authenticated')).m.save()
         p.install_app('admin', 'admin')
+        p.install_app('search', 'search')
         p.m.insert()
         return p
 

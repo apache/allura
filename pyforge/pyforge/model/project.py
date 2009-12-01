@@ -139,6 +139,7 @@ class Project(Document):
                 is_root=False,
                 acl=self.acl))
         sp.install_app('admin', 'admin')
+        sp.install_app('search', 'search')
         sp.m.save()
         return sp
 
