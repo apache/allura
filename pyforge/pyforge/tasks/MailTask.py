@@ -5,8 +5,11 @@ from celery.registry import tasks
 class MailTask(Task):
     routing_key = 'forge.mail'
 
-    def run(self, **kwargs):
+    def run(self, *args, **kwargs):
         logger = self.get_logger(**kwargs)
-        logger.debug("Fetched mail message")
+        logger.info("Fetched mail message")
+        logger.info('Args = %s', repr(args))
+        logger.info('KwArgs = %s', repr(kwargs))
 
 tasks.register(MailTask)
+print 'Imported tasks.MailTask'

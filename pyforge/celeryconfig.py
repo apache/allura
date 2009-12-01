@@ -29,4 +29,6 @@ CELERY_AMQP_EXCHANGE_TYPE = "topic"
 CELERY_AMQP_CONSUMER_QUEUE = "forge_tasks"
 CELERY_AMQP_CONSUMER_ROUTING_KEY = "forge.#"
 
-CELERY_IMPORTS = ["pyforge.tasks.MailTask"]
+CELERY_IMPORTS = ["pyforge.tasks.MailTask",
+                  "pyforge.tasks.search",
+                  ]

@@ -3,6 +3,8 @@ from logging import getLogger
 from pylons import g
 from pprint import pformat
 
+from pyforge.tasks.search import AddArtifacts, DelArtifacts
+
 log = getLogger(__name__)
 
 def try_solr(func):
@@ -28,18 +30,19 @@ def add_artifact(obj):
 
 @try_solr
 def add_artifacts(obj_iter):
-    g.solr.add((_solarize(a) for a in obj_iter), commit=True)
+    AddArtifacts.delay(g.solr_server,
+                       *[_solarize(a) for a in obj_iter])
 
 @try_solr
 def remove_artifact(obj):
-    g.solr.delete(id=obj.index()['id'])
-    g.solr.commit()
-    
+    remove_artifacts([obj])
+
 @try_solr
 def remove_artifacts(obj_iter):
-    for obj in obj_iter:
-        g.solr.delete(id=obj.index()['id'])
-    g.solr.commit()
+    oids = [ obj.index()['id']
+             for obj in obj_iter ]
+    DelArtifacts.delay(g.solr_server,
+                       *[oids])
 
 @try_solr
 def search(q,**kw):

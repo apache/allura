@@ -8,6 +8,7 @@ import pkg_resources
 
 from tg import config
 from pylons import c
+import paste.deploy.converters
 import pysolr
 
 from pyforge import model as M
@@ -23,7 +24,10 @@ class Globals(object):
     def __init__(self):
         """Do nothing, by default."""
         self.pyforge_templates = pkg_resources.resource_filename('pyforge', 'templates')
-        self.solr =  pysolr.Solr(config['solr.server'])
+        self.solr_server = config['solr.server']
+        self.solr =  pysolr.Solr(self.solr_server)
+        self.use_queue = paste.deploy.converters.asbool(
+            config.get('use_queue', False))
         
     def app_static(self, resource, app=None):
         app = app or c.app
