@@ -27,6 +27,8 @@ setup(
         "pysolr",
         "repoze.what-quickstart",
         "sqlalchemy-migrate",
+        "Markdown >= 2.0.3",
+        "Pygments >= 1.1.1",
         ],
     setup_requires=["PasteScript >= 1.7"],
     paster_plugins=['PasteScript', 'Pylons', 'TurboGears2', 'tg.devtools'],
