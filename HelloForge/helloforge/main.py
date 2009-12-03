@@ -1,8 +1,9 @@
 import difflib
+import logging
 from pprint import pformat
 
 import pkg_resources
-from pylons import c, request
+from pylons import g, c, request
 from tg import expose, redirect, validate
 from formencode import validators as V
 
@@ -12,9 +13,12 @@ from pyforge.lib.dispatch import _dispatch
 from pyforge.lib.helpers import push_config
 from pyforge.lib.security import require, has_artifact_access
 from pyforge.lib import search
+from pyforge.lib.decorators import audit, react
 
 from helloforge import model as M
 from helloforge import version
+
+log = logging.getLogger(__name__)
 
 class HelloForgeApp(Application):
     '''This is the HelloWorld application for PyForge, showing
@@ -28,6 +32,31 @@ class HelloForgeApp(Application):
     def __init__(self, project, config):
         Application.__init__(self, project, config)
         self.root = RootController()
+
+    @audit('hello_forge.#')
+    def auditor(self, routing_key, data):
+        log.info('Auditing some data from %s: %s (%s)',
+                 routing_key, pformat(data),
+                 self.config.options.mount_point)
+        g.publish('react', 'wiki.comment', data)
+
+    @react('wiki.#')
+    def reactor1(self, routing_key, data):
+        log.info('Reacting (1) to %s: %s (%s)',
+                 routing_key, pformat(data),
+                 self.config.options.mount_point)
+
+    @react('wiki.#')
+    def reactor2(self, routing_key, data):
+        log.info('Reacting (2) to %s: %s (%s)',
+                 routing_key, pformat(data),
+                 self.config.options.mount_point)
+
+    @classmethod
+    @react('wiki.#')
+    def reactor3(cls, routing_key, data):
+        log.info('Reacting globally to %s: %s',
+                 routing_key, pformat(data))
 
     @property
     def sitemap(self):

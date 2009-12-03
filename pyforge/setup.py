@@ -54,12 +54,17 @@ setup(
     main = pylons.util:PylonsInstaller
     plugin_test = pylons.util:PylonsInstaller
 
+    [paste.paster_create_template]
+    forgeapp=pyforge.pastetemplate:ForgeAppTemplate
+
     [pyforge]
     admin = pyforge.ext.admin:AdminApp
     search = pyforge.ext.search:SearchApp
+
+    [paste.paster_command]
+    reactor_setup = pyforge.command:ReactorSetupCommand
+    reactor = pyforge.command:ReactorCommand
     
-    [paste.paster_create_template]
-    forgeapp=pyforge.pastetemplate:ForgeAppTemplate
     """,
 )
 
