@@ -102,29 +102,35 @@ class ReactorCommand(Command):
         log.info('Exiting worker process: %s', qn)
 
     def route_audit(self, plugin_name, method):
-        'Auditors only respond to their particuarl mount point'
+        'Auditors only respond to their particluar mount point'
         def callback(data, msg):
             msg.ack()
-            pylons.c.project = M.Project.m.get(_id=data['project_id'])
-            if method.im_self:
-                method(msg.delivery_info['routing_key'], data)
-            else:
-                pylons.c.app = pylons.c.project.app_instance(data['mount_point'])
-                method(pylons.c.app, msg.delivery_info['routing_key'], data)
+            try:
+                pylons.c.project = M.Project.m.get(_id=data['project_id'])
+                if method.im_self:
+                    method(msg.delivery_info['routing_key'], data)
+                else:
+                    pylons.c.app = pylons.c.project.app_instance(data['mount_point'])
+                    method(pylons.c.app, msg.delivery_info['routing_key'], data)
+            except:
+                log.exception('Exception audit handling %s: %s', plugin_name, method)
         return callback
 
     def route_react(self, plugin_name, method):
         'All plugin instances respond to the react exchange'
         def callback(data, msg):
             msg.ack()
-            pylons.c.project = M.Project.m.get(_id=data['project_id'])
-            if method.im_self:
-                method(msg.delivery_info['routing_key'], data)
-            else:
-                for cfg in pylons.c.project.app_configs:
-                    if cfg.plugin_name != plugin_name: continue
-                    pylons.c.app = pylons.c.project.app_instance(cfg.options.mount_point)
-                    method(pylons.c.app, msg.delivery_info['routing_key'], data)
+            try:
+                pylons.c.project = M.Project.m.get(_id=data['project_id'])
+                if method.im_self:
+                    method(msg.delivery_info['routing_key'], data)
+                else:
+                    for cfg in pylons.c.project.app_configs:
+                        if cfg.plugin_name != plugin_name: continue
+                        pylons.c.app = pylons.c.project.app_instance(cfg.options.mount_point)
+                        method(pylons.c.app, msg.delivery_info['routing_key'], data)
+            except:
+                log.exception('Exception react handling %s: %s', plugin_name, method)
         return callback
     
 class EmptyClass(object): pass
