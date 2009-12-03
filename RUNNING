@@ -70,3 +70,8 @@ java -jar start.jar
 # from forge, where development.ini lives
 
 paster serve development.ini
+
+# or if running on a sandbox
+
+paster serve sandbox.ini
+
