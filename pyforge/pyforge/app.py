@@ -65,6 +65,7 @@ class Application(object):
     root=None  # root controller
     permissions=[]
     sitemap = [ ]
+    installable=True
 
     def __init__(self, project, app_config_object):
         self.project = project

@@ -60,7 +60,7 @@ class ProjectAdminController(object):
             for ep in pkg_resources.iter_entry_points('pyforge') ]
         installable_plugin_names = [ 
             name for (name, app) in plugins
-            if app.root ]
+            if app.installable ]
         return dict(
             installable_plugin_names=installable_plugin_names,
             roles=M.ProjectRole.m.find().sort('_id').all(),

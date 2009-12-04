@@ -41,6 +41,9 @@ class PageHistory(Snapshot):
     def original(self):
         return Page.m.get(_id=self.artifact_id)
         
+    def shorthand_id(self):
+        return '%s#%s' % (self.original().shorthand_id(), self.version)
+
     def url(self):
         return self.original().url() + '?version=%d' % self.version
 
@@ -63,6 +66,9 @@ class Page(VersionedArtifact):
 
     def url(self):
         return c.app.script_name + '/' + self.title + '/'
+
+    def shorthand_id(self):
+        return self.title
 
     def index(self):
         result = VersionedArtifact.index(self)
@@ -137,5 +143,8 @@ class Comment(Message):
 
     def url(self):
         return self.page.url() + '#comment-' + self._id
+
+    def shorthand_id(self):
+        return '%s-%s' % (self.page.title, self._id)
 
     

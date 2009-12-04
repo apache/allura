@@ -3,5 +3,5 @@
 
 from .session import ProjectSession
 from .project import Project, AppConfig
-from .artifact import Artifact, Message, VersionedArtifact, Snapshot
+from .artifact import Artifact, Message, VersionedArtifact, Snapshot, ArtifactLink
 from .auth import User, ProjectRole

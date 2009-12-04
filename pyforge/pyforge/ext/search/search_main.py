@@ -34,15 +34,16 @@ class SearchApp(Application):
     @classmethod
     @audit('search.add_artifacts')
     def add_artifacts(cls, routing_key, doc):
-        log.info('Adding artifacts to index')
+        for a in doc['artifacts']:
+            log.info('Adding artifact: %s', a['id'])
         g.solr.add(doc['artifacts'])
         g.solr.commit()
 
     @classmethod
     @audit('search.del_artifacts')
     def del_artifacts(cls, routing_key, doc):
-        log.info('Removing artifacts from index')
         for aid in doc['artifact_ids']:
+            log.info('Removing artifact: %s', aid)
             g.solr.delete(id=aid)
         g.solr.commit()
 
