@@ -12,19 +12,20 @@ from ming import schema as S
 from ming import Field
 
 from pyforge.model import VersionedArtifact, Snapshot, Message
+from pyforge.lib.markdown_extensions import ArtifactExtension
 
 wikiwords = [
     (r'\b([A-Z]\w+[A-Z]+\w+)', r'<a href="../\1/">\1</a>'),
-    (r'([^\\])\[(.*)\]', r'\1<a href="../\2/">\2</a>'),
-    (r'\\\[(.*)\]', r'[\1]'),
-    (r'^\[(.*)\]', r'<a href="../\1/">\1</a>'),
+    # (r'([^\\])\[(.*)\]', r'\1<a href="../\2/">\2</a>'),
+    # (r'\\\[(.*)\]', r'[\1]'),
+    # (r'^\[(.*)\]', r'<a href="../\1/">\1</a>'),
     ]
 wikiwords = [
     (re.compile(pattern), replacement)
     for pattern, replacement in wikiwords ]
 
 MD = markdown.Markdown(
-    extensions=['codehilite'],
+    extensions=['codehilite', ArtifactExtension()],
     output_format='html4'
     )
 

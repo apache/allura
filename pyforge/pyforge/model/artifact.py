@@ -69,11 +69,11 @@ class ArtifactLink(Document):
         indexes = [
             ('link', 'project_id') ]
 
-    re_link = re.compile('''
+    re_link = re.compile('''\[
         (?:(.*?):)?      # optional project ID
         (?:(.*?):)?      # optional plugin ID
         (.*)             # artifact ID
-        ''', re.VERBOSE)
+        \]''', re.VERBOSE)
 
     _id = Field(str)
     link = Field(str)
