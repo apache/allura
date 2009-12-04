@@ -63,7 +63,7 @@ class Artifact(Document):
     plugin_verson = Field(
         S.Object,
         { str: str },
-        if_missing=lambda:{c.app.config.name:c.app.__version__})
+        if_missing=lambda:{c.app.config.plugin_name:c.app.__version__})
     acl = Field({str:[S.ObjectId]})
 
     @property
