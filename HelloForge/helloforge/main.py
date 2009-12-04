@@ -122,7 +122,7 @@ class RootController(object):
         'local wiki search'
         results = []
         count=0
-        if q is None:
+        if not q:
             q = ''
         else:
             search_query = '''%s

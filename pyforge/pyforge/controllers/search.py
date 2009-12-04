@@ -13,7 +13,7 @@ class SearchController(object):
     def index(self, q=None, history=None):
         results = []
         count=0
-        if q is None:
+        if not q:
             q = ''
         else:
             search_query = '%s AND is_history_b:%s' % (q, history)

@@ -49,7 +49,7 @@ class SearchController(object):
     def index(self, q=None, history=None):
         results = []
         count=0
-        if q is None:
+        if not q:
             q = ''
         else:
             pids = [c.project._id] + [
