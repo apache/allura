@@ -1,8 +1,9 @@
 import difflib
+import logging
 from pprint import pformat
 
 import pkg_resources
-from pylons import c, request
+from pylons import c, g, request
 from tg import expose, redirect, validate
 from tg.decorators import with_trailing_slash
 from formencode import validators as V
@@ -12,7 +13,10 @@ from pyforge import version
 from pyforge.model import ProjectRole
 from pyforge.lib.helpers import push_config
 from pyforge.lib.security import require, has_artifact_access
+from pyforge.lib.decorators import audit
 from pyforge.lib import search
+
+log = logging.getLogger(__name__)
 
 class SearchApp(Application):
     '''This is the HelloWorld application for PyForge, showing
@@ -26,6 +30,21 @@ class SearchApp(Application):
     @property
     def sitemap(self):
         return [SitemapEntry('Search Project', '.')]
+
+    @classmethod
+    @audit('search.add_artifacts')
+    def add_artifacts(cls, routing_key, doc):
+        log.info('Adding artifacts to index')
+        g.solr.add(doc['artifacts'])
+        g.solr.commit()
+
+    @classmethod
+    @audit('search.del_artifacts')
+    def del_artifacts(cls, routing_key, doc):
+        log.info('Removing artifacts from index')
+        for aid in doc['artifact_ids']:
+            g.solr.delete(id=aid)
+        g.solr.commit()
 
     def sidebar_menu(self):
         return [ ]

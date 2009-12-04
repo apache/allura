@@ -55,10 +55,14 @@ class ProjectAdminController(object):
 
     @expose('pyforge.ext.admin.templates.admin_index')
     def index(self):
-        plugin_names = [
-            ep.name for ep in pkg_resources.iter_entry_points('pyforge') ]
+        plugins = [
+            (ep.name, ep.load())
+            for ep in pkg_resources.iter_entry_points('pyforge') ]
+        installable_plugin_names = [ 
+            name for (name, app) in plugins
+            if app.root ]
         return dict(
-            plugin_names=plugin_names,
+            plugin_names=installable_plugin_names,
             roles=M.ProjectRole.m.find().sort('_id').all(),
             users=[M.User.m.get(_id=id) for id in c.project.acl.read ])
 

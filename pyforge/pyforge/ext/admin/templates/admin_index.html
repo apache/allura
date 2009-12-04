@@ -45,7 +45,8 @@
         <fieldset><legend>Install Plugins</legend>
           Plugin name: 
           <select name="ep_name">
-            <option py:for="name in plugin_names" value="$name">$name</option>
+            <option py:for="name in installable_plugin_names" value="$name">
+              $name</option>
           </select><br/>
           Mount Point: <input name="mount_point"/><br/>
           <input type="submit" value="Install" />

@@ -14,9 +14,9 @@ from carrot.connection import BrokerConnection
 from carrot.messaging import Consumer
 
 from pyforge.config.environment import load_environment
-from pyforge import model as M
 
 log=None
+M=None
 
 class Command(command.Command):
     min_args = max_args = 1
@@ -24,9 +24,11 @@ class Command(command.Command):
     group_name = 'PyForge'
 
     def basic_setup(self):
-        global log
+        global log, M
         conf = appconfig('config:%s' % self.args[0],relative_to=os.getcwd())
         logging.config.fileConfig(self.args[0])
+        from pyforge import model
+        M=model
         log = logging.getLogger(__name__)
         log.info('Initialize reactor with config %r', self.args[0])
         load_environment(conf.global_conf, conf.local_conf)

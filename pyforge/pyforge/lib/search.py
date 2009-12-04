@@ -3,7 +3,7 @@ from logging import getLogger
 from pylons import g
 from pprint import pformat
 
-from pyforge.tasks.search import AddArtifacts, DelArtifacts
+# from pyforge.tasks.search import AddArtifacts, DelArtifacts
 
 log = getLogger(__name__)
 
@@ -30,8 +30,9 @@ def add_artifact(obj):
 
 @try_solr
 def add_artifacts(obj_iter):
-    AddArtifacts.delay(g.solr_server,
-                       *[_solarize(a) for a in obj_iter])
+    g.publish('audit', 'search.add_artifacts',
+              dict(artifacts=[_solarize(a) for a in obj_iter]),
+              serializer='yaml') # json can't handle datetimes
 
 @try_solr
 def remove_artifact(obj):
@@ -41,8 +42,8 @@ def remove_artifact(obj):
 def remove_artifacts(obj_iter):
     oids = [ obj.index()['id']
              for obj in obj_iter ]
-    DelArtifacts.delay(g.solr_server,
-                       *[oids])
+    g.publish('audit', 'search.del_artifacts',
+              dict(artifact_ids=oids))
 
 @try_solr
 def search(q,**kw):
