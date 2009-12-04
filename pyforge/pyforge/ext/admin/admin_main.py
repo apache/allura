@@ -62,7 +62,7 @@ class ProjectAdminController(object):
             name for (name, app) in plugins
             if app.root ]
         return dict(
-            plugin_names=installable_plugin_names,
+            installable_plugin_names=installable_plugin_names,
             roles=M.ProjectRole.m.find().sort('_id').all(),
             users=[M.User.m.get(_id=id) for id in c.project.acl.read ])
 
