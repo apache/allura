@@ -18,9 +18,9 @@ mongod
 # from the directory containing rabbitmqctl
 
 sudo ./rabbitmq-server
-./rabbitmqctl add_user celeryuser celerypw
-./rabbitmqctl add_vhost celeryvhost
-./rabbitmqctl set_permissions -p celeryvhost celeryuser "" ".*" ".*"
+./rabbitmqctl add_user test test
+./rabbitmqctl add_vhost test
+./rabbitmqctl set_permissions -p test test "" ".*" ".*"
 
 #
 # Stopping RabbitMQ
