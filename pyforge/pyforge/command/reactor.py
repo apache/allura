@@ -84,7 +84,7 @@ class ReactorCommand(Command):
 
     summary = 'Start up all the auditors and reactors for registered plugins'
     parser = command.Command.standard_parser(verbose=True)
-    parser.add_option('-p', '--proc', dest='proc', type='int',
+    parser.add_option('-p', '--proc', dest='proc', type='int', default=1,
                       help='number of worker processes to spawn per queue')
 
     def command(self):
