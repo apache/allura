@@ -10,7 +10,9 @@ class ArtifactLinkProcessor(markdown.preprocessors.Preprocessor):
             old_link = mo.group(0)
             new_link = lookup(old_link)
             if new_link:
-                return '[<a href="%s">%s</a>]' % (new_link.url, old_link[1:-1])
+                link_text = ':'.join(
+                    g for g in mo.groups() if g is not None)
+                return ' [<a href="%s">%s</a>]' % (new_link.url, link_text)
             else:
                 return old_link
         for line in lines:
