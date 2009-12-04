@@ -54,8 +54,18 @@ class ReactorSetupCommand(Command):
         'Tear down all queues and bindings'
         be = self.backend
         ch = self.backend.channel
-        ch.exchange_delete('audit', nowait=True)
-        ch.exchange_delete('react', nowait=True)
+        try:
+            ch.exchange_delete('audit')
+        except:
+            log.warning('Error deleting audit exchange')
+            self.backend = be = pylons.g.conn.create_backend()
+            ch = self.backend.channel
+        try:
+            ch.exchange_delete('react')
+        except:
+            log.warning('Error deleting react exchange')
+            self.backend = be = pylons.g.conn.create_backend()
+            ch = self.backend.channel
         be.exchange_declare('audit', 'topic', True, False)
         be.exchange_declare('react', 'topic', True, False)
 
