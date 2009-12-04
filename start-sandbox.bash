@@ -2,9 +2,9 @@
 
 # Start RabbitMQ
 sudo rabbitmq-server &
-rabbitmqctl add_user test test
-rabbitmqctl add_vhost test
-rabbitmqctl set_permissions -p test test "" ".*" ".*"
+rabbitmqctl add_user testuser testpw
+rabbitmqctl add_vhost testvhost
+rabbitmqctl set_permissions -p testvhost testuser "" ".*" ".*"
 
 
 # Start SOLR, as per SOG-sandbox location
