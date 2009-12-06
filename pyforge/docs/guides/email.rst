@@ -16,11 +16,9 @@ turbogears, and it's bug tracer and issue 142 in that tracker::
     devtools.bug.142@turbogears.sf.net
     
 
-And it in turn would be published to any reactor-plugins that listen on::
-
-    turbogears.*
-    turbogears.devtools.*
-    turbogears.devtools.bug.*
+And it in turn would be published to the message bus, which will assure
+that all plugins that are registered to be notified for that e-mail 
+addresses are called like that. 
 
 If your app has more than one artifact type, you could nest them inside 
 `project.app.something.id.*`
