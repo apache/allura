@@ -66,12 +66,17 @@ Pluggable Event Listeners
 Have we mentioned Roundup already?   Because here's another idea we stole 
 from them: 
 
-**Reactors**
+**Auditors** and **reactors**
 
-Reactors are just hooks that get called when messages come in.   Nearly 
-everything in roundup is implemented as a reactor, and we've tried to do 
-the same with PyForge.  Except now reactors are called by a wider variety 
-of events...
+**Auditors** are hooks that get called when events/messages come in, 
+they can modify the message before it is persisted to the document 
+store (via MongoDB).   
+
+Once the message is saved to the document store, it is then queued up for another set of hooks -- **reactors** -- that are not allowed to change the
+message, but can do things like send e-mail or push a new kind of event 
+onto another queue. 
+ 
+Nearly everything in roundup is implemented as either an auditor or a reactor, and PyForge definitely steals that idea and runs with it. 
 
 TODO: Finish reactor overview (after reactor code is written)
 
