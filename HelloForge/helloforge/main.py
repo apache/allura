@@ -115,6 +115,10 @@ class RootController(object):
     def _lookup(self, pname, *remainder):
         return PageController(pname), remainder
 
+    @expose()
+    def new_page(self, title):
+        redirect(title + '/')
+
     @expose('helloforge.templates.search')
     @validate(dict(q=V.UnicodeString(if_empty=None),
                    history=V.StringBool(if_empty=False)))

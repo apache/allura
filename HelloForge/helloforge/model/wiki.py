@@ -1,36 +1,25 @@
-from datetime import datetime
 from time import sleep
 
-from pylons import c
+from pylons import c, g
 import re
-import markdown
 
-import pymongo
 from pymongo.errors import OperationFailure
 
 from ming import schema as S
 from ming import Field
 
 from pyforge.model import VersionedArtifact, Snapshot, Message
-from pyforge.lib.markdown_extensions import ArtifactExtension
 
 wikiwords = [
     (r'\b([A-Z]\w+[A-Z]+\w+)', r'<a href="../\1/">\1</a>'),
-    # (r'([^\\])\[(.*)\]', r'\1<a href="../\2/">\2</a>'),
-    # (r'\\\[(.*)\]', r'[\1]'),
-    # (r'^\[(.*)\]', r'<a href="../\1/">\1</a>'),
     ]
+
 wikiwords = [
     (re.compile(pattern), replacement)
     for pattern, replacement in wikiwords ]
 
-MD = markdown.Markdown(
-    extensions=['codehilite', ArtifactExtension()],
-    output_format='html4'
-    )
-
 def to_html(text):
-    content = MD.convert(text)
+    content = g.markdown.convert(text)
     for pattern, replacement in wikiwords:
         content = pattern.sub(replacement, content)
     return content

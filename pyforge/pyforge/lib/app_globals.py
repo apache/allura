@@ -10,10 +10,12 @@ from tg import config
 from pylons import c
 import paste.deploy.converters
 import pysolr
+import markdown
 from carrot.connection import BrokerConnection
 from carrot.messaging import Publisher
 
 from pyforge import model as M
+from pyforge.lib.markdown_extensions import ArtifactExtension
 
 class Globals(object):
     """Container for objects available throughout the life of the application.
@@ -39,6 +41,9 @@ class Globals(object):
         self.publisher = dict(
             audit=Publisher(connection=self.conn, exchange='audit', auto_declare=False),
             react=Publisher(connection=self.conn, exchange='react', auto_declare=False))
+        self.markdown = markdown.Markdown(
+            extensions=['codehilite', ArtifactExtension()],
+            output_format='html4')
         
     def app_static(self, resource, app=None):
         app = app or c.app
