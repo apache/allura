@@ -1,11 +1,12 @@
 from time import sleep
 
-from pylons import c, g
+from tg import g #g is a namespace for globally accessable app helpers
+from tg import c as context
 import re
 
 from pymongo.errors import OperationFailure
 
-from ming import schema as S
+from ming import schema
 from ming import Field
 
 from pyforge.model import VersionedArtifact, Snapshot, Message
@@ -52,10 +53,10 @@ class Page(VersionedArtifact):
         history_class = PageHistory
 
     title=Field(str)
-    text=Field(S.String, if_missing='')
+    text=Field(schema.String, if_missing='')
 
     def url(self):
-        return c.app.script_name + '/' + self.title + '/'
+        return context.app.script_name + '/' + self.title + '/'
 
     def shorthand_id(self):
         return self.title
@@ -68,20 +69,22 @@ class Page(VersionedArtifact):
             type_s='WikiPage',
             text=self.text)
         return result
-
+    
     @classmethod
     def upsert(cls, title, version=None):
+        """Update page with `title` or insert new page with that name"""
         if version is None:
             q = dict(
-                project_id=c.project._id,
+                project_id=context.project._id,
                 title=title)
+            #Check for existing page object    
             obj = cls.m.get(
-                app_config_id=c.app.config._id,
+                app_config_id=context.app.config._id,
                 title=title)
             if obj is None:
                 obj = cls.make(dict(
                         title=title,
-                        app_config_id=c.app.config._id,
+                        app_config_id=context.app.config._id,
                         ))
             new_obj = dict(obj, version=obj.version + 1)
             return cls.make(new_obj)
@@ -89,18 +92,19 @@ class Page(VersionedArtifact):
             pg = cls.upsert(title)
             HC = cls.__mongometa__.history_class
             ss = HC.m.find({'artifact_id':pg._id, 'version':int(version)}).one()
-            new_obj = dict(ss.data, version=version+1)
+            new_obj = dict(schema.data, version=version+1)
             return cls.make(new_obj)
 
     @property
     def html_text(self):
+        """A markdown processed version of the page text"""
         return to_html(self.text)
 
     def reply(self):
         while True:
             try:
                 c = Comment.make(dict(page_id=self._id))
-                c.m.insert()
+                context.m.insert()
                 return c
             except OperationFailure:
                 sleep(0.1)
@@ -115,7 +119,7 @@ class Page(VersionedArtifact):
 class Comment(Message):
     class __mongometa__:
         name='comment'
-    page_id=Field(S.ObjectId)
+    page_id=Field(schema.ObjectId)
 
     def index(self):
         result = Message.index(self)
@@ -129,12 +133,12 @@ class Comment(Message):
 
     @property
     def page(self):
+        """The page this comment connects too"""
         return Page.m.get(_id=self.page_id)
 
     def url(self):
+        """The URL for the page for this comment"""
         return self.page.url() + '#comment-' + self._id
 
     def shorthand_id(self):
         return '%s-%s' % (self.page.title, self._id)
-
-    

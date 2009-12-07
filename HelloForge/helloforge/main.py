@@ -3,13 +3,11 @@ import logging
 from pprint import pformat
 
 import pkg_resources
-from pylons import g, c, request
-from tg import expose, redirect, validate
+from tg import g, c, request, expose, redirect, validate
 from formencode import validators as V
 
 from pyforge.app import Application, ConfigOption, SitemapEntry
 from pyforge.model import ProjectRole
-from pyforge.lib.dispatch import _dispatch
 from pyforge.lib.helpers import push_config
 from pyforge.lib.security import require, has_artifact_access
 from pyforge.lib import search
@@ -19,6 +17,10 @@ from helloforge import model as M
 from helloforge import version
 
 log = logging.getLogger(__name__)
+
+# Will not be needed after _dispatch is fixed in tg 2.1
+from pyforge.lib.dispatch import _dispatch
+
 
 class HelloForgeApp(Application):
     '''This is the HelloWorld application for PyForge, showing
@@ -108,10 +110,12 @@ class RootController(object):
     @expose('helloforge.templates.index')
     def index(self):
         return dict(message=c.app.config.options['message'])
-
+    
+    #Will not be needed after _dispatch is fixed in tg 2.1
     def _dispatch(self, state, remainder):
         return _dispatch(self, state, remainder)
-        
+    
+    #Instantiate a Page object, and continue dispatch there
     def _lookup(self, pname, *remainder):
         return PageController(pname), remainder
 
@@ -119,7 +123,9 @@ class RootController(object):
     def new_page(self, title):
         redirect(title + '/')
 
-    @expose('helloforge.templates.search')
+    #This is all it takes to add search to your application. 
+    @expose('helloforge.templates.search') #Create a search template
+
     @validate(dict(q=V.UnicodeString(if_empty=None),
                    history=V.StringBool(if_empty=False)))
     def search(self, q=None, history=None):
@@ -133,7 +139,7 @@ class RootController(object):
             AND is_history_b:%s
             AND mount_point_s:%s''' % (
                 q, history, c.app.config.options.mount_point)
-            results = search.search(search_query)
+            results = search.search(search_query) 
             if results: count=results.hits
         return dict(q=q, history=history, results=results or [], count=count)
 
