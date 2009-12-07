@@ -73,25 +73,30 @@ class Page(VersionedArtifact):
     @classmethod
     def upsert(cls, title, version=None):
         """Update page with `title` or insert new page with that name"""
+        
+        #If no version is specified
         if version is None:
-            q = dict(
-                project_id=context.project._id,
-                title=title)
             #Check for existing page object    
             obj = cls.m.get(
                 app_config_id=context.app.config._id,
                 title=title)
+                
+            #If there's no page, make one
             if obj is None:
                 obj = cls.make(dict(
                         title=title,
                         app_config_id=context.app.config._id,
                         ))
+            #Save page with new revision number
             new_obj = dict(obj, version=obj.version + 1)
             return cls.make(new_obj)
         else:
+            #version was specified, move up from there and save...
             pg = cls.upsert(title)
             HC = cls.__mongometa__.history_class
-            ss = HC.m.find({'artifact_id':pg._id, 'version':int(version)}).one()
+            ss = HC.m.find(
+                    {'artifact_id':pg._id, 'version':int(version)}
+                    ).one()
             new_obj = dict(ss.data, version=version+1)
             return cls.make(new_obj)
 
@@ -117,6 +122,8 @@ class Page(VersionedArtifact):
             return []
 
 class Comment(Message):
+    """Comment class, threaded, persisted in mongo on a per-page basis"""
+    
     class __mongometa__:
         name='comment'
     page_id=Field(schema.ObjectId)
@@ -137,7 +144,7 @@ class Comment(Message):
         return Page.m.get(_id=self.page_id)
 
     def url(self):
-        """The URL for the page for this comment"""
+        """The URL for this specific comment"""
         return self.page.url() + '#comment-' + self._id
 
     def shorthand_id(self):
