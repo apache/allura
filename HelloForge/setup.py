@@ -2,7 +2,6 @@
 from helloforge.version import __version__
 
 from setuptools import setup, find_packages
-import sys, os
 
 setup(name='HelloForge',
       version=__version__,
