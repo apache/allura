@@ -1,7 +1,7 @@
 from time import sleep
 
-from tg import g #g is a namespace for globally accessable app helpers
-from tg import c as context
+from pylons import g #g is a namespace for globally accessable app helpers
+from pylons import c as context
 import re
 
 from pymongo.errors import OperationFailure

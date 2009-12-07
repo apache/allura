@@ -3,7 +3,8 @@ import logging
 from pprint import pformat
 
 import pkg_resources
-from tg import g, c, request, expose, redirect, validate
+from tg import request, expose, redirect, validate
+from pylons import g, c
 from formencode import validators as V
 
 from pyforge.app import Application, ConfigOption, SitemapEntry
