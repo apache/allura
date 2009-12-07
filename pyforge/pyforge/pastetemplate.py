@@ -11,5 +11,6 @@ class ForgeAppTemplate(templates.Template):
     summary = 'PyForge Quickstart Template'
     egg_plugins = ['PasteScript', 'Pylons', 'TurboGears2', 'tg.devtools', 'pyforge']
     vars = [
+        templates.var('plugin_name', 'The name of the plugin entry point'),
         #templates.var('auth', 'use authentication and authorization support', default="sqlalchemy"),
         ]

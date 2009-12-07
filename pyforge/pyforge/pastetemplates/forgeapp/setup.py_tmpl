@@ -1,10 +1,10 @@
 from setuptools import setup, find_packages
 import sys, os
 
-version = '0.0'
+from {{package}}.version import __version__
 
-setup(name='{{package}}',
-      version=version,
+setup(name='{{egg}}',
+      version=__version__,
       description="",
       long_description="""\
 """,
@@ -19,10 +19,11 @@ setup(name='{{package}}',
       zip_safe=False,
       install_requires=[
           # -*- Extra requirements: -*-
+          'pyforge',
       ],
       entry_points="""
       # -*- Entry points: -*-
       [pyforge]
-      hello_forge=helloforge.main:App
+      {{plugin_name}}={{package}}.main:{{egg}}App
       """,
       )
