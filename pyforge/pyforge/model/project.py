@@ -46,7 +46,7 @@ class Project(Document):
 
     @property
     def script_name(self):
-        return '/' + self._id
+        return '/projects/' + self._id
             
     @property
     def shortname(self):
@@ -147,15 +147,15 @@ class Project(Document):
                 'project_id':self._id,
                 'options.mount_point':mount_point}).first()
 
-    def new_subproject(self, name):
+    def new_subproject(self, name, install_apps=True):
         sp = self.make(dict(
                 _id = self._id + name + '/',
                 database=self.database,
-                is_root=False,
-                acl=self.acl))
-        sp.install_app('admin', 'admin')
-        sp.install_app('search', 'search')
-        sp.m.save()
+                is_root=False))
+        if install_apps:
+            sp.install_app('admin', 'admin')
+            sp.install_app('search', 'search')
+            sp.m.save()
         return sp
 
     def delete(self):

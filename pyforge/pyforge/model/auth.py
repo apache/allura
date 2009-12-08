@@ -1,3 +1,4 @@
+import logging
 from base64 import b64encode
 from random import randint
 from hashlib import sha256
@@ -7,7 +8,10 @@ from pylons import c
 from ming import Document, Session, Field
 from ming import schema as S
 
+from pyforge.lib.helpers import push_config
 from .session import ProjectSession
+
+log = logging.getLogger(__name__)
 
 SALT_LENGTH=8
 
@@ -30,6 +34,50 @@ class User(Document):
     open_ids=Field([str])
     password=Field(str)
 
+    @classmethod
+    def new_user(cls, username):
+        u = cls.m.insert(dict(username=username,
+                              display_name=username,
+                              password='foo'))
+        return u
+
+    @classmethod
+    def register(cls, doc, make_project=True):
+        result = cls.make(doc)
+        result.m.insert()
+        if make_project:
+            result._make_project()
+        return result
+
+    def _make_project(self):
+        from .project import Project
+        # Register user project
+        up = Project.m.get(_id='users/')
+        p = up.new_subproject(self.username, install_apps=False)
+        p.database='user:' + self.username
+        is_root=True
+        with push_config(c, project=p, user=self):
+            pr = self.project_role()
+            for roles in p.acl.itervalues():
+                roles.append(pr._id)
+            anon = ProjectRole.make(dict(name='*anonymous'))
+            auth = ProjectRole.make(dict(name='*authenticated'))
+            anon.m.save()
+            auth.m.save()
+            p.acl['read'].append(anon._id)
+            p.install_app('admin', 'admin')
+            p.install_app('search', 'search')
+        p.m.save()
+        return self
+
+    def private_project(self):
+        from .project import Project
+        return Project.m.get(_id='users/%s/' % self.username)
+
+    @property
+    def script_name(self):
+        return '/projects/users/' + self.username + '/'
+
     def role_iter(self):
         yield ProjectRole.m.get(name='*anonymous')
         if self._id:
@@ -40,6 +88,8 @@ class User(Document):
                 yield role
 
     def project_role(self):
+        if self._id is None:
+            return ProjectRole.m.get(name='*anonymous')
         obj = ProjectRole.m.get(user_id=self._id)
         if obj is None:
             obj = ProjectRole.make(dict(user_id=self._id))
@@ -55,8 +105,12 @@ class User(Document):
         check = encode_password(password, salt)
         return check == self.password
 
-    def register_project(self, pid):
+    def register_project(self, pid, private=False):
         from .project import Project
+        if private:
+            pid = '_user_' + pid
+        if not private:
+            assert not pid.startswith('_')
         p = Project.make(dict(
                 _id=pid + '/', name=pid,
                 database='project:%s' % pid,

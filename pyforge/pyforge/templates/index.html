@@ -13,14 +13,20 @@
 
   <body>
     <h1>New Project Registration</h1>
-    <form method="post" action="register_project">
-      New project URL: /<input name="pid"/>/ <br/>
+    <form method="post" action="projects/register">
+      New project URL: /projects/<input name="pid"/>/ <br/>
       <input type="submit" value="Register Project"/>
     </form>
-    <h1>PyForge Directory</h1>
+    <h1>PyForge Project Directory</h1>
     <ul>
       <li py:for="p in roots">
-        <a href="$p._id">$p.shortname</a>
+        <a href="$p.script_name">$p.shortname</a>
+      </li>
+    </ul>
+    <h1>PyForge User Directory</h1>
+    <ul>
+      <li py:for="u in users">
+        <a href="$u.script_name">$u.username</a>
       </li>
     </ul>
   </body>

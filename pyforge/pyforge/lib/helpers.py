@@ -5,12 +5,12 @@
 from webhelpers import date, feedgenerator, html, number, misc, text
 from contextlib import contextmanager
 
-from pyforge import model as M
-
 def make_users(uids):
+    from pyforge import model as M
     return (M.User.m.get(_id=uid) for uid in uids)
 
 def make_roles(ids):
+    from pyforge import model as M
     return (M.ProjectRole.m.get(_id=id) for id in ids)
 
 @contextmanager

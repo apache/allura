@@ -13,8 +13,10 @@ def bootstrap(command, conf, vars):
     """Place any commands to setup pyforge here"""
     database=conf.get('db_prefix', '') + 'project:test'
     conn = M.User.m.session.bind.conn
-    if database in conn.database_names():
-        conn.drop_database(database)
+    for database in conn.database_names():
+        if database.startswith('project:') or database.startswith('user:'):
+            log.info('Dropping database %s', database)
+            conn.drop_database(database)
     M.User.m.remove({})
     M.Project.m.remove({})
     g._push_object(pyforge.lib.app_globals.Globals())
@@ -22,14 +24,27 @@ def bootstrap(command, conf, vars):
         g.solr.delete(q='*:*')
     except:
         log.exception('Error clearing solr index')
-    u0 = M.User.make(dict(username='test_admin', display_name='Test Admin'))
-    u1 = M.User.make(dict(username='test_user', display_name='Test User'))
-    u2 = M.User.make(dict(username='test_user2', display_name='Test User 2'))
+    # Setup user 'root project'
+    p = M.Project.make(dict(_id='users/',
+                            is_root=True,
+                            database='project:users'))
+    p.m.insert()
+    c.project = p
+    anon = M.ProjectRole.make(dict(name='*anonymous'))
+    anon.m.save()
+    M.ProjectRole.make(dict(name='*authenticated')).m.save()
+    p.acl['read'].append(anon._id)
+    p.m.save()
+    log.info('Registering initial users')
+    u0 = M.User.register(dict(username='test_admin', display_name='Test Admin'))
+    u1 = M.User.register(dict(username='test_user', display_name='Test User'))
+    u2 = M.User.register(dict(username='test_user2', display_name='Test User 2'))
     u0.set_password('foo')
     u1.set_password('foo')
     u0.m.save()
     u1.m.save()
     u2.m.save()
+    log.info('Registering initial project')
     p0 = u0.register_project('test')
     p0.acl['read'].append(u1.project_role()._id)
     p1 = p0.new_subproject('sub1')
