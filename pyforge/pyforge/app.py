@@ -17,6 +17,14 @@ class ConfigOption(object):
             return self._default()
         return self._default
 
+class WSGIHook(object):
+
+    def handles(self, environ):
+        return False
+
+    def __call__(self, environ, start_response):
+        return []
+
 class SitemapEntry(object):
 
     def __init__(self, label, url=None, children=None):
@@ -66,6 +74,7 @@ class Application(object):
     permissions=[]
     sitemap = [ ]
     installable=True
+    wsgi = WSGIHook()
 
     def __init__(self, project, app_config_object):
         self.project = project

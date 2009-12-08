@@ -3,6 +3,7 @@
 import logging
 from collections import defaultdict
 
+import pkg_resources
 from tg import expose, flash, redirect, session
 from tg.decorators import with_trailing_slash, without_trailing_slash
 from pylons import c
@@ -47,6 +48,14 @@ class RootController(BaseController):
         # Lookup user
         uid = session.get('userid', None)
         c.user = M.User.m.get(_id=uid) or M.User.anonymous
+
+    def __call__(self, environ, start_response):
+        if environ['PATH_INFO'].startswith('/_wsgi_/'):
+            for ep in pkg_resources.iter_entry_points('pyforge'):
+                App = ep.load()
+                if App.wsgi.handles(environ):
+                    return App.wsgi(environ, start_response)
+        return BaseController.__call__(self, environ, start_response)
 
     @expose('pyforge.templates.index')
     @with_trailing_slash

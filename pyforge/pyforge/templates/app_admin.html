@@ -20,7 +20,7 @@
       <form method="post" action="configure">
         <div py:for="o in app.config_options">
           <label for="$o.name">$o.name</label><br/>
-          <input name="$o.name" value="${app.config.options[o.name]}"/>
+          <input name="$o.name" value="${app.config.options.get(o.name, o.default)}"/>
         </div>
         <input type="submit" value="Update config"/>
         <input type="submit" name="delete" value="Delete Plugin"/>
