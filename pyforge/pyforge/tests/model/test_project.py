@@ -16,7 +16,7 @@ from webob import exc
 from ming import Document, Session, Field, datastore
 from ming import schema as S
 
-from pyforge.model import Project
+from pyforge.model import Project, User
 
 database='project:nosetest'
 
@@ -31,11 +31,9 @@ def test_project_make():
     assert_true('PyForge model project can make and save')
 
 def test_project_install():
-    p = Project.make(dict(_id='nosetest/sub1/', database=database, is_root=True))
-    p.m.save()
-    p.uninstall_app('hello_forge')
-    p.install_app('hello_forge')
-
+    u = User.make(dict(username='nosetest_user', display_name='Nose Test user'))
+    u.m.save()
+    p = u.register_project('nosetest_sub1')
     assert_true('PyForge model project can install and uninstall')
 
 

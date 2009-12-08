@@ -19,7 +19,7 @@ class TestRootController(TestController):
     def test_index(self):
         response = self.app.get('/')
         # You can look for specific strings:
-        assert_true('PyForge' in response)
+        assert_true('ProjectController' in response)
         
         #Dumb test just looks for links on the page
         links = response.html.findAll('a')

@@ -10,9 +10,10 @@ Model tests for artifact
 from datetime import datetime
 from time import sleep
 
-from pylons import c
+from pylons import c, g
 import re
 import markdown
+import mock
 
 import pymongo
 from pymongo.errors import OperationFailure
@@ -20,13 +21,43 @@ from pymongo.errors import OperationFailure
 from ming import schema as S
 from ming import Field
 
-from pyforge.model import Artifact, Message
+from pyforge.model import Artifact, Message, AppConfig
+from pyforge.lib.app_globals import Globals
+
+PROJECT = mock.Mock()
+PROJECT.name = 'Test Project'
+PROJECT.shortname = 'tp'
+PROJECT._id = 'testproject/'
+PROJECT.database = 'nosetest:project'
+APP_CONFIG = mock.Mock()
+APP_CONFIG._id = None
+APP_CONFIG.project_id = 'testproject/'
+APP_CONFIG.plugin_name = 'plugin'
+APP_CONFIG.options.mount_point = 'foo'
+APP = mock.Mock()
+APP.config = APP_CONFIG
 
 class Checkmessage(Message):
     class __mongometa__:
         name='checkmessage'
     page_title=Field(str)
+    project=PROJECT
+    app_config=APP_CONFIG
+    def url(self):
+        return ''
+    def index(self):
+        return dict()
+    def shorthand_id(self):
+        return ''
 
+def setUp():
+    g._push_object(Globals())
+    c._push_object(mock.Mock())
+    c.app = APP
+    c.user._id = None
+    c.project = PROJECT
+    print 'Push config'
+    
 def test_artifact():
     class Checkartifact(Artifact):
         class __mongometa__:

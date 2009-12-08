@@ -7,7 +7,7 @@ from pylons import c
 from webob import exc
 from tg import expose
 
-from pyforge.lib.security import require_forge_access
+from pyforge.lib.security import require, has_project_access
 from pyforge.lib.base import BaseController
 from pyforge.controllers.root import ProjectController
 from pyforge.lib.dispatch import _dispatch
@@ -50,5 +50,5 @@ class TestController(BaseController, ProjectController):
 
     @expose('pyforge.templates.project_index')
     def index(self):
-        require_forge_access(c.project, 'read')
+        require(has_project_access('read'))
         return dict()

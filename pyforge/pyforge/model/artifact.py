@@ -204,7 +204,8 @@ class Artifact(Document):
         ticket number.  For a discussion, it might be the message ID.  Generally
         this should have a strong correlation to the URL.
         '''
-        raise NotImplementedError, 'shorthand_id'
+        return self._id.url_encode() # for those who like PAIN
+
         
 
 class Snapshot(Artifact):
@@ -347,3 +348,8 @@ class Message(Artifact):
             text=self.text,
             type_s='Generic Message')
         return result
+
+    def shorthand_id(self):
+        return self._id
+        return '%s#%s' % (self.original().shorthand_id(), self.version)
+
