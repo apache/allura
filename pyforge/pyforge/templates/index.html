@@ -17,17 +17,14 @@
       New project URL: /projects/<input name="pid"/>/ <br/>
       <input type="submit" value="Register Project"/>
     </form>
-    <h1>PyForge Project Directory</h1>
-    <ul>
-      <li py:for="p in roots">
-        <a href="$p.script_name">$p.shortname</a>
-      </li>
-    </ul>
-    <h1>PyForge User Directory</h1>
-    <ul>
-      <li py:for="u in users">
-        <a href="$u.script_name">$u.username</a>
-      </li>
-    </ul>
+    <h1>PyForge Directory</h1>
+    <div py:for="prefix, subprojects in projects.iteritems()">
+      <h2>${prefix.capitalize()}</h2>
+      <ul>
+        <li py:for="p in subprojects">
+          <a href="$p.script_name">$p.shortname</a>
+        </li>
+      </ul>
+    </div>
   </body>
 </html>

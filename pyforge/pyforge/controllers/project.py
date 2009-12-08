@@ -8,9 +8,12 @@ from pyforge.lib.security import require, require_authenticated, has_project_acc
 
 
 class ProjectsController(object):
+
+    def __init__(self, prefix):
+        self.prefix = prefix
     
     def _lookup(self, pname, *remainder):
-        project = M.Project.m.get(_id=pname + '/')
+        project = M.Project.m.get(_id=self.prefix + pname + '/')
         if project is None:
             raise exc.HTTPNotFound, pname
         c.project = project

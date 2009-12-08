@@ -14,7 +14,10 @@ def bootstrap(command, conf, vars):
     database=conf.get('db_prefix', '') + 'project:test'
     conn = M.User.m.session.bind.conn
     for database in conn.database_names():
-        if database.startswith('project:') or database.startswith('user:'):
+        if (database.startswith('project:')
+            or database.startswith('user:')
+            or database.startswith('projects:')
+            or database.startswith('users:')):
             log.info('Dropping database %s', database)
             conn.drop_database(database)
     M.User.m.remove({})
@@ -24,17 +27,6 @@ def bootstrap(command, conf, vars):
         g.solr.delete(q='*:*')
     except:
         log.exception('Error clearing solr index')
-    # Setup user 'root project'
-    p = M.Project.make(dict(_id='users/',
-                            is_root=True,
-                            database='project:users'))
-    p.m.insert()
-    c.project = p
-    anon = M.ProjectRole.make(dict(name='*anonymous'))
-    anon.m.save()
-    M.ProjectRole.make(dict(name='*authenticated')).m.save()
-    p.acl['read'].append(anon._id)
-    p.m.save()
     log.info('Registering initial users')
     u0 = M.User.register(dict(username='test_admin', display_name='Test Admin'))
     u1 = M.User.register(dict(username='test_user', display_name='Test User'))

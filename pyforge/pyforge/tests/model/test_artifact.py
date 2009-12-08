@@ -36,6 +36,7 @@ APP_CONFIG.plugin_name = 'plugin'
 APP_CONFIG.options.mount_point = 'foo'
 APP = mock.Mock()
 APP.config = APP_CONFIG
+APP.__version__ = '0.0'
 
 class Checkmessage(Message):
     class __mongometa__:

@@ -46,7 +46,7 @@ class Project(Document):
 
     @property
     def script_name(self):
-        return '/projects/' + self._id
+        return '/' + self._id
             
     @property
     def shortname(self):

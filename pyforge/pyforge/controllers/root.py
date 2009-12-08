@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 """Main Controller"""
 import logging
+from collections import defaultdict
 
 from tg import expose, flash, redirect, session
 from tg.decorators import with_trailing_slash, without_trailing_slash
@@ -39,22 +40,23 @@ class RootController(BaseController):
     error = ErrorController()
     static = StaticController()
     search = SearchController()
-    projects = ProjectsController()
+    projects = ProjectsController('projects/')
+    users = ProjectsController('users/')
 
     def __init__(self):
         # Lookup user
         uid = session.get('userid', None)
         c.user = M.User.m.get(_id=uid) or M.User.anonymous
 
-    def _lookup(self, *args):
-        return self.projects._lookup(*args)
-
     @expose('pyforge.templates.index')
     @with_trailing_slash
     def index(self):
         """Handle the front-page."""
-        return dict(roots=M.Project.m.find(dict(is_root=True)).all(),
-                    users=M.User.m.find().all())
+        projects = defaultdict(list)
+        for p in M.Project.m.find(dict(is_root=True)):
+            prefix, rest = p._id.split('/', 1)
+            projects[prefix].append(p)
+        return dict(projects=projects)
 
     def _dispatch(self, state, remainder):
         return _dispatch(self, state, remainder)

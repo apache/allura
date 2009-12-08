@@ -6,7 +6,8 @@
           py:with="parts=p._id.split('/')">
       <py:for each="i, part in enumerate(parts[:-1])"
          py:with="prefix='/'.join(parts[:i+1])">
-        <a href="/$prefix/">$part</a> /
+        <a href="/$prefix/" py:if="i">$part</a>
+        <span py:if="not i">$part</span> /
       </py:for>
   </py:def>
 

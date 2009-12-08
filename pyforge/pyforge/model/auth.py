@@ -46,7 +46,7 @@ class User(Document):
         result = cls.make(doc)
         result.m.insert()
         if make_project:
-            result._make_project()
+            result.register_project(result.username, 'users')
         return result
 
     def _make_project(self):
@@ -105,15 +105,14 @@ class User(Document):
         check = encode_password(password, salt)
         return check == self.password
 
-    def register_project(self, pid, private=False):
+    def register_project(self, pid, prefix='projects'):
         from .project import Project
-        if private:
-            pid = '_user_' + pid
-        if not private:
-            assert not pid.startswith('_')
+        database = prefix + ':' + pid
+        project_id = prefix + '/' + pid + '/'
         p = Project.make(dict(
-                _id=pid + '/', name=pid,
-                database='project:%s' % pid,
+                _id=project_id,
+                name=pid,
+                database=database,
                 is_root=True))
         c.project = p
         pr = self.project_role()

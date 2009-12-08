@@ -9,7 +9,7 @@ from tg import expose
 
 from pyforge.lib.security import require, has_project_access
 from pyforge.lib.base import BaseController
-from pyforge.controllers.root import ProjectController
+from pyforge.controllers.project import ProjectController
 from pyforge.lib.dispatch import _dispatch
 from pyforge import model as M
 
@@ -27,7 +27,7 @@ class TestController(BaseController, ProjectController):
     '''
 
     def __init__(self):
-        c.project = M.Project.m.get(_id='test/')
+        c.project = M.Project.m.get(_id='projects/test/')
         c.user = M.User.m.get(username='test_admin')
 
     def _dispatch(self, state, remainder):
