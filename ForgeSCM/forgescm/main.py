@@ -179,7 +179,6 @@ class CommitsController(object):
     def _lookup(self, id, *remainder):
         if ':' in id: id = id.split(':')[-1]
         if '%3A' in id: id = id.split('%3A')[-1]
-        print id
         return CommitController(id), remainder
 
 class CommitController(object):

@@ -38,13 +38,6 @@ class Commit(Artifact):
         name='commit'
     type_s = 'ForgeSCM Commit'
 
-    def index(self):
-        result = Artifact.index(self)
-        result.update(
-            title_s='Commit %s by %s' % (self.hash, self.user),
-            text=self.summary)
-        return result
-
     _id = Field(schema.ObjectId)
     hash = Field(str)
     repository_id = Field(schema.ObjectId)
@@ -54,6 +47,13 @@ class Commit(Artifact):
     parents = Field([str])
     tags = Field([str])
     user = Field(str)
+
+    def index(self):
+        result = Artifact.index(self)
+        result.update(
+            title_s='Commit %s by %s' % (self.hash, self.user),
+            text=self.summary)
+        return result
 
     @property
     def repository(self):

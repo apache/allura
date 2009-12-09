@@ -57,6 +57,9 @@ class LogParser(object):
             elif cur_line != '\n':
                 assert False, 'Unknown header: %r' % cur_line
         r.m.save()
+        if self.result and not self.result[-1].parents:
+            self.result[-1].parents = [ r.hash ]
+            self.result[-1].m.save()
         self.result.append(r)
         if cur_line == '\n':
             cur_line = line_iter.next()
