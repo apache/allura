@@ -1,5 +1,7 @@
 #-*- python -*-
+import difflib
 import logging
+from pprint import pformat
 
 # Non-stdlib imports
 import pkg_resources
@@ -22,12 +24,16 @@ from forgewiki import version
 
 log = logging.getLogger(__name__)
 
+# Will not be needed after _dispatch is fixed in tg 2.1
+from pyforge.lib.dispatch import _dispatch
+
 class ForgeWikiApp(Application):
+    '''This is the Wiki app for PyForge'''
     __version__ = version.__version__
-    permissions = ['configure', 'read', 'write', 'comment']
+    permissions = [ 'configure', 'read', 'create', 'edit', 'delete', 'comment' ]
     config_options = Application.config_options + [
-        ConfigOption('some_str_config_option', str, 'some_str_config_option'),
-        ConfigOption('some_int_config_option', int, 42),
+        ConfigOption('project_name', str, 'pname'),
+        ConfigOption('message', str, 'Custom message goes here'),
         ]
 
     def __init__(self, project, config):
@@ -46,16 +52,20 @@ class ForgeWikiApp(Application):
 
     @property
     def sitemap(self):
-        menu_id = 'ForgeWiki (%s)' % self.config.options.mount_point  
+        menu_id = 'ForgeWiki (%s)' % self.config.options.mount_point
         with push_config(c, app=self):
+            pages = [
+                SitemapEntry(p.title, p.url())
+                for p in model.Page.m.find(dict(
+                        app_config_id=self.config._id)) ]
             return [
-                SitemapEntry(menu_id, '.')[self.sidebar_menu()] ]
+                SitemapEntry(menu_id, '.')[SitemapEntry('Pages')[pages]] ]
 
     def sidebar_menu(self):
         return [
-            SitemapEntry('Home', '.'),      
-            SitemapEntry('Search', 'search'),      
-            ]
+            SitemapEntry(p.title, p.url())
+            for p in model.Page.m.find(dict(
+                    app_config_id=self.config._id)) ]
 
     @property
     def templates(self):
@@ -64,35 +74,49 @@ class ForgeWikiApp(Application):
     def install(self, project):
         'Set up any default permissions and roles here'
 
+        self.config.options['project_name'] = project._id
         self.uninstall(project)
         # Give the installing user all the permissions
         pr = c.user.project_role()
         for perm in self.permissions:
               self.config.acl[perm] = [ pr._id ]
         self.config.acl['read'].append(
-            ProjectRole.m.get(name='*anonymous')._id)      
+            ProjectRole.m.get(name='*anonymous')._id)
         self.config.acl['comment'].append(
             ProjectRole.m.get(name='*authenticated')._id)
         self.config.m.save()
-        art = model.MyArtifact.make(dict(
-                text='This is a sample artifact'))
-        art.commit()
+        p = model.Page.upsert('Root')
+        p.text = 'This is the root page.'
+        p.commit()
 
     def uninstall(self, project):
         "Remove all the plugin's artifacts from the database"
-        pass
+        model.Page.m.remove(dict(project_id=c.project._id))
+        model.Comment.m.remove(dict(project_id=c.project._id))
 
 class RootController(object):
 
     @expose('forgewiki.templates.index')
     def index(self):
-        return dict()
-                  
+        return dict(message=c.app.config.options['message'])
+
+    #Will not be needed after _dispatch is fixed in tg 2.1
+    def _dispatch(self, state, remainder):
+        return _dispatch(self, state, remainder)
+
+    #Instantiate a Page object, and continue dispatch there
+    def _lookup(self, pname, *remainder):
+        return PageController(pname), remainder
+
+    @expose()
+    def new_page(self, title):
+        redirect(title + '/')
+
     @expose('forgewiki.templates.search')
     @validate(dict(q=validators.UnicodeString(if_empty=None),
                    history=validators.StringBool(if_empty=False)))
     def search(self, q=None, history=None):
-        'local plugin search'
+        'local wiki search'
         results = []
         count=0
         if not q:
@@ -100,63 +124,112 @@ class RootController(object):
         else:
             search_query = '''%s
             AND is_history_b:%s
+            AND project_id_s:%s
             AND mount_point_s:%s''' % (
-                q, history, c.app.config.options.mount_point)
-            results = search(search_query)
+                q, history, c.project._id, c.app.config.options.mount_point)
+            results = search.search(search_query)
             if results: count=results.hits
         return dict(q=q, history=history, results=results or [], count=count)
 
-    def _lookup(self, id, *remainder):
-        return ArtifactController(id), remainder
+class PageController(object):
 
-class ArtifactController(object):
+    def __init__(self, title):
+        self.title = title
+        self.page = model.Page.upsert(title)
+        self.comments = CommentController(self.page)
 
-    def __init__(self, id):
-        self.artifact = model.MyArtifact.m.get(_id=ObjectId.url_decode(id))
-        self.comments = CommentController(self.artifact)
+    def get_version(self, version):
+        if not version: return self.page
+        try:
+            return model.Page.upsert(self.title, version=int(version))
+        except ValueError:
+            return None
 
-    @expose('forgewiki.templates.artifact')
+    @expose('forgewiki.templates.page_view')
     @validate(dict(version=validators.Int()))
     def index(self, version=None):
-        require(has_artifact_access('read', self.artifact))
-        artifact = self.get_version(version)
-        if artifact is None:
-            if version:
-                redirect('.?version=%d' % (version-1))
-            elif version <= 0:
-                redirect('.')
-            else:
-                redirect('..')
-        cur = artifact.version
+        require(has_artifact_access('read', self.page))
+        page = self.get_version(version)
+        if page is None:
+            if version: redirect('.?version=%d' % (version-1))
+            else: redirect('.')
+        cur = page.version - 1
         if cur > 0: prev = cur-1
         else: prev = None
         next = cur+1
-        return dict(artifact=artifact,
+        return dict(page=page,
                     cur=cur, prev=prev, next=next)
 
-    def get_version(self, version):
-        if not version: return self.artifact
-        ss = model.MyArtifactHistory.m.get(artifact_id=self.artifact._id,
-                                           version=version)
-        if ss is None: return None
-        result = deepcopy(self.artifact)
-        return result.update(ss.data)
-    
+    @expose('helloforge.templates.page_edit')
+    def edit(self):
+        if self.page.version == 1:
+            require(has_artifact_access('create', self.page))
+        else:
+            require(has_artifact_access('edit', self.page))
+        return dict(page=self.page)
+
+    @expose('helloforge.templates.page_history')
+    def history(self):
+        require(has_artifact_access('read', self.page))
+        pages = self.page.history()
+        return dict(title=self.title, pages=pages)
+
+    @expose('helloforge.templates.page_diff')
+    def diff(self, v1, v2):
+        require(has_artifact_access('read', self.page))
+        p1 = self.get_version(int(v1))
+        p2 = self.get_version(int(v2))
+        p1.version -= 1
+        p2.version -= 1
+        t1 = p1.text
+        t2 = p2.text
+        differ = difflib.SequenceMatcher(None, p1.text, p2.text)
+        result = []
+        for tag, i1, i2, j1, j2 in differ.get_opcodes():
+            if tag in ('delete', 'replace'):
+                result += [ '<del>', t1[i1:i2], '</del>' ]
+            if tag in ('insert', 'replace'):
+                result += [ '<ins>', t2[j1:j2], '</ins>' ]
+            if tag == 'equal':
+                result += t1[i1:i2]
+        result = ''.join(result).replace('\n', '<br/>\n')
+        return dict(p1=p1, p2=p2, edits=result)
+
+    @expose(content_type='text/plain')
+    def raw(self):
+        require(has_artifact_access('read', self.page))
+        return pformat(self.page)
+
+    @expose()
+    def revert(self, version):
+        require(has_artifact_access('edit', self.page))
+        orig = self.get_version(version)
+        self.page.text = orig.text
+        self.page.commit()
+        redirect('.')
+
+    @expose()
+    def update(self, text):
+        require(has_artifact_access('edit', self.page))
+        self.page.text = text
+        self.page.commit()
+        redirect('.')
+
 class CommentController(object):
 
-    def __init__(self, artifact, comment_id=None):
-        self.artifact = artifact
+    def __init__(self, page, comment_id=None):
+        self.page = page
         self.comment_id = comment_id
-        self.comment = model.MyArtifactComment.m.get(_id=self.comment_id)
+        self.comment = model.Comment.m.get(_id=self.comment_id)
 
     @expose()
     def reply(self, text):
-        require(has_artifact_access('comment', self.artifact))
+        require(has_artifact_access('comment', self.page))
         if self.comment_id:
             c = self.comment.reply()
             c.text = text
         else:
-            c = self.artifact.reply()
+            c = self.page.reply()
             c.text = text
         c.m.save()
         redirect(request.referer)
@@ -167,14 +240,14 @@ class CommentController(object):
         self.comment.m.delete()
         redirect(request.referer)
 
+    def _dispatch(self, state, remainder):
+        return _dispatch(self, state, remainder)
+
     def _lookup(self, next, *remainder):
         if self.comment_id:
             return CommentController(
-                self.artifact,
+                self.page,
                 self.comment_id + '/' + next), remainder
         else:
             return CommentController(
-                self.artifact, next), remainder
-
-    
-    
+                self.page, next), remainder

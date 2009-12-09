@@ -1,1 +1,1 @@
-from artifacts import MyArtifact, MyArtifactHistory, MyArtifactComment
+from wiki import Page, Comment, to_html

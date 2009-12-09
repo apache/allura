@@ -2,6 +2,12 @@
       xmlns:py="http://genshi.edgewall.org/"
       xmlns:xi="http://www.w3.org/2001/XInclude">
 
+  <div py:def="navigation(page)">
+    <a href="..">PluginRoot</a>
+    <a href="edit">Edit Page</a>
+    <a href="history">Page History</a>
+  </div>
+
   <py:def function="display_comment(comment)">
     <div id="comment-${comment._id}"
          style="padding-left: 10px; border-left: 1px solid grey">

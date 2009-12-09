@@ -6,20 +6,22 @@
   <xi:include href="${g.pyforge_templates}/master.html"/>
   <xi:include href="${c.app.templates}/lib.html" />
 
-  <?python from pprint import pformat ?>
-
   <head>
     <meta content="text/html; charset=UTF-8" http-equiv="content-type" py:replace="''"/>
-    <title>${artifact.shorthand_id()}</title>
+    <title>$page.title</title>
+    <link rel="stylesheet" type="text/css" 
+          href="${g.app_static('css/hilite.css')}"/>
     <style>
       .hidden { display: None }
     </style>
   </head>
   
   <body>
-    <h1>${artifact.shorthand_id()}</h1>
+    <h1>$page.title</h1>
     <div>
       <a href="..">PluginRoot</a>
+      <a href="edit">Edit Page</a>
+      <a href="history">Page History</a>
       <form style="display:inline; float:right"
             method="GET"
             action="../search">
@@ -33,7 +35,7 @@
     <a href=".">Latest</a>
     <hr/>
     <div>
-      <pre py:content="pformat(artifact)"/>
+      ${Markup(page.html_text)}
     </div>
 
     <hr/>
@@ -45,7 +47,7 @@
         <input type="submit"/>
       </form>
     </div>
-    <py:for each="cmt in artifact.root_comments()">
+    <py:for each="cmt in page.root_comments()">
       ${display_comment(cmt)}
     </py:for>
   </body>
