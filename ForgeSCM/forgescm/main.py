@@ -24,9 +24,10 @@ from pyforge.lib.security import require, has_artifact_access
 from pyforge.model import ProjectRole
 
 # Local imports
-from forgescm import model
-from forgescm import version
-from forgescm.wsgi import WSGIHook
+from . import model
+from . import version
+from .wsgi import WSGIHook
+from .lib import hg
 
 log = logging.getLogger(__name__)
 
@@ -44,26 +45,42 @@ class ForgeSCMApp(Application):
 
     @property
     def repo(self):
-        return model.Repository.m.get()
+        return model.Repository.m.get(app_config_id=self.config._id)
 
     @audit('scm.hg.init')
     def scm_hg_init(self, routing_key, data):
-        log.info('Got hg init command: %s', pformat(data))
-        repo_dir = pkg_resources.resource_filename(
-            'forgescm',
-            os.path.join('data', c.project._id, c.app.config.options.mount_point))
-        log.info('Initializing repository at %s', repo_dir)
-        if os.path.exists(repo_dir):
-            shutil.rmtree(repo_dir)
-        os.makedirs(repo_dir)
-        ctx = uvc.main.Context(repo_dir)
-        command = uvc.hg.init(ctx, [])
-        output = StringIO()
-        uvc.util.run_in_directory(
-            repo_dir,
-            command.get_command_line(),
-            output=output)
         repo = self.repo
+        cmd = hg.init()
+        cmd.clean_dir()
+        repo.clear_commits()
+        cmd.run()
+        if cmd.sp.returncode:
+            g.publish('react', 'error', dict(
+                    message=cmd.output))
+        else:
+            log.info('Setting repo status for %s', repo)
+            repo.status = 'Ready'
+            repo.m.save()
+                    
+    @audit('scm.hg.clone')
+    def scm_hg_clone(self, routing_key, data):
+        repo = self.repo
+        # Perform the clone
+        cmd = hg.clone(data['url'], '.')
+        cmd.clean_dir()
+        cmd.run()
+        if cmd.sp.returncode:
+            g.publish('react', 'error', dict(
+                    message=cmd.sp.stdout.read()))
+            return
+        # Load the log
+        cmd = hg.log('-g', '-p')
+        cmd.run()
+        # Clear the old set of commits
+        repo.clear_commits()
+        parser = hg.LogParser(repo._id)
+        parser.feed(StringIO(cmd.output))
+        # Update the repo status
         repo.status = 'Ready'
         repo.m.save()
 
@@ -83,6 +100,12 @@ class ForgeSCMApp(Application):
     @property
     def templates(self):
          return pkg_resources.resource_filename('forgescm', 'templates')
+
+    @property
+    def repo_dir(self):
+        return pkg_resources.resource_filename(
+            'forgescm',
+            os.path.join('data', self.project._id, self.config.options.mount_point))
 
     def install(self, project):
         'Set up any default permissions and roles here'
@@ -105,13 +128,16 @@ class ForgeSCMApp(Application):
 
     def uninstall(self, project):
         "Remove all the plugin's artifacts from the database"
-        pass
+        model.Repository.m.remove(dict(app_config_id=self.config._id))
 
 class RootController(object):
 
+    def __init__(self):
+        self.repo = CommitsController()
+
     @expose('forgescm.templates.index')
     def index(self):
-        return dict()
+        return dict(repo=c.app.repo)
                   
     @expose('forgescm.templates.search')
     @validate(dict(q=validators.UnicodeString(if_empty=None),
@@ -131,76 +157,48 @@ class RootController(object):
             if results: count=results.hits
         return dict(q=q, history=history, results=results or [], count=count)
 
-    def _lookup(self, id, *remainder):
-        return ArtifactController(id), remainder
+    @expose()
+    def reinit(self):
+        repo = c.app.repo
+        repo.status = 'Pending'
+        repo.m.save()
+        g.publish('audit', 'scm.%s.init' % c.app.config.options.type, {})
+        redirect('.')
+        
+    @expose()
+    def clone_from(self, url=None):
+        repo = c.app.repo
+        repo.status = 'Pending'
+        repo.m.save()
+        g.publish('audit', 'scm.%s.clone' % c.app.config.options.type, dict(
+                url=url))
+        redirect('.')
 
-class ArtifactController(object):
+class CommitsController(object):
+
+    def _lookup(self, id, *remainder):
+        if ':' in id: id = id.split(':')[-1]
+        if '%3A' in id: id = id.split('%3A')[-1]
+        print id
+        return CommitController(id), remainder
+
+class CommitController(object):
 
     def __init__(self, id):
-        self.artifact = model.MyArtifact.m.get(_id=ObjectId.url_decode(id))
-        self.comments = CommentController(self.artifact)
+        self.commit = model.Commit.m.get(hash=id)
 
-    @expose('forgescm.templates.artifact')
-    @validate(dict(version=validators.Int()))
-    def index(self, version=None):
-        require(has_artifact_access('read', self.artifact))
-        artifact = self.get_version(version)
-        if artifact is None:
-            if version:
-                redirect('.?version=%d' % (version-1))
-            elif version <= 0:
-                redirect('.')
-            else:
-                redirect('..')
-        cur = artifact.version
-        if cur > 0: prev = cur-1
-        else: prev = None
-        next = cur+1
-        return dict(artifact=artifact,
-                    cur=cur, prev=prev, next=next)
+    @expose('forgescm.templates.commit_index')
+    def index(self):
+        return dict(value=self.commit)
 
-    def get_version(self, version):
-        if not version: return self.artifact
-        ss = model.MyArtifactHistory.m.get(artifact_id=self.artifact._id,
-                                           version=version)
-        if ss is None: return None
-        result = deepcopy(self.artifact)
-        return result.update(ss.data)
-    
-class CommentController(object):
+    def _lookup(self, id, *remainder):
+        return PatchController(id), remainder
 
-    def __init__(self, artifact, comment_id=None):
-        self.artifact = artifact
-        self.comment_id = comment_id
-        self.comment = model.MyArtifactComment.m.get(_id=self.comment_id)
+class PatchController(object):
 
-    @expose()
-    def reply(self, text):
-        require(has_artifact_access('comment', self.artifact))
-        if self.comment_id:
-            c = self.comment.reply()
-            c.text = text
-        else:
-            c = self.artifact.reply()
-            c.text = text
-        c.m.save()
-        redirect(request.referer)
+    def __init__(self, id):
+        self.patch = model.Patch.m.get(_id=ObjectId.url_decode(id))
 
-    @expose()
-    def delete(self):
-        require(lambda:c.user._id == self.comment.author()._id)
-        self.comment.text = '[Text deleted by commenter]'
-        self.comment.m.save()
-        redirect(request.referer)
-
-    def _lookup(self, next, *remainder):
-        if self.comment_id:
-            return CommentController(
-                self.artifact,
-                self.comment_id + '/' + next), remainder
-        else:
-            return CommentController(
-                self.artifact, next), remainder
-
-    
-    
+    @expose('forgescm.templates.patch_index')
+    def index(self):
+        return dict(value=self.patch)

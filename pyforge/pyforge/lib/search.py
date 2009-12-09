@@ -17,9 +17,8 @@ def try_solr(func):
 
 def _solarize(obj):
     doc = obj.index()
+    if doc is None: return None
     text = doc.pop('text', '')
-    if text is None:
-        import pdb; pdb.set_trace()
     text = text + pformat(doc.values())
     doc['text'] = text
     return doc
@@ -30,8 +29,15 @@ def add_artifact(obj):
 
 @try_solr
 def add_artifacts(obj_iter):
+    obj_iter = list(obj_iter)
+    artifacts = [ _solarize(a) for a in obj_iter ]
+    for obj, index in zip(obj_iter, artifacts):
+        if index is None:
+            log.error('Unindexable document: %s (%s): %r',
+                      obj, type(obj), obj)
+    artifacts = [ a for a in artifacts if a ]
     g.publish('audit', 'search.add_artifacts',
-              dict(artifacts=[_solarize(a) for a in obj_iter]),
+              dict(artifacts=artifacts),
               serializer='yaml') # json can't handle datetimes
 
 @try_solr

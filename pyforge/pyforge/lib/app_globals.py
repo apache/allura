@@ -28,8 +28,11 @@ class Globals(object):
     def __init__(self):
         """Do nothing, by default."""
         self.pyforge_templates = pkg_resources.resource_filename('pyforge', 'templates')
-        self.solr_server = config['solr.server']
-        self.solr =  pysolr.Solr(self.solr_server)
+        self.solr_server = config.get('solr.server')
+        if self.solr_server:
+            self.solr =  pysolr.Solr(self.solr_server)
+        else:
+            self.solr = None
         self.use_queue = paste.deploy.converters.asbool(
             config.get('use_queue', False))
         self.conn = BrokerConnection(
@@ -59,9 +62,10 @@ class Globals(object):
     def set_app(self, name):
         c.app = c.project.app_instance(name)
 
-    def publish(self, xn, key, message, **kw):
+    def publish(self, xn, key, message=None, **kw):
         project = getattr(c, 'project', None)
         app = getattr(c, 'app', None)
+        if message is None: message = {}
         if project:
             message.setdefault('project_id', project._id)
         if app:

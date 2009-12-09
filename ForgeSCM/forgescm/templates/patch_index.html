@@ -8,7 +8,7 @@
 
   <head>
     <meta content="text/html; charset=UTF-8" http-equiv="content-type" py:replace="''"/>
-    <title>ForgeSCM Index Page</title>
+    <title>ForgeSCM Commit</title>
   </head>
   
   <body>
@@ -18,15 +18,7 @@
     <p>
       Your repository is <em>${c.app.repo.status}</em>
     </p>
-    <a href="reinit">Reinitialize the repository</a><br/>
-    <form method="POST" action="clone_from">
-      Clone the repo from <input name="url"/>
-    </form>
-    <h3>Recent Commits</h3>
-    <p py:for="ct in repo.commits()">
-      <a href="${ct.url()}"><code>$ct.hash</code></a>
-      by <em>$ct.user</em> at $ct.date<br/>
-      $ct.summary
-    </p>
+    <h3>$value.filename</h3>
+    <pre style="border:1px solid black">$value.patch_text</pre>
   </body>
 </html>

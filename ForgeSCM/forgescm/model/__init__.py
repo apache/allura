@@ -1,3 +1,2 @@
-from artifacts import Repository
+from artifacts import Repository, Commit, Patch
 
-from artifacts import MyArtifact, MyArtifactHistory, MyArtifactComment
