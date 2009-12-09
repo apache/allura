@@ -104,7 +104,7 @@ class Page(VersionedArtifact):
         while True:
             try:
                 c = Comment.make(dict(page_id=self._id))
-                context.m.insert()
+                c.m.insert()
                 return c
             except OperationFailure:
                 sleep(0.1)
