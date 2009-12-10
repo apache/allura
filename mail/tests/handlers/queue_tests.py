@@ -9,6 +9,7 @@ confirm_format = "testing-confirm-[0-9]+@"
 noreply_format = "testing-noreply@"
 
 host = "localhost"
+project = "test"
 list_name = "forge-list"
 list_addr = "forge-list@%s" % host
 
