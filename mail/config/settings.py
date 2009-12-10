@@ -5,7 +5,7 @@ relay_config = {'host': 'localhost', 'port': 8825}
 
 receiver_config = {'host': 'localhost', 'port': 8823}
 
-handlers = ['app.handlers.sample', 'app.handlers.index', 'app.handlers.amqp']
+handlers = ['app.handlers.sample', 'app.handlers.index', 'app.handlers.amqp', 'app.handlers.react']
 
 router_defaults = {'host': 'localhost'}
 
