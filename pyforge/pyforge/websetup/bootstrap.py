@@ -43,7 +43,8 @@ def bootstrap(command, conf, vars):
     p0.m.save()
     p1.m.save()
     c.user = u0
-    p0.install_app('hello_forge', 'wiki')
+    p0.install_app('hello_forge', 'hello')
+    p0.install_app('Wiki', 'wiki')
     dev = M.ProjectRole.make(dict(name='developer'))
     dev.m.save()
     for ur in M.ProjectRole.m.find():
