@@ -14,9 +14,13 @@ class Repository(Artifact):
     _id = Field(schema.ObjectId)
     description = Field(str)
     status = Field(str)
+    parent = Field(str)
 
     def url(self):
         return c.app.script_name + '/repo/'
+
+    def native_url(self):
+        return '/_wsgi_/scm/' + c.app.script_name
 
     def index(self):
         result = Artifact.index(self)

@@ -18,12 +18,17 @@
     <p>
       Your repository is <em>${c.app.repo.status}</em>
     </p>
+    <a href="${repo.native_url()}">View Natively</a><br/>
     <a href="reinit">Reinitialize the repository</a><br/>
+    <py:if test="c.app.repo.parent">
+      <a href="reclone">Re-clone the repository</a> 
+      from $c.app.repo.parent<br/>
+    </py:if>
     <form method="POST" action="clone_from">
       Clone the repo from <input name="url"/>
     </form>
     <h3>Recent Commits</h3>
-    <p py:for="ct in repo.commits()">
+    <p py:for="ct in repo.commits().limit(5)">
       <a href="${ct.url()}"><code>$ct.hash</code></a>
       by <em>$ct.user</em> at $ct.date<br/>
       $ct.summary

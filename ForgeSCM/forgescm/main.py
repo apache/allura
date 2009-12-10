@@ -53,6 +53,7 @@ class ForgeSCMApp(Application):
         cmd = hg.init()
         cmd.clean_dir()
         repo.clear_commits()
+        repo.parent = None
         cmd.run()
         if cmd.sp.returncode:
             g.publish('react', 'error', dict(
@@ -67,6 +68,29 @@ class ForgeSCMApp(Application):
         repo = self.repo
         # Perform the clone
         cmd = hg.clone(data['url'], '.')
+        cmd.clean_dir()
+        cmd.run()
+        if cmd.sp.returncode:
+            g.publish('react', 'error', dict(
+                    message=cmd.sp.stdout.read()))
+            return
+        # Load the log
+        cmd = hg.log('-g', '-p')
+        cmd.run()
+        # Clear the old set of commits
+        repo.clear_commits()
+        repo.parent = data['url']
+        parser = hg.LogParser(repo._id)
+        parser.feed(StringIO(cmd.output))
+        # Update the repo status
+        repo.status = 'Ready'
+        repo.m.save()
+
+    @audit('scm.hg.reclone')
+    def scm_hg_reclone(self, routing_key, data):
+        repo = self.repo
+        # Perform the clone
+        cmd = hg.clone(repo.parent, '.')
         cmd.clean_dir()
         cmd.run()
         if cmd.sp.returncode:
@@ -160,15 +184,23 @@ class RootController(object):
     @expose()
     def reinit(self):
         repo = c.app.repo
-        repo.status = 'Pending'
+        repo.status = 'Pending Reinit'
         repo.m.save()
         g.publish('audit', 'scm.%s.init' % c.app.config.options.type, {})
         redirect('.')
         
     @expose()
+    def reclone(self):
+        repo = c.app.repo
+        repo.status = 'Pending Reclone'
+        repo.m.save()
+        g.publish('audit', 'scm.%s.reclone' % c.app.config.options.type, {})
+        redirect('.')
+        
+    @expose()
     def clone_from(self, url=None):
         repo = c.app.repo
-        repo.status = 'Pending'
+        repo.status = 'Pending Clone'
         repo.m.save()
         g.publish('audit', 'scm.%s.clone' % c.app.config.options.type, dict(
                 url=url))
