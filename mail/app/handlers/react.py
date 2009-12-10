@@ -25,7 +25,7 @@ from pyforge.config.environment import load_environment
 from pyforge import model as M
 from pyforge.model import Project
 
-logging.config.fileConfig("config/jtb_logging.conf")
+logging.config.fileConfig("config/react_logging.conf")
 
 class EmptyClass(object): pass
 
