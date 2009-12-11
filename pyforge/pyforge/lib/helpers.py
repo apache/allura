@@ -6,6 +6,8 @@ from pylons import c
 from webhelpers import date, feedgenerator, html, number, misc, text
 from contextlib import contextmanager
 
+from pymongo import bson
+
 def make_users(uids):
     from pyforge import model as M
     return (M.User.m.get(_id=uid) for uid in uids)
@@ -39,8 +41,37 @@ def mixin_reactors(cls, module, prefix=None):
         if ConsumerDecoration.get_decoration(value, False):
             setattr(cls, prefix + name, staticmethod(value))
 
-def set_context(project_id, mount_point):
+def set_context(project_id, mount_point=None, app_config_id=None):
     from pyforge import model
     p = model.Project.m.get(_id=project_id)
     c.project = p
-    c.app = p.app_instance(mount_point)
+    if app_config_id is None:
+        c.app = p.app_instance(mount_point)
+    else:
+        if isinstance(app_config_id, basestring):
+            app_config_id = bson.ObjectId.url_decode(app_config_id)
+        app_config = model.AppConfig.m.get(_id=app_config_id)
+        c.app = p.app_instance(app_config)
+
+@contextmanager
+def push_context(project_id, mount_point=None, app_config_id=None):
+    project = getattr(c, 'project', ())
+    app = getattr(c, 'app', ())
+    set_context(project_id, mount_point, app_config_id)
+    yield
+    if project == ():
+        del c.project
+    else:
+        c.project = project
+    if app == ():
+        del c.app
+    else:
+        c.app = app
+                      
+def encode_keys(d):
+    '''Encodes the unicode keys of d, making the result
+    a valid kwargs argument'''
+    return dict(
+        (k.encode('utf-8'), v)
+        for k,v in d.iteritems())
+

@@ -36,7 +36,7 @@ def add_artifacts(obj_iter):
             log.error('Unindexable document: %s (%s): %r',
                       obj, type(obj), obj)
     artifacts = [ a for a in artifacts if a ]
-    g.publish('audit', 'search.add_artifacts',
+    g.publish('react', 'artifacts_altered',
               dict(artifacts=artifacts),
               serializer='yaml') # json can't handle datetimes
 
@@ -46,9 +46,9 @@ def remove_artifact(obj):
 
 @try_solr
 def remove_artifacts(obj_iter):
-    oids = [ obj.index()['id']
+    oids = [ obj.index_id()
              for obj in obj_iter ]
-    g.publish('audit', 'search.del_artifacts',
+    g.publish('react', 'artifacts_removed',
               dict(artifact_ids=oids))
 
 @try_solr

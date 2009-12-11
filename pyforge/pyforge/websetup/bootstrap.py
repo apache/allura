@@ -53,7 +53,6 @@ def bootstrap(command, conf, vars):
     c.user = u0
     p0.install_app('hello_forge', 'hello')
     p0.install_app('Wiki', 'wiki')
-    p0.install_app('Repository', 'src')
     app = p0.install_app('Repository', 'src')
     with pyforge.lib.helpers.push_config(c, project=p0, app=app):
         g.publish('audit', 'scm.hg.clone', dict(

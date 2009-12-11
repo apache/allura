@@ -154,6 +154,7 @@ class Project(Document):
         return sorted(roles, key=lambda r:r.display())
 
     def install_app(self, ep_name, mount_point, **override_options):
+        assert self.app_instance(mount_point) is None
         for ep in pkg_resources.iter_entry_points('pyforge', ep_name):
             App = ep.load()
             break

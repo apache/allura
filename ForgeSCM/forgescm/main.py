@@ -10,8 +10,9 @@ from ming import schema
 
 # Pyforge-specific imports
 from pyforge.app import Application, ConfigOption, SitemapEntry
-from pyforge.lib.helpers import push_config, mixin_reactors
+from pyforge.lib.helpers import push_config, mixin_reactors, set_context
 from pyforge.lib.security import require, has_artifact_access
+from pyforge.lib.decorators import react
 from pyforge.model import ProjectRole
 
 # Local imports
@@ -51,22 +52,19 @@ class ForgeSCMApp(Application):
             SitemapEntry('Home', '.'),      
             SitemapEntry('Search', 'search'),
             ]
+        repo = self.repo
         if self.config.options.type == 'hg':
-            repo = self.repo
             result += [
                 SitemapEntry('HgWeb', repo.native_url()),
                 SitemapEntry('Files', repo.native_url() + '/file') ]
+        elif self.config.options.type == 'git':
+            result += [
+                SitemapEntry('CGIT', repo.native_url()) ]
         return result
 
     @property
     def templates(self):
          return pkg_resources.resource_filename('forgescm', 'templates')
-
-    @property
-    def repo_dir(self):
-        return pkg_resources.resource_filename(
-            'forgescm',
-            os.path.join('data', self.project._id, self.config.options.mount_point))
 
     def install(self, project):
         'Set up any default permissions and roles here'
@@ -80,15 +78,20 @@ class ForgeSCMApp(Application):
             ProjectRole.m.get(name='*anonymous')._id)      
         self.config.m.save()
         # Create a repository
+        repo_dir = pkg_resources.resource_filename(
+            'forgescm',
+            os.path.join('data', self.project._id, self.config.options.mount_point))
         repo = model.Repository.make(dict(
                 description='This is the repository object',
                 status='Pending',
-                type=self.config.options['type']))
+                type=self.config.options['type'],
+                repo_dir=repo_dir))
         repo.m.insert()
 
     def uninstall(self, project):
         "Remove all the plugin's artifacts from the database"
-        model.Repository.m.remove(dict(app_config_id=self.config._id))
+        repo = self.repo
+        if repo: repo.delete()
 
 mixin_reactors(ForgeSCMApp, hg_react)
 

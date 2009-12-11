@@ -2,15 +2,18 @@ import logging
 from cStringIO import StringIO
 
 from pylons import c, g
+from pymongo import bson
 
-from pyforge.lib.decorators import audit
-from pyforge.lib.helpers import push_config
+from pyforge.lib.decorators import audit, react
+from pyforge.lib.helpers import push_context, set_context, encode_keys
+from pyforge.model import Project
 
 from forgescm.lib import hg
 from forgescm import model as M
 
 log = logging.getLogger(__name__)
 
+## Auditors
 @audit('scm.hg.init')
 def init(routing_key, data):
     repo = c.app.repo
@@ -23,8 +26,9 @@ def init(routing_key, data):
     if cmd.sp.returncode:
         g.publish('react', 'error', dict(
                 message=cmd.output))
+        repo.status = 'Error: %s' % cmd.output
+        repo.m.save()
     else:
-        log.info('Setting repo status for %s', repo)
         repo.status = 'Ready'
         repo.m.save()
 
@@ -44,30 +48,26 @@ def clone(routing_key, data):
                 message=errmsg))
         repo.status = 'Error: %s' % errmsg
         repo.m.save()
-        return
-    # Update the repo status
-    repo.status = 'Ready'
-    repo.parent = data['url']
-    repo.clear_commits()
-    repo.m.save()
-    # Load the log & create refresh commit messages
-    log.info('Begin log %s', data['url'])
-    cmd = hg.scm_log('-g', '-p')
-    parser = hg.LogParser(repo._id)
-    cmd.run(output_consumer=parser.feed)
-    log.info('Log complete %s', data['url'])
+    else:
+        g.publish('react', 'scm.cloned', dict(
+                url=data['url']))
 
 @audit('scm.hg.fork')
 def fork(routing_key, data):
+    log.info('Begin forking %s => %s', data['forked_from'], data['forked_to'])
+    set_context(**encode_keys(data['forked_to']))
+    # Set repo metadata
     repo = c.app.repo
-    log.info('Begin forking')
     repo.type = 'hg'
+    repo.forked_from.update(data['forked_from'])
+    repo.m.save()
     # Perform the clone
-    with repo.context_of(repo.forked_from) as parent_repo:
-        clone_url = repo.clone_url()
+    log.info('Cloning from %s', data['url'])
     cmd = hg.clone(data['url'], '.')
     cmd.clean_dir()
     cmd.run()
+    repo.status = 'Ready'
+    repo.m.save()
     log.info('Clone complete for %s', data['url'])
     if cmd.sp.returncode:
         errmsg = cmd.output
@@ -76,45 +76,13 @@ def fork(routing_key, data):
         repo.status = 'Error: %s' % errmsg
         repo.m.save()
         return
-    # Update the repo status
-    repo.status = 'Ready'
-    repo.parent = data['url']
-    repo.clear_commits()
-    repo.m.save()
-    my_context = dict(project=c.project, app=c.app)
-    commit_extra = dict(
-        app_config_id = c.app.config._id,
-        repository_id = repo._id)
-    # Copy the history
-    log.info('Begin history copy')
-    with repo.context_of(repo.forked_from) as parent_repo:
-        for commit in parent_repo.commits():
-            patches = commit.patches
-            with push_config(c, **my_context):
-                commit = M.Commit.make(commit)
-                commit.update(commit_extra)
-                commit.m.save()
-                log.info('Commit repo ID is %s', commit.repository_id)
-                log.info('Repo id is %s', repo._id)
-                for p in patches:
-                    p.update(commit_extra)
-                    p.commit_id = commit._id
-                    M.Patch.make(p).m.save()
-    log.info('History copy complete')
-
-@audit('scm.hg.refresh_commit')
-def refresh_commit(routing_key, data):
-    repo = c.app.repo
-    hash = data['hash']
-    log.info('Refresh commit %s', hash)
-    # Load the log
-    cmd = hg.scm_log('-g', '-p', '-r', hash)
-    cmd.run()
-    parser = hg.LogParser(repo._id)
-    parser.feed(StringIO(cmd.output))
+    else:
+        log.info("Sending scm.forked message")
+        g.publish('react', 'scm.forked', data)
 
 @audit('scm.hg.reclone')
 def reclone(routing_key, data):
+    set_context(data['project_id'], data['mount_point'])
     repo = c.app.repo
     # Perform the clone
     cmd = hg.clone(repo.parent, '.')
@@ -134,4 +102,17 @@ def reclone(routing_key, data):
     # Update the repo status
     repo.status = 'Ready'
     repo.m.save()
+
+## Reactors
+@react('scm.hg.refresh_commit')
+def refresh_commit(routing_key, data):
+    set_context(data['project_id'], data['mount_point'])
+    repo = c.app.repo
+    hash = data['hash']
+    log.info('Refresh commit %s', hash)
+    # Load the log
+    cmd = hg.scm_log('-g', '-p', '-r', hash)
+    cmd.run()
+    parser = hg.LogParser(repo._id)
+    parser.feed(StringIO(cmd.output))
 

@@ -1,5 +1,8 @@
 import logging
+import pkg_resources
 
+import pylons
+import paste.cgiapp
 from tg import expose
 from pylons import c, g
 from mercurial import ui, hg
@@ -19,6 +22,9 @@ class WSGIHook(app.WSGIHook, BaseController):
     def __init__(self):
         self.hg_ui = u = ui.ui()
         u.setconfig('web', 'style', 'gitweb')
+        self.cgit_app = paste.cgiapp.CGIApplication(
+            {},
+            pkg_resources.resource_filename('forgescm', 'cgit/cgit'))
 
     def handles(self, environ):
         prefix = '/_wsgi_/scm'
@@ -39,17 +45,19 @@ class WSGIHook(app.WSGIHook, BaseController):
         environ['SCRIPT_NAME'] += '/' + c.project._id + rest[0]
         if c.app.config.options.type == 'hg':
             return self.hgweb(environ, start_response)
+        elif c.app.config.options.type == 'git':
+            return self.cgit(environ, start_response)
         return BaseController.__call__(self, environ, start_response)
 
     def hgweb(self, environ, start_response):
-        repo = c.app.repo_dir
+        repo = c.app.repo.repo_dir
         name = 'Main Repository for %s' % c.project._id
-        log.info('About to serve %s from %s', name, repo)
         repo = hg.repository(self.hg_ui, repo)
         svr = hgweb(repo, name)
-        log.info('Script name is %s', environ['SCRIPT_NAME'])
-        log.info('Path info is %s', environ['PATH_INFO'])
         return svr(environ, start_response)
+
+    def cgit(self, environ, start_response):
+        return self.cgit_app(environ, start_response)
 
     def find_project(self, url_path):
         length = len(url_path)

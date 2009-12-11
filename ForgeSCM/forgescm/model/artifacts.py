@@ -1,3 +1,5 @@
+import os
+import shutil
 import logging
 from datetime import datetime
 from contextlib import contextmanager
@@ -23,6 +25,7 @@ class Repository(Artifact):
     parent = Field(str)
     type = Field(str, if_missing='hg')
     pull_requests = Field([str])
+    repo_dir = Field(str)
     forks = Field([dict(
                 project_id=str,
                 app_config_id=schema.ObjectId(if_missing=None))])
@@ -94,15 +97,26 @@ class Repository(Artifact):
         app = p.install_app('Repository', mount_point)
         with push_config(c, project=p, app=app):
             repo = app.repo
-            repo.forked_from = forked_from
             repo.status = 'Pending Fork'
             repo.m.save()
-            g.publish('audit', 'scm.%s.fork' % c.app.config.options.type, dict(
-                    url=clone_url))
             new_url = repo.url()
-        self.forks.append(dict(project_id=p._id, app_config_id=app.config._id))
-        self.m.save()
+        g.publish('audit', 'scm.%s.fork' % c.app.config.options.type, dict(
+                url=clone_url,
+                forked_to=dict(project_id=project_id,
+                               app_config_id=app.config._id.url_encode()),
+                forked_from=dict(project_id=c.project._id,
+                                 app_config_id=c.app.config._id.url_encode())))
         return new_url
+
+    def delete(self):
+        try:
+            if os.path.exists(self.repo_dir):
+                shutil.rmtree(self.repo_dir)
+        except:
+            log.exception('Error deleting %s', self.repo_dir_)
+        self.m.delete()
+        Commit.m.remove(dict(app_config_id=self.app_config_id))
+        Patch.m.remove(dict(app_config_id=self.app_config_id))
 
 class Commit(Artifact):
     class __mongometa__:
@@ -171,6 +185,5 @@ class Patch(Artifact):
             return self.commit.url() + self._id.url_encode() + '/'
         except:
             log.exception("Cannot get patch URL")
-            import pdb; pdb.set_trace()
             return '#'
 

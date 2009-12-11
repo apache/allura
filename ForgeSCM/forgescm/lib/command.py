@@ -30,7 +30,7 @@ class Command(object):
 
     def cwd(self):
         try:
-            result = c.app.repo_dir
+            result = c.app.repo.repo_dir
         except:
             result = os.getcwd()
             log.exception("Can't set cwd to app dir, defaulting to %s",

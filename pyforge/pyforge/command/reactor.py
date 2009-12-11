@@ -159,7 +159,7 @@ class ReactorCommand(Command):
                             cfg.options.mount_point)
                         method(pylons.c.app, msg.delivery_info['routing_key'], data)
                 else:
-                    # Classmethod or function -- just call once
+                    # Classmethod or function -- just call once 
                     method(msg.delivery_info['routing_key'], data)
             except:
                 log.exception('Exception react handling %s: %s', plugin_name, method)

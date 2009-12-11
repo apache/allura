@@ -14,7 +14,7 @@ from pyforge import version
 from pyforge.model import ProjectRole, SearchConfig, ScheduledMessage
 from pyforge.lib.helpers import push_config
 from pyforge.lib.security import require, has_artifact_access
-from pyforge.lib.decorators import audit
+from pyforge.lib.decorators import audit, react
 from pyforge.lib import search
 
 log = logging.getLogger(__name__)
@@ -33,7 +33,7 @@ class SearchApp(Application):
         return [SitemapEntry('Search Project', '.')]
 
     @classmethod
-    @audit('search.add_artifacts')
+    @react('artifacts_altered')
     def add_artifacts(cls, routing_key, doc):
         obj = SearchConfig.m.find().first()
         for a in doc['artifacts']:
@@ -42,7 +42,7 @@ class SearchApp(Application):
         g.solr.add(doc['artifacts'])
 
     @classmethod
-    @audit('search.del_artifacts')
+    @react('artifacts_removed')
     def del_artifacts(cls, routing_key, doc):
         for aid in doc['artifact_ids']:
             log.info('Removing artifact: %s', aid)
