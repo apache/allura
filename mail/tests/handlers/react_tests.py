@@ -26,3 +26,10 @@ def test_react_for_bad_project():
     client.begin()
     client.say(dest_addr, "Test project react messages for non-existing project dropped properly")
 
+def test_react_for_user_project():
+    """
+    Then make sure that project react messages for existing user queued properly.
+    """
+    dest_addr = "docs.index@test_user2.%s" % host
+    client.begin()
+    client.say(dest_addr, "Test project react messages for existing user queued properly")
