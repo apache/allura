@@ -64,8 +64,8 @@ def REACTING(message, post_name=None, appmount=None, apploc=None, proj=None, hos
                 routing_key = plugin_name + '.' + apploc
                 try:
                     pylons.g.publish('audit', routing_key,
-                        dict(content=message),
-                        serializer='pickle')
+                        dict(content=str(message)),
+                        serializer='yaml')
                 except:
                     logging.debug('REACT: unable to queue message in carrot')
                 else:
