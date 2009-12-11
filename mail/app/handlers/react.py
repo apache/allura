@@ -30,7 +30,7 @@ class ProjectContents:
 @route("(appmount)\\.(apploc)@(proj)\\.(host)", appmount=".*", apploc=".*", proj=".*")
 @stateless
 def REACTING(message, post_name=None, appmount=None, apploc=None, proj=None, host=None):
-    conf = appconfig('config:%s' % 'development.ini',relative_to=os.getcwd())
+    conf = appconfig('config:%s' % '../pyforge/development.ini',relative_to=os.getcwd())
     load_environment(conf.global_conf, conf.local_conf)
     pylons.c._push_object(EmptyClass())
     pylons.g._push_object(Globals())
