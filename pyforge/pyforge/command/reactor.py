@@ -91,7 +91,7 @@ class ReactorCommand(Command):
 
     def command(self):
         self.basic_setup()
-        processes = []
+        processes = [ Process(target=self.periodic_main, args=()) ]
         for x in xrange(self.options.proc):
             processes += [
                 Process(target=self.worker_main, args=((name,)+ args))
@@ -113,17 +113,33 @@ class ReactorCommand(Command):
         consumer.wait()
         log.info('Exiting worker process: %s', qn)
 
+    def periodic_main(self):
+        log.info('Entering periodic reactor')
+        while True:
+            M.ScheduledMessage.fire_when_ready()
+            time.sleep(5)
+
     def route_audit(self, plugin_name, method):
         'Auditors only respond to their particluar mount point'
         def callback(data, msg):
             msg.ack()
             try:
-                pylons.c.project = M.Project.m.get(_id=data['project_id'])
-                if method.im_self:
-                    method(msg.delivery_info['routing_key'], data)
+                project_id = data.get('project_id')
+                if project_id:
+                    pylons.c.project = M.Project.m.get(_id=project_id)
                 else:
-                    pylons.c.app = pylons.c.project.app_instance(data['mount_point'])
+                    pylons.c.project = None
+                mount_point = data.get('mount_point')
+                if mount_point is not None:
+                    pylons.c.app = pylons.c.project.app_instance(mount_point)
+                    log.debug('Setting app %s', pylons.c.app)
+                if getattr(method, 'im_self', ()) is None:
+                    log.debug('im_self is None')
+                    # Instancemethod - call, binding self
                     method(pylons.c.app, msg.delivery_info['routing_key'], data)
+                else:
+                    # Classmethod or function - don't bind self
+                    method(msg.delivery_info['routing_key'], data)
             except:
                 log.exception('Exception audit handling %s: %s', plugin_name, method)
         return callback
@@ -134,13 +150,17 @@ class ReactorCommand(Command):
             msg.ack()
             try:
                 pylons.c.project = M.Project.m.get(_id=data['project_id'])
-                if method.im_self:
-                    method(msg.delivery_info['routing_key'], data)
-                else:
+                mount_point = data.get('mount_point')
+                if getattr(method, 'im_self', ()) is None:
+                    # Instancemethod - call once for each app, binding self
                     for cfg in pylons.c.project.app_configs:
                         if cfg.plugin_name != plugin_name: continue
-                        pylons.c.app = pylons.c.project.app_instance(cfg.options.mount_point)
+                        pylons.c.app = pylons.c.project.app_instance(
+                            cfg.options.mount_point)
                         method(pylons.c.app, msg.delivery_info['routing_key'], data)
+                else:
+                    # Classmethod or function -- just call once
+                    method(msg.delivery_info['routing_key'], data)
             except:
                 log.exception('Exception react handling %s: %s', plugin_name, method)
         return callback

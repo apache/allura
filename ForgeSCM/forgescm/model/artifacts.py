@@ -1,10 +1,16 @@
+import logging
 from datetime import datetime
+from contextlib import contextmanager
 
+from tg import config
 from pylons import c, g
 from pymongo.errors import OperationFailure
 
 from ming import Field, schema
-from pyforge.model import Project, Artifact, VersionedArtifact, Snapshot, Message
+from pyforge.lib.helpers import push_config
+from pyforge.model import Project, Artifact, AppConfig
+
+log = logging.getLogger(__name__)
 
 class Repository(Artifact):
     class __mongometa__:
@@ -15,12 +21,49 @@ class Repository(Artifact):
     description = Field(str)
     status = Field(str)
     parent = Field(str)
+    type = Field(str, if_missing='hg')
+    pull_requests = Field([str])
+    forks = Field([dict(
+                project_id=str,
+                app_config_id=schema.ObjectId(if_missing=None))])
+    forked_from = Field(dict(
+            project_id=str,
+            app_config_id=schema.ObjectId(if_missing=None)))
 
     def url(self):
-        return c.app.script_name + '/repo/'
+        return c.app.script_name + '/'
+
+    def clone_command(self):
+        if self.type == 'hg':
+            return 'hg clone ' + self.clone_url()
+        return '<unknown command>'
+
+    def clone_url(self):
+        return config.get('host_prefix', 'http://localhost:8080') + self.native_url()
 
     def native_url(self):
-        return '/_wsgi_/scm/' + c.app.script_name
+        return '/_wsgi_/scm' + c.app.script_name
+
+    def file_browser(self):
+        return self.native_url() + '/file'
+
+    def forked_from_url(self):
+        with self.context_of(self.forked_from) as repo:
+            return repo.url()
+
+    def forked_from_repo(self):
+        with self.context_of(self.forked_from) as repo:
+            return repo
+
+    @classmethod
+    @contextmanager
+    def context_of(cls, repo_info):
+        p = Project.m.get(_id=repo_info.project_id)
+        with push_config(c, project=p):
+            app_config = AppConfig.m.get(_id=repo_info.app_config_id)
+            app = p.app_instance(app_config)
+            with push_config(c, app=app):
+                yield app.repo
 
     def index(self):
         result = Artifact.index(self)
@@ -37,14 +80,29 @@ class Repository(Artifact):
         Patch.m.remove(dict(repository_id=self._id))
         Commit.m.remove(dict(repository_id=self._id))
 
+    def fork_urls(self):
+        for f in self.forks:
+            with self.context_of(f) as repo:
+                yield repo.url()
+
     def fork(self, project_id, mount_point):
+        clone_url = self.clone_url()
+        forked_from = dict(
+            project_id=c.project._id,
+            app_config_id=c.app.config._id)
         p = Project.m.get(_id=project_id)
-        p.install_app('Repository', mount_point)
-        new_app = p.app_instance(mount_point)
-        new_app.repo.status = 'Pending Fork'
-        g.publish('audit', 'scm.%s.fork' % c.app.config.options.type,
-                  target=dict(project_id=project_id,
-                              mount_point=mount_point))
+        app = p.install_app('Repository', mount_point)
+        with push_config(c, project=p, app=app):
+            repo = app.repo
+            repo.forked_from = forked_from
+            repo.status = 'Pending Fork'
+            repo.m.save()
+            g.publish('audit', 'scm.%s.fork' % c.app.config.options.type, dict(
+                    url=clone_url))
+            new_url = repo.url()
+        self.forks.append(dict(project_id=p._id, app_config_id=app.config._id))
+        self.m.save()
+        return new_url
 
 class Commit(Artifact):
     class __mongometa__:
@@ -69,6 +127,9 @@ class Commit(Artifact):
             text=self.summary)
         return result
 
+    def shorthand_id(self):
+        return self.hash
+
     @property
     def repository(self):
         return Repository.m.get(_id=self.repository_id)
@@ -78,7 +139,7 @@ class Commit(Artifact):
         return Patch.m.find(dict(commit_id=self._id))
 
     def url(self):
-        return self.repository.url() + self.hash + '/'
+        return self.repository.url() + 'repo/' + self.hash + '/'
 
 class Patch(Artifact):
     class __mongometa__:
@@ -98,11 +159,18 @@ class Patch(Artifact):
             text=self.patch_text)
         return result
             
+    def shorthand_id(self):
+        return self.commit.shorthand_id() + '.' + self.filename
         
     @property
     def commit(self):
         return Commit.m.get(_id=self.commit_id)
         
     def url(self):
-        return self.commit.url() + self._id.url_encode() + '/'
+        try:
+            return self.commit.url() + self._id.url_encode() + '/'
+        except:
+            log.exception("Cannot get patch URL")
+            import pdb; pdb.set_trace()
+            return '#'
 

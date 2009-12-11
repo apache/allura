@@ -43,7 +43,7 @@ class LogParser(object):
 
     def parse_header(self, cur_line, line_iter):
         hash = cur_line.split(':')[2].strip()
-        log.info('Parsing changeset %s', hash)
+        log.debug('Parsing changeset %s', hash)
         r = M.Commit.make(dict(repository_id=self.repo_id,
                                hash=hash))
         while cur_line != '\n':
@@ -79,7 +79,6 @@ class LogParser(object):
 
     def parse_diff(self, cur_line, line_iter):
         cmdline = cur_line.split(' ')
-        log.info('Parsing diff %s', cmdline)
         r = M.Patch.make(dict(repository_id=self.result[-1].repository_id,
                               commit_id=self.result[-1]._id,
                               filename=cmdline[2][2:]))

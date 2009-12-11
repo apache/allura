@@ -1,15 +1,63 @@
 import logging
+from datetime import datetime, timedelta
 
-from pylons import c
+from pylons import c, g
 import pkg_resources
 from webob import exc
+from pymongo import bson
 
 from ming import Document, Session, Field, datastore
 from ming import schema as S
 
+from pyforge.lib.helpers import push_config
 from .session import ProjectSession
 
 log = logging.getLogger(__name__)
+
+class SearchConfig(Document):
+    class __mongometa__:
+        session = Session.by_name('main')
+        name='search_config'
+
+    _id = Field(S.ObjectId)
+    last_commit = Field(datetime, if_missing=datetime.min)
+    pending_commit = Field(int, if_missing=0)
+
+    def needs_commit(self):
+        now = datetime.utcnow()
+        elapsed = now - self.last_commit
+        td_threshold = timedelta(seconds=60)
+        return elapsed > td_threshold and self.pending_commit
+
+class ScheduledMessage(Document):
+    class __mongometa__:
+        session = Session.by_name('main')
+        name='scheduled_message'
+
+    _id = Field(S.ObjectId)
+    when = Field(datetime)
+    exchange = Field(str)
+    routing_key = Field(str)
+    data = Field(None)
+    nonce = Field(S.ObjectId, if_missing=None)
+
+    @classmethod
+    def fire_when_ready(cls):
+        now = datetime.utcnow()
+        # Lock the objects to fire
+        nonce = bson.ObjectId()
+        cls.m.update_partial({'when' : { '$lt':now},
+                              'nonce': None },
+                             {'$set': {'nonce':nonce}})
+        # Actually fire
+        for obj in cls.m.find(dict(nonce=nonce)):
+            log.info('Firing scheduled message to %s:%s',
+                     obj.exchange, obj.routing_key)
+            try:
+                g.publish(obj.exchange, obj.routing_key, obj.get('data'))
+                obj.m.delete()
+            except:
+                log.exception('Error when firing %r', obj)
 
 class Project(Document):
     class __mongometa__:
@@ -105,7 +153,7 @@ class Project(Document):
         roles = auth.ProjectRole.m.find().all()
         return sorted(roles, key=lambda r:r.display())
 
-    def install_app(self, ep_name, mount_point):
+    def install_app(self, ep_name, mount_point, **override_options):
         for ep in pkg_resources.iter_entry_points('pyforge', ep_name):
             App = ep.load()
             break
@@ -113,17 +161,16 @@ class Project(Document):
             raise exc.HTTPNotFound, ep_name
         options = App.default_options()
         options['mount_point'] = mount_point
+        options.update(override_options)
         cfg = AppConfig.make(dict(
                 project_id=self._id,
                 plugin_name=ep_name,
                 options=options,
                 acl=dict((p,[]) for p in App.permissions)))
         app = App(self, cfg)
-        c.project = self
-        cfg.m.save()
-        c.app = app
-        app.install(self)
-        c.app = None
+        with push_config(c, project=self, app=app):
+            cfg.m.save()
+            app.install(self)
         return app
 
     def uninstall_app(self, mount_point):
@@ -132,8 +179,11 @@ class Project(Document):
         app.uninstall(self)
         app.config.m.delete()
 
-    def app_instance(self, mount_point):
-        app_config = self.app_config(mount_point)
+    def app_instance(self, mount_point_or_config):
+        if isinstance(mount_point_or_config, AppConfig):
+            app_config = mount_point_or_config
+        else:
+            app_config = self.app_config(mount_point_or_config)
         if app_config is None:
             return None
         App = app_config.load()

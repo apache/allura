@@ -17,12 +17,15 @@ class Command(object):
             base = self.base
         self.args = tuple(base) + args
 
-    def run(self):
+    def run(self, output_consumer=None):
         self.sp = subprocess.Popen(
             self.args, executable=self.args[0],
             stdin=None, stdout=subprocess.PIPE,
             stderr=subprocess.STDOUT, cwd=self.cwd())
-        self.output = self.sp.stdout.read()
+        if output_consumer is None:
+            self.output = self.sp.stdout.read()
+        else:
+            output_consumer(self.sp.stdout)
         self.sp.wait()
 
     def cwd(self):

@@ -2,6 +2,7 @@
 """Setup the pyforge application"""
 import sys
 import logging
+from datetime import datetime
 from tg import config
 from pylons import c, g
 import pyforge
@@ -22,11 +23,18 @@ def bootstrap(command, conf, vars):
             conn.drop_database(database)
     M.User.m.remove({})
     M.Project.m.remove({})
+    M.SearchConfig.m.remove({})
+    M.ScheduledMessage.m.remove({})
     g._push_object(pyforge.lib.app_globals.Globals())
+    log.info('Initializing search')
+    M.SearchConfig.make(dict(
+            last_commit = datetime.min,
+            pending_commit = 0)).m.save()
     try:
         g.solr.delete(q='*:*')
     except:
         log.exception('Error clearing solr index')
+    g.publish('audit', 'search.check_commit', {})
     log.info('Registering initial users')
     u0 = M.User.register(dict(username='test_admin', display_name='Test Admin'))
     u1 = M.User.register(dict(username='test_user', display_name='Test User'))
@@ -46,6 +54,10 @@ def bootstrap(command, conf, vars):
     p0.install_app('hello_forge', 'hello')
     p0.install_app('Wiki', 'wiki')
     p0.install_app('Repository', 'src')
+    app = p0.install_app('Repository', 'src')
+    with pyforge.lib.helpers.push_config(c, project=p0, app=app):
+        g.publish('audit', 'scm.hg.clone', dict(
+                url='https://rick446@bitbucket.org/rick446/sqlalchemy-migrate/'))
     dev = M.ProjectRole.make(dict(name='developer'))
     dev.m.save()
     for ur in M.ProjectRole.m.find():

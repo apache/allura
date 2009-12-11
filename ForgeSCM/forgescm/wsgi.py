@@ -47,7 +47,8 @@ class WSGIHook(app.WSGIHook, BaseController):
         log.info('About to serve %s from %s', name, repo)
         repo = hg.repository(self.hg_ui, repo)
         svr = hgweb(repo, name)
-        log.info('Server created')
+        log.info('Script name is %s', environ['SCRIPT_NAME'])
+        log.info('Path info is %s', environ['PATH_INFO'])
         return svr(environ, start_response)
 
     def find_project(self, url_path):

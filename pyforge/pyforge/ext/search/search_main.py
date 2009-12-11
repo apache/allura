@@ -1,5 +1,6 @@
 import difflib
 import logging
+from datetime import datetime, timedelta
 from pprint import pformat
 
 import pkg_resources
@@ -10,7 +11,7 @@ from formencode import validators as V
 
 from pyforge.app import Application, ConfigOption, SitemapEntry
 from pyforge import version
-from pyforge.model import ProjectRole
+from pyforge.model import ProjectRole, SearchConfig, ScheduledMessage
 from pyforge.lib.helpers import push_config
 from pyforge.lib.security import require, has_artifact_access
 from pyforge.lib.decorators import audit
@@ -34,10 +35,11 @@ class SearchApp(Application):
     @classmethod
     @audit('search.add_artifacts')
     def add_artifacts(cls, routing_key, doc):
+        obj = SearchConfig.m.find().first()
         for a in doc['artifacts']:
             log.info('Adding artifact: %s', a['id'])
+            obj.pending_commit += 1
         g.solr.add(doc['artifacts'])
-        g.solr.commit()
 
     @classmethod
     @audit('search.del_artifacts')
@@ -45,7 +47,25 @@ class SearchApp(Application):
         for aid in doc['artifact_ids']:
             log.info('Removing artifact: %s', aid)
             g.solr.delete(id=aid)
-        g.solr.commit()
+
+    @classmethod
+    @audit('search.check_commit')
+    def check_commit(cls, routing_key, doc):
+        log.info('Checking commits')
+        obj = SearchConfig.m.find().first()
+        now = datetime.utcnow()
+        if obj.needs_commit():
+            log.info('Committing to solr')
+            obj.last_commit = now
+            obj.pending_commit = 0
+            obj.m.save()
+            g.solr.commit()
+        ScheduledMessage.make(dict(
+                when=now+timedelta(seconds=60),
+                exchange='audit',
+                routing_key='search.check_commit')).m.save()
+                                   
+        
 
     def sidebar_menu(self):
         return [ ]
