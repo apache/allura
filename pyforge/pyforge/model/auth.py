@@ -33,6 +33,7 @@ class User(Document):
     display_name=Field(str)
     open_ids=Field([str])
     password=Field(str)
+    projects=Field([str])
 
     @classmethod
     def new_user(cls, username):
@@ -78,6 +79,11 @@ class User(Document):
     def script_name(self):
         return '/projects/users/' + self.username + '/'
 
+    def my_projects(self):
+        from .project import Project
+        for p in self.projects:
+            yield Project.m.get(_id=p)
+
     def role_iter(self):
         yield ProjectRole.m.get(name='*anonymous')
         if self._id:
@@ -93,6 +99,8 @@ class User(Document):
         obj = ProjectRole.m.get(user_id=self._id)
         if obj is None:
             obj = ProjectRole.make(dict(user_id=self._id))
+            self.projects.append(c.project._id)
+            self.m.save()
             obj.m.save()
         return obj
 

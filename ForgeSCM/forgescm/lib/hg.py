@@ -2,8 +2,9 @@ import os
 import shutil
 import logging
 
-from forgescm import model as M
+from pymongo import bson
 
+from forgescm import model as M
 from .command import Command
 
 log = logging.getLogger(__name__)
@@ -14,7 +15,7 @@ class init(Command):
 class clone(Command):
     base='hg clone'
 
-class log(Command):
+class scm_log(Command):
     base='hg log -g -p'
 
 class LogParser(object):
@@ -31,12 +32,18 @@ class LogParser(object):
                     cur_line = self.parse_header(cur_line, line_iter)
                 elif cur_line.startswith('diff --git'):
                     cur_line = self.parse_diff(cur_line, line_iter)
+                elif cur_line.strip():
+                    log.error('Unexpected line %r', cur_line)
+                    cur_line = line_iter.next()
+                else:
+                    cur_line = line_iter.next()
             except StopIteration:
                 break
         return self.result
 
     def parse_header(self, cur_line, line_iter):
         hash = cur_line.split(':')[2].strip()
+        log.info('Parsing changeset %s', hash)
         r = M.Commit.make(dict(repository_id=self.repo_id,
                                hash=hash))
         while cur_line != '\n':
@@ -50,6 +57,8 @@ class LogParser(object):
                 r.parents.append(result)
             elif cur_line.startswith('user:'):
                 r.user = result
+            elif cur_line.startswith('branch:'):
+                r.branch = result
             elif cur_line.startswith('date:'):
                 r.date = result
             elif cur_line.startswith('summary:'):
@@ -70,6 +79,7 @@ class LogParser(object):
 
     def parse_diff(self, cur_line, line_iter):
         cmdline = cur_line.split(' ')
+        log.info('Parsing diff %s', cmdline)
         r = M.Patch.make(dict(repository_id=self.result[-1].repository_id,
                               commit_id=self.result[-1]._id,
                               filename=cmdline[2][2:]))
@@ -78,7 +88,7 @@ class LogParser(object):
             cur_line = line_iter.next()
             if cur_line.startswith('diff'): break
             if cur_line != '\n': text_lines.append(cur_line)
-        r.patch_text = ''.join(text_lines)
+        r.patch_text = bson.Binary(''.join(text_lines))
         r.m.save()
         if cur_line == '\n':
             cur_line = line_iter.next()

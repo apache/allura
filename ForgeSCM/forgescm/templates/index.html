@@ -24,6 +24,16 @@
       <a href="reclone">Re-clone the repository</a> 
       from $c.app.repo.parent<br/>
     </py:if>
+    <form method="POST" action="fork">
+      Fork to 
+      <select name="project">
+        <option py:for="p in c.user.my_projects()"
+                value="$p._id">$p.name</option>
+      </select>
+      /
+      <input name="mount_point"/>
+      <input type="submit" value="FORK!"/>
+    </form>
     <form method="POST" action="clone_from">
       Clone the repo from <input name="url"/>
     </form>

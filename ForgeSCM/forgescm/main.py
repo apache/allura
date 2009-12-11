@@ -7,8 +7,7 @@ from pprint import pformat
 
 # Non-stdlib imports
 import pkg_resources
-import uvc.main, uvc.hg, uvc.util
-from tg import expose, validate, redirect
+from tg import expose, validate, redirect, flash
 from pylons import g, c, request
 from formencode import validators
 from pymongo.bson import ObjectId
@@ -66,25 +65,55 @@ class ForgeSCMApp(Application):
     @audit('scm.hg.clone')
     def scm_hg_clone(self, routing_key, data):
         repo = self.repo
+        log.info('Begin cloning %s', data['url'])
         # Perform the clone
         cmd = hg.clone(data['url'], '.')
         cmd.clean_dir()
         cmd.run()
+        log.info('Clone complete for %s', data['url'])
         if cmd.sp.returncode:
+            errmsg = cmd.output
             g.publish('react', 'error', dict(
-                    message=cmd.sp.stdout.read()))
+                    message=errmsg))
+            repo.status = 'Error: %s' % errmsg
+            repo.m.save()
             return
-        # Load the log
-        cmd = hg.log('-g', '-p')
-        cmd.run()
-        # Clear the old set of commits
-        repo.clear_commits()
-        repo.parent = data['url']
-        parser = hg.LogParser(repo._id)
-        parser.feed(StringIO(cmd.output))
         # Update the repo status
         repo.status = 'Ready'
         repo.m.save()
+        # Load the log & create refresh commit messages
+        cmd = hg.scm_log('-q')
+        cmd.run()
+        for line in cmd.output.split('\n'):
+            rev, hash = line.split(':')
+            g.publish('audit', 'scm.hg.refresh_commit', dict(
+                    hash=hash))
+            
+        # log.info('Begin log %s', data['url'])
+        # cmd = hg.scm_log('-g', '-p')
+        # cmd.run()
+        # log.info('Log complete %s', data['url'])
+        # # Clear the old set of commits
+        # repo.clear_commits()
+        # repo.parent = data['url']
+        # parser = hg.LogParser(repo._id)
+        # log.info('Begin parsing log')
+        # parser.feed(StringIO(cmd.output))
+
+    @audit('scm.hg.refresh_commit')
+    def scm_hg_refresh_commit(self, routing_key, data):
+        repo = self.repo
+        hash = data['hash']
+        log.info('Refresh commit %s', hash)
+        # Load the log
+        cmd = hg.scm_log('-g', '-p', '-r', hash)
+        cmd.run()
+        parser = hg.LogParser(repo._id)
+        parser.feed(StringIO(cmd.output))
+
+    @audit('scm.hg.fork')
+    def scm_hg_fork(self, routing_key, data):
+        assert False
 
     @audit('scm.hg.reclone')
     def scm_hg_reclone(self, routing_key, data):
@@ -162,6 +191,14 @@ class RootController(object):
     @expose('forgescm.templates.index')
     def index(self):
         return dict(repo=c.app.repo)
+
+    @expose('forgescm.templates.fork')
+    def fork(self, project, mount_point):
+        new_repo = c.app.repo.fork(project, mount_point)
+        # Find projects where we can mount things
+        flash('Project %s forked' % c.app.repo.url())
+        redirect(new_repo.url())
+                    
                   
     @expose('forgescm.templates.search')
     @validate(dict(q=validators.UnicodeString(if_empty=None),

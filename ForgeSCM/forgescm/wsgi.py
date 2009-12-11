@@ -16,6 +16,9 @@ class WSGIHook(app.WSGIHook, BaseController):
     '''
     Handle URLs like /_wsgi_/scm/proj/subproj/subsub/src/...
     '''
+    def __init__(self):
+        self.hg_ui = u = ui.ui()
+        u.setconfig('web', 'style', 'gitweb')
 
     def handles(self, environ):
         prefix = '/_wsgi_/scm'
@@ -42,7 +45,7 @@ class WSGIHook(app.WSGIHook, BaseController):
         repo = c.app.repo_dir
         name = 'Main Repository for %s' % c.project._id
         log.info('About to serve %s from %s', name, repo)
-        repo = hg.repository(ui.ui(), repo)
+        repo = hg.repository(self.hg_ui, repo)
         svr = hgweb(repo, name)
         log.info('Server created')
         return svr(environ, start_response)

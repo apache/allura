@@ -1,10 +1,10 @@
 from datetime import datetime
 
-from pylons import c
+from pylons import c, g
 from pymongo.errors import OperationFailure
 
 from ming import Field, schema
-from pyforge.model import Artifact, VersionedArtifact, Snapshot, Message
+from pyforge.model import Project, Artifact, VersionedArtifact, Snapshot, Message
 
 class Repository(Artifact):
     class __mongometa__:
@@ -37,6 +37,15 @@ class Repository(Artifact):
         Patch.m.remove(dict(repository_id=self._id))
         Commit.m.remove(dict(repository_id=self._id))
 
+    def fork(self, project_id, mount_point):
+        p = Project.m.get(_id=project_id)
+        p.install_app('Repository', mount_point)
+        new_app = p.app_instance(mount_point)
+        new_app.repo.status = 'Pending Fork'
+        g.publish('audit', 'scm.%s.fork' % c.app.config.options.type,
+                  target=dict(project_id=project_id,
+                              mount_point=mount_point))
+
 class Commit(Artifact):
     class __mongometa__:
         name='commit'
@@ -51,6 +60,7 @@ class Commit(Artifact):
     parents = Field([str])
     tags = Field([str])
     user = Field(str)
+    branch = Field(str)
 
     def index(self):
         result = Artifact.index(self)
@@ -79,7 +89,7 @@ class Patch(Artifact):
     repository_id = Field(schema.ObjectId)
     commit_id = Field(schema.ObjectId)
     filename = Field(str)
-    patch_text = Field(str)
+    patch_text = Field(schema.Binary)
 
     def index(self):
         result = Artifact.index(self)
