@@ -54,17 +54,15 @@ def REACTING(message, post_name=None, appmount=None, apploc=None, proj=None, hos
         except:
             logging.debug('REACT: cannot initialize valid project')
         else:
-            logging.debug('REACT: retrieved valid project')
+            logging.debug('REACT: retrieved valid project with mount point:' + appmount)
             try:
                 c.project.app_config(appmount)
                 c.app = c.project.app_instance(appmount)
-            except:
-                logging.debug('REACT: invalid app mount point')
-            else:
-#                plugin_name="dummy"
-#                plugin_name=c.project.plugin_name
                 plugin_name=c.app.config.plugin_name
-                logging.debug('REACT: valid app mount point with plugin_name:' + plugin_name)
+            except:
+                logging.debug('REACT: invalid mount point (' + appmount + ')')
+            else:
+                logging.debug('REACT: valid mount point (' + appmount + ') with plugin_name:' + plugin_name)
 
 #    conn = BrokerConnection(hostname="localhost", port=5672,
 #                              userid="celeryuser", password="celerypw",
