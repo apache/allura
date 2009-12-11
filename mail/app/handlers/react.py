@@ -44,10 +44,8 @@ def REACTING(message, post_name=None, appmount=None, apploc=None, proj=None, hos
         except:
             logging.debug('REACT: project "' + proj + '" does not exist as project or user')
         else:
-#            relay.deliver(message)
             logging.debug('REACT: project "' + proj + '" exists as user with _id:' + valid._id)
     else:
-#        relay.deliver(message)
         logging.debug('REACT: project "' + proj + '" exists as project with _id:' + valid._id)
         try:
             c.project = Project.m.get(_id=valid._id)
@@ -63,15 +61,15 @@ def REACTING(message, post_name=None, appmount=None, apploc=None, proj=None, hos
                 logging.debug('REACT: invalid mount point (' + appmount + ')')
             else:
                 logging.debug('REACT: valid mount point (' + appmount + ') with plugin_name:' + plugin_name)
-
-#    conn = BrokerConnection(hostname="localhost", port=5672,
-#                              userid="celeryuser", password="celerypw",
-#                              virtual_host="celeryvhost")
-#
-#    publisher = Publisher(connection=conn,
-#                            exchange="forge", routing_key="mail")
-#    publisher.send({"message": message}, serializer="pickle")
-#    publisher.close()
+                routing_key = plugin_name + '.' + apploc
+                try:
+                    pylons.g.publish('audit', routing_key,
+                        dict(content=message),
+                        serializer='pickle')
+                except:
+                    logging.debug('REACT: unable to queue message in carrot')
+                else:
+                    logging.debug('REACT: successfully queued message in carrot with key:' + routing_key)
 
     return REACTING
 
