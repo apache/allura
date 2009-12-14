@@ -4,7 +4,7 @@ from pylons import c, g
 
 from pyforge.lib.decorators import audit, react
 from pyforge.lib.helpers import push_context, set_context, encode_keys
-from forgescm.lib import hg
+from forgescm.lib import hg, git
 
 from forgescm import model as M
 
@@ -64,13 +64,16 @@ def cloned(routing_key, data):
     repo.status = 'Ready'
     repo.parent = data['url']
     repo.m.save()
-    assert c.app.config.options.type == 'hg'
     # Load the log & create refresh commit messages
     log.info('Begin log %s', data['url'])
     type = c.app.config.options['type']
     if type == 'hg':
         cmd = hg.scm_log('-g', '-p')
         parser = hg.LogParser(repo._id)
+        cmd.run(output_consumer=parser.feed)
+    elif type == 'git':
+        cmd = git.scm_log('-p')
+        parser = git.LogParser(repo._id)
         cmd.run(output_consumer=parser.feed)
     else:
         log.warning('Cannot index repos of type %s', type)

@@ -1,9 +1,10 @@
+import os
 import logging
 import pkg_resources
 
 import pylons
 import paste.cgiapp
-from tg import expose
+from tg import config
 from pylons import c, g
 from mercurial import ui, hg
 from mercurial.hgweb import hgweb
@@ -22,9 +23,8 @@ class WSGIHook(app.WSGIHook, BaseController):
     def __init__(self):
         self.hg_ui = u = ui.ui()
         u.setconfig('web', 'style', 'gitweb')
-        self.cgit_app = paste.cgiapp.CGIApplication(
-            {},
-            pkg_resources.resource_filename('forgescm', 'cgit/cgit'))
+        self._git_app = paste.cgiapp.CGIApplication(
+            {}, config.get('gitweb.cgi'))
 
     def handles(self, environ):
         prefix = '/_wsgi_/scm'
@@ -46,7 +46,7 @@ class WSGIHook(app.WSGIHook, BaseController):
         if c.app.config.options.type == 'hg':
             return self.hgweb(environ, start_response)
         elif c.app.config.options.type == 'git':
-            return self.cgit(environ, start_response)
+            return self.git_app(environ, start_response)
         return BaseController.__call__(self, environ, start_response)
 
     def hgweb(self, environ, start_response):
@@ -56,8 +56,11 @@ class WSGIHook(app.WSGIHook, BaseController):
         svr = hgweb(repo, name)
         return svr(environ, start_response)
 
-    def cgit(self, environ, start_response):
-        return self.cgit_app(environ, start_response)
+    def git_app(self, environ, start_response):
+        environ['GITWEB_CONFIG_SYSTEM'] = str(
+            c.app.repo.repo_dir + '/gitweb.conf')
+        print environ['GITWEB_CONFIG_SYSTEM']
+        return self._git_app(environ, start_response)
 
     def find_project(self, url_path):
         length = len(url_path)

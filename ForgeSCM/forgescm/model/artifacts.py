@@ -39,10 +39,18 @@ class Repository(Artifact):
     def clone_command(self):
         if self.type == 'hg':
             return 'hg clone ' + self.clone_url()
+        elif self.type == 'git':
+            return 'git clone ' + self.clone_url()
         return '<unknown command>'
 
     def clone_url(self):
-        return config.get('host_prefix', 'http://localhost:8080') + self.native_url()
+        if self.type == 'hg':
+            return config.get('host_prefix', 'http://localhost:8080') \
+                + self.native_url()
+        elif self.type == 'git':
+            return self.repo_dir
+        else:
+            return 'Unknown clone url'
 
     def native_url(self):
         return '/_wsgi_/scm' + c.app.script_name
@@ -64,9 +72,12 @@ class Repository(Artifact):
         p = Project.m.get(_id=repo_info.project_id)
         with push_config(c, project=p):
             app_config = AppConfig.m.get(_id=repo_info.app_config_id)
-            app = p.app_instance(app_config)
-            with push_config(c, app=app):
-                yield app.repo
+            if app_config: 
+                app = p.app_instance(app_config)
+                with push_config(c, app=app):
+                    yield app.repo
+            else:
+                yield None
 
     def index(self):
         result = Artifact.index(self)
@@ -86,7 +97,8 @@ class Repository(Artifact):
     def fork_urls(self):
         for f in self.forks:
             with self.context_of(f) as repo:
-                yield repo.url()
+                if repo:
+                    yield repo.url()
 
     def fork(self, project_id, mount_point):
         clone_url = self.clone_url()
@@ -95,6 +107,8 @@ class Repository(Artifact):
             app_config_id=c.app.config._id)
         p = Project.m.get(_id=project_id)
         app = p.install_app('Repository', mount_point)
+        app.config.options.type = c.app.config.options.type
+        app.config.m.save()
         with push_config(c, project=p, app=app):
             repo = app.repo
             repo.status = 'Pending Fork'

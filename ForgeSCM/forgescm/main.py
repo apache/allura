@@ -5,8 +5,8 @@ import logging
 # Non-stdlib imports
 import pkg_resources
 from pylons import g, c
+import genshi
 from ming import schema
-
 
 # Pyforge-specific imports
 from pyforge.app import Application, ConfigOption, SitemapEntry
@@ -19,7 +19,7 @@ from pyforge.model import ProjectRole
 from . import model
 from . import version
 from .wsgi import WSGIHook
-from .reactors import hg_react
+from .reactors import common_react, hg_react, git_react
 from .controllers import root
 
 log = logging.getLogger(__name__)
@@ -51,6 +51,7 @@ class ForgeSCMApp(Application):
         result = [
             SitemapEntry('Home', '.'),      
             SitemapEntry('Search', 'search'),
+            SitemapEntry('Init Repo', 'reinit'),
             ]
         repo = self.repo
         if self.config.options.type == 'hg':
@@ -59,7 +60,7 @@ class ForgeSCMApp(Application):
                 SitemapEntry('Files', repo.native_url() + '/file') ]
         elif self.config.options.type == 'git':
             result += [
-                SitemapEntry('CGIT', repo.native_url()) ]
+                SitemapEntry('GitWeb', repo.native_url() + '/.git') ]
         return result
 
     @property
@@ -93,5 +94,7 @@ class ForgeSCMApp(Application):
         repo = self.repo
         if repo: repo.delete()
 
+mixin_reactors(ForgeSCMApp, common_react)
 mixin_reactors(ForgeSCMApp, hg_react)
+mixin_reactors(ForgeSCMApp, git_react)
 

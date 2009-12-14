@@ -73,7 +73,7 @@ class RootController(object):
         repo = c.app.repo
         url = repo.url()
         clone_url = repo.clone_url()
-        with repo.forked_from_context():
+        with repo.context_of(repo.forked_from):
             repo = c.app.repo
             repo.pull_requests.append(
                 'Pull request from <a href="%s">%s</a> (%s)' % (url, url, clone_url))
