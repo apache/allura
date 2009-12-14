@@ -69,9 +69,9 @@ class Repository(Artifact):
     @classmethod
     @contextmanager
     def context_of(cls, repo_info):
-        p = Project.m.get(_id=repo_info.project_id)
+        p = Project.m.get(_id=repo_info['project_id'])
         with push_config(c, project=p):
-            app_config = AppConfig.m.get(_id=repo_info.app_config_id)
+            app_config = AppConfig.m.get(_id=repo_info['app_config_id'])
             if app_config: 
                 app = p.app_instance(app_config)
                 with push_config(c, app=app):

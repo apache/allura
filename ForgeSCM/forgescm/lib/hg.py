@@ -25,9 +25,9 @@ class LogParser(object):
         self.result = []
 
     def feed(self, line_iter):
-        cur_line = line_iter.next()
-        while True:
-            try:
+        try:
+            cur_line = line_iter.next()
+            while True:
                 if cur_line.startswith('changeset:'):
                     cur_line = self.parse_header(cur_line, line_iter)
                 elif cur_line.startswith('diff --git'):
@@ -37,8 +37,8 @@ class LogParser(object):
                     cur_line = line_iter.next()
                 else:
                     cur_line = line_iter.next()
-            except StopIteration:
-                break
+        except StopIteration:
+            pass
         return self.result
 
     def parse_header(self, cur_line, line_iter):

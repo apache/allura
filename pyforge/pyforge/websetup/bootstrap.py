@@ -33,6 +33,7 @@ def bootstrap(command, conf, vars):
     try:
         g.solr.delete(q='*:*')
     except:
+        log.error('SOLR server is %s', g.solr_server)
         log.exception('Error clearing solr index')
     g.publish('audit', 'search.check_commit', {})
     log.info('Registering initial users')
@@ -51,12 +52,25 @@ def bootstrap(command, conf, vars):
     p0.m.save()
     p1.m.save()
     c.user = u0
+    if conf.get('load_test_data'):
+        log.info('Loading test data')
+        app = p0.install_app('Repository', 'src')
+        app = p0.install_app('Repository', 'src_git')
+        app.config.options['type'] = 'git'
+        app.config.m.save()
+        return
     p0.install_app('hello_forge', 'hello')
     p0.install_app('Wiki', 'wiki')
     app = p0.install_app('Repository', 'src')
     with pyforge.lib.helpers.push_config(c, project=p0, app=app):
         g.publish('audit', 'scm.hg.clone', dict(
                 url='https://rick446@bitbucket.org/rick446/sqlalchemy-migrate/'))
+    app = p0.install_app('Repository', 'src_git')
+    app.config.options['type'] = 'git'
+    app.config.m.save()
+    with pyforge.lib.helpers.push_config(c, project=p0, app=app):
+        g.publish('audit', 'scm.git.clone', dict(
+                url='git://github.com/mongodb/mongo.git'))
     dev = M.ProjectRole.make(dict(name='developer'))
     dev.m.save()
     for ur in M.ProjectRole.m.find():

@@ -24,7 +24,7 @@ class WSGIHook(app.WSGIHook, BaseController):
         self.hg_ui = u = ui.ui()
         u.setconfig('web', 'style', 'gitweb')
         self._git_app = paste.cgiapp.CGIApplication(
-            {}, config.get('gitweb.cgi'))
+            {}, config.get('gitweb.cgi', '/usr/lib/cgi-bin/gitweb.cgi'))
 
     def handles(self, environ):
         prefix = '/_wsgi_/scm'
@@ -59,7 +59,6 @@ class WSGIHook(app.WSGIHook, BaseController):
     def git_app(self, environ, start_response):
         environ['GITWEB_CONFIG_SYSTEM'] = str(
             c.app.repo.repo_dir + '/gitweb.conf')
-        print environ['GITWEB_CONFIG_SYSTEM']
         return self._git_app(environ, start_response)
 
     def find_project(self, url_path):

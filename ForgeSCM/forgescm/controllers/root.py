@@ -17,7 +17,7 @@ class RootController(object):
         repo = c.app.repo
         return dict(repo=repo)
 
-    @expose('forgescm.templates.fork')
+    @expose()
     def fork(self, project, mount_point):
         repo = c.app.repo
         new_url = repo.fork(project, mount_point)
