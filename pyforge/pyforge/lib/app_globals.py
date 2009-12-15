@@ -6,7 +6,7 @@ __all__ = ['Globals']
 
 import pkg_resources
 
-from tg import config
+from tg import config, session
 from pylons import c
 import paste.deploy.converters
 import pysolr
@@ -47,6 +47,16 @@ class Globals(object):
         self.markdown = markdown.Markdown(
             extensions=['codehilite', ArtifactExtension()],
             output_format='html4')
+
+        self.oid_store = M.OpenIdStore()
+
+    def oid_session(self):
+        if 'openid_info' in session:
+            return session['openid_info']
+        else:
+            session['openid_info'] = result = {}
+            session.save()
+            return result
         
     def app_static(self, resource, app=None):
         app = app or c.app

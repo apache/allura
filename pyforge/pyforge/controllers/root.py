@@ -1,23 +1,21 @@
 # -*- coding: utf-8 -*-
 """Main Controller"""
-import logging
+import logging, string
 from collections import defaultdict
 
 import pkg_resources
 from tg import expose, flash, redirect, session
 from tg.decorators import with_trailing_slash, without_trailing_slash
 from pylons import c
-from webob import exc
 
 from pyforge.lib.base import BaseController
 from pyforge.controllers.error import ErrorController
-
 from pyforge.lib.dispatch import _dispatch
 from pyforge import model as M
+from .auth import AuthController
 from .search import SearchController
 from .static import StaticController
 from .project import ProjectsController
-
 
 __all__ = ['RootController']
 
@@ -38,6 +36,7 @@ class RootController(BaseController):
     
     """
     
+    auth = AuthController()
     error = ErrorController()
     static = StaticController()
     search = SearchController()
@@ -70,30 +69,5 @@ class RootController(BaseController):
     def _dispatch(self, state, remainder):
         return _dispatch(self, state, remainder)
         
-    @expose('pyforge.templates.login')
-    @without_trailing_slash
-    def login(self, *args, **kwargs):
-        return dict()
 
-    @expose()
-    def logout(self):
-        session['userid'] = None
-        session.save()
-        redirect('/')
-
-    @expose()
-    def do_login(self, username, password):
-        user = M.User.m.get(username=username)
-        if user is None:
-            session['userid'] = None
-            session.save()
-            raise exc.HTTPUnauthorized()
-        if not user.validate_password(password):
-            session['userid'] = None
-            session.save()
-            raise exc.HTTPUnauthorized()
-        session['userid'] = user._id
-        session.save()
-        flash('Welcome back, %s' % user.display_name)
-        redirect('/')
 

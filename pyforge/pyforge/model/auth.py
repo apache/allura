@@ -22,6 +22,37 @@ def encode_password(password, salt=None):
     hashpass = sha256(salt + password.encode('utf-8')).digest()
     return 'sha256' + salt + b64encode(hashpass)
 
+class OpenId(Document):
+    class __mongometa__:
+        name='openid'
+        session = Session.by_name('main')
+
+    _id = Field(str)
+    claimed_by_user_id=Field(S.ObjectId, if_missing=None)
+    display_identifier=Field(str)
+
+    @classmethod
+    def upsert(cls, url, display_identifier):
+        result = cls.m.get(_id=url)
+        if not result:
+            result = cls.make(dict(
+                    _id=url,
+                    display_identifier=display_identifier))
+            result.m.save()
+        return result
+
+    def claimed_by_user(self):
+        if self.claimed_by_user_id:
+            result = User.m.get(_id=self.claimed_by_user_id)
+        else:
+            result = User.make(dict(username=None, password=None,
+                                    display_name=self.display_identifier,
+                                    open_ids=[self._id]))
+            result.m.save()
+            self.claimed_by_user_id = result._id
+            self.m.save()
+        return result
+            
 class User(Document):
     SALT_LEN=8
     class __mongometa__:
@@ -34,6 +65,14 @@ class User(Document):
     open_ids=Field([str])
     password=Field(str)
     projects=Field([str])
+
+    def claim_openid(self, oid_url):
+        oid_obj = OpenId.upsert(oid_url, self.display_name)
+        oid_obj.claimed_by_user_id = self._id
+        oid_obj.m.save()
+        if oid_url in self.open_ids: return
+        self.open_ids.append(oid_url)
+        self.m.save()
 
     @classmethod
     def new_user(cls, username):

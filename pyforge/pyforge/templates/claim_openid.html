@@ -8,23 +8,13 @@
   
   <head>
     <meta content="text/html; charset=UTF-8" http-equiv="content-type" py:replace="''"/>
-    <title>Login Form</title>
+    <title>OpenId Claim Form</title>
   </head>
   
   <body>
-    <div id="loginform">
-      <form action="/do_login" method="post" class="loginfields">
-        <h2><span>Password Login</span></h2>
-        <label for="username">Username:</label>
-        <input type="text" id="username" name="username" class="text"/><br/>
-        <label for="password">Password:</label>
-        <input type="password" id="password" name="password" class="text"/><br/>
-        <input type="submit" id="submit" value="Login" />
-      </form>
-    </div>
+    <h1>OpenId Claim Form</h1>
     <div id="loginform_oid">
-      <form action="login_verify_oid" method="post" class="loginfields">
-        <h2><span>OpenID Login</span></h2>
+      <form action="claim_verify_oid" method="post" class="loginfields">
         <label for="provider">Provider</label>
         <select id="provider" name="provider">
           <option py:for="label, url in oid_providers" value="$url">$label</option>
@@ -32,7 +22,7 @@
         <br/>
         <label for="username">Username:</label>
         <input type="text" id="username" name="username" class="text"/><br/>
-        <input type="submit" id="submit" value="Login" />
+        <input type="submit" id="submit" value="Claim" />
       </form>
     </div>
   </body>

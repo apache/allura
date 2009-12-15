@@ -21,6 +21,9 @@ def bootstrap(command, conf, vars):
             or database.startswith('users:')):
             log.info('Dropping database %s', database)
             conn.drop_database(database)
+    M.OpenId.m.remove({})
+    M.OpenIdAssociation.m.remove({})
+    M.OpenIdNonce.m.remove({})
     M.User.m.remove({})
     M.Project.m.remove({})
     M.SearchConfig.m.remove({})

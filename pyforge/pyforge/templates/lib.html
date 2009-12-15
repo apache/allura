@@ -41,10 +41,10 @@
         </li> 
       </py:if>       
       <li class="loginlogout" py:if="c.user._id">
-        <a href="/logout">Logout</a>
+        <a href="/auth/logout">Logout</a>
       </li>
       <li class="loginlogout" py:if="not c.user._id">
-        <a href="/login">Login</a>
+        <a href="/auth/">Login</a>
       </li>
     </ul>
   </py:def>
