@@ -127,7 +127,7 @@ class RootController(object):
             AND project_id_s:%s
             AND mount_point_s:%s''' % (
                 q, history, c.project._id, c.app.config.options.mount_point)
-            results = search.search(search_query)
+            results = search(search_query)
             if results: count=results.hits
         return dict(q=q, history=history, results=results or [], count=count)
 
