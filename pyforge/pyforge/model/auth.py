@@ -45,9 +45,11 @@ class OpenId(Document):
         if self.claimed_by_user_id:
             result = User.m.get(_id=self.claimed_by_user_id)
         else:
-            result = User.make(dict(username=None, password=None,
-                                    display_name=self.display_identifier,
-                                    open_ids=[self._id]))
+            result = User.register(
+                dict(username=None, password=None,
+                     display_name=self.display_identifier,
+                     open_ids=[self._id]),
+                make_project=False)
             result.m.save()
             self.claimed_by_user_id = result._id
             self.m.save()
