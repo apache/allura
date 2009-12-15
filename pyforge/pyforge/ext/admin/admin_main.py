@@ -87,7 +87,7 @@ class ProjectAdminController(object):
         'add a subproject for the current project'
         require(has_project_access('create'))
         sp = c.project.new_subproject(sp_name)
-        redirect('.#project-admin')
+        redirect('.#subproject-admin')
 
     @expose()
     def delete_project(self):

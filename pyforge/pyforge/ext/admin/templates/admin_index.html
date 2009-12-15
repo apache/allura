@@ -25,6 +25,11 @@
     <h1>ProjectAdmin for ${project_links(c.project)}</h1>
     <div id="subproject-admin">
       <h2>Subproject Admin</h2>
+      <form method="POST" action="new_subproject">
+        Add a subproject at $c.project._id 
+        <input name="sp_name"/><br/>
+        <input type="submit" value="Add Subproject"/>
+      </form>
       <ul>
         <li py:for="sp in c.project.direct_subprojects">
           <a href="/${sp._id + 'admin/'}">$sp.shortname</a>
