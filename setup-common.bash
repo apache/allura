@@ -23,6 +23,7 @@ easy_install ipython
 easy_install -UZ -i http://www.turbogears.org/2.1/downloads/current/index turbogears2==2.1a3
 easy_install -UZ -i http://www.turbogears.org/2.1/downloads/current/index tg.devtools==2.1a3
 easy_install beautifulsoup
+easy_install mercurial
 
 #
 # Install _our_ code.
