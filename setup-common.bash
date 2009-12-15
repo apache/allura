@@ -66,6 +66,12 @@ python setup.py develop
 popd
 
 echo
+echo '# installing ForgeSCM dependencies'
+pushd ForgeSCM
+python setup.py develop
+popd
+
+echo
 echo '# creating data directory for mongo'
 mkdir -p /data/db
 
