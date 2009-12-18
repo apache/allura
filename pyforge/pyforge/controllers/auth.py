@@ -63,7 +63,7 @@ class AuthController(object):
 
     @expose()
     def do_setup_openid_user(self, username=None, display_name=None):
-        if M.User.m.get(username=username):
+        if M.User.query.get(username=username):
             flash('That username is already taken.  Please choose another.',
                   'error')
             redirect('setup_openid_user')
@@ -71,7 +71,7 @@ class AuthController(object):
             username=username,
             display_name=display_name)
         c.user.register_project(username, 'users')
-        c.user.m.save()
+        # c.user.m.save()
         flash('Your username has been set to %s.' % username)
         redirect('/')
 
@@ -107,7 +107,7 @@ class AuthController(object):
 
     @expose()
     def do_login(self, username, password):
-        user = M.User.m.get(username=username)
+        user = M.User.query.get(username=username)
         if user is None:
             session['userid'] = None
             session.save()

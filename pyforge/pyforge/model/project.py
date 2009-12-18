@@ -7,8 +7,9 @@ from webob import exc
 from pymongo import bson
 
 from ming import Document, Session, Field, datastore
+from ming.orm.base import mapper
 from ming.orm.mapped_class import MappedClass
-from ming.orm.property import FieldProperty
+from ming.orm.property import FieldProperty, RelationProperty, ForeignIdProperty
 from ming import schema as S
 
 from pyforge.lib.helpers import push_config
@@ -17,14 +18,14 @@ from .session import project_doc_session, project_orm_session
 
 log = logging.getLogger(__name__)
 
-class SearchConfig(Document):
+class SearchConfig(MappedClass):
     class __mongometa__:
-        session = main_doc_session
+        session = main_orm_session
         name='search_config'
 
-    _id = Field(S.ObjectId)
-    last_commit = Field(datetime, if_missing=datetime.min)
-    pending_commit = Field(int, if_missing=0)
+    _id = FieldProperty(S.ObjectId)
+    last_commit = FieldProperty(datetime, if_missing=datetime.min)
+    pending_commit = FieldProperty(int, if_missing=0)
 
     def needs_commit(self):
         now = datetime.utcnow()
@@ -32,33 +33,34 @@ class SearchConfig(Document):
         td_threshold = timedelta(seconds=60)
         return elapsed > td_threshold and self.pending_commit
 
-class ScheduledMessage(Document):
+class ScheduledMessage(MappedClass):
     class __mongometa__:
-        session = main_doc_session
+        session = main_orm_session
         name='scheduled_message'
 
-    _id = Field(S.ObjectId)
-    when = Field(datetime)
-    exchange = Field(str)
-    routing_key = Field(str)
-    data = Field(None)
-    nonce = Field(S.ObjectId, if_missing=None)
+    _id = FieldProperty(S.ObjectId)
+    when = FieldProperty(datetime)
+    exchange = FieldProperty(str)
+    routing_key = FieldProperty(str)
+    data = FieldProperty(None)
+    nonce = FieldProperty(S.ObjectId, if_missing=None)
 
     @classmethod
     def fire_when_ready(cls):
         now = datetime.utcnow()
         # Lock the objects to fire
         nonce = bson.ObjectId()
-        cls.m.update_partial({'when' : { '$lt':now},
-                              'nonce': None },
-                             {'$set': {'nonce':nonce}})
+        m = mapper(cls)
+        m.doc_cls.m.update_partial({'when' : { '$lt':now},
+                                    'nonce': None },
+                                   {'$set': {'nonce':nonce}})
         # Actually fire
-        for obj in cls.m.find(dict(nonce=nonce)):
+        for obj in cls.query.find(dict(nonce=nonce)):
             log.info('Firing scheduled message to %s:%s',
                      obj.exchange, obj.routing_key)
             try:
                 g.publish(obj.exchange, obj.routing_key, obj.get('data'))
-                obj.m.delete()
+                obj.delete()
             except:
                 log.exception('Error when firing %r', obj)
 
@@ -79,6 +81,8 @@ class Project(MappedClass):
             'plugin':[S.ObjectId],    # install/delete/configure plugins
             'security':[S.ObjectId],  # update ACL, roles
             })
+    app_configs = RelationProperty('AppConfig')
+
 
     def sidebar_menu(self):
         from pyforge.app import SitemapEntry
@@ -107,7 +111,7 @@ class Project(MappedClass):
     def parent_project(self):
         if self.is_root: return None
         parent_id, shortname, empty = self._id.rsplit('/', 2)
-        return self.m.get(_id=parent_id + '/')
+        return self.get(_id=parent_id + '/')
 
     def sitemap(self):
         from pyforge.app import SitemapEntry
@@ -128,7 +132,7 @@ class Project(MappedClass):
 
     @property
     def subprojects(self):
-        q = self.m.find(dict(_id={'$gt':self._id}))
+        q = self.query.find(dict(_id={'$gt':self._id}))
         for project in q:
             if project._id.startswith(self._id):
                 yield project
@@ -147,13 +151,9 @@ class Project(MappedClass):
         return datastore.DataStore(self.dburi)
 
     @property
-    def app_configs(self):
-        return AppConfig.m.find(dict(project_id=self._id)).all()
-
-    @property
     def roles(self):
         from . import auth
-        roles = auth.ProjectRole.m.find().all()
+        roles = auth.ProjectRole.find().all()
         return sorted(roles, key=lambda r:r.display())
 
     def install_app(self, ep_name, mount_point, **override_options):
@@ -166,14 +166,13 @@ class Project(MappedClass):
         options = App.default_options()
         options['mount_point'] = mount_point
         options.update(override_options)
-        cfg = AppConfig.make(dict(
-                project_id=self._id,
-                plugin_name=ep_name,
-                options=options,
-                acl=dict((p,[]) for p in App.permissions)))
+        cfg = AppConfig(
+            project_id=self._id,
+            plugin_name=ep_name,
+            options=options,
+            acl=dict((p,[]) for p in App.permissions))
         app = App(self, cfg)
         with push_config(c, project=self, app=app):
-            cfg.m.save()
             app.install(self)
         return app
 
@@ -181,7 +180,7 @@ class Project(MappedClass):
         app = self.app_instance(mount_point)
         if app is None: return
         app.uninstall(self)
-        app.config.m.delete()
+        app.config.delete()
 
     def app_instance(self, mount_point_or_config):
         if isinstance(mount_point_or_config, AppConfig):
@@ -197,47 +196,48 @@ class Project(MappedClass):
             return App(self, app_config)
 
     def app_config(self, mount_point):
-        return AppConfig.m.find({
+        return AppConfig.query.find({
                 'project_id':self._id,
                 'options.mount_point':mount_point}).first()
 
     def new_subproject(self, name, install_apps=True):
-        sp = self.make(dict(
-                _id = self._id + name + '/',
-                database=self.database,
-                is_root=False))
+        sp = Project(
+            _id = self._id + name + '/',
+            database=self.database,
+            is_root=False)
         if install_apps:
             sp.install_app('admin', 'admin')
             sp.install_app('search', 'search')
-            sp.m.save()
         return sp
 
     def delete(self):
         # Cascade to subprojects
         for sp in self.subprojects:
-            sp.m.delete()
-        self.m.delete()
+            sp.delete()
+        self.delete()
 
-class AppConfig(Document):
+class AppConfig(MappedClass):
     class __mongometa__:
-        session = project_doc_session
+        session = project_orm_session
         name='config'
 
     # AppConfig schema
-    _id=Field(S.ObjectId)
-    project_id=Field(str)
-    plugin_name=Field(str)
-    version=Field(str)
-    options=Field(None)
+    _id=FieldProperty(S.ObjectId)
+    project_id=ForeignIdProperty(Project)
+    plugin_name=FieldProperty(str)
+    version=FieldProperty(str)
+    options=FieldProperty(None)
+    project = RelationProperty(Project, via='project_id')
 
-    acl = Field({str:[S.ObjectId]}) # acl[permission] = [ role1, role2, ... ]
 
-    @property
-    def project(self):
-        return Project.m.get(_id=self.project_id)
-    
+    # acl[permission] = [ role1, role2, ... ]
+    acl = FieldProperty({str:[S.ObjectId]}) 
+
     def load(self):
         for ep in pkg_resources.iter_entry_points(
             'pyforge', self.plugin_name):
             return ep.load()
         return None
+
+    def script_name(self):
+        return self.project.script_name + self.options.mount_point

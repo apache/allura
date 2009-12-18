@@ -8,63 +8,23 @@ import pymongo
 from pylons import c
 from ming import Document, Session, Field
 from ming import schema as S
+from ming.orm.base import mapper, session, state
+from ming.orm.mapped_class import MappedClass
+from ming.orm.property import FieldProperty, ForeignIdProperty, RelationProperty
 from pymongo.bson import ObjectId
 from pymongo.errors import OperationFailure
 
 from .session import ProjectSession
-
-from pyforge.lib import search
+from .session import main_doc_session, main_orm_session
+from .session import project_doc_session, project_orm_session
+from .session import artifact_orm_session
 
 def nonce(length=4):
     return sha1(ObjectId().binary).hexdigest()[:4]
 
-class ArtifactSession(ProjectSession):
-
-    def remove(self, cls, *args, **kwargs):
-        for a in self.find(cls, *args, **kwargs):
-            search.remove_artifact(a)
-            ArtifactLink.remove(a)
-        ProjectSession.remove(self, cls, *args, **kwargs)
-
-    def update_partial(self, cls, spec, fields, upsert):
-        ProjectSession.update_partial(self, cls, spec, fields, upsert)
-        for a in self.find(cls, spec):
-            search.add_artifact(a)
-            ArtifactLink.add(a)
-
-    def save(self, doc, *args):
-        ProjectSession.save(self, doc, *args)
-        search.add_artifact(doc)
-        ArtifactLink.add(doc)
-
-    def insert(self, doc):
-        ProjectSession.insert(self, doc)
-        search.add_artifact(doc)
-        ArtifactLink.add(doc)
-
-    def update(self, doc, spec, upsert=False):
-        ProjectSession.update(self, doc, spec, upsert)
-        search.add_artifact(doc)
-        ArtifactLink.add(doc)
-
-    def delete(self, doc):
-        ProjectSession.delete(self, doc)
-        search.remove_artifact(doc)
-        ArtifactLink.remove(doc)
-
-    def set(self, doc, fields_values):
-        ProjectSession.set(self, doc, fields_values)
-        search.add_artifact(doc)
-        ArtifactLink.add(doc)
-
-    def increase_field(self, doc, **kwargs):
-        ProjectSession.increase_field(self, doc, **kwargs)
-        search.add_artifact(doc)
-        ArtifactLink.add(doc)
-
-class ArtifactLink(Document):
+class ArtifactLink(MappedClass):
     class __mongometa__:
-        session = ProjectSession(Session.by_name('main'))
+        session = project_orm_session
         name='artifact_link'
         indexes = [
             ('link', 'project_id') ]
@@ -78,27 +38,28 @@ class ArtifactLink(Document):
     re_link = re.compile(r'(?:\s%s)|(?:^%s)' % (core_re, core_re),
                          re.VERBOSE)
 
-    _id = Field(str)
-    link = Field(str)
-    project_id = Field(str)
-    plugin_name = Field(str)
-    mount_point = Field(str)
-    url = Field(str)
+    _id = FieldProperty(str)
+    link = FieldProperty(str)
+    project_id = FieldProperty(str)
+    plugin_name = FieldProperty(str)
+    mount_point = FieldProperty(str)
+    url = FieldProperty(str)
 
     @classmethod
     def add(cls, artifact):
-        entry = cls.make(dict(
-                _id=artifact.index_id(),
-                link=artifact.shorthand_id(),
-                project_id=artifact.project._id,
-                plugin_name=c.app.config.plugin_name,
-                mount_point=c.app.config.options.mount_point,
-                url=artifact.url()))
-        entry.m.save()
+        aid = artifact.index_id()
+        entry = cls.query.get(_id=aid)
+        if entry is None:
+            entry = cls(_id=aid)
+        entry.link=artifact.shorthand_id()
+        entry.project_id=artifact.project._id
+        entry.plugin_name=artifact.app_config.plugin_name
+        entry.mount_point=artifact.app_config.options.mount_point
+        entry.url=artifact.url()
 
     @classmethod
     def remove(cls, artifact):
-        cls.m.remove(dict(_id=artifact.index_id()))
+        mapper(cls).remove(dict(_id=artifact.index_id()))
 
     @classmethod
     def lookup(cls, link):
@@ -120,11 +81,11 @@ class ArtifactLink(Document):
         if project_id is None:
             projects = list(c.project.parent_iter())
         elif project_id.startswith('/'):
-            projects = Project.m.find(dict(_id=project_id[1:] + '/')).all()
+            projects = Project.query.find(dict(_id=project_id[1:] + '/')).all()
         else:
             project_id = os.path.normpath(
                 os.path.join('/' + c.project._id[:-1], project_id))
-            projects = Project.m.find(dict(_id=project_id[1:] + '/')).all()
+            projects = Project.query.find(dict(_id=project_id[1:] + '/')).all()
         if not projects: return None
         #
         # Find the app_id to search
@@ -136,31 +97,27 @@ class ArtifactLink(Document):
         #
         with push_config(c, project=projects[0]):
             for p in projects:
-                links = cls.m.find(dict(project_id=p._id, link=artifact_id)).all()
+                links = cls.query.find(dict(project_id=p._id, link=artifact_id)).all()
                 for l in links:
                     if app_id == l.mount_point: return l
                 for l in links:
                     if app_id == l.plugin_name: return l
         return None
 
-class Artifact(Document):
+class Artifact(MappedClass):
     class __mongometa__:
-        session = ArtifactSession(Session.by_name('main'))
+        session = artifact_orm_session
         name='artifact'
 
     # Artifact base schema
-    _id = Field(S.ObjectId)
-    app_config_id = Field(S.ObjectId, if_missing=lambda:c.app.config._id)
-    plugin_verson = Field(
+    _id = FieldProperty(S.ObjectId)
+    app_config_id = ForeignIdProperty('AppConfig', if_missing=lambda:c.app.config._id)
+    plugin_verson = FieldProperty(
         S.Object,
         { str: str },
         if_missing=lambda:{c.app.config.plugin_name:c.app.__version__})
-    acl = Field({str:[S.ObjectId]})
-
-    @property
-    def app_config(self):
-        from .project import AppConfig
-        return AppConfig.m.get(_id=self.app_config_id)
+    acl = FieldProperty({str:[S.ObjectId]})
+    app_config = RelationProperty('AppConfig')
 
     @property
     def project(self):
@@ -180,6 +137,8 @@ class Artifact(Document):
 
     def index(self):
         project = self.project
+        if project is None:
+            import pdb; pdb.set_trace()
         if hasattr(self._id, 'url_encode'):
             _id = self._id.url_encode()
         return dict(
@@ -206,23 +165,21 @@ class Artifact(Document):
         '''
         return self._id.url_encode() # for those who like PAIN
 
-        
-
 class Snapshot(Artifact):
     class __mongometa__:
-        session = ArtifactSession(Session.by_name('main'))
+        session = artifact_orm_session
         name='artifact_snapshot'
 
-    _id = Field(S.ObjectId)
-    artifact_id = Field(S.ObjectId)
-    artifact_class = Field(str)
-    version = Field(S.Int, if_missing=0)
-    author = Field(dict(
+    _id = FieldProperty(S.ObjectId)
+    artifact_id = FieldProperty(S.ObjectId)
+    artifact_class = FieldProperty(str)
+    version = FieldProperty(S.Int, if_missing=0)
+    author = FieldProperty(dict(
             id=S.ObjectId,
             username=str,
             display_name=str))
-    timestamp = Field(datetime)
-    data = Field(None)
+    timestamp = FieldProperty(datetime)
+    data = FieldProperty(None)
 
     def index(self):
         result = Artifact.index(self)
@@ -242,16 +199,16 @@ class Snapshot(Artifact):
 
 class VersionedArtifact(Artifact):
     class __mongometa__:
-        session = ArtifactSession(Session.by_name('main'))
+        session = artifact_orm_session
         name='versioned_artifact'
         history_class = Snapshot
 
-    version = Field(S.Int, if_missing=0)
+    version = FieldProperty(S.Int, if_missing=0)
 
     def commit(self):
         '''Save off a snapshot of the artifact as well as saving the
         artifact itself.'''
-        self.m.save()
+        session(self).save(self) # make sure we're in the session
         data = dict(
             artifact_id=self._id,
             artifact_class='%s.%s' % (
@@ -263,15 +220,15 @@ class VersionedArtifact(Artifact):
                 username=c.user.username,
                 display_name=c.user.display_name),
             timestamp=datetime.utcnow(),
-            data=self)
-        ss = self.__mongometa__.history_class.make(data)
-        ss.m.save()
+            data=state(self).document)
+        ss = self.__mongometa__.history_class(**data)
+        self.version += 1
         return ss
 
     def get_version(self, n):
         if n < 0:
             n = self.version + n + 1
-        ss = self.__mongometa__.history_class.m.get(
+        ss = self.__mongometa__.history_class.query.get(
             artifact_id=self._id,
             artifact_class='%s.%s' % (
                 self.__class__.__module__,
@@ -289,43 +246,43 @@ class VersionedArtifact(Artifact):
 
     def history(self):
         HC = self.__mongometa__.history_class
-        q = HC.m.find(dict(artifact_id=self._id)).sort('version', pymongo.DESCENDING)
+        q = HC.query.find(dict(artifact_id=self._id)).sort('version', pymongo.DESCENDING)
         return q
 
 class Message(Artifact):
     class __mongometa__:
-        session = ArtifactSession(Session.by_name('main'))
+        session = artifact_orm_session
         name='message'
 
-    _id=Field(str, if_missing=nonce)
-    parent_id=Field(str)
-    app_id=Field(S.ObjectId, if_missing=lambda:c.app.config._id)
-    timestamp=Field(datetime, if_missing=datetime.utcnow)
-    author_id=Field(S.ObjectId, if_missing=lambda:c.user._id)
-    text=Field(str, if_missing='')
+    _id=FieldProperty(str, if_missing=nonce)
+    parent_id=FieldProperty(str)
+    app_id=FieldProperty(S.ObjectId, if_missing=lambda:c.app.config._id)
+    timestamp=FieldProperty(datetime, if_missing=datetime.utcnow)
+    author_id=FieldProperty(S.ObjectId, if_missing=lambda:c.user._id)
+    text=FieldProperty(str, if_missing='')
 
     def author(self):
         from .auth import User
-        return User.m.get(_id=self.author_id) or User.anonymous
+        return User.query.get(_id=self.author_id) or User.anonymous
 
     def reply(self):
         while True:
             try:
                 new_id = self._id + '/' + nonce()
-                msg = self.make(dict(
-                        self,
-                        _id=new_id,
-                        parent_id=self._id,
-                        timestamp=datetime.utcnow(),
-                        author_id=c.user._id))
-                msg.m.insert()
+                new_args = dict(
+                    state(self).document,
+                    _id=new_id,
+                    parent_id=self._id,
+                    timestamp=datetime.utcnow(),
+                    author_id=c.user._id)
+                msg = self.__class__(**new_args)
                 return msg
             except OperationFailure:
                 sleep(0.1)
                 continue # pragma: no cover
 
     def descendants(self):
-        q = self.m.find(dict(_id={'$gt':self._id}))
+        q = self.query.find(dict(_id={'$gt':self._id}))
         for msg in q:
             if msg._id.startswith(self._id):
                 yield msg

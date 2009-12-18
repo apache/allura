@@ -3,6 +3,8 @@
 """The application's Globals object"""
 
 __all__ = ['Globals']
+import logging
+import socket
 
 import pkg_resources
 
@@ -16,6 +18,8 @@ from carrot.messaging import Publisher
 
 from pyforge import model as M
 from pyforge.lib.markdown_extensions import ArtifactExtension
+
+log = logging.getLogger(__name__)
 
 class Globals(object):
     """Container for objects available throughout the life of the application.
@@ -80,4 +84,13 @@ class Globals(object):
             message.setdefault('project_id', project._id)
         if app:
             message.setdefault('mount_point', app.config.options.mount_point)
-        self.publisher[xn].send(message, routing_key=key, **kw)
+        try:
+            self.publisher[xn].send(message, routing_key=key, **kw)
+        except socket.error:
+            return
+            log.exception('''Failure publishing, saving message for later:
+xn: %r
+key: %r
+data: %r
+''', xn, key, message)
+            

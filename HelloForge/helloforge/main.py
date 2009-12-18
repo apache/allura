@@ -7,6 +7,8 @@ from tg import request, expose, redirect, validate
 from pylons import g, c
 from formencode import validators as V
 
+from ming.orm.base import mapper
+
 from pyforge.app import Application, ConfigOption, SitemapEntry
 from pyforge.model import ProjectRole
 from pyforge.lib.helpers import push_config
@@ -66,7 +68,7 @@ class HelloForgeApp(Application):
         with push_config(c, app=self):
             pages = [
                 SitemapEntry(p.title, p.url())
-                for p in M.Page.m.find(dict(
+                for p in M.Page.query.find(dict(
                         app_config_id=self.config._id)) ]
             return [
                 SitemapEntry(
@@ -79,7 +81,7 @@ class HelloForgeApp(Application):
     def sidebar_menu(self):
         return [
                 SitemapEntry(p.title, p.url())
-                for p in M.Page.m.find(dict(
+                for p in M.Page.query.find(dict(
                         app_config_id=self.config._id)) ]
 
     @property
@@ -94,17 +96,16 @@ class HelloForgeApp(Application):
             for perm in self.permissions:
                 self.config.acl[perm] = [ pr._id ]
         self.config.acl['read'].append(
-            ProjectRole.m.get(name='*anonymous')._id)
+            ProjectRole.query.get(name='*anonymous')._id)
         self.config.acl['comment'].append(
-            ProjectRole.m.get(name='*authenticated')._id)
-        self.config.m.save()
+            ProjectRole.query.get(name='*authenticated')._id)
         p = M.Page.upsert('Root')
         p.text = 'This is the root page.'
         p.commit()
 
     def uninstall(self, project):
-        M.Page.m.remove(dict(project_id=c.project._id))
-        M.Comment.m.remove(dict(project_id=c.project._id))
+        mapper(M.Page).remove(dict(project_id=c.project._id))
+        mapper(M.Comment).remove(dict(project_id=c.project._id))
 
 class RootController(object):
 
@@ -234,7 +235,7 @@ class CommentController(object):
     def __init__(self, page, comment_id=None):
         self.page = page
         self.comment_id = comment_id
-        self.comment = M.Comment.m.get(_id=self.comment_id)
+        self.comment = M.Comment.query.get(_id=self.comment_id)
 
     @expose()
     def reply(self, text):
@@ -245,12 +246,11 @@ class CommentController(object):
         else:
             c = self.page.reply()
             c.text = text
-        c.m.save()
         redirect(request.referer)
 
     @expose()
     def delete(self):
-        self.comment.m.delete()
+        self.comment.query.delete()
         redirect(request.referer)
 
     def _dispatch(self, state, remainder):

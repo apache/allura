@@ -10,6 +10,8 @@ from pylons import g, c, request
 from formencode import validators
 from pymongo.bson import ObjectId
 
+from ming.orm.base import mapper
+
 # Pyforge-specific imports
 from pyforge.app import Application, ConfigOption, SitemapEntry
 from pyforge.lib.helpers import push_config
@@ -56,7 +58,7 @@ class ForgeWikiApp(Application):
         with push_config(c, app=self):
             pages = [
                 SitemapEntry(p.title, p.url())
-                for p in model.Page.m.find(dict(
+                for p in model.Page.query.find(dict(
                         app_config_id=self.config._id)) ]
             return [
                 SitemapEntry(menu_id, '.')[SitemapEntry('Pages')[pages]] ]
@@ -64,7 +66,7 @@ class ForgeWikiApp(Application):
     def sidebar_menu(self):
         return [
             SitemapEntry(p.title, p.url())
-            for p in model.Page.m.find(dict(
+            for p in model.Page.query.find(dict(
                     app_config_id=self.config._id)) ]
 
     @property
@@ -81,18 +83,17 @@ class ForgeWikiApp(Application):
         for perm in self.permissions:
               self.config.acl[perm] = [ pr._id ]
         self.config.acl['read'].append(
-            ProjectRole.m.get(name='*anonymous')._id)
+            ProjectRole.query.get(name='*anonymous')._id)
         self.config.acl['comment'].append(
-            ProjectRole.m.get(name='*authenticated')._id)
-        self.config.m.save()
+            ProjectRole.query.get(name='*authenticated')._id)
         p = model.Page.upsert('Root')
         p.text = 'This is the root page.'
         p.commit()
 
     def uninstall(self, project):
         "Remove all the plugin's artifacts from the database"
-        model.Page.m.remove(dict(project_id=c.project._id))
-        model.Comment.m.remove(dict(project_id=c.project._id))
+        mapper(model.Page).remove(dict(project_id=c.project._id))
+        mapper(model.Comment).remove(dict(project_id=c.project._id))
 
 class RootController(object):
 

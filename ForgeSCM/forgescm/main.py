@@ -38,7 +38,7 @@ class ForgeSCMApp(Application):
 
     @property
     def repo(self):
-        return model.Repository.m.get(app_config_id=self.config._id)
+        return model.Repository.query.get(app_config_id=self.config._id)
 
     @property
     def sitemap(self):
@@ -76,18 +76,16 @@ class ForgeSCMApp(Application):
         for perm in self.permissions:
               self.config.acl[perm] = [ pr._id ]
         self.config.acl['read'].append(
-            ProjectRole.m.get(name='*anonymous')._id)      
-        self.config.m.save()
+            ProjectRole.query.get(name='*anonymous')._id)      
         # Create a repository
         repo_dir = pkg_resources.resource_filename(
             'forgescm',
             os.path.join('data', self.project._id, self.config.options.mount_point))
-        repo = model.Repository.make(dict(
-                description='This is the repository object',
-                status='Pending',
-                type=self.config.options['type'],
-                repo_dir=repo_dir))
-        repo.m.insert()
+        repo = model.Repository(
+            description='This is the repository object',
+            status='Pending',
+            type=self.config.options['type'],
+            repo_dir=repo_dir)
 
     def uninstall(self, project):
         "Remove all the plugin's artifacts from the database"

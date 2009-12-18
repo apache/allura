@@ -8,7 +8,11 @@ from tg import config
 from pylons import c, g
 from pymongo.errors import OperationFailure
 
-from ming import Field, schema
+from ming import schema
+from ming.orm.base import state, session, mapper
+from ming.orm.mapped_class import MappedClass
+from ming.orm.property import FieldProperty
+
 from pyforge.lib.helpers import push_config
 from pyforge.model import Project, Artifact, AppConfig
 
@@ -19,17 +23,17 @@ class Repository(Artifact):
         name='repository'
     type_s = 'ForgeSCM Repository'
 
-    _id = Field(schema.ObjectId)
-    description = Field(str)
-    status = Field(str)
-    parent = Field(str)
-    type = Field(str, if_missing='hg')
-    pull_requests = Field([str])
-    repo_dir = Field(str)
-    forks = Field([dict(
+    _id = FieldProperty(schema.ObjectId)
+    description = FieldProperty(str)
+    status = FieldProperty(str)
+    parent = FieldProperty(str)
+    type = FieldProperty(str, if_missing='hg')
+    pull_requests = FieldProperty([str])
+    repo_dir = FieldProperty(str)
+    forks = FieldProperty([dict(
                 project_id=str,
                 app_config_id=schema.ObjectId(if_missing=None))])
-    forked_from = Field(dict(
+    forked_from = FieldProperty(dict(
             project_id=str,
             app_config_id=schema.ObjectId(if_missing=None)))
 
@@ -69,9 +73,9 @@ class Repository(Artifact):
     @classmethod
     @contextmanager
     def context_of(cls, repo_info):
-        p = Project.m.get(_id=repo_info['project_id'])
+        p = Project.query.get(_id=repo_info['project_id'])
         with push_config(c, project=p):
-            app_config = AppConfig.m.get(_id=repo_info['app_config_id'])
+            app_config = AppConfig.query.get(_id=repo_info['app_config_id'])
             if app_config: 
                 app = p.app_instance(app_config)
                 with push_config(c, app=app):
@@ -88,11 +92,11 @@ class Repository(Artifact):
         return result
 
     def commits(self):
-        return Commit.m.find(dict(repository_id=self._id))
+        return Commit.query.find(dict(repository_id=self._id))
 
     def clear_commits(self):
-        Patch.m.remove(dict(repository_id=self._id))
-        Commit.m.remove(dict(repository_id=self._id))
+        mapper(Patch).remove(dict(repository_id=self._id))
+        mapper(Commit).remove(dict(repository_id=self._id))
 
     def fork_urls(self):
         for f in self.forks:
@@ -105,14 +109,12 @@ class Repository(Artifact):
         forked_from = dict(
             project_id=c.project._id,
             app_config_id=c.app.config._id)
-        p = Project.m.get(_id=project_id)
+        p = Project.query.get(_id=project_id)
         app = p.install_app('Repository', mount_point)
         app.config.options.type = c.app.config.options.type
-        app.config.m.save()
         with push_config(c, project=p, app=app):
             repo = app.repo
             repo.status = 'Pending Fork'
-            repo.m.save()
             new_url = repo.url()
         g.publish('audit', 'scm.%s.fork' % c.app.config.options.type, dict(
                 url=clone_url,
@@ -128,25 +130,25 @@ class Repository(Artifact):
                 shutil.rmtree(self.repo_dir)
         except:
             log.exception('Error deleting %s', self.repo_dir_)
-        self.m.delete()
-        Commit.m.remove(dict(app_config_id=self.app_config_id))
-        Patch.m.remove(dict(app_config_id=self.app_config_id))
+        self.delete()
+        mapper(Commit).remove(dict(app_config_id=self.app_config_id))
+        mapper(Patch).remove(dict(app_config_id=self.app_config_id))
 
 class Commit(Artifact):
     class __mongometa__:
         name='commit'
     type_s = 'ForgeSCM Commit'
 
-    _id = Field(schema.ObjectId)
-    hash = Field(str)
-    repository_id = Field(schema.ObjectId)
-    summary = Field(str)
-    diff = Field(str)
-    date = Field(str)
-    parents = Field([str])
-    tags = Field([str])
-    user = Field(str)
-    branch = Field(str)
+    _id = FieldProperty(schema.ObjectId)
+    hash = FieldProperty(str)
+    repository_id = FieldProperty(schema.ObjectId)
+    summary = FieldProperty(str)
+    diff = FieldProperty(str)
+    date = FieldProperty(str)
+    parents = FieldProperty([str])
+    tags = FieldProperty([str])
+    user = FieldProperty(str)
+    branch = FieldProperty(str)
 
     def index(self):
         result = Artifact.index(self)
@@ -174,11 +176,11 @@ class Patch(Artifact):
         name='diff'
     type_s = 'ForgeSCM Patch'
 
-    _id = Field(schema.ObjectId)
-    repository_id = Field(schema.ObjectId)
-    commit_id = Field(schema.ObjectId)
-    filename = Field(str)
-    patch_text = Field(schema.Binary)
+    _id = FieldProperty(schema.ObjectId)
+    repository_id = FieldProperty(schema.ObjectId)
+    commit_id = FieldProperty(schema.ObjectId)
+    filename = FieldProperty(str)
+    patch_text = FieldProperty(schema.Binary)
 
     def index(self):
         result = Artifact.index(self)
@@ -201,3 +203,4 @@ class Patch(Artifact):
             log.exception("Cannot get patch URL")
             return '#'
 
+MappedClass.compile_all()

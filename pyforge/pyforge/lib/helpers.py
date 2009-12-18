@@ -10,11 +10,11 @@ from pymongo import bson
 
 def make_users(uids):
     from pyforge import model as M
-    return (M.User.m.get(_id=uid) for uid in uids)
+    return (M.User.query.get(_id=uid) for uid in uids)
 
 def make_roles(ids):
     from pyforge import model as M
-    return (M.ProjectRole.m.get(_id=id) for id in ids)
+    return (M.ProjectRole.query.get(_id=id) for id in ids)
 
 @contextmanager
 def push_config(obj, **kw):
@@ -43,14 +43,14 @@ def mixin_reactors(cls, module, prefix=None):
 
 def set_context(project_id, mount_point=None, app_config_id=None):
     from pyforge import model
-    p = model.Project.m.get(_id=project_id)
+    p = model.Project.query.get(_id=project_id)
     c.project = p
     if app_config_id is None:
         c.app = p.app_instance(mount_point)
     else:
         if isinstance(app_config_id, basestring):
             app_config_id = bson.ObjectId.url_decode(app_config_id)
-        app_config = model.AppConfig.m.get(_id=app_config_id)
+        app_config = model.AppConfig.query.get(_id=app_config_id)
         c.app = p.app_instance(app_config)
 
 @contextmanager

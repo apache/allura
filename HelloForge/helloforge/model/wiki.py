@@ -7,7 +7,9 @@ import re
 from pymongo.errors import OperationFailure
 
 from ming import schema
-from ming import Field
+from ming.orm.base import state, session
+from ming.orm.mapped_class import MappedClass
+from ming.orm.property import FieldProperty
 
 from pyforge.model import VersionedArtifact, Snapshot, Message
 
@@ -30,7 +32,7 @@ class PageHistory(Snapshot):
         name='page_history'
 
     def original(self):
-        return Page.m.get(_id=self.artifact_id)
+        return Page.query.get(_id=self.artifact_id)
         
     def shorthand_id(self):
         return '%s#%s' % (self.original().shorthand_id(), self.version)
@@ -52,11 +54,11 @@ class Page(VersionedArtifact):
         name='page'
         history_class = PageHistory
 
-    title=Field(str)
-    text=Field(schema.String, if_missing='')
+    title=FieldProperty(str)
+    text=FieldProperty(schema.String, if_missing='')
 
     def url(self):
-        return context.app.script_name + '/' + self.title + '/'
+        return self.app_config.script_name() + '/' + self.title + '/'
 
     def shorthand_id(self):
         return self.title
@@ -77,26 +79,22 @@ class Page(VersionedArtifact):
         #If no version is specified
         if version is None:
             #Check for existing page object    
-            obj = cls.m.get(
+            obj = cls.query.get(
                 app_config_id=context.app.config._id,
                 title=title)
                 
             #If there's no page, make one
             if obj is None:
-                obj = cls.make(dict(
-                        title=title,
-                        app_config_id=context.app.config._id,
-                        ))
-            #Save page with new revision number
-            new_obj = dict(obj, version=obj.version + 1)
-            return cls.make(new_obj)
+                obj = cls(
+                    title=title,
+                    app_config_id=context.app.config._id,
+                    )
+            return obj
         else:
             #version was specified, move up from there and save...
             pg = cls.upsert(title)
             HC = cls.__mongometa__.history_class
-            ss = HC.m.find(
-                    {'artifact_id':pg._id, 'version':int(version)}
-                    ).one()
+            ss = HC.query.find({'artifact_id':pg._id, 'version':int(version)}).one()
             new_obj = dict(ss.data, version=version+1)
             return cls.make(new_obj)
 
@@ -109,7 +107,7 @@ class Page(VersionedArtifact):
         while True:
             try:
                 c = Comment.make(dict(page_id=self._id))
-                c.m.insert()
+                c.query.insert()
                 return c
             except OperationFailure:
                 sleep(0.1)
@@ -117,7 +115,7 @@ class Page(VersionedArtifact):
 
     def root_comments(self):
         if '_id' in self:
-            return Comment.m.find(dict(page_id=self._id, parent_id=None))
+            return Comment.query.find(dict(page_id=self._id, parent_id=None))
         else:
             return []
 
@@ -126,7 +124,7 @@ class Comment(Message):
     
     class __mongometa__:
         name='comment'
-    page_id=Field(schema.ObjectId)
+    page_id=FieldProperty(schema.ObjectId)
 
     def index(self):
         result = Message.index(self)
@@ -141,7 +139,7 @@ class Comment(Message):
     @property
     def page(self):
         """The page this comment connects too"""
-        return Page.m.get(_id=self.page_id)
+        return Page.query.get(_id=self.page_id)
 
     def url(self):
         """The URL for this specific comment"""
@@ -149,3 +147,5 @@ class Comment(Message):
 
     def shorthand_id(self):
         return '%s-%s' % (self.page.title, self._id)
+
+MappedClass.compile_all()

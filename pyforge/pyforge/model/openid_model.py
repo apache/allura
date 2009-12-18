@@ -6,14 +6,18 @@ from openid.store import nonce
 from openid.association import Association
 
 from ming import Document, Session, Field
+from ming.orm.mapped_class import MappedClass
+from ming.orm.property import FieldProperty
+from .session import main_doc_session, main_orm_session
+from .session import project_doc_session, project_orm_session
 
-class OpenIdAssociation(Document):
+class OpenIdAssociation(MappedClass):
     class __mongometa__:
-        name='oid_store'
-        session = Session.by_name('main')
+        name='oid_store_assoc'
+        session = main_orm_session
 
-    _id = Field(str) # server url
-    assocs = Field({str:str})
+    _id = FieldProperty(str) # server url
+    assocs = FieldProperty({str:str})
 
     # Mimic openid.store.memstore.ServerAssocs
     def set_assoc(self, assoc):
@@ -51,13 +55,13 @@ class OpenIdAssociation(Document):
         new_len = len(self.assocs)
         return (old_len - new_len), new_len
 
-class OpenIdNonce(Document):
+class OpenIdNonce(MappedClass):
     class __mongometa__:
-        name='oid_store'
-        session = Session.by_name('main')
+        name='oid_store_nonce'
+        session = main_orm_session
 
-    _id = Field(str) # Nonce value
-    timestamp = Field(datetime, if_missing=datetime.utcnow)
+    _id = FieldProperty(str) # Nonce value
+    timestamp = FieldProperty(datetime, if_missing=datetime.utcnow)
         
 class OpenIdStore(object):
 

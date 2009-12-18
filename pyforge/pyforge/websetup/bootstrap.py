@@ -5,6 +5,10 @@ import logging
 from datetime import datetime
 from tg import config
 from pylons import c, g
+
+from ming.orm.base import session
+from ming.orm.ormsession import ThreadLocalORMSession
+
 import pyforge
 from pyforge import model as M
 
@@ -13,7 +17,7 @@ log = logging.getLogger(__name__)
 def bootstrap(command, conf, vars):
     """Place any commands to setup pyforge here"""
     database=conf.get('db_prefix', '') + 'project:test'
-    conn = M.User.m.session.bind.conn
+    conn = M.main_doc_session.bind.conn
     for database in conn.database_names():
         if (database.startswith('project:')
             or database.startswith('user:')
@@ -21,46 +25,40 @@ def bootstrap(command, conf, vars):
             or database.startswith('users:')):
             log.info('Dropping database %s', database)
             conn.drop_database(database)
-    M.OpenId.m.remove({})
-    M.OpenIdAssociation.m.remove({})
-    M.OpenIdNonce.m.remove({})
-    M.User.m.remove({})
-    M.Project.m.remove({})
-    M.SearchConfig.m.remove({})
-    M.ScheduledMessage.m.remove({})
+    M.OpenId.query.remove({})
+    M.OpenIdAssociation.query.remove({})
+    M.OpenIdNonce.query.remove({})
+    M.User.query.remove({})
+    M.Project.query.remove({})
+    M.SearchConfig.query.remove({})
+    M.ScheduledMessage.query.remove({})
     g._push_object(pyforge.lib.app_globals.Globals())
     log.info('Initializing search')
-    M.SearchConfig.make(dict(
-            last_commit = datetime.min,
-            pending_commit = 0)).m.save()
+    M.SearchConfig(last_commit = datetime.min,
+                   pending_commit = 0)
     try:
         g.solr.delete(q='*:*')
     except:
         log.error('SOLR server is %s', g.solr_server)
-        log.exception('Error clearing solr index')
+        log.error('Error clearing solr index')
     g.publish('audit', 'search.check_commit', {})
     log.info('Registering initial users')
+    M.User.anonymous = M.User(_id=None, username='*anonymous', display_name='Anonymous Coward')
     u0 = M.User.register(dict(username='test_admin', display_name='Test Admin'))
     u1 = M.User.register(dict(username='test_user', display_name='Test User'))
     u2 = M.User.register(dict(username='test_user2', display_name='Test User 2'))
     u0.set_password('foo')
     u1.set_password('foo')
-    u0.m.save()
-    u1.m.save()
-    u2.m.save()
     log.info('Registering initial project')
     p0 = u0.register_project('test')
     p0.acl['read'].append(u1.project_role()._id)
     p1 = p0.new_subproject('sub1')
-    p0.m.save()
-    p1.m.save()
     c.user = u0
     if conf.get('load_test_data'):
         log.info('Loading test data')
         app = p0.install_app('Repository', 'src')
         app = p0.install_app('Repository', 'src_git')
         app.config.options['type'] = 'git'
-        app.config.m.save()
         return
     p0.install_app('hello_forge', 'hello')
     p0.install_app('Wiki', 'wiki')
@@ -70,16 +68,15 @@ def bootstrap(command, conf, vars):
                 url='https://rick446@bitbucket.org/rick446/sqlalchemy-migrate/'))
     app = p0.install_app('Repository', 'src_git')
     app.config.options['type'] = 'git'
-    app.config.m.save()
     with pyforge.lib.helpers.push_config(c, project=p0, app=app):
         g.publish('audit', 'scm.git.clone', dict(
                 url='git://github.com/mongodb/mongo.git'))
-    dev = M.ProjectRole.make(dict(name='developer'))
-    dev.m.save()
-    for ur in M.ProjectRole.m.find():
+    dev = M.ProjectRole(name='developer')
+    for ur in M.ProjectRole.query.find():
         if ur.name and ur.name[:1] == '*': continue
         ur.roles.append(dev._id)
-        ur.m.save()
+    ThreadLocalORMSession.flush_all()
+    
 
 def pm(etype, value, tb):
     import pdb, traceback

@@ -126,7 +126,7 @@ class ReactorCommand(Command):
             try:
                 project_id = data.get('project_id')
                 if project_id:
-                    pylons.c.project = M.Project.m.get(_id=project_id)
+                    pylons.c.project = M.Project.query.get(_id=project_id)
                 else:
                     pylons.c.project = None
                 mount_point = data.get('mount_point')
@@ -149,7 +149,7 @@ class ReactorCommand(Command):
         def callback(data, msg):
             msg.ack()
             try:
-                pylons.c.project = M.Project.m.get(_id=data['project_id'])
+                pylons.c.project = M.Project.query.get(_id=data['project_id'])
                 mount_point = data.get('mount_point')
                 if getattr(method, 'im_self', ()) is None:
                     # Instancemethod - call once for each app, binding self

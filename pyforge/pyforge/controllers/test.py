@@ -27,14 +27,14 @@ class TestController(BaseController, ProjectController):
     '''
 
     def __init__(self):
-        c.project = M.Project.m.get(_id='projects/test/')
-        c.user = M.User.m.get(username='test_admin')
+        c.project = M.Project.query.get(_id='projects/test/')
+        c.user = M.User.query.get(username='test_admin')
 
     def _dispatch(self, state, remainder):
         return _dispatch(self, state, remainder)
         
     def _lookup(self, name, *remainder):
-        subproject = M.Project.m.get(_id=c.project._id + name + '/')
+        subproject = M.Project.query.get(_id=c.project._id + name + '/')
         if subproject:
             c.project = subproject
             c.app = None

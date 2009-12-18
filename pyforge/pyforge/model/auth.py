@@ -6,10 +6,16 @@ from hashlib import sha256
 from pylons import c
 
 from ming import Document, Session, Field
+from ming.orm.base import session
+from ming.orm.mapped_class import MappedClass
+from ming.orm.property import FieldProperty
 from ming import schema as S
 
 from pyforge.lib.helpers import push_config
 from .session import ProjectSession
+from .session import main_doc_session, main_orm_session
+from .session import project_doc_session, project_orm_session
+
 
 log = logging.getLogger(__name__)
 
@@ -22,10 +28,10 @@ def encode_password(password, salt=None):
     hashpass = sha256(salt + password.encode('utf-8')).digest()
     return 'sha256' + salt + b64encode(hashpass)
 
-class OpenId(Document):
+class OpenId(MappedClass):
     class __mongometa__:
         name='openid'
-        session = Session.by_name('main')
+        session = main_orm_session
 
     _id = Field(str)
     claimed_by_user_id=Field(S.ObjectId, if_missing=None)
@@ -33,60 +39,54 @@ class OpenId(Document):
 
     @classmethod
     def upsert(cls, url, display_identifier):
-        result = cls.m.get(_id=url)
+        result = cls.query.get(_id=url)
         if not result:
-            result = cls.make(dict(
-                    _id=url,
-                    display_identifier=display_identifier))
-            result.m.save()
+            result = cls(
+                _id=url,
+                display_identifier=display_identifier)
         return result
 
     def claimed_by_user(self):
         if self.claimed_by_user_id:
-            result = User.m.get(_id=self.claimed_by_user_id)
+            result = User.query.get(_id=self.claimed_by_user_id)
         else:
             result = User.register(
                 dict(username=None, password=None,
                      display_name=self.display_identifier,
                      open_ids=[self._id]),
                 make_project=False)
-            result.m.save()
             self.claimed_by_user_id = result._id
-            self.m.save()
         return result
             
-class User(Document):
+class User(MappedClass):
     SALT_LEN=8
     class __mongometa__:
         name='user'
-        session = Session.by_name('main')
+        session = main_orm_session
 
-    _id=Field(S.ObjectId)
-    username=Field(str)
-    display_name=Field(str)
-    open_ids=Field([str])
-    password=Field(str)
-    projects=Field([str])
+    _id=FieldProperty(S.ObjectId)
+    username=FieldProperty(str)
+    display_name=FieldProperty(str)
+    open_ids=FieldProperty([str])
+    password=FieldProperty(str)
+    projects=FieldProperty([str])
 
     def claim_openid(self, oid_url):
         oid_obj = OpenId.upsert(oid_url, self.display_name)
         oid_obj.claimed_by_user_id = self._id
-        oid_obj.m.save()
         if oid_url in self.open_ids: return
         self.open_ids.append(oid_url)
-        self.m.save()
 
     @classmethod
     def new_user(cls, username):
-        u = cls.m.insert(dict(username=username,
-                              display_name=username,
-                              password='foo'))
+        u = cls(username=username,
+                display_name=username,
+                password='foo')
         return u
 
     @classmethod
     def register(cls, doc, make_project=True):
-        result = cls.make(doc)
-        result.m.insert()
+        result = cls(**doc)
         if make_project:
             result.register_project(result.username, 'users')
         return result
@@ -94,7 +94,7 @@ class User(Document):
     def _make_project(self):
         from .project import Project
         # Register user project
-        up = Project.m.get(_id='users/')
+        up = Project.query.get(_id='users/')
         p = up.new_subproject(self.username, install_apps=False)
         p.database='user:' + self.username
         is_root=True
@@ -102,19 +102,16 @@ class User(Document):
             pr = self.project_role()
             for roles in p.acl.itervalues():
                 roles.append(pr._id)
-            anon = ProjectRole.make(dict(name='*anonymous'))
-            auth = ProjectRole.make(dict(name='*authenticated'))
-            anon.m.save()
-            auth.m.save()
+            anon = ProjectRole(name='*anonymous')
+            auth = ProjectRole(name='*authenticated')
             p.acl['read'].append(anon._id)
             p.install_app('admin', 'admin')
             p.install_app('search', 'search')
-        p.m.save()
         return self
 
     def private_project(self):
         from .project import Project
-        return Project.m.get(_id='users/%s/' % self.username)
+        return Project.query.get(_id='users/%s/' % self.username)
 
     @property
     def script_name(self):
@@ -123,26 +120,25 @@ class User(Document):
     def my_projects(self):
         from .project import Project
         for p in self.projects:
-            yield Project.m.get(_id=p)
+            yield Project.query.get(_id=p)
 
     def role_iter(self):
-        yield ProjectRole.m.get(name='*anonymous')
+        yield ProjectRole.query.get(name='*anonymous')
         if self._id:
-            yield ProjectRole.m.get(name='*authenticated')
+            yield ProjectRole.query.get(name='*authenticated')
         if self._id:
             pr = self.project_role()
             for role in pr.role_iter():
                 yield role
 
     def project_role(self):
+        # session(self).flush(self) # to get the _id
         if self._id is None:
-            return ProjectRole.m.get(name='*anonymous')
-        obj = ProjectRole.m.get(user_id=self._id)
+            return ProjectRole.query.get(name='*anonymous')
+        obj = ProjectRole.query.get(user_id=self._id)
         if obj is None:
-            obj = ProjectRole.make(dict(user_id=self._id))
+            obj = ProjectRole(user_id=self._id)
             self.projects.append(c.project._id)
-            self.m.save()
-            obj.m.save()
         return obj
 
     def set_password(self, password):
@@ -158,34 +154,34 @@ class User(Document):
         from .project import Project
         database = prefix + ':' + pid
         project_id = prefix + '/' + pid + '/'
-        p = Project.make(dict(
-                _id=project_id,
-                name=pid,
-                database=database,
-                is_root=True))
+        p = Project(_id=project_id,
+                    name=pid,
+                    database=database,
+                    is_root=True)
         c.project = p
         pr = self.project_role()
+        # session(pr).flush(pr) # to get the _id of the new project role
         for roles in p.acl.itervalues():
             roles.append(pr._id)
-        ProjectRole.make(dict(name='*anonymous')).m.save()
-        ProjectRole.make(dict(name='*authenticated')).m.save()
+        ProjectRole(name='*anonymous')
+        ProjectRole(name='*authenticated')
         p.install_app('admin', 'admin')
         p.install_app('search', 'search')
-        p.m.insert()
         return p
 
-User.anonymous = User.make(dict(
-        _id=None, username='*anonymous', display_name='Anonymous Coward'))
+    @classmethod
+    def anonymous(cls):
+        return User.query.get(_id=None)
 
-class ProjectRole(Document):
+class ProjectRole(MappedClass):
     class __mongometa__:
-        session = ProjectSession(Session.by_name('main'))
+        session = project_orm_session
         name='user'
     
-    _id = Field(S.ObjectId)
-    name = Field(str)
-    user_id = Field(S.ObjectId, if_missing=None) # if role is a user
-    roles = Field([S.ObjectId])
+    _id = FieldProperty(S.ObjectId)
+    name = FieldProperty(str)
+    user_id = FieldProperty(S.ObjectId, if_missing=None) # if role is a user
+    roles = FieldProperty([S.ObjectId])
 
     def display(self):
         if self.name: return self.name
@@ -205,15 +201,14 @@ class ProjectRole(Document):
 
     @classmethod
     def for_user(cls, user):
-        obj = cls.m.get(user_id=user._id)
+        obj = cls.query.get(user_id=user._id)
         if obj is None:
             obj = cls.make(user_id=user._id)
-            obj.m.save()
         return obj
 
     @property
     def user(self):
-        return User.m.get(_id=self.user_id)
+        return User.query.get(_id=self.user_id)
 
     def role_iter(self, visited=None):
         if visited is None: visited = set()
@@ -221,7 +216,7 @@ class ProjectRole(Document):
             yield self
             visited.add(self._id)
             for rid in self.roles:
-                pr = ProjectRole.m.get(_id=rid)
+                pr = ProjectRole.query.get(_id=rid)
                 if pr is None: continue
                 for rr in pr.role_iter(visited):
                     yield rr

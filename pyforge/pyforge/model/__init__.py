@@ -7,5 +7,9 @@ from .artifact import Artifact, Message, VersionedArtifact, Snapshot, ArtifactLi
 from .auth import User, ProjectRole, OpenId
 from .openid_model import OpenIdStore, OpenIdAssociation, OpenIdNonce
 
+from .session import main_doc_session, main_orm_session
+from .session import project_doc_session, project_orm_session
+from .session import artifact_orm_session
+
 from ming.orm.mapped_class import MappedClass
 MappedClass.compile_all()

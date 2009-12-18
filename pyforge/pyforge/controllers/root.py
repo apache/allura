@@ -48,7 +48,7 @@ class RootController(BaseController):
     def __init__(self):
         # Lookup user
         uid = session.get('userid', None)
-        c.user = M.User.m.get(_id=uid) or M.User.anonymous
+        c.user = M.User.query.get(_id=uid) or M.User.anonymous
 
     def __call__(self, environ, start_response):
         app = self._wsgi_handler(environ)
