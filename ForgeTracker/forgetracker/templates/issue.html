@@ -1,0 +1,53 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+                      "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:py="http://genshi.edgewall.org/"
+      xmlns:xi="http://www.w3.org/2001/XInclude">
+  <xi:include href="${g.pyforge_templates}/master.html"/>
+  <xi:include href="${c.app.templates}/lib.html" />
+
+  <?python from pprint import pformat ?>
+
+  <head>
+    <meta content="text/html; charset=UTF-8" http-equiv="content-type" py:replace="''"/>
+    <title>${artifact.shorthand_id()}</title>
+    <style>
+      .hidden { display: None }
+    </style>
+  </head>
+
+  <body>
+    <h1>${artifact.shorthand_id()}</h1>
+    <div>
+      <a href="..">PluginRoot</a>
+      <form style="display:inline; float:right"
+            method="GET"
+            action="../search">
+        Search: <input name="q"/>
+      </form>
+    </div>
+    <a py:if="prev is not None" href=".?version=1">First</a>
+    <a py:if="prev is not None" href=".?version=$prev">&lt;</a>
+    Version $cur
+    <a py:if="next is not None" href=".?version=$ next">&gt;</a>
+    <a href=".">Latest</a>
+    <hr/>
+    <div>
+      <pre py:content="pformat(artifact)"/>
+    </div>
+
+    <hr/>
+    <h2>Comments</h2>
+    <div class="reply">
+      <h3>Make a comment</h3>
+      <form class="hidden" method="post" action="comments/reply">
+        <textarea rows="4" cols="60" name="text"></textarea><br/>
+        <input type="submit"/>
+      </form>
+    </div>
+    <py:for each="cmt in artifact.root_comments()">
+      ${display_comment(cmt)}
+    </py:for>
+  </body>
+  <script type="text/javascript" src="${g.app_static('js/comments.js')}"/>
+</html>

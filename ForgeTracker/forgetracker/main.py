@@ -3,6 +3,7 @@ import logging
 
 # Non-stdlib imports
 import pkg_resources
+from tg import tmpl_context
 from tg import expose, validate, redirect
 from pylons import g, c, request
 from formencode import validators
@@ -19,6 +20,8 @@ from pyforge.model import ProjectRole
 # Local imports
 from forgetracker import model
 from forgetracker import version
+
+from forgetracker.widgets.issue_form import create_issue_form
 
 log = logging.getLogger(__name__)
 
@@ -108,6 +111,23 @@ class RootController(object):
 
     def _lookup(self, id, *remainder):
         return ArtifactController(id), remainder
+
+class IssueController(object):
+
+    def __init__(self, id):
+        pass
+
+    @expose()
+    def index(self, issue_num, **kw):
+        return dict()
+
+    @expose('forgetracker.templates.new_issue')
+    def new(self, **kw):
+        tmpl_context.form = create_issue_form
+        return dict(modelname='Issue',
+            page='New Issue')
+
+
 
 class ArtifactController(object):
 
