@@ -57,7 +57,7 @@ Issue = Issue0
 
 
 
-class Comment0(Document):
+class Comment0(Message):
 
     class __mongometa__:
         name = 'issue_comment'
@@ -98,7 +98,7 @@ Comment = Comment0
 
 
 
-class Attachment0(Document):
+class Attachment0(Message):
 
     class __mongometa__:
         name = 'issue_attachment'
