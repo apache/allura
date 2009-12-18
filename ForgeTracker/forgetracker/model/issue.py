@@ -1,26 +1,57 @@
+from time import sleep
+
+from pylons import c
+from pymongo.errors import OperationFailure
+
 from ming.datastore import DataStore
-from ming import Session
 from ming import Document, Field, schema
 from datetime import datetime
+
+from pyforge.model import Message
 
 
 class Issue0(Document):
 
     class __mongometa__:
-        session = Session.by_name('main')
         name = 'issue'
 
+    type_s          = 'Issue'
     _id             = Field(schema.ObjectId)
     version         = Field(0)
     created_date    = Field(datetime, if_missing=datetime.utcnow)
 
-    parent          = Field(schema.ObjectId, if_missing=None)
+    parent_id       = Field(schema.ObjectId, if_missing=None)
     summary         = Field(str)
     description     = Field(str, if_missing='')
     reported_by     = Field(str)
     assigned_to     = Field(str, if_missing='')
     milestone       = Field(str, if_missing='')
     status          = Field(str, if_missing='open')
+
+    def url(self):
+        return c.app.script_name + '/' + self._id.url_encode() + '/'
+
+    def shorthand_id(self):
+        return '%s/%s' % (self.type_s, text=self.summary)
+
+    def index(self):
+        return self
+
+    def root_comments(self):
+        return Comment.m.find(dict(issue_id=self._id, reply_to=None))
+
+    def attachments(self):
+        return Attachment.m.find(dict(issue_id=self._id))
+
+    def reply(self):
+        while True:
+            try:
+                c = Comment.make(dict(issue_id=self._id))
+                c.m.insert()
+                return c
+            except OperationFailure:
+                sleep(0.1)
+                continue
 
 Issue = Issue0
 
@@ -29,17 +60,39 @@ Issue = Issue0
 class Comment0(Document):
 
     class __mongometa__:
-        session = Session.by_name('main')
         name = 'issue_comment'
 
+    type_s          = 'Issue Comment'
     _id             = Field(schema.ObjectId)
     version         = Field(0)
     created_date    = Field(datetime, if_missing=datetime.utcnow)
 
-    issue           = Field(schema.ObjectId)
+    issue_id        = Field(schema.ObjectId)
     kind            = Field(str, if_missing='comment')
-    reply_to        = Field(schema.ObjectId, if_missing=None)
+    reply_to_id     = Field(schema.ObjectId, if_missing=None)
     text            = Field(str)
+
+    def index(self):
+        result = Message.index(self)
+        author = self.author()
+        result.update(
+            title_s='Comment on %s by %s' % (
+                self.issue.shorthand_id(),
+                author.display_name
+            )
+            type_s=self.type_s
+        )
+        return result
+
+    @property
+    def issue(self):
+        return Issue.m.get(_id=self.issue_id)
+
+    def url(self):
+        return self.issue.url() + '#comment-' + self._id
+
+    def shorthand_id(self):
+        return '%s-%s' % (self.issue.shorthand_id, self._id)
 
 Comment = Comment0
 
@@ -48,16 +101,38 @@ Comment = Comment0
 class Attachment0(Document):
 
     class __mongometa__:
-        session = Session.by_name('main')
         name = 'issue_attachment'
 
+    type_s          = 'Issue Attachment'
     _id             = Field(schema.ObjectId)
     version         = Field(0)
     created_date    = Field(datetime, if_missing=datetime.utcnow)
 
-    issue           = Field(schema.ObjectId)
+    issue_id        = Field(schema.ObjectId)
     file_type       = Field(str)
     file_name       = Field(str)
     data            = Field(str)
+
+    def index(self):
+        result = Message.index(self)
+        author = self.author()
+        result.update(
+            title_s='Attachment on %s by %s' % (
+                self.issue.shorthand_id(),
+                author.display_name
+            )
+            type_s=self.type_s
+        )
+        return result
+
+    @property
+    def issue(self):
+        return Issue.m.get(_id=self.issue_id)
+
+    def url(self):
+        return self.issue.url() + '#attachment-' + self._id
+
+    def shorthand_id(self):
+        return '%s-%s' % (self.issue.shorthand_id, self._id)
 
 Attachment = Attachment0
