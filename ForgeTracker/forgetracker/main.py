@@ -110,7 +110,7 @@ class RootController(object):
         return dict(q=q, history=history, results=results or [], count=count)
 
     def _lookup(self, id, *remainder):
-        return ArtifactController(id), remainder
+        return IssueController(id), remainder
 
 class IssueController(object):
 
