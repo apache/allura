@@ -20,6 +20,7 @@ setup(name='ForgeTracker',
       install_requires=[
           # -*- Extra requirements: -*-
           'pyforge',
+          'tw.forms',
       ],
       entry_points="""
       # -*- Entry points: -*-

@@ -1,1 +1,1 @@
-from artifacts import MyArtifact, MyArtifactHistory, MyArtifactComment
+from issue import Issue, Comment, Attachment
