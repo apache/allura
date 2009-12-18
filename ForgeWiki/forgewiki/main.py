@@ -160,7 +160,7 @@ class PageController(object):
         return dict(page=page,
                     cur=cur, prev=prev, next=next)
 
-    @expose('helloforge.templates.page_edit')
+    @expose('forgewiki.templates.page_edit')
     def edit(self):
         if self.page.version == 1:
             require(has_artifact_access('create', self.page))
@@ -168,13 +168,13 @@ class PageController(object):
             require(has_artifact_access('edit', self.page))
         return dict(page=self.page)
 
-    @expose('helloforge.templates.page_history')
+    @expose('forgewiki.templates.page_history')
     def history(self):
         require(has_artifact_access('read', self.page))
         pages = self.page.history()
         return dict(title=self.title, pages=pages)
 
-    @expose('helloforge.templates.page_diff')
+    @expose('forgewiki.templates.page_diff')
     def diff(self, v1, v2):
         require(has_artifact_access('read', self.page))
         p1 = self.get_version(int(v1))
