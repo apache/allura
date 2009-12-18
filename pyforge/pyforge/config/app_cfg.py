@@ -32,11 +32,12 @@ class ForgeConfig(AppConfig):
         self.use_sqlalchemy = False
         self.use_toscawidgets = False
         self.use_transaction_manager = False
+        # self.handle_status_codes = [ 403, 404 ]
         self.handle_status_codes = [ 403, 404 ]
 
     def add_error_middleware(self, global_conf, app):
         app = AppConfig.add_error_middleware(self, global_conf, app)
-        app = StatusCodeRedirect(app, [401], '/login')
+        app = StatusCodeRedirect(app, [401], '/auth/')
         return app
 
     def setup_routes(self):

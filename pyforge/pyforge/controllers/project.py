@@ -13,7 +13,7 @@ class ProjectsController(object):
         self.prefix = prefix
     
     def _lookup(self, pname, *remainder):
-        project = M.Project.m.get(_id=self.prefix + pname + '/')
+        project = M.Project.query.get(_id=self.prefix + pname + '/')
         if project is None:
             raise exc.HTTPNotFound, pname
         c.project = project
@@ -32,7 +32,7 @@ class ProjectsController(object):
 class ProjectController(object):
 
     def _lookup(self, name, *remainder):
-        subproject = M.Project.m.get(_id=c.project._id + name + '/')
+        subproject = M.Project.query.get(_id=c.project._id + name + '/')
         if subproject:
             c.project = subproject
             c.app = None

@@ -7,16 +7,19 @@ from webob import exc
 from pymongo import bson
 
 from ming import Document, Session, Field, datastore
+from ming.orm.mapped_class import MappedClass
+from ming.orm.property import FieldProperty
 from ming import schema as S
 
 from pyforge.lib.helpers import push_config
-from .session import ProjectSession
+from .session import main_doc_session, main_orm_session
+from .session import project_doc_session, project_orm_session
 
 log = logging.getLogger(__name__)
 
 class SearchConfig(Document):
     class __mongometa__:
-        session = Session.by_name('main')
+        session = main_doc_session
         name='search_config'
 
     _id = Field(S.ObjectId)
@@ -31,7 +34,7 @@ class SearchConfig(Document):
 
 class ScheduledMessage(Document):
     class __mongometa__:
-        session = Session.by_name('main')
+        session = main_doc_session
         name='scheduled_message'
 
     _id = Field(S.ObjectId)
@@ -59,17 +62,17 @@ class ScheduledMessage(Document):
             except:
                 log.exception('Error when firing %r', obj)
 
-class Project(Document):
+class Project(MappedClass):
     class __mongometa__:
-        session = Session.by_name('main')
+        session = main_orm_session
         name='project'
 
     # Project schema
-    _id=Field(str)
-    name=Field(str)
-    database=Field(str)
-    is_root=Field(bool)
-    acl = Field({
+    _id=FieldProperty(str)
+    name=FieldProperty(str)
+    database=FieldProperty(str)
+    is_root=FieldProperty(bool)
+    acl = FieldProperty({
             'create':[S.ObjectId],    # create subproject
             'read':[S.ObjectId],      # read project
             'delete':[S.ObjectId],    # delete project, subprojects
@@ -217,7 +220,7 @@ class Project(Document):
 
 class AppConfig(Document):
     class __mongometa__:
-        session = ProjectSession(Session.by_name('main'))
+        session = project_doc_session
         name='config'
 
     # AppConfig schema

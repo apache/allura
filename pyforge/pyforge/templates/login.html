@@ -13,7 +13,7 @@
   
   <body>
     <div id="loginform">
-      <form action="/do_login" method="post" class="loginfields">
+      <form action="/auth/do_login" method="post" class="loginfields">
         <h2><span>Password Login</span></h2>
         <label for="username">Username:</label>
         <input type="text" id="username" name="username" class="text"/><br/>
@@ -23,7 +23,7 @@
       </form>
     </div>
     <div id="loginform_oid">
-      <form action="login_verify_oid" method="post" class="loginfields">
+      <form action="/auth/login_verify_oid" method="post" class="loginfields">
         <h2><span>OpenID Login</span></h2>
         <label for="provider">Provider</label>
         <select id="provider" name="provider">
