@@ -1,8 +1,14 @@
+import logging
+from itertools import chain
+
 from pylons import c
 from ming import Session
+from ming.orm.base import state
 from ming.orm.ormsession import ThreadLocalORMSession, SessionExtension
 
 from pyforge.lib import search
+
+log = logging.getLogger(__name__)
 
 class ProjectSession(Session):
 
@@ -17,32 +23,32 @@ class ArtifactSessionExtension(SessionExtension):
 
     def __init__(self, session):
         SessionExtension.__init__(self, session)
-        self.objects_removed = []
+        self.objects_added = []
+        self.objects_deleted = []
 
-    def after_insert(self, obj, st):
+    def before_flush(self, obj=None):
+        if obj is None:
+            self.objects_added = list(
+                chain(self.session.uow.new,
+                      self.session.uow.dirty))
+            self.objects_removed = list(self.session.uow.deleted)
+        else:
+            st = state(obj)
+            if st.status in (st.new, st.dirty):
+                self.objects_added = [ obj ]
+            elif st.status == st.deleted:
+                self.objects_deleted = [ obj ]
+
+    def after_flush(self, obj=None):
         from .artifact import ArtifactLink
-        search.add_artifact(obj)
-        ArtifactLink.add(obj)
-
-    def after_update(self, obj, st):
-        from .artifact import ArtifactLink
-        search.add_artifact(obj)
-        ArtifactLink.add(obj)
-
-    def after_delete(self, obj, st):
-        from .artifact import ArtifactLink
-        search.remove_artifact(obj)
-        ArtifactLink.remove(obj)
-
-    def before_remove(self, cls, *args, **kwargs):
-        from .artifact import ArtifactLink
-        self.objects_removed = [
-            (obj, state(obj)) for obj in cls.query.find(*args, **kwargs) ]
-
-    def after_remove(self, cls, *args, **kwargs):
-        for obj, st in self.objects_removed:
-            self.after_delete(obj, st)
-        self.objects_removed = []
+        if self.objects_deleted:
+            search.remove_artifacts(self.objects_deleted)
+            for obj in self.objects_deleted:
+                ArtifactLink.remove(obj)
+        if self.objects_added:
+            search.add_artifacts(self.objects_added)
+            for obj in self.objects_added:
+                ArtifactLink.add(obj)
 
 main_doc_session = Session.by_name('main')
 project_doc_session = ProjectSession(main_doc_session)

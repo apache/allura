@@ -47,7 +47,6 @@ class RootController(object):
     def reinit(self):
         repo = c.app.repo
         repo.status = 'Pending Reinit'
-        repo.m.save()
         g.publish('audit', 'scm.%s.init' % c.app.config.options.type, {})
         redirect('.')
         
@@ -55,7 +54,6 @@ class RootController(object):
     def reclone(self):
         repo = c.app.repo
         repo.status = 'Pending Reclone'
-        repo.m.save()
         g.publish('audit', 'scm.%s.reclone' % c.app.config.options.type, {})
         redirect('.')
         
@@ -63,7 +61,6 @@ class RootController(object):
     def clone_from(self, url=None):
         repo = c.app.repo
         repo.status = 'Pending Clone'
-        repo.m.save()
         g.publish('audit', 'scm.%s.clone' % c.app.config.options.type, dict(
                 url=url))
         redirect('.')
@@ -77,7 +74,6 @@ class RootController(object):
             repo = c.app.repo
             repo.pull_requests.append(
                 'Pull request from <a href="%s">%s</a> (%s)' % (url, url, clone_url))
-            repo.m.save()
         flash('Pull request sent')
         redirect('.')
 
@@ -85,7 +81,6 @@ class RootController(object):
     def delete_pull_request(self, i):
         repo = c.app.repo
         del repo.pull_requests[int(i)]
-        repo.m.save()
         redirect('.')
 
 class CommitsController(object):
@@ -98,7 +93,7 @@ class CommitsController(object):
 class CommitController(object):
 
     def __init__(self, id):
-        self.commit = model.Commit.m.get(hash=id)
+        self.commit = model.Commit.query.get(hash=id)
 
     @expose('forgescm.templates.commit_index')
     def index(self):
@@ -110,7 +105,7 @@ class CommitController(object):
 class PatchController(object):
 
     def __init__(self, id):
-        self.patch = model.Patch.m.get(_id=bson.ObjectId.url_decode(id))
+        self.patch = model.Patch.query.get(_id=bson.ObjectId.url_decode(id))
 
     @expose('forgescm.templates.patch_index')
     def index(self):

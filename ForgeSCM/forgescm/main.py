@@ -48,10 +48,11 @@ class ForgeSCMApp(Application):
                 SitemapEntry(menu_id, '.')[self.sidebar_menu()] ]
 
     def sidebar_menu(self):
+        base = self.repo.url()
         result = [
-            SitemapEntry('Home', '.'),      
-            SitemapEntry('Search', 'search'),
-            SitemapEntry('Init Repo', 'reinit'),
+            SitemapEntry('Home', base),      
+            SitemapEntry('Search', base + 'search'),
+            SitemapEntry('Init Repo', base + 'reinit'),
             ]
         repo = self.repo
         if self.config.options.type == 'hg':

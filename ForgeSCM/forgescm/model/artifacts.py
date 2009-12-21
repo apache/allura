@@ -5,6 +5,7 @@ from datetime import datetime
 from contextlib import contextmanager
 
 from tg import config
+import chardet
 from pylons import c, g
 from pymongo.errors import OperationFailure
 
@@ -38,7 +39,7 @@ class Repository(Artifact):
             app_config_id=schema.ObjectId(if_missing=None)))
 
     def url(self):
-        return c.app.script_name + '/'
+        return self.app_config.script_name() + '/'
 
     def clone_command(self):
         if self.type == 'hg':
@@ -57,7 +58,7 @@ class Repository(Artifact):
             return 'Unknown clone url'
 
     def native_url(self):
-        return '/_wsgi_/scm' + c.app.script_name
+        return '/_wsgi_/scm' + self.app_config.script_name()
 
     def file_browser(self):
         return self.native_url() + '/file'
@@ -86,8 +87,7 @@ class Repository(Artifact):
     def index(self):
         result = Artifact.index(self)
         result.update(
-            title_s='%s repository' % c.app.script_name,
-            type_s=self.type_s,
+            title_s='%s repository' % self.app_config.script_name(),
             text=self.description)
         return result
 
@@ -162,11 +162,11 @@ class Commit(Artifact):
 
     @property
     def repository(self):
-        return Repository.m.get(_id=self.repository_id)
+        return Repository.query.get(_id=self.repository_id)
 
     @property
     def patches(self):
-        return Patch.m.find(dict(commit_id=self._id))
+        return Patch.query.find(dict(commit_id=self._id))
 
     def url(self):
         return self.repository.url() + 'repo/' + self.hash + '/'
@@ -182,11 +182,33 @@ class Patch(Artifact):
     filename = FieldProperty(str)
     patch_text = FieldProperty(schema.Binary)
 
+    def _get_unicode_text(self):
+        '''determine the encoding and return either unicode or u"<<binary data>>"'''
+        if not self.patch_text: return u''
+        for attempt in ('ascii', 'utf-8', 'latin-1'):
+            try:
+                return unicode(self.patch_text, attempt)
+            except UnicodeDecodeError:
+                pass
+        encoding = chardet.detect(self.patch_text)
+        if encoding['confidence'] > 0.6:
+            return unicode(self.patch_text, encoding['encoding'])
+        else:
+            return u'<<binary data>>'
+
     def index(self):
         result = Artifact.index(self)
+        if self.patch_text:
+            encoding = chardet.detect(self.patch_text)
+            if encoding['confidence'] > 0.6:
+                text = unicode(self.patch_text, encoding['encoding'])
+            else:
+                text = '<<binary data>'
+        else:
+            self.patch_Text = ''
         result.update(
             title_s='Commit %s: %s' % (self.commit.hash, self.filename),
-            text=self.patch_text)
+            text=self._get_unicode_text())
         return result
             
     def shorthand_id(self):
@@ -194,7 +216,7 @@ class Patch(Artifact):
         
     @property
     def commit(self):
-        return Commit.m.get(_id=self.commit_id)
+        return Commit.query.get(_id=self.commit_id)
         
     def url(self):
         try:

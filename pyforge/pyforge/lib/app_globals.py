@@ -71,7 +71,7 @@ class Globals(object):
               resource ])
 
     def set_project(self, pid):
-        c.project = M.Project.m.get(_id=pid + '/')
+        c.project = M.Project.query.get(_id=pid + '/')
 
     def set_app(self, name):
         c.app = c.project.app_instance(name)
@@ -84,13 +84,22 @@ class Globals(object):
             message.setdefault('project_id', project._id)
         if app:
             message.setdefault('mount_point', app.config.options.mount_point)
+        if hasattr(c, 'queued_messages'):
+            c.queued_messages.append(dict(
+                    xn=xn,
+                    message=message,
+                    routing_key=key,
+                    **kw))
+        else:
+            self._publish(xn, message, routing_key=key, **kw)
+
+    def _publish(self, xn, message, routing_key, **kw):
         try:
-            self.publisher[xn].send(message, routing_key=key, **kw)
+            self.publisher[xn].send(message, routing_key=routing_key, **kw)
         except socket.error:
             return
-            log.exception('''Failure publishing, saving message for later:
-xn: %r
-key: %r
-data: %r
-''', xn, key, message)
-            
+            log.exception('''Failure publishing message:
+xn         : %r
+routing_key: %r
+data       : %r
+''', xn, routing_key, message)

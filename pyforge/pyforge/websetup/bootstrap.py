@@ -16,6 +16,7 @@ log = logging.getLogger(__name__)
 
 def bootstrap(command, conf, vars):
     """Place any commands to setup pyforge here"""
+    c.queued_messages = []
     database=conf.get('db_prefix', '') + 'project:test'
     conn = M.main_doc_session.bind.conn
     for database in conn.database_names():
@@ -54,6 +55,7 @@ def bootstrap(command, conf, vars):
     p0.acl['read'].append(u1.project_role()._id)
     p1 = p0.new_subproject('sub1')
     c.user = u0
+    ThreadLocalORMSession.flush_all()
     if conf.get('load_test_data'):
         log.info('Loading test data')
         app = p0.install_app('Repository', 'src')
@@ -72,9 +74,13 @@ def bootstrap(command, conf, vars):
         g.publish('audit', 'scm.git.clone', dict(
                 url='git://github.com/mongodb/mongo.git'))
     dev = M.ProjectRole(name='developer')
+    ThreadLocalORMSession.flush_all()
     for ur in M.ProjectRole.query.find():
         if ur.name and ur.name[:1] == '*': continue
         ur.roles.append(dev._id)
+    ThreadLocalORMSession.flush_all()
+    for msg in c.queued_messages:
+        g._publish(**msg)
     ThreadLocalORMSession.flush_all()
     
 

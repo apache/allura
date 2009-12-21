@@ -7,6 +7,7 @@ from pylons import c
 
 from ming import Document, Session, Field
 from ming.orm.base import session
+from ming.orm.ormsession import ThreadLocalORMSession
 from ming.orm.mapped_class import MappedClass
 from ming.orm.property import FieldProperty
 from ming import schema as S
@@ -167,6 +168,7 @@ class User(MappedClass):
         ProjectRole(name='*authenticated')
         p.install_app('admin', 'admin')
         p.install_app('search', 'search')
+        ThreadLocalORMSession.flush_all()
         return p
 
     @classmethod

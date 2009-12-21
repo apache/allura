@@ -44,8 +44,8 @@ class LogParser(object):
     def parse_header(self, cur_line, line_iter):
         hash = cur_line.split(':')[2].strip()
         log.debug('Parsing changeset %s', hash)
-        r = M.Commit.make(dict(repository_id=self.repo_id,
-                               hash=hash))
+        r = M.Commit(repository_id=self.repo_id,
+                     hash=hash)
         while cur_line != '\n':
             cur_line = line_iter.next()
             if cur_line == '\n': break
@@ -65,10 +65,8 @@ class LogParser(object):
                 r.summary = result
             elif cur_line != '\n':
                 assert False, 'Unknown header: %r' % cur_line
-        r.m.save()
         if self.result and not self.result[-1].parents:
             self.result[-1].parents = [ r.hash ]
-            self.result[-1].m.save()
         self.result.append(r)
         if cur_line == '\n':
             cur_line = line_iter.next()
@@ -79,16 +77,15 @@ class LogParser(object):
 
     def parse_diff(self, cur_line, line_iter):
         cmdline = cur_line.split(' ')
-        r = M.Patch.make(dict(repository_id=self.result[-1].repository_id,
-                              commit_id=self.result[-1]._id,
-                              filename=cmdline[2][2:]))
+        r = M.Patch(repository_id=self.result[-1].repository_id,
+                    commit_id=self.result[-1]._id,
+                    filename=cmdline[2][2:])
         text_lines = []
         while cur_line != '\n':
             cur_line = line_iter.next()
             if cur_line.startswith('diff'): break
             if cur_line != '\n': text_lines.append(cur_line)
         r.patch_text = bson.Binary(''.join(text_lines))
-        r.m.save()
         if cur_line == '\n':
             cur_line = line_iter.next()
         return cur_line

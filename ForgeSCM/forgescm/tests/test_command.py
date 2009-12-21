@@ -16,7 +16,7 @@ class TestCommand(TestCase):
     def setUp(self):
         g._push_object(app_globals.Globals())
         c._push_object(EmptyClass())
-        c.project = M.Project.m.get(_id='projects/test/')
+        c.project = M.Project.query.get(_id='projects/test/')
         c.app = c.project.app_instance('src')
 
     def test_init_log(self):

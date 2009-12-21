@@ -129,6 +129,9 @@ class ReactorCommand(Command):
                     pylons.c.project = M.Project.query.get(_id=project_id)
                 else:
                     pylons.c.project = None
+                if pylons.c.project is None and project_id:
+                    log.error('The project_id was %s but it was not found',
+                              project_id)
                 mount_point = data.get('mount_point')
                 if mount_point is not None:
                     pylons.c.app = pylons.c.project.app_instance(mount_point)
@@ -141,7 +144,13 @@ class ReactorCommand(Command):
                     # Classmethod or function - don't bind self
                     method(msg.delivery_info['routing_key'], data)
             except:
-                log.exception('Exception audit handling %s: %s', plugin_name, method)
+                log.exception('Exception audit handling %s: %s',
+                              plugin_name, method)
+            else:
+                ming.orm.ormsession.ThreadLocalORMSession.flush_all()
+            finally:
+                ming.orm.ormsession.ThreadLocalORMSession.close_all()
+                
         return callback
 
     def route_react(self, plugin_name, method):
@@ -149,6 +158,7 @@ class ReactorCommand(Command):
         def callback(data, msg):
             msg.ack()
             try:
+                # log.info('React(%s): %s', msg.delivery_info['routing_key'], data)
                 pylons.c.project = M.Project.query.get(_id=data['project_id'])
                 mount_point = data.get('mount_point')
                 if getattr(method, 'im_self', ()) is None:
@@ -163,6 +173,10 @@ class ReactorCommand(Command):
                     method(msg.delivery_info['routing_key'], data)
             except:
                 log.exception('Exception react handling %s: %s', plugin_name, method)
+            else:
+                ming.orm.ormsession.ThreadLocalORMSession.flush_all()
+            finally:
+                ming.orm.ormsession.ThreadLocalORMSession.close_all()
         return callback
     
 class EmptyClass(object): pass

@@ -35,35 +35,44 @@ class SearchApp(Application):
     @classmethod
     @react('artifacts_altered')
     def add_artifacts(cls, routing_key, doc):
-        obj = SearchConfig.m.find().first()
+        obj = SearchConfig.query.find().first()
+        log.info('Adding %d artifacts', len(doc['artifacts']))
+        obj.pending_commit += len(doc['artifacts'])
+        try:
+            g.solr.add(doc['artifacts'])
+            return
+        except UnicodeDecodeError:
+            pass
+        # Debug UnicodeDecodeError
         for a in doc['artifacts']:
-            log.info('Adding artifact: %s', a['id'])
-            obj.pending_commit += 1
-        g.solr.add(doc['artifacts'])
+            try:
+                g.solr.add([a])
+            except UnicodeDecodeError:
+                log.error('Error decoding in pysolr:\n%s', pformat(a))
 
     @classmethod
     @react('artifacts_removed')
     def del_artifacts(cls, routing_key, doc):
+        log.info('Removing %d artifacts', len(doc['artifact_ids']))
         for aid in doc['artifact_ids']:
-            log.info('Removing artifact: %s', aid)
             g.solr.delete(id=aid)
+        obj = SearchConfig.query.find().first()
+        obj.pending_commit += len(doc['artifact_ids'])
 
     @classmethod
     @audit('search.check_commit')
     def check_commit(cls, routing_key, doc):
         log.info('Checking commits')
-        obj = SearchConfig.m.find().first()
+        obj = SearchConfig.query.find().first()
         now = datetime.utcnow()
         if obj.needs_commit():
-            log.info('Committing to solr')
             obj.last_commit = now
             obj.pending_commit = 0
-            obj.m.save()
             g.solr.commit()
-        ScheduledMessage.make(dict(
-                when=now+timedelta(seconds=60),
-                exchange='audit',
-                routing_key='search.check_commit')).m.save()
+        ScheduledMessage(
+            when=now+timedelta(seconds=60),
+            exchange='audit',
+            routing_key='search.check_commit')
                                    
         
 

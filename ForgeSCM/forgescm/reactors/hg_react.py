@@ -27,10 +27,8 @@ def init(routing_key, data):
         g.publish('react', 'error', dict(
                 message=cmd.output))
         repo.status = 'Error: %s' % cmd.output
-        repo.m.save()
     else:
         repo.status = 'Ready'
-        repo.m.save()
 
 @audit('scm.hg.clone')
 def clone(routing_key, data):
@@ -47,7 +45,6 @@ def clone(routing_key, data):
         g.publish('react', 'error', dict(
                 message=errmsg))
         repo.status = 'Error: %s' % errmsg
-        repo.m.save()
     else:
         g.publish('react', 'scm.cloned', dict(
                 url=data['url']))
@@ -60,21 +57,18 @@ def fork(routing_key, data):
     repo = c.app.repo
     repo.type = 'hg'
     repo.forked_from.update(data['forked_from'])
-    repo.m.save()
     # Perform the clone
     log.info('Cloning from %s', data['url'])
     cmd = hg.clone(data['url'], '.')
     cmd.clean_dir()
     cmd.run()
     repo.status = 'Ready'
-    repo.m.save()
     log.info('Clone complete for %s', data['url'])
     if cmd.sp.returncode:
         errmsg = cmd.output
         g.publish('react', 'error', dict(
                 message=errmsg))
         repo.status = 'Error: %s' % errmsg
-        repo.m.save()
         return
     else:
         log.info("Sending scm.forked message")
@@ -101,7 +95,6 @@ def reclone(routing_key, data):
     parser.feed(StringIO(cmd.output))
     # Update the repo status
     repo.status = 'Ready'
-    repo.m.save()
 
 ## Reactors
 @react('scm.hg.refresh_commit')

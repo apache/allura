@@ -20,10 +20,10 @@ class TestHgLogParser(TestCase):
         self.fp = open(path)
         g._push_object(app_globals.Globals())
         c._push_object(EmptyClass())
-        c.project = M.Project.m.get(_id='projects/test/')
+        c.project = M.Project.query.get(_id='projects/test/')
         c.app = c.project.app_instance('src')
-        FM.Commit.m.remove(dict(app_conf_id=c.app.config._id))
-        FM.Patch.m.remove(dict(app_conf_id=c.app.config._id))
+        FM.Commit.query.remove(dict(app_conf_id=c.app.config._id))
+        FM.Patch.query.remove(dict(app_conf_id=c.app.config._id))
 
     def test_parse_hg(self):
         parser = hg.LogParser(c.app.repo._id)
@@ -40,10 +40,10 @@ class TestGitLogParser(TestCase):
         self.fp = open(path)
         g._push_object(app_globals.Globals())
         c._push_object(EmptyClass())
-        c.project = M.Project.m.get(_id='projects/test/')
+        c.project = M.Project.query.get(_id='projects/test/')
         c.app = c.project.app_instance('src_git')
-        FM.Commit.m.remove(dict(app_conf_id=c.app.config._id))
-        FM.Patch.m.remove(dict(app_conf_id=c.app.config._id))
+        FM.Commit.query.remove(dict(app_conf_id=c.app.config._id))
+        FM.Patch.query.remove(dict(app_conf_id=c.app.config._id))
 
     def test_parse_git(self):
         parser = git.LogParser(c.app.repo._id)

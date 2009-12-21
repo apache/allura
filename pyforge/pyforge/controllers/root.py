@@ -6,7 +6,7 @@ from collections import defaultdict
 import pkg_resources
 from tg import expose, flash, redirect, session
 from tg.decorators import with_trailing_slash, without_trailing_slash
-from pylons import c
+from pylons import c, g
 
 import ming
 
@@ -49,6 +49,7 @@ class RootController(BaseController):
         # Lookup user
         uid = session.get('userid', None)
         c.user = M.User.query.get(_id=uid) or M.User.anonymous()
+        c.queued_messages = []
 
     def __call__(self, environ, start_response):
         app = self._wsgi_handler(environ)
@@ -56,18 +57,22 @@ class RootController(BaseController):
             app = lambda e,s: BaseController.__call__(self, e, s)
         result = app(environ, start_response)
         if not isinstance(result, list):
-            return self._session_closing_iterator(result)
+            return self._cleanup_iterator(result)
         else:
-            # Clear all the Ming thread-local sessions
-            ming.orm.ormsession.ThreadLocalORMSession.flush_all()
-            ming.orm.ormsession.ThreadLocalORMSession.close_all()
+            self._cleanup_request()
             return result
 
-    def _session_closing_iterator(self, result):
+    def _cleanup_iterator(self, result):
         for x in result:
             yield x
+        self._cleanup_request()
+
+    def _cleanup_request(self):
         ming.orm.ormsession.ThreadLocalORMSession.flush_all()
+        for msg in c.queued_messages:
+            g._publish(**msg)
         ming.orm.ormsession.ThreadLocalORMSession.close_all()
+        
 
     def _wsgi_handler(self, environ):
         if environ['PATH_INFO'].startswith('/_wsgi_/'):

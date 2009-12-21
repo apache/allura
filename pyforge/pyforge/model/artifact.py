@@ -111,6 +111,7 @@ class Artifact(MappedClass):
     class __mongometa__:
         session = artifact_orm_session
         name='artifact'
+    type_s = 'Generic Artifact'
 
     # Artifact base schema
     _id = FieldProperty(S.ObjectId)
@@ -154,7 +155,7 @@ class Artifact(MappedClass):
             mount_point_s=self.app_config.options.mount_point,
             is_history_b=False,
             url_s=self.url(),
-            type_s='Generic Artifact')
+            type_s=self.type_s)
 
     def url(self):
         raise NotImplementedError, 'url'

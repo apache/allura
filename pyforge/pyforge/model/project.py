@@ -7,7 +7,7 @@ from webob import exc
 from pymongo import bson
 
 from ming import Document, Session, Field, datastore
-from ming.orm.base import mapper
+from ming.orm.base import mapper, session
 from ming.orm.mapped_class import MappedClass
 from ming.orm.property import FieldProperty, RelationProperty, ForeignIdProperty
 from ming import schema as S
@@ -51,15 +51,18 @@ class ScheduledMessage(MappedClass):
         # Lock the objects to fire
         nonce = bson.ObjectId()
         m = mapper(cls)
-        m.doc_cls.m.update_partial({'when' : { '$lt':now},
-                                    'nonce': None },
-                                   {'$set': {'nonce':nonce}})
+        session(cls).impl.update_partial(
+            m.doc_cls,
+            {'when' : { '$lt':now},
+             'nonce': None },
+            {'$set': {'nonce':nonce}},
+            False)
         # Actually fire
         for obj in cls.query.find(dict(nonce=nonce)):
             log.info('Firing scheduled message to %s:%s',
                      obj.exchange, obj.routing_key)
             try:
-                g.publish(obj.exchange, obj.routing_key, obj.get('data'))
+                g.publish(obj.exchange, obj.routing_key, getattr(obj, 'data', None))
                 obj.delete()
             except:
                 log.exception('Error when firing %r', obj)
@@ -153,7 +156,7 @@ class Project(MappedClass):
     @property
     def roles(self):
         from . import auth
-        roles = auth.ProjectRole.find().all()
+        roles = auth.ProjectRole.query.find().all()
         return sorted(roles, key=lambda r:r.display())
 
     def install_app(self, ep_name, mount_point, **override_options):

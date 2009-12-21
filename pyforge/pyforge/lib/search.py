@@ -1,4 +1,5 @@
 from logging import getLogger
+from itertools import islice
 
 from pylons import g
 from pprint import pformat
@@ -19,7 +20,11 @@ def _solarize(obj):
     doc = obj.index()
     if doc is None: return None
     text = doc.pop('text', '')
-    text = text + pformat(doc.values())
+    try:
+        text = text + pformat(doc.values())
+    except TypeError:
+        # log.exception('Indexing empty text: %s', doc)
+        text = pformat(doc.values())
     doc['text'] = text
     return doc
 
@@ -29,16 +34,21 @@ def add_artifact(obj):
 
 @try_solr
 def add_artifacts(obj_iter):
-    obj_iter = list(obj_iter)
-    artifacts = [ _solarize(a) for a in obj_iter ]
-    for obj, index in zip(obj_iter, artifacts):
-        if index is None:
-            log.error('Unindexable document: %s (%s): %r',
-                      obj, type(obj), obj)
-    artifacts = [ a for a in artifacts if a ]
-    g.publish('react', 'artifacts_altered',
-              dict(artifacts=artifacts),
-              serializer='yaml') # json can't handle datetimes
+    def gen_index():
+        for obj in obj_iter:
+            result = _solarize(obj)
+            if result is None:
+                log.error('Unindexable document: %s (%s): %r',
+                          obj, type(obj), obj)
+            else:
+                yield result
+    artifact_iterator = gen_index()
+    while True:
+        artifacts = list(islice(artifact_iterator, 1000))
+        if not artifacts: break
+        g.publish('react', 'artifacts_altered',
+                  dict(artifacts=artifacts),
+                  serializer='yaml')
 
 @try_solr
 def remove_artifact(obj):
