@@ -1,5 +1,6 @@
 import re
 import os
+import logging
 from time import sleep
 from datetime import datetime
 from hashlib import sha1
@@ -18,6 +19,8 @@ from .session import ProjectSession
 from .session import main_doc_session, main_orm_session
 from .session import project_doc_session, project_orm_session
 from .session import artifact_orm_session
+
+log = logging.getLogger(__name__)
 
 def nonce(length=4):
     return sha1(ObjectId().binary).hexdigest()[:4]
@@ -197,6 +200,9 @@ class Snapshot(Artifact):
     def shorthand_id(self):
         return '%s#%s' % (self.original().shorthand_id(), self.version)
 
+    def __getattr__(self, name):
+        return getattr(self.data, name)
+
 class VersionedArtifact(Artifact):
     class __mongometa__:
         session = artifact_orm_session
@@ -206,9 +212,8 @@ class VersionedArtifact(Artifact):
     version = FieldProperty(S.Int, if_missing=0)
 
     def commit(self):
-        '''Save off a snapshot of the artifact as well as saving the
-        artifact itself.'''
-        session(self).save(self) # make sure we're in the session
+        '''Save off a snapshot of the artifact and increment the version #'''
+        self.version += 1
         data = dict(
             artifact_id=self._id,
             artifact_class='%s.%s' % (
@@ -220,9 +225,10 @@ class VersionedArtifact(Artifact):
                 username=c.user.username,
                 display_name=c.user.display_name),
             timestamp=datetime.utcnow(),
-            data=state(self).document)
+            data=state(self).document.deinstrumented_clone())
         ss = self.__mongometa__.history_class(**data)
-        self.version += 1
+        log.info('Snapshot version %s of %s',
+                 self.version, self.__class__)
         return ss
 
     def get_version(self, n):

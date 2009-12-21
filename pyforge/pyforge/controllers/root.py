@@ -48,7 +48,7 @@ class RootController(BaseController):
     def __init__(self):
         # Lookup user
         uid = session.get('userid', None)
-        c.user = M.User.query.get(_id=uid) or M.User.anonymous
+        c.user = M.User.query.get(_id=uid) or M.User.anonymous()
 
     def __call__(self, environ, start_response):
         app = self._wsgi_handler(environ)
@@ -59,13 +59,15 @@ class RootController(BaseController):
             return self._session_closing_iterator(result)
         else:
             # Clear all the Ming thread-local sessions
+            ming.orm.ormsession.ThreadLocalORMSession.flush_all()
             ming.orm.ormsession.ThreadLocalORMSession.close_all()
             return result
 
     def _session_closing_iterator(self, result):
         for x in result:
             yield x
-        ming.orm.ThreadLocalORMSession.close_all()
+        ming.orm.ormsession.ThreadLocalORMSession.flush_all()
+        ming.orm.ormsession.ThreadLocalORMSession.close_all()
 
     def _wsgi_handler(self, environ):
         if environ['PATH_INFO'].startswith('/_wsgi_/'):
