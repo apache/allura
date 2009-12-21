@@ -116,8 +116,7 @@ class Page(VersionedArtifact):
     def reply(self):
         while True:
             try:
-                c = Comment.make(dict(page_id=self._id))
-                c.query.insert()
+                c = Comment(page_id=self._id)
                 return c
             except OperationFailure:
                 sleep(0.1)

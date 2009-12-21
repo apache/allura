@@ -176,6 +176,7 @@ class Project(MappedClass):
             acl=dict((p,[]) for p in App.permissions))
         app = App(self, cfg)
         with push_config(c, project=self, app=app):
+            session(cfg).flush()
             app.install(self)
         return app
 

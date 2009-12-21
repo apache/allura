@@ -7,6 +7,7 @@ import pkg_resources
 from pylons import g, c
 import genshi
 from ming import schema
+from ming.orm.base import session
 
 # Pyforge-specific imports
 from pyforge.app import Application, ConfigOption, SitemapEntry
@@ -87,6 +88,7 @@ class ForgeSCMApp(Application):
             status='Pending',
             type=self.config.options['type'],
             repo_dir=repo_dir)
+        session(repo).flush()
 
     def uninstall(self, project):
         "Remove all the plugin's artifacts from the database"

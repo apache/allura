@@ -22,7 +22,6 @@ class OpenIdAssociation(MappedClass):
     # Mimic openid.store.memstore.ServerAssocs
     def set_assoc(self, assoc):
         self.assocs[assoc.handle] = assoc.serialize()
-        self.m.save()
 
     def get_assoc(self, handle):
         return Association.deserialize(self.assocs.get(handle))
@@ -30,7 +29,6 @@ class OpenIdAssociation(MappedClass):
     def remove_assoc(self, handle):
         try:
             del self.assocs[handle]
-            self.m.save()
         except KeyError:
             return False
         else:
@@ -66,9 +64,9 @@ class OpenIdNonce(MappedClass):
 class OpenIdStore(object):
 
     def _get_assocs(self, server_url):
-        assoc = OpenIdAssociation.m.get(_id=server_url)
+        assoc = OpenIdAssociation.query.get(_id=server_url)
         if assoc is None:
-            assoc = OpenIdAssociation.make(dict(_id=server_url))
+            assoc = OpenIdAssociation(_id=server_url)
         return assoc
     
     def storeAssociation(self, server_url, association):
@@ -90,8 +88,8 @@ class OpenIdStore(object):
         if abs(timestamp - time.time()) > nonce.SKEW:
             return False
         key = str((server_url, timestamp, salt))
-        if OpenIdNonce.m.get(_id=key) is None:
-            OpenIdNonce.make(dict(_id=key)).m.save()
+        if OpenIdNonce.query.get(_id=key) is None:
+            OpenIdNonce(_id=key)
             return True
         else:
             return False
@@ -99,7 +97,7 @@ class OpenIdStore(object):
     def cleanupNonces(self):
         now = datetime.utcnow()
         cutoff = now - timedelta(seconds=nonce.SKEW)
-        num_removed = OpenIdNonce.m.remove(dict(
+        num_removed = OpenIdNonce.query.remove(dict(
                 timestamp={'$lt': cutoff}))
         return num_removed
 

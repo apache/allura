@@ -205,7 +205,7 @@ class ProjectRole(MappedClass):
     def for_user(cls, user):
         obj = cls.query.get(user_id=user._id)
         if obj is None:
-            obj = cls.make(user_id=user._id)
+            obj = cls(user_id=user._id)
         return obj
 
     @property

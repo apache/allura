@@ -72,22 +72,22 @@ def test_artifact():
     assert_true('PyForge has available model::Artifact class')
 
 def test_message_author():
-    m = Checkmessage.make(dict(page_title='test_title'))
+    m = Checkmessage(page_title='test_title')
     m.author()
     assert_true('PyForge message has author')
 
 def test_message_reply():
-    m = Checkmessage.make(dict(page_title='test_title'))
+    m = Checkmessage(page_title='test_title')
     m.reply()
     assert_true('PyForge message has reply')
 
 def test_message_descendants():
-    m = Checkmessage.make(dict(page_title='test_title'))
+    m = Checkmessage(page_title='test_title')
     m.descendants()
     assert_true('PyForge message has descendants')
 
 def test_message_replies():
-    m = Checkmessage.make(dict(page_title='test_title'))
+    m = Checkmessage(page_title='test_title')
     m.replies()
     assert_true('PyForge message has replies')
 

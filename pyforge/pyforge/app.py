@@ -121,7 +121,6 @@ class DefaultAdminController(object):
                 redirect('..')
             for k,v in kw.iteritems():
                 self.app.config.options[k] = v
-            # self.app.config.m.save()
             if is_admin:
                 # possibly moving admin mount point
                 redirect('/'
@@ -137,14 +136,12 @@ class DefaultAdminController(object):
     def add_perm(self, permission, role):
         require(has_artifact_access('configure'))
         self.app.config.acl[permission].append(ObjectId.url_decode(role))
-        # self.app.config.m.save()
         redirect('.#app-acl')
 
     @expose()
     def del_perm(self, permission, role):
         require(has_artifact_access('configure'))
         self.app.config.acl[permission].remove(ObjectId.url_decode(role))
-        # self.app.config.m.save()
         redirect('.#app-acl')
         
 

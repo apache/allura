@@ -43,15 +43,18 @@ def forked_update_dest(routing_key, data):
     log.info('Begin history copy')
     with push_context(**encode_keys(repo.forked_from)):
         parent_repo = c.app.repo
-        for commit in parent_repo.commits():
+        for commit in parent_repo.commits:
             patches = commit.patches
             with push_context(**encode_keys(data['forked_to'])):
-                commit = M.Commit.make(commit)
-                commit.update(commit_extra)
+                commit_dict = state(commit).document.deinstrumented_clone()
+                commit_dict.update(commit_extra)
+                del commit_dict['_id']
+                commit = M.Commit(**commit_dict)
                 for p in patches:
-                    p.update(commit_extra)
-                    p.commit_id = commit._id
-                    M.Patch(**state(p).document.uninstrumented_clone())
+                    patch_dict = state(p).document.deinstrumented_clone()
+                    patch_dict.update(commit_extra, commit_id=commit._id)
+                    del patch_dict['_id']
+                    M.Patch(**patch_dict)
     log.info('History copy complete')
 
 @react('scm.cloned')

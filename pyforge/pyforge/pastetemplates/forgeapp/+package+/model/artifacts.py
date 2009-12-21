@@ -12,7 +12,7 @@ class MyArtifactHistory(Snapshot):
     type_s='MyArtifact Snapshot'
 
     def original(self):
-        return MyArtifact.m.get(_id=self.artifact_id)
+        return MyArtifact.query.get(_id=self.artifact_id)
 
     def shorthand_id(self):
         return '%s#%s' % (self.original().shorthand_id(), self.version)
@@ -49,12 +49,11 @@ class MyArtifact(VersionedArtifact):
         return result
 
     def root_comments(self):
-        return MyArtifactComment.m.find(dict(artifact_id=self._id, parent_id=None))
+        return MyArtifactComment.query.find(dict(artifact_id=self._id, parent_id=None))
     def reply(self):
         while True:
             try:
-                c = MyArtifactComment.make(dict(artifact_id=self._id))
-                c.m.insert()
+                c = MyArtifactComment(artifact_id=self._id)
                 return c
             except OperationFailure:
                 sleep(0.1)
@@ -78,7 +77,7 @@ class MyArtifactComment(Message):
 
     @property
     def artifact(self):
-        return MyArtifact.m.get(_id=self.artifact_id)
+        return MyArtifact.query.get(_id=self.artifact_id)
 
     def url(self):
         return self.artifact.url() + '#comment-' + self._id

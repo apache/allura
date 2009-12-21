@@ -71,7 +71,6 @@ class AuthController(object):
             username=username,
             display_name=display_name)
         c.user.register_project(username, 'users')
-        # c.user.m.save()
         flash('Your username has been set to %s.' % username)
         redirect('/')
 

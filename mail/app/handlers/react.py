@@ -37,10 +37,10 @@ def REACTING(message, post_name=None, appmount=None, apploc=None, proj=None, hos
     ming.configure(**conf)
 
     try:
-        valid = ProjectContents(Project.m.find({"name":proj, "database":"projects:"+proj}).one())
+        valid = ProjectContents(Project.query.find({"name":proj, "database":"projects:"+proj}).one())
     except:
         try:
-            valid = ProjectContents(Project.m.find({"name":proj, "database":"users:"+proj}).one())
+            valid = ProjectContents(Project.query.find({"name":proj, "database":"users:"+proj}).one())
         except:
             logging.debug('REACT: project "' + proj + '" does not exist as project or user')
         else:
@@ -48,7 +48,7 @@ def REACTING(message, post_name=None, appmount=None, apploc=None, proj=None, hos
     else:
         logging.debug('REACT: project "' + proj + '" exists as project with _id:' + valid._id)
         try:
-            c.project = Project.m.get(_id=valid._id)
+            c.project = Project.query.get(_id=valid._id)
         except:
             logging.debug('REACT: cannot initialize valid project')
         else:

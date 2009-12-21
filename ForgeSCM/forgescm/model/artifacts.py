@@ -12,7 +12,7 @@ from pymongo.errors import OperationFailure
 from ming import schema
 from ming.orm.base import state, session, mapper
 from ming.orm.mapped_class import MappedClass
-from ming.orm.property import FieldProperty
+from ming.orm.property import FieldProperty, RelationProperty, ForeignIdProperty
 
 from pyforge.lib.helpers import push_config
 from pyforge.model import Project, Artifact, AppConfig
@@ -37,6 +37,9 @@ class Repository(Artifact):
     forked_from = FieldProperty(dict(
             project_id=str,
             app_config_id=schema.ObjectId(if_missing=None)))
+
+    commits = RelationProperty('Commit', via='repository_id',
+                               fetch=False)
 
     def url(self):
         return self.app_config.script_name() + '/'
@@ -91,9 +94,6 @@ class Repository(Artifact):
             text=self.description)
         return result
 
-    def commits(self):
-        return Commit.query.find(dict(repository_id=self._id))
-
     def clear_commits(self):
         mapper(Patch).remove(dict(repository_id=self._id))
         mapper(Commit).remove(dict(repository_id=self._id))
@@ -129,8 +129,8 @@ class Repository(Artifact):
             if os.path.exists(self.repo_dir):
                 shutil.rmtree(self.repo_dir)
         except:
-            log.exception('Error deleting %s', self.repo_dir_)
-        self.delete()
+            log.exception('Error deleting %s', self.repo_dir)
+        Artifact.delete(self)
         mapper(Commit).remove(dict(app_config_id=self.app_config_id))
         mapper(Patch).remove(dict(app_config_id=self.app_config_id))
 
@@ -141,7 +141,7 @@ class Commit(Artifact):
 
     _id = FieldProperty(schema.ObjectId)
     hash = FieldProperty(str)
-    repository_id = FieldProperty(schema.ObjectId)
+    repository_id = ForeignIdProperty(Repository)
     summary = FieldProperty(str)
     diff = FieldProperty(str)
     date = FieldProperty(str)
@@ -149,6 +149,9 @@ class Commit(Artifact):
     tags = FieldProperty([str])
     user = FieldProperty(str)
     branch = FieldProperty(str)
+
+    repository = RelationProperty(Repository, via='repository_id')
+    patches = RelationProperty('Patch', via='commit_id')
 
     def index(self):
         result = Artifact.index(self)
@@ -160,14 +163,6 @@ class Commit(Artifact):
     def shorthand_id(self):
         return self.hash
 
-    @property
-    def repository(self):
-        return Repository.query.get(_id=self.repository_id)
-
-    @property
-    def patches(self):
-        return Patch.query.find(dict(commit_id=self._id))
-
     def url(self):
         return self.repository.url() + 'repo/' + self.hash + '/'
 
@@ -177,10 +172,13 @@ class Patch(Artifact):
     type_s = 'ForgeSCM Patch'
 
     _id = FieldProperty(schema.ObjectId)
-    repository_id = FieldProperty(schema.ObjectId)
-    commit_id = FieldProperty(schema.ObjectId)
+    repository_id = ForeignIdProperty(Repository)
+    commit_id = ForeignIdProperty(Commit)
     filename = FieldProperty(str)
     patch_text = FieldProperty(schema.Binary)
+
+    repository = RelationProperty(Repository, via='repository_id')
+    commit = RelationProperty(Commit, via='commit_id')
 
     def _get_unicode_text(self):
         '''determine the encoding and return either unicode or u"<<binary data>>"'''
@@ -213,10 +211,6 @@ class Patch(Artifact):
             
     def shorthand_id(self):
         return self.commit.shorthand_id() + '.' + self.filename
-        
-    @property
-    def commit(self):
-        return Commit.query.get(_id=self.commit_id)
         
     def url(self):
         try:

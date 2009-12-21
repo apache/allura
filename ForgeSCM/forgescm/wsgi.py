@@ -65,7 +65,7 @@ class WSGIHook(app.WSGIHook, BaseController):
         length = len(url_path)
         while length:
             id = '/'.join(url_path[:length]) + '/'
-            p = M.Project.m.get(_id=id)
+            p = M.Project.query.get(_id=id)
             if p: return p, url_path[length:]
             length -= 1
         return None, url_path
