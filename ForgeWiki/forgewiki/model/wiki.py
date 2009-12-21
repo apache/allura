@@ -49,6 +49,17 @@ class PageHistory(Snapshot):
             text=self.data.text)
         return result
 
+    @property
+    def html_text(self):
+        """A markdown processed version of the page text"""
+        return to_html(self.data.text)
+
+    def root_comments(self):
+        if '_id' in self:
+            return Comment.query.find(dict(page_id=self.artifact_id, parent_id=None))
+        else:
+            return []
+
 class Page(VersionedArtifact):
     class __mongometa__:
         name='page'
@@ -93,13 +104,7 @@ class Page(VersionedArtifact):
             pg = cls.upsert(title)
             HC = cls.__mongometa__.history_class
             ss = HC.query.find({'artifact_id':pg._id, 'version':int(version)}).one()
-            new_obj = dict(ss.data, version=version+1)
-            return cls.make(new_obj)
-
-    @property
-    def html_text(self):
-        """A markdown processed version of the page text"""
-        return to_html(self.text)
+            return ss
 
     def reply(self):
         while True:
@@ -109,6 +114,11 @@ class Page(VersionedArtifact):
             except OperationFailure:
                 sleep(0.1)
                 continue
+
+    @property
+    def html_text(self):
+        """A markdown processed version of the page text"""
+        return to_html(self.text)
 
     def root_comments(self):
         if '_id' in self:

@@ -147,15 +147,15 @@ class PageController(object):
             return None
 
     @expose('forgewiki.templates.page_view')
-    @validate(dict(version=validators.Int()))
+    @validate(dict(version=validators.Int(if_empty=None)))
     def index(self, version=None):
         require(has_artifact_access('read', self.page))
         page = self.get_version(version)
         if page is None:
             if version: redirect('.?version=%d' % (version-1))
             else: redirect('.')
-        cur = page.version - 1
-        if cur > 0: prev = cur-1
+        cur = page.version
+        if cur > 1: prev = cur-1
         else: prev = None
         next = cur+1
         return dict(page=page,
@@ -180,8 +180,6 @@ class PageController(object):
         require(has_artifact_access('read', self.page))
         p1 = self.get_version(int(v1))
         p2 = self.get_version(int(v2))
-        p1.version -= 1
-        p2.version -= 1
         t1 = p1.text
         t2 = p2.text
         differ = difflib.SequenceMatcher(None, p1.text, p2.text)
@@ -221,7 +219,7 @@ class CommentController(object):
     def __init__(self, page, comment_id=None):
         self.page = page
         self.comment_id = comment_id
-        self.comment = model.Comment.m.get(_id=self.comment_id)
+        self.comment = model.Comment.query.get(_id=self.comment_id)
 
     @expose()
     def reply(self, text):
@@ -232,13 +230,12 @@ class CommentController(object):
         else:
             c = self.page.reply()
             c.text = text
-        c.m.save()
         redirect(request.referer)
 
     @expose()
     def delete(self):
         require(lambda:c.user._id == self.comment.author()._id)
-        self.comment.m.delete()
+        self.comment.delete()
         redirect(request.referer)
 
     def _dispatch(self, state, remainder):

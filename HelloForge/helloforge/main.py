@@ -248,7 +248,7 @@ class CommentController(object):
 
     @expose()
     def delete(self):
-        self.comment.query.delete()
+        self.comment.delete()
         redirect(request.referer)
 
     def _dispatch(self, state, remainder):
