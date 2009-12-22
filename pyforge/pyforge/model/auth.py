@@ -3,7 +3,9 @@ from base64 import b64encode
 from random import randint
 from hashlib import sha256
 
+import ldap
 from pylons import c
+from tg import config
 
 from ming import Document, Session, Field
 from ming.orm.base import session
@@ -144,8 +146,25 @@ class User(MappedClass):
 
     def set_password(self, password):
         self.password = encode_password(password)
-
+        
     def validate_password(self, password):
+        method = config.get('auth.method', 'local')
+        if method == 'local':
+            return self._validate_password_local(password)
+        elif method == 'ldap':
+            return self._validate_password_ldap(password)
+
+    def _validate_password_ldap(self, password):
+        try:
+            dn = 'uid=%s,%s' % (self.username, config['auth.ldap.suffix'])
+            con = ldap.initialize(config['auth.ldap.server'])
+            con.bind_s(dn, password)
+            con.unbind_s()
+        except ldap.INVALID_CREDENTIALS:
+            return False
+        return True
+    
+    def _validate_password_local(self, password):
         if not self.password: return False
         salt = str(self.password[6:6+self.SALT_LEN])
         check = encode_password(password, salt)
