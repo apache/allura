@@ -81,17 +81,47 @@ class User(MappedClass):
         self.open_ids.append(oid_url)
 
     @classmethod
-    def new_user(cls, username):
-        u = cls(username=username,
-                display_name=username,
-                password='foo')
-        return u
-
-    @classmethod
     def register(cls, doc, make_project=True):
-        result = cls(**doc)
+        method = config.get('auth.method', 'local')
+        if method == 'local':
+            result = cls._register_local(doc)
+        elif method == 'ldap':
+            result = cls._register_ldap(doc)
         if make_project:
             result.register_project(result.username, 'users')
+        return result
+
+    @classmethod
+    def _register_local(cls, doc):
+        return cls(**doc)
+
+    @classmethod
+    def _register_ldap(cls, doc):
+        password = doc.pop('password', None)
+        result = cls(**doc)
+        dn = 'uid=%s,%s' % (doc['username'], config['auth.ldap.suffix'])
+        try:
+            con = ldap.initialize(config['auth.ldap.server'])
+            con.bind_s(config['auth.ldap.admin_dn'],
+                       config['auth.ldap.admin_password'])
+            ldap_info = dict(
+                uid=doc['username'],
+                displayName=doc['display_name'],
+                cn=doc['display_name'],
+                userPassword=password,
+                objectClass=['inetOrgPerson'],
+                givenName=doc['display_name'].split()[0],
+                sn=doc['display_name'].split()[-1])
+            ldap_info = dict((k,v) for k,v in ldap_info.iteritems()
+                             if v is not None)
+            try:
+                con.add_s(dn, ldap_info.items())
+            except ldap.ALREADY_EXISTS:
+                con.modify_s(dn, [(ldap.MOD_REPLACE, k, v)
+                                  for k,v in ldap_info.iteritems()])
+            con.unbind_s()
+        except:
+            raise
         return result
 
     def _make_project(self):
@@ -145,7 +175,24 @@ class User(MappedClass):
         return obj
 
     def set_password(self, password):
+        method = config.get('auth.method', 'local')
+        if method == 'local':
+            return self._set_password_local(password)
+        elif method == 'ldap':
+            return self._set_password_ldap(password)
+
+    def _set_password_local(self, password):
         self.password = encode_password(password)
+
+    def _set_password_ldap(self, password):
+        try:
+            dn = 'uid=%s,%s' % (self.username, config['auth.ldap.suffix'])
+            con = ldap.initialize(config['auth.ldap.server'])
+            con.bind_s(dn, password)
+            con.modify_s(dn, [(ldap.MOD_REPLACE, 'userPassword', password)])
+            con.unbind_s()
+        except ldap.INVALID_CREDENTIALS:
+            return False
         
     def validate_password(self, password):
         method = config.get('auth.method', 'local')
