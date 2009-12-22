@@ -62,7 +62,6 @@ class SearchApp(Application):
     @classmethod
     @audit('search.check_commit')
     def check_commit(cls, routing_key, doc):
-        log.info('Checking commits')
         obj = SearchConfig.query.find().first()
         now = datetime.utcnow()
         if obj.needs_commit():

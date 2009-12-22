@@ -46,9 +46,12 @@ def add_artifacts(obj_iter):
     while True:
         artifacts = list(islice(artifact_iterator, 1000))
         if not artifacts: break
+        # Publish using pickle for speed -- this is our
+        #   most performance-critical message yet, and it is only Python->Python,
+        #   so pickle is appropriate (and we need DateTime, so we can't use json)
         g.publish('react', 'artifacts_altered',
                   dict(artifacts=artifacts),
-                  serializer='yaml')
+                  serializer='pickle')
 
 @try_solr
 def remove_artifact(obj):

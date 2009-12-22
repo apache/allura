@@ -23,7 +23,6 @@ class TestRootController(TestController):
         
         #Dumb test just looks for links on the page
         links = response.html.findAll('a')
-        print links
         assert_true(links, "Mummy, there are no links here!")
         
         
