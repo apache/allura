@@ -38,8 +38,7 @@ def add_artifacts(obj_iter):
         for obj in obj_iter:
             result = _solarize(obj)
             if result is None:
-                log.error('Unindexable document: %s (%s): %r',
-                          obj, type(obj), obj)
+                continue # uninidexable document
             else:
                 yield result
     artifact_iterator = gen_index()

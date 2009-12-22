@@ -63,6 +63,7 @@ setup(
     [pyforge]
     admin = pyforge.ext.admin:AdminApp
     search = pyforge.ext.search:SearchApp
+    home = pyforge.ext.project_home:ProjectHomeApp
 
     [paste.paster_command]
     reactor_setup = pyforge.command:ReactorSetupCommand

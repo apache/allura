@@ -1,10 +1,12 @@
 # -*- coding: utf-8 -*-
 
 """WebHelpers used in pyforge."""
+from contextlib import contextmanager
 from pylons import c
+from tg.decorators import before_validate
+from formencode.variabledecode import variable_decode
 
 from webhelpers import date, feedgenerator, html, number, misc, text
-from contextlib import contextmanager
 
 from pymongo import bson
 
@@ -74,4 +76,11 @@ def encode_keys(d):
     return dict(
         (k.encode('utf-8'), v)
         for k,v in d.iteritems())
+
+def vardec(fun):
+    def hook(remainder, params):
+        new_params = variable_decode(params)
+        params.update(new_params)
+    before_validate(hook)(fun)
+    return fun
 

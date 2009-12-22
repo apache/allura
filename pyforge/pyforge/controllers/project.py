@@ -49,9 +49,14 @@ class ProjectController(object):
 
     @expose('pyforge.templates.project_index')
     @with_trailing_slash
-    def index(self):
+    def old_index(self):
         require(has_project_access('read'))
         return dict()
+
+    @expose()
+    @with_trailing_slash
+    def index(self):
+        redirect('home/')
 
     @expose('pyforge.templates.project_sitemap')
     @without_trailing_slash

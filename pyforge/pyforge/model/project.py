@@ -220,6 +220,11 @@ class Project(MappedClass):
             sp.delete()
         self.delete()
 
+    def render_widget(self, widget):
+        app = self.app_instance(widget['mount_point'])
+        with push_config(c, project=self, app=app):
+            return getattr(app.widget(app), widget['widget_name'])()
+
 class AppConfig(MappedClass):
     class __mongometa__:
         session = project_orm_session

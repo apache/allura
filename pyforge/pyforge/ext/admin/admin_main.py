@@ -8,17 +8,27 @@ from webob import exc
 from pymongo.bson import ObjectId
 
 
-from pyforge.app import Application, DefaultAdminController, SitemapEntry
+from pyforge.app import Application, WidgetController, DefaultAdminController, SitemapEntry
 from pyforge.lib.dispatch import _dispatch
 from pyforge import version
 from pyforge import model as M
 from pyforge.lib.security import require, has_project_access
+
+class AdminWidgets(WidgetController):
+    widgets=['users']
+
+    def __init__(self, app): pass
+
+    @expose('pyforge.ext.admin.templates.widgets.users')
+    def users(self):
+        return dict(project_roles=c.project.roles)
 
 class AdminApp(Application):
     '''This is the admin app.  It is pretty much required for
     a functioning pyforge project.
     '''
     __version__ = version.__version__
+    widget=AdminWidgets
 
     def __init__(self, project, config):
         Application.__init__(self, project, config)

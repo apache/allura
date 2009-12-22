@@ -226,14 +226,16 @@ class User(MappedClass):
                     database=database,
                     is_root=True)
         c.project = p
-        pr = self.project_role()
-        # session(pr).flush(pr) # to get the _id of the new project role
-        for roles in p.acl.itervalues():
-            roles.append(pr._id)
-        ProjectRole(name='*anonymous')
-        ProjectRole(name='*authenticated')
-        p.install_app('admin', 'admin')
-        p.install_app('search', 'search')
+        with push_config(c, project=p, user=self):
+            pr = self.project_role()
+            # session(pr).flush(pr) # to get the _id of the new project role
+            for roles in p.acl.itervalues():
+                roles.append(pr._id)
+            ProjectRole(name='*anonymous')
+            ProjectRole(name='*authenticated')
+            p.install_app('home', 'home')
+            p.install_app('admin', 'admin')
+            p.install_app('search', 'search')
         ThreadLocalORMSession.flush_all()
         return p
 

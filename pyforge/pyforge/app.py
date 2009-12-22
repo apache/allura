@@ -63,6 +63,14 @@ class SitemapEntry(object):
                 self.children.append(e)
                 child_index[lbl] = e
 
+class WidgetController(object):
+    widgets=[]
+
+    def __init__(self, app): pass
+
+    def portlet(self, content):
+        return '<div class="portlet">%s</div>' % content
+
 class Application(object):
     'base pyforge pluggable application'
     __version__ = None
@@ -75,6 +83,7 @@ class Application(object):
     sitemap = [ ]
     installable=True
     wsgi = WSGIHook()
+    widget = WidgetController
 
     def __init__(self, project, app_config_object):
         self.project = project
