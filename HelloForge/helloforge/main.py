@@ -24,7 +24,6 @@ log = logging.getLogger(__name__)
 # Will not be needed after _dispatch is fixed in tg 2.1
 from pyforge.lib.dispatch import _dispatch
 
-
 class HelloForgeApp(Application):
     '''This is the HelloWorld application for PyForge, showing
     all the rich, creamy goodness that is installable apps.
