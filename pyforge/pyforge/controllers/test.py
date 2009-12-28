@@ -27,6 +27,7 @@ class TestController(BaseController, ProjectController):
     '''
 
     def __init__(self):
+        c.app = None
         c.project = M.Project.query.get(_id='projects/test/')
         c.user = M.User.query.get(username='test_admin')
 
