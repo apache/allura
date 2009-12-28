@@ -3,7 +3,7 @@ from itertools import chain
 
 from pylons import c
 from ming import Session
-from ming.orm.base import state
+from ming.orm.base import state, session
 from ming.orm.ormsession import ThreadLocalORMSession, SessionExtension
 
 from pyforge.lib import search
@@ -49,6 +49,7 @@ class ArtifactSessionExtension(SessionExtension):
             search.add_artifacts(self.objects_added)
             for obj in self.objects_added:
                 ArtifactLink.add(obj)
+            session(ArtifactLink).flush()
 
 main_doc_session = Session.by_name('main')
 project_doc_session = ProjectSession(main_doc_session)

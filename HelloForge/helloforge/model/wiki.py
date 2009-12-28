@@ -69,7 +69,7 @@ class Page(VersionedArtifact):
     text=FieldProperty(schema.String, if_missing='')
 
     def url(self):
-        return self.app_config.script_name() + '/' + self.title + '/'
+        return self.app_config.script_name() + self.title + '/'
 
     def shorthand_id(self):
         return self.title

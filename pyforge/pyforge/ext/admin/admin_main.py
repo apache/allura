@@ -1,5 +1,6 @@
 import difflib
 from pprint import pformat
+from collections import defaultdict
 
 import pkg_resources
 from pylons import c, request
@@ -15,13 +16,28 @@ from pyforge import model as M
 from pyforge.lib.security import require, has_project_access
 
 class AdminWidgets(WidgetController):
-    widgets=['users']
+    widgets=['users', 'plugin_status']
 
     def __init__(self, app): pass
 
     @expose('pyforge.ext.admin.templates.widgets.users')
     def users(self):
         return dict(project_roles=c.project.roles)
+
+    @expose('pyforge.ext.admin.templates.widgets.plugin_status')
+    def plugin_status(self):
+        'Display # of ArtifactLinks for each (mounted) plugin'
+        links = defaultdict(list)
+        for ac in c.project.app_configs:
+            mp = ac.options.mount_point
+            q = M.ArtifactLink.query.find(dict(project_id=c.project._id,
+                                               mount_point=mp))
+            ct = q.count()
+            if 0 < ct < 10:
+                links[mp] = q.all()
+            elif ct:
+                links[mp] = [ None ] * ct
+        return dict(links=links)
 
 class AdminApp(Application):
     '''This is the admin app.  It is pretty much required for

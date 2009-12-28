@@ -59,7 +59,7 @@ class PortalConfig(Artifact):
             
 
     def url(self):
-        return self.app_config.script_name() + '/'
+        return self.app_config.script_name()
 
     def index(self):
         return None

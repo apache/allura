@@ -42,7 +42,7 @@ class Repository(Artifact):
                                fetch=False)
 
     def url(self):
-        return self.app_config.script_name() + '/'
+        return self.app_config.script_name()
 
     def clone_command(self):
         if self.type == 'hg':

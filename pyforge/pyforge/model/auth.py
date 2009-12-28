@@ -224,7 +224,7 @@ class User(MappedClass):
         p = Project(_id=project_id,
                     name=pid,
                     short_description='Please update with a short description',
-                    description=('%s\n'
+                    description=(pid + '\n'
                                  + '=' * 80 + '\n\n' 
                                  + 'You can edit this description in the admin page'),
                     database=database,
@@ -235,7 +235,8 @@ class User(MappedClass):
             # session(pr).flush(pr) # to get the _id of the new project role
             for roles in p.acl.itervalues():
                 roles.append(pr._id)
-            ProjectRole(name='*anonymous')
+            pr = ProjectRole(name='*anonymous')
+            p.acl.read.append(pr._id)
             ProjectRole(name='*authenticated')
             p.install_app('home', 'home')
             p.install_app('admin', 'admin')

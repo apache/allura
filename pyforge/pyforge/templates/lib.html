@@ -34,7 +34,7 @@
     <ul id="mainmenu">
       <li><a href="/">Welcome</a></li>
       <li><a href="/search/">Search</a></li>
-      <py:if test="hasattr(c, 'project')">
+      <py:if test="c.project">
         <li py:for="s in c.project.sitemap()">
           <a py:if="s.url" href="$s.url">$s.label</a>
           <span py:if="not s.url">$s.label</span>
