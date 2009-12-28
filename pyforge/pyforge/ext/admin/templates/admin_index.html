@@ -22,8 +22,31 @@
   </head>
   
   <body>
-    <h1>ProjectAdmin for ${project_links(c.project)}</h1>
+    <h1>Admin $c.project.name</h1>
     <div id="subproject-admin">
+      <form method="POST" action="update">
+        <table>
+          <tbody>
+            <tr>
+              <th>Project Name</th>
+              <td><input name="name" value="$c.project.name"/></td>
+            </tr>
+            <tr>
+              <th>Short Name</th>
+              <td>$c.project.shortname</td>
+            </tr>
+          </tbody>
+        </table>
+        <label for="short_description">Short Description (text only)</label><br/>
+        <textarea name="short_description" id="short_description"
+                  >$c.project.short_description</textarea>
+        <br/>
+        <label for="description">Description (MarkDown)</label><br/>
+        <textarea name="description" id="description"
+                  >$c.project.description</textarea>
+        <br/>
+        <input type="submit" value="Update Project"/>
+      </form>
       <h2>Subproject Admin</h2>
       <form method="POST" action="new_subproject">
         Add a subproject at $c.project._id 

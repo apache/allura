@@ -65,4 +65,13 @@
     </ul>
   </py:def>
 
+  <py:def function="crumbs(trail)">
+    <py:for each="i, (label, url) in enumerate(trail)">
+      <li class="${i == 0 and 'first' or None}">
+        <a py:if="url" href="$url">$label</a>
+        <span py:if="not url">$label</span>
+      </li>
+    </py:for>
+  </py:def>
+
 </html>

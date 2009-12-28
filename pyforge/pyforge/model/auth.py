@@ -223,6 +223,10 @@ class User(MappedClass):
         project_id = prefix + '/' + pid + '/'
         p = Project(_id=project_id,
                     name=pid,
+                    short_description='Please update with a short description',
+                    description=('%s\n'
+                                 + '=' * 80 + '\n\n' 
+                                 + 'You can edit this description in the admin page'),
                     database=database,
                     is_root=True)
         c.project = p

@@ -76,3 +76,33 @@ ul#sidebarmenu li a {
 ul#sidebarmenu li a:hover {
     background-color: #ddd;
 }
+
+#breadcrumbs
+{
+    height: 2em;
+    width: 100%;
+}
+
+#breadcrumbs ul
+{ 
+    height: 2em;
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+}
+
+#breadcrumbs ul li
+{ 
+    float: left;
+    padding-left: 0.5em;
+}
+
+#breadcrumbs ul li:before
+{	
+    content: "\00BB";
+}
+
+#breadcrumbs ul li.first:before
+{	
+    content: "";
+}

@@ -47,7 +47,7 @@ class SitemapEntry(object):
         if callable(lbl):
             lbl = lbl(app)
         if url and not url.startswith('/'):
-            url = app.script_name + '/' + url
+            url = app.script_name + url
         return SitemapEntry(lbl, url, [
                 ch.bind_app(app) for ch in self.children])
 

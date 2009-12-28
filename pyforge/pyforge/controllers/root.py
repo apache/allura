@@ -48,6 +48,7 @@ class RootController(BaseController):
     def __init__(self):
         # Lookup user
         uid = session.get('userid', None)
+        c.project = c.app = None
         c.user = M.User.query.get(_id=uid) or M.User.anonymous()
         c.queued_messages = []
 
@@ -89,6 +90,10 @@ class RootController(BaseController):
             prefix, rest = p._id.split('/', 1)
             projects[prefix].append(p)
         return dict(projects=projects)
+
+    @expose()
+    def error(self):
+        raise AssertionError, 'hgi'
 
     def _dispatch(self, state, remainder):
         return _dispatch(self, state, remainder)

@@ -75,6 +75,8 @@ class Project(MappedClass):
     # Project schema
     _id=FieldProperty(str)
     name=FieldProperty(str)
+    short_description=FieldProperty(str)
+    description=FieldProperty(str)
     database=FieldProperty(str)
     is_root=FieldProperty(bool)
     acl = FieldProperty({
@@ -105,10 +107,14 @@ class Project(MappedClass):
     @property
     def script_name(self):
         return '/' + self._id
-            
+
     @property
     def shortname(self):
         return self._id.split('/')[-2]
+
+    @property
+    def description_html(self):
+        return g.markdown.convert(self.description)
 
     @property
     def parent_project(self):
@@ -225,6 +231,14 @@ class Project(MappedClass):
         with push_config(c, project=self, app=app):
             return getattr(app.widget(app), widget['widget_name'])()
 
+    def breadcrumbs(self):
+        entry = ( self.name, self.script_name )
+        if self.parent_project:
+            return self.parent_project.breadcrumbs() + [
+                (self.name, self.script_name) ]
+        else:
+            return [ ( self._id.rsplit('/', 2)[0], None) ] + [ entry ]
+
 class AppConfig(MappedClass):
     class __mongometa__:
         session = project_orm_session
@@ -249,4 +263,9 @@ class AppConfig(MappedClass):
         return None
 
     def script_name(self):
-        return self.project.script_name + self.options.mount_point
+        return self.project.script_name + self.options.mount_point + '/'
+
+    def breadcrumbs(self):
+        return self.project.breadcrumbs() + [
+            (self.options.mount_point, self.script_name()) ]
+            

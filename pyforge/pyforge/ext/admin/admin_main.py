@@ -86,6 +86,13 @@ class ProjectAdminController(object):
         return app.admin, remainder
 
     @expose()
+    def update(self, name=None, shortname=None, short_description=None, description=None, **kw):
+        c.project.name = name
+        c.project.short_description = short_description
+        c.project.description = description
+        redirect('.')
+
+    @expose()
     def install(self, ep_name, mount_point):
         'install a plugin a the given mount point'
         require(has_project_access('plugin'))

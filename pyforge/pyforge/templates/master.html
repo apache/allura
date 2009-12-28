@@ -30,6 +30,14 @@
       <py:with vars="flash=tg.flash_obj.render('flash', use_js=False)">
         <div py:if="flash" py:content="XML(flash)" />
       </py:with>
+      <div id="breadcrumbs" py:if="c.project or c.app">
+        <ul py:if="c.app">
+          ${crumbs(c.app.config.breadcrumbs())}
+        </ul>
+        <ul py:if="not c.app">
+          ${crumbs(c.project.breadcrumbs())}
+        </ul>
+      </div>
       <div py:replace="select('*|text()')"/>
       <!-- End of main_content -->
       ${footer()}

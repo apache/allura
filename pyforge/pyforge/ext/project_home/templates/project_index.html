@@ -17,7 +17,7 @@
   </head>
   
   <body>
-    <h1>Project Homepage for ${project_links(c.project)}</h1>
+    ${Markup(c.project.description_html)}
     <div class="$layout_class">
       <div py:for="div in layout" id="$div.name">
         <py:for each="w in div.content">${Markup(w)}</py:for>
