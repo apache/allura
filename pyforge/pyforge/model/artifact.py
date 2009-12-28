@@ -155,7 +155,8 @@ class Artifact(MappedClass):
             mount_point_s=self.app_config.options.mount_point,
             is_history_b=False,
             url_s=self.url(),
-            type_s=self.type_s)
+            type_s=self.type_s,
+            snippet_s='')
 
     def url(self):
         raise NotImplementedError, 'url'

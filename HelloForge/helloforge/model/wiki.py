@@ -77,7 +77,7 @@ class Page(VersionedArtifact):
     def index(self):
         result = VersionedArtifact.index(self)
         result.update(
-            title_s=self.title,
+            title_s='HelloForge WikiPage %s' % self.title,
             version_i=self.version,
             type_s='WikiPage',
             text=self.text)

@@ -205,7 +205,7 @@ class Patch(Artifact):
         else:
             self.patch_Text = ''
         result.update(
-            title_s='Commit %s: %s' % (self.commit.hash, self.filename),
+            title_s='Patch on Commit %s: %s' % (self.commit.hash, self.filename),
             text=self._get_unicode_text())
         return result
             

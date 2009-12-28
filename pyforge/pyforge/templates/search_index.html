@@ -16,7 +16,7 @@
     <h1>Search</h1>
     <form method="GET" action=".">
       <input type="text" name="q" value="$q"/><br/>
-      Search history? <input type="checkbox" name="history" checked="${history or None}"/><br/>
+      Search all versions? <input type="checkbox" name="history" checked="${history or None}"/><br/>
       <input type="submit" value="Search"/>
     </form>
     <p py:if="count==0 and q">No results.</p>
@@ -24,7 +24,9 @@
     <p py:if="count > 1 and q">$count results.</p>
     <div py:for="doc in results">
       <a href="${doc['url_s']}">$doc.title_s</a><br/>
-      <pre>${pformat(doc)}</pre>
+      <py:if test="doc.get('snippet')">
+        ${Markup(doc['snippet'])}<br/>
+      </py:if>
       <hr/>
     </div>
   </body>
