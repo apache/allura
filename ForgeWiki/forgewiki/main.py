@@ -168,7 +168,8 @@ class PageController(object):
             require(has_artifact_access('create', self.page))
         else:
             require(has_artifact_access('edit', self.page))
-        return dict(page=self.page)
+        return dict(page=self.page,
+                    example=MARKDOWN_EXAMPLE)
 
     @expose('forgewiki.templates.page_history')
     def history(self):
@@ -250,3 +251,12 @@ class CommentController(object):
         else:
             return CommentController(
                 self.page, next), remainder
+
+MARKDOWN_EXAMPLE='''
+# First-level heading
+
+Some *emphasized* and **strong** text
+
+#### Fourth-level heading
+
+'''
