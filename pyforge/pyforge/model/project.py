@@ -75,13 +75,14 @@ class Project(MappedClass):
     # Project schema
     _id=FieldProperty(str)
     name=FieldProperty(str)
-    short_description=FieldProperty(str)
-    description=FieldProperty(str)
+    short_description=FieldProperty(str, if_missing='')
+    description=FieldProperty(str, if_missing='')
     database=FieldProperty(str)
     is_root=FieldProperty(bool)
     acl = FieldProperty({
             'create':[S.ObjectId],    # create subproject
             'read':[S.ObjectId],      # read project
+            'update':[S.ObjectId],    # update project metadata
             'delete':[S.ObjectId],    # delete project, subprojects
             'plugin':[S.ObjectId],    # install/delete/configure plugins
             'security':[S.ObjectId],  # update ACL, roles
@@ -120,7 +121,7 @@ class Project(MappedClass):
     def parent_project(self):
         if self.is_root: return None
         parent_id, shortname, empty = self._id.rsplit('/', 2)
-        return self.get(_id=parent_id + '/')
+        return self.query.get(_id=parent_id + '/')
 
     def sitemap(self):
         from pyforge.app import SitemapEntry
@@ -211,8 +212,10 @@ class Project(MappedClass):
                 'options.mount_point':mount_point}).first()
 
     def new_subproject(self, name, install_apps=True):
+        _id = self._id + name + '/'
         sp = Project(
-            _id = self._id + name + '/',
+            _id=_id,
+            name=name,
             database=self.database,
             is_root=False)
         if install_apps:
@@ -224,7 +227,7 @@ class Project(MappedClass):
         # Cascade to subprojects
         for sp in self.subprojects:
             sp.delete()
-        self.delete()
+        MappedClass.delete(self)
 
     def render_widget(self, widget):
         app = self.app_instance(widget['mount_point'])

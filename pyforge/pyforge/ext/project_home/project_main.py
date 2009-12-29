@@ -30,6 +30,7 @@ class ProjectWidgets(WidgetController):
 class ProjectHomeApp(Application):
     __version__ = version.__version__
     widget = ProjectWidgets
+    installable = False
 
     def __init__(self, project, config):
         Application.__init__(self, project, config)

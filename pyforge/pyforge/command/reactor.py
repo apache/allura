@@ -11,7 +11,7 @@ import pylons
 from paste.script import command
 from paste.deploy import appconfig
 from carrot.connection import BrokerConnection
-from carrot.messaging import Consumer
+from carrot.messaging import Consumer, ConsumerSet
 
 from pyforge.config.environment import load_environment
 
@@ -87,12 +87,20 @@ class ReactorCommand(Command):
     summary = 'Start up all the auditors and reactors for registered plugins'
     parser = command.Command.standard_parser(verbose=True)
     parser.add_option('-p', '--proc', dest='proc', type='int', default=1,
-                      help='number of worker processes to spawn per queue')
+                      help='number of worker processes to spawn')
 
     def command(self):
         self.basic_setup()
         processes = [ Process(target=self.periodic_main, args=()) ]
+        configs = [
+            dict(plugin_name=name,
+                 method=method, xn=xn, qn=qn, keys=keys)
+            for name, plugin in self.plugins
+            for method, xn, qn, keys in plugin_consumers(name, plugin) ]
         for x in xrange(self.options.proc):
+            processes.append(Process(target=self.multi_worker_main,
+                                     args=(configs,)))
+            continue
             processes += [
                 Process(target=self.worker_main, args=((name,)+ args))
                 for name, plugin in self.plugins
@@ -102,6 +110,20 @@ class ReactorCommand(Command):
         while True:
             time.sleep(300)
             log.info('=== Mark ===')
+
+    def multi_worker_main(self, configs):
+        log.info('Entering multiqueue worker process')
+        consumers = [ ]
+        cset = ConsumerSet(pylons.g.conn)
+        for config in configs:
+            c = Consumer(connection=pylons.g.conn, queue=config['qn'])
+            if config['xn'] == 'audit':
+                c.register_callback(self.route_audit(config['plugin_name'], config['method']))
+            else:
+                c.register_callback(self.route_react(config['plugin_name'], config['method']))
+            cset.add_consumer(c)
+        for x in cset.iterconsume():
+            pass
 
     def worker_main(self, plugin_name, method, xn, qn, keys):
         log.info('Entering worker process: %s', qn)

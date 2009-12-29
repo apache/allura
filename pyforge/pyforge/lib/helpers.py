@@ -16,7 +16,8 @@ def make_users(uids):
 
 def make_roles(ids):
     from pyforge import model as M
-    return (M.ProjectRole.query.get(_id=id) for id in ids)
+    result = (M.ProjectRole.query.get(_id=id) for id in ids)
+    return (pr for pr in result if pr is not None)
 
 @contextmanager
 def push_config(obj, **kw):

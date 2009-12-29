@@ -91,10 +91,6 @@ class RootController(BaseController):
             projects[prefix].append(p)
         return dict(projects=projects)
 
-    @expose()
-    def error(self):
-        raise AssertionError, 'hgi'
-
     def _dispatch(self, state, remainder):
         return _dispatch(self, state, remainder)
         

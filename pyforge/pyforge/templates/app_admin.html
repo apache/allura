@@ -15,18 +15,18 @@
     <h1>Admin for 
       ${project_links(c.project)} $app.config.options.mount_point </h1>
     <h2>App type: $app.config.plugin_name</h2>
-    <div id="app-config">
+    <div id="app-config" py:if="len(app.config_options) > 1">
       <h3>Config Options</h3>
       <form method="post" action="configure">
-        <div py:for="o in app.config_options">
+        <div py:for="o in app.config_options" py:if="o.name != 'mount_point'">
           <label for="$o.name">$o.name</label><br/>
           <input name="$o.name" value="${app.config.options.get(o.name, o.default)}"/>
         </div>
         <input type="submit" value="Update config"/>
-        <input type="submit" name="delete" value="Delete Plugin"/>
+        <input py:if="app.installable" type="submit" name="delete" value="Delete Plugin"/>
       </form>
     </div>
-    <div id="app-acl">
+    <div id="app-acl" py:if="app.permissions">
       <h3>ACL Config</h3>
       <div py:for="p in app.permissions" >
         <h4>$p</h4>

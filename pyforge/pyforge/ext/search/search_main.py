@@ -24,6 +24,8 @@ class SearchApp(Application):
     all the rich, creamy goodness that is installable apps.
     '''
     __version__ = version.__version__
+    installable = False
+    
     def __init__(self, project, config):
         Application.__init__(self, project, config)
         self.root = SearchController()

@@ -19,146 +19,210 @@
                 value="$r._id">${r.display()}</option>
       </select>
     </py:def>
+    <link rel="stylesheet" type="text/css" media="screen" href="${g.app_static('css/admin.css')}"/>
   </head>
   
   <body>
-    <h1>Admin $c.project.name</h1>
-    <div id="subproject-admin">
-      <form method="POST" action="update">
-        <table>
-          <tbody>
-            <tr>
-              <th>Project Name</th>
-              <td><input name="name" value="$c.project.name"/></td>
-            </tr>
-            <tr>
-              <th>Short Name</th>
-              <td>$c.project.shortname</td>
-            </tr>
-          </tbody>
-        </table>
-        <label for="short_description">Short Description (text only)</label><br/>
-        <textarea name="short_description" id="short_description"
-                  >$c.project.short_description</textarea>
-        <br/>
-        <label for="description">Description (MarkDown)</label><br/>
-        <textarea name="description" id="description"
-                  >$c.project.description</textarea>
-        <br/>
-        <input type="submit" value="Update Project"/>
-      </form>
-      <h2>Subproject Admin</h2>
-      <form method="POST" action="new_subproject">
-        Add a subproject at $c.project._id 
-        <input name="sp_name"/><br/>
-        <input type="submit" value="Add Subproject"/>
-      </form>
-      <ul>
-        <li py:for="sp in c.project.direct_subprojects">
-          <a href="/${sp._id + 'admin/'}">$sp.shortname</a>
-        </li>
-      </ul>
-    </div>
-    <div id="plugin-admin" 
-         py:if="has_project_access('plugin')()">
-      <h2>Plugin Admin</h2>
-      <ul>
-        <li py:for="config in c.project.app_configs">
-          <a href="$config.options.mount_point/">
-            $config.plugin_name (at $config.options.mount_point)</a>
-        </li>
-      </ul>
-      <form method="post" action="install"
-            py:if="has_project_access('plugin')()">
-        <fieldset><legend>Install Plugins</legend>
-          Plugin name: 
-          <select name="ep_name">
-            <option py:for="name in installable_plugin_names" value="$name">
-              $name</option>
-          </select><br/>
-          Mount Point: <input name="mount_point"/><br/>
-          <input type="submit" value="Install" />
-        </fieldset>
+    <h1>Project Admin</h1>
+    <div id="project-admin">
+      <div py:if="not has_project_access('update')()">
+        <h3>Project Name: $c.project.name</h3>
+        <h3>Short Description</h3>
+        <pre>$c.project.short_description</pre>
+        <h3>Description</h3>
+        ${Markup(c.project.description_html)}
+      </div>
+      <form py:if="has_project_access('update')()" method="POST" action="update">
+        <div class="editable viewing">
+          <div class="viewer"><h3>Project Name: $c.project.name</h3></div>
+          <div class="editor">
+            <label>Project Name:</label>
+            <input name="name" value="$c.project.name"/>
+          </div>
+        </div>
+        <h3>Shortname: $c.project.shortname</h3>
+        <h3>Short Description</h3>
+        <div class="editable viewing">
+          <div class="viewer"><pre>$c.project.short_description</pre></div>
+          <div class="editor">
+            <textarea name="short_description">$c.project.short_description</textarea>
+          </div>
+        </div>
+        <h3>Description</h3>
+        <div class="editable viewing">
+          <div class="viewer">${Markup(c.project.description_html)}</div>
+          <div class="editor">
+            <textarea name="description">$c.project.description</textarea>
+          </div>
+        </div>
       </form>
     </div>
-    <div id="acl-admin" py:if="has_project_access('security')()">
-      <h2>Project ACL Admin</h2>
-      <p>The project ACL determines project-level permissions.</p>
-      <div py:for="permission, role_ids in c.project.acl.iteritems()"
-           style="border:1px solid black">
-        <h3>Permission: $permission</h3>
-        <ul>
-          <li py:for="r in h.make_roles(role_ids)">
-            ${r.display()}
-            <form 
-               py:if="c.user != r.user or permission != 'security'"
-               method="post" 
-               action="del_perm" 
-               style="display:inline">
+    <div id="mount-admin" class="title-pane"> 
+      <h2 class="title">Plugin / Subproject Admin <a href="#mount-admin">#</a></h2>
+      <div class="content">
+        <form method="POST" action="update_mounts">
+          <input py:for="i, sp in enumerate(c.project.direct_subprojects)"
+                 type="hidden" 
+                 name="subproject-${i}.id"
+                 value="$sp._id"/>
+          <input py:for="i, config in enumerate(c.project.app_configs)"
+                 type="hidden" 
+                 name="plugin-${i}.mount_point"
+                 value="$config.options.mount_point"/>
+          <table>
+            <thead>
+              <tr>
+                <th>Type</th>
+                <th>Mount Point</th>
+                <th>Edit</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr py:for="i, sp in enumerate(c.project.direct_subprojects)">
+                <td>Subproject</td>
+                <td>$sp.shortname</td>
+                <td><a href="/${sp._id + 'admin/'}">Edit</a></td>
+                <td><input py:if="has_project_access('delete')()" 
+                           name="subproject-${i}.delete" type="submit" value="Delete"/></td>
+              </tr>
+              <tr py:for="i, config in enumerate(c.project.app_configs)">
+                <td>Plugin: $config.plugin_name</td>
+                <td>$config.options.mount_point</td>
+                <td><a py:if="has_project_access('plugin')()"
+                       href="$config.options.mount_point/">Edit</a></td>
+                <td><input py:if="has_project_access('plugin')() and config.load().installable"
+                           name="plugin-${i}.delete" type="submit" value="Delete"/></td>
+              </tr>
+              <tr>
+                <td>
+                  <select name="new.ep_name">
+                    <option value="">New Subproject</option>
+                    <optgroup label="New Plugin">
+                      <option py:for="name in installable_plugin_names" value="$name">$name</option>
+                    </optgroup>
+                  </select>
+                </td>
+                <td>
+                  <input name="new.mount_point"/>
+                </td>
+                <td colspan="2">
+                  <input type="submit" value="Install" name="new.install"/>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </form>
+      </div>
+    </div>
+    <div id="acl-admin" class="title-pane hidden" 
+         py:if="has_project_access('security')()">
+      <h2 class="title">Project ACL Admin <a href="#acl-admin">#</a></h2>
+      <div class="content">
+        <p>The project ACL determines project-level permissions.</p>
+        <div py:for="permission, role_ids in c.project.acl.iteritems()"
+             class="title-pane hidden">
+          <h3 class="title">Permission: $permission</h3>
+          <div class="content">
+            <form method="POST" action="update_acl">
               <input type="hidden" name="permission" value="$permission"/>
-              <input type="hidden" name="role" value="${r._id.url_encode()}"/>
-              <input type="submit" value="Remove Permission"/>
+              <input py:for="i,rid in enumerate(role_ids)"
+                     type="hidden" name="role-${i}.id" value="$rid"/>
+              <table>
+                <thead>
+                  <tr><th>Role</th><th>Username</th><th/></tr>
+                </thead>
+                <tbody>
+                  <tr py:for="i, r in enumerate(h.make_roles(role_ids))">
+                    <td>${r.display()}</td>
+                    <td>$r.user.username</td>
+                    <td><input type="submit" value="Remove" name="role-${i}.delete" /></td>
+                  </tr>
+                  <tr>
+                    <td>
+                      <select name="new.id">
+                        <option value="">User</option>
+                        <optgroup label="Existing role">
+                          <option py:for="r in c.project.roles"
+                                  value="$r._id">${r.display()}</option>
+                        </optgroup>
+                      </select>
+                    </td>
+                    <td>
+                      <input name="new.username"/>
+                    </td>
+                    <td>
+                      <input type="submit" name="new.add" value="Add Permission"/>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
             </form>
-          </li>
-        </ul>
-        <form method="post" action="add_perm">
-          <input type="hidden" name="permission" value="$permission"/>
-          <label for="role">Role:</label>
-          ${role_select('role')}
-          <input type="submit" value="Add Permission"/>
-        </form>
-        <form method="post" action="add_user_perm">
-          <input type="hidden" name="permission" value="$permission"/>
-          <label for="username">Username:</label>
-          <input name="username"/>
-          <input type="submit" value="Add Permission"/>
-        </form>
+          </div>
+        </div>
       </div>
     </div>
     <div id="role-admin" 
+         class="title-pane hidden"
          py:if="c.project.is_root and has_project_access('security')()">
-      <h2>Role Admin</h2>
-      <p>
-        Each user on the project has a private role.  
-        Each role can have subroles.  A role inherits all the permissions 
-        that its subroles have.  All users who have read access should 
-        automatically appear here.
-      </p>
-      <div py:for="r in c.project.roles" style="border:1px solid black">
-        <h3>${r.display()}</h3>
-        <form method="post" action="del_role" py:if="not r.special">
-          <input type="hidden" name="role" value="$r._id"/>
-          <input type="submit" value="Remove Role"/>
-        </form>
-        <p>Acts as:</p>
-        <ul>
-          <li py:for="rr in h.make_roles(r.roles)">
-            ${rr.display()}
-            <form method="post" action="del_subrole" style="display:inline">
-              <input type="hidden" name="role" value="$r._id"/>
-              <input type="hidden" name="subrole" value="$rr._id"/>
-              <input type="submit" value="Remove Subrole"/>
-            </form>
-          </li>
-        </ul>
-        <form method="post" action="add_subrole">
-          <input type="hidden" name="role" value="$r._id"/>
-          Acts as
-          <select name="subrole">
-            <option py:for="r in roles" py:if="not r.special" value="$r._id">
-              ${r.display()}
-            </option>
-          </select>
-          <input type="submit" value="Add"/>
+      <h2 class="title">Role Admin <a href="#role-admin">#</a></h2>
+      <div class="content">
+        <p>
+          Each user on the project has a private role.  
+          Each role can have subroles.  A role inherits all the permissions 
+          that its subroles have.  All users who have read access should 
+          automatically appear here.
+        </p>
+        <form method="POST" action="update_roles">
+          <input py:for="i,r in enumerate(c.project.roles)" 
+                 type="hidden"
+                 name="role-${i}.id"
+                 value="$r._id"/>
+          <table border="1">
+            <thead>
+              <tr>
+                <th>Role Name</th>
+                <th>Subroles</th>
+                <th/>
+              </tr>
+            </thead>
+            <tbody>
+              <tr py:for="i, r in enumerate(c.project.roles)">
+                <td>${r.display()}</td>
+                <td>
+                  <span py:for="j, sr in enumerate(h.make_roles(r.roles))">
+                    ${sr.display()}
+                    <input type="hidden" name="role-${i}.subroles-${j}.id" value="$sr._id"/>
+                    <input type="submit" name="role-${i}.subroles-${j}.delete" value="Del"/>
+                    <br/>
+                  </span>
+                  <span>
+                    <select name="role-${i}.new.id">
+                      <option py:for="r in roles" py:if="not r.special" value="$r._id">
+                        ${r.display()}
+                      </option>
+                    </select>
+                    <input name="role-${i}.new.add" type="submit" value="Add Subrole"/>
+                    <br/>
+                  </span>
+                </td>
+                <td>
+                  <input py:if="not r.special" name="role-${i}.delete" 
+                         type="submit" value="Delete Role"/>
+                </td>
+              </tr>
+              <tr>
+                <td><input name="new.name"/></td>
+                <td colspan="2">
+                  <input type="submit" name="new.add" value="Create Group Role"/>
+                </td>
+              </tr>
+            </tbody>
+          </table>
         </form>
       </div>
-      <form method="post" action="add_group_role">
-        <label for="name">New group role</label>
-        <input type="text" name="name"/>
-        <input type="submit" value="Add"/>
-      </form>
     </div>
-    
+    <script type="text/javascript" src="${g.app_static('js/admin.js')}"/>
   </body>
 
 </html>

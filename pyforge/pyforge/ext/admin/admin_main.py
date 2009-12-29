@@ -11,9 +11,11 @@ from pymongo.bson import ObjectId
 
 from pyforge.app import Application, WidgetController, DefaultAdminController, SitemapEntry
 from pyforge.lib.dispatch import _dispatch
+from pyforge.lib.helpers import vardec
 from pyforge import version
 from pyforge import model as M
 from pyforge.lib.security import require, has_project_access
+from pyforge.model import nonce
 
 class AdminWidgets(WidgetController):
     widgets=['users', 'plugin_status']
@@ -45,6 +47,7 @@ class AdminApp(Application):
     '''
     __version__ = version.__version__
     widget=AdminWidgets
+    installable=False
 
     def __init__(self, project, config):
         Application.__init__(self, project, config)
@@ -108,91 +111,66 @@ class ProjectAdminController(object):
         c.project.description = description
         redirect('.')
 
+    @vardec
     @expose()
-    def install(self, ep_name, mount_point):
-        'install a plugin a the given mount point'
-        require(has_project_access('plugin'))
-        c.project.install_app(ep_name, mount_point)
-        redirect('.#plugin-admin')
+    def update_mounts(self, subproject=None, plugin=None, new=None, **kw):
+        if subproject is None: subproject = []
+        if plugin is None: plugin = []
+        for sp in subproject:
+            if sp.get('delete'):
+                M.Project.query.get(_id=sp['id']).delete()
+        for p in plugin:
+            if p.get('delete'):
+                c.project.uninstall_app(p['mount_point'])
+        if new.get('install'):
+            if new['ep_name'] == '':
+                require(has_project_access('create'))
+                sp = c.project.new_subproject(new['mount_point'] or nonce())
+            else:
+                require(has_project_access('plugin'))
+                c.project.install_app(new['ep_name'], new['mount_point'] or new['ep_name'])
+        redirect('.#mount-admin')
 
+    @vardec
     @expose()
-    def new_subproject(self, sp_name):
-        'add a subproject for the current project'
-        require(has_project_access('create'))
-        sp = c.project.new_subproject(sp_name)
-        redirect('.#subproject-admin')
-
-    @expose()
-    def delete_project(self):
-        'delete the current project'
-        require(has_project_access('delete'), 'Must have delete access')
-        c.project.delete()
-        redirect('..')
-
-    @expose()
-    def add_group_role(self, name):
-        'add a named role to the project'
+    def update_acl(self, permission=None, role=None, new=None, **kw):
         require(has_project_access('security'))
-        r = M.ProjectRole(name=name)
-        redirect('.#role-admin')
-
-    @expose()
-    def del_role(self, role):
-        'Delete a role'
-        require(has_project_access('security'))
-        role = M.ProjectRole.query.get(_id=ObjectId.url_decode(role))
-        if not role.special:
-            role.delete()
-        redirect('.#role-admin')
-
-    @expose()
-    def add_subrole(self, role, subrole):
-        'Add a subrole to a role'
-        require(has_project_access('security'))
-        role = M.ProjectRole.query.get(_id=ObjectId.url_decode(role))
-        role.roles.append(ObjectId.url_decode(subrole))
-        redirect('.#role-admin')
-
-    @expose()
-    def add_role_to_user(self, role, username):
-        'Add a subrole to a role'
-        require(has_project_access('security'))
-        user = M.User.query.get(username=username)
-        pr = user.project_role()
-        pr.roles.append(ObjectId.url_decode(role))
-        redirect('.#role-admin')
-
-    @expose()
-    def del_subrole(self, role, subrole):
-        'Remove a subrole from a role'
-        require(has_project_access('security'))
-        role = M.ProjectRole.query.get(_id=ObjectId.url_decode(role))
-        role.roles.remove(ObjectId.url_decode(subrole))
-        redirect('.#role-admin')
-
-    @expose()
-    def add_perm(self, permission, role):
-        require(has_project_access('security'))
-        c.project.acl[permission].append(ObjectId.url_decode(role))
+        if role is None: role = []
+        for r in role:
+            if r.get('delete'):
+                c.project.acl[permission].remove(ObjectId.url_decode(r['id']))
+        if new.get('add'):
+            if new['id']:
+                c.project.acl[permission].append(ObjectId.url_decode(new['id']))
+            else:
+                user = M.User.query.get(username=new['username'])
+                if user is None:
+                    flash('No user %s' % new['username'], 'error')
+                    redirect('.')
+                role = user.project_role()
+                c.project.acl[permission].append(role._id)
         redirect('.#acl-admin')
 
+    @vardec
     @expose()
-    def add_user_perm(self, permission, username):
+    def update_roles(self, role=None, new=None, **kw):
         require(has_project_access('security'))
-        user = M.User.query.get(username=username)
-        if user is None:
-            flash('No user %s' % username, 'error')
-            redirect('.')
-        role = user.project_role()
-        c.project.acl[permission].append(role._id)
-        redirect('.#acl-admin')
-
-    @expose()
-    def del_perm(self, permission, role):
-        require(has_project_access('security'))
-        c.project.acl[permission].remove(ObjectId.url_decode(role))
-        redirect('.#acl-admin')
-
+        for r in role:
+            if r.get('delete'):
+                role = M.ProjectRole.query.get(_id=ObjectId.url_decode(r['id']))
+                if not role.special:
+                    role.delete()
+            if r['new'].get('add'):
+                role = M.ProjectRole.query.get(_id=ObjectId.url_decode(r['id']))
+                role.roles.append(ObjectId.url_decode(r['new']['id']))
+            for sr in r.get('subroles', []):
+                if sr.get('delete'):
+                    role = M.ProjectRole.query.get(_id=ObjectId.url_decode(r['id']))
+                    role.roles.remove(ObjectId.url_decode(sr['id']))
+        if new.get('add'):
+            M.ProjectRole(name=new['name'])
+        redirect('.#role-admin')
+            
 class AdminAppAdminController(DefaultAdminController):
     '''Administer the admin app'''
     pass

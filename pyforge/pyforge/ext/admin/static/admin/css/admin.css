@@ -1,0 +1,80 @@
+/* Admin-local stuff */
+#role-admin table
+{
+}
+
+#role-admin td
+{
+    border: none;
+    border-bottom: 1px solid black;
+}
+
+/* Inline editing of content */
+.editable.viewing .editor
+{
+    display: none;
+}
+
+.editable.editing .viewer
+{
+    display: none;
+}
+
+.editable .edit
+{
+    float:left;
+    display:none;
+}
+
+.editable
+{
+    position: relative;
+}
+
+.editable:hover
+{
+    background-color: #ddd;
+    cursor: pointer;
+}
+
+.editable:hover .edit
+{
+    float:left;
+    position: absolute;
+    top: -0.5em;
+    display:block;
+    border: 1px solid grey;
+    background-color: #eee;
+}
+
+.editable .editor
+{
+    border: 1px solid black;
+}
+
+/* Collapsible boxes */
+.title-pane
+{
+    margin: 0;
+    padding: 4px;
+}
+
+.title-pane .title
+{
+    background-color: #ff8;
+    padding: 4px;
+    margin: 0;
+    border: 1px solid #333;
+}
+
+.title-pane .content
+{
+    background-color: #888;
+    border: 1px solid black;
+    border-top: none;
+}
+
+.title-pane.hidden .content
+{
+    display:none;
+}
