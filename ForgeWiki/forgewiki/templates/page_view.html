@@ -19,21 +19,27 @@
   <body>
     <h1>$page.title</h1>
     <div>
-      <a href="..">PluginRoot</a>
-      <a href="edit">Edit Page</a>
-      <a href="history">Page History</a>
+      <a py:if="prev is not None" href=".?version=1">First</a>
+      <a py:if="prev is not None" href=".?version=$prev">&lt;</a>
+      Version $cur
+      <a py:if="next is not None" href=".?version=$next">&gt;</a>
+      <a href=".">Latest</a>
       <form style="display:inline; float:right"
             method="GET"
             action="../search">
         Search: <input name="q"/>
       </form>
     </div>
-    <a py:if="prev is not None" href=".?version=1">First</a>
-    <a py:if="prev is not None" href=".?version=$prev">&lt;</a>
-    Version $cur
-    <a py:if="next is not None" href=".?version=$next">&gt;</a>
-    <a href=".">Latest</a>
-    <hr/>
+    <hr style="clear:both"/>
+    <div id="sidebar-right">
+      <ul>
+        <li>
+          <a href="..">PluginRoot</a>
+          <a href="edit">Edit Page</a>
+          <a href="history">Page History</a>
+        </li>
+      </ul>
+    </div>
     <div>
       ${Markup(page.html_text)}
     </div>

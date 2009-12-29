@@ -133,3 +133,41 @@ ul#sidebarmenu li a:hover {
 {
     display:none;
 }
+
+#sidebar-right
+{
+    border: 3px double black;
+    float: right;
+    width: 80px;
+    float:right;
+    background-color: #ddd;
+}
+
+#sidebar-right ul
+{
+    padding: 0;
+    margin: 0;
+    background-color: #aaa;
+}
+
+
+#sidebar-right ul li {
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+    font-weight: bold;
+}
+
+#sidebar-right ul li a {
+    display:block;
+    width: 100%;
+    color: #000;
+    font-size: 12px;
+    text-decoration: none;
+    font-weight: normal;
+}
+
+#sidebar-right ul li a:hover {
+    background-color: #ddd;
+}
+
