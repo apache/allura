@@ -99,6 +99,7 @@ class RootController(object):
 
     @expose('forgewiki.templates.index')
     def index(self):
+        redirect('Root/')
         return dict(message=c.app.config.options['message'])
 
     #Will not be needed after _dispatch is fixed in tg 2.1

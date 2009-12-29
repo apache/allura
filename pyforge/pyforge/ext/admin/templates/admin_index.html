@@ -115,13 +115,13 @@
         </form>
       </div>
     </div>
-    <div id="acl-admin" class="title-pane hidden" 
+    <div id="acl-admin" class="title-pane closed" 
          py:if="has_project_access('security')()">
       <h2 class="title">Project ACL Admin <a href="#acl-admin">#</a></h2>
       <div class="content">
         <p>The project ACL determines project-level permissions.</p>
         <div py:for="permission, role_ids in c.project.acl.iteritems()"
-             class="title-pane hidden">
+             class="title-pane closed">
           <h3 class="title">Permission: $permission</h3>
           <div class="content">
             <form method="POST" action="update_acl">
@@ -163,7 +163,7 @@
       </div>
     </div>
     <div id="role-admin" 
-         class="title-pane hidden"
+         class="title-pane closed"
          py:if="c.project.is_root and has_project_access('security')()">
       <h2 class="title">Role Admin <a href="#role-admin">#</a></h2>
       <div class="content">

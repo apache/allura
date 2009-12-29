@@ -40,16 +40,17 @@
 
     <hr/>
     <h2>Comments</h2>
-    <div class="reply">
-      <h3>Make a comment</h3>
-      <form class="hidden" method="post" action="comments/reply">
-        <textarea rows="4" cols="60" name="text"></textarea><br/>
-        <input type="submit"/>
-      </form>
+    <div class="reply title-pane closed">
+      <h3 class="title">Make a comment</h3>
+      <div class="content">
+        <form method="post" action="comments/reply">
+          <textarea rows="4" cols="60" name="text"></textarea><br/>
+          <input type="submit"/>
+        </form>
+      </div>
     </div>
     <py:for each="cmt in page.root_comments()">
       ${display_comment(cmt)}
     </py:for>
   </body>
-  <script type="text/javascript" src="${g.app_static('js/comments.js')}"/>
 </html>
