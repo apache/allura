@@ -116,10 +116,11 @@ ul#sidebarmenu li a:hover {
 
 .title-pane .title
 {
-    background-color: #ff8;
-    padding: 4px;
-    margin: 0;
-    border: 1px solid #333;
+  background-color: #ff8;
+  padding: 4px;
+  margin: 0;
+  border: 1px solid #333;
+  cursor: pointer;
 }
 
 .title-pane .content
