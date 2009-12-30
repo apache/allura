@@ -27,3 +27,7 @@ paster reactor sandbox.ini &
 paster setup-app sandbox.ini
 paster serve sandbox.ini &
 
+sleep 5
+echo "########################################"
+echo "The forge is running."
+echo "########################################"
