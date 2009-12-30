@@ -10,7 +10,7 @@ rabbitmqctl set_permissions -p testvhost testuser "" ".*" ".*"
 
 # Start SOLR, as per SOG-sandbox location
 pushd /usr/local/solr
-java -jar start.jar &
+/usr/java/jdk1.5.0_15/bin/java -jar start.jar &
 popd
 
 
