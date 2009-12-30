@@ -1,8 +1,6 @@
 #!/bin/bash
 
 # Install RPMs.
-#   Python 2.6  (Already done on sandobxes)
-#   Git (Already done on sandobxes)
-yum install rabbitmq-server
+yum install -y openldap-devel
 
-setup-common.bash
+./setup-common.bash

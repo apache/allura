@@ -31,7 +31,7 @@ setup(
         "Pygments >= 1.1.1",
         "PyYAML >= 3.09",
         "python-openid >= 2.2.4",
-        "python-ldap >= 2.3.10",
+        "python-ldap == 2.3.9",
         ],
     setup_requires=["PasteScript >= 1.7"],
     paster_plugins=['PasteScript', 'Pylons', 'TurboGears2', 'tg.devtools'],

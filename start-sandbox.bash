@@ -1,5 +1,5 @@
 #!/bin/bash
-./setup-common.bash
+./setup-sandbox.bash
 
 # Start RabbitMQ
 # sudo rabbitmq-server & # already started for us
