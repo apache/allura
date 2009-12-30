@@ -43,6 +43,10 @@ cd Ming
 python setup.py develop
 popd
 
+echo
+echo '# creating data directory for mongo'
+mkdir -p /data/db
+
 
 #
 # Install all our (formal) dependencies.
@@ -55,8 +59,8 @@ python setup.py develop
 popd
 
 echo
-echo '# installing HelloForge dependencies'
-pushd HelloForge
+echo '# installing ForgeSCM dependencies'
+pushd ForgeSCM
 python setup.py develop
 popd
 
@@ -67,22 +71,7 @@ python setup.py develop
 popd
 
 echo
-echo '# installing ForgeSCM dependencies'
-pushd ForgeSCM
+echo '# installing HelloForge dependencies'
+pushd HelloForge
 python setup.py develop
 popd
-
-echo
-echo '# creating data directory for mongo'
-mkdir -p /data/db
-
-echo
-echo '# downloading and untarring solr'
-mkdir download install
-pushd download
-wget http://apache.mirrors.tds.net/lucene/solr/1.4.0/apache-solr-1.4.0.tgz
-cd ../install
-tar xzf ../download/apache-solr-1.4.0.tgz
-popd
-
-# Start up the server?

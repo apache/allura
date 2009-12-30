@@ -1,7 +1,8 @@
 #!/bin/bash
+./setup-common.bash
 
 # Start RabbitMQ
-sudo rabbitmq-server &
+# sudo rabbitmq-server & # already started for us
 rabbitmqctl add_user testuser testpw
 rabbitmqctl add_vhost testvhost
 rabbitmqctl set_permissions -p testvhost testuser "" ".*" ".*"
@@ -14,7 +15,7 @@ popd
 
 
 # Start mongo, already on the path
-mongod &
+# mongod & # already started for us
 
 
 # Start the forge
