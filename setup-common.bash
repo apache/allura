@@ -65,6 +65,12 @@ python setup.py develop
 popd
 
 echo
+echo '# installing ForgeTracker dependencies'
+pushd ForgeTracker
+python setup.py develop
+popd
+
+echo
 echo '# installing ForgeWiki dependencies'
 pushd ForgeWiki
 python setup.py develop
