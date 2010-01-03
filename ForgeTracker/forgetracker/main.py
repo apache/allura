@@ -97,7 +97,8 @@ class RootController(object):
 
     @expose('forgetracker.templates.index')
     def index(self):
-        return dict()
+        issues = model.Issue.m.find().all()
+        return dict(issues=issues)
 
     @expose('forgetracker.templates.search')
     @validate(dict(q=validators.UnicodeString(if_empty=None),

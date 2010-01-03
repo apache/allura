@@ -16,9 +16,9 @@
     <h2>Project: $c.project.shortname</h2>
     <p>The app config follows</p>
     <dl>
-      <py:for each="name, value in c.app.config.options.iteritems()">
-        <dt>$name</dt>
-        <dd>$value</dd>
+      <py:for each="issue in issues">
+        <dt>$issue.issue_num</dt>
+        <dd>$issue.summary</dd>
       </py:for>
     </dl>
   </body>
