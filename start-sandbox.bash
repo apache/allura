@@ -25,7 +25,7 @@ paster reactor_setup sandbox.ini
 paster reactor sandbox.ini &
 
 paster setup-app sandbox.ini
-paster serve sandbox.ini &
+paster serve --reload sandbox.ini &
 
 sleep 5
 echo "########################################"
