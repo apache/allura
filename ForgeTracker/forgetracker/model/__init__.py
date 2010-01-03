@@ -1,1 +1,1 @@
-from issue import Issue, Comment, Attachment
+from issue import Globals, Issue, Comment, Attachment

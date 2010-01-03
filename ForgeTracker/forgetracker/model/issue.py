@@ -9,6 +9,15 @@ from datetime import datetime
 
 from pyforge.model import Message
 
+class Globals(Document):
+
+    class __mongometa__:
+        name = 'globals'
+
+    type_s          = 'Globals'
+    _id             = Field(schema.ObjectId)
+    last_issue_num  = Field(int)
+
 
 class Issue0(Document):
 
@@ -21,6 +30,7 @@ class Issue0(Document):
     created_date    = Field(datetime, if_missing=datetime.utcnow)
 
     parent_id       = Field(schema.ObjectId, if_missing=None)
+    issue_num       = Field(int)
     summary         = Field(str)
     description     = Field(str, if_missing='')
     reported_by     = Field(str)
@@ -29,7 +39,7 @@ class Issue0(Document):
     status          = Field(str, if_missing='open')
 
     def url(self):
-        return c.app.script_name + '/' + self._id.url_encode() + '/'
+        return c.app.script_name + '/' + self.issue_num + '/'
 
     def shorthand_id(self):
         return '%s/%s' % (self.type_s, self._id)

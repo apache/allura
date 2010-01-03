@@ -77,9 +77,8 @@ class ForgeTrackerApp(Application):
         self.config.acl['comment'].append(
             ProjectRole.m.get(name='*authenticated')._id)
         self.config.m.save()
-        art = model.MyArtifact.make(dict(
-                text='This is a sample artifact'))
-        art.commit()
+        globals = model.Globals.make({'last_issue_num':0})
+        globals.commit()
 
     def uninstall(self, project):
         "Remove all the plugin's artifacts from the database"
@@ -109,13 +108,14 @@ class RootController(object):
             if results: count=results.hits
         return dict(q=q, history=history, results=results or [], count=count)
 
-    def _lookup(self, id, *remainder):
-        return IssueController(id), remainder
+    def _lookup(self, issue_num, *remainder):
+        return IssueController(issue_num), remainder
 
 class IssueController(object):
 
-    def __init__(self, id):
-        pass
+    def __init__(self, issue_num=None):
+        self.issue_num = issue_num
+        if issue_num: self.issue = model.Issue.m.get(issue_num=issue_num)
 
     @expose()
     def index(self, issue_num, **kw):
