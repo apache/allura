@@ -16,6 +16,7 @@ class Globals(Document):
 
     type_s          = 'Globals'
     _id             = Field(schema.ObjectId)
+    project_id      = Field(schema.ObjectId)
     last_issue_num  = Field(int)
 
 
@@ -28,6 +29,7 @@ class Issue0(Document):
     _id             = Field(schema.ObjectId)
     version         = Field(0)
     created_date    = Field(datetime, if_missing=datetime.utcnow)
+    project_id      = Field(schema.ObjectId)
 
     parent_id       = Field(schema.ObjectId, if_missing=None)
     issue_num       = Field(int)
@@ -76,6 +78,7 @@ class Comment0(Message):
     _id             = Field(schema.ObjectId)
     version         = Field(0)
     created_date    = Field(datetime, if_missing=datetime.utcnow)
+    project_id      = Field(schema.ObjectId)
 
     issue_id        = Field(schema.ObjectId)
     kind            = Field(str, if_missing='comment')
@@ -117,6 +120,7 @@ class Attachment0(Message):
     _id             = Field(schema.ObjectId)
     version         = Field(0)
     created_date    = Field(datetime, if_missing=datetime.utcnow)
+    project_id      = Field(schema.ObjectId)
 
     issue_id        = Field(schema.ObjectId)
     file_type       = Field(str)

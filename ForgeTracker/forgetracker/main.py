@@ -9,6 +9,8 @@ from pylons import g, c, request
 from formencode import validators
 from pymongo.bson import ObjectId
 
+from ming.orm.base import mapper
+
 # Pyforge-specific imports
 from pyforge.app import Application, ConfigOption, SitemapEntry
 from pyforge.lib.helpers import push_config
@@ -77,12 +79,19 @@ class ForgeTrackerApp(Application):
         self.config.acl['comment'].append(
             ProjectRole.m.get(name='*authenticated')._id)
         self.config.m.save()
-        globals = model.Globals.make({'last_issue_num':0})
+        globals = model.Globals.make({
+            'project_id':c.project._id,
+            'last_issue_num':0
+        })
         globals.commit()
 
     def uninstall(self, project):
         "Remove all the plugin's artifacts from the database"
-        pass
+        id = c.project._id
+        mapper(model.Issue).remove({'project_id':id})
+        mapper(model.Comment).remove({'project_id':id})
+        mapper(model.Attachment).remove({'project_id':id})
+        mapper(model.Globals).remove({'project_id':id})
 
 class RootController(object):
 
