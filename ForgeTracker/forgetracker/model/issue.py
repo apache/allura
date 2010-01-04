@@ -44,7 +44,7 @@ class Issue0(Document):
         return c.app.script_name + '/' + self.issue_num + '/'
 
     def shorthand_id(self):
-        return '%s/%s' % (self.type_s, self._id)
+        return '%s/%s' % (self.type_s, self.issue_num)
 
     def index(self):
         return self
