@@ -88,10 +88,10 @@ class ForgeTrackerApp(Application):
     def uninstall(self, project):
         "Remove all the plugin's artifacts from the database"
         id = c.project._id
-        mapper(model.Issue).remove({'project_id':id})
-        mapper(model.Comment).remove({'project_id':id})
-        mapper(model.Attachment).remove({'project_id':id})
-        mapper(model.Globals).remove({'project_id':id})
+        # mapper(model.Issue).remove({'project_id':id})
+        # mapper(model.Comment).remove({'project_id':id})
+        # mapper(model.Attachment).remove({'project_id':id})
+        # mapper(model.Globals).remove({'project_id':id})
 
 class RootController(object):
 
