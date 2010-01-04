@@ -123,6 +123,7 @@ class RootController(object):
 
     @expose('forgetracker.templates.new_issue')
     def new(self, **kw):
+        # require(has_artifact_access('create', ?))
         tmpl_context.form = create_issue_form
         return dict(modelname='Issue',
             page='New Issue')
@@ -131,11 +132,12 @@ class IssueController(object):
 
     def __init__(self, issue_num=None):
         self.issue_num = issue_num
-        if issue_num: self.issue = model.Issue.m.get(issue_num=issue_num)
+        self.issue = model.Issue.m.get(issue_num=issue_num)
 
-    @expose()
-    def index(self, issue_num, **kw):
-        return dict()
+    @expose('forgetracker.templates.issue')
+    def index(self, **kw):
+        require(has_artifact_access('read', self.issue))
+        return dict(issue=self.issue)
 
 
 
