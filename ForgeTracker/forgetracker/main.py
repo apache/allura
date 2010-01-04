@@ -121,6 +121,12 @@ class RootController(object):
     def _lookup(self, issue_num, *remainder):
         return IssueController(issue_num), remainder
 
+    @expose('forgetracker.templates.new_issue')
+    def new(self, **kw):
+        tmpl_context.form = create_issue_form
+        return dict(modelname='Issue',
+            page='New Issue')
+
 class IssueController(object):
 
     def __init__(self, issue_num=None):
@@ -130,12 +136,6 @@ class IssueController(object):
     @expose()
     def index(self, issue_num, **kw):
         return dict()
-
-    @expose('forgetracker.templates.new_issue')
-    def new(self, **kw):
-        tmpl_context.form = create_issue_form
-        return dict(modelname='Issue',
-            page='New Issue')
 
 
 
