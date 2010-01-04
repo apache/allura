@@ -131,8 +131,9 @@ class RootController(object):
 class IssueController(object):
 
     def __init__(self, issue_num=None):
-        self.issue_num = issue_num
-        self.issue = model.Issue.m.get(issue_num=issue_num)
+        self.issue_num  = issue_num
+        self.issue      = model.Issue.m.get(issue_num=issue_num)
+        self.comments   = CommentController(self.issue)
 
     @expose('forgetracker.templates.issue')
     def index(self, **kw):
@@ -141,45 +142,12 @@ class IssueController(object):
 
 
 
-class ArtifactController(object):
-
-    def __init__(self, id):
-        self.artifact = model.MyArtifact.m.get(_id=ObjectId.url_decode(id))
-        self.comments = CommentController(self.artifact)
-
-    @expose('forgetracker.templates.artifact')
-    @validate(dict(version=validators.Int()))
-    def index(self, version=None):
-        require(has_artifact_access('read', self.artifact))
-        artifact = self.get_version(version)
-        if artifact is None:
-            if version:
-                redirect('.?version=%d' % (version-1))
-            elif version <= 0:
-                redirect('.')
-            else:
-                redirect('..')
-        cur = artifact.version
-        if cur > 0: prev = cur-1
-        else: prev = None
-        next = cur+1
-        return dict(artifact=artifact,
-                    cur=cur, prev=prev, next=next)
-
-    def get_version(self, version):
-        if not version: return self.artifact
-        ss = model.MyArtifactHistory.m.get(artifact_id=self.artifact._id,
-                                           version=version)
-        if ss is None: return None
-        result = deepcopy(self.artifact)
-        return result.update(ss.data)
-
 class CommentController(object):
 
-    def __init__(self, artifact, comment_id=None):
-        self.artifact = artifact
+    def __init__(self, issue, comment_id=None):
+        self.issue = issue
         self.comment_id = comment_id
-        self.comment = model.MyArtifactComment.m.get(_id=self.comment_id)
+        self.comment = model.Comment.m.get(_id=self.comment_id)
 
     @expose()
     def reply(self, text):
