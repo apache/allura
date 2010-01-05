@@ -78,8 +78,12 @@
       <input type="submit" value="FORK!"/>
     </form>
     <h3>Recent Commits</h3>
-    <p py:for="ct in repo.commits.limit(5)">
-      <a href="${ct.url()}"><code>$ct.hash</code></a>
+    <p py:for="ct in repo.ordered_commits(5)">
+      <a href="${ct.url()}">
+        <code>
+          <py:if test="ct.rev is not None">${ct.rev}:</py:if>
+          $ct.hash
+      </code></a>
       by <em>$ct.user</em> at $ct.date<br/>
       $ct.summary
     </p>

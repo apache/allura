@@ -75,6 +75,10 @@ def cloned(routing_key, data):
         cmd = git.scm_log('-p')
         parser = git.LogParser(repo._id)
         cmd.run(output_consumer=parser.feed)
+    elif type == 'svn':
+        cmd = hg.scm_log('-g', '-p', 'hg_repo')
+        parser = hg.LogParser(repo._id)
+        cmd.run(output_consumer=parser.feed)
     else:
         log.warning('Cannot index repos of type %s', type)
     log.info('Log complete %s', data['url'])

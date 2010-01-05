@@ -32,7 +32,7 @@ class Issue0(Document):
         return c.app.script_name + '/' + self._id.url_encode() + '/'
 
     def shorthand_id(self):
-        return '%s/%s' % (self.type_s, text=self.summary)
+        return '%s/%s' % (self.type_s, self._id)
 
     def index(self):
         return self
@@ -79,7 +79,7 @@ class Comment0(Document):
             title_s='Comment on %s by %s' % (
                 self.issue.shorthand_id(),
                 author.display_name
-            )
+            ),
             type_s=self.type_s
         )
         return result
@@ -120,7 +120,7 @@ class Attachment0(Document):
             title_s='Attachment on %s by %s' % (
                 self.issue.shorthand_id(),
                 author.display_name
-            )
+            ),
             type_s=self.type_s
         )
         return result

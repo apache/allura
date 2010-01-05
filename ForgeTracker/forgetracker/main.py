@@ -21,7 +21,7 @@ from pyforge.model import ProjectRole
 from forgetracker import model
 from forgetracker import version
 
-from forgetracker.widgets.issue_form import create_issue_form
+# from forgetracker.widgets.issue_form import create_issue_form
 
 log = logging.getLogger(__name__)
 

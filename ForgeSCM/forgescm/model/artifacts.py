@@ -7,6 +7,7 @@ from contextlib import contextmanager
 from tg import config
 import chardet
 from pylons import c, g
+import pymongo
 from pymongo.errors import OperationFailure
 
 from ming import schema
@@ -41,6 +42,14 @@ class Repository(Artifact):
     commits = RelationProperty('Commit', via='repository_id',
                                fetch=False)
 
+    def ordered_commits(self, limit=None):
+        q = self.commits
+        q = q.sort([('rev', pymongo.DESCENDING),
+                    ('date', pymongo.DESCENDING)])
+        if limit:
+            q = q.limit(limit)
+        return q
+
     def url(self):
         return self.app_config.script_name()
 
@@ -49,6 +58,8 @@ class Repository(Artifact):
             return 'hg clone ' + self.clone_url()
         elif self.type == 'git':
             return 'git clone ' + self.clone_url()
+        elif self.type == 'svn':
+            return 'svn co ' + self.clone_url()
         return '<unknown command>'
 
     def clone_url(self):
@@ -57,6 +68,8 @@ class Repository(Artifact):
                 + self.native_url()
         elif self.type == 'git':
             return self.repo_dir
+        elif self.type == 'svn':
+            return 'file://' + self.repo_dir + '/svn_repo'
         else:
             return 'Unknown clone url'
 
@@ -110,10 +123,11 @@ class Repository(Artifact):
             project_id=c.project._id,
             app_config_id=c.app.config._id)
         p = Project.query.get(_id=project_id)
-        app = p.install_app('Repository', mount_point)
-        app.config.options.type = c.app.config.options.type
+        app = p.install_app('Repository', mount_point,
+                            type=c.app.config.options.type)
         with push_config(c, project=p, app=app):
             repo = app.repo
+            repo.type = app.repo.type
             repo.status = 'Pending Fork'
             new_url = repo.url()
         g.publish('audit', 'scm.%s.fork' % c.app.config.options.type, dict(
@@ -141,6 +155,7 @@ class Commit(Artifact):
 
     _id = FieldProperty(schema.ObjectId)
     hash = FieldProperty(str)
+    rev = FieldProperty(int) # only relevant for hg and svn repos
     repository_id = ForeignIdProperty(Repository)
     summary = FieldProperty(str)
     diff = FieldProperty(str)

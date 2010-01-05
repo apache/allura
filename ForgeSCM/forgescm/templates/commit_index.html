@@ -19,7 +19,13 @@
       Your repository is <em>${c.app.repo.status}</em>
     </p>
     <table>
-      <tr><th>Hash</th><td>$value.hash</td></tr>
+      <tr>
+        <th>Hash</th>
+        <td>
+          <py:if test="value.rev is not None">${value.rev}:</py:if>
+          $value.hash
+        </td>
+      </tr>
       <tr><th>User</th><td>$value.user</td></tr>
       <tr py:for="t in value.tags"><th>Tag</th><td>$t</td></tr>
       <tr py:for="p in value.parents">

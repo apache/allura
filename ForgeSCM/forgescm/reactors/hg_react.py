@@ -35,6 +35,7 @@ def clone(routing_key, data):
     repo = c.app.repo
     log.info('Begin cloning %s', data['url'])
     repo.type = 'hg'
+    repo.clear_commits()
     # Perform the clone
     cmd = hg.clone(data['url'], '.')
     cmd.clean_dir()

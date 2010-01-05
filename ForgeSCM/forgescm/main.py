@@ -20,7 +20,7 @@ from pyforge.model import ProjectRole
 from . import model
 from . import version
 from .wsgi import WSGIHook
-from .reactors import common_react, hg_react, git_react
+from .reactors import common_react, hg_react, git_react, svn_react
 from .controllers import root
 
 log = logging.getLogger(__name__)
@@ -56,13 +56,16 @@ class ForgeSCMApp(Application):
             SitemapEntry('Init Repo', base + 'reinit'),
             ]
         repo = self.repo
-        if self.config.options.type == 'hg':
+        if self.config.options.type in 'hg':
             result += [
                 SitemapEntry('HgWeb', repo.native_url()),
                 SitemapEntry('Files', repo.native_url() + '/file') ]
         elif self.config.options.type == 'git':
             result += [
                 SitemapEntry('GitWeb', repo.native_url() + '/.git') ]
+        elif self.config.options.type == 'svn':
+            result += [
+                SitemapEntry('Browser', repo.native_url()) ]
         return result
 
     @property
@@ -98,4 +101,5 @@ class ForgeSCMApp(Application):
 mixin_reactors(ForgeSCMApp, common_react)
 mixin_reactors(ForgeSCMApp, hg_react)
 mixin_reactors(ForgeSCMApp, git_react)
+mixin_reactors(ForgeSCMApp, svn_react)
 

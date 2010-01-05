@@ -190,7 +190,8 @@ class Project(MappedClass):
     def uninstall_app(self, mount_point):
         app = self.app_instance(mount_point)
         if app is None: return
-        app.uninstall(self)
+        with push_config(c, project=self, app=app):
+            app.uninstall(self)
         app.config.delete()
 
     def app_instance(self, mount_point_or_config):

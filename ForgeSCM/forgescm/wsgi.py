@@ -47,10 +47,19 @@ class WSGIHook(app.WSGIHook, BaseController):
             return self.hgweb(environ, start_response)
         elif c.app.config.options.type == 'git':
             return self.git_app(environ, start_response)
+        elif c.app.config.options.type == 'svn':
+            return self.hgweb_svn(environ, start_response)
         return BaseController.__call__(self, environ, start_response)
 
     def hgweb(self, environ, start_response):
         repo = c.app.repo.repo_dir
+        name = 'Main Repository for %s' % c.project._id
+        repo = hg.repository(self.hg_ui, repo)
+        svr = hgweb(repo, name)
+        return svr(environ, start_response)
+
+    def hgweb_svn(self, environ, start_response):
+        repo = c.app.repo.repo_dir + '/hg_repo'
         name = 'Main Repository for %s' % c.project._id
         repo = hg.repository(self.hg_ui, repo)
         svr = hgweb(repo, name)

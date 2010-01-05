@@ -42,9 +42,12 @@ class LogParser(object):
         return self.result
 
     def parse_header(self, cur_line, line_iter):
-        hash = cur_line.split(':')[2].strip()
-        log.debug('Parsing changeset %s', hash)
+        hdr, rev, hash = cur_line.split(':')
+        rev = rev.strip()
+        hash = hash.strip()
+        log.info('Parsing changeset %s:%s', rev, hash)
         r = M.Commit(repository_id=self.repo_id,
+                     rev=int(rev),
                      hash=hash)
         while cur_line != '\n':
             cur_line = line_iter.next()

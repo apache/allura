@@ -17,7 +17,9 @@ class Command(object):
             base = self.base
         self.args = tuple(base) + args
 
-    def run(self, output_consumer=None):
+    def run(self, output_consumer=None, cwd=None):
+        if cwd is None:
+            cwd=self.cwd()
         self.sp = subprocess.Popen(
             self.args, executable=self.args[0],
             stdin=None, stdout=subprocess.PIPE,
@@ -27,6 +29,10 @@ class Command(object):
         else:
             output_consumer(self.sp.stdout)
         self.sp.wait()
+
+    def run_exc(self, *args, **kwargs):
+        result = self.run(*args, **kwargs)
+        assert not self.sp.returncode, self.output
 
     def cwd(self):
         try:
