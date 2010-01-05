@@ -16,10 +16,10 @@ class Globals(MappedClass):
         name = 'globals'
         session = project_orm_session
 
-    type_s          = 'Globals'
-    _id             = FieldProperty(schema.ObjectId)
-    project_id      = FieldProperty(str)
-    last_issue_num  = FieldProperty(int)
+    type_s = 'Globals'
+    _id = FieldProperty(schema.ObjectId)
+    project_id = FieldProperty(str)
+    last_issue_num = FieldProperty(int)
 
 class IssueHistory(Snapshot):
 
@@ -50,24 +50,20 @@ class Issue(VersionedArtifact):
         name = 'issue'
         history_class = IssueHistory
 
-    # Python style guide (PEP 8) doesn't like things lined up by columns.
-    #   See http://www.python.org/dev/peps/pep-008/ (Whitespace in
-    #   Expressions and Statements)  Just a "Pet Peeve" according to the PEP,
-    #   but I thought I'd mention it.
-    type_s          = 'Issue'
-    _id             = FieldProperty(schema.ObjectId)
-    version         = FieldProperty(0)
-    created_date    = FieldProperty(datetime, if_missing=datetime.utcnow)
-    project_id      = FieldProperty(schema.ObjectId)
+    type_s = 'Issue'
+    _id = FieldProperty(schema.ObjectId)
+    version = FieldProperty(0)
+    created_date = FieldProperty(datetime, if_missing=datetime.utcnow)
+    project_id = FieldProperty(schema.ObjectId)
 
-    parent_id       = FieldProperty(schema.ObjectId, if_missing=None)
-    issue_num       = FieldProperty(int)
-    summary         = FieldProperty(str)
-    description     = FieldProperty(str, if_missing='')
-    reported_by     = FieldProperty(str)
-    assigned_to     = FieldProperty(str, if_missing='')
-    milestone       = FieldProperty(str, if_missing='')
-    status          = FieldProperty(str, if_missing='open')
+    parent_id = FieldProperty(schema.ObjectId, if_missing=None)
+    issue_num = FieldProperty(int)
+    summary = FieldProperty(str)
+    description = FieldProperty(str, if_missing='')
+    reported_by = FieldProperty(str)
+    assigned_to = FieldProperty(str, if_missing='')
+    milestone = FieldProperty(str, if_missing='')
+    status = FieldProperty(str, if_missing='open')
 
     comments = RelationProperty('Comment')
     attachments = RelationProperty('Attachment')
@@ -104,16 +100,16 @@ class Comment(Message):
     class __mongometa__:
         name = 'issue_comment'
 
-    type_s          = 'Issue Comment'
-    _id             = FieldProperty(schema.ObjectId)
-    version         = FieldProperty(0)
-    created_date    = FieldProperty(datetime, if_missing=datetime.utcnow)
-    project_id      = FieldProperty(schema.ObjectId)
+    type_s = 'Issue Comment'
+    _id = FieldProperty(schema.ObjectId)
+    version = FieldProperty(0)
+    created_date = FieldProperty(datetime, if_missing=datetime.utcnow)
+    project_id = FieldProperty(schema.ObjectId)
 
-    issue_id        = ForeignIdProperty(Issue)
-    kind            = FieldProperty(str, if_missing='comment')
-    reply_to_id     = FieldProperty(schema.ObjectId, if_missing=None)
-    text            = FieldProperty(str)
+    issue_id = ForeignIdProperty(Issue)
+    kind = FieldProperty(str, if_missing='comment')
+    reply_to_id = FieldProperty(schema.ObjectId, if_missing=None)
+    text = FieldProperty(str)
 
     issue = RelationProperty('Issue')
 
@@ -140,16 +136,16 @@ class Attachment(Artifact):
     class __mongometa__:
         name = 'issue_attachment'
 
-    type_s          = 'Issue Attachment'
-    _id             = FieldProperty(schema.ObjectId)
-    version         = FieldProperty(0)
-    created_date    = FieldProperty(datetime, if_missing=datetime.utcnow)
-    project_id      = FieldProperty(schema.ObjectId)
+    type_s = 'Issue Attachment'
+    _id = FieldProperty(schema.ObjectId)
+    version = FieldProperty(0)
+    created_date = FieldProperty(datetime, if_missing=datetime.utcnow)
+    project_id = FieldProperty(schema.ObjectId)
 
-    issue_id        = ForeignIdProperty(Issue)
-    file_type       = FieldProperty(str)
-    file_name       = FieldProperty(str)
-    data            = FieldProperty(str)
+    issue_id = ForeignIdProperty(Issue)
+    file_type = FieldProperty(str)
+    file_name = FieldProperty(str)
+    data = FieldProperty(str)
 
     issue = RelationProperty('Issue')
 
