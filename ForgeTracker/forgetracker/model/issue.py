@@ -3,42 +3,74 @@ from time import sleep
 from pylons import c
 from pymongo.errors import OperationFailure
 
-from ming.datastore import DataStore
-from ming import Document, Field, schema
+from ming import schema
+from ming.orm.mapped_class import MappedClass
+from ming.orm.property import FieldProperty, ForeignIdProperty, RelationProperty
 from datetime import datetime
 
-from pyforge.model import Message
+from pyforge.model import Artifact, VersionedArtifact, Snapshot, Message, project_orm_session
 
-class Globals(Document):
+class Globals(MappedClass):
 
     class __mongometa__:
         name = 'globals'
+        session = project_orm_session
 
     type_s          = 'Globals'
-    _id             = Field(schema.ObjectId)
-    project_id      = Field(schema.ObjectId)
-    last_issue_num  = Field(int)
+    _id             = FieldProperty(schema.ObjectId)
+    project_id      = FieldProperty(str)
+    last_issue_num  = FieldProperty(int)
 
+class IssueHistory(Snapshot):
 
-class Issue0(Document):
+    class __mongometa__:
+        name = 'issue_history'
+
+    def original(self):
+        return Issue.query.get(_id=self.artifact_id)
+
+    def shorthand_id(self):
+        return '%s#%s' % (self.original().shorthand_id(), self.version)
+
+    def url(self):
+        return self.original().url() + '?version=%d' % self.version
+
+    def index(self):
+        result = Snapshot.index(self)
+        result.update(
+            title_s='Version %d of %s' % (
+                self.version,self.original().title),
+            type_s='Issue Snapshot',
+            text=self.data.summary)
+        return result
+
+class Issue(VersionedArtifact):
 
     class __mongometa__:
         name = 'issue'
+        history_class = IssueHistory
 
+    # Python style guide (PEP 8) doesn't like things lined up by columns.
+    #   See http://www.python.org/dev/peps/pep-008/ (Whitespace in
+    #   Expressions and Statements)  Just a "Pet Peeve" according to the PEP,
+    #   but I thought I'd mention it.
     type_s          = 'Issue'
-    _id             = Field(schema.ObjectId)
-    version         = Field(0)
-    created_date    = Field(datetime, if_missing=datetime.utcnow)
-    project_id      = Field(schema.ObjectId)
+    _id             = FieldProperty(schema.ObjectId)
+    version         = FieldProperty(0)
+    created_date    = FieldProperty(datetime, if_missing=datetime.utcnow)
+    project_id      = FieldProperty(schema.ObjectId)
 
-    parent_id       = Field(schema.ObjectId, if_missing=None)
-    issue_num       = Field(int)
-    summary         = Field(str)
-    description     = Field(str, if_missing='')
-    reported_by     = Field(str)
-    assigned_to     = Field(str, if_missing='')
-    milestone       = Field(str, if_missing='')
-    status          = Field(str, if_missing='open')
+    parent_id       = FieldProperty(schema.ObjectId, if_missing=None)
+    issue_num       = FieldProperty(int)
+    summary         = FieldProperty(str)
+    description     = FieldProperty(str, if_missing='')
+    reported_by     = FieldProperty(str)
+    assigned_to     = FieldProperty(str, if_missing='')
+    milestone       = FieldProperty(str, if_missing='')
+    status          = FieldProperty(str, if_missing='open')
+
+    comments = RelationProperty('Comment')
+    attachments = RelationProperty('Attachment')
 
     def url(self):
         return c.app.script_name + '/' + self.issue_num + '/'
@@ -47,43 +79,43 @@ class Issue0(Document):
         return '%s/%s' % (self.type_s, self.issue_num)
 
     def index(self):
-        return self
+        result = VersionedArtifact.index(self)
+        result.update(
+            title_s='Issue %s' % self.issue_num,
+            version_i=self.version,
+            type_s=self.type_s,
+            text=self.summary)
+        return result
 
     def root_comments(self):
-        return Comment.m.find(dict(issue_id=self._id, reply_to=None))
-
-    def attachments(self):
-        return Attachment.m.find(dict(issue_id=self._id))
+        return Comment.query.find(dict(issue_id=self._id, reply_to=None))
 
     def reply(self):
         while True:
             try:
-                c = Comment.make(dict(issue_id=self._id))
-                c.m.insert()
+                c = Comment(issue_id=self._id)
                 return c
             except OperationFailure:
                 sleep(0.1)
                 continue
 
-Issue = Issue0
-
-
-
-class Comment0(Message):
+class Comment(Message):
 
     class __mongometa__:
         name = 'issue_comment'
 
     type_s          = 'Issue Comment'
-    _id             = Field(schema.ObjectId)
-    version         = Field(0)
-    created_date    = Field(datetime, if_missing=datetime.utcnow)
-    project_id      = Field(schema.ObjectId)
+    _id             = FieldProperty(schema.ObjectId)
+    version         = FieldProperty(0)
+    created_date    = FieldProperty(datetime, if_missing=datetime.utcnow)
+    project_id      = FieldProperty(schema.ObjectId)
 
-    issue_id        = Field(schema.ObjectId)
-    kind            = Field(str, if_missing='comment')
-    reply_to_id     = Field(schema.ObjectId, if_missing=None)
-    text            = Field(str)
+    issue_id        = ForeignIdProperty(Issue)
+    kind            = FieldProperty(str, if_missing='comment')
+    reply_to_id     = FieldProperty(schema.ObjectId, if_missing=None)
+    text            = FieldProperty(str)
+
+    issue = RelationProperty('Issue')
 
     def index(self):
         result = Message.index(self)
@@ -97,35 +129,29 @@ class Comment0(Message):
         )
         return result
 
-    @property
-    def issue(self):
-        return Issue.m.get(_id=self.issue_id)
-
     def url(self):
         return self.issue.url() + '#comment-' + self._id
 
     def shorthand_id(self):
         return '%s-%s' % (self.issue.shorthand_id, self._id)
 
-Comment = Comment0
-
-
-
-class Attachment0(Message):
+class Attachment(Artifact):
 
     class __mongometa__:
         name = 'issue_attachment'
 
     type_s          = 'Issue Attachment'
-    _id             = Field(schema.ObjectId)
-    version         = Field(0)
-    created_date    = Field(datetime, if_missing=datetime.utcnow)
-    project_id      = Field(schema.ObjectId)
+    _id             = FieldProperty(schema.ObjectId)
+    version         = FieldProperty(0)
+    created_date    = FieldProperty(datetime, if_missing=datetime.utcnow)
+    project_id      = FieldProperty(schema.ObjectId)
 
-    issue_id        = Field(schema.ObjectId)
-    file_type       = Field(str)
-    file_name       = Field(str)
-    data            = Field(str)
+    issue_id        = ForeignIdProperty(Issue)
+    file_type       = FieldProperty(str)
+    file_name       = FieldProperty(str)
+    data            = FieldProperty(str)
+
+    issue = RelationProperty('Issue')
 
     def index(self):
         result = Message.index(self)
@@ -139,14 +165,11 @@ class Attachment0(Message):
         )
         return result
 
-    @property
-    def issue(self):
-        return Issue.m.get(_id=self.issue_id)
-
     def url(self):
         return self.issue.url() + '#attachment-' + self._id
 
     def shorthand_id(self):
         return '%s-%s' % (self.issue.shorthand_id, self._id)
 
-Attachment = Attachment0
+
+MappedClass.compile_all()
