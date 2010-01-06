@@ -62,9 +62,18 @@ def REACTING(message, post_name=None, appmount=None, apploc=None, proj=None, hos
             else:
                 logging.debug('REACT: valid mount point (' + appmount + ') with plugin_name:' + plugin_name)
                 routing_key = plugin_name + '.' + apploc
+                mailto = message.__getitem__('To')
+                mailfrom = message.__getitem__('From')
+                mailsubj = message.__getitem__('Subject')
+                mailbody = message.body()
+                logging.debug('REACT: *** TO *** = ' + mailto)
+                logging.debug('REACT: *** FROM *** = ' + mailfrom)
+                logging.debug('REACT: *** SUBJECT *** = ' + mailsubj)
+                logging.debug('REACT: *** CONTENT *** = ' + message.body())
                 try:
                     pylons.g.publish('audit', routing_key,
-                        dict(content=str(message)),
+                         dict(to=mailto,fro=mailfrom,subject=mailsubj,body=mailbody),
+#                        dict(content=str(message)),
                         serializer='yaml')
                 except:
                     logging.debug('REACT: unable to queue message in carrot')
