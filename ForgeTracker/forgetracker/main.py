@@ -124,9 +124,9 @@ class RootController(object):
         require(has_artifact_access('write'))
         if request.method != 'POST':
             raise Exception('save_new must be a POST request')
-        if issue_num is not None:
+        if issue_num:
             issue = model.Issue.query.get(project_id=c.project._id,
-                                          issue_num=issue_num)
+                                          issue_num=int(issue_num))
             if not issue:
                 raise Exception('Issue number not found.')
             issue.update(post_data)
