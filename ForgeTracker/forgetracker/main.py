@@ -129,17 +129,19 @@ class RootController(object):
                                           issue_num=int(issue_num))
             if not issue:
                 raise Exception('Issue number not found.')
-            issue.update(post_data)
+            del post_data['issue_num']
         else:
+            issue = model.Issue()
+            issue.project_id = c.project._id
             globals = model.Globals.query.get(project_id=c.project._id)
 
             # FIX ME: need to lock around this increment or something
             globals.last_issue_num += 1
-            post_data.issue_num = globals.last_issue_num
+            post_data['issue_num'] = globals.last_issue_num
             # FIX ME
 
-            post_data.project_id = c.project._id
-            issue = model.Issue(post_data)
+        for k,v in post_data.iteritems():
+            setattr(issue, k, v)
         return "Issue saved."
 
 
