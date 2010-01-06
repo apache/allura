@@ -131,6 +131,14 @@ class RootController(object):
                 raise Exception('Issue number not found.')
             issue.update(post_data)
         else:
+            globals = model.Globals.query.get(project_id=c.project._id)
+
+            # FIX ME: need to lock around this increment or something
+            globals.last_issue_num += 1
+            post_data.issue_num = globals.last_issue_num
+            # FIX ME
+
+            post_data.project_id = c.project._id
             issue = model.Issue(post_data)
         return "Issue saved."
 
