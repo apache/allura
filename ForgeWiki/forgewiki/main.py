@@ -44,8 +44,29 @@ class ForgeWikiApp(Application):
 
     @audit('Wiki.#')
     def auditor(self, routing_key, data):
-        log.info('Auditing data from %s (%s)',
+        log.info('JTB13 Auditing data from %s (%s)',
                  routing_key, self.config.options.mount_point)
+        try:
+            elements = routing_key.split('.')
+            count = len(elements)
+        except:
+            log.info('Audit applies to page Root.')
+            p = model.Page.upsert('Root')
+        else:
+            log.info('JTB13 Audit applies to page ' + elements[1])
+            p = model.Page.upsert(elements[1])
+            try:
+#                p.text = 'This is the JTB13 test page:' + data.body
+#                p.text = str(data)
+                p.text = str(data['body'])
+                p.commit()
+#                c = p.reply()
+#                c.text = 'This is a test comment.'
+#                c.m.save()
+            except:
+                log.info('JTB13 failed to configure wiki')
+            else:
+                log.info('JTB13 configured wiki')
 
     @react('Wiki.#')
     def reactor(self, routing_key, data):
