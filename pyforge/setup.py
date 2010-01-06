@@ -32,6 +32,7 @@ setup(
         "PyYAML >= 3.09",
         "python-openid >= 2.2.4",
         "python-ldap == 2.3.9",
+        "python-dateutil >= 1.4.1",
         ],
     setup_requires=["PasteScript >= 1.7"],
     paster_plugins=['PasteScript', 'Pylons', 'TurboGears2', 'tg.devtools'],
@@ -68,6 +69,7 @@ setup(
     [paste.paster_command]
     reactor_setup = pyforge.command:ReactorSetupCommand
     reactor = pyforge.command:ReactorCommand
+    sendmsg = pyforge.command:SendMessageCommand
     
     """,
 )

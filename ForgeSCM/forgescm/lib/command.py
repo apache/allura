@@ -20,6 +20,7 @@ class Command(object):
     def run(self, output_consumer=None, cwd=None):
         if cwd is None:
             cwd=self.cwd()
+        log.info('Running command: %r', self.args)
         self.sp = subprocess.Popen(
             self.args, executable=self.args[0],
             stdin=None, stdout=subprocess.PIPE,

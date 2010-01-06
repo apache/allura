@@ -27,6 +27,7 @@ def init(routing_key, data):
     log.info('Setup gitweb in %s', repo.repo_dir)
     repo_name = c.project._id + c.app.config.options.mount_point
     git.setup_gitweb(repo_name, repo.repo_dir)
+    git.setup_commit_hook(repo.repo_dir, c.app.config.script_name()[1:])
     if cmd.sp.returncode:
         g.publish('react', 'error', dict(
                 message=cmd.output))
@@ -42,10 +43,12 @@ def clone(routing_key, data):
     # Perform the clone
     cmd = git.clone(data['url'], '.')
     cmd.clean_dir()
+    repo.clear_commits()
     cmd.run()
     log.info('Clone complete for %s', data['url'])
     repo_name = c.project._id + c.app.config.options.mount_point
     git.setup_gitweb(repo_name, repo.repo_dir)
+    git.setup_commit_hook(repo.repo_dir, c.app.config.script_name()[1:])
     if cmd.sp.returncode:
         errmsg = cmd.output
         g.publish('react', 'error', dict(
@@ -67,11 +70,13 @@ def fork(routing_key, data):
     log.info('Cloning from %s', data['url'])
     cmd = git.clone(data['url'], '.')
     cmd.clean_dir()
+    repo.clear_commits()
     cmd.run()
     repo.status = 'Ready'
     log.info('Clone complete for %s', data['url'])
     repo_name = c.project._id + c.app.config.options.mount_point
     git.setup_gitweb(repo_name, repo.repo_dir)
+    git.setup_commit_hook(repo.repo_dir, c.app.config.script_name()[1:])
     if cmd.sp.returncode:
         errmsg = cmd.output
         g.publish('react', 'error', dict(
@@ -89,13 +94,14 @@ def reclone(routing_key, data):
     # Perform the clone
     cmd = git.clone(repo.parent, '.')
     cmd.clean_dir()
+    repo.clear_commits()
     cmd.run()
     if cmd.sp.returncode:
         g.publish('react', 'error', dict(
                 message=cmd.sp.stdout.read()))
         return
     # Load the log
-    cmd = git.log('-g', '-p')
+    cmd = git.scm_log('-p')
     cmd.run()
     # Clear the old set of commits
     repo.clear_commits()
@@ -112,8 +118,6 @@ def refresh_commit(routing_key, data):
     hash = data['hash']
     log.info('Refresh commit %s', hash)
     # Load the log
-    cmd = git.scm_log('-g', '-p', '-r', hash)
-    cmd.run()
+    cmd = git.scm_log('-p', '-1', hash)
     parser = git.LogParser(repo._id)
-    parser.feed(StringIO(cmd.output))
-
+    cmd.run(output_consumer=parser.feed)

@@ -23,6 +23,7 @@ def init(routing_key, data):
     repo.clear_commits()
     repo.parent = None
     cmd.run()
+    hg.setup_commit_hook(repo.repo_dir, c.app.config.script_name()[1:])
     if cmd.sp.returncode:
         g.publish('react', 'error', dict(
                 message=cmd.output))
@@ -40,6 +41,7 @@ def clone(routing_key, data):
     cmd = hg.clone(data['url'], '.')
     cmd.clean_dir()
     cmd.run()
+    hg.setup_commit_hook(repo.repo_dir, c.app.config.script_name()[1:])
     log.info('Clone complete for %s', data['url'])
     if cmd.sp.returncode:
         errmsg = cmd.output
@@ -95,6 +97,7 @@ def reclone(routing_key, data):
     parser = hg.LogParser(repo._id)
     parser.feed(StringIO(cmd.output))
     # Update the repo status
+    hg.setup_commit_hook(repo.repo_dir, c.app.config.script_name()[1:])
     repo.status = 'Ready'
 
 ## Reactors

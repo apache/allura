@@ -159,7 +159,7 @@ class Commit(Artifact):
     repository_id = ForeignIdProperty(Repository)
     summary = FieldProperty(str)
     diff = FieldProperty(str)
-    date = FieldProperty(str)
+    date = FieldProperty(datetime)
     parents = FieldProperty([str])
     tags = FieldProperty([str])
     user = FieldProperty(str)

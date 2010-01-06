@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import os
 
 """WebHelpers used in pyforge."""
 from contextlib import contextmanager
@@ -10,6 +11,23 @@ from webhelpers import date, feedgenerator, html, number, misc, text
 
 from pymongo import bson
 
+def find_project(url_path):
+    from pyforge import model as M
+    length = len(url_path)
+    while length:
+        id = '/'.join(url_path[:length]) + '/'
+        p = M.Project.query.get(_id=id)
+        if p: return p, url_path[length:]
+        length -= 1
+    return None, url_path
+
+def find_executable(exe_name):
+    '''Find the abspath of a given executable (which
+    must be on the PATH)'''
+    for dirname in os.environ['PATH'].split(os.pathsep):
+        path = os.path.join(dirname, exe_name)
+        if os.access(path, os.X_OK): return path
+    
 def make_users(uids):
     from pyforge import model as M
     return (M.User.query.get(_id=uid) for uid in uids)

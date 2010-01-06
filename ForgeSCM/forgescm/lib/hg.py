@@ -1,8 +1,11 @@
 import os
+import json
 import shutil
 import logging
 
+import pylons
 from pymongo import bson
+from dateutil.parser import parse as parse_dt
 
 from forgescm import model as M
 from .command import Command
@@ -16,7 +19,30 @@ class clone(Command):
     base='hg clone'
 
 class scm_log(Command):
-    base='hg log -g -p'
+    base='hg log'
+
+def setup_commit_hook(repo_dir, plugin_id):
+    text = '''[hooks]
+incoming.notify_forge = python:forgescm.lib.hg.incoming_hook
+
+[notify_forge]
+repository = %s
+config = %s
+''' % (plugin_id, pylons.config.__file__)
+    fn = os.path.join(repo_dir, '.hg/hgrc')
+    with open(fn, 'a') as fp:
+        fp.write(text)
+
+def incoming_hook(ui, repo, node, **kwargs):
+    ini_file = ui.config('notify_forge', 'config')
+    repo_id = ui.config('notify_forge', 'repository')
+    from pyforge.command import SendMessageCommand
+    cmd = SendMessageCommand('sendmsg')
+    msg = dict(hash=node)
+    cmd.parse_args(['-c', repo_id, ini_file,
+                    'react', 'scm.hg.refresh_commit',
+                    json.dumps(msg)])
+    cmd.command()
 
 class LogParser(object):
 
@@ -63,7 +89,7 @@ class LogParser(object):
             elif cur_line.startswith('branch:'):
                 r.branch = result
             elif cur_line.startswith('date:'):
-                r.date = result
+                r.date = parse_dt(result)
             elif cur_line.startswith('summary:'):
                 r.summary = result
             elif cur_line != '\n':

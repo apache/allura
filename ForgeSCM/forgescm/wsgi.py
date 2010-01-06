@@ -13,6 +13,7 @@ from pyforge import app
 from pyforge import model as M
 from pyforge.lib import app_globals
 from pyforge.lib.base import BaseController
+from pyforge.lib.helpers import find_project
 
 log = logging.getLogger(__name__)
 
@@ -35,7 +36,7 @@ class WSGIHook(app.WSGIHook, BaseController):
 
     def __call__(self, environ, start_response):
         url_path = environ['PATH_INFO'][1:].split('/')
-        project, rest = self.find_project(url_path)
+        project, rest = find_project(url_path)
         if project is None:
             return BaseController.__call__(self, environ, start_response)
         class EmptyClass(object): pass
@@ -70,12 +71,3 @@ class WSGIHook(app.WSGIHook, BaseController):
             c.app.repo.repo_dir + '/gitweb.conf')
         return self._git_app(environ, start_response)
 
-    def find_project(self, url_path):
-        length = len(url_path)
-        while length:
-            id = '/'.join(url_path[:length]) + '/'
-            p = M.Project.query.get(_id=id)
-            if p: return p, url_path[length:]
-            length -= 1
-        return None, url_path
-    

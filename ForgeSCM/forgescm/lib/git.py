@@ -4,8 +4,11 @@ import logging
 
 import pkg_resources
 import genshi
+import pylons
 from pymongo import bson
+from dateutil.parser import parse as parse_dt
 
+from pyforge.lib.helpers import find_executable
 from forgescm import model as M
 from .command import Command
 
@@ -18,11 +21,12 @@ class clone(Command):
     base='git clone'
 
 class scm_log(Command):
-    base='git log -p'
+    base='git log'
 
 def setup_gitweb(repo_name, repo_dir):
-    # Set up the GitWeb config file
-    tpl_fn = pkg_resources.resource_filename('forgescm', 'data/gitweb.conf_tmpl')
+    'Set up the GitWeb config file'
+    tpl_fn = pkg_resources.resource_filename(
+        'forgescm', 'data/gitweb.conf_tmpl')
     tpl_text = open(tpl_fn).read()
     tt = genshi.template.NewTextTemplate(
         tpl_text, filepath=os.path.dirname(tpl_fn), filename=tpl_fn)
@@ -33,6 +37,24 @@ def setup_gitweb(repo_name, repo_dir):
     cfg_fn = os.path.join(repo_dir, 'gitweb.conf')
     with open(cfg_fn, 'w') as fp:
         fp.write(cfg_strm.render())
+
+def setup_commit_hook(repo_dir, plugin_id):
+    'Set up the git post-commit hook'
+    tpl_fn = pkg_resources.resource_filename(
+        'forgescm', 'data/git/post-commit_tmpl')
+    tpl_text = open(tpl_fn).read()
+    tt = genshi.template.NewTextTemplate(
+        tpl_text, filepath=os.path.dirname(tpl_fn), filename=tpl_fn)
+    context = dict(
+        plugin_id=plugin_id,
+        ini_file=pylons.config.__file__,
+        paster=find_executable('paster')
+        )
+    strm = tt.generate(**context)
+    fn = os.path.join(repo_dir, '.git/hooks/post-commit')
+    with open(fn, 'w') as fp:
+        fp.write(strm.render())
+    os.chmod(fn, 0755)
 
 class LogParser(object):
 
@@ -73,7 +95,7 @@ class LogParser(object):
             if cur_line.startswith('Author:'):
                 r.user = result
             elif cur_line.startswith('Date:'):
-                r.date = result
+                r.date = parse_dt(result)
             elif cur_line != '\n':
                 r.summary += cur_line
             elif cur_line == '\n':

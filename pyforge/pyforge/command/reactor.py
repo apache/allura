@@ -1,6 +1,7 @@
 import os
 import sys
 import time
+import json
 import logging
 from pkg_resources import iter_entry_points
 from multiprocessing import Process
@@ -200,7 +201,36 @@ class ReactorCommand(Command):
             finally:
                 ming.orm.ormsession.ThreadLocalORMSession.close_all()
         return callback
-    
+
+class SendMessageCommand(Command):
+    min_args=3
+    max_args=4
+    usage = 'NAME <ini file> <exchange> <topic> [<json message>]'
+    summary = 'Send a message to a RabbitMQ exchange'
+    parser = command.Command.standard_parser(verbose=True)
+    parser.add_option('-c', '--context', dest='context',
+                      help=('The context of the message (path to the project'
+                            ' and/or plugin'))
+
+    def command(self):
+        from pyforge.lib.helpers import find_project
+        self.basic_setup()
+        exchange = self.args[1]
+        topic = self.args[2]
+        # Set the context of the message
+        if self.options.context:
+            project, rest = find_project(self.options.context.split('/'))
+            pylons.c.project = project
+            if rest:
+                pylons.g.set_app(rest[0])
+        if len(self.args) > 3:
+            base_message = json.loads(self.args[3])
+        else:
+            base_message = json.loads(sys.stdin.read())
+        log.info('Sending message to %s / %s:\n%s',
+                 exchange, topic, base_message)
+        pylons.g.publish(exchange, topic, base_message)
+
 class EmptyClass(object): pass
 
 def plugin_consumers(name, plugin):
