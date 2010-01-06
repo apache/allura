@@ -21,7 +21,7 @@ from pyforge.model import ProjectRole
 from forgetracker import model
 from forgetracker import version
 
-from forgetracker.widgets.issue_form import create_issue_form
+from forgetracker.widgets.issue_form import issue_form
 
 log = logging.getLogger(__name__)
 
@@ -83,6 +83,7 @@ class ForgeTrackerApp(Application):
         # mapper(model.Attachment).remove(project_id)
         # mapper(model.Globals).remove(project_id)
 
+
 class RootController(object):
 
     @expose('forgetracker.templates.index')
@@ -114,9 +115,25 @@ class RootController(object):
     @expose('forgetracker.templates.new_issue')
     def new(self, **kw):
         require(has_artifact_access('write'))
-        tmpl_context.form = create_issue_form
+        tmpl_context.form = issue_form
         return dict(modelname='Issue',
             page='New Issue')
+
+    @expose()
+    def save_issue(self, issue_num, **post_data):
+        require(has_artifact_access('write'))
+        if request.method != 'POST':
+            raise Exception('save_new must be a POST request')
+        if issue_num is not None:
+            issue = model.Issue.query.get(project_id=c.project._id,
+                                          issue_num=issue_num)
+            if not issue:
+                raise Exception('Issue number not found.')
+            issue.update(post_data)
+        else:
+            issue = model.Issue(post_data)
+        return "Issue saved."
+
 
 class IssueController(object):
 

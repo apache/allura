@@ -1,18 +1,13 @@
-from tw.api import WidgetsList
-from tw.forms import TableForm, CalendarDatePicker, SingleSelectField, TextField, TextArea
+import tw.forms as twf
 
-class IssueForm(TableForm):
+issue_form = twf.TableForm('issue_form', action='save_issue', children=[
+    twf.HiddenField('issue_num'),
+    twf.TextField('summary'),
+    twf.Spacer(),
+    twf.TextArea('description', suppress_label=True),
+    twf.TextField('reported_by'),
+    twf.TextField('assigned_to'),
+    twf.TextField('milestone'),
 
-    class fields(WidgetsList):
-        #created_date
-        #parent
-        summary         = TextField()
-        description     = TextArea()
-        reported_by     = TextField()
-        assigned_to     = TextField()
-        milestone       = TextField()
-
-        status_options  = enumerate(('open', 'unread', 'accepted', 'pending', 'closed'))
-        status          = SingleSelectField(options=status_options)
-
-create_issue_form = IssueForm("create_issue_form")
+    twf.SingleSelectField('status', options=['open', 'unread', 'accepted', 'pending', 'closed'])
+])
