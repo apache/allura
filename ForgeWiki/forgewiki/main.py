@@ -55,12 +55,13 @@ class ForgeWikiApp(Application):
         else:
             log.info('Audit applies to page ' + elements[1])
             p = model.Page.upsert(elements[1])
-            try:
-                p.text = str(data['body'])
-                p.commit()
-#                c = p.reply()
-#                c.text = 'This is a test comment.'
-#                c.m.save()
+        try:
+            p.text = str(data['body'])
+            p.commit()
+        except:
+            log.info('Audit did not update.')
+        else:
+            log.info('Audit updated.')
 
     @react('Wiki.#')
     def reactor(self, routing_key, data):
