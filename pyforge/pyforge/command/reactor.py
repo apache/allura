@@ -147,6 +147,7 @@ class ReactorCommand(Command):
         def callback(data, msg):
             msg.ack()
             try:
+                log.info('***Message received:%s', data)
                 project_id = data.get('project_id')
                 if project_id:
                     pylons.c.project = M.Project.query.get(_id=project_id)

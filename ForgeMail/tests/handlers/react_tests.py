@@ -14,7 +14,7 @@ def test_react_for_existing_project():
     """
     Then make sure that project react messages for existing project queued properly.
     """
-    dest_addr = "wiki.Beta@test.%s" % host
+    dest_addr = "wiki.Beta@test.projects.%s" % host
     client.begin()
     client.say(dest_addr, "Test project react messages for existing project queued properly")
 
@@ -22,7 +22,7 @@ def test_react_for_bad_project():
     """
     Then make sure that project react messages for non-existing project dropped properly.
     """
-    dest_addr = "wiki.Beta@badproject.%s" % host
+    dest_addr = "wiki.Beta@badproject.projects.%s" % host
     client.begin()
     client.say(dest_addr, "Test project react messages for non-existing project dropped properly")
 
@@ -30,6 +30,6 @@ def test_react_for_user_project():
     """
     Then make sure that project react messages for existing user queued properly.
     """
-    dest_addr = "wiki.Beta@test_user2.%s" % host
+    dest_addr = "wiki.Beta@test_user2.users.%s" % host
     client.begin()
     client.say(dest_addr, "Test project react messages for existing user queued properly")

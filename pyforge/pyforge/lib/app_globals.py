@@ -79,6 +79,7 @@ class Globals(object):
     def publish(self, xn, key, message=None, **kw):
         project = getattr(c, 'project', None)
         app = getattr(c, 'app', None)
+        log.info('HI! I am publishing!')
         if message is None: message = {}
         if project:
             message.setdefault('project_id', project._id)

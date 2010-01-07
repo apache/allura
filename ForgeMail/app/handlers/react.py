@@ -1,4 +1,5 @@
 import logging
+logging.config.fileConfig("config/react_logging.conf")
 
 from lamson.routing import route, route_like, stateless
 from config.settings import relay
@@ -17,15 +18,8 @@ from pyforge import model as M
 from pyforge.model import Project
 from pyforge.lib.app_globals import Globals
 
-logging.config.fileConfig("config/react_logging.conf")
 
 class EmptyClass(object): pass
-
-class ProjectContents:
-    def __init__(self,indict):
-        self.contents = indict
-    def __getattr__(self,which):
-        return self.contents.get(which,None)
 
 @route("(appmount)\\.(apploc)@(proj)\\.(host)", appmount=".*", apploc=".*", proj=".*")
 @stateless
@@ -36,19 +30,15 @@ def REACTING(message, post_name=None, appmount=None, apploc=None, proj=None, hos
     pylons.g._push_object(Globals())
     ming.configure(**conf)
 
+    project_id = '/'.join(reversed(proj.split('.'))) + '/'
     try:
-        valid = ProjectContents(Project.query.find({"name":proj, "database":"projects:"+proj}).one())
+        valid = M.Project.query.get(_id=project_id)
     except:
-        try:
-            valid = ProjectContents(Project.query.find({"name":proj, "database":"users:"+proj}).one())
-        except:
-            logging.debug('REACT: project "' + proj + '" does not exist as project or user')
-        else:
-            logging.debug('REACT: project "' + proj + '" exists as user with _id:' + valid._id)
+        logging.debug('REACT: project "' + proj + '" does not exist as project or user')
     else:
-        logging.debug('REACT: project "' + proj + '" exists as project with _id:' + valid._id)
+        logging.debug('REACT: project "' + proj + '" exists with id:' + project_id)
         try:
-            c.project = Project.query.get(_id=valid._id)
+            c.project = M.Project.query.get(_id=project_id)
         except:
             logging.debug('REACT: cannot initialize valid project')
         else:
@@ -72,8 +62,7 @@ def REACTING(message, post_name=None, appmount=None, apploc=None, proj=None, hos
                 logging.debug('REACT: *** CONTENT *** = ' + message.body())
                 try:
                     pylons.g.publish('audit', routing_key,
-                         dict(to=mailto,fro=mailfrom,subject=mailsubj,body=mailbody),
-#                        dict(content=str(message)),
+                        dict(to=mailto,fro=mailfrom,subject=mailsubj,body=mailbody),
                         serializer='yaml')
                 except:
                     logging.debug('REACT: unable to queue message in carrot')
