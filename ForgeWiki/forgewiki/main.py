@@ -56,7 +56,7 @@ class ForgeWikiApp(Application):
             log.info('Audit applies to page ' + elements[1])
             p = model.Page.upsert(elements[1])
         try:
-            p.text = str(data['body'])
+            p.text = g.markdown.convert(str(data['body']))
             p.commit()
         except:
             log.info('Audit did not update.')
