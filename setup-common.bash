@@ -24,6 +24,7 @@ easy_install -UZ -i http://www.turbogears.org/2.1/downloads/current/index turbog
 easy_install -UZ -i http://www.turbogears.org/2.1/downloads/current/index tg.devtools==2.1a3
 easy_install beautifulsoup
 easy_install mercurial
+easy_install python-dateutil
 
 #
 # Install _our_ code.
