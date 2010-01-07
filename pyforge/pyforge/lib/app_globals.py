@@ -49,7 +49,7 @@ class Globals(object):
             audit=Publisher(connection=self.conn, exchange='audit', auto_declare=False),
             react=Publisher(connection=self.conn, exchange='react', auto_declare=False))
         self.markdown = markdown.Markdown(
-            extensions=['codehilite', ArtifactExtension()],
+            extensions=['codehilite', ArtifactExtension(),'meta'],
             output_format='html4')
 
         self.oid_store = M.OpenIdStore()
