@@ -1,50 +1,19 @@
-import os
 import sys
 import time
 import json
-import logging
-from pkg_resources import iter_entry_points
 from multiprocessing import Process
-from pprint import pformat
 
 import ming
 import pylons
-from paste.script import command
-from paste.deploy import appconfig
-from carrot.connection import BrokerConnection
+from pymongo.bson import ObjectId
 from carrot.messaging import Consumer, ConsumerSet
 
-from pyforge.config.environment import load_environment
+from . import base
 
-log=None
-M=None
-
-class Command(command.Command):
-    min_args = max_args = 1
-    usage = 'NAME <ini file>'
-    group_name = 'PyForge'
-
-    def basic_setup(self):
-        global log, M
-        conf = appconfig('config:%s' % self.args[0],relative_to=os.getcwd())
-        logging.config.fileConfig(self.args[0])
-        from pyforge import model
-        M=model
-        log = logging.getLogger(__name__)
-        log.info('Initialize reactor with config %r', self.args[0])
-        load_environment(conf.global_conf, conf.local_conf)
-        pylons.c._push_object(EmptyClass())
-        from pyforge.lib.app_globals import Globals
-        pylons.g._push_object(Globals())
-        ming.configure(**conf)
-        self.plugins = [
-            (ep.name, ep.load()) for ep in iter_entry_points('pyforge') ]
-        log.info('Loaded plugins')
-
-class ReactorSetupCommand(Command):
+class ReactorSetupCommand(base.Command):
 
     summary = 'Configure the RabbitMQ queues and bindings for the given set of plugins'
-    parser = command.Command.standard_parser(verbose=True)
+    parser = base.Command.standard_parser(verbose=True)
 
     def command(self):
         self.basic_setup()
@@ -60,20 +29,20 @@ class ReactorSetupCommand(Command):
         try:
             ch.exchange_delete('audit')
         except:
-            log.warning('Error deleting audit exchange')
+            base.log.warning('Error deleting audit exchange')
             self.backend = be = pylons.g.conn.create_backend()
             ch = self.backend.channel
         try:
             ch.exchange_delete('react')
         except:
-            log.warning('Error deleting react exchange')
+            base.log.warning('Error deleting react exchange')
             self.backend = be = pylons.g.conn.create_backend()
             ch = self.backend.channel
         be.exchange_declare('audit', 'topic', True, False)
         be.exchange_declare('react', 'topic', True, False)
 
     def configure_plugin(self, name, plugin):
-        log.info('Configuring plugin %s:%s', name, plugin)
+        base.log.info('Configuring plugin %s:%s', name, plugin)
         be = self.backend
         for method, xn, qn, keys in plugin_consumers(name, plugin):
             if be.queue_exists(qn):
@@ -81,12 +50,12 @@ class ReactorSetupCommand(Command):
             be.queue_declare(qn, True, False, False, True)
             for k in keys:
                 be.queue_bind(exchange=xn, queue=qn, routing_key=k)
-            log.info('... %s %s %r', xn, qn, keys)
+            base.log.info('... %s %s %r', xn, qn, keys)
 
-class ReactorCommand(Command):
+class ReactorCommand(base.Command):
 
     summary = 'Start up all the auditors and reactors for registered plugins'
-    parser = command.Command.standard_parser(verbose=True)
+    parser = base.Command.standard_parser(verbose=True)
     parser.add_option('-p', '--proc', dest='proc', type='int', default=1,
                       help='number of worker processes to spawn')
 
@@ -110,10 +79,10 @@ class ReactorCommand(Command):
             p.start()
         while True:
             time.sleep(300)
-            log.info('=== Mark ===')
+            base.log.info('=== Mark ===')
 
     def multi_worker_main(self, configs):
-        log.info('Entering multiqueue worker process')
+        base.log.info('Entering multiqueue worker process')
         consumers = [ ]
         cset = ConsumerSet(pylons.g.conn)
         for config in configs:
@@ -127,19 +96,19 @@ class ReactorCommand(Command):
             pass
 
     def worker_main(self, plugin_name, method, xn, qn, keys):
-        log.info('Entering worker process: %s', qn)
+        base.log.info('Entering worker process: %s', qn)
         consumer = Consumer(connection=pylons.g.conn, queue=qn)
         if xn == 'audit':
             consumer.register_callback(self.route_audit(plugin_name, method))
         else:
             consumer.register_callback(self.route_react(plugin_name, method))
         consumer.wait()
-        log.info('Exiting worker process: %s', qn)
+        base.log.info('Exiting worker process: %s', qn)
 
     def periodic_main(self):
-        log.info('Entering periodic reactor')
+        base.log.info('Entering periodic reactor')
         while True:
-            M.ScheduledMessage.fire_when_ready()
+            base.M.ScheduledMessage.fire_when_ready()
             time.sleep(5)
 
     def route_audit(self, plugin_name, method):
@@ -147,29 +116,31 @@ class ReactorCommand(Command):
         def callback(data, msg):
             msg.ack()
             try:
-                log.info('***Message received:%s', data)
+                base.log.info('***Message received:%s', data)
                 project_id = data.get('project_id')
                 if project_id:
-                    pylons.c.project = M.Project.query.get(_id=project_id)
+                    pylons.c.project = base.M.Project.query.get(_id=project_id)
                 else:
                     pylons.c.project = None
                 if pylons.c.project is None and project_id:
-                    log.error('The project_id was %s but it was not found',
-                              project_id)
+                    base.log.error('The project_id was %s but it was not found',
+                                   project_id)
+                if data.get('user_id'):
+                    pylons.c.user = base.M.User.query.get(_id=ObjectId.url_decode(data['user_id']))
                 mount_point = data.get('mount_point')
                 if mount_point is not None:
                     pylons.c.app = pylons.c.project.app_instance(mount_point)
-                    log.debug('Setting app %s', pylons.c.app)
+                    base.log.debug('Setting app %s', pylons.c.app)
                 if getattr(method, 'im_self', ()) is None:
-                    log.debug('im_self is None')
+                    base.log.debug('im_self is None')
                     # Instancemethod - call, binding self
                     method(pylons.c.app, msg.delivery_info['routing_key'], data)
                 else:
                     # Classmethod or function - don't bind self
                     method(msg.delivery_info['routing_key'], data)
             except:
-                log.exception('Exception audit handling %s: %s',
-                              plugin_name, method)
+                base.log.exception('Exception audit handling %s: %s',
+                                   plugin_name, method)
             else:
                 ming.orm.ormsession.ThreadLocalORMSession.flush_all()
             finally:
@@ -183,7 +154,9 @@ class ReactorCommand(Command):
             msg.ack()
             try:
                 # log.info('React(%s): %s', msg.delivery_info['routing_key'], data)
-                pylons.c.project = M.Project.query.get(_id=data['project_id'])
+                if data.get('user_id'):
+                    pylons.c.user = base.M.User.query.get(_id=ObjectId.url_decode(data['user_id']))
+                pylons.c.project = base.M.Project.query.get(_id=data['project_id'])
                 mount_point = data.get('mount_point')
                 if getattr(method, 'im_self', ()) is None:
                     # Instancemethod - call once for each app, binding self
@@ -196,19 +169,19 @@ class ReactorCommand(Command):
                     # Classmethod or function -- just call once 
                     method(msg.delivery_info['routing_key'], data)
             except:
-                log.exception('Exception react handling %s: %s', plugin_name, method)
+                base.log.exception('Exception react handling %s: %s', plugin_name, method)
             else:
                 ming.orm.ormsession.ThreadLocalORMSession.flush_all()
             finally:
                 ming.orm.ormsession.ThreadLocalORMSession.close_all()
         return callback
 
-class SendMessageCommand(Command):
+class SendMessageCommand(base.Command):
     min_args=3
     max_args=4
     usage = 'NAME <ini file> <exchange> <topic> [<json message>]'
     summary = 'Send a message to a RabbitMQ exchange'
-    parser = command.Command.standard_parser(verbose=True)
+    parser = base.Command.standard_parser(verbose=True)
     parser.add_option('-c', '--context', dest='context',
                       help=('The context of the message (path to the project'
                             ' and/or plugin'))
@@ -228,11 +201,9 @@ class SendMessageCommand(Command):
             base_message = json.loads(self.args[3])
         else:
             base_message = json.loads(sys.stdin.read())
-        log.info('Sending message to %s / %s:\n%s',
-                 exchange, topic, base_message)
+        base.log.info('Sending message to %s / %s:\n%s',
+                      exchange, topic, base_message)
         pylons.g.publish(exchange, topic, base_message)
-
-class EmptyClass(object): pass
 
 def plugin_consumers(name, plugin):
     from pyforge.lib.decorators import ConsumerDecoration
@@ -254,7 +225,7 @@ def plugin_consumers(name, plugin):
 def debug():
     from IPython.ipapi import make_session; make_session()
     from IPython.Debugger import Pdb
-    log.info('Entering debugger')
+    base.log.info('Entering debugger')
     p = Pdb(color_scheme='Linux')
     p.reset()
     p.setup(sys._getframe(), None)

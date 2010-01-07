@@ -48,6 +48,7 @@ def bootstrap(command, conf, vars):
     u0 = M.User.register(dict(username='test_admin', display_name='Test Admin'))
     u1 = M.User.register(dict(username='test_user', display_name='Test User'))
     u2 = M.User.register(dict(username='test_user2', display_name='Test User 2'))
+    u0.claim_address('Beta@wiki.test.projects.sourceforge.net')
     u0.set_password('foo')
     u1.set_password('foo')
     log.info('Registering initial project')

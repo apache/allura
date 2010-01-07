@@ -35,7 +35,7 @@ setup(
         "python-dateutil >= 1.4.1",
         ],
     setup_requires=["PasteScript >= 1.7"],
-    paster_plugins=['PasteScript', 'Pylons', 'TurboGears2', 'tg.devtools'],
+    paster_plugins=['PasteScript', 'Pylons', 'TurboGears2', 'tg.devtools', 'ForgeMail'],
     packages=find_packages(exclude=['ez_setup']),
     include_package_data=True,
     test_suite='nose.collector',

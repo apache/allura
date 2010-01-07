@@ -4,7 +4,7 @@
 from .session import ProjectSession
 from .project import Project, AppConfig, SearchConfig, ScheduledMessage
 from .artifact import Artifact, Message, VersionedArtifact, Snapshot, ArtifactLink, nonce
-from .auth import User, ProjectRole, OpenId
+from .auth import User, ProjectRole, OpenId, EmailAddress
 from .openid_model import OpenIdStore, OpenIdAssociation, OpenIdNonce
 
 from .session import main_doc_session, main_orm_session

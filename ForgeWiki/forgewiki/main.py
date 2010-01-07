@@ -8,7 +8,6 @@ import pkg_resources
 from tg import expose, validate, redirect
 from pylons import g, c, request
 from formencode import validators
-from pymongo.bson import ObjectId
 
 from ming.orm.base import mapper
 
@@ -18,7 +17,7 @@ from pyforge.lib.helpers import push_config
 from pyforge.lib.search import search
 from pyforge.lib.decorators import audit, react
 from pyforge.lib.security import require, has_artifact_access
-from pyforge.model import ProjectRole
+from pyforge.model import ProjectRole, User
 
 # Local imports
 from forgewiki import model
@@ -49,19 +48,19 @@ class ForgeWikiApp(Application):
         try:
             elements = routing_key.split('.')
             count = len(elements)
+            log.info('Audit applies to page ' + elements[1])
+            p = model.Page.upsert(elements[1])
         except:
             log.info('Audit applies to page Root.')
             p = model.Page.upsert('Root')
-        else:
-            log.info('Audit applies to page ' + elements[1])
-            p = model.Page.upsert(elements[1])
-        try:
-            p.text = g.markdown.convert(str(data['body']))
-            p.commit()
-        except:
-            log.info('Audit did not update.')
-        else:
-            log.info('Audit updated.')
+        # Find ancestor comment
+        parent = model.Comment.query.get(message_id=data['headers'].get('In-Reply-To'))
+        if parent is None: parent = p
+        comment = parent.reply()
+        if 'Message-ID' in data['headers']:
+            comment.message_id=data['headers']['Message-ID']
+        comment.text = data['payload']
+        # comment.text = g.markdown.convert(str(data['payload']))
 
     @react('Wiki.#')
     def reactor(self, routing_key, data):

@@ -7,8 +7,6 @@ import ldap
 from pylons import c
 from tg import config
 
-from ming import Document, Session, Field
-from ming.orm.base import session
 from ming.orm.ormsession import ThreadLocalORMSession
 from ming.orm.mapped_class import MappedClass
 from ming.orm.property import FieldProperty
@@ -31,14 +29,39 @@ def encode_password(password, salt=None):
     hashpass = sha256(salt + password.encode('utf-8')).digest()
     return 'sha256' + salt + b64encode(hashpass)
 
+class EmailAddress(MappedClass):
+    class __mongometa__:
+        name='email_address'
+        session = main_orm_session
+
+    _id = FieldProperty(str)
+    claimed_by_user_id=FieldProperty(S.ObjectId, if_missing=None)
+    confirmed = FieldProperty(bool)
+
+    def claimed_by_user(self):
+        return User.query.get(_id=self.claimed_by_user_id)
+
+    @classmethod
+    def upsert(cls, addr):
+        addr = cls.canonical(addr)
+        result = cls.query.get(_id=addr)
+        if not result:
+            result = cls(_id=addr)
+        return result
+
+    @classmethod
+    def canonical(cls, addr):
+        user, domain = addr.split('@')
+        return '%s@%s' % (user, domain.lower())
+    
 class OpenId(MappedClass):
     class __mongometa__:
         name='openid'
         session = main_orm_session
 
-    _id = Field(str)
-    claimed_by_user_id=Field(S.ObjectId, if_missing=None)
-    display_identifier=Field(str)
+    _id = FieldProperty(str)
+    claimed_by_user_id=FieldProperty(S.ObjectId, if_missing=None)
+    display_identifier=FieldProperty(str)
 
     @classmethod
     def upsert(cls, url, display_identifier):
@@ -71,6 +94,7 @@ class User(MappedClass):
     username=FieldProperty(str)
     display_name=FieldProperty(str)
     open_ids=FieldProperty([str])
+    email_addresses=FieldProperty([str])
     password=FieldProperty(str)
     projects=FieldProperty([str])
 
@@ -79,6 +103,13 @@ class User(MappedClass):
         oid_obj.claimed_by_user_id = self._id
         if oid_url in self.open_ids: return
         self.open_ids.append(oid_url)
+
+    def claim_address(self, email_address):
+        addr = EmailAddress.canonical(email_address)
+        email_addr = EmailAddress.upsert(addr)
+        email_addr.claimed_by_user_id = self._id
+        if addr in self.email_addresses: return
+        self.email_addresses.append(addr)
 
     @classmethod
     def register(cls, doc, make_project=True):

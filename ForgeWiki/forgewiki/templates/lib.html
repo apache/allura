@@ -14,7 +14,7 @@
       <a py:if="c.user._id and comment.author_id==c.user._id" 
          href="comments/$comment._id/delete">[X]</a>
       <br/>
-      <p py:content="comment.text"/>
+      ${Markup(g.markdown.convert(comment.text))}
       <div style="padding-left: 10px; border-left: 1px solid grey">
         <div class="reply title-pane closed">
           <h3 class="title">Reply to ${comment.author().display_name}</h3>

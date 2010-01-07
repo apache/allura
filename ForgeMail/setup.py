@@ -24,8 +24,9 @@ setup(name='ForgeMail',
       entry_points="""
       # -*- Entry points: -*-
       [pyforge]
-      Mail=forgemail.main:ForgeMailApp
+      # Mail=forgemail.main:ForgeMailApp
+
       [paste.paster_command]
-      lamson=forgemail.app.command:LamsonCommand
+      smtp_server=forgemail.app.command:SMTPServerCommand
       """,
       )

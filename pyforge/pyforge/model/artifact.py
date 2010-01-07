@@ -23,7 +23,11 @@ from .session import artifact_orm_session
 log = logging.getLogger(__name__)
 
 def nonce(length=4):
-    return sha1(ObjectId().binary).hexdigest()[:4]
+    return sha1(ObjectId().binary).hexdigest()[:length]
+
+def gen_message_id():
+    parts = c.app.config.script_name().split('/')[:-1]
+    return '%s@%s.sourceforge.net' % (nonce(40), '.'.join(reversed(parts)))
 
 class ArtifactLink(MappedClass):
     class __mongometa__:
@@ -268,6 +272,7 @@ class Message(Artifact):
     timestamp=FieldProperty(datetime, if_missing=datetime.utcnow)
     author_id=FieldProperty(S.ObjectId, if_missing=lambda:c.user._id)
     text=FieldProperty(str, if_missing='')
+    message_id=FieldProperty(str, if_missing=gen_message_id)
 
     def author(self):
         from .auth import User
