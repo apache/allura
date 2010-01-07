@@ -118,6 +118,9 @@ def refresh_commit(routing_key, data):
     hash = data['hash']
     log.info('Refresh commit %s', hash)
     # Load the log
-    cmd = git.scm_log('-p', '-1', hash)
+    if '..' in hash:
+        cmd = git.scm_log('-p', hash)
+    else:
+        cmd = git.scm_log('-p', '-1', hash)
     parser = git.LogParser(repo._id)
     cmd.run(output_consumer=parser.feed)

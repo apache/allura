@@ -1,6 +1,10 @@
 import os
+import sys
 import logging
 
+import genshi
+import pylons
+import pkg_resources
 from pymongo import bson
 
 from forgescm import model as M
@@ -21,12 +25,6 @@ class rebase(Command):
     def cwd(self):
         return Command.cwd(self) + '/hg_repo'
 
-class scm_log(Command):
-    base='git svn log'
-
-    def cwd(self):
-        return Command.cwd(self) + '/git'
-
 def svn_clone(remote):
     '''Clone one svn repo using svnsync'''
     # Create the svn repo
@@ -44,3 +42,22 @@ def svn_clone(remote):
     sync('sync', 'file://%s/svn_repo' % cmd.cwd()).run_exc()
     # Use hgsubversion to clone svn=>hg
     hg.clone('file://%s/svn_repo' % cmd.cwd(), 'hg_repo').run_exc()
+
+def setup_commit_hook(repo_dir, plugin_id):
+    'Set up the svn post-commit hook'
+    tpl_fn = pkg_resources.resource_filename(
+        'forgescm', 'data/svn/post-commit_tmpl')
+    tpl_text = open(tpl_fn).read()
+    tt = genshi.template.NewTextTemplate(
+        tpl_text, filepath=os.path.dirname(tpl_fn), filename=tpl_fn)
+    context = dict(
+        executable=sys.executable,
+        repository=plugin_id,
+        config=pylons.config['__file__'])
+    strm = tt.generate(**context)
+    fn = os.path.join(repo_dir, 'svn_repo/hooks/post-commit')
+    with open(fn, 'w') as fp:
+        fp.write(strm.render())
+    os.chmod(fn, 0755)
+
+    

@@ -38,6 +38,7 @@ def init(routing_key, data):
     cmd.clean_dir()
     try:
         cmd.run_exc()
+        svn.setup_commit_hook(repo.repo_dir, c.app.config.script_name()[1:])
         hg.clone('file://%s/svn' % cmd.cwd(), 'hg_repo').run_exc()
     except AssertionError, ae:
         g.publish('react', 'error', dict(
@@ -57,6 +58,7 @@ def clone(routing_key, data):
     # Perform the clone
     try:
         svn.svn_clone(data['url'])
+        svn.setup_commit_hook(repo.repo_dir, c.app.config.script_name()[1:])
         log.info('Clone complete for %s', data['url'])
         g.publish('react', 'scm.cloned', dict(
                 url=data['url']))
@@ -99,6 +101,7 @@ def reclone(routing_key, data):
     # Perform the clone
     try:
         svn.svn_clone(repo.parent)
+        svn.setup_commit_hook(repo.repo_dir, c.app.config.script_name()[1:])
         g.publish('react', 'scm.cloned', dict(
                 url=data['url']))
         repo.status = 'Ready'
@@ -120,7 +123,7 @@ def refresh_commit(routing_key, data):
     # Load the log
     try:
         svn.scm_rebase().run_exc()
-        cmd = svn.scm_log('-g', '-p', '-r', hash).run_exc()
+        cmd = svn.scm_log('-g', '-p', '--debug', '-r', hash).run_exc()
         parser = hg.LogParser(repo._id)
         parser.feed(StringIO(cmd.output))
     except AssertionError, ae:
@@ -136,7 +139,7 @@ def refresh_log(routing_key, data):
     set_context(data['project_id'], data['mount_point'])
     repo = c.app.repo
     repo.clear_commits()
-    cmd = svn.scm_log('-g', '-p')
+    cmd = svn.scm_log('-g', '-p', '--debug')
     cmd.run()
     parser = hg.LogParser(repo._id)
     parser.feed(StringIO(cmd.output))

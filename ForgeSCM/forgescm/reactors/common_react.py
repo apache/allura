@@ -76,7 +76,7 @@ def cloned(routing_key, data):
         parser = git.LogParser(repo._id)
         cmd.run(output_consumer=parser.feed)
     elif type == 'svn':
-        cmd = hg.scm_log('-g', '-p', 'hg_repo')
+        cmd = hg.scm_log('-g', '-p', '--debug', 'hg_repo')
         parser = hg.LogParser(repo._id)
         cmd.run(output_consumer=parser.feed)
     else:

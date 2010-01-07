@@ -78,12 +78,20 @@ class LogParser(object):
         while cur_line != '\n':
             cur_line = line_iter.next()
             if cur_line == '\n': break
-            cmd, rest = cur_line.split(':', 1)
+            try:
+                cmd, rest = cur_line.split(':', 1)
+            except ValueError:
+                if r.summary:
+                    r.summary += cur_line
+                else:
+                    r.summary = cur_line
+                continue
             result = self.parse_line(rest)
             if cur_line.startswith('tag:'):
                 r.tags.append(result)
             elif cur_line.startswith('parent:'):
-                r.parents.append(result)
+                if not result.startswith('-1:0000'): 
+                    r.parents.append(result)
             elif cur_line.startswith('user:'):
                 r.user = result
             elif cur_line.startswith('branch:'):
@@ -92,8 +100,13 @@ class LogParser(object):
                 r.date = parse_dt(result)
             elif cur_line.startswith('summary:'):
                 r.summary = result
+            elif cur_line.startswith('description:'):
+                r.summary = result
+            elif (cur_line.startswith('extra:')
+                  and 'convert_revision=svn:' in cur_line):
+                r.rev = int(cur_line.split('@')[-1])
             elif cur_line != '\n':
-                assert False, 'Unknown header: %r' % cur_line
+                log.debug('Unknown header: %r', cur_line)
         if self.result and not self.result[-1].parents:
             self.result[-1].parents = [ r.hash ]
         self.result.append(r)

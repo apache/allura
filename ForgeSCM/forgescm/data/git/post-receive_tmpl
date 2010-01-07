@@ -1,5 +1,23 @@
-#!/usr/bin/env python
+#!$executable
 import sys
-for line in sys.stdin:
-    print line
-# git log -1 --format='{"hash":"%H"}' | $paster sendmsg -c ${plugin_id} ${ini_file} react scm.git.refresh_commit
+import json
+
+REPOSITORY='$repository'
+CONFIG='$config'
+
+def main():
+    for line in sys.stdin:
+        old, new, ref = line.split()
+        print '%s: %s -> %s' % (ref, old, new)
+        from pyforge.command import SendMessageCommand
+        cmd = SendMessageCommand('sendmsg')
+        msg = dict(hash='%s..%s' % (old, new))
+        cmd.parse_args(['-c', REPOSITORY, CONFIG,
+                        'react', 'scm.git.refresh_commit',
+                        json.dumps(msg)])
+        cmd.command()
+        print line
+
+if __name__ == '__main__':
+    main()
+

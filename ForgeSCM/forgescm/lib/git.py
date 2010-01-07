@@ -1,4 +1,5 @@
 import os
+import sys
 import shutil
 import logging
 
@@ -41,17 +42,16 @@ def setup_gitweb(repo_name, repo_dir):
 def setup_commit_hook(repo_dir, plugin_id):
     'Set up the git post-commit hook'
     tpl_fn = pkg_resources.resource_filename(
-        'forgescm', 'data/git/post-commit_tmpl')
+        'forgescm', 'data/git/post-receive_tmpl')
     tpl_text = open(tpl_fn).read()
     tt = genshi.template.NewTextTemplate(
         tpl_text, filepath=os.path.dirname(tpl_fn), filename=tpl_fn)
     context = dict(
-        plugin_id=plugin_id,
-        ini_file=pylons.config.__file__,
-        paster=find_executable('paster')
-        )
+        executable=sys.executable,
+        repository=plugin_id,
+        config=pylons.config['__file__'])
     strm = tt.generate(**context)
-    fn = os.path.join(repo_dir, '.git/hooks/post-commit')
+    fn = os.path.join(repo_dir, '.git/hooks/post-receive')
     with open(fn, 'w') as fp:
         fp.write(strm.render())
     os.chmod(fn, 0755)
