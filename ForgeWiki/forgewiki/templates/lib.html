@@ -9,25 +9,26 @@
   </div>
 
   <py:def function="display_comment(comment)">
-    <div id="comment-${comment._id}"
-         style="padding-left: 10px; border-left: 1px solid grey">
+    <div id="comment-${comment._id}">
       Posted by <em>${comment.author().display_name}</em> at ${comment.timestamp} 
       <a py:if="c.user._id and comment.author_id==c.user._id" 
          href="comments/$comment._id/delete">[X]</a>
       <br/>
       <p py:content="comment.text"/>
-      <div class="reply title-pane closed">
-        <h3 class="title">Reply</h3>
-        <div class="content">
-          <form method="post" action="comments/$comment._id/reply">
-            <textarea rows="4" cols="60" name="text"></textarea><br/>
-            <input type="submit"/>
-          </form>
+      <div style="padding-left: 10px; border-left: 1px solid grey">
+        <div class="reply title-pane closed">
+          <h3 class="title">Reply to ${comment.author().display_name}</h3>
+          <div class="content">
+            <form method="post" action="comments/$comment._id/reply">
+              <textarea rows="4" cols="60" name="text"></textarea><br/>
+              <input type="submit"/>
+            </form>
+          </div>
         </div>
+        <py:for each="cc in comment.replies()">
+          ${display_comment(cc)}
+        </py:for>
       </div>
-      <py:for each="cc in comment.replies()">
-        ${display_comment(cc)}
-      </py:for>
     </div>
   </py:def>
 
