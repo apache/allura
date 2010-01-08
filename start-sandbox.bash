@@ -23,6 +23,7 @@ popd
 cd pyforge
 paster reactor_setup sandbox.ini
 paster reactor sandbox.ini &
+paster smtp_server sandbox.ini &
 
 paster setup-app sandbox.ini
 paster serve --reload sandbox.ini &
