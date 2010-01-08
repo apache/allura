@@ -54,7 +54,7 @@ class Issue(VersionedArtifact):
     _id = FieldProperty(schema.ObjectId)
     version = FieldProperty(0)
     created_date = FieldProperty(datetime, if_missing=datetime.utcnow)
-    project_id = FieldProperty(schema.ObjectId)
+    project_id = FieldProperty(str)
 
     parent_id = FieldProperty(schema.ObjectId, if_missing=None)
     issue_num = FieldProperty(int)
@@ -104,7 +104,7 @@ class Comment(Message):
     _id = FieldProperty(schema.ObjectId)
     version = FieldProperty(0)
     created_date = FieldProperty(datetime, if_missing=datetime.utcnow)
-    project_id = FieldProperty(schema.ObjectId)
+    project_id = FieldProperty(str)
 
     issue_id = ForeignIdProperty(Issue)
     kind = FieldProperty(str, if_missing='comment')
@@ -140,7 +140,7 @@ class Attachment(Artifact):
     _id = FieldProperty(schema.ObjectId)
     version = FieldProperty(0)
     created_date = FieldProperty(datetime, if_missing=datetime.utcnow)
-    project_id = FieldProperty(schema.ObjectId)
+    project_id = FieldProperty(str)
 
     issue_id = ForeignIdProperty(Issue)
     file_type = FieldProperty(str)
