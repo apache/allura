@@ -148,10 +148,10 @@ class RootController(object):
 class IssueController(object):
 
     def __init__(self, issue_num=None):
-        self.issue_num  = issue_num
-        self.issue      = model.Issue.query.get(project_id=c.project._id,
-                                                issue_num=issue_num)
-        self.comments   = CommentController(self.issue)
+        self.issue_num = int(issue_num)
+        self.issue = model.Issue.query.get(project_id=c.project._id,
+                                                issue_num=self.issue_num)
+        self.comments = CommentController(self.issue)
 
     @expose('forgetracker.templates.issue')
     def index(self, **kw):
