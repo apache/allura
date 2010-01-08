@@ -11,6 +11,7 @@ from forgemail.lib import util, exc
 log = logging.getLogger(__name__)
 
 common_suffix = tg.config.get('forgemail.domain', '.sourceforge.net')
+smtp_client = util.SMTPClient()
 
 @audit('forgemail.received_email')
 def received_email(routing_key, data):
@@ -20,7 +21,6 @@ def received_email(routing_key, data):
     goes to the audit with routing ID
     <plugin name>.<topic>
     '''
-    return
     msg = util.parse_message(data['data'])
     user = util.identify_sender(data['peer'], data['mailfrom'], msg)
     log.info('Received email from %s', user)
@@ -41,4 +41,46 @@ def received_email(routing_key, data):
         except:
             log.exception('Error routing mail to %s', addr)
 
+@audit('forgemail.send_email')
+def send_email(routing_key, data):
+    addrs_plain = []
+    addrs_html = []
+    addrs_multi = []
+    # Divide addresses based on preferred email formats
+    for addr in data['destinations']:
+        if isinstance(addr, basestring):
+            addrs_plain.append(addr)
+        else:
+            if addr.preferences['email_format'] == 'plain':
+                addrs_plain.append(addr)
+            elif addr.preferences['email_format'] == 'html':
+                addrs_html.append(addr)
+            else:
+                addrs_multi.append(addr)
+    plain_msg = util.encode_email_part(data['text'], 'text/plain')
+    html_text = g.markdown.convert(data['text'])
+    html_msg = util.encode_email_part(html_text, 'text/html')
+    multi_msg = util.make_multipart_message(plain_msg, html_msg)
+    smtp_client.sendmail(
+        addrs_multi,
+        data['from'],
+        data['subject'],
+        data['message_id'],
+        multi_msg)
+    smtp_client.sendmail(
+        addrs_plain,
+        data['from'],
+        data['subject'],
+        data['message_id'],
+        plain_msg)
+    smtp_client.sendmail(
+        addrs_html,
+        data['from'],
+        data['subject'],
+        data['message_id'],
+        html_msg)
+
+        
+            
+    
 

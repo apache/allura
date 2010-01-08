@@ -46,8 +46,10 @@ class ForgeWikiApp(Application):
 
     @audit('Wiki.#')
     def auditor(self, routing_key, data):
+        '''Attach a comment to the named page'''
         log.info('Auditing data from %s (%s)',
                  routing_key, self.config.options.mount_point)
+        log.info('Headers are: %s', data['headers'])
         try:
             elements = routing_key.split('.')
             count = len(elements)
@@ -62,8 +64,10 @@ class ForgeWikiApp(Application):
         comment = parent.reply()
         if 'Message-ID' in data['headers']:
             comment.message_id=data['headers']['Message-ID']
-        comment.text = data['payload']
-        # comment.text = g.markdown.convert(str(data['payload']))
+        comment.text = '*%s*\n\n%s' % (
+            data['headers'].get('Subject'),
+            data['payload'])
+        log.info('Set subject to %s', data['headers'].get('Subject'))
 
     @react('Wiki.#')
     def reactor(self, routing_key, data):

@@ -1,7 +1,11 @@
 import logging
+import smtplib
 import email.feedparser
+from email.MIMEMultipart import MIMEMultipart
+from email.MIMEText import MIMEText
 
 import tg
+from paste.deploy.converters import asbool, asint, aslist
 from pylons import c
 
 from pyforge.lib.helpers import push_config, find_project
@@ -57,3 +61,51 @@ def identify_sender(peer, email_address, msg):
         return addr.claimed_by_user()
     # TODO: look at the From: header, maybe?
     return None
+
+def encode_email_part(content, content_type):
+    try:
+        return MIMEText(content, content_type, 'iso-8859-1')
+    except:
+        return MIMEText(content, content_type, 'utf-8')
+
+def make_multipart_message(*parts):
+    msg = MIMEMultipart('related')
+    msg.preamble = 'This is a multi-part message in MIME format.'
+    alt = MIMEMultipart('alternative')
+    msg.attach(alt)
+    for part in parts:
+        alt.attach(part)
+    return msg
+
+class SMTPClient(object):
+
+    def __init__(self):
+        self._client = None
+
+    def sendmail(self, addrs, addrfrom, subject, message_id, message):
+        if not addrs: return
+        message['To'] = 'undisclosed-recipients'
+        message['From'] = addrfrom
+        message['Subject'] = subject
+        message['Message-ID'] = message_id
+        content = message.as_string()
+        try:
+            self._client.sendmail(addrfrom, addrs, content)
+        except:
+            self._connect()
+            self._client.sendmail(addrfrom, addrs, content)
+
+    def _connect(self):
+        if asbool(tg.config.get('smtp_ssl', False)):
+            smtp_client = smtplib.SMTP_SSL(
+                tg.config.get('smtp_server', 'localhost'),
+                asint(tg.config.get('smtp_port', 25)))
+        else:
+            smtp_client = smtplib.SMTP(
+                tg.config.get('smtp_server', 'localhost'),
+                asint(tg.config.get('smtp_port', 465)))
+        if tg.config.get('smtp_user', None):
+            smtp_client.login(tg.config['smtp_user'], tg.config['smtp_password'])
+        if asbool(tg.config.get('smtp_tls', False)):
+            smtp_client.starttls()
+        self._client = smtp_client
