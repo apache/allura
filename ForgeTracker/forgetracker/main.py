@@ -54,7 +54,7 @@ class ForgeTrackerApp(Application):
         return [
             SitemapEntry('Home', '.'),
             SitemapEntry('Search', 'search'),
-            SitemapEntry('New Issue', 'new'),
+            SitemapEntry('New Issue', '%s/new' % self.config.options.mount_point),
             ]
 
     @property
