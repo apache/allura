@@ -91,6 +91,10 @@ class Application(object):
         self.admin = DefaultAdminController(self)
         self.script_name = self.config.script_name()
 
+    def has_access(self, user, topic):
+        '''Whether the user has access to send email to the given topic'''
+        return False
+
     @classmethod
     def default_options(cls):
         return dict(

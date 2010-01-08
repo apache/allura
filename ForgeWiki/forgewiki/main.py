@@ -41,6 +41,9 @@ class ForgeWikiApp(Application):
         Application.__init__(self, project, config)
         self.root = RootController()
 
+    def has_access(self, user, topic):
+        return user != User.anonymous()
+
     @audit('Wiki.#')
     def auditor(self, routing_key, data):
         log.info('Auditing data from %s (%s)',

@@ -22,7 +22,7 @@ class Command(command.Command):
         logging.config.fileConfig(self.args[0])
         from pyforge import model
         M=model
-        log = logging.getLogger(__name__)
+        log = logging.getLogger('pyforge.command')
         log.info('Initialize reactor with config %r', self.args[0])
         load_environment(conf.global_conf, conf.local_conf)
         pylons.c._push_object(EmptyClass())
