@@ -60,6 +60,12 @@ python setup.py develop
 popd
 
 echo
+echo '# installing ForgeMail dependencies'
+pushd ForgeMail
+python setup.py develop
+popd
+
+echo
 echo '# installing ForgeSCM dependencies'
 pushd ForgeSCM
 python setup.py develop
