@@ -97,6 +97,7 @@ class User(MappedClass):
     email_addresses=FieldProperty([str])
     password=FieldProperty(str)
     projects=FieldProperty([str])
+    preferences=FieldProperty({str:None})
 
     def claim_openid(self, oid_url):
         oid_obj = OpenId.upsert(oid_url, self.display_name)

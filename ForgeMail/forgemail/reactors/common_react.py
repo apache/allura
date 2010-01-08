@@ -2,9 +2,11 @@ import logging
 
 import tg
 from pylons import c, g
+from pymongo.bson import ObjectId
 
 from pyforge.lib.decorators import audit
 from pyforge.lib.helpers import push_config
+from pyforge import model as M
 
 from forgemail.lib import util, exc
 
@@ -48,12 +50,24 @@ def send_email(routing_key, data):
     addrs_multi = []
     # Divide addresses based on preferred email formats
     for addr in data['destinations']:
-        if isinstance(addr, basestring):
+        if '@' in addr:
             addrs_plain.append(addr)
         else:
-            if addr.preferences['email_format'] == 'plain':
+            user = M.User.query.get(_id=ObjectId.url_decode(addr))
+            if not user:
+                log.warning('Cannot find user with ID %s', addr)
+                continue
+            addr = user.preferences.email_address
+            if not addr and user.email_addresses:
+                addr = user.email_addresses[0]
+                log.warning('User %s has not set primary email address, using %s',
+                            user._id, addr)
+            if not addr:
+                log.error("User %s has not set any email address, can't deliver",
+                          user._id)
+            if user.preferences.email_format == 'plain':
                 addrs_plain.append(addr)
-            elif addr.preferences['email_format'] == 'html':
+            elif user.preferences.email_format == 'html':
                 addrs_html.append(addr)
             else:
                 addrs_multi.append(addr)
