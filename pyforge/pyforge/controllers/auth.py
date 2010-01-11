@@ -1,12 +1,15 @@
 import logging, string
+from pprint import pformat
 
 from tg import expose, session, flash, redirect
 from tg.decorators import with_trailing_slash, without_trailing_slash
-from pylons import c
+from pylons import c, request
 from webob import exc
 
 from pyforge import model as M
 from pyforge.lib.oid_helper import verify_oid, process_oid
+from pyforge.lib.security import require_authenticated
+from pyforge.lib.helpers import vardec
 
 log = logging.getLogger(__name__)
 
@@ -25,6 +28,9 @@ OID_PROVIDERS=[
     ('AOL', 'http://openid.aol.com/${username}/') ]
 
 class AuthController(object):
+
+    def __init__(self):
+        self.prefs = PreferencesController()
 
     @expose('pyforge.templates.login')
     @with_trailing_slash
@@ -60,6 +66,26 @@ class AuthController(object):
     @expose('pyforge.templates.setup_openid_user')
     def setup_openid_user(self):
         return dict()
+
+    @expose()
+    def send_verification_link(self, a):
+        addr = M.EmailAddress.query.get(_id=a)
+        if addr:
+            addr.send_verification_link()
+            flash('Verification link sent')
+        else:
+            flash('No such address', 'error')
+        redirect(request.referer)
+
+    @expose()
+    def verify_addr(self, a):
+        addr = M.EmailAddress.query.get(nonce=a)
+        if addr:
+            addr.confirmed = True
+            flash('Email address confirmed')
+        else:
+            flash('Unknown verification link', 'error')
+        redirect('/')
 
     @expose()
     def do_setup_openid_user(self, username=None, display_name=None):
@@ -119,3 +145,48 @@ class AuthController(object):
         session.save()
         flash('Welcome back, %s' % user.display_name)
         redirect('/')
+
+class PreferencesController(object):
+
+    @expose('pyforge.templates.user_preferences')
+    def index(self):
+        require_authenticated()
+        return dict()
+
+    @vardec
+    @expose()
+    def update(self,
+               display_name=None,
+               addr=None,
+               new_addr=None,
+               primary_addr=None,
+               oid=None,
+               new_oid=None,
+               preferences=None,
+               **kw):
+        require_authenticated()
+        c.user.display_name = display_name
+        for i, (old_a, data) in enumerate(zip(c.user.email_addresses, addr or [])):
+            obj = c.user.address_object(old_a)
+            if data.get('delete') or not obj:
+                del c.user.email_addresses[i]
+                if obj: obj.delete()
+        c.user.preferences.email_address = primary_addr
+        if new_addr.get('claim'):
+            if M.EmailAddress.query.get(_id=new_addr['addr'], confirmed=True):
+                flash('Email address already claimed', 'error')
+            else:
+                c.user.email_addresses.append(new_addr['addr'])
+                em = M.EmailAddress.upsert(new_addr['addr'])
+                em.claimed_by_user_id=c.user._id
+                em.send_verification_link()
+        for i, (old_oid, data) in enumerate(zip(c.user.open_ids, oid or [])):
+            obj = c.user.openid_object(old_oid)
+            if data.get('delete') or not obj:
+                del c.user.open_ids[i]
+                if obj: obj.delete()
+                
+        for k,v in preferences.iteritems():
+            c.user.preferences[k] = v
+        redirect('.')
+        

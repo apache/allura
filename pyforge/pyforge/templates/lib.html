@@ -74,4 +74,29 @@
     </py:for>
   </py:def>
 
+  <py:def function="text_field(name, label, value=None)">
+    <label for="$name">$label</label><br/>
+    <input type="text" id="$name" name="$name" class="text" value="$value"/><br/>
+  </py:def>
+
+  <py:def function="select_field(name, label, options, value=None)">
+    <label for="$name">$label</label><br/>
+    <select id="$name" name="$name">
+      <py:for each="olbl, oval in options">
+        <option value="$oval" selected="${oval == value or None}">$olbl</option>
+      </py:for>
+    </select>
+  </py:def>
+
+  <py:def function="radio_button(name, label, option, value=None)">
+    <py:if test="label">
+      <label for="$name">$label</label><br/>
+    </py:if>
+    <input type="radio" id="$name" name="$name" class="text" value="$option" 
+           checked="${option==value and 'on' or None}"/><br/>
+  </py:def>
+
+  <py:def function="submit_button(value, name=None)">
+    <input type="submit" name="$name" value="$value"/><br/>
+  </py:def>
 </html>

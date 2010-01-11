@@ -1,10 +1,11 @@
 import logging
+import os
 from base64 import b64encode
 from random import randint
 from hashlib import sha256
 
 import ldap
-from pylons import c
+from pylons import c, g
 from tg import config
 
 from ming.orm.ormsession import ThreadLocalORMSession
@@ -37,6 +38,7 @@ class EmailAddress(MappedClass):
     _id = FieldProperty(str)
     claimed_by_user_id=FieldProperty(S.ObjectId, if_missing=None)
     confirmed = FieldProperty(bool)
+    nonce = FieldProperty(str)
 
     def claimed_by_user(self):
         return User.query.get(_id=self.claimed_by_user_id)
@@ -53,6 +55,17 @@ class EmailAddress(MappedClass):
     def canonical(cls, addr):
         user, domain = addr.split('@')
         return '%s@%s' % (user, domain.lower())
+
+    def send_verification_link(self):
+        self.nonce = sha256(os.urandom(10)).hexdigest()
+        log.info('Would send verification link to %s', self._id)
+        text = '''
+To verify the email address %s belongs to the user %s,
+please visit the following URL:
+
+    %s
+''' % (self._id, self.claimed_by_user().username, g.url('/auth/verify_addr', a=self.nonce))
+        print text
     
 class OpenId(MappedClass):
     class __mongometa__:
@@ -97,7 +110,15 @@ class User(MappedClass):
     email_addresses=FieldProperty([str])
     password=FieldProperty(str)
     projects=FieldProperty([str])
-    preferences=FieldProperty({str:None})
+    preferences=FieldProperty(dict(
+            email_address=str,
+            email_format=str))
+
+    def address_object(self, addr):
+        return EmailAddress.query.get(_id=addr, claimed_by_user_id=self._id)
+
+    def openid_object(self, oid):
+        return OpenId.query.get(_id=oid, claimed_by_user_id=self._id)
 
     def claim_openid(self, oid_url):
         oid_obj = OpenId.upsert(oid_url, self.display_name)

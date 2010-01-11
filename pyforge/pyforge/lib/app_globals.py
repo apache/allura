@@ -5,11 +5,12 @@
 __all__ = ['Globals']
 import logging
 import socket
+from urllib import urlencode
 
 import pkg_resources
 
 from tg import config, session
-from pylons import c
+from pylons import c, request
 import paste.deploy.converters
 import pysolr
 import markdown
@@ -103,3 +104,10 @@ xn         : %r
 routing_key: %r
 data       : %r
 ''', xn, routing_key, message)
+
+    def url(self, base, **kw):
+        params = urlencode(kw)
+        if params:
+            return '%s://%s%s?%s' % (request.scheme, request.host, base, params)
+        else:
+            return '%s://%s%s' % (request.scheme, request.host, base)
