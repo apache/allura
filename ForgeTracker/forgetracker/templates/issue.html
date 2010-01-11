@@ -12,37 +12,69 @@
     <meta content="text/html; charset=UTF-8" http-equiv="content-type" py:replace="''"/>
     <title>${issue.shorthand_id()}</title>
     <style>
-      .hidden { display: None }
+        .hidden { display: None }
+        .issue-num { font-size:20pt }
+        .top-liner { border-top: 1px solid #ccc }
+        .bottom-liner { border-bottom: 1px solid #ccc }
     </style>
   </head>
 
   <body>
-    <h1>${issue.shorthand_id()}</h1>
-    <div>
-      <a href="..">PluginRoot</a>
-      <form style="display:inline; float:right"
-            method="GET"
-            action="../search">
-        Search: <input name="q"/>
-      </form>
-    </div>
-    <hr/>
-    <div>
-      <pre py:content="pformat(issue)"/>
-    </div>
+    <div class="container">
+        <article class="issue">
 
-    <hr/>
-    <h2>Comments</h2>
-    <div class="reply">
-      <h3>Make a comment</h3>
-      <form class="hidden" method="post" action="comments/reply">
-        <textarea rows="4" cols="60" name="text"></textarea><br/>
-        <input type="submit"/>
-      </form>
+            <h1>${issue.shorthand_id()}</h1>
+            <div>
+              <a href="..">PluginRoot</a>
+              <form style="display:inline; float:right"
+                    method="GET"
+                    action="../search">
+                Search: <input name="q"/>
+              </form>
+            </div>
+            <hr/>
+
+
+            <div id="header" class="span-24 last">
+                <h1 class="span-24 last">$issue.summary</h1>
+            </div>
+
+            <div class="span-24">
+                <div class="span-8">
+                    <span class="quiet">owner:</span>
+                    <span class="issue-assigned-to">$issue.assigned_to</span>
+                </div>
+
+                <div class="span-8">
+                    <span class="quiet">status:</span>
+                    <span class="issue-status">$issue.status</span>
+                </div>
+
+                <div class="span-8 last">
+                    <span class="quiet">opened:</span>
+                    <span class="issue-create-date">$issue.created_date</span>
+                </div>
+            </div>
+
+            <div class="span-24 last issue-description">
+                <div class="span-24 last quiet prepend-top bottom-liner">Description</div>
+                <p class="span-24 last">$issue.description</p>
+            </div>
+
+            <hr/>
+            <h2>Comments</h2>
+            <div class="reply">
+              <h3>Make a comment</h3>
+              <form class="hidden" method="post" action="comments/reply">
+                <textarea rows="4" cols="60" name="text"></textarea><br/>
+                <input type="submit"/>
+              </form>
+            </div>
+            <py:for each="cmt in issue.root_comments()">
+              ${display_comment(cmt)}
+            </py:for>
+        </article>
     </div>
-    <py:for each="cmt in issue.root_comments()">
-      ${display_comment(cmt)}
-    </py:for>
   </body>
   <script type="text/javascript" src="${g.app_static('js/comments.js')}"/>
 </html>
