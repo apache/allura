@@ -12,13 +12,18 @@
   </head>
 
   <body>
-    <h1>Welcome to ForgeTracker</h1>
-    <h2>Project: $c.project.shortname</h2>
-    <dl>
-      <py:for each="issue in issues">
-        <dt>$issue.issue_num</dt>
-        <dd>$issue.summary</dd>
-      </py:for>
-    </dl>
+    <div class="container">
+        <h1>Welcome to ForgeTracker</h1>
+        <h2>Project: $c.project.shortname</h2>
+        <div class="issue-list">
+          <py:for each="issue in issues">
+            <div class="issue">
+                <div class="issue-num span-1"><a href="$issue.issue_num">$issue.issue_num</a></div>
+                <div class="issue-status span-2">$issue.status</div>
+                <div class="issue-summary span-21 last">$issue.summary</div>
+            </div>
+          </py:for>
+        </div>
+    </div>
   </body>
 </html>
