@@ -119,6 +119,10 @@ class RootController(object):
         return dict(modelname='Issue',
             page='New Issue')
 
+    @expose('forgetracker.templates.not_found')
+    def not_found(self, **kw):
+        return dict()
+
     @expose()
     def save_issue(self, issue_num, **post_data):
         require(has_artifact_access('write'))
@@ -148,15 +152,19 @@ class RootController(object):
 class IssueController(object):
 
     def __init__(self, issue_num=None):
-        self.issue_num = int(issue_num)
-        self.issue = model.Issue.query.get(project_id=c.project._id,
-                                                issue_num=self.issue_num)
-        self.comments = CommentController(self.issue)
+        if issue_num is not None:
+            self.issue_num = int(issue_num)
+            self.issue = model.Issue.query.get(project_id=c.project._id,
+                                                    issue_num=self.issue_num)
+            self.comments = CommentController(self.issue)
 
     @expose('forgetracker.templates.issue')
     def index(self, **kw):
         require(has_artifact_access('read', self.issue))
-        return dict(issue=self.issue)
+        if self.issue is not None:
+            return dict(issue=self.issue)
+        else:
+            redirect('not_found')
 
 class CommentController(object):
 
