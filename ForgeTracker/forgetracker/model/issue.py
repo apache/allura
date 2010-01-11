@@ -106,6 +106,7 @@ class Comment(Message):
     created_date = FieldProperty(datetime, if_missing=datetime.utcnow)
     project_id = FieldProperty(str)
 
+    author = FieldProperty(str, if_missing='')
     issue_id = ForeignIdProperty(Issue)
     kind = FieldProperty(str, if_missing='comment')
     reply_to_id = FieldProperty(schema.ObjectId, if_missing=None)
