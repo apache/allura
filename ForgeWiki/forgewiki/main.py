@@ -74,6 +74,16 @@ class ForgeWikiApp(Application):
         log.info('Reacting to data from %s (%s)',
                  routing_key, self.config.options.mount_point)
 
+    @audit('forgewiki.reply')
+    def auditor(self, routing_key, data):
+        log.info('Auditing reply from %s (%s)',
+                 routing_key, self.config.options.mount_point)
+        # 'data' should be a dictionary which includes:
+        # destinations, text, from, subject, message_id
+        data['destinations'] = 'devnull@localhost'
+        g.publish('audit', 'forgemail.send_email',
+            data, serializer='yaml')
+
     @property
     def sitemap(self):
         menu_id = 'ForgeWiki (%s)' % self.config.options.mount_point
@@ -254,6 +264,17 @@ class CommentController(object):
         else:
             c = self.page.reply()
             c.text = text
+        email = ''
+        for addr in c.author().email_addresses:
+            email = email + ', ' + addr
+        data = {
+#            'destinations':email,
+            'text':text,
+            'from':str(self.page),
+            'subject':str('reply to '+c._id),
+            'message_id':c._id}
+        g.publish('audit', 'forgewiki.reply', data, 
+            serializer='yaml')
         redirect(request.referer)
 
     @expose()
