@@ -3,7 +3,8 @@ from time import sleep
 from pylons import c
 from pymongo.errors import OperationFailure
 
-from ming import Field, schema
+from ming import schema
+from ming.orm.property import FieldProperty
 from pyforge.model import VersionedArtifact, Snapshot, Message
 
 class MyArtifactHistory(Snapshot):
@@ -35,7 +36,7 @@ class MyArtifact(VersionedArtifact):
         history_class = MyArtifactHistory
     type_s = 'MyArtifact'
 
-    text = Field(str, if_missing='')
+    text = FieldProperty(str, if_missing='')
         
     def url(self):
         return c.app.script_name + '/' + self._id.url_encode() + '/'
@@ -64,7 +65,7 @@ class MyArtifactComment(Message):
         name='my_artifact_comment'
     type_s = 'MyArtifact Comment'
 
-    artifact_id=Field(schema.ObjectId)
+    artifact_id=FieldProperty(schema.ObjectId)
 
     def index(self):
         result = Message.index(self)

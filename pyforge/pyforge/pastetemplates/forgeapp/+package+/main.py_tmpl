@@ -70,13 +70,11 @@ class {{egg}}App(Application):
         for perm in self.permissions:
               self.config.acl[perm] = [ pr._id ]
         self.config.acl['read'].append(
-            ProjectRole.m.get(name='*anonymous')._id)      
+            ProjectRole.query.get(name='*anonymous')._id)      
         self.config.acl['comment'].append(
-            ProjectRole.m.get(name='*authenticated')._id)
-        self.config.m.save()
-        art = model.MyArtifact.make(dict(
-                text='This is a sample artifact'))
-        art.commit()
+            ProjectRole.query.get(name='*authenticated')._id)
+        art = model.MyArtifact(
+            text='This is a sample artifact')
 
     def uninstall(self, project):
         "Remove all the plugin's artifacts from the database"
@@ -112,7 +110,7 @@ class RootController(object):
 class ArtifactController(object):
 
     def __init__(self, id):
-        self.artifact = model.MyArtifact.m.get(_id=ObjectId.url_decode(id))
+        self.artifact = model.MyArtifact.query.get(_id=ObjectId.url_decode(id))
         self.comments = CommentController(self.artifact)
 
     @expose('{{package}}.templates.artifact')
@@ -136,8 +134,8 @@ class ArtifactController(object):
 
     def get_version(self, version):
         if not version: return self.artifact
-        ss = model.MyArtifactHistory.m.get(artifact_id=self.artifact._id,
-                                           version=version)
+        ss = model.MyArtifactHistory.query.get(artifact_id=self.artifact._id,
+                                               version=version)
         if ss is None: return None
         result = deepcopy(self.artifact)
         return result.update(ss.data)
@@ -147,7 +145,7 @@ class CommentController(object):
     def __init__(self, artifact, comment_id=None):
         self.artifact = artifact
         self.comment_id = comment_id
-        self.comment = model.MyArtifactComment.m.get(_id=self.comment_id)
+        self.comment = model.MyArtifactComment.query.get(_id=self.comment_id)
 
     @expose()
     def reply(self, text):
@@ -158,14 +156,12 @@ class CommentController(object):
         else:
             c = self.artifact.reply()
             c.text = text
-        c.m.save()
         redirect(request.referer)
 
     @expose()
     def delete(self):
         require(lambda:c.user._id == self.comment.author()._id)
         self.comment.text = '[Text deleted by commenter]'
-        self.comment.m.save()
         redirect(request.referer)
 
     def _lookup(self, next, *remainder):

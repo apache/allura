@@ -113,6 +113,7 @@ class User(MappedClass):
     preferences=FieldProperty(dict(
             email_address=str,
             email_format=str))
+    plugin_preferences=FieldProperty({str:None})
 
     def address_object(self, addr):
         return EmailAddress.query.get(_id=addr, claimed_by_user_id=self._id)
