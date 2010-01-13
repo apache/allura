@@ -48,7 +48,7 @@ class ThreadsController(object):
 
     @expose()
     def new(self, subject, content):
-        thd = self.forum.new_thread(subject, content)
+        thd, post = self.forum.new_thread(subject, content)
         redirect(thd.url())
 
     def _lookup(self, id, *remainder):

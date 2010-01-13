@@ -84,11 +84,11 @@ class Forum(Artifact):
                     text=content)
         self.num_topics += 1
         self.num_posts += 1
-        g.publish('react', 'ForgeForum.new_thread', dict(
+        g.publish('react', 'Forum.new_thread', dict(
                 thread_id=thd._id))
-        g.publish('react', 'ForgeForum.new_post', dict(
+        g.publish('react', 'Forum.new_post', dict(
                 post_id=post._id))
-        return thd
+        return thd, post
 
     def subscription(self):
         return self.subscriptions.get(str(c.user._id))
@@ -196,7 +196,7 @@ class Post(Message):
         result.thread_id = self.thread_id
         result.subject = subject
         result.text = text
-        g.publish('react', 'ForgeForum.new_post', dict(
+        g.publish('react', 'Forum.new_post', dict(
                 post_id=result._id))
         return result
 

@@ -75,7 +75,7 @@ class ForgeWikiApp(Application):
                  routing_key, self.config.options.mount_point)
 
     @audit('forgewiki.reply')
-    def auditor(self, routing_key, data):
+    def audit_reply(self, routing_key, data):
         log.info('Auditing reply from %s (%s)',
                  routing_key, self.config.options.mount_point)
         # 'data' should be a dictionary which includes:

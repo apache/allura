@@ -35,6 +35,7 @@ def received_email(routing_key, data):
                     log.info('Access denied for %s to mailbox %s',
                              user, topic)
                 else:
+                    log.info('Sending message to audit queue %s', topic)
                     g.publish('audit', topic,
                               dict(msg, user_id=str(user._id)),
                               serializer='yaml')

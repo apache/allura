@@ -32,12 +32,32 @@ class ForgeForumApp(Application):
         self.default_forum_preferences = dict(
             subscriptions={})
 
-    @audit('ForgeForum.#')
+    def has_access(self, user, topic):
+        return user != User.anonymous()
+
+    @audit('Forum.#')
     def auditor(self, routing_key, data):
         log.info('Auditing data from %s (%s)',
                  routing_key, self.config.options.mount_point)
+        log.info('Headers are: %s', data['headers'])
+        try:
+            header, shortname = routing_key.split('.')
+            f = model.Forum.query.get(shortname=shortname)
+        except:
+            log.exception('Error processing data: %s', data)
+            return
+        # Find ancestor post
+        parent = model.Post.query.get(message_id=data['headers'].get('In-Reply-To'))
+        subject = data['headers'].get('Subject')
+        text = data['payload']
+        if parent is None:
+            thd, post = f.new_thread(subject, text)
+        else:
+            post = parent.reply(subject, text)
+            parent.thread.num_replies += 1
+        post.message_id = data['headers'].get('Message-ID', post.message_id)
 
-    @react('ForgeForum.new_post')
+    @react('Forum.new_post')
     def notify_subscribers(self, routing_key, data):
         post = model.Post.query.get(_id=data.pop('post_id'))
         thread = post.thread
