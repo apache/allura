@@ -26,6 +26,7 @@
             <h1>${issue.shorthand_id()}</h1>
             <div>
               <a href="..">PluginRoot</a>
+              Editing
               <form style="display:inline; float:right"
                     method="GET"
                     action="../search">
@@ -38,19 +39,27 @@
             <div id="header" class="editable viewing span-24 last">
                 <h1 class="viewer span-24 last">$issue.summary</h1>
                 <div class="editor">
-                    <input name="summary" value="$issue.summary"/>
+                    <input name="summary" value="$issue.summary" style="width:98%"/>
                 </div>
             </div>
 
             <div class="span-24">
-                <div class="span-8">
+                <div class="editable viewing span-8">
                     <span class="quiet">owner:</span>
-                    <span class="issue-assigned-to">$issue.assigned_to</span>
+                    <span class="viewer issue-assigned-to">$issue.assigned_to</span>
+                    <input name="assigned_to" value="$issue.assigned_to" class="editor"/>
                 </div>
 
-                <div class="span-8">
+                <div class="editable viewing span-8">
                     <span class="quiet">status:</span>
-                    <span class="issue-status">$issue.status</span>
+                    <span class="viewer issue-status">$issue.status</span>
+                    <select name="status" class="editor">
+                        <option value="open">open</option>
+                        <option value="unread">unread</option>
+                        <option value="accepted">accepted</option>
+                        <option value="pending">pending</option>
+                        <option value="closed">closed</option>
+                    </select>
                 </div>
 
                 <div class="span-8 last">

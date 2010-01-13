@@ -173,11 +173,13 @@ class IssueController(object):
 
     @expose()
     def update_issue(self, **post_data):
-        require(has_artifact_access('write'))
+        require(has_artifact_access('write', self.issue))
         if request.method != 'POST':
             raise Exception('update_issue must be a POST request')
         self.issue.summary = post_data['summary']
         self.issue.description = post_data['description']
+        self.issue.assigned_to = post_data['assigned_to']
+        self.issue.status = post_data['status']
         redirect('edit')
 
 class CommentController(object):
