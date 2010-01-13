@@ -58,7 +58,7 @@
 
             <div class="span-24 last issue-description">
                 <div class="span-24 last quiet prepend-top bottom-liner">Description</div>
-                <p class="span-24 last">${Markup(g.markdown.convert(issue.description))}</p>
+                <div class="span-24 last" py:content="Markup(g.markdown.convert(issue.description))"/>
             </div>
 
             <hr/>
