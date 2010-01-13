@@ -146,7 +146,7 @@ class RootController(object):
 
         for k,v in post_data.iteritems():
             setattr(issue, k, v)
-        return "Issue saved."
+        redirect(str(issue.issue_num))
 
 
 class IssueController(object):
