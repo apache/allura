@@ -77,6 +77,43 @@ ul#sidebarmenu li a:hover {
     background-color: #ddd;
 }
 
+#sidebar-right
+{
+    border: 3px double black;
+    float: right;
+    width: 110px;
+    float:right;
+    background-color: #ddd;
+}
+
+#sidebar-right ul
+{
+    padding: 0;
+    margin: 0;
+    background-color: #aaa;
+}
+
+
+#sidebar-right ul li {
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+    font-weight: bold;
+}
+
+#sidebar-right ul li a {
+    display:block;
+    width: 100%;
+    color: #000;
+    font-size: 12px;
+    text-decoration: none;
+    font-weight: normal;
+}
+
+#sidebar-right ul li a:hover {
+    background-color: #ddd;
+}
+
 .breadcrumbs
 {
     height: 2em;
@@ -135,40 +172,46 @@ ul#sidebarmenu li a:hover {
     display:none;
 }
 
-#sidebar-right
+/* Inline editing of content */
+.editable.viewing .editor
 {
-    border: 3px double black;
-    float: right;
-    width: 110px;
-    float:right;
+    display: none;
+}
+
+.editable.editing .viewer
+{
+    display: none;
+}
+
+.editable .edit
+{
+    float:left;
+    display:none;
+}
+
+.editable
+{
+    position: relative;
+}
+
+.editable:hover
+{
     background-color: #ddd;
+    cursor: pointer;
 }
 
-#sidebar-right ul
+.editable:hover .edit
 {
-    padding: 0;
-    margin: 0;
-    background-color: #aaa;
-}
-
-
-#sidebar-right ul li {
-    list-style-type: none;
-    margin: 0;
-    padding: 0;
-    font-weight: bold;
-}
-
-#sidebar-right ul li a {
+    float:left;
+    position: absolute;
+    top: -0.5em;
     display:block;
-    width: 100%;
-    color: #000;
-    font-size: 12px;
-    text-decoration: none;
-    font-weight: normal;
+    border: 1px solid grey;
+    background-color: #eee;
 }
 
-#sidebar-right ul li a:hover {
-    background-color: #ddd;
+.editable .editor
+{
+    border: 1px solid black;
 }
 

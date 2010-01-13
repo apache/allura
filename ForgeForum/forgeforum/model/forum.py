@@ -38,12 +38,8 @@ class Forum(Artifact):
 
     @property
     def email_address(self):
-        if self.parent:
-            addr = self.parent.email_address()
-            u, d = addr.split('@')
-            return '%s.%s@%s' % (u, self.shortname, d)
         domain = '.'.join(reversed(self.app.script_name[1:-1].split('/')))
-        return '%s@%s%s' % (self.shortname, domain, common_suffix)
+        return '%s@%s%s' % (self.shortname.replace('/', '.'), domain, common_suffix)
 
     @property
     def last_post(self):
@@ -60,10 +56,7 @@ class Forum(Artifact):
         return Forum.query.find(dict(parent_id=self._id)).all()
         
     def url(self):
-        if self.parent:
-            return self.parent.url() + self.shortname + '/'
-        else:
-            return self.app.script_name + self.shortname + '/'
+        return self.app.script_name + self.shortname + '/'
     
     def shorthand_id(self):
         return '%s/%s' % (self.type_s, self._id.url_encode())
@@ -189,6 +182,11 @@ class Post(Message):
             return self.subject
         else:
             return 'Re: ' + self.subject
+
+    def reply_text(self):
+        l = [ '%s wrote:' % self.author().display_name ]
+        l += [ '> ' + line for line in self.text.split('\n') ]
+        return '\n'.join(l)
 
     def reply(self, subject, text):
         result = Message.reply(self)

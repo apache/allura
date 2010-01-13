@@ -4,7 +4,7 @@ import logging
 # Non-stdlib imports
 import pkg_resources
 from pylons import g, c, request
-from tg import expose, redirect
+from tg import expose, redirect, flash
 from pymongo.bson import ObjectId
 
 # Pyforge-specific imports
@@ -41,8 +41,8 @@ class ForgeForumApp(Application):
                  routing_key, self.config.options.mount_point)
         log.info('Headers are: %s', data['headers'])
         try:
-            header, shortname = routing_key.split('.')
-            f = model.Forum.query.get(shortname=shortname)
+            header, shortname = routing_key.split('.', 1)
+            f = model.Forum.query.get(shortname=shortname.replace('.', '/'))
         except:
             log.exception('Error processing data: %s', data)
             return
@@ -54,7 +54,9 @@ class ForgeForumApp(Application):
             thd, post = f.new_thread(subject, text)
         else:
             post = parent.reply(subject, text)
-            parent.thread.num_replies += 1
+        post.thread.num_replies = (
+            model.Post.query.find(dict(thread_id=post.thread_id)).count())
+        log.info('Set num_replies on thread to %s', post.thread.num_replies)
         post.message_id = data['headers'].get('Message-ID', post.message_id)
 
     @react('Forum.new_post')
@@ -148,25 +150,32 @@ class ForumAdminController(DefaultAdminController):
     @vardec
     @expose()
     def update_forums(self, forum=None, new_forum=None, **kw):
+        if forum is None: forum = []
         if new_forum.get('create'):
+            if '.' in new_forum['shortname'] or '/' in new_forum['shortname']:
+                flash('Shortname cannot contain . or /', 'error')
+                redirect('.')
             if new_forum['parent']:
                 parent_id = ObjectId(str(new_forum['parent']))
+                shortname = (model.Forum.query.get(_id=parent_id).shortname + '/'
+                             + new_forum['shortname'])
             else:
                 parent_id=None
+                shortname = new_forum['shortname']
             f = model.Forum(app_config_id=self.app.config._id,
                             parent_id=parent_id,
                             name=new_forum['name'],
-                            shortname=new_forum['shortname'],
+                            shortname=shortname,
                             description=new_forum['description'])
-        if forum:
-            for f in forum:
-                if f.get('delete'):
-                    forum = model.Forum.query.get(_id=ObjectId(str(f['id'])))
-                    for t in forum.threads:
-                        model.Post.query.remove(dict(app_config_id=self.app.config._id,
-                                                     thread_id=t._id))
-                        t.delete()
-                    forum.delete()
-        log.info('Forum is %s, new_forum is %s, kw is %s',
-                 forum, new_forum, kw)
+        for f in forum:
+            forum = model.Forum.query.get(_id=ObjectId(str(f['id'])))
+            if f.get('delete'):
+                for t in forum.threads:
+                    model.Post.query.remove(dict(app_config_id=self.app.config._id,
+                                                 thread_id=t._id))
+                    t.delete()
+                forum.delete()
+                continue
+            forum.name = f['name']
+            forum.description = f['description']
         redirect('.')

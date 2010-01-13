@@ -45,8 +45,8 @@
     <tr>
       <td>[icon]</td>
       <td>
-        <a href="${forum.url()}">$forum.name</a><br/>
-        <p>$forum.description</p>
+        <a href="${forum.url()}">$forum.name</a>($forum.shortname)<br/>
+        ${Markup(g.markdown.convert(forum.description))}
         <py:if test="forum.subforums">
           <b>Subforums:</b>
           <span py:for="i, sf in enumerate(forum.subforums)">
@@ -67,8 +67,18 @@
     <tr>
       <td>[icon]</td>
       <td>
-        <a href="${forum.url()}">$forum.name</a><br/>
-        <p>$forum.description</p>
+        <div class="editable viewing">
+          <div class="viewer"><a href="${forum.url()}">$forum.name</a>($forum.shortname)</div>
+          <div class="editor">
+            ${text_field('forum-%s.name' % i, 'Forum Name', forum.name)}
+          </div>
+        </div>
+        <div class="editable viewing">
+          <div class="viewer">${Markup(g.markdown.convert(forum.description))}</div>
+          <div class="editor">
+            ${text_area('forum-%s.description' % i, 'Description', forum.description)}
+          </div>
+        </div>
         <py:if test="forum.subforums">
           <b>Subforums:</b>
           <span py:for="i, sf in enumerate(forum.subforums)">
@@ -147,11 +157,11 @@
         ${Markup(g.markdown.convert(post.text))}
         <div style="padding-left: 10px; border-left: 1px solid grey">
           <div class="reply title-pane closed">
-            <h3 class="title">Reply to ${post.author().display_name}</h3>
+            <div class="title">Reply to ${post.author().display_name}</div>
             <div class="content">
               <form method="post" action="${post.url() + 'reply'}">
                 ${text_field('subject', 'Subject', post.reply_subject())}
-                ${text_area('text', 'Content')}
+                ${text_area('text', 'Content', post.reply_text())}
                 ${submit_button('Send Reply')}
               </form>
             </div>

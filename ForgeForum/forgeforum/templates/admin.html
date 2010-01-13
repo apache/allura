@@ -45,21 +45,19 @@
               <py:for each="i, forum in enumerate(app.forums)">
                 ${forum_admin_row(i, forum)}
               </py:for>
-              <tr>
-                <td>[New]</td>
-                <td colspan="4">
-                  ${text_field('new_forum.name', 'Name')}
-                  ${text_field('new_forum.shortname', 'Short Name')}
-                  ${select_field('new_forum.parent', 'Parent Forum', 
-                                 [('None', '')] + [ (f.name, f._id) for f in app.forums ])}
-                  ${text_area('new_forum.description', 'Description', style="height:50px;")}
-                </td>
-                <td>
-                  ${submit_button('Create Forum', 'new_forum.create')}
-                </td>
-              </tr>
             </tbody>
           </table>
+          <div class="title-pane closed">
+            <div class="title">New Forum</div>
+            <div class="content">
+              ${text_field('new_forum.name', 'Name')}
+              ${text_field('new_forum.shortname', 'Short Name')}
+              ${select_field('new_forum.parent', 'Parent Forum', 
+              [('None', '')] + [ (f.name, f._id) for f in app.forums ])}
+              ${text_area('new_forum.description', 'Description', style="height:50px;")}
+              ${submit_button('Create Forum', 'new_forum.create')}
+            </div>
+          </div>
         </form>
       </div>
     </div>

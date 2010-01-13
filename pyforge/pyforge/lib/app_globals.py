@@ -80,11 +80,14 @@ class Globals(object):
     def publish(self, xn, key, message=None, **kw):
         project = getattr(c, 'project', None)
         app = getattr(c, 'app', None)
+        user = getattr(c, 'user', None)
         if message is None: message = {}
         if project:
             message.setdefault('project_id', project._id)
         if app:
             message.setdefault('mount_point', app.config.options.mount_point)
+        if user:
+           message.setdefault('user_id',  str(user._id))
         if hasattr(c, 'queued_messages'):
             c.queued_messages.append(dict(
                     xn=xn,

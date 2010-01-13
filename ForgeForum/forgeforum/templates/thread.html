@@ -29,6 +29,7 @@
     </div>
 
     <h1>$thread.subject</h1>
+    <p>Thread Shortlink: <input readonly="true" value="[${thread.shorthand_id()}]"/></p>
     ${page_nav(offset, total, pagesize)}
     <div py:if="style=='threaded'">
       <div style="width:220px; float:left">

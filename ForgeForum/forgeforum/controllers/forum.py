@@ -1,4 +1,4 @@
-from tg import expose, validate, redirect
+from tg import expose, validate, redirect, flash
 from pylons import g, c, request
 from formencode import validators
 from pymongo.bson import ObjectId
@@ -41,6 +41,9 @@ class ForumController(object):
             if results: count=results.hits
         return dict(q=q, history=history, results=results or [], count=count)
 
+    def _lookup(self, id, *remainder):
+        return ForumController(self.forum.shortname + '/' + id), remainder
+
 class ThreadsController(object):
 
     def __init__(self, forum):
@@ -48,8 +51,12 @@ class ThreadsController(object):
 
     @expose()
     def new(self, subject, content):
-        thd, post = self.forum.new_thread(subject, content)
-        redirect(thd.url())
+        g.publish('audit', 'Forum.%s' % self.forum.shortname.replace('/', '.'),
+                  dict(headers=dict(Subject=subject),
+                       payload=content))
+        flash('Message posted.  It may take a few seconds before your message '
+              'appears.')
+        redirect('..')
 
     def _lookup(self, id, *remainder):
         return ThreadController(id), remainder
@@ -96,8 +103,12 @@ class PostController(object):
 
     @expose()
     def reply(self, subject=None, text=None):
-        post = self.post.reply(subject, text)
-        self.post.thread.num_replies += 1
+        g.publish('audit', 'Forum.%s' % self.post.forum.shortname.replace('/', '.'),
+                  dict(headers={'Subject':subject,
+                                'In-Reply-To':self.post.message_id},
+                       payload=text))
+        flash('Message posted.  It may take a few seconds before your message '
+              'appears.')
         redirect(self.post.thread.url())
 
     def _lookup(self, id, *remainder):

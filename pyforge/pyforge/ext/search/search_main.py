@@ -41,7 +41,8 @@ class SearchApp(Application):
         log.info('Adding %d artifacts', len(doc['artifacts']))
         obj.pending_commit += len(doc['artifacts'])
         try:
-            artifacts = [ search.ref_to_solr(ref) for ref in doc['artifacts'] ]
+            artifacts = ( search.ref_to_solr(ref) for ref in doc['artifacts'] )
+            artifacts = [ a for a in artifacts if a is not None ]
             g.solr.add(artifacts)
             return
         except UnicodeDecodeError:
