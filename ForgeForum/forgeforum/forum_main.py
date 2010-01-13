@@ -46,6 +46,21 @@ class ForgeForumApp(Application):
         except:
             log.exception('Error processing data: %s', data)
             return
+        # Handle attachments
+        log.info('data keys: %s', data.keys())
+        if data.get('filename'):
+            log.info('Saving attachment %s', data['filename'])
+            filename = '%s-%s' % (data['headers']['Message-ID'], data['filename'])
+            model.Attachment.save(filename,
+                                  data['content_type'],
+                                  data['headers']['Message-ID'],
+                                  data['payload'])
+            return
+        # Handle duplicates
+        original = model.Post.query.get(message_id=data['headers'].get('Message-ID'))
+        if original:
+            log.info('Dropping duplicate message: %s', data['headers'])
+            return
         # Find ancestor post
         parent = model.Post.query.get(message_id=data['headers'].get('In-Reply-To'))
         subject = data['headers'].get('Subject')

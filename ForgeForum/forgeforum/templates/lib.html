@@ -151,8 +151,10 @@
         ${h.ago(post.timestamp)}
       </div>        
       <div class="content">
-        <a py:if="c.user._id and post.author_id==c.user._id" 
-           href="${post.url()}delete">[Delete]</a>
+        <form py:if="c.user._id and post.author_id==c.user._id"
+              method="POST" action="${post.url()}delete">
+          ${submit_button('Delete')}
+        </form>
         <br/>
         ${Markup(g.markdown.convert(post.text))}
         <div style="padding-left: 10px; border-left: 1px solid grey">
@@ -165,6 +167,16 @@
                 ${submit_button('Send Reply')}
               </form>
             </div>
+          </div>
+          <div py:for="md in post.attachments"
+               py:with="url=post.attachment_url(md);filename=post.attachment_filename(md)">
+            <form py:if="c.user._id and post.author_id==c.user._id"
+                  method="POST" action="$url"
+                  style="display:inline">
+              <input type="submit" name="delete" value="Delete"/>
+            </form>
+            <a href="$url">$filename</a>
+            ($md.length bytes)
           </div>
           <!--
           <py:for each="cc in post.replies()">

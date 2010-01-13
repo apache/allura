@@ -37,7 +37,9 @@ class MailServer(smtpd.SMTPServer):
 
     def process_message(self, peer, mailfrom, rcpttos, data):
         base.log.info('Msg Received from %s for %s', mailfrom, rcpttos)
+        base.log.info(' (%d bytes)', len(data))
         pylons.g.publish('audit', 'forgemail.received_email',
                          dict(peer=peer, mailfrom=mailfrom,
                               rcpttos=rcpttos, data=data),
                          serializer='pickle')
+        base.log.info('Msg passed along')

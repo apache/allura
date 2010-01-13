@@ -14,6 +14,7 @@
   
   <body>
     <h1>$forum.name</h1>
+    <p>Forum Shortlink: <input readonly="true" value="[${forum.shorthand_id()}]"/></p>
     <div>${Markup(g.markdown.convert(forum.description))}</div>
     <a href="mailto:$forum.email_address">Post via Email</a>
     <div py:if="forum.parent" class="breadcrumbs" >

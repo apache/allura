@@ -10,7 +10,7 @@ from ming.orm.mapped_class import MappedClass
 from ming.orm.property import FieldProperty, RelationProperty, ForeignIdProperty
 
 from pyforge.lib.helpers import nonce
-from pyforge.model import Artifact, Message
+from pyforge.model import Artifact, Message, Filesystem
 
 common_suffix = tg.config.get('forgemail.domain', '.sourceforge.net')
 
@@ -59,7 +59,7 @@ class Forum(Artifact):
         return self.app.script_name + self.shortname + '/'
     
     def shorthand_id(self):
-        return '%s/%s' % (self.type_s, self._id.url_encode())
+        return '%s/%s' % (self.type_s, self.shortname) # _id.url_encode())
 
     def index(self):
         result = Artifact.index(self)
@@ -211,14 +211,35 @@ class Post(Message):
                 result.append(pi)
         return result
 
-class Attachment(Artifact):
-    class __mongometa__:
-        name='post'
-    type_s = 'Post'
+    @property
+    def attachments(self):
+        return Attachment.find({
+                'metadata.message_id':self.message_id})
 
-    post_id = ForeignIdProperty(Post)
-    filename = FieldProperty(str)
-    mimetype = FieldProperty(str)
-    content = FieldProperty(schema.Binary)
+    def attachment_url(self, file_info):
+        return self.forum.url() + 'attachment/' + file_info['filename']
+
+    def attachment_filename(self, file_info):
+        return file_info['filename'][len(file_info['metadata']['message_id'])+1:]
+
+class Attachment(Filesystem):
+    class __mongometa__:
+        name='attachment'
+        indexes = [ 'metadata.message_id' ]
+
+    @classmethod
+    def save(cls, filename, content_type,
+             message_id, content):
+        with cls.open(filename, 'w') as fp:
+            fp.content_type = content_type
+            fp.metadata = dict(message_id=message_id)
+            fp.write(content)
+
+    @classmethod
+    def load(cls, filename, offset=0, limit=-1):
+        with cls.open(filename, 'r') as fp:
+            if offset:
+                fp.seek(offset)
+            return fp.read(limit)
     
 MappedClass.compile_all()

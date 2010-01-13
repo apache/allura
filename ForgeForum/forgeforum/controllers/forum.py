@@ -1,5 +1,8 @@
+import logging
+
 from tg import expose, validate, redirect, flash
-from pylons import g, c, request
+from tg import request, response
+from pylons import g, c
 from formencode import validators
 from pymongo.bson import ObjectId
 
@@ -10,12 +13,15 @@ from pyforge.lib.search import search
 
 from forgeforum import model
 
+log = logging.getLogger(__name__)
+
 class ForumController(object):
 
     def __init__(self, forum_id):
         self.forum = model.Forum.query.get(app_config_id=c.app.config._id,
                                            shortname=forum_id)
         self.thread = ThreadsController(self.forum)
+        self.attachment = AttachmentsController(self.forum)
 
     @expose('forgeforum.templates.forum')
     def index(self):
@@ -103,7 +109,8 @@ class PostController(object):
 
     @expose()
     def reply(self, subject=None, text=None):
-        g.publish('audit', 'Forum.%s' % self.post.forum.shortname.replace('/', '.'),
+        g.publish('audit',
+                  'Forum.%s' % self.post.forum.shortname.replace('/', '.'),
                   dict(headers={'Subject':subject,
                                 'In-Reply-To':self.post.message_id},
                        payload=text))
@@ -114,3 +121,34 @@ class PostController(object):
     def _lookup(self, id, *remainder):
         return PostController(self.post._id + '/' + id), remainder
 
+class AttachmentsController(object):
+
+    def __init__(self, forum):
+        self.forum = forum
+        self.prefix_len = len(self.forum.url()+'attachment/')
+
+    @expose()
+    def _lookup(self, *args):
+        filename = request.path_info[self.prefix_len:]
+        return AttachmentController(filename), []
+
+class AttachmentController(object):
+
+    def __init__(self, filename):
+        self.filename = filename
+
+    @expose() 
+    def index(self, delete=False):
+        require(has_artifact_access('delete'))
+        if request.method == 'POST':
+            if delete: model.Attachment.remove(self.filename)
+            redirect(request.referer)
+        with model.Attachment.open(self.filename) as fp:
+            filename = self.filename[len(fp.metadata['message_id'])+1:]
+            response.headers['Content-Type'] = ''
+            response.content_type = fp.content_type
+            response.headers.add('Content-Disposition', 
+                'attachment;filename=%s' % filename)
+            return fp.read()
+        return self.filename
+        

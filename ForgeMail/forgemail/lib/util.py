@@ -46,10 +46,14 @@ def parse_message(data):
     result['multipart'] = multipart = msg.is_multipart()
     result['headers'] = dict(msg)
     if multipart:
-        result['parts'] = [
-            dict(headers=dict(subpart),
-                 payload=subpart.get_payload())
-            for subpart in msg.walk() ]
+        result['parts'] = []
+        for part in msg.walk():
+            dpart = dict(
+                headers=dict(part),
+                content_type=part.get_content_type(),
+                filename=part.get_filename(None),
+                payload=part.get_payload(decode=True))
+            result['parts'].append(dpart)
     else:
         result['payload'] = msg.get_payload()
     return result

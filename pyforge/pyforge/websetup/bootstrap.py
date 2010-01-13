@@ -29,6 +29,7 @@ def bootstrap(command, conf, vars):
     M.OpenId.query.remove({})
     M.OpenIdAssociation.query.remove({})
     M.OpenIdNonce.query.remove({})
+    M.EmailAddress.query.remove({})
     M.User.query.remove({})
     M.Project.query.remove({})
     M.SearchConfig.query.remove({})
