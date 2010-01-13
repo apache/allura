@@ -166,6 +166,20 @@ class IssueController(object):
         else:
             redirect('not_found')
 
+    @expose('forgetracker.templates.edit_issue')
+    def edit(self, **kw):
+        require(has_artifact_access('write', self.issue))
+        return dict(issue=self.issue)
+
+    @expose()
+    def update_issue(self, **post_data):
+        require(has_artifact_access('write'))
+        if request.method != 'POST':
+            raise Exception('update_issue must be a POST request')
+        self.issue.summary = post_data['summary']
+        self.issue.description = post_data['description']
+        redirect('edit')
+
 class CommentController(object):
 
     def __init__(self, issue, comment_id=None):
