@@ -82,12 +82,14 @@ class SMTPClient(object):
     def __init__(self):
         self._client = None
 
-    def sendmail(self, addrs, addrfrom, subject, message_id, message):
+    def sendmail(self, addrs, addrfrom, subject, message_id, in_reply_to, message):
         if not addrs: return
         message['To'] = 'undisclosed-recipients'
         message['From'] = addrfrom
         message['Subject'] = subject
         message['Message-ID'] = message_id
+        if in_reply_to:
+            message['In-Reply-To'] = in_reply_to
         content = message.as_string()
         try:
             self._client.sendmail(addrfrom, addrs, content)

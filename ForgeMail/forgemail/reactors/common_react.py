@@ -71,27 +71,30 @@ def send_email(routing_key, data):
                 addrs_html.append(addr)
             else:
                 addrs_multi.append(addr)
-    plain_msg = util.encode_email_part(data['text'], 'text/plain')
+    plain_msg = util.encode_email_part(data['text'], 'plain')
     html_text = g.markdown.convert(data['text'])
-    html_msg = util.encode_email_part(html_text, 'text/html')
+    html_msg = util.encode_email_part(html_text, 'html')
     multi_msg = util.make_multipart_message(plain_msg, html_msg)
     smtp_client.sendmail(
         addrs_multi,
         data['from'],
         data['subject'],
         data['message_id'],
+        data.get('in_reply_to', None),
         multi_msg)
     smtp_client.sendmail(
         addrs_plain,
         data['from'],
         data['subject'],
         data['message_id'],
+        data.get('in_reply_to', None),
         plain_msg)
     smtp_client.sendmail(
         addrs_html,
         data['from'],
         data['subject'],
         data['message_id'],
+        data.get('in_reply_to', None),
         html_msg)
 
         

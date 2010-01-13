@@ -77,13 +77,13 @@ ul#sidebarmenu li a:hover {
     background-color: #ddd;
 }
 
-#breadcrumbs
+.breadcrumbs
 {
     height: 2em;
     width: 100%;
 }
 
-#breadcrumbs ul
+.breadcrumbs ul
 { 
     height: 2em;
     list-style-type: none;
@@ -91,18 +91,18 @@ ul#sidebarmenu li a:hover {
     padding: 0;
 }
 
-#breadcrumbs ul li
+.breadcrumbs ul li
 { 
     float: left;
     padding-left: 0.5em;
 }
 
-#breadcrumbs ul li:before
+.breadcrumbs ul li:before
 {	
     content: "\00BB";
 }
 
-#breadcrumbs ul li.first:before
+.breadcrumbs ul li.first:before
 {	
     content: "";
 }

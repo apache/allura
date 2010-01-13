@@ -1,0 +1,49 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" 
+                      "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:py="http://genshi.edgewall.org/"
+      xmlns:xi="http://www.w3.org/2001/XInclude">
+
+  <xi:include href="${g.pyforge_templates}/master.html"/>
+  <xi:include href="${c.app.templates}/lib.html" />
+
+  <head>
+    <meta content="text/html; charset=UTF-8" http-equiv="content-type" py:replace="''"/>
+    <title>ForgeForum Index Page</title>
+    <py:def function="display_post_thread(post_threads)">
+      <div py:for="pi in post_threads">
+        <a href="#post-${pi.post._id}">$pi.post.subject</a>
+        by <a href="${pi.post.author().url()}">${pi.post.author().display_name}</a>
+        ${h.ago(pi.post.timestamp)}
+        <br/>
+        <div py:if="pi.children" style="border-left:1px solid black; margin-left: 5px; padding-left: 5px">
+          ${display_post_thread(pi.children)}
+        </div>
+      </div>
+    </py:def>
+  </head>
+  
+  <body>
+    <div class="breadcrumbs" >
+      <ul>${crumbs(forum.breadcrumbs())}</ul>
+    </div>
+
+    <h1>$thread.subject</h1>
+    ${page_nav(offset, total, pagesize)}
+    <div py:if="style=='threaded'">
+      <div style="width:220px; float:left">
+        ${display_post_thread(post_threads)}
+      </div>
+      <div style="margin-left: 225px">
+        <py:for each="post in posts">
+          ${display_post(post)}
+        </py:for>
+      </div>
+    </div>
+    <div py:if="style!='threaded'">
+      <py:for each="post in posts">
+        ${display_post(post)}
+      </py:for>
+    </div>
+  </body>
+</html>

@@ -1,9 +1,9 @@
 from setuptools import setup, find_packages
 import sys, os
 
-from forgescm.version import __version__
+from forgeforum.version import __version__
 
-setup(name='ForgeSCM',
+setup(name='ForgeForum',
       version=__version__,
       description="",
       long_description="""\
@@ -24,6 +24,6 @@ setup(name='ForgeSCM',
       entry_points="""
       # -*- Entry points: -*-
       [pyforge]
-      Repository=forgescm.scm_main:ForgeSCMApp
+      Forum=forgeforum.forum_main:ForgeForumApp
       """,
       )

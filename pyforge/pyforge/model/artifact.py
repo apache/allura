@@ -3,7 +3,6 @@ import os
 import logging
 from time import sleep
 from datetime import datetime
-from hashlib import sha1
 
 import pymongo
 from pylons import c
@@ -12,9 +11,9 @@ from ming import schema as S
 from ming.orm.base import mapper, session, state
 from ming.orm.mapped_class import MappedClass
 from ming.orm.property import FieldProperty, ForeignIdProperty, RelationProperty
-from pymongo.bson import ObjectId
 from pymongo.errors import OperationFailure
 
+from pyforge.lib.helpers import nonce
 from .session import ProjectSession
 from .session import main_doc_session, main_orm_session
 from .session import project_doc_session, project_orm_session
@@ -22,11 +21,8 @@ from .session import artifact_orm_session
 
 log = logging.getLogger(__name__)
 
-def nonce(length=4):
-    return sha1(ObjectId().binary).hexdigest()[:length]
-
 def gen_message_id():
-    parts = c.app.config.script_name().split('/')[:-1]
+    parts = c.app.config.script_name().split('/')[1:-1]
     return '%s@%s.sourceforge.net' % (nonce(40), '.'.join(reversed(parts)))
 
 class ArtifactLink(MappedClass):
@@ -59,7 +55,7 @@ class ArtifactLink(MappedClass):
         if entry is None:
             entry = cls(_id=aid)
         entry.link=artifact.shorthand_id()
-        entry.project_id=artifact.project._id
+        entry.project_id=artifact.project_id
         entry.plugin_name=artifact.app_config.plugin_name
         entry.mount_point=artifact.app_config.options.mount_point
         entry.url=artifact.url()
@@ -130,6 +126,10 @@ class Artifact(MappedClass):
     @property
     def project(self):
         return self.app_config.project
+
+    @property
+    def project_id(self):
+        return self.app_config.project_id
 
     @property
     def app(self):
@@ -288,6 +288,7 @@ class Message(Artifact):
                     parent_id=self._id,
                     timestamp=datetime.utcnow(),
                     author_id=c.user._id)
+                del new_args['message_id']
                 msg = self.__class__(**new_args)
                 return msg
             except OperationFailure:

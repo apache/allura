@@ -1,0 +1,44 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" 
+                      "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:py="http://genshi.edgewall.org/"
+      xmlns:xi="http://www.w3.org/2001/XInclude">
+
+  <xi:include href="${g.pyforge_templates}/master.html"/>
+  <xi:include href="${c.app.templates}/lib.html" />
+
+  <head>
+    <meta content="text/html; charset=UTF-8" http-equiv="content-type" py:replace="''"/>
+    <title>ForgeForum Index Page</title>
+  </head>
+  
+  <body>
+    <h1>$forum.name</h1>
+    <div>${Markup(forum.description)}</div>
+    <a href="mailto:$forum.email_address">Post via Email</a>
+    <div py:if="forum.parent" class="breadcrumbs" >
+      <ul>${crumbs(forum.breadcrumbs())}</ul>
+    </div>
+
+    <py:if test="forum.subforums">
+      <h2>SubForums</h2>
+      ${forums_table(parent_id=forum._id)}
+    </py:if>
+
+    <h2>Topics</h2>
+    <form method="post" action="${c.app.script_name}subscribe">
+      ${threads_table(threads)}
+      ${submit_button('Update Subscriptions')}
+    </form>
+    <div class="title-pane closed">
+      <h2 class="title">New Topic</h2>
+      <div class="content">
+        <form method="post" action="thread/new">
+          ${text_field('subject', 'Subject')}
+          ${text_area('content', 'Content')}
+          ${submit_button('Create new topic')}
+        </form>
+      </div>
+    </div>
+  </body>
+</html>

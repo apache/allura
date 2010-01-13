@@ -1,0 +1,169 @@
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:py="http://genshi.edgewall.org/"
+      xmlns:xi="http://www.w3.org/2001/XInclude">
+
+  <py:def function="threads_table(threads)">
+    <input py:for="i,thread in enumerate(threads)"
+           type="hidden" name="thread-${i}.id" value="$thread._id"/>
+    <table id="threads">
+      <thead>
+        <tr>
+          <th>Topics</th>
+          <th>Replies</th>
+          <th>Views</th>
+          <th>Last Post</th>
+          <th>Subscribed</th>
+        </tr>
+      </thead>
+      <tbody>
+        <py:for each="i, thread in enumerate(threads)">
+          ${thread_row(i, thread)}
+        </py:for>
+      </tbody>
+    </table>
+  </py:def>
+
+  <py:def function="forums_table(parent_id)">
+    <input py:for="i,forum in enumerate(c.app.subforums_of(parent_id))"
+           type="hidden" name="forum-${i}.shortname" value="$forum.shortname"/>
+    <table id="forums">
+      <thead>
+        <tr>
+          <th/>
+          <th>Forum</th><th>Topics</th><th>Posts</th><th>Last Post</th><th>Subscribed</th>
+        </tr>
+      </thead>
+      <tbody>
+        <py:for each="i, forum in enumerate(c.app.subforums_of(parent_id))">
+          ${forum_row(i, forum)}
+        </py:for>
+      </tbody>
+    </table>
+  </py:def>
+
+  <py:def function="forum_row(i, forum)">
+    <tr>
+      <td>[icon]</td>
+      <td>
+        <a href="${forum.url()}">$forum.name</a><br/>
+        <p>$forum.description</p>
+        <py:if test="forum.subforums">
+          <b>Subforums:</b>
+          <span py:for="i, sf in enumerate(forum.subforums)">
+            <py:if test="i != 0">, </py:if>
+            <a href="${sf.url()}">$sf.name</a> 
+          </span>
+        </py:if>
+      </td>
+      <td>${forum.num_topics}</td>
+      <td>${forum.num_posts}</td>
+      <td>${post_summary(forum.last_post)}</td>
+      <td>${checkbox('forum-%s.subscribed' % i, None, forum.subscription())}
+      </td>
+    </tr>
+  </py:def>
+
+  <py:def function="forum_admin_row(i, forum)">
+    <tr>
+      <td>[icon]</td>
+      <td>
+        <a href="${forum.url()}">$forum.name</a><br/>
+        <p>$forum.description</p>
+        <py:if test="forum.subforums">
+          <b>Subforums:</b>
+          <span py:for="i, sf in enumerate(forum.subforums)">
+            <py:if test="i != 0">, </py:if>
+            <a href="${sf.url()}">$sf.name</a> 
+          </span>
+        </py:if>
+      </td>
+      <td>${forum.num_topics}</td>
+      <td>${forum.num_posts}</td>
+      <td>${post_summary(forum.last_post)}</td>
+      <td>
+        ${submit_button('Delete', 'forum-%s.delete' % i)}
+      </td>
+    </tr>
+  </py:def>
+
+  <py:def function="display_comment(comment)">
+    <div id="comment-${comment._id}"
+         style="padding-left: 10px; border-left: 1px solid grey">
+      Posted by <em>${comment.author().display_name}</em> at ${comment.timestamp} 
+      <a py:if="c.user._id and comment.author_id==c.user._id" 
+         href="comments/$comment._id/delete">[X]</a>
+      <br/>
+      <p py:content="comment.text"/>
+      <div class="reply">
+        <h3>Reply</h3>
+        <form class="hidden" method="post" action="comments/$comment._id/reply">
+          <textarea rows="4" cols="60" name="text"></textarea><br/>
+          <input type="submit"/>
+        </form>
+      </div>
+      <py:for each="cc in comment.replies()">
+        ${display_comment(cc)}
+      </py:for>
+    </div>
+  </py:def>
+
+  <py:def function="thread_row(i, thread)">
+    <tr>
+      <td><a href="${thread.url()}">$thread.subject</a></td>
+      <td>$thread.num_replies</td>
+      <td>$thread.num_views</td>
+      <td>${post_summary(thread.last_post)}</td>
+      <td>${checkbox('thread-%s.subscribed' % i, None, thread.subscription())}</td>
+    </tr>
+  </py:def>
+
+  <py:def function="post_summary(post)">
+    <span py:if="post">
+      by <a href="${post.author().url()}">${post.author().display_name}</a>
+      ${h.ago(post.timestamp)}
+    </span>
+  </py:def>
+
+  <py:def function="page_nav(offset,total,pagesize)"
+          py:with="cur_page=offset / pagesize; num_pages=total/pagesize">
+    <p>Page ${1 + cur_page} of ${1 + num_pages}</p>
+    <a href=".">&lt;&lt;</a> 
+    <a href="?offset=${offset - pagesize}">&lt;</a>
+    <a href="?offset=${offset + pagesize}">&gt;</a>
+    <a href="?offset=${total - pagesize}">&gt;&gt;</a>
+  </py:def>
+
+  <py:def function="display_post(post)">
+    <div id="post-${post._id}" class="title-pane">
+      <div class="title">
+        <strong>$post.subject</strong>
+        by <a href="${post.author().url()}">${post.author().display_name}</a>
+        ${h.ago(post.timestamp)}
+      </div>        
+      <div class="content">
+        <a py:if="c.user._id and post.author_id==c.user._id" 
+           href="${post.url()}delete">[Delete]</a>
+        <br/>
+        ${Markup(g.markdown.convert(post.text))}
+        <div style="padding-left: 10px; border-left: 1px solid grey">
+          <div class="reply title-pane closed">
+            <h3 class="title">Reply to ${post.author().display_name}</h3>
+            <div class="content">
+              <form method="post" action="${post.url() + 'reply'}">
+                ${text_field('subject', 'Subject', post.reply_subject())}
+                ${text_area('text', 'Content')}
+                ${submit_button('Send Reply')}
+              </form>
+            </div>
+          </div>
+          <!--
+          <py:for each="cc in post.replies()">
+            ${display_post(cc)}
+          </py:for>
+          -->
+        </div>
+      </div>
+    </div>
+  </py:def>
+
+</html>

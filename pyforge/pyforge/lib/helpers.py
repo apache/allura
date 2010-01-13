@@ -1,7 +1,9 @@
 # -*- coding: utf-8 -*-
 import os
+from hashlib import sha1
+from datetime import datetime
 
-"""WebHelpers used in pyforge."""
+from pymongo.bson import ObjectId
 from contextlib import contextmanager
 from pylons import c
 from tg.decorators import before_validate
@@ -103,3 +105,10 @@ def vardec(fun):
     before_validate(hook)(fun)
     return fun
 
+def nonce(length=4):
+    return sha1(ObjectId().binary + os.urandom(10)).hexdigest()[:length]
+
+def ago(dt):
+    return date.distance_of_time_in_words(dt, datetime.utcnow(),
+                                          'minute',
+                                          round=True) + ' ago'

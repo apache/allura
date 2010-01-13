@@ -24,6 +24,6 @@ setup(name='ForgeWiki',
       entry_points="""
       # -*- Entry points: -*-
       [pyforge]
-      Wiki=forgewiki.main:ForgeWikiApp
+      Wiki=forgewiki.wiki_main:ForgeWikiApp
       """,
       )
