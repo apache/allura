@@ -41,14 +41,16 @@ class SearchApp(Application):
         log.info('Adding %d artifacts', len(doc['artifacts']))
         obj.pending_commit += len(doc['artifacts'])
         try:
-            g.solr.add(doc['artifacts'])
+            artifacts = [ search.ref_to_solr(ref) for ref in doc['artifacts'] ]
+            g.solr.add(artifacts)
             return
         except UnicodeDecodeError:
             pass
         # Debug UnicodeDecodeError
         for a in doc['artifacts']:
             try:
-                g.solr.add([a])
+                artifacts = [ search.ref_to_solr(a) ]
+                g.solr.add(artifacts)
             except UnicodeDecodeError:
                 log.error('Error decoding in pysolr:\n%s', pformat(a))
 

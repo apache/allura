@@ -71,7 +71,7 @@ class LogParser(object):
         hdr, rev, hash = cur_line.split(':')
         rev = rev.strip()
         hash = hash.strip()
-        log.info('Parsing changeset %s:%s', rev, hash)
+        # log.info('Parsing changeset %s:%s', rev, hash)
         r = M.Commit(repository_id=self.repo_id,
                      rev=int(rev),
                      hash=hash)

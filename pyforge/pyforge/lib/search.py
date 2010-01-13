@@ -1,10 +1,11 @@
 from logging import getLogger
 from itertools import islice
 
-from pylons import g
+from pylons import c,g
 from pprint import pformat
 
 # from pyforge.tasks.search import AddArtifacts, DelArtifacts
+from pyforge.lib.helpers import push_config
 
 log = getLogger(__name__)
 
@@ -28,6 +29,19 @@ def _solarize(obj):
     doc['text'] = text
     return doc
 
+def _obj_to_ref(obj):
+    return dict(
+        project_id=obj.project._id,
+        cls=obj.__class__,
+        id=obj._id)
+
+def ref_to_solr(ref):
+    from pyforge.model import Project
+    project = Project.query.get(_id=ref['project_id'])
+    with push_config(c, project=project):
+        obj = ref['cls'].query.get(_id=ref['id'])
+        return _solarize(obj)
+
 @try_solr
 def add_artifact(obj):
     add_artifacts([obj])
@@ -41,7 +55,8 @@ def add_artifacts(obj_iter):
                 continue # uninidexable document
             else:
                 yield result
-    artifact_iterator = gen_index()
+    # artifact_iterator = gen_index()
+    artifact_iterator = ( _obj_to_ref(o) for o in obj_iter)
     while True:
         artifacts = list(islice(artifact_iterator, 1000))
         if not artifacts: break
