@@ -118,11 +118,15 @@ class Project(MappedClass):
     def url(self):
         if ':/' in self._id:
             domain, path = self._id.split(':/', 1)
-            if ':' in request.host:
-                port = request.host.split(':')[-1]
-                return '%s://%s:%s/%s' % (request.scheme, domain, port, path)
-            else:
-                return '%s://%s/%s' % (request.scheme, domain, path)
+            try:
+                if ':' in request.host:
+                    port = request.host.split(':')[-1]
+                    return '%s://%s:%s/%s' % (
+                        request.scheme, domain, port, path)
+                else:
+                    return '%s://%s/%s' % (request.scheme, domain, path)
+            except TypeError:
+                return 'http://%s/%s' % (domain, path)
             return '/' + path
         return '/' + self._id
 
