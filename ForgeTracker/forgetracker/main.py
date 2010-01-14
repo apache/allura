@@ -52,9 +52,9 @@ class ForgeTrackerApp(Application):
 
     def sidebar_menu(self):
         return [
-            SitemapEntry('Home', '.'),
-            SitemapEntry('Search', 'search'),
-            SitemapEntry('New Issue', 'new'),
+            SitemapEntry('Home', self.config.url()),
+            SitemapEntry('Search', self.config.url() + 'search'),
+            SitemapEntry('New Issue', self.config.url() + 'new'),
             ]
 
     @property

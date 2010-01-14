@@ -69,7 +69,7 @@ class Issue(VersionedArtifact):
     attachments = RelationProperty('Attachment')
 
     def url(self):
-        return c.app.script_name + '/' + str(self.issue_num) + '/'
+        return c.app.url() + '/' + str(self.issue_num) + '/'
 
     def shorthand_id(self):
         return '%s/%s' % (self.type_s, self.issue_num)
