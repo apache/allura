@@ -301,6 +301,33 @@ class User(MappedClass):
         ThreadLocalORMSession.flush_all()
         return p
 
+    def register_project_domain(self, domain, name):
+        from .project import Project
+        database = 'domain:' + domain.replace('.', ':')
+        project_id = domain + ':/'
+        p = Project(_id=project_id,
+                    name=name,
+                    short_description='Please update with a short description',
+                    description=(name + '\n'
+                                 + '=' * 80 + '\n\n' 
+                                 + 'You can edit this description in the admin page'),
+                    database=database,
+                    is_root=True)
+        c.project = p
+        with push_config(c, project=p, user=self):
+            pr = self.project_role()
+            # session(pr).flush(pr) # to get the _id of the new project role
+            for roles in p.acl.itervalues():
+                roles.append(pr._id)
+            pr = ProjectRole(name='*anonymous')
+            p.acl.read.append(pr._id)
+            ProjectRole(name='*authenticated')
+            p.install_app('home', 'home')
+            p.install_app('admin', 'admin')
+            p.install_app('search', 'search')
+        ThreadLocalORMSession.flush_all()
+        return p
+
     @classmethod
     def anonymous(cls):
         return User.query.get(_id=None)

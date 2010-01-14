@@ -17,7 +17,7 @@ from pyforge import model as M
 from .auth import AuthController
 from .search import SearchController
 from .static import StaticController
-from .project import ProjectsController
+from .project import ProjectsController, HostProjectController
 
 __all__ = ['RootController']
 
@@ -44,7 +44,6 @@ class RootController(BaseController):
     search = SearchController()
     projects = ProjectsController('projects/')
     users = ProjectsController('users/')
-    realm = ProjectsController('realm/')
 
     def __init__(self):
         # Lookup user
@@ -77,6 +76,10 @@ class RootController(BaseController):
         
 
     def _wsgi_handler(self, environ):
+        host = environ['HTTP_HOST'].split(':')[0].lower()
+        project = M.Project.query.get(_id=host + ':/')
+        if project:
+            return HostProjectController(project)
         if environ['PATH_INFO'].startswith('/_wsgi_/'):
             for ep in pkg_resources.iter_entry_points('pyforge'):
                 App = ep.load()
@@ -95,5 +98,3 @@ class RootController(BaseController):
     def _dispatch(self, state, remainder):
         return _dispatch(self, state, remainder)
         
-
-

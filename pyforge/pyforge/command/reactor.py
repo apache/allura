@@ -125,7 +125,10 @@ class ReactorCommand(base.Command):
                     base.log.error('The project_id was %s but it was not found',
                                    project_id)
                 if data.get('user_id'):
-                    pylons.c.user = base.M.User.query.get(_id=ObjectId.url_decode(data['user_id']))
+                    try:
+                        pylons.c.user = base.M.User.query.get(_id=ObjectId.url_decode(data['user_id']))
+                    except:
+                        base.log.exception('Bad user_id: %s', data['user_id'])
                 mount_point = data.get('mount_point')
                 if mount_point is not None:
                     pylons.c.app = pylons.c.project.app_instance(mount_point)

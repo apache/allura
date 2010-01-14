@@ -1,7 +1,8 @@
 import logging
+import warnings
 from datetime import datetime, timedelta
 
-from pylons import c, g
+from pylons import c, g, request
 import pkg_resources
 from webob import exc
 from pymongo import bson
@@ -107,6 +108,22 @@ class Project(MappedClass):
 
     @property
     def script_name(self):
+        warnings.warn('script_name is deprecated, use url() instead',
+                      DeprecationWarning, stacklevel=2)
+        if ':/' in self._id:
+            domain, path = self._id.split(':/', 1)
+            return '/' + path
+        return '/' + self._id
+
+    def url(self):
+        if ':/' in self._id:
+            domain, path = self._id.split(':/', 1)
+            if ':' in request.host:
+                port = request.host.split(':')[-1]
+                return '%s://%s:%s%s' % (request.scheme, domain, port, path)
+            else:
+                return '%s://%s%s' % (request.scheme, domain, path)
+            return '/' + path
         return '/' + self._id
 
     @property
@@ -236,10 +253,9 @@ class Project(MappedClass):
             return getattr(app.widget(app), widget['widget_name'])()
 
     def breadcrumbs(self):
-        entry = ( self.name, self.script_name )
+        entry = ( self.name, self.url() )
         if self.parent_project:
-            return self.parent_project.breadcrumbs() + [
-                (self.name, self.script_name) ]
+            return self.parent_project.breadcrumbs() + [ entry ]
         else:
             return [ ( self._id.rsplit('/', 2)[0], None) ] + [ entry ]
 
@@ -267,9 +283,14 @@ class AppConfig(MappedClass):
         return None
 
     def script_name(self):
+        warnings.warn('script_name is deprecated, use url() instead',
+                      DeprecationWarning, stacklevel=2)
         return self.project.script_name + self.options.mount_point + '/'
+
+    def url(self):
+        return self.project.url() + self.options.mount_point + '/'
 
     def breadcrumbs(self):
         return self.project.breadcrumbs() + [
-            (self.options.mount_point, self.script_name()) ]
+            (self.options.mount_point, self.url()) ]
             

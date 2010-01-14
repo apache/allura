@@ -87,7 +87,10 @@ class Globals(object):
         if app:
             message.setdefault('mount_point', app.config.options.mount_point)
         if user:
-           message.setdefault('user_id',  str(user._id))
+            if user._id is None:
+                message.setdefault('user_id',  None)
+            else:
+                message.setdefault('user_id',  str(user._id))
         if hasattr(c, 'queued_messages'):
             c.queued_messages.append(dict(
                     xn=xn,

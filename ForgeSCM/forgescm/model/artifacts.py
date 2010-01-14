@@ -51,7 +51,7 @@ class Repository(Artifact):
         return q
 
     def url(self):
-        return self.app_config.script_name()
+        return self.app_config.url()
 
     def clone_command(self):
         if self.type == 'hg':
@@ -74,6 +74,8 @@ class Repository(Artifact):
             return 'Unknown clone url'
 
     def native_url(self):
+        # Still using script_name() because we need to make sure
+        #  this is on the same host as the page is being served from
         return '/_wsgi_/scm' + self.app_config.script_name()
 
     def file_browser(self):

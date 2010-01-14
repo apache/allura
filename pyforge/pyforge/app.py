@@ -47,7 +47,7 @@ class SitemapEntry(object):
         if callable(lbl):
             lbl = lbl(app)
         if url and not url.startswith('/'):
-            url = app.script_name + url
+            url = app.url + url
         return SitemapEntry(lbl, url, [
                 ch.bind_app(app) for ch in self.children])
 
@@ -89,7 +89,7 @@ class Application(object):
         self.project = project
         self.config = app_config_object # pragma: no cover
         self.admin = DefaultAdminController(self)
-        self.script_name = self.config.script_name()
+        self.url = self.config.url()
 
     def has_access(self, user, topic):
         '''Whether the user has access to send email to the given topic'''

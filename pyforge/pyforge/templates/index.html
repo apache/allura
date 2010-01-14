@@ -22,7 +22,7 @@
       <h2>${prefix.capitalize()}</h2>
       <ul>
         <li py:for="p in subprojects">
-          <a href="$p.script_name">$p.shortname</a>
+          <a href="${p.url()}">$p.name</a>
         </li>
       </ul>
     </div>

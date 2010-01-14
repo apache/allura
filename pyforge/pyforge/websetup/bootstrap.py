@@ -23,6 +23,7 @@ def bootstrap(command, conf, vars):
         if (database.startswith('project:')
             or database.startswith('user:')
             or database.startswith('projects:')
+            or database.startswith('domain:')
             or database.startswith('users:')):
             log.info('Dropping database %s', database)
             conn.drop_database(database)
@@ -61,7 +62,7 @@ def bootstrap(command, conf, vars):
     u0.set_password('foo')
     u1.set_password('foo')
     log.info('Registering initial project')
-    adobe = u_adobe.register_project('Adobe', prefix='realm')
+    adobe = u_adobe.register_project_domain('adobe.localhost', 'Adobe')
     p0 = u0.register_project('test')
     p0.acl['read'].append(u1.project_role()._id)
     p1 = p0.new_subproject('sub1')
