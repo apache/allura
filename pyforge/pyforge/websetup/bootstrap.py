@@ -45,14 +45,23 @@ def bootstrap(command, conf, vars):
         log.error('Error clearing solr index')
     g.publish('audit', 'search.check_commit', {})
     log.info('Registering initial users')
-    M.User.anonymous = M.User(_id=None, username='*anonymous', display_name='Anonymous Coward')
-    u0 = M.User.register(dict(username='test_admin', display_name='Test Admin'))
-    u1 = M.User.register(dict(username='test_user', display_name='Test User'))
-    u2 = M.User.register(dict(username='test_user2', display_name='Test User 2'))
+    M.User.anonymous = M.User(_id=None,
+                              username='*anonymous',
+                              display_name='Anonymous Coward')
+    u_adobe = M.User.register(dict(username='adobe_admin',
+                                   display_name='Adobe Admin'))
+    u0 = M.User.register(dict(username='test_admin',
+                              display_name='Test Admin'))
+    u1 = M.User.register(dict(username='test_user',
+                              display_name='Test User'))
+    u2 = M.User.register(dict(username='test_user2',
+                              display_name='Test User 2'))
+    u_adobe.set_password('foo')
     u0.claim_address('Beta@wiki.test.projects.sourceforge.net')
     u0.set_password('foo')
     u1.set_password('foo')
     log.info('Registering initial project')
+    adobe = u_adobe.register_project('Adobe', prefix='realm')
     p0 = u0.register_project('test')
     p0.acl['read'].append(u1.project_role()._id)
     p1 = p0.new_subproject('sub1')

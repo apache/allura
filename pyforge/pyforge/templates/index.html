@@ -18,7 +18,7 @@
       <input type="submit" value="Register Project"/>
     </form>
     <h1>PyForge Directory</h1>
-    <div py:for="prefix, subprojects in projects.iteritems()">
+    <div py:for="prefix, subprojects in sorted(projects.iteritems())">
       <h2>${prefix.capitalize()}</h2>
       <ul>
         <li py:for="p in subprojects">

@@ -44,6 +44,7 @@ class RootController(BaseController):
     search = SearchController()
     projects = ProjectsController('projects/')
     users = ProjectsController('users/')
+    realm = ProjectsController('realm/')
 
     def __init__(self):
         # Lookup user
