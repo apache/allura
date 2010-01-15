@@ -139,12 +139,12 @@ class AttachmentController(object):
 
     @expose() 
     def index(self, delete=False):
-        require(has_artifact_access('delete'))
         if request.method == 'POST':
+            require(has_artifact_access('delete'))
             if delete: model.Attachment.remove(self.filename)
             redirect(request.referer)
         with model.Attachment.open(self.filename) as fp:
-            filename = self.filename[len(fp.metadata['message_id'])+1:]
+            filename = fp.metadata['filename']
             response.headers['Content-Type'] = ''
             response.content_type = fp.content_type
             response.headers.add('Content-Disposition', 

@@ -22,7 +22,7 @@ log = logging.getLogger(__name__)
 
 class ForgeForumApp(Application):
     __version__ = version.__version__
-    permissions = ['configure', 'read', 'post', 'moderate', 'admin']
+    permissions = ['configure', 'read', 'post', 'moderate', 'admin', 'delete']
     config_options = Application.config_options
 
     def __init__(self, project, config):
@@ -50,8 +50,7 @@ class ForgeForumApp(Application):
         log.info('data keys: %s', data.keys())
         if data.get('filename'):
             log.info('Saving attachment %s', data['filename'])
-            filename = '%s-%s' % (data['headers']['Message-ID'], data['filename'])
-            model.Attachment.save(filename,
+            model.Attachment.save(data['filename'],
                                   data['content_type'],
                                   data['headers']['Message-ID'],
                                   data['payload'])

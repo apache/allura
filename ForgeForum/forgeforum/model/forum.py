@@ -38,7 +38,7 @@ class Forum(Artifact):
 
     @property
     def email_address(self):
-        domain = '.'.join(reversed(self.app.script_name[1:-1].split('/')))
+        domain = '.'.join(reversed(self.app.url[1:-1].split('/')))
         return '%s@%s%s' % (self.shortname.replace('/', '.'), domain, common_suffix)
 
     @property
@@ -56,7 +56,7 @@ class Forum(Artifact):
         return Forum.query.find(dict(parent_id=self._id)).all()
         
     def url(self):
-        return self.app.script_name + self.shortname + '/'
+        return self.app.url + self.shortname + '/'
     
     def shorthand_id(self):
         return '%s/%s' % (self.type_s, self.shortname) # _id.url_encode())
@@ -220,24 +220,25 @@ class Post(Message):
         return self.forum.url() + 'attachment/' + file_info['filename']
 
     def attachment_filename(self, file_info):
-        return file_info['filename'][len(file_info['metadata']['message_id'])+1:]
+        return file_info['metadata']['filename']
 
 class Attachment(Filesystem):
     class __mongometa__:
         name='attachment'
-        indexes = [ 'metadata.message_id' ]
+        indexes = [ 'metadata.message_id', 'metadata.filename' ]
 
     @classmethod
     def save(cls, filename, content_type,
              message_id, content):
-        with cls.open(filename, 'w') as fp:
+        with cls.open(str(ObjectId()), 'w') as fp:
             fp.content_type = content_type
-            fp.metadata = dict(message_id=message_id)
+            fp.metadata = dict(message_id=message_id,
+                               filename=filename)
             fp.write(content)
 
     @classmethod
-    def load(cls, filename, offset=0, limit=-1):
-        with cls.open(filename, 'r') as fp:
+    def load(cls, id, offset=0, limit=-1):
+        with cls.open(id, 'r') as fp:
             if offset:
                 fp.seek(offset)
             return fp.read(limit)

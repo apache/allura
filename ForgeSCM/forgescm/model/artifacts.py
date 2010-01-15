@@ -105,7 +105,7 @@ class Repository(Artifact):
     def index(self):
         result = Artifact.index(self)
         result.update(
-            title_s='%s repository' % self.app_config.script_name(),
+            title_s='%s repository' % self.app_config.url(),
             text=self.description)
         return result
 
