@@ -88,7 +88,7 @@ class RootController(object):
 
     @expose('forgetracker.templates.index')
     def index(self):
-        issues = model.Issue.query.find(dict(project_id=c.project._id)).all()
+        issues = model.Issue.query.find(dict(project_id=c.project._id)).sort('issue_num')
         return dict(issues=issues)
 
     @expose('forgetracker.templates.search')
