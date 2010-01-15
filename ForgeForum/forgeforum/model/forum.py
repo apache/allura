@@ -80,6 +80,7 @@ class Forum(Artifact):
                     thread_id=thd._id,
                     subject=subject,
                     text=content)
+        post.give_access('moderate', user=post.author())
         self.num_topics += 1
         self.num_posts += 1
         g.publish('react', 'Forum.new_thread', dict(
@@ -217,6 +218,7 @@ class Post(Message):
         result.thread_id = self.thread_id
         result.subject = subject
         result.text = text
+        result.give_access('moderate', user=result.author())
         g.publish('react', 'Forum.new_post', dict(
                 post_id=result._id))
         return result

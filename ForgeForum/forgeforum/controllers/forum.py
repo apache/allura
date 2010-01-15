@@ -19,6 +19,9 @@ log = logging.getLogger(__name__)
 
 class ForumController(object):
 
+    def _check_security(self):
+        require(has_artifact_access('read', self.forum))
+
     def __init__(self, forum_id):
         self.forum = model.Forum.query.get(app_config_id=c.app.config._id,
                                            shortname=forum_id)
@@ -59,6 +62,7 @@ class ThreadsController(object):
 
     @expose()
     def new(self, subject, content):
+        require(has_artifact_access('post', self.forum))
         g.publish('audit', 'Forum.%s' % self.forum.shortname.replace('/', '.'),
                   dict(headers=dict(Subject=subject),
                        payload=content))
@@ -70,6 +74,9 @@ class ThreadsController(object):
         return ThreadController(id), remainder
 
 class ThreadController(object):
+
+    def _check_security(self):
+        require(has_artifact_access('read', self.thread))
 
     def __init__(self, thread_id):
         self.thread = model.Thread.query.get(_id=thread_id)
@@ -108,6 +115,9 @@ class ThreadController(object):
 
 class PostController(object):
 
+    def _check_security(self):
+        require(has_artifact_access('read', self.post))
+
     def __init__(self, thread, slug):
         self.thread = thread
         self.post = model.Post.query.get(thread_id=thread._id,
@@ -119,13 +129,14 @@ class PostController(object):
     @expose()
     def delete(self):
         if request.method == 'POST':
-            require(has_artifact_access('delete'))
+            require(has_artifact_access('moderate', self.post))
             self.post.delete()
             self.thread.update_stats()
         redirect(request.referer)
 
     @expose()
     def reply(self, subject=None, text=None):
+        require(has_artifact_access('post', self.thread))
         g.publish('audit',
                   'Forum.%s' % self.post.forum.shortname.replace('/', '.'),
                   dict(headers={'Subject':subject},
@@ -137,7 +148,7 @@ class PostController(object):
 
     @expose()
     def attach(self, file_info=None):
-        require(has_artifact_access('delete', self.post))
+        require(has_artifact_access('moderate', self.post))
         filename = file_info.filename
         chunks = []
         while True:
@@ -160,19 +171,23 @@ class AttachmentsController(object):
         self.forum = forum
         self.prefix_len = len(self.forum.url()+'attachment/')
 
-    @expose()
     def _lookup(self, filename, *args):
         return AttachmentController(filename), args
 
 class AttachmentController(object):
 
+    def _check_security(self):
+        require(has_artifact_access('read', self.post))
+
     def __init__(self, filename):
         self.filename = filename
+        md = model.Attachment.find(dict(filename=filename)).next()
+        self.post = model.Post.query.get(_id=md['metadata']['message_id'])
 
     @expose() 
     def index(self, delete=False, embed=False):
         if request.method == 'POST':
-            require(has_artifact_access('delete'))
+            require(has_artifact_access('moderate', self.post))
             if delete: model.Attachment.remove(self.filename)
             redirect(request.referer)
         with model.Attachment.open(self.filename) as fp:

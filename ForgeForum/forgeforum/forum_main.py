@@ -12,6 +12,7 @@ from ming.orm.base import session
 from pyforge.app import Application, ConfigOption, SitemapEntry, DefaultAdminController
 from pyforge.lib.helpers import push_config, vardec
 from pyforge.lib.decorators import audit, react
+from pyforge.lib.security import require, has_artifact_access
 from pyforge.model import User
 from pyforge.model.artifact import gen_message_id
 
@@ -25,7 +26,7 @@ log = logging.getLogger(__name__)
 
 class ForgeForumApp(Application):
     __version__ = version.__version__
-    permissions = ['configure', 'read', 'post', 'moderate', 'admin', 'delete']
+    permissions = ['configure', 'read', 'post', 'moderate', 'admin']
     config_options = Application.config_options
 
     def __init__(self, project, config):
@@ -36,7 +37,8 @@ class ForgeForumApp(Application):
             subscriptions={})
 
     def has_access(self, user, topic):
-        return user != User.anonymous()
+        f = model.Forum.query.get(shortname=topic.replace('.', '/'))
+        return has_artifact_access('post', f, user=user)()
 
     @audit('Forum.#')
     def auditor(self, routing_key, data):
@@ -177,6 +179,9 @@ class ForgeForumApp(Application):
         model.Post.query.remove(dict(app_config_id=self.config._id))
 
 class ForumAdminController(DefaultAdminController):
+
+    def _check_security(self):
+        require(has_artifact_access('admin', app=self.app), 'Admin access required')
 
     @expose('forgeforum.templates.admin')
     def index(self):

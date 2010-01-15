@@ -2,6 +2,10 @@
       xmlns:py="http://genshi.edgewall.org/"
       xmlns:xi="http://www.w3.org/2001/XInclude">
 
+  <?python
+     from pyforge.lib.security import has_artifact_access
+     ?>
+
   <py:def function="threads_table(threads)">
     <input py:for="i,thread in enumerate(threads)"
            type="hidden" name="thread-${i}.id" value="$thread._id"/>
@@ -151,14 +155,14 @@
         ${h.ago(post.timestamp)}
       </div>        
       <div class="content">
-        <form py:if="c.user._id and post.author_id==c.user._id"
+        <form py:if="has_artifact_access('moderate', post)()"
               method="POST" action="${post.url()}delete">
           ${submit_button('Delete')}
         </form>
         <br/>
         ${Markup(g.markdown.convert(post.text))}
         <div style="padding-left: 10px; border-left: 1px solid grey">
-          <div class="reply title-pane closed">
+          <div py:if="has_artifact_access('post', post.thread)()" class="reply title-pane closed">
             <div class="title">Reply to ${post.author().display_name}</div>
             <div class="content">
               <form method="post" action="${post.url() + 'reply'}">
@@ -168,7 +172,7 @@
               </form>
             </div>
           </div>
-          <div class="reply title-pane closed">
+          <div py:if="has_artifact_access('moderate', post)()" class="reply title-pane closed">
             <div class="title">New Attachment</div>
             <div class="content">
               <form method="post" action="${post.url() + 'attach'}" enctype="multipart/form-data">

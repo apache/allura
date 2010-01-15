@@ -124,7 +124,7 @@ class DefaultAdminController(object):
     @expose()
     def configure(self, **kw):
         with push_config(c, app=self.app):
-            require(has_artifact_access('configure'), 'Must have configure permission')
+            require(has_artifact_access('configure', app=self.app), 'Must have configure permission')
             is_admin = self.app.config.plugin_name == 'admin'
             if kw.pop('delete', False):
                 if is_admin:
@@ -147,13 +147,13 @@ class DefaultAdminController(object):
 
     @expose()
     def add_perm(self, permission, role):
-        require(has_artifact_access('configure'))
+        require(has_artifact_access('configure', app=self.app))
         self.app.config.acl[permission].append(ObjectId.url_decode(role))
         redirect('.#app-acl')
 
     @expose()
     def del_perm(self, permission, role):
-        require(has_artifact_access('configure'))
+        require(has_artifact_access('configure', app=self.app))
         self.app.config.acl[permission].remove(ObjectId.url_decode(role))
         redirect('.#app-acl')
         

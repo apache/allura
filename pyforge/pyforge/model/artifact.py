@@ -13,7 +13,7 @@ from ming.orm.mapped_class import MappedClass
 from ming.orm.property import FieldProperty, ForeignIdProperty, RelationProperty
 from pymongo.errors import OperationFailure
 
-from pyforge.lib.helpers import nonce
+from pyforge.lib.helpers import nonce, push_config
 from .session import ProjectSession
 from .session import main_doc_session, main_orm_session
 from .session import project_doc_session, project_orm_session
@@ -69,7 +69,6 @@ class ArtifactLink(MappedClass):
     @classmethod
     def lookup(cls, link):
         from .project import Project
-        from pyforge.lib.helpers import push_config
         #
         # Parse the link syntax
         #
@@ -138,6 +137,26 @@ class Artifact(MappedClass):
         ac = self.app_config
         return self.app_config.load()(self.project, self.app_config)
 
+    def give_access(self, *access_types, **kw):
+        user = kw.pop('user', c.user)
+        project = kw.pop('project', c.project)
+        with push_config(c, project=project):
+            project_role_id = user.project_role()._id
+        for at in access_types:
+            l = self.acl.setdefault(at, [])
+            if project_role_id not in l:
+                l.append(project_role_id)
+            
+    def revoke_access(self, *access_types, **kw):
+        user = kw.pop('user', c.user)
+        project = kw.pop('project', c.project)
+        with push_config(c, project=project):
+            project_role_id = user.project_role()._id
+        for at in access_types:
+            l = self.acl.setdefault(at, [])
+            if project_role_id in l:
+                l.remove(project_role_id)
+            
     def index_id(self):
         id = '%s.%s#%s' % (
             self.__class__.__module__,
