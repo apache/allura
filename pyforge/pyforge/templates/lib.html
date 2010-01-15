@@ -79,6 +79,11 @@
     <input type="text" id="$name" name="$name" class="text" value="$value"/><br/>
   </py:def>
 
+  <py:def function="file_field(name, label)">
+    <label for="$name">$label</label><br/>
+    <input type="file" id="$name" name="$name" class="text" /><br/>
+  </py:def>
+
   <py:def function="text_area(name, label, value=None, **kw)">
     <label for="$name">$label</label><br/>
     <textarea id="$name" name="$name" py:attrs="kw">$value</textarea><br/>

@@ -6,17 +6,20 @@ import pkg_resources
 from pylons import g, c, request
 from tg import expose, redirect, flash
 from pymongo.bson import ObjectId
+from ming.orm.base import session
 
 # Pyforge-specific imports
 from pyforge.app import Application, ConfigOption, SitemapEntry, DefaultAdminController
 from pyforge.lib.helpers import push_config, vardec
 from pyforge.lib.decorators import audit, react
 from pyforge.model import User
+from pyforge.model.artifact import gen_message_id
 
 # Local imports
 from forgeforum import model
 from forgeforum import version
 from .controllers import RootController
+
 
 log = logging.getLogger(__name__)
 
@@ -37,9 +40,18 @@ class ForgeForumApp(Application):
 
     @audit('Forum.#')
     def auditor(self, routing_key, data):
-        log.info('Auditing data from %s (%s)',
-                 routing_key, self.config.options.mount_point)
-        log.info('Headers are: %s', data['headers'])
+        message_id = data.get('message_id', gen_message_id())
+        in_reply_to = data.get('in_reply_to', [])
+        references = data.get('references', [])
+        log.info('Auditing data from %s (%s)\n'
+                 '\tmessage_id : %s\n'
+                 '\tin_reply_to: %s\n'
+                 '\treferences : %s',
+                 routing_key,
+                 self.config.options.mount_point,
+                 message_id,
+                 in_reply_to,
+                 references)
         try:
             header, shortname = routing_key.split('.', 1)
             f = model.Forum.query.get(shortname=shortname.replace('.', '/'))
@@ -47,34 +59,43 @@ class ForgeForumApp(Application):
             log.exception('Error processing data: %s', data)
             return
         # Handle attachments
-        log.info('data keys: %s', data.keys())
         if data.get('filename'):
             log.info('Saving attachment %s', data['filename'])
             model.Attachment.save(data['filename'],
                                   data['content_type'],
-                                  data['headers']['Message-ID'],
+                                  f._id,
+                                  message_id,
                                   data['payload'])
             return
         # Handle duplicates
-        original = model.Post.query.get(message_id=data['headers'].get('Message-ID'))
+        original = model.Post.query.get(_id=message_id)
         if original:
-            log.info('Dropping duplicate message: %s', data['headers'])
+            log.info('Saving text attachment')
+            model.Attachment.save('alternate',
+                                  data['content_type'],
+                                  f._id,
+                                  message_id,
+                                  data['payload'])
             return
-        # Find ancestor post
-        parent = model.Post.query.get(message_id=data['headers'].get('In-Reply-To'))
+        # Find parent post
+        if in_reply_to:
+            parent = model.Post.query.get(_id=in_reply_to[0])
+        else:
+            parent = None
+        log.info('In reply to parent: %s', parent)
         subject = data['headers'].get('Subject')
         text = data['payload']
         if parent is None:
-            thd, post = f.new_thread(subject, text)
+            thd, post = f.new_thread(subject, text, message_id)
         else:
-            post = parent.reply(subject, text)
-        post.thread.num_replies = (
-            model.Post.query.find(dict(thread_id=post.thread_id)).count())
-        log.info('Set num_replies on thread to %s', post.thread.num_replies)
-        post.message_id = data['headers'].get('Message-ID', post.message_id)
+            post = parent.reply(subject, text, message_id)
+        session(post).flush()
+        post.thread.update_stats()
+        post.forum.update_stats()
 
     @react('Forum.new_post')
     def notify_subscribers(self, routing_key, data):
+        log.info('Got a new post: %s', data['post_id'])
         post = model.Post.query.get(_id=data.pop('post_id'))
         thread = post.thread
         forum = thread.forum
@@ -84,13 +105,13 @@ class ForgeForumApp(Application):
         for un, sub in forum.subscriptions.iteritems():
             if sub: subs.add(un)
         msg = {
-            'message_id':post.message_id,
+            'message_id':post._id,
             'destinations':list(subs),
             'from':forum.email_address,
             'subject':'[%s] %s' % (forum.name, post.subject),
             'text':post.text}
         if post.parent:
-            msg['in_reply_to'] = post.parent.message_id
+            msg['in_reply_to'] = [post.parent._id]
         g.publish('audit', 'forgemail.send_email', msg)
 
     @react('ForgeForum.#')

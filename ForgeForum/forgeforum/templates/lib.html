@@ -168,8 +168,17 @@
               </form>
             </div>
           </div>
+          <div class="reply title-pane closed">
+            <div class="title">New Attachment</div>
+            <div class="content">
+              <form method="post" action="${post.url() + 'attach'}" enctype="multipart/form-data">
+                ${file_field('file_info', 'File to upload')}
+                ${submit_button('Attach file')}
+              </form>
+            </div>
+          </div>
           <div py:for="md in post.attachments"
-               py:with="url=post.attachment_url(md);filename=post.attachment_filename(md)">
+               py:with="url=post.attachment_url(md);filename=post.attachment_filename(md);ct=md.contentType">
             <form py:if="c.user._id and post.author_id==c.user._id"
                   method="POST" action="$url"
                   style="display:inline">
@@ -177,12 +186,14 @@
             </form>
             <a href="$url">$filename</a>
             ($md.length bytes)
+            <div py:if="ct.startswith('image/') or ct.startswith('text/')"
+                 class="title-pane closed">
+              <div class="title">View $filename</div>
+              <img class="content" py:if="ct.startswith('image/')" style="max-width:100%" src="$url"/>
+              <iframe class="content" width="100%" py:if="ct.startswith('text/')"
+                      src="$url?embed=True"/>
+            </div>
           </div>
-          <!--
-          <py:for each="cc in post.replies()">
-            ${display_post(cc)}
-          </py:for>
-          -->
         </div>
       </div>
     </div>

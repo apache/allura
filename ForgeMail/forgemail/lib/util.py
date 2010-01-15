@@ -1,3 +1,4 @@
+import re
 import logging
 import smtplib
 import email.feedparser
@@ -15,6 +16,7 @@ from . import exc
 
 log = logging.getLogger(__name__)
 
+RE_MESSAGE_ID = re.compile(r'<(.*)>')
 COMMON_SUFFIX = tg.config.get('forgemail.domain', '.sourceforge.net')
 
 def parse_address(addr):
@@ -45,11 +47,17 @@ def parse_message(data):
     result = {}
     result['multipart'] = multipart = msg.is_multipart()
     result['headers'] = dict(msg)
+    result['message_id'] = _parse_message_id(msg.get('Message-ID'))
+    result['in_reply_to'] = _parse_message_id(msg.get('In-Reply-To'))
+    result['references'] = _parse_message_id(msg.get('References'))
     if multipart:
         result['parts'] = []
         for part in msg.walk():
             dpart = dict(
                 headers=dict(part),
+                message_id=result['message_id'][0],
+                in_reply_to=result['in_reply_to'],
+                references=result['references'],
                 content_type=part.get_content_type(),
                 filename=part.get_filename(None),
                 payload=part.get_payload(decode=True))
@@ -81,6 +89,11 @@ def make_multipart_message(*parts):
         alt.attach(part)
     return msg
 
+def _parse_message_id(msgid):
+    if msgid is None: return []
+    return [ mo.group(1)
+             for mo in RE_MESSAGE_ID.finditer(msgid) ]
+
 class SMTPClient(object):
 
     def __init__(self):
@@ -91,9 +104,9 @@ class SMTPClient(object):
         message['To'] = 'undisclosed-recipients'
         message['From'] = addrfrom
         message['Subject'] = subject
-        message['Message-ID'] = message_id
+        message['Message-ID'] = '<' + message_id + '>'
         if in_reply_to:
-            message['In-Reply-To'] = in_reply_to
+            message['In-Reply-To'] = '<' + in_reply_to + '>'
         content = message.as_string()
         try:
             self._client.sendmail(addrfrom, addrs, content)

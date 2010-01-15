@@ -22,8 +22,10 @@ from .session import artifact_orm_session
 log = logging.getLogger(__name__)
 
 def gen_message_id():
-    parts = c.app.config.script_name().split('/')[1:-1]
-    return '%s@%s.sourceforge.net' % (nonce(40), '.'.join(reversed(parts)))
+    parts = c.project.url().split('/')[1:-1]
+    return '%s.%s@%s.sourceforge.net' % (nonce(40),
+                                         c.app.config.options['mount_point'],
+                                         '.'.join(reversed(parts)))
 
 class ArtifactLink(MappedClass):
     class __mongometa__:
@@ -265,49 +267,42 @@ class Message(Artifact):
     class __mongometa__:
         session = artifact_orm_session
         name='message'
+        indexes = [ 'slug', 'parent_id' ]
 
-    _id=FieldProperty(str, if_missing=nonce)
+    _id=FieldProperty(str, if_missing=gen_message_id)
+    slug=FieldProperty(str, if_missing=nonce)
     parent_id=FieldProperty(str)
     app_id=FieldProperty(S.ObjectId, if_missing=lambda:c.app.config._id)
     timestamp=FieldProperty(datetime, if_missing=datetime.utcnow)
     author_id=FieldProperty(S.ObjectId, if_missing=lambda:c.user._id)
     text=FieldProperty(str, if_missing='')
-    message_id=FieldProperty(str, if_missing=gen_message_id)
 
     def author(self):
         from .auth import User
         return User.query.get(_id=self.author_id) or User.anonymous
 
     def reply(self):
-        while True:
-            try:
-                new_id = self._id + '/' + nonce()
-                new_args = dict(
-                    state(self).document,
-                    _id=new_id,
-                    parent_id=self._id,
-                    timestamp=datetime.utcnow(),
-                    author_id=c.user._id)
-                del new_args['message_id']
-                msg = self.__class__(**new_args)
-                return msg
-            except OperationFailure:
-                sleep(0.1)
-                continue # pragma: no cover
+        new_id = gen_message_id()
+        new_slug = self.slug + '/' + nonce()
+        new_args = dict(
+            state(self).document,
+            _id=new_id,
+            slug=new_slug,
+            parent_id=self._id,
+            timestamp=datetime.utcnow(),
+            author_id=c.user._id)
+        return self.__class__(**new_args)
 
     def descendants(self):
-        q = self.query.find(dict(_id={'$gt':self._id}))
+        q = self.query.find(dict(slug={'$gt':self.slug}))
         for msg in q:
-            if msg._id.startswith(self._id):
+            if msg.slug.startswith(self.slug):
                 yield msg
             else:
                 break
 
     def replies(self):
-        depth = self._id.count('/')
-        for msg in self.descendants():
-            if msg._id.count('/') - depth == 1:
-                yield msg
+        return self.query.find(dict(parent_id=self._id))
 
     def index(self):
         result = Artifact.index(self)
@@ -321,6 +316,5 @@ class Message(Artifact):
         return result
 
     def shorthand_id(self):
-        return self._id
-        return '%s#%s' % (self.original().shorthand_id(), self.version)
+        return self.slug
 

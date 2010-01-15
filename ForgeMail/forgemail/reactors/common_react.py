@@ -41,21 +41,15 @@ def received_email(routing_key, data):
                         for part in msg['parts'][1:]:
                             msg = dict(
                                 headers=dict(msg_hdrs, **part['headers']),
+                                message_id=part['message_id'],
+                                in_reply_to=part['in_reply_to'],
+                                references=part['references'],
                                 filename=part['filename'],
                                 content_type=part['content_type'],
                                 payload=part['payload'],
                                 user_id=str(user._id))
                             g.publish('audit', topic, msg,
                                       serializer='yaml')
-                            continue
-                            log.info('eq, is = (%s,%s)',
-                                     part['headers'] == msg_hdrs,
-                                     part['headers'] is msg_hdrs)
-                            log.info('Headers: %s', part['headers'])
-                            continue
-                            g.publish('audit', topic,
-                                      dict(part, user_id=str(user._id)),
-                                      serializer='pickle')
                     else:
                         g.publish('audit', topic,
                                   dict(msg, user_id=str(user._id)),

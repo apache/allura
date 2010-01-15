@@ -29,6 +29,10 @@ class Forum(Artifact):
 
     threads = RelationProperty('Thread')
 
+    def update_stats(self):
+        self.num_topics = Thread.query.find(dict(forum_id=self._id)).count()
+        self.num_posts = Post.query.find(dict(forum_id=self._id)).count()
+
     def breadcrumbs(self):
         if self.parent:
             l = self.parent.breadcrumbs()
@@ -59,7 +63,7 @@ class Forum(Artifact):
         return self.app.url + self.shortname + '/'
     
     def shorthand_id(self):
-        return '%s/%s' % (self.type_s, self.shortname) # _id.url_encode())
+        return self.shortname
 
     def index(self):
         result = Artifact.index(self)
@@ -68,10 +72,11 @@ class Forum(Artifact):
                       text=self.description)
         return result
 
-    def new_thread(self, subject, content):
+    def new_thread(self, subject, content, message_id):
         thd = Thread(forum_id=self._id,
                      subject=subject)
-        post = Post(forum_id=self._id,
+        post = Post(_id=message_id,
+                    forum_id=self._id,
                     thread_id=thd._id,
                     subject=subject,
                     text=content)
@@ -85,6 +90,15 @@ class Forum(Artifact):
 
     def subscription(self):
         return self.subscriptions.get(str(c.user._id))
+
+    def delete(self):
+        # Delete all the threads, posts, and artifacts
+        Thread.query.remove(dict(forum_id=self._id))
+        Post.query.remove(dict(forum_id=self._id))
+        for md in Attachment.find({
+                'metadata.forum_id':self._id}):
+            Attachment.remove(md['filename'])
+        Artifact.delete(self)
 
 class Thread(Artifact):
     class __mongometa__:
@@ -100,6 +114,9 @@ class Thread(Artifact):
 
     forum = RelationProperty(Forum)
     posts = RelationProperty('Post')
+
+    def update_stats(self):
+        self.num_replies = Post.query.find(dict(thread_id=self._id)).count() - 1
 
     @property
     def last_post(self):
@@ -135,7 +152,7 @@ class Thread(Artifact):
         return self.forum.url() + 'thread/' + str(self._id) + '/'
     
     def shorthand_id(self):
-        return '%s/%s' % (self.type_s, self._id)
+        return '%s/%s' % (self.forum.shorthand_id(), self._id)
 
     def index(self):
         result = Artifact.index(self)
@@ -147,6 +164,11 @@ class Thread(Artifact):
 
     def subscription(self):
         return self.subscriptions.get(str(c.user._id))
+
+    def delete(self):
+        for p in Post.query.find(dict(thread_id=self._id)):
+            p.delete()
+        Artifact.delete(self)
 
 class Post(Message):
     class __mongometa__:
@@ -166,10 +188,10 @@ class Post(Message):
         return Post.query.get(_id=self.parent_id)
 
     def url(self):
-        return self.thread.url() + self._id + '/'
+        return self.thread.url() + self.slug + '/'
     
     def shorthand_id(self):
-        return '%s/%s' % (self.type_s, self._id)
+        return '%s#%s' % (self.thread.shorthand_id(), self.slug)
 
     def index(self):
         result = Message.index(self)
@@ -188,8 +210,9 @@ class Post(Message):
         l += [ '> ' + line for line in self.text.split('\n') ]
         return '\n'.join(l)
 
-    def reply(self, subject, text):
+    def reply(self, subject, text, message_id):
         result = Message.reply(self)
+        result._id = message_id
         result.forum_id = self.forum_id
         result.thread_id = self.thread_id
         result.subject = subject
@@ -214,7 +237,7 @@ class Post(Message):
     @property
     def attachments(self):
         return Attachment.find({
-                'metadata.message_id':self.message_id})
+                'metadata.message_id':self._id})
 
     def attachment_url(self, file_info):
         return self.forum.url() + 'attachment/' + file_info['filename']
@@ -222,17 +245,27 @@ class Post(Message):
     def attachment_filename(self, file_info):
         return file_info['metadata']['filename']
 
+    def delete(self):
+        for md in Attachment.find({
+                'metadata.message_id':self._id}):
+            Attachment.remove(md['filename'])
+        Message.delete(self)
+
 class Attachment(Filesystem):
     class __mongometa__:
         name='attachment'
-        indexes = [ 'metadata.message_id', 'metadata.filename' ]
+        indexes = [
+            'metadata.forum_id',
+            'metadata.message_id',
+            'metadata.filename' ]
 
     @classmethod
     def save(cls, filename, content_type,
-             message_id, content):
+             forum_id, message_id, content):
         with cls.open(str(ObjectId()), 'w') as fp:
             fp.content_type = content_type
-            fp.metadata = dict(message_id=message_id,
+            fp.metadata = dict(forum_id=forum_id,
+                               message_id=message_id,
                                filename=filename)
             fp.write(content)
 

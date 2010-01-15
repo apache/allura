@@ -1,4 +1,6 @@
 import logging
+from mimetypes import guess_type
+from urllib import unquote
 
 from tg import expose, validate, redirect, flash
 from tg import request, response
@@ -71,9 +73,14 @@ class ThreadController(object):
 
     def __init__(self, thread_id):
         self.thread = model.Thread.query.get(_id=thread_id)
+        self.forum = self.thread.forum
 
     @expose('forgeforum.templates.thread')
     def index(self, offset=None):
+        if not self.thread.last_post:
+            self.thread.delete()
+            self.forum.update_stats()
+            redirect(self.forum.url())
         pagesize = 15
         style = 'threaded'
         if offset is None: offset = 0
@@ -97,29 +104,55 @@ class ThreadController(object):
                     pagesize=pagesize)
 
     def _lookup(self, id, *remainder):
-        return PostController(id), remainder
+        return PostController(self.thread, id), remainder
 
 class PostController(object):
 
-    def __init__(self, post_id):
-        self.post = model.Post.query.get(_id=post_id)
+    def __init__(self, thread, slug):
+        self.thread = thread
+        self.post = model.Post.query.get(thread_id=thread._id,
+                                         slug=slug)
 
     def index(self):
         pass
 
     @expose()
+    def delete(self):
+        if request.method == 'POST':
+            require(has_artifact_access('delete'))
+            self.post.delete()
+            self.thread.update_stats()
+        redirect(request.referer)
+
+    @expose()
     def reply(self, subject=None, text=None):
         g.publish('audit',
                   'Forum.%s' % self.post.forum.shortname.replace('/', '.'),
-                  dict(headers={'Subject':subject,
-                                'In-Reply-To':self.post.message_id},
+                  dict(headers={'Subject':subject},
+                       in_reply_to=[self.post._id],
                        payload=text))
         flash('Message posted.  It may take a few seconds before your message '
               'appears.')
         redirect(self.post.thread.url())
 
+    @expose()
+    def attach(self, file_info=None):
+        require(has_artifact_access('delete', self.post))
+        filename = file_info.filename
+        chunks = []
+        while True:
+            s = file_info.file.read()
+            if not s: break
+            chunks.append(s)
+        data = ''.join(chunks)
+        content_type = guess_type(filename)
+        if content_type: content_type = content_type[0]
+        else: content_type = 'application/octet-stream'
+        model.Attachment.save(filename, content_type, self.thread.forum_id, self.post._id, data)
+        redirect(self.thread.url() + '#post-' + self.post.slug)
+
     def _lookup(self, id, *remainder):
-        return PostController(self.post._id + '/' + id), remainder
+        return PostController(self.thread, self.post.slug + '/' + id), remainder
 
 class AttachmentsController(object):
 
@@ -128,9 +161,8 @@ class AttachmentsController(object):
         self.prefix_len = len(self.forum.url()+'attachment/')
 
     @expose()
-    def _lookup(self, *args):
-        filename = request.path_info[self.prefix_len:]
-        return AttachmentController(filename), []
+    def _lookup(self, filename, *args):
+        return AttachmentController(filename), args
 
 class AttachmentController(object):
 
@@ -138,7 +170,7 @@ class AttachmentController(object):
         self.filename = filename
 
     @expose() 
-    def index(self, delete=False):
+    def index(self, delete=False, embed=False):
         if request.method == 'POST':
             require(has_artifact_access('delete'))
             if delete: model.Attachment.remove(self.filename)
@@ -147,8 +179,10 @@ class AttachmentController(object):
             filename = fp.metadata['filename']
             response.headers['Content-Type'] = ''
             response.content_type = fp.content_type
-            response.headers.add('Content-Disposition', 
-                'attachment;filename=%s' % filename)
+            if not embed:
+                response.headers.add('Content-Disposition', 
+                                     'attachment;filename=%s' % filename)
             return fp.read()
         return self.filename
         
+    

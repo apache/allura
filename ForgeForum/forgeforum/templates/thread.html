@@ -12,7 +12,7 @@
     <title>ForgeForum Index Page</title>
     <py:def function="display_post_thread(post_threads)">
       <div py:for="pi in post_threads">
-        <a href="#post-${pi.post._id}">$pi.post.subject</a>
+        <a href="#post-${pi.post.slug}">$pi.post.subject</a>
         by <a href="${pi.post.author().url()}">${pi.post.author().display_name}</a>
         ${h.ago(pi.post.timestamp)}
         <br/>
