@@ -10,7 +10,7 @@ from formencode import validators
 from pymongo.bson import ObjectId
 
 # Pyforge-specific imports
-from pyforge.app import Application, ConfigOption, SitemapEntry
+from pyforge.app import Application, ConfigOption, SitemapEntry, DefaultAdminController
 from pyforge.lib.helpers import push_config
 from pyforge.lib.search import search
 from pyforge.lib.decorators import audit, react
@@ -32,6 +32,7 @@ class ForgeTrackerApp(Application):
     def __init__(self, project, config):
         Application.__init__(self, project, config)
         self.root = RootController()
+        self.admin = TrackerAdminController(self)
 
     @audit('Issues.#')
     def auditor(self, routing_key, data):
@@ -214,3 +215,14 @@ class CommentController(object):
         else:
             return CommentController(
                 self.artifact, next), remainder
+
+
+class TrackerAdminController(DefaultAdminController):
+
+    @expose('forgetracker.templates.admin')
+    def index(self):
+        return dict(app=self.app)
+
+    @expose()
+    def update_issues(self, **post_data):
+        pass

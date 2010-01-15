@@ -1,0 +1,56 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+                    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:py="http://genshi.edgewall.org/"
+      xmlns:xi="http://www.w3.org/2001/XInclude">
+
+  <xi:include href="master.html" />
+  <xi:include href="${app.templates}/lib.html" />
+
+  <head>
+    <meta content="text/html; charset=UTF-8" http-equiv="content-type" py:replace="''"/>
+    <title>Admin for $c.project._id $app.config.options.mount_point</title>
+  </head>
+
+  <body>
+    <h1>Tracker Admin for ${project_links(c.project)} $app.config.options.mount_point </h1>
+    <div id="app-config" py:if="len(app.config_options) > 1">
+      <h3>Config Options</h3>
+      <form method="post" action="configure">
+        <div py:for="o in app.config_options" py:if="o.name != 'mount_point'">
+          <label for="$o.name">$o.name</label><br/>
+          <input name="$o.name" value="${app.config.options.get(o.name, o.default)}"/>
+        </div>
+        <input type="submit" value="Update config"/>
+        <input py:if="app.installable" type="submit" name="delete" value="Delete Plugin"/>
+      </form>
+    </div>
+    <div id="app-acl" class="title-pane closed">
+      <h3 class="title">ACL Config</h3>
+      <div class="content">
+        <div py:for="p in app.permissions" >
+          <h4>$p</h4>
+          <ul>
+            <li py:for="role in h.make_roles(app.config.acl[p])">
+              ${role.display()}
+              <form method="POST" action="del_perm" style="display:inline">
+                <input type="hidden" name="permission" value="$p"/>
+                <input type="hidden" name="role" value="${role._id}"/>
+                <input type="submit" value="Remove"/>
+              </form>
+            </li>
+          </ul>
+          <form method="POST" action="add_perm">
+            <input type="hidden" name="permission" value="$p"/>
+            <select name="role">
+              <option py:for="role in c.project.roles"
+                      value="$role._id"
+                      >${role.display()}</option>
+            </select>
+            <input type="submit" value="Add role"/>
+          </form>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>
