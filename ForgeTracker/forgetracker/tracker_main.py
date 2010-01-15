@@ -138,6 +138,7 @@ class RootController(object):
         else:
             issue = model.Issue()
             issue.project_id = c.project._id
+            issue.custom_fields = dict()
             globals = model.Globals.query.get(project_id=c.project._id)
 
             # FIX ME: need to lock around this increment or something
@@ -163,7 +164,8 @@ class IssueController(object):
     def index(self, **kw):
         require(has_artifact_access('read', self.issue))
         if self.issue is not None:
-            return dict(issue=self.issue)
+            globals = model.Globals.query.get(project_id=c.project._id)
+            return dict(issue=self.issue, globals=globals)
         else:
             redirect('not_found')
 
@@ -182,6 +184,10 @@ class IssueController(object):
         self.issue.description = post_data['description']
         self.issue.assigned_to = post_data['assigned_to']
         self.issue.status = post_data['status']
+
+        globals = model.Globals.query.get(project_id=c.project._id)
+        for field in globals.custom_fields.split(','):
+            self.issue.custom_fields[field] = post_data[field]
         redirect('edit')
 
 class CommentController(object):
@@ -233,4 +239,10 @@ class TrackerAdminController(DefaultAdminController):
     def set_status_names(self, **post_data):
         globals = model.Globals.query.get(project_id=c.project._id)
         globals.status_names = post_data['status_names']
+        redirect('.')
+
+    @expose()
+    def set_custom_fields(self, **post_data):
+        globals = model.Globals.query.get(project_id=c.project._id)
+        globals.custom_fields = post_data['custom_fields']
         redirect('.')

@@ -21,6 +21,7 @@ class Globals(MappedClass):
     project_id = FieldProperty(str)
     last_issue_num = FieldProperty(int)
     status_names = FieldProperty(str)
+    custom_fields = FieldProperty(str)
 
 class IssueHistory(Snapshot):
 
@@ -65,6 +66,7 @@ class Issue(VersionedArtifact):
     assigned_to = FieldProperty(str, if_missing='')
     milestone = FieldProperty(str, if_missing='')
     status = FieldProperty(str, if_missing='')
+    custom_fields = FieldProperty({str:None})
 
     comments = RelationProperty('Comment')
     attachments = RelationProperty('Attachment')

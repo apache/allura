@@ -64,5 +64,17 @@
 
       </div>
     </div>
+    <div id="app-acl" class="title-pane closed">
+      <h3 class="title">Custom Fields Config</h3>
+      <div class="content">
+
+        <form method="POST" action="set_custom_fields">
+            custom fields:
+            <input type="text" name="custom_fields" style="width:50%" value="${globals.custom_fields}"/>
+            <input type="submit" value="Save"/>
+        </form>
+
+      </div>
+    </div>
   </body>
 </html>

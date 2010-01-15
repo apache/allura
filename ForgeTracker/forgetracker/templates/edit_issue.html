@@ -74,6 +74,18 @@
                     </div>
                 </div>
             </div>
+
+            <div class="span-24 last custom-fields" py:if="globals.custom_fields">
+                <div class="span-24 last quiet prepend-top bottom-liner">Custom Fields</div>
+                <div py:for="field in globals.custom_fields.split(',')" class="editable viewing span-24 last">
+                    <label class="span-4">$field:</label>
+                    <span class="viewer span-20 last">${issue.custom_fields.get(field, '')}</span>
+                    <span class="editor span-20 last">
+                        <input name="$field" type="text" style="width:50%" value="${issue.custom_fields.get(field, '')}"/>
+                    </span>
+                </div>
+            </div>
+
 <input type="submit" value="submit"/>
 </form>
             <hr/>
