@@ -25,6 +25,6 @@ setup(name='ForgeTracker',
       entry_points="""
       # -*- Entry points: -*-
       [pyforge]
-      Issues=forgetracker.main:ForgeTrackerApp
+      Issues=forgetracker.tracker_main:ForgeTrackerApp
       """,
       )
