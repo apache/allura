@@ -5,6 +5,7 @@
 *.pyc
 */.coverage
 *~
+*.swp
 .dbshell
 pyforge/docs/_build/*
 mail/logs/*

@@ -2,14 +2,12 @@
 # Did you activate sandbox-env?
 
 
-
 #
 # Starting MongoDB
 #
 # from the directory containing mongod
 
 mongod
-
 
 
 #
@@ -29,45 +27,27 @@ sudo ./rabbitmq-server
 ./rabbitmqctl stop
 
 
-
-#
-# Starting Celery
-#
-# from forge/pyforge, where celeryconfig.py lives
-
-celeryinit
-celeryd --detach
-
-
-
-#
-# Starting Lamson
-#
-# from forge/mail
-
-mkdir run logs
-lamson start
-lamson status
-lamson log
-
-#
-# Stopping Lamson
-#
-
-lamson stop -ALL run
-rm -rf run/*
- 
 #
 # Starting SOLR
-# 
+#
 
 cd install/apache-solr-1.4.0/example
 java -jar start.jar
 
+
+#
+# Setting up and starting the reactor process
+#
+# from pyforge, where development.ini lives
+
+cd pyforge
+paster reactor_setup development.ini
+paster reactor development.ini
+
 #
 # Starting the forge
 #
-# from forge, where development.ini lives
+# from pyforge, where development.ini lives
 
 paster serve development.ini
 
