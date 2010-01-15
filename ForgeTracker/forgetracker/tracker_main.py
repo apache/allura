@@ -74,7 +74,7 @@ class ForgeTrackerApp(Application):
             ProjectRole.query.get(name='*anonymous')._id)
         self.config.acl['comment'].append(
             ProjectRole.query.get(name='*authenticated')._id)
-        model.Globals(project_id=c.project._id, last_issue_num=0)
+        model.Globals(project_id=c.project._id, last_issue_num=0, status_names='open,unread,accepted,pending,closed')
 
     def uninstall(self, project):
         "Remove all the plugin's artifacts from the database"
@@ -170,7 +170,8 @@ class IssueController(object):
     @expose('forgetracker.templates.edit_issue')
     def edit(self, **kw):
         require(has_artifact_access('write', self.issue))
-        return dict(issue=self.issue)
+        globals = model.Globals.query.get(project_id=c.project._id)
+        return dict(issue=self.issue, globals=globals)
 
     @expose()
     def update_issue(self, **post_data):
@@ -221,8 +222,15 @@ class TrackerAdminController(DefaultAdminController):
 
     @expose('forgetracker.templates.admin')
     def index(self):
-        return dict(app=self.app)
+        globals = model.Globals.query.get(project_id=c.project._id)
+        return dict(app=self.app, globals=globals)
 
     @expose()
     def update_issues(self, **post_data):
         pass
+
+    @expose()
+    def set_status_names(self, **post_data):
+        globals = model.Globals.query.get(project_id=c.project._id)
+        globals.status_names = post_data['status_names']
+        redirect('.')

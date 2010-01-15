@@ -55,11 +55,7 @@
                     <span class="quiet">status:</span>
                     <span class="viewer issue-status">$issue.status</span>
                     <select name="status" class="editor">
-                        <option value="open">open</option>
-                        <option value="unread">unread</option>
-                        <option value="accepted">accepted</option>
-                        <option value="pending">pending</option>
-                        <option value="closed">closed</option>
+                        <option py:for="name in globals.status_names.split(',')" value="$name">$name</option>
                     </select>
                 </div>
 

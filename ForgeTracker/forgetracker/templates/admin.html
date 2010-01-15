@@ -52,5 +52,17 @@
         </div>
       </div>
     </div>
+    <div id="app-acl" class="title-pane closed">
+      <h3 class="title">Status Config</h3>
+      <div class="content">
+
+        <form method="POST" action="set_status_names">
+            status names:
+            <input type="text" name="status_names" style="width:50%" value="${globals.status_names}"/>
+            <input type="submit" value="Save"/>
+        </form>
+
+      </div>
+    </div>
   </body>
 </html>

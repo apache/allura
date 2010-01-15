@@ -1,4 +1,6 @@
 import tw.forms as twf
+from pylons import c
+from forgetracker import model
 
 issue_form = twf.TableForm('issue_form', action='save_issue', children=[
     twf.HiddenField('issue_num'),
@@ -9,5 +11,6 @@ issue_form = twf.TableForm('issue_form', action='save_issue', children=[
     twf.TextField('assigned_to'),
     twf.TextField('milestone'),
 
-    twf.SingleSelectField('status', options=['open', 'unread', 'accepted', 'pending', 'closed'])
+    twf.SingleSelectField('status',
+        options=lambda: model.Globals.query.get(project_id=c.project._id).status_names.split(','))
 ])

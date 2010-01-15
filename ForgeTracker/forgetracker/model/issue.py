@@ -20,6 +20,7 @@ class Globals(MappedClass):
     _id = FieldProperty(schema.ObjectId)
     project_id = FieldProperty(str)
     last_issue_num = FieldProperty(int)
+    status_names = FieldProperty(str)
 
 class IssueHistory(Snapshot):
 
@@ -63,7 +64,7 @@ class Issue(VersionedArtifact):
     reported_by = FieldProperty(str)
     assigned_to = FieldProperty(str, if_missing='')
     milestone = FieldProperty(str, if_missing='')
-    status = FieldProperty(str, if_missing='open')
+    status = FieldProperty(str, if_missing='')
 
     comments = RelationProperty('Comment')
     attachments = RelationProperty('Attachment')
