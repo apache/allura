@@ -272,8 +272,11 @@ class Post(Message):
         parent = self.parent
         if parent:
             thd, new_parent = self.forum.new_thread(
-                thread_title, 'Discussion promoted from [here](%s)' % 
-                self.thread.url())
+                thread_title, 'Discussion moved')
+            reply = parent.reply(self.subject, 'Discussion moved')
+            reply.text = 'Discussion moved to [here](%s)' % thd.url()
+            new_parent.text = 'Discussion moved from [here](%s#post-%s)' % (
+                self.thread.url(), reply.slug)
             new_parent.slug = parent.slug
             new_parent.timestamp = parent.timestamp
         else:
@@ -287,11 +290,6 @@ class Post(Message):
         Post.query.update(
             dict(slug=my_replies),
             {'$set':dict(thread_id=thd._id)})
-        if parent:
-            parent.reply(
-                self.subject,
-                'Post has been moved to its own thread [here](%s)' %
-                thd.url())
         return thd
 
 class Attachment(Filesystem):
