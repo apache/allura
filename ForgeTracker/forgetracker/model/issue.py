@@ -87,7 +87,10 @@ class Issue(VersionedArtifact):
         return result
 
     def root_comments(self):
-        return Comment.query.find(dict(issue_id=self._id, reply_to=None))
+        if '_id' in self:
+            return Comment.query.find(dict(issue_id=self._id, reply_to=None))
+        else:
+            return []
 
     def reply(self):
         while True:
@@ -130,7 +133,7 @@ class Comment(Message):
         return result
 
     def url(self):
-        return self.issue.url() + '#comment-' + self._id
+        return self.issue.url() + '#comment-' + str(self._id)
 
     def shorthand_id(self):
         return '%s-%s' % (self.issue.shorthand_id, self._id)
