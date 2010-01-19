@@ -199,12 +199,12 @@ class CommentController(object):
 
     @expose()
     def reply(self, text):
-        require(has_artifact_access('comment', self.artifact))
+        require(has_artifact_access('comment', self.issue))
         if self.comment_id:
             c = self.comment.reply()
             c.text = text
         else:
-            c = self.artifact.reply()
+            c = self.issue.reply()
             c.text = text
         redirect(request.referer)
 
@@ -217,11 +217,11 @@ class CommentController(object):
     def _lookup(self, next, *remainder):
         if self.comment_id:
             return CommentController(
-                self.artifact,
+                self.issue,
                 self.comment_id + '/' + next), remainder
         else:
             return CommentController(
-                self.artifact, next), remainder
+                self.issue, next), remainder
 
 
 class TrackerAdminController(DefaultAdminController):
