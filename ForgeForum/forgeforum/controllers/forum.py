@@ -8,6 +8,8 @@ from tg import request, response
 from pylons import g, c
 from formencode import validators
 from pymongo.bson import ObjectId
+from ming.base import Object
+from webob import exc
 
 from pyforge.app import Application, ConfigOption, SitemapEntry, DefaultAdminController
 from pyforge.lib.security import require, has_artifact_access
@@ -188,8 +190,32 @@ class PostController(object):
         self.post = model.Post.query.get(thread_id=thread._id,
                                          slug=slug)
 
-    def index(self):
-        pass
+    @expose('forgeforum.templates.post')
+    def index(self, subject=None, text=None, version=None, **kw):
+        if request.method == 'POST':
+            self.post.subject = subject
+            self.post.text = text
+            self.post.commit()
+            redirect(request.referer)
+        elif request.method=='GET':
+            if version is not None:
+                HC = self.post.__mongometa__.history_class
+                ss = HC.query.find({'artifact_id':self.post._id, 'version':int(version)}).first()
+                if not ss: raise exc.HTTPNotFound
+                post = Object(
+                    ss.data,
+                    acl=self.post.acl,
+                    author=self.post.author,
+                    url=self.post.url,
+                    thread=self.post.thread,
+                    reply_subject=self.post.reply_subject,
+                    reply_text=self.post.reply_text,
+                    attachments=self.post.attachments,
+                    )
+            else:
+                post=self.post
+            return dict(forum=self.post.forum,
+                        post=post)
 
     @expose()
     def moderate(self, subject=None, delete=None):

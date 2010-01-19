@@ -13,6 +13,7 @@ from ming.orm.property import FieldProperty, RelationProperty, ForeignIdProperty
 
 from pyforge.lib.helpers import nonce
 from pyforge.model import Artifact, Message, Filesystem
+from pyforge.model import VersionedArtifact, Snapshot
 
 common_suffix = tg.config.get('forgemail.domain', '.sourceforge.net')
 
@@ -90,6 +91,7 @@ class Forum(Artifact):
                         text=content)
         thd.first_post_id = post._id
         post.give_access('moderate', user=post.author())
+        post.commit()
         self.num_topics += 1
         self.num_posts += 1
         g.publish('react', 'Forum.new_thread', dict(
@@ -191,9 +193,34 @@ class Thread(Artifact):
             dict(thread_id=self._id),
             {'$set':dict(forum_id=new_forum._id)})
 
-class Post(Message):
+class PostHistory(Snapshot):
+    class __mongometa__:
+        name='post_history'
+
+    artifact_id = ForeignIdProperty('Post')
+
+    def original(self):
+        return Post.query.get(_id=self.artifact_id)
+        
+    def shorthand_id(self):
+        return '%s#%s' % (self.original().shorthand_id(), self.version)
+
+    def url(self):
+        return self.original().url() + '?version=%d' % self.version
+
+    def index(self):
+        result = Snapshot.index(self)
+        result.update(
+            title_s='Version %d of %s' % (
+                self.version,self.original().subject),
+            type_s='Post Snapshot',
+            text=self.data.text)
+        return result
+
+class Post(Message, VersionedArtifact):
     class __mongometa__:
         name='post'
+        history_class = PostHistory
     type_s = 'Post'
 
     thread_id = ForeignIdProperty(Thread)
@@ -240,6 +267,7 @@ class Post(Message):
         result.subject = subject
         result.text = text
         result.give_access('moderate', user=result.author())
+        result.commit()
         g.publish('react', 'Forum.new_post', dict(
                 post_id=result._id))
         return result

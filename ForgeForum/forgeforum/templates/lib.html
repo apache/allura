@@ -155,6 +155,7 @@
         ${h.ago(post.timestamp)}
       </div>        
       <div class="content">
+        <a href="${post.url()}">Permalink</a>
         <div py:if="has_artifact_access('moderate', post)()"
              class="title-pane closed">
           <span class="title">Moderate</span>
@@ -171,6 +172,17 @@
         </div>
         <br/>
         ${Markup(g.markdown.convert(post.text))}
+        <div py:if="has_artifact_access('moderate', post)()"
+             class="title-pane closed">
+          <span class="title">Edit Post</span>
+          <div class="content">
+            <form method="POST" action="${post.url()}">
+                ${text_field('subject', 'Subject', post.subject)}
+                ${text_area('text', 'Content', post.text)}
+                ${submit_button('Update post')}
+            </form>
+          </div>
+        </div>
         <div style="padding-left: 10px; border-left: 1px solid grey">
           <div py:if="has_artifact_access('post', post.thread)()" class="reply title-pane closed">
             <div class="title">Reply to ${post.author().display_name}</div>
