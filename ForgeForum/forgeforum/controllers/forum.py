@@ -82,6 +82,9 @@ class ThreadController(object):
         self.thread = model.Thread.query.get(_id=thread_id)
         self.forum = self.thread.forum
 
+    def _lookup(self, id, *remainder):
+        return PostController(self.thread, id), remainder
+
     @expose('forgeforum.templates.thread')
     def index(self, offset=None):
         if not self.thread.last_post:
@@ -110,8 +113,21 @@ class ThreadController(object):
                     total=self.thread.num_replies,
                     pagesize=pagesize)
 
-    def _lookup(self, id, *remainder):
-        return PostController(self.thread, id), remainder
+    @expose()
+    def moderate(self, forum=None, delete=None):
+        require(has_artifact_access('moderate', self.thread))
+        if delete:
+            url = self.thread.forum.url()
+            self.thread.delete()
+            redirect(url)
+        new_forum = model.Forum.query.get(
+            app_config_id=c.app.config._id,
+            shortname=forum)
+        if not new_forum:
+            flash('Forum "%s" not found' % forum, 'error')
+            redirect('.')
+        self.thread.set_forum(new_forum)
+        redirect(self.thread.url())
 
 class PostController(object):
 
@@ -127,12 +143,14 @@ class PostController(object):
         pass
 
     @expose()
-    def delete(self):
-        if request.method == 'POST':
-            require(has_artifact_access('moderate', self.post))
+    def moderate(self, subject=None, delete=None):
+        require(has_artifact_access('moderate', self.post.thread))
+        if delete:
             self.post.delete()
             self.thread.update_stats()
-        redirect(request.referer)
+        else:
+            thd = self.post.promote(subject)
+        redirect(thd.url())
 
     @expose()
     def reply(self, subject=None, text=None):

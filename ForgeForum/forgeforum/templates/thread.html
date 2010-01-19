@@ -16,11 +16,15 @@
         by <a href="${pi.post.author().url()}">${pi.post.author().display_name}</a>
         ${h.ago(pi.post.timestamp)}
         <br/>
-        <div py:if="pi.children" style="border-left:1px solid black; margin-left: 5px; padding-left: 5px">
+        <div py:if="pi.children" 
+             style="border-left:1px solid black; margin-left: 5px; padding-left: 5px">
           ${display_post_thread(pi.children)}
         </div>
       </div>
     </py:def>
+  <?python
+     from pyforge.lib.security import has_artifact_access
+     ?>
   </head>
   
   <body>
@@ -31,6 +35,16 @@
     <h1>$thread.subject</h1>
     <p>Thread Shortlink: <input readonly="true" value="[${thread.shorthand_id()}]"/></p>
     ${page_nav(offset, total, pagesize)}
+    <div class="title-pane closed" py:if="has_artifact_access('moderate', thread)">
+      <span class="title">Moderate thread</span>
+      <div class="content">
+        <form method="POST" action="moderate">
+          ${select_field('forum', 'New Forum', [ (f.name, f.shortname) for f in c.app.forums])}
+          ${submit_button('Move thread to new forum')}
+          ${submit_button('Delete thread', 'delete')}
+        </form>
+      </div>
+    </div>
     <div py:if="style=='threaded'">
       <div style="width:220px; float:left">
         ${display_post_thread(post_threads)}

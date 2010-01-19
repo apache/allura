@@ -148,17 +148,27 @@
   </py:def>
 
   <py:def function="display_post(post)">
-    <div id="post-${post._id}" class="title-pane">
+    <div id="post-${post.slug}" class="title-pane">
       <div class="title">
         <strong>$post.subject</strong>
         by <a href="${post.author().url()}">${post.author().display_name}</a>
         ${h.ago(post.timestamp)}
       </div>        
       <div class="content">
-        <form py:if="has_artifact_access('moderate', post)()"
-              method="POST" action="${post.url()}delete">
-          ${submit_button('Delete')}
-        </form>
+        <div py:if="has_artifact_access('moderate', post)()"
+             class="title-pane closed">
+          <span class="title">Moderate</span>
+          <div class="content">
+            <form method="POST" action="${post.url()}moderate">
+              <fieldset py:if="has_artifact_access('moderate', post.thread)()">
+                <legend>Promote post to its own thread</legend>
+                ${text_field('subject', 'Thread title', post.subject)}
+                ${submit_button('Promote to thread')}
+              </fieldset>
+              ${submit_button('Delete Post')}
+            </form>
+          </div>
+        </div>
         <br/>
         ${Markup(g.markdown.convert(post.text))}
         <div style="padding-left: 10px; border-left: 1px solid grey">

@@ -1,11 +1,13 @@
+import re
 from time import sleep
 
 import tg
 import pymongo
-from pylons import c, g
+from pylons import c, g, request
 from pymongo.bson import ObjectId
 
 from ming import schema
+from ming.orm.base import mapper
 from ming.orm.mapped_class import MappedClass
 from ming.orm.property import FieldProperty, RelationProperty, ForeignIdProperty
 
@@ -72,14 +74,20 @@ class Forum(Artifact):
                       text=self.description)
         return result
 
-    def new_thread(self, subject, content, message_id):
+    def new_thread(self, subject, content, message_id=None):
         thd = Thread(forum_id=self._id,
                      subject=subject)
-        post = Post(_id=message_id,
-                    forum_id=self._id,
-                    thread_id=thd._id,
-                    subject=subject,
-                    text=content)
+        if message_id is None:
+            post = Post(forum_id=self._id,
+                        thread_id=thd._id,
+                        subject=subject,
+                        text=content)
+        else:
+            post = Post(_id=message_id,
+                        forum_id=self._id,
+                        thread_id=thd._id,
+                        subject=subject,
+                        text=content)
         post.give_access('moderate', user=post.author())
         self.num_topics += 1
         self.num_posts += 1
@@ -171,6 +179,12 @@ class Thread(Artifact):
             p.delete()
         Artifact.delete(self)
 
+    def set_forum(self, new_forum):
+        self.forum_id = new_forum._id
+        Post.query.update(
+            dict(thread_id=self._id),
+            {'$set':dict(forum_id=new_forum._id)})
+
 class Post(Message):
     class __mongometa__:
         name='post'
@@ -211,9 +225,10 @@ class Post(Message):
         l += [ '> ' + line for line in self.text.split('\n') ]
         return '\n'.join(l)
 
-    def reply(self, subject, text, message_id):
+    def reply(self, subject, text, message_id=None):
         result = Message.reply(self)
-        result._id = message_id
+        if message_id:
+            result._id = message_id
         result.forum_id = self.forum_id
         result.thread_id = self.thread_id
         result.subject = subject
@@ -227,7 +242,7 @@ class Post(Message):
     def create_post_threads(cls, posts):
         result = []
         post_index = {}
-        for p in posts:
+        for p in sorted(posts, key=lambda p:p.slug):
             pi = dict(post=p, children=[])
             post_index[p._id] = pi
             if p.parent_id in post_index:
@@ -252,6 +267,32 @@ class Post(Message):
                 'metadata.message_id':self._id}):
             Attachment.remove(md['filename'])
         Message.delete(self)
+
+    def promote(self, thread_title):
+        parent = self.parent
+        if parent:
+            thd, new_parent = self.forum.new_thread(
+                thread_title, 'Discussion promoted from [here](%s)' % 
+                self.thread.url())
+            new_parent.slug = parent.slug
+            new_parent.timestamp = parent.timestamp
+        else:
+            new_parent = None
+            thd = Thread(forum_id=self.forum._id,
+                         subject=thread_title)
+        self.thread_id = thd._id
+        if new_parent:
+            self.parent_id = new_parent._id
+        my_replies = re.compile(r'%s/.*' % self.slug)
+        Post.query.update(
+            dict(slug=my_replies),
+            {'$set':dict(thread_id=thd._id)})
+        if parent:
+            parent.reply(
+                self.subject,
+                'Post has been moved to its own thread [here](%s)' %
+                thd.url())
+        return thd
 
 class Attachment(Filesystem):
     class __mongometa__:
