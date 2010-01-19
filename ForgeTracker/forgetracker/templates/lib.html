@@ -5,7 +5,7 @@
   <py:def function="display_comment(comment)">
     <div id="comment-${comment._id}"
          style="padding-left: 10px; border-left: 1px solid grey">
-      Posted by <em>${comment.author().display_name}</em> at ${comment.timestamp}
+      Posted by <em>comment.author().display_name</em> at ${comment.timestamp}
       <a py:if="c.user._id and comment.author_id==c.user._id"
          href="comments/$comment._id/delete">[X]</a>
       <br/>
