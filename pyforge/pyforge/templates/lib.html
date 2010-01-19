@@ -108,11 +108,12 @@
   </py:def>
 
   <py:def function="checkbox(name, label, checked)">
-    <py:if test="label">
-      <label for="$name">$label</label><br/>
-    </py:if>
     <input type="checkbox" id="$name" name="$name" 
-           checked="${checked or None}"/><br/>
+           checked="${checked or None}"/>
+    <py:if test="label">
+      <label for="$name">$label</label>
+    </py:if>
+    <br/>
   </py:def>
 
   <py:def function="submit_button(value, name=None)">

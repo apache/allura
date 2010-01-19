@@ -35,13 +35,38 @@
     <h1>$thread.subject</h1>
     <p>Thread Shortlink: <input readonly="true" value="[${thread.shorthand_id()}]"/></p>
     ${page_nav(offset, total, pagesize)}
-    <div class="title-pane closed" py:if="has_artifact_access('moderate', thread)">
+    <div class="title-pane closed" py:if="has_artifact_access('moderate', thread)()">
       <span class="title">Moderate thread</span>
       <div class="content">
         <form method="POST" action="moderate">
           ${select_field('forum', 'New Forum', [ (f.name, f.shortname) for f in c.app.forums])}
           ${submit_button('Move thread to new forum')}
           ${submit_button('Delete thread', 'delete')}
+        </form>
+      </div>
+    </div>
+    <div class="title-pane closed">
+      <span class="title" py:if="thread.tags">
+        Tags: 
+        <py:for each="i,t in enumerate(thread.tags)"><py:if test="i">, </py:if>$t</py:for>
+      </span>
+      <span class="title" py:if="not thread.tags">
+        No tags
+      </span>
+      <div class="content">
+        <py:for each="t in thread.tags">
+          <a href="${thread.forum.url()}tag/$t/">$t</a>
+        </py:for><br/>
+        <form py:if="has_artifact_access('moderate', thread.first_post)()"
+              method="POST" action="update_tags">
+          ${text_field('new_tag.name', 'New Tag(s) - separate by space')}
+          <fieldset><legend>Remove Tags</legend>
+            <py:for each="i, t in enumerate(thread.tags)">
+              <input type="hidden" name="tag-${i}.name" value="$t"/>
+              ${checkbox('tag-%d.delete' % i, t, False)}
+            </py:for>
+          </fieldset>
+          ${submit_button('Update Tags')}
         </form>
       </div>
     </div>

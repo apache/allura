@@ -1,3 +1,4 @@
+import shlex
 import logging
 from mimetypes import guess_type
 from urllib import unquote
@@ -12,6 +13,7 @@ from pyforge.app import Application, ConfigOption, SitemapEntry, DefaultAdminCon
 from pyforge.lib.security import require, has_artifact_access
 from pyforge.model import ProjectRole
 from pyforge.lib.search import search
+from pyforge.lib.helpers import vardec
 
 from forgeforum import model
 
@@ -26,6 +28,7 @@ class ForumController(object):
         self.forum = model.Forum.query.get(app_config_id=c.app.config._id,
                                            shortname=forum_id)
         self.thread = ThreadsController(self.forum)
+        self.tag = TagsController(self.forum)
         self.attachment = AttachmentsController(self.forum)
 
     @expose('forgeforum.templates.forum')
@@ -54,6 +57,35 @@ class ForumController(object):
 
     def _lookup(self, id, *remainder):
         return ForumController(self.forum.shortname + '/' + id), remainder
+
+class TagsController(object):
+
+    def __init__(self, forum):
+        self.forum = forum
+
+    def _lookup(self, tag, *remainder):
+        tag = unquote(tag).lower()
+        return TagController(self.forum, [tag]), remainder
+
+class TagController(object):
+
+    def __init__(self, forum, tags):
+        self.forum = forum
+        self.tags = tags
+
+    @expose('forgeforum.templates.tag_forum')
+    def index(self, tag=None):
+        if tag: redirect('%s/' % tag)
+        threads = model.Thread.query.find(dict(
+                forum_id=self.forum._id,
+                tags={'$all':self.tags})).all()
+        return dict(forum=self.forum,
+                    tags=self.tags,
+                    threads=threads)
+
+    def _lookup(self, tag, *remainder):
+        tag = unquote(tag).lower()
+        return TagController(self.forum, self.tags + [tag]), remainder
 
 class ThreadsController(object):
 
@@ -128,6 +160,23 @@ class ThreadController(object):
             redirect('.')
         self.thread.set_forum(new_forum)
         redirect(self.thread.url())
+
+    @vardec
+    @expose()
+    def update_tags(self, tag=None, new_tag=None, **kw):
+        require(has_artifact_access('moderate', self.thread.first_post))
+        try:
+            asciiname = str(new_tag['name'])
+        except UnicodeDecodeError:
+            asciiname = new_tag['name'].encode('utf-8')
+        new_tags = [
+            t.lower() 
+            for t in shlex.split(asciiname, posix=True) ]
+        for obj in tag:
+            if obj.get('delete'): continue
+            new_tags.append(obj['name'])
+        self.thread.tags = new_tags
+        redirect('.')
 
 class PostController(object):
 

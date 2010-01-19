@@ -88,6 +88,7 @@ class Forum(Artifact):
                         thread_id=thd._id,
                         subject=subject,
                         text=content)
+        thd.first_post_id = post._id
         post.give_access('moderate', user=post.author())
         self.num_topics += 1
         self.num_posts += 1
@@ -112,6 +113,8 @@ class Forum(Artifact):
 class Thread(Artifact):
     class __mongometa__:
         name='thread'
+        indexes = [
+            'tags' ]
     type_s = 'Thread'
 
     _id=FieldProperty(str, if_missing=lambda:nonce(8))
@@ -120,9 +123,12 @@ class Thread(Artifact):
     num_replies = FieldProperty(int, if_missing=0)
     num_views = FieldProperty(int, if_missing=0)
     subscriptions = FieldProperty({str:bool})
+    tags = FieldProperty([str])
+    first_post_id = ForeignIdProperty('Post')
 
     forum = RelationProperty(Forum)
     posts = RelationProperty('Post')
+    first_post = RelationProperty('Post')
 
     def update_stats(self):
         self.num_replies = Post.query.find(dict(thread_id=self._id)).count() - 1
