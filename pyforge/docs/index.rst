@@ -18,6 +18,7 @@ Installation / Getting Started
    :maxdepth: 2
 
    install
+   platform_tour
 
 Writing a PyForge based app
 =====================================================================

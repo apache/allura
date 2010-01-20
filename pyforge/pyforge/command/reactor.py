@@ -159,7 +159,6 @@ class ReactorCommand(base.Command):
                 if data.get('user_id'):
                     pylons.c.user = base.M.User.query.get(_id=ObjectId.url_decode(data['user_id']))
                 pylons.c.project = base.M.Project.query.get(_id=data['project_id'])
-                mount_point = data.get('mount_point')
                 if getattr(method, 'im_self', ()) is None:
                     # Instancemethod - call once for each app, binding self
                     for cfg in pylons.c.project.app_configs:
