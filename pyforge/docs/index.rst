@@ -11,6 +11,14 @@ Introducing the new *Forge Platform:*
    
    intro
 
+Installation / Getting Started
+=================
+
+.. toctree::
+   :maxdepth: 2
+
+   install
+
 Writing a PyForge based app
 =====================================================================
 
