@@ -210,8 +210,9 @@ class CommentController(object):
 
     @expose()
     def delete(self):
-        require(lambda:c.user._id == self.comment.author()._id)
-        self.comment.text = '[Text deleted by commenter]'
+#        require(lambda:c.user._id == self.comment.author()._id)
+#        self.comment.text = '[Text deleted by commenter]'
+        self.comment.delete()
         redirect(request.referer)
 
     def _lookup(self, next, *remainder):
