@@ -36,7 +36,7 @@ class Globals(object):
         self.solr_server = config.get('solr.server')
         if self.solr_server:
             self.solr =  pysolr.Solr(self.solr_server)
-        else:
+        else: # pragma no cover
             self.solr = None
         self.use_queue = paste.deploy.converters.asbool(
             config.get('use_queue', False))
@@ -103,7 +103,7 @@ class Globals(object):
     def _publish(self, xn, message, routing_key, **kw):
         try:
             self.publisher[xn].send(message, routing_key=routing_key, **kw)
-        except socket.error:
+        except socket.error: # pragma no cover
             return
             log.exception('''Failure publishing message:
 xn         : %r

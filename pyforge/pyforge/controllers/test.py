@@ -10,7 +10,7 @@ from tg import expose
 from pyforge.lib.security import require, has_project_access
 from pyforge.lib.base import BaseController
 from pyforge.controllers.project import ProjectController
-from pyforge.lib.dispatch import _dispatch
+from pyforge.lib.dispatch import _dispatch, default
 from pyforge import model as M
 
 __all__ = ['RootController']
@@ -30,6 +30,7 @@ class TestController(BaseController, ProjectController):
         c.app = None
         c.project = M.Project.query.get(_id='projects/test/')
         c.user = M.User.query.get(username='test_admin')
+        self.dispatch = DispatchTest()
 
     def _dispatch(self, state, remainder):
         return _dispatch(self, state, remainder)
@@ -53,3 +54,23 @@ class TestController(BaseController, ProjectController):
     def index(self):
         require(has_project_access('read'))
         return dict()
+
+class DispatchTest(object):
+
+    def _lookup(self, name, *args):
+        return NamedController(name), args
+
+class NamedController(object):
+
+    def __init__(self, name):
+        self.name = name
+
+    @expose()
+    def index(self):
+        return 'index ' + self.name
+
+    @default
+    @expose()
+    def _lookup(self, *args):
+        return 'default(%s)(%r)' % (self.name, args)
+
