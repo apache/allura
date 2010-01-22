@@ -9,7 +9,7 @@ from pylons import c
 from ming import Document, Session, Field
 from ming import schema as S
 from ming.orm.base import mapper, session, state
-from ming.orm.mapped_class import MappedClass
+from ming.orm.mapped_class import MappedClass, MappedClassMeta
 from ming.orm.property import FieldProperty, ForeignIdProperty, RelationProperty
 from pymongo.errors import OperationFailure
 

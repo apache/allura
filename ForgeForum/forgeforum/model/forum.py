@@ -12,7 +12,7 @@ from ming.orm.mapped_class import MappedClass
 from ming.orm.property import FieldProperty, RelationProperty, ForeignIdProperty
 
 from pyforge.lib.helpers import nonce
-from pyforge.model import Artifact, Message, Filesystem
+from pyforge.model import Artifact, Message, File
 from pyforge.model import VersionedArtifact, Snapshot
 
 common_suffix = tg.config.get('forgemail.domain', '.sourceforge.net')
@@ -107,9 +107,8 @@ class Forum(Artifact):
         # Delete all the threads, posts, and artifacts
         Thread.query.remove(dict(forum_id=self._id))
         Post.query.remove(dict(forum_id=self._id))
-        for md in Attachment.find({
-                'metadata.forum_id':self._id}):
-            Attachment.remove(md['filename'])
+        for att in Attachment.by_metadata(forum_id=self._id):
+            att.delete()
         Artifact.delete(self)
 
 class Thread(Artifact):
@@ -229,7 +228,6 @@ class Post(Message, VersionedArtifact):
 
     thread = RelationProperty(Thread)
     forum = RelationProperty(Forum)
-    attachments = RelationProperty('Attachment')
 
     @property
     def parent(self):
@@ -287,19 +285,11 @@ class Post(Message, VersionedArtifact):
 
     @property
     def attachments(self):
-        return Attachment.find({
-                'metadata.message_id':self._id})
-
-    def attachment_url(self, file_info):
-        return self.forum.url() + 'attachment/' + file_info['filename']
-
-    def attachment_filename(self, file_info):
-        return file_info['metadata']['filename']
+        return Attachment.by_metadata(post_id=self._id)
 
     def delete(self):
-        for md in Attachment.find({
-                'metadata.message_id':self._id}):
-            Attachment.remove(md['filename'])
+        for att in Attachment.by_metadata(message_id=self._id):
+            att.delete()
         Message.delete(self)
 
     def promote(self, thread_title):
@@ -326,29 +316,29 @@ class Post(Message, VersionedArtifact):
             {'$set':dict(thread_id=thd._id)})
         return thd
 
-class Attachment(Filesystem):
+class Attachment(File):
     class __mongometa__:
-        name='attachment'
+        name = 'attachment.files'
         indexes = [
+            'metadata.filename',
             'metadata.forum_id',
-            'metadata.message_id',
-            'metadata.filename' ]
+            'metadata.post_id' ]
 
-    @classmethod
-    def save(cls, filename, content_type,
-             forum_id, message_id, content):
-        with cls.open(str(ObjectId()), 'w') as fp:
-            fp.content_type = content_type
-            fp.metadata = dict(forum_id=forum_id,
-                               message_id=message_id,
-                               filename=filename)
-            fp.write(content)
+    # Override the metadata schema here
+    metadata=FieldProperty(dict(
+            forum_id=schema.ObjectId,
+            post_id=str,
+            filename=str))
 
-    @classmethod
-    def load(cls, id, offset=0, limit=-1):
-        with cls.open(id, 'r') as fp:
-            if offset:
-                fp.seek(offset)
-            return fp.read(limit)
-    
+    @property
+    def forum(self):
+        return Forum.query.get(_id=self.metadata.forum_id)
+
+    @property
+    def post(self):
+        return Post.query.get(_id=self.metadata.post_id)
+
+    def url(self):
+        return self.forum.url() + 'attachment/' + self.filename
+
 MappedClass.compile_all()

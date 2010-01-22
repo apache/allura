@@ -13,7 +13,7 @@ from pyforge.app import Application, ConfigOption, SitemapEntry, DefaultAdminCon
 from pyforge.lib.helpers import push_config, vardec
 from pyforge.lib.decorators import audit, react
 from pyforge.lib.security import require, has_artifact_access
-from pyforge.model import User
+from pyforge.model import User, File
 from pyforge.model.artifact import gen_message_id
 
 # Local imports
@@ -65,9 +65,9 @@ class ForgeForumApp(Application):
             log.info('Saving attachment %s', data['filename'])
             model.Attachment.save(data['filename'],
                                   data['content_type'],
-                                  f._id,
-                                  message_id,
-                                  data['payload'])
+                                  data['payload'],
+                                  forum_id=f._id,
+                                  post_id=message_id)
             return
         # Handle duplicates
         original = model.Post.query.get(_id=message_id)
@@ -75,9 +75,9 @@ class ForgeForumApp(Application):
             log.info('Saving text attachment')
             model.Attachment.save('alternate',
                                   data['content_type'],
-                                  f._id,
-                                  message_id,
-                                  data['payload'])
+                                  data['payload'],
+                                  forum_id=f._id,
+                                  post_id=message_id)
             return
         # Find parent post
         if in_reply_to:

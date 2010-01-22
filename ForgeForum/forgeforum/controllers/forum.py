@@ -243,16 +243,18 @@ class PostController(object):
     def attach(self, file_info=None):
         require(has_artifact_access('moderate', self.post))
         filename = file_info.filename
-        chunks = []
-        while True:
-            s = file_info.file.read()
-            if not s: break
-            chunks.append(s)
-        data = ''.join(chunks)
         content_type = guess_type(filename)
         if content_type: content_type = content_type[0]
         else: content_type = 'application/octet-stream'
-        model.Attachment.save(filename, content_type, self.thread.forum_id, self.post._id, data)
+        with model.Attachment.create(
+            content_type=content_type,
+            filename=filename,
+            forum_id=self.post.forum._id,
+            post_id=self.post._id) as fp:
+            while True:
+                s = file_info.file.read()
+                if not s: break
+                fp.write(s)
         redirect(self.thread.url() + '#post-' + self.post.slug)
 
     def _lookup(self, id, *remainder):
@@ -274,16 +276,16 @@ class AttachmentController(object):
 
     def __init__(self, filename):
         self.filename = filename
-        md = model.Attachment.find(dict(filename=filename)).next()
-        self.post = model.Post.query.get(_id=md['metadata']['message_id'])
+        self.attachment = model.Attachment.query.get(filename=filename)
+        self.post = self.attachment.post
 
     @expose() 
     def index(self, delete=False, embed=False):
         if request.method == 'POST':
             require(has_artifact_access('moderate', self.post))
-            if delete: model.Attachment.remove(self.filename)
+            if delete: self.attachment.delete()
             redirect(request.referer)
-        with model.Attachment.open(self.filename) as fp:
+        with self.attachment.open() as fp:
             filename = fp.metadata['filename']
             response.headers['Content-Type'] = ''
             response.content_type = fp.content_type

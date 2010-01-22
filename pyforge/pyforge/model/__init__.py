@@ -6,7 +6,7 @@ from .project import Project, AppConfig, SearchConfig, ScheduledMessage
 from .artifact import Artifact, Message, VersionedArtifact, Snapshot, ArtifactLink, nonce
 from .auth import User, ProjectRole, OpenId, EmailAddress
 from .openid_model import OpenIdStore, OpenIdAssociation, OpenIdNonce
-from .filesystem import Filesystem
+from .filesystem import File
 
 from .session import main_doc_session, main_orm_session
 from .session import project_doc_session, project_orm_session
