@@ -46,6 +46,11 @@ class RootController(BaseController):
     users = ProjectsController('users/')
 
     def __init__(self):
+        """Create a user-aware root controller instance.
+        
+        The Controller is instantiated on each request before dispatch, 
+        so c.user will always point to the current user.
+        """
         # Lookup user
         uid = session.get('userid', None)
         c.project = c.app = None
@@ -53,6 +58,13 @@ class RootController(BaseController):
         c.queued_messages = []
 
     def __call__(self, environ, start_response):
+        """This is the basic WSGI callable that wraps and dispatches forge controllers.
+        
+        It peforms a number of functions: 
+          * displays the forge index page
+          * sets up and cleans up the Ming/MongoDB Session
+          * persists all Ming object changes to Mongo
+        """
         app = self._wsgi_handler(environ)
         if app is None:
             app = lambda e,s: BaseController.__call__(self, e, s)
