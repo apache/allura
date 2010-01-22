@@ -38,6 +38,10 @@ def test_reactor():
 
 def test_reactor_callbacks():
     def test_callback(callback, msg):
+        msg.data = dict(project_id='projects/test_badproject/',
+                mount_point='hello',
+                user_id='badf00d')
+        callback(msg.data, msg)
         msg.data = dict(project_id='projects/test/',
                 mount_point='hello',
                 user_id=M.User.anonymous._id)

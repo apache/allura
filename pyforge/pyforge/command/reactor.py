@@ -122,7 +122,7 @@ class ReactorCommand(base.Command):
                     except:
                         base.log.exception('Bad user_id: %s', data['user_id'])
                 mount_point = data.get('mount_point')
-                if mount_point is not None:
+                if pylons.c.project and mount_point is not None:
                     pylons.c.app = pylons.c.project.app_instance(mount_point)
                     base.log.debug('Setting app %s', pylons.c.app)
                 if getattr(method, 'im_self', ()) is None:
@@ -133,7 +133,7 @@ class ReactorCommand(base.Command):
                     base.log.debug('im_self is %r', getattr(method, 'im_self', ()))
                     # Classmethod or function - don't bind self
                     method(msg.delivery_info['routing_key'], data)
-            except:
+            except: # pragma no cover
                 base.log.exception('Exception audit handling %s: %s',
                                    plugin_name, method)
                 if self.options.dry_run: raise
@@ -151,11 +151,17 @@ class ReactorCommand(base.Command):
             try:
                 # log.info('React(%s): %s', msg.delivery_info['routing_key'], data)
                 if 'user_id' in data:
-                    pylons.c.user = base.M.User.query.get(_id=data['user_id'] and ObjectId(data['user_id']) or None)
+                    try:
+                        pylons.c.user = base.M.User.query.get(_id=data['user_id'] and ObjectId(data['user_id']) or None)
+                    except:
+                        base.log.exception('Bad user_id: %s', data['user_id'])
                 if 'project_id' in data:
                     pylons.c.project = base.M.Project.query.get(_id=data['project_id'])
                 if getattr(method, 'im_self', ()) is None:
                     # Instancemethod - call once for each app, binding self
+                    if not pylons.c.project:
+                        # Can't route it, so drop
+                        return
                     for cfg in pylons.c.project.app_configs:
                         if cfg.plugin_name != plugin_name: continue
                         pylons.c.app = pylons.c.project.app_instance(
@@ -164,7 +170,7 @@ class ReactorCommand(base.Command):
                 else:
                     # Classmethod or function -- just call once 
                     method(msg.delivery_info['routing_key'], data)
-            except:
+            except: # pragma no cover
                 base.log.exception('Exception react handling %s: %s', plugin_name, method)
                 if self.options.dry_run: raise
             else:

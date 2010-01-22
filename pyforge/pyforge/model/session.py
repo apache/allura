@@ -17,10 +17,17 @@ class ProjectSession(Session):
 
     @property
     def db(self):
-        return getattr(self.main_session.bind.conn, c.project.database)
+        if c.project:
+            return getattr(self.main_session.bind.conn, c.project.database)
+        else:
+            return None
 
     def _impl(self, cls):
-        return self.db[cls.__mongometa__.name]
+        db = self.db
+        if db:
+            return db[cls.__mongometa__.name]
+        else:
+            return None
 
 class ArtifactSessionExtension(SessionExtension):
 
