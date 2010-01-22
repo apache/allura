@@ -3,6 +3,7 @@
 *-py2.6.egg
 *.log
 *.pyc
+*.orig
 */.coverage
 *~
 *.swp
