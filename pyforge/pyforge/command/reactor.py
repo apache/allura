@@ -28,13 +28,13 @@ class ReactorSetupCommand(base.Command):
         ch = self.backend.channel
         try:
             ch.exchange_delete('audit')
-        except:
+        except: # pragma no cover
             base.log.warning('Error deleting audit exchange')
             self.backend = be = pylons.g.conn.create_backend()
             ch = self.backend.channel
         try:
             ch.exchange_delete('react')
-        except:
+        except: # pragma no cover
             base.log.warning('Error deleting react exchange')
             self.backend = be = pylons.g.conn.create_backend()
             ch = self.backend.channel
@@ -58,6 +58,8 @@ class ReactorCommand(base.Command):
     parser = base.Command.standard_parser(verbose=True)
     parser.add_option('-p', '--proc', dest='proc', type='int', default=1,
                       help='number of worker processes to spawn')
+    parser.add_option('--dry_run', dest='dry_run', action='store_true', default=False,
+                      help="get ready to run the reactor, but don't actually run it")
 
     def command(self):
         self.basic_setup()
@@ -71,15 +73,13 @@ class ReactorCommand(base.Command):
             processes.append(Process(target=self.multi_worker_main,
                                      args=(configs,)))
             continue
-            processes += [
-                Process(target=self.worker_main, args=((name,)+ args))
-                for name, plugin in self.plugins
-                for args in plugin_consumers(name, plugin)]
-        for p in processes:
-            p.start()
-        while True:
-            time.sleep(300)
-            base.log.info('=== Mark ===')
+        if self.options.dry_run: return configs
+        else: # pragma no cover
+            for p in processes:
+                p.start()
+            while True:
+                time.sleep(300)
+                base.log.info('=== Mark ===')
 
     def multi_worker_main(self, configs):
         base.log.info('Entering multiqueue worker process')
@@ -92,41 +92,33 @@ class ReactorCommand(base.Command):
             else:
                 c.register_callback(self.route_react(config['plugin_name'], config['method']))
             cset.add_consumer(c)
-        for x in cset.iterconsume():
-            pass
-
-    def worker_main(self, plugin_name, method, xn, qn, keys):
-        base.log.info('Entering worker process: %s', qn)
-        consumer = Consumer(connection=pylons.g.conn, queue=qn)
-        if xn == 'audit':
-            consumer.register_callback(self.route_audit(plugin_name, method))
-        else:
-            consumer.register_callback(self.route_react(plugin_name, method))
-        consumer.wait()
-        base.log.info('Exiting worker process: %s', qn)
+        if self.options.dry_run: return
+        else: # pragma no cover
+            for x in cset.iterconsume():
+                pass
 
     def periodic_main(self):
         base.log.info('Entering periodic reactor')
         while True:
             base.M.ScheduledMessage.fire_when_ready()
             time.sleep(5)
+            if self.options.dry_run: return
 
     def route_audit(self, plugin_name, method):
         'Auditors only respond to their particluar mount point'
         def callback(data, msg):
             msg.ack()
             try:
-                project_id = data.get('project_id')
-                if project_id:
-                    pylons.c.project = base.M.Project.query.get(_id=project_id)
+                if 'project_id' in data:
+                    pylons.c.project = base.M.Project.query.get(_id=data['project_id'])
+                    if pylons.c.project is None:
+                        base.log.error('The project_id was %s but it was not found',
+                                       data['project_id'])
                 else:
                     pylons.c.project = None
-                if pylons.c.project is None and project_id:
-                    base.log.error('The project_id was %s but it was not found',
-                                   project_id)
-                if data.get('user_id'):
+                if 'user_id' in data:
                     try:
-                        pylons.c.user = base.M.User.query.get(_id=ObjectId.url_decode(data['user_id']))
+                        pylons.c.user = base.M.User.query.get(_id=data['user_id'] and ObjectId(data['user_id']) or None)
                     except:
                         base.log.exception('Bad user_id: %s', data['user_id'])
                 mount_point = data.get('mount_point')
@@ -138,11 +130,13 @@ class ReactorCommand(base.Command):
                     # Instancemethod - call, binding self
                     method(pylons.c.app, msg.delivery_info['routing_key'], data)
                 else:
+                    base.log.debug('im_self is %r', getattr(method, 'im_self', ()))
                     # Classmethod or function - don't bind self
                     method(msg.delivery_info['routing_key'], data)
             except:
                 base.log.exception('Exception audit handling %s: %s',
                                    plugin_name, method)
+                if self.options.dry_run: raise
             else:
                 ming.orm.ormsession.ThreadLocalORMSession.flush_all()
             finally:
@@ -156,9 +150,10 @@ class ReactorCommand(base.Command):
             msg.ack()
             try:
                 # log.info('React(%s): %s', msg.delivery_info['routing_key'], data)
-                if data.get('user_id'):
-                    pylons.c.user = base.M.User.query.get(_id=ObjectId.url_decode(data['user_id']))
-                pylons.c.project = base.M.Project.query.get(_id=data['project_id'])
+                if 'user_id' in data:
+                    pylons.c.user = base.M.User.query.get(_id=data['user_id'] and ObjectId(data['user_id']) or None)
+                if 'project_id' in data:
+                    pylons.c.project = base.M.Project.query.get(_id=data['project_id'])
                 if getattr(method, 'im_self', ()) is None:
                     # Instancemethod - call once for each app, binding self
                     for cfg in pylons.c.project.app_configs:
@@ -171,6 +166,7 @@ class ReactorCommand(base.Command):
                     method(msg.delivery_info['routing_key'], data)
             except:
                 base.log.exception('Exception react handling %s: %s', plugin_name, method)
+                if self.options.dry_run: raise
             else:
                 ming.orm.ormsession.ThreadLocalORMSession.flush_all()
             finally:
@@ -200,7 +196,7 @@ class SendMessageCommand(base.Command):
                 pylons.g.set_app(rest[0])
         if len(self.args) > 3:
             base_message = json.loads(self.args[3])
-        else:
+        else:  # pragma no cover
             base_message = json.loads(sys.stdin.read())
         base.log.info('Sending message to %s / %s:\n%s',
                       exchange, topic, base_message)
@@ -223,7 +219,7 @@ def plugin_consumers(name, plugin):
             i += 1
             yield method, 'react', qn, list(deco.react_keys)
 
-def debug():
+def debug(): # pragma no cover
     from IPython.ipapi import make_session; make_session()
     from IPython.Debugger import Pdb
     base.log.info('Entering debugger')

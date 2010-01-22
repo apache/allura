@@ -20,10 +20,10 @@ class ConfigOption(object):
 class WSGIHook(object):
 
     def handles(self, environ):
-        return False
+        raise NotImplementedError, 'handles' # pragma no cover
 
     def __call__(self, environ, start_response):
-        return []
+        raise NotImplementedError, '__call__' # pragma no cover
 
 class SitemapEntry(object):
 
@@ -46,7 +46,7 @@ class SitemapEntry(object):
         url = self.url
         if callable(lbl):
             lbl = lbl(app)
-        if url and not url.startswith('/'):
+        if url is not None and not url.startswith('/'):
             url = app.url + url
         return SitemapEntry(lbl, url, [
                 ch.bind_app(app) for ch in self.children])

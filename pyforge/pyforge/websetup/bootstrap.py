@@ -70,6 +70,7 @@ def bootstrap(command, conf, vars):
     ThreadLocalORMSession.flush_all()
     if conf.get('load_test_data'):
         log.info('Loading test data')
+        app = p0.install_app('hello_forge', 'hello')
         app = p0.install_app('Repository', 'src')
         app = p0.install_app('Repository', 'src_git')
         app.config.options['type'] = 'git'

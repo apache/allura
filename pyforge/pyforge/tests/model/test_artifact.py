@@ -1,17 +1,14 @@
 # -*- coding: utf-8 -*-
 """
-Nosetest modules
-"""
-from nose.tools import *
-import os
-"""
 Model tests for artifact
 """
+import re
+import os
 from datetime import datetime
 from time import sleep
 
 from pylons import c, g
-import re
+from nose.tools import assert_true
 import markdown
 import mock
 
@@ -19,6 +16,7 @@ import pymongo
 from pymongo.errors import OperationFailure
 
 from ming import schema as S
+from ming.base import Object
 from ming.orm.property import FieldProperty
 
 from pyforge.model import Artifact, Message, AppConfig
@@ -29,11 +27,12 @@ PROJECT.name = 'Test Project'
 PROJECT.shortname = 'tp'
 PROJECT._id = 'testproject/'
 PROJECT.database = 'nosetest:project'
+PROJECT.url = lambda: '/testproject/'
 APP_CONFIG = mock.Mock()
 APP_CONFIG._id = None
 APP_CONFIG.project_id = 'testproject/'
 APP_CONFIG.plugin_name = 'plugin'
-APP_CONFIG.options.mount_point = 'foo'
+APP_CONFIG.options = Object(mount_point = 'foo')
 APP = mock.Mock()
 APP.config = APP_CONFIG
 APP.config.script_name = lambda:'test_application'

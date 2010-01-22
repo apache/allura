@@ -45,6 +45,12 @@ class HelloForgeApp(Application):
                  self.config.options.mount_point)
         g.publish('react', 'wiki.comment', data)
 
+    @classmethod
+    @audit('hello_forge_class.#')
+    def class_auditor(self, routing_key, data):
+        log.info('Auditing some data from %s: %s',
+                 routing_key, pformat(data))
+
     @react('wiki.#')
     def reactor1(self, routing_key, data):
         log.info('Reacting (1) to %s: %s (%s)',
