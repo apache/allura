@@ -16,6 +16,7 @@ log = logging.getLogger(__name__)
 
 def bootstrap(command, conf, vars):
     """Place any commands to setup pyforge here"""
+    ThreadLocalORMSession.close_all()
     c.queued_messages = []
     database=conf.get('db_prefix', '') + 'project:test'
     conn = M.main_doc_session.bind.conn
@@ -74,6 +75,8 @@ def bootstrap(command, conf, vars):
         app = p0.install_app('Repository', 'src')
         app = p0.install_app('Repository', 'src_git')
         app.config.options['type'] = 'git'
+        ThreadLocalORMSession.flush_all()
+        ThreadLocalORMSession.close_all()
     else: # pragma no cover
         p0.install_app('Wiki', 'wiki')
         p0.install_app('Issues', 'bug')
@@ -95,6 +98,7 @@ def bootstrap(command, conf, vars):
         for msg in c.queued_messages:
             g._publish(**msg)
         ThreadLocalORMSession.flush_all()
+        ThreadLocalORMSession.close_all()
 
 def pm(etype, value, tb): # pragma no cover
     import pdb, traceback

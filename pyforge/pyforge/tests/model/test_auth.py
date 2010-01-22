@@ -9,6 +9,7 @@ Model tests for auth
 """
 from ming import Document, Session, Field
 from ming import schema as S
+from ming.orm.ormsession import ThreadLocalORMSession
 
 from pyforge.model import User
 
@@ -26,10 +27,11 @@ def test_user():
     groups=Field([str], if_empty=['*anonymous', '*authenticated' ])
 
     assert_true('PyForge has available model::User class')
+    ThreadLocalORMSession.close_all()
 
 def test_user_make():
     user = User(username='nosetest_user', display_name='Nosetest Admin')
     user.set_password('foo')
 
     assert_true('PyForge model user can add a user')
-
+    ThreadLocalORMSession.close_all()

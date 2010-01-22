@@ -83,8 +83,6 @@ class SecurityTests(object):
         name = unquote(name)
         if name == '*anonymous':
             c.user = M.User.anonymous
-            return SecurityTest(), args
-        c.user = M.User.query.get(username=name)
         return SecurityTest(), args
 
 class SecurityTest(object):
@@ -111,7 +109,11 @@ class SecurityTest(object):
 
     @expose()
     def needs_project_access_ok(self):
-        require(has_project_access('read'))
+        pred = has_project_access('read')
+        if not pred():
+            print 'Inside needs_project_access, c.user = %s' % c.user
+            import pdb; pdb.set_trace()
+        require(pred)
         return ''
 
     @expose()

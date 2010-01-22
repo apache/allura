@@ -102,6 +102,7 @@ class User(MappedClass):
     class __mongometa__:
         name='user'
         session = main_orm_session
+        unique_indexes = [ 'username' ]
 
     _id=FieldProperty(S.ObjectId)
     username=FieldProperty(str)
