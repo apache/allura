@@ -9,6 +9,7 @@ from ming.orm.property import FieldProperty, ForeignIdProperty, RelationProperty
 from datetime import datetime
 
 from pyforge.model import Artifact, VersionedArtifact, Snapshot, Message, project_orm_session
+from pyforge.model import File
 
 class Globals(MappedClass):
 
@@ -69,7 +70,6 @@ class Issue(VersionedArtifact):
     custom_fields = FieldProperty({str:None})
 
     comments = RelationProperty('Comment')
-    attachments = RelationProperty('Attachment')
 
     def url(self):
         return c.app.url + '/' + str(self.issue_num) + '/'
@@ -85,6 +85,10 @@ class Issue(VersionedArtifact):
             type_s=self.type_s,
             text=self.summary)
         return result
+
+    @property
+    def attachments(self):
+        return Attachment.by_metadata(issue_id=self._id)
 
     def root_comments(self):
         if '_id' in self:
@@ -138,41 +142,23 @@ class Comment(Message):
     def shorthand_id(self):
         return '%s-%s' % (self.issue.shorthand_id, self._id)
 
-class Attachment(Artifact):
-
+class Attachment(File):
     class __mongometa__:
-        name = 'issue_attachment'
+        name = 'attachment.files'
+        indexes = [
+            'metadata.filename',
+            'metadata.issue_id' ]
 
-    type_s = 'Issue Attachment'
-    _id = FieldProperty(schema.ObjectId)
-    version = FieldProperty(0)
-    created_date = FieldProperty(datetime, if_missing=datetime.utcnow)
-    project_id = FieldProperty(str)
+    # Override the metadata schema here
+    metadata=FieldProperty(dict(
+            issue_id=schema.ObjectId,
+            filename=str))
 
-    issue_id = ForeignIdProperty(Issue)
-    file_type = FieldProperty(str)
-    file_name = FieldProperty(str)
-    data = FieldProperty(str)
-
-    issue = RelationProperty('Issue')
-
-    def index(self):
-        result = Message.index(self)
-        author = self.author()
-        result.update(
-            title_s='Attachment on %s by %s' % (
-                self.issue.shorthand_id(),
-                author.display_name
-            ),
-            type_s=self.type_s
-        )
-        return result
+    @property
+    def issue(self):
+        return Issue.query.get(_id=self.metadata.issue_id)
 
     def url(self):
-        return self.issue.url() + '#attachment-' + self._id
-
-    def shorthand_id(self):
-        return '%s-%s' % (self.issue.shorthand_id, self._id)
-
+        return self.issue.url() + 'attachment/' + self.filename
 
 MappedClass.compile_all()

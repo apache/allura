@@ -6,7 +6,10 @@
   <xi:include href="${g.pyforge_templates}/master.html"/>
   <xi:include href="${c.app.templates}/lib.html" />
 
-  <?python from pprint import pformat ?>
+  <?python
+    from pprint import pformat
+    from pyforge.lib.security import has_artifact_access
+    ?>
 
   <head>
     <meta content="text/html; charset=UTF-8" http-equiv="content-type" py:replace="''"/>
@@ -89,6 +92,16 @@
 <input type="submit" value="submit"/>
 </form>
             <hr/>
+            <div py:if="has_artifact_access('write', issue)()" class="reply title-pane closed">
+              <div class="title">New Attachment</div>
+              <div class="content">
+                <form method="post" action="${issue.url() + 'attach'}" enctype="multipart/form-data">
+                  ${file_field('file_info', 'File to upload')}
+                  ${submit_button('Attach file')}
+                </form>
+              </div>
+              <hr/>
+            </div>
             <h2>Comments</h2>
             <div class="reply title-pane closed">
               <h3 class="title">Make a comment</h3>

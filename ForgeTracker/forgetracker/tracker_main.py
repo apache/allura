@@ -1,10 +1,12 @@
 #-*- python -*-
 import logging
+from mimetypes import guess_type
 
 # Non-stdlib imports
 import pkg_resources
 from tg import tmpl_context
 from tg import expose, validate, redirect
+from tg import request, response
 from tg.decorators import with_trailing_slash, without_trailing_slash
 from pylons import g, c, request
 from formencode import validators
@@ -161,6 +163,7 @@ class IssueController(object):
             self.issue_num = int(issue_num)
             self.issue = model.Issue.query.get(project_id=c.project._id,
                                                     issue_num=self.issue_num)
+            self.attachment = AttachmentsController(self.issue)
             self.comments = CommentController(self.issue)
 
     @with_trailing_slash
@@ -195,6 +198,57 @@ class IssueController(object):
             for field in globals.custom_fields.split(','):
                 self.issue.custom_fields[field] = post_data[field]
         redirect('edit')
+
+    @expose()
+    def attach(self, file_info=None):
+        require(has_artifact_access('write', self.issue))
+        filename = file_info.filename
+        content_type = guess_type(filename)
+        if content_type: content_type = content_type[0]
+        else: content_type = 'application/octet-stream'
+        with model.Attachment.create(
+            content_type=content_type,
+            filename=filename,
+            issue_id=self.issue._id) as fp:
+            while True:
+                s = file_info.file.read()
+                if not s: break
+                fp.write(s)
+        redirect('.')
+
+class AttachmentsController(object):
+
+    def __init__(self, issue):
+        self.issue = issue
+
+    def _lookup(self, filename, *args):
+        return AttachmentController(filename), args
+
+class AttachmentController(object):
+
+    def _check_security(self):
+        require(has_artifact_access('read', self.issue))
+
+    def __init__(self, filename):
+        self.filename = filename
+        self.attachment = model.Attachment.query.get(filename=filename)
+        self.issue = self.attachment.issue
+
+    @expose()
+    def index(self, delete=False, embed=False):
+        if request.method == 'POST':
+            require(has_artifact_access('write', self.issue))
+            if delete: self.attachment.delete()
+            redirect(request.referer)
+        with self.attachment.open() as fp:
+            filename = fp.metadata['filename']
+            response.headers['Content-Type'] = ''
+            response.content_type = fp.content_type
+            if not embed:
+                response.headers.add('Content-Disposition',
+                                     'attachment;filename=%s' % filename)
+            return fp.read()
+        return self.filename
 
 class CommentController(object):
 
