@@ -2,7 +2,7 @@ import tw.forms as twf
 from pylons import c
 from forgetracker import model
 
-issue_form = twf.TableForm('issue_form', action='save_issue', children=[
+issue_form = twf.TableForm('issue_form', action='../save_issue', children=[
     twf.HiddenField('issue_num'),
     twf.TextField('summary'),
     twf.Spacer(),

@@ -5,6 +5,7 @@ import logging
 import pkg_resources
 from tg import tmpl_context
 from tg import expose, validate, redirect
+from tg.decorators import with_trailing_slash, without_trailing_slash
 from pylons import g, c, request
 from formencode import validators
 from pymongo.bson import ObjectId
@@ -55,7 +56,7 @@ class ForgeTrackerApp(Application):
         return [
             SitemapEntry('Home', self.config.url()),
             SitemapEntry('Search', self.config.url() + 'search'),
-            SitemapEntry('New Issue', self.config.url() + 'new'),
+            SitemapEntry('New Issue', self.config.url() + 'new/'),
             ]
 
     @property
@@ -87,6 +88,7 @@ class ForgeTrackerApp(Application):
 
 class RootController(object):
 
+    @with_trailing_slash
     @expose('forgetracker.templates.index')
     def index(self):
         issues = model.Issue.query.find(dict(project_id=c.project._id)).sort('issue_num')
@@ -113,6 +115,7 @@ class RootController(object):
     def _lookup(self, issue_num, *remainder):
         return IssueController(issue_num), remainder
 
+    @with_trailing_slash
     @expose('forgetracker.templates.new_issue')
     def new(self, **kw):
         require(has_artifact_access('write'))
@@ -160,6 +163,7 @@ class IssueController(object):
                                                     issue_num=self.issue_num)
             self.comments = CommentController(self.issue)
 
+    @with_trailing_slash
     @expose('forgetracker.templates.issue')
     def index(self, **kw):
         require(has_artifact_access('read', self.issue))
@@ -169,6 +173,7 @@ class IssueController(object):
         else:
             redirect('not_found')
 
+    @with_trailing_slash
     @expose('forgetracker.templates.edit_issue')
     def edit(self, **kw):
         require(has_artifact_access('write', self.issue))
@@ -228,6 +233,7 @@ class CommentController(object):
 
 class TrackerAdminController(DefaultAdminController):
 
+    @with_trailing_slash
     @expose('forgetracker.templates.admin')
     def index(self):
         globals = model.Globals.query.get(project_id=c.project._id)
