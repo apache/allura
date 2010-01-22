@@ -29,7 +29,8 @@ def test_find_executable():
     assert h.find_executable('bash') == '/bin/bash'
 
 def test_make_users():
-    assert h.make_users([None]).next() == M.User.anonymous
+    r = h.make_users([None]).next()
+    assert r.username == '*anonymous', r
 
 def test_make_roles():
     g.set_project('projects/test')

@@ -80,7 +80,11 @@ class NamedController(object):
 class SecurityTests(object):
 
     def _lookup(self, name, *args):
-        c.user = M.User.query.get(username=unquote(name))
+        name = unquote(name)
+        if name == '*anonymous':
+            c.user = M.User.anonymous
+            return SecurityTest(), args
+        c.user = M.User.query.get(username=name)
         return SecurityTest(), args
 
 class SecurityTest(object):
