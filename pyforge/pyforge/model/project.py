@@ -108,8 +108,6 @@ class Project(MappedClass):
 
     @property
     def script_name(self):
-        warnings.warn('script_name is deprecated, use url() instead',
-                      DeprecationWarning, stacklevel=2)
         if ':/' in self._id:
             domain, path = self._id.split(':/', 1)
             return '/' + path
@@ -287,8 +285,6 @@ class AppConfig(MappedClass):
         return None
 
     def script_name(self):
-        warnings.warn('script_name is deprecated, use url() instead',
-                      DeprecationWarning, stacklevel=2)
         return self.project.script_name + self.options.mount_point + '/'
 
     def url(self):
