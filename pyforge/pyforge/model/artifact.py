@@ -35,13 +35,13 @@ class ArtifactLink(MappedClass):
             ('link', 'project_id') ]
 
     core_re = r'''\[
-            (?:(.*?):)?      # optional project ID
-            (?:(.*?):)?      # optional plugin ID
-            (.*)             # artifact ID
+            (?:(?P<project_id>.*?):)?      # optional project ID
+            (?:(?P<plugin_id>.*?):)?      # optional plugin ID
+            (?P<artifact_id>.*)             # artifact ID
     \]'''
 
-    re_link = re.compile(r'(?:\s%s)|(?:^%s)' % (core_re, core_re),
-                         re.VERBOSE)
+    re_link_1 = re.compile(r'\s' + core_re, re.VERBOSE)
+    re_link_2 = re.compile(r'^' +  core_re, re.VERBOSE)
 
     _id = FieldProperty(str)
     link = FieldProperty(str)
@@ -72,13 +72,14 @@ class ArtifactLink(MappedClass):
         #
         # Parse the link syntax
         #
-        m = cls.re_link.match(link)
+        m = cls.re_link_1.match(link)
+        if m is None: m = cls.re_link_2.match(link)
         if m is None: return None
-        groups = m.groups()
-        if groups[1] is None:
-            # foo:bar comes in as (foo, None, bar), so make it (None, foo, bar)
-            groups = groups[1], groups[0], groups[2]
-        project_id, app_id, artifact_id = groups
+        groups = m.groupdict()
+        project_id = groups.get('project_id', None)
+        app_id = groups.get('app_id', None)
+        artifact_id = groups.get('artifact_id', None)
+
         #
         # Find the projects to search
         #

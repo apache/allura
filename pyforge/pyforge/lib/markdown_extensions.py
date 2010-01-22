@@ -4,7 +4,7 @@ from pyforge import model as M
 class ArtifactLinkProcessor(markdown.preprocessors.Preprocessor):
     def run(self, lines):
         new_lines = []
-        re = M.ArtifactLink.re_link
+        # re = M.ArtifactLink.re_link
         lookup = M.ArtifactLink.lookup
         def replace_link(mo):
             old_link = mo.group(0)
@@ -16,7 +16,8 @@ class ArtifactLinkProcessor(markdown.preprocessors.Preprocessor):
             else:
                 return old_link
         for line in lines:
-            line = re.sub(replace_link, line)
+            line = M.ArtifactLink.re_link_1.sub(replace_link, line)
+            line = M.ArtifactLink.re_link_2.sub(replace_link, line)
             new_lines.append(line)
         return new_lines
 

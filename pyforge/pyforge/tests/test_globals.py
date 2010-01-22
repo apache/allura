@@ -7,6 +7,8 @@ from paste.deploy import loadapp
 from paste.script.appinstall import SetupCommand
 from pylons import g, session, request
 
+from pyforge import model as M
+
 def setUp(self):
     """Method called by nose before running each test"""
     # Loading the application:
@@ -30,3 +32,9 @@ def test_app_globals():
     assert g.url('/foo') == 'http://localhost:80/foo', g.url('/foo')
 
 
+def test_markdown():
+    'Just a test to get coverage in our markdown extension'
+    g.set_project('projects/test')
+    g.set_app('hello')
+    assert '<a href=' in g.markdown.convert('# Foo!\n[Root]')
+    assert '<a href=' not in g.markdown.convert('# Foo!\n[Rooted]')

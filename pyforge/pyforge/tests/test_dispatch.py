@@ -1,6 +1,3 @@
-from nose.tools import assert_raises
-from webob import exc
-
 from pyforge.tests import TestController
 
 app = None
