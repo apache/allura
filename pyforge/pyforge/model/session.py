@@ -26,7 +26,7 @@ class ProjectSession(Session):
         db = self.db
         if db:
             return db[cls.__mongometa__.name]
-        else:
+        else: # pragma no cover
             return None
 
 class ArtifactSessionExtension(SessionExtension):

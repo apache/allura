@@ -1,7 +1,7 @@
 """
 This module provides the security predicates used in decorating various models.
 """
-from pylons import c, response, request
+from pylons import c, request
 from webob import exc
 
 def has_project_access(access_type, project=None, user=None):

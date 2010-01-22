@@ -41,7 +41,7 @@ def bootstrap(command, conf, vars):
                    pending_commit = 0)
     try:
         g.solr.delete(q='*:*')
-    except:
+    except: # pragma no cover
         log.error('SOLR server is %s', g.solr_server)
         log.error('Error clearing solr index')
     g.publish('audit', 'search.check_commit', {})
@@ -74,31 +74,29 @@ def bootstrap(command, conf, vars):
         app = p0.install_app('Repository', 'src')
         app = p0.install_app('Repository', 'src_git')
         app.config.options['type'] = 'git'
-        return
-    p0.install_app('hello_forge', 'hello')
-    p0.install_app('Wiki', 'wiki')
-    p0.install_app('Issues', 'bug')
-    app = p0.install_app('Repository', 'src')
-    with pyforge.lib.helpers.push_config(c, project=p0, app=app):
-        g.publish('audit', 'scm.hg.clone', dict(
-                url='https://rick446@bitbucket.org/rick446/sqlalchemy-migrate/'))
-    app = p0.install_app('Repository', 'src_git')
-    app.config.options['type'] = 'git'
-    with pyforge.lib.helpers.push_config(c, project=p0, app=app):
-        g.publish('audit', 'scm.git.clone', dict(
-                url='git://github.com/mongodb/mongo.git'))
-    dev = M.ProjectRole(name='developer')
-    ThreadLocalORMSession.flush_all()
-    for ur in M.ProjectRole.query.find():
-        if ur.name and ur.name[:1] == '*': continue
-        ur.roles.append(dev._id)
-    ThreadLocalORMSession.flush_all()
-    for msg in c.queued_messages:
-        g._publish(**msg)
-    ThreadLocalORMSession.flush_all()
-    
+    else: # pragma no cover
+        p0.install_app('Wiki', 'wiki')
+        p0.install_app('Issues', 'bug')
+        app = p0.install_app('Repository', 'src')
+        with pyforge.lib.helpers.push_config(c, project=p0, app=app):
+            g.publish('audit', 'scm.hg.clone', dict(
+                    url='https://rick446@bitbucket.org/rick446/sqlalchemy-migrate/'))
+        app = p0.install_app('Repository', 'src_git')
+        app.config.options['type'] = 'git'
+        with pyforge.lib.helpers.push_config(c, project=p0, app=app):
+            g.publish('audit', 'scm.git.clone', dict(
+                    url='git://github.com/mongodb/mongo.git'))
+        dev = M.ProjectRole(name='developer')
+        ThreadLocalORMSession.flush_all()
+        for ur in M.ProjectRole.query.find():
+            if ur.name and ur.name[:1] == '*': continue
+            ur.roles.append(dev._id)
+        ThreadLocalORMSession.flush_all()
+        for msg in c.queued_messages:
+            g._publish(**msg)
+        ThreadLocalORMSession.flush_all()
 
-def pm(etype, value, tb):
+def pm(etype, value, tb): # pragma no cover
     import pdb, traceback
     try:
         from IPython.ipapi import make_session; make_session()

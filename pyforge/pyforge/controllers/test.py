@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 """Main Controller"""
 import logging
+from urllib import unquote
 
 import pkg_resources
 from pylons import c
@@ -9,8 +10,9 @@ from tg import expose
 
 from pyforge.lib.security import require, has_project_access
 from pyforge.lib.base import BaseController
-from pyforge.controllers.project import ProjectController
 from pyforge.lib.dispatch import _dispatch, default
+from pyforge.lib.security import require, require_authenticated, has_project_access, has_artifact_access
+from pyforge.controllers.project import ProjectController
 from pyforge import model as M
 
 __all__ = ['RootController']
@@ -31,6 +33,7 @@ class TestController(BaseController, ProjectController):
         c.project = M.Project.query.get(_id='projects/test/')
         c.user = M.User.query.get(username='test_admin')
         self.dispatch = DispatchTest()
+        self.security = SecurityTests()
 
     def _dispatch(self, state, remainder):
         return _dispatch(self, state, remainder)
@@ -73,4 +76,47 @@ class NamedController(object):
     @expose()
     def _lookup(self, *args):
         return 'default(%s)(%r)' % (self.name, args)
+
+class SecurityTests(object):
+
+    def _lookup(self, name, *args):
+        c.user = M.User.query.get(username=unquote(name))
+        return SecurityTest(), args
+
+class SecurityTest(object):
+
+    def __init__(self):
+        from helloforge import model as HM
+        self.page = HM.Page.query.get(title='Root')
+        c.app = c.project.app_instance('hello')
+
+    @expose()
+    def forbidden(self):
+        require(lambda:False, 'Never allowed')
+        return ''
+
+    @expose()
+    def needs_auth(self):
+        require_authenticated()
+        return ''
+
+    @expose()
+    def needs_project_access_fail(self):
+        require(has_project_access('no_such_permission'))
+        return ''
+
+    @expose()
+    def needs_project_access_ok(self):
+        require(has_project_access('read'))
+        return ''
+
+    @expose()
+    def needs_artifact_access_fail(self):
+        require(has_artifact_access('no_such_permission', self.page))
+        return ''
+
+    @expose()
+    def needs_artifact_access_ok(self):
+        require(has_artifact_access('read', self.page))
+        return ''
 

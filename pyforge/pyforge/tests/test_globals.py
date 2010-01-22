@@ -7,8 +7,6 @@ from paste.deploy import loadapp
 from paste.script.appinstall import SetupCommand
 from pylons import g, session, request
 
-from pyforge import model as M
-
 def setUp(self):
     """Method called by nose before running each test"""
     # Loading the application:
