@@ -186,8 +186,9 @@ class IssueController(object):
         self.issue.status = post_data['status']
 
         globals = model.Globals.query.get(project_id=c.project._id)
-        for field in globals.custom_fields.split(','):
-            self.issue.custom_fields[field] = post_data[field]
+        if globals.custom_fields:
+            for field in globals.custom_fields.split(','):
+                self.issue.custom_fields[field] = post_data[field]
         redirect('edit')
 
 class CommentController(object):
