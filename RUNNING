@@ -1,57 +1,8 @@
-# Did you run setup-common.bash?
-# Did you activate sandbox-env?
+Now documented in pyforge/docs.
 
-
-#
-# Starting MongoDB
-#
-# from the directory containing mongod
-
-mongod
-
-
-#
-# Starting RabbitMQ
-#
-# from the directory containing rabbitmqctl
-
-sudo ./rabbitmq-server
-./rabbitmqctl add_user testuser testpw
-./rabbitmqctl add_vhost testvhost
-./rabbitmqctl set_permissions -p testvhost testuser "" ".*" ".*"
-
-#
-# Stopping RabbitMQ
-#
-
-./rabbitmqctl stop
-
-
-#
-# Starting SOLR
-#
-
-cd install/apache-solr-1.4.0/example
-java -jar start.jar
-
-
-#
-# Setting up and starting the reactor process
-#
-# from pyforge, where development.ini lives
-
-cd pyforge
-paster reactor_setup development.ini
-paster reactor development.ini
-
-#
-# Starting the forge
-#
-# from pyforge, where development.ini lives
-
-paster serve development.ini
-
-# or if running on a sandbox
-
-paster serve sandbox.ini
-
+If you're just getting started, open pyforge/docs/install.rst (plus pyforge/docs/mac_install.rst if you use a Mac) in your text editor to learn how to setup the python virtual environment.
+If you have a virtual environment setup, activate the virtual environment and do:
+		easy_install sphinx
+		cd forge/pyforge/docs
+		make html
+		now you can view the docs in your browser; install instructions at forge/pyforge/docs/_build/html/install.html

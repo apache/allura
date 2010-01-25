@@ -1,5 +1,5 @@
 Getting Started Guide
-=============
+=====================
 
 Quickstart Script
 ----------------------
@@ -7,6 +7,12 @@ Quickstart Script
 If you have or can acquire a copy of the quickstart script setup-local.bash,
 that's probably the way to go.  For those who are gluttons for punishment, here
 are the manual directions....
+
+Setup your python development stack on a Mac
+--------------------------------------------
+If you use a mac, you'll want to follow the `Mac OS install`_ instructions now.
+
+.. _`Mac OS install`: mac_install.html
 
 Setting up a virtual environment
 ------------------------------------------
@@ -103,6 +109,11 @@ RabbitMQ
       (anvil)~/src$ sudo rabbitmqctl add_user testuser testpw
       (anvil)~/src$ sudo rabbitmqctl add_vhost testvhost
       (anvil)~/src$ sudo rabbitmqctl set_permissions -p testvhost testuser ""  ".*" ".*"
+
+  If you get errors running these, it's likely because rabbit isn't running. It can be run as a daemon (instructions vary per architecture) or directly from a console window, e.g.::
+
+	    $ cd <rabbitmq_server_directory> # not needed on MACOS
+	    $ sudo rabbitmq-server
 
 Forge "reactor" server
   This is the server that will respond to RabbitMQ messages.  To set it up to
