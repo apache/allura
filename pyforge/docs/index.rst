@@ -12,7 +12,7 @@ Introducing the new *Forge Platform:*
    intro
 
 Installation / Getting Started
-=================
+=====================================================================
 
 .. toctree::
    :maxdepth: 2
@@ -27,6 +27,7 @@ Writing a PyForge based app
    :maxdepth: 3
    
    tutorials/wiki-plugin
+   plugins
 
 Inside the Platform Components
 =====================================================================

@@ -1,8 +1,6 @@
 Writing event listeners
 ---------------------------------------------------------------------
 
-TODO: write about event listeners in general
-
 Our event system is driven by RabbitMQ, most of which you can ignore,
 because we've simplified it down to two kinds of event listeners: 
 

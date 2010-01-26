@@ -148,7 +148,8 @@ you can start the application server::
 
       (anvil)~/src/forge/pyforge$ paster serve --reload development.ini
 
-And now you should be able to visit the server running on your `local machine <http://localhost:8080/>`_.
+And now you should be able to visit the server running on your 
+`local machine <http://localhost:8080/>`_.
 
 Logging In, Getting Around
 ----------------------------------------------
@@ -156,4 +157,6 @@ Logging In, Getting Around
 Part of the base system includes the test_admin and test_user accounts.  The
 password for both accounts is `foo`.  The `test` project has several plugins
 already configured; to configure more, you can visit the `Admin` plugin
-(accessible in the top navigation bar when inside the `test` project).  Happy hacking!
+(accessible in the top navigation bar when inside the `test` project).  
+
+Happy hacking!

@@ -31,9 +31,6 @@ The PyForge platform allows you to setup other message types, such as commit
 messages, to go into amqp with the same routing information, and turn into 
 "messages" just like e-mail. 
 
-Jon and Wolf have basically already created the routing for this stuff, and 
-an amqp based message bus on which e-mail message contents can be placed. 
-
 Email Content Handling
 ---------------------------------------------------------------------
 
