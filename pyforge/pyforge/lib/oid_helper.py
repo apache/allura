@@ -21,7 +21,7 @@ def verify_oid(oid_url, failure_redirect=None, return_to=None,
         log.exception('Error in openid login')
         flash(str(ex[0]), 'error')
         redirect(failure_redirect)
-    if req is None:
+    if req is None: # pragma no cover
         flash('No openid services found for <code>%s</code>' % oid_url,
               'error')
         redirect(failure_redirect)

@@ -58,6 +58,7 @@ class AdminApp(Application):
                 SitemapEntry('ACLs', '#acl-admin'),
                 SitemapEntry('Roles', '#role-admin'),
                 ]]
+        self.templates = pkg_resources.resource_filename('pyforge.ext.admin', 'templates')
 
     def sidebar_menu(self):
         return [
@@ -65,10 +66,6 @@ class AdminApp(Application):
                          ac.options.mount_point + '/').bind_app(self)
             for ac in c.project.app_configs
             ]
-
-    @property
-    def templates(self):
-        return pkg_resources.resource_filename('pyforge.ext.admin', 'templates')
 
     def install(self, project):
         pass
@@ -105,7 +102,7 @@ class ProjectAdminController(object):
         return app.admin, remainder
 
     @expose()
-    def update(self, name=None, shortname=None, short_description=None, description=None, **kw):
+    def update(self, name=None, short_description=None, description=None, **kw):
         c.project.name = name
         c.project.short_description = short_description
         c.project.description = description
@@ -155,6 +152,7 @@ class ProjectAdminController(object):
     @expose()
     def update_roles(self, role=None, new=None, **kw):
         require(has_project_access('security'))
+        if role is None: role = []
         for r in role:
             if r.get('delete'):
                 role = M.ProjectRole.query.get(_id=ObjectId.url_decode(r['id']))

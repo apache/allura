@@ -47,9 +47,9 @@ def bootstrap(command, conf, vars):
         log.error('Error clearing solr index')
     g.publish('audit', 'search.check_commit', {})
     log.info('Registering initial users')
-    M.User.anonymous = M.User(_id=None,
-                              username='*anonymous',
-                              display_name='Anonymous Coward')
+    anonymous = M.User(_id=None,
+                       username='*anonymous',
+                       display_name='Anonymous Coward')
     u_adobe = M.User.register(dict(username='adobe_admin',
                                    display_name='Adobe Admin'))
     u0 = M.User.register(dict(username='test_admin',

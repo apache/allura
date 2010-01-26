@@ -17,27 +17,34 @@ class OpenIdAssociation(MappedClass):
         session = main_orm_session
 
     _id = FieldProperty(str) # server url
-    assocs = FieldProperty({str:str})
+    assocs = FieldProperty([dict(
+                key=str, value=str)])
 
     # Mimic openid.store.memstore.ServerAssocs
     def set_assoc(self, assoc):
-        self.assocs[assoc.handle] = assoc.serialize()
+        for a in self.assocs:
+            if a['key'] == assoc.handle:
+                a['value'] = assoc.serialize()
+                return
+        self.assocs.append(dict(key=assoc.handle, value=assoc.serialize()))
 
     def get_assoc(self, handle):
-        return Association.deserialize(self.assocs.get(handle))
+        for a in self.assocs:
+            if a['key'] == handle:
+                return Association.deserialize(a['value'])
+        return None
 
     def remove_assoc(self, handle):
-        try:
-            del self.assocs[handle]
-        except KeyError:
-            return False
-        else:
-            return True
+        old_len = len(self.assocs)
+        self.assocs = [
+            a for a in self.assocs
+            if a['key'] != handle ]
+        return old_len != len(self.assocs)
 
     def best_assoc(self):
         best = None
-        for assoc in self.assocs.itervalues():
-            assoc = Association.deserialize(assoc)
+        for assoc in self.assocs:
+            assoc = Association.deserialize(assoc['value'])
             if best is None or best.issued < assoc.issued:
                 best = assoc
         if best:
@@ -47,9 +54,8 @@ class OpenIdAssociation(MappedClass):
 
     def cleanup_assocs(self):
         old_len = len(self.assocs)
-        self.assocs = dict(
-            (handle, assoc) for handle, assoc in self.assocs.iteritems()
-            if assoc.getExpiresIn() != 0)
+        self.assocs = [ a for a in self.assocs
+                        if Association.deserialize(a['value']).getExpiresIn() != 0 ]
         new_len = len(self.assocs)
         return (old_len - new_len), new_len
 

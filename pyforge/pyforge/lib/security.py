@@ -30,7 +30,7 @@ def has_artifact_access(access_type, obj=None, user=None, app=None):
 def require(predicate, message='Forbidden'):
     from pyforge import model as M
     if predicate(): return
-    if c.user != M.User.anonymous:
+    if c.user != M.User.anonymous():
         request.environ['error_message'] = message
         raise exc.HTTPForbidden(detail=message)
     else:
@@ -38,5 +38,5 @@ def require(predicate, message='Forbidden'):
 
 def require_authenticated():
     from pyforge import model as M
-    if c.user == M.User.anonymous:
+    if c.user == M.User.anonymous():
         raise exc.HTTPUnauthorized()

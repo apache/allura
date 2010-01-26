@@ -35,6 +35,8 @@ class ProjectHomeApp(Application):
     def __init__(self, project, config):
         Application.__init__(self, project, config)
         self.root = ProjectHomeController()
+        self.templates = pkg_resources.resource_filename(
+            'pyforge.ext.project_home', 'templates')
 
     @property
     def sitemap(self):
@@ -42,16 +44,12 @@ class ProjectHomeApp(Application):
         return [
             SitemapEntry('Home', '.') ]
 
-    @property
-    def layout(self):
-        return 
-
     def sidebar_menu(self):
         return [ SitemapEntry('Configure', 'configuration')]
 
-    @property
-    def templates(self):
-        return pkg_resources.resource_filename('pyforge.ext.project_home', 'templates')
+    # @property
+    # def templates(self):
+    #     return
 
     def install(self, project):
         pr = c.user.project_role()
@@ -59,7 +57,7 @@ class ProjectHomeApp(Application):
             for perm in self.permissions:
                 self.config.acl[perm] = [ pr._id ]
 
-    def uninstall(self, project):
+    def uninstall(self, project): # pragma no cover
         raise NotImplementedError, "uninstall"
 
 class ProjectHomeController(object):
@@ -96,6 +94,7 @@ class ProjectHomeController(object):
         config = M.PortalConfig.current()
         config.layout_class = layout_class
         # Handle updated and deleted divs
+        if divs is None: divs = []
         new_divs = []
         for div in divs:
             log.info('Got div update:%s', pformat(div))

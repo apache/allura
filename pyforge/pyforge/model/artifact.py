@@ -36,7 +36,7 @@ class ArtifactLink(MappedClass):
 
     core_re = r'''\[
             (?:(?P<project_id>.*?):)?      # optional project ID
-            (?:(?P<plugin_id>.*?):)?      # optional plugin ID
+            (?:(?P<app_id>.*?):)?      # optional plugin ID
             (?P<artifact_id>.*)             # artifact ID
     \]'''
 
@@ -79,6 +79,9 @@ class ArtifactLink(MappedClass):
         project_id = groups.get('project_id', None)
         app_id = groups.get('app_id', None)
         artifact_id = groups.get('artifact_id', None)
+        if app_id is None:
+            app_id = project_id
+            project_id = None
 
         #
         # Find the projects to search
@@ -167,8 +170,6 @@ class Artifact(MappedClass):
 
     def index(self):
         project = self.project
-        if project is None:
-            import pdb; pdb.set_trace()
         if hasattr(self._id, 'url_encode'):
             _id = self._id.url_encode()
         return dict(
@@ -185,7 +186,7 @@ class Artifact(MappedClass):
             snippet_s='')
 
     def url(self):
-        raise NotImplementedError, 'url'
+        raise NotImplementedError, 'url' # pragma no cover
 
     def shorthand_id(self):
         '''How to refer to this artifact within the app instance context.
@@ -194,7 +195,7 @@ class Artifact(MappedClass):
         ticket number.  For a discussion, it might be the message ID.  Generally
         this should have a strong correlation to the URL.
         '''
-        return self._id.url_encode() # for those who like PAIN
+        return self._id.url_encode() # pragma no cover
 
 class Snapshot(Artifact):
     class __mongometa__:
@@ -223,7 +224,7 @@ class Snapshot(Artifact):
         return result
 
     def original(self):
-        raise NotImplemented, 'original'
+        raise NotImplemented, 'original' # pragma no cover
             
     def shorthand_id(self):
         return '%s#%s' % (self.original().shorthand_id(), self.version)
@@ -275,7 +276,8 @@ class VersionedArtifact(Artifact):
     def revert(self, version):
         ss = self.get_version(version)
         old_version = self.version
-        self.update(version.data)
+        for k,v in ss.data.iteritems():
+            setattr(self, k, v)
         self.version = old_version
 
     def history(self):
@@ -314,7 +316,7 @@ class Message(Artifact):
         return self.__class__(**new_args)
 
     def descendants(self):
-        q = self.query.find(dict(slug={'$gt':self.slug}))
+        q = self.query.find(dict(slug={'$gt':self.slug})).sort('slug')
         for msg in q:
             if msg.slug.startswith(self.slug):
                 yield msg

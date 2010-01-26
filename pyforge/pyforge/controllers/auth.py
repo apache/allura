@@ -56,7 +56,6 @@ class AuthController(object):
         session['userid'] = c.user._id
         session.save()
         if not c.user.username:
-            import pdb; pdb.set_trace()
             flash('Please choose a user name for SourceForge, %s.'
                   % c.user.display_name)
             redirect('setup_openid_user')
@@ -89,13 +88,12 @@ class AuthController(object):
 
     @expose()
     def do_setup_openid_user(self, username=None, display_name=None):
-        if M.User.query.get(username=username):
+        if M.User.query.get(username=username) and username != c.user.username:
             flash('That username is already taken.  Please choose another.',
                   'error')
             redirect('setup_openid_user')
-        c.user.update(
-            username=username,
-            display_name=display_name)
+        c.user.username = username
+        c.user.display_name = display_name
         c.user.register_project(username, 'users')
         flash('Your username has been set to %s.' % username)
         redirect('/')

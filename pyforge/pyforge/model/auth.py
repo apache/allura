@@ -65,7 +65,7 @@ please visit the following URL:
 
     %s
 ''' % (self._id, self.claimed_by_user().username, g.url('/auth/verify_addr', a=self.nonce))
-        print text
+        log.info('Verification email:\n%s', text)
     
 class OpenId(MappedClass):
     class __mongometa__:
@@ -88,7 +88,7 @@ class OpenId(MappedClass):
     def claimed_by_user(self):
         if self.claimed_by_user_id:
             result = User.query.get(_id=self.claimed_by_user_id)
-        else:
+        else: # pragma no cover
             result = User.register(
                 dict(username=None, password=None,
                      display_name=self.display_identifier,
@@ -143,7 +143,7 @@ class User(MappedClass):
         method = config.get('auth.method', 'local')
         if method == 'local':
             result = cls._register_local(doc)
-        elif method == 'ldap':
+        elif method == 'ldap': # pragma no cover
             result = cls._register_ldap(doc)
         if make_project:
             result.register_project(result.username, 'users')
@@ -181,24 +181,6 @@ class User(MappedClass):
         except:
             raise
         return result
-
-    def _make_project(self):
-        from .project import Project
-        # Register user project
-        up = Project.query.get(_id='users/')
-        p = up.new_subproject(self.username, install_apps=False)
-        p.database='user:' + self.username
-        is_root=True
-        with push_config(c, project=p, user=self):
-            pr = self.project_role()
-            for roles in p.acl.itervalues():
-                roles.append(pr._id)
-            anon = ProjectRole(name='*anonymous')
-            auth = ProjectRole(name='*authenticated')
-            p.acl['read'].append(anon._id)
-            p.install_app('admin', 'admin')
-            p.install_app('search', 'search')
-        return self
 
     def private_project(self):
         from .project import Project
@@ -279,6 +261,8 @@ class User(MappedClass):
         from .project import Project
         database = prefix + ':' + pid
         project_id = prefix + '/' + pid + '/'
+        p = Project.query.get(_id=project_id)
+        if p: return p
         p = Project(_id=project_id,
                     name=pid,
                     short_description='Please update with a short description',
@@ -351,20 +335,15 @@ class ProjectRole(MappedClass):
             elif u.display_name: uname = u.display_name
             else: uname = u._id
             return '*user-%s' % uname
-        return '**unknown name role: %s' % self._id
+        return '**unknown name role: %s' % self._id # pragma no cover
 
     @property
     def special(self):
-        if self.name: return '*' == self.name[0]
-        if self.user_id: return True
-        return False
-
-    @classmethod
-    def for_user(cls, user):
-        obj = cls.query.get(user_id=user._id)
-        if obj is None:
-            obj = cls(user_id=user._id)
-        return obj
+        if self.name:
+            return '*' == self.name[0]
+        if self.user_id:
+            return True
+        return False # pragma no cover
 
     @property
     def user(self):

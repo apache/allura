@@ -41,8 +41,8 @@ class ArtifactSessionExtension(SessionExtension):
             self.objects_added = list(
                 chain(self.session.uow.new,
                       self.session.uow.dirty))
-            self.objects_removed = list(self.session.uow.deleted)
-        else:
+            self.objects_deleted = list(self.session.uow.deleted)
+        else: # pragma no cover
             st = state(obj)
             if st.status in (st.new, st.dirty):
                 self.objects_added = [ obj ]

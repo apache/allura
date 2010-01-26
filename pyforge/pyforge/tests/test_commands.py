@@ -44,7 +44,7 @@ def test_reactor_callbacks():
         callback(msg.data, msg)
         msg.data = dict(project_id='projects/test/',
                 mount_point='hello',
-                user_id=M.User.anonymous._id)
+                user_id=M.User.anonymous()._id)
         callback(msg.data, msg)
         msg.data = dict(project_id='projects/test/',
                 mount_point='hello')

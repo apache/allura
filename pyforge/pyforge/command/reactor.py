@@ -118,7 +118,7 @@ class ReactorCommand(base.Command):
                     pylons.c.project = None
                 if 'user_id' in data:
                     try:
-                        pylons.c.user = base.M.User.query.get(_id=data['user_id'] and ObjectId(data['user_id']) or None)
+                        pylons.c.user = base.M.User.query.get(_id=data['user_id'] and ObjectId(str(data['user_id'])) or None)
                     except:
                         base.log.exception('Bad user_id: %s', data['user_id'])
                 mount_point = data.get('mount_point')
@@ -152,7 +152,7 @@ class ReactorCommand(base.Command):
                 # log.info('React(%s): %s', msg.delivery_info['routing_key'], data)
                 if 'user_id' in data:
                     try:
-                        pylons.c.user = base.M.User.query.get(_id=data['user_id'] and ObjectId(data['user_id']) or None)
+                        pylons.c.user = base.M.User.query.get(_id=data['user_id'] and ObjectId(str(data['user_id'])) or None)
                     except:
                         base.log.exception('Bad user_id: %s', data['user_id'])
                 if 'project_id' in data:

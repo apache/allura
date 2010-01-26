@@ -8,12 +8,17 @@ from pylons import c
 from webob import exc
 from tg import expose
 
-from pyforge.lib.security import require, has_project_access
+import  ming.orm.ormsession
+
 from pyforge.lib.base import BaseController
 from pyforge.lib.dispatch import _dispatch, default
 from pyforge.lib.security import require, require_authenticated, has_project_access, has_artifact_access
-from pyforge.controllers.project import ProjectController
 from pyforge import model as M
+from .project import ProjectController
+from .auth import AuthController
+from .static import StaticController
+from .search import SearchController
+from .error import ErrorController
 
 __all__ = ['RootController']
 
@@ -34,6 +39,10 @@ class TestController(BaseController, ProjectController):
         c.user = M.User.query.get(username='test_admin')
         self.dispatch = DispatchTest()
         self.security = SecurityTests()
+        self.auth = AuthController()
+        self.static = StaticController()
+        self.gsearch = SearchController()
+        self.error = ErrorController()
 
     def _dispatch(self, state, remainder):
         return _dispatch(self, state, remainder)
@@ -57,6 +66,24 @@ class TestController(BaseController, ProjectController):
     def index(self):
         require(has_project_access('read'))
         return dict()
+
+    def __call__(self, environ, start_response):
+        app = lambda e,s: BaseController.__call__(self, e, s)
+        result = app(environ, start_response)
+        if not isinstance(result, list):
+            return self._cleanup_iterator(result)
+        else:
+            self._cleanup_request()
+            return result
+
+    def _cleanup_iterator(self, result):
+        for x in result:
+            yield x
+        self._cleanup_request()
+
+    def _cleanup_request(self):
+        ming.orm.ormsession.ThreadLocalORMSession.flush_all()
+        ming.orm.ormsession.ThreadLocalORMSession.close_all()
 
 class DispatchTest(object):
 
@@ -82,7 +109,7 @@ class SecurityTests(object):
     def _lookup(self, name, *args):
         name = unquote(name)
         if name == '*anonymous':
-            c.user = M.User.anonymous
+            c.user = M.User.anonymous()
         return SecurityTest(), args
 
 class SecurityTest(object):

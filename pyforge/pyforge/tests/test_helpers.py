@@ -35,7 +35,7 @@ def test_make_users():
 def test_make_roles():
     g.set_project('projects/test')
     g.set_app('hello')
-    u = M.User.anonymous
+    u = M.User.anonymous()
     pr = u.project_role()
     assert h.make_roles([pr._id]).next() == pr
 

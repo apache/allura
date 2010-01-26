@@ -10,9 +10,6 @@ class StaticController(object):
     '''Controller for mounting static resources in plugins by the plugin
     name'''
 
-    def _dispatch(self, state, remainder):
-        return _dispatch(self, state, remainder)
-        
     def _lookup(self, ep_name, *remainder):
         for ep in pkg_resources.iter_entry_points('pyforge', ep_name):
             result = StaticAppController(ep)
@@ -38,6 +35,9 @@ class StaticAppController(object):
         mtype, menc = mimetypes.guess_type(path)
         if mtype:
             response.headers['Content-Type'] = mtype
-        if menc:
+        if menc: # pragma no cover
             response.headers['Content-Encoding'] = menc
-        return open(path, 'rb')
+        try:
+            return open(path, 'rb')
+        except IOError:
+            raise exc.HTTPNotFound, request.path

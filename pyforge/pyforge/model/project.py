@@ -65,7 +65,7 @@ class ScheduledMessage(MappedClass):
             try:
                 g.publish(obj.exchange, obj.routing_key, getattr(obj, 'data', None))
                 obj.delete()
-            except:
+            except: # pragma no cover
                 log.exception('Error when firing %r', obj)
 
 class Project(MappedClass):
@@ -121,11 +121,10 @@ class Project(MappedClass):
                     port = request.host.split(':')[-1]
                     return '%s://%s:%s/%s' % (
                         request.scheme, domain, port, path)
-                else:
+                else: # pragma no cover
                     return '%s://%s/%s' % (request.scheme, domain, path)
-            except TypeError:
+            except TypeError: # pragma no cover
                 return 'http://%s/%s' % (domain, path)
-            return '/' + path
         return '/' + self._id
 
     @property
@@ -176,10 +175,6 @@ class Project(MappedClass):
                 yield sp
 
     @property
-    def project_bind(self):
-        return datastore.DataStore(self.dburi)
-
-    @property
     def roles(self):
         from . import auth
         roles = auth.ProjectRole.query.find().all()
@@ -190,7 +185,7 @@ class Project(MappedClass):
         for ep in pkg_resources.iter_entry_points('pyforge', ep_name):
             App = ep.load()
             break
-        else:
+        else: # pragma no cover
             raise exc.HTTPNotFound, ep_name
         options = App.default_options()
         options['mount_point'] = mount_point
@@ -221,7 +216,7 @@ class Project(MappedClass):
         if app_config is None:
             return None
         App = app_config.load()
-        if App is None:
+        if App is None: # pragma no cover
             return None
         else:
             return App(self, app_config)
@@ -238,6 +233,8 @@ class Project(MappedClass):
             name=name,
             database=self.database,
             is_root=False)
+        with push_config(c, project=sp):
+            AppConfig.query.remove(dict(project_id=c.project._id))
         if install_apps:
             sp.install_app('admin', 'admin')
             sp.install_app('search', 'search')
@@ -247,6 +244,9 @@ class Project(MappedClass):
         # Cascade to subprojects
         for sp in self.subprojects:
             sp.delete()
+        # Cascade to app configs
+        for ac in self.app_configs:
+            ac.delete()
         MappedClass.delete(self)
 
     def render_widget(self, widget):

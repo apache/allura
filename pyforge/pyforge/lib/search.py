@@ -13,7 +13,7 @@ def try_solr(func):
     def inner(*args, **kwargs):
         try:
             return func(*args, **kwargs)
-        except:
+        except: # pragma no cover
             log.exception('Error in solr indexing')
     return inner
 
@@ -48,14 +48,6 @@ def add_artifact(obj):
 
 @try_solr
 def add_artifacts(obj_iter):
-    def gen_index():
-        for obj in obj_iter:
-            result = _solarize(obj)
-            if result is None:
-                continue # uninidexable document
-            else:
-                yield result
-    # artifact_iterator = gen_index()
     artifact_iterator = ( _obj_to_ref(o) for o in obj_iter)
     while True:
         artifacts = list(islice(artifact_iterator, 1000))

@@ -29,6 +29,7 @@ class SearchApp(Application):
     def __init__(self, project, config):
         Application.__init__(self, project, config)
         self.root = SearchController()
+        self.templates = pkg_resources.resource_filename('pyforge.ext.search', 'templates')
 
     @property
     def sitemap(self):
@@ -77,21 +78,15 @@ class SearchApp(Application):
             when=now+timedelta(seconds=60),
             exchange='audit',
             routing_key='search.check_commit')
-                                   
-        
 
     def sidebar_menu(self):
         return [ ]
 
-    @property
-    def templates(self):
-        return pkg_resources.resource_filename('pyforge.ext.search', 'templates')
-
     def install(self, project):
-        pass
+        pass # pragma no cover
 
     def uninstall(self, project):
-        pass
+        pass # pragma no cover
 
 class SearchController(object):
 

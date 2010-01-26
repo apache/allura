@@ -18,6 +18,8 @@
       ${select_field('preferences.email_format', 'Email Format',
                      [('Plain Text', 'plain'), ('HTML', 'html'), ('Combined', 'both')],
                      c.user.preferences.email_format)}
+      <input py:for="i,a in enumerate(c.user.email_addresses)"
+             name="addr-${i}.ord" value="$i" type="hidden"/>
       <fieldset>
         <legend>Email Addresses</legend>
         <table>

@@ -1,7 +1,5 @@
 from pyforge.tests import TestController
 
-app = None
-
 class TestSecurity(TestController):
 
     def test_anon(self):
