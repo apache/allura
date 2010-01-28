@@ -237,7 +237,8 @@ class PageController(object):
     def revert(self, version):
         require(has_artifact_access('edit', self.page))
         orig = self.get_version(version)
-        self.page.text = orig.text
+        if orig:
+            self.page.text = orig.text
         self.page.commit()
         redirect('.')
 
