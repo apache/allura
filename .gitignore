@@ -4,7 +4,7 @@
 *.log
 *.pyc
 *.orig
-*/.coverage
+*.coverage
 *~
 *.swp
 .dbshell
