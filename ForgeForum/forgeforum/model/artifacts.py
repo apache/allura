@@ -39,10 +39,10 @@ class MyArtifact(VersionedArtifact):
     text = FieldProperty(str, if_missing='')
         
     def url(self):
-        return c.app.script_name + '/' + self._id.url_encode() + '/'
+        return c.app.script_name + '/' + str(self._id) + '/'
     
     def shorthand_id(self):
-        return '%s/%s' % (self.type_s, self._id.url_encode())
+        return '%s/%s' % (self.type_s, str(self._id))
 
     def index(self):
         result = VersionedArtifact.index(self)

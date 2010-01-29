@@ -135,9 +135,9 @@ class Repository(Artifact):
         g.publish('audit', 'scm.%s.fork' % c.app.config.options.type, dict(
                 url=clone_url,
                 forked_to=dict(project_id=project_id,
-                               app_config_id=app.config._id.url_encode()),
+                               app_config_id=str(app.config._id)),
                 forked_from=dict(project_id=c.project._id,
-                                 app_config_id=c.app.config._id.url_encode())))
+                                 app_config_id=str(c.app.config._id))))
         return new_url
 
     def delete(self):
@@ -231,7 +231,7 @@ class Patch(Artifact):
         
     def url(self):
         try:
-            return self.commit.url() + self._id.url_encode() + '/'
+            return self.commit.url() + str(self._id) + '/'
         except:
             log.exception("Cannot get patch URL")
             return '#'

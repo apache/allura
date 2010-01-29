@@ -170,8 +170,6 @@ class Artifact(MappedClass):
 
     def index(self):
         project = self.project
-        if hasattr(self._id, 'url_encode'):
-            _id = self._id.url_encode()
         return dict(
             id=self.index_id(),
             title_s='Artifact %s' % self._id,
@@ -195,7 +193,7 @@ class Artifact(MappedClass):
         ticket number.  For a discussion, it might be the message ID.  Generally
         this should have a strong correlation to the URL.
         '''
-        return self._id.url_encode() # pragma no cover
+        return str(self._id) # pragma no cover
 
 class Snapshot(Artifact):
     class __mongometa__:

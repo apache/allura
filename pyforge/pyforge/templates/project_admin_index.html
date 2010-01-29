@@ -29,7 +29,7 @@
                action="del_perm" 
                style="display:inline">
               <input type="hidden" name="permission" value="$permission"/>
-              <input type="hidden" name="user" value="${u._id.url_encode()}"/>
+              <input type="hidden" name="user" value="${str(u._id)}"/>
               <input type="submit" value="Remove Permission"/>
             </form>
           </li>
@@ -86,7 +86,7 @@
         <label for="name">New user role</label>
         <select name="id">
           <option py:for="u in users" 
-                  value="${u._id.url_encode()}">$u.display_name</option>
+                  value="${str(u._id)}">$u.display_name</option>
         </select>
         <input type="submit" value="Add"/>
       </form>
