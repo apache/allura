@@ -99,7 +99,7 @@ Some examples of artifacts in the current plugins:
 
 - Forum: Forum, Thread, Post, Attachment
 - Wiki: Page, Comment, Attachment
-- Tracker: Issue, Comment, Attachment
+- Tracker: Ticket, Comment, Attachment
 - SCM: Repository, Commit, Patch
 
 In order to implement your own artifact, you should override at least a few of
@@ -141,9 +141,9 @@ things for you:
 - The artifact is added to the index and will appear in searches
 - A shortlink is generated for the artifact (e.g. [MyWikiPage]).  This allows you
   to reference the artifact from other artifacts.  For instance, you might want
-  to reference `[Issue#151]` from `[Commit#abac332a]`.  Whenever the commit message
-  is displayed in the SCM plugin, any references to `[Issue#151]` will be
-  automatically linked to that Issue's page.
+  to reference `[Ticket#151]` from `[Commit#abac332a]`.  Whenever the commit message
+  is displayed in the SCM plugin, any references to `[Ticket#151]` will be
+  automatically linked to that Ticket's page.
 
 Shortlinks work only within a project hierarchy (in order to link to some other project's
 page, you'll have to use the full URL).  Sometimes, a shortlink may need to be
@@ -152,12 +152,12 @@ the same type within a project.  In order to do this, shortlinks may be prefixed
 by either the plugin mount point or a project ID and plugin mount point.  
 
 For
-instance, suppose we have an issue tracker mounted at `projects/test/tracker`
-with Issue #42 in it.  Further suppose that there is an SCM repository mounted at
+instance, suppose we have an ticket tracker mounted at `projects/test/tracker`
+with Ticket #42 in it.  Further suppose that there is an SCM repository mounted at
 `projects/test/subproject/repo`.  A user could push a commit to that repository
 with the commit message `[projects/test:tracker:42] - Fix weird issue`.  If you
 then examined the commit in the SCM plugin, the shortlink would be clickable and
-would take you to the issue itself.  The Tracker plugin would also list the
+would take you to the ticket itself.  The Tracker plugin would also list the
 commit message as a "related object" in a sidebar to allow for quick cross-referencing.
 
 Asynchronous Processing

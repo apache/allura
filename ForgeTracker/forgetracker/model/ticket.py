@@ -20,17 +20,17 @@ class Globals(MappedClass):
     type_s = 'Globals'
     _id = FieldProperty(schema.ObjectId)
     project_id = FieldProperty(str)
-    last_issue_num = FieldProperty(int)
+    last_ticket_num = FieldProperty(int)
     status_names = FieldProperty(str)
     custom_fields = FieldProperty(str)
 
-class IssueHistory(Snapshot):
+class TicketHistory(Snapshot):
 
     class __mongometa__:
-        name = 'issue_history'
+        name = 'ticket_history'
 
     def original(self):
-        return Issue.query.get(_id=self.artifact_id)
+        return Ticket.query.get(_id=self.artifact_id)
 
     def shorthand_id(self):
         return '%s#%s' % (self.original().shorthand_id(), self.version)
@@ -43,24 +43,24 @@ class IssueHistory(Snapshot):
         result.update(
             title_s='Version %d of %s' % (
                 self.version,self.original().title),
-            type_s='Issue Snapshot',
+            type_s='Ticket Snapshot',
             text=self.data.summary)
         return result
 
-class Issue(VersionedArtifact):
+class Ticket(VersionedArtifact):
 
     class __mongometa__:
-        name = 'issue'
-        history_class = IssueHistory
+        name = 'ticket'
+        history_class = TicketHistory
 
-    type_s = 'Issue'
+    type_s = 'Ticket'
     _id = FieldProperty(schema.ObjectId)
     version = FieldProperty(0)
     created_date = FieldProperty(datetime, if_missing=datetime.utcnow)
     project_id = FieldProperty(str)
 
     parent_id = FieldProperty(schema.ObjectId, if_missing=None)
-    issue_num = FieldProperty(int)
+    ticket_num = FieldProperty(int)
     summary = FieldProperty(str)
     description = FieldProperty(str, if_missing='')
     reported_by = FieldProperty(str)
@@ -72,15 +72,15 @@ class Issue(VersionedArtifact):
     comments = RelationProperty('Comment')
 
     def url(self):
-        return c.app.url + '/' + str(self.issue_num) + '/'
+        return c.app.url + '/' + str(self.ticket_num) + '/'
 
     def shorthand_id(self):
-        return '%s/%s' % (self.type_s, self.issue_num)
+        return '%s/%s' % (self.type_s, self.ticket_num)
 
     def index(self):
         result = VersionedArtifact.index(self)
         result.update(
-            title_s='Issue %s' % self.issue_num,
+            title_s='Ticket %s' % self.ticket_num,
             version_i=self.version,
             type_s=self.type_s,
             text=self.summary)
@@ -88,18 +88,18 @@ class Issue(VersionedArtifact):
 
     @property
     def attachments(self):
-        return Attachment.by_metadata(issue_id=self._id)
+        return Attachment.by_metadata(ticket_id=self._id)
 
     def root_comments(self):
         if '_id' in self:
-            return Comment.query.find(dict(issue_id=self._id, reply_to=None))
+            return Comment.query.find(dict(ticket_id=self._id, reply_to=None))
         else:
             return []
 
     def reply(self):
         while True:
             try:
-                c = Comment(issue_id=self._id)
+                c = Comment(ticket_id=self._id)
                 return c
             except OperationFailure:
                 sleep(0.1)
@@ -108,28 +108,28 @@ class Issue(VersionedArtifact):
 class Comment(Message):
 
     class __mongometa__:
-        name = 'issue_comment'
+        name = 'ticket_comment'
 
-    type_s = 'Issue Comment'
+    type_s = 'Ticket Comment'
     _id = FieldProperty(schema.ObjectId)
     version = FieldProperty(0)
     created_date = FieldProperty(datetime, if_missing=datetime.utcnow)
     project_id = FieldProperty(str)
 
     author = FieldProperty(str, if_missing='')
-    issue_id = ForeignIdProperty(Issue)
+    ticket_id = ForeignIdProperty(Ticket)
     kind = FieldProperty(str, if_missing='comment')
     reply_to_id = FieldProperty(schema.ObjectId, if_missing=None)
     text = FieldProperty(str)
 
-    issue = RelationProperty('Issue')
+    ticket = RelationProperty('Ticket')
 
     def index(self):
         result = Message.index(self)
         author = self.author()
         result.update(
             title_s='Comment on %s by %s' % (
-                self.issue.shorthand_id(),
+                self.ticket.shorthand_id(),
                 author.display_name
             ),
             type_s=self.type_s
@@ -137,28 +137,28 @@ class Comment(Message):
         return result
 
     def url(self):
-        return self.issue.url() + '#comment-' + str(self._id)
+        return self.ticket.url() + '#comment-' + str(self._id)
 
     def shorthand_id(self):
-        return '%s-%s' % (self.issue.shorthand_id, self._id)
+        return '%s-%s' % (self.ticket.shorthand_id, self._id)
 
 class Attachment(File):
     class __mongometa__:
         name = 'attachment.files'
         indexes = [
             'metadata.filename',
-            'metadata.issue_id' ]
+            'metadata.ticket_id' ]
 
     # Override the metadata schema here
     metadata=FieldProperty(dict(
-            issue_id=schema.ObjectId,
+            ticket_id=schema.ObjectId,
             filename=str))
 
     @property
-    def issue(self):
-        return Issue.query.get(_id=self.metadata.issue_id)
+    def ticket(self):
+        return Ticket.query.get(_id=self.metadata.ticket_id)
 
     def url(self):
-        return self.issue.url() + 'attachment/' + self.filename
+        return self.ticket.url() + 'attachment/' + self.filename
 
 MappedClass.compile_all()

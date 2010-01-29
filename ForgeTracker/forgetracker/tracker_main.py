@@ -24,7 +24,7 @@ from pyforge.model import ProjectRole
 from forgetracker import model
 from forgetracker import version
 
-from forgetracker.widgets.issue_form import issue_form
+from forgetracker.widgets.ticket_form import ticket_form
 
 log = logging.getLogger(__name__)
 
@@ -37,12 +37,12 @@ class ForgeTrackerApp(Application):
         self.root = RootController()
         self.admin = TrackerAdminController(self)
 
-    @audit('Issues.#')
+    @audit('Tickets.#')
     def auditor(self, routing_key, data):
         log.info('Auditing data from %s (%s)',
                  routing_key, self.config.options.mount_point)
 
-    @react('Issues.#')
+    @react('Tickets.#')
     def reactor(self, routing_key, data):
         log.info('Reacting to data from %s (%s)',
                  routing_key, self.config.options.mount_point)
@@ -58,7 +58,7 @@ class ForgeTrackerApp(Application):
         return [
             SitemapEntry('Home', self.config.url()),
             SitemapEntry('Search', self.config.url() + 'search'),
-            SitemapEntry('New Issue', self.config.url() + 'new/'),
+            SitemapEntry('New Ticket', self.config.url() + 'new/'),
             ]
 
     @property
@@ -77,12 +77,12 @@ class ForgeTrackerApp(Application):
             ProjectRole.query.get(name='*anonymous')._id)
         self.config.acl['comment'].append(
             ProjectRole.query.get(name='*authenticated')._id)
-        model.Globals(project_id=c.project._id, last_issue_num=0, status_names='open,unread,accepted,pending,closed')
+        model.Globals(project_id=c.project._id, last_ticket_num=0, status_names='open,unread,accepted,pending,closed')
 
     def uninstall(self, project):
         "Remove all the plugin's artifacts from the database"
         project_id = {'project_id':c.project._id}
-        # mapper(model.Issue).remove(project_id)
+        # mapper(model.Ticket).remove(project_id)
         # mapper(model.Comment).remove(project_id)
         # mapper(model.Attachment).remove(project_id)
         # mapper(model.Globals).remove(project_id)
@@ -93,8 +93,8 @@ class RootController(object):
     @with_trailing_slash
     @expose('forgetracker.templates.index')
     def index(self):
-        issues = model.Issue.query.find(dict(project_id=c.project._id)).sort('issue_num')
-        return dict(issues=issues)
+        tickets = model.Ticket.query.find(dict(project_id=c.project._id)).sort('ticket_num')
+        return dict(tickets=tickets)
 
     @expose('forgetracker.templates.search')
     @validate(dict(q=validators.UnicodeString(if_empty=None),
@@ -114,94 +114,94 @@ class RootController(object):
             if results: count=results.hits
         return dict(q=q, history=history, results=results or [], count=count)
 
-    def _lookup(self, issue_num, *remainder):
-        return IssueController(issue_num), remainder
+    def _lookup(self, ticket_num, *remainder):
+        return TicketController(ticket_num), remainder
 
     @with_trailing_slash
-    @expose('forgetracker.templates.new_issue')
+    @expose('forgetracker.templates.new_ticket')
     def new(self, **kw):
         require(has_artifact_access('write'))
-        tmpl_context.form = issue_form
-        return dict(modelname='Issue',
-            page='New Issue')
+        tmpl_context.form = ticket_form
+        return dict(modelname='Ticket',
+            page='New Ticket')
 
     @expose('forgetracker.templates.not_found')
     def not_found(self, **kw):
         return dict()
 
     @expose()
-    def save_issue(self, issue_num, **post_data):
+    def save_ticket(self, ticket_num, **post_data):
         require(has_artifact_access('write'))
         if request.method != 'POST':
             raise Exception('save_new must be a POST request')
-        if issue_num:
-            issue = model.Issue.query.get(project_id=c.project._id,
-                                          issue_num=int(issue_num))
-            if not issue:
-                raise Exception('Issue number not found.')
-            del post_data['issue_num']
+        if ticket_num:
+            ticket = model.Ticket.query.get(project_id=c.project._id,
+                                          ticket_num=int(ticket_num))
+            if not ticket:
+                raise Exception('Ticket number not found.')
+            del post_data['ticket_num']
         else:
-            issue = model.Issue()
-            issue.project_id = c.project._id
-            issue.custom_fields = dict()
+            ticket = model.Ticket()
+            ticket.project_id = c.project._id
+            ticket.custom_fields = dict()
             globals = model.Globals.query.get(project_id=c.project._id)
 
             # FIX ME: need to lock around this increment or something
-            globals.last_issue_num += 1
-            post_data['issue_num'] = globals.last_issue_num
+            globals.last_ticket_num += 1
+            post_data['ticket_num'] = globals.last_ticket_num
             # FIX ME
 
         for k,v in post_data.iteritems():
-            setattr(issue, k, v)
-        redirect(str(issue.issue_num))
+            setattr(ticket, k, v)
+        redirect(str(ticket.ticket_num))
 
 
-class IssueController(object):
+class TicketController(object):
 
-    def __init__(self, issue_num=None):
-        if issue_num is not None:
-            self.issue_num = int(issue_num)
-            self.issue = model.Issue.query.get(project_id=c.project._id,
-                                                    issue_num=self.issue_num)
-            self.attachment = AttachmentsController(self.issue)
-            self.comments = CommentController(self.issue)
+    def __init__(self, ticket_num=None):
+        if ticket_num is not None:
+            self.ticket_num = int(ticket_num)
+            self.ticket = model.Ticket.query.get(project_id=c.project._id,
+                                                    ticket_num=self.ticket_num)
+            self.attachment = AttachmentsController(self.ticket)
+            self.comments = CommentController(self.ticket)
 
     @with_trailing_slash
-    @expose('forgetracker.templates.issue')
+    @expose('forgetracker.templates.ticket')
     def index(self, **kw):
-        require(has_artifact_access('read', self.issue))
-        if self.issue is not None:
+        require(has_artifact_access('read', self.ticket))
+        if self.ticket is not None:
             globals = model.Globals.query.get(project_id=c.project._id)
-            return dict(issue=self.issue, globals=globals)
+            return dict(ticket=self.ticket, globals=globals)
         else:
             redirect('not_found')
 
     @with_trailing_slash
-    @expose('forgetracker.templates.edit_issue')
+    @expose('forgetracker.templates.edit_ticket')
     def edit(self, **kw):
-        require(has_artifact_access('write', self.issue))
+        require(has_artifact_access('write', self.ticket))
         globals = model.Globals.query.get(project_id=c.project._id)
-        return dict(issue=self.issue, globals=globals)
+        return dict(ticket=self.ticket, globals=globals)
 
     @expose()
-    def update_issue(self, **post_data):
-        require(has_artifact_access('write', self.issue))
+    def update_ticket(self, **post_data):
+        require(has_artifact_access('write', self.ticket))
         if request.method != 'POST':
-            raise Exception('update_issue must be a POST request')
-        self.issue.summary = post_data['summary']
-        self.issue.description = post_data['description']
-        self.issue.assigned_to = post_data['assigned_to']
-        self.issue.status = post_data['status']
+            raise Exception('update_ticket must be a POST request')
+        self.ticket.summary = post_data['summary']
+        self.ticket.description = post_data['description']
+        self.ticket.assigned_to = post_data['assigned_to']
+        self.ticket.status = post_data['status']
 
         globals = model.Globals.query.get(project_id=c.project._id)
         if globals.custom_fields:
             for field in globals.custom_fields.split(','):
-                self.issue.custom_fields[field] = post_data[field]
+                self.ticket.custom_fields[field] = post_data[field]
         redirect('edit')
 
     @expose()
     def attach(self, file_info=None):
-        require(has_artifact_access('write', self.issue))
+        require(has_artifact_access('write', self.ticket))
         filename = file_info.filename
         content_type = guess_type(filename)
         if content_type: content_type = content_type[0]
@@ -209,7 +209,7 @@ class IssueController(object):
         with model.Attachment.create(
             content_type=content_type,
             filename=filename,
-            issue_id=self.issue._id) as fp:
+            ticket_id=self.ticket._id) as fp:
             while True:
                 s = file_info.file.read()
                 if not s: break
@@ -218,8 +218,8 @@ class IssueController(object):
 
 class AttachmentsController(object):
 
-    def __init__(self, issue):
-        self.issue = issue
+    def __init__(self, ticket):
+        self.ticket = ticket
 
     def _lookup(self, filename, *args):
         return AttachmentController(filename), args
@@ -227,17 +227,17 @@ class AttachmentsController(object):
 class AttachmentController(object):
 
     def _check_security(self):
-        require(has_artifact_access('read', self.issue))
+        require(has_artifact_access('read', self.ticket))
 
     def __init__(self, filename):
         self.filename = filename
         self.attachment = model.Attachment.query.get(filename=filename)
-        self.issue = self.attachment.issue
+        self.ticket = self.attachment.ticket
 
     @expose()
     def index(self, delete=False, embed=False):
         if request.method == 'POST':
-            require(has_artifact_access('write', self.issue))
+            require(has_artifact_access('write', self.ticket))
             if delete: self.attachment.delete()
             redirect(request.referer)
         with self.attachment.open() as fp:
@@ -252,19 +252,19 @@ class AttachmentController(object):
 
 class CommentController(object):
 
-    def __init__(self, issue, comment_id=None):
-        self.issue = issue
+    def __init__(self, ticket, comment_id=None):
+        self.ticket = ticket
         self.comment_id = comment_id
         self.comment = model.Comment.query.get(_id=self.comment_id)
 
     @expose()
     def reply(self, text):
-        require(has_artifact_access('comment', self.issue))
+        require(has_artifact_access('comment', self.ticket))
         if self.comment_id:
             c = self.comment.reply()
             c.text = text
         else:
-            c = self.issue.reply()
+            c = self.ticket.reply()
             c.text = text
         redirect(request.referer)
 
@@ -278,11 +278,11 @@ class CommentController(object):
     def _lookup(self, next, *remainder):
         if self.comment_id:
             return CommentController(
-                self.issue,
+                self.ticket,
                 self.comment_id + '/' + next), remainder
         else:
             return CommentController(
-                self.issue, next), remainder
+                self.ticket, next), remainder
 
 
 class TrackerAdminController(DefaultAdminController):
@@ -294,7 +294,7 @@ class TrackerAdminController(DefaultAdminController):
         return dict(app=self.app, globals=globals)
 
     @expose()
-    def update_issues(self, **post_data):
+    def update_tickets(self, **post_data):
         pass
 
     @expose()

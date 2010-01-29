@@ -10,7 +10,7 @@
     <meta content="text/html; charset=UTF-8" http-equiv="content-type" py:replace="''"/>
     <title>ForgeTracker Index Page</title>
     <style type="text/css">
-        div.issue { font-size:160% }
+        div.ticket { font-size:160% }
     </style>
   </head>
 
@@ -18,17 +18,17 @@
     <div class="container">
         <h1>Welcome to ForgeTracker</h1>
         <h2>Project: $c.project.shortname</h2>
-        <div class="issue-list">
-          <py:for each="issue in issues">
-            <div class="issue span-24 last">
-                <div class="issue-num span-3"><a href="$issue.issue_num">$issue.issue_num/</a></div>
-                <div class="issue-status span-3">$issue.status</div>
-                <div class="issue-summary span-18 last">$issue.summary</div>
+        <div class="ticket-list">
+          <py:for each="ticket in tickets">
+            <div class="ticket span-24 last">
+                <div class="ticket-num span-3"><a href="$ticket.ticket_num/">$ticket.ticket_num</a></div>
+                <div class="ticket-status span-3">$ticket.status</div>
+                <div class="ticket-summary span-18 last">$ticket.summary</div>
             </div>
           </py:for>
         </div>
         <script type="text/javascript">
-            $('div.issue-list').children(':even').css('background-color', '#eeeeee');
+            $('div.ticket-list').children(':even').css('background-color', '#eeeeee');
         </script>
     </div>
   </body>

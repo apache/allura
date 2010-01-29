@@ -79,7 +79,7 @@ def bootstrap(command, conf, vars):
         ThreadLocalORMSession.close_all()
     else: # pragma no cover
         p0.install_app('Wiki', 'wiki')
-        p0.install_app('Issues', 'bug')
+        p0.install_app('Tickets', 'bug')
         app = p0.install_app('Repository', 'src')
         with pyforge.lib.helpers.push_config(c, project=p0, app=app):
             g.publish('audit', 'scm.hg.clone', dict(

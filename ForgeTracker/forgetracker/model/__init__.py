@@ -1,1 +1,1 @@
-from issue import Globals, Issue, Comment, Attachment
+from ticket import Globals, Ticket, Comment, Attachment

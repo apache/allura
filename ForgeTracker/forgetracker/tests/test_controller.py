@@ -8,5 +8,5 @@ from forgetracker.tests import TestController
 class TestRootController(TestController):
 
     def test_index(self):
-        response = self.app.get('/Issues/')
+        response = self.app.get('/Tickets/')
         assert_true('Welcome to ForgeTracker' in response)

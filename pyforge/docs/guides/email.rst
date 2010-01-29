@@ -11,7 +11,7 @@ used like this::
     subproject.app.artifact@project.example.com
 
 Which would translate into the devtools project which is a subproject of 
-turbogears, and it's bug tracer and issue 142 in that tracker:: 
+turbogears, and it's bug tracker and ticket 142 in that tracker::
 
     devtools.bug.142@turbogears.sf.net
     
@@ -89,4 +89,4 @@ already.
 Spam prevention technology is a rabbit hole down which the PyForge could go 
 forever, without finding a prefect solution.   The goal for launch is not 
 perfection, but a solid foundation on which future anti-spam measures 
-can be taken. 
+can be taken.

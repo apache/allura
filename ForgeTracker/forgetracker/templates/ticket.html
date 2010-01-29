@@ -10,11 +10,11 @@
 
   <head>
     <meta content="text/html; charset=UTF-8" http-equiv="content-type" py:replace="''"/>
-    <title>${issue.shorthand_id()}</title>
+    <title>${ticket.shorthand_id()}</title>
     <link rel="stylesheet" type="text/css" href="${g.app_static('css/hilite.css')}"/>
     <style>
         .hidden { display: None }
-        .issue-num { font-size:20pt }
+        .ticket-num { font-size:20pt }
         .top-liner { border-top: 1px solid #ccc }
         .bottom-liner { border-bottom: 1px solid #ccc }
     </style>
@@ -22,9 +22,9 @@
 
   <body>
     <div class="container">
-        <article class="issue">
+        <article class="ticket">
 
-            <h1>${issue.shorthand_id()}</h1>
+            <h1>${ticket.shorthand_id()}</h1>
             <div>
               <a href="..">PluginRoot</a>
               <a href="edit/">Edit</a>
@@ -38,41 +38,41 @@
 
 
             <div id="header" class="span-24 last">
-                <h1 class="span-24 last">$issue.summary</h1>
+                <h1 class="span-24 last">$ticket.summary</h1>
             </div>
 
             <div class="span-24">
                 <div class="span-8">
                     <span class="quiet">owner:</span>
-                    <span class="issue-assigned-to">$issue.assigned_to</span>
+                    <span class="ticket-assigned-to">$ticket.assigned_to</span>
                 </div>
 
                 <div class="span-8">
                     <span class="quiet">status:</span>
-                    <span class="issue-status">$issue.status</span>
+                    <span class="ticket-status">$ticket.status</span>
                 </div>
 
                 <div class="span-8 last">
                     <span class="quiet">opened:</span>
-                    <span class="issue-create-date">${issue.created_date.strftime('%H:%M:%S %Y-%m-%d')}</span>
+                    <span class="ticket-create-date">${ticket.created_date.strftime('%H:%M:%S %Y-%m-%d')}</span>
                 </div>
             </div>
 
-            <div class="span-24 last issue-description">
+            <div class="span-24 last ticket-description">
                 <div class="span-24 last quiet prepend-top bottom-liner">Description</div>
-                <div class="span-24 last" py:content="Markup(g.markdown.convert(issue.description))"/>
+                <div class="span-24 last" py:content="Markup(g.markdown.convert(ticket.description))"/>
             </div>
 
             <div class="span-24 last custom-fields" py:if="globals.custom_fields">
                 <div class="span-24 last quiet prepend-top bottom-liner">Custom Fields</div>
                 <div class="span-24 last" py:for="field in globals.custom_fields.split(',')">
                     <span class="span-4"><label>${field}:</label></span>
-                    <span class="span-20">${issue.custom_fields.get(field, '')}</span>
+                    <span class="span-20">${ticket.custom_fields.get(field, '')}</span>
                 </div>
             </div>
             <hr/>
             <h2>Attachments</h2>
-          <div py:for="att in issue.attachments">
+          <div py:for="att in ticket.attachments">
             <a href="${att.url()}">${att.metadata.filename}</a>
             ($att.length bytes)
             <div py:if="att.contentType.startswith('image/') or att.contentType.startswith('text/')"
@@ -95,7 +95,7 @@
                 </form>
               </div>
             </div>
-            <py:for each="cmt in issue.root_comments()">
+            <py:for each="cmt in ticket.root_comments()">
               ${display_comment(cmt)}
             </py:for>
         </article>
