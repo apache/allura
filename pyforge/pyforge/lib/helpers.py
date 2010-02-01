@@ -72,7 +72,7 @@ def set_context(project_id, mount_point=None, app_config_id=None):
         c.app = p.app_instance(mount_point)
     else:
         if isinstance(app_config_id, basestring):
-            app_config_id = bson.ObjectId.url_decode(app_config_id)
+            app_config_id = bson.ObjectId(app_config_id)
         app_config = model.AppConfig.query.get(_id=app_config_id)
         c.app = p.app_instance(app_config)
 

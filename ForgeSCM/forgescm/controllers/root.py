@@ -105,7 +105,7 @@ class CommitController(object):
 class PatchController(object):
 
     def __init__(self, id):
-        self.patch = model.Patch.query.get(_id=bson.ObjectId.url_decode(id))
+        self.patch = model.Patch.query.get(_id=bson.ObjectId(id))
 
     @expose('forgescm.templates.patch_index')
     def index(self):

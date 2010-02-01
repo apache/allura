@@ -148,13 +148,13 @@ class DefaultAdminController(object):
     @expose()
     def add_perm(self, permission, role):
         require(has_artifact_access('configure', app=self.app))
-        self.app.config.acl[permission].append(ObjectId.url_decode(role))
+        self.app.config.acl[permission].append(ObjectId(role))
         redirect('.#app-acl')
 
     @expose()
     def del_perm(self, permission, role):
         require(has_artifact_access('configure', app=self.app))
-        self.app.config.acl[permission].remove(ObjectId.url_decode(role))
+        self.app.config.acl[permission].remove(ObjectId(role))
         redirect('.#app-acl')
         
 

@@ -110,7 +110,7 @@ class RootController(object):
 class ArtifactController(object):
 
     def __init__(self, id):
-        self.artifact = model.MyArtifact.query.get(_id=ObjectId.url_decode(id))
+        self.artifact = model.MyArtifact.query.get(_id=ObjectId(id))
         self.comments = CommentController(self.artifact)
 
     @expose('{{package}}.templates.artifact')

@@ -69,7 +69,7 @@ def send_email(routing_key, data):
         if '@' in addr:
             addrs_plain.append(addr)
         else:
-            user = M.User.query.get(_id=ObjectId.url_decode(addr))
+            user = M.User.query.get(_id=ObjectId(addr))
             if not user:
                 log.warning('Cannot find user with ID %s', addr)
                 continue
