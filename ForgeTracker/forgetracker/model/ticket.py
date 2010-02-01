@@ -115,7 +115,6 @@ class Comment(Message):
     version = FieldProperty(0)
     created_date = FieldProperty(datetime, if_missing=datetime.utcnow)
 
-    author = FieldProperty(str, if_missing='')
     ticket_id = ForeignIdProperty(Ticket)
     kind = FieldProperty(str, if_missing='comment')
     reply_to_id = FieldProperty(schema.ObjectId, if_missing=None)
