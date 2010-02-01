@@ -10,7 +10,7 @@ from ming.orm.property import FieldProperty, ForeignIdProperty, RelationProperty
 from datetime import datetime
 
 from pyforge.model import Artifact, VersionedArtifact, Snapshot, Message, project_orm_session, Project
-from pyforge.model import File
+from pyforge.model import File, User
 
 class Globals(MappedClass):
 
@@ -63,7 +63,7 @@ class Ticket(VersionedArtifact):
     ticket_num = FieldProperty(int)
     summary = FieldProperty(str)
     description = FieldProperty(str, if_missing='')
-    reported_by = FieldProperty(str)
+    reported_by_id = FieldProperty(schema.ObjectId, if_missing=lambda:c.user._id)
     assigned_to = FieldProperty(str, if_missing='')
     milestone = FieldProperty(str, if_missing='')
     status = FieldProperty(str, if_missing='')
@@ -85,6 +85,9 @@ class Ticket(VersionedArtifact):
             type_s=self.type_s,
             text=self.summary)
         return result
+
+    def reported_by(self):
+        return User.query.get(_id=self.reported_by_id) or User.anonymous
 
     @property
     def attachments(self):
