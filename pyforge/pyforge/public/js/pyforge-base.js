@@ -1,6 +1,7 @@
 (function($) {
     // Setup title-pane widgets
-    $('.title-pane .title').click(function() {
+    $('.title-pane .title').click(function(e) {
+        e.preventDefault();
         $(this).closest('.title-pane')
             .find('> .content').toggle('fast', function() {
                 $(this)

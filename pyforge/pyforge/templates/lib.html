@@ -41,7 +41,6 @@
           <a href="/auth/" py:if="not c.user._id">Log In</a>
         </li>
       </ul>
-      <hr/>
       <div id="project-menu" py:if="c.project">
         <div class="pti">Project: <a href="${c.project.url()}">$c.project.name</a></div>
         <span id="project-search"><input type="text"/></span>

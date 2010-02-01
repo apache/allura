@@ -18,28 +18,7 @@
   
   <body>
     <h1>$page.title</h1>
-    <div>
-      <a py:if="prev is not None" href=".?version=1">First</a>
-      <a py:if="prev is not None" href=".?version=$prev">&lt;</a>
-      Version $cur
-      <a py:if="next is not None" href=".?version=$next">&gt;</a>
-      <a href=".">Latest</a>
-      <form style="display:inline; float:right"
-            method="GET"
-            action="../search">
-        Search: <input name="q"/>
-      </form>
-    </div>
-    <hr style="clear:both"/>
-    <div id="sidebar-right">
-      <ul>
-        <li>
-          <a href="..">PluginRoot</a>
-          <a href="edit">Edit Page</a>
-          <a href="history">Page History</a>
-        </li>
-      </ul>
-    </div>
+    <hr/>
     <div>
       ${Markup(page.html_text)}
     </div>
@@ -47,11 +26,11 @@
     <hr/>
     <h2>Comments</h2>
     <div class="reply title-pane closed">
-      <h3 class="title">Make a comment</h3>
+      <button class="title" type="button">Add reply</button>
       <div class="content">
         <form method="post" action="comments/reply">
           <textarea rows="4" cols="60" name="text"></textarea><br/>
-          <input type="submit"/>
+          <input type="submit" value="Save Comment"/>
         </form>
       </div>
     </div>

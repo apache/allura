@@ -1,4 +1,5 @@
 from time import sleep
+from datetime import datetime
 
 from pylons import c
 from pymongo.errors import OperationFailure
@@ -135,6 +136,22 @@ class Comment(Message):
             type_s=self.type_s
         )
         return result
+
+    @property
+    def posted_ago(self):
+        comment_td = (datetime.utcnow() - self.timestamp)
+        if comment_td.seconds < 3600 and comment_td.days < 1:
+            return "%s minutes ago" % (comment_td.seconds / 60)
+        elif comment_td.seconds >= 3600 and comment_td.days < 1:
+            return "%s hours ago" % (comment_td.seconds / 3600)
+        elif comment_td.days >= 1 and comment_td.days < 7:
+            return "%s days ago" % comment_td.days
+        elif comment_td.days >= 7 and comment_td.days < 30:
+            return "%s weeks ago" % (comment_td.days / 7)
+        elif comment_td.days >= 30 and comment_td.days < 365:
+            return "%s months ago" % (comment_td.days / 30)
+        else:
+            return "%s years ago" % (comment_td.days / 365)
 
     def url(self):
         return self.ticket.url() + '#comment-' + str(self._id)

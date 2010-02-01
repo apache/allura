@@ -23,7 +23,7 @@
   
   <body py:match="body" py:attrs="select('@*')">
     ${main_menu()}
-    <!-- ${header()} -->
+    ${sidebar_menu()}
     <div id="content">
       <p py:if="c.user" style="float:right">Welcome, 
         <a href="/auth/prefs/">$c.user.display_name!</a>
@@ -42,9 +42,8 @@
       </div>
       <div py:replace="select('*|text()')"/>
       <!-- End of main_content -->
-      ${footer()}
     </div>
-    ${sidebar_menu()}
+    ${footer()}
     <script type="text/javascript" src="/js/pyforge-base.js"/>
   </body>
 </html>
