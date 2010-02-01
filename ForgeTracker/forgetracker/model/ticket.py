@@ -20,7 +20,7 @@ class Globals(MappedClass):
 
     type_s = 'Globals'
     _id = FieldProperty(schema.ObjectId)
-    project_id = ForeignIdProperty(Project)
+    app_config_id = ForeignIdProperty('AppConfig', if_missing=lambda:c.app.config._id)
     last_ticket_num = FieldProperty(int)
     status_names = FieldProperty(str)
     custom_fields = FieldProperty(str)
@@ -58,7 +58,6 @@ class Ticket(VersionedArtifact):
     _id = FieldProperty(schema.ObjectId)
     version = FieldProperty(0)
     created_date = FieldProperty(datetime, if_missing=datetime.utcnow)
-    project_id = FieldProperty(str)
 
     parent_id = FieldProperty(schema.ObjectId, if_missing=None)
     ticket_num = FieldProperty(int)
@@ -115,7 +114,6 @@ class Comment(Message):
     _id = FieldProperty(schema.ObjectId)
     version = FieldProperty(0)
     created_date = FieldProperty(datetime, if_missing=datetime.utcnow)
-    project_id = FieldProperty(str)
 
     author = FieldProperty(str, if_missing='')
     ticket_id = ForeignIdProperty(Ticket)
@@ -169,6 +167,7 @@ class Attachment(File):
     # Override the metadata schema here
     metadata=FieldProperty(dict(
             ticket_id=schema.ObjectId,
+            app_config_id=schema.ObjectId,
             filename=str))
 
     @property

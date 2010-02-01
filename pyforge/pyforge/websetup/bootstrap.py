@@ -113,6 +113,8 @@ def bootstrap(command, conf, vars):
         app = p0.install_app('hello_forge', 'hello')
         app = p0.install_app('Repository', 'src')
         app = p0.install_app('Repository', 'src_git')
+        p0.install_app('Tickets', 'bugs')
+        p0.install_app('Tickets', 'doc_bugs')
         app.config.options['type'] = 'git'
         ThreadLocalORMSession.flush_all()
         ThreadLocalORMSession.close_all()
@@ -121,7 +123,6 @@ def bootstrap(command, conf, vars):
     else: # pragma no cover
         log.info('Loading some large data')
         p0.install_app('Wiki', 'wiki')
-        p0.install_app('Tickets', 'bug')
         app = p0.install_app('Repository', 'src')
         with pyforge.lib.helpers.push_config(c, project=p0, app=app):
             g.publish('audit', 'scm.hg.clone', dict(

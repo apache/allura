@@ -12,5 +12,5 @@ ticket_form = twf.TableForm('ticket_form', action='../save_ticket', children=[
     twf.TextField('milestone'),
 
     twf.SingleSelectField('status',
-        options=lambda: model.Globals.query.get(project_id=c.project._id).status_names.split(','))
+        options=lambda: model.Globals.query.get(app_config_id=c.app.config._id).status_names.split(','))
 ])
