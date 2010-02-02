@@ -97,17 +97,17 @@ class ForgeWikiApp(Application):
 
     def sidebar_menu(self):
         pages = [SitemapEntry(p.title, p.url()) for p in model.Page.query.find(dict(app_config_id=self.config._id))]
-        return [SitemapEntry('Add a new page*','.'),
+        return [SitemapEntry('Add a new page','.', className="todo"),
 				SitemapEntry('Edit this page','edit'),
-				SitemapEntry('Related Pages*')
+				SitemapEntry('Related Pages', className="todo")
 			   ]+pages+[
 			    SitemapEntry('Wiki Nav'),
 			    SitemapEntry('View History','history'),
-			    SitemapEntry('Browse Pages*','.'),
-			    SitemapEntry('Browse Tags*','.'),
-			    SitemapEntry('Advanced*','.'),
-			    SitemapEntry('Bookmarks*'),
-			    SitemapEntry('Help*')]
+			    SitemapEntry('Browse Pages','.', className="todo"),
+			    SitemapEntry('Browse Tags','.', className="todo"),
+			    SitemapEntry('Advanced','.', className="todo"),
+			    SitemapEntry('Bookmarks', className="todo"),
+			    SitemapEntry('Help', className="todo")]
 
     @property
     def templates(self):

@@ -27,8 +27,9 @@ class WSGIHook(object):
 
 class SitemapEntry(object):
 
-    def __init__(self, label, url=None, children=None):
+    def __init__(self, label, url=None, children=None, className=None):
         self.label = label
+        self.className = className
         self.url = url
         if children is None:
             children = []

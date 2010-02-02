@@ -22,8 +22,8 @@
 
   <py:def function="nav(s)">
     <li>
-      <a py:if="s.url" href="$s.url">$s.label</a>
-      <span py:if="not s.url">$s.label</span>
+      <a py:if="s.url" href="$s.url" class="$s.className">$s.label</a>
+      <span py:if="not s.url" class="$s.className">$s.label</span>
       <ul py:if="s.children">
         <py:for each="ss in s.children">${nav(ss)}</py:for>
       </ul>
@@ -46,8 +46,8 @@
         <span id="project-search"><input type="text"/></span>
         <ul class="mb">
           <li py:for="s in c.project.sitemap()">
-            <a py:if="s.url" href="$s.url">$s.label</a>
-            <span py:if="not s.url">$s.label</span>
+            <a py:if="s.url" href="$s.url" class="$s.className">$s.label</a>
+            <span py:if="not s.url" class="$s.className">$s.label</span>
           </li>
         </ul>
       </div>
@@ -57,15 +57,15 @@
   <py:def function="sidebar_menu()">
     <ul id="sidebarmenu" py:if="getattr(c, 'app', None)">
       <li py:for="s in c.app.sidebar_menu()">
-        <a py:if="s.url" href="$s.url">$s.label</a>
-        <span py:if="not s.url">$s.label</span>
+        <a py:if="s.url" href="$s.url" class="$s.className">$s.label</a>
+        <span py:if="not s.url" class="$s.className">$s.label</span>
       </li> 
     </ul>
     <ul id="sidebarmenu" 
         py:if="getattr(c, 'project', None) and not getattr(c, 'app', None)">
       <li py:for="s in c.project.sidebar_menu()">
-        <a py:if="s.url" href="$s.url">$s.label</a>
-        <span py:if="not s.url">$s.label</span>
+        <a py:if="s.url" href="$s.url" class="$s.className">$s.label</a>
+        <span py:if="not s.url" class="$s.className">$s.label</span>
       </li> 
     </ul>
   </py:def>
