@@ -190,7 +190,7 @@ class TicketController(object):
             raise Exception('update_ticket must be a POST request')
         self.ticket.summary = post_data['summary']
         self.ticket.description = post_data['description']
-        self.ticket.assigned_to = post_data['assigned_to']
+      # self.ticket.assigned_to = post_data['assigned_to']
         self.ticket.status = post_data['status']
 
         globals = model.Globals.query.get(app_config_id=c.app.config._id)

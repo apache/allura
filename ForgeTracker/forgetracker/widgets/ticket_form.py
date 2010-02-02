@@ -7,7 +7,7 @@ ticket_form = twf.TableForm('ticket_form', action='../save_ticket', children=[
     twf.TextField('summary'),
     twf.Spacer(),
     twf.TextArea('description', suppress_label=True),
-    twf.TextField('assigned_to'),
+  # twf.TextField('assigned_to'),
     twf.TextField('milestone'),
 
     twf.SingleSelectField('status',

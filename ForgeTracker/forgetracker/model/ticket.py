@@ -64,7 +64,7 @@ class Ticket(VersionedArtifact):
     summary = FieldProperty(str)
     description = FieldProperty(str, if_missing='')
     reported_by_id = FieldProperty(schema.ObjectId, if_missing=lambda:c.user._id)
-    assigned_to = FieldProperty(str, if_missing='')
+    assigned_to_id = FieldProperty(schema.ObjectId, if_missing=None)
     milestone = FieldProperty(str, if_missing='')
     status = FieldProperty(str, if_missing='')
     custom_fields = FieldProperty({str:None})
@@ -88,6 +88,15 @@ class Ticket(VersionedArtifact):
 
     def reported_by(self):
         return User.query.get(_id=self.reported_by_id) or User.anonymous
+
+    def assigned_to(self):
+        if self.assigned_to_id is None: return None
+        return User.query.get(_id=self.assigned_to_id)
+
+    def assigned_to_name(self):
+        who = self.assigned_to()
+        if who is None: return 'nobody'
+        return who.display_name
 
     @property
     def attachments(self):
