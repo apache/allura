@@ -76,7 +76,7 @@ class Ticket(VersionedArtifact):
         return c.app.url + '/' + str(self.ticket_num) + '/'
 
     def shorthand_id(self):
-        return '%s/%s' % (self.type_s, self.ticket_num)
+        return '#' + str(self.ticket_num)
 
     def index(self):
         result = VersionedArtifact.index(self)
