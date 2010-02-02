@@ -28,7 +28,7 @@ incoming.notify_forge = python:forgescm.lib.hg.incoming_hook
 [notify_forge]
 repository = %s
 config = %s
-''' % (plugin_id, pylons.config.__file__)
+''' % (plugin_id, pylons.config['__file__'])
     fn = os.path.join(repo_dir, '.hg/hgrc')
     with open(fn, 'a') as fp:
         fp.write(text)

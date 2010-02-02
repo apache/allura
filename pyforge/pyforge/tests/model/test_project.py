@@ -16,7 +16,7 @@ def setUp():
     c._push_object(mock.Mock())
     request._push_object(Request.blank('/'))
     ThreadLocalORMSession.close_all()
-    g.set_project('projects/test')
+    g.set_project('test')
     g.set_app('hello')
     M.File.remove({})
     M.Project.query.remove(dict(_id='projects/test/test_project_nose/'))
@@ -38,12 +38,12 @@ def test_project():
     assert type(c.project.sidebar_menu()) == list
     assert c.project.script_name in c.project.url()
     old_proj = c.project
-    g.set_project('projects/test/sub1')
+    g.set_project('test/sub1')
     assert type(c.project.sidebar_menu()) == list
     assert type(c.project.sitemap()) == list
     assert old_proj in list(c.project.parent_iter())
-    g.set_project('projects/test')
-    p = M.Project.query.get(_id='adobe.localhost:/')
+    g.set_project('test')
+    p = M.Project.query.get(shortname='Adobe 1')
     assert 'http' in p.url()
     assert p.script_name in p.url()
     assert c.project.shortname == 'test'

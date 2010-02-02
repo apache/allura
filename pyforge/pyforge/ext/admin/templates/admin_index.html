@@ -63,8 +63,8 @@
         <form method="POST" action="update_mounts">
           <input py:for="i, sp in enumerate(c.project.direct_subprojects)"
                  type="hidden" 
-                 name="subproject-${i}.id"
-                 value="$sp._id"/>
+                 name="subproject-${i}.shortname"
+                 value="$sp.shortname"/>
           <input py:for="i, config in enumerate(c.project.app_configs)"
                  type="hidden" 
                  name="plugin-${i}.mount_point"
@@ -82,7 +82,7 @@
               <tr py:for="i, sp in enumerate(c.project.direct_subprojects)">
                 <td>Subproject</td>
                 <td>$sp.shortname</td>
-                <td><a href="/${sp._id + 'admin/'}">Edit</a></td>
+                <td><a href="${sp.url() + 'admin/'}">Edit</a></td>
                 <td><input py:if="has_project_access('delete')()" 
                            name="subproject-${i}.delete" type="submit" value="Delete"/></td>
               </tr>

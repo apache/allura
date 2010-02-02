@@ -9,7 +9,7 @@ from ming.orm.mapped_class import MappedClass
 from ming.orm.property import FieldProperty, ForeignIdProperty, RelationProperty
 from datetime import datetime
 
-from pyforge.model import Artifact, VersionedArtifact, Snapshot, Message, project_orm_session
+from pyforge.model import Artifact, VersionedArtifact, Snapshot, Message, project_orm_session, Project
 from pyforge.model import File
 
 class Globals(MappedClass):
@@ -20,7 +20,7 @@ class Globals(MappedClass):
 
     type_s = 'Globals'
     _id = FieldProperty(schema.ObjectId)
-    project_id = FieldProperty(str)
+    project_id = ForeignIdProperty(Project)
     last_ticket_num = FieldProperty(int)
     status_names = FieldProperty(str)
     custom_fields = FieldProperty(str)

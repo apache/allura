@@ -24,7 +24,7 @@ def setUp():
     M.OpenIdNonce.query.remove({})
     M.OpenIdAssociation.query.remove({})
     conn = M.main_doc_session.bind.conn
-    g.set_project('projects/test')
+    g.set_project('test')
     g.set_app('hello')
     c.user = M.User.query.get(username='test_admin')
     c.user.email_addresses = c.user.open_ids = []

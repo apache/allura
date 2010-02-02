@@ -7,11 +7,11 @@ import pkg_resources
 from webob import exc
 from pymongo import bson
 
-from ming import Document, Session, Field, datastore
+from ming import schema as S
 from ming.orm.base import mapper, session
 from ming.orm.mapped_class import MappedClass
 from ming.orm.property import FieldProperty, RelationProperty, ForeignIdProperty
-from ming import schema as S
+from ming.orm.ormsession import ThreadLocalORMSession
 
 from pyforge.lib.helpers import push_config
 from .session import main_doc_session, main_orm_session
@@ -68,13 +68,99 @@ class ScheduledMessage(MappedClass):
             except: # pragma no cover
                 log.exception('Error when firing %r', obj)
 
+class Neighborhood(MappedClass):
+    '''Provide a grouping of related projects.
+
+    url_prefix - location of neighborhood (may include scheme and/or host)
+    css - block of CSS text to add to all neighborhood pages
+    acl - list of user IDs who have rights to perform ops on neighborhood.  Empty
+        acl implies that any authenticated user can perform the op
+        'read' - access the neighborhood (usually [ User.anonymous()._id ])
+        'create' - create projects within the neighborhood (open neighborhoods
+            will typically have this empty)
+        'moderate' - invite projects into the neighborhood, evict projects from
+            the neighborhood
+        'admin' - update neighborhood ACLs, acts as a superuser with all
+            permissions in neighborhood projects
+    '''
+    class __mongometa__:
+        session = main_orm_session
+        name = 'neighborhood'
+
+    _id = FieldProperty(S.ObjectId)
+    name = FieldProperty(str)
+    url_prefix = FieldProperty(str) # e.g. http://adobe.openforge.com/ or projects/
+    shortname_prefix = FieldProperty(str, if_missing='')
+    css = FieldProperty(str, if_missing='')
+    acl = FieldProperty({
+            'read':[S.ObjectId],      # access neighborhood at all
+            'create':[S.ObjectId],    # create project in neighborhood
+            'moderate':[S.ObjectId],    # invite/evict projects
+            'admin':[S.ObjectId],  # update ACLs
+            })
+    projects = RelationProperty('Project')
+
+    def url(self):
+        url = self.url_prefix
+        if url.startswith('//'):
+            try:
+                return request.scheme + ':' + url
+            except TypeError: # pragma no cover
+                return 'http:' + url
+        else:
+            return url
+
+    def register_project(self, shortname, user=None):
+        '''Register a new project in the neighborhood.  The given user will
+        become the project's superuser.  If no user is specified, c.user is used.
+        '''
+        from . import auth
+        if user is None: user = c.user
+        p = Project.query.get(shortname=shortname)
+        if p:
+            assert p.neighborhood == self, (
+                'Project %s exists in neighborhood %s' % (
+                    shortname, p.neighborhood.name))
+            return p
+        database = 'project:' + shortname.replace('/', ':').replace(' ', '_')
+        p = Project(neighborhood_id=self._id,
+                    shortname=shortname,
+                    name=shortname,
+                    short_description='Please update with a short description',
+                    description=(shortname + '\n'
+                                 + '=' * 80 + '\n\n'
+                                 + 'You can edit this description in the admin page'),
+                    database=database,
+                    is_root=True)
+        with push_config(c, project=p, user=user):
+            pr = user.project_role()
+            for roles in p.acl.itervalues():
+                roles.append(pr._id)
+            pr = auth.ProjectRole(name='*anonymous')
+            p.acl.read.append(pr._id)
+            auth.ProjectRole(name='*authenticated')
+            p.install_app('home', 'home')
+            p.install_app('admin', 'admin')
+            p.install_app('search', 'search')
+            ThreadLocalORMSession.flush_all()
+        return p
+
+    def bind_controller(self, controller):
+        from pyforge.controllers.project import NeighborhoodController
+        controller_attr = self.url_prefix[1:-1]
+        setattr(controller, controller_attr, NeighborhoodController(
+                self.name, self.shortname_prefix))
+
 class Project(MappedClass):
     class __mongometa__:
         session = main_orm_session
         name='project'
 
     # Project schema
-    _id=FieldProperty(str)
+    _id=FieldProperty(S.ObjectId)
+    parent_id = FieldProperty(S.ObjectId, if_missing=None)
+    neighborhood_id = ForeignIdProperty(Neighborhood)
+    shortname = FieldProperty(str)
     name=FieldProperty(str)
     short_description=FieldProperty(str, if_missing='')
     description=FieldProperty(str, if_missing='')
@@ -88,8 +174,8 @@ class Project(MappedClass):
             'plugin':[S.ObjectId],    # install/delete/configure plugins
             'security':[S.ObjectId],  # update ACL, roles
             })
+    neighborhood = RelationProperty(Neighborhood)
     app_configs = RelationProperty('AppConfig')
-
 
     def sidebar_menu(self):
         from pyforge.app import SitemapEntry
@@ -108,28 +194,21 @@ class Project(MappedClass):
 
     @property
     def script_name(self):
-        if ':/' in self._id:
-            domain, path = self._id.split(':/', 1)
-            return '/' + path
-        return '/' + self._id
+        url = self.url()
+        if '//' in url:
+            return url.rsplit('//')[-1]
+        else:
+            return url
 
     def url(self):
-        if ':/' in self._id:
-            domain, path = self._id.split(':/', 1)
+        url = self.neighborhood.url_prefix + self.shortname + '/'
+        if url.startswith('//'):
             try:
-                if ':' in request.host:
-                    port = request.host.split(':')[-1]
-                    return '%s://%s:%s/%s' % (
-                        request.scheme, domain, port, path)
-                else: # pragma no cover
-                    return '%s://%s/%s' % (request.scheme, domain, path)
+                return request.scheme + ':' + url
             except TypeError: # pragma no cover
-                return 'http://%s/%s' % (domain, path)
-        return '/' + self._id
-
-    @property
-    def shortname(self):
-        return self._id.split('/')[-2]
+                return 'http:' + url
+        else:
+            return url
 
     @property
     def description_html(self):
@@ -138,8 +217,7 @@ class Project(MappedClass):
     @property
     def parent_project(self):
         if self.is_root: return None
-        parent_id, shortname, empty = self._id.rsplit('/', 2)
-        return self.query.get(_id=parent_id + '/')
+        return self.query.get(_id=self.parent_id)
 
     def sitemap(self):
         from pyforge.app import SitemapEntry
@@ -160,19 +238,16 @@ class Project(MappedClass):
 
     @property
     def subprojects(self):
-        q = self.query.find(dict(_id={'$gt':self._id}))
+        q = self.query.find(dict(shortname={'$gt':self.shortname})).sort('shortname')
         for project in q:
-            if project._id.startswith(self._id):
+            if project.shortname.startswith(self.shortname + '/'):
                 yield project
             else:
                 break
 
     @property
     def direct_subprojects(self):
-        depth = self._id.count('/')
-        for sp in self.subprojects:
-            if sp._id.count('/') - depth == 1:
-                yield sp
+        return self.query.find(dict(parent_id=self._id))
 
     @property
     def roles(self):
@@ -227,22 +302,25 @@ class Project(MappedClass):
                 'options.mount_point':mount_point}).first()
 
     def new_subproject(self, name, install_apps=True):
-        _id = self._id + name + '/'
+        shortname = self.shortname + '/' + name
         sp = Project(
-            _id=_id,
+            parent_id=self._id,
+            neighborhood_id=self.neighborhood_id,
+            shortname=shortname,
             name=name,
             database=self.database,
             is_root=False)
         with push_config(c, project=sp):
             AppConfig.query.remove(dict(project_id=c.project._id))
-        if install_apps:
-            sp.install_app('admin', 'admin')
-            sp.install_app('search', 'search')
+            if install_apps:
+                sp.install_app('home', 'home')
+                sp.install_app('admin', 'admin')
+                sp.install_app('search', 'search')
         return sp
 
     def delete(self):
         # Cascade to subprojects
-        for sp in self.subprojects:
+        for sp in self.direct_subprojects:
             sp.delete()
         # Cascade to app configs
         for ac in self.app_configs:
@@ -259,7 +337,7 @@ class Project(MappedClass):
         if self.parent_project:
             return self.parent_project.breadcrumbs() + [ entry ]
         else:
-            return [ ( self._id.rsplit('/', 2)[0], None) ] + [ entry ]
+            return [ (self.neighborhood.name, self.neighborhood.url())] + [ entry ]
 
 class AppConfig(MappedClass):
     class __mongometa__:

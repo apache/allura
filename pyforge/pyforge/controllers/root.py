@@ -17,7 +17,7 @@ from pyforge import model as M
 from .auth import AuthController
 from .search import SearchController
 from .static import StaticController
-from .project import ProjectsController, HostProjectController
+from .project import NeighborhoodController, HostNeighborhoodController
 
 __all__ = ['RootController']
 
@@ -42,8 +42,9 @@ class RootController(BaseController):
     error = ErrorController()
     static = StaticController()
     search = SearchController()
-    projects = ProjectsController('projects/')
-    users = ProjectsController('users/')
+    # projects = NeighborhoodController('Projects')
+    # users = NeighborhoodController('Users', 'users/')
+    # adobe = NeighborhoodController('Adobe')
 
     def __init__(self):
         """Create a user-aware root controller instance.
@@ -56,6 +57,9 @@ class RootController(BaseController):
         c.project = c.app = None
         c.user = M.User.query.get(_id=uid) or M.User.anonymous()
         c.queued_messages = []
+        for n in M.Neighborhood.query.find():
+            if n.url_prefix.startswith('//'): continue
+            n.bind_controller(self)
 
     def __call__(self, environ, start_response):
         """This is the basic WSGI callable that wraps and dispatches forge controllers.
@@ -88,10 +92,10 @@ class RootController(BaseController):
         
 
     def _wsgi_handler(self, environ):
-        host = environ['HTTP_HOST'].split(':')[0].lower()
-        project = M.Project.query.get(_id=host + ':/')
-        if project:
-            return HostProjectController(project)
+        host = environ['HTTP_HOST'].lower()
+        neighborhood = M.Neighborhood.query.get(url_prefix='//' + host + '/')
+        if neighborhood:
+            return HostNeighborhoodController(neighborhood.name, neighborhood.shortname_prefix)
         if environ['PATH_INFO'].startswith('/_wsgi_/'):
             for ep in pkg_resources.iter_entry_points('pyforge'):
                 App = ep.load()
@@ -102,9 +106,9 @@ class RootController(BaseController):
     def index(self):
         """Handle the front-page."""
         projects = defaultdict(list)
-        for p in M.Project.query.find(dict(is_root=True)):
-            prefix, rest = p._id.split('/', 1)
-            projects[prefix].append(p)
+        for n in M.Neighborhood.query.find():
+            projects[n.name] = M.Project.query.find(dict(
+                    is_root=True, neighborhood_id=n._id)).all()
         return dict(projects=projects)
 
     def _dispatch(self, state, remainder):

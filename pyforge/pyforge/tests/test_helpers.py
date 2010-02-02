@@ -20,9 +20,9 @@ def setUp(self):
     cmd.run([test_file])
 
 def test_find_project():
-    proj, rest = h.find_project('projects/test/foo'.split('/'))
+    proj, rest = h.find_project('/projects/test/foo')
     assert proj is not None
-    proj, rest = h.find_project('projects/testable/foo'.split('/'))
+    proj, rest = h.find_project('/projects/testable/foo')
     assert proj is None
 
 def test_find_executable():
@@ -33,39 +33,39 @@ def test_make_users():
     assert r.username == '*anonymous', r
 
 def test_make_roles():
-    g.set_project('projects/test')
+    g.set_project('test')
     g.set_app('hello')
     u = M.User.anonymous()
     pr = u.project_role()
     assert h.make_roles([pr._id]).next() == pr
 
 def test_context_setters():
-    h.set_context('projects/test/', 'hello')
+    h.set_context('test', 'hello')
     assert c.project is not None
     assert c.app is not None
     cfg_id = c.app.config._id
-    h.set_context('projects/test/', app_config_id=cfg_id)
+    h.set_context('test', app_config_id=cfg_id)
     assert c.project is not None
     assert c.app is not None
-    h.set_context('projects/test/', app_config_id=str(cfg_id))
+    h.set_context('test', app_config_id=str(cfg_id))
     assert c.project is not None
     assert c.app is not None
     c.project = c.app = None
-    with h.push_context('projects/test/', 'hello'):
+    with h.push_context('test', 'hello'):
         assert c.project is not None
         assert c.app is not None
     assert c.project == c.app == None
-    with h.push_context('projects/test/', app_config_id=cfg_id):
+    with h.push_context('test', app_config_id=cfg_id):
         assert c.project is not None
         assert c.app is not None
     assert c.project == c.app == None
-    with h.push_context('projects/test/', app_config_id=str(cfg_id)):
+    with h.push_context('test', app_config_id=str(cfg_id)):
         assert c.project is not None
         assert c.app is not None
     assert c.project == c.app == None
     del c.project
     del c.app
-    with h.push_context('projects/test/', app_config_id=str(cfg_id)):
+    with h.push_context('test', app_config_id=str(cfg_id)):
         assert c.project is not None
         assert c.app is not None
     assert not hasattr(c, 'project')

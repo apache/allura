@@ -13,7 +13,7 @@ def setUp():
     g._push_object(Globals())
     c._push_object(mock.Mock())
     ThreadLocalORMSession.close_all()
-    g.set_project('projects/test')
+    g.set_project('test')
     g.set_app('hello')
     M.File.remove({})
     c.user = M.User.query.get(username='test_admin')

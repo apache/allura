@@ -26,7 +26,7 @@ def setUp():
     conn = M.main_doc_session.bind.conn
     conn.drop_database('users:nosetest_user')
     conn.drop_database('domain:test:projects')
-    g.set_project('projects/test')
+    g.set_project('test')
     g.set_app('hello')
     c.user = M.User.query.get(username='test_admin')
     c.user.email_addresses = c.user.open_ids = []
@@ -76,7 +76,7 @@ def test_user():
     u = M.User.register(dict(
             username='nosetest_user'))
     ThreadLocalORMSession.flush_all()
-    assert u.private_project()._id == 'users/nosetest_user/'
+    assert u.private_project().shortname == 'users/nosetest_user'
     assert len(list(u.role_iter())) == 3
     u.set_password('foo')
     assert u.validate_password('foo')
@@ -84,9 +84,6 @@ def test_user():
     u.set_password('foobar')
     assert u.validate_password('foobar')
     assert not u.validate_password('foo')
-    p = u.register_project_domain('test.projects', 'TestProj')
-    assert p._id == 'test.projects:/'
-    assert p.name == 'TestProj'
 
 def test_project_role():
     role = M.ProjectRole(name='test_role')

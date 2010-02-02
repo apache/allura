@@ -15,7 +15,7 @@ def setUp():
     c._push_object(mock.Mock())
     request._push_object(Request.blank('/'))
     ThreadLocalORMSession.close_all()
-    g.set_project('projects/test')
+    g.set_project('test')
     g.set_app('hello')
     c.user = M.User.query.get(username='test_admin')
     c.user.email_addresses = c.user.open_ids = []

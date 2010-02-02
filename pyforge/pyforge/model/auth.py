@@ -110,7 +110,7 @@ class User(MappedClass):
     open_ids=FieldProperty([str])
     email_addresses=FieldProperty([str])
     password=FieldProperty(str)
-    projects=FieldProperty([str])
+    projects=FieldProperty([S.ObjectId])
     preferences=FieldProperty(dict(
             email_address=str,
             email_format=str))
@@ -140,13 +140,15 @@ class User(MappedClass):
 
     @classmethod
     def register(cls, doc, make_project=True):
+        from pyforge import model as M
         method = config.get('auth.method', 'local')
         if method == 'local':
             result = cls._register_local(doc)
         elif method == 'ldap': # pragma no cover
             result = cls._register_ldap(doc)
         if make_project:
-            result.register_project(result.username, 'users')
+            n = M.Neighborhood.query.get(name='Users')
+            n.register_project('users/' + result.username, result)
         return result
 
     @classmethod
@@ -184,7 +186,7 @@ class User(MappedClass):
 
     def private_project(self):
         from .project import Project
-        return Project.query.get(_id='users/%s/' % self.username)
+        return Project.query.get(shortname='users/%s' % self.username)
 
     @property
     def script_name(self):
@@ -204,15 +206,16 @@ class User(MappedClass):
             for role in pr.role_iter():
                 yield role
 
-    def project_role(self):
-        # session(self).flush(self) # to get the _id
-        if self._id is None:
-            return ProjectRole.query.get(name='*anonymous')
-        obj = ProjectRole.query.get(user_id=self._id)
-        if obj is None:
-            obj = ProjectRole(user_id=self._id)
-            self.projects.append(c.project._id)
-        return obj
+    def project_role(self, project=None):
+        if project is None: project = c.project
+        with push_config(c, project=project, user=self):
+            if self._id is None:
+                return ProjectRole.query.get(name='*anonymous')
+            obj = ProjectRole.query.get(user_id=self._id)
+            if obj is None:
+                obj = ProjectRole(user_id=self._id)
+                self.projects.append(c.project._id)
+            return obj
 
     def set_password(self, password):
         method = config.get('auth.method', 'local')
@@ -256,62 +259,6 @@ class User(MappedClass):
         salt = str(self.password[6:6+self.SALT_LEN])
         check = encode_password(password, salt)
         return check == self.password
-
-    def register_project(self, pid, prefix='projects'):
-        from .project import Project
-        database = prefix + ':' + pid
-        project_id = prefix + '/' + pid + '/'
-        p = Project.query.get(_id=project_id)
-        if p: return p
-        p = Project(_id=project_id,
-                    name=pid,
-                    short_description='Please update with a short description',
-                    description=(pid + '\n'
-                                 + '=' * 80 + '\n\n' 
-                                 + 'You can edit this description in the admin page'),
-                    database=database,
-                    is_root=True)
-        c.project = p
-        with push_config(c, project=p, user=self):
-            pr = self.project_role()
-            # session(pr).flush(pr) # to get the _id of the new project role
-            for roles in p.acl.itervalues():
-                roles.append(pr._id)
-            pr = ProjectRole(name='*anonymous')
-            p.acl.read.append(pr._id)
-            ProjectRole(name='*authenticated')
-            p.install_app('home', 'home')
-            p.install_app('admin', 'admin')
-            p.install_app('search', 'search')
-        ThreadLocalORMSession.flush_all()
-        return p
-
-    def register_project_domain(self, domain, name):
-        from .project import Project
-        database = 'domain:' + domain.replace('.', ':')
-        project_id = domain + ':/'
-        p = Project(_id=project_id,
-                    name=name,
-                    short_description='Please update with a short description',
-                    description=(name + '\n'
-                                 + '=' * 80 + '\n\n' 
-                                 + 'You can edit this description in the admin page'),
-                    database=database,
-                    is_root=True)
-        c.project = p
-        with push_config(c, project=p, user=self):
-            pr = self.project_role()
-            # session(pr).flush(pr) # to get the _id of the new project role
-            for roles in p.acl.itervalues():
-                roles.append(pr._id)
-            pr = ProjectRole(name='*anonymous')
-            p.acl.read.append(pr._id)
-            ProjectRole(name='*authenticated')
-            p.install_app('home', 'home')
-            p.install_app('admin', 'admin')
-            p.install_app('search', 'search')
-        ThreadLocalORMSession.flush_all()
-        return p
 
     @classmethod
     def anonymous(cls):

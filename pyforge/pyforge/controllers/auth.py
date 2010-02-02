@@ -94,7 +94,8 @@ class AuthController(object):
             redirect('setup_openid_user')
         c.user.username = username
         c.user.display_name = display_name
-        c.user.register_project(username, 'users')
+        n = M.Neighborhood.query.get(name='Users')
+        n.register_project('users/' + username)
         flash('Your username has been set to %s.' % username)
         redirect('/')
 

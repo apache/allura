@@ -25,7 +25,7 @@ def init(routing_key, data):
     repo.parent = None
     cmd.run()
     log.info('Setup gitweb in %s', repo.repo_dir)
-    repo_name = c.project._id + c.app.config.options.mount_point
+    repo_name = c.project.shortname + c.app.config.options.mount_point
     git.setup_gitweb(repo_name, repo.repo_dir)
     git.setup_commit_hook(repo.repo_dir, c.app.config.script_name()[1:])
     if cmd.sp.returncode:
@@ -46,7 +46,7 @@ def clone(routing_key, data):
     repo.clear_commits()
     cmd.run()
     log.info('Clone complete for %s', data['url'])
-    repo_name = c.project._id + c.app.config.options.mount_point
+    repo_name = c.project.shortname + c.app.config.options.mount_point
     git.setup_gitweb(repo_name, repo.repo_dir)
     git.setup_commit_hook(repo.repo_dir, c.app.config.script_name()[1:])
     if cmd.sp.returncode:
@@ -74,7 +74,7 @@ def fork(routing_key, data):
     cmd.run()
     repo.status = 'Ready'
     log.info('Clone complete for %s', data['url'])
-    repo_name = c.project._id + c.app.config.options.mount_point
+    repo_name = c.project.shortname + c.app.config.options.mount_point
     git.setup_gitweb(repo_name, repo.repo_dir)
     git.setup_commit_hook(repo.repo_dir, c.app.config.script_name()[1:])
     if cmd.sp.returncode:

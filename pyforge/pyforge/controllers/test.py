@@ -34,25 +34,27 @@ class TestController(BaseController, ProjectController):
     '''
 
     def __init__(self):
-        c.app = None
-        c.project = M.Project.query.get(_id='projects/test/')
-        c.user = M.User.query.get(username='test_admin')
+        c.project = M.Project.query.get(shortname='test')
         self.dispatch = DispatchTest()
         self.security = SecurityTests()
         self.auth = AuthController()
         self.static = StaticController()
         self.gsearch = SearchController()
         self.error = ErrorController()
+        for n in M.Neighborhood.query.find():
+            if n.url_prefix.startswith('//'): continue
+            n.bind_controller(self)
 
     def _dispatch(self, state, remainder):
         return _dispatch(self, state, remainder)
         
     def _lookup(self, name, *remainder):
-        subproject = M.Project.query.get(_id=c.project._id + name + '/')
+        subproject = M.Project.query.get(shortname=c.project.shortname + '/' + name)
         if subproject:
             c.project = subproject
             c.app = None
             return ProjectController(), remainder
+        app = c.project.app_instance(name)
         app = c.project.app_instance(name)
         if app is None:
             c.project.install_app(name, name)
@@ -68,6 +70,9 @@ class TestController(BaseController, ProjectController):
         return dict()
 
     def __call__(self, environ, start_response):
+        c.app = None
+        c.project = M.Project.query.get(shortname='test')
+        c.user = M.User.query.get(username='test_admin')
         app = lambda e,s: BaseController.__call__(self, e, s)
         result = app(environ, start_response)
         if not isinstance(result, list):

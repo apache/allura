@@ -74,6 +74,10 @@ class ReactorCommand(base.Command):
                                      args=(configs,)))
             continue
         if self.options.dry_run: return configs
+        elif self.options.proc == 1:
+            base.log.info('Starting single reactor process')
+            processes[0].start()
+            self.multi_worker_main(configs)
         else: # pragma no cover
             for p in processes:
                 p.start()
@@ -110,7 +114,11 @@ class ReactorCommand(base.Command):
             msg.ack()
             try:
                 if 'project_id' in data:
-                    pylons.c.project = base.M.Project.query.get(_id=data['project_id'])
+                    try:
+                        pylons.c.project = base.M.Project.query.get(_id=ObjectId(str(data['project_id'])))
+                    except:
+                        pylons.c.project = None
+                        base.log.exception('Error looking up project %r', data['project_id'])
                     if pylons.c.project is None:
                         base.log.error('The project_id was %s but it was not found',
                                        data['project_id'])
@@ -118,7 +126,8 @@ class ReactorCommand(base.Command):
                     pylons.c.project = None
                 if 'user_id' in data:
                     try:
-                        pylons.c.user = base.M.User.query.get(_id=data['user_id'] and ObjectId(str(data['user_id'])) or None)
+                        pylons.c.user = base.M.User.query.get(
+                            _id=data['user_id'] and ObjectId(str(data['user_id'])) or None)
                     except:
                         base.log.exception('Bad user_id: %s', data['user_id'])
                 mount_point = data.get('mount_point')
@@ -126,11 +135,9 @@ class ReactorCommand(base.Command):
                     pylons.c.app = pylons.c.project.app_instance(mount_point)
                     base.log.debug('Setting app %s', pylons.c.app)
                 if getattr(method, 'im_self', ()) is None:
-                    base.log.debug('im_self is None')
                     # Instancemethod - call, binding self
                     method(pylons.c.app, msg.delivery_info['routing_key'], data)
                 else:
-                    base.log.debug('im_self is %r', getattr(method, 'im_self', ()))
                     # Classmethod or function - don't bind self
                     method(msg.delivery_info['routing_key'], data)
             except: # pragma no cover
@@ -156,7 +163,11 @@ class ReactorCommand(base.Command):
                     except:
                         base.log.exception('Bad user_id: %s', data['user_id'])
                 if 'project_id' in data:
-                    pylons.c.project = base.M.Project.query.get(_id=data['project_id'])
+                    try:
+                        pylons.c.project = base.M.Project.query.get(_id=ObjectId(str(data['project_id'])))
+                    except:
+                        pylons.c.project = None
+                        base.log.exception('Error looking up project %r', data['project_id'])
                 if getattr(method, 'im_self', ()) is None:
                     # Instancemethod - call once for each app, binding self
                     if not pylons.c.project:
@@ -196,7 +207,7 @@ class SendMessageCommand(base.Command):
         topic = self.args[2]
         # Set the context of the message
         if self.options.context:
-            project, rest = find_project(self.options.context.split('/'))
+            project, rest = find_project(self.options.context)
             pylons.c.project = project
             if rest:
                 pylons.g.set_app(rest[0])

@@ -1,10 +1,13 @@
 # -*- coding: utf-8 -*-
 """Setup the pyforge application"""
+import os
 import sys
 import logging
+import shutil
 from datetime import datetime
 from tg import config
 from pylons import c, g
+from paste.deploy.converters import asbool
 
 from ming.orm.base import session
 from ming.orm.ormsession import ThreadLocalORMSession
@@ -14,42 +17,75 @@ from pyforge import model as M
 
 log = logging.getLogger(__name__)
 
+def cache_test_data():
+    log.info('Saving data to cache in .test-data')
+    if os.path.exists('.test-data'):
+        shutil.rmtree('.test-data')
+    os.system('mongodump -o .test-data > mongodump.log')
+
+def restore_test_data():
+    if os.path.exists('.test-data'):
+        log.info('Restoring data from cache in .test-data')
+        rc = os.system('mongorestore --dir .test-data > mongorestore.log')
+        return rc == 0
+    else:
+        return False
+
 def bootstrap(command, conf, vars):
     """Place any commands to setup pyforge here"""
+    # Clean up all old stuff
     ThreadLocalORMSession.close_all()
     c.queued_messages = []
     database=conf.get('db_prefix', '') + 'project:test'
     conn = M.main_doc_session.bind.conn
     for database in conn.database_names():
-        if (database.startswith('project:')
-            or database.startswith('user:')
-            or database.startswith('projects:')
-            or database.startswith('domain:')
-            or database.startswith('users:')):
-            log.info('Dropping database %s', database)
-            conn.drop_database(database)
-    M.OpenId.query.remove({})
-    M.OpenIdAssociation.query.remove({})
-    M.OpenIdNonce.query.remove({})
-    M.EmailAddress.query.remove({})
-    M.User.query.remove({})
-    M.Project.query.remove({})
-    M.SearchConfig.query.remove({})
-    M.ScheduledMessage.query.remove({})
+        db = conn[database]
+        for coll in db.collection_names():
+            if coll.startswith('system.'): continue
+            log.info('Dropping collection %s:%s', database, coll)
+            db.drop_collection(coll)
     g._push_object(pyforge.lib.app_globals.Globals())
-    log.info('Initializing search')
-    M.SearchConfig(last_commit = datetime.min,
-                   pending_commit = 0)
     try:
         g.solr.delete(q='*:*')
     except: # pragma no cover
         log.error('SOLR server is %s', g.solr_server)
         log.error('Error clearing solr index')
+    if asbool(conf.get('cache_test_data')):
+        if restore_test_data():
+            c.project = M.Project.query.get(shortname='test')
+            return
+    log.info('Initializing search')
+    M.SearchConfig(last_commit = datetime.utcnow(),
+                   pending_commit = 0)
     g.publish('audit', 'search.check_commit', {})
-    log.info('Registering initial users')
+    log.info('Registering initial users & neighborhoods')
     anonymous = M.User(_id=None,
                        username='*anonymous',
                        display_name='Anonymous Coward')
+    root = M.User.register(dict(username='root', display_name='Root'),
+                           make_project=False)
+    root.set_password('foo')
+    n_projects = M.Neighborhood(name='Projects',
+                                url_prefix='/projects/',
+                                acl=dict(read=[None], create=[],
+                                         moderate=[root._id], admin=[root._id]))
+    n_users = M.Neighborhood(name='Users',
+                             url_prefix='/users/',
+                             shortname_prefix='users/',
+                             acl=dict(read=[None], create=[],
+                                      moderate=[root._id], admin=[root._id]))
+    n_adobe = M.Neighborhood(name='Adobe',
+                             url_prefix='//adobe.localhost:8080/',
+                             acl=dict(read=[None], create=[],
+                                      moderate=[root._id], admin=[root._id]))
+    n_mozilla = M.Neighborhood(name='Mozilla',
+                               url_prefix='/mozilla/',
+                               acl=dict(read=[None], create=[],
+                                        moderate=[root._id], admin=[root._id]))
+    ThreadLocalORMSession.flush_all()
+    log.info('Registering "regular users" (non-root)')
+    u_mozilla = M.User.register(dict(username='mozilla_admin',
+                                     display_name='Adobe Admin'))
     u_adobe = M.User.register(dict(username='adobe_admin',
                                    display_name='Adobe Admin'))
     u0 = M.User.register(dict(username='test_admin',
@@ -59,17 +95,20 @@ def bootstrap(command, conf, vars):
     u2 = M.User.register(dict(username='test_user2',
                               display_name='Test User 2'))
     u_adobe.set_password('foo')
-    u0.claim_address('Beta@wiki.test.projects.sourceforge.net')
     u0.set_password('foo')
     u1.set_password('foo')
-    log.info('Registering initial project')
-    adobe = u_adobe.register_project_domain('adobe.localhost', 'Adobe')
-    p0 = u0.register_project('test')
-    p0.acl['read'].append(u1.project_role()._id)
-    p1 = p0.new_subproject('sub1')
+    u0.claim_address('Beta@wiki.test.projects.sourceforge.net')
+    log.info('Registering initial projects')
+    p_adobe1 = n_adobe.register_project('Adobe 1', u_adobe)
+    p_adobe2 = n_adobe.register_project('Adobe 2', u_adobe)
+    p_mozilla = n_mozilla.register_project('Mozilla 1', u_mozilla)
+    p0 = n_projects.register_project('test', u0)
+    c.project = p0
     c.user = u0
+    p0.acl['read'].append(u1.project_role(p0)._id)
+    p1 = p0.new_subproject('sub1')
     ThreadLocalORMSession.flush_all()
-    if conf.get('load_test_data'):
+    if asbool(conf.get('load_test_data')):
         log.info('Loading test data')
         app = p0.install_app('hello_forge', 'hello')
         app = p0.install_app('Repository', 'src')
@@ -77,7 +116,10 @@ def bootstrap(command, conf, vars):
         app.config.options['type'] = 'git'
         ThreadLocalORMSession.flush_all()
         ThreadLocalORMSession.close_all()
+        if asbool(conf.get('cache_test_data')):
+            cache_test_data()
     else: # pragma no cover
+        log.info('Loading some large data')
         p0.install_app('Wiki', 'wiki')
         p0.install_app('Tickets', 'bug')
         app = p0.install_app('Repository', 'src')

@@ -23,12 +23,12 @@ def setUp(self):
 
 def test_reactor_setup():
     cmd = reactor.ReactorSetupCommand('setup')
-    cmd.args = [ 'development.ini' ]
+    cmd.args = [ 'test.ini' ]
     cmd.command()
 
 def test_reactor():
     cmd = reactor.ReactorCommand('reactor')
-    cmd.args = [ 'development.ini' ]
+    cmd.args = [ 'test.ini' ]
     cmd.options = mock.Mock()
     cmd.options.dry_run = True
     cmd.options.proc = 1
@@ -37,29 +37,36 @@ def test_reactor():
     cmd.periodic_main()
 
 def test_reactor_callbacks():
+    ok_id = M.Project.query.get(shortname='test')._id
+    bad_id = None
+    malformed_id = 'foo'
     def test_callback(callback, msg):
-        msg.data = dict(project_id='projects/test_badproject/',
+        msg.data = dict(project_id=malformed_id,
                 mount_point='hello',
                 user_id='badf00d')
         callback(msg.data, msg)
-        msg.data = dict(project_id='projects/test/',
+        msg.data = dict(project_id=bad_id,
+                mount_point='hello',
+                user_id='badf00d')
+        callback(msg.data, msg)
+        msg.data = dict(project_id=ok_id,
                 mount_point='hello',
                 user_id=M.User.anonymous()._id)
         callback(msg.data, msg)
-        msg.data = dict(project_id='projects/test/',
+        msg.data = dict(project_id=ok_id,
                 mount_point='hello')
         callback(msg.data, msg)
-        msg.data = dict(project_id='projects/test/')
+        msg.data = dict(project_id=ok_id)
         callback(msg.data, msg)
         msg.data = dict()
         callback(msg.data, msg)
     cmd = reactor.ReactorCommand('reactor')
-    cmd.args = [ 'development.ini' ]
+    cmd.args = [ 'test.ini' ]
     cmd.options = mock.Mock()
     cmd.options.dry_run = True
     cmd.options.proc = 1
     configs = cmd.command()
-    g.set_project('projects/test')
+    g.set_project('test')
     g.set_app('hello')
     a_callback = cmd.route_audit('hello_forge', c.app.__class__.auditor)
     ac_callback = cmd.route_audit('hello_forge', c.app.__class__.class_auditor)
@@ -76,11 +83,11 @@ def test_reactor_callbacks():
 
 def test_send_message():
     cmd = reactor.SendMessageCommand('send_message')
-    cmd.args = [ 'development.ini', 'audit', 'nobody.listening', '{}' ]
+    cmd.args = [ 'test.ini', 'audit', 'nobody.listening', '{}' ]
     cmd.options = mock.Mock()
-    cmd.options.context = 'projects/test/hello/'
+    cmd.options.context = '/projects/test/hello/'
     cmd.command()
-    cmd.options.context = 'projects/test/'
+    cmd.options.context = '/projects/test/'
     cmd.command()
     cmd.options.context = None
     cmd.command()

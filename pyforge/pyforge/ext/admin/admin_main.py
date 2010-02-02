@@ -115,7 +115,7 @@ class ProjectAdminController(object):
         if plugin is None: plugin = []
         for sp in subproject:
             if sp.get('delete'):
-                M.Project.query.get(_id=sp['id']).delete()
+                M.Project.query.get(shortname=sp['shortname']).delete()
         for p in plugin:
             if p.get('delete'):
                 c.project.uninstall_app(p['mount_point'])

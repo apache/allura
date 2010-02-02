@@ -1,4 +1,4 @@
-from pylons import g
+from pylons import g, c
 
 from ming.orm.ormsession import ThreadLocalORMSession
 
@@ -21,7 +21,7 @@ class TestAdmin(TestController):
                 'new.mount_point':'test_subproject'})
         self.app.post('/admin/update_mounts', params={
                 'subproject-0.delete':'on',
-                'subproject-0.id':'projects/test/test_subproject/',
+                'subproject-0.shortname':'test/test_subproject',
                 'new.ep_name':'',
                 })
         # Add/Remove a plugin

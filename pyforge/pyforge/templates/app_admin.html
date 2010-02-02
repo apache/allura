@@ -12,8 +12,7 @@
   </head>
   
   <body>
-    <h1>Admin for 
-      ${project_links(c.project)} $app.config.options.mount_point </h1>
+    <h1>Admin for $c.project.name: $app.config.options.mount_point </h1>
     <h2>App type: $app.config.plugin_name</h2>
     <div id="app-config" py:if="len(app.config_options) > 1">
       <h3>Config Options</h3>

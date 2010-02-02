@@ -4,6 +4,18 @@ This module provides the security predicates used in decorating various models.
 from pylons import c, request
 from webob import exc
 
+def has_neighborhood_access(access_type, neighborhood, user=None):
+    from pyforge import model as M
+    def result(user=user):
+        if user is None: user = c.user
+        acl = neighborhood.acl[access_type]
+        anon = M.User.anonymous()
+        if not acl: return user != anon
+        for u in acl:
+            if u == anon._id or u == user._id: return True
+        return False
+    return result
+
 def has_project_access(access_type, project=None, user=None):
     def result(project=project, user=user):
         if project is None: project = c.project
@@ -12,6 +24,8 @@ def has_project_access(access_type, project=None, user=None):
         for proj in project.parent_iter():
             acl = set(proj.acl.get(access_type, []))
             if acl & user_roles: return True
+        if has_neighborhood_access('admin', project.neighborhood, user)():
+            return True
         return False
     return result
 
@@ -24,6 +38,8 @@ def has_artifact_access(access_type, obj=None, user=None, app=None):
         if obj is not None:
             acl |= set(obj.acl.get(access_type, []))
         if acl & user_roles: return True
+        if has_neighborhood_access('admin', app.project.neighborhood, user)():
+            return True
         return False
     return result
 

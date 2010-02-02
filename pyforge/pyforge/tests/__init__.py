@@ -54,7 +54,6 @@ class TestController(object):
         test_file = path.join(conf_dir, 'test.ini')
         cmd = SetupCommand('setup-app')
         cmd.run([test_file])
-        
     
     def tearDown(self):
         """Method called by nose after running each test"""

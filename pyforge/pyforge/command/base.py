@@ -1,4 +1,5 @@
 import os
+import sys
 import logging
 from pkg_resources import iter_entry_points
 
@@ -19,7 +20,11 @@ class Command(command.Command):
     def basic_setup(self):
         global log, M
         conf = appconfig('config:%s' % self.args[0],relative_to=os.getcwd())
-        logging.config.fileConfig(self.args[0])
+        try:
+            logging.config.fileConfig(self.args[0])
+        except Exception:
+            print >> sys.stderr, (
+                'Could not configure logging with config file %s' % self.args[0])
         from pyforge import model
         M=model
         log = logging.getLogger('pyforge.command')

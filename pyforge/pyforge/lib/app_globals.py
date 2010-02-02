@@ -16,6 +16,7 @@ import pysolr
 import markdown
 from carrot.connection import BrokerConnection
 from carrot.messaging import Publisher
+from pymongo.bson import ObjectId
 
 from pyforge import model as M
 from pyforge.lib.markdown_extensions import ArtifactExtension
@@ -72,7 +73,7 @@ class Globals(object):
               resource ])
 
     def set_project(self, pid):
-        c.project = M.Project.query.get(_id=pid + '/')
+        c.project = M.Project.query.get(shortname=pid)
 
     def set_app(self, name):
         c.app = c.project.app_instance(name)
@@ -90,7 +91,12 @@ class Globals(object):
             if user._id is None:
                 message.setdefault('user_id',  None)
             else:
-                message.setdefault('user_id',  str(user._id))
+                message.setdefault('user_id',  user._id)
+        # Make message safe for serialization
+        if kw.get('serializer', 'json') in ('json', 'yaml'):
+            for k, v in message.items():
+                if isinstance(v, ObjectId):
+                    message[k] = str(v)
         if hasattr(c, 'queued_messages'):
             c.queued_messages.append(dict(
                     xn=xn,

@@ -14,3 +14,5 @@ sandbox-env/*
 download/*
 install/*
 ForgeSCM/forgescm/data/*
+*/.test-data/*
+*/.coverage

@@ -85,7 +85,7 @@ class ForgeSCMApp(Application):
         # Create a repository
         repo_dir = pkg_resources.resource_filename(
             'forgescm',
-            os.path.join('data', self.project._id, self.config.options.mount_point))
+            os.path.join('data', self.project.shortname, self.config.options.mount_point))
         repo = model.Repository(
             description='This is the repository object',
             status='Pending',

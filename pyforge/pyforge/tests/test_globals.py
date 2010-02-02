@@ -23,7 +23,7 @@ def setUp(self):
 def test_app_globals():
     g.oid_session()
     g.oid_session()
-    g.set_project('projects/test')
+    g.set_project('test')
     g.set_app('hello')
     assert g.app_static('css/style.css') == '/static/hello_forge/css/style.css', g.app_static('css/style.css')
     assert g.url('/foo', a='foo bar') == 'http://localhost:80/foo?a=foo+bar', g.url('/foo', a='foo bar')
@@ -32,7 +32,7 @@ def test_app_globals():
 
 def test_markdown():
     'Just a test to get coverage in our markdown extension'
-    g.set_project('projects/test')
+    g.set_project('test')
     g.set_app('hello')
     assert '<a href=' in g.markdown.convert('# Foo!\n[Root]')
     assert '<a href=' not in g.markdown.convert('# Foo!\n[Rooted]')

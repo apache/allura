@@ -15,13 +15,20 @@ from pymongo import bson
 
 def find_project(url_path):
     from pyforge import model as M
-    length = len(url_path)
+    for n in M.Neighborhood.query.find():
+        if url_path.startswith(n.url_prefix):
+            break
+    else:
+        return None, url_path
+    project_part = n.shortname_prefix + url_path[len(n.url_prefix):]
+    parts = project_part.split('/')
+    length = len(parts)
     while length:
-        id = '/'.join(url_path[:length]) + '/'
-        p = M.Project.query.get(_id=id)
-        if p: return p, url_path[length:]
+        shortname = '/'.join(parts[:length])
+        p = M.Project.query.get(shortname=shortname)
+        if p: return p, parts[length:]
         length -= 1
-    return None, url_path
+    return None, url_path.split('/')
 
 def find_executable(exe_name):
     '''Find the abspath of a given executable (which
@@ -64,9 +71,9 @@ def mixin_reactors(cls, module, prefix=None):
         if ConsumerDecoration.get_decoration(value, False):
             setattr(cls, prefix + name, staticmethod(value))
 
-def set_context(project_id, mount_point=None, app_config_id=None):
+def set_context(project_shortname, mount_point=None, app_config_id=None):
     from pyforge import model
-    p = model.Project.query.get(_id=project_id)
+    p = model.Project.query.get(shortname=project_shortname)
     c.project = p
     if app_config_id is None:
         c.app = p.app_instance(mount_point)
