@@ -37,6 +37,10 @@ def find_executable(exe_name):
         path = os.path.join(dirname, exe_name)
         if os.access(path, os.X_OK): return path
     
+def make_neighborhoods(uids):
+    from pyforge import model as M
+    return (M.Neighborhood.query.get(_id=uid) for uid in uids)
+
 def make_users(uids):
     from pyforge import model as M
     return (M.User.query.get(_id=uid) for uid in uids)
@@ -74,6 +78,8 @@ def mixin_reactors(cls, module, prefix=None):
 def set_context(project_shortname, mount_point=None, app_config_id=None):
     from pyforge import model
     p = model.Project.query.get(shortname=project_shortname)
+    if p is None:
+        p = model.Project.query.get(_id=ObjectId(str(project_shortname)))
     c.project = p
     if app_config_id is None:
         c.app = p.app_instance(mount_point)

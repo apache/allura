@@ -7,6 +7,7 @@ import pkg_resources
 from tg import expose, flash, redirect, session
 from tg.decorators import with_trailing_slash, without_trailing_slash
 from pylons import c, g
+from webob import exc
 
 import ming
 
@@ -72,12 +73,19 @@ class RootController(BaseController):
         app = self._wsgi_handler(environ)
         if app is None:
             app = lambda e,s: BaseController.__call__(self, e, s)
-        result = app(environ, start_response)
-        if not isinstance(result, list):
-            return self._cleanup_iterator(result)
-        else:
+        try:
+            result = app(environ, start_response)
+            if not isinstance(result, list):
+                return self._cleanup_iterator(result)
+            else:
+                self._cleanup_request()
+                return result
+        except exc.HTTPRedirection:
             self._cleanup_request()
-            return result
+            raise
+        except:
+            ming.orm.ormsession.ThreadLocalORMSession.close_all()
+            raise
 
     def _cleanup_iterator(self, result):
         for x in result:
@@ -107,7 +115,7 @@ class RootController(BaseController):
         """Handle the front-page."""
         projects = defaultdict(list)
         for n in M.Neighborhood.query.find():
-            projects[n.name] = M.Project.query.find(dict(
+            projects[n] = M.Project.query.find(dict(
                     is_root=True, neighborhood_id=n._id)).all()
         return dict(projects=projects)
 

@@ -27,6 +27,7 @@ class TestProjectHome(TestController):
     def test_neighborhood_home(self):
         r0 = str(self.app.get('/projects/test/home/'))
         r1 = self.app.get('/mozilla/test/home/', status=302)
+        r2 = self.app.get('/mozilla/no_such_project/home/', status=404)
         r = self.app.get('/projects/test/home/configuration')
         selects = r.html.findAll('select')
         options = selects[-1].findAll('option')

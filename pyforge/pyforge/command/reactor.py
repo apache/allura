@@ -115,7 +115,10 @@ class ReactorCommand(base.Command):
             try:
                 if 'project_id' in data:
                     try:
-                        pylons.c.project = base.M.Project.query.get(_id=ObjectId(str(data['project_id'])))
+                        if data['project_id']:
+                            pylons.c.project = base.M.Project.query.get(_id=ObjectId(str(data['project_id'])))
+                        else:
+                            pylons.c.project = None
                     except:
                         pylons.c.project = None
                         base.log.exception('Error looking up project %r', data['project_id'])
@@ -164,7 +167,10 @@ class ReactorCommand(base.Command):
                         base.log.exception('Bad user_id: %s', data['user_id'])
                 if 'project_id' in data:
                     try:
-                        pylons.c.project = base.M.Project.query.get(_id=ObjectId(str(data['project_id'])))
+                        if data['project_id']:
+                            pylons.c.project = base.M.Project.query.get(_id=ObjectId(str(data['project_id'])))
+                        else:
+                            pylons.c.project = None
                     except:
                         pylons.c.project = None
                         base.log.exception('Error looking up project %r', data['project_id'])

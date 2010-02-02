@@ -108,6 +108,22 @@ class ProjectAdminController(object):
         c.project.description = description
         redirect('.')
 
+    @expose()
+    def join_neighborhood(self, nid):
+        if not nid:
+            n = M.Neighborhood.query.get(name='Projects')
+            c.project.neighborhood_id = n._id
+            flash('Joined %s' % n.name)
+            redirect(c.project.url() + 'admin/')
+        nid = ObjectId(str(nid))
+        if nid not in c.project.neighborhood_invitations:
+            flash('No invitation to that neighborhood', 'error')
+            redirect('.')
+        c.project.neighborhood_id = nid
+        n = M.Neighborhood.query.get(_id=nid)
+        flash('Joined %s' % n.name)
+        redirect(c.project.url() + 'admin/')
+
     @vardec
     @expose()
     def update_mounts(self, subproject=None, plugin=None, new=None, **kw):

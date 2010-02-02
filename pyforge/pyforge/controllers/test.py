@@ -72,14 +72,21 @@ class TestController(BaseController, ProjectController):
     def __call__(self, environ, start_response):
         c.app = None
         c.project = M.Project.query.get(shortname='test')
-        c.user = M.User.query.get(username='test_admin')
+        c.user = M.User.query.get(username=environ.get('username', 'test_admin'))
         app = lambda e,s: BaseController.__call__(self, e, s)
-        result = app(environ, start_response)
-        if not isinstance(result, list):
-            return self._cleanup_iterator(result)
-        else:
+        try:
+            result = app(environ, start_response)
+            if not isinstance(result, list):
+                return self._cleanup_iterator(result)
+            else:
+                self._cleanup_request()
+                return result
+        except exc.HTTPRedirection:
             self._cleanup_request()
-            return result
+            raise
+        except:
+            ming.orm.ormsession.ThreadLocalORMSession.close_all()
+            raise
 
     def _cleanup_iterator(self, result):
         for x in result:

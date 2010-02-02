@@ -92,6 +92,7 @@ class Neighborhood(MappedClass):
     url_prefix = FieldProperty(str) # e.g. http://adobe.openforge.com/ or projects/
     shortname_prefix = FieldProperty(str, if_missing='')
     css = FieldProperty(str, if_missing='')
+    homepage = FieldProperty(str, if_missing='')
     acl = FieldProperty({
             'read':[S.ObjectId],      # access neighborhood at all
             'create':[S.ObjectId],    # create project in neighborhood
@@ -123,26 +124,31 @@ class Neighborhood(MappedClass):
                     shortname, p.neighborhood.name))
             return p
         database = 'project:' + shortname.replace('/', ':').replace(' ', '_')
-        p = Project(neighborhood_id=self._id,
-                    shortname=shortname,
-                    name=shortname,
-                    short_description='Please update with a short description',
-                    description=(shortname + '\n'
-                                 + '=' * 80 + '\n\n'
-                                 + 'You can edit this description in the admin page'),
-                    database=database,
-                    is_root=True)
-        with push_config(c, project=p, user=user):
-            pr = user.project_role()
-            for roles in p.acl.itervalues():
-                roles.append(pr._id)
-            pr = auth.ProjectRole(name='*anonymous')
-            p.acl.read.append(pr._id)
-            auth.ProjectRole(name='*authenticated')
-            p.install_app('home', 'home')
-            p.install_app('admin', 'admin')
-            p.install_app('search', 'search')
-            ThreadLocalORMSession.flush_all()
+        try:
+            p = Project(neighborhood_id=self._id,
+                        shortname=shortname,
+                        name=shortname,
+                        short_description='Please update with a short description',
+                        description=(shortname + '\n'
+                                     + '=' * 80 + '\n\n'
+                                     + 'You can edit this description in the admin page'),
+                        database=database,
+                        is_root=True)
+            with push_config(c, project=p, user=user):
+                pr = user.project_role()
+                for roles in p.acl.itervalues():
+                    roles.append(pr._id)
+                pr = auth.ProjectRole(name='*anonymous')
+                p.acl.read.append(pr._id)
+                auth.ProjectRole(name='*authenticated')
+                p.install_app('home', 'home')
+                p.install_app('admin', 'admin')
+                p.install_app('search', 'search')
+                ThreadLocalORMSession.flush_all()
+        except:
+            ThreadLocalORMSession.close_all()
+            p.delete()
+            raise
         return p
 
     def bind_controller(self, controller):
@@ -174,6 +180,7 @@ class Project(MappedClass):
             'plugin':[S.ObjectId],    # install/delete/configure plugins
             'security':[S.ObjectId],  # update ACL, roles
             })
+    neighborhood_invitations=FieldProperty([S.ObjectId])
     neighborhood = RelationProperty(Neighborhood)
     app_configs = RelationProperty('AppConfig')
 

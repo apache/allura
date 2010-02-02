@@ -5,7 +5,7 @@ from ming.orm.ormsession import ThreadLocalORMSession
 from pyforge.tests import TestController
 from pyforge import model as M
 
-class TestAdmin(TestController):
+class TestProjectAdmin(TestController):
 
     def test_admin_controller(self):
         self.app.get('/admin/')

@@ -85,7 +85,7 @@ def bootstrap(command, conf, vars):
     ThreadLocalORMSession.flush_all()
     log.info('Registering "regular users" (non-root)')
     u_mozilla = M.User.register(dict(username='mozilla_admin',
-                                     display_name='Adobe Admin'))
+                                     display_name='Mozilla Admin'))
     u_adobe = M.User.register(dict(username='adobe_admin',
                                    display_name='Adobe Admin'))
     u0 = M.User.register(dict(username='test_admin',
@@ -94,6 +94,9 @@ def bootstrap(command, conf, vars):
                               display_name='Test User'))
     u2 = M.User.register(dict(username='test_user2',
                               display_name='Test User 2'))
+    n_adobe.acl['admin'].append(u_adobe._id)
+    n_mozilla.acl['admin'].append(u_mozilla._id)
+    u_mozilla.set_password('foo')
     u_adobe.set_password('foo')
     u0.set_password('foo')
     u1.set_password('foo')

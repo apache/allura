@@ -11,7 +11,7 @@
 
   <head>
     <meta content="text/html; charset=UTF-8" http-equiv="content-type" py:replace="''"/>
-    <title>Project Admin for $c.project._id</title>
+    <title>Project Admin for $c.project.shortname</title>
 
     <py:def function="role_select(name)">
       <select name="$name">
@@ -24,6 +24,18 @@
   
   <body>
     <h1>Project Admin</h1>
+      <py:if test="len(c.project.neighborhood_invitations)">
+        <h2>Neighborhood Invitation(s)</h2>
+        <form method="POST" action="join_neighborhood">
+          <select name="nid">
+            <option py:if="c.project.neighborhood.name != 'Projects'" value="">
+              Leave $c.project.neighborhood.name</option>
+            <option py:for="n in h.make_neighborhoods(c.project.neighborhood_invitations)"
+                    value="$n._id">$n.name</option>
+          </select>
+          <input type="submit" value="Join Neighborhood"/>
+        </form>
+      </py:if>
     <div id="project-admin">
       <div py:if="not has_project_access('update')()">
         <h3>Project Name: $c.project.name</h3>
