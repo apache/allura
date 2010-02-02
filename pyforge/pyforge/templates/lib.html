@@ -115,4 +115,28 @@
   <py:def function="submit_button(value, name=None)">
     <input type="submit" name="$name" value="$value"/><br/>
   </py:def>
+
+  <py:def function="markdown_edit(name, content)">
+    <textarea id="wmd_edit_$name" name="$name">$content</textarea>
+    <div id="wmd_preview_$name"></div>
+
+    <script type="text/javascript">
+        wmd_options = { autostart: false };
+    </script>
+    <script type="text/javascript" src="/wmd/wmd.js"></script>
+    <script type="text/javascript">
+        (function() {
+            var textarea = document.getElementById('wmd_edit_$name');
+            var previewDiv = document.getElementById('wmd_preview_$name');
+
+            var previewManager = new Attacklab.wmd.previewManager({
+              input:textarea,
+              preview:previewDiv,
+              output:null
+            });
+
+            new Attacklab.wmd.editor(textarea,previewManager.refresh);
+        })()
+    </script>
+  </py:def>
 </html>

@@ -10,22 +10,30 @@
   <head>
     <meta content="text/html; charset=UTF-8" http-equiv="content-type" py:replace="''"/>
     <title>$page.title</title>
+    <style type="text/css">
+      #wmd_edit_text{
+        width: 45%;
+        float: left;
+      }
+      #wmd_preview_text{
+        width: 45%;
+        float: left;
+        margin: 1em 0 0 1em;
+        border: 1px solid #ccc;
+        padding: .5em;
+      }
+      #edit_holder{
+        overflow: auto;
+      }
+    </style>
   </head>
   
   <body>
     <h1>$page.title</h1>
-    <div id="sidebar-right" style="width: 300px; padding: 1em;">
-      <p>You can use 
-        <a href="http://daringfireball.net/projects/markdown/">MarkDown</a> 
-        Syntax here</p>
-      <h4>Example Input</h4>
-      <pre style="background-color:#fff">$example</pre>
-      <h4>Example Rendering</h4>
-      <div style="background-color:#fff">${Markup(g.markdown.convert(example))}</div>
-      <a href="http://daringfireball.net/projects/markdown/syntax">More Examples</a> 
-    </div>
     <form method="post" action="update">
-      <textarea cols="80" rows="24" name="text">$page.text</textarea><br/>
+      <div id="edit_holder">
+        ${markdown_edit("text",page.text)}
+      </div>
       <input type="submit" value="Save Changes"/>
     </form>
   </body>

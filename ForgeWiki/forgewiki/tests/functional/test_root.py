@@ -15,6 +15,10 @@ class TestRootController(TestController):
         response = self.app.get('/Wiki/TEST/index')
         assert_true('TEST' in response)
 
+    def test_root_markdown_syntax(self):
+        response = self.app.get('/Wiki/TEST/markdown_syntax')
+        assert_true('Markdown Syntax' in response)
+
     def test_root_new_page(self):
         response = self.app.get('/Wiki/new_page?title=TEST')
         assert_true('TEST' in response)

@@ -107,7 +107,9 @@ class ForgeWikiApp(Application):
 			    SitemapEntry('Browse Tags','.', className="todo"),
 			    SitemapEntry('Advanced','.', className="todo"),
 			    SitemapEntry('Bookmarks', className="todo"),
-			    SitemapEntry('Help', className="todo")]
+			    SitemapEntry('Help'),
+			    SitemapEntry('Wiki Help','.', className="todo"),
+			    SitemapEntry('Markdown Syntax',c.app.url+'markdown_syntax')]
 
     @property
     def templates(self):
@@ -173,6 +175,11 @@ class RootController(object):
             if results: count=results.hits
         return dict(q=q, history=history, results=results or [], count=count)
 
+    @expose('forgewiki.templates.markdown_syntax')
+    def markdown_syntax(self):
+        'Display a page about how to use markdown.'
+        return dict(example=MARKDOWN_EXAMPLE)
+
 class PageController(object):
 
     def __init__(self, title):
@@ -208,8 +215,7 @@ class PageController(object):
             require(has_artifact_access('create', self.page))
         else:
             require(has_artifact_access('edit', self.page))
-        return dict(page=self.page,
-                    example=MARKDOWN_EXAMPLE)
+        return dict(page=self.page)
 
     @expose('forgewiki.templates.page_history')
     def history(self):
