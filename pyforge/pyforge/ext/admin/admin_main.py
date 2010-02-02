@@ -135,10 +135,10 @@ class ProjectAdminController(object):
         if role is None: role = []
         for r in role:
             if r.get('delete'):
-                c.project.acl[permission].remove(ObjectId(r['id']))
+                c.project.acl[permission].remove(ObjectId(str(r['id'])))
         if new.get('add'):
             if new['id']:
-                c.project.acl[permission].append(ObjectId(new['id']))
+                c.project.acl[permission].append(ObjectId(str(new['id'])))
             else:
                 user = M.User.query.get(username=new['username'])
                 if user is None:
@@ -155,16 +155,16 @@ class ProjectAdminController(object):
         if role is None: role = []
         for r in role:
             if r.get('delete'):
-                role = M.ProjectRole.query.get(_id=ObjectId(r['id']))
+                role = M.ProjectRole.query.get(_id=ObjectId(str(r['id'])))
                 if not role.special:
                     role.delete()
             if r['new'].get('add'):
-                role = M.ProjectRole.query.get(_id=ObjectId(r['id']))
-                role.roles.append(ObjectId(r['new']['id']))
+                role = M.ProjectRole.query.get(_id=ObjectId(str(r['id'])))
+                role.roles.append(ObjectId(str(r['new']['id'])))
             for sr in r.get('subroles', []):
                 if sr.get('delete'):
-                    role = M.ProjectRole.query.get(_id=ObjectId(r['id']))
-                    role.roles.remove(ObjectId(sr['id']))
+                    role = M.ProjectRole.query.get(_id=ObjectId(str(r['id'])))
+                    role.roles.remove(ObjectId(str(sr['id'])))
         if new.get('add'):
             M.ProjectRole(name=new['name'])
         redirect('.#role-admin')
