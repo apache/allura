@@ -42,3 +42,10 @@ class TestFunctionalController(TestController):
         self.new_ticket(summary)
         response = self.app.get('/bugs/')
         assert_true(summary in response)
+
+    def test_new_attachment(self):
+        self.new_ticket('test new attachment')
+        content = file(__file__).read()
+        self.app.post('/bugs/1/attach', upload_files=[('file_info', 'test_root.py', content)])
+        response = self.app.get('/bugs/1/')
+        assert_true('test_root.py' in response)
