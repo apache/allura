@@ -34,3 +34,14 @@ class TestFunctionalController(TestController):
         self.app.post('/bugs/1/comments/reply', { 'text': comment })
         response = self.app.get('/bugs/1/')
         assert_true(comment in response)
+
+    def test_render_ticket(self):
+        response = self.app.get('/bugs/new/')
+        form = response.form
+        summary = 'test render ticket'
+        form['summary'] = summary
+        response = form.submit().follow()
+        assert_true(summary in response)
+        assert_true('Attachments' in response)
+        assert_true('Comments' in response)
+        assert_true('Make a comment' in response)
