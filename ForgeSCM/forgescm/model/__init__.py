@@ -1,2 +1,2 @@
-from artifacts import Repository, Commit, Patch
+from artifacts import Repository, Commit
 

@@ -33,6 +33,10 @@ config = %s
     with open(fn, 'a') as fp:
         fp.write(text)
 
+# nyi
+def setup_scmweb(self, repo_dir):
+    return
+
 def incoming_hook(ui, repo, node, **kwargs):
     ini_file = ui.config('notify_forge', 'config')
     repo_id = ui.config('notify_forge', 'repository')

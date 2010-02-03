@@ -17,10 +17,11 @@ class Command(object):
             base = self.base
         self.args = tuple(base) + args
 
+    # consider checking return value
     def run(self, output_consumer=None, cwd=None):
         if cwd is None:
             cwd=self.cwd()
-        log.info('Running command: %r', self.args)
+        log.info('Running command: %r in %s', self.args, cwd)
         self.sp = subprocess.Popen(
             self.args, executable=self.args[0],
             stdin=None, stdout=subprocess.PIPE,
@@ -29,7 +30,15 @@ class Command(object):
             self.output = self.sp.stdout.read()
         else:
             output_consumer(self.sp.stdout)
+
+        # Python docs say: Warning: This will deadlock if the child process
+        # generates enough output to a stdout or stderr pipe such that it
+        # blocks waiting for the OS pipe buffer to accept more data. Use
+        # communicate() to avoid that.
         self.sp.wait()
+
+        log.info('command result: %s', self.sp.returncode)
+        return self.sp.returncode
 
     def run_exc(self, *args, **kwargs):
         result = self.run(*args, **kwargs)

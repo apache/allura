@@ -1,9 +1,7 @@
 from os import path, system
 
 from tg import config
-from paste.deploy import loadapp
-from paste.script.appinstall import SetupCommand
-from webtest import TestApp
+from forgescm.tests import test_helper
 
 class TestController(object):
     """
@@ -22,23 +20,8 @@ class TestController(object):
     
     """
     
-    application_under_test = 'main'
-    
     def setUp(self):
-        """Method called by nose before running each test"""
-        # Loading the application:
-        conf_dir = config.here = path.abspath(
-            path.dirname(__file__) + '/../..')
-        wsgiapp = loadapp('config:test.ini#%s' % self.application_under_test,
-                          relative_to=conf_dir)
-        self.app = TestApp(wsgiapp)
-        # Setting it up:
-        test_file = path.join(conf_dir, 'test.ini')
-        cmd = SetupCommand('setup-app')
-        cmd.run([test_file])
-        hg_repo_url = config.here + '/forgescm/tests/hg_repo'
-        if not path.exists(hg_repo_url):
-            system('hg init %s' % hg_repo_url)
+        self.app = test_helper.test_setup_app()
     
     def tearDown(self):
         """Method called by nose after running each test"""

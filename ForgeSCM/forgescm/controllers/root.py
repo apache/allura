@@ -18,9 +18,9 @@ class RootController(object):
         return dict(repo=repo)
 
     @expose()
-    def fork(self, project, mount_point):
+    def fork(self, project_id, mount_point):
         repo = c.app.repo
-        new_url = repo.fork(project, mount_point)
+        new_url = repo.fork(project_id, mount_point)
         flash('Project %s forked' % repo.url())
         redirect(new_url)
                     

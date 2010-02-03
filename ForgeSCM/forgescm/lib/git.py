@@ -19,10 +19,23 @@ class init(Command):
     base='git init'
 
 class clone(Command):
-    base='git clone'
+    base='git clone -n'
+
+    # call this after a clone, since git clone always creates
+    # a subdir, we need to move the git back to the already
+    # existing mount-point directory
+    # -- possibly could eliminate this if we use --bare
+    def finish(self):
+        path = self.cwd()
+        tmp_git_path = os.path.join(path, self.args[-1])
+        shutil.move(os.path.join(tmp_git_path, '.git'), os.path.join(path, '.git'))
+        shutil.rmtree(os.path.join(path, tmp_git_path))
 
 class scm_log(Command):
     base='git log'
+
+def setup_scmweb(repo_name, repo_dir):
+    return setup_gitweb(repo_name, repo_dir)
 
 def setup_gitweb(repo_name, repo_dir):
     'Set up the GitWeb config file'
@@ -46,10 +59,13 @@ def setup_commit_hook(repo_dir, plugin_id):
     tpl_text = open(tpl_fn).read()
     tt = genshi.template.NewTextTemplate(
         tpl_text, filepath=os.path.dirname(tpl_fn), filename=tpl_fn)
+    config = None
+    if 'file' in pylons.config:
+        config = pylons.config.__file__
     context = dict(
         executable=sys.executable,
         repository=plugin_id,
-        config=pylons.config['__file__'])
+        config=config)
     strm = tt.generate(**context)
     fn = os.path.join(repo_dir, '.git/hooks/post-receive')
     with open(fn, 'w') as fp:

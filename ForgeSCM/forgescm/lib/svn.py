@@ -43,6 +43,9 @@ def svn_clone(remote):
     # Use hgsubversion to clone svn=>hg
     hg.clone('file://%s/svn_repo' % cmd.cwd(), 'hg_repo').run_exc()
 
+def setup_scmweb(self, repo_dir):
+    return
+
 def setup_commit_hook(repo_dir, plugin_id):
     'Set up the svn post-commit hook'
     tpl_fn = pkg_resources.resource_filename(

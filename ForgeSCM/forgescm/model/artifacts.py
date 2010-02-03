@@ -17,6 +17,9 @@ from ming.orm.property import FieldProperty, RelationProperty, ForeignIdProperty
 
 from pyforge.lib.helpers import push_config
 from pyforge.model import Project, Artifact, AppConfig
+from pymongo import bson
+import sys
+import forgescm.lib
 
 log = logging.getLogger(__name__)
 
@@ -33,10 +36,10 @@ class Repository(Artifact):
     pull_requests = FieldProperty([str])
     repo_dir = FieldProperty(str)
     forks = FieldProperty([dict(
-                project_id=str,
+                project_id=schema.ObjectId,
                 app_config_id=schema.ObjectId(if_missing=None))])
     forked_from = FieldProperty(dict(
-            project_id=str,
+            project_id=schema.ObjectId,
             app_config_id=schema.ObjectId(if_missing=None)))
 
     commits = RelationProperty('Commit', via='repository_id',
@@ -49,6 +52,39 @@ class Repository(Artifact):
         if limit:
             q = q.limit(limit)
         return q
+
+    def scmlib(self):
+        if self.type == 'git':
+            return forgescm.lib.git
+        elif self.type == 'hg':
+            return forgescm.lib.hg
+        elif self.type == 'svn':
+            return forgescm.lib.svn
+
+    ## patterned after git_react/init...
+    ## compare/make sure it does everything
+    ## hg and svn init do
+    def init(self, data):
+        '''This is the fat model method to handle a reactor's init call'''
+        log.info(self.type + ' init')
+        print >> sys.stderr, self.type + ' init'
+        repo = c.app.repo
+        scm = self.scmlib()
+        cmd = scm.init()
+        cmd.clean_dir()
+        self.clear_commits()
+        self.parent = None
+        cmd.run()
+        log.info('Setup gitweb in %s', self.repo_dir)
+        repo_name = c.project.shortname + c.app.config.options.mount_point
+        scm.setup_scmweb(repo_name, repo.repo_dir)
+        scm.setup_commit_hook(repo.repo_dir, c.app.config.script_name()[1:])
+        if cmd.sp.returncode:
+            g.publish('react', 'error', dict(
+                message=cmd.output))
+            repo.status = 'Error: %s' % cmd.output
+        else:
+            repo.status = 'Ready'
 
     def url(self):
         return self.app_config.url()
@@ -110,7 +146,6 @@ class Repository(Artifact):
         return result
 
     def clear_commits(self):
-        mapper(Patch).remove(dict(repository_id=self._id))
         mapper(Commit).remove(dict(repository_id=self._id))
 
     def fork_urls(self):
@@ -121,10 +156,7 @@ class Repository(Artifact):
 
     def fork(self, project_id, mount_point):
         clone_url = self.clone_url()
-        forked_from = dict(
-            project_id=c.project._id,
-            app_config_id=c.app.config._id)
-        p = Project.query.get(_id=project_id)
+        p = Project.query.get(_id=bson.ObjectId(str(project_id)))
         app = p.install_app('Repository', mount_point,
                             type=c.app.config.options.type)
         with push_config(c, project=p, app=app):
@@ -134,9 +166,9 @@ class Repository(Artifact):
             new_url = repo.url()
         g.publish('audit', 'scm.%s.fork' % c.app.config.options.type, dict(
                 url=clone_url,
-                forked_to=dict(project_id=project_id,
+                forked_to=dict(project_id=str(p._id),
                                app_config_id=str(app.config._id)),
-                forked_from=dict(project_id=c.project._id,
+                forked_from=dict(project_id=str(c.project._id),
                                  app_config_id=str(c.app.config._id))))
         return new_url
 
@@ -148,7 +180,6 @@ class Repository(Artifact):
             log.exception('Error deleting %s', self.repo_dir)
         Artifact.delete(self)
         mapper(Commit).remove(dict(app_config_id=self.app_config_id))
-        mapper(Patch).remove(dict(app_config_id=self.app_config_id))
 
 class Commit(Artifact):
     class __mongometa__:
@@ -168,7 +199,6 @@ class Commit(Artifact):
     branch = FieldProperty(str)
 
     repository = RelationProperty(Repository, via='repository_id')
-    patches = RelationProperty('Patch', via='commit_id')
 
     def index(self):
         result = Artifact.index(self)
@@ -183,57 +213,5 @@ class Commit(Artifact):
     def url(self):
         return self.repository.url() + 'repo/' + self.hash + '/'
 
-class Patch(Artifact):
-    class __mongometa__:
-        name='diff'
-    type_s = 'ForgeSCM Patch'
-
-    _id = FieldProperty(schema.ObjectId)
-    repository_id = ForeignIdProperty(Repository)
-    commit_id = ForeignIdProperty(Commit)
-    filename = FieldProperty(str)
-    patch_text = FieldProperty(schema.Binary)
-
-    repository = RelationProperty(Repository, via='repository_id')
-    commit = RelationProperty(Commit, via='commit_id')
-
-    def _get_unicode_text(self):
-        '''determine the encoding and return either unicode or u"<<binary data>>"'''
-        if not self.patch_text: return u''
-        for attempt in ('ascii', 'utf-8', 'latin-1'):
-            try:
-                return unicode(self.patch_text, attempt)
-            except UnicodeDecodeError:
-                pass
-        encoding = chardet.detect(self.patch_text)
-        if encoding['confidence'] > 0.6:
-            return unicode(self.patch_text, encoding['encoding'])
-        else:
-            return u'<<binary data>>'
-
-    def index(self):
-        result = Artifact.index(self)
-        if self.patch_text:
-            encoding = chardet.detect(self.patch_text)
-            if encoding['confidence'] > 0.6:
-                text = unicode(self.patch_text, encoding['encoding'])
-            else:
-                text = '<<binary data>'
-        else:
-            self.patch_Text = ''
-        result.update(
-            title_s='Patch on Commit %s: %s' % (self.commit.hash, self.filename),
-            text=self._get_unicode_text())
-        return result
-            
-    def shorthand_id(self):
-        return self.commit.shorthand_id() + '.' + self.filename
-        
-    def url(self):
-        try:
-            return self.commit.url() + str(self._id) + '/'
-        except:
-            log.exception("Cannot get patch URL")
-            return '#'
 
 MappedClass.compile_all()

@@ -9,7 +9,7 @@ from pyforge.lib.helpers import push_context, set_context, encode_keys
 from pyforge.model import Project
 
 from forgescm.lib import git
-from forgescm import model as M
+from pyforge import model as M
 
 log = logging.getLogger(__name__)
 
@@ -40,11 +40,12 @@ def clone(routing_key, data):
     repo = c.app.repo
     log.info('Begin cloning %s', data['url'])
     repo.type = 'git'
-    # Perform the clone
-    cmd = git.clone(data['url'], '.')
+    cmd = git.clone(data['url'], 'git_dest')
     cmd.clean_dir()
     repo.clear_commits()
     cmd.run()
+    cmd.finish() # move cloned dir back to the mount point's cwd
+
     log.info('Clone complete for %s', data['url'])
     repo_name = c.project.shortname + c.app.config.options.mount_point
     git.setup_gitweb(repo_name, repo.repo_dir)
@@ -61,17 +62,23 @@ def clone(routing_key, data):
 @audit('scm.git.fork')
 def fork(routing_key, data):
     log.info('Begin forking %s => %s', data['forked_from'], data['forked_to'])
-    set_context(**encode_keys(data['forked_to']))
+    project = M.Project.query.get(_id=bson.ObjectId(data['forked_to']['project_id']))
+    data_context = data['forked_to'].copy()
+    data_context['project_shortname']=project.shortname
+    del data_context['project_id']
+
+    set_context(**encode_keys(data_context))
     # Set repo metadata
     repo = c.app.repo
     repo.type = 'git'
     repo.forked_from.update(data['forked_from'])
     # Perform the clone
     log.info('Cloning from %s', data['url'])
-    cmd = git.clone(data['url'], '.')
+    cmd = git.clone(data['url'], 'git_dest')
     cmd.clean_dir()
     repo.clear_commits()
     cmd.run()
+    cmd.finish()
     repo.status = 'Ready'
     log.info('Clone complete for %s', data['url'])
     repo_name = c.project.shortname + c.app.config.options.mount_point

@@ -8,14 +8,15 @@ from pyforge.lib.decorators import audit, react
 from pyforge.lib.helpers import push_context, set_context, encode_keys
 from forgescm.lib import hg, git
 
-from forgescm import model as M
+from pyforge import model as M
 
 log = logging.getLogger(__name__)
 
 
 @react('scm.initialized')
 def initialized(routing_key, data):
-    set_context(data['project_id'], data['mount_point'])
+    shortname = M.Project.query.get(_id=data['project_id']).shortname
+    set_context(shortname, data['mount_point'])
     repo = c.app.repo
     log.info('Setting repo status for %s', repo)
     repo.status = 'Ready'
@@ -59,7 +60,8 @@ def forked_update_dest(routing_key, data):
 
 @react('scm.cloned')
 def cloned(routing_key, data):
-    set_context(data['project_id'], data['mount_point'])
+    shortname = M.Project.query.get(_id=data['project_id']).shortname
+    set_context(shortname, data['mount_point'])
     repo = c.app.repo
     # Update the repo status
     repo.status = 'Ready'
