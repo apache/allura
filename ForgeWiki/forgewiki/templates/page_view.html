@@ -18,11 +18,11 @@
   
   <body>
     <h1>$page.title</h1>
-    <hr/>
     <div>
       ${Markup(page.html_text)}
     </div>
-
+    <br/>
+    ${list_attachments(list(page.attachments), False)}
     <hr/>
     <h2>Comments</h2>
     <div class="reply title-pane closed">

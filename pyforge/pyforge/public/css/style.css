@@ -255,3 +255,14 @@ ul#sidebarmenu li a:hover {
 .todo{
     background-color: #ff7;
 }
+.attachment_images{
+    overflow: auto;
+}
+.attachment_thumb{
+    float: left;
+    margin: .5em;
+}
+.attachment_thumb img{
+    width: 50px;
+    height: 50px;
+}

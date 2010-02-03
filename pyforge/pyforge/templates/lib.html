@@ -116,6 +116,36 @@
     <input type="submit" name="$name" value="$value"/><br/>
   </py:def>
 
+  <py:def function="list_attachments(attachments, edit_mode=False)">
+    <div py:if="len(attachments)" py:strip="True">
+      <strong>Attachments</strong>
+      <div class="attachment_images">
+        <div py:for="att in attachments" py:strip="True">
+          <div py:if="att.contentType.startswith('image/')" class="attachment_thumb">
+            <a href="${att.url()}">
+              <img src="${att.url()}"/>
+            </a><br/>
+            $att.metadata.filename
+            <form py:if="edit_mode" method="post" action="${att.url()}">
+              <input type="hidden" name="delete" value="True"/>
+              ${submit_button('Delete file')}
+            </form>
+          </div>
+        </div>
+      </div>
+      <div py:for="att in attachments">
+        <form py:if="not att.contentType.startswith('image/')" method="post" action="${att.url()}">
+          <a href="${att.url()}">${att.metadata.filename}</a>
+          ($att.length bytes)
+            <input type="hidden" name="delete" value="True"/>
+            <span py:if="edit_mode" py:strip="True">
+              ${submit_button('Delete file')}
+            </span>
+        </form>
+      </div>
+    </div>
+  </py:def>
+
   <py:def function="markdown_edit(name, content)">
     <textarea id="wmd_edit_$name" name="$name">$content</textarea>
     <div id="wmd_preview_$name"></div>

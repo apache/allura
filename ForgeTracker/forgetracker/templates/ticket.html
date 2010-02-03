@@ -71,19 +71,7 @@
                 </div>
             </div>
             <hr/>
-            <h2>Attachments</h2>
-          <div py:for="att in ticket.attachments">
-            <a href="${att.url()}">${att.metadata.filename}</a>
-            ($att.length bytes)
-            <div py:if="att.contentType.startswith('image/') or att.contentType.startswith('text/')"
-                 class="title-pane closed">
-              <div class="title">View $att.metadata.filename</div>
-              <img class="content" py:if="att.contentType.startswith('image/')"
-                   style="max-width:100%" src="${att.url()}"/>
-              <iframe class="content" width="100%" py:if="att.contentType.startswith('text/')"
-                      src="${att.url()}?embed=True"/>
-            </div>
-          </div>
+            ${list_attachments(list(ticket.attachments), False)}
             <hr/>
             <h2>Comments</h2>
             <div class="reply title-pane closed">

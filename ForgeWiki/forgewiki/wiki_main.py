@@ -2,10 +2,11 @@
 import difflib
 import logging
 from pprint import pformat
+from mimetypes import guess_type
 
 # Non-stdlib imports
 import pkg_resources
-from tg import expose, validate, redirect
+from tg import expose, validate, redirect, response
 from pylons import g, c, request
 from formencode import validators
 
@@ -134,6 +135,7 @@ class ForgeWikiApp(Application):
 
     def uninstall(self, project):
         "Remove all the plugin's artifacts from the database"
+        model.Attachment.query.remove({'metadata.app_config_id':c.app.config._id})
         mapper(model.Page).remove(dict(project_id=c.project._id))
         mapper(model.Comment).remove(dict(project_id=c.project._id))
 
@@ -186,6 +188,7 @@ class PageController(object):
         self.title = title
         self.page = model.Page.upsert(title)
         self.comments = CommentController(self.page)
+        self.attachment = AttachmentsController(self.page)
 
     def get_version(self, version):
         if not version: return self.page
@@ -262,6 +265,58 @@ class PageController(object):
         self.page.text = text
         self.page.commit()
         redirect('.')
+
+    @expose()
+    def attach(self, file_info=None):
+        require(has_artifact_access('edit', self.page))
+        filename = file_info.filename
+        content_type = guess_type(filename)
+        if content_type: content_type = content_type[0]
+        else: content_type = 'application/octet-stream'
+        with model.Attachment.create(
+            content_type=content_type,
+            filename=filename,
+            page_id=self.page._id,
+            app_config_id=c.app.config._id) as fp:
+            while True:
+                s = file_info.file.read()
+                if not s: break
+                fp.write(s)
+        redirect('.')
+
+class AttachmentsController(object):
+
+    def __init__(self, page):
+        self.page = page
+
+    def _lookup(self, filename, *args):
+        return AttachmentController(filename), args
+
+class AttachmentController(object):
+
+    def _check_security(self):
+        require(has_artifact_access('read', self.page))
+
+    def __init__(self, filename):
+        self.filename = filename
+        self.attachment = model.Attachment.query.get(filename=filename)
+        self.page = self.attachment.page
+
+    @expose()
+    def index(self, delete=False, embed=False):
+        if request.method == 'POST':
+            require(has_artifact_access('edit', self.page))
+            if delete: self.attachment.delete()
+            redirect(request.referer)
+        with self.attachment.open() as fp:
+            filename = fp.metadata['filename']
+            response.headers['Content-Type'] = ''
+            response.content_type = fp.content_type
+            if not embed:
+                response.headers.add('Content-Disposition',
+                                     'attachment;filename=%s' % filename)
+            return fp.read()
+        return self.filename
 
 class CommentController(object):
 

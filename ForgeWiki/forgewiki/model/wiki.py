@@ -12,7 +12,7 @@ from ming.orm.base import state, session
 from ming.orm.mapped_class import MappedClass
 from ming.orm.property import FieldProperty
 
-from pyforge.model import VersionedArtifact, Snapshot, Message
+from pyforge.model import VersionedArtifact, Snapshot, Message, File
 
 wikiwords = [
     (r'\b([A-Z]\w+[A-Z]+\w+)', r'<a href="../\1/">\1</a>'),
@@ -83,6 +83,10 @@ class Page(VersionedArtifact):
             type_s='WikiPage',
             text=self.text)
         return result
+
+    @property
+    def attachments(self):
+        return Attachment.by_metadata(page_id=self._id)
     
     @classmethod
     def upsert(cls, title, version=None):
@@ -126,6 +130,26 @@ class Page(VersionedArtifact):
             return Comment.query.find(dict(page_id=self._id, parent_id=None))
         else:
             return []
+
+class Attachment(File):
+    class __mongometa__:
+        name = 'attachment.files'
+        indexes = [
+            'metadata.filename',
+            'metadata.page_id' ]
+
+    # Override the metadata schema here
+    metadata=FieldProperty(dict(
+            page_id=schema.ObjectId,
+            app_config_id=schema.ObjectId,
+            filename=str))
+
+    @property
+    def page(self):
+        return Page.query.get(_id=self.metadata.page_id)
+
+    def url(self):
+        return self.page.url() + 'attachment/' + self.filename
 
 class Comment(Message):
     class __mongometa__:

@@ -7,6 +7,10 @@
   <xi:include href="${g.pyforge_templates}/master.html"/>
   <xi:include href="lib.html"/>
 
+  <?python
+    from pyforge.lib.security import has_artifact_access
+    ?>
+
   <head>
     <meta content="text/html; charset=UTF-8" http-equiv="content-type" py:replace="''"/>
     <title>$page.title</title>
@@ -36,5 +40,16 @@
       </div>
       <input type="submit" value="Save Changes"/>
     </form>
+    <br/>
+    ${list_attachments(list(page.attachments), has_artifact_access('edit', page)())}
+    <div py:if="has_artifact_access('edit', page)()" class="reply title-pane closed">
+      <button class="title">Add Attachment</button>
+      <div class="content">
+        <form method="post" action="${page.url() + 'attach'}" enctype="multipart/form-data">
+          ${file_field('file_info', 'File to upload')}
+          ${submit_button('Attach file')}
+        </form>
+      </div>
+    </div>
   </body>
 </html>

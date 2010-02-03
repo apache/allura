@@ -92,16 +92,17 @@
 <input type="submit" value="submit"/>
 </form>
             <hr/>
+            ${list_attachments(list(ticket.attachments), has_artifact_access('write', ticket)())}
             <div py:if="has_artifact_access('write', ticket)()" class="reply title-pane closed">
-              <div class="title">New Attachment</div>
+              <button class="title">Add Attachment</button>
               <div class="content">
-                <form method="post" action="${ticket.url() + 'attach'}" enctype="multipart/form-data">
+                <form method="post" action="${page.url() + 'attach'}" enctype="multipart/form-data">
                   ${file_field('file_info', 'File to upload')}
                   ${submit_button('Attach file')}
                 </form>
               </div>
-              <hr/>
             </div>
+            <hr/>
             <h2>Comments</h2>
             <div class="reply title-pane closed">
               <h3 class="title">Make a comment</h3>
