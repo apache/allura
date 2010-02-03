@@ -12,8 +12,6 @@ class TestFunctionalController(TestController):
         form['summary'] = summary
         response = form.submit().follow()
         assert_true(summary in response)
-        response = self.app.get('/bugs/')
-        assert_true(summary in response)
 
     def test_two_trackers(self):
         response = self.app.get('/doc_bugs/new/')
@@ -45,3 +43,12 @@ class TestFunctionalController(TestController):
         assert_true('Attachments' in response)
         assert_true('Comments' in response)
         assert_true('Make a comment' in response)
+
+    def test_render_index(self):
+        response = self.app.get('/bugs/new/')
+        form = response.form
+        summary = 'test render index'
+        form['summary'] = summary
+        form.submit()
+        response = self.app.get('/bugs/')
+        assert_true(summary in response)
