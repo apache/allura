@@ -1,7 +1,7 @@
 import logging
 from itertools import chain
 
-from pylons import c
+from pylons import c, g
 from ming import Session
 from ming.orm.base import state, session
 from ming.orm.ormsession import ThreadLocalORMSession, SessionExtension
@@ -61,6 +61,25 @@ class ArtifactSessionExtension(SessionExtension):
                 ArtifactLink.add(obj)
             session(ArtifactLink).flush()
 
+class TagEventSessionExtension(SessionExtension):
+
+    def __init__(self, session):
+        SessionExtension.__init__(self, session)
+        self.objects_added = []
+        self.objects_deleted = []
+
+    def before_flush(self, obj=None):
+        if obj is None:
+            self.objects_added = list(self.session.uow.new)
+        else: # pragma no cover
+            self.objects_added = [ obj ]
+
+    def after_flush(self, obj=None):
+        for obj in self.objects_added:
+            g.publish('react', 'tag.event', obj.as_message(),
+                      serializer='')
+        self.object_added = []
+
 main_doc_session = Session.by_name('main')
 project_doc_session = ProjectSession(main_doc_session)
 main_orm_session = ThreadLocalORMSession(main_doc_session)
@@ -68,3 +87,6 @@ project_orm_session = ThreadLocalORMSession(project_doc_session)
 artifact_orm_session = ThreadLocalORMSession(
     doc_session=project_doc_session,
     extensions = [ ArtifactSessionExtension ])
+tag_event_orm_session = ThreadLocalORMSession(
+    main_doc_session,
+    extensions=[ TagEventSessionExtension ])

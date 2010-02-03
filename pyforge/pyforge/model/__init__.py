@@ -7,6 +7,7 @@ from .artifact import Artifact, Message, VersionedArtifact, Snapshot, ArtifactLi
 from .auth import User, ProjectRole, OpenId, EmailAddress
 from .openid_model import OpenIdStore, OpenIdAssociation, OpenIdNonce
 from .filesystem import File
+from .tag import TagEvent, Tag, UserTags
 
 from .session import main_doc_session, main_orm_session
 from .session import project_doc_session, project_orm_session

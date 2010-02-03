@@ -33,6 +33,7 @@ setup(
         "python-openid >= 2.2.4",
         "python-ldap == 2.3.9",
         "python-dateutil >= 1.4.1",
+        "WebOb == 0.9.6.1"
         ],
     setup_requires=["PasteScript >= 1.7"],
     paster_plugins=['PasteScript', 'Pylons', 'TurboGears2', 'tg.devtools', 'ForgeMail'],
@@ -65,6 +66,7 @@ setup(
     admin = pyforge.ext.admin:AdminApp
     search = pyforge.ext.search:SearchApp
     home = pyforge.ext.project_home:ProjectHomeApp
+    tag = pyforge.ext.tag:TagApp
 
     [paste.paster_command]
     reactor_setup = pyforge.command:ReactorSetupCommand

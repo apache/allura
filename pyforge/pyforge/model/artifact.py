@@ -3,6 +3,7 @@ import os
 import logging
 from time import sleep
 from datetime import datetime
+import cPickle as pickle
 
 import pymongo
 from pylons import c
@@ -13,7 +14,7 @@ from ming.orm.mapped_class import MappedClass, MappedClassMeta
 from ming.orm.property import FieldProperty, ForeignIdProperty, RelationProperty
 from pymongo.errors import OperationFailure
 
-from pyforge.lib.helpers import nonce, push_config
+from pyforge.lib.helpers import nonce, push_config, push_context
 from .session import ProjectSession
 from .session import main_doc_session, main_orm_session
 from .session import project_doc_session, project_orm_session
@@ -126,7 +127,52 @@ class Artifact(MappedClass):
         { str: str },
         if_missing=lambda:{c.app.config.plugin_name:c.app.__version__})
     acl = FieldProperty({str:[S.ObjectId]})
+    tags = FieldProperty([dict(tag=str, count=int)])
     app_config = RelationProperty('AppConfig')
+
+    def dump_ref(self):
+        '''Return a JSON-serializable reference to an artifact'''
+        d = dict(project_id=str(self.app_config.project._id),
+                    mount_point=self.app_config.options.mount_point,
+                    artifact_type=pickle.dumps(self.__class__),
+                    artifact_id=self._id)
+        if isinstance(self._id, pymongo.bson.ObjectId):
+            d['artifact_id'] = str(self._id)
+        return d
+
+    @classmethod
+    def load_ref(cls,ref):
+        from .project import Project
+        project = Project.query.get(_id=pymongo.bson.ObjectId(ref['project_id']))
+        with push_context(ref['project_id'], ref['mount_point']):
+            acls = pickle.loads(ref['artifact_type'])
+            obj = acls.query.get(_id=ref['artifact_id'])
+            if obj is not None: return obj
+            try:
+                return acls.query.get(_id=pymongo.bson.ObjectId(str(ref['artifact_id'])))
+            except:
+                return None
+
+    def add_tags(self, tags):
+        'Update the tags collection to reflect new tags added'
+        cur_tags = dict((t['tag'], t['count']) for t in self.tags)
+        for t in tags:
+            c = cur_tags.get(t, 0)
+            c += 1
+            cur_tags[t] = c
+        self.tags = [ dict(tag=k, count=v) for k,v in cur_tags.iteritems() ]
+
+    def remove_tags(self, tags):
+        'Update the tags collection to reflect tags removed'
+        cur_tags = dict((t['tag'], t['count']) for t in self.tags)
+        for t in tags:
+            c = cur_tags.get(t, 1)
+            c -= 1
+            if c:
+                cur_tags[t] = c
+            else:
+                cur_tags.pop(t, None)
+        self.tags = [ dict(tag=k, count=v) for k,v in cur_tags.iteritems() ]
 
     @property
     def project(self):
