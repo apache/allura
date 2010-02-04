@@ -96,7 +96,7 @@
             <div py:if="has_artifact_access('write', ticket)()" class="reply title-pane closed">
               <button class="title">Add Attachment</button>
               <div class="content">
-                <form method="post" action="${page.url() + 'attach'}" enctype="multipart/form-data">
+                <form method="post" action="${ticket.url() + 'attach'}" enctype="multipart/form-data">
                   ${file_field('file_info', 'File to upload')}
                   ${submit_button('Attach file')}
                 </form>

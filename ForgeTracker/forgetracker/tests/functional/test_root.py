@@ -40,7 +40,6 @@ class TestFunctionalController(TestController):
         form['summary'] = summary
         response = form.submit().follow()
         assert_true(summary in response)
-        assert_true('Attachments' in response)
         assert_true('Comments' in response)
         assert_true('Make a comment' in response)
 
