@@ -80,7 +80,7 @@ class TagEvent(MappedClass):
         d = dict(
             when=self.when,
             event=self.event,
-            user_id=self.user_id,
+            user_id=str(self.user_id),
             project_id=aref['project_id'],
             artifact_ref=dict(aref),
             tags=list(self.tags))
