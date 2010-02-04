@@ -47,7 +47,7 @@ class TagApp(Application):
             Tag.remove(aref, doc['tags'])
 
     def sidebar_menu(self):
-        return [ ]
+        return [ ] # pragma no cover
 
     def install(self, project):
         pass # pragma no cover

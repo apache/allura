@@ -115,3 +115,5 @@ class UserTags(MappedClass):
         for t in tags:
             cur_tags.pop(t, None)
         self.tags = [ dict(tag=k, when=v) for k,v in cur_tags.iteritems() ]
+        if not self.tags:
+            self.delete()
