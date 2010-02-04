@@ -19,7 +19,7 @@ from carrot.messaging import Publisher
 from pymongo.bson import ObjectId
 
 from pyforge import model as M
-from pyforge.lib.markdown_extensions import ArtifactExtension
+from pyforge.lib.markdown_extensions import ForgeExtension
 
 log = logging.getLogger(__name__)
 
@@ -51,7 +51,7 @@ class Globals(object):
             audit=Publisher(connection=self.conn, exchange='audit', auto_declare=False),
             react=Publisher(connection=self.conn, exchange='react', auto_declare=False))
         self.markdown = markdown.Markdown(
-            extensions=['codehilite', ArtifactExtension(),'meta'],
+            extensions=['codehilite', ForgeExtension(),'meta'],
             output_format='html4')
 
         self.oid_store = M.OpenIdStore()

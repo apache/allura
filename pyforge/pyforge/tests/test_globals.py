@@ -36,3 +36,6 @@ def test_markdown():
     g.set_app('hello')
     assert '<a href=' in g.markdown.convert('# Foo!\n[Root]')
     assert '<a href=' not in g.markdown.convert('# Foo!\n[Rooted]')
+    assert '<a href=' in g.markdown.convert('http://sf.net')
+    assert '<a href=' in g.markdown.convert('This is http://sf.net')
+    assert '<a href=' in g.markdown.convert('http://sf.net is this')

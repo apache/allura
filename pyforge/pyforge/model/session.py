@@ -77,7 +77,7 @@ class TagEventSessionExtension(SessionExtension):
     def after_flush(self, obj=None):
         for obj in self.objects_added:
             g.publish('react', 'tag.event', obj.as_message(),
-                      serializer='')
+                      serializer='yaml')
         self.object_added = []
 
 main_doc_session = Session.by_name('main')
