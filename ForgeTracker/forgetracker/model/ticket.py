@@ -72,7 +72,7 @@ class Ticket(VersionedArtifact):
     comments = RelationProperty('Comment')
 
     def url(self):
-        return c.app.url + '/' + str(self.ticket_num) + '/'
+        return c.app.url + str(self.ticket_num) + '/'
 
     def shorthand_id(self):
         return '#' + str(self.ticket_num)

@@ -37,6 +37,13 @@ easy_install python-dateutil
 # This already happened just to get this file to run;
 # now assume we run it in-place.
 
+echo '# installing pymongo and dependencies'
+pushd ..
+git clone git://github.com/rick446/mongo-python-driver.git pymongo
+cd pymongo
+python setup.py develop
+popd
+
 echo '# installing Ming and dependencies'
 pushd ..
 git clone git://merciless.git.sourceforge.net/gitroot/merciless/merciless Ming
