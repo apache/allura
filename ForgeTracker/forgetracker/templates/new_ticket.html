@@ -13,9 +13,37 @@
 
 <body>
 
-<h1>New ${modelname}</h1>
+<form method="POST" action="../save_ticket">
+  <input type="hidden" name="ticket_num" value=""/>
+  <label for="summary">Name:</label>
+  <br/>
+  <input name="summary" value=""/>
+  <br/>
+  <label for="status">status:</label>
+  <br/>
+  <select name="status">
+    <option py:for="name in globals.status_names.split(',')" value="$name">$name</option>
+  </select>
+  <br/>
+  <label for="description">Description</label>
+  <br/>
+  <textarea name="description"></textarea>
+  <br/>
 
-<div py:replace="tmpl_context.form()">Input Form</div>
+  <div py:if="globals.custom_fields">
+    <div class="span-24 last quiet prepend-top bottom-liner">Custom Fields</div>
+    <div py:for="field in globals.custom_fields.split(',')">
+      <label for="$field">$field:</label>
+      <br/>
+      <input name="$field" type="text" value=""/>
+    </div>
+  </div>
+
+  ${user_tags_edit('tags', {'tags':[]})}
+  <br/>
+
+  <input type="submit" value="Create Ticket"/>
+</form>
 
 </body>
 </html>

@@ -139,15 +139,15 @@ class RootController(object):
     def new(self, **kw):
         require(has_artifact_access('write'))
         tmpl_context.form = ticket_form
-        return dict(modelname='Ticket',
-            page='New Ticket')
+        globals = model.Globals.query.get(app_config_id=c.app.config._id)
+        return dict(modelname='Ticket', page='New Ticket', globals=globals)
 
     @expose('forgetracker.templates.not_found')
     def not_found(self, **kw):
         return dict()
 
     @expose()
-    def save_ticket(self, ticket_num, **post_data):
+    def save_ticket(self, ticket_num, tags, tags_old=None, **post_data):
         require(has_artifact_access('write'))
         if request.method != 'POST':
             raise Exception('save_new must be a POST request')
@@ -162,6 +162,10 @@ class RootController(object):
             ticket.app_config_id = c.app.config._id
             ticket.custom_fields = dict()
             globals = model.Globals.query.get(app_config_id=c.app.config._id)
+            
+            if tags: tags = tags.split(',')
+            else: tags = []
+            tag_artifact(ticket, c.user, tags)
 
             # FIX ME: need to lock around this increment or something
             globals.last_ticket_num += 1
