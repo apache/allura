@@ -11,7 +11,6 @@ from ming.orm.ormsession import ThreadLocalORMSession
 from pyforge.command import reactor
 from pyforge import model as M
 from pyforge.lib import helpers as h
-from pyforge.ext.tag import TagApp
 from forgewiki import model as WM
 
 def setUp(self):
@@ -26,52 +25,26 @@ def setUp(self):
     cmd.run([test_file])
 
 def test_tag_untag():
-    # Don't save the TagEvent object (it would send messages via the reactor, not
-    # what we want.)
-    # Prepare reactor command
-    cmd = reactor.ReactorCommand('reactor')
-    cmd.args = [ 'test.ini' ]
-    cmd.options = mock.Mock()
-    cmd.options.dry_run = True
-    cmd.options.proc = 1
-    configs = cmd.command()
-    callback = cmd.route_react('tag', TagApp.tag_event)
-    msg = _tag_message()
-    ThreadLocalORMSession.close_all()
-    callback(msg.data, msg)
+    h.set_context('test', 'wiki')
+    pg = WM.Page.query.find().first()
+    # Give page 2 tags
+    h.tag_artifact(pg, M.User.anonymous(), ['test', 'wiki'])
+    ThreadLocalORMSession.flush_all(); ThreadLocalORMSession.close_all()
+    pg = WM.Page.query.find().first()
     assert M.UserTags.query.find(dict(user_id=None)).count() == 1
     assert M.Tag.query.find().count() == 2
-    msg = _untag_message()
-    ThreadLocalORMSession.close_all()
-    callback(msg.data, msg)
+    assert len(pg.tags) == 2
+    # Remove 1
+    h.tag_artifact(pg, M.User.anonymous(), ['test'])
+    ThreadLocalORMSession.flush_all(); ThreadLocalORMSession.close_all()
+    pg = WM.Page.query.find().first()
+    assert M.UserTags.query.find(dict(user_id=None)).count() == 1
+    assert M.Tag.query.find().count() == 1
+    assert len(pg.tags) == 1
+    # Remove last one
+    h.tag_artifact(pg, M.User.anonymous(), [])
+    ThreadLocalORMSession.flush_all(); ThreadLocalORMSession.close_all()
+    pg = WM.Page.query.find().first()
     assert M.UserTags.query.find(dict(user_id=None)).count() == 0
     assert M.Tag.query.find().count() == 0
-
-def _tag_message():
-    # Create the 'tag' message
-    c.user = M.User.anonymous()
-    h.set_context('test', 'wiki')
-    pg = WM.Page.query.find().first()
-    evt = M.TagEvent.add(pg, [ 'cool', 'page' ])
-    # Prepare mock message
-    msg = mock.Mock()
-    msg.ack = lambda:None
-    msg.delivery_info = dict(
-        routing_key='tag.event')
-    msg.data = evt.as_message()
-    return msg
-
-def _untag_message():
-    # Create the 'untag' message
-    c.user = M.User.anonymous()
-    h.set_context('test', 'wiki')
-    pg = WM.Page.query.find().first()
-    evt = M.TagEvent.remove(pg, [ 'cool', 'page' ])
-    # Prepare mock message
-    msg = mock.Mock()
-    msg.ack = lambda:None
-    msg.delivery_info = dict(
-        routing_key='tag.event')
-    msg.data = evt.as_message()
-    return msg
-
+    assert len(pg.tags) == 0

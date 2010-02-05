@@ -14,7 +14,7 @@ from ming.orm.property import FieldProperty, RelationProperty, ForeignIdProperty
 from ming.orm.ormsession import ThreadLocalORMSession
 
 from pyforge.lib.helpers import push_config
-from .session import main_orm_session, tag_event_orm_session
+from .session import main_orm_session
 
 log = logging.getLogger(__name__)
 
@@ -35,43 +35,36 @@ class Tag(MappedClass):
     tag = FieldProperty(str)
 
     @classmethod
-    def add(cls, artifact_ref, tags):
+    def add(cls, artifact_ref, user, tags):
         for t in tags:
             if cls.query.find(dict(
-                    user_id=c.user._id,
+                    user_id=user._id,
                     artifact_ref=artifact_ref,
                     tag=t)).count(): continue
             else:
-                cls(user_id=c.user._id,
+                cls(user_id=user._id,
                     artifact_ref=artifact_ref,
                     tag=t)
 
     @classmethod
-    def remove(cls, artifact_ref, tags):
+    def remove(cls, artifact_ref, user, tags):
         cls.query.remove(dict(
-                user_id=c.user._id,
+                user_id=user._id,
                 artifact_ref=artifact_ref,
                 tag={'$in':tags}))
 
 class TagEvent(MappedClass):
     class __mongometa__:
-        session = tag_event_orm_session
+        session = main_orm_session
         name='tag_event'
 
     _id = FieldProperty(S.ObjectId)
     when = FieldProperty(datetime, if_missing=datetime.utcnow)
-    event = FieldProperty(S.OneOf('add', 'remove'))
     user_id = ForeignIdProperty('User', if_missing=lambda:c.user._id)
     artifact_ref = FieldProperty(ArtifactReference)
-    tags = FieldProperty([str])
-
-    @classmethod
-    def add(cls, artifact, tags):
-        return cls(event='add', artifact_ref=artifact.dump_ref_str(), tags=tags)
-
-    @classmethod
-    def remove(cls, artifact, tags):
-        return cls(event='remove', artifact_ref=artifact.dump_ref_str(), tags=tags)
+    added_tags = FieldProperty([str])
+    removed_tags = FieldProperty([str])
+    user = RelationProperty('User', via='user_id')
 
     def as_message(self):
         aref = self.artifact_ref
@@ -79,11 +72,11 @@ class TagEvent(MappedClass):
         aref['artifact_id'] = str(aref['artifact_id'])
         d = dict(
             when=self.when,
-            event=self.event,
             user_id=str(self.user_id),
             project_id=aref['project_id'],
             artifact_ref=dict(aref),
-            tags=list(self.tags))
+            added_tags=list(self.added_tags),
+            removed_tags=list(self.removed_tags))
         return d
 
 class UserTags(MappedClass):

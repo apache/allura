@@ -14,7 +14,7 @@ from ming.orm.base import mapper
 
 # Pyforge-specific imports
 from pyforge.app import Application, ConfigOption, SitemapEntry
-from pyforge.lib.helpers import push_config
+from pyforge.lib.helpers import push_config, tag_artifact
 from pyforge.lib.search import search
 from pyforge.lib.decorators import audit, react
 from pyforge.lib.security import require, has_artifact_access
@@ -262,13 +262,12 @@ class PageController(object):
 
     @expose()
     def update(self, text, tags, tags_old):
-        tags = tags.split(',')
         require(has_artifact_access('edit', self.page))
+        if tags: tags = tags.split(',')
+        else: tags = []
         self.page.text = text
         self.page.commit()
-        user_tags = UserTags.upsert(c.user, self.page.dump_ref())
-        TagEvent.remove(self.page, [tag.tag for tag in user_tags.tags if tag.tag not in tags])
-        TagEvent.add(self.page, [t for t in tags if t not in [tag.tag for tag in user_tags.tags]])
+        tag_artifact(self.page, c.user, tags)
         redirect('.')
 
     @expose()

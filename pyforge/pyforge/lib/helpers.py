@@ -125,3 +125,32 @@ def ago(dt):
     return date.distance_of_time_in_words(dt, datetime.utcnow(),
                                           'minute',
                                           round=True) + ' ago'
+
+def tag_artifact(artifact, user, tags):
+    from pyforge import model as M
+    aref = artifact.dump_ref()
+    when = datetime.utcnow()
+    # Get the UserTags object
+    ut = M.UserTags.upsert(user, aref)
+    # Determine which tags were added/removed
+    user_tags = set(tag.tag for tag in ut.tags)
+    tags = set(tags)
+    added_tags = list(tags - user_tags)
+    removed_tags = list(user_tags - tags)
+    # Create the TagEvent
+    evt = M.TagEvent(
+        when=when,
+        user_id=user._id,
+        artifact_ref=aref,
+        added_tags=added_tags,
+        removed_tags=removed_tags)
+    # Update the UserTags Object
+    ut.add_tags(when, added_tags)
+    ut.remove_tags(removed_tags)
+    # Update the artifact
+    artifact.add_tags(added_tags)
+    artifact.remove_tags(removed_tags)
+    # Update the Tag index
+    M.Tag.add(aref, user, added_tags)
+    M.Tag.remove(aref, user, removed_tags)
+
