@@ -27,6 +27,19 @@
             </div>
           </py:for>
         </div>
+        <div class="recent-changes">
+          <h3>Recent Changes</h3>
+          <div class="change-list">
+            <py:for each="change in changes">
+              <div class="change span-24 last">
+                  <div class="change-date span-5">$change.change_date</div>
+                  <div class="change-type span-2">$change.change_type</div>
+                  <div class="ticket-num span-2"><a href="$change.ticket_num">($change.ticket_num)</a></div>
+                  <div class="change-summary span-14 last">$change.change_text</div>
+              </div>
+            </py:for>
+          </div>
+        </div>
         <script type="text/javascript">
             $('div.ticket-list').children(':even').css('background-color', '#eeeeee');
         </script>
