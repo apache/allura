@@ -18,7 +18,7 @@ from pyforge.lib.helpers import push_config
 from pyforge.lib.search import search
 from pyforge.lib.decorators import audit, react
 from pyforge.lib.security import require, has_artifact_access
-from pyforge.model import ProjectRole
+from pyforge.model import ProjectRole, TagEvent, UserTags
 
 # Local imports
 from forgetracker import model
@@ -198,10 +198,12 @@ class TicketController(object):
     def edit(self, **kw):
         require(has_artifact_access('write', self.ticket))
         globals = model.Globals.query.get(app_config_id=c.app.config._id)
-        return dict(ticket=self.ticket, globals=globals)
+        user_tags = UserTags.upsert(c.user, self.ticket.dump_ref())
+        return dict(ticket=self.ticket, globals=globals, user_tags=user_tags)
 
     @expose()
-    def update_ticket(self, **post_data):
+    def update_ticket(self, tags, tags_old, **post_data):
+        tags = tags.split(',')
         require(has_artifact_access('write', self.ticket))
         if request.method != 'POST':
             raise Exception('update_ticket must be a POST request')
@@ -210,10 +212,15 @@ class TicketController(object):
       # self.ticket.assigned_to = post_data['assigned_to']
         self.ticket.status = post_data['status']
 
+        user_tags = UserTags.upsert(c.user, self.ticket.dump_ref())
+        TagEvent.remove(self.ticket, [tag.tag for tag in user_tags.tags if tag.tag not in tags])
+        TagEvent.add(self.ticket, [t for t in tags if t not in [tag.tag for tag in user_tags.tags]])
+
         globals = model.Globals.query.get(app_config_id=c.app.config._id)
         if globals.custom_fields:
             for field in globals.custom_fields.split(','):
                 self.ticket.custom_fields[field] = post_data[field]
+
         redirect('edit/')
 
     @expose()

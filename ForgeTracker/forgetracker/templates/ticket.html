@@ -57,6 +57,9 @@
                     <span class="ticket-create-date">${ticket.created_date.strftime('%H:%M:%S %Y-%m-%d')}</span>
                 </div>
             </div>
+            <div py:if="len(ticket.tags)">
+              Tags: <span py:for="tag in ticket.tags">$tag.tag ($tag.count) </span>
+            </div>
 
             <div class="span-24 last ticket-description">
                 <div class="span-24 last quiet prepend-top bottom-liner">Description</div>

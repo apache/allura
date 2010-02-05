@@ -39,16 +39,7 @@
         ${markdown_edit("text",page.text)}
       </div>
 
-      <label for="tags">Tags:</label><br />
-      <input id="tags" name="tags" type="text" value="${','.join([t.tag for t in user_tags.tags])}" />
-      <script type="text/javascript" src="/js/jquery.tag.editor.js"></script>
-      <script type="text/javascript">
-        $("#tags").tagEditor({
-          confirmRemoval: false,
-          completeOnSeparator: true,
-          completeOnBlur: true
-        });
-      </script>
+      ${user_tags_edit('tags', user_tags)}
       <br/>
 
       <input type="submit" value="Save Changes"/>
