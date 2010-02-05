@@ -115,6 +115,17 @@ class Ticket(VersionedArtifact):
         else:
             return []
 
+    def ordered_comments(self, limit=None):
+        if '_id' in self:
+            if limit:
+                q = Comment.query.find(dict(ticket_id=self._id),limit=limit)
+            else:
+                q = Comment.query.find(dict(ticket_id=self._id))
+            q = q.sort([('created_date', pymongo.DESCENDING)])
+            return q
+        else:
+            return []
+
     def reply(self):
         while True:
             try:
