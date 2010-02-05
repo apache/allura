@@ -108,6 +108,12 @@ class Ticket(VersionedArtifact):
         else:
             return []
 
+    def all_comments(self):
+        if '_id' in self:
+            return Comment.query.find(dict(ticket_id=self._id))
+        else:
+            return []
+
     def reply(self):
         while True:
             try:
