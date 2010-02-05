@@ -3,6 +3,7 @@ from datetime import datetime
 
 from pylons import c
 from pymongo.errors import OperationFailure
+import pymongo
 
 from ming import schema
 from ming.orm.mapped_class import MappedClass
