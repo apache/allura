@@ -110,7 +110,8 @@ class RootController(object):
     @expose('forgetracker.templates.index')
     def index(self):
         tickets = model.Ticket.query.find(dict(app_config_id=c.app.config._id)).sort('ticket_num')
-        return dict(tickets=tickets)
+        changes = self.ordered_history(5)
+        return dict(tickets=tickets,changes=changes)
 
     @expose('forgetracker.templates.search')
     @validate(dict(q=validators.UnicodeString(if_empty=None),
