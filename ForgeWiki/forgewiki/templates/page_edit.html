@@ -38,6 +38,19 @@
       <div id="edit_holder">
         ${markdown_edit("text",page.text)}
       </div>
+
+      <label for="tags">Tags:</label><br />
+      <input id="tags" name="tags" type="text" value="${','.join([t.tag for t in user_tags.tags])}" />
+      <script type="text/javascript" src="/js/jquery.tag.editor.js"></script>
+      <script type="text/javascript">
+        $("#tags").tagEditor({
+          confirmRemoval: false,
+          completeOnSeparator: true,
+          completeOnBlur: true
+        });
+      </script>
+      <br/>
+
       <input type="submit" value="Save Changes"/>
     </form>
     <br/>
@@ -45,7 +58,7 @@
     <div py:if="has_artifact_access('edit', page)()" class="reply title-pane closed">
       <button class="title">Add Attachment</button>
       <div class="content">
-        <form method="post" action="${page.url() + 'attach'}" enctype="multipart/form-data">
+        <form id="attachment_form" method="post" action="${page.url() + 'attach'}" enctype="multipart/form-data">
           ${file_field('file_info', 'File to upload')}
           ${submit_button('Attach file')}
         </form>

@@ -132,6 +132,16 @@ class Artifact(MappedClass):
 
     def dump_ref(self):
         '''Return a JSON-serializable reference to an artifact'''
+        d = dict(project_id=self.app_config.project._id,
+                    mount_point=self.app_config.options.mount_point,
+                    artifact_type=pickle.dumps(self.__class__),
+                    artifact_id=self._id)
+        if isinstance(self._id, pymongo.bson.ObjectId):
+            d['artifact_id'] = str(self._id)
+        return d
+
+    def dump_ref_str(self):
+        '''Return a JSON-serializable reference to an artifact'''
         d = dict(project_id=str(self.app_config.project._id),
                     mount_point=self.app_config.options.mount_point,
                     artifact_type=pickle.dumps(self.__class__),

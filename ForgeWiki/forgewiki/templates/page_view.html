@@ -22,6 +22,8 @@
       ${Markup(page.html_text)}
     </div>
     <br/>
+    Tags: <span py:for="tag in page.tags">$tag.tag ($tag.count) </span>
+    <br/>
     ${list_attachments(list(page.attachments), False)}
     <hr/>
     <h2>Comments</h2>

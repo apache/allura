@@ -67,11 +67,11 @@ class TagEvent(MappedClass):
 
     @classmethod
     def add(cls, artifact, tags):
-        return cls(event='add', artifact_ref=artifact.dump_ref(), tags=tags)
+        return cls(event='add', artifact_ref=artifact.dump_ref_str(), tags=tags)
 
     @classmethod
     def remove(cls, artifact, tags):
-        return cls(event='remove', artifact_ref=artifact.dump_ref(), tags=tags)
+        return cls(event='remove', artifact_ref=artifact.dump_ref_str(), tags=tags)
 
     def as_message(self):
         aref = self.artifact_ref
