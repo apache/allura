@@ -23,12 +23,29 @@ class ForgeExtension(markdown.Extension):
 
     def extendMarkdown(self, md, md_globals):
         core_artifact_link = r'(\[((?P<project_id>.*?):)?((?P<app_id>.*?):)?(?P<artifact_id>.*?)\])'
+        md.treeprocessors['br'] = LineOrientedTreeProcessor()
         md.inlinePatterns['oembed'] = OEmbedPattern(r'\[embed#(.*?)\]')
         md.inlinePatterns['autolink_1'] = AutolinkPattern(r'(http(?:s?)://\S*)')
         md.inlinePatterns['artifact_1'] = ArtifactLinkPattern('^' + core_artifact_link)
         md.inlinePatterns['artifact_2'] = ArtifactLinkPattern(r'\w' + core_artifact_link)
         if self._use_wiki:
             md.inlinePatterns['wiki'] = WikiLinkPattern(r'\b([A-Z]\w+[A-Z]+\w+)')
+
+class LineOrientedTreeProcessor(markdown.treeprocessors.Treeprocessor):
+    '''Once MD is satisfied with the etree, this runs to replace \n with <br/>
+    within <p>s.
+    '''
+    def run(self, root):
+        for node in root.getiterator('p'):
+            if node.text is None: continue
+            parts = node.text.split('\n')
+            if len(parts) == 1: continue
+            node.text = parts[0]
+            for p in parts[1:]:
+                br = markdown.etree.Element('br')
+                br.tail = p
+                node.append(br)
+        return root
 
 class ArtifactLinkPattern(markdown.inlinepatterns.LinkPattern):
 

@@ -40,6 +40,16 @@ def test_markdown():
     assert '<a href=' in g.markdown.convert('This is http://sf.net')
     assert '<a href=' not in g.markdown.convert('http://sf.net is this') # Meta ext grabs it
     assert '<a href=' in g.markdown_wiki.convert('This is a WikiPage')
+    assert '<br>' in g.markdown.convert('Multi\nLine')
+    assert '<br>' not in g.markdown.convert('Multi\n\nLine')
+    assert '<br>' not in g.markdown.convert('''# Header
+
+Some text in a regular paragraph
+
+    :::python
+    for i in range(10):
+        print i
+''')
 
 def test_oembed():
     g.set_project('test')
