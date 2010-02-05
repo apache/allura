@@ -13,39 +13,47 @@ class TestFunctionalController(TestController):
 
     def test_new_ticket(self):
         summary = 'test new ticket'
-        response = self.new_ticket(summary)
-        assert_true(summary in response)
+        ticket_view = self.new_ticket(summary)
+        assert_true(summary in ticket_view)
 
     def test_two_trackers(self):
         summary = 'test two trackers'
-        response = self.new_ticket(summary, '/doc_bugs/')
-        assert_true(summary in response)
-        response = self.app.get('/bugs/')
-        assert_false(summary in response)
+        ticket_view = self.new_ticket(summary, '/doc_bugs/')
+        assert_true(summary in ticket_view)
+        index_view = self.app.get('/bugs/')
+        assert_false(summary in index_view)
 
     def test_new_comment(self):
         self.new_ticket('test new comment')
         comment = 'comment testing new comment'
         self.app.post('/bugs/1/comments/reply', { 'text': comment })
-        response = self.app.get('/bugs/1/')
-        assert_true(comment in response)
+        ticket_view = self.app.get('/bugs/1/')
+        assert_true(comment in ticket_view)
 
     def test_render_ticket(self):
         summary = 'test render ticket'
-        response = self.new_ticket(summary)
-        assert_true(summary in response)
-        assert_true('Comments' in response)
-        assert_true('Make a comment' in response)
+        ticket_view = self.new_ticket(summary)
+        ticket_view.mustcontain(summary, 'Comments', 'Make a comment')
 
     def test_render_index(self):
         summary = 'test render index'
         self.new_ticket(summary)
-        response = self.app.get('/bugs/')
-        assert_true(summary in response)
+        index_view = self.app.get('/bugs/')
+        assert_true(summary in index_view)
 
     def test_new_attachment(self):
+        file_name = 'test_root.py'
+        file_data = file(__file__).read()
+        upload = ('file_info', file_name, file_data)
         self.new_ticket('test new attachment')
-        content = file(__file__).read()
-        self.app.post('/bugs/1/attach', upload_files=[('file_info', 'test_root.py', content)])
-        response = self.app.get('/bugs/1/')
-        assert_true('test_root.py' in response)
+        ticket_editor = self.app.post('/bugs/1/attach', upload_files=[upload]).follow()
+        assert_true(file_name in ticket_editor)
+
+    def test_new_attachment_content(self):
+        file_name = 'test_root.py'
+        file_data = file(__file__).read()
+        upload = ('file_info', file_name, file_data)
+        self.new_ticket('test new attachment')
+        ticket_editor = self.app.post('/bugs/1/attach', upload_files=[upload]).follow()
+        download = ticket_editor.click(description=file_name)
+        assert_true(download.body == file_data)
