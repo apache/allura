@@ -4,7 +4,7 @@ import logging, string
 from collections import defaultdict
 
 import pkg_resources
-from tg import expose, flash, redirect, session
+from tg import expose, flash, redirect, session, config
 from tg.decorators import with_trailing_slash, without_trailing_slash
 from pylons import c, g
 from webob import exc
@@ -19,6 +19,7 @@ from .auth import AuthController
 from .search import SearchController
 from .static import StaticController
 from .project import NeighborhoodController, HostNeighborhoodController
+from .oembed import OEmbedController
 
 __all__ = ['RootController']
 
@@ -101,6 +102,8 @@ class RootController(BaseController):
 
     def _wsgi_handler(self, environ):
         host = environ['HTTP_HOST'].lower()
+        if host == config['oembed.host']:
+            return OEmbedController()
         neighborhood = M.Neighborhood.query.get(url_prefix='//' + host + '/')
         if neighborhood:
             return HostNeighborhoodController(neighborhood.name, neighborhood.shortname_prefix)

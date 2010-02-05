@@ -35,11 +35,11 @@ class ArtifactLink(MappedClass):
         indexes = [
             ('link', 'project_id') ]
 
-    core_re = r'''\[
+    core_re = r'''(\[
             (?:(?P<project_id>.*?):)?      # optional project ID
             (?:(?P<app_id>.*?):)?      # optional plugin ID
             (?P<artifact_id>.*)             # artifact ID
-    \]'''
+    \])'''
 
     re_link_1 = re.compile(r'\s' + core_re, re.VERBOSE)
     re_link_2 = re.compile(r'^' +  core_re, re.VERBOSE)

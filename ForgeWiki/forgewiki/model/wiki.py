@@ -3,7 +3,6 @@ from datetime import datetime
 
 from pylons import g #g is a namespace for globally accessable app helpers
 from pylons import c as context
-import re
 
 from pymongo.errors import OperationFailure
 
@@ -13,20 +12,6 @@ from ming.orm.mapped_class import MappedClass
 from ming.orm.property import FieldProperty
 
 from pyforge.model import VersionedArtifact, Snapshot, Message, File
-
-wikiwords = [
-    (r'\b([A-Z]\w+[A-Z]+\w+)', r'<a href="../\1/">\1</a>'),
-    ]
-
-wikiwords = [
-    (re.compile(pattern), replacement)
-    for pattern, replacement in wikiwords ]
-
-def to_html(text):
-    content = g.markdown.convert(text)
-    for pattern, replacement in wikiwords:
-        content = pattern.sub(replacement, content)
-    return content
 
 class PageHistory(Snapshot):
     class __mongometa__:
@@ -53,7 +38,7 @@ class PageHistory(Snapshot):
     @property
     def html_text(self):
         """A markdown processed version of the page text"""
-        return to_html(self.data.text)
+        return g.markdown_wiki.convert(self.data.text)
 
     def root_comments(self):
         if '_id' in self:
@@ -123,7 +108,7 @@ class Page(VersionedArtifact):
     @property
     def html_text(self):
         """A markdown processed version of the page text"""
-        return to_html(self.text)
+        return g.markdown_wiki.convert(self.text)
 
     def root_comments(self):
         if '_id' in self:

@@ -1,1 +1,1 @@
-from wiki import Page, Comment, to_html, Attachment
+from wiki import Page, Comment, Attachment

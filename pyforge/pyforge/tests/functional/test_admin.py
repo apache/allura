@@ -4,6 +4,7 @@ from ming.orm.ormsession import ThreadLocalORMSession
 
 from pyforge.tests import TestController
 from pyforge import model as M
+from pyforge.lib import helpers as h
 
 class TestProjectAdmin(TestController):
 
@@ -35,6 +36,7 @@ class TestProjectAdmin(TestController):
                 'new.ep_name':'',
                 })
         # Update ACL
+        h.set_context('test', 'hello')
         role = M.User.anonymous().project_role()
         self.app.post('/admin/update_acl', params={
                 'permission':'plugin',

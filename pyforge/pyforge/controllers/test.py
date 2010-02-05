@@ -19,6 +19,7 @@ from .auth import AuthController
 from .static import StaticController
 from .search import SearchController
 from .error import ErrorController
+from .oembed import OEmbedController
 
 __all__ = ['RootController']
 
@@ -41,6 +42,7 @@ class TestController(BaseController, ProjectController):
         self.static = StaticController()
         self.gsearch = SearchController()
         self.error = ErrorController()
+        self.oembed = OEmbedController()
         for n in M.Neighborhood.query.find():
             if n.url_prefix.startswith('//'): continue
             n.bind_controller(self)

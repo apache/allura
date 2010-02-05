@@ -6,6 +6,7 @@ __all__ = ['Globals']
 import logging
 import socket
 from urllib import urlencode
+from ConfigParser import RawConfigParser
 
 import pkg_resources
 
@@ -13,6 +14,7 @@ from tg import config, session
 from pylons import c, request
 import paste.deploy.converters
 import pysolr
+import oembed
 import markdown
 from carrot.connection import BrokerConnection
 from carrot.messaging import Publisher
@@ -34,6 +36,8 @@ class Globals(object):
     def __init__(self):
         """Do nothing, by default."""
         self.pyforge_templates = pkg_resources.resource_filename('pyforge', 'templates')
+
+        # Setup SOLR
         self.solr_server = config.get('solr.server')
         if self.solr_server:
             self.solr =  pysolr.Solr(self.solr_server)
@@ -41,6 +45,8 @@ class Globals(object):
             self.solr = None
         self.use_queue = paste.deploy.converters.asbool(
             config.get('use_queue', False))
+
+        # Setup RabbitMQ
         self.conn = BrokerConnection(
             hostname=config.get('amqp.hostname', 'localhost'),
             port=config.get('amqp.port', 5672),
@@ -50,9 +56,22 @@ class Globals(object):
         self.publisher = dict(
             audit=Publisher(connection=self.conn, exchange='audit', auto_declare=False),
             react=Publisher(connection=self.conn, exchange='react', auto_declare=False))
+
+        # Setup markdown
         self.markdown = markdown.Markdown(
-            extensions=['codehilite', ForgeExtension(),'meta'],
+            extensions=['codehilite', ForgeExtension(), 'meta'],
             output_format='html4')
+        self.markdown_wiki = markdown.Markdown(
+            extensions=['codehilite', ForgeExtension(wiki=True),'meta'],
+            output_format='html4')
+
+        # Setup OEmbed
+        cp = RawConfigParser()
+        cp.read(config['oembed.config'])
+        self.oembed_consumer = consumer = oembed.OEmbedConsumer()
+        for endpoint in cp.sections():
+            values = [ v for k,v in cp.items(endpoint) ]
+            consumer.addEndpoint(oembed.OEmbedEndpoint(endpoint, values))
 
         self.oid_store = M.OpenIdStore()
 
