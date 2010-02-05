@@ -41,6 +41,28 @@ class TestFunctionalController(TestController):
         index_view = self.app.get('/bugs/')
         assert_true(summary in index_view)
 
+    def test_ticket_tag_untag(self):
+        summary = 'test tagging and untagging a ticket'
+        self.new_ticket(summary)
+        self.app.post('/bugs/1/update_ticket',{
+            'summary':'aaa',
+            'description':'bbb',
+            'status':'ccc',
+            'tags':'red,blue',
+            'tags_old':'red,blue'
+        })
+        response = self.app.get('/bugs/1/')
+        assert_true('aaa' in response)
+        self.app.post('/bugs/1/update_ticket',{
+            'summary':'zzz',
+            'description':'bbb',
+            'status':'ccc',
+            'tags':'red',
+            'tags_old':'red'
+        })
+        response = self.app.get('/bugs/1/')
+        assert_true('zzz' in response)
+
     def test_new_attachment(self):
         file_name = 'test_root.py'
         file_data = file(__file__).read()
