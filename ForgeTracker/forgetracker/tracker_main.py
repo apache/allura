@@ -87,8 +87,24 @@ class ForgeTrackerApp(Application):
         model.Comment.query.remove(app_config_id)
         model.Globals.query.remove(app_config_id)
 
-
 class RootController(object):
+
+    def ordered_history(self, limit=None):
+        q = []
+        tickets = model.Ticket.query.find(dict(app_config_id=c.app.config._id)).sort('ticket_num')
+        for ticket in tickets:
+            q.append(dict(change_type='ticket',change_date=ticket.created_date,ticket_num=ticket.ticket_num,change_text=ticket.summary))
+            for comment in ticket.ordered_comments(limit):
+                q.append(dict(change_type='comment',change_date=comment.created_date,ticket_num=ticket.ticket_num,change_text=comment.text))
+        q.sort(reverse=True)
+        if limit:
+            n = len(q)
+            if n > limit:
+                z = []
+                for i in range(0, limit):
+                    z.append(q[i])
+                q = z
+        return q
 
     @with_trailing_slash
     @expose('forgetracker.templates.index')
