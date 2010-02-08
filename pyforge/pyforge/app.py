@@ -1,5 +1,5 @@
 from tg import expose, redirect, flash
-from pylons import c
+from pylons import c, g
 from pymongo.bson import ObjectId
 
 from pyforge.lib.helpers import push_config
@@ -108,7 +108,9 @@ class Application(object):
 
     def uninstall(self, project):
         'Whatever logic is required to tear down a plugin'
-        pass # pragma: no cover
+        # De-index all the artifacts belonging to this plugin in one fell swoop
+        g.solr.delete('project_id_s:%s AND mount_point_s:%s' % (
+                project._id, self.config.options['mount_point']))
 
     def sidebar_menu(self):
         return []
