@@ -218,6 +218,7 @@ class Artifact(MappedClass):
             is_history_b=False,
             url_s=self.url(),
             type_s=self.type_s,
+            tags_t=','.join(t.tag for t in self.tags),
             snippet_s='')
 
     def url(self):
@@ -250,7 +251,9 @@ class Snapshot(Artifact):
 
     def index(self):
         result = Artifact.index(self)
+        result.update(self.original().index())
         result.update(
+            id=self.index_id(),
             version_i=self.version,
             author_username_t=self.author.username,
             author_display_name_t=self.author.display_name,
