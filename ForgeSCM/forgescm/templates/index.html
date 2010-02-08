@@ -79,6 +79,7 @@
     </form>
     <h3>Recent Commits</h3>
     <p py:for="ct in repo.ordered_commits(5)">
+      ${gravatar(ct.user, size=24)}
       <a href="${ct.url()}">
         <code>
           <py:if test="ct.rev is not None">${ct.rev}:</py:if>
