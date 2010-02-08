@@ -19,6 +19,10 @@ class TestRootController(TestController):
         response = self.app.get('/Wiki/markdown_syntax')
         assert_true('Markdown Syntax' in response)
 
+    def test_root_browse_pages(self):
+        response = self.app.get('/Wiki/browse')
+        assert_true('Browse Pages' in response)
+
     def test_root_new_page(self):
         response = self.app.get('/Wiki/new_page?title=TEST')
         assert_true('TEST' in response)
@@ -86,6 +90,6 @@ class TestRootController(TestController):
 
     def test_new_attachment(self):
         content = file(__file__).read()
-        self.app.post('/wiki/TEST/attach', upload_files=[('file_info', 'test_root.py', content)])
+        response = self.app.post('/wiki/TEST/attach', upload_files=[('file_info', 'test_root.py', content)])
         response = self.app.get('/wiki/TEST/')
         assert_true('test_root.py' in response)

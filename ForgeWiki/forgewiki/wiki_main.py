@@ -104,7 +104,7 @@ class ForgeWikiApp(Application):
 			   ]+pages+[
 			    SitemapEntry('Wiki Nav'),
 			    SitemapEntry('View History','history'),
-			    SitemapEntry('Browse Pages','.', className="todo"),
+			    SitemapEntry('Browse Pages',c.app.url+'browse'),
 			    SitemapEntry('Browse Tags','.', className="todo"),
 			    SitemapEntry('Advanced','.', className="todo"),
 			    SitemapEntry('Bookmarks', className="todo"),
@@ -176,6 +176,33 @@ class RootController(object):
             results = search(search_query)
             if results: count=results.hits
         return dict(q=q, history=history, results=results or [], count=count)
+
+    @expose('forgewiki.templates.browse')
+    @validate(dict(sort=validators.UnicodeString(if_empty='alpha')))
+    def browse(self, sort='alpha'):
+        'list of all pages in the wiki'
+        pages = []
+        uv_pages = []
+        q = model.Page.query.find(dict(app_config_id=c.app.config._id))
+        if sort == 'alpha':
+            q = q.sort('title')
+        for page in q:
+            recent_edit = page.history().first()
+            p = dict(title=page.title)
+            if recent_edit:
+                p['updated'] = recent_edit.timestamp
+                p['user_label'] = recent_edit.author.display_name
+                p['user_name'] = recent_edit.author.username
+                pages.append(p)
+            else:
+                if sort == 'recent':
+                    uv_pages.append(p)
+                else:
+                    pages.append(p)
+        if sort == 'recent':
+            pages.sort(reverse=True, key=lambda x:(x['updated']))
+            pages = pages + uv_pages
+        return dict(pages=pages)
 
     @expose('forgewiki.templates.markdown_syntax')
     def markdown_syntax(self):

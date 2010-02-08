@@ -1,0 +1,38 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+                      "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:py="http://genshi.edgewall.org/"
+      xmlns:xi="http://www.w3.org/2001/XInclude">
+
+  <xi:include href="master.html" />
+  <xi:include href="lib.html" />
+  <?python from pyforge.lib import helpers?>
+
+  <head>
+    <meta content="text/html; charset=UTF-8" http-equiv="content-type" py:replace="''"/>
+    <title>Browse Pages</title>
+  </head>
+  <body>
+    <h1>Browse Pages</h1>
+    View: <a href="browse?sort=recent">Recently Updated</a> | <a href="browse?sort=alpha">Alphabetical</a>
+    <table id="forge_wiki_browse">
+      <thead>
+        <tr>
+          <th>Title</th>
+          <th>Last Update By</th>
+          <th>Last Updated</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr py:for="page in pages">
+          <td><a href="${page['title']}">${page['title']}</a></td>
+          <td py:if="'user_label' in page">${page['user_label']}</td>
+          <td py:if="'user_label' not in page"></td>
+          <td py:if="'updated' in page">${helpers.ago(page['updated'])}</td>
+          <td py:if="'updated' not in page"></td>
+        </tr>
+      </tbody>
+    </table>
+  </body>
+
+</html>
