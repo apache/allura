@@ -26,7 +26,7 @@ paster reactor sandbox.ini &
 paster smtp_server sandbox.ini &
 
 paster setup-app sandbox.ini
-paster serve --reload sandbox.ini &
+paster serve --reload --daemon sandbox.ini
 
 sleep 5
 echo "########################################"
