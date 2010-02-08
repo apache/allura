@@ -182,4 +182,8 @@
       });
     </script>
   </py:def>
+
+  <py:def function="gravatar(email, **kw)">
+    <img src="${g.gravatar(email, **kw)}" class="gravatar" alt="gravatar for $email"/>
+  </py:def>
 </html>

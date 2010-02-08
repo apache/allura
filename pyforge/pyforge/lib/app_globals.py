@@ -23,6 +23,8 @@ from pymongo.bson import ObjectId
 from pyforge import model as M
 from pyforge.lib.markdown_extensions import ForgeExtension
 
+from pyforge.lib import gravatar
+
 log = logging.getLogger(__name__)
 
 class Globals(object):
@@ -72,6 +74,9 @@ class Globals(object):
         for endpoint in cp.sections():
             values = [ v for k,v in cp.items(endpoint) ]
             consumer.addEndpoint(oembed.OEmbedEndpoint(endpoint, values))
+
+        # Setup Gravatar
+        self.gravatar = gravatar.url
 
         self.oid_store = M.OpenIdStore()
 
