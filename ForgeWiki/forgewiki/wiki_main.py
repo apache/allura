@@ -135,6 +135,7 @@ class ForgeWikiApp(Application):
 
     def uninstall(self, project):
         "Remove all the plugin's artifacts from the database"
+        Application.uninstall(self, project)
         model.Attachment.query.remove({'metadata.app_config_id':c.app.config._id})
         mapper(model.Page).remove(dict(project_id=c.project._id))
         mapper(model.Comment).remove(dict(project_id=c.project._id))
