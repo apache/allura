@@ -40,6 +40,10 @@ class PageHistory(Snapshot):
         """A markdown processed version of the page text"""
         return g.markdown_wiki.convert(self.data.text)
 
+    @property
+    def attachments(self):
+        return self.original().attachments
+
     def root_comments(self):
         if '_id' in self:
             return Comment.query.find(dict(page_id=self.artifact_id, parent_id=None))
