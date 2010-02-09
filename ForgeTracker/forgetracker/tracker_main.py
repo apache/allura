@@ -119,6 +119,7 @@ class RootController(object):
     def search(self, q=None, history=None):
         'local plugin search'
         results = []
+        tickets = []
         count=0
         if not q:
             q = ''
@@ -128,8 +129,11 @@ class RootController(object):
             AND mount_point_s:%s''' % (
                 q, history, c.app.config.options.mount_point)
             results = search(search_query)
-            if results: count=results.hits
-        return dict(q=q, history=history, results=results or [], count=count)
+            if results:
+                tickets = model.Ticket.query.find(dict(app_config_id=c.app.config._id,
+                                                       _id={'$in':[ObjectId(r['id'].split('#')[1]) for r in results.docs]}))
+                count=len(tickets)
+        return dict(q=q, history=history, tickets=tickets or [], count=count)
 
     def _lookup(self, ticket_num, *remainder):
         return TicketController(ticket_num), remainder
@@ -208,10 +212,10 @@ class TicketController(object):
     @expose()
     def update_ticket(self, tags, tags_old, **post_data):
         require(has_artifact_access('write', self.ticket))
-        if tags: tags = tags.split(',')
-        else: tags = []
         if request.method != 'POST':
             raise Exception('update_ticket must be a POST request')
+        if tags: tags = tags.split(',')
+        else: tags = []
         self.ticket.summary = post_data['summary']
         self.ticket.description = post_data['description']
       # self.ticket.assigned_to = post_data['assigned_to']

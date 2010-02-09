@@ -3,7 +3,8 @@
 <html xmlns="http://www.w3.org/1999/xhtml"
       xmlns:py="http://genshi.edgewall.org/"
       xmlns:xi="http://www.w3.org/2001/XInclude">
-  <?python from pprint import pformat ?>
+  <?python from pprint import pformat
+           from pyforge.lib import helpers?>
 
   <xi:include href="master.html" />
   <xi:include href="lib.html" />
@@ -22,11 +23,30 @@
     <p py:if="count==0 and q">No results.</p>
     <p py:if="count==1 and q">$count result.</p>
     <p py:if="count > 1 and q">$count results.</p>
-    <div py:for="doc in results">
-      <a href="${doc['url_s']}">$doc.title_s</a><br/>
-      <pre>${pformat(doc)}</pre>
-      <hr/>
-    </div>
+    <table py:if="count != 0 and q">
+      <thead>
+        <tr>
+          <th>&nbsp;</th>
+          <th>Ticket</th>
+          <th>Updated</th>
+          <th>Status</th>
+          <th>Contents</th>
+          <th>Assigned To</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr py:for="t in tickets">
+          <td><input type="checkbox"/></td>
+          <td><a href="${t.url()}">#$t.ticket_num $t.summary</a></td>
+          <td>${helpers.ago(t.created_date)}</td>
+          <td>$t.status</td>
+          <td py:if="len(t.description) &gt; 70">${t.description[0:70]}...</td>
+          <td py:if="len(t.description) &lt;= 70">$t.description</td>
+          <td py:if="t.assigned_to()">${t.assigned_to().display_name}</td>
+          <td py:if="not t.assigned_to()">nobody</td>
+        </tr>
+      </tbody>
+    </table>
   </body>
 
 </html>
