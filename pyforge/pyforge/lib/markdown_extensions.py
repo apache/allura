@@ -24,8 +24,7 @@ class ForgeExtension(markdown.Extension):
         md.treeprocessors['br'] = LineOrientedTreeProcessor()
         md.inlinePatterns['oembed'] = OEmbedPattern(r'\[embed#(.*?)\]')
         md.inlinePatterns['autolink_1'] = AutolinkPattern(r'(http(?:s?)://\S*)')
-        md.inlinePatterns['artifact_1'] = ArtifactLinkPattern('^' + self.core_artifact_link)
-        md.inlinePatterns['artifact_2'] = ArtifactLinkPattern(r'\w' + self.core_artifact_link)
+        md.inlinePatterns['artifact'] = ArtifactLinkPattern(self.core_artifact_link)
         if self._use_wiki:
             md.inlinePatterns['wiki'] = WikiLinkPattern(r'\b([A-Z]\w+[A-Z]+\w+)')
 
