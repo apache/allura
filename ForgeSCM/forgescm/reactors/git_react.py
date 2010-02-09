@@ -10,89 +10,30 @@ from pyforge.model import Project
 
 from forgescm.lib import git
 from pyforge import model as M
+import sys
 
 log = logging.getLogger(__name__)
 
 ## Auditors
 @audit('scm.git.init')
 def init(routing_key, data):
-    log.info('GIT init')
     repo = c.app.repo
-    repo.type = 'git'
-    cmd = git.init()
-    cmd.clean_dir()
-    repo.clear_commits()
-    repo.parent = None
-    cmd.run()
-    log.info('Setup gitweb in %s', repo.repo_dir)
-    repo_name = c.project.shortname + c.app.config.options.mount_point
-    git.setup_gitweb(repo_name, repo.repo_dir)
-    git.setup_commit_hook(repo.repo_dir, c.app.config.script_name()[1:])
-    if cmd.sp.returncode:
-        g.publish('react', 'error', dict(
-                message=cmd.output))
-        repo.status = 'Error: %s' % cmd.output
-    else:
-        repo.status = 'Ready'
+    return repo.do_init(data, "git")
 
 @audit('scm.git.clone')
 def clone(routing_key, data):
     repo = c.app.repo
-    log.info('Begin cloning %s', data['url'])
-    repo.type = 'git'
-    cmd = git.clone(data['url'], 'git_dest')
-    cmd.clean_dir()
-    repo.clear_commits()
-    cmd.run()
-    cmd.finish() # move cloned dir back to the mount point's cwd
-
-    log.info('Clone complete for %s', data['url'])
-    repo_name = c.project.shortname + c.app.config.options.mount_point
-    git.setup_gitweb(repo_name, repo.repo_dir)
-    git.setup_commit_hook(repo.repo_dir, c.app.config.script_name()[1:])
-    if cmd.sp.returncode:
-        errmsg = cmd.output
-        g.publish('react', 'error', dict(
-                message=errmsg))
-        repo.status = 'Error: %s' % errmsg
-    else:
-        g.publish('react', 'scm.cloned', dict(
-                url=data['url']))
+    return repo.do_clone(data['url'], "git")
 
 @audit('scm.git.fork')
 def fork(routing_key, data):
-    log.info('Begin forking %s => %s', data['forked_from'], data['forked_to'])
-    project = M.Project.query.get(_id=bson.ObjectId(data['forked_to']['project_id']))
-    data_context = data['forked_to'].copy()
-    data_context['project_shortname']=project.shortname
-    del data_context['project_id']
+    # get from info
+    src_project = M.Project.query.get(_id=bson.ObjectId(data['forked_from']['project_id']))
+    src_app_config = M.AppConfig.query.get(_id=bson.ObjectId(data['forked_from']['app_config_id']))
+    src_app = src_project.app_instance(src_app_config)
 
-    set_context(**encode_keys(data_context))
-    # Set repo metadata
-    repo = c.app.repo
-    repo.type = 'git'
-    repo.forked_from.update(data['forked_from'])
-    # Perform the clone
-    log.info('Cloning from %s', data['url'])
-    cmd = git.clone(data['url'], 'git_dest')
-    cmd.clean_dir()
-    repo.clear_commits()
-    cmd.run()
-    cmd.finish()
-    repo.status = 'Ready'
-    log.info('Clone complete for %s', data['url'])
-    repo_name = c.project.shortname + c.app.config.options.mount_point
-    git.setup_gitweb(repo_name, repo.repo_dir)
-    git.setup_commit_hook(repo.repo_dir, c.app.config.script_name()[1:])
-    if cmd.sp.returncode:
-        errmsg = cmd.output
-        g.publish('react', 'error', dict(
-                message=errmsg))
-        repo.status = 'Error: %s' % errmsg
-        return
-    else:
-        log.info("Sending scm.forked message")
-        g.publish('react', 'scm.forked', data)
+    assert src_app.repo.type == "git"
+    return src_app.repo.do_fork(data)
 
 @audit('scm.git.reclone')
 def reclone(routing_key, data):

@@ -28,26 +28,9 @@ log = logging.getLogger(__name__)
 ## Auditors
 @audit('scm.svn.init')
 def init(routing_key, data):
-    # svn init
     log.info('SVN init')
     repo = c.app.repo
-    repo.type = 'svn'
-    repo.clear_commits()
-    repo.parent = None
-    cmd = svn.init()
-    cmd.clean_dir()
-    try:
-        cmd.run_exc()
-        svn.setup_commit_hook(repo.repo_dir, c.app.config.script_name()[1:])
-        hg.clone('file://%s/svn' % cmd.cwd(), 'hg_repo').run_exc()
-    except AssertionError, ae:
-        g.publish('react', 'error', dict(
-                message=ae.args[0]))
-        repo.status = 'Error: %s' % ae.args[0]
-    except Exception, ex:
-        g.publish('react', 'error', dict(message=str(ex)))
-        repo.status = 'Error: %s' % ex
-    repo.status = 'Ready'
+    return repo.do_init(data, "svn")
 
 @audit('scm.svn.clone')
 def clone(routing_key, data):

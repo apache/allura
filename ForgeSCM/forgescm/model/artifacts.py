@@ -15,7 +15,7 @@ from ming.orm.base import state, session, mapper
 from ming.orm.mapped_class import MappedClass
 from ming.orm.property import FieldProperty, RelationProperty, ForeignIdProperty
 
-from pyforge.lib.helpers import push_config
+from pyforge.lib.helpers import push_config, set_context, encode_keys
 from pyforge.model import Project, Artifact, AppConfig
 from pymongo import bson
 import sys
@@ -35,6 +35,7 @@ class Repository(Artifact):
     type = FieldProperty(str, if_missing='hg')
     pull_requests = FieldProperty([str])
     repo_dir = FieldProperty(str)
+    cloned_from = FieldProperty(str)
     forks = FieldProperty([dict(
                 project_id=schema.ObjectId,
                 app_config_id=schema.ObjectId(if_missing=None))])
@@ -61,33 +62,79 @@ class Repository(Artifact):
         elif self.type == 'svn':
             return forgescm.lib.svn
 
-    ## patterned after git_react/init...
-    ## compare/make sure it does everything
-    ## hg and svn init do
-    def init(self, data):
-        '''This is the fat model method to handle a reactor's init call'''
+    def do_init(self, data, type):
+        assert type in ["git", "svn", "hg"]
+        self.type = type
         log.info(self.type + ' init')
-        print >> sys.stderr, self.type + ' init'
         repo = c.app.repo
         scm = self.scmlib()
         cmd = scm.init()
         cmd.clean_dir()
         self.clear_commits()
         self.parent = None
-        cmd.run()
-        log.info('Setup gitweb in %s', self.repo_dir)
-        repo_name = c.project.shortname + c.app.config.options.mount_point
-        scm.setup_scmweb(repo_name, repo.repo_dir)
-        scm.setup_commit_hook(repo.repo_dir, c.app.config.script_name()[1:])
-        if cmd.sp.returncode:
-            g.publish('react', 'error', dict(
-                message=cmd.output))
-            repo.status = 'Error: %s' % cmd.output
-        else:
+
+        try:
+            cmd.run_exc()
+            repo_name = c.project.shortname + c.app.config.options.mount_point
+            scm.setup_scmweb(repo_name, repo.repo_dir)
+            scm.setup_commit_hook(repo.repo_dir, c.app.config.script_name()[1:])
             repo.status = 'Ready'
+        except AssertionError, ae:
+            g.publish('react', 'error', dict(
+                    message=ae.args[0]))
+            repo.status = 'Error: %s' % ae.args[0]
+        except Exception, ex:
+            g.publish('react', 'error', dict(message=str(ex)))
+            repo.status = 'Error: %s' % ex
+
 
     def url(self):
         return self.app_config.url()
+
+    # patterned from def clone in reactors
+    def do_clone(self, url, type):
+        assert type in ["git", "svn", "hg"]
+        repo = c.app.repo
+        log.info('Begin (%s) cloning %s', type, url)
+        repo.type = type
+        repo.clear_commits()
+        scm = self.scmlib()
+        repo.cloned_from = url
+
+        cmd = None
+        if type == "git":
+            cmd = scm.clone(url, "git_dest")
+        elif type == "hg":
+            cmd = scm.clone(url, ".")
+        elif type == "svn":
+            # yipes: svn is ugly and requires
+            # multiple cmds... so we do
+            # this ugliness unlike git & hg
+            try:
+                scm.svn_clone(url)
+            except Exception, ex:
+                g.publish(
+                        'react',
+                        'error',
+                        dict(message=str(ex)))
+                repo.status = 'Error: %s' % ex
+                return # don't continue after error
+        else:
+            raise TypeError(type + " not expected")
+        if cmd:
+            cmd.clean_dir()
+            cmd.run()
+        repo_name = c.project.shortname + c.app.config.options.mount_point
+        scm.setup_scmweb
+        scm.setup_commit_hook(repo.repo_dir, c.app.config.script_name()[1:])
+        log.info('Clone complete for %s', url)
+        if cmd and cmd.sp.returncode:
+            errmsg = cmd.output
+            g.publish('react', 'error', dict(message=errmsg))
+            repo.status = 'Error: %s' % errmsg
+        else:
+            g.publish('react', 'scm.cloned', dict(
+                    url=url))
 
     def clone_command(self):
         if self.type == 'hg':
@@ -100,8 +147,8 @@ class Repository(Artifact):
 
     def clone_url(self):
         if self.type == 'hg':
-            return config.get('host_prefix', 'http://localhost:8080') \
-                + self.native_url()
+            #return config.get('host_prefix', 'http://localhost:8080') + self.native_url()
+            return self.repo_dir
         elif self.type == 'git':
             return self.repo_dir
         elif self.type == 'svn':
@@ -154,7 +201,55 @@ class Repository(Artifact):
                 if repo:
                     yield repo.url()
 
+    # copied from git_react and hg_react
+    def do_fork(self, data):
+        log.info('Begin forking %s => %s', data['forked_from'], data['forked_to'])
+        project = Project.query.get(_id=bson.ObjectId(data['forked_to']['project_id']))
+        data_context = data['forked_to'].copy()
+        data_context['project_shortname']=project.shortname
+        del data_context['project_id']
+
+        set_context(**encode_keys(data_context))
+
+        # Set repo metadata
+        dest_repo = c.app.repo
+
+        # Perform the clone
+        scm = self.scmlib()
+        dest_repo.forked_from.update(data['forked_from'])
+        log.info('Cloning from %s', data['url'])
+        assert data['url'] == self.repo_dir
+
+        if self.type == "git":
+            cmd = scm.clone(self.repo_dir, 'git_dest') # this is ugly
+        elif self.type == "hg":
+            cmd = scm.clone(self.repo_dir, '.')
+        else:
+            assert False # only git and hg supported
+        cmd.clean_dir()
+        dest_repo.clear_commits()
+        cmd.run()
+        dest_repo.status = 'Ready'
+        log.info('Clone complete for %s', data['url'])
+        repo_name = c.project.shortname + c.app.config.options.mount_point
+        scm.setup_scmweb(repo_name, dest_repo.repo_dir)
+
+        # valid for hg?
+        scm.setup_commit_hook(dest_repo.repo_dir, c.app.config.script_name()[1:])
+        if cmd.sp.returncode:
+            errmsg = cmd.output
+            g.publish('react', 'error', dict(
+                    message=errmsg))
+            dest_repo.status = 'Error: %s' % errmsg
+            return
+        else:
+            log.info("Sending scm.forked message")
+            g.publish('react', 'scm.forked', data)
+
+
+
     def fork(self, project_id, mount_point):
+        """create a fork from an existing openforge repository"""
         clone_url = self.clone_url()
         p = Project.query.get(_id=bson.ObjectId(str(project_id)))
         app = p.install_app('Repository', mount_point,
@@ -162,7 +257,7 @@ class Repository(Artifact):
         with push_config(c, project=p, app=app):
             repo = app.repo
             repo.type = app.repo.type
-            repo.status = 'Pending Fork'
+            repo.status = 'pending fork'
             new_url = repo.url()
         g.publish('audit', 'scm.%s.fork' % c.app.config.options.type, dict(
                 url=clone_url,

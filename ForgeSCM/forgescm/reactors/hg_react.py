@@ -17,65 +17,21 @@ log = logging.getLogger(__name__)
 @audit('scm.hg.init')
 def init(routing_key, data):
     repo = c.app.repo
-    repo.type = 'hg'
-    cmd = hg.init()
-    cmd.clean_dir()
-    repo.clear_commits()
-    repo.parent = None
-    cmd.run()
-    hg.setup_commit_hook(repo.repo_dir, c.app.config.script_name()[1:])
-    if cmd.sp.returncode:
-        g.publish('react', 'error', dict(
-                message=cmd.output))
-        repo.status = 'Error: %s' % cmd.output
-    else:
-        repo.status = 'Ready'
+    return repo.do_init(data, "hg")
 
 @audit('scm.hg.clone')
 def clone(routing_key, data):
     repo = c.app.repo
-    log.info('Begin cloning %s', data['url'])
-    repo.type = 'hg'
-    repo.clear_commits()
-    # Perform the clone
-    cmd = hg.clone(data['url'], '.')
-    cmd.clean_dir()
-    cmd.run()
-    hg.setup_commit_hook(repo.repo_dir, c.app.config.script_name()[1:])
-    log.info('Clone complete for %s', data['url'])
-    if cmd.sp.returncode:
-        errmsg = cmd.output
-        g.publish('react', 'error', dict(
-                message=errmsg))
-        repo.status = 'Error: %s' % errmsg
-    else:
-        g.publish('react', 'scm.cloned', dict(
-                url=data['url']))
+    return repo.do_clone(data['url'], "hg")
 
 @audit('scm.hg.fork')
 def fork(routing_key, data):
-    log.info('Begin forking %s => %s', data['forked_from'], data['forked_to'])
-    set_context(**encode_keys(data['forked_to']))
-    # Set repo metadata
-    repo = c.app.repo
-    repo.type = 'hg'
-    repo.forked_from.update(data['forked_from'])
-    # Perform the clone
-    log.info('Cloning from %s', data['url'])
-    cmd = hg.clone(data['url'], '.')
-    cmd.clean_dir()
-    cmd.run()
-    repo.status = 'Ready'
-    log.info('Clone complete for %s', data['url'])
-    if cmd.sp.returncode:
-        errmsg = cmd.output
-        g.publish('react', 'error', dict(
-                message=errmsg))
-        repo.status = 'Error: %s' % errmsg
-        return
-    else:
-        log.info("Sending scm.forked message")
-        g.publish('react', 'scm.forked', data)
+    src_project = M.Project.query.get(_id=bson.ObjectId(data['forked_from']['project_id']))
+    src_app_config = M.AppConfig.query.get(_id=bson.ObjectId(data['forked_from']['app_config_id']))
+    src_app = src_project.app_instance(src_app_config)
+
+    assert src_app.repo.type == "hg"
+    return src_app.repo.do_fork(data)
 
 @audit('scm.hg.reclone')
 def reclone(routing_key, data):

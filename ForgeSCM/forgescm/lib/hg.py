@@ -33,7 +33,6 @@ config = %s
     with open(fn, 'a') as fp:
         fp.write(text)
 
-# nyi
 def setup_scmweb(self, repo_dir):
     return
 
@@ -60,8 +59,6 @@ class LogParser(object):
             while True:
                 if cur_line.startswith('changeset:'):
                     cur_line = self.parse_header(cur_line, line_iter)
-                elif cur_line.startswith('diff --git'):
-                    cur_line = self.parse_diff(cur_line, line_iter)
                 elif cur_line.strip():
                     log.error('Unexpected line %r', cur_line)
                     cur_line = line_iter.next()
@@ -120,19 +117,3 @@ class LogParser(object):
 
     def parse_line(self, rest):
         return rest.lstrip()
-
-    def parse_diff(self, cur_line, line_iter):
-        cmdline = cur_line.split(' ')
-        r = M.Patch(repository_id=self.result[-1].repository_id,
-                    commit_id=self.result[-1]._id,
-                    filename=cmdline[2][2:])
-        text_lines = []
-        while cur_line != '\n':
-            cur_line = line_iter.next()
-            if cur_line.startswith('diff'): break
-            if cur_line != '\n': text_lines.append(cur_line)
-        r.patch_text = bson.Binary(''.join(text_lines))
-        if cur_line == '\n':
-            cur_line = line_iter.next()
-        return cur_line
-

@@ -28,6 +28,7 @@ class clone(Command):
     def finish(self):
         path = self.cwd()
         tmp_git_path = os.path.join(path, self.args[-1])
+        #print >> sys.stderr, tmp_git_path
         shutil.move(os.path.join(tmp_git_path, '.git'), os.path.join(path, '.git'))
         shutil.rmtree(os.path.join(path, tmp_git_path))
 

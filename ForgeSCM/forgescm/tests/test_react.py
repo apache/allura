@@ -5,9 +5,10 @@ import ming
 from pyforge import model as M
 from pyforge.lib import app_globals
 from forgescm.reactors import common_react
-from forgescm.reactors import git_react
+from forgescm.reactors import git_react, svn_react, hg_react
 import forgescm.reactors
 from forgescm.tests import test_helper
+from nose.tools import assert_equal
 
 ming.configure(**{'ming.main.master':'mongo://localhost:27017/pyforge'})
 
@@ -26,16 +27,16 @@ class TestReact(TestCase):
                  mount_point=c.app.config.options.mount_point)
         return func(routing_key, d)
 
-    def test_initialized(self): # if I call this test_initialized, it fails in test_setup_app
+    def test_initialized(self):
         self.publish(common_react.initialized, 'scm.initialized')
         # incomplete, we need to validate result
 
-    def test_forked_update(self):
-        return # incomplete tests removed, see git history
-
     def test_cloned(self):
-        self.publish(common_react.cloned, 'scm.cloned', dict(
-                url='forgescm/tests/hg_repo'))
+        test_helper.setup_simple_hg_repo(c.app.repo)
+        self.publish(common_react.cloned,
+                'scm.cloned',
+                dict(url='forgescm/tests/hg_repo'))
+
 
     #for_each (git, hg, svn):
     #    setup: create repo
@@ -45,10 +46,9 @@ class TestReact(TestCase):
     # But first, let's test the git_clone
 
     def test_git_fork(self):
-        result = test_helper.create_git_repo()
-        assert "commit" in result.output
-
-        c.app.repo.type = "git"
+        result = test_helper.setup_simple_git_repo(c.app.repo)
+        assert c.app.repo.type == "git"
+        assert c.app.config.options.type == "git"
 
         from_project = c.project
         to_project = c.project
@@ -65,4 +65,27 @@ class TestReact(TestCase):
                                app_config_id=str(c.app.config._id)))
 
         self.publish(git_react.fork, 'scm.git.fork', data)
-        # missing: check that it was forked
+        assert to_app.repo.repo_dir
+        assert "commit" in to_app.repo.scmlib().scm_log().run().output
+
+
+    def init_helper(self, func, type):
+        c.user = M.User.query.get(username='test_admin')
+
+        c.app.repo.status = 'bogus'
+        c.app.repo.parent = 'bogus'
+        self.publish(func, 'scm.%s.init' % type, {})
+        assert_equal(c.app.repo.status, 'Ready')
+        assert_equal(c.app.repo.parent, None)
+
+    def test_git_init(self):
+        self.init_helper(git_react.init, 'git')
+
+    def test_hg_init(self):
+        self.init_helper(hg_react.init, 'hg')
+
+    def test_svn_init(self):
+        self.init_helper(svn_react.init, 'svn')
+
+
+    ## missing tests: clone, hg fork, svn fork

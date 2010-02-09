@@ -1,5 +1,7 @@
 import os
 import sys
+import logging
+import shutil
 from forgescm.lib import hg, git
 from pylons import c, g
 from tg import config
@@ -9,8 +11,10 @@ from paste.script.appinstall import SetupCommand
 from webtest import TestApp
 from time import sleep
 from pyforge.lib import app_globals
+from forgescm.lib import git
 
 from forgescm.lib.command import Command
+log = logging.getLogger(__name__)
 
 class git_add_all(Command):
     base='git add .'
@@ -38,9 +42,6 @@ def test_setup_app():
     test_file = os.path.join(conf_dir, 'test.ini')
     cmd = SetupCommand('setup-app')
     cmd.run([test_file])
-    hg_repo_url = config.here + '/forgescm/tests/hg_repo'
-    if not os.path.exists(hg_repo_url):
-        system('hg init %s' % hg_repo_url)
     return app
 
 def ensure_c_project_and_app():
@@ -52,23 +53,54 @@ def ensure_c_project_and_app():
     c.project = get_project()
     c.app = c.project.app_instance('src')
 
-def create_git_repo():
-    save_dir = os.getcwd()
-    os.chdir("/tmp")
-    cmd = git.init()
-    cmd.clean_dir()
-    cmd.run()
-    create_readme(c.app.repo.repo_dir)
-    git_add_all().run()
-    git_commit_all().run()
-    log = git.scm_log()
-    log.run()
-    os.chdir(save_dir)
-    return log
+# used by test_fork
+def setup_simple_git_repo(repo):
+    url = create_git_repo()
+    return clone_git_repo(repo, url)
 
-def clone_git_repo(repo):
+
+def test_svn_repo_dir():
+    return os.path.join(os.path.dirname(__file__), 'svn_repo')
+
+def test_hg_repo_dir():
+    return os.path.join(os.path.dirname(__file__), 'hg_repo')
+
+def setup_simple_hg_repo(repo):
+    src = test_hg_repo_dir()
+    if os.path.exists(repo.repo_dir):
+      shutil.rmtree(repo.repo_dir)
+    shutil.copytree(src, repo.repo_dir)
+    assert "changeset" in repo.scmlib().scm_log().run().output
+
+# creates an empty git repo, and then adds one commit to it
+def create_git_repo():
+    tgz = os.path.join(os.path.dirname(__file__), 'git_repo.tgz')
+    dest = "/tmp/git_repo"
+    os.system("tar zvfx %s --directory %s &> /dev/null" % (tgz, os.path.dirname(dest)))
+    return dest
+
+def clone_git_repo(repo, url):
     repo.type = "git"
-    # following is copied from  reactors/git_react.py,
+    repo.app.config.options.type = "git"
+
+    # following is copied from reactors/git_react.py,
     # should be factored out
     repo.clear_commits()
+    cmd = git.clone(url, 'git_dest')
+    cmd.clean_dir()
+    repo.clear_commits()
+    cmd.run()
 
+    log.info('Clone complete for %s', url)
+    repo_name = c.project.shortname + c.app.config.options.mount_point
+    git.setup_gitweb(repo_name, repo.repo_dir)
+    git.setup_commit_hook(repo.repo_dir, c.app.config.script_name()[1:])
+    if cmd.sp.returncode:
+        errmsg = cmd.output
+        g.publish('react', 'error', dict(
+                message=errmsg))
+        repo.status = 'Error: %s' % errmsg
+    else:
+        g.publish('react', 'scm.cloned', dict(
+                url=url))
+    return cmd.cwd()

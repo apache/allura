@@ -14,7 +14,7 @@ from . import hg
 log = logging.getLogger(__name__)
 
 class init(Command):
-    base='svnadmin create svn_repo'
+    base='svnadmin create .'
 
 class sync(Command):
     base = 'svnsync'
@@ -34,14 +34,12 @@ def svn_clone(remote):
     # Allow svnsync to change revprops
     revprop_hook = os.path.join(
         cmd.cwd(),
-        'svn_repo/hooks/pre-revprop-change')
+        './hooks/pre-revprop-change')
     # os.remove(revprop_hook)
     os.symlink('/bin/true', revprop_hook)
     # Use svnsync to clone svn=>svn
-    sync('init', 'file://%s/svn_repo' % cmd.cwd(), remote).run_exc()
-    sync('sync', 'file://%s/svn_repo' % cmd.cwd()).run_exc()
-    # Use hgsubversion to clone svn=>hg
-    hg.clone('file://%s/svn_repo' % cmd.cwd(), 'hg_repo').run_exc()
+    sync('init', 'file://%s' % cmd.cwd(), 'file://%s' % remote).run_exc()
+    sync('sync', 'file://%s' % cmd.cwd()).run_exc()
 
 def setup_scmweb(self, repo_dir):
     return
@@ -58,7 +56,7 @@ def setup_commit_hook(repo_dir, plugin_id):
         repository=plugin_id,
         config=pylons.config['__file__'])
     strm = tt.generate(**context)
-    fn = os.path.join(repo_dir, 'svn_repo/hooks/post-commit')
+    fn = os.path.join(repo_dir, 'hooks/post-commit')
     with open(fn, 'w') as fp:
         fp.write(strm.render())
     os.chmod(fn, 0755)

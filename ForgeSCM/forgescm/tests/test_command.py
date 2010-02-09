@@ -32,10 +32,9 @@ class TestCommand(TestCase):
         assert os.getcwd() != cmd.cwd()
         cmd.clean_dir()
         cmd.run()
-        git.scm_log('-p').run(output_consumer=lambda line:None)
+        assert os.path.exists(os.path.join(cmd.cwd(), ".git"))
 
     def test_setup_gitweb(self):
         repo = c.app.repo
         repo_name = c.project.shortname + c.app.config.options.mount_point
         git.setup_gitweb(repo_name, repo.repo_dir)
-
