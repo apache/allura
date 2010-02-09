@@ -11,23 +11,21 @@ from pylons import g
 import oembed
 import markdown
 
-from pyforge import model as M
-
 log = logging.getLogger(__name__)
 
 class ForgeExtension(markdown.Extension):
+    core_artifact_link = r'(\[((?P<project_id>.*?):)?((?P<app_id>.*?):)?(?P<artifact_id>.*?)\])'
 
     def __init__(self, wiki=False):
         markdown.Extension.__init__(self)
         self._use_wiki = wiki
 
     def extendMarkdown(self, md, md_globals):
-        core_artifact_link = r'(\[((?P<project_id>.*?):)?((?P<app_id>.*?):)?(?P<artifact_id>.*?)\])'
         md.treeprocessors['br'] = LineOrientedTreeProcessor()
         md.inlinePatterns['oembed'] = OEmbedPattern(r'\[embed#(.*?)\]')
         md.inlinePatterns['autolink_1'] = AutolinkPattern(r'(http(?:s?)://\S*)')
-        md.inlinePatterns['artifact_1'] = ArtifactLinkPattern('^' + core_artifact_link)
-        md.inlinePatterns['artifact_2'] = ArtifactLinkPattern(r'\w' + core_artifact_link)
+        md.inlinePatterns['artifact_1'] = ArtifactLinkPattern('^' + self.core_artifact_link)
+        md.inlinePatterns['artifact_2'] = ArtifactLinkPattern(r'\w' + self.core_artifact_link)
         if self._use_wiki:
             md.inlinePatterns['wiki'] = WikiLinkPattern(r'\b([A-Z]\w+[A-Z]+\w+)')
 
@@ -50,6 +48,7 @@ class LineOrientedTreeProcessor(markdown.treeprocessors.Treeprocessor):
 class ArtifactLinkPattern(markdown.inlinepatterns.LinkPattern):
 
     def handleMatch(self, mo):
+        from pyforge import model as M
         old_link = mo.group(2)
         new_link = M.ArtifactLink.lookup(old_link)
         if new_link:

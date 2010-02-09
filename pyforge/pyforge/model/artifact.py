@@ -19,6 +19,7 @@ from .session import ProjectSession
 from .session import main_doc_session, main_orm_session
 from .session import project_doc_session, project_orm_session
 from .session import artifact_orm_session
+from .types import ArtifactReference, ArtifactReferenceType
 
 log = logging.getLogger(__name__)
 
@@ -50,6 +51,7 @@ class ArtifactLink(MappedClass):
     plugin_name = FieldProperty(str)
     mount_point = FieldProperty(str)
     url = FieldProperty(str)
+    artifact_reference = FieldProperty(ArtifactReferenceType)
 
     @classmethod
     def add(cls, artifact):
@@ -62,6 +64,7 @@ class ArtifactLink(MappedClass):
         entry.plugin_name=artifact.app_config.plugin_name
         entry.mount_point=artifact.app_config.options.mount_point
         entry.url=artifact.url()
+        entry.artifact_reference = artifact.dump_ref()
 
     @classmethod
     def remove(cls, artifact):
@@ -128,40 +131,18 @@ class Artifact(MappedClass):
         if_missing=lambda:{c.app.config.plugin_name:c.app.__version__})
     acl = FieldProperty({str:[S.ObjectId]})
     tags = FieldProperty([dict(tag=str, count=int)])
+    references = FieldProperty([ArtifactReferenceType])
+    backreferences = FieldProperty({str:ArtifactReferenceType})
     app_config = RelationProperty('AppConfig')
 
     def dump_ref(self):
-        '''Return a JSON-serializable reference to an artifact'''
-        d = dict(project_id=self.app_config.project._id,
-                    mount_point=self.app_config.options.mount_point,
-                    artifact_type=pickle.dumps(self.__class__),
-                    artifact_id=self._id)
-        if isinstance(self._id, pymongo.bson.ObjectId):
-            d['artifact_id'] = str(self._id)
+        '''Return a pickle-serializable reference to an artifact'''
+        d = ArtifactReference(dict(
+                project_id=self.app_config.project._id,
+                mount_point=self.app_config.options.mount_point,
+                artifact_type=pymongo.bson.Binary(pickle.dumps(self.__class__)),
+                artifact_id=self._id))
         return d
-
-    def dump_ref_str(self):
-        '''Return a JSON-serializable reference to an artifact'''
-        d = dict(project_id=str(self.app_config.project._id),
-                    mount_point=self.app_config.options.mount_point,
-                    artifact_type=pickle.dumps(self.__class__),
-                    artifact_id=self._id)
-        if isinstance(self._id, pymongo.bson.ObjectId):
-            d['artifact_id'] = str(self._id)
-        return d
-
-    @classmethod
-    def load_ref(cls,ref):
-        from .project import Project
-        project = Project.query.get(_id=pymongo.bson.ObjectId(ref['project_id']))
-        with push_context(ref['project_id'], ref['mount_point']):
-            acls = pickle.loads(ref['artifact_type'])
-            obj = acls.query.get(_id=ref['artifact_id'])
-            if obj is not None: return obj
-            try:
-                return acls.query.get(_id=pymongo.bson.ObjectId(str(ref['artifact_id'])))
-            except:
-                return None
 
     def add_tags(self, tags):
         'Update the tags collection to reflect new tags added'

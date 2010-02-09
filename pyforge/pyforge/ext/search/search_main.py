@@ -11,11 +11,12 @@ from formencode import validators as V
 
 from pyforge.app import Application, ConfigOption, SitemapEntry
 from pyforge import version
-from pyforge.model import ProjectRole, SearchConfig, ScheduledMessage
+from pyforge.model import ProjectRole, SearchConfig, ScheduledMessage, Project
 from pyforge.lib.helpers import push_config
 from pyforge.lib.security import require, has_artifact_access
 from pyforge.lib.decorators import audit, react
 from pyforge.lib import search
+from pyforge import model as M
 
 log = logging.getLogger(__name__)
 
@@ -38,32 +39,37 @@ class SearchApp(Application):
     @classmethod
     @react('artifacts_altered')
     def add_artifacts(cls, routing_key, doc):
-        obj = SearchConfig.query.find().first()
         log.info('Adding %d artifacts', len(doc['artifacts']))
+        obj = SearchConfig.query.find().first()
         obj.pending_commit += len(doc['artifacts'])
-        try:
-            artifacts = ( search.ref_to_solr(ref) for ref in doc['artifacts'] )
-            artifacts = [ a for a in artifacts if a is not None ]
-            g.solr.add(artifacts)
-            return
-        except UnicodeDecodeError:
-            pass
-        # Debug UnicodeDecodeError
-        for a in doc['artifacts']:
-            try:
-                artifacts = [ search.ref_to_solr(a) ]
-                g.solr.add(artifacts)
-            except UnicodeDecodeError:
-                log.error('Error decoding in pysolr:\n%s', pformat(a))
+        artifacts = ( ref.to_artifact() for ref in doc['artifacts'] )
+        artifacts = ((a, search.solarize(a)) for a in artifacts)
+        artifacts = [ (a, s) for a,s in artifacts if s is not None ]
+        # Add to solr
+        g.solr.add([ s for a,s in artifacts])
+        # Add backreferences
+        for a, s in artifacts:
+            aref = a.dump_ref()
+            references = list(search.find_shortlinks(s['text']))
+            a.references = [ r.artifact_reference for r in references ]
+            for r in references:
+                M.ArtifactReference(r.artifact_reference).to_artifact().backreferences[s['id']] =aref
 
     @classmethod
     @react('artifacts_removed')
     def del_artifacts(cls, routing_key, doc):
-        log.info('Removing %d artifacts', len(doc['artifact_ids']))
-        for aid in doc['artifact_ids']:
-            g.solr.delete(id=aid)
+        log.info('Removing %d artifacts', len(doc['artifacts']))
         obj = SearchConfig.query.find().first()
-        obj.pending_commit += len(doc['artifact_ids'])
+        obj.pending_commit += len(doc['artifacts'])
+        artifacts = ( ref.to_artifact() for ref in doc['artifacts'] )
+        artifacts = ((a, search.solarize(a)) for a in artifacts)
+        artifacts = [ (a, s) for a,s in artifacts if s is not None ]
+        # Add to solr
+        g.solr.add([ s for a,s in artifacts])
+        # Add backreferences
+        for a, s in artifacts:
+            for r in search.find_shortlinks(s['text']):
+                del M.ArtifactReference(r.artifact_reference).to_artifact().backreferences[s['id']]
 
     @classmethod
     @audit('search.check_commit')

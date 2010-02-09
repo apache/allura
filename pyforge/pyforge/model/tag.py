@@ -15,14 +15,9 @@ from ming.orm.ormsession import ThreadLocalORMSession
 
 from pyforge.lib.helpers import push_config
 from .session import main_orm_session
+from .types import ArtifactReferenceType
 
 log = logging.getLogger(__name__)
-
-ArtifactReference = S.Object(dict(
-        project_id=S.ObjectId(if_missing=lambda:c.project._id),
-        mount_point=S.String(if_missing=lambda:c.app.config.options.mount_point),
-        artifact_type=str, # pickled class
-        artifact_id=None))
 
 class Tag(MappedClass):
     class __mongometa__:
@@ -31,7 +26,7 @@ class Tag(MappedClass):
 
     _id = FieldProperty(S.ObjectId)
     user_id = ForeignIdProperty('User', if_missing=lambda:c.user._id)
-    artifact_ref = FieldProperty(ArtifactReference)
+    artifact_ref = FieldProperty(ArtifactReferenceType)
     tag = FieldProperty(str)
 
     @classmethod
@@ -61,7 +56,7 @@ class TagEvent(MappedClass):
     _id = FieldProperty(S.ObjectId)
     when = FieldProperty(datetime, if_missing=datetime.utcnow)
     user_id = ForeignIdProperty('User', if_missing=lambda:c.user._id)
-    artifact_ref = FieldProperty(ArtifactReference)
+    artifact_ref = FieldProperty(ArtifactReferenceType)
     added_tags = FieldProperty([str])
     removed_tags = FieldProperty([str])
     user = RelationProperty('User', via='user_id')
@@ -86,7 +81,7 @@ class UserTags(MappedClass):
 
     _id = FieldProperty(S.ObjectId)
     user_id = ForeignIdProperty('User')
-    artifact_reference = FieldProperty(ArtifactReference)
+    artifact_reference = FieldProperty(ArtifactReferenceType)
     tags = FieldProperty([dict(tag=str, when=datetime)])
 
     @classmethod
