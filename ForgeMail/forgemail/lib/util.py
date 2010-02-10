@@ -106,7 +106,7 @@ class SMTPClient(object):
         message['Subject'] = subject
         message['Message-ID'] = '<' + message_id + '>'
         if in_reply_to:
-            message['In-Reply-To'] = '<' + in_reply_to + '>'
+            message['In-Reply-To'] = ','.join(('<' + irt + '>') for irt in in_reply_to)
         content = message.as_string()
         try:
             self._client.sendmail(addrfrom, addrs, content)
