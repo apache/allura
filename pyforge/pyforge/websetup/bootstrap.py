@@ -127,14 +127,14 @@ def bootstrap(command, conf, vars):
         log.info('Loading some large data')
         p0.install_app('Wiki', 'wiki')
         app = p0.install_app('Repository', 'src')
-        with pyforge.lib.helpers.push_config(c, project=p0, app=app):
-            g.publish('audit', 'scm.hg.clone', dict(
-                    url='https://rick446@bitbucket.org/rick446/sqlalchemy-migrate/'))
+        # with pyforge.lib.helpers.push_config(c, project=p0, app=app):
+        #     g.publish('audit', 'scm.hg.clone', dict(
+        #             url='https://rick446@bitbucket.org/rick446/sqlalchemy-migrate/'))
         app = p0.install_app('Repository', 'src_git')
         app.config.options['type'] = 'git'
-        with pyforge.lib.helpers.push_config(c, project=p0, app=app):
-            g.publish('audit', 'scm.git.clone', dict(
-                    url='git://github.com/mongodb/mongo.git'))
+        # with pyforge.lib.helpers.push_config(c, project=p0, app=app):
+        #     g.publish('audit', 'scm.git.clone', dict(
+        #             url='git://github.com/mongodb/mongo.git'))
         dev = M.ProjectRole(name='developer')
         ThreadLocalORMSession.flush_all()
         for ur in M.ProjectRole.query.find():

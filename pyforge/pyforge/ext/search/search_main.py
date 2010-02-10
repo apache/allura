@@ -49,11 +49,14 @@ class SearchApp(Application):
         g.solr.add([ s for a,s in artifacts])
         # Add backreferences
         for a, s in artifacts:
+            if isinstance(a, M.Snapshot): continue
+            c.app = c.project.app_instance(a.app_config)
             aref = a.dump_ref()
             references = list(search.find_shortlinks(s['text']))
             a.references = [ r.artifact_reference for r in references ]
             for r in references:
                 M.ArtifactReference(r.artifact_reference).to_artifact().backreferences[s['id']] =aref
+        M.session.artifact_orm_session._get().disable_artifact_index = True
 
     @classmethod
     @react('artifacts_removed')
@@ -68,8 +71,10 @@ class SearchApp(Application):
         g.solr.add([ s for a,s in artifacts])
         # Add backreferences
         for a, s in artifacts:
+            c.app = c.project.app_instance(a.app_config)
             for r in search.find_shortlinks(s['text']):
                 del M.ArtifactReference(r.artifact_reference).to_artifact().backreferences[s['id']]
+        M.session.artifact_orm_session._get().disable_artifact_index = True
 
     @classmethod
     @audit('search.check_commit')

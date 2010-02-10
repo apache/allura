@@ -50,16 +50,19 @@ class ArtifactSessionExtension(SessionExtension):
                 self.objects_deleted = [ obj ]
 
     def after_flush(self, obj=None):
-        from .artifact import ArtifactLink
-        if self.objects_deleted:
-            search.remove_artifacts(self.objects_deleted)
-            for obj in self.objects_deleted:
-                ArtifactLink.remove(obj)
-        if self.objects_added:
-            search.add_artifacts(self.objects_added)
-            for obj in self.objects_added:
-                ArtifactLink.add(obj)
-            session(ArtifactLink).flush()
+        if not getattr(self.session, 'disable_artifact_index', False):
+            from .artifact import ArtifactLink
+            if self.objects_deleted:
+                search.remove_artifacts(self.objects_deleted)
+                for obj in self.objects_deleted:
+                    ArtifactLink.remove(obj)
+            if self.objects_added:
+                search.add_artifacts(self.objects_added)
+                for obj in self.objects_added:
+                    ArtifactLink.add(obj)
+                session(ArtifactLink).flush()
+        self.objects_added = []
+        self.objects_deleted = []
 
 main_doc_session = Session.by_name('main')
 project_doc_session = ProjectSession(main_doc_session)
