@@ -32,7 +32,13 @@ def test_index_artifact():
     search.solarize(a)
     a.text = None
     search.remove_artifacts([a])
-    search.search('Root')
+    g.solr.add([search.solarize(a)])
+    r = search.search('Root')
+    assert r.hits == 1
+    r = search.search_artifact(HM.Page, 'title:"HelloForge WikiPage Root"')
+    assert r.hits == 1
+    r = search.search_artifact(HM.Page, 'title:"Root"')
+    assert r.hits == 0
 
 def test_searchapp():
     app = search_main.SearchApp

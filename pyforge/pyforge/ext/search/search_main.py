@@ -68,7 +68,7 @@ class SearchApp(Application):
         artifacts = ((a, search.solarize(a)) for a in artifacts)
         artifacts = [ (a, s) for a,s in artifacts if s is not None ]
         # Add to solr
-        g.solr.add([ s for a,s in artifacts])
+        g.solr.delete([ s for a,s in artifacts])
         # Add backreferences
         for a, s in artifacts:
             c.app = c.project.app_instance(a.app_config)

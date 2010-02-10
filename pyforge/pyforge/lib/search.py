@@ -56,6 +56,24 @@ def remove_artifacts(obj_iter):
 @try_solr
 def search(q,**kw):
     return g.solr.search(q, **kw)
+
+def search_artifact(atype, q, history=False, **kw):
+    # first, grab an artifact and get the fields that it indexes
+    a = atype.query.find().first()
+    fields = a.index()
+    # Now, we'll translate all the fld:
+    for f in fields:
+        if f[-2] == '_':
+            base = f[:-2]
+            actual = f
+            q = q.replace(base+':', actual+':')
+    parts = [q]
+    parts.append('type_s:%s' % fields['type_s'])
+    parts.append('project_id_s:%s' % c.project._id)
+    parts.append('mount_point_s:%s' % c.app.config.options.mount_point)
+    if not history:
+        parts.append('is_history_b:False')
+    return g.solr.search(' AND '.join(parts), **kw)
     
 def find_shortlinks(text):
     from pyforge import model as M

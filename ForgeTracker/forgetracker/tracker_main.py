@@ -15,7 +15,7 @@ from pymongo.bson import ObjectId
 # Pyforge-specific imports
 from pyforge.app import Application, ConfigOption, SitemapEntry, DefaultAdminController
 from pyforge.lib.helpers import push_config, tag_artifact
-from pyforge.lib.search import search
+from pyforge.lib.search import search_artifact
 from pyforge.lib.decorators import audit, react
 from pyforge.lib.security import require, has_artifact_access
 from pyforge.model import ProjectRole, TagEvent, UserTags
@@ -124,15 +124,13 @@ class RootController(object):
         if not q:
             q = ''
         else:
-            search_query = '''%s
-            AND is_history_b:%s
-            AND mount_point_s:%s''' % (
-                q, history, c.app.config.options.mount_point)
-            results = search(search_query)
+            results = search_artifact(model.Ticket, q, history)
             if results:
-                tickets = model.Ticket.query.find(dict(app_config_id=c.app.config._id,
-                                                       _id={'$in':[ObjectId(r['id'].split('#')[1]) for r in results.docs]}))
-                count=len(tickets)
+                query = model.Ticket.query.find(
+                    dict(app_config_id=c.app.config._id,
+                         ticket_num={'$in':[r['ticket_num_i'] for r in results.docs]}))
+                tickets = query.all()
+                count = len(tickets)
         return dict(q=q, history=history, tickets=tickets or [], count=count)
 
     def _lookup(self, ticket_num, *remainder):

@@ -82,7 +82,13 @@ class Ticket(VersionedArtifact):
             title_s='Ticket %s' % self.ticket_num,
             version_i=self.version,
             type_s=self.type_s,
-            text=self.summary)
+            ticket_num_i=self.ticket_num,
+            summary_t=self.summary,
+            milestone_s=self.milestone,
+            status_s=self.status,
+            text=self.description)
+        for k,v in self.custom_fields.iteritems():
+            result[k + '_s'] = str(v)
         return result
 
     def reported_by(self):
