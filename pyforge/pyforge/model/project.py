@@ -208,7 +208,8 @@ class Project(MappedClass):
             return url
 
     def url(self):
-        url = self.neighborhood.url_prefix + self.shortname + '/'
+        shortname = self.shortname[len(self.neighborhood.shortname_prefix):]
+        url = self.neighborhood.url_prefix + shortname + '/'
         if url.startswith('//'):
             try:
                 return request.scheme + ':' + url
