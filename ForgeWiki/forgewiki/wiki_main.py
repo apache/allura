@@ -7,6 +7,7 @@ from mimetypes import guess_type
 # Non-stdlib imports
 import pkg_resources
 from tg import expose, validate, redirect, response
+from tg.decorators import with_trailing_slash, without_trailing_slash
 from pylons import g, c, request
 from formencode import validators
 
@@ -18,7 +19,7 @@ from pyforge.lib.helpers import push_config, tag_artifact
 from pyforge.lib.search import search
 from pyforge.lib.decorators import audit, react
 from pyforge.lib.security import require, has_artifact_access
-from pyforge.model import ProjectRole, User, TagEvent, UserTags
+from pyforge.model import ProjectRole, User, TagEvent, UserTags, ArtifactReference
 
 # Local imports
 from forgewiki import model
@@ -97,20 +98,37 @@ class ForgeWikiApp(Application):
                 SitemapEntry(menu_id, '.')[SitemapEntry('Pages')[pages]] ]
 
     def sidebar_menu(self):
-        pages = [SitemapEntry(p.title, p.url()) for p in model.Page.query.find(dict(app_config_id=self.config._id))]
-        return [SitemapEntry('Add a new page','.', className="todo"),
-				SitemapEntry('Edit this page','edit'),
-				SitemapEntry('Related Pages', className="todo")
-			   ]+pages+[
-			    SitemapEntry('Wiki Nav'),
-			    SitemapEntry('View History','history'),
-			    SitemapEntry('Browse Pages',c.app.url+'browse'),
-			    SitemapEntry('Browse Tags','.', className="todo"),
-			    SitemapEntry('Advanced','.', className="todo"),
-			    SitemapEntry('Bookmarks', className="todo"),
-			    SitemapEntry('Help'),
-			    SitemapEntry('Wiki Help','.', className="todo"),
-			    SitemapEntry('Markdown Syntax',c.app.url+'markdown_syntax')]
+        related_pages = []
+        page = request.path_info.split(self.url)[-1].split('/')[-2]
+        page = model.Page.query.find(dict(app_config_id=self.config._id,title=page)).first()
+        links = [SitemapEntry('Home',c.app.url),
+                 SitemapEntry('Add a new page','.', className="todo")]
+        if page:
+            links.append(SitemapEntry('Edit this page','edit'))
+            for aref in page.references:
+                artifact = ArtifactReference(aref).to_artifact()
+                if isinstance(artifact, model.Page):
+                    related_pages.append(SitemapEntry(artifact.title, artifact.url()))
+            for aref in page.backreferences.itervalues():
+                artifact = ArtifactReference(aref).to_artifact()
+                if isinstance(artifact, model.Page):
+                    related_pages.append(SitemapEntry(artifact.title, artifact.url()))
+        if len(related_pages):
+            links.append(SitemapEntry('Related Pages'))
+            links = links + related_pages
+        links.append(SitemapEntry('Wiki Nav'))
+        if page:
+            links.append(SitemapEntry('View History','history'))
+        links = links + [
+		    SitemapEntry('Browse Pages',c.app.url+'browse'),
+		    SitemapEntry('Browse Tags','.', className="todo"),
+		    SitemapEntry('Advanced','.', className="todo"),
+		    SitemapEntry('Bookmarks', className="todo"),
+		    SitemapEntry('Help'),
+		    SitemapEntry('Wiki Help','.', className="todo"),
+		    SitemapEntry('Markdown Syntax',c.app.url+'markdown_syntax')
+        ]
+        return links
 
     @property
     def templates(self):
@@ -159,6 +177,7 @@ class RootController(object):
     def new_page(self, title):
         redirect(title + '/')
 
+    @with_trailing_slash
     @expose('forgewiki.templates.search')
     @validate(dict(q=validators.UnicodeString(if_empty=None),
                    history=validators.StringBool(if_empty=False)))
@@ -178,6 +197,7 @@ class RootController(object):
             if results: count=results.hits
         return dict(q=q, history=history, results=results or [], count=count)
 
+    @with_trailing_slash
     @expose('forgewiki.templates.browse')
     @validate(dict(sort=validators.UnicodeString(if_empty='alpha')))
     def browse(self, sort='alpha'):
@@ -205,6 +225,7 @@ class RootController(object):
             pages = pages + uv_pages
         return dict(pages=pages)
 
+    @with_trailing_slash
     @expose('forgewiki.templates.markdown_syntax')
     def markdown_syntax(self):
         'Display a page about how to use markdown.'
@@ -225,6 +246,7 @@ class PageController(object):
         except ValueError:
             return None
 
+    @with_trailing_slash
     @expose('forgewiki.templates.page_view')
     @validate(dict(version=validators.Int(if_empty=None)))
     def index(self, version=None):
@@ -240,6 +262,7 @@ class PageController(object):
         return dict(page=page,
                     cur=cur, prev=prev, next=next)
 
+    @without_trailing_slash
     @expose('forgewiki.templates.page_edit')
     def edit(self):
         if self.page.version == 1:
@@ -249,12 +272,14 @@ class PageController(object):
         user_tags = UserTags.upsert(c.user, self.page.dump_ref())
         return dict(page=self.page, user_tags=user_tags)
 
+    @without_trailing_slash
     @expose('forgewiki.templates.page_history')
     def history(self):
         require(has_artifact_access('read', self.page))
         pages = self.page.history()
         return dict(title=self.title, pages=pages)
 
+    @without_trailing_slash
     @expose('forgewiki.templates.page_diff')
     def diff(self, v1, v2):
         require(has_artifact_access('read', self.page))
@@ -274,11 +299,13 @@ class PageController(object):
         result = ''.join(result).replace('\n', '<br/>\n')
         return dict(p1=p1, p2=p2, edits=result)
 
+    @without_trailing_slash
     @expose(content_type='text/plain')
     def raw(self):
         require(has_artifact_access('read', self.page))
         return pformat(self.page)
 
+    @without_trailing_slash
     @expose()
     def revert(self, version):
         require(has_artifact_access('edit', self.page))
@@ -288,6 +315,7 @@ class PageController(object):
         self.page.commit()
         redirect('.')
 
+    @without_trailing_slash
     @expose()
     def update(self, text, tags, tags_old):
         require(has_artifact_access('edit', self.page))
@@ -298,6 +326,7 @@ class PageController(object):
         tag_artifact(self.page, c.user, tags)
         redirect('.')
 
+    @without_trailing_slash
     @expose()
     def attach(self, file_info=None):
         require(has_artifact_access('edit', self.page))

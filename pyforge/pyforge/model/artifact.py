@@ -203,7 +203,7 @@ class Artifact(MappedClass):
             self.__class__.__module__,
             self.__class__.__name__,
             self._id)
-        return id
+        return id.replace('.', '/')
 
     def index(self):
         project = self.project
