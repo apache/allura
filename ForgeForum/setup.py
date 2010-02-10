@@ -21,6 +21,8 @@ setup(name='ForgeForum',
           # -*- Extra requirements: -*-
           'pyforge',
       ],
+      test_suite='nose.collector',
+      tests_require=['WebTest', 'BeautifulSoup'],
       entry_points="""
       # -*- Entry points: -*-
       [pyforge]

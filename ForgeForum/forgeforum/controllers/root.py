@@ -62,6 +62,5 @@ class RootController(object):
                 obj['obj'].subscriptions[str(c.user._id)] = True
             else:
                 obj['obj'].subscriptions.pop(str(c.user._id), None)
-                print session(obj['obj'])
         redirect(request.referer)
 

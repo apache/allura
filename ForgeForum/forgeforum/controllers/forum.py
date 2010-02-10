@@ -39,24 +39,6 @@ class ForumController(object):
         return dict(forum=self.forum,
                     threads=threads)
                   
-    @expose('forgeforum.templates.search')
-    @validate(dict(q=validators.UnicodeString(if_empty=None),
-                   history=validators.StringBool(if_empty=False)))
-    def search(self, q=None, history=None):
-        'local plugin search'
-        results = []
-        count=0
-        if not q:
-            q = ''
-        else:
-            search_query = '''%s
-            AND is_history_b:%s
-            AND mount_point_s:%s''' % (
-                q, history, c.app.config.options.mount_point)
-            results = search(search_query)
-            if results: count=results.hits
-        return dict(q=q, history=history, results=results or [], count=count)
-
     def _lookup(self, id, *remainder):
         return ForumController(self.forum.shortname + '/' + id), remainder
 
@@ -133,7 +115,7 @@ class ThreadController(object):
             posts = self.thread.find_posts_by_thread(
                 offset=offset, limit=pagesize)
             post_threads = model.Post.create_post_threads(posts)
-        else:
+        else: # pragma no cover
             posts = self.thread.find_posts_by_date(
                 offset=offset, limit=15)
             post_threads=[]
@@ -167,9 +149,10 @@ class ThreadController(object):
     @expose()
     def update_tags(self, tag=None, new_tag=None, **kw):
         require(has_artifact_access('moderate', self.thread.first_post))
+        if tag is None: tag = []
         try:
             asciiname = str(new_tag['name'])
-        except UnicodeDecodeError:
+        except UnicodeDecodeError: # pragma no cover
             asciiname = new_tag['name'].encode('utf-8')
         new_tags = [
             t.lower() 
@@ -193,6 +176,7 @@ class PostController(object):
     @expose('forgeforum.templates.post')
     def index(self, subject=None, text=None, version=None, **kw):
         if request.method == 'POST':
+            require(has_artifact_access('moderate', self.post))
             self.post.subject = subject
             self.post.text = text
             self.post.commit()
@@ -223,6 +207,7 @@ class PostController(object):
         if delete:
             self.post.delete()
             self.thread.update_stats()
+            redirect(self.thread.url())
         else:
             thd = self.post.promote(subject)
         redirect(thd.url())
@@ -244,7 +229,7 @@ class PostController(object):
         require(has_artifact_access('moderate', self.post))
         filename = file_info.filename
         content_type = guess_type(filename)
-        if content_type: content_type = content_type[0]
+        if content_type[0]: content_type = content_type[0]
         else: content_type = 'application/octet-stream'
         with model.Attachment.create(
             content_type=content_type,
@@ -293,6 +278,5 @@ class AttachmentController(object):
                 response.headers.add('Content-Disposition', 
                                      'attachment;filename=%s' % filename)
             return fp.read()
-        return self.filename
         
     

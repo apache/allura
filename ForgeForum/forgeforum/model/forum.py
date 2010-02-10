@@ -104,6 +104,9 @@ class Forum(Artifact):
         return self.subscriptions.get(str(c.user._id))
 
     def delete(self):
+        # Delete the subforums
+        for sf in self.subforums:
+            sf.delete()
         # Delete all the threads, posts, and artifacts
         Thread.query.remove(dict(forum_id=self._id))
         Post.query.remove(dict(forum_id=self._id))
@@ -165,7 +168,9 @@ class Thread(Artifact):
                 parent_id=None))
         
     def url(self):
-        return self.forum.url() + 'thread/' + str(self._id) + '/'
+        # Can't use self.forum because it might change during the req
+        forum = Forum.query.get(_id=self.forum_id)
+        return forum.url() + 'thread/' + str(self._id) + '/'
     
     def shorthand_id(self):
         return '%s/%s' % (self.forum.shorthand_id(), self._id)

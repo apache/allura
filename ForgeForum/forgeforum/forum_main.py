@@ -116,11 +116,6 @@ class ForgeForumApp(Application):
             msg['in_reply_to'] = [post.parent._id]
         g.publish('audit', 'forgemail.send_email', msg)
 
-    @react('ForgeForum.#')
-    def reactor(self, routing_key, data):
-        log.info('Reacting to data from %s (%s)',
-                 routing_key, self.config.options.mount_point)
-
     @property
     def sitemap(self):
         try:
@@ -128,7 +123,7 @@ class ForgeForumApp(Application):
             with push_config(c, app=self):
                 return [
                     SitemapEntry(menu_id, '.')[self.sidebar_menu()] ]
-        except:
+        except: # pragma no cover
             log.exception('sitemap')
             return []
 
@@ -153,9 +148,9 @@ class ForgeForumApp(Application):
                 SitemapEntry('Search', 'search'),      
                 ]
             l += [ SitemapEntry(f.name, f.url())
-                   for f in self.forums ]
+                   for f in self.top_forums ]
             return l
-        except:
+        except: # pragma no cover
             log.exception('sidebar_menu')
             return []
         
@@ -210,12 +205,9 @@ class ForumAdminController(DefaultAdminController):
         for f in forum:
             forum = model.Forum.query.get(_id=ObjectId(str(f['id'])))
             if f.get('delete'):
-                for t in forum.threads:
-                    model.Post.query.remove(dict(app_config_id=self.app.config._id,
-                                                 thread_id=t._id))
-                    t.delete()
                 forum.delete()
-                continue
-            forum.name = f['name']
-            forum.description = f['description']
+            else:
+                forum.name = f['name']
+                forum.description = f['description']
+        flash('Forums updated')
         redirect('.')
