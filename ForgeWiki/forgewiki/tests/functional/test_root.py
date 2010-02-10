@@ -1,6 +1,14 @@
 from nose.tools import assert_true
 
 from forgewiki.tests import TestController
+from forgewiki import model
+
+# These are needed for faking reactor actions
+import mock
+from pyforge.lib import helpers as h
+from pyforge.command import reactor
+from pyforge.ext.search import search_main
+from ming.orm.ormsession import ThreadLocalORMSession
 
 #---------x---------x---------x---------x---------x---------x---------x
 # RootController methods exposed:
@@ -13,74 +21,74 @@ from forgewiki.tests import TestController
 class TestRootController(TestController):
     def test_root_index(self):
         response = self.app.get('/Wiki/TEST/index')
-        assert_true('TEST' in response)
+        assert 'TEST' in response
 
     def test_root_markdown_syntax(self):
-        response = self.app.get('/Wiki/markdown_syntax')
-        assert_true('Markdown Syntax' in response)
+        response = self.app.get('/Wiki/markdown_syntax/')
+        assert 'Markdown Syntax' in response
 
     def test_root_browse_pages(self):
-        response = self.app.get('/Wiki/browse')
-        assert_true('Browse Pages' in response)
+        response = self.app.get('/Wiki/browse/')
+        assert 'Browse Pages' in response
 
     def test_root_new_page(self):
         response = self.app.get('/Wiki/new_page?title=TEST')
-        assert_true('TEST' in response)
+        assert 'TEST' in response
 
     def test_root_new_search(self):
-        response = self.app.get('/Wiki/TEST/index')
+        self.app.get('/Wiki/TEST/index')
         response = self.app.get('/Wiki/search?q=TEST')
-        assert_true('ForgeWiki Search' in response)
+        assert 'ForgeWiki Search' in response
 
     def test_page_index(self):
         response = self.app.get('/Wiki/TEST/index/')
-        assert_true('TEST' in response)
+        assert 'TEST' in response
 
     def test_page_edit(self):
-        response = self.app.get('/Wiki/TEST/index/')
+        self.app.get('/Wiki/TEST/index/')
         response = self.app.post('/Wiki/TEST/edit')
-        assert_true('TEST' in response)
+        assert 'TEST' in response
 
     def test_page_history(self):
         response = self.app.get('/Wiki/TEST/history')
-        assert_true('TEST' in response)
+        assert 'TEST' in response
 
     def test_page_diff(self):
-        response = self.app.get('/Wiki/TEST/index/')
-        response = self.app.get('/Wiki/TEST/revert?version=1')
+        self.app.get('/Wiki/TEST/index/')
+        self.app.get('/Wiki/TEST/revert?version=1')
         response = self.app.get('/Wiki/TEST/diff?v1=0&v2=0')
-        assert_true('TEST' in response)
+        assert 'TEST' in response
 
     def test_page_raw(self):
-        response = self.app.get('/Wiki/TEST/index/')
+        self.app.get('/Wiki/TEST/index/')
         response = self.app.get('/Wiki/TEST/raw')
-        assert_true('TEST' in response)
+        assert 'TEST' in response
 
     def test_page_revert_no_text(self):
-        response = self.app.get('/Wiki/TEST/index/')
+        self.app.get('/Wiki/TEST/index/')
         response = self.app.get('/Wiki/TEST/revert?version=1')
-        assert_true('TEST' in response)
+        assert 'TEST' in response
 
     def test_page_revert_with_text(self):
-        response = self.app.get('/Wiki/TEST/index/')
-        response = self.app.get('/Wiki/TEST/update?text=sometext&tags=&tags_old=')
+        self.app.get('/Wiki/TEST/index/')
+        self.app.get('/Wiki/TEST/update?text=sometext&tags=&tags_old=')
         response = self.app.get('/Wiki/TEST/revert?version=1')
-        assert_true('TEST' in response)
+        assert 'TEST' in response
 
     def test_page_update(self):
-        response = self.app.get('/Wiki/TEST/index/')
+        self.app.get('/Wiki/TEST/index/')
         response = self.app.get('/Wiki/TEST/update?text=sometext&tags=&tags_old=')
-        assert_true('TEST' in response)
+        assert 'TEST' in response
 
     def test_page_tag_untag(self):
-        response = self.app.get('/Wiki/TEST/index/')
+        self.app.get('/Wiki/TEST/index/')
         response = self.app.get('/Wiki/TEST/update?text=sometext&tags=red,blue&tags_old=red,blue')
-        assert_true('TEST' in response)
+        assert 'TEST' in response
         response = self.app.get('/Wiki/TEST/update?text=sometext&tags=red&tags_old=red')
-        assert_true('TEST' in response)
+        assert 'TEST' in response
 
     def test_comment_reply(self):
-        response = self.app.get('/Wiki/TEST/index')
+        self.app.get('/Wiki/TEST/index')
         response = self.app.post('/Wiki/TEST/comments/reply?text=sometext')
 
 #    def test_comment_delete(self):
@@ -89,7 +97,53 @@ class TestRootController(TestController):
 #        response = self.app.post('/Wiki/TEST/comments/delete')
 
     def test_new_attachment(self):
+        self.app.get('/Wiki/TEST/index')
         content = file(__file__).read()
-        response = self.app.post('/wiki/TEST/attach', upload_files=[('file_info', 'test_root.py', content)])
-        response = self.app.get('/wiki/TEST/')
-        assert_true('test_root.py' in response)
+        response = self.app.post('/Wiki/TEST/attach', upload_files=[('file_info', 'test_root.py', content)]).follow()
+        assert 'test_root.py' in response
+
+    def test_sidebar_static_page(self):
+        response = self.app.get('/Wiki/TEST/')
+        assert 'Edit this page' not in response
+        assert 'Related Pages' not in response
+
+    def test_sidebar_dynamic_page(self):
+        response = self.app.get('/Wiki/TEST/').follow()
+        assert 'Edit this page' in response
+        assert 'Related Pages' not in response
+        self.app.get('/Wiki/aaa/')
+        self.app.get('/Wiki/bbb/')
+        
+        # Fake out updating the pages since reactor doesn't work with tests
+        app = search_main.SearchApp
+        cmd = reactor.ReactorCommand('reactor')
+        cmd.args = [ 'test.ini' ]
+        cmd.options = mock.Mock()
+        cmd.options.dry_run = True
+        cmd.options.proc = 1
+        configs = cmd.command()
+        add_artifacts = cmd.route_audit('search', app.add_artifacts)
+        del_artifacts = cmd.route_audit('search', app.del_artifacts)
+        msg = mock.Mock()
+        msg.ack = lambda:None
+        msg.delivery_info = dict(routing_key='search.add_artifacts')
+        h.set_context('test', 'wiki')
+        a = model.Page.query.find(dict(title='aaa')).first()
+        a.text = '\n[TEST]\n'
+        msg.data = dict(project_id=a.project_id,
+                        mount_point=a.app_config.options.mount_point,
+                        artifacts=[a.dump_ref()])
+        add_artifacts(msg.data, msg)
+        b = model.Page.query.find(dict(title='TEST')).first()
+        b.text = '\n[bbb]\n'
+        msg.data = dict(project_id=b.project_id,
+                        mount_point=b.app_config.options.mount_point,
+                        artifacts=[b.dump_ref()])
+        add_artifacts(msg.data, msg)
+        ThreadLocalORMSession.flush_all()
+        ThreadLocalORMSession.close_all()
+        
+        response = self.app.get('/Wiki/TEST/')
+        assert 'Related Pages' in response
+        assert 'aaa' in response
+        assert 'bbb' in response

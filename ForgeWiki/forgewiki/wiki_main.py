@@ -99,19 +99,17 @@ class ForgeWikiApp(Application):
 
     def sidebar_menu(self):
         related_pages = []
+        related_urls = []
         page = request.path_info.split(self.url)[-1].split('/')[-2]
         page = model.Page.query.find(dict(app_config_id=self.config._id,title=page)).first()
         links = [SitemapEntry('Home',c.app.url),
                  SitemapEntry('Add a new page','.', className="todo")]
         if page:
             links.append(SitemapEntry('Edit this page','edit'))
-            for aref in page.references:
+            for aref in page.references+page.backreferences.values():
                 artifact = ArtifactReference(aref).to_artifact()
-                if isinstance(artifact, model.Page):
-                    related_pages.append(SitemapEntry(artifact.title, artifact.url()))
-            for aref in page.backreferences.itervalues():
-                artifact = ArtifactReference(aref).to_artifact()
-                if isinstance(artifact, model.Page):
+                if isinstance(artifact, model.Page) and artifact.url() not in related_urls:
+                    related_urls.append(artifact.url())
                     related_pages.append(SitemapEntry(artifact.title, artifact.url()))
         if len(related_pages):
             links.append(SitemapEntry('Related Pages'))
@@ -234,10 +232,13 @@ class RootController(object):
 class PageController(object):
 
     def __init__(self, title):
+        exists = model.Page.query.find(dict(app_config_id=c.app.config._id, title=title)).first()
         self.title = title
         self.page = model.Page.upsert(title)
         self.comments = CommentController(self.page)
         self.attachment = AttachmentsController(self.page)
+        if not exists:
+            redirect('edit')
 
     def get_version(self, version):
         if not version: return self.page
