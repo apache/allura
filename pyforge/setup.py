@@ -64,6 +64,7 @@ setup(
     forgeapp=pyforge.pastetemplate:ForgeAppTemplate
 
     [pyforge]
+    user = pyforge.ext.user_home:UserHomeApp
     admin = pyforge.ext.admin:AdminApp
     search = pyforge.ext.search:SearchApp
     home = pyforge.ext.project_home:ProjectHomeApp

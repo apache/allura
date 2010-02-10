@@ -111,7 +111,7 @@ class Neighborhood(MappedClass):
         else:
             return url
 
-    def register_project(self, shortname, user=None):
+    def register_project(self, shortname, user=None, user_project=False):
         '''Register a new project in the neighborhood.  The given user will
         become the project's superuser.  If no user is specified, c.user is used.
         '''
@@ -141,7 +141,10 @@ class Neighborhood(MappedClass):
                 pr = auth.ProjectRole(name='*anonymous')
                 p.acl.read.append(pr._id)
                 auth.ProjectRole(name='*authenticated')
-                p.install_app('home', 'home')
+                if user_project:
+                    p.install_app('user', 'home')
+                else:
+                    p.install_app('home', 'home')
                 p.install_app('admin', 'admin')
                 p.install_app('search', 'search')
                 ThreadLocalORMSession.flush_all()
