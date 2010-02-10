@@ -119,8 +119,7 @@ class Repository(Artifact):
                         dict(message=str(ex)))
                 repo.status = 'Error: %s' % ex
                 return # don't continue after error
-        else:
-            raise TypeError(type + " not expected")
+
         if cmd:
             cmd.clean_dir()
             cmd.run()
@@ -204,12 +203,14 @@ class Repository(Artifact):
     # copied from git_react and hg_react
     def do_fork(self, data):
         log.info('Begin forking %s => %s', data['forked_from'], data['forked_to'])
-        project = Project.query.get(_id=bson.ObjectId(data['forked_to']['project_id']))
-        data_context = data['forked_to'].copy()
-        data_context['project_shortname']=project.shortname
-        del data_context['project_id']
+        dest_project = Project.query.get(_id=bson.ObjectId(data['forked_to']['project_id']))
+        data['forked_to']['project_shortname']=dest_project.shortname
+        del data['forked_to']['project_id']
+        src_project = Project.query.get(_id=bson.ObjectId(data['forked_from']['project_id']))
+        data['forked_from']['project_shortname']=src_project.shortname
+        del data['forked_from']['project_id']
 
-        set_context(**encode_keys(data_context))
+        set_context(**encode_keys(data['forked_to']))
 
         # Set repo metadata
         dest_repo = c.app.repo
@@ -231,7 +232,7 @@ class Repository(Artifact):
         cmd.run()
         dest_repo.status = 'Ready'
         log.info('Clone complete for %s', data['url'])
-        repo_name = c.project.shortname + c.app.config.options.mount_point
+        repo_name = dest_project.shortname + c.app.config.options.mount_point
         scm.setup_scmweb(repo_name, dest_repo.repo_dir)
 
         # valid for hg?

@@ -147,7 +147,7 @@ class TestRepository(TestCase):
         assert "git_repo" in url
         assert os.path.exists(url + "/.git")
 
-    def test_git_clone(self): # clone is how we copy from an external repo to OpenForge
+    def test_git_clone(self):
         repo = c.app.repo
         src_url = test_helper.create_git_repo()
         repo.do_clone(src_url, "git")
@@ -155,6 +155,9 @@ class TestRepository(TestCase):
         assert_equal(repo.cloned_from, src_url)
         assert src_url != repo.repo_dir
         assert os.path.isdir(os.path.join(repo.repo_dir, ".git"))
+
+        # do_clone fires a scm.cloned message, lets do that manually here
+        assert_equal(repo.commits.count(), 0)
 
     def test_hg_clone(self):
         repo = c.app.repo

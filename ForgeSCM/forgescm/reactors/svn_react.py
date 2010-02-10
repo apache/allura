@@ -35,46 +35,11 @@ def init(routing_key, data):
 @audit('scm.svn.clone')
 def clone(routing_key, data):
     repo = c.app.repo
-    log.info('Begin cloning %s', data['url'])
-    repo.type = 'svn'
-    repo.clear_commits()
-    # Perform the clone
-    try:
-        svn.svn_clone(data['url'])
-        svn.setup_commit_hook(repo.repo_dir, c.app.config.script_name()[1:])
-        log.info('Clone complete for %s', data['url'])
-        g.publish('react', 'scm.cloned', dict(
-                url=data['url']))
-    except AssertionError, ae:
-        g.publish('react', 'error', dict(
-                message=ae.args[0]))
-        repo.status = 'Error: %s' % ae.args[0]
-    except Exception, ex:
-        g.publish('react', 'error', dict(message=str(ex)))
-        repo.status = 'Error: %s' % ex
+    return repo.do_clone(data['url'], "svn")
 
 @audit('scm.svn.fork')
 def fork(routing_key, data):
-    log.info('Begin forking %s => %s', data['forked_from'], data['forked_to'])
-    set_context(**encode_keys(data['forked_to']))
-    # Set repo metadata
-    repo = c.app.repo
-    repo.forked_from.update(data['forked_from'])
-    # Perform the clone
-    log.info('Cloning from %s', data['url'])
-    try:
-        svn.svn_clone(data['url'])
-        repo.status = 'Ready'
-        log.info('Clone complete for %s', data['url'])
-        log.info("Sending scm.forked message")
-        g.publish('react', 'scm.forked', data)
-    except AssertionError, ae:
-        g.publish('react', 'error', dict(
-                message=ae.args[0]))
-        repo.status = 'Error: %s' % ae.args[0]
-    except Exception, ex:
-        g.publish('react', 'error', dict(message=str(ex)))
-        repo.status = 'Error: %s' % ex
+    assert False # SVN forking is not supported
 
 @audit('scm.svn.reclone')
 def reclone(routing_key, data):

@@ -9,6 +9,7 @@ from forgescm.reactors import git_react, svn_react, hg_react
 import forgescm.reactors
 from forgescm.tests import test_helper
 from nose.tools import assert_equal
+from forgescm.model import Commit
 
 ming.configure(**{'ming.main.master':'mongo://localhost:27017/pyforge'})
 
@@ -31,12 +32,23 @@ class TestReact(TestCase):
         self.publish(common_react.initialized, 'scm.initialized')
         # incomplete, we need to validate result
 
-    def test_cloned(self):
+    def test_hg_cloned(self):
         test_helper.setup_simple_hg_repo(c.app.repo)
+        assert Commit.query.find().count() == 0
         self.publish(common_react.cloned,
                 'scm.cloned',
                 dict(url='forgescm/tests/hg_repo'))
+        ming.orm.ormsession.ThreadLocalORMSession.flush_all()
+        assert Commit.query.find().count() != 0
 
+    def test_git_cloned(self):
+        test_helper.setup_simple_git_repo(c.app.repo)
+        assert Commit.query.find().count() == 0
+        self.publish(common_react.cloned,
+                'scm.cloned',
+                dict(url='/tmp/git_repo'))
+        ming.orm.ormsession.ThreadLocalORMSession.flush_all()
+        assert Commit.query.find().count() != 0
 
     #for_each (git, hg, svn):
     #    setup: create repo

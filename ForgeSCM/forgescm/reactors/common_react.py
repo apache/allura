@@ -9,13 +9,14 @@ from pyforge.lib.helpers import push_context, set_context, encode_keys
 from forgescm.lib import hg, git
 
 from pyforge import model as M
+from pymongo import bson
 
 log = logging.getLogger(__name__)
 
 
 @react('scm.initialized')
 def initialized(routing_key, data):
-    shortname = M.Project.query.get(_id=data['project_id']).shortname
+    shortname = M.Project.query.get(_id=bson.ObjectId(data['project_id'])).shortname
     set_context(shortname, data['mount_point'])
     repo = c.app.repo
     log.info('Setting repo status for %s', repo)
@@ -60,7 +61,7 @@ def forked_update_dest(routing_key, data):
 
 @react('scm.cloned')
 def cloned(routing_key, data):
-    shortname = M.Project.query.get(_id=data['project_id']).shortname
+    shortname = M.Project.query.get(_id=bson.ObjectId(data['project_id'])).shortname
     set_context(shortname, data['mount_point'])
     repo = c.app.repo
     # Update the repo status

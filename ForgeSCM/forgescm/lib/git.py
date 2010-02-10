@@ -28,7 +28,6 @@ class clone(Command):
     def finish(self):
         path = self.cwd()
         tmp_git_path = os.path.join(path, self.args[-1])
-        #print >> sys.stderr, tmp_git_path
         shutil.move(os.path.join(tmp_git_path, '.git'), os.path.join(path, '.git'))
         shutil.rmtree(os.path.join(path, tmp_git_path))
 
@@ -131,15 +130,11 @@ class LogParser(object):
     def parse_diff(self, cur_line, line_iter):
         cmdline = cur_line.split(' ')
         log.debug('Begin diff %s', cmdline)
-        r = M.Patch(repository_id=self.result[-1].repository_id,
-                    commit_id=self.result[-1]._id,
-                    filename=cmdline[2][2:])
         text_lines = []
         while cur_line != '\n':
             cur_line = line_iter.next()
             if cur_line.startswith('diff'): break
             if cur_line != '\n': text_lines.append(cur_line)
-        r.patch_text = bson.Binary(''.join(text_lines))
         if cur_line == '\n':
             cur_line = line_iter.next()
         return cur_line

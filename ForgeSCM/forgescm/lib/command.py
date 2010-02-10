@@ -23,7 +23,6 @@ class Command(object):
         if cwd is None:
             cwd=self.cwd()
         log.info('Running command: %r in %s', self.args, cwd)
-        #print >> sys.stderr, 'Running command: %r in %s', self.args, cwd
         self.sp = subprocess.Popen(
             self.args, executable=self.args[0],
             stdin=None, stdout=subprocess.PIPE,
@@ -40,7 +39,6 @@ class Command(object):
         self.sp.wait()
         log.info('command result: %s', self.sp.returncode)
         if self.sp.returncode != 0:
-            print >> sys.stderr, 'command %r (in %s) returned: %s' % (self.args, self.cwd(), self.sp.returncode)
             assert False
         if hasattr(self, "finish"):
             self.finish()
