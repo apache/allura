@@ -333,10 +333,13 @@ class CommentController(object):
 
 class TrackerAdminController(DefaultAdminController):
 
+    def __init__(self, app):
+        self.app = app
+
     @with_trailing_slash
     @expose('forgetracker.templates.admin')
     def index(self):
-        globals = model.Globals.query.get(app_config_id=c.app.config._id)
+        globals = model.Globals.query.get(app_config_id=self.app.config._id)
         return dict(app=self.app, globals=globals)
 
     @expose()
