@@ -43,7 +43,10 @@ def bootstrap(command, conf, vars):
         for coll in db.collection_names():
             if coll.startswith('system.'): continue
             log.info('Dropping collection %s:%s', database, coll)
-            db.drop_collection(coll)
+            try:
+                db.drop_collection(coll)
+            except:
+                pass
     g._push_object(pyforge.lib.app_globals.Globals())
     try:
         g.solr.delete(q='*:*')
