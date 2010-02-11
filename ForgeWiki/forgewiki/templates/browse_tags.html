@@ -10,26 +10,21 @@
 
   <head>
     <meta content="text/html; charset=UTF-8" http-equiv="content-type" py:replace="''"/>
-    <title>Browse Pages</title>
+    <title>Browse Tags</title>
   </head>
   <body>
-    <h1>Browse Pages</h1>
-    View: <a href="?sort=recent">Recently Updated</a> | <a href="?sort=alpha">Alphabetical</a>
-    <table id="forge_wiki_browse">
+    <h1>Browse Tags</h1>
+    <table id="forge_wiki_browse_tags">
       <thead>
         <tr>
-          <th>Title</th>
-          <th>Last Update By</th>
-          <th>Last Updated</th>
+          <th>Tag</th>
+          <th>Pages</th>
         </tr>
       </thead>
       <tbody>
-        <tr py:for="page in pages">
-          <td><a href="../${page['title']}">${page['title']}</a></td>
-          <td py:if="'user_label' in page">${page['user_label']}</td>
-          <td py:if="'user_label' not in page"></td>
-          <td py:if="'updated' in page">${helpers.ago(page['updated'])}</td>
-          <td py:if="'updated' not in page"></td>
+        <tr py:for="tag in tags">
+          <td>$tag</td>
+          <td><span py:strip="True" py:for="p in tags[tag]"><a href="${p.url()}">$p.title</a> </span></td>
         </tr>
       </tbody>
     </table>

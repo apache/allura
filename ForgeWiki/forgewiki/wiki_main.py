@@ -12,6 +12,7 @@ from pylons import g, c, request
 from formencode import validators
 
 from ming.orm.base import mapper
+from pymongo.bson import ObjectId
 
 # Pyforge-specific imports
 from pyforge.app import Application, ConfigOption, SitemapEntry
@@ -19,7 +20,7 @@ from pyforge.lib.helpers import push_config, tag_artifact
 from pyforge.lib.search import search
 from pyforge.lib.decorators import audit, react
 from pyforge.lib.security import require, has_artifact_access
-from pyforge.model import ProjectRole, User, TagEvent, UserTags, ArtifactReference
+from pyforge.model import ProjectRole, User, TagEvent, UserTags, ArtifactReference, Tag
 
 # Local imports
 from forgewiki import model
@@ -102,8 +103,7 @@ class ForgeWikiApp(Application):
         related_urls = []
         page = request.path_info.split(self.url)[-1].split('/')[-2]
         page = model.Page.query.find(dict(app_config_id=self.config._id,title=page)).first()
-        links = [SitemapEntry('Home',c.app.url),
-                 SitemapEntry('Add a new page','.', className="todo")]
+        links = [SitemapEntry('Home',c.app.url)]
         if page:
             links.append(SitemapEntry('Edit this page','edit'))
             for aref in page.references+page.backreferences.values():
@@ -118,13 +118,11 @@ class ForgeWikiApp(Application):
         if page:
             links.append(SitemapEntry('View History','history'))
         links = links + [
-		    SitemapEntry('Browse Pages',c.app.url+'browse'),
-		    SitemapEntry('Browse Tags','.', className="todo"),
-		    SitemapEntry('Advanced','.', className="todo"),
-		    SitemapEntry('Bookmarks', className="todo"),
+		    SitemapEntry('Browse Pages',c.app.url+'browse_pages/'),
+		    SitemapEntry('Browse Tags',c.app.url+'browse_tags/'),
 		    SitemapEntry('Help'),
-		    SitemapEntry('Wiki Help','.', className="todo"),
-		    SitemapEntry('Markdown Syntax',c.app.url+'markdown_syntax')
+		    SitemapEntry('Wiki Help',c.app.url+'wiki_help/'),
+		    SitemapEntry('Markdown Syntax',c.app.url+'markdown_syntax/')
         ]
         return links
 
@@ -198,7 +196,7 @@ class RootController(object):
     @with_trailing_slash
     @expose('forgewiki.templates.browse')
     @validate(dict(sort=validators.UnicodeString(if_empty='alpha')))
-    def browse(self, sort='alpha'):
+    def browse_pages(self, sort='alpha'):
         'list of all pages in the wiki'
         pages = []
         uv_pages = []
@@ -224,10 +222,32 @@ class RootController(object):
         return dict(pages=pages)
 
     @with_trailing_slash
+    @expose('forgewiki.templates.browse_tags')
+    @validate(dict(sort=validators.UnicodeString(if_empty='alpha')))
+    def browse_tags(self, sort='alpha'):
+        'list of all tags in the wiki'
+        tags = Tag.query.find({'artifact_ref.mount_point':c.app.config.options.mount_point,
+                               'artifact_ref.project_id':c.app.config.project_id}).all()
+        page_tags = {}
+        for tag in tags:
+            artifact = ArtifactReference(tag.artifact_ref).to_artifact()
+            if isinstance(artifact, model.Page):
+                if tag.tag not in page_tags:
+                    page_tags[tag.tag] = []
+                page_tags[tag.tag].append(artifact)
+        return dict(tags=page_tags)
+
+    @with_trailing_slash
     @expose('forgewiki.templates.markdown_syntax')
     def markdown_syntax(self):
         'Display a page about how to use markdown.'
         return dict(example=MARKDOWN_EXAMPLE)
+
+    @with_trailing_slash
+    @expose('forgewiki.templates.wiki_help')
+    def wiki_help(self):
+        'Display a help page about using the wiki.'
+        return dict()
 
 class PageController(object):
 
@@ -238,7 +258,7 @@ class PageController(object):
         self.comments = CommentController(self.page)
         self.attachment = AttachmentsController(self.page)
         if not exists:
-            redirect('edit')
+            redirect(c.app.url+title+'/edit')
 
     def get_version(self, version):
         if not version: return self.page

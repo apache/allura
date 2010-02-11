@@ -27,8 +27,16 @@ class TestRootController(TestController):
         response = self.app.get('/Wiki/markdown_syntax/')
         assert 'Markdown Syntax' in response
 
+    def test_root_wiki_help(self):
+        response = self.app.get('/Wiki/wiki_help/')
+        assert 'Wiki Help' in response
+
+    def test_root_browse_tags(self):
+        response = self.app.get('/Wiki/browse_tags/')
+        assert 'Browse Tags' in response
+
     def test_root_browse_pages(self):
-        response = self.app.get('/Wiki/browse/')
+        response = self.app.get('/Wiki/browse_pages/')
         assert 'Browse Pages' in response
 
     def test_root_new_page(self):
