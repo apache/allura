@@ -10,17 +10,18 @@ from tg import expose, validate, redirect, response
 from tg.decorators import with_trailing_slash, without_trailing_slash
 from pylons import g, c, request
 from formencode import validators
+from pymongo import bson
 
 from ming.orm.base import mapper
 from pymongo.bson import ObjectId
 
 # Pyforge-specific imports
 from pyforge.app import Application, ConfigOption, SitemapEntry
-from pyforge.lib.helpers import push_config, tag_artifact
+from pyforge.lib.helpers import push_config, tag_artifact, DateTimeConverter, diff_text
 from pyforge.lib.search import search
 from pyforge.lib.decorators import audit, react
 from pyforge.lib.security import require, has_artifact_access
-from pyforge.model import ProjectRole, User, TagEvent, UserTags, ArtifactReference, Tag
+from pyforge.model import ProjectRole, User, TagEvent, UserTags, ArtifactReference, Tag, Feed
 
 # Local imports
 from forgewiki import model
@@ -249,6 +250,31 @@ class RootController(object):
         'Display a help page about using the wiki.'
         return dict()
 
+    @without_trailing_slash
+    @expose()
+    @validate(dict(
+            since=DateTimeConverter(if_empty=None),
+            until=DateTimeConverter(if_empty=None),
+            offset=validators.Int(if_empty=None),
+            limit=validators.Int(if_empty=None)))
+    def feed(self, since, until, offset, limit):
+        if request.environ['PATH_INFO'].endswith('.atom'):
+            feed_type = 'atom'
+        else:
+            feed_type = 'rss'
+        title = 'Recent changes to %s' % c.app.config.options.mount_point
+        feed = Feed.feed(
+            {'artifact_reference.mount_point':c.app.config.options.mount_point,
+             'artifact_reference.project_id':c.project._id},
+            feed_type,
+            title,
+            c.app.url,
+            title,
+            since, until, offset, limit)
+        response.headers['Content-Type'] = ''
+        response.content_type = 'application/xml'
+        return feed.writeString('utf-8')
+
 class PageController(object):
 
     def __init__(self, title):
@@ -306,18 +332,7 @@ class PageController(object):
         require(has_artifact_access('read', self.page))
         p1 = self.get_version(int(v1))
         p2 = self.get_version(int(v2))
-        t1 = p1.text
-        t2 = p2.text
-        differ = difflib.SequenceMatcher(None, p1.text, p2.text)
-        result = []
-        for tag, i1, i2, j1, j2 in differ.get_opcodes():
-            if tag in ('delete', 'replace'):
-                result += [ '<del>', t1[i1:i2], '</del>' ]
-            if tag in ('insert', 'replace'):
-                result += [ '<ins>', t2[j1:j2], '</ins>' ]
-            if tag == 'equal':
-                result += t1[i1:i2]
-        result = ''.join(result).replace('\n', '<br/>\n')
+        result = diff_text(p1.text, p2.text)
         return dict(p1=p1, p2=p2, edits=result)
 
     @without_trailing_slash
@@ -325,6 +340,29 @@ class PageController(object):
     def raw(self):
         require(has_artifact_access('read', self.page))
         return pformat(self.page)
+
+    @without_trailing_slash
+    @expose()
+    @validate(dict(
+            since=DateTimeConverter(if_empty=None),
+            until=DateTimeConverter(if_empty=None),
+            offset=validators.Int(if_empty=None),
+            limit=validators.Int(if_empty=None)))
+    def feed(self, since, until, offset, limit):
+        if request.environ['PATH_INFO'].endswith('.atom'):
+            feed_type = 'atom'
+        else:
+            feed_type = 'rss'
+        feed = Feed.feed(
+            {'artifact_reference':self.page.dump_ref()},
+            feed_type,
+            'Recent changes to %s' % self.page.title,
+            self.page.url(),
+            'Recent changes to %s' % self.page.title,
+            since, until, offset, limit)
+        response.headers['Content-Type'] = ''
+        response.content_type = 'application/xml'
+        return feed.writeString('utf-8')
 
     @without_trailing_slash
     @expose()
@@ -405,17 +443,15 @@ class CommentController(object):
     def __init__(self, page, comment_id=None):
         self.page = page
         self.comment_id = comment_id
-        self.comment = model.Comment.query.get(_id=self.comment_id)
+        self.comment = model.Comment.query.get(slug=self.comment_id)
 
     @expose()
     def reply(self, text):
         require(has_artifact_access('comment', self.page))
         if self.comment_id:
-            c = self.comment.reply()
-            c.text = text
+            c = self.comment.reply(text)
         else:
-            c = self.page.reply()
-            c.text = text
+            c = self.page.reply(text)
         email = ''
         for addr in c.author().email_addresses:
             email = email + ', ' + addr
@@ -434,9 +470,6 @@ class CommentController(object):
         require(lambda:c.user._id == self.comment.author()._id)
         self.comment.delete()
         redirect(request.referer)
-
-    def _dispatch(self, state, remainder):
-        return _dispatch(self, state, remainder)
 
     def _lookup(self, next, *remainder):
         if self.comment_id:

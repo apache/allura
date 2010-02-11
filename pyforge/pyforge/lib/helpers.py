@@ -1,8 +1,11 @@
 # -*- coding: utf-8 -*-
 import os
+import difflib
 from hashlib import sha1
 from datetime import datetime
 
+from formencode.validators import FancyValidator
+from dateutil.parser import parse
 from pymongo.bson import ObjectId
 from contextlib import contextmanager
 from pylons import c
@@ -153,4 +156,30 @@ def tag_artifact(artifact, user, tags):
     # Update the Tag index
     M.Tag.add(aref, user, added_tags)
     M.Tag.remove(aref, user, removed_tags)
+
+class DateTimeConverter(FancyValidator):
+
+    def _to_python(self, value, state):
+        return parse(value)
+
+    def _from_python(self, value, state):
+        return value.isoformat()
+
+def absurl(url):
+    from tg import request
+    if '://' in url: return url
+    return request.scheme + '://' + request.host + url
+
+def diff_text(t1, t2):
+    differ = difflib.SequenceMatcher(None, t1, t2)
+    result = []
+    for tag, i1, i2, j1, j2 in differ.get_opcodes():
+        if tag in ('delete', 'replace'):
+            result += [ '<del>', t1[i1:i2], '</del>' ]
+        if tag in ('insert', 'replace'):
+            result += [ '<ins>', t2[j1:j2], '</ins>' ]
+        if tag == 'equal':
+            result += t1[i1:i2]
+    return ''.join(result).replace('\n', '<br/>\n')
+
 
