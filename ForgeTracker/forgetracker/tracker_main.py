@@ -18,7 +18,7 @@ from pyforge.lib.helpers import push_config, tag_artifact
 from pyforge.lib.search import search_artifact
 from pyforge.lib.decorators import audit, react
 from pyforge.lib.security import require, has_artifact_access
-from pyforge.model import ProjectRole, TagEvent, UserTags
+from pyforge.model import ProjectRole, TagEvent, UserTags, ArtifactReference
 
 # Local imports
 from forgetracker import model
@@ -55,11 +55,28 @@ class ForgeTrackerApp(Application):
                 SitemapEntry(menu_id, '.')[self.sidebar_menu()] ]
 
     def sidebar_menu(self):
-        return [
+        related_artifacts = []
+        related_urls = []
+        ticket = request.path_info.split(self.url)[-1].split('/')[0]
+        if ticket.isdigit():
+            ticket = model.Ticket.query.find(dict(app_config_id=self.config._id,ticket_num=int(ticket))).first()
+        else:
+            ticket = None
+        links = [
             SitemapEntry('Home', self.config.url()),
-            SitemapEntry('Search', self.config.url() + 'search'),
-            SitemapEntry('New Ticket', self.config.url() + 'new/'),
-            ]
+            SitemapEntry('Create New Ticket', self.config.url() + 'new/')]
+        if ticket:
+            links.append(SitemapEntry('Update this Ticket',ticket.url() + 'edit/'))
+            for aref in ticket.references+ticket.backreferences.values():
+                artifact = ArtifactReference(aref).to_artifact()
+                if artifact.url() not in related_urls:
+                    related_urls.append(artifact.url())
+                    related_artifacts.append(SitemapEntry(artifact.shorthand_id(), artifact.url()))
+        if len(related_artifacts):
+            links.append(SitemapEntry('Related Artifacts'))
+            links = links + related_artifacts
+        links.append(SitemapEntry('Search', self.config.url() + 'search'))
+        return links
 
     @property
     def templates(self):

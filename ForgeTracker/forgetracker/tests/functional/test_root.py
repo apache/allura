@@ -1,6 +1,15 @@
 from nose.tools import assert_true, assert_false
 from forgetracker.tests import TestController
 from pyforge import model
+from forgewiki import model as wm
+from forgetracker import model as tm
+
+# These are needed for faking reactor actions
+import mock
+from pyforge.lib import helpers as h
+from pyforge.command import reactor
+from pyforge.ext.search import search_main
+from ming.orm.ormsession import ThreadLocalORMSession
 
 
 class TestFunctionalController(TestController):
@@ -79,3 +88,53 @@ class TestFunctionalController(TestController):
         ticket_editor = self.app.post('/bugs/1/attach', upload_files=[upload]).follow()
         download = ticket_editor.click(description=file_name)
         assert_true(download.body == file_data)
+
+    def test_sidebar_static_page(self):
+        response = self.app.get('/bugs/search/')
+        assert 'Create New Ticket' in response
+        assert 'Update this Ticket' not in response
+        assert 'Related Artifacts' not in response
+
+    def test_sidebar_ticket_page(self):
+        summary = 'test sidebar logic for a ticket page'
+        self.new_ticket(summary)
+        response = self.app.get('/projects/test/bugs/1/')
+        assert 'Create New Ticket' in response
+        assert 'Update this Ticket' in response
+        assert 'Related Artifacts' not in response
+        self.app.get('/Wiki/aaa/')
+        self.new_ticket('bbb')
+        
+        # Fake out updating the pages since reactor doesn't work with tests
+        app = search_main.SearchApp
+        cmd = reactor.ReactorCommand('reactor')
+        cmd.args = [ 'test.ini' ]
+        cmd.options = mock.Mock()
+        cmd.options.dry_run = True
+        cmd.options.proc = 1
+        configs = cmd.command()
+        add_artifacts = cmd.route_audit('search', app.add_artifacts)
+        del_artifacts = cmd.route_audit('search', app.del_artifacts)
+        msg = mock.Mock()
+        msg.ack = lambda:None
+        msg.delivery_info = dict(routing_key='search.add_artifacts')
+        h.set_context('test', 'wiki')
+        a = wm.Page.query.find(dict(title='aaa')).first()
+        a.text = '\n[bugs:#1]\n'
+        msg.data = dict(project_id=a.project_id,
+                        mount_point=a.app_config.options.mount_point,
+                        artifacts=[a.dump_ref()])
+        add_artifacts(msg.data, msg)
+        b = tm.Ticket.query.find(dict(ticket_num=2)).first()
+        b.description = '\n[#1]\n'
+        msg.data = dict(project_id=b.project_id,
+                        mount_point=b.app_config.options.mount_point,
+                        artifacts=[b.dump_ref()])
+        add_artifacts(msg.data, msg)
+        ThreadLocalORMSession.flush_all()
+        ThreadLocalORMSession.close_all()
+        
+        response = self.app.get('/projects/test/bugs/1/')
+        assert 'Related Artifacts' in response
+        assert 'aaa' in response
+        assert '#2' in response
