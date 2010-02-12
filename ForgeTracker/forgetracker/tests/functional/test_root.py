@@ -57,6 +57,7 @@ class TestFunctionalController(TestController):
             'summary':'aaa',
             'description':'bbb',
             'status':'ccc',
+            'assigned_to':'',
             'tags':'red,blue',
             'tags_old':'red,blue'
         })
@@ -66,6 +67,7 @@ class TestFunctionalController(TestController):
             'summary':'zzz',
             'description':'bbb',
             'status':'ccc',
+            'assigned_to':'',
             'tags':'red',
             'tags_old':'red'
         })
@@ -138,3 +140,23 @@ class TestFunctionalController(TestController):
         assert 'Related Artifacts' in response
         assert 'aaa' in response
         assert '#2' in response
+
+
+    def test_assign_ticket(self):
+        summary = 'test assign ticket'
+        self.new_ticket(summary)
+        response = self.app.get('/projects/test/bugs/1/edit/')
+        assert response.html.find('span', {'class': 'viewer ticket-assigned-to'}).string == 'nobody'
+        test_user = response.html.find(id="assigned_to").findAll('option')[1]
+        test_user_id = test_user['value']
+        test_user_name = test_user.string
+        self.app.post('/bugs/1/update_ticket',{
+            'summary':'zzz',
+            'description':'bbb',
+            'status':'ccc',
+            'assigned_to':test_user_id,
+            'tags':'',
+            'tags_old':''
+        })
+        response = self.app.get('/projects/test/bugs/1/edit/')
+        assert response.html.find('span', {'class': 'viewer ticket-assigned-to'}).string == test_user_name

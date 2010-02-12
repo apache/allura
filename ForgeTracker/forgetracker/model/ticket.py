@@ -45,7 +45,7 @@ class TicketHistory(Snapshot):
         result = Snapshot.index(self)
         result.update(
             title_s='Version %d of %s' % (
-                self.version,self.original().title),
+                self.version,self.original().summary),
             type_s='Ticket Snapshot',
             text=self.data.summary)
         return result
@@ -73,13 +73,7 @@ class Ticket(VersionedArtifact):
 
     def commit(self):
         VersionedArtifact.commit(self)
-        if self.version > 1:
-            t1 = self.upsert(self.title, self.version-1).text
-            t2 = self.text
-            description = h.diff_text(t1, t2)
-        else:
-            description = None
-        Feed.post(self, description)
+        Feed.post(self, 'Ticket updated')
 
     def url(self):
         return self.app_config.url() + str(self.ticket_num) + '/'

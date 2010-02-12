@@ -189,4 +189,20 @@
   <py:def function="gravatar(email, **kw)">
     <img src="${g.gravatar(email, **kw)}" class="gravatar" alt="gravatar for $email"/>
   </py:def>
+  
+  <py:def function="select_user_in_project(name, value)">
+    <?python from pyforge.model import User
+      users = User.query.find({'_id':{'$in':[role.user_id for role in c.project.roles]}}).all()
+    ?>
+    <select id="$name" name="$name">
+      <py:for each="user in users">
+        <py:if test="value==user._id">
+          <option value="${user._id or ''}" selected="selected">${user._id and user.display_name or 'nobody'}</option>
+        </py:if>
+        <py:if test="value!=user._id">
+          <option value="${user._id or ''}">${user._id and user.display_name or 'nobody'}</option>
+        </py:if>
+      </py:for>
+    </select>
+  </py:def>
 </html>

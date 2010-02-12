@@ -283,7 +283,10 @@ class TicketController(object):
         else: tags = []
         self.ticket.summary = post_data['summary']
         self.ticket.description = post_data['description']
-      # self.ticket.assigned_to = post_data['assigned_to']
+        if post_data['assigned_to']:
+            self.ticket.assigned_to_id = post_data['assigned_to']
+        else:
+            self.ticket.assigned_to_id = None
         self.ticket.status = post_data['status']
         tag_artifact(self.ticket, c.user, tags)
 

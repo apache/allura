@@ -51,7 +51,7 @@
                 <div class="editable viewing span-8">
                     <span class="quiet">owner:</span>
                     <span class="viewer ticket-assigned-to">${ticket.assigned_to_name()}</span>
-                    <input disabled="disabled" name="assigned_to" value="${ticket.assigned_to_name()}" class="editor"/>
+                    <span class="editor ticket-assigned-to">${select_user_in_project('assigned_to',ticket.assigned_to_id)}</span>
                 </div>
 
                 <div class="editable viewing span-8">
