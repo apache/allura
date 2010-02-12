@@ -12,24 +12,32 @@ from dateutil.parser import parse as parse_dt
 from pyforge.lib.helpers import find_executable
 from forgescm import model as M
 from .command import Command
+import glob
 
 log = logging.getLogger(__name__)
 
+# Moves stuff in path/tmp_dir, whatever tmp_dir was called, to path
+def git_finish(command):
+    path = command.cwd()
+    tmp_git_path = os.path.join(path, command.args[-1])
+    files = glob.glob(os.path.join(tmp_git_path, "*"))
+    for file in files:
+        shutil.move(file, path)
+    shutil.rmtree(tmp_git_path)
+
+
 class init(Command):
-    base='git init'
+    base='git init --bare'
 
 class clone(Command):
-    base='git clone -n'
+    base='git clone --bare'
 
     # call this after a clone, since git clone always creates
     # a subdir, we need to move the git back to the already
     # existing mount-point directory
     # -- possibly could eliminate this if we use --bare
     def finish(self):
-        path = self.cwd()
-        tmp_git_path = os.path.join(path, self.args[-1])
-        shutil.move(os.path.join(tmp_git_path, '.git'), os.path.join(path, '.git'))
-        shutil.rmtree(os.path.join(path, tmp_git_path))
+        git_finish(self)
 
 class scm_log(Command):
     base='git log'
@@ -38,19 +46,24 @@ def setup_scmweb(repo_name, repo_dir):
     return setup_gitweb(repo_name, repo_dir)
 
 def setup_gitweb(repo_name, repo_dir):
-    'Set up the GitWeb config file'
+    '''Set up the GitWeb config file'''
+    log.info("Setup GitWeb config file")
+    log.info("repo_name: " + repo_name)
     tpl_fn = pkg_resources.resource_filename(
         'forgescm', 'data/gitweb.conf_tmpl')
     tpl_text = open(tpl_fn).read()
     tt = genshi.template.NewTextTemplate(
         tpl_text, filepath=os.path.dirname(tpl_fn), filename=tpl_fn)
     cfg_strm = tt.generate(
-        my_uri='/_wsgi_/scm/' + repo_name,
+        my_uri='/_wsgi_/scm/projects/' + repo_name,
         site_name='GitWeb Interface for ' + repo_name,
-        project_root=repo_dir)
+        project_root=os.path.join(repo_dir, ".."))
     cfg_fn = os.path.join(repo_dir, 'gitweb.conf')
     with open(cfg_fn, 'w') as fp:
         fp.write(cfg_strm.render())
+
+    with open(os.path.join(repo_dir, 'description'), 'w') as desc:
+        desc.write(repo_name)
 
 def setup_commit_hook(repo_dir, plugin_id):
     'Set up the git post-commit hook'
@@ -67,7 +80,7 @@ def setup_commit_hook(repo_dir, plugin_id):
         repository=plugin_id,
         config=config)
     strm = tt.generate(**context)
-    fn = os.path.join(repo_dir, '.git/hooks/post-receive')
+    fn = os.path.join(repo_dir, 'hooks', 'post-receive')
     with open(fn, 'w') as fp:
         fp.write(strm.render())
     os.chmod(fn, 0755)

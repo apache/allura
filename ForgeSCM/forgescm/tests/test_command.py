@@ -32,7 +32,7 @@ class TestCommand(TestCase):
         assert os.getcwd() != cmd.cwd()
         cmd.clean_dir()
         cmd.run()
-        assert os.path.exists(os.path.join(cmd.cwd(), ".git"))
+        assert os.path.exists(os.path.join(cmd.cwd(), "refs"))
 
     def test_setup_gitweb(self):
         repo = c.app.repo

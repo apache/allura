@@ -15,6 +15,13 @@ class TestRootController(TestController):
         test_helper.ensure_c_project_and_app()
         response = self.app.get('/Repository/')
         assert_true('Welcome to ForgeSCM' in response)
+
+    def test_gitweb(self):
+        test_helper.ensure_c_project_and_app()
+        assert c.app
+        response = self.app.get('/_wsgi_/scm/projects/test/src_git/.git')
+        assert response
+
         
     def test_fork(self):
         test_helper.ensure_c_project_and_app()

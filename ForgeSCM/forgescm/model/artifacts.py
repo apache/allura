@@ -75,13 +75,13 @@ class Repository(Artifact):
 
         try:
             cmd.run_exc()
-            repo_name = c.project.shortname + c.app.config.options.mount_point
+            repo_name = "/".join([c.project.shortname, c.app.config.options.mount_point])
             scm.setup_scmweb(repo_name, repo.repo_dir)
             scm.setup_commit_hook(repo.repo_dir, c.app.config.script_name()[1:])
             repo.status = 'Ready'
         except AssertionError, ae:
             g.publish('react', 'error', dict(
-                    message=ae.args[0]))
+                message=ae.args[0]))
             repo.status = 'Error: %s' % ae.args[0]
         except Exception, ex:
             g.publish('react', 'error', dict(message=str(ex)))
@@ -91,8 +91,8 @@ class Repository(Artifact):
     def url(self):
         return self.app_config.url()
 
-    # patterned from def clone in reactors
     def do_clone(self, url, type):
+        """the separate method clone(), is called and run synchronously with the controller method, this method is the callback when the queued message is handled by the reactor"""
         assert type in ["git", "svn", "hg"]
         repo = c.app.repo
         log.info('Begin (%s) cloning %s', type, url)
@@ -103,7 +103,7 @@ class Repository(Artifact):
 
         cmd = None
         if type == "git":
-            cmd = scm.clone(url, "git_dest")
+            cmd = scm.clone(url, "tmp_dir")
         elif type == "hg":
             cmd = scm.clone(url, ".")
         elif type == "svn":
@@ -123,8 +123,9 @@ class Repository(Artifact):
         if cmd:
             cmd.clean_dir()
             cmd.run()
-        repo_name = c.project.shortname + c.app.config.options.mount_point
-        scm.setup_scmweb
+        repo_name = "/".join([c.project.shortname, c.app.config.options.mount_point])
+        log.info(scm)
+        scm.setup_scmweb(repo_name, repo.repo_dir)
         scm.setup_commit_hook(repo.repo_dir, c.app.config.script_name()[1:])
         log.info('Clone complete for %s', url)
         if cmd and cmd.sp.returncode:
@@ -146,7 +147,6 @@ class Repository(Artifact):
 
     def clone_url(self):
         if self.type == 'hg':
-            #return config.get('host_prefix', 'http://localhost:8080') + self.native_url()
             return self.repo_dir
         elif self.type == 'git':
             return self.repo_dir
@@ -159,6 +159,9 @@ class Repository(Artifact):
         # Still using script_name() because we need to make sure
         #  this is on the same host as the page is being served from
         return '/_wsgi_/scm' + self.app_config.script_name()
+
+    def scmweb_log_url(self):
+        return self.native_url() + '?p=%s;a=log' % self.app.config.options.mount_point;
 
     def file_browser(self):
         return self.native_url() + '/file'
@@ -222,7 +225,7 @@ class Repository(Artifact):
         assert data['url'] == self.repo_dir
 
         if self.type == "git":
-            cmd = scm.clone(self.repo_dir, 'git_dest') # this is ugly
+            cmd = scm.clone(self.repo_dir, "tmp_dir")
         elif self.type == "hg":
             cmd = scm.clone(self.repo_dir, '.')
         else:
@@ -232,10 +235,9 @@ class Repository(Artifact):
         cmd.run()
         dest_repo.status = 'Ready'
         log.info('Clone complete for %s', data['url'])
-        repo_name = dest_project.shortname + c.app.config.options.mount_point
+        repo_name = "/".join([dest_project.shortname, c.app.config.options.mount_point])
         scm.setup_scmweb(repo_name, dest_repo.repo_dir)
 
-        # valid for hg?
         scm.setup_commit_hook(dest_repo.repo_dir, c.app.config.script_name()[1:])
         if cmd.sp.returncode:
             errmsg = cmd.output
@@ -307,7 +309,9 @@ class Commit(Artifact):
         return self.hash
 
     def url(self):
-        return self.repository.url() + 'repo/' + self.hash + '/'
-
+        return "%s?p=%s;a=commit;h=%s" % (
+                self.repository.native_url(),
+                self.repository.app.config.options.mount_point,
+                self.hash)
 
 MappedClass.compile_all()

@@ -11,8 +11,6 @@ $$logo = "/static/Repository/gitweb/git-logo.png";
 $$favicon = "/static/Repository/gitweb/git-favicon.png";
 $$projects_list_description_width = 40;
 
-$$feature{'pathinfo'}{'default'} = [1];
-
 $$feature{'search'}{'default'} = [undef];
 $$feature{'blame'}{'default'} = [undef];
 $$feature{'pickaxe'}{'default'} = [undef];

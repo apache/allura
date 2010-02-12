@@ -19,7 +19,7 @@ from pymongo import bson
 def find_project(url_path):
     from pyforge import model as M
     for n in M.Neighborhood.query.find():
-        if url_path.startswith(n.url_prefix):
+        if url_path.strip("/").startswith(n.url_prefix.strip("/")):
             break
     else:
         return None, url_path

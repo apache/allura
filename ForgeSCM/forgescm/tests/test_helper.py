@@ -74,11 +74,11 @@ def setup_simple_hg_repo(repo):
     shutil.copytree(src, repo.repo_dir)
     assert "changeset" in repo.scmlib().scm_log().run().output
 
-# creates an empty git repo, and then adds one commit to it
+# creates git repo; has one commit
 def create_git_repo():
-    tgz = os.path.join(os.path.dirname(__file__), 'git_repo.tgz')
+    tgz_path = os.path.join(os.path.dirname(__file__), 'git_repo.tgz')
     dest = "/tmp/git_repo"
-    os.system("tar zvfx %s --directory %s &> /dev/null" % (tgz, os.path.dirname(dest)))
+    os.system("tar zvfx %s --directory %s &> /dev/null" % (tgz_path, os.path.dirname(dest)))
     return dest
 
 def clone_git_repo(repo, url):
@@ -88,7 +88,7 @@ def clone_git_repo(repo, url):
     # following is copied from reactors/git_react.py,
     # should be factored out
     repo.clear_commits()
-    cmd = git.clone(url, 'git_dest')
+    cmd = git.clone(url, "tmp_dir")
     cmd.clean_dir()
     repo.clear_commits()
     cmd.run()

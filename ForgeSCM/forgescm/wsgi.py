@@ -35,14 +35,15 @@ class WSGIHook(app.WSGIHook, BaseController):
             return True
 
     def __call__(self, environ, start_response):
-        project, rest = find_project(environ['PATH_INFO'][1:])
+        url_path = environ['PATH_INFO'][1:]
+        project, rest = find_project(url_path)
         if project is None:
             return BaseController.__call__(self, environ, start_response)
         class EmptyClass(object): pass
         c.project = project
         c.app = c.project.app_instance(rest[0])
         environ['PATH_INFO'] = '/' + '/'.join(rest[1:])
-        environ['SCRIPT_NAME'] += '/' + c.project._id + rest[0]
+        environ['SCRIPT_NAME'] += '/' + str(c.project._id) + rest[0]
         if c.app.config.options.type == 'hg':
             return self.hgweb(environ, start_response)
         elif c.app.config.options.type == 'git':

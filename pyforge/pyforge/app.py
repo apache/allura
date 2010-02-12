@@ -20,7 +20,7 @@ class ConfigOption(object):
 class WSGIHook(object):
 
     def handles(self, environ):
-        raise NotImplementedError, 'handles' # pragma no cover
+        return False
 
     def __call__(self, environ, start_response):
         raise NotImplementedError, '__call__' # pragma no cover

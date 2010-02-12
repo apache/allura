@@ -63,31 +63,6 @@ class RootController(BaseController):
             if n.url_prefix.startswith('//'): continue
             n.bind_controller(self)
 
-    def __call__(self, environ, start_response):
-        """This is the basic WSGI callable that wraps and dispatches forge controllers.
-        
-        It peforms a number of functions: 
-          * displays the forge index page
-          * sets up and cleans up the Ming/MongoDB Session
-          * persists all Ming object changes to Mongo
-        """
-        app = self._wsgi_handler(environ)
-        if app is None:
-            app = lambda e,s: BaseController.__call__(self, e, s)
-        try:
-            result = app(environ, start_response)
-            if not isinstance(result, list):
-                return self._cleanup_iterator(result)
-            else:
-                self._cleanup_request()
-                return result
-        except exc.HTTPRedirection:
-            self._cleanup_request()
-            raise
-        except:
-            ming.orm.ormsession.ThreadLocalORMSession.close_all()
-            raise
-
     def _cleanup_iterator(self, result):
         for x in result:
             yield x
@@ -99,18 +74,6 @@ class RootController(BaseController):
             g._publish(**msg)
         ming.orm.ormsession.ThreadLocalORMSession.close_all()
         
-
-    def _wsgi_handler(self, environ):
-        host = environ['HTTP_HOST'].lower()
-        if host == config['oembed.host']:
-            return OEmbedController()
-        neighborhood = M.Neighborhood.query.get(url_prefix='//' + host + '/')
-        if neighborhood:
-            return HostNeighborhoodController(neighborhood.name, neighborhood.shortname_prefix)
-        if environ['PATH_INFO'].startswith('/_wsgi_/'):
-            for ep in pkg_resources.iter_entry_points('pyforge'):
-                App = ep.load()
-                if App.wsgi.handles(environ): return App.wsgi
 
     @expose('pyforge.templates.index')
     @with_trailing_slash

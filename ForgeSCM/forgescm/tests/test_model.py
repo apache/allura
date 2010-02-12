@@ -139,13 +139,13 @@ class TestRepository(TestCase):
         assert os.path.isfile(gitweb_conf_path)
 
         # assert commit hook is setup
-        commit_hook_path = os.path.join(repo.repo_dir,'.git', 'hooks', 'post-receive')
+        commit_hook_path = os.path.join(repo.repo_dir, 'hooks', 'post-receive')
         assert os.path.isfile(commit_hook_path)
 
     def test_create_git_repo(self):
         url = test_helper.create_git_repo()
         assert "git_repo" in url
-        assert os.path.exists(url + "/.git")
+        assert os.path.exists(os.path.join(url, ".git"))
 
     def test_git_clone(self):
         repo = c.app.repo
@@ -154,10 +154,14 @@ class TestRepository(TestCase):
 
         assert_equal(repo.cloned_from, src_url)
         assert src_url != repo.repo_dir
-        assert os.path.isdir(os.path.join(repo.repo_dir, ".git"))
+        assert os.path.isdir(os.path.join(repo.repo_dir, "refs"))
 
         # do_clone fires a scm.cloned message, lets do that manually here
         assert_equal(repo.commits.count(), 0)
+
+        # assert web is setup
+        gitweb_conf_path = os.path.join(repo.repo_dir, 'gitweb.conf')
+        assert os.path.isfile(gitweb_conf_path)
 
     def test_hg_clone(self):
         repo = c.app.repo

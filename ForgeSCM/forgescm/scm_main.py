@@ -62,7 +62,7 @@ class ForgeSCMApp(Application):
                 SitemapEntry('Files', repo.native_url() + '/file') ]
         elif self.config.options.type == 'git':
             result += [
-                SitemapEntry('GitWeb', repo.native_url() + '/.git') ]
+                SitemapEntry('GitWeb', repo.native_url() + '.git?p='+repo.app.config.options.mount_point) ]
         elif self.config.options.type == 'svn':
             result += [
                 SitemapEntry('Browser', repo.native_url()) ]
