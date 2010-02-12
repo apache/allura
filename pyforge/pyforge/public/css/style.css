@@ -45,6 +45,12 @@ ul.mb li.loginlogout, #project-search {
 	top:0;
 	right:1em;
 }
+ul.mb li.user-link {
+    display:block;
+    position:absolute;
+    top:0;
+    right:7em;
+}
 .mb li+li {
 	padding-left:1em;
 }

@@ -1,0 +1,52 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+                      "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:py="http://genshi.edgewall.org/"
+      xmlns:xi="http://www.w3.org/2001/XInclude">
+
+  <xi:include href="master.html" />
+  <xi:include href="lib.html" />
+
+  <?python from pyforge.lib.security import has_project_access ?>
+
+  <head>
+    <meta content="text/html; charset=UTF-8" http-equiv="content-type" py:replace="''"/>
+    <title>Project Homepage for $c.project._id</title>
+    <link rel="stylesheet" type="text/css"
+          href="${g.app_static('css/project_home.css')}"/>
+  </head>
+
+  <body>
+    <h1>Configure Dashboard for $c.project.name</h1>
+    <form method="POST" action="update_configuration">
+      <label for="layout_class">Layout Class</label>
+      <select name="layout_class" id="layout_class">
+        <option value="onecol" selected="${layout_class=='onecol' or None}">
+          One Column</option>
+        <option value="twocol" selected="${layout_class=='twocol' or None}">
+          Two Column</option>
+      </select>
+      <div py:for="i, div in enumerate(layout)"
+           style="border: 1px solid black; border-top:4px solid gray;">
+        <label for="divs-${i}.name">Div Name</label>
+        <input name="divs-${i}.name" id="divs-${i}.name" value="$div.name"/>
+        <input type="submit" name="divs-${i}.del" value="Delete Div" />
+        <fieldset><legend>Widgets</legend>
+          <div py:for="j, w in enumerate(div.content)">
+            <label for="divs-${i}.content-${j}">Widget</label>
+            <select name="divs-${i}.content-${j}.widget" id="divs-${i}.content-${j}">
+              <option py:for="wt in widget_types"
+                      value="$wt.mount_point/$wt.widget_name"
+                      selected="${wt==w or None}">$wt.mount_point / $wt.widget_name</option>
+            </select>
+            <input type="submit" name="divs-${i}.content-${j}.del"
+                   value="Remove"/>
+          </div>
+          <input type="submit" name="divs-${i}.new_widget" value="New Widget"/>
+        </fieldset>
+      </div>
+      <input type="submit" name="new_div" value="New Div"/>
+      <input type="submit" value="Update Layout"/>
+    </form>
+  </body>
+</html>

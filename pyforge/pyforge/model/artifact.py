@@ -1,20 +1,22 @@
 import re
 import os
 import logging
+from collections import defaultdict
 from time import sleep
 from datetime import datetime
 import cPickle as pickle
 
 import pymongo
-from pylons import c
+from pylons import c, g
 from ming import Document, Session, Field
 from ming import schema as S
 from ming.orm.base import mapper, session, state
 from ming.orm.mapped_class import MappedClass, MappedClassMeta
 from ming.orm.property import FieldProperty, ForeignIdProperty, RelationProperty
 from pymongo.errors import OperationFailure
+from webhelpers import feedgenerator as FG
 
-from pyforge.lib.helpers import nonce, push_config, push_context
+from pyforge.lib.helpers import nonce, push_config, push_context, absurl
 from .session import ProjectSession
 from .session import main_doc_session, main_orm_session
 from .session import project_doc_session, project_orm_session
@@ -100,21 +102,72 @@ class ArtifactLink(MappedClass):
             projects = Project.query.find(dict(shortname=project_id[1:])).all()
         if not projects: return None
         #
-        # Find the app_id to search
-        #
-        if app_id is None:
-            app_id = c.app.config.options.mount_point
-        #
         # Actually search the projects
         #
         with push_config(c, project=projects[0]):
             for p in projects:
                 links = cls.query.find(dict(project_id=p._id, link=artifact_id)).all()
+                if app_id is None: return links[0]
                 for l in links:
                     if app_id == l.mount_point: return l
                 for l in links:
                     if app_id == l.plugin_name: return l
         return None
+
+class Feed(MappedClass):
+    class __mongometa__:
+        session = project_orm_session
+        name = 'artifact_feed'
+
+    _id = FieldProperty(S.ObjectId)
+    artifact_reference = FieldProperty(ArtifactReferenceType)
+    title=FieldProperty(str)
+    link=FieldProperty(str)
+    pubdate = FieldProperty(datetime, if_missing=datetime.utcnow)
+    description = FieldProperty(str)
+    unique_id = FieldProperty(str, if_missing=lambda:nonce(40))
+    author_name = FieldProperty(str, if_missing=lambda:c.user.display_name)
+    author_link = FieldProperty(str, if_missing=lambda:c.user.url())
+
+    @classmethod
+    def post(cls, artifact, description=None):
+        idx = artifact.index()
+        title='%s modified by %s' % (idx['title_s'], c.user.display_name)
+        if description is None: description = title
+        item = cls(artifact_reference=artifact.dump_ref(),
+                   title=title,
+                   description=description,
+                   link=artifact.url())
+        return item
+
+    @classmethod
+    def feed(cls, q, feed_type, title, link, description,
+             since=None, until=None, offset=None, limit=None):
+        d = dict(title=title, link=absurl(link), description=description, language=u'en')
+        if feed_type == 'atom':
+            feed = FG.Atom1Feed(**d)
+        elif feed_type == 'rss':
+            feed = FG.Rss201rev2Feed(**d)
+        query = defaultdict(dict)
+        query.update(q)
+        if since is not None:
+            query['pubdate']['$gte'] = since
+        if until is not None:
+            query['pubdate']['$lte'] = until
+        cur = cls.query.find(query)
+        cur = cur.sort('pubdate', pymongo.DESCENDING)
+        if limit is not None: query = cur.limit(limit)
+        if offset is not None: query = cur.offset(limit)
+        for r in cur:
+            a = ArtifactReference(r.artifact_reference).to_artifact()
+            feed.add_item(title=r.title,
+                          link=absurl(r.link),
+                          pubdate=r.pubdate,
+                          description=r.description,
+                          unique_id=r.unique_id,
+                          author_name=r.author_name,
+                          author_link=absurl(r.author_link))
+        return feed
 
 class Artifact(MappedClass):
     class __mongometa__:

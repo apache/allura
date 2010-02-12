@@ -11,7 +11,8 @@ from ming.orm.property import FieldProperty, ForeignIdProperty, RelationProperty
 from datetime import datetime
 
 from pyforge.model import Artifact, VersionedArtifact, Snapshot, Message, project_orm_session, Project
-from pyforge.model import File, User
+from pyforge.model import File, User, Feed
+from pyforge.lib import helpers as h
 
 class Globals(MappedClass):
 
@@ -69,6 +70,16 @@ class Ticket(VersionedArtifact):
     custom_fields = FieldProperty({str:None})
 
     comments = RelationProperty('Comment')
+
+    def commit(self):
+        VersionedArtifact.commit(self)
+        if self.version > 1:
+            t1 = self.upsert(self.title, self.version-1).text
+            t2 = self.text
+            description = h.diff_text(t1, t2)
+        else:
+            description = None
+        Feed.post(self, description)
 
     def url(self):
         return self.app_config.url() + str(self.ticket_num) + '/'
@@ -130,14 +141,10 @@ class Ticket(VersionedArtifact):
         else:
             return []
 
-    def reply(self):
-        while True:
-            try:
-                c = Comment(ticket_id=self._id)
-                return c
-            except OperationFailure:
-                sleep(0.1)
-                continue
+    def reply(self, text):
+        Feed.post(self, 'Comment: %s' % text)
+        c = Comment(ticket_id=self._id, text=text)
+        return c
 
 class Comment(Message):
 
@@ -145,7 +152,6 @@ class Comment(Message):
         name = 'ticket_comment'
 
     type_s = 'Ticket Comment'
-    _id = FieldProperty(schema.ObjectId)
     version = FieldProperty(0)
     created_date = FieldProperty(datetime, if_missing=datetime.utcnow)
 
@@ -189,6 +195,12 @@ class Comment(Message):
 
     def shorthand_id(self):
         return '%s-%s' % (self.ticket.shorthand_id, self._id)
+
+    def reply(self, text):
+        r = Message.reply(self)
+        r.text = text
+        Feed.post(self.ticket, 'Comment: %s', text)
+        return r
 
 class Attachment(File):
     class __mongometa__:

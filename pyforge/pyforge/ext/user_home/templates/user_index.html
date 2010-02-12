@@ -1,4 +1,4 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" 
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
                       "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
       xmlns:py="http://genshi.edgewall.org/"
@@ -11,13 +11,11 @@
 
   <head>
     <meta content="text/html; charset=UTF-8" http-equiv="content-type" py:replace="''"/>
-    <title>Project Homepage for $c.project.name</title>
-    <link rel="stylesheet" type="text/css" 
-          href="${g.app_static('css/project_home.css')}"/>
-    <link rel="alternate" type="application/rss+xml" title="RSS" href="../feed.rss"/>
-    <link rel="alternate" type="application/atom+xml" title="Atom" href="../feed.atom"/>
+    <title>User Homepage for $c.user.display_name</title>
+    <link rel="stylesheet" type="text/css"
+          href="${g.app_static('css/user_home.css')}"/>
   </head>
-  
+
   <body>
     ${Markup(c.project.description_html)}
     <div class="$layout_class">

@@ -148,7 +148,7 @@ class User(MappedClass):
             result = cls._register_ldap(doc)
         if make_project:
             n = M.Neighborhood.query.get(name='Users')
-            n.register_project('users/' + result.username, result)
+            n.register_project('users/' + result.username, result, user_project=True)
         return result
 
     @classmethod

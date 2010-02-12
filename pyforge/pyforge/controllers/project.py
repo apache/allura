@@ -1,16 +1,17 @@
 from urllib import unquote
 
-from tg import expose, flash, redirect
+from tg import expose, flash, redirect, validate, request, response
 from tg.decorators import with_trailing_slash, without_trailing_slash
 from pylons import c
 from webob import exc
 from pymongo.bson import ObjectId
+from formencode import validators
 
 import  ming.orm.ormsession
 
 from pyforge import model as M
 from pyforge.lib.base import BaseController
-from pyforge.lib.helpers import vardec
+from pyforge.lib.helpers import vardec, DateTimeConverter
 from pyforge.controllers.error import ErrorController
 from pyforge.lib.dispatch import _dispatch
 from pyforge.lib.security import require, has_project_access, has_neighborhood_access
@@ -102,6 +103,30 @@ class ProjectController(object):
         raise NotImplementedError, 'sitemap'
         require(has_project_access('read'))
         return dict()
+
+    @without_trailing_slash
+    @expose()
+    @validate(dict(
+            since=DateTimeConverter(if_empty=None),
+            until=DateTimeConverter(if_empty=None),
+            offset=validators.Int(if_empty=None),
+            limit=validators.Int(if_empty=None)))
+    def feed(self, since, until, offset, limit):
+        if request.environ['PATH_INFO'].endswith('.atom'):
+            feed_type = 'atom'
+        else:
+            feed_type = 'rss'
+        title = 'Recent changes to Project %s' % c.project.name
+        feed = M.Feed.feed(
+            {'artifact_reference.project_id':c.project._id},
+            feed_type,
+            title,
+            c.project.url(),
+            title,
+            since, until, offset, limit)
+        response.headers['Content-Type'] = ''
+        response.content_type = 'application/xml'
+        return feed.writeString('utf-8')
 
 class NeighborhoodAdminController(object):
 

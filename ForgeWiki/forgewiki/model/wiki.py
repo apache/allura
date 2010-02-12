@@ -9,9 +9,10 @@ from pymongo.errors import OperationFailure
 from ming import schema
 from ming.orm.base import state, session
 from ming.orm.mapped_class import MappedClass
-from ming.orm.property import FieldProperty
+from ming.orm.property import FieldProperty, ForeignIdProperty, RelationProperty
 
-from pyforge.model import VersionedArtifact, Snapshot, Message, File
+from pyforge.model import VersionedArtifact, Snapshot, Message, File, Feed
+from pyforge.lib import helpers as h
 
 class PageHistory(Snapshot):
     class __mongometa__:
@@ -58,6 +59,16 @@ class Page(VersionedArtifact):
     title=FieldProperty(str)
     text=FieldProperty(schema.String, if_missing='')
 
+    def commit(self):
+        VersionedArtifact.commit(self)
+        if self.version > 1:
+            t1 = self.upsert(self.title, self.version-1).text
+            t2 = self.text
+            description = h.diff_text(t1, t2)
+        else:
+            description = self.text
+        Feed.post(self, description)
+
     def url(self):
         return self.app_config.url() + self.title + '/'
 
@@ -100,14 +111,9 @@ class Page(VersionedArtifact):
             ss = HC.query.find({'artifact_id':pg._id, 'version':int(version)}).one()
             return ss
 
-    def reply(self):
-        while True:
-            try:
-                c = Comment(page_id=self._id)
-                return c
-            except OperationFailure:
-                sleep(0.1)
-                continue
+    def reply(self, text):
+        Feed.post(self, text)
+        return Comment(page_id=self._id, text=text)
 
     @property
     def html_text(self):
@@ -143,7 +149,9 @@ class Attachment(File):
 class Comment(Message):
     class __mongometa__:
         name='comment'
-    page_id=FieldProperty(schema.ObjectId)
+    page_id=ForeignIdProperty(Page)
+    page = RelationProperty(Page)
+
 
     def index(self):
         result = Message.index(self)
@@ -154,6 +162,12 @@ class Comment(Message):
             type_s='Comment on WikiPage',
             page_title_t=self.page.title)
         return result
+
+    def reply(self, text):
+        Feed.post(self.page, text)
+        r = Message.reply(self)
+        r.text = text
+        return r
 
     @property
     def page(self):

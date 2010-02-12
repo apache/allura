@@ -1,0 +1,19 @@
+div.twocol #col1
+{
+    width: 40%;
+    float: left;
+}
+
+div.twocol #col2
+{
+    width: 50%;
+    float: left;
+}
+
+div.portlet
+{
+    margin: 2px;
+    border: 1px solid black;
+    border-top: 1em solid #333;
+    background-color: yellow;
+}

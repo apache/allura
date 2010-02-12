@@ -14,11 +14,11 @@ from pymongo.bson import ObjectId
 
 # Pyforge-specific imports
 from pyforge.app import Application, ConfigOption, SitemapEntry, DefaultAdminController
-from pyforge.lib.helpers import push_config, tag_artifact
+from pyforge.lib.helpers import push_config, tag_artifact, DateTimeConverter
 from pyforge.lib.search import search_artifact
 from pyforge.lib.decorators import audit, react
 from pyforge.lib.security import require, has_artifact_access
-from pyforge.model import ProjectRole, TagEvent, UserTags, ArtifactReference
+from pyforge.model import ProjectRole, TagEvent, UserTags, ArtifactReference, Feed
 
 # Local imports
 from forgetracker import model
@@ -165,6 +165,31 @@ class RootController(object):
     def not_found(self, **kw):
         return dict()
 
+    @without_trailing_slash
+    @expose()
+    @validate(dict(
+            since=DateTimeConverter(if_empty=None),
+            until=DateTimeConverter(if_empty=None),
+            offset=validators.Int(if_empty=None),
+            limit=validators.Int(if_empty=None)))
+    def feed(self, since, until, offset, limit):
+        if request.environ['PATH_INFO'].endswith('.atom'):
+            feed_type = 'atom'
+        else:
+            feed_type = 'rss'
+        title = 'Recent changes to %s' % c.app.config.options.mount_point
+        feed = Feed.feed(
+            {'artifact_reference.mount_point':c.app.config.options.mount_point,
+             'artifact_reference.project_id':c.project._id},
+            feed_type,
+            title,
+            c.app.url,
+            title,
+            since, until, offset, limit)
+        response.headers['Content-Type'] = ''
+        response.content_type = 'application/xml'
+        return feed.writeString('utf-8')
+
     @expose()
     def save_ticket(self, ticket_num, tags, tags_old=None, **post_data):
         require(has_artifact_access('write'))
@@ -224,6 +249,31 @@ class TicketController(object):
         user_tags = UserTags.upsert(c.user, self.ticket.dump_ref())
         return dict(ticket=self.ticket, globals=globals, user_tags=user_tags)
 
+    @without_trailing_slash
+    @expose()
+    @validate(dict(
+            since=DateTimeConverter(if_empty=None),
+            until=DateTimeConverter(if_empty=None),
+            offset=validators.Int(if_empty=None),
+            limit=validators.Int(if_empty=None)))
+    def feed(self, since, until, offset, limit):
+        if request.environ['PATH_INFO'].endswith('.atom'):
+            feed_type = 'atom'
+        else:
+            feed_type = 'rss'
+        title = 'Recent changes to %d: %s' % (
+            self.ticket.ticket_num, self.ticket.summary)
+        feed = Feed.feed(
+            {'artifact_reference':self.ticket.dump_ref()},
+            feed_type,
+            title,
+            self.ticket.url(),
+            title,
+            since, until, offset, limit)
+        response.headers['Content-Type'] = ''
+        response.content_type = 'application/xml'
+        return feed.writeString('utf-8')
+
     @expose()
     def update_ticket(self, tags, tags_old, **post_data):
         require(has_artifact_access('write', self.ticket))
@@ -241,7 +291,7 @@ class TicketController(object):
         if globals.custom_fields:
             for field in globals.custom_fields.split(','):
                 self.ticket.custom_fields[field] = post_data[field]
-
+        self.ticket.commit()
         redirect('edit/')
 
     @expose()
@@ -301,17 +351,15 @@ class CommentController(object):
     def __init__(self, ticket, comment_id=None):
         self.ticket = ticket
         self.comment_id = comment_id
-        self.comment = model.Comment.query.get(_id=self.comment_id)
+        self.comment = model.Comment.query.get(slug=comment_id)
 
     @expose()
     def reply(self, text):
         require(has_artifact_access('comment', self.ticket))
         if self.comment_id:
-            c = self.comment.reply()
-            c.text = text
+            c = self.comment.reply(text)
         else:
-            c = self.ticket.reply()
-            c.text = text
+            c = self.ticket.reply(text)
         redirect(request.referer)
 
     @expose()
