@@ -41,6 +41,10 @@ class TicketHistory(Snapshot):
     def url(self):
         return self.original().url() + '?version=%d' % self.version
 
+    def assigned_to(self):
+        if self.data.assigned_to_id is None: return None
+        return User.query.get(_id=self.data.assigned_to_id)
+
     def index(self):
         result = Snapshot.index(self)
         result.update(
@@ -73,7 +77,31 @@ class Ticket(VersionedArtifact):
 
     def commit(self):
         VersionedArtifact.commit(self)
-        Feed.post(self, 'Ticket updated')
+        if self.version > 1:
+            hist = TicketHistory.query.get(artifact_id=self._id, version=self.version-1)
+            old = hist.data
+            changes = []
+            fields = [
+                ('Summary', old.summary, self.summary),
+                ('Status', old.status, self.status) ]
+            for key in self.custom_fields:
+                fields.append((key, old.custom_fields[key], self.custom_fields[key]))
+            for title, o, n in fields:
+                if o != n:
+                    changes.append('%s updated: %r => %r' % (
+                            title, o, n))
+            o = hist.assigned_to()
+            n = self.assigned_to()
+            if o != n:
+                changes.append('Owner updated: %r => %r' % (
+                        o and o.username, n and n.username))
+            if old.description != self.description:
+                changes.append('Description updated:')
+                changes.append(h.diff_text(old.description, self.description))
+            description = '<br>'.join(changes)
+        else:
+            description = 'Ticket %s created: %s' % (self.ticket_num, self.summary)
+        Feed.post(self, description)
 
     def url(self):
         return self.app_config.url() + str(self.ticket_num) + '/'

@@ -21,20 +21,32 @@ class TestFeeds(TestController):
 
     def test_project_feed(self):
         self.app.get('/feed.rss')
-        self.app.get('/feed.xml')
+        self.app.get('/feed.atom')
 
     def test_wiki_feed(self):
         self.app.get('/Wiki/feed.rss')
-        self.app.get('/Wiki/feed.xml')
+        self.app.get('/Wiki/feed.atom')
 
     def test_wiki_page_feed(self):
         self.app.get('/Wiki/Root/feed.rss')
-        self.app.get('/Wiki/Root/feed.xml')
+        self.app.get('/Wiki/Root/feed.atom')
 
     def test_ticket_list_feed(self):
         self.app.get('/Tickets/feed.rss')
-        self.app.get('/Tickets/feed.xml')
+        self.app.get('/Tickets/feed.atom')
 
     def test_ticket_feed(self):
         self.app.get('/Tickets/1/feed.rss')
-        self.app.get('/Tickets/1/feed.xml')
+        r = self.app.get('/Tickets/1/feed.atom')
+        assert 'created' in r
+        self.app.post('/Tickets/1/update_ticket', params=dict(
+                ticket_num='',
+                tags='',
+                tags_old='',
+                summary='This is a new ticket',
+                status='unread',
+                description='This is another description'))
+        r = self.app.get('/Tickets/1/feed.atom')
+        assert '=&gt;' in r
+        assert '&lt;ins&gt;' in r
+

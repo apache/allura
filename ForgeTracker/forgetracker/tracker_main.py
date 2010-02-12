@@ -222,6 +222,7 @@ class RootController(object):
 
         for k,v in post_data.iteritems():
             setattr(ticket, k, v)
+        ticket.commit()
         redirect(str(ticket.ticket_num)+'/')
 
 
