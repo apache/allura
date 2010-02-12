@@ -106,6 +106,10 @@ class ForgeTrackerApp(Application):
 
 class RootController(object):
 
+    def __init__(self):
+        setattr(self, 'feed.atom', self.feed)
+        setattr(self, 'feed.rss', self.feed)
+
     def ordered_history(self, limit=None):
         q = []
         tickets = model.Ticket.query.find(dict(app_config_id=c.app.config._id)).sort('ticket_num')
@@ -230,6 +234,8 @@ class TicketController(object):
                                                     ticket_num=self.ticket_num)
             self.attachment = AttachmentsController(self.ticket)
             self.comments = CommentController(self.ticket)
+        setattr(self, 'feed.atom', self.feed)
+        setattr(self, 'feed.rss', self.feed)
 
     @with_trailing_slash
     @expose('forgetracker.templates.ticket')

@@ -31,9 +31,9 @@ class OEmbedController(BaseController):
         if isinstance(response, oembed.OEmbedPhotoResponse):
             override_template(self.index, 'genshi:pyforge.templates.oembed.photo')
         elif isinstance(response, oembed.OEmbedVideoResponse):
-            override_template(self.index, 'genshi:pyforge.templates.oembed.html')
+            override_template(self.index, 'genshi:pyforge.templates.oembed.html_tpl')
         elif isinstance(response, oembed.OEmbedRichResponse):
-            override_template(self.index, 'genshi:pyforge.templates.oembed.html')
+            override_template(self.index, 'genshi:pyforge.templates.oembed.html_tpl')
         elif isinstance(response, oembed.OEmbedLinkResponse):
             if data['provider_name'] == 'Twitter Status':
                 override_template(self.index, 'genshi:pyforge.templates.oembed.link_twitter')

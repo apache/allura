@@ -157,14 +157,14 @@ class ForgeWikiApp(Application):
 
 class RootController(object):
 
+    def __init__(self):
+        setattr(self, 'feed.atom', self.feed)
+        setattr(self, 'feed.rss', self.feed)
+
     @expose('forgewiki.templates.index')
     def index(self):
         redirect('Root/')
         return dict(message=c.app.config.options['message'])
-
-    #Will not be needed after _dispatch is fixed in tg 2.1
-    def _dispatch(self, state, remainder):
-        return _dispatch(self, state, remainder)
 
     #Instantiate a Page object, and continue dispatch there
     def _lookup(self, pname, *remainder):
@@ -283,6 +283,8 @@ class PageController(object):
         self.page = model.Page.upsert(title)
         self.comments = CommentController(self.page)
         self.attachment = AttachmentsController(self.page)
+        setattr(self, 'feed.atom', self.feed)
+        setattr(self, 'feed.rss', self.feed)
         if not exists:
             redirect(c.app.url+title+'/edit')
 
