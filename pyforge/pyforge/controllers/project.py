@@ -75,6 +75,10 @@ class HostNeighborhoodController(BaseController, NeighborhoodController):
 
 class ProjectController(object):
 
+    def __init__(self):
+        setattr(self, 'feed.rss', self.feed)
+        setattr(self, 'feed.atom', self.feed)
+
     def _lookup(self, name, *remainder):
         name=unquote(name)
         subproject = M.Project.query.get(shortname=c.project.shortname + '/' + name)
