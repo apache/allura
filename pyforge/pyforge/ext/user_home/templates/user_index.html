@@ -7,21 +7,50 @@
   <xi:include href="master.html" />
   <xi:include href="lib.html" />
 
-  <?python from pyforge.lib.security import has_project_access ?>
+  <?python from pyforge.lib.security import has_project_access
+           from pyforge.model import Project ?>
 
   <head>
     <meta content="text/html; charset=UTF-8" http-equiv="content-type" py:replace="''"/>
-    <title>User Homepage for $c.user.display_name</title>
+    <title>${user.display_name}'s Home</title>
     <link rel="stylesheet" type="text/css"
           href="${g.app_static('css/user_home.css')}"/>
   </head>
 
   <body>
+    <h1><py:if test="user.preferences.email_address">${gravatar(user.preferences.email_address)} </py:if>${user.display_name} (${user.username})</h1>
     ${Markup(c.project.description_html)}
+    <div class="project-list">
+      <span class="title">Projects</span>
+      <ul>
+        <li py:for="project in h.make_projects(user.projects)" py:if="not project.shortname.startswith('users/')">
+            <a class="project-name" href="${project.url()}">${project.name}</a>
+        </li>
+      </ul>
+    </div>
+    <py:if test="c.user.username == user.username">
+        <div class="address-list">
+          <span class="title">Email Addresses</span>
+          <ul>
+            <li py:for="email in user.email_addresses">
+                <span py:if="email == user.preferences.email_address" class="prime email-address">${email}</span>
+                <span py:if="email != user.preferences.email_address" class="email-address">${email}</span>
+            </li>
+          </ul>
+        </div>
+        <div class="openid-list">
+          <span class="title">OpenIDs</span>
+          <ul>
+            <li py:for="openid in user.open_ids">
+                <span class="openid">${openid}</span>
+            </li>
+          </ul>
+        </div>
     <div class="$layout_class">
       <div py:for="div in layout" id="$div.name">
         <py:for each="w in div.content">${Markup(w)}</py:for>
       </div>
     </div>
+    </py:if>
   </body>
 </html>

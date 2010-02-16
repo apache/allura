@@ -15,7 +15,7 @@ from pyforge.lib.helpers import push_config, html, vardec
 from pyforge.lib.dispatch import _dispatch
 from pyforge.ext.project_home import model as M
 from pyforge.lib.security import require, has_project_access
-from pyforge.model import nonce
+from pyforge.model import nonce, User
 
 log = logging.getLogger(__name__)
 
@@ -67,8 +67,11 @@ class UserHomeController(object):
 
     @expose('pyforge.ext.user_home.templates.user_index')
     def index(self):
+        username = c.project.shortname[len('users/'):]
+        user = User.query.find({'username':username}).first()
         config = M.PortalConfig.current()
         return dict(
+            user=user,
             layout_class=config.layout_class,
             layout=config.rendered_layout())
 

@@ -40,3 +40,9 @@ class TestUserHome(TestController):
         self.app.post('/users/test_admin/home/update_configuration', params=params)
         r1 = str(self.app.get('/home/'))
         assert r0 != r1
+
+    def test_seclusion(self):
+        response = self.app.get('/users/test_admin/home/')
+        assert 'Email Addresses' in response
+        response = self.app.get('/users/test_user/home/')
+        assert 'Email Addresses' not in response
