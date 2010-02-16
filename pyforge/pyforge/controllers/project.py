@@ -99,7 +99,10 @@ class ProjectController(object):
     @expose()
     @with_trailing_slash
     def index(self):
-        redirect('home/')
+        if c.project.shortname.startswith('users/'):
+            redirect('profile/')
+        else:
+            redirect('home/')
 
     @expose('pyforge.templates.project_sitemap')
     @without_trailing_slash

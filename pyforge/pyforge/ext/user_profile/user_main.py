@@ -27,16 +27,16 @@ class UserWidgets(WidgetController):
     def welcome(self):
         return self.portlet('<h1>Please configure your widgets </h1>')
 
-class UserHomeApp(Application):
+class UserProfileApp(Application):
     __version__ = version.__version__
     widget = UserWidgets
     installable = False
 
     def __init__(self, user, config):
         Application.__init__(self, user, config)
-        self.root = UserHomeController()
+        self.root = UserProfileController()
         self.templates = pkg_resources.resource_filename(
-            'pyforge.ext.user_home', 'templates')
+            'pyforge.ext.user_profile', 'templates')
 
     @property
     def sitemap(self):
@@ -59,13 +59,13 @@ class UserHomeApp(Application):
     def uninstall(self, project): # pragma no cover
         raise NotImplementedError, "uninstall"
 
-class UserHomeController(object):
+class UserProfileController(object):
 
     def _check_security(self):
         require(has_project_access('read'),
                 'Read access required')
 
-    @expose('pyforge.ext.user_home.templates.user_index')
+    @expose('pyforge.ext.user_profile.templates.user_index')
     def index(self):
         username = c.project.shortname[len('users/'):]
         user = User.query.find({'username':username}).first()
@@ -75,7 +75,7 @@ class UserHomeController(object):
             layout_class=config.layout_class,
             layout=config.rendered_layout())
 
-    @expose('pyforge.ext.user_home.templates.user_dashboard_configuration')
+    @expose('pyforge.ext.user_profile.templates.user_dashboard_configuration')
     def configuration(self):
         config = M.PortalConfig.current()
         mount_points = [
@@ -113,7 +113,7 @@ class UserHomeController(object):
                 mp,wn = w['widget'].split('/')
                 content.append(dict(mount_point=mp, widget_name=wn))
             if div.get('new_widget'):
-                content.append(dict(mount_point='home', widget_name='welcome'))
+                content.append(dict(mount_point='profile', widget_name='welcome'))
             config.layout.append(dict(
                     name=div['name'],
                     content=content))

@@ -142,7 +142,7 @@ class Neighborhood(MappedClass):
                 p.acl.read.append(pr._id)
                 auth.ProjectRole(name='*authenticated')
                 if user_project:
-                    p.install_app('user', 'home')
+                    p.install_app('profile', 'profile')
                 else:
                     p.install_app('home', 'home')
                 p.install_app('admin', 'admin')
