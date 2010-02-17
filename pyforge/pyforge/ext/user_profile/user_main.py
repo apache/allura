@@ -69,11 +69,7 @@ class UserProfileController(object):
     def index(self):
         username = c.project.shortname[len('users/'):]
         user = User.query.find({'username':username}).first()
-        config = M.PortalConfig.current()
-        return dict(
-            user=user,
-            layout_class=config.layout_class,
-            layout=config.rendered_layout())
+        return dict(user=user)
 
     @expose('pyforge.ext.user_profile.templates.user_dashboard_configuration')
     def configuration(self):
