@@ -1,0 +1,43 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+  xmlns:py="http://genshi.edgewall.org/"
+  xmlns:xi="http://www.w3.org/2001/XInclude">
+
+<xi:include href="master.html" />
+
+<head>
+  <meta content="text/html; charset=UTF-8" http-equiv="content-type" py:replace="''"/>
+  <title>New ${modelname}</title>
+</head>
+
+<body>
+
+<form method="POST" action="../save_bin">
+  <label for="summary">Name:</label>
+  <br/>
+  <input name="summary" value=""/>
+  <br/>
+  <label for="terms">Name:</label>
+  <br/>
+  <input name="terms" value=""/>
+  <br/>
+
+  <div py:if="globals.custom_fields">
+    <div class="span-24 last quiet prepend-top bottom-liner">Custom Fields</div>
+    <div py:for="field in globals.custom_fields.split(',')">
+      <label for="$field">$field:</label>
+      <br/>
+      <input name="$field" type="text" value=""/>
+    </div>
+  </div>
+
+  ${user_tags_edit('tags', {'tags':[]})}
+  <br/>
+
+  <input type="submit" value="Save Bin"/>
+</form>
+
+</body>
+</html>
+
