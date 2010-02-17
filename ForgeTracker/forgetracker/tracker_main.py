@@ -161,8 +161,36 @@ class RootController(object):
                 count = len(tickets)
         return dict(q=q, history=history, tickets=tickets or [], count=count)
 
+    @expose('forgetracker.templates.bin')
+    @validate(dict(q=validators.UnicodeString(if_empty=None),
+                   history=validators.StringBool(if_empty=False)))
+    def bin(self, q=None, history=None):
+        'local plugin search'
+        results = []
+        tickets = []
+        count=0
+        if not q:
+            q = ''
+        else:
+            results = search_artifact(model.Ticket, q, history)
+            if results:
+                query = model.Ticket.query.find(
+                    dict(app_config_id=c.app.config._id,
+                         ticket_num={'$in':[r['ticket_num_i'] for r in results.docs]}))
+                tickets = query.all()
+                count = len(tickets)
+        return dict(q=q, history=history, tickets=tickets or [], count=count)
+
     def _lookup(self, ticket_num, *remainder):
         return TicketController(ticket_num), remainder
+
+    @with_trailing_slash
+    @expose('forgetracker.templates.new_bin')
+    def savebin(self, **kw):
+        require(has_artifact_access('write'))
+        tmpl_context.form = bin_form
+        globals = model.Globals.query.get(app_config_id=c.app.config._id)
+        return dict(modelname='Bin', page='New Bin', globals=globals)
 
     @with_trailing_slash
     @expose('forgetracker.templates.new_ticket')
@@ -200,6 +228,20 @@ class RootController(object):
         response.headers['Content-Type'] = ''
         response.content_type = 'application/xml'
         return feed.writeString('utf-8')
+
+    @expose()
+    def save_bin(self, **post_data):
+        require(has_artifact_access('write'))
+        if request.method != 'POST':
+            raise Exception('save_bin must be a POST request')
+        bin = model.Bin()
+        bin.app_config_id = c.app.config._id
+        bin.custom_fields = dict()
+        globals = model.Globals.query.get(app_config_id=c.app.config._id)
+        for k,v in post_data.iteritems():
+            setattr(bin, k, v)
+        bin.commit()
+        redirect(str(bin.summary)+'/')
 
     @expose()
     def save_ticket(self, ticket_num, tags, tags_old=None, **post_data):
