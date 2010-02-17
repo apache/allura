@@ -1,4 +1,4 @@
-from os import path, system
+from os import path, system, environ
 
 from tg import config
 from paste.deploy import loadapp
@@ -23,17 +23,18 @@ class TestController(object):
     """
 
     application_under_test = 'main'
+    test_config = environ.get('SANDBOX') and 'sandbox-test.ini' or 'test.ini'
 
     def setUp(self):
         """Method called by nose before running each test"""
         # Loading the application:
         conf_dir = config.here = path.abspath(
             path.dirname(__file__) + '/../..')
-        wsgiapp = loadapp('config:test.ini#%s' % self.application_under_test,
+        wsgiapp = loadapp('config:%s#%s' % (self.test_config, self.application_under_test),
                           relative_to=conf_dir)
         self.app = TestApp(wsgiapp)
         # Setting it up:
-        test_file = path.join(conf_dir, 'test.ini')
+        test_file = path.join(conf_dir, self.test_config)
         cmd = SetupCommand('setup-app')
         cmd.run([test_file])
 

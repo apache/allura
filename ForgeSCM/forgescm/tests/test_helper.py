@@ -32,14 +32,16 @@ class EmptyClass(object): pass
 
 def test_setup_app():
     """Method called by nose before running each test"""
+    test_config = os.environ.get('SANDBOX') and 'sandbox-test.ini' or 'test.ini'
+
     # Loading the application:
     conf_dir = config.here = os.path.abspath(
         os.path.dirname(__file__) + '/../..')
-    wsgiapp = loadapp('config:test.ini#main', relative_to=conf_dir)
+    wsgiapp = loadapp('config:%s#main' % test_config, relative_to=conf_dir)
     app = TestApp(wsgiapp)
 
     # Setting it up:
-    test_file = os.path.join(conf_dir, 'test.ini')
+    test_file = os.path.join(conf_dir, test_config)
     cmd = SetupCommand('setup-app')
     cmd.run([test_file])
     return app

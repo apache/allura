@@ -1,4 +1,4 @@
-from os import path
+from os import path, environ
 
 import mock
 
@@ -15,12 +15,14 @@ from forgewiki import model as WM
 
 def setUp(self):
     """Method called by nose before running each test"""
+    test_config = environ.get('SANDBOX') and 'sandbox-test.ini' or 'test.ini'
+
     # Loading the application:
     conf_dir = config.here
-    wsgiapp = loadapp('config:test.ini#main',
+    wsgiapp = loadapp('config:%s#main' % test_config,
                       relative_to=conf_dir)
     # Setting it up:
-    test_file = path.join(conf_dir, 'test.ini')
+    test_file = path.join(conf_dir, test_config)
     cmd = SetupCommand('setup-app')
     cmd.run([test_file])
 

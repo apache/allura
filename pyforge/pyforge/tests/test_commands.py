@@ -1,4 +1,4 @@
-from os import path
+from os import path, environ
 
 import mock
 
@@ -10,25 +10,28 @@ from pylons import c, g
 from pyforge.command import reactor
 from pyforge import model as M
 
+test_config = environ.get('SANDBOX') and 'sandbox-test.ini' or 'test.ini'
+
+
 def setUp(self):
     """Method called by nose before running each test"""
     # Loading the application:
     conf_dir = config.here
-    wsgiapp = loadapp('config:test.ini#main',
+    wsgiapp = loadapp('config:%s#main' % test_config,
                       relative_to=conf_dir)
     # Setting it up:
-    test_file = path.join(conf_dir, 'test.ini')
+    test_file = path.join(conf_dir, test_config)
     cmd = SetupCommand('setup-app')
     cmd.run([test_file])
 
 def test_reactor_setup():
     cmd = reactor.ReactorSetupCommand('setup')
-    cmd.args = [ 'test.ini' ]
+    cmd.args = [ test_config ]
     cmd.command()
 
 def test_reactor():
     cmd = reactor.ReactorCommand('reactor')
-    cmd.args = [ 'test.ini' ]
+    cmd.args = [ test_config ]
     cmd.options = mock.Mock()
     cmd.options.dry_run = True
     cmd.options.proc = 1
@@ -61,7 +64,7 @@ def test_reactor_callbacks():
         msg.data = dict()
         callback(msg.data, msg)
     cmd = reactor.ReactorCommand('reactor')
-    cmd.args = [ 'test.ini' ]
+    cmd.args = [ test_config ]
     cmd.options = mock.Mock()
     cmd.options.dry_run = True
     cmd.options.proc = 1
@@ -83,7 +86,7 @@ def test_reactor_callbacks():
 
 def test_send_message():
     cmd = reactor.SendMessageCommand('send_message')
-    cmd.args = [ 'test.ini', 'audit', 'nobody.listening', '{}' ]
+    cmd.args = [ test_config, 'audit', 'nobody.listening', '{}' ]
     cmd.options = mock.Mock()
     cmd.options.context = '/projects/test/hello/'
     cmd.command()

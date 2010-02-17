@@ -1,3 +1,5 @@
+import os
+
 import mock
 from pylons import c, g, request
 from webob import Request
@@ -43,7 +45,7 @@ def test_index_artifact():
 def test_searchapp():
     app = search_main.SearchApp
     cmd = reactor.ReactorCommand('reactor')
-    cmd.args = [ 'test.ini' ]
+    cmd.args = [ os.environ.get('SANDBOX') and 'sandbox-test.ini' or 'test.ini' ]
     cmd.options = mock.Mock()
     cmd.options.dry_run = True
     cmd.options.proc = 1
