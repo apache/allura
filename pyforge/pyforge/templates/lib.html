@@ -25,43 +25,49 @@
     <div id="mainmenu">
       <ul class="mb">
         <li><a href="/"><em>Open</em>Forge</a></li>
-        <li><a>Neighborhood</a></li>
-        <li><a href="/search/">Search Forge</a></li>
-        <li class="user-link" py:if="c.user._id">
-            <a href="${c.user.url()}">$c.user.display_name</a>
-        </li>
+        <li><a py:if="c.project and c.project.neighborhood" href="${c.project.neighborhood.url()}">$c.project.neighborhood.name</a></li>
         <li class="loginlogout">
           <a href="/auth/logout" py:if="c.user and c.user._id">Log Out</a>
           <a href="/auth/" py:if="not c.user or not c.user._id">Log In</a>
         </li>
+        <li class="user-link">
+            <a href="${c.user.url()}" py:if="c.user and c.user._id">$c.user.display_name</a>
+            <a href="." class="todo" py:if="not c.user or not c.user._id">Create Account</a>
+        </li>
+        <li class="forge-search-link"><a href="/search/">Search OpenForge</a></li>
       </ul>
-      <div id="project-menu" py:if="c.project">
-        <div class="pti">Project: <a href="${c.project.url()}">$c.project.name</a></div>
-        <span id="project-search"><input type="text"/></span>
-        <ul class="mb">
-          <li py:for="s in c.project.sitemap()">
-            <a py:if="s.url" href="$s.url" class="$s.className">$s.label</a>
-            <span py:if="not s.url" class="$s.className">$s.label</span>
-          </li>
-        </ul>
-      </div>
+    </div>
+  </py:def>
+
+  <py:def function="project_menu()">
+    <div id="project-menu" py:if="c.project">
+      <span id="project-search"><input type="text"/></span>
+      <ul class="mb">
+        <li py:for="s in c.project.sitemap()">
+          <a py:if="s.url" href="$s.url" class="$s.className">$s.label</a>
+          <span py:if="not s.url" class="$s.className">$s.label</span>
+        </li>
+      </ul>
     </div>
   </py:def>
 
   <py:def function="sidebar_menu()">
-    <ul id="sidebarmenu" py:if="getattr(c, 'app', None)">
-      <li py:for="s in c.app.sidebar_menu()">
-        <a py:if="s.url" href="$s.url" class="$s.className">$s.label</a>
-        <span py:if="not s.url" class="$s.className">$s.label</span>
-      </li> 
-    </ul>
-    <ul id="sidebarmenu" 
-        py:if="getattr(c, 'project', None) and not getattr(c, 'app', None)">
-      <li py:for="s in c.project.sidebar_menu()">
-        <a py:if="s.url" href="$s.url" class="$s.className">$s.label</a>
-        <span py:if="not s.url" class="$s.className">$s.label</span>
-      </li> 
-    </ul>
+    <div id="sidebar">
+      <a py:if="c.project" href="${c.project.url()}" id="project-home-link">$c.project.name</a>
+      <ul id="sidebarmenu" py:if="getattr(c, 'app', None)">
+        <li py:for="s in c.app.sidebar_menu()">
+          <a py:if="s.url" href="$s.url" class="$s.className">$s.label</a>
+          <span py:if="not s.url" class="$s.className">$s.label</span>
+        </li>
+      </ul>
+      <ul id="sidebarmenu"
+          py:if="getattr(c, 'project', None) and not getattr(c, 'app', None)">
+        <li py:for="s in c.project.sidebar_menu()">
+          <a py:if="s.url" href="$s.url" class="$s.className">$s.label</a>
+          <span py:if="not s.url" class="$s.className">$s.label</span>
+        </li>
+      </ul>
+    </div>
   </py:def>
 
   <py:def function="crumbs(trail)">
@@ -150,8 +156,9 @@
   </py:def>
 
   <py:def function="markdown_edit(name, content)">
-    <textarea id="wmd_edit_$name" name="$name">$content</textarea>
-    <div id="wmd_preview_$name"></div>
+  <div class="wmd_holder">
+    <textarea id="wmd_edit_$name" class="wmd_edit" name="$name">$content</textarea>
+    <div id="wmd_preview_$name" class="wmd_preview"></div>
 
     <script type="text/javascript">
         wmd_options = { autostart: false, output:"Markdown" };
@@ -171,10 +178,11 @@
             new Attacklab.wmd.editor(textarea,previewManager.refresh);
         })()
     </script>
+  </div>
   </py:def>
 
   <py:def function="user_tags_edit(name, user_tags)">
-    <label for="$name">Tags:</label><br />
+    Tags:
     <input id="$name" name="$name" type="text" value="${','.join([t.tag for t in user_tags.tags])}" />
     <script type="text/javascript" src="/js/jquery.tag.editor.js"></script>
     <script type="text/javascript">
@@ -187,7 +195,8 @@
   </py:def>
 
   <py:def function="gravatar(email, **kw)">
-    <img src="${g.gravatar(email, **kw)}" class="gravatar" alt="gravatar for $email"/>
+    <img py:if="email" src="${g.gravatar(email, **kw)}" class="gravatar" alt="gravatar for $email"/>
+    <img py:if="not email" src="/images/user.png" class="gravatar" alt="gravatar for $email"/>
   </py:def>
   
   <py:def function="select_user_in_project(name, value)">

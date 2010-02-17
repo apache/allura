@@ -14,30 +14,12 @@
   <head>
     <meta content="text/html; charset=UTF-8" http-equiv="content-type" py:replace="''"/>
     <title>$page.title</title>
-    <style type="text/css">
-      #wmd_edit_text{
-        width: 45%;
-        float: left;
-      }
-      #wmd_preview_text{
-        width: 45%;
-        float: left;
-        margin: 1em 0 0 1em;
-        border: 1px solid #ccc;
-        padding: .5em;
-      }
-      #edit_holder{
-        overflow: auto;
-      }
-    </style>
   </head>
   
   <body>
     <h1>$page.title</h1>
     <form method="post" action="update">
-      <div id="edit_holder">
-        ${markdown_edit("text",page.text)}
-      </div>
+      ${markdown_edit("text",page.text)}
 
       ${user_tags_edit('tags', user_tags)}
       <br/>

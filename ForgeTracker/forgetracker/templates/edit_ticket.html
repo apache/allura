@@ -13,114 +13,101 @@
 
   <head>
     <meta content="text/html; charset=UTF-8" http-equiv="content-type" py:replace="''"/>
-    <title>${ticket.shorthand_id()}</title>
+    <title>#$ticket.ticket_num $ticket.summary</title>
     <link rel="stylesheet" type="text/css" href="${g.app_static('css/hilite.css')}"/>
-    <style>
-        .hidden { display: None }
-        .ticket-num { font-size:20pt }
-        .top-liner { border-top: 1px solid #ccc }
-        .bottom-liner { border-bottom: 1px solid #ccc }
-    </style>
+    <link rel="stylesheet" type="text/css" href="${g.app_static('css/tracker.css')}"/>
+    <link rel="alternate" type="application/rss+xml" title="RSS" href="feed.rss"/>
+    <link rel="alternate" type="application/atom+xml" title="Atom" href="feed.atom"/>
   </head>
 
   <body>
-    <div class="container">
-        <article class="ticket">
-
-            <h1>${ticket.shorthand_id()}</h1>
-            <div>
-              <a href="../..">PluginRoot</a>
-              Editing
-              <form style="display:inline; float:right"
-                    method="GET"
-                    action="../search">
-                Search: <input name="q"/>
-              </form>
+    <form method="POST" action="../update_ticket">
+      <div id="sidebar-right">
+          <div class="editable viewing">
+              State:
+              <span class="viewer">$ticket.status</span>
+              <span class="editor">
+                <select name="status">
+                  <option py:for="name in globals.status_names.split(',')" value="$name">$name</option>
+                </select>
+              </span>
+          </div>
+          <div class="editable viewing">
+            Assigned To:
+            <span class="viewer ticket-assigned-to">${ticket.assigned_to_name()}</span>
+            <span class="editor ticket-assigned-to">${select_user_in_project('assigned_to',ticket.assigned_to_id)}</span>
+          </div>
+          <py:if test="globals.custom_fields">
+              <py:for each="field in globals.custom_fields.split(',')">
+                  ${field}: ${ticket.custom_fields.get(field, '')}<br/>
+              </py:for>
+          </py:if>
+      </div>
+      <div id="ticket_header">
+        <div class="reported_by">
+          ${gravatar(ticket.reported_by().preferences.email_address, size=50)}<br/>
+          ${ticket.reported_by().username}
+        </div>
+        <div class="information">
+          <div style="overflow: auto">
+            <span class="editable viewing title">
+              <h2 class="viewer">#$ticket.ticket_num $ticket.summary</h2>
+              <span class="editor">
+                <input name="summary" value="$ticket.summary"/>
+              </span>
+            </span>
+            <div class="update_times">
+              reported ${helpers.ago(ticket.created_date, round=True)}<br/>
+              last updated ${helpers.ago(ticket.last_updated, round=True)}
             </div>
-            <hr/>
-
-<form method="POST" action="../update_ticket">
-            <div id="header" class="editable viewing span-24 last">
-                <h1 class="viewer span-24 last">$ticket.summary</h1>
-                <div class="editor">
-                    <input name="summary" value="$ticket.summary" style="width:98%"/>
-                </div>
+            <a class="feed" href="${ticket.url()}feed.rss"><img src="/images/rss.png" alt="subscribe" title="subscribe" width="25" height="25"/></a>
+          </div>
+          <div>
+            <div class="tags">
+              ${user_tags_edit('tags', user_tags)}
             </div>
+          </div>
+        </div>
+      </div>
+      ${markdown_edit("description",ticket.description)}
 
-            <div class="span-24">
-                <div class="editable viewing span-8">
-                    <span class="quiet">owner:</span>
-                    <span class="viewer ticket-assigned-to">${ticket.assigned_to_name()}</span>
-                    <span class="editor ticket-assigned-to">${select_user_in_project('assigned_to',ticket.assigned_to_id)}</span>
-                </div>
+      <div class="span-24 last custom-fields" py:if="globals.custom_fields">
+          <div class="span-24 last quiet prepend-top bottom-liner">Custom Fields</div>
+          <div py:for="field in globals.custom_fields.split(',')" class="editable viewing span-24 last">
+              <label class="span-4">$field:</label>
+              <span class="viewer span-20 last">${ticket.custom_fields.get(field, '')}</span>
+              <span class="editor span-20 last">
+                  <input name="$field" type="text" style="width:50%" value="${ticket.custom_fields.get(field, '')}"/>
+              </span>
+          </div>
+      </div>
 
-                <div class="editable viewing span-8">
-                    <span class="quiet">status:</span>
-                    <span class="viewer ticket-status">$ticket.status</span>
-                    <select name="status" class="editor">
-                        <option py:for="name in globals.status_names.split(',')" value="$name">$name</option>
-                    </select>
-                </div>
-
-                <div class="span-8 last">
-                    <span class="quiet">opened:</span>
-                    <span class="ticket-create-date">$ticket.created_date</span>
-                </div>
-            </div>
-
-            <div class="span-24 last ticket-description">
-                <div class="span-24 last quiet prepend-top bottom-liner">Description</div>
-                <div class="editable viewing span-24 last">
-                    <div class="viewer span-24 last" py:content="Markup(g.markdown.convert(ticket.description))"/>
-                    <div class="editor">
-                        <textarea name="description">$ticket.description</textarea>
-                    </div>
-                </div>
-            </div>
-
-            <div class="span-24 last custom-fields" py:if="globals.custom_fields">
-                <div class="span-24 last quiet prepend-top bottom-liner">Custom Fields</div>
-                <div py:for="field in globals.custom_fields.split(',')" class="editable viewing span-24 last">
-                    <label class="span-4">$field:</label>
-                    <span class="viewer span-20 last">${ticket.custom_fields.get(field, '')}</span>
-                    <span class="editor span-20 last">
-                        <input name="$field" type="text" style="width:50%" value="${ticket.custom_fields.get(field, '')}"/>
-                    </span>
-                </div>
-            </div>
-
-            ${user_tags_edit('tags', user_tags)}
-            <br/>
-
-<input type="submit" value="submit"/>
-</form>
-            <hr/>
-            ${list_attachments(list(ticket.attachments), has_artifact_access('write', ticket)())}
-            <div py:if="has_artifact_access('write', ticket)()" class="reply title-pane closed">
-              <button class="title">Add Attachment</button>
-              <div class="content">
-                <form method="post" action="${ticket.url() + 'attach'}" enctype="multipart/form-data">
-                  ${file_field('file_info', 'File to upload')}
-                  ${submit_button('Attach file')}
-                </form>
-              </div>
-            </div>
-            <hr/>
-            <h2>Comments</h2>
-            <div class="reply title-pane closed">
-              <h3 class="title">Make a comment</h3>
-              <div class="content">
-                <form method="post" action="comments/reply">
-                  <textarea rows="4" cols="60" name="text"></textarea><br/>
-                  <input type="submit"/>
-                </form>
-              </div>
-            </div>
-            <py:for each="cmt in ticket.root_comments()">
-              ${display_comment(cmt)}
-            </py:for>
-        </article>
+      <input type="submit" value="submit"/>
+    </form>
+    ${list_attachments(list(ticket.attachments), has_artifact_access('write', ticket)())}
+    <div py:if="has_artifact_access('write', ticket)()" class="reply title-pane closed">
+      <button class="title">Add Attachment</button>
+      <div class="content">
+        <form method="post" action="${ticket.url() + 'attach'}" enctype="multipart/form-data">
+          ${file_field('file_info', 'File to upload')}
+          ${submit_button('Attach file')}
+        </form>
+      </div>
     </div>
+    <hr/>
+    <h2>Comments</h2>
+    <div class="reply title-pane closed">
+      <h3 class="title">Make a comment</h3>
+      <div class="content">
+        <form method="post" action="comments/reply">
+          <textarea rows="4" cols="60" name="text"></textarea><br/>
+          <input type="submit"/>
+        </form>
+      </div>
+    </div>
+    <py:for each="cmt in ticket.root_comments()">
+      ${display_comment(cmt)}
+    </py:for>
   </body>
   <script type="text/javascript" src="${g.app_static('js/comments.js')}"/>
 </html>

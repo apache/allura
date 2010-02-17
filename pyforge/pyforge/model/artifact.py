@@ -376,6 +376,14 @@ class VersionedArtifact(Artifact):
         q = HC.query.find(dict(artifact_id=self._id)).sort('version', pymongo.DESCENDING)
         return q
 
+    @property
+    def last_updated(self):
+        history = self.history()
+        if len(history):
+            return self.history().first().timestamp
+        else:
+            return self.created_date
+
 class Message(Artifact):
     class __mongometa__:
         session = artifact_orm_session

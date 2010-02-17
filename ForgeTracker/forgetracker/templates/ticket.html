@@ -6,93 +6,65 @@
   <xi:include href="${g.pyforge_templates}/master.html"/>
   <xi:include href="${c.app.templates}/lib.html" />
 
-  <?python from pprint import pformat ?>
+  <?python from pyforge.lib import helpers?>
 
   <head>
     <meta content="text/html; charset=UTF-8" http-equiv="content-type" py:replace="''"/>
-    <title>${ticket.shorthand_id()}</title>
+    <title>#$ticket.ticket_num $ticket.summary</title>
     <link rel="stylesheet" type="text/css" href="${g.app_static('css/hilite.css')}"/>
+    <link rel="stylesheet" type="text/css" href="${g.app_static('css/tracker.css')}"/>
     <link rel="alternate" type="application/rss+xml" title="RSS" href="feed.rss"/>
     <link rel="alternate" type="application/atom+xml" title="Atom" href="feed.atom"/>
-    <style>
-        .hidden { display: None }
-        .ticket-num { font-size:20pt }
-        .top-liner { border-top: 1px solid #ccc }
-        .bottom-liner { border-bottom: 1px solid #ccc }
-    </style>
   </head>
 
   <body>
-    <div class="container">
-        <article class="ticket">
-
-            <h1>${ticket.shorthand_id()}</h1>
-            <div>
-              <a href="..">PluginRoot</a>
-              <a href="edit/">Edit</a>
-              <form style="display:inline; float:right"
-                    method="GET"
-                    action="../search">
-                Search: <input name="q"/>
-              </form>
-            </div>
-            <hr/>
-
-
-            <div id="header" class="span-24 last">
-                <h1 class="span-24 last">$ticket.summary</h1>
-            </div>
-
-            <div class="span-24">
-                <div class="span-8">
-                    <span class="quiet">owner:</span>
-                    <span class="ticket-assigned-to">${ticket.assigned_to_name()}</span>
-                </div>
-
-                <div class="span-8">
-                    <span class="quiet">status:</span>
-                    <span class="ticket-status">$ticket.status</span>
-                </div>
-
-                <div class="span-8 last">
-                    <span class="quiet">opened:</span>
-                    <span class="ticket-create-date">${ticket.created_date.strftime('%H:%M:%S %Y-%m-%d')}</span>
-                </div>
-            </div>
-            <div py:if="len(ticket.tags)">
-              Tags: <span py:for="tag in ticket.tags">$tag.tag ($tag.count) </span>
-            </div>
-
-            <div class="span-24 last ticket-description">
-                <div class="span-24 last quiet prepend-top bottom-liner">Description</div>
-                <div class="span-24 last" py:content="Markup(g.markdown.convert(ticket.description))"/>
-            </div>
-            &nbsp;
-            <div class="span-24 last custom-fields" py:if="globals.custom_fields">
-                <div class="span-24 last quiet prepend-top bottom-liner">Custom Fields</div>
-                <div class="span-24 last" py:for="field in globals.custom_fields.split(',')">
-                    <span class="span-4"><label>${field}:</label></span>
-                    <span class="span-20">${ticket.custom_fields.get(field, '')}</span>
-                </div>
-            </div>
-            <hr/>
-            ${list_attachments(list(ticket.attachments), False)}
-            <hr/>
-            <h2>Comments</h2>
-            <div class="reply title-pane closed">
-              <h3 class="title">Make a comment</h3>
-              <div class="content">
-                <form method="post" action="comments/reply">
-                  <textarea rows="4" cols="60" name="text"></textarea><br/>
-                  <input type="submit"/>
-                </form>
-              </div>
-            </div>
-            <py:for each="cmt in ticket.root_comments()">
-              ${display_comment(cmt)}
+    <div id="sidebar-right">
+        State: $ticket.status<br/>
+        Assigned To: ${ticket.assigned_to_name()}<br/>
+        <py:if test="globals.custom_fields">
+            <py:for each="field in globals.custom_fields.split(',')">
+                ${field}: ${ticket.custom_fields.get(field, '')}<br/>
             </py:for>
-        </article>
+        </py:if>
     </div>
+    <div id="ticket_header">
+      <div class="reported_by">
+        ${gravatar(ticket.reported_by().preferences.email_address, size=50)}<br/>
+        ${ticket.reported_by().username}
+      </div>
+      <div class="information">
+        <div style="overflow: auto">
+          <h2 class="title">#$ticket.ticket_num $ticket.summary</h2>
+          <div class="update_times">
+            reported ${helpers.ago(ticket.created_date, round=True)}<br/>
+            last updated ${helpers.ago(ticket.last_updated, round=True)}
+          </div>
+          <a class="feed" href="${ticket.url()}feed.rss"><img src="/images/rss.png" alt="subscribe" title="subscribe" width="25" height="25"/></a>
+        </div>
+        <div>
+          <div class="tags" py:if="len(ticket.tags)">
+            Tags: <span py:for="tag in ticket.tags">$tag.tag ($tag.count) </span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div py:content="Markup(g.markdown.convert(ticket.description))"/>
+    ${list_attachments(list(ticket.attachments), False)}
+    <hr/>
+    <h2>Comments</h2>
+    <div class="reply title-pane closed">
+      <h3 class="title">Make a comment</h3>
+      <div class="content">
+        <form method="post" action="comments/reply">
+          <textarea rows="4" cols="60" name="text"></textarea><br/>
+          <input type="submit"/>
+        </form>
+      </div>
+    </div>
+    <py:for each="cmt in ticket.root_comments()">
+      ${display_comment(cmt)}
+    </py:for>
   </body>
   <script type="text/javascript" src="${g.app_static('js/comments.js')}"/>
 </html>

@@ -22,28 +22,27 @@
   </head>
   
   <body py:match="body" py:attrs="select('@*')">
-    ${main_menu()}
-    ${sidebar_menu()}
-    <div id="content">
-      <p py:if="c.user" style="float:right">Welcome, 
-        <a href="/auth/prefs/">$c.user.display_name!</a>
-      </p>
-      <p py:if="not c.user" style="float:right">Welcome, Anonymous Coward!</p>
-      <py:with vars="flash=tg.flash_obj.render('flash', use_js=False)">
-        <div py:if="flash" py:content="XML(flash)" />
-      </py:with>
-      <div class="breadcrumbs" py:if="c.project or c.app">
-        <ul py:if="c.app">
-          ${crumbs(c.app.config.breadcrumbs())}
-        </ul>
-        <ul py:if="not c.app">
-          ${crumbs(c.project.breadcrumbs())}
-        </ul>
+    <div class="container">
+      ${main_menu()}
+      ${sidebar_menu()}
+      ${project_menu()}
+      <div id="content">
+        <py:with vars="flash=tg.flash_obj.render('flash', use_js=False)">
+          <div py:if="flash" py:content="XML(flash)" />
+        </py:with>
+        <!-- <div class="breadcrumbs" py:if="c.project or c.app">
+          <ul py:if="c.app">
+            ${crumbs(c.app.config.breadcrumbs())}
+          </ul>
+          <ul py:if="not c.app">
+            ${crumbs(c.project.breadcrumbs())}
+          </ul>
+        </div> -->
+        <div py:replace="select('*|text()')"/>
+        <!-- End of main_content -->
       </div>
-      <div py:replace="select('*|text()')"/>
-      <!-- End of main_content -->
+      ${footer()}
     </div>
-    ${footer()}
     <script type="text/javascript" src="/js/pyforge-base.js"/>
   </body>
 </html>

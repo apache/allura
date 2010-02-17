@@ -76,6 +76,13 @@ class ForgeTrackerApp(Application):
             links.append(SitemapEntry('Related Artifacts'))
             links = links + related_artifacts
         links.append(SitemapEntry('Search', self.config.url() + 'search'))
+        links.append(SitemapEntry('In Bins', className="todo"))
+        if ticket:
+            links.append(SitemapEntry('Subtasks', className="todo"))
+        links.append(SitemapEntry('Ticket Help', '.', className="todo"))
+        links.append(SitemapEntry('Markdown Syntax', '.', className="todo"))
+        links.append(SitemapEntry('Auditors', '.', className="todo"))
+        links.append(SitemapEntry('Reactors', '.', className="todo"))
         return links
 
     @property

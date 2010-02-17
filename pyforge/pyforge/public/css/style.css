@@ -4,32 +4,36 @@ hr{
     clear: none;
     margin: 0.5em 0;
 }
-
-#mainmenu {
+#mainmenu{
+	border-style:solid;
+	border-color: #ccc;
+	border-width: 0 0 1px 0;
+}
+#mainmenu, #project-menu {
 	text-transform:uppercase;
 	font-family:Helvetica, Arial, sans serif;
 }
-#mainmenu a {
+#mainmenu a, #project-menu a {
 	text-decoration:none;
 	color:black;
 	padding:0.4em 0.4em 0.2em 0.4em;
 	-moz-border-radius:0.5em;
 	-webkit-border-radius:0.5em;
 }
-#mainmenu a:hover { background-color:#eeeeee; }
+#mainmenu a:hover, #project-menu a:hover { background-color:#eeeeee; }
 ul.mb, #project-menu {
 	position:relative;
-	width:100%;
 	padding:0;
 }
 #project-menu {
-	border-style:solid;
-	border-color: #ccc;
-	border-width: 1px 0;
-	margin: .5em 0;
+	margin-bottom: 1em;
+	overflow: hidden;
+}
+#project-menu ul.mb{
+    top: 1em;
 }
 ul.mb{
-	overflow: auto;
+	overflow: hidden;
 }
 ul.mb li {
 	float:left;
@@ -39,18 +43,15 @@ ul.mb li {
 	font-weight:bold;
 	font-style:normal;
 }
-ul.mb li.loginlogout, #project-search {
-	display:block;
-	position:absolute;
-	top:0;
-	right:1em;
+
+#project-search {
+    float: right;
+    margin-right: 1em;
 }
-ul.mb li.user-link {
-    display:block;
-    position:absolute;
-    top:0;
-    right:7em;
+ul.mb li.loginlogout, ul.mb li.user-link, ul.mb li.forge-search-link {
+    float: right;
 }
+
 .mb li+li {
 	padding-left:1em;
 }
@@ -64,13 +65,20 @@ div#content
 	margin-left: 15em;
     padding-right: .5em;
 }
-
-ul#sidebarmenu
+a#project-home-link:link,a#project-home-link:visited,a#project-home-link:hover,a#project-home-link:active{
+    color: #000;
+    text-decoration: none;
+    font-size: 25px;
+}
+#sidebar
 {
 	float: left;
+    margin: 0 .5em;
+}
+ul#sidebarmenu
+{
     width: 12em;
     padding: .5em;
-    margin: 0 .5em;
 	border: 1px solid #ccc;
 }
 
@@ -97,11 +105,11 @@ ul#sidebarmenu li a:hover {
 
 #sidebar-right
 {
-    border: 3px double black;
     float: right;
-    width: 110px;
-    float:right;
-    background-color: #ddd;
+    width: 15em;
+    padding: .5em;
+    margin: 0 .5em;
+	border: 1px solid #ccc;
 }
 
 #sidebar-right ul
@@ -271,6 +279,21 @@ ul#sidebarmenu li a:hover {
 .attachment_thumb img{
     width: 50px;
     height: 50px;
+}
+
+.wmd_edit{
+    width: 45%;
+    float: left;
+}
+.wmd_preview{
+    width: 45%;
+    float: left;
+    margin: 1em 0 0 1em;
+    border: 1px solid #ccc;
+    padding: .5em;
+}
+.wmd_holder{
+    overflow: auto;
 }
 .tagEditor
 {
