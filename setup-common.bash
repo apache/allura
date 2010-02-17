@@ -61,6 +61,12 @@ mkdir -p /data/db
 #
 
 echo
+echo '# installing our nose plugin'
+pushd NoWarnings
+python setup.py develop
+popd
+
+echo
 echo '# installing pyforge dependencies'
 pushd pyforge
 python setup.py develop
