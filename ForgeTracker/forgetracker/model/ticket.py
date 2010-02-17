@@ -54,6 +54,29 @@ class TicketHistory(Snapshot):
             text=self.data.summary)
         return result
 
+class Bin(Artifact):
+    class __mongometa__:
+        name = 'bin'
+
+    type_s = 'Bin'
+    _id = FieldProperty(schema.ObjectId)
+    summary = FieldProperty(str)
+    terms = FieldProperty(str, if_missing='')
+
+    def url(self):
+        return self.app_config.url() + str(self.summary) + '/'
+
+    def shorthand_id(self):
+        return 'bin' + str(self.summary)
+
+    def index(self):
+        result = Artifact.index(self)
+        result.update(
+            type_s=self.type_s,
+            summary_t=self.summary,
+            terms_s=self.terms)
+        return result
+
 class Ticket(VersionedArtifact):
     class __mongometa__:
         name = 'ticket'
