@@ -40,6 +40,7 @@ class TestFeeds(TestController):
         r = self.app.get('/Tickets/1/feed.atom')
         assert 'created' in r
         self.app.post('/Tickets/1/update_ticket', params=dict(
+                assigned_to='',
                 ticket_num='',
                 tags='',
                 tags_old='',

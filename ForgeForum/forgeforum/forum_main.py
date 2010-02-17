@@ -7,6 +7,7 @@ from pylons import g, c, request
 from tg import expose, redirect, flash
 from pymongo.bson import ObjectId
 from ming.orm.base import session
+from ming import schema
 
 # Pyforge-specific imports
 from pyforge.app import Application, ConfigOption, SitemapEntry, DefaultAdminController
@@ -26,8 +27,11 @@ log = logging.getLogger(__name__)
 
 class ForgeForumApp(Application):
     __version__ = version.__version__
-    permissions = ['configure', 'read', 'post', 'moderate', 'admin']
-    config_options = Application.config_options
+    permissions = ['configure', 'read', 'unmoderated_post', 'post', 'moderate', 'admin']
+    config_options = Application.config_options + [
+        ConfigOption('PostingPolicy',
+                     schema.OneOf('ApproveOnceModerated', 'ModerateAll'), 'ApproveOnceModerated')
+        ]
 
     def __init__(self, project, config):
         Application.__init__(self, project, config)
@@ -40,9 +44,9 @@ class ForgeForumApp(Application):
         f = model.Forum.query.get(shortname=topic.replace('.', '/'))
         return has_artifact_access('post', f, user=user)()
 
-    @audit('Forum.#')
+    @audit('Forum.msg.#')
     def auditor(self, routing_key, data):
-        message_id = data.get('message_id', gen_message_id())
+        message_id = data.get('message_id', [gen_message_id()])
         in_reply_to = data.get('in_reply_to', [])
         references = data.get('references', [])
         log.info('Auditing data from %s (%s)\n'
@@ -55,29 +59,33 @@ class ForgeForumApp(Application):
                  in_reply_to,
                  references)
         try:
-            header, shortname = routing_key.split('.', 1)
+            shortname = routing_key.split('.', 2)[-1]
             f = model.Forum.query.get(shortname=shortname.replace('.', '/'))
         except:
             log.exception('Error processing data: %s', data)
+            return
+        if f is None:
+            log.info('routing key is %s', routing_key)
+            log.exception('Cannot find forum %s', shortname)
             return
         # Handle attachments
         if data.get('filename'):
             log.info('Saving attachment %s', data['filename'])
             model.Attachment.save(data['filename'],
-                                  data['content_type'],
+                                  data.get('content_type', 'application/octet-stream'),
                                   data['payload'],
                                   forum_id=f._id,
-                                  post_id=message_id)
+                                  post_id=message_id[0])
             return
         # Handle duplicates
-        original = model.Post.query.get(_id=message_id)
+        original = model.Post.query.get(_id=message_id[0])
         if original:
             log.info('Saving text attachment')
             model.Attachment.save('alternate',
-                                  data['content_type'],
+                                  data.get('content_type', 'application/octet-stream'),
                                   data['payload'],
                                   forum_id=f._id,
-                                  post_id=message_id)
+                                  post_id=message_id[0])
             return
         # Find parent post
         if in_reply_to:
@@ -87,18 +95,28 @@ class ForgeForumApp(Application):
         log.info('In reply to parent: %s', parent)
         subject = data['headers'].get('Subject')
         text = data['payload']
-        if parent is None:
-            thd, post = f.new_thread(subject, text, message_id)
+        # Create 'orphan' post for moderation
+        post = model.Post(_id=message_id[0],
+                    forum_id=f._id,
+                    subject=subject,
+                    text=text)
+        if parent:
+            post.parent_id = parent._id
+        self._classify_post(f, post)
+
+    def _classify_post(self, forum, post):
+        if has_artifact_access('unmoderated_post')():
+            post.approve()
+        elif has_artifact_access('post')():
+            pass
         else:
-            post = parent.reply(subject, text, message_id)
+            post.delete() # poster has no access
         session(post).flush()
-        post.thread.update_stats()
-        post.forum.update_stats()
 
     @react('Forum.new_post')
     def notify_subscribers(self, routing_key, data):
         log.info('Got a new post: %s', data['post_id'])
-        post = model.Post.query.get(_id=data.pop('post_id'))
+        post = model.Post.query.get(_id=data.get('post_id'))
         thread = post.thread
         forum = thread.forum
         subs = set()

@@ -1,0 +1,96 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+                      "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:py="http://genshi.edgewall.org/"
+      xmlns:xi="http://www.w3.org/2001/XInclude">
+
+  <xi:include href="${g.pyforge_templates}/master.html"/>
+  <xi:include href="${c.app.templates}/lib.html" />
+
+  <head>
+    <meta content="text/html; charset=UTF-8" http-equiv="content-type" py:replace="''"/>
+    <title>ForgeForum Moderation Page</title>
+  <?python
+     from pyforge.lib.security import has_artifact_access
+     ?>
+  </head>
+
+  <body>
+    <div class="breadcrumbs" >
+      <ul>${crumbs(forum.breadcrumbs())}</ul>
+    </div>
+
+    <h1>Moderation Queue</h1>
+    <div>
+      Displaying page $pgnum / $pages
+    </div>
+    <a href="?status=$status&amp;flag=$flag&amp;offset=${offset-limit}">Previous Page</a>
+    <a href="?status=$status&amp;flag=$flag&amp;offset=${offset+limit}">Next Page</a><br/>
+
+    <form method="GET" action=".">
+      <fieldset>
+        <legend>Post Filter</legend>
+        ${select_field('status', 'Show posts with status',
+            [('Any', '-'), ('Spam', 'spam'),('Pending moderation', 'pending'),('Ok', 'ok')], status)}
+        ${text_field('flag', 'Show posts with at least n flags', flag)}
+        ${submit_button('Filter Posts')}
+      </fieldset>
+    </form>
+
+    <form method="POST" action="moderate">
+      <fieldset>
+        <legend>Update marked posts</legend>
+        <input type="submit" name="approve" value="Approve Marked"/>
+        <input type="submit" name="spam" value="Spam Marked"/>
+        <input type="submit" name="delete" value="Delete Marked"/>
+      </fieldset>
+      <table>
+        <thead>
+          <tr>
+            <th><a href="#">[x]</a></th>
+            <th>Timestamp</th>
+            <th>Status</th>
+            <th>Flags?</th>
+            <th>Author</th>
+            <th>Subject</th>
+            <th>Text</th>
+            <th>Attachments</th>
+          </tr>
+        </thead>
+        <tbody>
+          <py:for each="i, post in enumerate(posts)">
+            <tr>
+              <td>
+                <input type="hidden" name="post-${i}.slug" value="$post.slug"/>
+                <input type="checkbox" name="post-${i}.checked"/>
+              </td>
+              <td>$post.timestamp</td>
+              <td>$post.status</td>
+              <td>$post.flags</td>
+              <td py:with="author=post.author()">$author.display_name ($author.username)</td>
+              <td>$post.subject</td>
+              <td>${h.text.truncate(post.text)}</td>
+              <td>${len(post.attachments)}</td>
+            </tr>
+          </py:for>
+        </tbody>
+      </table>
+    </form>
+    <script type="text/javascript">
+      (function($){
+          var tbl = $('form table');
+          var checkboxes = $('input[type=checkbox]', tbl);
+          console.log(tbl);
+          console.log(checkboxes);
+          $('a[href=#]', tbl).click(function() {
+              console.log(this);
+              checkboxes.each(function() {
+                  if(this.checked) { this.checked = false; }
+                  else { this.checked = true; }
+              });
+              return false;
+          });
+      }(jQuery));
+    </script>
+  </body>
+</html>

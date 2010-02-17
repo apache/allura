@@ -25,7 +25,8 @@ def parse_address(addr):
     if not domain.endswith(COMMON_SUFFIX):
         raise exc.AddressException, 'Unknown domain: ' + domain
     domain = domain[:-len(COMMON_SUFFIX)]
-    path = list(reversed(domain.split('.')))
+    path = '/' + '/'.join(reversed(domain.split('.')))
+
     project, mount_point = find_project(path)
     if project is None:
         raise exc.AddressException, 'Unknown project: ' + domain
@@ -35,7 +36,7 @@ def parse_address(addr):
         app = project.app_instance(mount_point[0])
         if not app:
             raise exc.AddressException, 'Unknown plugin: ' + domain
-        topic = '%s.%s' % (app.config.plugin_name, userpart)
+        topic = '%s.msg.%s' % (app.config.plugin_name, userpart)
     return topic, project, app
         
 def parse_message(data):

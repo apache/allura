@@ -383,3 +383,19 @@ class AppConfig(MappedClass):
         return self.project.breadcrumbs() + [
             (self.options.mount_point, self.url()) ]
             
+    def grant_permission(self, permission, role=None):
+        from . import auth
+        if role is None: role = c.user
+        if not isinstance(role, auth.ProjectRole):
+            role = role.project_role()
+        if role._id not in self.acl[permission]:
+            self.acl[permission].append(role._id)
+
+    def revoke_permission(self, permission, role=None):
+        from . import auth
+        if role is None: role = c.user
+        if not isinstance(role, auth.ProjectRole):
+            role = role.project_role()
+        if role._id in self.acl[permission]:
+            self.acl[permission].remove(role._id)
+

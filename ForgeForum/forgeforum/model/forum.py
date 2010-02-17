@@ -7,7 +7,7 @@ from pylons import c, g, request
 from pymongo.bson import ObjectId
 
 from ming import schema
-from ming.orm.base import mapper
+from ming.orm.base import mapper, session
 from ming.orm.mapped_class import MappedClass
 from ming.orm.property import FieldProperty, RelationProperty, ForeignIdProperty
 
@@ -34,7 +34,7 @@ class Forum(Artifact):
 
     def update_stats(self):
         self.num_topics = Thread.query.find(dict(forum_id=self._id)).count()
-        self.num_posts = Post.query.find(dict(forum_id=self._id)).count()
+        self.num_posts = Post.query.find(dict(forum_id=self._id, status='ok')).count()
 
     def breadcrumbs(self):
         if self.parent:
@@ -75,31 +75,6 @@ class Forum(Artifact):
                       text=self.description)
         return result
 
-    def new_thread(self, subject, content, message_id=None):
-        thd = Thread(forum_id=self._id,
-                     subject=subject)
-        if message_id is None:
-            post = Post(forum_id=self._id,
-                        thread_id=thd._id,
-                        subject=subject,
-                        text=content)
-        else:
-            post = Post(_id=message_id,
-                        forum_id=self._id,
-                        thread_id=thd._id,
-                        subject=subject,
-                        text=content)
-        thd.first_post_id = post._id
-        post.give_access('moderate', user=post.author())
-        post.commit()
-        self.num_topics += 1
-        self.num_posts += 1
-        g.publish('react', 'Forum.new_thread', dict(
-                thread_id=thd._id))
-        g.publish('react', 'Forum.new_post', dict(
-                post_id=post._id))
-        return thd, post
-
     def subscription(self):
         return self.subscriptions.get(str(c.user._id))
 
@@ -135,7 +110,7 @@ class Thread(Artifact):
     first_post = RelationProperty('Post')
 
     def update_stats(self):
-        self.num_replies = Post.query.find(dict(thread_id=self._id)).count() - 1
+        self.num_replies = Post.query.find(dict(thread_id=self._id, status='ok')).count() - 1
 
     @property
     def last_post(self):
@@ -148,15 +123,15 @@ class Thread(Artifact):
         return Forum.query.get(_id=self.parent_id)
 
     def find_posts_by_thread(self, offset, limit):
-        q = Post.query.find(dict(forum_id=self.forum_id, thread_id=self._id))
-        q = q.sort('_id')
+        q = Post.query.find(dict(forum_id=self.forum_id, thread_id=self._id, status='ok'))
+        q = q.sort('slug')
         q = q.skip(offset)
         q = q.limit(limit)
         return q.all()
 
     def find_posts_by_date(self, offset, limit):
         # Sort the posts roughly in threaded order
-        q = Post.query.find(dict(forum_id=self.forum_id, thread_id=self._id))
+        q = Post.query.find(dict(forum_id=self.forum_id, thread_id=self._id, status='ok'))
         q = q.sort('timestamp')
         q = q.skip(offset)
         q = q.limit(limit)
@@ -165,7 +140,8 @@ class Thread(Artifact):
     def top_level_posts(self):
         return Post.query.find(dict(
                 thread_id=self._id,
-                parent_id=None))
+                parent_id=None,
+                status='ok'))
         
     def url(self):
         # Can't use self.forum because it might change during the req
@@ -230,6 +206,9 @@ class Post(Message, VersionedArtifact):
     thread_id = ForeignIdProperty(Thread)
     forum_id = ForeignIdProperty(Forum)
     subject = FieldProperty(str)
+    status = FieldProperty(schema.OneOf('ok', 'pending', 'spam', if_missing='pending'))
+    flagged_by = FieldProperty([schema.ObjectId])
+    flags = FieldProperty(int, if_missing=0)
 
     thread = RelationProperty(Thread)
     forum = RelationProperty(Forum)
@@ -239,10 +218,16 @@ class Post(Message, VersionedArtifact):
         return Post.query.get(_id=self.parent_id)
 
     def url(self):
-        return self.thread.url() + self.slug + '/'
+        if self.thread:
+            return self.thread.url() + self.slug + '/'
+        else:
+            return None
     
     def shorthand_id(self):
-        return '%s#%s' % (self.thread.shorthand_id(), self.slug)
+        if self.thread:
+            return '%s#%s' % (self.thread.shorthand_id(), self.slug)
+        else:
+            return None
 
     def index(self):
         result = Message.index(self)
@@ -260,20 +245,6 @@ class Post(Message, VersionedArtifact):
         l = [ '%s wrote:' % self.author().display_name ]
         l += [ '> ' + line for line in self.text.split('\n') ]
         return '\n'.join(l)
-
-    def reply(self, subject, text, message_id=None):
-        result = Message.reply(self)
-        if message_id:
-            result._id = message_id
-        result.forum_id = self.forum_id
-        result.thread_id = self.thread_id
-        result.subject = subject
-        result.text = text
-        result.give_access('moderate', user=result.author())
-        result.commit()
-        g.publish('react', 'Forum.new_post', dict(
-                post_id=result._id))
-        return result
 
     @classmethod
     def create_post_threads(cls, posts):
@@ -320,6 +291,33 @@ class Post(Message, VersionedArtifact):
             dict(slug=my_replies),
             {'$set':dict(thread_id=thd._id)})
         return thd
+
+    def approve(self):
+        self.status = 'ok'
+        if self.parent_id:
+            parent = Post.query.get(_id=self.parent_id)
+            self.slug = parent.slug + '/' + nonce()
+            self.forum_id = parent.forum_id
+            self.thread_id = parent.thread_id
+        else:
+            thd = Thread(forum_id=self.forum._id,
+                         subject=self.subject)
+            self.thread_id = thd._id
+            thd.first_post_id = self._id
+            g.publish('react', 'Forum.new_thread', dict(thread_id=thd._id))
+        self.give_access('moderate', user=self.author())
+        self.commit()
+        if c.app.config.options.get('PostingPolicy') == 'ApproveOnceModerated':
+            c.app.config.grant_permission('unmoderated_post', self.author())
+        g.publish('react', 'Forum.new_post', dict(post_id=self._id))
+        session(self).flush()
+        self.thread.update_stats()
+        self.forum.update_stats()
+
+    def spam(self):
+        self.status = 'spam'
+        g.publish('react', 'spam', dict(artifact_reference=self.dump_ref()),
+                  serializer='pickle')
 
 class Attachment(File):
     class __mongometa__:

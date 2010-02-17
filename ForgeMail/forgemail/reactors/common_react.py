@@ -21,7 +21,7 @@ def received_email(routing_key, data):
 
     <topic>@<mount_point>.<subproj2>.<subproj1>.<project>.projects.sourceforge.net
     goes to the audit with routing ID
-    <plugin name>.<topic>
+    <plugin name>.mail.<topic>
     '''
     msg = util.parse_message(data['data'])
     user = util.identify_sender(data['peer'], data['mailfrom'], msg)
@@ -30,6 +30,7 @@ def received_email(routing_key, data):
     for addr in data['rcpttos']:
         try:
             topic, project, app = util.parse_address(addr)
+            routing_key = topic
             with push_config(c, project=project, app=app):
                 if not app.has_access(user, topic):
                     log.info('Access denied for %s to mailbox %s',
@@ -48,10 +49,10 @@ def received_email(routing_key, data):
                                 content_type=part['content_type'],
                                 payload=part['payload'],
                                 user_id=str(user._id))
-                            g.publish('audit', topic, msg,
+                            g.publish('audit', routing_key, msg,
                                       serializer='yaml')
                     else:
-                        g.publish('audit', topic,
+                        g.publish('audit', routing_key,
                                   dict(msg, user_id=str(user._id)),
                                   serializer='pickle')
         except exc.ForgeMailException, e:

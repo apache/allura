@@ -32,6 +32,7 @@ class ForumController(object):
         self.thread = ThreadsController(self.forum)
         self.tag = TagsController(self.forum)
         self.attachment = AttachmentsController(self.forum)
+        self.moderate = ModerationController(self.forum)
 
     @expose('forgeforum.templates.forum')
     def index(self):
@@ -79,7 +80,7 @@ class ThreadsController(object):
     @expose()
     def new(self, subject, content):
         require(has_artifact_access('post', self.forum))
-        g.publish('audit', 'Forum.%s' % self.forum.shortname.replace('/', '.'),
+        g.publish('audit', 'Forum.msg.%s' % self.forum.shortname.replace('/', '.'),
                   dict(headers=dict(Subject=subject),
                        payload=content))
         flash('Message posted.  It may take a few seconds before your message '
@@ -202,10 +203,14 @@ class PostController(object):
                         post=post)
 
     @expose()
-    def moderate(self, subject=None, delete=None):
+    def moderate(self, subject=None, delete=None, spam=None):
         require(has_artifact_access('moderate', self.post.thread))
         if delete:
             self.post.delete()
+            self.thread.update_stats()
+            redirect(self.thread.url())
+        elif spam:
+            self.post.status = 'spam'
             self.thread.update_stats()
             redirect(self.thread.url())
         else:
@@ -213,10 +218,17 @@ class PostController(object):
         redirect(thd.url())
 
     @expose()
+    def flag(self):
+        if c.user._id not in self.post.flagged_by:
+            self.post.flagged_by.append(c.user._id)
+            self.post.flags += 1
+        redirect(request.referer)
+
+    @expose()
     def reply(self, subject=None, text=None):
         require(has_artifact_access('post', self.thread))
         g.publish('audit',
-                  'Forum.%s' % self.post.forum.shortname.replace('/', '.'),
+                  'Forum.msg.%s' % self.post.forum.shortname.replace('/', '.'),
                   dict(headers={'Subject':subject},
                        in_reply_to=[self.post._id],
                        payload=text))
@@ -280,3 +292,52 @@ class AttachmentController(object):
             return fp.read()
         
     
+class ModerationController(object):
+
+    def _check_security(self):
+        require(has_artifact_access('moderate', self.forum))
+
+    def __init__(self, forum):
+        self.forum = forum
+
+    @expose('forgeforum.templates.moderate')
+    def index(self, offset=0, limit=50,
+              status='-', flag=None):
+        query = dict(
+            forum_id=self.forum._id)
+        if status != '-':
+            query['status'] = status
+        if flag:
+            query['flags'] = {'$gte': int(flag) }
+        print query
+        q = model.Post.query.find(query)
+        count = q.count()
+        offset = int(offset)
+        limit = int(limit)
+        q = q.skip(offset)
+        q = q.limit(limit)
+        pgnum = (offset // limit) + 1
+        pages = (count // limit) + 1
+        return dict(forum=self.forum,
+                    posts=q, offset=offset, limit=limit,
+                    status=status, flag=flag,
+                    pgnum=pgnum, pages=pages)
+
+    @expose()
+    @vardec
+    def moderate(self, post=None,
+                 approve=None,
+                 spam=None,
+                 delete=None,
+                 **kw):
+        for args in post:
+            if not args.get('checked', False): continue
+            post = model.Post.query.get(slug=args['slug'])
+            if approve:
+                if post.status != 'ok': post.approve()
+            elif spam:
+                if post.status != 'spam': post.spam()
+            elif delete:
+                post.delete()
+        redirect(request.referer)
+

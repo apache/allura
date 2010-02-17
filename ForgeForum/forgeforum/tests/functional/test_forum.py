@@ -57,42 +57,42 @@ class TestForumReactors(TestController):
         assert True == c.app.has_access(M.User.query.get(username='root'), 'test')
 
     def test_post(self):
-        self._post('Forum.test', 'Test Thread', 'Nothing here')
+        self._post('Forum.msg.test', 'Test Thread', 'Nothing here')
 
     def test_bad_post(self):
         self._post('Forumtest', 'Test Thread', 'Nothing here')
 
     def test_notify(self):
-        self._post('Forum.test', 'Test Thread', 'Nothing here',
-                   message_id='test@sf.net')
-        self._post('Forum.test', 'Test Reply', 'Nothing here, either',
-                   message_id='test1@sf.net',
+        self._post('Forum.msg.test', 'Test Thread', 'Nothing here',
+                   message_id=['test@sf.net'])
+        self._post('Forum.msg.test', 'Test Reply', 'Nothing here, either',
+                   message_id=['test1@sf.net'],
                    in_reply_to=[ 'test@sf.net' ])
         self._notify('test@sf.net')
         self._notify('test1@sf.net')
 
     def test_reply(self):
-        self._post('Forum.test', 'Test Thread', 'Nothing here',
-                   message_id='test@sf.net')
-        self._post('Forum.test', 'Test Reply', 'Nothing here, either',
-                   message_id='test1@sf.net',
+        self._post('Forum.msg.test', 'Test Thread', 'Nothing here',
+                   message_id=['test@sf.net'])
+        self._post('Forum.msg.test', 'Test Reply', 'Nothing here, either',
+                   message_id=['test1@sf.net'],
                    in_reply_to=[ 'test@sf.net' ])
         assert FM.Thread.query.find().count() == 1
         assert FM.Post.query.find().count() == 2
 
     def test_attach(self):
-        self._post('Forum.test', 'Attachment Thread', 'This is a text file',
-                   message_id='test.100@sf.net',
+        self._post('Forum.msg.test', 'Attachment Thread', 'This is a text file',
+                   message_id=['test.100@sf.net'],
                    filename='test.txt',
                    content_type='text/plain')
-        self._post('Forum.test', 'Test Thread', 'Nothing here',
-                   message_id='test@sf.net')
-        self._post('Forum.test', 'Attachment Thread', 'This is a text file',
-                   message_id='test@sf.net',
+        self._post('Forum.msg.test', 'Test Thread', 'Nothing here',
+                   message_id=['test@sf.net'])
+        self._post('Forum.msg.test', 'Attachment Thread', 'This is a text file',
+                   message_id=['test@sf.net'],
                    content_type='text/plain')
 
     def test_threads(self):
-        self._post('Forum.test', 'Test', 'test')
+        self._post('Forum.msg.test', 'Test', 'test')
         thd = FM.Thread.query.find().first()
         url = str('/Forum/test/thread/%s/' % thd._id)
         r = self.app.get(url)
@@ -130,7 +130,7 @@ class TestForumReactors(TestController):
         assert len(r.html.findAll('tr')) == 1
 
     def test_posts(self):
-        self._post('Forum.test', 'Test', 'test')
+        self._post('Forum.msg.test', 'Test', 'test')
         thd = FM.Thread.query.find().first()
         thd_url = str('/Forum/test/thread/%s/' % thd._id)
         r = self.app.get(thd_url)
@@ -142,8 +142,8 @@ class TestForumReactors(TestController):
         r = self.app.get(url, params=dict(version=1))
         r = self.app.post(url + 'reply',
                           params=dict(subject='Reply', text='text'))
-        self._post('Forum.test', 'Test Reply', 'Nothing here, either',
-                   message_id='test1@sf.net',
+        self._post('Forum.msg.test', 'Test Reply', 'Nothing here, either',
+                   message_id=['test1@sf.net'],
                    in_reply_to=[ p._id ])
         reply = FM.Post.query.find().all()[-1]
         r = self.app.get(thd_url + reply.slug + '/')
@@ -244,6 +244,7 @@ class TestForum(TestController):
                 content='This is a *test thread*'))
         r = self.app.get(r.location)
         assert 'Message posted' in r
+        r = self.app.get('/Forum/TestForum/moderate/')
 
 class TestForumAdmin(TestController):
 

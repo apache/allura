@@ -107,8 +107,8 @@ class ArtifactLink(MappedClass):
         with push_config(c, project=projects[0]):
             for p in projects:
                 links = cls.query.find(dict(project_id=p._id, link=artifact_id)).all()
-                if app_id is None: return links[0]
                 for l in links:
+                    if app_id is None: return l
                     if app_id == l.mount_point: return l
                 for l in links:
                     if app_id == l.plugin_name: return l
