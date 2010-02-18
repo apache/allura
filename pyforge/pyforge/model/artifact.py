@@ -93,7 +93,10 @@ class ArtifactLink(MappedClass):
         # Find the projects to search
         #
         if project_id is None:
-            projects = list(c.project.parent_iter())
+            if c.project:
+                projects = list(c.project.parent_iter())
+            else:
+                return None
         elif project_id.startswith('/'):
             projects = Project.query.find(dict(shortname=project_id[1:])).all()
         else:

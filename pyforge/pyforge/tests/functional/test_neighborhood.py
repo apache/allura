@@ -22,6 +22,9 @@ class TestNeighborhood(TestController):
         r = self.app.post('/mozilla/_admin/update',
                           params=dict(name='Mozq1', css='', homepage='# MozQ1!'),
                           extra_environ=dict(username='root'))
+        r = self.app.post('/mozilla/_admin/update',
+                          params=dict(name='Mozq1', css='', homepage='# MozQ1!\n[Root]'),
+                          extra_environ=dict(username='root'))
 
     def test_invite(self):
         r = self.app.get('/mozilla/_moderate/', extra_environ=dict(username='root'))
