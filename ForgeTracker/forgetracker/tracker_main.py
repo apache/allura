@@ -161,6 +161,7 @@ class RootController(object):
                 count = len(tickets)
         return dict(q=q, history=history, tickets=tickets or [], count=count)
 
+    @with_trailing_slash
     @expose('forgetracker.templates.bin')
     @validate(dict(q=validators.UnicodeString(if_empty=None),
                    history=validators.StringBool(if_empty=False)))
