@@ -150,7 +150,7 @@ class NeighborhoodAdminController(object):
 
     @expose()
     def update(self, name=None, css=None, homepage=None):
-        self.name = name
+        self.neighborhood.name = name
         self.neighborhood.css = css
         self.neighborhood.homepage = homepage
         redirect('.')
