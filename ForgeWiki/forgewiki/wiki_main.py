@@ -11,6 +11,7 @@ from tg.decorators import with_trailing_slash, without_trailing_slash
 from pylons import g, c, request
 from formencode import validators
 from pymongo import bson
+from webob import exc
 
 from ming.orm.base import mapper
 from pymongo.bson import ObjectId
@@ -35,7 +36,7 @@ from pyforge.lib.dispatch import _dispatch
 class ForgeWikiApp(Application):
     '''This is the Wiki app for PyForge'''
     __version__ = version.__version__
-    permissions = [ 'configure', 'read', 'create', 'edit', 'delete', 'comment' ]
+    permissions = [ 'configure', 'read', 'create', 'edit', 'delete', 'comment', 'edit_page_permissions' ]
     config_options = Application.config_options + [
         ConfigOption('project_name', str, 'pname'),
         ConfigOption('message', str, 'Custom message goes here'),
@@ -144,7 +145,8 @@ class ForgeWikiApp(Application):
             ProjectRole.query.get(name='*anonymous')._id)
         self.config.acl['comment'].append(
             ProjectRole.query.get(name='*authenticated')._id)
-        p = model.Page.upsert('Root')
+        p = model.Page.upsert('Root')    
+        p.viewable_by = ['all']
         p.text = 'This is the root page.'
         p.commit()
 
@@ -286,6 +288,7 @@ class PageController(object):
         setattr(self, 'feed.atom', self.feed)
         setattr(self, 'feed.rss', self.feed)
         if not exists:
+            self.page.viewable_by = ['all']
             redirect(c.app.url+title+'/edit')
 
     def get_version(self, version):
@@ -301,6 +304,8 @@ class PageController(object):
     def index(self, version=None):
         require(has_artifact_access('read', self.page))
         page = self.get_version(version)
+        if 'all' not in page.viewable_by and str(c.user._id) not in page.viewable_by:
+            raise exc.HTTPForbidden(detail="You may not view this page.")
         if page is None:
             if version: redirect('.?version=%d' % (version-1))
             else: redirect('.')
@@ -318,6 +323,8 @@ class PageController(object):
             require(has_artifact_access('create', self.page))
         else:
             require(has_artifact_access('edit', self.page))
+            if 'all' not in self.page.viewable_by and str(c.user._id) not in self.page.viewable_by:
+                raise exc.HTTPForbidden(detail="You may not view this page.")
         user_tags = UserTags.upsert(c.user, self.page.dump_ref())
         return dict(page=self.page, user_tags=user_tags)
 
@@ -378,13 +385,14 @@ class PageController(object):
 
     @without_trailing_slash
     @expose()
-    def update(self, text, tags, tags_old):
+    def update(self, text, tags, tags_old, viewable_by):
         require(has_artifact_access('edit', self.page))
         if tags: tags = tags.split(',')
         else: tags = []
         self.page.text = text
         self.page.commit()
         tag_artifact(self.page, c.user, tags)
+        self.page.viewable_by = isinstance(viewable_by, list) and viewable_by or viewable_by.split(',')
         redirect('.')
 
     @without_trailing_slash

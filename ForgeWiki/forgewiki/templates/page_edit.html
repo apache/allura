@@ -22,8 +22,10 @@
       ${markdown_edit("text",page.text)}
 
       ${user_tags_edit('tags', user_tags)}
-      <br/>
-
+      <div style="overflow: hidden" py:if="has_artifact_access('edit_page_permissions', page)()">
+        <span style="float: left; margin-right: 1em">Viewable by:</span>
+        ${select_user_in_project('viewable_by', page.viewable_by, size=4, all=True)}
+      </div>
       <input type="submit" value="Save Changes"/>
     </form>
     <br/>

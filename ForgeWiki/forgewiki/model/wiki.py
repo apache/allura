@@ -58,6 +58,7 @@ class Page(VersionedArtifact):
 
     title=FieldProperty(str)
     text=FieldProperty(schema.String, if_missing='')
+    viewable_by=FieldProperty([str])
 
     def commit(self):
         VersionedArtifact.commit(self)

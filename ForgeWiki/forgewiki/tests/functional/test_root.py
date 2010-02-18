@@ -81,20 +81,20 @@ class TestRootController(TestController):
 
     def test_page_revert_with_text(self):
         self.app.get('/Wiki/TEST/index/')
-        self.app.get('/Wiki/TEST/update?text=sometext&tags=&tags_old=')
+        self.app.get('/Wiki/TEST/update?text=sometext&tags=&tags_old=&viewable_by=all')
         response = self.app.get('/Wiki/TEST/revert?version=1')
         assert 'TEST' in response
 
     def test_page_update(self):
         self.app.get('/Wiki/TEST/index/')
-        response = self.app.get('/Wiki/TEST/update?text=sometext&tags=&tags_old=')
+        response = self.app.get('/Wiki/TEST/update?text=sometext&tags=&tags_old=&viewable_by=all')
         assert 'TEST' in response
 
     def test_page_tag_untag(self):
         self.app.get('/Wiki/TEST/index/')
-        response = self.app.get('/Wiki/TEST/update?text=sometext&tags=red,blue&tags_old=red,blue')
+        response = self.app.get('/Wiki/TEST/update?text=sometext&tags=red,blue&tags_old=red,blue&viewable_by=all')
         assert 'TEST' in response
-        response = self.app.get('/Wiki/TEST/update?text=sometext&tags=red&tags_old=red')
+        response = self.app.get('/Wiki/TEST/update?text=sometext&tags=red&tags_old=red&viewable_by=all')
         assert 'TEST' in response
 
     def test_comment_reply(self):
@@ -157,3 +157,9 @@ class TestRootController(TestController):
         assert 'Related Pages' in response
         assert 'aaa' in response
         assert 'bbb' in response
+
+    def test_page_permissions(self):
+        response = self.app.get('/Wiki/TEST/').follow()
+        assert 'Viewable by' in response
+        self.app.get('/Wiki/TEST/update?text=sometext&tags=&tags_old=&viewable_by=')
+        self.app.get('/Wiki/TEST/', status=403)
