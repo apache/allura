@@ -5,6 +5,7 @@
 from tg import TGController, tmpl_context, config
 from tg.render import render
 from pylons.i18n import _, ungettext, N_
+from pylons import c, g
 from tw.api import WidgetBunch
 import pyforge.model as model
 
@@ -64,4 +65,8 @@ class BaseController(TGController):
             for ep in pkg_resources.iter_entry_points('pyforge'):
                 App = ep.load()
                 if App.wsgi and App.wsgi.handles(environ): return App.wsgi
+
+    def _cleanup_request(self):
+        ming.orm.ormsession.ThreadLocalORMSession.flush_all()
+        ming.orm.ormsession.ThreadLocalORMSession.close_all()
 

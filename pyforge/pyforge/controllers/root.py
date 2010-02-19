@@ -73,7 +73,7 @@ class RootController(BaseController):
         for msg in c.queued_messages:
             g._publish(**msg)
         ming.orm.ormsession.ThreadLocalORMSession.close_all()
-        
+
 
     @expose('pyforge.templates.index')
     @with_trailing_slash

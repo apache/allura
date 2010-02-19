@@ -23,7 +23,7 @@ def find_project(url_path):
             break
     else:
         return None, url_path
-    project_part = n.shortname_prefix + url_path[len(n.url_prefix):]
+    project_part = n.shortname_prefix + url_path[len(n.url_prefix):] # easily off-by-one, might be better to join together everything but url_prefix
     parts = project_part.split('/')
     length = len(parts)
     while length:
