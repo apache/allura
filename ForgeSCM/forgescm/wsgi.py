@@ -35,7 +35,7 @@ class WSGIHook(app.WSGIHook, BaseController):
             return True
 
     def __call__(self, environ, start_response):
-        url_path = environ['PATH_INFO'][1:]
+        url_path = environ['PATH_INFO']
         project, rest = find_project(url_path)
         if project is None:
             return BaseController.__call__(self, environ, start_response)
