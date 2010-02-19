@@ -18,7 +18,6 @@ def setUp(self):
     test_config = environ.get('SANDBOX') and 'sandbox-test.ini' or 'test.ini'
 
     # Loading the application:
-    import sys; print >> sys.stderr, config
     conf_dir = config.here
     wsgiapp = loadapp('config:%s#main' % test_config,
                       relative_to=conf_dir)
