@@ -43,7 +43,7 @@ class WSGIHook(app.WSGIHook, BaseController):
         c.project = project
         c.app = c.project.app_instance(rest[0])
         environ['PATH_INFO'] = '/' + '/'.join(rest[1:])
-        environ['SCRIPT_NAME'] += '/' + str(c.project._id) + rest[0]
+        environ['SCRIPT_NAME'] += '/' + url_path
         if c.app.config.options.type == 'hg':
             return self.hgweb(environ, start_response)
         elif c.app.config.options.type == 'git':
@@ -54,7 +54,7 @@ class WSGIHook(app.WSGIHook, BaseController):
 
     def hgweb(self, environ, start_response):
         repo = c.app.repo.repo_dir
-        name = 'Main Repository for %s' % c.project._id
+        name = 'Main Repository for %s' % c.project.shortname
         repo = hg.repository(self.hg_ui, repo)
         svr = hgweb(repo, name)
         return svr(environ, start_response)
