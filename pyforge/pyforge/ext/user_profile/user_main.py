@@ -73,18 +73,9 @@ class UserProfileController(object):
 
     @expose('pyforge.ext.user_profile.templates.user_dashboard_configuration')
     def configuration(self):
-        config = M.PortalConfig.current()
-        mount_points = [
-            (ac.options.mount_point, ac.load())
-            for ac in c.project.app_configs ]
-        widget_types = [
-            dict(mount_point=mp, widget_name=w)
-            for mp, app_class in mount_points
-            for w in app_class.widget.widgets ]
-        return dict(
-            layout_class=config.layout_class,
-            layout=config.layout,
-            widget_types=widget_types)
+        username = c.project.shortname[len('users/'):]
+        user = User.query.find({'username':username}).first()
+        return dict(user=user)
 
     @vardec
     @expose()

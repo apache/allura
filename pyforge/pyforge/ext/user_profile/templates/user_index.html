@@ -12,9 +12,9 @@
 
   <head>
     <meta content="text/html; charset=UTF-8" http-equiv="content-type" py:replace="''"/>
-    <title>${user.display_name}'s Home</title>
+    <title>${user.display_name}'s Profile</title>
     <link rel="stylesheet" type="text/css"
-          href="${g.app_static('css/user_home.css')}"/>
+          href="${g.app_static('css/user_profile.css')}"/>
   </head>
 
   <body>
@@ -33,6 +33,7 @@
           <span class="title">Email Addresses</span>
           <ul>
             <li py:for="email in user.email_addresses">
+                ${gravatar(email, size=24)}
                 <span py:if="email == user.preferences.email_address" class="prime email-address">${email}</span>
                 <span py:if="email != user.preferences.email_address" class="email-address">${email}</span>
             </li>
