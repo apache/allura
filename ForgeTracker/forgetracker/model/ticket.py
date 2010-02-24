@@ -25,7 +25,7 @@ class Globals(MappedClass):
     app_config_id = ForeignIdProperty('AppConfig', if_missing=lambda:c.app.config._id)
     last_ticket_num = FieldProperty(int)
     status_names = FieldProperty(str)
-    custom_fields = FieldProperty(str)
+    custom_fields = FieldProperty([{str:None}])
 
 class TicketHistory(Snapshot):
 
@@ -108,7 +108,7 @@ class Ticket(VersionedArtifact):
                 ('Summary', old.summary, self.summary),
                 ('Status', old.status, self.status) ]
             for key in self.custom_fields:
-                fields.append((key, old.custom_fields[key], self.custom_fields[key]))
+                fields.append((key, old.custom_fields.get(key, ''), self.custom_fields[key]))
             for title, o, n in fields:
                 if o != n:
                     changes.append('%s updated: %r => %r' % (

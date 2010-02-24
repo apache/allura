@@ -25,10 +25,10 @@
 
   <div py:if="globals.custom_fields">
     <div class="span-24 last quiet prepend-top bottom-liner">Custom Fields</div>
-    <div py:for="field in globals.custom_fields.split(',')">
-      <label for="$field">$field:</label>
+    <div py:for="field in globals.custom_fields">
+      <label for="${field.name}">${field.name}:</label>
       <br/>
-      <input name="$field" type="text" value=""/>
+      <input name="${field.name}" type="text" value=""/>
     </div>
   </div>
 

@@ -1,6 +1,7 @@
 #-*- python -*-
 import logging
 from mimetypes import guess_type
+import re
 
 # Non-stdlib imports
 import pkg_resources
@@ -101,7 +102,10 @@ class ForgeTrackerApp(Application):
             ProjectRole.query.get(name='*anonymous')._id)
         self.config.acl['comment'].append(
             ProjectRole.query.get(name='*authenticated')._id)
-        model.Globals(app_config_id=c.app.config._id, last_ticket_num=0, status_names='open,unread,accepted,pending,closed')
+        model.Globals(app_config_id=c.app.config._id,
+            last_ticket_num=0,
+            status_names='open,unread,accepted,pending,closed',
+            custom_fields=[])
 
     def uninstall(self, project):
         "Remove all the plugin's artifacts from the database"
@@ -349,8 +353,8 @@ class TicketController(object):
 
         globals = model.Globals.query.get(app_config_id=c.app.config._id)
         if globals.custom_fields:
-            for field in globals.custom_fields.split(','):
-                self.ticket.custom_fields[field] = post_data[field]
+            for field in globals.custom_fields:
+                self.ticket.custom_fields[field.name] = post_data[field.name]
         self.ticket.commit()
         redirect('edit/')
 
@@ -439,16 +443,19 @@ class CommentController(object):
                 self.ticket, next), remainder
 
 
+_SEP_RE = re.compile(r'[ ,]+')
+
 class TrackerAdminController(DefaultAdminController):
 
     def __init__(self, app):
         self.app = app
+        self.globals = model.Globals.query.get(app_config_id=self.app.config._id)
 
     @with_trailing_slash
     @expose('forgetracker.templates.admin')
     def index(self):
-        globals = model.Globals.query.get(app_config_id=self.app.config._id)
-        return dict(app=self.app, globals=globals)
+        custom_fields = ', '.join([field.name for field in self.globals.custom_fields])
+        return dict(app=self.app, globals=self.globals, custom_fields=custom_fields)
 
     @expose()
     def update_tickets(self, **post_data):
@@ -456,12 +463,11 @@ class TrackerAdminController(DefaultAdminController):
 
     @expose()
     def set_status_names(self, **post_data):
-        globals = model.Globals.query.get(app_config_id=c.app.config._id)
-        globals.status_names = post_data['status_names']
+        self.globals.status_names = post_data['status_names']
         redirect('.')
 
     @expose()
     def set_custom_fields(self, **post_data):
-        globals = model.Globals.query.get(app_config_id=c.app.config._id)
-        globals.custom_fields = post_data['custom_fields']
+        self.globals.custom_fields = [{'name':name, 'type':'str'}
+                                        for name in re.split(_SEP_RE, post_data['custom_fields'])]
         redirect('.')

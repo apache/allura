@@ -47,9 +47,9 @@
             &nbsp;
             <div class="span-24 last custom-fields" py:if="globals.custom_fields">
                 <div class="span-24 last quiet prepend-top bottom-liner">Custom Fields</div>
-                <div class="span-24 last" py:for="field in globals.custom_fields.split(',')">
-                    <span class="span-4"><label>${field}:</label></span>
-                    <span class="span-20">${bin.custom_fields.get(field, '')}</span>
+                <div class="span-24 last" py:for="field in globals.custom_fields">
+                    <span class="span-4"><label>${field.name}:</label></span>
+                    <span class="span-20">${bin.custom_fields.get(field.name, '')}</span>
                 </div>
             </div>
             <hr/>

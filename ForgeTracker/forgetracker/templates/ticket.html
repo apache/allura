@@ -21,11 +21,9 @@
     <div id="sidebar-right">
         State: $ticket.status<br/>
         Assigned To: ${ticket.assigned_to_name()}<br/>
-        <py:if test="globals.custom_fields">
-            <py:for each="field in globals.custom_fields.split(',')">
-                ${field}: ${ticket.custom_fields.get(field, '')}<br/>
-            </py:for>
-        </py:if>
+        <py:for each="field in globals.custom_fields or []">
+            ${field.name}: ${ticket.custom_fields.get(field.name, '')}<br/>
+        </py:for>
     </div>
     <div id="ticket_header">
       <div class="reported_by">
