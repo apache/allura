@@ -1,7 +1,7 @@
 #-*- python -*-
 import logging
 from mimetypes import guess_type
-import re
+import json, urllib
 
 # Non-stdlib imports
 import pkg_resources
@@ -443,8 +443,6 @@ class CommentController(object):
                 self.ticket, next), remainder
 
 
-_SEP_RE = re.compile(r'[ ,]+')
-
 class TrackerAdminController(DefaultAdminController):
 
     def __init__(self, app):
@@ -454,8 +452,7 @@ class TrackerAdminController(DefaultAdminController):
     @with_trailing_slash
     @expose('forgetracker.templates.admin')
     def index(self):
-        custom_fields = ', '.join([field.name for field in self.globals.custom_fields])
-        return dict(app=self.app, globals=self.globals, custom_fields=custom_fields)
+        return dict(app=self.app, globals=self.globals)
 
     @expose()
     def update_tickets(self, **post_data):
@@ -468,6 +465,5 @@ class TrackerAdminController(DefaultAdminController):
 
     @expose()
     def set_custom_fields(self, **post_data):
-        self.globals.custom_fields = [{'name':name, 'type':'str'}
-                                        for name in re.split(_SEP_RE, post_data['custom_fields'])]
-        redirect('.')
+        data = urllib.unquote_plus(post_data['custom_fields'])
+        self.globals.custom_fields = json.loads(data)

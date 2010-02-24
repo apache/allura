@@ -68,13 +68,16 @@
       <h3 class="title">Custom Fields Config</h3>
       <div class="content">
 
-        <form method="POST" action="set_custom_fields">
-            custom fields:
-            <input type="text" name="custom_fields" style="width:50%" value="${custom_fields}"/>
-            <input type="submit" value="Save"/>
-        </form>
-
+        custom fields:
+        <div id="custom-field-list">
+            <div py:for="field in globals.custom_fields" style="display:none" class="custom-field-stub"
+                data-name="${field.name}" data-type="${field.type}"/>
+        </div>
+        <hr/>
+        <button onclick="add_field()">Add Field</button>
+        <button onclick="save_fields()">Save</button>
       </div>
     </div>
   </body>
+  <script type="text/javascript" src="/static/Tickets/js/custom-fields.js"/>
 </html>
