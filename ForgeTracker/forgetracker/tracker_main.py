@@ -173,8 +173,6 @@ class RootController(object):
 
     @with_trailing_slash
     @expose('forgetracker.templates.bin')
-    @validate(dict(q=validators.UnicodeString(if_empty=None),
-                   history=validators.StringBool(if_empty=False)))
     def bin(self, q=None, history=None):
         'local plugin search'
         results = []
