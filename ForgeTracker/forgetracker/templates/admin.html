@@ -73,11 +73,22 @@
             <div py:for="field in globals.custom_fields" style="display:none" class="custom-field-stub"
                 data-name="${field.name}" data-type="${field.type}"/>
         </div>
-        <hr/>
         <button onclick="add_field()">Add Field</button>
         <button onclick="save_fields()">Save</button>
       </div>
     </div>
   </body>
+  <style type="text/css">
+    div.custom-field {
+        border:1px solid gray;
+        margin:2px;
+        padding:2px;
+        background-color:white;
+    }
+  </style>
+  <script type="text/javascript" src="/static/Tickets/js/jquery.ui.core.js"/>
+  <script type="text/javascript" src="/static/Tickets/js/jquery.ui.widget.js"/>
+  <script type="text/javascript" src="/static/Tickets/js/jquery.ui.mouse.js"/>
+  <script type="text/javascript" src="/static/Tickets/js/jquery.ui.sortable.js"/>
   <script type="text/javascript" src="/static/Tickets/js/custom-fields.js"/>
 </html>

@@ -41,4 +41,5 @@ $(function(){
         add_field(name, type);
         $this.remove();
     });
+    $('#custom-field-list').sortable();
 });
