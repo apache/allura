@@ -58,8 +58,11 @@ class ForgeTrackerApp(Application):
 
     def sidebar_menu(self):
         related_artifacts = []
+        search_bins = []
         related_urls = []
         ticket = request.path_info.split(self.url)[-1].split('/')[0]
+        for bin in model.Bin.query.find():
+            search_bins.append(SitemapEntry(bin.shorthand_id(), bin.url()))
         if ticket.isdigit():
             ticket = model.Ticket.query.find(dict(app_config_id=self.config._id,ticket_num=int(ticket))).first()
         else:
@@ -78,7 +81,9 @@ class ForgeTrackerApp(Application):
             links.append(SitemapEntry('Related Artifacts'))
             links = links + related_artifacts
         links.append(SitemapEntry('Search', self.config.url() + 'search'))
-        links.append(SitemapEntry('In Bins', className="todo"))
+        if len(search_bins):
+            links.append(SitemapEntry('In Bins', className="todo"))
+            links = links + search_bins
         if ticket:
             links.append(SitemapEntry('Subtasks', className="todo"))
         links.append(SitemapEntry('Ticket Help', '.', className="todo"))
