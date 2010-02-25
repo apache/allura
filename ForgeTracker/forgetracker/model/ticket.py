@@ -64,7 +64,7 @@ class Bin(Artifact):
     terms = FieldProperty(str, if_missing='')
 
     def url(self):
-        return self.app_config.url() + str(self.summary) + '/'
+        return self.app_config.url() + 'search?q=' + str(self.terms)
 
     def shorthand_id(self):
         return 'bin' + str(self.summary)
