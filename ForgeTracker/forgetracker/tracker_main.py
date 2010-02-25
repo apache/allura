@@ -173,22 +173,11 @@ class RootController(object):
 
     @with_trailing_slash
     @expose('forgetracker.templates.bin')
-    def bin(self, q=None, history=None):
-        'local plugin search'
-        results = []
-        tickets = []
+    def bins(self):
+        bins = model.Bin.query.find()
         count=0
-        if not q:
-            q = ''
-        else:
-            results = search_artifact(model.Ticket, q, history)
-            if results:
-                query = model.Ticket.query.find(
-                    dict(app_config_id=c.app.config._id,
-                         ticket_num={'$in':[r['ticket_num_i'] for r in results.docs]}))
-                tickets = query.all()
-                count = len(tickets)
-        return dict(q=q, history=history, tickets=tickets or [], count=count)
+        count = len(bins)
+        return dict(bins=bins or [], count=count)
 
     def _lookup(self, ticket_num, *remainder):
         return TicketController(ticket_num), remainder
