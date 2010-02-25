@@ -65,7 +65,7 @@ class NeighborhoodController(object):
 
     @expose()
     def icon(self):
-        with self.neighborhood.icon.open(fs_session=main_orm_session) as fp:
+        with self.neighborhood.icon.open() as fp:
             filename = fp.metadata['filename']
             response.headers['Content-Type'] = ''
             response.content_type = fp.content_type
@@ -177,8 +177,7 @@ class NeighborhoodAdminController(object):
             with M.NeighborhoodFile.create(
                 content_type=content_type,
                 filename=filename,
-                neighborhood_id=self.neighborhood._id,
-                fs_session=main_orm_session) as fp:
+                neighborhood_id=self.neighborhood._id) as fp:
                 while True:
                     s = icon.file.read()
                     if not s: break
