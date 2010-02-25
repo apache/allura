@@ -253,6 +253,7 @@ class RootController(object):
         require(has_artifact_access('write'))
         if request.method != 'POST':
             raise Exception('save_new must be a POST request')
+        globals = model.Globals.query.get(app_config_id=c.app.config._id)
         if ticket_num:
             ticket = model.Ticket.query.get(app_config_id=c.app.config._id,
                                           ticket_num=int(ticket_num))
@@ -263,7 +264,6 @@ class RootController(object):
             ticket = model.Ticket()
             ticket.app_config_id = c.app.config._id
             ticket.custom_fields = dict()
-            globals = model.Globals.query.get(app_config_id=c.app.config._id)
             
             if tags: tags = tags.split(',')
             else: tags = []
@@ -274,8 +274,14 @@ class RootController(object):
             post_data['ticket_num'] = globals.last_ticket_num
             # FIX ME
 
+        custom_fields = {}
+        for field in globals.custom_fields:
+            custom_fields[field.name] = True
         for k,v in post_data.iteritems():
-            setattr(ticket, k, v)
+            if k in custom_fields:
+                ticket.custom_fields[k] = v
+            else:
+                setattr(ticket, k, v)
         ticket.commit()
         redirect(str(ticket.ticket_num)+'/')
 
