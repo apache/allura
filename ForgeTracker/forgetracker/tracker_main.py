@@ -257,7 +257,7 @@ class RootController(object):
             ticket = model.Ticket()
             ticket.app_config_id = c.app.config._id
             ticket.custom_fields = dict()
-            
+
             if tags: tags = tags.split(',')
             else: tags = []
             tag_artifact(ticket, c.user, tags)
