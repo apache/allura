@@ -67,7 +67,7 @@ class Bin(Artifact):
         return self.app_config.url() + 'search?q=' + str(self.terms)
 
     def shorthand_id(self):
-        return 'bin' + str(self.summary)
+        return str(self.summary)
 
     def index(self):
         result = Artifact.index(self)
