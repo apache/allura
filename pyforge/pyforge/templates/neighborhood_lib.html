@@ -16,7 +16,7 @@
         </li>
       </ul>
       <div id="project-menu">
-        <div class="pti">Neighborhood: <a href="${neighborhood.url()}">$neighborhood.name</a></div>
+        <div class="pti"><img py:if="neighborhood.icon" src="${neighborhood.url()}/icon"/> Neighborhood: <a href="${neighborhood.url()}">$neighborhood.name</a></div>
         <form py:if="has_neighborhood_access('create', neighborhood)()" style="float:right"
               method="POST" action="${neighborhood.url()}/register">
           <label for="pid">Register project</label>

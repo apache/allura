@@ -35,8 +35,10 @@ class File(MappedClass):
     next=FieldProperty(None)
 
     @classmethod
-    def _fs(cls):
-        return GridFS(session(cls).impl.db)
+    def _fs(cls, fs_session=None):
+        if not fs_session:
+            fs_session = project_orm_session
+        return GridFS(fs_session.impl.db)
 
     @classmethod
     def _grid_coll_name(cls):
@@ -71,15 +73,15 @@ class File(MappedClass):
                 for k,v in kw.iteritems()))
 
     @classmethod
-    def create(cls, content_type=None, **meta_kwargs):
+    def create(cls, content_type=None, fs_session=None, **meta_kwargs):
         fn = str(pymongo.bson.ObjectId())
-        fp = cls._fs().open(fn, 'w', collection=cls._grid_coll_name())
+        fp = cls._fs(fs_session=fs_session).open(fn, 'w', collection=cls._grid_coll_name())
         fp.content_type = content_type
         fp.metadata = dict(meta_kwargs)
         return fp
 
-    def open(self, mode='r'):
-        return self._fs().open(self.filename, mode, collection=self._grid_coll_name())
+    def open(self, mode='r', fs_session=None):
+        return self._fs(fs_session=fs_session).open(self.filename, mode, collection=self._grid_coll_name())
 
     def delete(self):
         self.remove(self.filename)

@@ -2,7 +2,7 @@
 """The application's model objects"""
 
 from .session import ProjectSession
-from .project import Neighborhood, Project, AppConfig, SearchConfig, ScheduledMessage
+from .project import Neighborhood, NeighborhoodFile, Project, AppConfig, SearchConfig, ScheduledMessage
 from .artifact import Artifact, Message, VersionedArtifact, Snapshot, ArtifactLink, nonce, Feed
 from .auth import User, ProjectRole, OpenId, EmailAddress
 from .openid_model import OpenIdStore, OpenIdAssociation, OpenIdNonce

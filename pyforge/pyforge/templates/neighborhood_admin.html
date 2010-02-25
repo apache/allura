@@ -16,7 +16,7 @@
   <body>
     <h1>$neighborhood.name Admin</h1>
     <div>
-      <form method="POST" action="update">
+      <form method="POST" action="update" enctype="multipart/form-data">
         <div class="editable viewing">
           <div class="viewer"><h3>Name: $neighborhood.name</h3></div>
           <div class="editor">
@@ -36,6 +36,17 @@
           <div class="viewer"><pre>$neighborhood.css</pre></div>
           <div class="editor">
             <textarea name="css">$neighborhood.css</textarea>
+          </div>
+        </div>
+        <h3>Icon</h3>
+        <div class="editable viewing" style="min-height:50px;">
+          <div class="viewer">
+            <py:if test="neighborhood.icon">
+              <img src="${neighborhood.url()}/icon"/>
+            </py:if>
+          </div>
+          <div class="editor">
+            ${file_field('icon', 'File')}
           </div>
         </div>
       </form>

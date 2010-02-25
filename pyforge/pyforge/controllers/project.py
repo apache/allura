@@ -1,4 +1,5 @@
 from urllib import unquote
+from mimetypes import guess_type
 
 from tg import expose, flash, redirect, validate, request, response
 from tg.decorators import with_trailing_slash, without_trailing_slash
@@ -18,6 +19,8 @@ from pyforge.lib.security import require, has_project_access, has_neighborhood_a
 from .auth import AuthController
 from .search import SearchController
 from .static import StaticController
+
+from pyforge.model.session import main_orm_session
 
 class NeighborhoodController(object):
     '''Manages a neighborhood of projects.
@@ -59,6 +62,17 @@ class NeighborhoodController(object):
             flash('%s: %s' % (ex.__class__, str(ex)), 'error')
             redirect('.')
         redirect(p.script_name + 'admin/')
+
+    @expose()
+    def icon(self):
+        with self.neighborhood.icon.open(fs_session=main_orm_session) as fp:
+            filename = fp.metadata['filename']
+            response.headers['Content-Type'] = ''
+            response.content_type = fp.content_type
+            response.headers.add('Content-Disposition',
+                                     'attachment;filename=%s' % filename)
+            return fp.read()
+        return self.neighborhood.icon.filename
 
 class HostNeighborhoodController(BaseController, NeighborhoodController):
     '''Neighborhood controller with support for use as a root controller, for
@@ -149,10 +163,26 @@ class NeighborhoodAdminController(object):
         return dict(neighborhood=self.neighborhood)
 
     @expose()
-    def update(self, name=None, css=None, homepage=None):
+    def update(self, name=None, css=None, homepage=None, icon=None):
         self.neighborhood.name = name
         self.neighborhood.css = css
         self.neighborhood.homepage = homepage
+        if icon is not None:
+            filename = icon.filename
+            content_type = guess_type(filename)
+            if content_type: content_type = content_type[0]
+            else: content_type = 'application/octet-stream'
+            if self.neighborhood.icon:
+                M.NeighborhoodFile.query.remove({'metadata.neighborhood_id':self.neighborhood._id})
+            with M.NeighborhoodFile.create(
+                content_type=content_type,
+                filename=filename,
+                neighborhood_id=self.neighborhood._id,
+                fs_session=main_orm_session) as fp:
+                while True:
+                    s = icon.file.read()
+                    if not s: break
+                    fp.write(s)
         redirect('.')
 
     @vardec

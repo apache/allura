@@ -17,6 +17,8 @@ from pyforge.lib.helpers import push_config
 from .session import main_doc_session, main_orm_session
 from .session import project_doc_session, project_orm_session
 
+from filesystem import File
+
 log = logging.getLogger(__name__)
 
 class SearchConfig(MappedClass):
@@ -67,6 +69,15 @@ class ScheduledMessage(MappedClass):
                 obj.delete()
             except: # pragma no cover
                 log.exception('Error when firing %r', obj)
+
+class NeighborhoodFile(File):
+    class __mongometa__:
+        session = main_orm_session
+
+    # Override the metadata schema here
+    metadata=FieldProperty(dict(
+            neighborhood_id=S.ObjectId,
+            filename=str))
 
 class Neighborhood(MappedClass):
     '''Provide a grouping of related projects.
@@ -159,6 +170,10 @@ class Neighborhood(MappedClass):
         controller_attr = self.url_prefix[1:-1]
         setattr(controller, controller_attr, NeighborhoodController(
                 self.name, self.shortname_prefix))
+
+    @property
+    def icon(self):
+        return NeighborhoodFile.query.find({'metadata.neighborhood_id':self._id}).first()
 
 class Project(MappedClass):
     class __mongometa__:

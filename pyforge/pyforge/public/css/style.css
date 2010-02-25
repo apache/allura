@@ -59,6 +59,11 @@ ul.mb li.loginlogout, ul.mb li.user-link, ul.mb li.forge-search-link {
 	font-size:140%;
 	padding-left:0.3em;
 }
+.pti img{
+    width: 50px;
+    height: 50px;
+    vertical-align: middle;
+}
 
 div#content
 {
