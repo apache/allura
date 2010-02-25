@@ -184,11 +184,11 @@ class RootController(object):
 
     @with_trailing_slash
     @expose('forgetracker.templates.new_bin')
-    def savebin(self, **kw):
+    def savebin(self, q=None, **kw):
         require(has_artifact_access('write'))
         tmpl_context.form = bin_form
         globals = model.Globals.query.get(app_config_id=c.app.config._id)
-        return dict(modelname='Bin', page='New Bin', globals=globals)
+        return dict(q=q or '', modelname='Bin', page='New Bin', globals=globals)
 
     @with_trailing_slash
     @expose('forgetracker.templates.new_ticket')
