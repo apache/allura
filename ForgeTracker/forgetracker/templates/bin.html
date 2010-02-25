@@ -10,7 +10,7 @@
 
   <head>
     <meta content="text/html; charset=UTF-8" http-equiv="content-type" py:replace="''"/>
-    <title>${bin.shorthand_id()}</title>
+    <title>Saved Search Bins</title>
     <link rel="stylesheet" type="text/css" href="${g.app_static('css/hilite.css')}"/>
     <link rel="alternate" type="application/rss+xml" title="RSS" href="feed.rss"/>
     <link rel="alternate" type="application/atom+xml" title="Atom" href="feed.atom"/>
@@ -18,42 +18,20 @@
 
   <body>
     <div class="container">
-        <article class="bin">
-
-            <h1>${bin.shorthand_id()}</h1>
-            <div>
-              <a href="..">PluginRoot</a>
-              <a href="edit/">Edit</a>
-              <form style="display:inline; float:right"
-                    method="GET"
-                    action="../search">
-                Search: <input name="q"/>
-              </form>
-            </div>
-            <hr/>
-
-
-            <div id="header" class="span-24 last">
-                <h1 class="span-24 last">$bin.summary</h1>
-            </div>
-
-            <div class="span-24">
-                <div class="span-24">
-                    <span class="quiet">terms:</span>
-                    <span class="bin-terms">$bin.terms</span>
-                </div>
-
-            </div>
-            &nbsp;
-            <div class="span-24 last custom-fields" py:if="globals.custom_fields">
-                <div class="span-24 last quiet prepend-top bottom-liner">Custom Fields</div>
-                <div class="span-24 last" py:for="field in globals.custom_fields">
-                    <span class="span-4"><label>${field.name}:</label></span>
-                    <span class="span-20">${bin.custom_fields.get(field.name, '')}</span>
-                </div>
-            </div>
-            <hr/>
-        </article>
+      <h1>Welcome to ForgeTrackeer</h1>
+      <h2>Project: $c.project.shortname</h2>
+      <h3>Saved Search Bins</h3>
+      <div class="bin-list">
+        <py:for each="bin in bins">
+          <div class="bin span-20 last">
+            <div class="bin-summary span-4"><a href="$bin.summary">$bin.summary</a></div>
+            <div class="bin-terms span-14">$bin.terms</div>
+          </div>
+        </py:for>
+      </div>
+      <script type="text/javascript">
+        $('div.bin-list').children(':even').css('background-color', '#eeeeee');
+      </script>
     </div>
   </body>
 </html>
