@@ -14,13 +14,13 @@
 <body>
 
 <form method="POST" action="../save_bin">
-  <label for="summary">Name:</label>
+  <label for="summary">Bin Name:</label>
   <br/>
-  <input name="summary" value=""/>
+  <input name="summary" value="$q"/>
   <br/>
-  <label for="terms">Name:</label>
+  <label for="terms">Search Terms:</label>
   <br/>
-  <input name="terms" value=""/>
+  <input name="terms" value="$q"/>
   <br/>
 
   <div py:if="globals.custom_fields">
@@ -32,7 +32,6 @@
     </div>
   </div>
 
-  ${user_tags_edit('tags', {'tags':[]})}
   <br/>
 
   <input type="submit" value="Save Bin"/>
