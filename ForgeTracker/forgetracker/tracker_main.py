@@ -238,8 +238,7 @@ class RootController(object):
         globals = model.Globals.query.get(app_config_id=c.app.config._id)
         for k,v in post_data.iteritems():
             setattr(bin, k, v)
-        bin.commit()
-        redirect(str(bin.summary)+'/')
+        redirect('bins/')
 
     @expose()
     def save_ticket(self, ticket_num, tags, tags_old=None, **post_data):
