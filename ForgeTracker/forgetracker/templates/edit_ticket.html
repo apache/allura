@@ -28,7 +28,7 @@
               <span class="viewer">$ticket.status</span>
               <span class="editor">
                 <select name="status">
-                  <option py:for="name in globals.status_names.split(',')" value="$name">$name</option>
+                  <option py:for="name in globals.status_names.split()" value="$name">$name</option>
                 </select>
               </span>
           </div>
@@ -75,7 +75,10 @@
               <label class="span-4">${field.name}:</label>
               <span class="viewer span-20 last">${ticket.custom_fields.get(field.name, '')}</span>
               <span class="editor span-20 last">
-                  <input name="${field.name}" type="text" style="width:50%" value="${ticket.custom_fields.get(field.name, '')}"/>
+                  <input py:if="field.type != 'select'" name="${field.name}" type="text" style="width:50%" value="${ticket.custom_fields.get(field.name, '')}"/>
+                  <select py:if="field.type == 'select'" name="${field.name}">
+                    <option py:for="option in field.options.split()" value="${option}">${option}</option>
+                  </select>
               </span>
           </div>
       </div>

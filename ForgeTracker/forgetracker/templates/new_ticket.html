@@ -22,7 +22,7 @@
   <label for="status">status:</label>
   <br/>
   <select name="status">
-    <option py:for="name in globals.status_names.split(',')" value="$name">$name</option>
+    <option py:for="name in globals.status_names.split()" value="$name">$name</option>
   </select>
   <br/>
   <label for="description">Description</label>
@@ -35,7 +35,10 @@
     <div py:for="field in globals.custom_fields">
       <label for="${field.name}">${field.name}:</label>
       <br/>
-      <input name="${field.name}" type="text" value=""/>
+      <input py:if="field.type != 'select'" name="${field.name}" type="text" value=""/>
+      <select py:if="field.type == 'select'" name="${field.name}">
+        <option py:for="option in field.options.split()" value="${option}">$option</option>
+      </select>
     </div>
   </div>
 

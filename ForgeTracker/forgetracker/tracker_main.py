@@ -104,7 +104,7 @@ class ForgeTrackerApp(Application):
             ProjectRole.query.get(name='*authenticated')._id)
         model.Globals(app_config_id=c.app.config._id,
             last_ticket_num=0,
-            status_names='open,unread,accepted,pending,closed',
+            status_names='open unread accepted pending closed',
             custom_fields=[])
 
     def uninstall(self, project):
