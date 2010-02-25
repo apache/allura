@@ -26,6 +26,7 @@ from forgetracker import model
 from forgetracker import version
 
 from forgetracker.widgets.ticket_form import ticket_form
+from forgetracker.widgets.bin_form import bin_form
 
 log = logging.getLogger(__name__)
 
