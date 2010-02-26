@@ -467,6 +467,6 @@ class TrackerAdminController(DefaultAdminController):
         data = urllib.unquote_plus(post_data['custom_fields'])
         custom_fields = json.loads(data)
         for field in custom_fields:
-            field['name'] = '_' + '_'.join([w for w in NONALNUM_RE.split(field['label']) if w])
+            field['name'] = '_' + '_'.join([w for w in NONALNUM_RE.split(field['label'].lower()) if w])
             field['label'] = field['label'].title()
         self.globals.custom_fields = custom_fields
