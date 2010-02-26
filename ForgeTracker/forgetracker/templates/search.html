@@ -21,9 +21,9 @@
       <input type="submit" value="Search"/>
     </form>
     <p py:if="q">
-      <form method="GET" action="savebin">
-        <input type="hidden" name="q" value="$q"/>
+      <form method="GET" action="newbin">
         <input type="submit" value="Save Search"/>
+        <input type="hidden" name="q" value="$q"/>
       </form>
     </p>
     <p py:if="count==0 and q">No results.</p>
