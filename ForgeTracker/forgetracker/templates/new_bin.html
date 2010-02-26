@@ -13,7 +13,7 @@
 
 <body>
 
-<form method="POST" action="../save_bin">
+<form method="POST" action="save_bin">
   <label for="summary">Bin Name:</label>
   <br/>
   <input name="summary" value="$q"/>
@@ -21,17 +21,6 @@
   <label for="terms">Search Terms:</label>
   <br/>
   <input name="terms" value="$q"/>
-  <br/>
-
-  <div py:if="globals.custom_fields">
-    <div class="span-24 last quiet prepend-top bottom-liner">Custom Fields</div>
-    <div py:for="field in globals.custom_fields">
-      <label for="${field.name}">${field.name}:</label>
-      <br/>
-      <input name="${field.name}" type="text" value=""/>
-    </div>
-  </div>
-
   <br/>
 
   <input type="submit" value="Save Bin"/>
