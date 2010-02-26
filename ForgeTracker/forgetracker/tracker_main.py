@@ -81,8 +81,8 @@ class ForgeTrackerApp(Application):
             links.append(SitemapEntry('Related Artifacts'))
             links = links + related_artifacts
         links.append(SitemapEntry('Search', self.config.url() + 'search'))
+        links.append(SitemapEntry('In Bins', self.config.url() + 'bins'))
         if len(search_bins):
-            links.append(SitemapEntry('In Bins', className="todo"))
             links = links + search_bins
         if ticket:
             links.append(SitemapEntry('Subtasks', className="todo"))
@@ -184,7 +184,7 @@ class RootController(object):
 
     @with_trailing_slash
     @expose('forgetracker.templates.new_bin')
-    def savebin(self, q=None, **kw):
+    def newbin(self, q=None, **kw):
         require(has_artifact_access('write'))
         tmpl_context.form = bin_form
         globals = model.Globals.query.get(app_config_id=c.app.config._id)
