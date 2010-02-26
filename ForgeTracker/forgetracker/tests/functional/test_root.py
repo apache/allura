@@ -1,4 +1,4 @@
-import os
+import os, urllib
 
 from nose.tools import assert_true, assert_false
 from forgetracker.tests import TestController
@@ -162,3 +162,11 @@ class TestFunctionalController(TestController):
         })
         response = self.app.get('/projects/test/bugs/1/edit/')
         assert response.html.find('span', {'class': 'viewer ticket-assigned-to'}).string == test_user_name
+
+    def test_custom_fields(self):
+        spec = """[{"name":"Priority","type":"select","options":"normal urgent critical"},
+                   {"name":"Category","type":"string","options":""}]"""
+        spec = urllib.quote_plus(spec)
+        self.app.post('/admin/bugs/set_custom_fields', { 'custom_fields': spec })
+        ticket_view = self.new_ticket('test custom fields')
+        assert 'Priority: normal' in ticket_view
