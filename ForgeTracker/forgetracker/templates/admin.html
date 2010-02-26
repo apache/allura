@@ -71,7 +71,7 @@
         custom fields:
         <div id="custom-field-list">
             <div py:for="field in globals.custom_fields" style="display:none" class="custom-field-stub"
-                data-name="${field.name}" data-type="${field.type}" data-options="${getattr(field, 'options', '')}"/>
+                data-label="${field.label}" data-type="${field.type}" data-options="${getattr(field, 'options', '')}"/>
         </div>
         <button onclick="add_field()">Add Field</button>
         <button onclick="save_fields()">Save</button>

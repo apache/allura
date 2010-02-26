@@ -1,7 +1,7 @@
 #-*- python -*-
 import logging
 from mimetypes import guess_type
-import json, urllib
+import json, urllib, re
 
 # Non-stdlib imports
 import pkg_resources
@@ -440,6 +440,7 @@ class CommentController(object):
             return CommentController(
                 self.ticket, next), remainder
 
+NONALNUM_RE = re.compile(r'\W+')
 
 class TrackerAdminController(DefaultAdminController):
 
@@ -464,4 +465,8 @@ class TrackerAdminController(DefaultAdminController):
     @expose()
     def set_custom_fields(self, **post_data):
         data = urllib.unquote_plus(post_data['custom_fields'])
-        self.globals.custom_fields = json.loads(data)
+        custom_fields = json.loads(data)
+        for field in custom_fields:
+            field['name'] = '_' + '_'.join([w for w in NONALNUM_RE.split(field['label']) if w])
+            field['label'] = field['label'].title()
+        self.globals.custom_fields = custom_fields

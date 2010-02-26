@@ -1,6 +1,6 @@
-function add_field(name, type, options){
+function add_field(label, type, options){
     var $new_field = $('<div class="custom-field">'
-                     +   '<label>Name: </label><input class="field-name" type="text"/><br/>'
+                     +   '<label>Label: </label><input class="field-label" type="text"/><br/>'
                      +   '<label>Type: </label>'
                      +   '<select>'
                      +     '<option value="string">string</option>'
@@ -12,7 +12,7 @@ function add_field(name, type, options){
                      +   '<button onclick="delete_field(this)">Delete</button>'
                      + '</div>');
 
-    name && $new_field.find('input.field-name').val(name);
+    label && $new_field.find('input.field-label').val(label);
     type && $new_field.find('option:contains('+type+')').attr('selected', 'selected');
     options && $new_field.find('input.field-options').val(options);
 
@@ -30,7 +30,7 @@ function save_fields(){
                 map(function(){
                     var $this=$(this);
                     return ('{'
-                        + '"name":"' + $this.find('input.field-name').val() + '",'
+                        + '"label":"' + $this.find('input.field-label').val() + '",'
                         + '"type":"' + $this.find('select').val() + '",'
                         + '"options":"' + $this.find('input.field-options').val() + '"'
                         + '}'
@@ -48,8 +48,8 @@ function show_hide_options(){
 
 $(function(){
     $('div.custom-field-stub').each(function(){
-        var $this=$(this), name=$this.attr('data-name'), type=$this.attr('data-type'), options=$this.attr('data-options');
-        add_field(name, type, options);
+        var $this=$(this), label=$this.attr('data-label'), type=$this.attr('data-type'), options=$this.attr('data-options');
+        add_field(label, type, options);
         $this.remove();
     });
     $('#custom-field-list').sortable();

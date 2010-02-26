@@ -22,7 +22,7 @@
         State: $ticket.status<br/>
         Assigned To: ${ticket.assigned_to_name()}<br/>
         <py:for each="field in globals.custom_fields or []">
-            ${field.name}: ${ticket.custom_fields.get(field.name, '')}<br/>
+            ${field.label}: ${ticket.custom_fields.get(field.name, '')}<br/>
         </py:for>
     </div>
     <div id="ticket_header">

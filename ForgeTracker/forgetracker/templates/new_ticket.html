@@ -33,7 +33,7 @@
   <div py:if="globals.custom_fields">
     <div class="span-24 last quiet prepend-top bottom-liner">Custom Fields</div>
     <div py:for="field in globals.custom_fields">
-      <label for="${field.name}">${field.name}:</label>
+      <label for="${field.name}">${field.label}:</label>
       <br/>
       <input py:if="field.type != 'select'" name="${field.name}" type="text" value=""/>
       <select py:if="field.type == 'select'" name="${field.name}">

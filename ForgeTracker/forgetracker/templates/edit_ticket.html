@@ -38,7 +38,7 @@
             <span class="editor ticket-assigned-to">${select_user_in_project('assigned_to',ticket.assigned_to_id)}</span>
           </div>
           <py:for each="field in globals.custom_fields or []">
-              ${field.name}: ${ticket.custom_fields.get(field.name, '')}<br/>
+              ${field.label}: ${ticket.custom_fields.get(field.name, '')}<br/>
           </py:for>
       </div>
       <div id="ticket_header">
@@ -72,7 +72,7 @@
       <div class="span-24 last custom-fields" py:if="globals.custom_fields">
           <div class="span-24 last quiet prepend-top bottom-liner">Custom Fields</div>
           <div py:for="field in globals.custom_fields" class="editable viewing span-24 last">
-              <label class="span-4">${field.name}:</label>
+              <label class="span-4">${field.label}:</label>
               <span class="viewer span-20 last">${ticket.custom_fields.get(field.name, '')}</span>
               <span class="editor span-20 last">
                   <input py:if="field.type != 'select'" name="${field.name}" type="text" style="width:50%" value="${ticket.custom_fields.get(field.name, '')}"/>
