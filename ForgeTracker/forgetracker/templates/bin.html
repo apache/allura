@@ -24,7 +24,7 @@
       <div class="bin-list">
         <py:for each="bin in bins">
           <div class="bin span-20 last">
-            <div class="bin-summary span-4"><a href="$bin.summary">$bin.summary</a></div>
+            <div class="bin-summary span-4"><a href="${bin.url()}">$bin.summary</a></div>
             <div class="bin-terms span-14">$bin.terms</div>
           </div>
         </py:for>
