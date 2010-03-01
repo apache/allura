@@ -4,6 +4,11 @@
       xmlns:py="http://genshi.edgewall.org/"
       xmlns:xi="http://www.w3.org/2001/XInclude"
       py:strip="True">
+  <?python
+         from ew import ResourceManager
+         resource_manager = ResourceManager.get()
+         resource_manager.register_widgets(c)
+         ?>
   <xi:include href="header.html" />
   <xi:include href="sidebars.html" />
   <xi:include href="footer.html" />
@@ -12,6 +17,8 @@
     <meta content="text/html; charset=UTF-8" http-equiv="content-type" py:replace="''"/>
     <title py:replace="''">Your title goes here</title>
     <meta py:replace="select('*')"/>
+    <py:for each="blob in resource_manager.emit('head_css')">$blob</py:for>
+    <py:for each="blob in resource_manager.emit('head_js')">$blob</py:for>
     <link rel="stylesheet" type="text/css" media="screen, projection" href="${tg.url('/css/blueprint/screen.css')}" />
     <link rel="stylesheet" type="text/css" media="print" href="${tg.url('/css/blueprint/print.css')}" />
     <link rel="stylesheet" type="text/css" href="${tg.url('/css/forge/jquery-ui-1.7.2.custom.css')}" />
@@ -25,6 +32,7 @@
   </head>
   
   <body py:match="body" py:attrs="select('@*')">
+    <py:for each="blob in resource_manager.emit('body_top_js')">$blob</py:for>
     <div class="container">
       ${main_menu()}
       ${nav_menu()}
@@ -51,6 +59,7 @@
       <div class="clear"/>
       ${footer()}
     </div>
+    <py:for each="blob in resource_manager.emit('body_js')">$blob</py:for>
     <script type="text/javascript" src="/js/pyforge-base.js"/>
   </body>
 </html>

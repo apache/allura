@@ -9,6 +9,7 @@ from tg.decorators import with_trailing_slash, without_trailing_slash
 from pylons import c, g
 from webob import exc
 
+import ew
 import ming
 
 from pyforge.lib.base import BaseController
@@ -44,6 +45,7 @@ class RootController(BaseController):
     error = ErrorController()
     static = StaticController()
     search = SearchController()
+    _ew_resources = ew.ResourceManager.get()
     # projects = NeighborhoodController('Projects')
     # users = NeighborhoodController('Users', 'users/')
     # adobe = NeighborhoodController('Adobe')
