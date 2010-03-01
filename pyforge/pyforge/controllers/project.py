@@ -149,6 +149,17 @@ class ProjectController(object):
         response.content_type = 'application/xml'
         return feed.writeString('utf-8')
 
+    @expose()
+    def icon(self):
+        with c.project.icon.open() as fp:
+            filename = fp.metadata['filename']
+            response.headers['Content-Type'] = ''
+            response.content_type = fp.content_type
+            response.headers.add('Content-Disposition',
+                                     'attachment;filename=%s' % filename)
+            return fp.read()
+        return c.project.icon.filename
+
 class NeighborhoodAdminController(object):
 
     def __init__(self, neighborhood):

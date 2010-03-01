@@ -38,7 +38,10 @@
   <py:def function="nav_menu()">
     <div id="nav_menu" class="span-24 last" py:if="c.project">
 
-      <div class="span-2"><!-- <img py:if="c.project.icon" src="${c.project.url()}/icon" class="project_icon"/> -->&nbsp;</div>
+      <div class="span-2">
+        <img py:if="c.project.icon" src="${c.project.url()}/icon" class="project_icon"/>
+        <py:if test="not c.project.icon">&nbsp;</py:if>
+      </div>
       <div class="span-15 project">
         <a py:if="c.project" href="${c.project.url()}" class="project_name">$c.project.name</a>
 

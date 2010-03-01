@@ -1,6 +1,7 @@
 import difflib
 from pprint import pformat
 from collections import defaultdict
+from mimetypes import guess_type
 
 import pkg_resources
 from pylons import c, request
@@ -102,10 +103,26 @@ class ProjectAdminController(object):
         return app.admin, remainder
 
     @expose()
-    def update(self, name=None, short_description=None, description=None, **kw):
+    def update(self, name=None, short_description=None, description=None, icon=None, **kw):
         c.project.name = name
         c.project.short_description = short_description
         c.project.description = description
+        if icon is not None:
+            filename = icon.filename
+            content_type = guess_type(filename)
+            if content_type: content_type = content_type[0]
+            else: content_type = 'application/octet-stream'
+            if c.project.icon:
+                M.ProjectFile.query.remove({'metadata.project_id':c.project._id, 'metadata.category':'icon'})
+            with M.ProjectFile.create(
+                content_type=content_type,
+                filename=filename,
+                category='icon',
+                project_id=c.project._id) as fp:
+                while True:
+                    s = icon.file.read()
+                    if not s: break
+                    fp.write(s)
         redirect('.')
 
     @expose()

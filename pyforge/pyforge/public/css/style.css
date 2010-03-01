@@ -30,7 +30,6 @@ a, a:link, a:visited, a:hover, a:active{
 #nav_menu .neighborhood_icon, #nav_menu .project_icon{
     width: 55px;
     height: 55px;
-    border: 1px solid #ccc;
     display: block;
     margin: 0 5px;
 }

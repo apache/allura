@@ -39,12 +39,14 @@
     <div id="project-admin">
       <div py:if="not has_project_access('update')()">
         <h3>Project Name: $c.project.name</h3>
+        <h3>Icon</h3>
+        <img src="${c.project.url()}/icon"/>
         <h3>Short Description</h3>
         <pre>$c.project.short_description</pre>
         <h3>Description</h3>
         ${Markup(c.project.description_html)}
       </div>
-      <form py:if="has_project_access('update')()" method="POST" action="update">
+      <form py:if="has_project_access('update')()" method="POST" action="update" enctype="multipart/form-data">
         <div class="editable viewing">
           <div class="viewer"><h3>Project Name: $c.project.name</h3></div>
           <div class="editor">
@@ -53,6 +55,17 @@
           </div>
         </div>
         <h3>Shortname: $c.project.shortname</h3>
+        <h3>Icon</h3>
+        <div class="editable viewing" style="min-height:50px;">
+          <div class="viewer">
+            <py:if test="c.project.icon">
+              <img src="${c.project.url()}/icon"/>
+            </py:if>
+          </div>
+          <div class="editor">
+            ${file_field('icon', 'File')}
+          </div>
+        </div>
         <h3>Short Description</h3>
         <div class="editable viewing">
           <div class="viewer"><pre>$c.project.short_description</pre></div>

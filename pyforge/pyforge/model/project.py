@@ -175,6 +175,12 @@ class Neighborhood(MappedClass):
     def icon(self):
         return NeighborhoodFile.query.find({'metadata.neighborhood_id':self._id}).first()
 
+class ProjectFile(File):
+    metadata=FieldProperty(dict(
+            project_id=S.ObjectId,
+            category=str,
+            filename=str))
+
 class Project(MappedClass):
     class __mongometa__:
         session = main_orm_session
@@ -235,6 +241,10 @@ class Project(MappedClass):
                 return 'http:' + url
         else:
             return url
+
+    @property
+    def icon(self):
+        return ProjectFile.query.find({'metadata.project_id':c.project._id, 'metadata.category':'icon'}).first()
 
     @property
     def description_html(self):
