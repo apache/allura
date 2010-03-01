@@ -14,33 +14,41 @@
     <meta py:replace="select('*')"/>
     <link rel="stylesheet" type="text/css" media="screen, projection" href="${tg.url('/css/blueprint/screen.css')}" />
     <link rel="stylesheet" type="text/css" media="print" href="${tg.url('/css/blueprint/print.css')}" />
+    <link rel="stylesheet" type="text/css" href="${tg.url('/css/themename/jquery-ui-1.7.1.custom.css')}" />
+
     <!--[if lt IE 8]>
       <link rel="stylesheet" type="text/css" media="screen, projection" href="${tg.url('/css/blueprint/ie.css')}" />
     <![endif]-->
     <link rel="stylesheet" type="text/css" media="screen" href="${tg.url('/css/style.css')}" />
     <script type="text/javascript" src="/js/jquery-1.4.2.min.js"/>
+    <script type="text/javascript" src="/js/jquery-ui-1.7.1.custom.min.js"></script>
   </head>
   
   <body py:match="body" py:attrs="select('@*')">
     <div class="container">
       ${main_menu()}
-      ${sidebar_menu()}
-      ${project_menu()}
-      <div id="content">
-        <py:with vars="flash=tg.flash_obj.render('flash', use_js=False)">
-          <div py:if="flash" py:content="XML(flash)" />
-        </py:with>
-        <!-- <div class="breadcrumbs" py:if="c.project or c.app">
-          <ul py:if="c.app">
-            ${crumbs(c.app.config.breadcrumbs())}
-          </ul>
-          <ul py:if="not c.app">
-            ${crumbs(c.project.breadcrumbs())}
-          </ul>
-        </div> -->
-        <div py:replace="select('*|text()')"/>
-        <!-- End of main_content -->
+      ${nav_menu()}
+      <div id="content_holder" class="span-24 last">
+        ${sidebar_menu()}
+        <div id="content" class="span-20 last">
+          <div style="padding: 1em">
+            <py:with vars="flash=tg.flash_obj.render('flash', use_js=False)">
+              <div py:if="flash" py:content="XML(flash)" />
+            </py:with>
+            <!-- <div class="breadcrumbs" py:if="c.project or c.app">
+              <ul py:if="c.app">
+                ${crumbs(c.app.config.breadcrumbs())}
+              </ul>
+              <ul py:if="not c.app">
+                ${crumbs(c.project.breadcrumbs())}
+              </ul>
+            </div> -->
+            <div py:replace="select('*|text()')"/>
+            <!-- End of main_content -->
+          </div>
+        </div>
       </div>
+      <div class="clear"/>
       ${footer()}
     </div>
     <script type="text/javascript" src="/js/pyforge-base.js"/>

@@ -1,6 +1,7 @@
 <html xmlns:py="http://genshi.edgewall.org/"
       xmlns:xi="http://www.w3.org/2001/XInclude"
       py:strip="True">
+  <?python from pyforge.lib.security import has_neighborhood_access ?>
 
   <ul py:def="project_tree(project)">
     <li py:for="p in project.direct_subprojects">
@@ -22,49 +23,56 @@
   </py:def>
 
   <py:def function="main_menu()">
-    <div id="mainmenu">
-      <ul class="mb">
-        <li><a href="/"><em>Open</em>Forge</a></li>
-        <li><a py:if="c.project and c.project.neighborhood" href="${c.project.neighborhood.url()}">$c.project.neighborhood.name</a></li>
-        <li class="loginlogout">
-          <a href="/auth/logout" py:if="c.user and c.user._id">Log Out</a>
-          <a href="/auth/" py:if="not c.user or not c.user._id">Log In</a>
-        </li>
-        <li class="user-link">
-            <a href="${c.user.url()}" py:if="c.user and c.user._id">$c.user.display_name</a>
-            <a href="." class="todo" py:if="not c.user or not c.user._id">Create Account</a>
-        </li>
-        <li class="forge-search-link"><a href="/search/">Search OpenForge</a></li>
-      </ul>
+    <div id="mainmenu" class="span-24 last">
+      <div class="sf_logo span-10"><a href="/"><img src="/images/sf.png"/></a></div>
+      <div class="span-14 last">
+        <a href="/auth/logout" py:if="c.user and c.user._id" class="sf_log_out">Log Out</a>
+        <a href="/auth/" py:if="not c.user or not c.user._id" class="sf_log_in">Log In</a>
+        <a href="${c.user.url()}" py:if="c.user and c.user._id" class="sf_user_link">$c.user.display_name</a>
+        <a href="." py:if="not c.user or not c.user._id" class="sf_create_account todo">Create Account</a>
+        <a href="/search/" class="sf_search_link">Search Site</a>
+      </div>
     </div>
   </py:def>
 
-  <py:def function="project_menu()">
-    <div id="project-menu" py:if="c.project">
-      <span id="project-search"><input type="text"/></span>
-      <ul class="mb">
-        <li py:for="s in c.project.sitemap()">
-          <a py:if="s.url" href="$s.url" class="$s.className">$s.label</a>
-          <span py:if="not s.url" class="$s.className">$s.label</span>
-        </li>
-      </ul>
+  <py:def function="nav_menu()">
+    <div id="nav_menu" class="span-24 last" py:if="c.project">
+
+      <div class="span-2"><!-- <img py:if="c.project.icon" src="${c.project.url()}/icon" class="project_icon"/> -->&nbsp;</div>
+      <div class="span-15 project">
+        <a py:if="c.project" href="${c.project.url()}" class="project_name">$c.project.name</a>
+
+        <ul class="nav_links">
+          <li py:for="s in c.project.sitemap()">
+            <a py:if="s.url and s.label != 'Home'" href="$s.url" class="$s.className ${s.url[:-1] in request.url and 'active' or ''}">$s.label</a>
+            <a py:if="s.url and s.label == 'Home'" href="$s.url" class="$s.className ${s.url[:-1] in request.url and 'active' or ''}"><img src="/images/home.png"/></a>
+            <span py:if="not s.url" class="$s.className">$s.label</span>
+          </li>
+        </ul>
+      </div>
+
+      <div class="span-5 neighborhood">
+        <a href="${c.project.neighborhood.url()}" class="neighborhood_name">$c.project.neighborhood.name</a><br/>
+        <em class="neighborhood_member">Neighborhood Member</em>
+      </div>
+      <div class="span-2 last"><img py:if="c.project.neighborhood.icon" src="${c.project.neighborhood.url()}/icon" class="neighborhood_icon"/></div>
     </div>
   </py:def>
 
   <py:def function="sidebar_menu()">
-    <div id="sidebar">
-      <a py:if="c.project" href="${c.project.url()}" id="project-home-link">$c.project.name</a>
+    <div id="sidebar" class="span-4">
+      <span id="app-search"><input type="text" class="defaultText" title="Search Tickets"/></span>
       <ul id="sidebarmenu" py:if="getattr(c, 'app', None)">
         <li py:for="s in c.app.sidebar_menu()">
-          <a py:if="s.url" href="$s.url" class="$s.className">$s.label</a>
-          <span py:if="not s.url" class="$s.className">$s.label</span>
+          <a py:if="s.url" href="$s.url" class="$s.className ${request.url.rfind(s.url,-len(s.url)) != -1 and 'active' or ''}">$s.label</a>
+          <span py:if="not s.url" class="$s.className nav_head">$s.label</span>
         </li>
       </ul>
       <ul id="sidebarmenu"
           py:if="getattr(c, 'project', None) and not getattr(c, 'app', None)">
         <li py:for="s in c.project.sidebar_menu()">
-          <a py:if="s.url" href="$s.url" class="$s.className">$s.label</a>
-          <span py:if="not s.url" class="$s.className">$s.label</span>
+          <a py:if="s.url" href="$s.url" class="$s.className ${s.url[:-1] in request.url and 'active' or ''}">$s.label</a>
+          <span py:if="not s.url" class="$s.className nav_head">$s.label</span>
         </li>
       </ul>
     </div>
