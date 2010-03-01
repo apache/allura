@@ -80,6 +80,17 @@
             <textarea name="description">$c.project.description</textarea>
           </div>
         </div>
+        <h3>Screenshots</h3>
+        <div class="editable viewing" style="min-height: 50px">
+          <div class="viewer">
+            <py:if test="len(c.project.get_screenshots())">
+              <img py:for="ss in c.project.get_screenshots()" src="${c.project.url()}screenshot/$ss.filename" class="project_screenshot"/> 
+            </py:if>
+          </div>
+          <div class="editor">
+            ${file_field('screenshot', 'File')}
+          </div>
+        </div>
       </form>
     </div>
     <div id="mount-admin" class="title-pane"> 

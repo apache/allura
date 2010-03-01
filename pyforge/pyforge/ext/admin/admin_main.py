@@ -103,11 +103,11 @@ class ProjectAdminController(object):
         return app.admin, remainder
 
     @expose()
-    def update(self, name=None, short_description=None, description=None, icon=None, **kw):
+    def update(self, name=None, short_description=None, description=None, icon=None, screenshot=None, **kw):
         c.project.name = name
         c.project.short_description = short_description
         c.project.description = description
-        if icon is not None:
+        if icon is not None and icon != '':
             filename = icon.filename
             content_type = guess_type(filename)
             if content_type: content_type = content_type[0]
@@ -121,6 +121,20 @@ class ProjectAdminController(object):
                 project_id=c.project._id) as fp:
                 while True:
                     s = icon.file.read()
+                    if not s: break
+                    fp.write(s)
+        if screenshot is not None and screenshot != '':
+            filename = screenshot.filename
+            content_type = guess_type(filename)
+            if content_type: content_type = content_type[0]
+            else: content_type = 'application/octet-stream'
+            with M.ProjectFile.create(
+                content_type=content_type,
+                filename=filename,
+                category='screenshot',
+                project_id=c.project._id) as fp:
+                while True:
+                    s = screenshot.file.read()
                     if not s: break
                     fp.write(s)
         redirect('.')

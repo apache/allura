@@ -92,6 +92,7 @@ class ProjectController(object):
     def __init__(self):
         setattr(self, 'feed.rss', self.feed)
         setattr(self, 'feed.atom', self.feed)
+        self.screenshot = ScreenshotsController()
 
     def _lookup(self, name, *remainder):
         name=unquote(name)
@@ -159,6 +160,29 @@ class ProjectController(object):
                                      'attachment;filename=%s' % filename)
             return fp.read()
         return c.project.icon.filename
+
+class ScreenshotsController(object):
+
+    def _lookup(self, filename, *args):
+        return ScreenshotController(filename), args
+
+class ScreenshotController(object):
+
+    def __init__(self, filename):
+        self.filename = filename
+        self.screenshot = M.ProjectFile.query.find({'metadata.project_id':c.project._id, 'metadata.category':'screenshot', 'filename':filename}).first()
+
+    @expose()
+    def index(self, embed=False):
+        with self.screenshot.open() as fp:
+            filename = fp.metadata['filename']
+            response.headers['Content-Type'] = ''
+            response.content_type = fp.content_type
+            if not embed:
+                response.headers.add('Content-Disposition',
+                                     'attachment;filename=%s' % filename)
+            return fp.read()
+        return self.filename
 
 class NeighborhoodAdminController(object):
 

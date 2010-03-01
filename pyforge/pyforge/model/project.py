@@ -242,6 +242,9 @@ class Project(MappedClass):
         else:
             return url
 
+    def get_screenshots(self):
+        return ProjectFile.query.find({'metadata.project_id':c.project._id, 'metadata.category':'screenshot'}).all()
+
     @property
     def icon(self):
         return ProjectFile.query.find({'metadata.project_id':c.project._id, 'metadata.category':'icon'}).first()
