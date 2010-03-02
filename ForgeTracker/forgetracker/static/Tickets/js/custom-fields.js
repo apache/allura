@@ -37,7 +37,9 @@ function save_fields(){
                 }).
                 get().
                 join(',') + ']';
-    $.post('set_custom_fields', { custom_fields: json });
+    $.post('set_custom_fields', { custom_fields: json }, function(){
+        location.reload();
+    });
 }
 
 function show_hide_options(){
