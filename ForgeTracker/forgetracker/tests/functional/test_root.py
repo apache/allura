@@ -52,6 +52,16 @@ class TestFunctionalController(TestController):
         index_view = self.app.get('/bugs/')
         assert_true(summary in index_view)
 
+    def test_render_help(self):
+        summary = 'test render help'
+        r = self.app.get('/bugs/help')
+        assert_true('Tracker Help' in r)
+
+    def test_render_markdown_syntax(self):
+        summary = 'test render markdown syntax'
+        r = self.app.get('/bugs/markdown_syntax')
+        assert_true('Markdown Syntax' in r)
+
     def test_ticket_tag_untag(self):
         summary = 'test tagging and untagging a ticket'
         self.new_ticket(summary)
@@ -148,7 +158,7 @@ class TestFunctionalController(TestController):
         summary = 'test assign ticket'
         self.new_ticket(summary)
         response = self.app.get('/projects/test/bugs/1/edit/')
-        assert response.html.find('span', {'class': 'viewer ticket-assigned-to'}).string == 'nobody'
+        assert 'nobody' in response.html.find('span', {'class': 'viewer ticket-assigned-to'}).string
         test_user = response.html.find(id="assigned_to").findAll('option')[1]
         test_user_id = test_user['value']
         test_user_name = test_user.string
@@ -161,7 +171,7 @@ class TestFunctionalController(TestController):
             'tags_old':''
         })
         response = self.app.get('/projects/test/bugs/1/edit/')
-        assert response.html.find('span', {'class': 'viewer ticket-assigned-to'}).string == test_user_name
+        assert test_user_name in response.html.find('span', {'class': 'viewer ticket-assigned-to'}).find('a').string
 
     def test_custom_fields(self):
         spec = """[{"label":"Priority","type":"select","options":"normal urgent critical"},

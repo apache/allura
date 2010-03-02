@@ -96,10 +96,8 @@ class ForgeTrackerApp(Application):
                 sub = model.Ticket.query.get(_id=sub_id, app_config_id=c.app.config._id)
                 links.append(SitemapEntry('Ticket {0}'.format(sub.ticket_num), sub.url()))
             links.append(SitemapEntry('Create New Subtask', '{0}new/?super_id={1}'.format(self.config.url(), ticket._id)))
-        links.append(SitemapEntry('Ticket Help', '.', className="todo"))
-        links.append(SitemapEntry('Markdown Syntax', '.', className="todo"))
-        links.append(SitemapEntry('Auditors', '.', className="todo"))
-        links.append(SitemapEntry('Reactors', '.', className="todo"))
+        links.append(SitemapEntry('Ticket Help', 'help'))
+        links.append(SitemapEntry('Markdown Syntax', self.config.url() + 'markdown_syntax'))
         return links
 
     @property
@@ -212,6 +210,16 @@ class RootController(object):
 
     @expose('forgetracker.templates.not_found')
     def not_found(self, **kw):
+        return dict()
+
+    @expose('forgetracker.templates.markdown_syntax')
+    def markdown_syntax(self):
+        'Static page explaining markdown.'
+        return dict()
+
+    @expose('forgetracker.templates.help')
+    def help(self):
+        'Static help page.'
         return dict()
 
     @without_trailing_slash

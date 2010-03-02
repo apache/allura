@@ -16,36 +16,49 @@
     </style>
   </head>
 
+  <?python from pyforge.lib import helpers?>
   <body>
-    <div class="container">
-        <h1>Welcome to ForgeTracker</h1>
-        <h2>Project: $c.project.shortname</h2>
-        <div class="ticket-list">
-          <py:for each="ticket in tickets">
-            <div class="ticket span-24 last">
-                <div class="ticket-num span-3"><a href="$ticket.ticket_num/">$ticket.ticket_num</a></div>
-                <div class="ticket-status span-3">$ticket.status</div>
-                <div class="ticket-summary span-18 last">$ticket.summary</div>
-            </div>
-          </py:for>
-        </div>
-        <div class="recent-changes">
-          <h3>Recent Changes</h3>
-          <div class="change-list">
-            <py:for each="change in changes">
-              <div class="change span-24 last">
-                  <div class="change-date span-5">$change.change_date</div>
-                  <div class="change-type span-2">$change.change_type</div>
-                  <div class="ticket-num span-2"><a href="$change.ticket_num">($change.ticket_num)</a></div>
-                  <div class="change-summary span-14 last">$change.change_text</div>
-              </div>
-            </py:for>
-          </div>
-        </div>
+        <h2>ForgeTracker for $c.project.shortname</h2>
+        <h3>Tickets</h3>
+        <py:if test="not len(tickets)">No tickets have been created yet.</py:if>
+        <table py:if="len(tickets)">
+          <thead>
+            <tr>
+              <th>Number</th>
+              <th>Status</th>
+              <th>Summary</th>
+            </tr>
+          </thead>
+          <tbody class="ticket-list">
+            <tr py:for="ticket in tickets">
+              <td><a href="$ticket.ticket_num/">#$ticket.ticket_num</a></td>
+              <td>$ticket.status</td>
+              <td>$ticket.summary</td>
+            </tr>
+          </tbody>
+        </table>
+        <h3 py:if="len(changes)">Recent Changes</h3>
+        <table py:if="len(changes)">
+          <thead>
+            <tr>
+              <th>Time</th>
+              <th>Type</th>
+              <th>Ticket</th>
+              <th>Summary</th>
+            </tr>
+          </thead>
+          <tbody class="change-list">
+            <tr py:for="change in changes">
+              <td>${helpers.ago(change.change_date)}</td>
+              <td>$change.change_type</td>
+              <td><a href="$change.ticket_num">#$change.ticket_num</a></td>
+              <td>$change.change_text</td>
+            </tr>
+          </tbody>
+        </table>
         <script type="text/javascript">
-            $('div.ticket-list').children(':even').css('background-color', '#eeeeee');
-            $('div.change-list').children(':even').css('background-color', '#eeeeee');
+            $('tbody.ticket-list').children(':even').addClass('even');
+            $('tbody.change-list').children(':even').addClass('even');
         </script>
-    </div>
   </body>
 </html>

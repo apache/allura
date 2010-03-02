@@ -130,45 +130,16 @@ ul#sidebarmenu li a {
 ul#sidebarmenu li a.active {
     background-color: #EDF3FB;
 }
-/*
 
 #sidebar-right
 {
-    float: right;
-    width: 15em;
-    padding: .5em;
-    margin: 0 .5em;
-    border: 1px solid #ccc;
+    background-color: #EDF3FB;
+    border-style: solid;
+    border-color: #aed0ea;
+    border-width: 1px 0 0 0;
+    position: relative;
+    padding: 5px;
 }
-
-#sidebar-right ul
-{
-    padding: 0;
-    margin: 0;
-    background-color: #aaa;
-}
-
-
-#sidebar-right ul li {
-    list-style-type: none;
-    margin: 0;
-    padding: 0;
-    font-weight: bold;
-}
-
-#sidebar-right ul li a {
-    display:block;
-    width: 100%;
-    color: #000;
-    font-size: 12px;
-    text-decoration: none;
-    font-weight: normal;
-}
-
-#sidebar-right ul li a:hover {
-    background-color: #ddd;
-}
-*/
 
 #footer{
 	clear: both;
@@ -194,6 +165,13 @@ ul#sidebarmenu li a.active {
 }
 #footer li{
     list-style-type: none;
+}
+
+thead th {
+    background-color: #aed0ea;
+}
+tbody .even{
+    background-color: #EDF3FB;
 }
 
 .defaultTextActive {

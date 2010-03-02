@@ -22,9 +22,27 @@
 
   <body>
     <form method="POST" action="../update_ticket">
-      <div id="sidebar-right">
+      <div class="span-14">
+        <div class="span-2">
+          ${gravatar(ticket.reported_by().preferences.email_address, size=50)}
+        </div>
+        <div class="span-12 last">
+          <span class="editable viewing title">
+            <h2 class="viewer ticket_title">#$ticket.ticket_num $ticket.summary</h2>
+            <span class="editor">
+              <input name="summary" value="$ticket.summary"/>
+            </span>
+          </span>
+          <a href="${ticket.reported_by().url()}">${ticket.reported_by().username}</a>, ${helpers.ago(ticket.created_date, round=True)}
+          ${markdown_edit("description",ticket.description)}
+
+          <input type="submit" value="submit"/>
+        </div>
+      </div>
+      <div id="sidebar-right" class="span-5 last">
+          <a class="ticket_feed" href="${ticket.url()}feed.rss"><img src="/images/rss.png" alt="subscribe" title="subscribe" width="25" height="25"/></a>
           <div class="editable viewing">
-              State:
+              Status:
               <span class="viewer">$ticket.status</span>
               <span class="editor">
                 <select name="status">
@@ -33,66 +51,40 @@
               </span>
           </div>
           <div class="editable viewing">
+              Tags:
+              <span class="viewer" py:if="len(ticket.tags)"><span py:for="tag in ticket.tags">$tag.tag ($tag.count) </span></span>
+              <span class="viewer" py:if="not len(ticket.tags)">None</span>
+              <span class="editor">${user_tags_edit('tags', user_tags)}</span>
+          </div>
+          <div class="editable viewing">
             Assigned To:
-            <span class="viewer ticket-assigned-to">${ticket.assigned_to_name()}</span>
+            <span class="viewer ticket-assigned-to">
+              <py:if test="not ticket.assigned_to()">${ticket.assigned_to_name()}</py:if>
+              <a py:if="ticket.assigned_to()" href="${ticket.assigned_to().url()}">${ticket.assigned_to_name()}</a>
+            </span>
             <span class="editor ticket-assigned-to">${select_user_in_project('assigned_to',ticket.assigned_to_id)}</span>
           </div>
-          <py:for each="field in globals.custom_fields or []">
-              ${field.label}: ${ticket.custom_fields.get(field.name, '')}<br/>
-          </py:for>
-      </div>
-      <div id="ticket_header">
-        <div class="reported_by">
-          ${gravatar(ticket.reported_by().preferences.email_address, size=50)}<br/>
-          ${ticket.reported_by().username}
-        </div>
-        <div class="information">
-          <div style="overflow: auto">
-            <span class="editable viewing title">
-              <h2 class="viewer">#$ticket.ticket_num $ticket.summary</h2>
+          <div py:for="field in globals.custom_fields or []" class="editable viewing">
+              <span class="viewer">${field.label}: ${ticket.custom_fields.get(field.name, '')}</span>
               <span class="editor">
-                <input name="summary" value="$ticket.summary"/>
-              </span>
-            </span>
-            <div class="update_times">
-              reported ${helpers.ago(ticket.created_date, round=True)}<br/>
-              last updated ${helpers.ago(ticket.last_updated, round=True)}
-            </div>
-            <a class="feed" href="${ticket.url()}feed.rss"><img src="/images/rss.png" alt="subscribe" title="subscribe" width="25" height="25"/></a>
-          </div>
-          <div>
-            <div class="tags">
-              ${user_tags_edit('tags', user_tags)}
-            </div>
-          </div>
-        </div>
-      </div>
-      ${markdown_edit("description",ticket.description)}
-
-      <div class="span-24 last custom-fields" py:if="globals.custom_fields">
-          <div class="span-24 last quiet prepend-top bottom-liner">Custom Fields</div>
-          <div py:for="field in globals.custom_fields" class="editable viewing span-24 last">
-              <label class="span-4">${field.label}:</label>
-              <span class="viewer span-20 last">${ticket.custom_fields.get(field.name, '')}</span>
-              <span class="editor span-20 last">
-                  <input py:if="field.type != 'select'" name="${field.name}" type="text" style="width:50%" value="${ticket.custom_fields.get(field.name, '')}"/>
+                  <input py:if="field.type != 'select'" name="${field.name}" type="text" value="${ticket.custom_fields.get(field.name, '')}"/>
                   <select py:if="field.type == 'select'" name="${field.name}">
                     <option py:for="option in field.options.split()" value="${option}" selected="${'selected' if ticket.custom_fields.get(field.name, '')==option else None}">${option}</option>
                   </select>
               </span>
           </div>
       </div>
-
-      <input type="submit" value="submit"/>
     </form>
-    ${list_attachments(list(ticket.attachments), has_artifact_access('write', ticket)())}
-    <div py:if="has_artifact_access('write', ticket)()" class="reply title-pane closed">
-      <button class="title">Add Attachment</button>
-      <div class="content">
-        <form method="post" action="${ticket.url() + 'attach'}" enctype="multipart/form-data">
-          ${file_field('file_info', 'File to upload')}
-          ${submit_button('Attach file')}
-        </form>
+    <div class="span-12 push-2">
+      ${list_attachments(list(ticket.attachments), has_artifact_access('write', ticket)())}
+      <div py:if="has_artifact_access('write', ticket)()" class="reply title-pane closed">
+        <button class="title">Add Attachment</button>
+        <div class="content">
+          <form method="post" action="${ticket.url() + 'attach'}" enctype="multipart/form-data">
+            ${file_field('file_info', 'File to upload')}
+            ${submit_button('Attach file')}
+          </form>
+        </div>
       </div>
     </div>
     <hr/>

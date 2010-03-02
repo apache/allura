@@ -1,27 +1,6 @@
-#ticket_header{
-    position: relative;
-    margin-bottom: 1em;
-    overflow: hidden;
+.ticket_title{
+    margin: 0;
 }
-#ticket_header .reported_by{
-    float: left;
-    text-align: center;
-    margin-right: 1em;
-
-}
-#ticket_header .information{
-    float:left;
-    overflow: hidden;
-
-}
-#ticket_header .title{
-    float: left;
-    margin: 0 10px 5px 0;
-}
-#ticket_header .update_times{
-    float: left;
-    margin-right: 1em;
-}
-#ticket_header .feed{
-    float: left;
+.ticket_feed{
+    float: right;
 }

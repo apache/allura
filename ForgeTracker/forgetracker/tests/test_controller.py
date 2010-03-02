@@ -9,4 +9,4 @@ class TestRootController(TestController):
 
     def test_index(self):
         response = self.app.get('/Tickets/')
-        assert_true('Welcome to ForgeTracker' in response)
+        assert_true('ForgeTracker for' in response)
