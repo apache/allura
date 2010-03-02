@@ -86,7 +86,8 @@ class Ticket(VersionedArtifact):
     _id = FieldProperty(schema.ObjectId)
     created_date = FieldProperty(datetime, if_missing=datetime.utcnow)
 
-    parent_id = FieldProperty(schema.ObjectId, if_missing=None)
+    super_id = FieldProperty(schema.ObjectId, if_missing=None)
+    sub_ids = FieldProperty([schema.ObjectId], if_missing=None)
     ticket_num = FieldProperty(int)
     summary = FieldProperty(str)
     description = FieldProperty(str, if_missing='')
@@ -190,6 +191,72 @@ class Ticket(VersionedArtifact):
         Feed.post(self, 'Comment: %s' % text)
         c = Comment(ticket_id=self._id, text=text)
         return c
+
+    def set_as_subticket_of(self, new_super_id):
+        # For this to be generally useful we would have to check first that
+        # new_super_id is not a sub_id (recursively) of self
+
+        if self.super_id == new_super_id:
+            return
+
+        if self.super_id is not None:
+            old_super = Ticket.query.get(_id=self.super_id, app_config_id=c.app.config._id)
+            old_super.sub_ids = [id for id in old_super.sub_ids if id != self._id]
+            old_super.dirty_sums(dirty_self=True)
+
+        self.super_id = new_super_id
+
+        if new_super_id is not None:
+            new_super = Ticket.query.get(_id=new_super_id, app_config_id=c.app.config._id)
+            if new_super.sub_ids is None:
+                new_super.sub_ids = []
+            if self._id not in new_super.sub_ids:
+                new_super.sub_ids.append(self._id)
+            new_super.dirty_sums(dirty_self=True)
+
+    def recalculate_sums(self, super_sums=None):
+        """Calculate custom fields of type 'sum' (if any) by recursing into subtickets (if any)."""
+        if super_sums is None:
+            super_sums = {}
+            globals = Globals.query.get(app_config_id=c.app.config._id)
+            for k in [cf.name for cf in globals.custom_fields or [] if cf.type=='sum']:
+                super_sums[k] = float(0)
+
+        # if there are no custom fields of type 'sum', we're done
+        if not super_sums:
+            return
+
+        # if this ticket has no subtickets, use its field values directly
+        if not self.sub_ids:
+            for k in super_sums:
+                try:
+                    v = float(self.custom_fields.get(k, 0))
+                except ValueError:
+                    v = 0
+                super_sums[k] += v
+
+        # else recurse into subtickets
+        else:
+            sub_sums = {}
+            for k in super_sums:
+                sub_sums[k] = float(0)
+            for id in self.sub_ids:
+                subticket = Ticket.query.get(_id=id, app_config_id=c.app.config._id)
+                subticket.recalculate_sums(sub_sums)
+            for k, v in sub_sums.iteritems():
+                self.custom_fields[k] = v
+                super_sums[k] += v
+
+    def dirty_sums(self, dirty_self=False):
+        """From a changed ticket, climb the superticket chain to call recalculate_sums at the root."""
+        root = self if dirty_self else None
+        next_id = self.super_id
+        while next_id is not None:
+            root = Ticket.query.get(_id=next_id, app_config_id=c.app.config._id)
+            next_id = root.super_id
+        if root is not None:
+            root.recalculate_sums()
+
 
 class Comment(Message):
 

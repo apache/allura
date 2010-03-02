@@ -13,6 +13,8 @@ from pylons import g, c, request
 from formencode import validators
 from pymongo.bson import ObjectId
 
+from ming.orm import session
+
 # Pyforge-specific imports
 from pyforge.app import Application, ConfigOption, SitemapEntry, DefaultAdminController
 from pyforge.lib.helpers import push_config, tag_artifact, DateTimeConverter
@@ -85,7 +87,15 @@ class ForgeTrackerApp(Application):
         if len(search_bins):
             links = links + search_bins
         if ticket:
-            links.append(SitemapEntry('Subtasks', className="todo"))
+            if ticket.super_id:
+                links.append(SitemapEntry('Supertask'))
+                super = model.Ticket.query.get(_id=ticket.super_id, app_config_id=c.app.config._id)
+                links.append(SitemapEntry('Ticket {0}'.format(super.ticket_num), super.url()))
+            links.append(SitemapEntry('Subtasks'))
+            for sub_id in ticket.sub_ids or []:
+                sub = model.Ticket.query.get(_id=sub_id, app_config_id=c.app.config._id)
+                links.append(SitemapEntry('Ticket {0}'.format(sub.ticket_num), sub.url()))
+            links.append(SitemapEntry('Create New Subtask', '{0}new/?super_id={1}'.format(self.config.url(), ticket._id)))
         links.append(SitemapEntry('Ticket Help', '.', className="todo"))
         links.append(SitemapEntry('Markdown Syntax', '.', className="todo"))
         links.append(SitemapEntry('Auditors', '.', className="todo"))
@@ -192,11 +202,13 @@ class RootController(object):
 
     @with_trailing_slash
     @expose('forgetracker.templates.new_ticket')
-    def new(self, **kw):
+    def new(self, super_id=None, **kw):
         require(has_artifact_access('write'))
         tmpl_context.form = ticket_form
         globals = model.Globals.query.get(app_config_id=c.app.config._id)
-        return dict(modelname='Ticket', page='New Ticket', globals=globals)
+        return dict(action=c.app.config.url()+'save_ticket',
+                    super_id=super_id,
+                    globals=globals)
 
     @expose('forgetracker.templates.not_found')
     def not_found(self, **kw):
@@ -244,7 +256,7 @@ class RootController(object):
     def save_ticket(self, ticket_num, tags, tags_old=None, **post_data):
         require(has_artifact_access('write'))
         if request.method != 'POST':
-            raise Exception('save_new must be a POST request')
+            raise Exception('save_ticket must be a POST request')
         globals = model.Globals.query.get(app_config_id=c.app.config._id)
         if ticket_num:
             ticket = model.Ticket.query.get(app_config_id=c.app.config._id,
@@ -266,15 +278,29 @@ class RootController(object):
             post_data['ticket_num'] = globals.last_ticket_num
             # FIX ME
 
-        custom_fields = {}
-        for field in globals.custom_fields:
-            custom_fields[field.name] = True
-        for k,v in post_data.iteritems():
-            if k in custom_fields:
+        custom_sums = set()
+        other_custom_fields = set()
+        for cf in globals.custom_fields or []:
+            (custom_sums if cf.type=='sum' else other_custom_fields).add(cf.name)
+        for k, v in post_data.iteritems():
+            if k in custom_sums:
+                # sums must be coerced to numeric type
+                try:
+                    ticket.custom_fields[k] = float(v)
+                except ValueError:
+                    ticket.custom_fields[k] = 0
+            elif k in other_custom_fields:
+                # strings are good enough for any other custom fields
                 ticket.custom_fields[k] = v
-            else:
+            elif k != 'super_id':
+                # if it's not a custom field, set it right on the ticket (but don't overwrite super_id)
                 setattr(ticket, k, v)
         ticket.commit()
+        # flush so we can participate in a subticket search (if any)
+        session(ticket).flush()
+        super_id = post_data.get('super_id')
+        if super_id:
+            ticket.set_as_subticket_of(ObjectId(super_id))
         redirect(str(ticket.ticket_num)+'/')
 
 
@@ -350,10 +376,19 @@ class TicketController(object):
         tag_artifact(self.ticket, c.user, tags)
 
         globals = model.Globals.query.get(app_config_id=c.app.config._id)
-        if globals.custom_fields:
-            for field in globals.custom_fields:
-                self.ticket.custom_fields[field.name] = post_data[field.name]
+        any_sums = False
+        for cf in globals.custom_fields or []:
+            value = post_data[cf.name]
+            if cf.type == 'sum':
+                any_sums = True
+                try:
+                    value = float(value)
+                except ValueError:
+                    value = 0
+            self.ticket.custom_fields[cf.name] = value
         self.ticket.commit()
+        if any_sums:
+            self.ticket.dirty_sums()
         redirect('edit/')
 
     @expose()

@@ -8,13 +8,14 @@
 
 <head>
   <meta content="text/html; charset=UTF-8" http-equiv="content-type" py:replace="''"/>
-  <title>New ${modelname}</title>
+  <title>New Ticket</title>
 </head>
 
 <body>
 
-<form method="POST" action="../save_ticket">
+<form method="POST" action="${action}">
   <input type="hidden" name="ticket_num" value=""/>
+  <input type="hidden" name="super_id" value="${super_id}"/>
   <label for="summary">Name:</label>
   <br/>
   <input name="summary" value=""/>

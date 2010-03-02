@@ -164,9 +164,59 @@ class TestFunctionalController(TestController):
         assert response.html.find('span', {'class': 'viewer ticket-assigned-to'}).string == test_user_name
 
     def test_custom_fields(self):
-        spec = """[{"name":"Priority","type":"select","options":"normal urgent critical"},
-                   {"name":"Category","type":"string","options":""}]"""
+        spec = """[{"label":"Priority","type":"select","options":"normal urgent critical"},
+                   {"label":"Category","type":"string","options":""}]"""
         spec = urllib.quote_plus(spec)
         self.app.post('/admin/bugs/set_custom_fields', { 'custom_fields': spec })
         ticket_view = self.new_ticket('test custom fields')
         assert 'Priority: normal' in ticket_view
+
+    def test_subtickets(self):
+        # create two tickets
+        self.new_ticket('test superticket')
+        self.new_ticket('test subticket')
+        h.set_context('test', 'bugs')
+        super = tm.Ticket.query.get(ticket_num=1)
+        sub = tm.Ticket.query.get(ticket_num=2)
+
+        # make one ticket a subticket of the other
+        sub.set_as_subticket_of(super._id)
+        ThreadLocalORMSession.flush_all()
+
+        # get a view on the first ticket, check for other ticket listed in sidebar
+        ticket_view = self.app.get('/projects/test/bugs/1/')
+        assert 'Supertask' not in ticket_view
+        assert 'Ticket 2' in ticket_view
+
+        # get a view on the second ticket, check for other ticket listed in sidebar
+        ticket_view = self.app.get('/projects/test/bugs/2/')
+        assert 'Supertask' in ticket_view
+        assert 'Ticket 1' in ticket_view
+
+    def test_custom_sums(self):
+        # setup a custom sum field
+        spec = """[{"label":"Days","type":"sum","options":""}]"""
+        spec = urllib.quote_plus(spec)
+        self.app.post('/admin/bugs/set_custom_fields', { 'custom_fields': spec })
+
+        # create three tickets
+        self.new_ticket('test superticket')
+        self.new_ticket('test subticket-1')
+        self.new_ticket('test subticket-2')
+        h.set_context('test', 'bugs')
+        super = tm.Ticket.query.get(ticket_num=1)
+        sub1 = tm.Ticket.query.get(ticket_num=2)
+        sub2 = tm.Ticket.query.get(ticket_num=3)
+
+        # set values for the custom sum
+        sub1.custom_fields['_days'] = 4.5
+        sub2.custom_fields['_days'] = 2.0
+
+        # make two tickets a subtickets of the other
+        sub1.set_as_subticket_of(super._id)
+        sub2.set_as_subticket_of(super._id)
+        ThreadLocalORMSession.flush_all()
+
+        # get a view on the first ticket, check for other ticket listed in sidebar
+        ticket_view = self.app.get('/projects/test/bugs/1/')
+        assert 'Days: 6.5' in ticket_view
