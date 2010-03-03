@@ -21,7 +21,7 @@
   <body>
     ${Markup(c.project.description_html)}
     <div class="$layout_class">
-      <div py:for="div in layout" id="$div.name">
+      <div py:for="div in layout" class="$div.name">
         <py:for each="w in div.content">${Markup(w)}</py:for>
       </div>
     </div>

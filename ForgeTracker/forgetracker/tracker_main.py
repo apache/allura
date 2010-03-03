@@ -13,7 +13,7 @@ from pylons import g, c, request
 from formencode import validators
 from pymongo.bson import ObjectId
 
-from ming.orm import session
+from ming.orm.base import session
 
 # Pyforge-specific imports
 from pyforge.app import Application, ConfigOption, SitemapEntry, DefaultAdminController

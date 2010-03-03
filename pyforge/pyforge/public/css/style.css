@@ -19,6 +19,12 @@ a, a:link, a:visited, a:hover, a:active{
     float: right;
     margin-left: 2em;
 }
+#nav_menu_missing{
+    height: 0;
+    padding-top: 5px;
+    border: 5px solid #aed0ea;
+    border-width: 0 0 5px 0;
+}
 #nav_menu{
     background-color: #EDF3FB;
     height: 62px;
@@ -352,4 +358,23 @@ tbody .even{
 .tagEditor li:hover
 {
 	background-color: #eee;
+}
+#pyforge_directory{
+    margin-top: 1em;
+}
+#pyforge_directory h3{
+    margin: 1em 0 5px 0;
+}
+#pyforge_directory ul{
+    padding-left: 1em;
+    margin: 0;
+}
+#pyforge_directory li{
+    list-style-type: none;
+}
+#pyforge_directory a:link, #pyforge_directory a:visited, #pyforge_directory a:active{
+    text-decoration: none;
+}
+#pyforge_directory a:hover{
+    text-decoration: underline;
 }

@@ -202,7 +202,7 @@ class NeighborhoodAdminController(object):
         self.neighborhood.name = name
         self.neighborhood.css = css
         self.neighborhood.homepage = homepage
-        if icon is not None:
+        if icon is not None and icon != '':
             filename = icon.filename
             content_type = guess_type(filename)
             if content_type: content_type = content_type[0]

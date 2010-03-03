@@ -36,6 +36,7 @@
   </py:def>
 
   <py:def function="nav_menu()">
+    <div id="nav_menu_missing" class="span-24 last" py:if="not c.project"/>
     <div id="nav_menu" class="span-24 last" py:if="c.project">
 
       <div class="span-2">
@@ -64,7 +65,8 @@
 
   <py:def function="sidebar_menu()">
     <div id="sidebar" class="span-4">
-      <span id="app-search"><input type="text" class="defaultText" title="Search Tickets"/></span>
+      <span id="app-search" py:if="c.app"><input type="text" class="defaultText" title="Search App"/></span>
+      <py:if test="not c.app">&nbsp;</py:if>
       <ul id="sidebarmenu" py:if="getattr(c, 'app', None)">
         <li py:for="s in c.app.sidebar_menu()">
           <a py:if="s.url" href="$s.url" class="$s.className ${request.url.rfind(s.url,-len(s.url)) != -1 and 'active' or ''}">$s.label</a>

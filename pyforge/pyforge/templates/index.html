@@ -8,23 +8,24 @@
 
 <head>
   <meta content="text/html; charset=UTF-8" http-equiv="content-type" py:replace="''"/>
-  <title>PyForge Directory</title>
+  <title>Directory</title>
 </head>
 
   <body>
-    <h1>New Project Registration</h1>
+    <h2>Directory</h2>
+    Add a new project at this url:
     <form method="post" action="projects/register">
-      New project URL: /projects/<input name="pid"/>/ <br/>
-      <input type="submit" value="Register Project"/>
+      /projects/<input name="pid"/>/ <input type="submit" value="Register Project"/>
     </form>
-    <h1>PyForge Directory</h1>
-    <div py:for="n, subprojects in sorted(projects.iteritems())">
-      <h2><a href="${n.url()}">${n.name}</a></h2>
-      <ul>
-        <li py:for="p in subprojects">
-          <a href="${p.url()}">$p.name</a>
-        </li>
-      </ul>
+    <div id="pyforge_directory">
+      <py:for each="n, subprojects in sorted(projects.iteritems())">
+        <h3><a href="${n.url()}">${n.name}</a></h3>
+        <ul>
+          <li py:for="p in subprojects">
+            <a href="${p.url()}">$p.name</a>
+          </li>
+        </ul>
+      </py:for>
     </div>
   </body>
 </html>
