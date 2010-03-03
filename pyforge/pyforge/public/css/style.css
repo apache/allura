@@ -131,6 +131,10 @@ ul#sidebarmenu li a.active {
     background-color: #EDF3FB;
 }
 
+ul#sidebarmenu li a.nav_child {
+    padding-left:2em;
+}
+
 #sidebar-right
 {
     background-color: #EDF3FB;

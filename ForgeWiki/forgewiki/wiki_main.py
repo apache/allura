@@ -112,7 +112,7 @@ class ForgeWikiApp(Application):
                 artifact = ArtifactReference(aref).to_artifact()
                 if isinstance(artifact, model.Page) and artifact.url() not in related_urls:
                     related_urls.append(artifact.url())
-                    related_pages.append(SitemapEntry(artifact.title, artifact.url()))
+                    related_pages.append(SitemapEntry(artifact.title, artifact.url(), className='nav_child'))
         if len(related_pages):
             links.append(SitemapEntry('Related Pages'))
             links = links + related_pages

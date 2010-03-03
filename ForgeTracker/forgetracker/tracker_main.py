@@ -64,7 +64,7 @@ class ForgeTrackerApp(Application):
         related_urls = []
         ticket = request.path_info.split(self.url)[-1].split('/')[0]
         for bin in model.Bin.query.find():
-            search_bins.append(SitemapEntry(bin.shorthand_id(), bin.url()))
+            search_bins.append(SitemapEntry(bin.shorthand_id(), bin.url(), className='nav_child'))
         if ticket.isdigit():
             ticket = model.Ticket.query.find(dict(app_config_id=self.config._id,ticket_num=int(ticket))).first()
         else:
@@ -78,24 +78,25 @@ class ForgeTrackerApp(Application):
                 artifact = ArtifactReference(aref).to_artifact()
                 if artifact.url() not in related_urls:
                     related_urls.append(artifact.url())
-                    related_artifacts.append(SitemapEntry(artifact.shorthand_id(), artifact.url()))
+                    related_artifacts.append(SitemapEntry(artifact.shorthand_id(), artifact.url(), className='nav_child'))
         if len(related_artifacts):
             links.append(SitemapEntry('Related Artifacts'))
             links = links + related_artifacts
         links.append(SitemapEntry('Search', self.config.url() + 'search'))
-        links.append(SitemapEntry('In Bins', self.config.url() + 'bins'))
+        links.append(SitemapEntry('Saved Searches'))
+        links.append(SitemapEntry('All', self.config.url() + 'bins', className='nav_child'))
         if len(search_bins):
             links = links + search_bins
         if ticket:
             if ticket.super_id:
                 links.append(SitemapEntry('Supertask'))
                 super = model.Ticket.query.get(_id=ticket.super_id, app_config_id=c.app.config._id)
-                links.append(SitemapEntry('Ticket {0}'.format(super.ticket_num), super.url()))
+                links.append(SitemapEntry('Ticket {0}'.format(super.ticket_num), super.url(), className='nav_child'))
             links.append(SitemapEntry('Subtasks'))
             for sub_id in ticket.sub_ids or []:
                 sub = model.Ticket.query.get(_id=sub_id, app_config_id=c.app.config._id)
-                links.append(SitemapEntry('Ticket {0}'.format(sub.ticket_num), sub.url()))
-            links.append(SitemapEntry('Create New Subtask', '{0}new/?super_id={1}'.format(self.config.url(), ticket._id)))
+                links.append(SitemapEntry('Ticket {0}'.format(sub.ticket_num), sub.url(), className='nav_child'))
+            links.append(SitemapEntry('Create New Subtask', '{0}new/?super_id={1}'.format(self.config.url(), ticket._id), className='nav_child'))
         links.append(SitemapEntry('Ticket Help', 'help'))
         links.append(SitemapEntry('Markdown Syntax', self.config.url() + 'markdown_syntax'))
         return links
