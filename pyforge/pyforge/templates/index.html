@@ -12,6 +12,14 @@
 </head>
 
   <body>
+    <py:def function="project(n, subprojects)">
+      <a href="${n.url()}">${n.name}</a>
+      <ul>
+        <li py:for="p in subprojects">
+          ${project(p, p.subprojects)}
+        </li>
+      </ul>
+    </py:def>
     <h2>Directory</h2>
     Add a new project at this url:
     <form method="post" action="projects/register">
@@ -19,12 +27,7 @@
     </form>
     <div id="pyforge_directory">
       <py:for each="n, subprojects in sorted(projects.iteritems())">
-        <h3><a href="${n.url()}">${n.name}</a></h3>
-        <ul>
-          <li py:for="p in subprojects">
-            <a href="${p.url()}">$p.name</a>
-          </li>
-        </ul>
+        ${project(n, subprojects)}
       </py:for>
     </div>
   </body>
