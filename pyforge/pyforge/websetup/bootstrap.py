@@ -5,6 +5,7 @@ import sys
 import logging
 import shutil
 from datetime import datetime
+from mimetypes import guess_type
 from tg import config
 from pylons import c, g
 from paste.deploy.converters import asbool
@@ -79,6 +80,64 @@ def bootstrap(command, conf, vars):
                                       moderate=[root._id], admin=[root._id]))
     n_adobe = M.Neighborhood(name='Adobe',
                              url_prefix='//adobe.localhost:8080/',
+                               css="""
+#nav_menu{
+ background-color: #000;
+ background-image: url(/images/adobe_header.png);
+ color: #fff;
+ border-width: 0;
+}
+#nav_menu .neighborhood_icon{
+ background-color: #fff;
+}
+#nav_menu a.neighborhood_name:link, 
+#nav_menu a.neighborhood_name:visited, 
+#nav_menu a.neighborhood_name:hover, 
+#nav_menu a.neighborhood_name:active, 
+#nav_menu a.project_name:link, 
+#nav_menu a.project_name:visited, 
+#nav_menu a.project_name:hover, 
+#nav_menu a.project_name:active{
+ color: #fff;
+}
+#nav_menu ul.nav_links a:link, 
+#nav_menu ul.nav_links a:visited, 
+#nav_menu ul.nav_links a:hover, 
+#nav_menu ul.nav_links a:active{
+ color: #fff;
+}
+#nav_menu ul.nav_links a.active:link, 
+#nav_menu ul.nav_links a.active:visited, 
+#nav_menu ul.nav_links a.active:hover, 
+#nav_menu ul.nav_links a.active:active{
+ color: #000;
+ background-color: #fff;
+ -moz-border-radius: 3px 3px 0 0;
+ -webkit-border-radius: 3px 3px 0 0;
+}
+
+#nav_menu .home_icon{
+   width: 20px;
+   background-image: url(/images/white_home.png);
+   background-repeat: no-repeat;
+   background-position: 5px 7px;
+}
+
+#nav_menu .home_icon.active{
+   background-image: url(/images/black_home.png);
+}
+#content_holder{
+ border-color: #000;
+ border-width: 0 5px 5px 5px;
+ width: 940px;
+}
+#content{
+ border-width: 0;
+}
+ul#sidebarmenu li a.active {
+ background-color: #000;
+ color: #fff;
+}""",
                              acl=dict(read=[None], create=[],
                                       moderate=[root._id], admin=[root._id]))
     n_mozilla = M.Neighborhood(name='Mozilla',
@@ -86,6 +145,21 @@ def bootstrap(command, conf, vars):
                                acl=dict(read=[None], create=[],
                                         moderate=[root._id], admin=[root._id]))
     ThreadLocalORMSession.flush_all()
+    # add the adobe icon
+    file_name = 'adobe_icon.png'
+    file_path = os.path.join(pyforge.__path__[0],'public','images',file_name)
+    f = file(file_path, 'r')
+    content_type = guess_type(file_name)
+    if content_type: content_type = content_type[0]
+    else: content_type = 'application/octet-stream'
+    with M.NeighborhoodFile.create(
+        content_type=content_type,
+        filename=file_name,
+        neighborhood_id=n_adobe._id) as fp:
+        while True:
+            s = f.read()
+            if not s: break
+            fp.write(s)
     log.info('Registering "regular users" (non-root)')
     u_mozilla = M.User.register(dict(username='mozilla_admin',
                                      display_name='Mozilla Admin'))

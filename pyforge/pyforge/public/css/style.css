@@ -83,6 +83,12 @@ a, a:link, a:visited, a:hover, a:active{
 #nav_menu ul.nav_links a:active.active{
     background-color: #aed0ea;
 }
+#nav_menu .home_icon{
+    width: 20px;
+    background-image: url(/images/home.png);
+    background-repeat: no-repeat;
+    background-position: center;
+}
 
 
 #content_holder{
@@ -154,9 +160,6 @@ ul#sidebarmenu li a.nav_child {
 #footer{
 	clear: both;
 	margin: 1em 0;
-	border-style:solid;
-	border-color: #ccc;
-	border-width: 1px 0 0 0;
 }
 #footer .foot_head{
     text-transform: uppercase;

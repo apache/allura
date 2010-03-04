@@ -5,6 +5,9 @@
   <?python from pyforge.lib.security import has_neighborhood_access ?>
 
   <py:def function="main_menu">
+    <style>
+      ${Markup(neighborhood.css)}
+    </style>
     <div id="mainmenu" class="span-24 last">
       <div class="sf_logo span-10"><a href="/"><img src="/images/sf.png"/></a></div>
       <div class="span-14 last">
@@ -20,12 +23,13 @@
     <div id="nav_menu" class="span-24 last" py:if="neighborhood">
       <div class="span-2">
         <img py:if="neighborhood.icon" src="${neighborhood.url()}/icon" class="neighborhood_icon"/>
+        <py:if test="not neighborhood.icon">&nbsp;</py:if>
       </div>
       <div class="span-13 project">
         <a href="${neighborhood.url()}" class="neighborhood_name">$neighborhood.name</a><br/>
         <ul class="nav_links">
           <li>
-            <a href="${neighborhood.url()}" class="${request.url.rfind(neighborhood.url(),-len(neighborhood.url())) != -1 and 'active' or ''}"><img src="/images/home.png"/></a>
+            <a href="${neighborhood.url()}" class="home_icon ${request.url.rfind(neighborhood.url(),-len(neighborhood.url())) != -1 and 'active' or ''}"/>
           </li>
           <li py:if="has_neighborhood_access('admin', neighborhood)()">
             <a href="${neighborhood.url()}_admin/" class="${neighborhood.url()+'_admin' in request.url and 'active' or ''}">Admin</a>

@@ -23,6 +23,9 @@
   </py:def>
 
   <py:def function="main_menu()">
+    <style py:if="c.project">
+      ${Markup(c.project.neighborhood.css)}
+    </style>
     <div id="mainmenu" class="span-24 last">
       <div class="sf_logo span-10"><a href="/"><img src="/images/sf.png"/></a></div>
       <div class="span-14 last">
@@ -49,7 +52,7 @@
         <ul class="nav_links">
           <li py:for="s in c.project.sitemap()">
             <a py:if="s.url and s.label != 'Home'" href="$s.url" class="$s.className ${s.url[:-1] in request.url and 'active' or ''}">$s.label</a>
-            <a py:if="s.url and s.label == 'Home'" href="$s.url" class="$s.className ${s.url[:-1] in request.url and 'active' or ''}"><img src="/images/home.png"/></a>
+            <a py:if="s.url and s.label == 'Home'" href="$s.url" class="$s.className home_icon ${s.url[:-1] in request.url and 'active' or ''}"/>
             <span py:if="not s.url" class="$s.className">$s.label</span>
           </li>
         </ul>
