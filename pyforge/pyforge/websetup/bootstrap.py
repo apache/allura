@@ -79,7 +79,7 @@ def bootstrap(command, conf, vars):
                              acl=dict(read=[None], create=[],
                                       moderate=[root._id], admin=[root._id]))
     n_adobe = M.Neighborhood(name='Adobe',
-                             url_prefix='//adobe.localhost:8080/',
+                             url_prefix='/adobe/',
                                css="""
 #nav_menu{
  background-color: #000;
