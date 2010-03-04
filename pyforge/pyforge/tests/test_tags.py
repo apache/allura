@@ -25,6 +25,7 @@ def setUp(self):
     test_file = path.join(conf_dir, test_config)
     cmd = SetupCommand('setup-app')
     cmd.run([test_file])
+    ThreadLocalORMSession.flush_all()
 
 def test_tag_untag():
     h.set_context('test', 'wiki')
