@@ -192,7 +192,12 @@
             });
 
             new Attacklab.wmd.editor(textarea,previewManager.refresh);
-        })()
+        })();
+        $(function(){
+            var link=$('a[href=http://www.wmd-editor.com/]');
+            link.prev().css({'padding-right':'15px'});
+            link.remove();
+        });
     </script>
   </div>
   </py:def>
