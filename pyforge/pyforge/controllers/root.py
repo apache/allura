@@ -85,7 +85,8 @@ class RootController(BaseController):
         for n in M.Neighborhood.query.find():
             projects[n] = M.Project.query.find(dict(
                     is_root=True, neighborhood_id=n._id)).all()
-        return dict(projects=projects)
+        psort = sorted(projects.items(), key=lambda x:x[0].name)
+        return dict(projects=psort)
 
     def _dispatch(self, state, remainder):
         return _dispatch(self, state, remainder)

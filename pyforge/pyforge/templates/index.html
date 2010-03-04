@@ -26,7 +26,7 @@
       /projects/<input name="pid"/>/ <input type="submit" value="Register Project"/>
     </form>
     <div id="pyforge_directory">
-      <py:for each="n, subprojects in sorted(projects.iteritems())">
+      <py:for each="n, subprojects in projects">
         ${project(n, subprojects)}
       </py:for>
     </div>
