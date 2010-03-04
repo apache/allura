@@ -118,13 +118,13 @@ class ForgeWikiApp(Application):
             links = links + related_pages
         links.append(SitemapEntry('Wiki Nav'))
         if page:
-            links.append(SitemapEntry('View History','history'))
+            links.append(SitemapEntry('View History','history', className='nav_child'))
         links = links + [
-		    SitemapEntry('Browse Pages',c.app.url+'browse_pages/'),
-		    SitemapEntry('Browse Tags',c.app.url+'browse_tags/'),
+		    SitemapEntry('Browse Pages',c.app.url+'browse_pages/', className='nav_child'),
+		    SitemapEntry('Browse Tags',c.app.url+'browse_tags/', className='nav_child'),
 		    SitemapEntry('Help'),
-		    SitemapEntry('Wiki Help',c.app.url+'wiki_help/'),
-		    SitemapEntry('Markdown Syntax',c.app.url+'markdown_syntax/')
+		    SitemapEntry('Wiki Help',c.app.url+'wiki_help/', className='nav_child'),
+		    SitemapEntry('Markdown Syntax',c.app.url+'markdown_syntax/', className='nav_child')
         ]
         return links
 

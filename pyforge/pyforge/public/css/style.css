@@ -130,7 +130,7 @@ ul#sidebarmenu li {
 ul#sidebarmenu li .nav_head{
     display: block;
     font-weight: bold;
-    padding: 0 1em;
+    padding: 1em 1em 0;
 }
 
 ul#sidebarmenu li a {
