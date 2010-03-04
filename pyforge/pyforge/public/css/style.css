@@ -265,6 +265,11 @@ tbody .even{
     position: relative;
 }
 
+.editable + .editable
+{
+    margin-top: 1em;
+}
+
 .editable:hover
 {
     background-color: #ddd;
