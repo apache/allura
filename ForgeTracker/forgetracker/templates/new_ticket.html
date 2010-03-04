@@ -16,37 +16,33 @@
 <form method="POST" action="${action}">
   <input type="hidden" name="ticket_num" value=""/>
   <input type="hidden" name="super_id" value="${super_id}"/>
-  <label for="summary">Name:</label>
-  <br/>
-  <input name="summary" value=""/>
-  <br/>
-  <label for="status">status:</label>
-  <br/>
-  <select name="status">
-    <option py:for="name in globals.status_names.split()" value="$name">$name</option>
-  </select>
-  <br/>
-  <label for="description">Description:</label>
-  <br/>
-  <textarea name="description"></textarea>
-  <br/>
-
-  <div py:if="globals.custom_fields">
-    <div class="span-24 last quiet prepend-top bottom-liner">Custom Fields</div>
-    <div py:for="field in globals.custom_fields">
-      <label for="${field.name}">${field.label}:</label>
-      <br/>
-      <input py:if="field.type != 'select'" name="${field.name}" type="text" value=""/>
-      <select py:if="field.type == 'select'" name="${field.name}">
-        <option py:for="option in field.options.split()" value="${option}">$option</option>
-      </select>
-    </div>
+  <div class="span-3"><label for="summary">Name:</label></div>
+  <div class="span-15 last"><input name="summary" value=""/></div>
+  <div class="span-3"><label for="status">Status:</label></div>
+  <div class="span-15 last">
+    <select name="status">
+      <option py:for="name in globals.status_names.split()" value="$name">$name</option>
+    </select>
   </div>
+  <div class="span-3"><label for="description">Description:</label></div>
+  <div class="span-15 last">${markdown_edit("description",'')}</div>
 
-  ${user_tags_edit('tags', {'tags':[]})}
-  <br/>
+  <py:if test="globals.custom_fields">
+    <py:for each="field in globals.custom_fields">
+      <div class="span-3"><label for="${field.name}">${field.label}:</label></div>
+      <div class="span-15 last">
+        <input py:if="field.type != 'select'" name="${field.name}" type="text" value=""/>
+        <select py:if="field.type == 'select'" name="${field.name}">
+          <option py:for="option in field.options.split()" value="${option}">$option</option>
+        </select>
+      </div>
+    </py:for>
+  </py:if>
 
-  <input type="submit" value="Create Ticket"/>
+  <div class="span-3"><label for="tags">Tags</label></div>
+  <div class="span-15 last">${user_tags_edit('tags', {'tags':[]})}</div>
+
+  <div class="span-15 push-3 last"><input type="submit" value="Create Ticket"/></div>
 </form>
 
 </body>

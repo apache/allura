@@ -203,7 +203,6 @@
   </py:def>
 
   <py:def function="user_tags_edit(name, user_tags)">
-    Tags:
     <input id="$name" name="$name" type="text" value="${','.join([t.tag for t in user_tags.tags])}" />
     <script type="text/javascript" src="/js/jquery.tag.editor.js"></script>
     <script type="text/javascript">
