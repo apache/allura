@@ -37,7 +37,9 @@
           <a class="ticket_feed" href="${ticket.url()}feed.rss"><img src="/images/rss.png" alt="subscribe" title="subscribe" width="25" height="25"/></a>
           Status: $ticket.status<br/>
           <div class="tags" py:if="len(ticket.tags)">
-            Tags: <span py:for="tag in ticket.tags">$tag.tag ($tag.count) </span>
+            Tags: <span py:for="tag in ticket.tags">
+              $tag.tag (${ticket.artifacts_tagged_with(tag.tag).count()})
+            </span>
           </div>
           <py:for each="field in globals.custom_fields or []">
               ${field.label}: ${ticket.custom_fields.get(field.name, '')}<br/>
