@@ -34,24 +34,27 @@ a, a:link, a:visited, a:hover, a:active{
     border-width: 0 0 5px 0;
 }
 #nav_menu .neighborhood_icon, #nav_menu .project_icon{
-    width: 55px;
-    height: 55px;
+    width: 48px;
+    height: 48px;
     display: block;
-    margin: 0 5px;
+    margin: 5px;
+}
+#nav_menu .neighborhood_icon{
+    margin-left: 16px;
 }
 #nav_menu .neighborhood{
     text-align: right;
 }
-#nav_menu a.neighborhood_name:link, #nav_menu a.neighborhood_name:visited, #nav_menu a.neighborhood_name:hover, #nav_menu a.neighborhood_name:active,
-#nav_menu a.project_name:link, #nav_menu a.project_name:visited, #nav_menu a.project_name:hover, #nav_menu a.project_name:active{
+#nav_menu .neighborhood_member{
+    font-family: Georgia, serif;
+}
+#nav_menu a.neighborhood_name:link, #nav_menu a.neighborhood_name:visited, #nav_menu a.neighborhood_name:hover, #nav_menu a.neighborhood_name:active{
     color: #555;
-    font-weight: bold;
-    font-size: 14px;
+    font-size: 20px;
 }
 #nav_menu a.project_name:link, #nav_menu a.project_name:visited, #nav_menu a.project_name:hover, #nav_menu a.project_name:active{
     color: #000;
-    font-weight: bold;
-    font-size: 14px;
+    font-size: 20px;
 }
 #nav_menu .project{
     position: relative;
