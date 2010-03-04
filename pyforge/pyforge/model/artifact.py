@@ -194,14 +194,21 @@ class Artifact(MappedClass):
     backreferences = FieldProperty({str:ArtifactReferenceType})
     app_config = RelationProperty('AppConfig')
 
+    @classmethod
+    def artifacts_tagged_with(cls, tag):
+        return cls.query.find({'tags.tag':tag})
+
     def dump_ref(self):
         '''Return a pickle-serializable reference to an artifact'''
-        d = ArtifactReference(dict(
-                project_id=self.app_config.project._id,
-                mount_point=self.app_config.options.mount_point,
-                artifact_type=pymongo.bson.Binary(pickle.dumps(self.__class__)),
-                artifact_id=self._id))
-        return d
+        try:
+            d = ArtifactReference(dict(
+                    project_id=self.app_config.project._id,
+                    mount_point=self.app_config.options.mount_point,
+                    artifact_type=pymongo.bson.Binary(pickle.dumps(self.__class__)),
+                    artifact_id=self._id))
+            return d
+        except AttributeError:
+            return None
 
     def add_tags(self, tags):
         'Update the tags collection to reflect new tags added'

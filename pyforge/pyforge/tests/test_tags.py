@@ -35,6 +35,8 @@ def test_tag_untag():
     pg = WM.Page.query.find().first()
     assert M.UserTags.query.find(dict(user_id=None)).count() == 1
     assert M.Tag.query.find().count() == 2
+    assert WM.Page.artifacts_tagged_with('test').count() == 1
+    assert WM.Page.artifacts_tagged_with('wiki').count() == 1
     assert len(pg.tags) == 2
     # Remove 1
     h.tag_artifact(pg, M.User.anonymous(), ['test'])
@@ -43,6 +45,8 @@ def test_tag_untag():
     assert M.UserTags.query.find(dict(user_id=None)).count() == 1
     assert M.Tag.query.find().count() == 1
     assert len(pg.tags) == 1
+    assert WM.Page.artifacts_tagged_with('test').count() == 1
+    assert WM.Page.artifacts_tagged_with('wiki').count() == 0
     # Remove last one
     h.tag_artifact(pg, M.User.anonymous(), [])
     ThreadLocalORMSession.flush_all(); ThreadLocalORMSession.close_all()
@@ -50,3 +54,5 @@ def test_tag_untag():
     assert M.UserTags.query.find(dict(user_id=None)).count() == 0
     assert M.Tag.query.find().count() == 0
     assert len(pg.tags) == 0
+    assert WM.Page.artifacts_tagged_with('test').count() == 0
+    assert WM.Page.artifacts_tagged_with('wiki').count() == 0
