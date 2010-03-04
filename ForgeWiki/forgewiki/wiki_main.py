@@ -91,7 +91,7 @@ class ForgeWikiApp(Application):
 
     @property
     def sitemap(self):
-        menu_id = 'ForgeWiki (%s)' % self.config.options.mount_point
+        menu_id = self.config.options.mount_point.title()
         with push_config(c, app=self):
             pages = [
                 SitemapEntry(p.title, p.url())

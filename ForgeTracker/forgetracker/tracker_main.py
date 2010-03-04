@@ -53,7 +53,7 @@ class ForgeTrackerApp(Application):
 
     @property
     def sitemap(self):
-        menu_id = 'ForgeTracker (%s)' % self.config.options.mount_point
+        menu_id = self.config.options.mount_point.title()
         with push_config(c, app=self):
             return [
                 SitemapEntry(menu_id, '.')[self.sidebar_menu()] ]

@@ -77,7 +77,7 @@ class HelloForgeApp(Application):
                         app_config_id=self.config._id)) ]
             return [
                 SitemapEntry(
-                    'HelloForge (%s)' % self.config.options.mount_point,
+                    self.config.options.mount_point.title(),
                     '.')[
                     SitemapEntry('Pages')[pages]
                 ]

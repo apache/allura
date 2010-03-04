@@ -137,7 +137,7 @@ class ForgeForumApp(Application):
     @property
     def sitemap(self):
         try:
-            menu_id = 'ForgeForum (%s)' % self.config.options.mount_point  
+            menu_id = self.config.options.mount_point.title()
             with push_config(c, app=self):
                 return [
                     SitemapEntry(menu_id, '.')[self.sidebar_menu()] ]
