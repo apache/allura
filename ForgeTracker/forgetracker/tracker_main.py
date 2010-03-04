@@ -14,6 +14,7 @@ from formencode import validators
 from pymongo.bson import ObjectId
 
 from ming.orm.base import session
+from ming.orm.ormsession import ThreadLocalORMSession
 
 # Pyforge-specific imports
 from pyforge.app import Application, ConfigOption, SitemapEntry, DefaultAdminController
@@ -82,7 +83,7 @@ class ForgeTrackerApp(Application):
         if len(related_artifacts):
             links.append(SitemapEntry('Related Artifacts'))
             links = links + related_artifacts
-        links.append(SitemapEntry('Search', self.config.url() + 'search'))
+        links.append(SitemapEntry('Search', self.config.url() + 'search/'))
         links.append(SitemapEntry('Saved Searches'))
         links.append(SitemapEntry('All', self.config.url() + 'bins', className='nav_child'))
         if len(search_bins):
@@ -161,6 +162,7 @@ class RootController(object):
         changes = self.ordered_history(5)
         return dict(tickets=tickets,changes=changes)
 
+    @with_trailing_slash
     @expose('forgetracker.templates.search')
     @validate(dict(q=validators.UnicodeString(if_empty=None),
                    history=validators.StringBool(if_empty=False)))
@@ -312,6 +314,53 @@ class RootController(object):
         if super_id:
             ticket.set_as_subticket_of(ObjectId(super_id))
         redirect(str(ticket.ticket_num)+'/')
+
+    @with_trailing_slash
+    @expose('forgetracker.templates.mass_edit')
+    @validate(dict(q=validators.UnicodeString(if_empty=None)))
+    def edit(self, q=None, **kw):
+        tickets = []
+        if q is None:
+            tickets = model.Ticket.query.find(dict(app_config_id=c.app.config._id)).sort('ticket_num')
+        else:
+            results = search_artifact(model.Ticket, q)
+            if results:
+                # copied from search (above), can we factor this?
+                query = model.Ticket.query.find(
+                    dict(app_config_id=c.app.config._id,
+                         ticket_num={'$in':[r['ticket_num_i'] for r in results.docs]}))
+                tickets = query.all()
+        globals = model.Globals.query.get(app_config_id=c.app.config._id)
+        return dict(tickets=tickets, globals=globals)
+
+    @expose()
+    def update_tickets(self, **post_data):
+        fields = set(['milestone', 'status'])
+        values = {}
+        for k in fields:
+            v = post_data.get(k)
+            if v: values[k] = v
+        assigned_to = post_data.get('assigned_to')
+        if assigned_to == '-':
+            values['assigned_to_id'] = None
+        elif assigned_to is not None:
+            values['assigned_to_id'] = ObjectId(assigned_to)
+
+        globals = model.Globals.query.get(app_config_id=c.app.config._id)
+        custom_fields = set([cf.name for cf in globals.custom_fields or[]])
+        custom_values = {}
+        for k in custom_fields:
+            v = post_data.get(k)
+            if v: custom_values[k] = v
+
+        for id in post_data['selected'].split(','):
+            ticket = model.Ticket.query.get(_id=ObjectId(id), app_config_id=c.app.config._id)
+            for k, v in values.iteritems():
+                ticket[k] = v
+            for k, v in custom_values.iteritems():
+                ticket.custom_fields[k] = v
+
+        ThreadLocalORMSession.flush_all()
 
 
 class TicketController(object):

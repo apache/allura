@@ -1,0 +1,78 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+                      "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:py="http://genshi.edgewall.org/"
+      xmlns:xi="http://www.w3.org/2001/XInclude">
+
+  <xi:include href="${g.pyforge_templates}/master.html"/>
+
+  <head>
+    <meta content="text/html; charset=UTF-8" http-equiv="content-type" py:replace="''"/>
+    <title>ForgeTracker Index Page</title>
+    <link rel="alternate" type="application/rss+xml" title="RSS" href="feed.rss"/>
+    <link rel="alternate" type="application/atom+xml" title="Atom" href="feed.atom"/>
+    <style type="text/css">
+        div.ticket { font-size:160% }
+    </style>
+  </head>
+
+  <?python from pyforge.lib import helpers?>
+  <body>
+        <h2>ForgeTracker for $c.project.shortname</h2>
+        <h3>Tickets</h3>
+        <py:if test="not len(tickets)">No tickets found.</py:if>
+        <table py:if="len(tickets)">
+          <thead>
+            <tr>
+              <th></th>
+              <th>Number</th>
+              <th>Summary</th>
+            </tr>
+          </thead>
+          <tbody class="ticket-list">
+            <tr py:for="ticket in tickets">
+              <td><input type="checkbox" name="${ticket._id}" value=""/></td>
+              <td><a href="${ticket.url()}">#$ticket.ticket_num</a></td>
+              <td>$ticket.summary</td>
+            </tr>
+          </tbody>
+        </table>
+        <script type="text/javascript">
+            $('tbody.ticket-list').children(':even').addClass('even');
+        </script>
+
+        <h3>Update</h3>
+        <div id="update-values">
+          <div>
+            <label for="assigned_to">Assigned To:</label>
+            <br/>
+            ${select_user_in_project('assigned_to', None)}
+          </div>
+          <div>
+            <label for="status">Status:</label>
+            <br/>
+            <select name="status">
+              <option value="" selected="selected"></option>
+              <option py:for="option in globals.status_names.split()" value="${option}">$option</option>
+            </select>
+          </div>
+          <div>
+            <label for="milestone">Milestone:</label>
+            <br/>
+            <input name="milestone" type="text" value=""/>
+          </div>
+          <div py:for="field in globals.custom_fields" py:if="field.type != 'sum'">
+            <label for="${field.name}">${field.label}:</label>
+            <br/>
+            <input py:if="field.type != 'select'" name="${field.name}" type="text" value=""/>
+            <select py:if="field.type == 'select'" name="${field.name}">
+              <option value="" selected="selected"></option>
+              <option py:for="option in field.options.split()" value="${option}">$option</option>
+            </select>
+          </div>
+        </div>
+        <button onclick="update_tickets()">Update Tickets</button>
+        <span id="result"></span>
+  </body>
+  <script type="text/javascript" src="/static/Tickets/js/mass-edit.js"/>
+</html>
