@@ -87,9 +87,6 @@ def bootstrap(command, conf, vars):
  color: #fff;
  border-width: 0;
 }
-#nav_menu .neighborhood_icon{
- background-color: #fff;
-}
 #nav_menu a.neighborhood_name:link, 
 #nav_menu a.neighborhood_name:visited, 
 #nav_menu a.neighborhood_name:hover, 
@@ -117,10 +114,9 @@ def bootstrap(command, conf, vars):
 }
 
 #nav_menu .home_icon{
-   width: 20px;
    background-image: url(/images/white_home.png);
    background-repeat: no-repeat;
-   background-position: 5px 7px;
+   background-position:center 7px;
 }
 
 #nav_menu .home_icon.active{

@@ -39,8 +39,8 @@ a, a:link, a:visited, a:hover, a:active{
     display: block;
     margin: 5px;
 }
-#nav_menu .neighborhood_icon{
-    margin-left: 16px;
+#nav_menu .project_icon {
+    margin:5px 0 0 15px;
 }
 #nav_menu .neighborhood{
     text-align: right;
@@ -63,7 +63,7 @@ a, a:link, a:visited, a:hover, a:active{
 #nav_menu ul.nav_links{
     position: absolute;
     bottom: 0;
-    left: 0;
+    left: -3px;
     margin: 0;
     padding: 0;
 }
@@ -87,7 +87,7 @@ a, a:link, a:visited, a:hover, a:active{
     background-color: #aed0ea;
 }
 #nav_menu .home_icon{
-    width: 20px;
+    width: 10px;
     background-image: url(/images/home.png);
     background-repeat: no-repeat;
     background-position: center;
