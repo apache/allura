@@ -81,11 +81,8 @@ class RootController(BaseController):
     @with_trailing_slash
     def index(self):
         """Handle the front-page."""
-        projects = defaultdict(list)
-        for n in M.Neighborhood.query.find():
-            projects[n] = M.Project.query.find(dict(
-                    is_root=True, neighborhood_id=n._id)).all()
-        psort = sorted(projects.items(), key=lambda x:x[0].name)
+        psort = [(n, M.Project.query.find(dict(is_root=True, neighborhood_id=n._id)).all())
+                 for n in M.Neighborhood.query.find().sort('name')]
         return dict(projects=psort)
 
     def _dispatch(self, state, remainder):
