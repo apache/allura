@@ -99,7 +99,7 @@ class ForgeTrackerApp(Application):
                 links.append(SitemapEntry('Ticket {0}'.format(sub.ticket_num), sub.url(), className='nav_child'))
             links.append(SitemapEntry('Create New Subtask', '{0}new/?super_id={1}'.format(self.config.url(), ticket._id), className='nav_child'))
         links.append(SitemapEntry('Help'))
-        links.append(SitemapEntry('Ticket Help', 'help', className='nav_child'))
+        links.append(SitemapEntry('Ticket Help', self.config.url() + 'help', className='nav_child'))
         links.append(SitemapEntry('Markdown Syntax', self.config.url() + 'markdown_syntax', className='nav_child'))
         return links
 
