@@ -30,10 +30,7 @@
             </div>
           </div>
           <div class="span-3"><label>Home Content<br/>(Markdown)</label></div>
-          <div class="editable viewing span-15 last" style="min-height:50px;">
-            <div class="viewer">${Markup(g.markdown.convert(neighborhood.homepage))}</div>
-            <div class="editor">${markdown_edit('homepage', neighborhood.homepage)}</div>
-          </div>
+          <div class="span-15 last" style="min-height:50px;">${markdown_edit('homepage', neighborhood.homepage)}</div>
           <div class="span-3"><label>Custom CSS</label></div>
           <div class="editable viewing span-15 last" style="min-height:50px;">
             <div class="viewer"><pre>$neighborhood.css</pre></div>
@@ -52,6 +49,7 @@
               ${file_field('icon', 'File')}
             </div>
           </div>
+          <div class="push-3 span-15 last"><input type="submit" value="Save"/></div>
         </form>
       </div>
       <div id="neighborhood-admin-permissions">
