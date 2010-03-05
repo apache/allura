@@ -61,8 +61,9 @@ class ForgeWikiApp(Application):
             log.info('Audit applies to page ' + elements[1])
             p = model.Page.upsert(elements[1])
         except:
-            log.info('Audit applies to page Root.')
-            p = model.Page.upsert('Root')
+            root_name = self.root_page_name
+            log.info('Audit applies to page %s.' % root_name)
+            p = model.Page.upsert(root_name)
         # Find ancestor comment
         parent = model.Comment.query.get(message_id=data['headers'].get('In-Reply-To'))
         if parent is None: parent = p
@@ -88,6 +89,10 @@ class ForgeWikiApp(Application):
         data['destinations'] = 'devnull@localhost'
         g.publish('audit', 'forgemail.send_email',
             data, serializer='yaml')
+
+    @property
+    def root_page_name(self):
+        return self.config.options.mount_point.title() + 'Home'
 
     @property
     def sitemap(self):
@@ -145,7 +150,7 @@ class ForgeWikiApp(Application):
             ProjectRole.query.get(name='*anonymous')._id)
         self.config.acl['comment'].append(
             ProjectRole.query.get(name='*authenticated')._id)
-        p = model.Page.upsert('Root')    
+        p = model.Page.upsert(self.root_page_name)
         p.viewable_by = ['all']
         p.text = 'This is the root page.'
         p.commit()
@@ -165,7 +170,7 @@ class RootController(object):
 
     @expose('forgewiki.templates.index')
     def index(self):
-        redirect('Root/')
+        redirect(c.app.root_page_name+'/')
         return dict(message=c.app.config.options['message'])
 
     #Instantiate a Page object, and continue dispatch there
