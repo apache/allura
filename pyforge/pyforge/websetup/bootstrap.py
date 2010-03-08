@@ -189,6 +189,7 @@ ul#sidebarmenu li a.active {
         app = p0.install_app('hello_forge', 'hello')
         app = p0.install_app('Repository', 'src')
         app = p0.install_app('Repository', 'src_git')
+        p0.install_app('Wiki', 'wiki')
         p0.install_app('Tickets', 'bugs')
         p0.install_app('Tickets', 'doc_bugs')
         app.config.options['type'] = 'git'

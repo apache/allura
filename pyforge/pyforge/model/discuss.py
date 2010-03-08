@@ -101,8 +101,8 @@ class Thread(Artifact):
     first_post_id = ForeignIdProperty('Post')
 
     discussion = RelationProperty(Discussion)
-    posts = RelationProperty('Post')
-    first_post = RelationProperty('Post')
+    posts = RelationProperty('Post', via='thread_id')
+    first_post = RelationProperty('Post', via='first_post_id')
 
     @classmethod
     def discussion_class(cls):
@@ -129,8 +129,7 @@ class Thread(Artifact):
             parent_id=parent_id,
             text=text,
             status='pending')
-        if message_id is not None:
-            kwargs['_id'] = message_id
+        if message_id is not None: kwargs['_id'] = message_id
         post = self.post_class()(**kwargs)
         if has_artifact_access('unmoderated_post')():
             log.info('Auto-approving message from %s', c.user.username)
@@ -186,7 +185,6 @@ class Thread(Artifact):
 
     def shorthand_id(self):
         return self._id
-        return '%s/%s' % (self.discussion.shorthand_id(), self._id)
 
     def index(self):
         result = Artifact.index(self)
@@ -286,13 +284,13 @@ class Post(Message, VersionedArtifact):
     def url(self):
         if self.thread:
             return self.thread.url() + self.slug + '/'
-        else:
+        else: # pragma no cover
             return None
 
     def shorthand_id(self):
         if self.thread:
             return '%s#%s' % (self.thread.shorthand_id(), self.slug)
-        else:
+        else: # pragma no cover
             return None
 
     def reply_subject(self):
@@ -307,7 +305,7 @@ class Post(Message, VersionedArtifact):
         return '\n'.join(l)
 
     def delete(self):
-        for att in self.attachment_class().by_metadata(message_id=self._id):
+        for att in self.attachment_class().by_metadata(post_id=self._id):
             att.delete()
         super(Post, self).delete()
 
@@ -355,7 +353,7 @@ class Attachment(File):
 
     @property
     def thread(self):
-        return self.ThreadClass.query.get(_id=self.metadata.post_id)
+        return self.ThreadClass.query.get(_id=self.metadata.thread_id)
 
     @property
     def post(self):
