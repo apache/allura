@@ -22,6 +22,7 @@ def try_solr(func):
     return inner
 
 def solarize(obj):
+    if obj is None: return None
     doc = obj.index()
     if doc is None: return None
     text = doc.pop('text', '')

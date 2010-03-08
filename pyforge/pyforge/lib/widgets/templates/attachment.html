@@ -1,0 +1,22 @@
+<div xmlns="http://www.w3.org/1999/xhtml"
+     xmlns:py="http://genshi.edgewall.org/"
+     py:strip="True">
+  <a href="${value.url()}">${value.metadata.filename}</a>
+  ($value.length bytes)
+  <form py:if="c.user._id and post.author_id==c.user._id"
+        method="POST" action="${value.url()}"
+        style="display:inline">
+    <input class="submit" type="submit" name="delete" value="Delete"/>
+  </form>
+  <div py:if="value.contentType.startswith('image/') or value.contentType.startswith('text/')"
+       class="title-pane closed">
+    <span class="title">View</span>
+    <div class="content">
+      <img py:if="value.contentType.startswith('image/')"
+           style="max-width:100%" src="${value.url()}"/>
+      <iframe width="100%" py:if="value.contentType.startswith('text/')"
+              src="${value.url()}?embed=True"/>
+    </div>
+  </div>
+  <br style="clear:both"/>
+</div>

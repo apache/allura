@@ -1,0 +1,13 @@
+<div xmlns="http://www.w3.org/1999/xhtml"
+     xmlns:py="http://genshi.edgewall.org/"
+     py:strip="True">
+  <a href="${value.url()}">$value.name</a>($value.shortname)<br/>
+  ${Markup(g.markdown.convert(value.description))}
+  <py:if test="value.subforums">
+    <b>Subforums:</b>
+    <span py:for="i, sf in enumerate(value.subforums)">
+      <py:if test="i != 0">, </py:if>
+      <a href="${sf.url()}">$sf.name</a>
+    </span>
+  </py:if>
+</div>

@@ -1,0 +1,21 @@
+<div xmlns="http://www.w3.org/1999/xhtml"
+     xmlns:py="http://genshi.edgewall.org/">
+  <input py:for="i,thread in enumerate(threads)"
+         type="hidden" name="thread-${i}.id" value="$thread._id"/>
+  <table id="threads">
+    <thead>
+      <tr>
+        <th>Topics</th>
+        <th>Replies</th>
+        <th>Views</th>
+        <th>Last Post</th>
+        <th>Subscribed</th>
+      </tr>
+    </thead>
+    <tbody>
+      <py:for each="i, thread in enumerate(threads)">
+        ${thread_row(i, thread)}
+      </py:for>
+    </tbody>
+  </table>
+</div>

@@ -24,6 +24,10 @@ class Checkmessage(M.Message):
         name='checkmessage'
     def url(self):
         return ''
+    def __init__(self, **kw):
+        super(Checkmessage, self).__init__(**kw)
+        if self.slug is not None and self.full_slug is None:
+            self.full_slug = datetime.utcnow().strftime('%Y%m%d%H%M%S') + ':' + self.slug
 Checkmessage.compile_all()
 
 def setUp():

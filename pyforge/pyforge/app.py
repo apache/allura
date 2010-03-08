@@ -1,10 +1,16 @@
+import logging
+
 from tg import expose, redirect, flash
 from pylons import c, g
 from pymongo.bson import ObjectId
 
+from ming.orm import session
+
 from pyforge.lib.helpers import push_config
 from pyforge.lib.security import require, has_artifact_access
 from pyforge import model
+
+log = logging.getLogger(__name__)
 
 class ConfigOption(object):
 
@@ -105,7 +111,13 @@ class Application(object):
 
     def install(self, project):
         'Whatever logic is required to initially set up a plugin'
-        pass # pragma: no cover
+        # Create the discussion object
+        discussion = model.Discussion(
+            shortname=self.config.options.mount_point,
+            name='%s Discussion' % self.config.options.mount_point,
+            description='Forum for %s comments' % self.config.options.mount_point)
+        session(discussion).flush()
+        self.config.discussion_id = discussion._id
 
     def uninstall(self, project):
         'Whatever logic is required to tear down a plugin'
@@ -122,6 +134,35 @@ class Application(object):
 
     def sidebar_menu(self):
         return []
+
+    def message_auditor(self, routing_key, data, artifact):
+        # Find ancestor comment
+        parent_id = data['headers'].get('In-Reply-To')
+        thd = artifact.discussion_thread(data)
+        # Handle attachments
+        message_id = data['headers']['Message-ID']
+        if data.get('filename'):
+            log.info('Saving attachment %s', data['filename'])
+            model.Attachment.save(data['filename'],
+                                  data.get('content_type', 'application/octet-stream'),
+                                  data['payload'],
+                                  discussion_id=self.config.discussion._id,
+                                  post_id=message_id)
+            return
+        # Handle duplicates
+        original = model.Post.query.get(_id=message_id)
+        if original:
+            log.info('Saving text attachment')
+            model.Attachment.save('alternate',
+                                  data.get('content_type', 'application/octet-stream'),
+                                  data['payload'],
+                                  discussion_id=self.config.discussion._id,
+                                  post_id=message_id)
+            return
+        thd.post(data['payload'],
+            message_id=data['headers']['Message-ID'],
+            parent_id=parent_id)
+
 
 class DefaultAdminController(object):
 

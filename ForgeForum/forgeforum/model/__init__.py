@@ -1,2 +1,1 @@
-# from artifacts import MyArtifact, MyArtifactHistory, MyArtifactComment
-from forum import Forum, Thread, Post, Attachment
+from forum import Forum, ForumThread, ForumPost, ForumAttachment

@@ -1,6 +1,7 @@
 from time import sleep
 from datetime import datetime
 
+import tg
 from pylons import c
 from pymongo.errors import OperationFailure
 import pymongo
@@ -11,8 +12,10 @@ from ming.orm.property import FieldProperty, ForeignIdProperty, RelationProperty
 from datetime import datetime
 
 from pyforge.model import Artifact, VersionedArtifact, Snapshot, Message, project_orm_session, Project
-from pyforge.model import File, User, Feed
+from pyforge.model import File, User, Feed, Thread, Post
 from pyforge.lib import helpers as h
+
+common_suffix = tg.config.get('forgemail.domain', '.sourceforge.net')
 
 class Globals(MappedClass):
 
@@ -97,7 +100,12 @@ class Ticket(VersionedArtifact):
     status = FieldProperty(str, if_missing='')
     custom_fields = FieldProperty({str:None})
 
-    comments = RelationProperty('Comment')
+    # comments = RelationProperty('Comment')
+
+    @property
+    def email_address(self):
+        domain = '.'.join(reversed(self.app.url[1:-1].split('/')))
+        return '%s@%s%s' % (self.ticket_num, domain, common_suffix)
 
     def commit(self):
         VersionedArtifact.commit(self)
@@ -124,7 +132,12 @@ class Ticket(VersionedArtifact):
                 changes.append(h.diff_text(old.description, self.description))
             description = '<br>'.join(changes)
         else:
-            description = 'Ticket %s created: %s' % (self.ticket_num, self.summary)
+            description = 'Ticket %s created: %s' % (
+                self.ticket_num, self.summary)
+            Thread(discussion_id=self.app_config.discussion_id,
+                   artifact_id=self._id,
+                   subject='#%s discussion' % self.ticket_num)
+
         Feed.post(self, description)
 
     def url(self):
@@ -164,33 +177,33 @@ class Ticket(VersionedArtifact):
     def attachments(self):
         return Attachment.by_metadata(ticket_id=self._id)
 
-    def root_comments(self):
-        if '_id' in self:
-            return Comment.query.find(dict(ticket_id=self._id, reply_to=None))
-        else:
-            return []
+    # def root_comments(self):
+    #     if '_id' in self:
+    #         return Comment.query.find(dict(ticket_id=self._id, reply_to=None))
+    #     else:
+    #         return []
 
-    def all_comments(self):
-        if '_id' in self:
-            return Comment.query.find(dict(ticket_id=self._id))
-        else:
-            return []
+    # def all_comments(self):
+    #     if '_id' in self:
+    #         return Comment.query.find(dict(ticket_id=self._id))
+    #     else:
+    #         return []
 
-    def ordered_comments(self, limit=None):
-        if '_id' in self:
-            if limit:
-                q = Comment.query.find(dict(ticket_id=self._id),limit=limit)
-            else:
-                q = Comment.query.find(dict(ticket_id=self._id))
-            q = q.sort([('created_date', pymongo.DESCENDING)])
-            return q
-        else:
-            return []
+    # def ordered_comments(self, limit=None):
+    #     if '_id' in self:
+    #         if limit:
+    #             q = Comment.query.find(dict(ticket_id=self._id),limit=limit)
+    #         else:
+    #             q = Comment.query.find(dict(ticket_id=self._id))
+    #         q = q.sort([('created_date', pymongo.DESCENDING)])
+    #         return q
+    #     else:
+    #         return []
 
-    def reply(self, text):
-        Feed.post(self, 'Comment: %s' % text)
-        c = Comment(ticket_id=self._id, text=text)
-        return c
+    # def reply(self, text):
+    #     Feed.post(self, 'Comment: %s' % text)
+    #     c = Comment(ticket_id=self._id, text=text)
+    #     return c
 
     def set_as_subticket_of(self, new_super_id):
         # For this to be generally useful we would have to check first that
@@ -258,61 +271,61 @@ class Ticket(VersionedArtifact):
             root.recalculate_sums()
 
 
-class Comment(Message):
+# class Comment(Message):
 
-    class __mongometa__:
-        name = 'ticket_comment'
+#     class __mongometa__:
+#         name = 'ticket_comment'
 
-    type_s = 'Ticket Comment'
-    version = FieldProperty(0)
-    created_date = FieldProperty(datetime, if_missing=datetime.utcnow)
+#     type_s = 'Ticket Comment'
+#     version = FieldProperty(0)
+#     created_date = FieldProperty(datetime, if_missing=datetime.utcnow)
 
-    ticket_id = ForeignIdProperty(Ticket)
-    kind = FieldProperty(str, if_missing='comment')
-    reply_to_id = FieldProperty(schema.ObjectId, if_missing=None)
-    text = FieldProperty(str)
+#     ticket_id = ForeignIdProperty(Ticket)
+#     kind = FieldProperty(str, if_missing='comment')
+#     reply_to_id = FieldProperty(schema.ObjectId, if_missing=None)
+#     text = FieldProperty(str)
 
-    ticket = RelationProperty('Ticket')
+#     ticket = RelationProperty('Ticket')
 
-    def index(self):
-        result = Message.index(self)
-        author = self.author()
-        result.update(
-            title_s='Comment on %s by %s' % (
-                self.ticket.shorthand_id(),
-                author.display_name
-            ),
-            type_s=self.type_s
-        )
-        return result
+#     def index(self):
+#         result = Message.index(self)
+#         author = self.author()
+#         result.update(
+#             title_s='Comment on %s by %s' % (
+#                 self.ticket.shorthand_id(),
+#                 author.display_name
+#             ),
+#             type_s=self.type_s
+#         )
+#         return result
 
-    @property
-    def posted_ago(self):
-        comment_td = (datetime.utcnow() - self.timestamp)
-        if comment_td.seconds < 3600 and comment_td.days < 1:
-            return "%s minutes ago" % (comment_td.seconds / 60)
-        elif comment_td.seconds >= 3600 and comment_td.days < 1:
-            return "%s hours ago" % (comment_td.seconds / 3600)
-        elif comment_td.days >= 1 and comment_td.days < 7:
-            return "%s days ago" % comment_td.days
-        elif comment_td.days >= 7 and comment_td.days < 30:
-            return "%s weeks ago" % (comment_td.days / 7)
-        elif comment_td.days >= 30 and comment_td.days < 365:
-            return "%s months ago" % (comment_td.days / 30)
-        else:
-            return "%s years ago" % (comment_td.days / 365)
+#     @property
+#     def posted_ago(self):
+#         comment_td = (datetime.utcnow() - self.timestamp)
+#         if comment_td.seconds < 3600 and comment_td.days < 1:
+#             return "%s minutes ago" % (comment_td.seconds / 60)
+#         elif comment_td.seconds >= 3600 and comment_td.days < 1:
+#             return "%s hours ago" % (comment_td.seconds / 3600)
+#         elif comment_td.days >= 1 and comment_td.days < 7:
+#             return "%s days ago" % comment_td.days
+#         elif comment_td.days >= 7 and comment_td.days < 30:
+#             return "%s weeks ago" % (comment_td.days / 7)
+#         elif comment_td.days >= 30 and comment_td.days < 365:
+#             return "%s months ago" % (comment_td.days / 30)
+#         else:
+#             return "%s years ago" % (comment_td.days / 365)
 
-    def url(self):
-        return self.ticket.url() + '#comment-' + str(self._id)
+#     def url(self):
+#         return self.ticket.url() + '#comment-' + str(self._id)
 
-    def shorthand_id(self):
-        return '%s-%s' % (self.ticket.shorthand_id, self._id)
+#     def shorthand_id(self):
+#         return '%s-%s' % (self.ticket.shorthand_id, self._id)
 
-    def reply(self, text):
-        r = Message.reply(self)
-        r.text = text
-        Feed.post(self.ticket, 'Comment: %s', text)
-        return r
+#     def reply(self, text):
+#         r = Message.reply(self)
+#         r.text = text
+#         Feed.post(self.ticket, 'Comment: %s', text)
+#         return r
 
 class Attachment(File):
     class __mongometa__:

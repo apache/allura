@@ -1,6 +1,7 @@
 from time import sleep
 from datetime import datetime
 
+import tg
 from pylons import g #g is a namespace for globally accessable app helpers
 from pylons import c as context
 
@@ -11,8 +12,10 @@ from ming.orm.base import state, session
 from ming.orm.mapped_class import MappedClass
 from ming.orm.property import FieldProperty, ForeignIdProperty, RelationProperty
 
-from pyforge.model import VersionedArtifact, Snapshot, Message, File, Feed
+from pyforge.model import VersionedArtifact, Snapshot, Message, File, Feed, Thread, Post
 from pyforge.lib import helpers as h
+
+common_suffix = tg.config.get('forgemail.domain', '.sourceforge.net')
 
 class PageHistory(Snapshot):
     class __mongometa__:
@@ -70,6 +73,11 @@ class Page(VersionedArtifact):
             description = self.text
         Feed.post(self, description)
 
+    @property
+    def email_address(self):
+        domain = '.'.join(reversed(self.app.url[1:-1].split('/')))
+        return '%s@%s%s' % (self.title.replace('/', '.'), domain, common_suffix)
+
     def url(self):
         return self.app_config.url() + self.title + '/'
 
@@ -88,7 +96,7 @@ class Page(VersionedArtifact):
     @property
     def attachments(self):
         return Attachment.by_metadata(page_id=self._id)
-    
+
     @classmethod
     def upsert(cls, title, version=None):
         """Update page with `title` or insert new page with that name"""
@@ -105,6 +113,9 @@ class Page(VersionedArtifact):
                     title=title,
                     app_config_id=context.app.config._id,
                     )
+                t = Thread(discussion_id=obj.app_config.discussion_id,
+                           artifact_id=obj._id,
+                           subject='Discussion for %s page' % title)
             return obj
         else:
             pg = cls.upsert(title)
@@ -114,7 +125,13 @@ class Page(VersionedArtifact):
 
     def reply(self, text):
         Feed.post(self, text)
-        return Comment(page_id=self._id, text=text)
+        # Get thread
+        thread = Thread.query.get(artifact_id=self._id)
+        return Post(
+            discussion_id=thread.discussion_id,
+            thread_id=thread._id,
+            text=text)
+    # return Comment(page_id=self._id, text=text)
 
     @property
     def html_text(self):

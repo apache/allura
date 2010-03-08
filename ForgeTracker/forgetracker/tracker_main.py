@@ -23,6 +23,8 @@ from pyforge.lib.search import search_artifact
 from pyforge.lib.decorators import audit, react
 from pyforge.lib.security import require, has_artifact_access
 from pyforge.model import ProjectRole, TagEvent, UserTags, ArtifactReference, Feed
+from pyforge.lib import widgets as w
+from pyforge.controllers import AppDiscussionController
 
 # Local imports
 from forgetracker import model
@@ -33,19 +35,39 @@ from forgetracker.widgets.bin_form import bin_form
 
 log = logging.getLogger(__name__)
 
+class W:
+    thread=w.Thread(
+        offset=None, limit=None, page_size=None, total=None,
+        style='linear')
+
 class ForgeTrackerApp(Application):
     __version__ = version.__version__
-    permissions = ['configure', 'read', 'write', 'comment']
+    permissions = ['configure', 'read', 'write',
+                    'unmoderated_post', 'post', 'moderate', 'admin']
 
     def __init__(self, project, config):
         Application.__init__(self, project, config)
         self.root = RootController()
         self.admin = TrackerAdminController(self)
 
-    @audit('Tickets.#')
-    def auditor(self, routing_key, data):
+    def has_access(self, user, topic):
+        return has_artifact_access('post', user=user)
+
+    @audit('Tickets.msg.#')
+    def message_auditor(self, routing_key, data):
         log.info('Auditing data from %s (%s)',
                  routing_key, self.config.options.mount_point)
+        log.info('Headers are: %s', data['headers'])
+        try:
+            ticket_num = routing_key.split('.')[-1]
+            t = model.Ticket.query.get(ticket_num=int(ticket_num))
+        except:
+            log.exception('Unexpected error routing tkt msg: %s', routing_key)
+            return
+        if t is None:
+            log.error("Can't find ticket %s (routing key was %s)",
+                      ticket_num, routing_key)
+        super(ForgeTrackerApp, self).message_auditor(routing_key, data, t)
 
     @react('Tickets.#')
     def reactor(self, routing_key, data):
@@ -72,6 +94,7 @@ class ForgeTrackerApp(Application):
             ticket = None
         links = [
             SitemapEntry('Home', self.config.url()),
+            SitemapEntry('Discuss', c.app.url + '_discuss/'),
             SitemapEntry('Create New Ticket', self.config.url() + 'new/')]
         if ticket:
             links.append(SitemapEntry('Update this Ticket',ticket.url() + 'edit/'))
@@ -111,13 +134,14 @@ class ForgeTrackerApp(Application):
         'Set up any default permissions and roles here'
 
         self.uninstall(project)
+        super(ForgeTrackerApp, self).install(project)
         # Give the installing user all the permissions
         pr = c.user.project_role()
         for perm in self.permissions:
               self.config.acl[perm] = [ pr._id ]
         self.config.acl['read'].append(
             ProjectRole.query.get(name='*anonymous')._id)
-        self.config.acl['comment'].append(
+        self.config.acl['post'].append(
             ProjectRole.query.get(name='*authenticated')._id)
         model.Globals(app_config_id=c.app.config._id,
             last_ticket_num=0,
@@ -129,7 +153,7 @@ class ForgeTrackerApp(Application):
         model.Attachment.query.remove({'metadata.app_config_id':c.app.config._id})
         app_config_id = {'app_config_id':c.app.config._id}
         model.Ticket.query.remove(app_config_id)
-        model.Comment.query.remove(app_config_id)
+        # model.Comment.query.remove(app_config_id)
         model.Globals.query.remove(app_config_id)
 
 class RootController(object):
@@ -137,14 +161,20 @@ class RootController(object):
     def __init__(self):
         setattr(self, 'feed.atom', self.feed)
         setattr(self, 'feed.rss', self.feed)
+        self._discuss = AppDiscussionController()
 
     def ordered_history(self, limit=None):
         q = []
         tickets = model.Ticket.query.find(dict(app_config_id=c.app.config._id)).sort('ticket_num')
         for ticket in tickets:
-            q.append(dict(change_type='ticket',change_date=ticket.created_date,ticket_num=ticket.ticket_num,change_text=ticket.summary))
-            for comment in ticket.ordered_comments(limit):
-                q.append(dict(change_type='comment',change_date=comment.created_date,ticket_num=ticket.ticket_num,change_text=comment.text))
+            q.append(dict(change_type='ticket',change_date=ticket.created_date,
+                          ticket_num=ticket.ticket_num,change_text=ticket.summary))
+            for comment in ticket.discussion_thread().find_posts(limit=limit, style='linear'):
+                # for comment in ticket.ordered_comments(limit):
+                q.append(dict(change_type='comment',
+                              change_date=comment.timestamp,
+                              ticket_num=ticket.ticket_num,
+                              change_text=comment.text))
         q.sort(reverse=True)
         if limit:
             n = len(q)
@@ -371,7 +401,7 @@ class TicketController(object):
             self.ticket = model.Ticket.query.get(app_config_id=c.app.config._id,
                                                     ticket_num=self.ticket_num)
             self.attachment = AttachmentsController(self.ticket)
-            self.comments = CommentController(self.ticket)
+            # self.comments = CommentController(self.ticket)
         setattr(self, 'feed.atom', self.feed)
         setattr(self, 'feed.rss', self.feed)
 
@@ -379,6 +409,7 @@ class TicketController(object):
     @expose('forgetracker.templates.ticket')
     def index(self, **kw):
         require(has_artifact_access('read', self.ticket))
+        c.thread = W.thread
         if self.ticket is not None:
             globals = model.Globals.query.get(app_config_id=c.app.config._id)
             return dict(ticket=self.ticket, globals=globals)
@@ -389,6 +420,7 @@ class TicketController(object):
     @expose('forgetracker.templates.edit_ticket')
     def edit(self, **kw):
         require(has_artifact_access('write', self.ticket))
+        c.thread = W.thread
         globals = model.Globals.query.get(app_config_id=c.app.config._id)
         user_tags = UserTags.upsert(c.user, self.ticket.dump_ref())
         return dict(ticket=self.ticket, globals=globals, user_tags=user_tags)
@@ -502,37 +534,37 @@ class AttachmentController(object):
             return fp.read()
         return self.filename
 
-class CommentController(object):
+# class CommentController(object):
 
-    def __init__(self, ticket, comment_id=None):
-        self.ticket = ticket
-        self.comment_id = comment_id
-        self.comment = model.Comment.query.get(slug=comment_id)
+#     def __init__(self, ticket, comment_id=None):
+#         self.ticket = ticket
+#         self.comment_id = comment_id
+#         # self.comment = model.Comment.query.get(slug=comment_id)
 
-    @expose()
-    def reply(self, text):
-        require(has_artifact_access('comment', self.ticket))
-        if self.comment_id:
-            c = self.comment.reply(text)
-        else:
-            c = self.ticket.reply(text)
-        redirect(request.referer)
+#     @expose()
+#     def reply(self, text):
+#         require(has_artifact_access('comment', self.ticket))
+#         if self.comment_id:
+#             c = self.comment.reply(text)
+#         else:
+#             c = self.ticket.reply(text)
+#         redirect(request.referer)
 
-    @expose()
-    def delete(self):
-#        require(lambda:c.user._id == self.comment.author()._id)
-#        self.comment.text = '[Text deleted by commenter]'
-        self.comment.delete()
-        redirect(request.referer)
+#     @expose()
+#     def delete(self):
+# #        require(lambda:c.user._id == self.comment.author()._id)
+# #        self.comment.text = '[Text deleted by commenter]'
+#         self.comment.delete()
+#         redirect(request.referer)
 
-    def _lookup(self, next, *remainder):
-        if self.comment_id:
-            return CommentController(
-                self.ticket,
-                self.comment_id + '/' + next), remainder
-        else:
-            return CommentController(
-                self.ticket, next), remainder
+#     def _lookup(self, next, *remainder):
+#         if self.comment_id:
+#             return CommentController(
+#                 self.ticket,
+#                 self.comment_id + '/' + next), remainder
+#         else:
+#             return CommentController(
+#                 self.ticket, next), remainder
 
 NONALNUM_RE = re.compile(r'\W+')
 

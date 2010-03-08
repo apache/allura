@@ -3,6 +3,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml"
       xmlns:py="http://genshi.edgewall.org/"
       xmlns:xi="http://www.w3.org/2001/XInclude">
+  <?python from pyforge import model as M?>
   <xi:include href="${g.pyforge_templates}/master.html"/>
   <xi:include href="${c.app.templates}/lib.html" />
 
@@ -22,6 +23,7 @@
   
   <body>
     <h1>$page.title</h1>
+    <a href="${page.email_link(page.title)}">Email Page</a>
     <div>
       ${Markup(page.html_text)}
     </div>
@@ -30,18 +32,9 @@
     </div>
     ${list_attachments(list(page.attachments), False)}
     <hr/>
-    <h2>Comments</h2>
-    <div class="reply title-pane closed">
-      <button class="title" type="button">Add reply</button>
-      <div class="content">
-        <form method="post" action="comments/reply">
-          <textarea rows="4" cols="60" name="text"></textarea><br/>
-          <input type="submit" value="Save Comment"/>
-        </form>
-      </div>
+    <div py:with="thread=page.discussion_thread()" id="#comment">
+      <h2><a href="${thread.url()}">Discussion</a></h2>
+      ${c.thread.display(value=thread)}
     </div>
-    <py:for each="cmt in page.root_comments()">
-      ${display_comment(cmt)}
-    </py:for>
   </body>
 </html>

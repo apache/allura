@@ -1,0 +1,25 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+                      "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:py="http://genshi.edgewall.org/"
+      xmlns:xi="http://www.w3.org/2001/XInclude">
+
+  <xi:include href="${g.pyforge_templates}/master.html"/>
+  <?python from pyforge.lib.security import has_artifact_access ?>
+
+  <head>
+    <meta content="text/html; charset=UTF-8" http-equiv="content-type" py:replace="''"/>
+    <title>Moderation Queue</title>
+  </head>
+
+  <body>
+    <h1>Moderation Queue</h1>
+    <div>
+      Displaying page $pgnum / $pages
+    </div>
+    <a href="?status=$status&amp;flag=$flag&amp;offset=${offset-limit}">Previous Page</a>
+    <a href="?status=$status&amp;flag=$flag&amp;offset=${offset+limit}">Next Page</a><br/>
+    ${c.post_filter.display(action='.', value=dict(status=status, flag=flag))}
+    ${c.moderate_posts.display(value=dict(posts=posts), action='moderate')}
+  </body>
+</html>

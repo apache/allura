@@ -189,4 +189,51 @@ def diff_text(t1, t2):
             result += t1[i1:i2]
     return ''.join(result).replace('\n', '<br/>\n')
 
+class ProxiedAttrMeta(type):
+    def __init__(cls, name, bases, dct):
+        for v in dct.itervalues():
+            if isinstance(v, attrproxy):
+                v.cls = cls
 
+class attrproxy(object):
+    cls=None
+    def __init__(self, *attrs):
+        self.attrs = attrs
+
+    def __repr__(self):
+        return '<attrproxy on %s for %s>' % (
+            self.cls, self.attrs)
+
+    def __get__(self, obj, klass=None):
+        if obj is None:
+            obj = klass
+        for a in self.attrs:
+            obj = getattr(obj, a)
+        return proxy(obj)
+
+    def __getattr__(self, name):
+        if self.cls is None:
+            return promised_attrproxy(lambda:self.cls, name)
+        return getattr(
+            attrproxy(self.cls, *self.attrs),
+            name)
+
+class promised_attrproxy(attrproxy):
+    def __init__(self, promise, *attrs):
+        super(promised_attrproxy, self).__init__(*attrs)
+        self._promise = promise
+
+    def __repr__(self):
+        return '<promised_attrproxy for %s>' % (self.attrs,)
+
+    def __getattr__(self, name):
+        cls = self._promise()
+        return getattr(cls, name)
+
+class proxy(object):
+    def __init__(self, obj):
+        self._obj = obj
+    def __getattr__(self, name):
+        return getattr(self._obj, name)
+    def __call__(self, *args, **kwargs):
+        return self._obj(*args, **kwargs)

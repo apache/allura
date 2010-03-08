@@ -64,7 +64,7 @@ class SearchApp(Application):
         log.info('Removing %d artifacts', len(doc['artifacts']))
         obj = SearchConfig.query.find().first()
         obj.pending_commit += len(doc['artifacts'])
-        artifacts = ( ref.to_artifact() for ref in doc['artifacts'] )
+        artifacts = ( ref.to_artifact() for ref in doc['artifacts'] if ref is not None)
         artifacts = ((a, search.solarize(a)) for a in artifacts)
         artifacts = [ (a, s) for a,s in artifacts if s is not None ]
         # Add to solr

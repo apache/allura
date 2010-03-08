@@ -73,7 +73,7 @@ def identify_sender(peer, email_address, msg):
     if addr and addr.claimed_by_user_id:
         return addr.claimed_by_user()
     # TODO: look at the From: header, maybe?
-    return None
+    return M.User.anonymous()
 
 def encode_email_part(content, content_type):
     try:

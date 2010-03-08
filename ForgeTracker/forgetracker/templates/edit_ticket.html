@@ -9,6 +9,7 @@
   <?python
     from pprint import pformat
     from pyforge.lib.security import has_artifact_access
+    from pyforge import model as M
     ?>
 
   <head>
@@ -89,19 +90,10 @@
       </div>
     </div>
     <hr/>
-    <h2>Comments</h2>
-    <div class="reply title-pane closed">
-      <h3 class="title">Make a comment</h3>
-      <div class="content">
-        <form method="post" action="comments/reply">
-          <textarea rows="4" cols="60" name="text"></textarea><br/>
-          <input type="submit"/>
-        </form>
-      </div>
+    <div py:with="thread=ticket.discussion_thread()">
+      <h2><a href="${thread.url()}">Discussion</a></h2>
+      ${c.thread.display(value=thread)}
     </div>
-    <py:for each="cmt in ticket.root_comments()">
-      ${display_comment(cmt)}
-    </py:for>
+    <script type="text/javascript" src="${g.app_static('js/comments.js')}"/>
   </body>
-  <script type="text/javascript" src="${g.app_static('js/comments.js')}"/>
 </html>

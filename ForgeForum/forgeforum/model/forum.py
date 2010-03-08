@@ -1,58 +1,28 @@
 import re
-from time import sleep
 
 import tg
-import pymongo
-from pylons import c, g, request
-from pymongo.bson import ObjectId
+from pylons import g
 
 from ming import schema
-from ming.orm.base import mapper, session
 from ming.orm.mapped_class import MappedClass
 from ming.orm.property import FieldProperty, RelationProperty, ForeignIdProperty
 
-from pyforge.lib.helpers import nonce
-from pyforge.model import Artifact, Message, File
-from pyforge.model import VersionedArtifact, Snapshot
+from pyforge import model as M
 
 common_suffix = tg.config.get('forgemail.domain', '.sourceforge.net')
 
-class Forum(Artifact):
+class Forum(M.Discussion):
     class __mongometa__:
         name='forum'
     type_s = 'Forum'
 
     parent_id = FieldProperty(schema.ObjectId, if_missing=None)
-    shortname = FieldProperty(str)
-    name = FieldProperty(str)
-    description = FieldProperty(str, if_missing='')
-    num_topics = FieldProperty(int, if_missing=0)
-    num_posts = FieldProperty(int, if_missing=0)
-    subscriptions = FieldProperty({str:bool})
+    threads = RelationProperty('ForumThread')
+    posts = RelationProperty('ForumPost')
 
-    threads = RelationProperty('Thread')
-
-    def update_stats(self):
-        self.num_topics = Thread.query.find(dict(forum_id=self._id)).count()
-        self.num_posts = Post.query.find(dict(forum_id=self._id, status='ok')).count()
-
-    def breadcrumbs(self):
-        if self.parent:
-            l = self.parent.breadcrumbs()
-        else:
-            l = []
-        return l + [(self.name, self.url())]
-
-    @property
-    def email_address(self):
-        domain = '.'.join(reversed(self.app.url[1:-1].split('/')))
-        return '%s@%s%s' % (self.shortname.replace('/', '.'), domain, common_suffix)
-
-    @property
-    def last_post(self):
-        q = Post.query.find(dict(
-                forum_id=self._id)).sort('timestamp', pymongo.DESCENDING)
-        return q.first()
+    @classmethod
+    def attachment_class(cls):
+        return ForumAttachment
 
     @property
     def parent(self):
@@ -62,286 +32,145 @@ class Forum(Artifact):
     def subforums(self):
         return Forum.query.find(dict(parent_id=self._id)).all()
         
+    @property
+    def email_address(self):
+        domain = '.'.join(reversed(self.app.url[1:-1].split('/')))
+        return '%s@%s%s' % (self.shortname.replace('/', '.'), domain, common_suffix)
+
+    def breadcrumbs(self):
+        if self.parent:
+            l = self.parent.breadcrumbs()
+        else:
+            l = []
+        return l + [(self.name, self.url())]
+
     def url(self):
         return self.app.url + self.shortname + '/'
-    
-    def shorthand_id(self):
-        return self.shortname
-
-    def index(self):
-        result = Artifact.index(self)
-        result.update(type_s=self.type_s,
-                      name_s=self.name,
-                      text=self.description)
-        return result
-
-    def subscription(self):
-        return self.subscriptions.get(str(c.user._id))
 
     def delete(self):
         # Delete the subforums
         for sf in self.subforums:
             sf.delete()
-        # Delete all the threads, posts, and artifacts
-        Thread.query.remove(dict(forum_id=self._id))
-        Post.query.remove(dict(forum_id=self._id))
-        for att in Attachment.by_metadata(forum_id=self._id):
-            att.delete()
-        Artifact.delete(self)
+        super(Forum, self).delete()
 
-class Thread(Artifact):
+    def discussion_thread(self, data=None):
+        # If the data is a reply, use the parent's thread
+        subject = '[no subject]'
+        parent_id = None
+        if data is not None:
+            parent_id = data['headers'].get('In-Reply-To')
+            subject = data['headers'].get('Subject', subject)
+        if parent_id is not None:
+            parent = self.post_class().query.get(_id=parent_id)
+            if parent: return parent.thread
+        # Otherwise it's a new thread
+        return self.thread_class()(discussion_id=self._id,subject=subject)
+
+class ForumThread(M.Thread):
     class __mongometa__:
-        name='thread'
-        indexes = [
-            'tags' ]
+        name='forum_thread'
     type_s = 'Thread'
 
-    _id=FieldProperty(str, if_missing=lambda:nonce(8))
-    forum_id = ForeignIdProperty(Forum)
-    subject = FieldProperty(str)
-    num_replies = FieldProperty(int, if_missing=0)
-    num_views = FieldProperty(int, if_missing=0)
-    subscriptions = FieldProperty({str:bool})
-    tags = FieldProperty([str])
-    first_post_id = ForeignIdProperty('Post')
+    discussion_id = ForeignIdProperty(Forum)
+    first_post_id = ForeignIdProperty('ForumPost')
 
-    forum = RelationProperty(Forum)
-    posts = RelationProperty('Post')
-    first_post = RelationProperty('Post')
+    discussion = RelationProperty(Forum)
+    posts = RelationProperty('ForumPost')
+    first_post = RelationProperty('ForumPost')
 
-    def update_stats(self):
-        self.num_replies = Post.query.find(dict(thread_id=self._id, status='ok')).count() - 1
+    @classmethod
+    def attachment_class(cls):
+        return ForumAttachment
 
-    @property
-    def last_post(self):
-        q = Post.query.find(dict(
-                thread_id=self._id)).sort('timestamp', pymongo.DESCENDING)
-        return q.first()
-
-    @property
-    def parent(self):
-        return Forum.query.get(_id=self.parent_id)
-
-    def find_posts_by_thread(self, offset, limit):
-        q = Post.query.find(dict(forum_id=self.forum_id, thread_id=self._id, status='ok'))
-        q = q.sort('slug')
-        q = q.skip(offset)
-        q = q.limit(limit)
-        return q.all()
-
-    def find_posts_by_date(self, offset, limit):
-        # Sort the posts roughly in threaded order
-        q = Post.query.find(dict(forum_id=self.forum_id, thread_id=self._id, status='ok'))
-        q = q.sort('timestamp')
-        q = q.skip(offset)
-        q = q.limit(limit)
-        return q.all()
-
-    def top_level_posts(self):
-        return Post.query.find(dict(
-                thread_id=self._id,
-                parent_id=None,
-                status='ok'))
-        
-    def url(self):
-        # Can't use self.forum because it might change during the req
-        forum = Forum.query.get(_id=self.forum_id)
-        return forum.url() + 'thread/' + str(self._id) + '/'
-    
-    def shorthand_id(self):
-        return '%s/%s' % (self.forum.shorthand_id(), self._id)
-
-    def index(self):
-        result = Artifact.index(self)
-        result.update(type_s=self.type_s,
-                      name_s=self.subject,
-                      views_i=self.num_views,
-                      text=self.subject)
-        return result
-
-    def subscription(self):
-        return self.subscriptions.get(str(c.user._id))
-
-    def delete(self):
-        for p in Post.query.find(dict(thread_id=self._id)):
-            p.delete()
-        Artifact.delete(self)
+    def post(self, subject, text, message_id=None, parent_id=None, **kw):
+        post = super(ForumThread, self).post(text, message_id=message_id, parent_id=parent_id)
+        post.subject = subject
+        return post
 
     def set_forum(self, new_forum):
-        self.forum_id = new_forum._id
-        Post.query.update(
-            dict(thread_id=self._id),
-            {'$set':dict(forum_id=new_forum._id)})
+        self.post_class().query.update(
+            dict(discussion_id=self.discussion_id, thread_id=self._id),
+            {'$set':dict(discussion_id=new_forum._id)})
+        self.attachment_class().query.update(
+            {'metadata.discussion_id':self.discussion_id,
+             'metadata.thread_id':self._id},
+            {'$set':dict(discussion_id=new_forum._id)})
+        self.discussion_id = new_forum._id
 
-class PostHistory(Snapshot):
+class ForumPostHistory(M.PostHistory):
     class __mongometa__:
         name='post_history'
 
-    artifact_id = ForeignIdProperty('Post')
+    artifact_id = ForeignIdProperty('ForumPost')
 
-    def original(self):
-        return Post.query.get(_id=self.artifact_id)
-        
-    def shorthand_id(self):
-        return '%s#%s' % (self.original().shorthand_id(), self.version)
-
-    def url(self):
-        return self.original().url() + '?version=%d' % self.version
-
-    def index(self):
-        result = Snapshot.index(self)
-        result.update(
-            title_s='Version %d of %s' % (
-                self.version,self.original().subject),
-            type_s='Post Snapshot',
-            text=self.data.text)
-        return result
-
-class Post(Message, VersionedArtifact):
+class ForumPost(M.Post):
     class __mongometa__:
-        name='post'
-        history_class = PostHistory
+        name='forum_post'
+        history_class = ForumPostHistory
     type_s = 'Post'
 
-    thread_id = ForeignIdProperty(Thread)
-    forum_id = ForeignIdProperty(Forum)
     subject = FieldProperty(str)
-    status = FieldProperty(schema.OneOf('ok', 'pending', 'spam', if_missing='pending'))
-    flagged_by = FieldProperty([schema.ObjectId])
-    flags = FieldProperty(int, if_missing=0)
+    discussion_id = ForeignIdProperty(Forum)
+    thread_id = ForeignIdProperty(ForumThread)
 
-    thread = RelationProperty(Thread)
-    forum = RelationProperty(Forum)
-
-    @property
-    def parent(self):
-        return Post.query.get(_id=self.parent_id)
-
-    def url(self):
-        if self.thread:
-            return self.thread.url() + self.slug + '/'
-        else:
-            return None
-    
-    def shorthand_id(self):
-        if self.thread:
-            return '%s#%s' % (self.thread.shorthand_id(), self.slug)
-        else:
-            return None
-
-    def index(self):
-        result = Message.index(self)
-        result.update(type_s=self.type_s,
-                      name_s=self.subject)
-        return result
-
-    def reply_subject(self):
-        if self.subject.lower().startswith('re:'):
-            return self.subject
-        else:
-            return 'Re: ' + self.subject
-
-    def reply_text(self):
-        l = [ '%s wrote:' % self.author().display_name ]
-        l += [ '> ' + line for line in self.text.split('\n') ]
-        return '\n'.join(l)
+    discussion = RelationProperty(Forum)
+    thread = RelationProperty(ForumThread)
 
     @classmethod
-    def create_post_threads(cls, posts):
-        result = []
-        post_index = {}
-        for p in sorted(posts, key=lambda p:p.slug):
-            pi = dict(post=p, children=[])
-            post_index[p._id] = pi
-            if p.parent_id in post_index:
-                post_index[p.parent_id]['children'].append(pi)
-            else:
-                result.append(pi)
-        return result
+    def attachment_class(cls):
+        return ForumAttachment
 
-    @property
-    def attachments(self):
-        return Attachment.by_metadata(post_id=self._id)
-
-    def delete(self):
-        for att in Attachment.by_metadata(message_id=self._id):
-            att.delete()
-        Message.delete(self)
-
-    def promote(self, thread_title):
-        parent = self.parent
-        if parent:
-            thd, new_parent = self.forum.new_thread(
-                thread_title, 'Discussion moved')
-            reply = parent.reply(self.subject, 'Discussion moved')
-            reply.text = 'Discussion moved to [here](%s)' % thd.url()
-            new_parent.text = 'Discussion moved from [here](%s#post-%s)' % (
-                self.thread.url(), reply.slug)
-            new_parent.slug = parent.slug
-            new_parent.timestamp = parent.timestamp
-        else:
-            new_parent = None
-            thd = Thread(forum_id=self.forum._id,
-                         subject=thread_title)
-        self.thread_id = thd._id
-        if new_parent:
-            self.parent_id = new_parent._id
-        my_replies = re.compile(r'%s/.*' % self.slug)
-        Post.query.update(
-            dict(slug=my_replies),
-            {'$set':dict(thread_id=thd._id)})
+    def promote(self):
+        '''Make the post its own thread head'''
+        if not self.parent: return # already its own thread
+        thd = self.thread_class()(
+            discussion_id=self.discussion_id,
+            subject=self.subject,
+            first_post_id=self._id)
+        self.move(thd, None)
         return thd
 
-    def approve(self):
-        self.status = 'ok'
-        if self.parent_id:
-            parent = Post.query.get(_id=self.parent_id)
-            self.slug = parent.slug + '/' + nonce()
-            self.forum_id = parent.forum_id
-            self.thread_id = parent.thread_id
+    def move(self, thread, new_parent_id):
+        # Add a placeholder to note the move
+        placeholder = self.thread.post(
+            subject='Discussion moved',
+            text='Discussion moved to [here](%s#post-%s)' % (
+                thread.url(), self.slug),
+            parent_id=self.parent_id)
+        placeholder.slug = self.slug
+        placeholder.full_slug = self.full_slug
+        placeholder.approve()
+        if new_parent_id:
+            parent = self.post_class().query.get(_id=new_parent_id)
         else:
-            thd = Thread(forum_id=self.forum._id,
-                         subject=self.subject)
-            self.thread_id = thd._id
-            thd.first_post_id = self._id
-            g.publish('react', 'Forum.new_thread', dict(thread_id=thd._id))
-        self.give_access('moderate', user=self.author())
-        self.commit()
-        if c.app.config.options.get('PostingPolicy') == 'ApproveOnceModerated':
-            c.app.config.grant_permission('unmoderated_post', self.author())
-        g.publish('react', 'Forum.new_post', dict(post_id=self._id))
-        session(self).flush()
-        self.thread.update_stats()
-        self.forum.update_stats()
+            parent = None
+        # Set the thread ID on my replies and attachments
+        reply_re = re.compile(self.slug + '/.*')
+        self.slug, self.full_slug = self.make_slugs(parent=parent, timestamp=self.timestamp)
+        self.discussion_id=thread.discussion_id
+        self.thread_id=thread._id
+        self.parent_id=new_parent_id
+        self.text = 'Discussion moved from [here](%s#post-%s)\n\n%s' % (
+            placeholder.thread.url(), placeholder.slug, self.text)
+        reply_tree = self.query.find(dict(slug=reply_re)).all()
+        for post in reply_tree:
+            post.slug, post.full_slug = self.make_slugs(parent=post.parent, timestamp=post.timestamp)
+            post.discussion_id=self.discussion_id,
+            post.thread_id=self.thread_id
+        for post in [ self ] + reply_tree:
+            for att in post.attachments:
+                att.discussion_id=self.discussion_id
+                att.thread_id=self.thread_id
 
-    def spam(self):
-        self.status = 'spam'
-        g.publish('react', 'spam', dict(artifact_reference=self.dump_ref()),
-                  serializer='pickle')
-
-class Attachment(File):
+class ForumAttachment(M.Attachment):
+    DiscussionClass=Forum
+    ThreadClass=ForumThread
+    PostClass=ForumPost
     class __mongometa__:
-        name = 'attachment.files'
+        name = 'forum_attachment.files'
         indexes = [
             'metadata.filename',
             'metadata.forum_id',
             'metadata.post_id' ]
-
-    # Override the metadata schema here
-    metadata=FieldProperty(dict(
-            forum_id=schema.ObjectId,
-            post_id=str,
-            filename=str))
-
-    @property
-    def forum(self):
-        return Forum.query.get(_id=self.metadata.forum_id)
-
-    @property
-    def post(self):
-        return Post.query.get(_id=self.metadata.post_id)
-
-    def url(self):
-        return self.forum.url() + 'attachment/' + self.filename
 
 MappedClass.compile_all()

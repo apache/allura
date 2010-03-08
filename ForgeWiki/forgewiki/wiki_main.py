@@ -23,6 +23,9 @@ from pyforge.lib.search import search
 from pyforge.lib.decorators import audit, react
 from pyforge.lib.security import require, has_artifact_access
 from pyforge.model import ProjectRole, User, TagEvent, UserTags, ArtifactReference, Tag, Feed
+from pyforge.model import Discussion, Thread, Post, Attachment
+from pyforge.controllers import AppDiscussionController
+from pyforge.lib import widgets as w
 
 # Local imports
 from forgewiki import model
@@ -33,10 +36,17 @@ log = logging.getLogger(__name__)
 # Will not be needed after _dispatch is fixed in tg 2.1
 from pyforge.lib.dispatch import _dispatch
 
+class W:
+    thread=w.Thread(
+        offset=None, limit=None, page_size=None, total=None,
+        style='linear')
+
+
 class ForgeWikiApp(Application):
     '''This is the Wiki app for PyForge'''
     __version__ = version.__version__
-    permissions = [ 'configure', 'read', 'create', 'edit', 'delete', 'comment', 'edit_page_permissions' ]
+    permissions = [ 'configure', 'read', 'create', 'edit', 'delete', 'edit_page_permissions',
+                    'unmoderated_post', 'post', 'moderate', 'admin']
     config_options = Application.config_options + [
         ConfigOption('project_name', str, 'pname'),
         ConfigOption('message', str, 'Custom message goes here'),
@@ -47,33 +57,20 @@ class ForgeWikiApp(Application):
         self.root = RootController()
 
     def has_access(self, user, topic):
-        return user != User.anonymous()
+        return has_artifact_access('post', user=user)
 
-    @audit('Wiki.#')
-    def auditor(self, routing_key, data):
-        '''Attach a comment to the named page'''
+    @audit('Wiki.msg.#')
+    def message_auditor(self, routing_key, data):
         log.info('Auditing data from %s (%s)',
                  routing_key, self.config.options.mount_point)
         log.info('Headers are: %s', data['headers'])
         try:
-            elements = routing_key.split('.')
-            count = len(elements)
-            log.info('Audit applies to page ' + elements[1])
-            p = model.Page.upsert(elements[1])
+            title = routing_key.split('.')[-1]
+            p = model.Page.upsert(title)
         except:
-            root_name = self.root_page_name
-            log.info('Audit applies to page %s.' % root_name)
-            p = model.Page.upsert(root_name)
-        # Find ancestor comment
-        parent = model.Comment.query.get(message_id=data['headers'].get('In-Reply-To'))
-        if parent is None: parent = p
-        comment = parent.reply()
-        if 'Message-ID' in data['headers']:
-            comment.message_id=data['headers']['Message-ID']
-        comment.text = '*%s*\n\n%s' % (
-            data['headers'].get('Subject'),
-            data['payload'])
-        log.info('Set subject to %s', data['headers'].get('Subject'))
+            log.info('Audit applies to page Root.')
+            p = model.Page.upsert('Root')
+        super(ForgeWikiApp, self).message_auditor(routing_key, data, p)
 
     @react('Wiki.#')
     def reactor(self, routing_key, data):
@@ -110,7 +107,8 @@ class ForgeWikiApp(Application):
         related_urls = []
         page = request.path_info.split(self.url)[-1].split('/')[-2]
         page = model.Page.query.find(dict(app_config_id=self.config._id,title=page)).first()
-        links = [SitemapEntry('Home',c.app.url)]
+        links = [SitemapEntry('Home',c.app.url),
+                 SitemapEntry('Discuss', c.app.url + '_discuss/') ]
         if page:
             links.append(SitemapEntry('Edit this page','edit'))
             for aref in page.references+page.backreferences.values():
@@ -139,21 +137,22 @@ class ForgeWikiApp(Application):
 
     def install(self, project):
         'Set up any default permissions and roles here'
-
         self.config.options['project_name'] = project._id
         self.uninstall(project)
+        super(ForgeWikiApp, self).install(project)
         # Give the installing user all the permissions
         pr = c.user.project_role()
         for perm in self.permissions:
               self.config.acl[perm] = [ pr._id ]
         self.config.acl['read'].append(
             ProjectRole.query.get(name='*anonymous')._id)
-        self.config.acl['comment'].append(
+        self.config.acl['post'].append(
             ProjectRole.query.get(name='*authenticated')._id)
         p = model.Page.upsert(self.root_page_name)
         p.viewable_by = ['all']
         p.text = 'This is the root page.'
         p.commit()
+
 
     def uninstall(self, project):
         "Remove all the plugin's artifacts from the database"
@@ -167,6 +166,7 @@ class RootController(object):
     def __init__(self):
         setattr(self, 'feed.atom', self.feed)
         setattr(self, 'feed.rss', self.feed)
+        self._discuss = AppDiscussionController()
 
     @expose('forgewiki.templates.index')
     def index(self):
@@ -308,6 +308,7 @@ class PageController(object):
     @validate(dict(version=validators.Int(if_empty=None)))
     def index(self, version=None):
         require(has_artifact_access('read', self.page))
+        c.thread = W.thread
         page = self.get_version(version)
         if 'all' not in page.viewable_by and str(c.user._id) not in page.viewable_by:
             raise exc.HTTPForbidden(detail="You may not view this page.")

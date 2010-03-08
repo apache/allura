@@ -11,18 +11,25 @@ from pyforge.app import Application, ConfigOption, SitemapEntry, DefaultAdminCon
 from pyforge.lib.security import require, has_artifact_access
 from pyforge.model import ProjectRole
 from pyforge.lib.search import search
-from pyforge.lib.helpers import vardec
+from pyforge.lib import helpers as h
 
 from .forum import ForumController
 from forgeforum import model
+from forgeforum import widgets as FW
 
 log = logging.getLogger(__name__)
 
 class RootController(object):
 
+    class W(object):
+        forum_subscription_form=FW.ForumSubscriptionForm()
+
     @expose('forgeforum.templates.index')
     def index(self):
-        return dict()
+        c.forum_subscription_form = self.W.forum_subscription_form
+        return dict(forums=model.Forum.query.find(dict(
+                app_config_id=c.app.config._id,
+                parent_id=None)))
                   
     @expose('forgeforum.templates.search')
     @validate(dict(q=validators.UnicodeString(if_empty=None),
@@ -45,9 +52,11 @@ class RootController(object):
     def _lookup(self, id, *remainder):
         return ForumController(id), remainder
 
-    @vardec
+    @h.vardec
     @expose()
-    def subscribe(self, forum=None, thread=None, **kw):
+    @validate(W.forum_subscription_form)
+    def subscribe(self, **kw):
+        import pdb; pdb.set_trace()
         if forum is None: forum = []
         if thread is None: thread = []
         objs = []

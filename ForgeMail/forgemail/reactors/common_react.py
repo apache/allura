@@ -48,12 +48,12 @@ def received_email(routing_key, data):
                                 filename=part['filename'],
                                 content_type=part['content_type'],
                                 payload=part['payload'],
-                                user_id=str(user._id))
+                                user_id=user._id and str(user._id))
                             g.publish('audit', routing_key, msg,
                                       serializer='yaml')
                     else:
                         g.publish('audit', routing_key,
-                                  dict(msg, user_id=str(user._id)),
+                                  dict(msg, user_id=user._id and str(user._id)),
                                   serializer='pickle')
         except exc.ForgeMailException, e:
             log.error('Error routing email to %s: %s', addr, e)

@@ -226,19 +226,31 @@ tbody .even{
 
 /* Collapsible boxes */
 
-.title-pane h3.title
+.title-pane .title
 {
-  background-color: #ff8;
-  padding: 4px;
-  margin: 0;
+  background-color: #EDF3FB;
+  padding: 1px 6px;
+  margin: 4px 1px 0 1px;
   border: 1px solid #333;
+  font-weight:normal;
+  font-size:12px;
   cursor: pointer;
+}
+
+.title-pane .title:before
+{
+    content: ' [-]  ';
+}
+
+.title-pane.closed .title:before
+{
+    content: ' [+] ';
 }
 
 .title-pane .content
 {
     padding: .5em;
-	border: 1px solid #ccc;
+    border: 1px solid #ccc;
 }
 
 .title-pane.closed .content
@@ -370,6 +382,8 @@ tbody .even{
 {
 	background-color: #eee;
 }
+
+<<<<<<< HEAD:pyforge/pyforge/public/css/style.css
 #pyforge_directory{
     margin-top: 1em;
 }
@@ -389,3 +403,13 @@ tbody .even{
 #pyforge_directory a:hover{
     text-decoration: underline;
 }
+
+input[type="submit"], button
+{
+   background-color: #EDF3FB;
+   border: 1px solid #333;
+   font-weight:normal;
+   font-size:12px;
+   cursor: pointer;
+}
+

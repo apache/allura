@@ -45,73 +45,49 @@ class ForgeForumApp(Application):
         return has_artifact_access('post', f, user=user)()
 
     @audit('Forum.msg.#')
-    def auditor(self, routing_key, data):
-        message_id = data.get('message_id', [gen_message_id()])
-        in_reply_to = data.get('in_reply_to', [])
-        references = data.get('references', [])
-        log.info('Auditing data from %s (%s)\n'
-                 '\tmessage_id : %s\n'
-                 '\tin_reply_to: %s\n'
-                 '\treferences : %s',
-                 routing_key,
-                 self.config.options.mount_point,
-                 message_id,
-                 in_reply_to,
-                 references)
+    def message_auditor(self, routing_key, data):
+        log.info('Auditing data from %s (%s)',
+                 routing_key, self.config.options.mount_point)
+        log.info('Headers are: %s', data['headers'])
         try:
             shortname = routing_key.split('.', 2)[-1]
             f = model.Forum.query.get(shortname=shortname.replace('.', '/'))
         except:
-            log.exception('Error processing data: %s', data)
+            log.exception('Error looking up forum: %s', routing_key)
             return
         if f is None:
-            log.info('routing key is %s', routing_key)
-            log.exception('Cannot find forum %s', shortname)
+            log.error("Can't find forum %s (routing key was %s)",
+                          shortname, routing_key)
             return
-        # Handle attachments
-        if data.get('filename'):
-            log.info('Saving attachment %s', data['filename'])
-            model.Attachment.save(data['filename'],
-                                  data.get('content_type', 'application/octet-stream'),
-                                  data['payload'],
-                                  forum_id=f._id,
-                                  post_id=message_id[0])
-            return
-        # Handle duplicates
-        original = model.Post.query.get(_id=message_id[0])
-        if original:
-            log.info('Saving text attachment')
-            model.Attachment.save('alternate',
-                                  data.get('content_type', 'application/octet-stream'),
-                                  data['payload'],
-                                  forum_id=f._id,
-                                  post_id=message_id[0])
-            return
-        # Find parent post
-        if in_reply_to:
-            parent = model.Post.query.get(_id=in_reply_to[0])
-        else:
-            parent = None
-        log.info('In reply to parent: %s', parent)
-        subject = data['headers'].get('Subject')
-        text = data['payload']
-        # Create 'orphan' post for moderation
-        post = model.Post(_id=message_id[0],
-                    forum_id=f._id,
-                    subject=subject,
-                    text=text)
-        if parent:
-            post.parent_id = parent._id
-        self._classify_post(f, post)
+        super(ForgeForumApp, self).message_auditor(routing_key, data, f._id)
 
-    def _classify_post(self, forum, post):
-        if has_artifact_access('unmoderated_post')():
-            post.approve()
-        elif has_artifact_access('post')():
-            pass
-        else:
-            post.delete() # poster has no access
-        session(post).flush()
+    @audit('Forum.forum_stats.#')
+    def forum_stats_auditor(self, routing_key, data):
+        try:
+            shortname = routing_key.split('.', 2)[-1]
+            f = model.Forum.query.get(shortname=shortname.replace('.', '/'))
+        except:
+            log.exception('Error looking up forum: %s', routing_key)
+            return
+        if f is None:
+            log.error("Can't find forum %s (routing key was %s)",
+                          shortname, routing_key)
+            return
+        f.update_stats()
+
+    @audit('Forum.thread_stats.#')
+    def thread_stats_auditor(self, routing_key, data):
+        try:
+            thread_id = routing_key.split('.', 2)[-1]
+            thread = model.Thread.query.find(_id=thread_id)
+        except:
+            log.exception('Error looking up forum: %s', routing_key)
+            return
+        if thread is None:
+            log.error("Can't find thread %s (routing key was %s)",
+                      thread_id, routing_key)
+            return
+        thread.update_stats()
 
     @react('Forum.new_post')
     def notify_subscribers(self, routing_key, data):
@@ -188,8 +164,8 @@ class ForgeForumApp(Application):
     def uninstall(self, project):
         "Remove all the plugin's artifacts from the database"
         model.Forum.query.remove(dict(app_config_id=self.config._id))
-        model.Thread.query.remove(dict(app_config_id=self.config._id))
-        model.Post.query.remove(dict(app_config_id=self.config._id))
+        model.ForumThread.query.remove(dict(app_config_id=self.config._id))
+        model.ForumPost.query.remove(dict(app_config_id=self.config._id))
 
 class ForumAdminController(DefaultAdminController):
 

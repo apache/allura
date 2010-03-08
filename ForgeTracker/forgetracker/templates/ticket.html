@@ -6,7 +6,7 @@
   <xi:include href="${g.pyforge_templates}/master.html"/>
   <xi:include href="${c.app.templates}/lib.html" />
 
-  <?python from pyforge.lib import helpers?>
+  <?python from pyforge import model as M?>
 
   <head>
     <meta content="text/html; charset=UTF-8" http-equiv="content-type" py:replace="''"/>
@@ -25,10 +25,13 @@
         </div>
         <div class="span-12 last">
           <h2 class="ticket_title">#$ticket.ticket_num $ticket.summary</h2>
-          Created by <a href="${ticket.reported_by().url()}">${ticket.reported_by().username}</a> ${helpers.ago(ticket.created_date, round=True)}<br/>
+          Created by <a href="${ticket.reported_by().url()}">${ticket.reported_by().username}</a> ${h.ago(ticket.created_date, round=True)}<br/>
           Currently assigned to
           <py:if test="not ticket.assigned_to()">${ticket.assigned_to_name()}</py:if>
           <a py:if="ticket.assigned_to()" href="${ticket.assigned_to().url()}">${ticket.assigned_to_name()}</a>
+          <p>
+            <a href="${ticket.email_link('#%s' % ticket.ticket_num)}">Email Ticket</a>
+          </p>
           <div py:content="Markup(g.markdown.convert(ticket.description))"/>
           ${list_attachments(list(ticket.attachments), False)}
         </div>
@@ -49,19 +52,10 @@
           <a href="edit">Edit this Ticket</a>
       </div>
     <hr/>
-    <h2 id="comment">Comments</h2>
-    <div class="reply title-pane closed">
-      <h3 class="title">Make a comment</h3>
-      <div class="content">
-        <form method="post" action="comments/reply">
-          <textarea rows="4" cols="60" name="text"></textarea><br/>
-          <input type="submit"/>
-        </form>
-      </div>
+    <div py:with="thread=ticket.discussion_thread()" id="#comment">
+      <h2><a href="${thread.url()}">Discussion</a></h2>
+      ${c.thread.display(value=thread)}
     </div>
-    <py:for each="cmt in ticket.root_comments()">
-      ${display_comment(cmt)}
-    </py:for>
+    <script type="text/javascript" src="${g.app_static('js/comments.js')}"/>
   </body>
-  <script type="text/javascript" src="${g.app_static('js/comments.js')}"/>
 </html>

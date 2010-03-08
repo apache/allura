@@ -386,11 +386,12 @@ class AppConfig(MappedClass):
     # AppConfig schema
     _id=FieldProperty(S.ObjectId)
     project_id=ForeignIdProperty(Project)
+    discussion_id=ForeignIdProperty('Discussion')
     plugin_name=FieldProperty(str)
     version=FieldProperty(str)
     options=FieldProperty(None)
     project = RelationProperty(Project, via='project_id')
-
+    discussion = RelationProperty('Discussion', via='discussion_id')
 
     # acl[permission] = [ role1, role2, ... ]
     acl = FieldProperty({str:[S.ObjectId]}) 

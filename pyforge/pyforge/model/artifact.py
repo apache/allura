@@ -198,6 +198,17 @@ class Artifact(MappedClass):
     def artifacts_tagged_with(cls, tag):
         return cls.query.find({'tags.tag':tag})
 
+    def email_link(self, subject='artifact'):
+        if subject:
+            return 'mailto:%s?subject=[%s:%s:%s] Re: %s' % (
+                self.email_address,
+                self.app_config.project.shortname,
+                self.app_config.options.mount_point,
+                self.shorthand_id(),
+                subject)
+        else:
+            return 'mailto:%s' % self.email_address
+
     def dump_ref(self):
         '''Return a pickle-serializable reference to an artifact'''
         try:
@@ -298,6 +309,12 @@ class Artifact(MappedClass):
         this should have a strong correlation to the URL.
         '''
         return str(self._id) # pragma no cover
+
+    def discussion_thread(self, message_data=None):
+        '''Return the discussion thread for this artifact (possibly made more
+        specific by the message_data)'''
+        from .discuss import Thread
+        return Thread.query.get(artifact_id=self._id)
 
 class Snapshot(Artifact):
     class __mongometa__:
@@ -402,14 +419,30 @@ class Message(Artifact):
         session = artifact_orm_session
         name='message'
         indexes = [ 'slug', 'parent_id' ]
+    type_s='Generic Message'
 
     _id=FieldProperty(str, if_missing=gen_message_id)
     slug=FieldProperty(str, if_missing=nonce)
+    full_slug=FieldProperty(str, if_missing=None)
     parent_id=FieldProperty(str)
     app_id=FieldProperty(S.ObjectId, if_missing=lambda:c.app.config._id)
     timestamp=FieldProperty(datetime, if_missing=datetime.utcnow)
     author_id=FieldProperty(S.ObjectId, if_missing=lambda:c.user._id)
     text=FieldProperty(str, if_missing='')
+
+    @classmethod
+    def make_slugs(cls, parent=None, timestamp=None):
+        part = nonce()
+        if timestamp is None:
+            timestamp = datetime.utcnow()
+        dt = timestamp.strftime('%Y%m%d%H%M%S')
+        slug = part
+        full_slug = dt + ':' + part
+        if parent:
+            return (parent.slug + '/' + slug,
+                    parent.full_slug + '/' + full_slug)
+        else:
+            return slug, full_slug
 
     def author(self):
         from .auth import User
@@ -417,11 +450,12 @@ class Message(Artifact):
 
     def reply(self):
         new_id = gen_message_id()
-        new_slug = self.slug + '/' + nonce()
+        slug, full_slug = self.make_slugs(self)
         new_args = dict(
             state(self).document,
             _id=new_id,
-            slug=new_slug,
+            slug=slug,
+            full_slug=full_slug,
             parent_id=self._id,
             timestamp=datetime.utcnow(),
             author_id=c.user._id)
@@ -445,8 +479,7 @@ class Message(Artifact):
             author_user_name_t=author.username,
             author_display_name_t=author.display_name,
             timestamp_dt=self.timestamp,
-            text=self.text,
-            type_s='Generic Message')
+            text=self.text)
         return result
 
     def shorthand_id(self):

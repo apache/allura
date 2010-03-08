@@ -1,20 +1,19 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" 
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
                       "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
       xmlns:py="http://genshi.edgewall.org/"
       xmlns:xi="http://www.w3.org/2001/XInclude">
 
   <xi:include href="${g.pyforge_templates}/master.html"/>
-  <xi:include href="${c.app.templates}/lib.html" />
+  <?python from pyforge.lib.security import has_artifact_access ?>
 
   <head>
     <meta content="text/html; charset=UTF-8" http-equiv="content-type" py:replace="''"/>
-    <title>ForgeForum Index Page</title>
+    <title>$thread.discussion.name</title>
   </head>
-  
+
   <body>
-    <h1>Welcome to ForgeForum</h1>
-    <h2>Project: $c.project.shortname</h2>
-    ${c.forum_subscription_form.display(action='subscribe', value=dict(forums=list(forums)))}
+    ${c.thread_header.display(value=thread, offset=offset, pagesize=pagesize, total=total)}
+    ${c.thread.display(value=thread, offset=offset, pagesize=pagesize, total=total)}
   </body>
 </html>

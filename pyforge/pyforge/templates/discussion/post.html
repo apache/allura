@@ -1,20 +1,26 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" 
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
                       "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
       xmlns:py="http://genshi.edgewall.org/"
       xmlns:xi="http://www.w3.org/2001/XInclude">
 
   <xi:include href="${g.pyforge_templates}/master.html"/>
-  <xi:include href="${c.app.templates}/lib.html" />
 
   <head>
     <meta content="text/html; charset=UTF-8" http-equiv="content-type" py:replace="''"/>
-    <title>ForgeForum Index Page</title>
+    <title>$post.thread.subject</title>
   </head>
-  
+
   <body>
-    <h1>Welcome to ForgeForum</h1>
-    <h2>Project: $c.project.shortname</h2>
-    ${c.forum_subscription_form.display(action='subscribe', value=dict(forums=list(forums)))}
+    <h1>$post.thread.subject</h1>
+    <div>
+      Version:
+      <a href="?version=1">&lt;&lt;</a>
+      <a href="?version=${post.version-1}">&lt;</a>
+      $post.version
+      <a href="?version=${post.version+1}">&gt;</a>
+      <a href=".">&gt;&gt;</a>
+    </div>
+    ${c.post.display(value=post)}
   </body>
 </html>

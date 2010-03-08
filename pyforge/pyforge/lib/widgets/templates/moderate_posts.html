@@ -1,0 +1,47 @@
+<form xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:py="http://genshi.edgewall.org/"
+      xmlns:xi="http://www.w3.org/2001/XInclude"
+      name="$name"
+      id="$name"
+      method="$method"
+      action="$action"
+      enctype="$enctype"
+      py:attrs="attrs">
+  <fieldset>
+    <legend>Update marked posts</legend>
+    <input type="submit" name="approve" value="Approve Marked"/>
+    <input type="submit" name="spam" value="Spam Marked"/>
+    <input type="submit" name="delete" value="Delete Marked"/>
+  </fieldset>
+  <table>
+    <thead>
+      <tr>
+        <th><a href="#">[x]</a></th>
+        <th>Timestamp</th>
+        <th>Status</th>
+        <th>Flags?</th>
+        <th>Author</th>
+        <th>Subject</th>
+        <th>Text</th>
+        <th>Attachments</th>
+      </tr>
+    </thead>
+    <tbody>
+      <py:for each="i, post in enumerate(value.posts)">
+        <tr>
+          <td>
+            <input type="hidden" name="post-${i}.slug" value="$post.slug"/>
+            <input type="checkbox" name="post-${i}.checked"/>
+          </td>
+          <td>$post.timestamp</td>
+          <td>$post.status</td>
+          <td>$post.flags</td>
+          <td py:with="author=post.author()">$author.display_name ($author.username)</td>
+          <td>$post.thread.subject</td>
+          <td>${h.text.truncate(post.text)}</td>
+          <td>${len(post.attachments)}</td>
+        </tr>
+      </py:for>
+    </tbody>
+  </table>
+</form>

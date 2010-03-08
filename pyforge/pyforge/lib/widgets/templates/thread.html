@@ -1,0 +1,29 @@
+<div xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:py="http://genshi.edgewall.org/">
+  <?python from pyforge.lib.security import has_artifact_access ?>
+  <py:with vars="posts=value.find_posts(offset=offset, limit=pagesize, style=style)">
+    <div py:if="not posts">No posts found</div>
+    <div py:if="style=='threaded'"
+         py:with="post_threads=value.create_post_threads(posts)">
+      <div style="width:220px; float:left">
+        ${widgets.post_thread.display(value=post_threads)}
+      </div>
+      <div style="margin-left: 225px">
+        <py:for each="post in posts">
+          ${widgets.post.display(value=post)}
+        </py:for>
+      </div>
+    </div>
+    <div py:if="style!='threaded'">
+      <py:for each="post in posts">
+        ${widgets.post.display(value=post)}
+      </py:for>
+    </div>
+  </py:with>
+  <div py:if="has_artifact_access('post', value)()" class="title-pane closed">
+    <span class="title">New Post</span>
+    <div class="content">
+      ${widgets.edit_post.display(submit_text='New Post', action=value.url() + 'post')}
+    </div>
+  </div>
+</div>

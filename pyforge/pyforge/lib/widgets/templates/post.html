@@ -1,0 +1,62 @@
+<div xmlns="http://www.w3.org/1999/xhtml"
+     xmlns:py="http://genshi.edgewall.org/"
+     py:strip="True">
+  <?python from pyforge.lib.security import has_artifact_access?>
+  <div id="post-${value.slug}" class="title-pane">
+    <div class="title">
+      <py:if test="show_subject">
+        <strong>$value.subject</strong> by
+      </py:if>
+      <a href="${value.author().url()}">${value.author().display_name}</a>
+      ${h.ago(value.timestamp)}
+    </div>
+    <div class="content">
+      <div style="float:right">
+        <a href="${value.url()}">Permalink</a>
+        <div class="title-pane closed">
+          <div class="title">Post Controls</div>
+          <div class="content" style="background-color:#ccc; border:1px solid #333;">
+            ${widgets.flag_post.display(value=value, action=value.url() + 'flag')}
+            <py:if test="has_artifact_access('moderate', value)()">
+
+              ${widgets.moderate_post.display(value=value, action=value.url()+'moderate')}
+
+              <div class="title-pane closed">
+                <span class="title">Attach File</span>
+                <div class="content">
+                  ${widgets.attach_post.display(value=value, action=value.url() + 'attach')}
+                </div>
+              </div>
+
+              <div class="title-pane closed">
+                <span class="title">Edit Post</span>
+                <div class="content">
+                  ${widgets.edit_post.display(value=value, submit_text='Edit Post', action=value.url())}
+                </div>
+              </div>
+
+            </py:if>
+            <div py:if="has_artifact_access('post', value.thread)()" class="reply title-pane closed">
+              <div class="title">Reply to ${value.author().display_name}</div>
+              <div class="content">
+                  ${widgets.edit_post.display(
+                      value=value,
+                      submit_text='Post Reply',
+                      action=value.url()+'reply',
+                      value=dict(
+                          text=value.reply_text(),
+                          subject=value.reply_subject()),
+                      )}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      ${Markup(g.markdown.convert(value.text))}
+      <div py:for="att in value.attachments">
+        ${widgets.attachment.display(post=value, value=att)}
+      </div>
+    </div>
+  </div>
+</div>
