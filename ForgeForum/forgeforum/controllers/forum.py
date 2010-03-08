@@ -82,12 +82,15 @@ class ForumThreadController(ThreadController):
         require(has_artifact_access('moderate', self.thread))
         args = self.W.moderate_thread.validate(kw, None)
         g.publish('audit', 'Forum.forum_stats.%s' % self.thread.discussion.shortname.replace('/', '.'))
-        if args.pop('move'):
+        if args.pop('move', None):
             forum = args.pop('forum')
             g.publish('audit', 'Forum.forum_stats.%s' % forum.shortname.replace('/', '.'))
             self.thread.set_forum(forum)
             redirect(self.thread.url())
-        super(ForumThreadController, self).moderate(**kw)
+        elif args.pop('delete', None):
+            url = self.thread.discussion.url()
+            self.thread.delete()
+            redirect(url)
 
 class ForumPostController(PostController):
 

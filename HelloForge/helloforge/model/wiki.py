@@ -30,7 +30,7 @@ def to_html(text):
 
 class PageHistory(Snapshot):
     class __mongometa__:
-        name='page_history'
+        name='hello_page_history'
 
     def original(self):
         return Page.query.get(_id=self.artifact_id)
@@ -60,7 +60,7 @@ class PageHistory(Snapshot):
 
 class Page(VersionedArtifact):
     class __mongometa__:
-        name='page'
+        name='hello_page'
         history_class = PageHistory
 
     title=FieldProperty(str)
@@ -130,7 +130,7 @@ class Comment(Message):
     """Comment class, threaded, persisted in mongo on a per-page basis"""
     
     class __mongometa__:
-        name='comment'
+        name='hello_comment'
     page_id=FieldProperty(schema.ObjectId)
 
     def index(self):
