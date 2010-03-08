@@ -38,7 +38,7 @@
                       <form method="POST" action="del_perm" style="display:inline">
                         <input type="hidden" name="permission" value="$p"/>
                         <input type="hidden" name="role" value="${role._id}"/>
-                        <input type="submit" value="Remove"/>
+                        <input type="submit" value="Remove" py:if="role.display() != '*user-'+c.user.username"/>
                       </form>
                     </td>
                   </tr>
