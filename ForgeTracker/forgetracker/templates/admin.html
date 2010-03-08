@@ -5,7 +5,6 @@
       xmlns:xi="http://www.w3.org/2001/XInclude">
 
   <xi:include href="master.html" />
-  <xi:include href="${app.templates}/lib.html" />
 
   <head>
     <meta content="text/html; charset=UTF-8" http-equiv="content-type" py:replace="''"/>
@@ -13,82 +12,84 @@
   </head>
 
   <body>
-    <h1>Tracker Admin for ${project_tree(c.project)} $app.config.options.mount_point </h1>
-    <div id="app-config" py:if="len(app.config_options) > 1">
-      <h3>Config Options</h3>
-      <form method="post" action="configure">
-        <div py:for="o in app.config_options" py:if="o.name != 'mount_point'">
-          <label for="$o.name">$o.name</label><br/>
-          <input name="$o.name" value="${app.config.options.get(o.name, o.default)}"/>
-        </div>
-        <input type="submit" value="Update config"/>
-        <input py:if="app.installable" type="submit" name="delete" value="Delete Plugin"/>
-      </form>
-    </div>
-    <div id="app-acl" class="title-pane closed">
-      <h3 class="title">ACL Config</h3>
-      <div class="content">
-        <div py:for="p in app.permissions" >
-          <h4>$p</h4>
-          <ul>
-            <li py:for="role in h.make_roles(app.config.acl[p])">
-              ${role.display()}
-              <form method="POST" action="del_perm" style="display:inline">
+    <div id="app_admin_tabs">
+    	<ul>
+    		<li><a href="#app-acl" py:if="app.permissions">Permissions</a></li>
+    		<li><a href="#app-status" py:if="app.permissions">Statuses</a></li>
+    		<li><a href="#app-custom-fields" py:if="app.permissions">Custom Fields</a></li>
+    	</ul>
+      <div id="app-acl">
+        <h3>Permissions</h3>
+        <div id="acl-admin">
+          <py:for each="p in app.permissions" >
+            <h3><a href="#">$p</a></h3>
+            <div>
+              <table>
+                <thead>
+                  <tr>
+                    <th>Role</th>
+                    <th/>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr py:for="role in h.make_roles(app.config.acl[p])">
+                    <td>${role.display()}</td>
+                    <td>
+                      <form method="POST" action="del_perm" style="display:inline">
+                        <input type="hidden" name="permission" value="$p"/>
+                        <input type="hidden" name="role" value="${role._id}"/>
+                        <input type="submit" value="Remove"/>
+                      </form>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+              <form method="POST" action="add_perm">
                 <input type="hidden" name="permission" value="$p"/>
-                <input type="hidden" name="role" value="${role._id}"/>
-                <input type="submit" value="Remove"/>
+                <select name="role">
+                  <option py:for="role in c.project.roles"
+                          value="$role._id"
+                          >${role.display()}</option>
+                </select>
+                <input type="submit" value="Add role"/>
               </form>
-            </li>
-          </ul>
-          <form method="POST" action="add_perm">
-            <input type="hidden" name="permission" value="$p"/>
-            <select name="role">
-              <option py:for="role in c.project.roles"
-                      value="$role._id"
-                      >${role.display()}</option>
-            </select>
-            <input type="submit" value="Add role"/>
+            </div>
+          </py:for>
+        </div>
+      </div>
+      <div id="app-status">
+        <h3>Status</h3>
+        <div>
+          <form method="POST" action="set_status_names">
+              status names:
+              <input type="text" name="status_names" style="width:50%" value="${globals.status_names}"/>
+              <input type="submit" value="Save"/>
           </form>
         </div>
       </div>
-    </div>
-    <div id="app-acl" class="title-pane closed">
-      <h3 class="title">Status Config</h3>
-      <div class="content">
-
-        <form method="POST" action="set_status_names">
-            status names:
-            <input type="text" name="status_names" style="width:50%" value="${globals.status_names}"/>
-            <input type="submit" value="Save"/>
-        </form>
-
-      </div>
-    </div>
-    <div id="app-acl" class="title-pane closed">
-      <h3 class="title">Custom Fields Config</h3>
-      <div class="content">
-
-        custom fields:
-        <div id="custom-field-list">
-            <div py:for="field in globals.custom_fields" style="display:none" class="custom-field-stub"
-                data-label="${field.label}" data-type="${field.type}" data-options="${getattr(field, 'options', '')}"/>
+      <div id="app-custom-fields">
+        <h3>Custom Fields</h3>
+        <div>
+          <div id="custom-field-list">
+              <div py:for="field in globals.custom_fields" style="display:none" class="custom-field-stub"
+                  data-label="${field.label}" data-type="${field.type}" data-options="${getattr(field, 'options', '')}"/>
+          </div>
+          <button onclick="add_field()">Add Field</button>
+          <button onclick="save_fields()">Save</button>
         </div>
-        <button onclick="add_field()">Add Field</button>
-        <button onclick="save_fields()">Save</button>
       </div>
-    </div>
+    </div>  
+    <script type="text/javascript">
+    	$(function() {
+    		$("#app_admin_tabs").tabs();
+    	});
+      $(function() {
+             $("#acl-admin").accordion({
+               autoHeight: false,
+               navigation: true
+             });
+           });
+	  </script>
   </body>
-  <style type="text/css">
-    div.custom-field {
-        border:1px solid gray;
-        margin:2px;
-        padding:2px;
-        background-color:white;
-    }
-  </style>
-  <script type="text/javascript" src="/static/Tickets/js/jquery.ui.core.js"/>
-  <script type="text/javascript" src="/static/Tickets/js/jquery.ui.widget.js"/>
-  <script type="text/javascript" src="/static/Tickets/js/jquery.ui.mouse.js"/>
-  <script type="text/javascript" src="/static/Tickets/js/jquery.ui.sortable.js"/>
   <script type="text/javascript" src="/static/Tickets/js/custom-fields.js"/>
 </html>
