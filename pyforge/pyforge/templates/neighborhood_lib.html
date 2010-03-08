@@ -14,7 +14,7 @@
         <a href="/auth/logout" py:if="c.user and c.user._id" class="sf_log_out">Log Out</a>
         <a href="/auth/" py:if="not c.user or not c.user._id" class="sf_log_in">Log In</a>
         <a href="${c.user.url()}" py:if="c.user and c.user._id" class="sf_user_link">$c.user.display_name</a>
-        <a href="." py:if="not c.user or not c.user._id" class="sf_create_account todo">Create Account</a>
+        <a href="/auth/create_account" py:if="not c.user or not c.user._id" class="sf_create_account">Create Account</a>
         <a href="/search/" class="sf_search_link">Search Site</a>
       </div>
     </div>

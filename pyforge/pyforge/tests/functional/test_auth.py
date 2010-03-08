@@ -86,3 +86,17 @@ class TestAuth(TestController):
         result = self.app.get('/auth/claim_verify_oid', params=dict(
                 provider='', username='http://blog.pythonisito.com'))
         assert result.status_int == 302
+
+    def test_create_account(self):
+        r = self.app.get('/auth/create_account')
+        assert 'Create an Account' in r
+        r = self.app.post('/auth/save_new', params=dict(username='aaa',password='123')).follow()
+        assert 'Password must be at least 8 characters.' in r
+        r = self.app.post('/auth/save_new', params=dict(username='aaa',
+                                                        password='12345678',
+                                                        display_name='Test Me',
+                                                        open_ids='http://somewhere',
+                                                        email_addresses='test@test.com')).follow()
+        assert 'Welcome back, Test Me' in r
+        r = self.app.post('/auth/save_new', params=dict(username='aaa',password='12345678')).follow()
+        assert 'That username is already taken. Please choose another.' in r

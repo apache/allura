@@ -66,6 +66,34 @@ class AuthController(object):
     def setup_openid_user(self):
         return dict()
 
+    @expose('pyforge.templates.create_account')
+    def create_account(self):
+        return dict()
+
+    @expose()
+    def save_new(self,display_name=None,open_ids=None,email_addresses=None,username=None,password=None):
+        if M.User.query.get(username=username):
+            flash('That username is already taken. Please choose another.',
+                  'error')
+            redirect('create_account')
+        if len(password) < 8:
+            flash('Password must be at least 8 characters.',
+                  'error')
+            redirect('create_account')
+        user = M.User.register(dict(username=username,
+                                    display_name=display_name))
+        user.set_password(password)
+        if email_addresses:
+            for email in email_addresses.split(','):
+                addr = M.EmailAddress.upsert(email)
+                addr.send_verification_link()
+                user.claim_address(email)
+        if open_ids:
+            for open_id in open_ids.split(','):
+                oid = M.OpenId.upsert(open_id, display_name+"'s OpenId")
+                user.claim_openid(open_id)
+        self.do_login(username,password)
+
     @expose()
     def send_verification_link(self, a):
         addr = M.EmailAddress.query.get(_id=a)
