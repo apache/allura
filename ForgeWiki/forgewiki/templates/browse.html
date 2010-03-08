@@ -6,7 +6,6 @@
 
   <xi:include href="master.html" />
   <xi:include href="lib.html" />
-  <?python from pyforge.lib import helpers?>
 
   <head>
     <meta content="text/html; charset=UTF-8" http-equiv="content-type" py:replace="''"/>
@@ -28,7 +27,7 @@
           <td><a href="../${page['title']}">${page['title']}</a></td>
           <td py:if="'user_label' in page">${page['user_label']}</td>
           <td py:if="'user_label' not in page"></td>
-          <td py:if="'updated' in page">${helpers.ago(page['updated'])}</td>
+          <td py:if="'updated' in page">${h.ago(page['updated'])}</td>
           <td py:if="'updated' not in page"></td>
         </tr>
       </tbody>

@@ -16,7 +16,6 @@
     </style>
   </head>
 
-  <?python from pyforge.lib import helpers?>
   <body>
         <h2>ForgeTracker for $c.project.shortname</h2>
         <h3>Tickets</h3>
@@ -49,7 +48,7 @@
           </thead>
           <tbody class="change-list">
             <tr py:for="change in changes">
-              <td>${helpers.ago(change.change_date)}</td>
+              <td>${h.ago(change.change_date)}</td>
               <td>$change.change_type</td>
               <td><a href="$change.ticket_num">#$change.ticket_num</a></td>
               <td>$change.change_text</td>

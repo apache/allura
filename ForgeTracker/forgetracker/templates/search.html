@@ -3,8 +3,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml"
       xmlns:py="http://genshi.edgewall.org/"
       xmlns:xi="http://www.w3.org/2001/XInclude">
-  <?python from pprint import pformat
-           from pyforge.lib import helpers?>
+  <?python from pprint import pformat?>
 
   <xi:include href="master.html" />
   <xi:include href="lib.html" />
@@ -44,7 +43,7 @@
         <tr py:for="t in tickets">
           <td><input type="checkbox"/></td>
           <td><a href="${t.url()}">#$t.ticket_num $t.summary</a></td>
-          <td>${helpers.ago(t.created_date)}</td>
+          <td>${h.ago(t.created_date)}</td>
           <td>$t.status</td>
           <td py:if="len(t.description) &gt; 70">${t.description[0:70]}...</td>
           <td py:if="len(t.description) &lt;= 70">$t.description</td>

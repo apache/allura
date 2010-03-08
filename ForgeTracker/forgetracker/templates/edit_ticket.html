@@ -35,7 +35,7 @@
               <input name="summary" value="$ticket.summary"/>
             </span>
           </span>
-          Created by <a href="${ticket.reported_by().url()}">${ticket.reported_by().username}</a> ${helpers.ago(ticket.created_date, round=True)}
+          Created by <a href="${ticket.reported_by().url()}">${ticket.reported_by().username}</a> ${h.ago(ticket.created_date, round=True)}
           <div class="editable viewing">
             Currently assigned to
             <span class="viewer ticket-assigned-to">
