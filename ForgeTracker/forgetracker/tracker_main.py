@@ -577,7 +577,8 @@ class TrackerAdminController(DefaultAdminController):
     @with_trailing_slash
     @expose('forgetracker.templates.admin')
     def index(self):
-        return dict(app=self.app, globals=self.globals)
+        return dict(app=self.app, globals=self.globals,
+                    allow_config=has_artifact_access('configure', app=self.app)())
 
     @expose()
     def update_tickets(self, **post_data):

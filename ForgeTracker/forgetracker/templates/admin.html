@@ -17,11 +17,11 @@
     <div id="app_admin_tabs">
     	<ul>
     		<li><a href="#app-acl"
-    		       py:if="app.permissions and has_artifact_access('configure', app=app)()">Permissions</a></li>
+    		       py:if="app.permissions and allow_config">Permissions</a></li>
     		<li><a href="#app-status">Statuses</a></li>
     		<li><a href="#app-custom-fields">Custom Fields</a></li>
     	</ul>
-      <div id="app-acl" py:if="app.permissions and has_artifact_access('configure', app=app)()">
+      <div id="app-acl" py:if="app.permissions and allow_config">
         <h3>Permissions</h3>
         <div id="acl-admin">
           <py:for each="p in app.permissions" >
@@ -67,8 +67,8 @@
               <div class="span-3"><label>Status names:</label></div>
               <div class="span-15 last">
                 <input type="text" name="status_names" style="width:50%" value="${globals.status_names}" 
-                       py:if="has_artifact_access('configure', app=app)()"/>
-                <span py:if="not has_artifact_access('configure', app=app)()">${globals.status_names}</span>
+                       py:if="allow_config"/>
+                <span py:if="not allow_config">${globals.status_names}</span>
               </div>
               <div class="push-3 span-15 last"><input type="submit" value="Save"/></div>
           </form>
@@ -77,12 +77,13 @@
       <div id="app-custom-fields" style="overflow: auto">
         <h3>Custom Fields</h3>
         <div>
+          <p>Drag and drop the fields to re-order.</p>
           <div id="custom-field-list">
             <py:for each="field in globals.custom_fields">
               <div style="display:none" class="custom-field-stub"
                   data-label="${field.label}" data-type="${field.type}" data-options="${getattr(field, 'options', '')}"
-                  py:if="has_artifact_access('configure', app=app)()"/>
-              <py:if test="not has_artifact_access('configure', app=app)()">
+                  py:if="allow_config"/>
+              <py:if test="not allow_config">
                 <div class="span-3"><label>Label: </label></div><div class="span-15 last">${field.label}</div>
                 <div class="span-3"><label>Type: </label></div><div class="span-15 last">${field.type}</div>
                 <span class="options-wrapper" py:if="field.options"><div class="span-3"><label>Options: </label></div><div class="span-15 last">${getattr(field, 'options', '')}</div></span>
@@ -90,9 +91,9 @@
             </py:for>
           </div>
           <button onclick="add_field()" 
-                  py:if="has_artifact_access('configure', app=app)()">Add Field</button>
+                  py:if="allow_config">Add Field</button>
           <button onclick="save_fields()" 
-                  py:if="has_artifact_access('configure', app=app)()">Save</button>
+                  py:if="allow_config">Save</button>
         </div>
       </div>
     </div>  
@@ -108,6 +109,14 @@
            });
 	  </script>
   </body>
+  <style type="text/css">
+    div.custom-field {
+      cursor: move;
+      border:1px solid #ccc;
+      margin:2px;
+      padding:2px;
+    }
+  </style>
   <script type="text/javascript" src="/static/Tickets/js/custom-fields.js" 
-          py:if="has_artifact_access('configure', app=app)()"/>
+          py:if="allow_config"/>
 </html>

@@ -171,7 +171,8 @@ class DefaultAdminController(object):
 
     @expose('pyforge.templates.app_admin')
     def index(self):
-        return dict(app=self.app)
+        return dict(app=self.app,
+                    allow_config=has_artifact_access('configure', app=self.app)())
 
     @expose()
     def configure(self, **kw):
