@@ -149,7 +149,7 @@ class AuthController(object):
         if c.user:
             c.user.claim_openid(oid_obj._id)
             flash('Claimed %s' % oid_obj._id)
-        redirect('/')
+        redirect('/auth/prefs/')
 
     @expose()
     def logout(self):

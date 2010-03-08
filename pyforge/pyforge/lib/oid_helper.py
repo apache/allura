@@ -1,7 +1,7 @@
 import logging
 
 from pylons import g, request
-from tg import flash, redirect, session
+from tg import flash, redirect, session, config
 from openid.consumer import consumer
 
 from pyforge import model as M
@@ -12,7 +12,7 @@ def verify_oid(oid_url, failure_redirect=None, return_to=None,
                   **kw):
     '''Step 1 of OID verification -- redirect to provider site'''
     log.info('Trying to login via %s', oid_url)
-    realm = 'http://localhost.localdomain:8080/'
+    realm = config.get('openid.realm', 'http://localhost:8080/')
     return_to = realm + 'auth/' + return_to
     oidconsumer = consumer.Consumer(g.oid_session(), g.oid_store)
     try:
