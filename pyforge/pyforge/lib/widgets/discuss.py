@@ -152,8 +152,9 @@ class PostThread(ew.Widget):
 
 class Post(HierWidget):
     template='genshi:pyforge.lib.widgets.templates.post'
-    params=['value']
+    params=['value', 'show_subject']
     value=None
+    show_subject=False
     widgets=dict(
         flag_post=FlagPost(),
         moderate_post=ModeratePost(),

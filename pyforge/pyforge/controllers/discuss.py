@@ -66,7 +66,7 @@ class DiscussionController(object):
     @expose()
     @validate(pass_validator, error_handler=index)
     def subscribe(self, **kw):
-        kw = self.W.subscription_form.validate(kw)
+        kw = self.W.subscription_form.validate(kw, None)
         threads = kw.pop('threads')
         for t in threads:
             thread = t['_id']
@@ -89,10 +89,6 @@ class ThreadsController(object):
 
     def __init__(self, discussion_controller):
         self._discussion_controller = discussion_controller
-
-    @LazyProperty
-    def discussion(self):
-        return self._discussion_controller.discussion
 
     def _lookup(self, id, *remainder):
         return self.ThreadController(self._discussion_controller, id), remainder
@@ -140,18 +136,6 @@ class ThreadController(object):
         self.thread.num_replies += 1
         redirect(request.referer)
 
-    @h.vardec
-    @expose()
-    @validate(pass_validator, error_handler=index)
-    def moderate(self, **kw):
-        require(has_artifact_access('moderate', self.thread))
-        kw = self.W.moderate_thread.validate(kw, None)
-        if kw.pop('delete', None):
-            url = self.thread.discussion.url()
-            self.thread.delete()
-            redirect(url)
-        redirect(request.referer)
-
 class PostController(object):
     __metaclass__=h.ProxiedAttrMeta
     M=h.attrproxy('_discussion_controller', 'M')
@@ -184,7 +168,10 @@ class PostController(object):
             require(has_artifact_access('moderate', self.post))
             post_fields = self.W.edit_post.validate(kw, None)
             for k,v in post_fields.iteritems():
-                setattr(self.post, k, v)
+                try:
+                    setattr(self.post, k, v)
+                except AttributeError:
+                    continue
             redirect(request.referer)
         elif request.method=='GET':
             if version is not None:
@@ -347,7 +334,6 @@ class ModerationController(object):
             query['status'] = status
         if flag:
             query['flags'] = {'$gte': int(flag) }
-        print query
         q = self.M.Post.query.find(query)
         count = q.count()
         offset = int(offset)
@@ -361,8 +347,8 @@ class ModerationController(object):
                     status=status, flag=flag,
                     pgnum=pgnum, pages=pages)
 
-    @expose()
     @h.vardec
+    @expose()
     def moderate(self, post=None,
                  approve=None,
                  spam=None,

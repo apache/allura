@@ -10,7 +10,7 @@
       </div>
       <div style="margin-left: 225px">
         <py:for each="post in posts">
-          ${widgets.post.display(value=post)}
+          ${widgets.post.display(value=post, show_subject=show_subject)}
         </py:for>
       </div>
     </div>
