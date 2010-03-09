@@ -388,7 +388,7 @@ class RootController(object):
         for id in post_data['selected'].split(','):
             ticket = model.Ticket.query.get(_id=ObjectId(id), app_config_id=c.app.config._id)
             for k, v in values.iteritems():
-                ticket[k] = v
+                setattr(ticket, k, v)
             for k, v in custom_values.iteritems():
                 ticket.custom_fields[k] = v
 
@@ -459,13 +459,10 @@ class TicketController(object):
             raise Exception('update_ticket must be a POST request')
         if tags: tags = tags.split(',')
         else: tags = []
-        self.ticket.summary = post_data['summary']
-        self.ticket.description = post_data['description']
-        if post_data['assigned_to']:
-            self.ticket.assigned_to_id = post_data['assigned_to']
-        else:
-            self.ticket.assigned_to_id = None
-        self.ticket.status = post_data['status']
+        for k in ['summary', 'description', 'status', 'milestone']:
+            setattr(self.ticket, k, post_data[k])
+        who = post_data['assigned_to']
+        self.ticket.assigned_to_id = ObjectId(who) if who else None
         tag_artifact(self.ticket, c.user, tags)
 
         globals = model.Globals.query.get(app_config_id=c.app.config._id)

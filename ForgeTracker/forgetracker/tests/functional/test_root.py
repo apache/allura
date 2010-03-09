@@ -16,16 +16,21 @@ from ming.orm.ormsession import ThreadLocalORMSession
 
 class TestFunctionalController(TestController):
 
-    def new_ticket(self, summary, mp='/bugs/'):
-        response = self.app.get(mp + 'new/')
+    def new_ticket(self, mount_point='/bugs/', **kw):
+        response = self.app.get(mount_point + 'new/')
         form = response.form
-        form['summary'] = summary
+        for k, v in kw.iteritems():
+            form[k] = v
         return form.submit().follow()
 
     def test_new_ticket(self):
         summary = 'test new ticket'
-        ticket_view = self.new_ticket(summary)
+        ticket_view = self.new_ticket(summary=summary)
         assert_true(summary in ticket_view)
+
+    def test_new_with_milestone(self):
+        ticket_view = self.new_ticket(summary='test new with milestone', milestone='sprint-10')
+        assert 'Milestone: sprint-10' in ticket_view
 
     def test_new_ticket_form(self):
         response = self.app.get('/bugs/new/')
@@ -40,13 +45,13 @@ class TestFunctionalController(TestController):
 
     def test_two_trackers(self):
         summary = 'test two trackers'
-        ticket_view = self.new_ticket(summary, '/doc_bugs/')
+        ticket_view = self.new_ticket('/doc_bugs/', summary=summary)
         assert_true(summary in ticket_view)
         index_view = self.app.get('/bugs/')
         assert_false(summary in index_view)
 
     def test_new_comment(self):
-        self.new_ticket('test new comment')
+        self.new_ticket(summary='test new comment')
         comment = 'comment testing new comment'
         self.app.post('/bugs/1/comments/reply', { 'text': comment })
         ticket_view = self.app.get('/bugs/1/')
@@ -54,12 +59,12 @@ class TestFunctionalController(TestController):
 
     def test_render_ticket(self):
         summary = 'test render ticket'
-        ticket_view = self.new_ticket(summary)
+        ticket_view = self.new_ticket(summary=summary)
         ticket_view.mustcontain(summary, 'Comments', 'Make a comment')
 
     def test_render_index(self):
         summary = 'test render index'
-        self.new_ticket(summary)
+        self.new_ticket(summary=summary)
         index_view = self.app.get('/bugs/')
         assert_true(summary in index_view)
 
@@ -75,11 +80,12 @@ class TestFunctionalController(TestController):
 
     def test_ticket_tag_untag(self):
         summary = 'test tagging and untagging a ticket'
-        self.new_ticket(summary)
+        self.new_ticket(summary=summary)
         self.app.post('/bugs/1/update_ticket',{
             'summary':'aaa',
             'description':'bbb',
             'status':'ccc',
+            'milestone':'',
             'assigned_to':'',
             'tags':'red,blue',
             'tags_old':'red,blue'
@@ -90,6 +96,7 @@ class TestFunctionalController(TestController):
             'summary':'zzz',
             'description':'bbb',
             'status':'ccc',
+            'milestone':'',
             'assigned_to':'',
             'tags':'red',
             'tags_old':'red'
@@ -101,7 +108,7 @@ class TestFunctionalController(TestController):
         file_name = 'test_root.py'
         file_data = file(__file__).read()
         upload = ('file_info', file_name, file_data)
-        self.new_ticket('test new attachment')
+        self.new_ticket(summary='test new attachment')
         ticket_editor = self.app.post('/bugs/1/attach', upload_files=[upload]).follow()
         assert_true(file_name in ticket_editor)
 
@@ -109,7 +116,7 @@ class TestFunctionalController(TestController):
         file_name = 'test_root.py'
         file_data = file(__file__).read()
         upload = ('file_info', file_name, file_data)
-        self.new_ticket('test new attachment')
+        self.new_ticket(summary='test new attachment')
         ticket_editor = self.app.post('/bugs/1/attach', upload_files=[upload]).follow()
         download = ticket_editor.click(description=file_name)
         assert_true(download.body == file_data)
@@ -122,13 +129,13 @@ class TestFunctionalController(TestController):
 
     def test_sidebar_ticket_page(self):
         summary = 'test sidebar logic for a ticket page'
-        self.new_ticket(summary)
+        self.new_ticket(summary=summary)
         response = self.app.get('/projects/test/bugs/1/')
         assert 'Create New Ticket' in response
         assert 'Update this Ticket' in response
         assert 'Related Artifacts' not in response
         self.app.get('/Wiki/aaa/')
-        self.new_ticket('bbb')
+        self.new_ticket(summary='bbb')
         
         # Fake out updating the pages since reactor doesn't work with tests
         app = search_main.SearchApp
@@ -167,7 +174,7 @@ class TestFunctionalController(TestController):
 
     def test_assign_ticket(self):
         summary = 'test assign ticket'
-        self.new_ticket(summary)
+        self.new_ticket(summary=summary)
         response = self.app.get('/projects/test/bugs/1/edit/')
         assert 'nobody' in response.html.find('span', {'class': 'viewer ticket-assigned-to'}).string
         test_user = response.html.find(id="assigned_to").findAll('option')[1]
@@ -177,6 +184,7 @@ class TestFunctionalController(TestController):
             'summary':'zzz',
             'description':'bbb',
             'status':'ccc',
+            'milestone':'',
             'assigned_to':test_user_id,
             'tags':'',
             'tags_old':''
@@ -189,13 +197,13 @@ class TestFunctionalController(TestController):
                    {"label":"Category","type":"string","options":""}]"""
         spec = urllib.quote_plus(spec)
         self.app.post('/admin/bugs/set_custom_fields', { 'custom_fields': spec })
-        ticket_view = self.new_ticket('test custom fields')
+        ticket_view = self.new_ticket(summary='test custom fields')
         assert 'Priority: normal' in ticket_view
 
     def test_subtickets(self):
         # create two tickets
-        self.new_ticket('test superticket')
-        self.new_ticket('test subticket')
+        self.new_ticket(summary='test superticket')
+        self.new_ticket(summary='test subticket')
         h.set_context('test', 'bugs')
         super = tm.Ticket.query.get(ticket_num=1)
         sub = tm.Ticket.query.get(ticket_num=2)
@@ -221,9 +229,9 @@ class TestFunctionalController(TestController):
         self.app.post('/admin/bugs/set_custom_fields', { 'custom_fields': spec })
 
         # create three tickets
-        self.new_ticket('test superticket')
-        self.new_ticket('test subticket-1')
-        self.new_ticket('test subticket-2')
+        self.new_ticket(summary='test superticket')
+        self.new_ticket(summary='test subticket-1')
+        self.new_ticket(summary='test subticket-2')
         h.set_context('test', 'bugs')
         super = tm.Ticket.query.get(ticket_num=1)
         sub1 = tm.Ticket.query.get(ticket_num=2)

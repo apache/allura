@@ -66,6 +66,13 @@
               <span class="viewer" py:if="not len(ticket.tags)">None</span>
               <span class="editor">${user_tags_edit('tags', user_tags)}</span>
           </div>
+          <div class="editable viewing">
+              Milestone:
+              <span class="viewer">${ticket.milestone}</span>
+              <span class="editor">
+                <input name="milestone" type="text" value="${ticket.milestone}"/>
+              </span>
+          </div>
           <div py:for="field in globals.custom_fields or []" class="editable viewing">
               <span class="viewer">${field.label}: ${ticket.custom_fields.get(field.name, '')}</span>
               <span class="editor">
