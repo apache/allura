@@ -56,7 +56,8 @@
               <span class="viewer">$ticket.status</span>
               <span class="editor">
                 <select name="status">
-                  <option py:for="name in globals.status_names.split()" value="$name">$name</option>
+                  <option py:for="option in globals.status_names.split()" value="$option"
+                          selected="${'selected' if ticket.status==option else None}">$option</option>
                 </select>
               </span>
           </div>
@@ -78,7 +79,8 @@
               <span class="editor">
                   <input py:if="field.type != 'select'" name="${field.name}" type="text" value="${ticket.custom_fields.get(field.name, '')}"/>
                   <select py:if="field.type == 'select'" name="${field.name}">
-                    <option py:for="option in field.options.split()" value="${option}" selected="${'selected' if ticket.custom_fields.get(field.name, '')==option else None}">${option}</option>
+                    <option py:for="option in field.options.split()" value="${option}"
+                            selected="${'selected' if ticket.custom_fields.get(field.name, '')==option else None}">${option}</option>
                   </select>
               </span>
           </div>
