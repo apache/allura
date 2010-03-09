@@ -1,4 +1,5 @@
 import os, pyforge
+import Image, StringIO
 
 from pylons import g, c
 
@@ -88,7 +89,7 @@ class TestProjectAdmin(TestController):
 
 
     def test_project_icon(self):
-        file_name = 'info.png'
+        file_name = 'adobe_header.png'
         file_path = os.path.join(pyforge.__path__[0],'public','images',file_name)
         file_data = file(file_path).read()
         upload = ('icon', file_name, file_data)
@@ -101,10 +102,11 @@ class TestProjectAdmin(TestController):
                 description='A long description'), 
                 upload_files=[upload])
         r = self.app.get('/projects/test/icon')
-        assert r.body == file_data
+        image = Image.open(StringIO.StringIO(r.body))
+        assert image.size == (48,48)
 
     def test_project_screenshot(self):
-        file_name = 'info.png'
+        file_name = 'adobe_header.png'
         file_path = os.path.join(pyforge.__path__[0],'public','images',file_name)
         file_data = file(file_path).read()
         upload = ('screenshot', file_name, file_data)
@@ -119,4 +121,9 @@ class TestProjectAdmin(TestController):
         project = M.Project.query.find({'shortname':'test'}).first()
         filename = project.get_screenshots()[0].filename
         r = self.app.get('/projects/test/screenshot/'+filename)
-        assert r.body == file_data
+        uploaded = Image.open(file_path)
+        screenshot = Image.open(StringIO.StringIO(r.body))
+        assert uploaded.size == screenshot.size
+        r = self.app.get('/projects/test/screenshot/'+filename+'/thumb')
+        thumb = Image.open(StringIO.StringIO(r.body))
+        assert thumb.size == (101,101)

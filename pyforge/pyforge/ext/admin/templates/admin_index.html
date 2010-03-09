@@ -62,6 +62,13 @@
 
           <div class="span-3"><label>Description</label></div>
           <div class="span-15 last">${Markup(c.project.description_html)}</div>
+          <div class="span-3"><label>Screenshots</label></div>
+          <div class="span-15 last">
+              <py:if test="len(c.project.get_screenshots())">
+                <a py:for="ss in c.project.get_screenshots()" href="${c.project.url()}screenshot/$ss.filename"><img src="${c.project.url()}screenshot/$ss.filename/thumb" style="margin-right: 1em"/></a>
+              </py:if>
+              <py:if test="not len(c.project.get_screenshots())">No screenshots have been created.</py:if>
+          </div>
         </div>
         <form py:if="has_project_access('update')()" method="POST" action="update" enctype="multipart/form-data">
 
@@ -73,7 +80,7 @@
           <div class="span-3"><label>Shortname</label></div>
           <div class="span-15 last">$c.project.shortname</div>
           <div class="span-3"><label>Icon</label></div>
-          <div class="editable viewing span-15 last">
+          <div class="editable viewing span-15 last" style="min-height: 2em">
             <div class="viewer" py:if="c.project.icon"><img src="${c.project.url()}/icon"/></div>
             <div class="viewer" py:if="not c.project.icon">No icon has been created.</div>
             <div class="editor">
@@ -91,7 +98,7 @@
           <div class="editable viewing span-15 last">
             <div class="viewer">
               <py:if test="len(c.project.get_screenshots())">
-                <img py:for="ss in c.project.get_screenshots()" src="${c.project.url()}screenshot/$ss.filename" class="project_screenshot"/>
+                <a py:for="ss in c.project.get_screenshots()" href="${c.project.url()}screenshot/$ss.filename"><img src="${c.project.url()}screenshot/$ss.filename/thumb" style="margin-right: 1em"/></a>
               </py:if>
               <py:if test="not len(c.project.get_screenshots())">No screenshots have been created.</py:if>
             </div>

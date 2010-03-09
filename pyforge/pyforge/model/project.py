@@ -243,11 +243,11 @@ class Project(MappedClass):
             return url
 
     def get_screenshots(self):
-        return ProjectFile.query.find({'metadata.project_id':c.project._id, 'metadata.category':'screenshot'}).all()
+        return ProjectFile.query.find({'metadata.project_id':self._id, 'metadata.category':'screenshot'}).all()
 
     @property
     def icon(self):
-        return ProjectFile.query.find({'metadata.project_id':c.project._id, 'metadata.category':'icon'}).first()
+        return ProjectFile.query.find({'metadata.project_id':self._id, 'metadata.category':'icon'}).first()
 
     @property
     def description_html(self):

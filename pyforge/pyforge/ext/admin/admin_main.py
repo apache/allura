@@ -2,6 +2,8 @@ import difflib
 from pprint import pformat
 from collections import defaultdict
 from mimetypes import guess_type
+import Image
+import StringIO
 
 import pkg_resources
 from pylons import c, request
@@ -107,11 +109,19 @@ class ProjectAdminController(object):
         c.project.name = name
         c.project.short_description = short_description
         c.project.description = description
-        if icon is not None and icon != '':
+        if icon is not None and icon != '' and 'image/' in icon.type:
             filename = icon.filename
-            content_type = guess_type(filename)
-            if content_type: content_type = content_type[0]
+            if icon.type: content_type = icon.type
             else: content_type = 'application/octet-stream'
+            image = Image.open(icon.file)
+            format = image.format
+            if image.size[0] < image.size[1]:
+                h_offset = (image.size[1]-image.size[0])/2
+                image = image.crop((0, h_offset, image.size[0], image.size[0]+h_offset))
+            elif image.size[0] > image.size[1]:
+                w_offset = (image.size[0]-image.size[1])/2
+                image = image.crop((w_offset, 0, image.size[1]+w_offset, image.size[1]))
+            image.thumbnail((48, 48), Image.ANTIALIAS)
             if c.project.icon:
                 M.ProjectFile.query.remove({'metadata.project_id':c.project._id, 'metadata.category':'icon'})
             with M.ProjectFile.create(
@@ -119,24 +129,33 @@ class ProjectAdminController(object):
                 filename=filename,
                 category='icon',
                 project_id=c.project._id) as fp:
-                while True:
-                    s = icon.file.read()
-                    if not s: break
-                    fp.write(s)
-        if screenshot is not None and screenshot != '':
+                image.save(fp, format)
+        if screenshot is not None and screenshot != '' and 'image/' in screenshot.type:
             filename = screenshot.filename
-            content_type = guess_type(filename)
-            if content_type: content_type = content_type[0]
+            if screenshot.type: content_type = screenshot.type
             else: content_type = 'application/octet-stream'
+            image = Image.open(screenshot.file)
+            format = image.format
             with M.ProjectFile.create(
                 content_type=content_type,
                 filename=filename,
                 category='screenshot',
                 project_id=c.project._id) as fp:
-                while True:
-                    s = screenshot.file.read()
-                    if not s: break
-                    fp.write(s)
+                fp_name = fp.name
+                image.save(fp, format)
+            if image.size[0] < image.size[1]:
+                h_offset = (image.size[1]-image.size[0])/2
+                image = image.crop((0, h_offset, image.size[0], image.size[0]+h_offset))
+            elif image.size[0] > image.size[1]:
+                w_offset = (image.size[0]-image.size[1])/2
+                image = image.crop((w_offset, 0, image.size[1]+w_offset, image.size[1]))
+            image.thumbnail((150, 150), Image.ANTIALIAS)
+            with M.ProjectFile.create(
+                content_type=content_type,
+                filename=fp_name,
+                category='screenshot_thumb',
+                project_id=c.project._id) as fp:
+                image.save(fp, format)
         redirect('.')
 
     @expose()

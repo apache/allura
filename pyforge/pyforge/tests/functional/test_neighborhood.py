@@ -3,6 +3,7 @@ import os
 import pyforge
 
 from ming.orm.ormsession import ThreadLocalORMSession
+import Image, StringIO
 
 from pyforge.tests import TestController
 
@@ -29,7 +30,7 @@ class TestNeighborhood(TestController):
                           extra_environ=dict(username='root'))
 
     def test_icon(self):
-        file_name = 'info.png'
+        file_name = 'adobe_header.png'
         file_path = os.path.join(pyforge.__path__[0],'public','images',file_name)
         file_data = file(file_path).read()
         upload = ('icon', file_name, file_data)
@@ -39,7 +40,8 @@ class TestNeighborhood(TestController):
                           params=dict(name='Mozq1', css='', homepage='# MozQ1'),
                           extra_environ=dict(username='root'), upload_files=[upload])
         r = self.app.get('/mozilla/icon')
-        assert r.body == file_data
+        image = Image.open(StringIO.StringIO(r.body))
+        assert image.size == (48,48)
 
     def test_invite(self):
         r = self.app.get('/mozilla/_moderate/', extra_environ=dict(username='root'))

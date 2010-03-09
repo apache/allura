@@ -1,5 +1,6 @@
 from urllib import unquote
 from mimetypes import guess_type
+import Image
 
 from tg import expose, flash, redirect, validate, request, response
 from tg.decorators import with_trailing_slash, without_trailing_slash
@@ -170,11 +171,24 @@ class ScreenshotController(object):
 
     def __init__(self, filename):
         self.filename = filename
-        self.screenshot = M.ProjectFile.query.find({'metadata.project_id':c.project._id, 'metadata.category':'screenshot', 'filename':filename}).first()
 
     @expose()
     def index(self, embed=False):
-        with self.screenshot.open() as fp:
+        screenshot = M.ProjectFile.query.find({'metadata.project_id':c.project._id, 'metadata.category':'screenshot', 'filename':self.filename}).first()
+        with screenshot.open() as fp:
+            filename = fp.metadata['filename']
+            response.headers['Content-Type'] = ''
+            response.content_type = fp.content_type
+            if not embed:
+                response.headers.add('Content-Disposition',
+                                     'attachment;filename=%s' % filename)
+            return fp.read()
+        return self.filename
+
+    @expose()
+    def thumb(self, embed=False):
+        thumb = M.ProjectFile.query.find({'metadata.project_id':c.project._id, 'metadata.category':'screenshot_thumb', 'metadata.filename':self.filename}).first()
+        with thumb.open() as fp:
             filename = fp.metadata['filename']
             response.headers['Content-Type'] = ''
             response.content_type = fp.content_type
@@ -202,21 +216,26 @@ class NeighborhoodAdminController(object):
         self.neighborhood.name = name
         self.neighborhood.css = css
         self.neighborhood.homepage = homepage
-        if icon is not None and icon != '':
+        if icon is not None and icon != '' and 'image/' in icon.type:
             filename = icon.filename
-            content_type = guess_type(filename)
-            if content_type: content_type = content_type[0]
+            if icon.type: content_type = icon.type
             else: content_type = 'application/octet-stream'
+            image = Image.open(icon.file)
+            format = image.format
+            if image.size[0] < image.size[1]:
+                h_offset = (image.size[1]-image.size[0])/2
+                image = image.crop((0, h_offset, image.size[0], image.size[0]+h_offset))
+            elif image.size[0] > image.size[1]:
+                w_offset = (image.size[0]-image.size[1])/2
+                image = image.crop((w_offset, 0, image.size[1]+w_offset, image.size[1]))
+            image.thumbnail((48, 48), Image.ANTIALIAS)
             if self.neighborhood.icon:
                 M.NeighborhoodFile.query.remove({'metadata.neighborhood_id':self.neighborhood._id})
             with M.NeighborhoodFile.create(
                 content_type=content_type,
                 filename=filename,
                 neighborhood_id=self.neighborhood._id) as fp:
-                while True:
-                    s = icon.file.read()
-                    if not s: break
-                    fp.write(s)
+                image.save(fp, format)
         redirect('.')
 
     @vardec
