@@ -80,6 +80,12 @@ class TestProjectAdmin(TestController):
                 'role-0.new.id':'',
                 'role-0.delete':'on',
                 'new.name':''})
+        # Create a role when there are no existing roles
+        self.app.post('/admin/update_roles', params={
+                'new.add':'on',
+                'new.name':'test_role',
+                'role-0.id':str(role1._id)})
+
 
     def test_project_icon(self):
         file_name = 'info.png'

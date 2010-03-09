@@ -205,7 +205,7 @@ class ProjectAdminController(object):
                 role = M.ProjectRole.query.get(_id=ObjectId(str(r['id'])))
                 if not role.special:
                     role.delete()
-            if r['new'].get('add'):
+            if r.get('new', {}).get('add'):
                 role = M.ProjectRole.query.get(_id=ObjectId(str(r['id'])))
                 role.roles.append(ObjectId(str(r['new']['id'])))
             for sr in r.get('subroles', []):
