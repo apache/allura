@@ -334,6 +334,8 @@ class RootController(object):
             elif k in other_custom_fields:
                 # strings are good enough for any other custom fields
                 ticket.custom_fields[k] = v
+            elif k == 'assigned_to':
+                if v: ticket.assigned_to_id = ObjectId(v)
             elif k != 'super_id':
                 # if it's not a custom field, set it right on the ticket (but don't overwrite super_id)
                 setattr(ticket, k, v)

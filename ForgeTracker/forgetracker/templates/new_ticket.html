@@ -24,6 +24,8 @@
       <option py:for="name in globals.status_names.split()" value="$name">$name</option>
     </select>
   </div>
+  <div class="span-3"><label for="assigned_to">Assigned To:</label></div>
+  <div class="span-15 last">${select_user_in_project('assigned_to', None)}</div>
   <div class="span-3"><label for="description">Description:</label></div>
   <div class="span-15 last">${markdown_edit("description",'')}</div>
 

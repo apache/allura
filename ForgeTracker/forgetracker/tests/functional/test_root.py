@@ -27,6 +27,17 @@ class TestFunctionalController(TestController):
         ticket_view = self.new_ticket(summary)
         assert_true(summary in ticket_view)
 
+    def test_new_ticket_form(self):
+        response = self.app.get('/bugs/new/')
+        test_user = response.html.find(id="assigned_to").findAll('option')[1]
+        test_user_id = test_user['value']
+        test_user_name = test_user.string
+        form = response.form
+        form['summary'] = 'test new ticket form'
+        form['assigned_to'] = test_user_id
+        response = form.submit().follow()
+        assert test_user_name in response
+
     def test_two_trackers(self):
         summary = 'test two trackers'
         ticket_view = self.new_ticket(summary, '/doc_bugs/')
