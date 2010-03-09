@@ -230,3 +230,7 @@ class TestFunctionalController(TestController):
         # get a view on the first ticket, check for other ticket listed in sidebar
         ticket_view = self.app.get('/projects/test/bugs/1/')
         assert 'Days: 6.5' in ticket_view
+
+    def test_edit_all_button(self):
+        response = self.app.get('/projects/test/bugs/search/')
+        assert 'Edit All' not in response
