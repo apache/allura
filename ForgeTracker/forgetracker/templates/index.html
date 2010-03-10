@@ -24,14 +24,16 @@
           <thead>
             <tr>
               <th>Number</th>
-              <th>Status</th>
+	      <th>Status</th>
+	      <th>Assigned</th>
               <th>Summary</th>
             </tr>
           </thead>
           <tbody class="ticket-list">
             <tr py:for="ticket in tickets">
               <td><a href="$ticket.ticket_num/">#$ticket.ticket_num</a></td>
-              <td>$ticket.status</td>
+	      <td>$ticket.status</td>
+	      <td>${ticket.assigned_to_name()}</td>
               <td>$ticket.summary</td>
             </tr>
           </tbody>
