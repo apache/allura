@@ -33,7 +33,7 @@
             <tr py:for="ticket in tickets">
               <td><a href="$ticket.ticket_num/">#$ticket.ticket_num</a></td>
 	      <td>$ticket.status</td>
-	      <td py:if="ticket.assigned_to()">${ticket.assigned_to().display_name}</td>
+	      <td py:if="ticket.assigned_to()"><a href="${ticket.assigned_to().url()}">${ticket.assigned_to().display_name}</a></td>
 	      <td py:if="not ticket.assigned_to()"></td>
               <td>$ticket.summary</td>
             </tr>
