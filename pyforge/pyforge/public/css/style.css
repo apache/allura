@@ -106,6 +106,7 @@ a, a:link, a:visited, a:hover, a:active{
     border-right-color: #aed0ea;
     border-width: 5px 1px 0 5px;
     width: 789px;
+    min-height: 400px;
 }
 
 /* Side nav */
