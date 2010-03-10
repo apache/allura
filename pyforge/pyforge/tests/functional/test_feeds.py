@@ -46,6 +46,7 @@ class TestFeeds(TestController):
                 tags_old='',
                 summary='This is a new ticket',
                 status='unread',
+                milestone='',
                 description='This is another description'))
         r = self.app.get('/Tickets/1/feed.atom')
         assert '=&gt;' in r

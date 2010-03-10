@@ -19,7 +19,9 @@ from pyforge.lib import helpers as h
 from pyforge.tests import TestController
 
 def setUp():
-    TestController().setUp()
+    controller = TestController()
+    controller.setUp()
+    controller.app.get('/wiki/WikiHome/')
     g._push_object(Globals())
     c._push_object(mock.Mock())
     request._push_object(Request.blank('/'))
@@ -28,6 +30,7 @@ def setUp():
     ThreadLocalORMSession.flush_all()
     ThreadLocalORMSession.close_all()
     c.user = M.User.query.get(username='test_admin')
+
 
 def tearDown():
     ThreadLocalORMSession.close_all()

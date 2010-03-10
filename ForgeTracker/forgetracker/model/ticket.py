@@ -30,6 +30,14 @@ class Globals(MappedClass):
     status_names = FieldProperty(str)
     custom_fields = FieldProperty([{str:None}])
 
+    @classmethod
+    def next_ticket_num(cls):
+        g = cls.query.find_and_modify(
+            query=dict(app_config_id=c.app.config._id),
+            update={'$inc': { 'last_ticket_num': 1}},
+            new=True)
+        return g.last_ticket_num+1
+
 class TicketHistory(Snapshot):
 
     class __mongometa__:

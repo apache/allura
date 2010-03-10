@@ -315,11 +315,7 @@ class RootController(object):
             if tags: tags = tags.split(',')
             else: tags = []
             tag_artifact(ticket, c.user, tags)
-
-            # FIX ME: need to lock around this increment or something
-            globals.last_ticket_num += 1
-            post_data['ticket_num'] = globals.last_ticket_num
-            # FIX ME
+            post_data['ticket_num'] = model.Globals.next_ticket_num()
 
         custom_sums = set()
         other_custom_fields = set()
