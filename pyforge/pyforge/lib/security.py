@@ -43,9 +43,13 @@ def has_artifact_access(access_type, obj=None, user=None, app=None):
         return False
     return result
 
-def require(predicate, message='Forbidden'):
+def require(predicate, message=None):
     from pyforge import model as M
     if predicate(): return
+    if not message:
+        message = """You don't have permission to do that.
+                     You must ask a project administrator for rights to perform this task.
+                     Please click the back button to return to the previous page."""
     if c.user != M.User.anonymous():
         request.environ['error_message'] = message
         raise exc.HTTPForbidden(detail=message)
