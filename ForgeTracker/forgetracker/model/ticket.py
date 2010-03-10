@@ -108,8 +108,6 @@ class Ticket(VersionedArtifact):
     status = FieldProperty(str, if_missing='')
     custom_fields = FieldProperty({str:None})
 
-    # comments = RelationProperty('Comment')
-
     @property
     def email_address(self):
         domain = '.'.join(reversed(self.app.url[1:-1].split('/')))
@@ -184,34 +182,6 @@ class Ticket(VersionedArtifact):
     @property
     def attachments(self):
         return Attachment.by_metadata(ticket_id=self._id,type='attachment')
-
-    # def root_comments(self):
-    #     if '_id' in self:
-    #         return Comment.query.find(dict(ticket_id=self._id, reply_to=None))
-    #     else:
-    #         return []
-
-    # def all_comments(self):
-    #     if '_id' in self:
-    #         return Comment.query.find(dict(ticket_id=self._id))
-    #     else:
-    #         return []
-
-    # def ordered_comments(self, limit=None):
-    #     if '_id' in self:
-    #         if limit:
-    #             q = Comment.query.find(dict(ticket_id=self._id),limit=limit)
-    #         else:
-    #             q = Comment.query.find(dict(ticket_id=self._id))
-    #         q = q.sort([('created_date', pymongo.DESCENDING)])
-    #         return q
-    #     else:
-    #         return []
-
-    # def reply(self, text):
-    #     Feed.post(self, 'Comment: %s' % text)
-    #     c = Comment(ticket_id=self._id, text=text)
-    #     return c
 
     def set_as_subticket_of(self, new_super_id):
         # For this to be generally useful we would have to check first that

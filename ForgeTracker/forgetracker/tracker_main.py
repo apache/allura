@@ -7,7 +7,7 @@ import Image
 # Non-stdlib imports
 import pkg_resources
 from tg import tmpl_context
-from tg import expose, validate, redirect
+from tg import expose, validate, redirect, flash
 from tg import request, response
 from tg.decorators import with_trailing_slash, without_trailing_slash
 from pylons import g, c, request
@@ -619,7 +619,12 @@ class TrackerAdminController(DefaultAdminController):
 
     @expose()
     def set_status_names(self, **post_data):
-        self.globals.status_names = post_data['status_names']
+        if self.globals.query.update_if_not_modified(
+            {'$set': {'status_names':post_data['status_names']}}):
+            flash('Status names updated')
+        else:
+            flash('Mid-air collision! Status names were being modified by someone '
+                  'else.  Please retry.', 'error')
         redirect('.')
 
     @expose()
@@ -629,4 +634,9 @@ class TrackerAdminController(DefaultAdminController):
         for field in custom_fields:
             field['name'] = '_' + '_'.join([w for w in NONALNUM_RE.split(field['label'].lower()) if w])
             field['label'] = field['label'].title()
-        self.globals.custom_fields = custom_fields
+        if self.globals.query.update_if_not_modified(
+            {'$set':{'custom_fields':custom_fields}}):
+            flash('Custom fields updated')
+        else:
+            flash('Mid-air collision! Custom fields were being modified by someone '
+                  'else.  Please retry.', 'error')
