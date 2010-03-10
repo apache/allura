@@ -57,7 +57,7 @@ class SitemapEntry(object):
         if url is not None and not url.startswith('/'):
             url = app.url + url
         return SitemapEntry(lbl, url, [
-                ch.bind_app(app) for ch in self.children])
+                ch.bind_app(app) for ch in self.children], className=self.className)
 
     def extend(self, sitemap):
         child_index = dict(
