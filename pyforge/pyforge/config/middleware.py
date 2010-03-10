@@ -1,12 +1,15 @@
 # -*- coding: utf-8 -*-
 """WSGI middleware initialization for the pyforge application."""
 
+from webob import exc
+from tg import redirect
+from paste.deploy.converters import asbool
+
+import ew
+
 from pyforge.config.app_cfg import base_config
 from pyforge.config.environment import load_environment
 from pyforge.config.app_cfg import ForgeConfig
-from webob import exc
-from tg import redirect
-
 __all__ = ['make_app']
 
 # Use base_config to setup the necessary PasteDeploy application factory. 
@@ -40,6 +43,8 @@ def make_app(global_conf, full_stack=True, **app_conf):
     import ming
     ming.configure(**app_conf)
     # Wrap your base TurboGears 2 application with custom middleware here
+    if hasattr(ew.ResourceManager, 'configure'):
+        ew.ResourceManager.configure(compress=not asbool(global_conf['debug']))
     return app
 
 def make_plugin_test_app(global_conf, full_stack=True, **app_conf):
