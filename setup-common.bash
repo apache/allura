@@ -37,6 +37,13 @@ easy_install python-dateutil
 # This already happened just to get this file to run;
 # now assume we run it in-place.
 
+echo '# installing turbogears dev head'
+pushd ..
+hg clone http://bitbucket.org/turbogears/tg-dev/ tg-dev
+cd tg-dev
+python setup.py develop
+popd
+
 echo '# installing pymongo and dependencies'
 pushd ..
 git clone git://github.com/rick446/mongo-python-driver.git pymongo
