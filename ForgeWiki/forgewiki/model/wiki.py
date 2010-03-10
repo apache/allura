@@ -95,7 +95,7 @@ class Page(VersionedArtifact):
 
     @property
     def attachments(self):
-        return Attachment.by_metadata(page_id=self._id)
+        return Attachment.by_metadata(page_id=self._id,type='attachment')
 
     @classmethod
     def upsert(cls, title, version=None):
@@ -155,6 +155,7 @@ class Attachment(File):
     metadata=FieldProperty(dict(
             page_id=schema.ObjectId,
             app_config_id=schema.ObjectId,
+            type=str,
             filename=str))
 
     @property

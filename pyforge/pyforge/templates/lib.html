@@ -148,7 +148,7 @@
         <div py:for="att in attachments" py:strip="True">
           <div py:if="att.contentType.startswith('image/')" class="attachment_thumb">
             <a href="${att.url()}">
-              <img src="${att.url()}"/>
+              <img src="${att.url()}/thumb"/>
             </a><br/>
             $att.metadata.filename
             <form py:if="edit_mode" method="post" action="${att.url()}">

@@ -1,4 +1,6 @@
 import os, urllib
+import Image, StringIO
+import pyforge
 
 from nose.tools import assert_true, assert_false
 from forgetracker.tests import TestController
@@ -50,17 +52,10 @@ class TestFunctionalController(TestController):
         index_view = self.app.get('/bugs/')
         assert_false(summary in index_view)
 
-    def test_new_comment(self):
-        self.new_ticket(summary='test new comment')
-        comment = 'comment testing new comment'
-        self.app.post('/bugs/1/comments/reply', { 'text': comment })
-        ticket_view = self.app.get('/bugs/1/')
-        assert_true(comment in ticket_view)
-
     def test_render_ticket(self):
         summary = 'test render ticket'
         ticket_view = self.new_ticket(summary=summary)
-        ticket_view.mustcontain(summary, 'Comments', 'Make a comment')
+        ticket_view.mustcontain(summary, 'Discussion', 'No posts found')
 
     def test_render_index(self):
         summary = 'test render index'
@@ -112,7 +107,7 @@ class TestFunctionalController(TestController):
         ticket_editor = self.app.post('/bugs/1/attach', upload_files=[upload]).follow()
         assert_true(file_name in ticket_editor)
 
-    def test_new_attachment_content(self):
+    def test_new_text_attachment_content(self):
         file_name = 'test_root.py'
         file_data = file(__file__).read()
         upload = ('file_info', file_name, file_data)
@@ -120,6 +115,26 @@ class TestFunctionalController(TestController):
         ticket_editor = self.app.post('/bugs/1/attach', upload_files=[upload]).follow()
         download = ticket_editor.click(description=file_name)
         assert_true(download.body == file_data)
+
+    def test_new_image_attachment_content(self):
+        h.set_context('test', 'bugs')
+        file_name = 'adobe_header.png'
+        file_path = os.path.join(pyforge.__path__[0],'public','images',file_name)
+        file_data = file(file_path).read()
+        upload = ('file_info', file_name, file_data)
+        self.new_ticket(summary='test new attachment')
+        self.app.post('/bugs/1/attach', upload_files=[upload])
+        ticket = tm.Ticket.query.find({'ticket_num':1}).first()
+        filename = ticket.attachments.first().filename
+
+        uploaded = Image.open(file_path)
+        r = self.app.get('/bugs/1/attachment/'+filename)
+        downloaded = Image.open(StringIO.StringIO(r.body))
+        assert uploaded.size == downloaded.size
+        r = self.app.get('/bugs/1/attachment/'+filename+'/thumb')
+
+        thumbnail = Image.open(StringIO.StringIO(r.body))
+        assert thumbnail.size == (101,101)
 
     def test_sidebar_static_page(self):
         response = self.app.get('/bugs/search/')

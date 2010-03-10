@@ -164,6 +164,15 @@ def tag_artifact(artifact, user, tags):
     M.Tag.add(aref, user, added_tags)
     M.Tag.remove(aref, user, removed_tags)
 
+def square_image(image):
+    if image.size[0] < image.size[1]:
+        h_offset = (image.size[1]-image.size[0])/2
+        image = image.crop((0, h_offset, image.size[0], image.size[0]+h_offset))
+    elif image.size[0] > image.size[1]:
+        w_offset = (image.size[0]-image.size[1])/2
+        image = image.crop((w_offset, 0, image.size[1]+w_offset, image.size[1]))
+    return image
+
 class DateTimeConverter(FancyValidator):
 
     def _to_python(self, value, state):

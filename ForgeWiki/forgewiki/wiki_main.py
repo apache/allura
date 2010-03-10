@@ -3,6 +3,7 @@ import difflib
 import logging
 from pprint import pformat
 from mimetypes import guess_type
+import Image
 
 # Non-stdlib imports
 import pkg_resources
@@ -18,7 +19,7 @@ from pymongo.bson import ObjectId
 
 # Pyforge-specific imports
 from pyforge.app import Application, ConfigOption, SitemapEntry
-from pyforge.lib.helpers import push_config, tag_artifact, DateTimeConverter, diff_text
+from pyforge.lib.helpers import push_config, tag_artifact, DateTimeConverter, diff_text, square_image
 from pyforge.lib.search import search
 from pyforge.lib.decorators import audit, react
 from pyforge.lib.security import require, has_artifact_access
@@ -409,15 +410,37 @@ class PageController(object):
         content_type = guess_type(filename)
         if content_type: content_type = content_type[0]
         else: content_type = 'application/octet-stream'
-        with model.Attachment.create(
-            content_type=content_type,
-            filename=filename,
-            page_id=self.page._id,
-            app_config_id=c.app.config._id) as fp:
-            while True:
-                s = file_info.file.read()
-                if not s: break
-                fp.write(s)
+        if 'image/' in file_info.type:
+            image = Image.open(file_info.file)
+            format = image.format
+            with model.Attachment.create(
+                content_type=content_type,
+                filename=filename,
+                page_id=self.page._id,
+                type="attachment",
+                app_config_id=c.app.config._id) as fp:
+                fp_name = fp.name
+                image.save(fp, format)
+            image = square_image(image)
+            image.thumbnail((150, 150), Image.ANTIALIAS)
+            with model.Attachment.create(
+                content_type=content_type,
+                filename=fp_name,
+                page_id=self.page._id,
+                type="thumbnail",
+                app_config_id=c.app.config._id) as fp:
+                image.save(fp, format)
+        else:
+            with model.Attachment.create(
+                content_type=content_type,
+                filename=filename,
+                page_id=self.page._id,
+                type="attachment",
+                app_config_id=c.app.config._id) as fp:
+                while True:
+                    s = file_info.file.read()
+                    if not s: break
+                    fp.write(s)
         redirect('.')
 
 class AttachmentsController(object):
@@ -436,15 +459,30 @@ class AttachmentController(object):
     def __init__(self, filename):
         self.filename = filename
         self.attachment = model.Attachment.query.get(filename=filename)
+        self.thumbnail = model.Attachment.by_metadata(filename=filename).first()
         self.page = self.attachment.page
 
     @expose()
     def index(self, delete=False, embed=False):
         if request.method == 'POST':
             require(has_artifact_access('edit', self.page))
-            if delete: self.attachment.delete()
+            if delete:
+                self.attachment.delete()
+                self.thumb.delete()
             redirect(request.referer)
         with self.attachment.open() as fp:
+            filename = fp.metadata['filename']
+            response.headers['Content-Type'] = ''
+            response.content_type = fp.content_type
+            if not embed:
+                response.headers.add('Content-Disposition',
+                                     'attachment;filename=%s' % filename)
+            return fp.read()
+        return self.filename
+
+    @expose()
+    def thumb(self, embed=False):
+        with self.thumbnail.open() as fp:
             filename = fp.metadata['filename']
             response.headers['Content-Type'] = ''
             response.content_type = fp.content_type

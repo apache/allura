@@ -175,7 +175,7 @@ class Ticket(VersionedArtifact):
 
     @property
     def attachments(self):
-        return Attachment.by_metadata(ticket_id=self._id)
+        return Attachment.by_metadata(ticket_id=self._id,type='attachment')
 
     # def root_comments(self):
     #     if '_id' in self:
@@ -338,6 +338,7 @@ class Attachment(File):
     metadata=FieldProperty(dict(
             ticket_id=schema.ObjectId,
             app_config_id=schema.ObjectId,
+            type=str,
             filename=str))
 
     @property

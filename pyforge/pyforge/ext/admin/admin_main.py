@@ -3,7 +3,6 @@ from pprint import pformat
 from collections import defaultdict
 from mimetypes import guess_type
 import Image
-import StringIO
 
 import pkg_resources
 from pylons import c, request
@@ -14,7 +13,7 @@ from pymongo.bson import ObjectId
 
 from pyforge.app import Application, WidgetController, DefaultAdminController, SitemapEntry
 from pyforge.lib.dispatch import _dispatch
-from pyforge.lib.helpers import vardec
+from pyforge.lib.helpers import vardec, square_image
 from pyforge import version
 from pyforge import model as M
 from pyforge.lib.security import require, has_project_access
@@ -115,12 +114,7 @@ class ProjectAdminController(object):
             else: content_type = 'application/octet-stream'
             image = Image.open(icon.file)
             format = image.format
-            if image.size[0] < image.size[1]:
-                h_offset = (image.size[1]-image.size[0])/2
-                image = image.crop((0, h_offset, image.size[0], image.size[0]+h_offset))
-            elif image.size[0] > image.size[1]:
-                w_offset = (image.size[0]-image.size[1])/2
-                image = image.crop((w_offset, 0, image.size[1]+w_offset, image.size[1]))
+            image = square_image(image)
             image.thumbnail((48, 48), Image.ANTIALIAS)
             if c.project.icon:
                 M.ProjectFile.query.remove({'metadata.project_id':c.project._id, 'metadata.category':'icon'})
@@ -143,12 +137,7 @@ class ProjectAdminController(object):
                 project_id=c.project._id) as fp:
                 fp_name = fp.name
                 image.save(fp, format)
-            if image.size[0] < image.size[1]:
-                h_offset = (image.size[1]-image.size[0])/2
-                image = image.crop((0, h_offset, image.size[0], image.size[0]+h_offset))
-            elif image.size[0] > image.size[1]:
-                w_offset = (image.size[0]-image.size[1])/2
-                image = image.crop((w_offset, 0, image.size[1]+w_offset, image.size[1]))
+            image = square_image(image)
             image.thumbnail((150, 150), Image.ANTIALIAS)
             with M.ProjectFile.create(
                 content_type=content_type,

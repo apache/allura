@@ -1,4 +1,6 @@
 import os
+import Image, StringIO
+import pyforge
 
 from nose.tools import assert_true
 
@@ -97,20 +99,40 @@ class TestRootController(TestController):
         response = self.app.get('/Wiki/TEST/update?text=sometext&tags=red&tags_old=red&viewable_by=all')
         assert 'TEST' in response
 
-    def test_comment_reply(self):
-        self.app.get('/Wiki/TEST/index')
-        response = self.app.post('/Wiki/TEST/comments/reply?text=sometext')
-
-#    def test_comment_delete(self):
-#        response = self.app.get('/Wiki/TEST/index')
-#        response = self.app.post('/Wiki/TEST/comments/reply?text=sometext')
-#        response = self.app.post('/Wiki/TEST/comments/delete')
-
     def test_new_attachment(self):
         self.app.get('/Wiki/TEST/index')
         content = file(__file__).read()
         response = self.app.post('/Wiki/TEST/attach', upload_files=[('file_info', 'test_root.py', content)]).follow()
         assert 'test_root.py' in response
+
+    def test_new_text_attachment_content(self):
+        self.app.get('/Wiki/TEST/index')
+        file_name = 'test_root.py'
+        file_data = file(__file__).read()
+        upload = ('file_info', file_name, file_data)
+        page_editor = self.app.post('/Wiki/TEST/attach', upload_files=[upload]).follow()
+        download = page_editor.click(description=file_name)
+        assert_true(download.body == file_data)
+
+    def test_new_image_attachment_content(self):
+        self.app.get('/Wiki/TEST/index')
+        file_name = 'adobe_header.png'
+        file_path = os.path.join(pyforge.__path__[0],'public','images',file_name)
+        file_data = file(file_path).read()
+        upload = ('file_info', file_name, file_data)
+        self.app.post('/Wiki/TEST/attach', upload_files=[upload])
+        h.set_context('test', 'wiki')
+        page = model.Page.query.find(dict(title='TEST')).first()
+        filename = page.attachments.first().filename
+
+        uploaded = Image.open(file_path)
+        r = self.app.get('/Wiki/TEST/attachment/'+filename)
+        downloaded = Image.open(StringIO.StringIO(r.body))
+        assert uploaded.size == downloaded.size
+        r = self.app.get('/Wiki/TEST/attachment/'+filename+'/thumb')
+
+        thumbnail = Image.open(StringIO.StringIO(r.body))
+        assert thumbnail.size == (101,101)
 
     def test_sidebar_static_page(self):
         response = self.app.get('/Wiki/TEST/')
