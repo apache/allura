@@ -15,7 +15,6 @@ from pyforge.command import reactor
 from pyforge.ext.search import search_main
 from ming.orm.ormsession import ThreadLocalORMSession
 
-
 class TestFunctionalController(TestController):
 
     def new_ticket(self, mount_point='/bugs/', **kw):

@@ -8,7 +8,7 @@ import pymongo
 
 from ming import schema
 from ming.orm.mapped_class import MappedClass
-from ming.orm.property import FieldProperty, ForeignIdProperty, RelationProperty
+from ming.orm.property import FieldProperty, ForeignIdProperty, RelationProperty, ForeignIdProperty
 from datetime import datetime
 
 from pyforge.model import Artifact, VersionedArtifact, Snapshot, Message, project_orm_session, Project
@@ -52,6 +52,7 @@ class TicketHistory(Snapshot):
     def url(self):
         return self.original().url() + '?version=%d' % self.version
 
+    @property
     def assigned_to(self):
         if self.data.assigned_to_id is None: return None
         return User.query.get(_id=self.data.assigned_to_id)
@@ -102,11 +103,33 @@ class Ticket(VersionedArtifact):
     ticket_num = FieldProperty(int)
     summary = FieldProperty(str)
     description = FieldProperty(str, if_missing='')
-    reported_by_id = FieldProperty(schema.ObjectId, if_missing=lambda:c.user._id)
-    assigned_to_id = FieldProperty(schema.ObjectId, if_missing=None)
+    reported_by_id = ForeignIdProperty(User, if_missing=lambda:c.user._id)
+    assigned_to_id = ForeignIdProperty(User, if_missing=None)
     milestone = FieldProperty(str, if_missing='')
     status = FieldProperty(str, if_missing='')
     custom_fields = FieldProperty({str:None})
+
+    reported_by = RelationProperty(User, via='reported_by_id')
+    assigned_to = RelationProperty(User, via='assigned_to_id')
+
+    def index(self):
+        result = VersionedArtifact.index(self)
+        result.update(
+            title_s='Ticket %s' % self.ticket_num,
+            version_i=self.version,
+            type_s=self.type_s,
+            ticket_num_i=self.ticket_num,
+            summary_t=self.summary,
+            milestone_s=self.milestone,
+            status_s=self.status,
+            text=self.description)
+        for k,v in self.custom_fields.iteritems():
+            result[k + '_s'] = str(v)
+        if self.reported_by:
+            result['reported_by_s'] = self.reported_by.username
+        if self.assigned_to:
+            result['assigned_to_s'] = self.assigned_to.username
+        return result
 
     @property
     def email_address(self):
@@ -128,8 +151,8 @@ class Ticket(VersionedArtifact):
                 if o != n:
                     changes.append('%s updated: %r => %r' % (
                             title, o, n))
-            o = hist.assigned_to()
-            n = self.assigned_to()
+            o = hist.assigned_to
+            n = self.assigned_to
             if o != n:
                 changes.append('Owner updated: %r => %r' % (
                         o and o.username, n and n.username))
@@ -152,31 +175,9 @@ class Ticket(VersionedArtifact):
     def shorthand_id(self):
         return '#' + str(self.ticket_num)
 
-    def index(self):
-        result = VersionedArtifact.index(self)
-        result.update(
-            title_s='Ticket %s' % self.ticket_num,
-            version_i=self.version,
-            type_s=self.type_s,
-            ticket_num_i=self.ticket_num,
-            summary_t=self.summary,
-            milestone_s=self.milestone,
-            status_s=self.status,
-            text=self.description)
-        for k,v in self.custom_fields.iteritems():
-            result[k + '_s'] = str(v)
-        return result
-
-    def reported_by(self):
-        return User.query.get(_id=self.reported_by_id) or User.anonymous
-
-    def assigned_to(self):
-        if self.assigned_to_id is None: return None
-        return User.query.get(_id=self.assigned_to_id)
-
     def assigned_to_name(self):
-        who = self.assigned_to()
-        if who is None: return 'nobody'
+        who = self.assigned_to
+        if who in (None, User.anonymous()): return 'nobody'
         return who.display_name
 
     @property

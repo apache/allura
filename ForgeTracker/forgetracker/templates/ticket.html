@@ -20,15 +20,15 @@
   <body>
       <div class="span-14">
         <div class="span-2">
-          ${gravatar(ticket.reported_by().preferences.email_address, size=50)}<br/>
-          <py:if test="ticket.assigned_to()">${gravatar(ticket.assigned_to().preferences.email_address, size=50)}</py:if>
+          ${gravatar(ticket.reported_by.preferences.email_address, size=50)}<br/>
+          <py:if test="ticket.assigned_to">${gravatar(ticket.assigned_to.preferences.email_address, size=50)}</py:if>
         </div>
         <div class="span-12 last">
           <h2 class="ticket_title">#$ticket.ticket_num $ticket.summary</h2>
-          Created by <a href="${ticket.reported_by().url()}">${ticket.reported_by().display_name}</a> ${h.ago(ticket.created_date, round=True)}<br/>
+          Created by <a href="${ticket.reported_by.url()}">${ticket.reported_by.display_name}</a> ${h.ago(ticket.created_date, round=True)}<br/>
           Currently assigned to
-          <py:if test="not ticket.assigned_to()">${ticket.assigned_to_name()}</py:if>
-          <a py:if="ticket.assigned_to()" href="${ticket.assigned_to().url()}">${ticket.assigned_to_name()}</a>
+          <py:if test="not ticket.assigned_to_id">${ticket.assigned_to_name()}</py:if>
+          <a py:if="ticket.assigned_to_id" href="${ticket.assigned_to.url()}">${ticket.assigned_to_name()}</a>
           <p>
             <a href="${ticket.email_link('#%s' % ticket.ticket_num)}">Email Ticket</a>
           </p>
