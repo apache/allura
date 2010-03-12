@@ -33,7 +33,7 @@
             <a href="${ticket.email_link('#%s' % ticket.ticket_num)}">Email Ticket</a>
           </p>
           <div py:content="Markup(g.markdown.convert(ticket.description))"/>
-          ${list_attachments(list(ticket.attachments), False)}
+          ${c.attachment_list.display(attachments=list(ticket.attachments), edit_mode=False)}
         </div>
       </div>
       <div id="sidebar-right" class="span-5 last">

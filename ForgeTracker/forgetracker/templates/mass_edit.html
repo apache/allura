@@ -45,7 +45,7 @@
           <div>
             <label for="assigned_to">Assigned To:</label>
             <br/>
-            ${select_user_in_project('assigned_to', None)}
+            ${c.user_select.display(name='assigned_to')}
           </div>
           <div>
             <label for="status">Status:</label>

@@ -42,9 +42,9 @@
               <py:if test="not ticket.assigned_to_id">${ticket.assigned_to_name()}</py:if>
               <a py:if="ticket.assigned_to_id" href="${ticket.assigned_to.url()}">${ticket.assigned_to_name()}</a>
             </span>
-            <span class="editor ticket-assigned-to">${select_user_in_project('assigned_to',ticket.assigned_to_id)}</span>
+            <span class="editor ticket-assigned-to">${c.user_select.display(name='assigned_to',value=ticket.assigned_to_id)}</span>
           </div>
-          ${markdown_edit("description",ticket.description)}
+          ${c.markdown_editor.display(name='description',value=ticket.description)}
 
           <input type="submit" value="submit"/>
         </div>
@@ -65,7 +65,7 @@
               Tags:
               <span class="viewer" py:if="len(ticket.tags)"><span py:for="tag in ticket.tags">$tag.tag ($tag.count) </span></span>
               <span class="viewer" py:if="not len(ticket.tags)">None</span>
-              <span class="editor">${user_tags_edit('tags', user_tags)}</span>
+              <span class="editor">${c.user_tag_edit.display(name='tags', user_tags=user_tags)}</span>
           </div>
           <div class="editable viewing">
               Milestone:
@@ -87,7 +87,7 @@
       </div>
     </form>
     <div class="span-12 push-2">
-      ${list_attachments(list(ticket.attachments), has_artifact_access('write', ticket)())}
+      ${c.attachment_list.display(attachments=list(ticket.attachments), edit_mode=has_artifact_access('write', ticket)())}
       <div py:if="has_artifact_access('write', ticket)()" class="reply title-pane closed">
         <button class="title">Add Attachment</button>
         <div class="content">

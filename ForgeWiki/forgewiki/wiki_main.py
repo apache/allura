@@ -27,6 +27,7 @@ from pyforge.model import ProjectRole, User, TagEvent, UserTags, ArtifactReferen
 from pyforge.model import Discussion, Thread, Post, Attachment
 from pyforge.controllers import AppDiscussionController
 from pyforge.lib import widgets as w
+from pyforge.lib.widgets import form_fields as ffw
 
 # Local imports
 from forgewiki import model
@@ -38,6 +39,9 @@ class W:
     thread=w.Thread(
         offset=None, limit=None, page_size=None, total=None,
         style='linear')
+    markdown_editor = ffw.MarkdownEdit()
+    user_tag_edit = ffw.UserTagEdit()
+    attachment_list = ffw.AttachmentList()
 
 
 class ForgeWikiApp(Application):
@@ -308,6 +312,7 @@ class PageController(object):
     def index(self, version=None):
         require(has_artifact_access('read', self.page))
         c.thread = W.thread
+        c.attachment_list = W.attachment_list
         page = self.get_version(version)
         if 'all' not in page.viewable_by and str(c.user._id) not in page.viewable_by:
             raise exc.HTTPForbidden(detail="You may not view this page.")
@@ -330,6 +335,10 @@ class PageController(object):
             require(has_artifact_access('edit', self.page))
             if 'all' not in self.page.viewable_by and str(c.user._id) not in self.page.viewable_by:
                 raise exc.HTTPForbidden(detail="You may not view this page.")
+        c.markdown_editor = W.markdown_editor
+        c.user_select = ffw.ProjectUserSelect()
+        c.attachment_list = W.attachment_list
+        c.user_tag_edit = W.user_tag_edit
         user_tags = UserTags.upsert(c.user, self.page.dump_ref())
         return dict(page=self.page, user_tags=user_tags)
 
@@ -446,6 +455,7 @@ class AttachmentsController(object):
     def __init__(self, page):
         self.page = page
 
+    @expose()
     def _lookup(self, filename, *args):
         return AttachmentController(filename), args
 

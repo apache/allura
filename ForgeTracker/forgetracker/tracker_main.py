@@ -25,6 +25,7 @@ from pyforge.lib.decorators import audit, react
 from pyforge.lib.security import require, has_artifact_access
 from pyforge.model import ProjectRole, TagEvent, UserTags, ArtifactReference, Feed
 from pyforge.lib import widgets as w
+from pyforge.lib.widgets import form_fields as ffw
 from pyforge.controllers import AppDiscussionController
 
 # Local imports
@@ -40,6 +41,9 @@ class W:
     thread=w.Thread(
         offset=None, limit=None, page_size=None, total=None,
         style='linear')
+    markdown_editor = ffw.MarkdownEdit()
+    user_tag_edit = ffw.UserTagEdit()
+    attachment_list = ffw.AttachmentList()
 
 class ForgeTrackerApp(Application):
     __version__ = version.__version__
@@ -241,6 +245,9 @@ class RootController(object):
     def new(self, super_id=None, **kw):
         require(has_artifact_access('write'))
         tmpl_context.form = ticket_form
+        c.markdown_editor = W.markdown_editor
+        c.user_tag_edit = W.user_tag_edit
+        c.user_select = ffw.ProjectUserSelect()
         globals = model.Globals.query.get(app_config_id=c.app.config._id)
         return dict(action=c.app.config.url()+'save_ticket',
                     super_id=super_id,
@@ -363,6 +370,7 @@ class RootController(object):
                          ticket_num={'$in':[r['ticket_num_i'] for r in results.docs]}))
                 tickets = query.all()
         globals = model.Globals.query.get(app_config_id=c.app.config._id)
+        c.user_select = ffw.ProjectUserSelect()
         return dict(tickets=tickets, globals=globals)
 
     @expose()
@@ -412,6 +420,7 @@ class TicketController(object):
     def index(self, **kw):
         require(has_artifact_access('read', self.ticket))
         c.thread = W.thread
+        c.attachment_list = W.attachment_list
         if self.ticket is not None:
             globals = model.Globals.query.get(app_config_id=c.app.config._id)
             return dict(ticket=self.ticket, globals=globals)
@@ -423,9 +432,14 @@ class TicketController(object):
     def edit(self, **kw):
         require(has_artifact_access('write', self.ticket))
         c.thread = W.thread
+        c.markdown_editor = W.markdown_editor
+        c.attachment_list = W.attachment_list
+        c.user_tag_edit = W.user_tag_edit
+        c.user_select = ffw.ProjectUserSelect()
         globals = model.Globals.query.get(app_config_id=c.app.config._id)
         user_tags = UserTags.upsert(c.user, self.ticket.dump_ref())
-        return dict(ticket=self.ticket, globals=globals, user_tags=user_tags)
+        return dict(ticket=self.ticket, globals=globals,
+                    user_tags=user_tags)
 
     @without_trailing_slash
     @expose()

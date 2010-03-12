@@ -25,9 +25,9 @@
     </select>
   </div>
   <div class="span-3"><label for="assigned_to">Assigned To:</label></div>
-  <div class="span-15 last">${select_user_in_project('assigned_to', None)}</div>
+  <div class="span-15 last">${c.user_select.display(name='assigned_to')}</div>
   <div class="span-3"><label for="description">Description:</label></div>
-  <div class="span-15 last">${markdown_edit("description",'')}</div>
+  <div class="span-15 last">${c.markdown_editor.display(name='description',value='')}</div>
   <div class="span-3"><label for="milestone">Milestone:</label></div>
   <div class="span-15 last"><input name="milestone" value=""/></div>
 
@@ -44,7 +44,7 @@
   </py:if>
 
   <div class="span-3"><label for="tags">Tags</label></div>
-  <div class="span-15 last">${user_tags_edit('tags', {'tags':[]})}</div>
+  <div class="span-15 last">${c.user_tag_edit.display(name='tags', user_tags={'tags':[]})}</div>
 
   <div class="span-15 push-3 last"><input type="submit" value="Create Ticket"/></div>
 </form>

@@ -17,6 +17,10 @@ from pyforge import version
 from pyforge import model as M
 from pyforge.lib.security import require, has_project_access
 from pyforge.model import nonce
+from pyforge.lib.widgets import form_fields as ffw
+
+class W:
+    markdown_editor = ffw.MarkdownEdit()
 
 class AdminWidgets(WidgetController):
     widgets=['users', 'plugin_status']
@@ -89,6 +93,7 @@ class ProjectAdminController(object):
         installable_plugin_names = [ 
             name for (name, app) in plugins
             if app.installable ]
+        c.markdown_editor = W.markdown_editor
         return dict(
             installable_plugin_names=installable_plugin_names,
             roles=M.ProjectRole.query.find().sort('_id').all(),

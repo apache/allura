@@ -23,7 +23,7 @@ setup(
         "Django",
         "Carrot",
         "Celery >= 0.8.0",
-        "pymongo",
+        "pymongo >= 1.5",
         "pysolr",
         "repoze.what-quickstart",
         "sqlalchemy-migrate",
@@ -75,6 +75,9 @@ setup(
     reactor_setup = pyforge.command:ReactorSetupCommand
     reactor = pyforge.command:ReactorCommand
     sendmsg = pyforge.command:SendMessageCommand
+    
+    [easy_widgets.resources]
+    ew_resources=pyforge.config.resources:register_ew_resources
 
     """,
 )

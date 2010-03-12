@@ -1,0 +1,15 @@
+<div xmlns="http://www.w3.org/1999/xhtml"
+     xmlns:py="http://genshi.edgewall.org/">
+  <select id="$name" name="$name" size="$size" multiple="$size">
+    <option py:if="all and 'all' in value" value="all" selected="selected">All</option>
+    <option py:if="all and 'all' not in value" value="all">All</option>
+    <py:for each="user in users">
+      <py:if test="value is not None and (user._id == value or str(user._id) in str(value))">
+        <option value="${user._id or ''}" selected="selected">${user._id and user.display_name or 'nobody'}</option>
+      </py:if>
+      <py:if test="value is None or (user._id != value and str(user._id) not in str(value))">
+        <option value="${user._id or ''}">${user._id and user.display_name or 'nobody'}</option>
+      </py:if>
+    </py:for>
+  </select>
+</div>

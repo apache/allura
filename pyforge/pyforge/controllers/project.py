@@ -16,11 +16,15 @@ from pyforge.lib.base import BaseController
 from pyforge.lib.helpers import vardec, DateTimeConverter
 from pyforge.controllers.error import ErrorController
 from pyforge.lib.security import require, has_project_access, has_neighborhood_access
+from pyforge.lib.widgets import form_fields as ffw
 from .auth import AuthController
 from .search import SearchController
 from .static import StaticController
 
 from pyforge.model.session import main_orm_session
+
+class W:
+    markdown_editor = ffw.MarkdownEdit()
 
 class NeighborhoodController(object):
     '''Manages a neighborhood of projects.
@@ -208,6 +212,7 @@ class NeighborhoodAdminController(object):
 
     @expose('pyforge.templates.neighborhood_admin')
     def index(self):
+        c.markdown_editor = W.markdown_editor
         return dict(neighborhood=self.neighborhood)
 
     @expose()

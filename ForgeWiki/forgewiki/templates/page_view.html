@@ -30,7 +30,7 @@
     <div py:if="len(page.tags)">
     Tags: <span py:for="tag in page.tags">$tag.tag (${page.artifacts_tagged_with(tag.tag).count()}) </span>
     </div>
-    ${list_attachments(list(page.attachments), False)}
+    ${c.attachment_list.display(attachments=list(page.attachments), edit_mode=False)}
     <hr/>
     <div py:with="thread=page.discussion_thread()" id="#comment">
       <h2><a href="${thread.url()}">Discussion</a></h2>

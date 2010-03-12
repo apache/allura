@@ -1,0 +1,29 @@
+<div xmlns="http://www.w3.org/1999/xhtml"
+     xmlns:py="http://genshi.edgewall.org/"
+     class="wmd_holder">
+  <textarea id="wmd_edit_$name" class="wmd_edit" name="$name">$value</textarea>
+  <div id="wmd_preview_$name" class="wmd_preview"></div>
+
+  <script type="text/javascript">
+      wmd_options = { autostart: false, output:"Markdown" };
+  </script>
+  <script type="text/javascript">
+      $(window).load(function() {
+          var textarea = document.getElementById('wmd_edit_$name');
+          var previewDiv = document.getElementById('wmd_preview_$name');
+
+          var previewManager = new Attacklab.wmd.previewManager({
+            input:textarea,
+            preview:previewDiv,
+            output:null
+          });
+
+          new Attacklab.wmd.editor(textarea,previewManager.refresh);
+      });
+      $(function(){
+          var link=$('a[href=http://www.wmd-editor.com/]');
+          link.prev().css({'padding-right':'15px'});
+          link.remove();
+      });
+  </script>
+</div>
