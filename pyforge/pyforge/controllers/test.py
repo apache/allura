@@ -11,7 +11,6 @@ from tg import expose
 import  ming.orm.ormsession
 
 from pyforge.lib.base import BaseController
-from pyforge.lib.dispatch import _dispatch, default
 from pyforge.lib.security import require, require_authenticated, has_project_access, has_artifact_access
 from pyforge import model as M
 from .project import ProjectController
@@ -47,9 +46,7 @@ class TestController(BaseController, ProjectController):
             if n.url_prefix.startswith('//'): continue
             n.bind_controller(self)
 
-    def _dispatch(self, state, remainder):
-        return _dispatch(self, state, remainder)
-        
+    @expose()
     def _lookup(self, name, *remainder):
         subproject = M.Project.query.get(shortname=c.project.shortname + '/' + name)
         if subproject:
@@ -88,6 +85,7 @@ class TestController(BaseController, ProjectController):
 
 class DispatchTest(object):
 
+    @expose()
     def _lookup(self, name, *args):
         return NamedController(name), args
 
@@ -100,13 +98,13 @@ class NamedController(object):
     def index(self):
         return 'index ' + self.name
 
-    @default
     @expose()
-    def _lookup(self, *args):
+    def _default(self, *args):
         return 'default(%s)(%r)' % (self.name, args)
 
 class SecurityTests(object):
 
+    @expose()
     def _lookup(self, name, *args):
         name = unquote(name)
         if name == '*anonymous':

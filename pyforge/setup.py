@@ -75,7 +75,7 @@ setup(
     reactor_setup = pyforge.command:ReactorSetupCommand
     reactor = pyforge.command:ReactorCommand
     sendmsg = pyforge.command:SendMessageCommand
-    
+
     """,
 )
 

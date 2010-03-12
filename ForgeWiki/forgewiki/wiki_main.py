@@ -34,9 +34,6 @@ from forgewiki import version
 
 log = logging.getLogger(__name__)
 
-# Will not be needed after _dispatch is fixed in tg 2.1
-from pyforge.lib.dispatch import _dispatch
-
 class W:
     thread=w.Thread(
         offset=None, limit=None, page_size=None, total=None,
@@ -175,6 +172,7 @@ class RootController(object):
         return dict(message=c.app.config.options['message'])
 
     #Instantiate a Page object, and continue dispatch there
+    @expose()
     def _lookup(self, pname, *remainder):
         return PageController(pname), remainder
 

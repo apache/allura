@@ -14,7 +14,6 @@ import ming
 
 from pyforge.lib.base import BaseController
 from pyforge.controllers.error import ErrorController
-from pyforge.lib.dispatch import _dispatch
 from pyforge import model as M
 from .auth import AuthController
 from .search import SearchController
@@ -45,7 +44,6 @@ class RootController(BaseController):
     error = ErrorController()
     static = StaticController()
     search = SearchController()
-    _ew_resources = ew.ResourceManager.get()
     # projects = NeighborhoodController('Projects')
     # users = NeighborhoodController('Users', 'users/')
     # adobe = NeighborhoodController('Adobe')
@@ -64,6 +62,7 @@ class RootController(BaseController):
         for n in M.Neighborhood.query.find():
             if n.url_prefix.startswith('//'): continue
             n.bind_controller(self)
+        self._ew_resources = ew.ResourceManager.get()
 
     def _cleanup_iterator(self, result):
         for x in result:
@@ -84,7 +83,4 @@ class RootController(BaseController):
         psort = [(n, M.Project.query.find(dict(is_root=True, neighborhood_id=n._id)).all())
                  for n in M.Neighborhood.query.find().sort('name')]
         return dict(projects=psort)
-
-    def _dispatch(self, state, remainder):
-        return _dispatch(self, state, remainder)
         

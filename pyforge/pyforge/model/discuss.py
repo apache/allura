@@ -300,8 +300,11 @@ class Post(Message, VersionedArtifact):
             return 'Re: ' + self.subject
 
     def reply_text(self):
-        l = [ '%s wrote:' % self.author().display_name ]
-        l += [ '> ' + line for line in self.text.split('\n') ]
+        if self.text:
+            l = [ '%s wrote:' % self.author().display_name ]
+            l += [ '> ' + line for line in self.text.split('\n') ]
+        else:
+            return ''
         return '\n'.join(l)
 
     def delete(self):

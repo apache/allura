@@ -36,6 +36,7 @@ class _ThreadsTable(DW._ThreadsTable):
     class fields(ew.WidgetsList):
         num_replies=ew.HTMLField(show_label=True, label='Num Replies')
         num_views=ew.HTMLField(show_label=True)
+        flags=ew.HTMLField(show_label=True, text="${unicode(', '.join(value))}")
         last_post=ew.HTMLField(text="${value and value.summary()}", show_label=True)
         subscription=ew.Checkbox(suppress_label=True, show_label=True)
     fields.insert(0, ew.LinkField(
@@ -46,6 +47,17 @@ class ThreadSubscriptionForm(DW.SubscriptionForm):
     class fields(ew.WidgetsList):
         threads=_ThreadsTable()
 
+class AnnouncementsTable(DW._ThreadsTable):
+    class fields(ew.WidgetsList):
+        num_replies=ew.HTMLField(show_label=True, label='Num Replies')
+        num_views=ew.HTMLField(show_label=True)
+        flags=ew.HTMLField(show_label=True, text="${unicode(', '.join(value))}")
+        last_post=ew.HTMLField(text="${value and value.summary()}", show_label=True)
+    fields.insert(0, ew.LinkField(
+            label='Subject', text="${value['subject']}",
+            href="${value['url']()}", show_label=True))
+    name='announcements'
+    
 class _ForumSelector(ew.SingleSelectField):
     def _options(self):
         return [
@@ -60,11 +72,11 @@ class _ForumSelector(ew.SingleSelectField):
         return value.shortname
 
 class ModerateThread(ew.SimpleForm):
-    submit_text=None
+    submit_text='Save Changes'
     class fields(ew.WidgetsList):
         forum=_ForumSelector(label='New Forum')
+        flags=ew.CheckboxSet(options=['Sticky', 'Announcement'])
     class buttons(ew.WidgetsList):
-        move=ew.SubmitButton(label='Move thread to new forum')
         delete=ew.SubmitButton(label='Delete Thread')
 
 class ModeratePost(ew.SimpleForm):
@@ -80,6 +92,7 @@ class ModeratePost(ew.SimpleForm):
 class ForumHeader(DW.DiscussionHeader):
     template='forgeforum.widgets.templates.forum_header'
     widgets=dict(DW.DiscussionHeader.widgets,
+                 announcements_table=AnnouncementsTable(),
                  forum_subscription_form=ForumSubscriptionForm())
 
 class ThreadHeader(DW.ThreadHeader):
@@ -87,7 +100,8 @@ class ThreadHeader(DW.ThreadHeader):
     show_subject=True
     show_moderate=True
     widgets=dict(DW.ThreadHeader.widgets,
-                 moderate_thread=ModerateThread())
+                 moderate_thread=ModerateThread(),
+                 announcements_table=AnnouncementsTable())
 
 class Post(DW.Post):
     show_subject=True

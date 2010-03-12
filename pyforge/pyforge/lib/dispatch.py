@@ -1,3 +1,5 @@
+assert False, 'This module is obsolete'
+
 from webob import exc
 
 def default(func):

@@ -222,6 +222,7 @@ class RootController(object):
         count = len(bins)
         return dict(bins=bins or [], count=count)
 
+    @expose()
     def _lookup(self, ticket_num, *remainder):
         return TicketController(ticket_num), remainder
 
@@ -523,6 +524,7 @@ class AttachmentsController(object):
     def __init__(self, ticket):
         self.ticket = ticket
 
+    @expose()
     def _lookup(self, filename, *args):
         return AttachmentController(filename), args
 
@@ -566,38 +568,6 @@ class AttachmentController(object):
                                      'attachment;filename=%s' % filename)
             return fp.read()
         return self.filename
-
-# class CommentController(object):
-
-#     def __init__(self, ticket, comment_id=None):
-#         self.ticket = ticket
-#         self.comment_id = comment_id
-#         # self.comment = model.Comment.query.get(slug=comment_id)
-
-#     @expose()
-#     def reply(self, text):
-#         require(has_artifact_access('comment', self.ticket))
-#         if self.comment_id:
-#             c = self.comment.reply(text)
-#         else:
-#             c = self.ticket.reply(text)
-#         redirect(request.referer)
-
-#     @expose()
-#     def delete(self):
-# #        require(lambda:c.user._id == self.comment.author()._id)
-# #        self.comment.text = '[Text deleted by commenter]'
-#         self.comment.delete()
-#         redirect(request.referer)
-
-#     def _lookup(self, next, *remainder):
-#         if self.comment_id:
-#             return CommentController(
-#                 self.ticket,
-#                 self.comment_id + '/' + next), remainder
-#         else:
-#             return CommentController(
-#                 self.ticket, next), remainder
 
 NONALNUM_RE = re.compile(r'\W+')
 

@@ -32,6 +32,8 @@ class ForgeForumApp(Application):
         ConfigOption('PostingPolicy',
                      schema.OneOf('ApproveOnceModerated', 'ModerateAll'), 'ApproveOnceModerated')
         ]
+    PostClass=model.ForumPost
+    AttachmentClass=model.ForumAttachment
 
     def __init__(self, project, config):
         Application.__init__(self, project, config)
@@ -59,7 +61,8 @@ class ForgeForumApp(Application):
             log.error("Can't find forum %s (routing key was %s)",
                           shortname, routing_key)
             return
-        super(ForgeForumApp, self).message_auditor(routing_key, data, f._id)
+        super(ForgeForumApp, self).message_auditor(
+            routing_key, data, f, subject=data['headers'].get('Subject', '[No Subject]'))
 
     @audit('Forum.forum_stats.#')
     def forum_stats_auditor(self, routing_key, data):
@@ -79,7 +82,7 @@ class ForgeForumApp(Application):
     def thread_stats_auditor(self, routing_key, data):
         try:
             thread_id = routing_key.split('.', 2)[-1]
-            thread = model.Thread.query.find(_id=thread_id)
+            thread = model.ForumThread.query.find(_id=thread_id)
         except:
             log.exception('Error looking up forum: %s', routing_key)
             return
@@ -92,9 +95,9 @@ class ForgeForumApp(Application):
     @react('Forum.new_post')
     def notify_subscribers(self, routing_key, data):
         log.info('Got a new post: %s', data['post_id'])
-        post = model.Post.query.get(_id=data.get('post_id'))
+        post = model.ForumPost.query.get(_id=data.get('post_id'))
         thread = post.thread
-        forum = thread.forum
+        forum = thread.discussion
         subs = set()
         for un, sub in thread.subscriptions.iteritems():
             if sub: subs.add(un)

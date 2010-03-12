@@ -45,6 +45,7 @@ def make_app(global_conf, full_stack=True, **app_conf):
     # Wrap your base TurboGears 2 application with custom middleware here
     if hasattr(ew.ResourceManager, 'configure'):
         ew.ResourceManager.configure(compress=not asbool(global_conf['debug']))
+    ew.ResourceManager.register_all_resources()
     return app
 
 def make_plugin_test_app(global_conf, full_stack=True, **app_conf):

@@ -13,7 +13,6 @@ from webob import exc
 from pylons import c, g
 
 from pyforge.lib.base import BaseController
-from pyforge.lib.dispatch import _dispatch, default
 
 log = logging.getLogger(__name__)
 

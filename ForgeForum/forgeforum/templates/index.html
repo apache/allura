@@ -15,6 +15,11 @@
   <body>
     <h1>Welcome to ForgeForum</h1>
     <h2>Project: $c.project.shortname</h2>
+    <py:if test="announcements">
+      <h3>Announcements</h3>
+      ${c.announcements_table.display(value=announcements)}
+    </py:if>
+    <h3>Forums</h3>
     ${c.forum_subscription_form.display(action='subscribe', value=dict(forums=list(forums)))}
   </body>
 </html>

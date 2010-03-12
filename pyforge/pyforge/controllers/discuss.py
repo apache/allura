@@ -1,6 +1,6 @@
 from mimetypes import guess_type
 
-from tg import expose, redirect, validate, request, response
+from tg import expose, redirect, validate, request, response, flash
 from tg.decorators import before_validate
 from pylons import c
 from webob import exc
@@ -58,7 +58,6 @@ class DiscussionController(object):
 
     @expose('pyforge.templates.discussion.index')
     def index(self, **kw):
-        threads = self.discussion.threads
         c.discussion = self.W.discussion
         return dict(discussion=self.discussion)
 
@@ -90,6 +89,7 @@ class ThreadsController(object):
     def __init__(self, discussion_controller):
         self._discussion_controller = discussion_controller
 
+    @expose()
     def _lookup(self, id, *remainder):
         return self.ThreadController(self._discussion_controller, id), remainder
 
@@ -109,11 +109,12 @@ class ThreadController(object):
         self.discussion = discussion_controller.discussion
         self.thread = self.M.Thread.query.get(_id=thread_id)
 
+    @expose()
     def _lookup(self, id, *remainder):
         return self.PostController(self._discussion_controller, self.thread, id), remainder
 
     @expose('pyforge.templates.discussion.thread')
-    def index(self, offset=None):
+    def index(self, offset=None, **kw):
         c.thread = self.W.thread
         c.thread_header = self.W.thread_header
         pagesize = 15
@@ -134,6 +135,7 @@ class ThreadController(object):
         p = self.thread.post(**kw)
         p.commit()
         self.thread.num_replies += 1
+        flash('Message posted')
         redirect(request.referer)
 
 class PostController(object):
@@ -154,8 +156,11 @@ class PostController(object):
 
     @LazyProperty
     def post(self):
-        return self.M.Post.query.get(thread_id=self.thread._id,
-                                     slug=self._post_slug)
+        result = self.M.Post.query.find(dict(slug=self._post_slug)).all()
+        for p in result:
+            if p.thread_id == self.thread._id: return p
+        if result:
+            redirect(result[0].url())
 
     @h.vardec
     @expose('pyforge.templates.discussion.post')
@@ -246,6 +251,7 @@ class PostController(object):
                 fp.write(s)
         redirect(request.referer)
 
+    @expose()
     def _lookup(self, id, *remainder):
         return self.PostController(
             self._discussion_controller,
@@ -263,6 +269,7 @@ class AttachmentsController(object):
     def __init__(self, discussion_controller):
         self._discussion_controller = discussion_controller
 
+    @expose()
     def _lookup(self, filename, *args):
         return self.AttachmentController(self._discussion_controller, filename), args
 

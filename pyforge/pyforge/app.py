@@ -92,6 +92,9 @@ class Application(object):
     installable=True
     wsgi = WSGIHook()
     widget = WidgetController
+    DiscussionClass = model.Discussion
+    PostClass = model.Post
+    AttachmentClass = model.Attachment
 
     def __init__(self, project, app_config_object):
         self.project = project
@@ -112,7 +115,7 @@ class Application(object):
     def install(self, project):
         'Whatever logic is required to initially set up a plugin'
         # Create the discussion object
-        discussion = model.Discussion(
+        discussion = self.DiscussionClass(
             shortname=self.config.options.mount_point,
             name='%s Discussion' % self.config.options.mount_point,
             description='Forum for %s comments' % self.config.options.mount_point)
@@ -135,33 +138,35 @@ class Application(object):
     def sidebar_menu(self):
         return []
 
-    def message_auditor(self, routing_key, data, artifact):
+    def message_auditor(self, routing_key, data, artifact, **kw):
         # Find ancestor comment
-        parent_id = data['headers'].get('In-Reply-To')
+        parent_id = data.get('in_reply_to', [ None ])[0]
         thd = artifact.discussion_thread(data)
         # Handle attachments
-        message_id = data['headers']['Message-ID']
+        message_id = data['message_id']
         if data.get('filename'):
             log.info('Saving attachment %s', data['filename'])
-            model.Attachment.save(data['filename'],
+            self.AttachmentClass.save(data['filename'],
                                   data.get('content_type', 'application/octet-stream'),
                                   data['payload'],
-                                  discussion_id=self.config.discussion._id,
+                                  discussion_id=self.config.discussion_id,
                                   post_id=message_id)
             return
         # Handle duplicates
-        original = model.Post.query.get(_id=message_id)
+        original = self.PostClass.query.get(_id=message_id)
         if original:
             log.info('Saving text attachment')
-            model.Attachment.save('alternate',
+            self.AttachmentClass.save('alternate',
                                   data.get('content_type', 'application/octet-stream'),
                                   data['payload'],
-                                  discussion_id=self.config.discussion._id,
+                                  discussion_id=self.config.discussion_id,
                                   post_id=message_id)
             return
-        thd.post(data['payload'],
-            message_id=data['headers']['Message-ID'],
-            parent_id=parent_id)
+        thd.post(
+            text=data['payload'],
+            message_id=message_id,
+            parent_id=parent_id,
+            **kw)
 
 
 class DefaultAdminController(object):

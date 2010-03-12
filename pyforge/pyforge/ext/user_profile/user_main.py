@@ -12,7 +12,6 @@ from pymongo.bson import ObjectId
 from pyforge import version
 from pyforge.app import Application, WidgetController, ConfigOption, SitemapEntry
 from pyforge.lib.helpers import push_config, html, vardec
-from pyforge.lib.dispatch import _dispatch
 from pyforge.ext.project_home import model as M
 from pyforge.lib.security import require, has_project_access
 from pyforge.model import nonce, User

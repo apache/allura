@@ -9,6 +9,11 @@
     <ul>${crumbs(value.discussion.breadcrumbs())}</ul>
   </div>
 
+  <py:if test="value.discussion.announcements">
+    <h3>Announcements</h3>
+    ${widgets.announcements_table.display(value=value.discussion.announcements)}
+  </py:if>
+
   <h1>$value.subject</h1>
   <div  py:if="pagesize"
         py:with="cur_page=offset / pagesize; num_pages=total/pagesize">

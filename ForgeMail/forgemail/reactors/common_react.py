@@ -42,7 +42,7 @@ def received_email(routing_key, data):
                         for part in msg['parts'][1:]:
                             msg = dict(
                                 headers=dict(msg_hdrs, **part['headers']),
-                                message_id=part['message_id'],
+                                message_id=part['message_id'][0],
                                 in_reply_to=part['in_reply_to'],
                                 references=part['references'],
                                 filename=part['filename'],

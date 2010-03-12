@@ -12,7 +12,6 @@ from pymongo.bson import ObjectId
 
 
 from pyforge.app import Application, WidgetController, DefaultAdminController, SitemapEntry
-from pyforge.lib.dispatch import _dispatch
 from pyforge.lib.helpers import vardec, square_image
 from pyforge import version
 from pyforge import model as M
@@ -95,9 +94,7 @@ class ProjectAdminController(object):
             roles=M.ProjectRole.query.find().sort('_id').all(),
             users=[M.User.query.get(_id=id) for id in c.project.acl.read ])
 
-    def _dispatch(self, state, remainder):
-        return _dispatch(self, state, remainder)
-        
+    @expose()
     def _lookup(self, name, *remainder):
         app = c.project.app_instance(name)
         if app is None:

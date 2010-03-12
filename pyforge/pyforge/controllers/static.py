@@ -4,12 +4,11 @@ import pkg_resources
 from tg import expose, redirect, flash, config, validate, request, response
 from webob import exc
 
-from pyforge.lib.dispatch import _dispatch, default
-
 class StaticController(object):
     '''Controller for mounting static resources in plugins by the plugin
     name'''
 
+    @expose()
     def _lookup(self, ep_name, *remainder):
         for ep in pkg_resources.iter_entry_points('pyforge', ep_name):
             result = StaticAppController(ep)

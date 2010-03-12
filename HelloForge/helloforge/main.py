@@ -21,9 +21,6 @@ from helloforge import version
 
 log = logging.getLogger(__name__)
 
-# Will not be needed after _dispatch is fixed in tg 2.1
-from pyforge.lib.dispatch import _dispatch
-
 class HelloForgeApp(Application):
     '''This is the HelloWorld application for PyForge, showing
     all the rich, creamy goodness that is installable apps.
@@ -118,11 +115,8 @@ class RootController(object):
     def index(self):
         return dict(message=c.app.config.options['message'])
     
-    #Will not be needed after _dispatch is fixed in tg 2.1
-    def _dispatch(self, state, remainder):
-        return _dispatch(self, state, remainder)
-    
     #Instantiate a Page object, and continue dispatch there
+    @expose()
     def _lookup(self, pname, *remainder):
         return PageController(pname), remainder
 
@@ -256,9 +250,6 @@ class CommentController(object):
         self.comment.delete()
         redirect(request.referer)
 
-    def _dispatch(self, state, remainder):
-        return _dispatch(self, state, remainder)
-        
     def _lookup(self, next, *remainder):
         if self.comment_id:
             return CommentController(

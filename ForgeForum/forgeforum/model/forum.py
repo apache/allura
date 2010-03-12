@@ -1,9 +1,11 @@
 import re
+from itertools import chain
 
 import tg
 from pylons import g
 
 from ming import schema
+from ming.utils import LazyProperty
 from ming.orm.mapped_class import MappedClass
 from ming.orm.property import FieldProperty, RelationProperty, ForeignIdProperty
 
@@ -24,6 +26,19 @@ class Forum(M.Discussion):
     def attachment_class(cls):
         return ForumAttachment
 
+    @classmethod
+    def thread_class(cls):
+        return ForumThread
+
+    @LazyProperty
+    def threads(self):
+        threads = self.thread_class().query.find(dict(discussion_id=self._id)).all()
+        sorted_threads = chain(
+            (t for t in threads if 'Announcement' in t.flags),
+            (t for t in threads if 'Sticky' in t.flags and 'Announcement' not in t.flags),
+            (t for t in threads if 'Sticky' not in t.flags and 'Announcement' not in t.flags))
+        return list(sorted_threads)
+
     @property
     def parent(self):
         return Forum.query.get(_id=self.parent_id)
@@ -36,6 +51,12 @@ class Forum(M.Discussion):
     def email_address(self):
         domain = '.'.join(reversed(self.app.url[1:-1].split('/')))
         return '%s@%s%s' % (self.shortname.replace('/', '.'), domain, common_suffix)
+
+    @LazyProperty
+    def announcements(self):
+        return self.thread_class().query.find(dict(
+                app_config_id=self.app_config_id,
+                flags='Announcement')).all()
 
     def breadcrumbs(self):
         if self.parent:
@@ -58,7 +79,7 @@ class Forum(M.Discussion):
         subject = '[no subject]'
         parent_id = None
         if data is not None:
-            parent_id = data['headers'].get('In-Reply-To')
+            parent_id = data.get('in_reply_to', [ None ])[0]
             subject = data['headers'].get('Subject', subject)
         if parent_id is not None:
             parent = self.post_class().query.get(_id=parent_id)
@@ -73,6 +94,7 @@ class ForumThread(M.Thread):
 
     discussion_id = ForeignIdProperty(Forum)
     first_post_id = ForeignIdProperty('ForumPost')
+    flags = FieldProperty([str])
 
     discussion = RelationProperty(Forum)
     posts = RelationProperty('ForumPost')
@@ -122,7 +144,6 @@ class ForumPost(M.Post):
 
     def promote(self):
         '''Make the post its own thread head'''
-        if not self.parent: return # already its own thread
         thd = self.thread_class()(
             discussion_id=self.discussion_id,
             subject=self.subject,
@@ -134,8 +155,7 @@ class ForumPost(M.Post):
         # Add a placeholder to note the move
         placeholder = self.thread.post(
             subject='Discussion moved',
-            text='Discussion moved to [here](%s#post-%s)' % (
-                thread.url(), self.slug),
+            text='', 
             parent_id=self.parent_id)
         placeholder.slug = self.slug
         placeholder.full_slug = self.full_slug
@@ -145,8 +165,12 @@ class ForumPost(M.Post):
         else:
             parent = None
         # Set the thread ID on my replies and attachments
+        old_slug = self.slug + '/', self.full_slug + '/'
         reply_re = re.compile(self.slug + '/.*')
         self.slug, self.full_slug = self.make_slugs(parent=parent, timestamp=self.timestamp)
+        placeholder.text = 'Discussion moved to [here](%s#post-%s)' % (
+            thread.url(), self.slug)
+        new_slug = self.slug + '/', self.full_slug + '/'
         self.discussion_id=thread.discussion_id
         self.thread_id=thread._id
         self.parent_id=new_parent_id
@@ -154,8 +178,9 @@ class ForumPost(M.Post):
             placeholder.thread.url(), placeholder.slug, self.text)
         reply_tree = self.query.find(dict(slug=reply_re)).all()
         for post in reply_tree:
-            post.slug, post.full_slug = self.make_slugs(parent=post.parent, timestamp=post.timestamp)
-            post.discussion_id=self.discussion_id,
+            post.slug = new_slug[0] + post.slug[len(old_slug[0]):]
+            post.full_slug = new_slug[1] + post.slug[len(old_slug[1]):]
+            post.discussion_id=self.discussion_id
             post.thread_id=self.thread_id
         for post in [ self ] + reply_tree:
             for att in post.attachments:

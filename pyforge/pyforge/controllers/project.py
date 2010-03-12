@@ -15,7 +15,6 @@ from pyforge import model as M
 from pyforge.lib.base import BaseController
 from pyforge.lib.helpers import vardec, DateTimeConverter
 from pyforge.controllers.error import ErrorController
-from pyforge.lib.dispatch import _dispatch
 from pyforge.lib.security import require, has_project_access, has_neighborhood_access
 from .auth import AuthController
 from .search import SearchController
@@ -38,6 +37,7 @@ class NeighborhoodController(object):
         require(has_neighborhood_access('read', self.neighborhood),
                 'Read access required')
 
+    @expose()
     def _lookup(self, pname, *remainder):
         pname = unquote(pname)
         project = M.Project.query.get(shortname=self.prefix + pname)
@@ -85,9 +85,6 @@ class HostNeighborhoodController(BaseController, NeighborhoodController):
     static = StaticController()
     search = SearchController()
 
-    def _dispatch(self, state, remainder):
-        return _dispatch(self, state, remainder)
-
 class ProjectController(object):
 
     def __init__(self):
@@ -95,6 +92,7 @@ class ProjectController(object):
         setattr(self, 'feed.atom', self.feed)
         self.screenshot = ScreenshotsController()
 
+    @expose()
     def _lookup(self, name, *remainder):
         name=unquote(name)
         subproject = M.Project.query.get(shortname=c.project.shortname + '/' + name)
@@ -164,6 +162,7 @@ class ProjectController(object):
 
 class ScreenshotsController(object):
 
+    @expose()
     def _lookup(self, filename, *args):
         return ScreenshotController(filename), args
 

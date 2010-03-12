@@ -23,13 +23,18 @@ class RootController(object):
 
     class W(object):
         forum_subscription_form=FW.ForumSubscriptionForm()
+        announcements_table=FW.AnnouncementsTable()
 
     @expose('forgeforum.templates.index')
     def index(self):
         c.forum_subscription_form = self.W.forum_subscription_form
+        c.announcements_table = self.W.announcements_table
+        announcements=model.ForumThread.query.find(dict(
+                flags='Announcement')).all()
         return dict(forums=model.Forum.query.find(dict(
                 app_config_id=c.app.config._id,
-                parent_id=None)))
+                parent_id=None)),
+                    announcements=announcements)
                   
     @expose('forgeforum.templates.search')
     @validate(dict(q=validators.UnicodeString(if_empty=None),
@@ -49,6 +54,7 @@ class RootController(object):
             if results: count=results.hits
         return dict(q=q, history=history, results=results or [], count=count)
 
+    @expose()
     def _lookup(self, id, *remainder):
         return ForumController(id), remainder
 
@@ -56,9 +62,8 @@ class RootController(object):
     @expose()
     @validate(W.forum_subscription_form)
     def subscribe(self, **kw):
-        import pdb; pdb.set_trace()
-        if forum is None: forum = []
-        if thread is None: thread = []
+        forum = kw.pop('forum', [])
+        thread = kw.pop('thread', [])
         objs = []
         for data in forum:
             objs.append(dict(obj=model.Forum.query.get(shortname=data['shortname']),
