@@ -196,8 +196,9 @@ class RootController(object):
     @with_trailing_slash
     @expose('forgetracker.templates.search')
     @validate(dict(q=validators.UnicodeString(if_empty=None),
-                   history=validators.StringBool(if_empty=False)))
-    def search(self, q=None, history=None):
+                   history=validators.StringBool(if_empty=False),
+                   limit=validators.Int(if_empty=10)))
+    def search(self, q=None, history=None, limit=10):
         'local plugin search'
         results = []
         tickets = []
@@ -205,13 +206,14 @@ class RootController(object):
         if not q:
             q = ''
         else:
-            results = search_artifact(model.Ticket, q, history)
+            results = search_artifact(model.Ticket, q, history, rows=limit,
+                                      sort='ticket_num_i asc')
             if results:
                 query = model.Ticket.query.find(
                     dict(app_config_id=c.app.config._id,
                          ticket_num={'$in':[r['ticket_num_i'] for r in results.docs]}))
                 tickets = query.all()
-                count = len(tickets)
+                count = results.hits
         return dict(q=q, history=history, tickets=tickets or [], count=count)
 
     @with_trailing_slash

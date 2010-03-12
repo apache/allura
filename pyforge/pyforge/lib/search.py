@@ -58,7 +58,7 @@ def remove_artifacts(obj_iter):
 def search(q,**kw):
     return g.solr.search(q, **kw)
 
-def search_artifact(atype, q, history=False, **kw):
+def search_artifact(atype, q, history=False, rows=10, **kw):
     # first, grab an artifact and get the fields that it indexes
     a = atype.query.find().first()
     fields = a.index()
@@ -74,7 +74,7 @@ def search_artifact(atype, q, history=False, **kw):
     parts.append('mount_point_s:%s' % c.app.config.options.mount_point)
     if not history:
         parts.append('is_history_b:False')
-    return g.solr.search(' AND '.join(parts), **kw)
+    return g.solr.search(' AND '.join(parts), rows=rows, **kw)
     
 def find_shortlinks(text):
     from pyforge import model as M

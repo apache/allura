@@ -50,6 +50,12 @@
           <td py:if="t.assigned_to()">${t.assigned_to().display_name}</td>
           <td py:if="not t.assigned_to()">nobody</td>
         </tr>
+        <tr py:if="len(tickets) &lt; count">
+          <td />
+          <td colspan="7">
+            <a href="${tg.url('.', q=q, history=history, limit=count)}">More Results</a>
+          </td>
+        </tr>
       </tbody>
     </table>
     <button onclick="location='../edit/'+location.search;" py:if="count != 0">Edit All</button>
