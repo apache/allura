@@ -201,15 +201,10 @@ ul#sidebarmenu li a.active {
     else: # pragma no cover
         log.info('Loading some large data')
         p0.install_app('Wiki', 'wiki')
-        app = p0.install_app('Repository', 'src')
-        # with pyforge.lib.helpers.push_config(c, project=p0, app=app):
-        #     g.publish('audit', 'scm.hg.clone', dict(
-        #             url='https://rick446@bitbucket.org/rick446/sqlalchemy-migrate/'))
-        app = p0.install_app('Repository', 'src_git')
-        app.config.options['type'] = 'git'
-        # with pyforge.lib.helpers.push_config(c, project=p0, app=app):
-        #     g.publish('audit', 'scm.git.clone', dict(
-        #             url='git://github.com/mongodb/mongo.git'))
+        p0.install_app('Tickets', 'bugs')
+        p0.install_app('Forum', 'forum')
+        # app = p0.install_app('Repository', 'src')
+        # app = p0.install_app('Repository', 'src_git')
         dev = M.ProjectRole(name='developer')
         ThreadLocalORMSession.flush_all()
         for ur in M.ProjectRole.query.find():
