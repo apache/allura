@@ -116,6 +116,11 @@ class Thread(Artifact):
     def attachment_class(cls):
         return Attachment
 
+    def primary(self, primary_class=None):
+        result = primary_class.query.get(_id=self.artifact_id)
+        if result is None: return self
+        return result
+
     def post(self, text, message_id=None, parent_id=None, **kw):
         require(has_artifact_access('post', self))
         if message_id is None: message_id = gen_message_id()
@@ -275,6 +280,9 @@ class Post(Message, VersionedArtifact):
     @property
     def attachments(self):
         return self.attachment_class().by_metadata(post_id=self._id)
+
+    def primary(self, primary_class=None):
+        return primary_class.query.get(_id=self.thread.artifact_id)
 
     def summary(self):
         return '<a href="%s">%s</a> %s' % (

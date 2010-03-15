@@ -194,6 +194,12 @@ class Artifact(MappedClass):
     backreferences = FieldProperty({str:ArtifactReferenceType})
     app_config = RelationProperty('AppConfig')
 
+    def primary(self, primary_class):
+        '''If an artifact is a "secondary" artifact (discussion of a ticket, for
+        instance), return the artifact that is the "primary".
+        '''
+        return self
+
     @classmethod
     def artifacts_tagged_with(cls, tag):
         return cls.query.find({'tags.tag':tag})

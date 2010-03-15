@@ -104,10 +104,11 @@ class ForgeTrackerApp(Application):
         if ticket:
             links.append(SitemapEntry('Update this Ticket',ticket.url() + 'edit/'))
             for aref in ticket.references+ticket.backreferences.values():
-                artifact = ArtifactReference(aref).to_artifact()
+                artifact = ArtifactReference(aref).to_artifact().primary(model.Ticket)
                 if artifact.url() not in related_urls:
                     related_urls.append(artifact.url())
-                    related_artifacts.append(SitemapEntry(artifact.shorthand_id(), artifact.url(), className='nav_child'))
+                    title = '%s: %s' % (artifact.type_s, artifact.shorthand_id())
+                    related_artifacts.append(SitemapEntry(title, artifact.url(), className='nav_child'))
         if len(related_artifacts):
             links.append(SitemapEntry('Related Artifacts'))
             links = links + related_artifacts

@@ -104,6 +104,9 @@ class ForumThread(M.Thread):
     def attachment_class(cls):
         return ForumAttachment
 
+    def primary(self, primary_class):
+        return self
+
     def post(self, subject, text, message_id=None, parent_id=None, **kw):
         post = super(ForumThread, self).post(text, message_id=message_id, parent_id=parent_id)
         post.subject = subject
@@ -141,6 +144,9 @@ class ForumPost(M.Post):
     @classmethod
     def attachment_class(cls):
         return ForumAttachment
+
+    def primary(self, primary_class):
+        return self
 
     def promote(self):
         '''Make the post its own thread head'''
