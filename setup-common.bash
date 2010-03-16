@@ -58,6 +58,13 @@ cd Ming
 python setup.py develop
 popd
 
+echo '# installing EasyWidgets and dependencies'
+pushd ..
+hg clone http://bitbucket.org/rick446/easywidgets/ easywidgets
+cd easywidgets
+python setup.py develop
+popd
+
 echo
 echo '# creating data directory for mongo'
 mkdir -p /data/db
