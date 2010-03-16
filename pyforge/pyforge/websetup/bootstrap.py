@@ -140,6 +140,15 @@ ul#sidebarmenu li a.active {
                                url_prefix='/mozilla/',
                                acl=dict(read=[None], create=[],
                                         moderate=[root._id], admin=[root._id]))
+    M.Theme(name='forge_default',
+            label='Default Forge Theme',
+            color1='#536BB2',
+            color2='#aed0ea',
+            color3='#EDF3FB')
+    M.Theme(neighborhood_id = n_mozilla._id,
+            color1='#ccc',
+            color2='#666',
+            color3='#333')
     ThreadLocalORMSession.flush_all()
     # add the adobe icon
     file_name = 'adobe_icon.png'

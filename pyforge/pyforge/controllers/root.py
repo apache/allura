@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 """Main Controller"""
-import logging, string
+import logging, string, os
 from collections import defaultdict
 
 import pkg_resources
-from tg import expose, flash, redirect, session, config
+from tg import expose, flash, redirect, session, config, response
 from tg.decorators import with_trailing_slash, without_trailing_slash
 from pylons import c, g
 from webob import exc
@@ -12,6 +12,7 @@ from webob import exc
 import ew
 import ming
 
+import pyforge
 from pyforge.lib.base import BaseController
 from pyforge.controllers.error import ErrorController
 from pyforge import model as M
@@ -20,6 +21,7 @@ from .search import SearchController
 from .static import StaticController
 from .project import NeighborhoodController, HostNeighborhoodController
 from .oembed import OEmbedController
+from mako.template import Template
 
 __all__ = ['RootController']
 
@@ -75,7 +77,6 @@ class RootController(BaseController):
             g._publish(**msg)
         ming.orm.ormsession.ThreadLocalORMSession.close_all()
 
-
     @expose('pyforge.templates.index')
     @with_trailing_slash
     def index(self):
@@ -83,4 +84,19 @@ class RootController(BaseController):
         psort = [(n, M.Project.query.find(dict(is_root=True, neighborhood_id=n._id)).all())
                  for n in M.Neighborhood.query.find().sort('name')]
         return dict(projects=psort)
-        
+
+    @expose()
+    @without_trailing_slash
+    def site_style(self):
+        """Display the css for the default theme."""
+        theme = M.Theme.query.find(dict(name='forge_default')).first()
+    
+        template_path = os.path.join(pyforge.__path__[0],'templates')
+        file_path = os.path.join(template_path,'style.mak')
+        colors = dict(color1=theme.color1,
+                      color2=theme.color2,
+                      color3=theme.color3)
+        css = Template(filename=file_path, module_directory=template_path).render(**colors)
+        response.headers['Content-Type'] = ''
+        response.content_type = 'text/css'
+        return css

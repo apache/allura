@@ -31,6 +31,33 @@
           </div>
           <div class="span-3"><label>Home Content<br/>(Markdown)</label></div>
           <div class="span-15 last" style="min-height:50px;">${c.markdown_editor.display(name='homepage',value=neighborhood.homepage)}</div>
+          <div class="span-18 last">
+            Custom colors override the default theme for your neighborhood. You may also use them in your Custom CSS like "color: $${color1}"
+          </div>
+          <div class="span-3"><label>Custom Color 1</label></div>
+          <div class="editable viewing span-15 last">
+            <div class="viewer" py:if="neighborhood.theme" style="min-height:50px;">$neighborhood.theme.color1</div>
+            <div class="viewer" py:if="not neighborhood.theme">None</div>
+            <div class="editor">
+              <input name="color1" value="${neighborhood.theme and neighborhood.theme.color1 or ''}"/>
+            </div>
+          </div>
+          <div class="span-3"><label>Custom Color 2</label></div>
+          <div class="editable viewing span-15 last">
+            <div class="viewer" py:if="neighborhood.theme" style="min-height:50px;">$neighborhood.theme.color2</div>
+            <div class="viewer" py:if="not neighborhood.theme">None</div>
+            <div class="editor">
+              <input name="color2" value="${neighborhood.theme and neighborhood.theme.color2 or ''}"/>
+            </div>
+          </div>
+          <div class="span-3"><label>Custom Color 3</label></div>
+          <div class="editable viewing span-15 last">
+            <div class="viewer" py:if="neighborhood.theme" style="min-height:50px;">$neighborhood.theme.color3</div>
+            <div class="viewer" py:if="not neighborhood.theme">None</div>
+            <div class="editor">
+              <input name="color3" value="${neighborhood.theme and neighborhood.theme.color3 or ''}"/>
+            </div>
+          </div>
           <div class="span-3"><label>Custom CSS</label></div>
           <div class="editable viewing span-15 last" style="min-height:50px;">
             <div class="viewer"><pre>$neighborhood.css</pre></div>

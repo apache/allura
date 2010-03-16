@@ -1,5 +1,5 @@
 a, a:link, a:visited, a:hover, a:active{
-    color: #536BB2;
+    color: ${color1};
 }
 
 /* Top nav */
@@ -22,15 +22,15 @@ a, a:link, a:visited, a:hover, a:active{
 #nav_menu_missing{
     height: 0;
     padding-top: 5px;
-    border: 5px solid #aed0ea;
+    border: 5px solid ${color2};
     border-width: 0 0 5px 0;
 }
 #nav_menu{
-    background-color: #EDF3FB;
+    background-color: ${color3};
     height: 62px;
     padding-top: 5px;
     color: #555;
-    border: 5px solid #aed0ea;
+    border: 5px solid ${color2};
     border-width: 0 0 5px 0;
 }
 #nav_menu .neighborhood_icon, #nav_menu .project_icon{
@@ -84,7 +84,7 @@ a, a:link, a:visited, a:hover, a:active{
 #nav_menu ul.nav_links a:visited.active,
 #nav_menu ul.nav_links a:hover.active,
 #nav_menu ul.nav_links a:active.active{
-    background-color: #aed0ea;
+    background-color: ${color2};
 }
 #nav_menu .home_icon{
     width: 10px;
@@ -96,14 +96,14 @@ a, a:link, a:visited, a:hover, a:active{
 
 #content_holder{
     border-style: solid;
-    border-color: #aed0ea;
+    border-color: ${color2};
     border-width: 0 0 1px 5px;
     width: 945px;
 }
 #content{
     border-style: solid;
-    border-color: #EDF3FB;
-    border-right-color: #aed0ea;
+    border-color: ${color3};
+    border-right-color: ${color2};
     border-width: 5px 1px 0 5px;
     width: 789px;
     min-height: 400px;
@@ -144,7 +144,7 @@ ul#sidebarmenu li a {
     padding: 0 1em;
 }
 ul#sidebarmenu li a.active {
-    background-color: #EDF3FB;
+    background-color: ${color3};
 }
 
 ul#sidebarmenu li a.nav_child {
@@ -153,9 +153,9 @@ ul#sidebarmenu li a.nav_child {
 
 #sidebar-right
 {
-    background-color: #EDF3FB;
+    background-color: ${color3};
     border-style: solid;
-    border-color: #aed0ea;
+    border-color: ${color2};
     border-width: 1px 0 0 0;
     position: relative;
     padding: 5px;
@@ -185,10 +185,10 @@ ul#sidebarmenu li a.nav_child {
 }
 
 thead th {
-    background-color: #aed0ea;
+    background-color: ${color2};
 }
 tbody .even{
-    background-color: #EDF3FB;
+    background-color: ${color3};
 }
 
 .defaultTextActive {
@@ -229,7 +229,7 @@ tbody .even{
 
 .title-pane .title
 {
-  background-color: #EDF3FB;
+  background-color: ${color3};
   padding: 1px 6px;
   margin: 4px 1px 0 1px;
   border: 1px solid #333;
@@ -380,7 +380,6 @@ tbody .even{
 	background-color: #eee;
 }
 
-<<<<<<< HEAD:pyforge/pyforge/public/css/style.css
 #pyforge_directory{
     margin-top: 1em;
 }
@@ -403,7 +402,7 @@ tbody .even{
 
 input[type="submit"], button
 {
-   background-color: #EDF3FB;
+   background-color: ${color3};
    border: 1px solid #333;
    font-weight:normal;
    font-size:12px;

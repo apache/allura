@@ -27,7 +27,7 @@ class ForgeConfig(AppConfig):
         AppConfig.__init__(self)
         self.root_controller = root_controller
         self.package = pyforge
-        self.renderers = [ 'json', 'genshi' ]
+        self.renderers = [ 'json', 'genshi', 'mako' ]
         self.default_renderer = 'genshi'
         self.use_sqlalchemy = False
         self.use_toscawidgets = True

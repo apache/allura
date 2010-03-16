@@ -121,4 +121,52 @@ class TestNeighborhood(TestController):
         r = self.app.get('/projects/test/sub1/', status=302)
         r = self.app.get('/projects/test/no_such_app/', status=404)
 
+    def test_site_css(self):
+        r = self.app.get('/projects/site_style.css')
+        assert(
+"""a, a:link, a:visited, a:hover, a:active{
+    color: #536BB2;
+}""" in r)
+        assert(
+"""#nav_menu_missing{
+    height: 0;
+    padding-top: 5px;
+    border: 5px solid #aed0ea;
+    border-width: 0 0 5px 0;
+}""" in r)
+        assert(
+"""#content{
+    border-style: solid;
+    border-color: #EDF3FB;
+    border-right-color: #aed0ea;
+    border-width: 5px 1px 0 5px;
+    width: 789px;
+    min-height: 400px;
+}""" in r)
+        self.app.post('/projects/_admin/update',
+                          params=dict(name='Projects', css='', homepage='projects',
+                          color1='#aaa', color2='#bbb', color3='#ccc'),
+                          extra_environ=dict(username='root'))
+        r = self.app.get('/projects/site_style.css')
+        assert(
+"""a, a:link, a:visited, a:hover, a:active{
+    color: #aaa;
+}""" in r)
+        assert(
+"""#nav_menu_missing{
+    height: 0;
+    padding-top: 5px;
+    border: 5px solid #bbb;
+    border-width: 0 0 5px 0;
+}""" in r)
+        assert(
+"""#content{
+    border-style: solid;
+    border-color: #ccc;
+    border-right-color: #bbb;
+    border-width: 5px 1px 0 5px;
+    width: 789px;
+    min-height: 400px;
+}""" in r)
+
 

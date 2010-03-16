@@ -175,6 +175,23 @@ class Neighborhood(MappedClass):
     def icon(self):
         return NeighborhoodFile.query.find({'metadata.neighborhood_id':self._id}).first()
 
+    @property
+    def theme(self):
+        return Theme.query.find({'neighborhood_id':self._id}).first()
+
+class Theme(MappedClass):
+    class __mongometa__:
+        session = main_orm_session
+        name = 'theme'
+
+    _id=FieldProperty(S.ObjectId)
+    name = FieldProperty(str)
+    label = FieldProperty(str)
+    neighborhood_id = ForeignIdProperty(Neighborhood)
+    color1 = FieldProperty(str)
+    color2 = FieldProperty(str)
+    color3 = FieldProperty(str)
+
 class ProjectFile(File):
     metadata=FieldProperty(dict(
             project_id=S.ObjectId,

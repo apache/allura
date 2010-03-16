@@ -1,6 +1,7 @@
 from urllib import unquote
 from mimetypes import guess_type
 import Image
+import os
 
 from tg import expose, flash, redirect, validate, request, response
 from tg.decorators import with_trailing_slash, without_trailing_slash
@@ -11,6 +12,7 @@ from formencode import validators
 
 import  ming.orm.ormsession
 
+import pyforge
 from pyforge import model as M
 from pyforge.lib.base import BaseController
 from pyforge.lib.helpers import vardec, DateTimeConverter
@@ -21,7 +23,10 @@ from .auth import AuthController
 from .search import SearchController
 from .static import StaticController
 
+from mako.template import Template
 from pyforge.model.session import main_orm_session
+
+CACHED_CSS = dict()
 
 class W:
     markdown_editor = ffw.MarkdownEdit()
@@ -78,6 +83,30 @@ class NeighborhoodController(object):
                                      'attachment;filename=%s' % filename)
             return fp.read()
         return self.neighborhood.icon.filename
+
+    @expose()
+    @without_trailing_slash
+    def site_style(self):
+        """Display the css for the default theme."""
+        if self.neighborhood._id in CACHED_CSS:
+            css = CACHED_CSS[self.neighborhood._id]
+        else:
+            theme = M.Theme.query.find(dict(neighborhood_id=self.neighborhood._id)).first()
+            if theme == None:
+                theme = M.Theme.query.find(dict(name='forge_default')).first()
+            
+            template_path = os.path.join(pyforge.__path__[0],'templates')
+            file_path = os.path.join(template_path,'style.mak')
+            colors = dict(color1=theme.color1,
+                          color2=theme.color2,
+                          color3=theme.color3)
+            css = Template(filename=file_path, module_directory=template_path).render(**colors)
+            if self.neighborhood.css:
+                css = css + Template(self.neighborhood.css).render(**colors)
+            CACHED_CSS[self.neighborhood._id] = css
+        response.headers['Content-Type'] = ''
+        response.content_type = 'text/css'
+        return css
 
 class HostNeighborhoodController(BaseController, NeighborhoodController):
     '''Neighborhood controller with support for use as a root controller, for
@@ -216,10 +245,23 @@ class NeighborhoodAdminController(object):
         return dict(neighborhood=self.neighborhood)
 
     @expose()
-    def update(self, name=None, css=None, homepage=None, icon=None):
+    def update(self, name=None, css=None, homepage=None, icon=None,
+               color1=None, color2=None, color3=None):
         self.neighborhood.name = name
-        self.neighborhood.css = css
         self.neighborhood.homepage = homepage
+        self.neighborhood.css = css
+        if css and self.neighborhood._id in CACHED_CSS:
+            del CACHED_CSS[self.neighborhood._id]
+        if color1 or color2 or color3:
+            if self.neighborhood._id in CACHED_CSS:
+                del CACHED_CSS[self.neighborhood._id]
+            if not self.neighborhood.theme:
+                theme = M.Theme(neighborhood_id=self.neighborhood._id)
+            else:
+                theme = self.neighborhood.theme
+            theme.color1 = color1
+            theme.color2 = color2
+            theme.color3 = color3
         if icon is not None and icon != '' and 'image/' in icon.type:
             filename = icon.filename
             if icon.type: content_type = icon.type
