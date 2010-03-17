@@ -167,6 +167,7 @@ class RootController(object):
         setattr(self, 'feed.atom', self.feed)
         setattr(self, 'feed.rss', self.feed)
         self._discuss = AppDiscussionController()
+        self.bins = BinController()
 
     def ordered_history(self, limit=None):
         q = []
