@@ -110,25 +110,25 @@
       <div id="project-admin-plugins">
         <h2>Plugin / Subproject Admin</h2>
         <div>
-          <form method="POST" action="update_mounts">
-            <input py:for="i, sp in enumerate(c.project.direct_subprojects)"
-                   type="hidden"
-                   name="subproject-${i}.shortname"
-                   value="$sp.shortname"/>
-            <input py:for="i, config in enumerate(c.project.app_configs)"
-                   type="hidden"
-                   name="plugin-${i}.mount_point"
-                   value="$config.options.mount_point"/>
-            <table>
-              <thead>
-                <tr>
-                  <th>Type</th>
-                  <th>Mount Point</th>
-                  <th py:if="has_project_access('plugin')()">Edit</th>
-                  <th py:if="has_project_access('plugin')()"></th>
-                </tr>
-              </thead>
-              <tbody>
+          <table>
+            <thead>
+              <tr>
+                <th>Type</th>
+                <th>Mount Point</th>
+                <th py:if="has_project_access('plugin')()">Edit</th>
+                <th py:if="has_project_access('plugin')()"></th>
+              </tr>
+            </thead>
+            <tbody>
+              <form method="POST" action="update_mounts">
+                <input py:for="i, sp in enumerate(c.project.direct_subprojects)"
+                       type="hidden"
+                       name="subproject-${i}.shortname"
+                       value="$sp.shortname"/>
+                <input py:for="i, config in enumerate(c.project.app_configs)"
+                       type="hidden"
+                       name="plugin-${i}.mount_point"
+                       value="$config.options.mount_point"/>
                 <tr py:for="i, sp in enumerate(c.project.direct_subprojects)">
                   <td>Subproject</td>
                   <td>$sp.shortname</td>
@@ -144,6 +144,16 @@
                   <td py:if="has_project_access('plugin')() and config.load().installable"><input
                              name="plugin-${i}.delete" type="submit" value="Delete"/></td>
                 </tr>
+              </form>
+              <form method="POST" action="update_mounts">
+                <input py:for="i, sp in enumerate(c.project.direct_subprojects)"
+                       type="hidden"
+                       name="subproject-${i}.shortname"
+                       value="$sp.shortname"/>
+                <input py:for="i, config in enumerate(c.project.app_configs)"
+                       type="hidden"
+                       name="plugin-${i}.mount_point"
+                       value="$config.options.mount_point"/>
                 <tr py:if="has_project_access('plugin')()">
                   <td>
                     <select name="new.ep_name">
@@ -160,9 +170,9 @@
                     <input type="submit" value="Install" name="new.install"/>
                   </td>
                 </tr>
-              </tbody>
-            </table>
-          </form>
+              </form>
+            </tbody>
+          </table>
         </div>
       </div>
       <div id="project-admin-permissions" 
