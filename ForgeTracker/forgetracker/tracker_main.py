@@ -373,6 +373,51 @@ class RootController(object):
 
         ThreadLocalORMSession.flush_all()
 
+class BinController(object):
+
+    def __init__(self, summary=None):
+        if summary is not None:
+            self.summary = summary
+
+    @with_trailing_slash
+    @expose('forgetracker.templates.bin')
+    def index(self, **kw):
+        bins = model.Bin.query.find()
+        count=0
+        count = len(bins)
+        return dict(bins=bins or [], count=count)
+
+    @with_trailing_slash
+    @expose('forgetracker.templates.bin')
+    def bins(self):
+        bins = model.Bin.query.find()
+        count=0
+        count = len(bins)
+        return dict(bins=bins or [], count=count)
+        redirect('bins/')
+
+    @with_trailing_slash
+    @expose('forgetracker.templates.new_bin')
+    def newbin(self, q=None, **kw):
+        require(has_artifact_access('write'))
+        tmpl_context.form = bin_form
+        globals = model.Globals.query.get(app_config_id=c.app.config._id)
+        return dict(q=q or '', bin=bin or '', modelname='Bin', page='New Bin', globals=globals)
+        redirect(request.referer)
+
+    @with_trailing_slash
+    @expose()
+    def save_bin(self, **post_data):
+        require(has_artifact_access('write'))
+        if request.method != 'POST':
+            raise Exception('save_bin must be a POST request')
+        bin = model.Bin()
+        bin.app_config_id = c.app.config._id
+        bin.custom_fields = dict()
+        globals = model.Globals.query.get(app_config_id=c.app.config._id)
+        for k,v in post_data.iteritems():
+            setattr(bin, k, v)
+        redirect(request.referer)
 
 class TicketController(object):
 
