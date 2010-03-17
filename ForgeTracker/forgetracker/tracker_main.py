@@ -220,25 +220,9 @@ class RootController(object):
                 count = results.hits
         return dict(q=q, history=history, tickets=tickets or [], count=count)
 
-    @with_trailing_slash
-    @expose('forgetracker.templates.bin')
-    def bins(self):
-        bins = model.Bin.query.find()
-        count=0
-        count = len(bins)
-        return dict(bins=bins or [], count=count)
-
     @expose()
     def _lookup(self, ticket_num, *remainder):
         return TicketController(ticket_num), remainder
-
-    @with_trailing_slash
-    @expose('forgetracker.templates.new_bin')
-    def newbin(self, q=None, **kw):
-        require(has_artifact_access('write'))
-        tmpl_context.form = bin_form
-        globals = model.Globals.query.get(app_config_id=c.app.config._id)
-        return dict(q=q or '', modelname='Bin', page='New Bin', globals=globals)
 
     @with_trailing_slash
     @expose('forgetracker.templates.new_ticket')
