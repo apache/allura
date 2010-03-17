@@ -277,19 +277,6 @@ class RootController(object):
         return feed.writeString('utf-8')
 
     @expose()
-    def save_bin(self, **post_data):
-        require(has_artifact_access('write'))
-        if request.method != 'POST':
-            raise Exception('save_bin must be a POST request')
-        bin = model.Bin()
-        bin.app_config_id = c.app.config._id
-        bin.custom_fields = dict()
-        globals = model.Globals.query.get(app_config_id=c.app.config._id)
-        for k,v in post_data.iteritems():
-            setattr(bin, k, v)
-        redirect('bins/')
-
-    @expose()
     def save_ticket(self, ticket_num, tags, tags_old=None, **post_data):
         require(has_artifact_access('write'))
         if request.method != 'POST':
