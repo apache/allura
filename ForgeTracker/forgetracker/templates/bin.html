@@ -24,12 +24,14 @@
         <tr>
           <th>Name</th>
           <th>Terms</th>
+          <th>Delete?</th>
         </tr>
       </thead>
       <tbody class="bin-list">
         <tr py:for="bin in bins">
           <td><a href="${bin.url()}">$bin.summary</a></td>
-          <td>$bin.terms</td>
+	  <td>$bin.terms</td>
+	  <td><a href="delbin?summary=${bin.summary}">[X]</a></td>
         </tr>
       </tbody>
     </table>
