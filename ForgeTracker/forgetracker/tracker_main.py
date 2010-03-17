@@ -420,6 +420,13 @@ class BinController(object):
             setattr(bin, k, v)
         redirect(request.referer)
 
+    @with_trailing_slash
+    @expose()
+    def delbin(self, summary=None):
+        bin = model.Bin.query.find(dict(summary=summary,)).first()
+        bin.delete()
+        redirect(request.referer)
+
 class TicketController(object):
 
     def __init__(self, ticket_num=None):
