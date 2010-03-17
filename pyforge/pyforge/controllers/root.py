@@ -91,7 +91,7 @@ class RootController(BaseController):
         """Display the css for the default theme."""
         theme = M.Theme.query.find(dict(name='forge_default')).first()
     
-        template_path = os.path.join(pyforge.__path__[0],'templates')
+        template_path = pkg_resources.resource_filename('pyforge', 'templates')
         file_path = os.path.join(template_path,'style.mak')
         colors = dict(color1=theme.color1,
                       color2=theme.color2,

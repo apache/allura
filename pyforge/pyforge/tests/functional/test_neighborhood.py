@@ -138,7 +138,7 @@ class TestNeighborhood(TestController):
         assert(
 """#content{
     border-style: solid;
-    border-color: #EDF3FB;
+    border-color: #D7E8F5 #aed0ea #D7E8F5 #D7E8F5;
     border-right-color: #aed0ea;
     border-width: 5px 1px 0 5px;
     width: 789px;
@@ -146,13 +146,16 @@ class TestNeighborhood(TestController):
 }""" in r)
         self.app.post('/projects/_admin/update',
                           params=dict(name='Projects', css='', homepage='projects',
-                          color1='#aaa', color2='#bbb', color3='#ccc', color3='#ddd'),
+                          color1='#aaa', color2='#bbb', color3='#ccc', color4='#ddd'),
                           extra_environ=dict(username='root'))
         r = self.app.get('/projects/site_style.css')
         assert(
-"""a, a:link, a:visited, a:hover, a:active{
+"""a{
     color: #aaa;
-}""" in r)
+    text-decoration: none;
+}
+a:visited, a:hover {color: #aaa;}
+a:hover {text-decoration: underline;}""" in r)
         assert(
 """#nav_menu_missing{
     height: 0;
@@ -163,7 +166,7 @@ class TestNeighborhood(TestController):
         assert(
 """#content{
     border-style: solid;
-    border-color: #ccc;
+    border-color: #ddd #bbb #ddd #ddd;
     border-right-color: #bbb;
     border-width: 5px 1px 0 5px;
     width: 789px;

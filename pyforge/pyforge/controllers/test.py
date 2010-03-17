@@ -1,18 +1,23 @@
 # -*- coding: utf-8 -*-
 """Main Controller"""
+import os
 import logging
 from urllib import unquote
 
 import pkg_resources
-from pylons import c
+from pylons import c, request, response
 from webob import exc
 from tg import expose
+from tg.decorators import without_trailing_slash
+from mako.template import Template
 
 import  ming.orm.ormsession
 
+import pyforge
 from pyforge.lib.base import BaseController
 from pyforge.lib.security import require, require_authenticated, has_project_access, has_artifact_access
 from pyforge import model as M
+from .root import RootController
 from .project import ProjectController
 from .auth import AuthController
 from .static import StaticController
@@ -35,16 +40,18 @@ class TestController(BaseController, ProjectController):
 
     def __init__(self):
         c.project = M.Project.query.get(shortname='test')
-        self.dispatch = DispatchTest()
-        self.security = SecurityTests()
-        self.auth = AuthController()
-        self.static = StaticController()
-        self.gsearch = SearchController()
-        self.error = ErrorController()
+        setattr(self, 'feed.rss', self.feed)
+        setattr(self, 'feed.atom', self.feed)
         self.oembed = OEmbedController()
         for n in M.Neighborhood.query.find():
             if n.url_prefix.startswith('//'): continue
             n.bind_controller(self)
+        proxy_root = RootController()
+        self.dispatch = DispatchTest()
+        self.security = SecurityTests()
+        for attr in ('site_style', 'auth', 'static', 'error'):
+            setattr(self, attr, getattr(proxy_root, attr))
+        self.gsearch = proxy_root.search
 
     @expose()
     def _lookup(self, name, *remainder):
@@ -86,8 +93,11 @@ class TestController(BaseController, ProjectController):
 class DispatchTest(object):
 
     @expose()
-    def _lookup(self, name, *args):
-        return NamedController(name), args
+    def _lookup(self, *args):
+        if args:
+            return NamedController(args[0]), args[1:]
+        else:
+            raise exc.HTTPNotFound()
 
 class NamedController(object):
 

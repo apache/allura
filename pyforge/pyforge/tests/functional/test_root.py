@@ -14,7 +14,7 @@ from nose.tools import assert_true
 
 from pyforge.tests import TestController
 from pyforge import model as M
-
+from ming.orm import session
 
 class TestRootController(TestController):
     def test_index(self):
@@ -28,10 +28,13 @@ class TestRootController(TestController):
 
     def test_site_css(self):
         r = self.app.get('/site_style.css')
-        assert(
-"""a, a:link, a:visited, a:hover, a:active{
-    color: #536BB2;
-}""" in r)
+        assert("""a{
+    color: #104a75;
+    text-decoration: none;
+}
+a:visited, a:hover {color: #104a75;}
+a:hover {text-decoration: underline;}
+""" in r)
         assert(
 """#nav_menu_missing{
     height: 0;
@@ -42,7 +45,7 @@ class TestRootController(TestController):
         assert(
 """#content{
     border-style: solid;
-    border-color: #EDF3FB;
+    border-color: #D7E8F5 #aed0ea #D7E8F5 #D7E8F5;
     border-right-color: #aed0ea;
     border-width: 5px 1px 0 5px;
     width: 789px;
@@ -52,11 +55,15 @@ class TestRootController(TestController):
         theme.color1='#aaa'
         theme.color2='#bbb'
         theme.color3='#ccc'
+        session(theme).flush()
         r = self.app.get('/site_style.css')
         assert(
-"""a, a:link, a:visited, a:hover, a:active{
+"""a{
     color: #aaa;
-}""" in r)
+    text-decoration: none;
+}
+a:visited, a:hover {color: #aaa;}
+""" in r)
         assert(
 """#nav_menu_missing{
     height: 0;
@@ -67,7 +74,7 @@ class TestRootController(TestController):
         assert(
 """#content{
     border-style: solid;
-    border-color: #ccc;
+    border-color: #D7E8F5 #bbb #D7E8F5 #D7E8F5;
     border-right-color: #bbb;
     border-width: 5px 1px 0 5px;
     width: 789px;

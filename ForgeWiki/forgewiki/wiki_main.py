@@ -267,7 +267,7 @@ class RootController(object):
             until=DateTimeConverter(if_empty=None),
             offset=validators.Int(if_empty=None),
             limit=validators.Int(if_empty=None)))
-    def feed(self, since, until, offset, limit):
+    def feed(self, since=None, until=None, offset=None, limit=None):
         if request.environ['PATH_INFO'].endswith('.atom'):
             feed_type = 'atom'
         else:
@@ -371,7 +371,7 @@ class PageController(object):
             until=DateTimeConverter(if_empty=None),
             offset=validators.Int(if_empty=None),
             limit=validators.Int(if_empty=None)))
-    def feed(self, since, until, offset, limit):
+    def feed(self, since=None, until=None, offset=None, limit=None):
         if request.environ['PATH_INFO'].endswith('.atom'):
             feed_type = 'atom'
         else:

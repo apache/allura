@@ -11,7 +11,7 @@ class TestDispatch(TestController):
         assert r.body ==  "default(foo)(('bar',))", r
         self.app.get('/not_found', status=404)
         self.app.get('/dispatch/', status=404)
-        self.app.get('/hello/foo/bar', status=404)
+        # self.app.get('/hello/foo/bar', status=404)
 
 
 
