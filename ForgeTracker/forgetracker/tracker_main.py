@@ -492,7 +492,7 @@ class TicketController(object):
         return feed.writeString('utf-8')
 
     @expose()
-    def update_ticket(self, tags, tags_old, **post_data):
+    def update_ticket(self, tags=None, tags_old=None, **post_data):
         require(has_artifact_access('write', self.ticket))
         if request.method != 'POST':
             raise Exception('update_ticket must be a POST request')
