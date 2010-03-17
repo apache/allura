@@ -3,8 +3,8 @@ function add_field(label, type, options){
                      +   '<div class="span-3"><label>Label: </label></div><div class="span-15 last"><input class="field-label" type="text"/></div>'
                      +   '<div class="span-3"><label>Type: </label></div>'
                      +   '<div class="span-15 last"><select>'
-                     +     '<option value="string">string</option>'
-                     +     '<option value="sum">sum</option>'
+                     +     '<option value="string">text</option>'
+                     +     '<option value="sum">number</option>'
                      +     '<option value="select">select</option>'
                      +   '</select></div>'
                      +   '<span class="options-wrapper"><div class="span-3"><label>Options: </label></div>'
@@ -13,7 +13,7 @@ function add_field(label, type, options){
                      + '</div>');
 
     label && $new_field.find('input.field-label').val(label);
-    type && $new_field.find('option:contains('+type+')').attr('selected', 'selected');
+    type && $new_field.find('option[value="'+type+'"]').attr('selected', 'selected');
     options && $new_field.find('input.field-options').val(options);
 
     $('#custom-field-list').append($new_field);
