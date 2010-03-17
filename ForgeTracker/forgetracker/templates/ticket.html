@@ -41,7 +41,7 @@
           Status: $ticket.status<br/>
           <div class="tags" py:if="len(ticket.tags)">
             Tags: <span py:for="tag in ticket.tags">
-              $tag.tag (${ticket.artifacts_tagged_with(tag.tag).count()})
+              <a href="search?q=$tag.tag">$tag.tag (${ticket.artifacts_tagged_with(tag.tag).count()})</a>
             </span>
           </div>
           Milestone: $ticket.milestone<br/>
