@@ -427,6 +427,7 @@ tbody .even{
 	.wmd_holder div div {background: none !important;}
 	.wmd_holder span {padding: 0 10px !important;}
 	input, textarea {border-color:${color2} !important;}
+	input.title {font-size: 1em !important;}
 	textarea {height: 100px;}
 	.wmd_edit {width: 510px; height: 150px; margin: 0 0 1em; float: none;}
 	.wmd_preview {width: 510px; margin: 0 0 2em; float: none;}

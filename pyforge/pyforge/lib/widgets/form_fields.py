@@ -14,9 +14,10 @@ class MarkdownEdit(ew.Widget):
 
 class UserTagEdit(ew.Widget):
     template='genshi:pyforge.lib.widgets.templates.user_tag_edit'
-    params=['name','user_tags']
+    params=['name','user_tags', 'className']
     name=None
     user_tags=None
+    className=''
 
     def resources(self):
         yield ew.resource.JSLink('js/jquery.tag.editor.js')
