@@ -69,9 +69,10 @@
           </div>
           <div class="editable viewing">
               Milestone:
-              <span class="viewer">${ticket.milestone}</span>
+              <span class="viewer">${ticket.milestone or 'None'}</span>
               <span class="editor">
                 <select name="milestone">
+                  <option value="">None</option>
                   <option py:for="option in globals.milestone_names.split()" value="$option"
                           selected="${'selected' if ticket.milestone==option else None}">$option</option>
                 </select>
@@ -80,7 +81,12 @@
           <div py:for="field in globals.custom_fields or []" class="editable viewing">
               <span class="viewer">${field.label}: ${ticket.custom_fields.get(field.name, '')}</span>
               <span class="editor">
-                  <input py:if="field.type != 'select'" name="${field.name}" type="text" value="${ticket.custom_fields.get(field.name, '')}"/>
+                  <input py:if="field.type != 'select' and field.type != 'boolean'" name="${field.name}" type="text"
+                         value="${ticket.custom_fields.get(field.name, '')}"/>
+                  <input py:if="field.type == 'boolean' and ticket.custom_fields.get(field.name, '') == 'True'"
+                         name="${field.name}" type="checkbox" value="True" checked="checked"/>
+                  <input py:if="field.type == 'boolean' and ticket.custom_fields.get(field.name, '') != 'True'"
+                         name="${field.name}" type="checkbox" value="True"/>
                   <select py:if="field.type == 'select'" name="${field.name}">
                     <option py:for="option in field.options.split()" value="${option}"
                             selected="${'selected' if ticket.custom_fields.get(field.name, '')==option else None}">${option}</option>

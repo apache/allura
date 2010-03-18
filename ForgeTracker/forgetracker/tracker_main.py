@@ -309,6 +309,8 @@ class RootController(object):
         other_custom_fields = set()
         for cf in globals.custom_fields or []:
             (custom_sums if cf.type=='sum' else other_custom_fields).add(cf.name)
+            if cf.type == 'boolean' and cf.name not in post_data:
+                post_data[cf.name] = 'False'
         for k, v in post_data.iteritems():
             if k in custom_sums:
                 # sums must be coerced to numeric type
@@ -520,13 +522,17 @@ class TicketController(object):
             globals.milestone_names = ''
         any_sums = False
         for cf in globals.custom_fields or []:
-            value = post_data[cf.name]
-            if cf.type == 'sum':
-                any_sums = True
-                try:
-                    value = float(value)
-                except ValueError:
-                    value = 0
+            if cf.type != 'boolean' or cf.name in post_data:
+                value = post_data[cf.name]
+                if cf.type == 'sum':
+                    any_sums = True
+                    try:
+                        value = float(value)
+                    except ValueError:
+                        value = 0
+            # unchecked boolean won't be passed in, so make it False here
+            else:
+                value = 'False'
             self.ticket.custom_fields[cf.name] = value
         self.ticket.commit()
         if any_sums:

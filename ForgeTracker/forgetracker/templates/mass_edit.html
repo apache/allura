@@ -59,14 +59,15 @@
             <label for="milestone">Milestone:</label>
             <br/>
             <select name="milestone">
-              <option value="" selected="selected"></option>
+              <option value="" selected="selected">None</option>
               <option py:for="option in globals.milestone_names.split()" value="${option}">$option</option>
             </select>
           </div>
           <div py:for="field in globals.custom_fields" py:if="field.type != 'sum'">
             <label for="${field.name}">${field.label}:</label>
             <br/>
-            <input py:if="field.type != 'select'" name="${field.name}" type="text" value=""/>
+            <input py:if="field.type != 'select' and field.type != 'boolean'" name="${field.name}" type="text" value=""/>
+            <input py:if="field.type == 'boolean'" name="${field.name}" type="checkbox" value="True"/>
             <select py:if="field.type == 'select'" name="${field.name}">
               <option value="" selected="selected"></option>
               <option py:for="option in field.options.split()" value="${option}">$option</option>

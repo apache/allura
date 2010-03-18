@@ -44,7 +44,7 @@
               <a href="../search?q=$tag.tag">$tag.tag (${ticket.artifacts_tagged_with(tag.tag).count()})</a>
             </span>
           </div>
-          Milestone: $ticket.milestone<br/>
+          Milestone: ${ticket.milestone or 'None'}<br/>
           <py:for each="field in globals.custom_fields or []">
               ${field.label}: ${ticket.custom_fields.get(field.name, '')}<br/>
           </py:for>
