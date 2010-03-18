@@ -130,6 +130,8 @@ class ForgeTrackerApp(Application):
         links.append(SitemapEntry('Help'))
         links.append(SitemapEntry('Ticket Help', self.config.url() + 'help', className='nav_child'))
         links.append(SitemapEntry('Markdown Syntax', self.config.url() + 'markdown_syntax', className='nav_child'))
+        links.append(SitemapEntry('Ticket Statistics'))
+        links.append(SitemapEntry('Basic Stats', self.config.url() + 'stats', className='nav_child'))
         return links
 
     @property
