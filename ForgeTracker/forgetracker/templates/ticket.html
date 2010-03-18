@@ -18,44 +18,66 @@
   </head>
 
   <body>
-      <div class="span-14">
-        <div class="span-2">
-          ${gravatar(ticket.reported_by.preferences.email_address, size=50)}<br/>
-          <py:if test="ticket.assigned_to">${gravatar(ticket.assigned_to.preferences.email_address, size=50)}</py:if>
-        </div>
-        <div class="span-12 last">
-          <h2 class="ticket_title">#$ticket.ticket_num $ticket.summary</h2>
-          Created by <a href="${ticket.reported_by.url()}">${ticket.reported_by.display_name}</a> ${h.ago(ticket.created_date, round=True)}<br/>
-          Currently assigned to
-          <py:if test="not ticket.assigned_to_id">${ticket.assigned_to_name()}</py:if>
-          <a py:if="ticket.assigned_to_id" href="${ticket.assigned_to.url()}">${ticket.assigned_to_name()}</a>
-          <p>
-            <a href="${ticket.email_link('#%s' % ticket.ticket_num)}">Email Ticket</a>
-          </p>
+    <div id="content" class="span-20 last">
+      <div style="padding: 1em">
+        <h1 class="ticket_title title">#${ticket.ticket_num} ${ticket.summary}</h1>
+        <div class="span-12 append-1">
+          <div class="span-2 tright"><b>Created by:</b></div>
+          <div class="span-10 last gravatar sm">
+            <a href="${ticket.reported_by.url()}">
+              ${gravatar(ticket.reported_by.preferences.email_address, size=16)}
+              ${ticket.reported_by.display_name}
+            </a>
+            ${h.ago(ticket.created_date, round=True)}
+          </div>
+          <div class="span-2 tright clear" style="padding: 10px 0"><b>Assigned to:</b></div>
+          <div class="span-10 last gravatar sm" style="padding: 10px 0">
+            <a py:if="ticket.assigned_to_id" href="${ticket.assigned_to.url()}">
+              ${gravatar(ticket.assigned_to.preferences.email_address, size=16)}
+              ${ticket.assigned_to_name()}
+            </a>
+            <py:if test="not ticket.assigned_to_id">${ticket.assigned_to_name()}</py:if>
+          </div>
+          <hr class="clear clearfix"/>
           <div py:content="Markup(g.markdown.convert(ticket.description))"/>
           ${c.attachment_list.display(attachments=list(ticket.attachments), edit_mode=False)}
         </div>
-      </div>
-      <div id="sidebar-right" class="span-5 last">
-          <a class="ticket_feed" href="${ticket.url()}feed.rss"><img src="/images/rss.png" alt="subscribe" title="subscribe" width="25" height="25"/></a>
-          Status: $ticket.status<br/>
-          <div class="tags" py:if="len(ticket.tags)">
-            Tags: <span py:for="tag in ticket.tags">
-              <a href="../search?q=$tag.tag">$tag.tag (${ticket.artifacts_tagged_with(tag.tag).count()})</a>
-            </span>
-          </div>
-          Milestone: ${ticket.milestone or 'None'}<br/>
+
+        <div id="sidebar-right" class="span-6 last">
+          <div class="span-3 tright"><b>Status:</b></div>
+          <div class="span-3 last"><span class="${ticket.status}">${ticket.status}</span></div>
+          <hr class="clear clearfix"/>
+          <div class="span-3 tright"><b>Milestone:</b></div>
+          <div class="span-3 last">${ticket.milestone or 'None'}</div>
+          <hr class="clear clearfix"/>
           <py:for each="field in globals.custom_fields or []">
-              ${field.label}: ${ticket.custom_fields.get(field.name, '')}<br/>
+            <div class="span-3 tright"><b>${field.label}:</b></div>
+            <div class="span-3 last">${ticket.custom_fields.get(field.name, '')}</div>
+            <hr class="clear clearfix"/>
           </py:for>
-          &nbsp;<br/>
-          <a href="#comment">Leave a Comment</a><br/>
-          <a href="edit">Edit this Ticket</a>
-      </div>
-    <hr/>
-    <div py:with="thread=ticket.discussion_thread()" id="#comment">
-      <h2><a href="${thread.url()}">Discussion</a></h2>
+          <py:if test="len(ticket.tags)">
+            <div class="span-3 tright"><b>Tags:</b></div>
+            <div class="span-3 last">
+              <span py:for="tag in ticket.tags" class="ui-corner-all tag">
+                <a href="../search?q=$tag.tag">$tag.tag (${ticket.artifacts_tagged_with(tag.tag).count()})</a>
+              </span>
+            </div>
+          </py:if>
+          <span class="actions clear">
+            <br/><br/>
+            <a href="${ticket.email_link('#%s' % ticket.ticket_num)}"><span class="ui-icon ui-icon-mail-closed"></span> Email Ticket</a><br/>
+            <a href="#comment"><span class="ui-icon ui-icon-comment"></span> Leave a Comment</a><br/>
+            <a href="edit"><span class="ui-icon ui-icon-pencil"></span> Edit this Ticket</a><br/>
+            <a href="${ticket.url()}feed.rss"><span class="ui-icon ui-icon-signal-diag"></span> Follow this Ticket</a>
+          </span>
+        </div>
+
+        <div py:with="thread=ticket.discussion_thread()" id="#comment">
+      <h3><a href="${thread.url()}">Discussion</a></h3>
+          <hr class="clear clearfix"/>
       ${c.thread.display(value=thread)}
+    </div>
+      </div>
     </div>
     <script type="text/javascript" src="${g.app_static('js/comments.js')}"/>
   </body>
