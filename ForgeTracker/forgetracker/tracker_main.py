@@ -386,6 +386,13 @@ class RootController(object):
 
         ThreadLocalORMSession.flush_all()
 
+    @with_trailing_slash
+    @expose('forgetracker.templates.stats')
+    def stats(self):
+        globals = model.Globals.query.get(app_config_id=c.app.config._id)
+        c.user_select = ffw.ProjectUserSelect()
+        return dict(globals=globals)
+
 class BinController(object):
 
     def __init__(self, summary=None):
