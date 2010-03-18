@@ -152,6 +152,7 @@ class ForgeTrackerApp(Application):
         model.Globals(app_config_id=c.app.config._id,
             last_ticket_num=0,
             status_names='open unread accepted pending closed',
+            milestone_names='',
             custom_fields=[])
 
     def uninstall(self, project):
@@ -235,6 +236,8 @@ class RootController(object):
         c.user_tag_edit = W.user_tag_edit
         c.user_select = ffw.ProjectUserSelect()
         globals = model.Globals.query.get(app_config_id=c.app.config._id)
+        if globals.milestone_names is None:
+            globals.milestone_names = ''
         return dict(action=c.app.config.url()+'save_ticket',
                     super_id=super_id,
                     globals=globals)
@@ -284,6 +287,8 @@ class RootController(object):
         if request.method != 'POST':
             raise Exception('save_ticket must be a POST request')
         globals = model.Globals.query.get(app_config_id=c.app.config._id)
+        if globals.milestone_names is None:
+            globals.milestone_names = ''
         if ticket_num:
             ticket = model.Ticket.query.get(app_config_id=c.app.config._id,
                                           ticket_num=int(ticket_num))
@@ -343,6 +348,8 @@ class RootController(object):
                          ticket_num={'$in':[r['ticket_num_i'] for r in results.docs]}))
                 tickets = query.all()
         globals = model.Globals.query.get(app_config_id=c.app.config._id)
+        if globals.milestone_names is None:
+            globals.milestone_names = ''
         c.user_select = ffw.ProjectUserSelect()
         return dict(tickets=tickets, globals=globals)
 
@@ -448,6 +455,8 @@ class TicketController(object):
         c.attachment_list = W.attachment_list
         if self.ticket is not None:
             globals = model.Globals.query.get(app_config_id=c.app.config._id)
+            if globals.milestone_names is None:
+                globals.milestone_names = ''
             return dict(ticket=self.ticket, globals=globals)
         else:
             redirect('not_found')
@@ -462,6 +471,8 @@ class TicketController(object):
         c.user_tag_edit = W.user_tag_edit
         c.user_select = ffw.ProjectUserSelect()
         globals = model.Globals.query.get(app_config_id=c.app.config._id)
+        if globals.milestone_names is None:
+            globals.milestone_names = ''
         user_tags = UserTags.upsert(c.user, self.ticket.dump_ref())
         return dict(ticket=self.ticket, globals=globals,
                     user_tags=user_tags)
@@ -505,6 +516,8 @@ class TicketController(object):
         tag_artifact(self.ticket, c.user, tags)
 
         globals = model.Globals.query.get(app_config_id=c.app.config._id)
+        if globals.milestone_names is None:
+            globals.milestone_names = ''
         any_sums = False
         for cf in globals.custom_fields or []:
             value = post_data[cf.name]
@@ -617,6 +630,8 @@ class TrackerAdminController(DefaultAdminController):
     def __init__(self, app):
         self.app = app
         self.globals = model.Globals.query.get(app_config_id=self.app.config._id)
+        if self.globals and self.globals.milestone_names is None:
+            self.globals.milestone_names = ''
 
     @with_trailing_slash
     @expose('forgetracker.templates.admin')
@@ -635,6 +650,16 @@ class TrackerAdminController(DefaultAdminController):
             flash('Status names updated')
         else:
             flash('Mid-air collision! Status names were being modified by someone '
+                  'else.  Please retry.', 'error')
+        redirect('.')
+
+    @expose()
+    def set_milestone_names(self, **post_data):
+        if self.globals.query.update_if_not_modified(
+            {'$set': {'milestone_names':post_data['milestone_names']}}):
+            flash('Milestone names updated')
+        else:
+            flash('Mid-air collision! Milestone names were being modified by someone '
                   'else.  Please retry.', 'error')
         redirect('.')
 

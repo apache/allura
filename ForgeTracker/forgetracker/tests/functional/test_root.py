@@ -30,6 +30,7 @@ class TestFunctionalController(TestController):
         assert_true(summary in ticket_view)
 
     def test_new_with_milestone(self):
+        tm.Globals.milestone_names = 'sprint-9 sprint-10 sprint-11'
         ticket_view = self.new_ticket(summary='test new with milestone', milestone='sprint-10')
         assert 'Milestone: sprint-10' in ticket_view
 
@@ -210,9 +211,14 @@ class TestFunctionalController(TestController):
         spec = """[{"label":"Priority","type":"select","options":"normal urgent critical"},
                    {"label":"Category","type":"string","options":""}]"""
         spec = urllib.quote_plus(spec)
-        self.app.post('/admin/bugs/set_custom_fields', { 'custom_fields': spec })
+        r = self.app.post('/admin/bugs/set_custom_fields', { 'custom_fields': spec })
         ticket_view = self.new_ticket(summary='test custom fields')
         assert 'Priority: normal' in ticket_view
+
+    def test_milestone_names(self):
+        r = self.app.post('/admin/bugs/set_milestone_names', { 'milestone_names': 'aaa bbb ccc' })
+        ticket_view = self.new_ticket(summary='test milestone names')
+        assert 'Milestone: aaa' in ticket_view
 
     def test_subtickets(self):
         # create two tickets

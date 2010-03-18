@@ -28,6 +28,7 @@ class Globals(MappedClass):
     app_config_id = ForeignIdProperty('AppConfig', if_missing=lambda:c.app.config._id)
     last_ticket_num = FieldProperty(int)
     status_names = FieldProperty(str)
+    milestone_names = FieldProperty(str, if_missing='')
     custom_fields = FieldProperty([{str:None}])
 
     @classmethod

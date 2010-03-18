@@ -71,7 +71,10 @@
               Milestone:
               <span class="viewer">${ticket.milestone}</span>
               <span class="editor">
-                <input name="milestone" type="text" value="${ticket.milestone}"/>
+                <select name="milestone">
+                  <option py:for="option in globals.milestone_names.split()" value="$option"
+                          selected="${'selected' if ticket.milestone==option else None}">$option</option>
+                </select>
               </span>
           </div>
           <div py:for="field in globals.custom_fields or []" class="editable viewing">
