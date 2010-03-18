@@ -408,17 +408,13 @@ class RootController(object):
         week_ago = now - week
         fortnight_ago = now - fortnight
         month_ago = now - month
-        week_tickets = model.Ticket.query.find(dict(app_config_id=c.app.config._id,created_date=week_ago)).count()
-        month_tickets = model.Ticket.query.find(dict(app_config_id=c.app.config._id,created_date=month_ago)).count()
-#        weekticks = model.Ticket.query.find(dict(app_config_id=c.app.config._id,created_date=(datetime.utcnow-pastweek))).count()
-#        closed = model.Ticket.query.find(dict(app_config_id=c.app.config._id,created_date>datetime.utcnow)).count()
-#        tickets = model.Ticket.query.find(dict(app_config_id=c.app.config._id))
-#        for ticket in tickets:
-#            for comment in ticket.discussion_thread().find_posts(limit=limit, style='linear'):
-#                q.append(dict(change_type='comment',
-#                              change_date=comment.timestamp,
-#                              ticket_num=ticket.ticket_num,
-#                              change_text=comment.text))
+        week_tickets = self.tickets_since(week_ago)
+        fortnight_tickets = self.tickets_since(fortnight_ago)
+        month_tickets = self.tickets_since(month_ago)
+        comments=self.ticket_comments_since()
+        week_comments=self.ticket_comments_since(week_ago)
+        fortnight_comments=self.ticket_comments_since(fortnight_ago)
+        month_comments=self.ticket_comments_since(month_ago)
         globals = model.Globals.query.get(app_config_id=c.app.config._id)
         c.user_select = ffw.ProjectUserSelect()
         return dict(
@@ -427,7 +423,12 @@ class RootController(object):
                 fortnight_ago=str(fortnight_ago),
                 month_ago=str(month_ago),
                 week_tickets=week_tickets,
+                fortnight_tickets=fortnight_tickets,
                 month_tickets=month_tickets,
+                comments=comments,
+                week_comments=week_comments,
+                fortnight_comments=fortnight_comments,
+                month_comments=month_comments,
                 total=total,
                 open=open,
                 closed=closed,
