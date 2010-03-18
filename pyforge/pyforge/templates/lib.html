@@ -142,7 +142,8 @@
   </py:def>
 
   <py:def function="gravatar(email, **kw)">
-    <img py:if="email" src="${g.gravatar(email, **kw)}" class="gravatar" alt="gravatar for $email"/>
-    <img py:if="not email" src="/images/user.png" class="gravatar" alt="gravatar for $email"/>
+    <img py:if="email" src="${g.gravatar(email, **kw)}" alt="gravatar for $email"/>
+    <img py:if="not email and 'size' not in kw" src="/images/user.png" alt="gravatar for $email"/>
+    <img py:if="not email and 'size' in kw" src="/images/user.png" alt="gravatar for $email" width="${kw['size']}" height="${kw['size']}"/>
   </py:def>
 </html>

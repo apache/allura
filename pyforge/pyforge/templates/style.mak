@@ -163,7 +163,8 @@ ul#sidebarmenu li a.nav_child {
     padding-left:2em;
 }
 
-ul#sidebarmenu span.ui-icon, ul#sidebarmenu a span.ui-icon {
+ul#sidebarmenu span.ui-icon, ul#sidebarmenu a span.ui-icon,
+#sidebar-right span.ui-icon, #sidebar-right a span.ui-icon {
     float: left;
     margin-right: 5px;
 }
