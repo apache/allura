@@ -124,8 +124,9 @@ class TestNeighborhood(TestController):
     def test_site_css(self):
         r = self.app.get('/projects/site_style.css')
         assert(
-"""a, a:link, a:visited, a:hover, a:active{
-    color: #536BB2;
+"""a{
+    color: #104a75;
+    text-decoration: none;
 }""" in r)
         assert(
 """#nav_menu_missing{
@@ -145,7 +146,7 @@ class TestNeighborhood(TestController):
 }""" in r)
         self.app.post('/projects/_admin/update',
                           params=dict(name='Projects', css='', homepage='projects',
-                          color1='#aaa', color2='#bbb', color3='#ccc'),
+                          color1='#aaa', color2='#bbb', color3='#ccc', color3='#ddd'),
                           extra_environ=dict(username='root'))
         r = self.app.get('/projects/site_style.css')
         assert(

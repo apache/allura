@@ -98,11 +98,11 @@ class ForgeTrackerApp(Application):
         else:
             ticket = None
         links = [
-            SitemapEntry('Home', self.config.url()),
-            SitemapEntry('Discuss', c.app.url + '_discuss/'),
-            SitemapEntry('Create New Ticket', self.config.url() + 'new/')]
+            SitemapEntry('Home', self.config.url(), ui_icon='home'),
+            SitemapEntry('Discuss', c.app.url + '_discuss/', ui_icon='comment'),
+            SitemapEntry('Create New Ticket', self.config.url() + 'new/', ui_icon='plus')]
         if ticket:
-            links.append(SitemapEntry('Update this Ticket',ticket.url() + 'edit/'))
+            links.append(SitemapEntry('Update this Ticket',ticket.url() + 'edit/', ui_icon='check'))
             for aref in ticket.references+ticket.backreferences.values():
                 artifact = ArtifactReference(aref).to_artifact().primary(model.Ticket)
                 if artifact.url() not in related_urls:
@@ -112,7 +112,7 @@ class ForgeTrackerApp(Application):
         if len(related_artifacts):
             links.append(SitemapEntry('Related Artifacts'))
             links = links + related_artifacts
-        links.append(SitemapEntry('Search', self.config.url() + 'search/'))
+        links.append(SitemapEntry('Search', self.config.url() + 'search/', ui_icon='search'))
         links.append(SitemapEntry('Saved Searches'))
         links.append(SitemapEntry('All', self.config.url() + 'bins', className='nav_child'))
         if len(search_bins):

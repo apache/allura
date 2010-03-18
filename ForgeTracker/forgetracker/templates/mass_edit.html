@@ -17,14 +17,14 @@
   </head>
 
   <body>
-        <h2>ForgeTracker for $c.project.shortname</h2>
-        <h3>Tickets</h3>
+        <h1 class="title">ForgeTracker for $c.project.shortname</h1>
+        <h2>Tickets</h2>
         <py:if test="not len(tickets)">No tickets found.</py:if>
         <table py:if="len(tickets)">
           <thead>
             <tr>
               <th></th>
-              <th>Number</th>
+              <th>#</th>
               <th>Summary</th>
             </tr>
           </thead>
@@ -40,7 +40,7 @@
             $('tbody.ticket-list').children(':even').addClass('even');
         </script>
 
-        <h3>Update</h3>
+        <h2>Update</h2>
         <div id="update-values">
           <div>
             <label for="assigned_to">Assigned To:</label>

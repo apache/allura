@@ -34,10 +34,11 @@ class WSGIHook(object):
 
 class SitemapEntry(object):
 
-    def __init__(self, label, url=None, children=None, className=None):
+    def __init__(self, label, url=None, children=None, className=None, ui_icon=None):
         self.label = label
         self.className = className
         self.url = url
+        self.ui_icon = ui_icon
         if children is None:
             children = []
         self.children = children

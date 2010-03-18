@@ -99,7 +99,8 @@ class NeighborhoodController(object):
             file_path = os.path.join(template_path,'style.mak')
             colors = dict(color1=theme.color1,
                           color2=theme.color2,
-                          color3=theme.color3)
+                          color3=theme.color3,
+                          color4=theme.color4)
             css = Template(filename=file_path, module_directory=template_path).render(**colors)
             if self.neighborhood.css:
                 css = css + Template(self.neighborhood.css).render(**colors)
@@ -246,13 +247,13 @@ class NeighborhoodAdminController(object):
 
     @expose()
     def update(self, name=None, css=None, homepage=None, icon=None,
-               color1=None, color2=None, color3=None):
+               color1=None, color2=None, color3=None, color4=None):
         self.neighborhood.name = name
         self.neighborhood.homepage = homepage
         self.neighborhood.css = css
         if css and self.neighborhood._id in CACHED_CSS:
             del CACHED_CSS[self.neighborhood._id]
-        if color1 or color2 or color3:
+        if color1 or color2 or color3 or color4:
             if self.neighborhood._id in CACHED_CSS:
                 del CACHED_CSS[self.neighborhood._id]
             if not self.neighborhood.theme:
@@ -262,6 +263,7 @@ class NeighborhoodAdminController(object):
             theme.color1 = color1
             theme.color2 = color2
             theme.color3 = color3
+            theme.color4 = color4
         if icon is not None and icon != '' and 'image/' in icon.type:
             filename = icon.filename
             if icon.type: content_type = icon.type

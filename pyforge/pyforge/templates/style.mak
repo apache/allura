@@ -1,6 +1,10 @@
-a, a:link, a:visited, a:hover, a:active{
+a{
     color: ${color1};
+    text-decoration: none;
 }
+a:visited, a:hover {color: ${color1};}
+a:hover {text-decoration: underline;}
+
 
 /* Top nav */
 
@@ -12,8 +16,10 @@ a, a:link, a:visited, a:hover, a:active{
     text-decoration: underline;
 }
 #mainmenu{
-    border: 1px solid #ccc;
+    border: 1px solid ${color2};
     border-width: 0 0 1px 0;
+    height: 28px;
+    padding-top: 8px;
 }
 #mainmenu .last a{
     float: right;
@@ -50,7 +56,8 @@ a, a:link, a:visited, a:hover, a:active{
 }
 #nav_menu a.neighborhood_name:link, #nav_menu a.neighborhood_name:visited, #nav_menu a.neighborhood_name:hover, #nav_menu a.neighborhood_name:active{
     color: #555;
-    font-size: 20px;
+    font-size: 1.3em;
+    padding-top: 1.3em;
 }
 #nav_menu a.project_name:link, #nav_menu a.project_name:visited, #nav_menu a.project_name:hover, #nav_menu a.project_name:active{
     color: #000;
@@ -102,24 +109,29 @@ a, a:link, a:visited, a:hover, a:active{
 }
 #content{
     border-style: solid;
-    border-color: ${color3};
+    border-color: ${color4} ${color2} ${color4} ${color4};
     border-right-color: ${color2};
     border-width: 5px 1px 0 5px;
     width: 789px;
     min-height: 400px;
 }
+#content h1.title {
+    background: ${color3};
+    margin: -12px -12px 15px;
+    font-size: 1.5em;
+    padding: 10px 12px;
+    border-bottom: 1px solid ${color4};
+}
+#content h2 {font-size: 1.3em;}
 
 /* Side nav */
 #app-search input{
-    margin: .5em 1em;
-    width: 120px;
+	width: 125px;
+	margin: 15px 11px 12px;
 }
 #sidebar
 {
     margin-right: 0;
-}
-#sidebar a:link, #sidebar a:visited, #sidebar a:hover, #sidebar a:active{
-    color: #000;
 }
 ul#sidebarmenu
 {
@@ -128,7 +140,7 @@ ul#sidebarmenu
 }
 ul#sidebarmenu li {
     list-style-type: none;
-    margin: 0;
+    margin: 0 0 0.3em;
     padding: 0;
 }
 ul#sidebarmenu li .nav_head{
@@ -144,21 +156,29 @@ ul#sidebarmenu li a {
     padding: 0 1em;
 }
 ul#sidebarmenu li a.active {
-    background-color: ${color3};
+    background-color: ${color4};
 }
 
 ul#sidebarmenu li a.nav_child {
     padding-left:2em;
 }
 
+ul#sidebarmenu span.ui-icon, ul#sidebarmenu a span.ui-icon {
+    float: left;
+    margin-right: 5px;
+}
+
 #sidebar-right
 {
-    background-color: ${color3};
-    border-style: solid;
-    border-color: ${color2};
-    border-width: 1px 0 0 0;
     position: relative;
     padding: 5px;
+    background-color: ${color3};
+    border-top: 5px solid ${color2}
+}
+#sidebar-right hr {
+    margin: .2em 0;
+    padding: 0;
+    background: ${color4}
 }
 
 #footer{
@@ -279,6 +299,7 @@ tbody .even{
 .editable
 {
     position: relative;
+    margin-bottom: 5px;
 }
 
 .editable + .editable
@@ -288,7 +309,7 @@ tbody .even{
 
 .editable:hover
 {
-    background-color: #ddd;
+    background-color: ${color2};
     cursor: pointer;
 }
 
@@ -400,12 +421,73 @@ tbody .even{
     text-decoration: underline;
 }
 
-input[type="submit"], button
-{
-   background-color: ${color3};
-   border: 1px solid #333;
-   font-weight:normal;
-   font-size:12px;
-   cursor: pointer;
-}
+/* Wes fix */
+	.span-3 label {display: block; text-align: right; vertical-align: middle;}
+	.wmd_holder div div {background: none !important;}
+	.wmd_holder span {padding: 0 10px !important;}
+	input, textarea {border-color:${color2} !important;}
+	textarea {height: 100px;}
+	.wmd_edit {width: 510px; height: 150px; margin: 0 0 1em; float: none;}
+	.wmd_preview {width: 510px; margin: 0 0 2em; float: none;}
+	.editable {padding: 2px;}
+	.editable .viewer {padding: 4px 0;}
+	.editor input, .editor textarea, .editor select {margin: 0;}
+	thead th {border-bottom: 1px solid #94B1C7;}
+	tr.even td {background-color: ${color3}}
+	.closed {color: #b35959 }
+	.open {color: #77b359;}
+	.accepted {color: #576875;}
+	#ticket-list tr > td:first-child, #ticket-list tr > th:first-child, #forum-list tr > th, #forum-list tr > td {text-align: center;}
+	#forum-list tr > th:first-child, #forum-list tr > td:first-child, #forum-list tr > th:last-child, #forum-list tr > td:last-child {text-align: left;}
+	#forum-list tr > th:first-child, #forum-list tr > td:first-child {width: 50%;}
+	#forum-list h2 {font-size: 1em; font-weight: bold; margin: 0 0 .1em;}
+	#forum-list tr > td:first-child .ui-button {padding: 7px 2px 7px 7px; margin: 3px 10px 4px 5px; border-width: thin !important;}
+	#project-admin-overview .span-3 label {padding: 6px 0 11px;}
+	.fakeinput {padding: .5em 2px;}
+	.ui-tabs .ui-tabs-panel {padding: 1em .5em 0 0;}
 
+	tr > th {color: ${color1};}
+	tr > td {border-bottom: 1px solid ${color4};}
+		.nav_links li {margin-right: .5em;}
+		.gravatar img {border: 3px solid  ${color3}; margin-bottom: .2em; vertical-align: middle; -webkit-box-shadow: rgba(0, 0, 0, 0.5) 0px 0px 4px; -moz-box-shadow: rgba(0, 0, 0, 0.5) 0px 0px 4px;}
+	.gravatar.sm img {border: 2px solid  ${color4}; margin: 0 .3em; vertical-align: middle; -webkit-box-shadow: none; -moz-box-shadow: none;}
+	.gravatar {margin: 0 0 1em; display: block;}
+	.gravatar.sm {margin: 0;}
+	.tag {background-color: ${color2}; padding: .1em .4em;}
+	.assoc, .date {color: #aaa; margin-bottom: 1em;}
+	.hide {display: none;}
+	#project-admin-overview hr {margin: .5em;}
+	.arrow {background:none repeat scroll 0 0 #FFFFFF;
+        color:${color2};
+        font-size:15px;
+        height:5px;
+        left:112px;
+        line-height:0;
+        position:absolute;
+        top:40px;}
+	#comment, #post {margin: -1em 0 2em; position: relative;}
+	#comment textarea, #post textarea {width: 100%;}
+	#comment input.title, #post input.title, input.title.wide {width: 100%;}
+	.span-3 label {padding-top: 15px;}
+
+    .ui-button { -webkit-box-shadow: rgba(0, 0, 0, 0.3) 0px 2px 3px; -moz-box-shadow: rgba(0, 0, 0, 0.3) 0px 2px 3px;}
+    .ui-button:hover { -webkit-box-shadow: rgba(0, 0, 0, 0.5) 0px 0px 2px; -moz-box-shadow: rgba(0, 0, 0, 0.5) 0px 0px 2px;}
+    a.ui-button {padding: .4em 1em .4em .4em; margin-right: .5em;}
+
+	select {margin: 15px 0; width: 100%;}
+		.tcenter {text-align: center;}
+		.tright {text-align: right;}
+		.tleft {text-align: left;}
+		.fleft {float: left; clear: left;}
+		.fright {float: right; clear: right;}
+
+		.error, .notice, .success {padding:.8em;margin-bottom:1em;border:2px solid #ddd;}
+	.error {background:#FBE3E4;color:#8a1f11;border-color:#FBC2C4;}
+	.notice {background:#FFF6BF;color:#514721;border-color:#FFD324;}
+	.success {background:#E6EFC2;color:#264409;border-color:#C6D880;}
+	.error a {color:#8a1f11;}
+	.notice a {color:#514721;}
+	.success a {color:#264409;}
+	#forum-list .error {background:#8a1f11;}
+	#forum-list .notice {background:#e5be20;}
+	#forum-list .success {background:#264409;}

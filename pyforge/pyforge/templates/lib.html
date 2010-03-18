@@ -72,8 +72,8 @@
       <py:if test="not c.app">&nbsp;</py:if>
       <ul id="sidebarmenu" py:if="getattr(c, 'app', None)">
         <li py:for="s in c.app.sidebar_menu()">
-          <a py:if="s.url" href="$s.url" class="$s.className ${request.url.rfind(s.url,-len(s.url)) != -1 and 'active' or ''}">$s.label</a>
-          <span py:if="not s.url" class="$s.className nav_head">$s.label</span>
+          <a py:if="s.url" href="$s.url" class="$s.className ${request.url.rfind(s.url,-len(s.url)) != -1 and 'active' or ''}"><span py:if="s.ui_icon" class="ui-icon ui-icon-$s.ui_icon"></span>$s.label</a>
+          <span py:if="not s.url" class="$s.className nav_head"><span py:if="s.ui_icon" class="ui-icon ui-icon-$s.ui_icon"></span>$s.label</span>
         </li>
       </ul>
       <ul id="sidebarmenu"

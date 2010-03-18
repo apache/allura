@@ -191,6 +191,7 @@ class Theme(MappedClass):
     color1 = FieldProperty(str)
     color2 = FieldProperty(str)
     color3 = FieldProperty(str)
+    color4 = FieldProperty(str)
 
 class ProjectFile(File):
     metadata=FieldProperty(dict(
