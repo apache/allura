@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import os
 import difflib
+import urllib
 from hashlib import sha1
 from datetime import datetime
 
