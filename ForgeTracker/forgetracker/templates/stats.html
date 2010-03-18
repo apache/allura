@@ -1,0 +1,54 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+                      "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:py="http://genshi.edgewall.org/"
+      xmlns:xi="http://www.w3.org/2001/XInclude">
+  <xi:include href="${g.pyforge_templates}/master.html"/>
+  <xi:include href="${c.app.templates}/lib.html" />
+
+  <?python from pprint import pformat ?>
+
+  <head>
+    <meta content="text/html; charset=UTF-8" http-equiv="content-type" py:replace="''"/>
+    <title>Basic Statistics</title>
+    <link rel="stylesheet" type="text/css" href="${g.app_static('css/hilite.css')}"/>
+    <link rel="alternate" type="application/rss+xml" title="RSS" href="feed.rss"/>
+    <link rel="alternate" type="application/atom+xml" title="Atom" href="feed.atom"/>
+  </head>
+
+  <body>
+    <h2>Basic Statistics</h2>
+<p># tickets: $total</p>
+<p># open tickets: $open</p>
+<p># closed tickets: $closed</p>
+<p># new tickets in the last...</p>
+<ul>
+<li>7 days:</li>
+<li>14 days:</li>
+<li>30 days:</li>
+</ul>
+<p><b>DATES:</b></p>
+<ul>
+<li>now: $now</li>
+<li>week ago: $week_ago</li>
+<li>fortnight ago: $fortnight_ago</li>
+<li>month ago: $month_ago</li>
+<li>week tickets: $week_tickets</li>
+<li>month tickets: $month_tickets</li>
+</ul>
+<p># of comments on tickets</p>
+<p># of new comments on tickets in last...</p>
+<ul>
+<li>7 days:</li>
+<li>14 days:</li>
+<li>30 days:</li>
+</ul>
+<p># of ticket changes in the last...</p>
+<ul>
+<li>7 days:</li>
+<li>14 days:</li>
+<li>30 days:</li>
+</ul>
+
+  </body>
+</html>

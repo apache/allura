@@ -3,6 +3,7 @@ import logging
 from mimetypes import guess_type
 import json, urllib, re
 import Image
+from datetime import datetime, timedelta
 
 # Non-stdlib imports
 import pkg_resources
@@ -386,12 +387,51 @@ class RootController(object):
 
         ThreadLocalORMSession.flush_all()
 
+# tickets
+# open tickets
+# closed tickets
+# new tickets in the last 7/14/30 days
+# of comments on tickets
+# of new comments on tickets in 7/14/30
+# of ticket changes in the last 7/14/30
+
     @with_trailing_slash
     @expose('forgetracker.templates.stats')
     def stats(self):
+        total = model.Ticket.query.find(dict(app_config_id=c.app.config._id)).count()
+        open = model.Ticket.query.find(dict(app_config_id=c.app.config._id,status='open')).count()
+        closed = model.Ticket.query.find(dict(app_config_id=c.app.config._id,status='closed')).count()
+        now = datetime.utcnow()
+        week = timedelta(weeks=1)
+        fortnight = timedelta(weeks=2)
+        month = timedelta(weeks=4)
+        week_ago = now - week
+        fortnight_ago = now - fortnight
+        month_ago = now - month
+        week_tickets = model.Ticket.query.find(dict(app_config_id=c.app.config._id,created_date=week_ago)).count()
+        month_tickets = model.Ticket.query.find(dict(app_config_id=c.app.config._id,created_date=month_ago)).count()
+#        weekticks = model.Ticket.query.find(dict(app_config_id=c.app.config._id,created_date=(datetime.utcnow-pastweek))).count()
+#        closed = model.Ticket.query.find(dict(app_config_id=c.app.config._id,created_date>datetime.utcnow)).count()
+#        tickets = model.Ticket.query.find(dict(app_config_id=c.app.config._id))
+#        for ticket in tickets:
+#            for comment in ticket.discussion_thread().find_posts(limit=limit, style='linear'):
+#                q.append(dict(change_type='comment',
+#                              change_date=comment.timestamp,
+#                              ticket_num=ticket.ticket_num,
+#                              change_text=comment.text))
         globals = model.Globals.query.get(app_config_id=c.app.config._id)
         c.user_select = ffw.ProjectUserSelect()
-        return dict(globals=globals)
+        return dict(
+                now=str(now),
+                week_ago=str(week_ago),
+                fortnight_ago=str(fortnight_ago),
+                month_ago=str(month_ago),
+                week_tickets=week_tickets,
+                month_tickets=month_tickets,
+                total=total,
+                open=open,
+                closed=closed,
+                globals=globals)
 
 class BinController(object):
 
