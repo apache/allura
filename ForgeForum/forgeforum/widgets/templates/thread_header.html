@@ -5,6 +5,8 @@
   <xi:include href="${g.pyforge_templates}/master.html"/>
   <?python from pyforge.lib.security import has_artifact_access?>
 
+  <h1 class="title">$value.subject</h1>
+
   <div class="breadcrumbs" >
     <ul>${crumbs(value.discussion.breadcrumbs())}</ul>
   </div>
@@ -13,8 +15,6 @@
     <h3>Announcements</h3>
     ${widgets.announcements_table.display(value=value.discussion.announcements)}
   </py:if>
-
-  <h1>$value.subject</h1>
   <div  py:if="pagesize"
         py:with="cur_page=offset / pagesize; num_pages=total/pagesize">
     <p>Page ${1 + cur_page} of ${1 + num_pages}</p>

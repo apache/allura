@@ -2,15 +2,16 @@
      xmlns:py="http://genshi.edgewall.org/"
      py:strip="True">
   <?python from pyforge.lib.security import has_artifact_access?>
-  <h1>$value.subject</h1>
+  <h1 class="title">$value.subject</h1>
   <div  py:if="pagesize"
         py:with="cur_page=offset / pagesize; num_pages=total/pagesize">
-    <p>Page ${1 + cur_page} of ${1 + num_pages}</p>
-    <a href=".">&lt;&lt;</a>
-    <a href="?offset=${offset - pagesize}">&lt;</a>
-    <a href="?offset=${offset + pagesize}">&gt;</a>
-    <a href="?offset=${total - pagesize}">&gt;&gt;</a>
+    <div class="span-3">Page ${1 + cur_page} of ${1 + num_pages}</div>
+    <div class="span-16 tright last" id="discuss">
+      <a py:if="num_pages and cur_page > 0" href="?offset=${offset - pagesize}">&larr; Prev</a>
+      <a py:if="num_pages and cur_page &lt; num_pages" href="?offset=${offset + pagesize}">Next &rarr;</a>
+    </div>
   </div>
+  <hr class="clear clearfix space"/>
   <p>Thread Shortlink: <input readonly="true" value="[${value.shorthand_id()}]"/></p>
   <div class="title-pane closed" py:if="show_moderate and has_artifact_access('moderate', value)()">
     <span class="title">Moderate thread</span>
