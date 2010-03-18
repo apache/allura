@@ -216,8 +216,18 @@ class TestFunctionalController(TestController):
         assert 'Priority: normal' in ticket_view
 
     def test_milestone_names(self):
-        r = self.app.post('/admin/bugs/set_milestone_names', { 'milestone_names': 'aaa bbb ccc' })
-        ticket_view = self.new_ticket(summary='test milestone names')
+        self.app.post('/admin/bugs/set_milestone_names', { 'milestone_names': 'aaa bbb ccc' })
+        self.new_ticket(summary='test milestone names')
+        self.app.post('/bugs/1/update_ticket',{
+            'summary':'zzz',
+            'description':'bbb',
+            'status':'ccc',
+            'milestone':'aaa',
+            'assigned_to':'',
+            'tags':'',
+            'tags_old':''
+        })
+        ticket_view = self.app.get('/projects/test/bugs/1/')
         assert 'Milestone: aaa' in ticket_view
 
     def test_subtickets(self):

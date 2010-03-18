@@ -651,22 +651,14 @@ class TrackerAdminController(DefaultAdminController):
 
     @expose()
     def set_status_names(self, **post_data):
-        if self.globals.query.update_if_not_modified(
-            {'$set': {'status_names':post_data['status_names']}}):
-            flash('Status names updated')
-        else:
-            flash('Mid-air collision! Status names were being modified by someone '
-                  'else.  Please retry.', 'error')
+        self.globals.status_names=post_data['status_names']
+        flash('Status names updated')
         redirect('.')
 
     @expose()
     def set_milestone_names(self, **post_data):
-        if self.globals.query.update_if_not_modified(
-            {'$set': {'milestone_names':post_data['milestone_names']}}):
-            flash('Milestone names updated')
-        else:
-            flash('Mid-air collision! Milestone names were being modified by someone '
-                  'else.  Please retry.', 'error')
+        self.globals.milestone_names=post_data['milestone_names']
+        flash('Milestone names updated')
         redirect('.')
 
     @expose()
@@ -676,9 +668,5 @@ class TrackerAdminController(DefaultAdminController):
         for field in custom_fields:
             field['name'] = '_' + '_'.join([w for w in NONALNUM_RE.split(field['label'].lower()) if w])
             field['label'] = field['label'].title()
-        if self.globals.query.update_if_not_modified(
-            {'$set':{'custom_fields':custom_fields}}):
-            flash('Custom fields updated')
-        else:
-            flash('Mid-air collision! Custom fields were being modified by someone '
-                  'else.  Please retry.', 'error')
+        self.globals.custom_fields=custom_fields
+        flash('Custom fields updated')
