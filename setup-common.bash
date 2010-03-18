@@ -87,6 +87,12 @@ python setup.py develop
 popd
 
 echo
+echo '# installing ForgeForum dependencies'
+pushd ForgeForum
+python setup.py develop
+popd
+
+echo
 echo '# installing ForgeMail dependencies'
 pushd ForgeMail
 python setup.py develop
