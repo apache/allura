@@ -7,7 +7,6 @@
   <xi:include href="${c.app.templates}/lib.html" />
 
   <?python from pyforge import model as M?>
-  <?python import urllib?>
 
   <head>
     <meta content="text/html; charset=UTF-8" http-equiv="content-type" py:replace="''"/>
@@ -58,7 +57,7 @@
           <div class="span-3 tright"><b>Tags:</b></div>
           <div class="span-3 last">
             <span py:for="tag in ticket.tags" class="ui-corner-all tag">
-              <a href="../search?q=tags:${urllib.quote_plus(tag.tag)}">$tag.tag (${ticket.artifacts_tagged_with(tag.tag).count()})</a>
+              <a href="../search?q=tags:${h.urllib.quote_plus(tag.tag)}">$tag.tag (${ticket.artifacts_tagged_with(tag.tag).count()})</a>
             </span>
           </div>
         </py:if>
