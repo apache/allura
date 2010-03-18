@@ -404,6 +404,21 @@ class RootController(object):
             count = model.Ticket.query.find(dict(app_config_id=c.app.config._id)).count()
         return count
 
+    def ticket_comments_since(self, when=None):
+        count = 0
+        q = []
+        tickets = model.Ticket.query.find(dict(app_config_id=c.app.config._id))
+        if when:
+            for ticket in tickets:
+                posts = ticket.discussion_thread().find_posts(limit=None,
+                        style='linear', timestamp={'$gte':when})
+                count = count + len(posts)
+        else:
+            for ticket in tickets:
+                posts = ticket.discussion_thread().find_posts(limit=None, style='linear')
+                count = count + len(posts)
+        return count
+
     @with_trailing_slash
     @expose('forgetracker.templates.stats')
     def stats(self):
