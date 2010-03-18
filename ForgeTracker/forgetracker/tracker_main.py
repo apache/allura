@@ -395,6 +395,15 @@ class RootController(object):
 # of new comments on tickets in 7/14/30
 # of ticket changes in the last 7/14/30
 
+    def tickets_since(self, when=None):
+        count = 0
+        if when:
+            count = model.Ticket.query.find(dict(app_config_id=c.app.config._id,
+                created_date={'$gte':when})).count()
+        else:
+            count = model.Ticket.query.find(dict(app_config_id=c.app.config._id)).count()
+        return count
+
     @with_trailing_slash
     @expose('forgetracker.templates.stats')
     def stats(self):
