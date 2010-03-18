@@ -163,9 +163,14 @@ class Thread(Artifact):
                 result.append(pi)
         return result
 
-    def find_posts(self, offset=None, limit=None, style='threaded'):
-        q = self.post_class().query.find(
-            dict(discussion_id=self.discussion_id, thread_id=self._id, status='ok'))
+    def find_posts(self, offset=None, limit=None, timestamp=None, style='threaded'):
+        if timestamp:
+            terms = dict(discussion_id=self.discussion_id, thread_id=self._id,
+                    status='ok', timestamp=timestamp)
+        else:
+            terms = dict(discussion_id=self.discussion_id, thread_id=self._id,
+                    status='ok')
+        q = self.post_class().query.find(terms)
         if style == 'threaded':
             q = q.sort('full_slug')
         else:
