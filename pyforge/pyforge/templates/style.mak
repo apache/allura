@@ -493,3 +493,7 @@ tbody .even{
 	#forum-list .error {background:#8a1f11;}
 	#forum-list .notice {background:#e5be20;}
 	#forum-list .success {background:#264409;}
+	
+	.ui-accordion .ui-accordion-header a {
+        padding-left: 2em;
+    }

@@ -1,17 +1,18 @@
 function add_field(label, type, options){
     var $new_field = $('<div class="custom-field">'
-                     +   '<div class="span-3"><label>Label: </label></div><div class="span-15 last"><input class="field-label" type="text"/></div>'
-                     +   '<div class="span-3"><label>Type: </label></div>'
-                     +   '<div class="span-15 last"><select>'
+                     +   '<div class="span-3 clear"><label>Label: </label></div><div class="span-13 last"><input class="field-label title wide" type="text"/></div>'
+                     +   '<div class="span-3 clear"><label>Type: </label></div>'
+                     +   '<div class="span-13 last"><select class="title wide">'
                      +     '<option value="string">text</option>'
                      +     '<option value="sum">sum</option>'
                      +     '<option value="number">number</option>'
                      +     '<option value="boolean">boolean</option>'
                      +     '<option value="select">select</option>'
                      +   '</select></div>'
-                     +   '<span class="options-wrapper"><div class="span-3"><label>Options: </label></div>'
-                     +   '<div class="span-15 last"><input class="field-options" type="text"/></div></span>'
-                     +   '<button onclick="delete_field(this)">Delete</button>'
+                     +   '<span class="options-wrapper"><div class="span-3 clear"><label>Options: </label></div>'
+                     +   '<div class="span-13 last"><input class="field-options title wide" type="text"/></div></span>'
+                     +   '<div class="push-3 span-13 last"><input type="button" onclick="delete_field(this)" value="Delete" class="ui-state-default ui-button ui-button-text"/></div>'
+                     +   '<div class="clear clearfix"/>'
                      + '</div>');
 
     label && $new_field.find('input.field-label').val(label);

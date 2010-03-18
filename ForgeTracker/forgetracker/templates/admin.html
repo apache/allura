@@ -28,34 +28,41 @@
           <py:for each="p in app.permissions" >
             <h3><a href="#">$p</a></h3>
             <div>
-              <table>
-                <thead>
-                  <tr>
-                    <th>Role</th>
-                    <th/>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr py:for="role in h.make_roles(app.config.acl[p])">
-                    <td>${role.display()}</td>
-                    <td>
-                      <form method="POST" action="del_perm" style="display:inline">
-                        <input type="hidden" name="permission" value="$p"/>
-                        <input type="hidden" name="role" value="${role._id}"/>
-                        <input type="submit" value="Remove" py:if="role.display() != '*user-'+c.user.username"/>
-                      </form>
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
               <form method="POST" action="add_perm">
-                <input type="hidden" name="permission" value="$p"/>
-                <select name="role">
-                  <option py:for="role in c.project.roles"
-                          value="$role._id"
-                          >${role.display()}</option>
-                </select>
-                <input type="submit" value="Add role"/>
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Role</th>
+                      <th/>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr py:for="role in h.make_roles(app.config.acl[p])">
+                      <td>${role.display()}</td>
+                      <td>
+                        <form method="POST" action="del_perm" style="display:inline">
+                          <input type="hidden" name="permission" value="$p"/>
+                          <input type="hidden" name="role" value="${role._id}"/>
+                          <input type="submit" value="Remove" py:if="role.display() != '*user-'+c.user.username"
+                                 class="ui-state-default ui-button ui-button-text"/>
+                        </form>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td>
+                        <select name="role">
+                          <option py:for="role in c.project.roles"
+                                  value="$role._id"
+                                  >${role.display()}</option>
+                        </select>
+                      </td>
+                      <td>
+                        <input type="hidden" name="permission" value="$p"/>
+                        <input type="submit" value="Add Permission" class="ui-state-default ui-button ui-button-text"/>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
               </form>
             </div>
           </py:for>
@@ -65,13 +72,13 @@
         <h3>Statuses</h3>
         <div>
           <form method="POST" action="set_status_names">
-              <div class="span-3"><label>Status names:</label></div>
-              <div class="span-15 last">
-                <input type="text" name="status_names" style="width:50%" value="${globals.status_names}" 
-                       py:if="allow_config"/>
+              <div class="span-3 clear"><label>Names:</label></div>
+              <div class="span-13 last">
+                <input type="text" name="status_names" value="${globals.status_names}" 
+                       py:if="allow_config" class="title wide"/>
                 <span py:if="not allow_config">${globals.status_names}</span>
               </div>
-              <div class="push-3 span-15 last"><input type="submit" value="Save"/></div>
+              <div class="push-3 span-13 last"><input type="submit" value="Save" class="ui-state-default ui-button ui-button-text"/></div>
           </form>
         </div>
       </div>
@@ -79,17 +86,17 @@
         <h3>Milestones</h3>
         <div>
           <form method="POST" action="set_milestone_names">
-              <div class="span-3"><label>Milestone names:</label></div>
-              <div class="span-15 last">
-                <input type="text" name="milestone_names" style="width:50%" value="${globals.milestone_names}"
-                       py:if="allow_config"/>
+              <div class="span-3 clear"><label>Names:</label></div>
+              <div class="span-13 last">
+                <input type="text" name="milestone_names" value="${globals.milestone_names}"
+                       py:if="allow_config" class="title wide"/>
                 <span py:if="not allow_config">${globals.milestone_names}</span>
               </div>
-              <div class="push-3 span-15 last"><input type="submit" value="Save"/></div>
+              <div class="push-3 span-13 last"><input type="submit" value="Save" class="ui-state-default ui-button ui-button-text"/></div>
           </form>
         </div>
       </div>
-      <div id="app-custom-fields" style="overflow: auto">
+      <div id="app-custom-fields">
         <h3>Custom Fields</h3>
         <div>
           <p>Drag and drop the fields to re-order.</p>
@@ -105,10 +112,11 @@
               </py:if>
             </py:for>
           </div>
-          <button onclick="add_field()" 
-                  py:if="allow_config">Add Field</button>
-          <button onclick="save_fields()" 
-                  py:if="allow_config">Save</button>
+          <input type="button" onclick="add_field()" class="ui-state-default ui-button ui-button-text"
+                  py:if="allow_config" value="Add Field"/>
+          <input type="button" onclick="save_fields()" class="ui-state-default ui-button ui-button-text"
+                  py:if="allow_config" value="Save"/>
+          <div class="clear clearfix"/>
         </div>
       </div>
     </div>  
