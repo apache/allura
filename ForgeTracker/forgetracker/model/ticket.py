@@ -1,6 +1,7 @@
 from time import sleep
 from datetime import datetime
 
+import urllib
 import tg
 from pylons import c
 from pymongo.errors import OperationFailure
@@ -77,7 +78,7 @@ class Bin(Artifact):
     terms = FieldProperty(str, if_missing='')
 
     def url(self):
-        return self.app_config.url() + 'search/?q=' + str(self.terms)
+        return self.app_config.url() + 'search/?q=' + urllib.quote_plus(str(self.terms))
 
     def shorthand_id(self):
         return 'bin(' + str(self.summary) + ')'
