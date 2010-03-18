@@ -10,8 +10,8 @@ ticket_form = twf.TableForm('ticket_form', action='../save_ticket', children=[
   # twf.TextField('assigned_to'),
 
     twf.SingleSelectField('milestone',
-        options=lambda: model.Globals.query.get(app_config_id=c.app.config._id).milestone_names.split(',')),
+        options=lambda: model.Globals.query.get(app_config_id=c.app.config._id).milestone_names.split()),
 
     twf.SingleSelectField('status',
-        options=lambda: model.Globals.query.get(app_config_id=c.app.config._id).status_names.split(','))
+        options=lambda: model.Globals.query.get(app_config_id=c.app.config._id).status_names.split())
 ])
