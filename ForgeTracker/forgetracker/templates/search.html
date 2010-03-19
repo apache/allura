@@ -56,7 +56,7 @@
         </tr>
       </tbody>
     </table>
-    <button onclick="location='../edit/'+location.search;" py:if="count != 0">Edit All</button>
+    <a href="${tg.url('../edit/', q=q, limit=count)}" py:if="count != 0">Edit All</a>
   </body>
 
 </html>

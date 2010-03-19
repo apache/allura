@@ -343,12 +343,12 @@ class RootController(object):
     @with_trailing_slash
     @expose('forgetracker.templates.mass_edit')
     @validate(dict(q=validators.UnicodeString(if_empty=None)))
-    def edit(self, q=None, **kw):
+    def edit(self, q=None, limit=10, **kw):
         tickets = []
         if q is None:
             tickets = model.Ticket.query.find(dict(app_config_id=c.app.config._id)).sort('ticket_num')
         else:
-            results = search_artifact(model.Ticket, q)
+            results = search_artifact(model.Ticket, q, rows=limit)
             if results:
                 # copied from search (above), can we factor this?
                 query = model.Ticket.query.find(
