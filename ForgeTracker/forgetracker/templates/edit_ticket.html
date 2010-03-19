@@ -93,6 +93,13 @@
                   </select>
               </span>
           </div>
+          <span class="actions clear">
+            <br/><br/>
+            <a href="${ticket.email_link('#%s' % ticket.ticket_num)}"><span class="ui-icon ui-icon-mail-closed"></span> Email Ticket</a><br/>
+            <a href="#comment"><span class="ui-icon ui-icon-comment"></span> Leave a Comment</a><br/>
+            <a href="${ticket.url()}feed.rss"><span class="ui-icon ui-icon-signal-diag"></span> Follow this Ticket</a><br/>
+            <a href="${ticket.url()}"><span class="ui-icon ui-icon-arrowthick-1-w"></span> Back to Ticket</a><br/>
+          </span>
       </div>
     </form>
     <div class="span-12 push-2">
