@@ -20,10 +20,10 @@
         </li>
       </ul>
     </py:def>
-    <h2>Directory</h2>
+    <h1 class="title">Directory</h1>
     Add a new project at this url:
     <form method="post" action="projects/register">
-      /projects/<input name="pid"/>/ <input type="submit" value="Register Project"/>
+      /projects/<input name="pid" class="title"/>/ &nbsp; <input type="submit" value="Register Project" class="ui-state-default ui-button ui-button-text"/>
     </form>
     <div id="pyforge_directory">
       <py:for each="n, subprojects in projects">

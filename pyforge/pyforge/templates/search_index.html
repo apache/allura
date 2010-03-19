@@ -13,11 +13,12 @@
     <title>Search</title>
   </head>
   <body>
-    <h1>Search</h1>
+    <h1 class="title">Search</h1>
     <form method="GET" action=".">
-      <input type="text" name="q" value="$q"/><br/>
+      <input type="text" name="q" value="$q" class="title"/><br/>
       Search all versions? <input type="checkbox" name="history" checked="${history or None}"/><br/>
-      <input type="submit" value="Search"/>
+      &nbsp;<br/>
+      <input type="submit" value="Search" class="ui-state-default ui-button ui-button-text"/>
     </form>
     <p py:if="count==0 and q">No results.</p>
     <p py:if="count==1 and q">$count result.</p>
