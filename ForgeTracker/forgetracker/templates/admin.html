@@ -28,27 +28,27 @@
           <py:for each="p in app.permissions" >
             <h3><a href="#">$p</a></h3>
             <div>
-              <form method="POST" action="add_perm">
-                <table>
-                  <thead>
-                    <tr>
-                      <th>Role</th>
-                      <th/>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr py:for="role in h.make_roles(app.config.acl[p])">
-                      <td>${role.display()}</td>
-                      <td>
-                        <form method="POST" action="del_perm" style="display:inline">
-                          <input type="hidden" name="permission" value="$p"/>
-                          <input type="hidden" name="role" value="${role._id}"/>
-                          <input type="submit" value="Remove" py:if="role.display() != '*user-'+c.user.username"
-                                 class="ui-state-default ui-button ui-button-text"/>
-                        </form>
-                      </td>
-                    </tr>
-                    <tr>
+              <table>
+                <thead>
+                  <tr>
+                    <th>Role</th>
+                    <th/>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr py:for="role in h.make_roles(app.config.acl[p])">
+                    <td>${role.display()}</td>
+                    <td>
+                      <form method="POST" action="del_perm" style="display:inline">
+                        <input type="hidden" name="permission" value="$p"/>
+                        <input type="hidden" name="role" value="${role._id}"/>
+                        <input type="submit" value="Remove" py:if="role.display() != '*user-'+c.user.username"
+                               class="ui-state-default ui-button ui-button-text"/>
+                      </form>
+                    </td>
+                  </tr>
+                  <tr>
+                    <form method="POST" action="add_perm">
                       <td>
                         <select name="role">
                           <option py:for="role in c.project.roles"
@@ -60,10 +60,10 @@
                         <input type="hidden" name="permission" value="$p"/>
                         <input type="submit" value="Add Permission" class="ui-state-default ui-button ui-button-text"/>
                       </td>
-                    </tr>
-                  </tbody>
-                </table>
-              </form>
+                    </form>
+                  </tr>
+                </tbody>
+              </table>
             </div>
           </py:for>
         </div>
