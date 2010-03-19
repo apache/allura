@@ -12,7 +12,7 @@
     <title>Browse Tags</title>
   </head>
   <body>
-    <h1>Browse Tags</h1>
+    <h1 class="title">Browse Tags</h1>
     <table id="forge_wiki_browse_tags">
       <thead>
         <tr>
@@ -21,7 +21,7 @@
         </tr>
       </thead>
       <tbody>
-        <tr py:for="tag in tags">
+        <tr py:for="i, tag in enumerate(tags)" class="${i%2 and 'even' or ''}">
           <td>$tag</td>
           <td><span py:strip="True" py:for="p in tags[tag]"><a href="${p.url()}">$p.title</a> </span></td>
         </tr>

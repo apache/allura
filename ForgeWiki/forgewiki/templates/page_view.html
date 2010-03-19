@@ -22,7 +22,7 @@
   </head>
   
   <body>
-    <h1>$page.title</h1>
+    <h1 class="title">$page.title</h1>
     <a href="${page.email_link(page.title)}">Email Page</a>
     <div>
       ${Markup(page.html_text)}
@@ -32,7 +32,7 @@
     </div>
     ${c.attachment_list.display(attachments=list(page.attachments), edit_mode=False)}
     <hr/>
-    <div py:with="thread=page.discussion_thread()" id="#comment">
+    <div py:if="page.discussion_thread()" py:with="thread=page.discussion_thread()" id="#comment">
       <h2><a href="${thread.url()}">Discussion</a></h2>
       ${c.thread.display(value=thread)}
     </div>

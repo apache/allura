@@ -12,19 +12,22 @@
   </head>
   
   <body>
-    <h1>$title</h1>
+    <h1 class="title">$title</h1>
     <div>
       <a href=".">View Page</a>
       <a href="..">PluginRoot</a>
     </div>
     <hr/>
     <form method="get" action="diff">
-      <input type="submit" value="Compare revisions"/>
+      <input type="submit" value="Compare revisions" class="ui-button ui-widget ui-state-default ui-button-text-only"/>
+      <br/> <br/>
       <table>
         <thead>
           <tr>
             <th>Version</th>
-            <th>V1</th><th>V2</th>
+            <th>V1</th>
+            <th>V2</th>
+            <th>&nbsp;</th>
           </tr>
         </thead>
         <tbody>
@@ -33,8 +36,8 @@
             <td><input name="v1" type="radio" value="$p.version"/></td>
             <td><input name="v2" type="radio" value="$p.version"/></td>
             <td>
-              <a href="./?version=$p.version">View Revision</a>
-              <a href="./revert?version=$p.version">Revert to version $p.version</a>
+              <a href="./?version=$p.version" class="ui-button ui-widget ui-state-default ui-button-text-only">View Revision</a>
+              <a href="./revert?version=$p.version" class="ui-button ui-widget ui-state-default ui-button-text-only">Revert to version $p.version</a>
             </td>
           </tr>
         </tbody>

@@ -48,6 +48,10 @@ class PageHistory(Snapshot):
     def attachments(self):
         return self.original().attachments
 
+    @property
+    def email_address(self):
+        return self.original().email_address
+
     def root_comments(self):
         if '_id' in self:
             return Comment.query.find(dict(page_id=self.artifact_id, parent_id=None))

@@ -12,7 +12,7 @@
     <title>Browse Pages</title>
   </head>
   <body>
-    <h1>Browse Pages</h1>
+    <h1 class="title">Browse Pages</h1>
     View: <a href="?sort=recent">Recently Updated</a> | <a href="?sort=alpha">Alphabetical</a>
     <table id="forge_wiki_browse">
       <thead>
@@ -23,7 +23,7 @@
         </tr>
       </thead>
       <tbody>
-        <tr py:for="page in pages">
+        <tr py:for="i, page in enumerate(pages)" class="${i%2 and 'even' or ''}">
           <td><a href="../${page['title']}">${page['title']}</a></td>
           <td py:if="'user_label' in page">${page['user_label']}</td>
           <td py:if="'user_label' not in page"></td>
