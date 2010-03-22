@@ -39,7 +39,13 @@ class TestController(BaseController, ProjectController):
     '''
 
     def __init__(self):
+        # This code fixes a race condition in our tests 
         c.project = M.Project.query.get(shortname='test')
+        while c.project is None:
+            import sys, time
+            time.sleep(0.5)
+            print >> sys.stderr, 'Project "test" not found, retrying...'
+            c.project = M.Project.query.get(shortname='test')
         setattr(self, 'feed.rss', self.feed)
         setattr(self, 'feed.atom', self.feed)
         self.oembed = OEmbedController()
