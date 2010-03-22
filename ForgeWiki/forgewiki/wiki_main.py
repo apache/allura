@@ -142,14 +142,20 @@ class ForgeWikiApp(Application):
         self.config.options['project_name'] = project._id
         self.uninstall(project)
         super(ForgeWikiApp, self).install(project)
-        # Give the installing user all the permissions
-        pr = c.user.project_role()
-        for perm in self.permissions:
-              self.config.acl[perm] = [ pr._id ]
-        self.config.acl['read'].append(
-            ProjectRole.query.get(name='*anonymous')._id)
-        self.config.acl['post'].append(
-            ProjectRole.query.get(name='*authenticated')._id)
+        # Setup permissions
+        role_developer = ProjectRole.query.get(name='Developer')._id
+        role_auth = ProjectRole.query.get(name='*authenticated')._id
+        self.config.acl.update(
+            configure=c.project.acl['plugin'],
+            read=c.project.acl['read'],
+            create=[role_developer],
+            edit=[role_developer],
+            delete=[role_developer],
+            edit_page_permissions=c.project.acl['plugin'],
+            unmoderated_post=[role_developer],
+            post=[role_auth],
+            moderate=[role_developer],
+            admin=c.project.acl['plugin'])
         p = model.Page.upsert(self.root_page_name)
         p.viewable_by = ['all']
         p.text = 'This is the root page.'

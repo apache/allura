@@ -12,27 +12,11 @@ from ming.orm.ormsession import ThreadLocalORMSession
 import pyforge.model.auth
 from pyforge.lib.app_globals import Globals
 from pyforge import model as M
+from pyforge.tests import helpers
 
 def setUp():
-    g._push_object(Globals())
-    c._push_object(mock.Mock())
-    request._push_object(Request.blank('/'))
-    ThreadLocalORMSession.close_all()
-    M.EmailAddress.query.remove({})
-    M.OpenId.query.remove({})
-    M.User.query.remove(dict(username='nosetest_user'))
-    M.Project.query.remove(dict(_id='users/nosetest_user/'))
-    M.Project.query.remove(dict(_id='test.projects:/'))
-    conn = M.main_doc_session.bind.conn
-    conn.drop_database('users:nosetest_user')
-    conn.drop_database('domain:test:projects')
-    g.set_project('test')
-    g.set_app('hello')
-    c.user = M.User.query.get(username='test_admin')
-    c.user.email_addresses = c.user.open_ids = []
-    c.user.projects = c.user.projects[:2]
-    c.user.project_role().roles = []
-    M.ProjectRole.query.remove(dict(name='test_role'))
+    helpers.setup_basic_test()
+    helpers.setup_global_objects()
 
 def test_password_encoder():
     # Verify salt
@@ -95,3 +79,12 @@ def test_project_role():
         assert pr.user in (c.user, M.User.anonymous())
         list(pr.role_iter())
 
+def test_default_project_roles():
+    roles = dict((pr.name, pr)
+                 for pr in M.ProjectRole.query.find().all()
+                 if pr.name)
+    assert 'Owner' in roles.keys(), roles.keys()
+    assert 'Developer' in roles.keys(), roles.keys()
+    assert 'Member' in roles.keys(), roles.keys()
+    assert roles['Developer']._id in roles['Owner'].roles
+    assert roles['Member']._id in roles['Developer'].roles

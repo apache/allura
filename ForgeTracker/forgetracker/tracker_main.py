@@ -144,14 +144,17 @@ class ForgeTrackerApp(Application):
 
         self.uninstall(project)
         super(ForgeTrackerApp, self).install(project)
-        # Give the installing user all the permissions
-        pr = c.user.project_role()
-        for perm in self.permissions:
-              self.config.acl[perm] = [ pr._id ]
-        self.config.acl['read'].append(
-            ProjectRole.query.get(name='*anonymous')._id)
-        self.config.acl['post'].append(
-            ProjectRole.query.get(name='*authenticated')._id)
+        # Setup permissions
+        role_developer = ProjectRole.query.get(name='Developer')._id
+        role_auth = ProjectRole.query.get(name='*authenticated')._id
+        self.config.acl.update(
+            configure=c.project.acl['plugin'],
+            read=c.project.acl['read'],
+            write=[role_developer],
+            unmoderated_post=[role_developer],
+            post=[role_auth],
+            moderate=[role_developer],
+            admin=c.project.acl['plugin'])
         model.Globals(app_config_id=c.app.config._id,
             last_ticket_num=0,
             status_names='open unread accepted pending closed',

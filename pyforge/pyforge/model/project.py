@@ -146,12 +146,25 @@ class Neighborhood(MappedClass):
                         database=database,
                         is_root=True)
             with push_config(c, project=p, user=user):
+                # Install default named roles (#78)
+                role_owner = auth.ProjectRole(name='Owner')
+                role_developer = auth.ProjectRole(name='Developer')
+                role_member = auth.ProjectRole(name='Member')
+                role_auth = auth.ProjectRole(name='*authenticated')
+                role_anon = auth.ProjectRole(name='*anonymous')
+                # Setup subroles
+                role_owner.roles = [ role_developer._id ]
+                role_developer.roles = [ role_member._id ]
+                p.acl['create'] = [ role_owner._id ]
+                p.acl['read'] = [ role_owner._id, role_developer._id, role_member._id,
+                                  role_anon._id ]
+                p.acl['update'] = [ role_owner._id ]
+                p.acl['delete'] = [ role_owner._id ]
+                p.acl['plugin'] = [ role_owner._id ]
+                p.acl['security'] = [ role_owner._id ]
                 pr = user.project_role()
-                for roles in p.acl.itervalues():
-                    roles.append(pr._id)
-                pr = auth.ProjectRole(name='*anonymous')
-                p.acl.read.append(pr._id)
-                auth.ProjectRole(name='*authenticated')
+                pr.roles = [ role_owner._id, role_developer._id, role_member._id ]
+                # Setup builtin plugin applications
                 if user_project:
                     p.install_app('profile', 'profile')
                 else:

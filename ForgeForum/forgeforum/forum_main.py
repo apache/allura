@@ -14,8 +14,7 @@ from pyforge.app import Application, ConfigOption, SitemapEntry, DefaultAdminCon
 from pyforge.lib.helpers import push_config, vardec
 from pyforge.lib.decorators import audit, react
 from pyforge.lib.security import require, has_artifact_access
-from pyforge.model import User, File
-from pyforge.model.artifact import gen_message_id
+from pyforge.model import ProjectRole
 
 # Local imports
 from forgeforum import model
@@ -159,10 +158,16 @@ class ForgeForumApp(Application):
         'Set up any default permissions and roles here'
 
         self.uninstall(project)
-        # Give the installing user all the permissions
-        pr = c.user.project_role()
-        for perm in self.permissions:
-              self.config.acl[perm] = [ pr._id ]
+        # Setup permissions
+        role_developer = ProjectRole.query.get(name='Developer')._id
+        role_auth = ProjectRole.query.get(name='*authenticated')._id
+        self.config.acl.update(
+            configure=c.project.acl['plugin'],
+            read=c.project.acl['read'],
+            unmoderated_post=[role_developer],
+            post=[role_auth],
+            moderate=[role_developer],
+            admin=c.project.acl['plugin'])
 
     def uninstall(self, project):
         "Remove all the plugin's artifacts from the database"

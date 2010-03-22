@@ -192,7 +192,6 @@ ul#sidebarmenu li a.active {
     p0 = n_projects.register_project('test', u0)
     c.project = p0
     c.user = u0
-    p0.acl['read'].append(u1.project_role(p0)._id)
     p1 = p0.new_subproject('sub1')
     ThreadLocalORMSession.flush_all()
     if asbool(conf.get('load_test_data')):
@@ -216,11 +215,6 @@ ul#sidebarmenu li a.active {
         p0.install_app('Forum', 'forum')
         # app = p0.install_app('Repository', 'src')
         # app = p0.install_app('Repository', 'src_git')
-        dev = M.ProjectRole(name='developer')
-        ThreadLocalORMSession.flush_all()
-        for ur in M.ProjectRole.query.find():
-            if ur.name and ur.name[:1] == '*': continue
-            ur.roles.append(dev._id)
         ThreadLocalORMSession.flush_all()
         for msg in c.queued_messages:
             g._publish(**msg)

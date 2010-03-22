@@ -32,7 +32,8 @@ class TestFunctionalController(TestController):
     def test_new_with_milestone(self):
         tm.Globals.milestone_names = 'sprint-9 sprint-10 sprint-11'
         ticket_view = self.new_ticket(summary='test new with milestone', milestone='sprint-10')
-        assert 'Milestone: sprint-10' in ticket_view
+        assert 'Milestone' in ticket_view
+        assert 'sprint-10' in ticket_view
 
     def test_new_ticket_form(self):
         response = self.app.get('/bugs/new/')
@@ -213,7 +214,8 @@ class TestFunctionalController(TestController):
         spec = urllib.quote_plus(spec)
         r = self.app.post('/admin/bugs/set_custom_fields', { 'custom_fields': spec })
         ticket_view = self.new_ticket(summary='test custom fields')
-        assert 'Priority: normal' in ticket_view
+        assert 'Priority:' in ticket_view
+        assert 'normal' in ticket_view
 
     def test_milestone_names(self):
         self.app.post('/admin/bugs/set_milestone_names', { 'milestone_names': 'aaa bbb ccc' })
@@ -228,7 +230,8 @@ class TestFunctionalController(TestController):
             'tags_old':''
         })
         ticket_view = self.app.get('/projects/test/bugs/1/')
-        assert 'Milestone: aaa' in ticket_view
+        assert 'Milestone' in ticket_view
+        assert 'aaa' in ticket_view
 
     def test_subtickets(self):
         # create two tickets
@@ -278,7 +281,8 @@ class TestFunctionalController(TestController):
 
         # get a view on the first ticket, check for other ticket listed in sidebar
         ticket_view = self.app.get('/projects/test/bugs/1/')
-        assert 'Days: 6.5' in ticket_view
+        assert 'Days' in ticket_view
+        assert '6.5' in ticket_view
 
     def test_edit_all_button(self):
         response = self.app.get('/projects/test/bugs/search/')

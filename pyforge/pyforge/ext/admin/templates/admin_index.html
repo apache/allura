@@ -194,7 +194,7 @@
                   <tbody>
                     <tr py:for="i, r in enumerate(h.make_roles(role_ids))">
                       <td>${r.display()}</td>
-                      <td>$r.user.username</td>
+                      <td>${r.user._id and r.user.username or ''}</td>
                       <td><input type="submit" value="Remove" name="role-${i}.delete" /></td>
                     </tr>
                     <tr>
