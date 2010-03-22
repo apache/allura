@@ -177,6 +177,43 @@ class RootController(object):
         self._discuss = AppDiscussionController()
         self.bins = BinController()
 
+    def paged_query(self, q=None, limit=10, page=0, sort='ticket_num_i asc', **kw):
+        """Query tickets, sorting and paginating the result.
+
+        We do the sorting and skipping right in SOLR, before we ever ask
+        Mongo for the actual tickets.  Other keywords for
+        search_artifact (e.g., history) or for SOLR are accepted through
+        kw.  The output is intended to be used directly in templates,
+        e.g., exposed controller methods can just:
+
+            return paged_query(q, ...)
+
+        If you want all the results at once instead of paged you have
+        these options:
+          - don't call this routine, search directly in mongo
+          - call this routine with a very high limit and TEST that
+            count<=limit in the result
+        limit=-1 is NOT recognized as 'all'.  500 is a reasonable limit.
+        """
+
+        start = page * limit
+        count = 0
+        tickets = []
+        matches = search_artifact(model.Ticket, q, rows=limit, sort=sort, start=start, fl='ticket_num_i', **kw) if q else None
+        if matches:
+            count = matches.hits
+            # ticket_numbers is in sorted order
+            ticket_numbers = [match['ticket_num_i'] for match in matches.docs]
+            # but query, unfortunately, returns results in arbitrary order
+            query = model.Ticket.query.find(dict(app_config_id=c.app.config._id, ticket_num={'$in':ticket_numbers}))
+            # so stick all the results in a dictionary...
+            ticket_for_num = {}
+            for t in query.all():
+                ticket_for_num[t.ticket_num] = t
+            # and pull them out in the order given by ticket_numbers
+            tickets = [ticket_for_num[tn] for tn in ticket_numbers]
+        return dict(tickets=tickets, count=count, q=q, limit=limit, page=page, sort=sort, **kw)
+
     def ordered_history(self, limit=None):
         q = []
         tickets = model.Ticket.query.find(dict(app_config_id=c.app.config._id)).sort('ticket_num')
@@ -202,32 +239,17 @@ class RootController(object):
     @with_trailing_slash
     @expose('forgetracker.templates.index')
     def index(self):
-        tickets = model.Ticket.query.find(dict(app_config_id=c.app.config._id)).sort('ticket_num')
-        changes = self.ordered_history(5)
-        return dict(tickets=tickets,changes=changes)
+        result = self.paged_query(q='!status:closed', sort='ticket_num_i desc', limit=500)
+        result['changes'] = self.ordered_history(5)
+        return result
 
     @with_trailing_slash
     @expose('forgetracker.templates.search')
     @validate(dict(q=validators.UnicodeString(if_empty=None),
                    history=validators.StringBool(if_empty=False),
                    limit=validators.Int(if_empty=10)))
-    def search(self, q=None, history=None, limit=10):
-        'local plugin search'
-        results = []
-        tickets = []
-        count=0
-        if not q:
-            q = ''
-        else:
-            results = search_artifact(model.Ticket, q, history, rows=limit,
-                                      sort='ticket_num_i asc')
-            if results:
-                query = model.Ticket.query.find(
-                    dict(app_config_id=c.app.config._id,
-                         ticket_num={'$in':[r['ticket_num_i'] for r in results.docs]}))
-                tickets = query.all()
-                count = results.hits
-        return dict(q=q, history=history, tickets=tickets or [], count=count)
+    def search(self, q=None, history=False, limit=10):
+        return self.paged_query(q=q, limit=limit, history=history)
 
     @expose()
     def _lookup(self, ticket_num, *remainder):
@@ -344,22 +366,13 @@ class RootController(object):
     @expose('forgetracker.templates.mass_edit')
     @validate(dict(q=validators.UnicodeString(if_empty=None)))
     def edit(self, q=None, limit=10, **kw):
-        tickets = []
-        if q is None:
-            tickets = model.Ticket.query.find(dict(app_config_id=c.app.config._id)).sort('ticket_num')
-        else:
-            results = search_artifact(model.Ticket, q, rows=limit)
-            if results:
-                # copied from search (above), can we factor this?
-                query = model.Ticket.query.find(
-                    dict(app_config_id=c.app.config._id,
-                         ticket_num={'$in':[r['ticket_num_i'] for r in results.docs]}))
-                tickets = query.all()
+        result = self.paged_query(q=q, limit=limit, **kw)
         globals = model.Globals.query.get(app_config_id=c.app.config._id)
         if globals.milestone_names is None:
             globals.milestone_names = ''
+        result['globals'] = globals
         c.user_select = ffw.ProjectUserSelect()
-        return dict(tickets=tickets, globals=globals)
+        return result
 
     @expose()
     def update_tickets(self, **post_data):

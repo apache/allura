@@ -287,3 +287,18 @@ class TestFunctionalController(TestController):
     def test_edit_all_button(self):
         response = self.app.get('/projects/test/bugs/search/')
         assert 'Edit All' not in response
+
+#   def test_home(self):
+#       self.new_ticket(summary='test first ticket')
+#       self.new_ticket(summary='test second ticket')
+#       self.new_ticket(summary='test third ticket')
+#       response = self.app.get('/projects/test/bugs/')
+#       assert '[#3] test third ticket' in response
+
+#   def test_search(self):
+#       self.new_ticket(summary='test first ticket')
+#       self.new_ticket(summary='test second ticket')
+#       self.new_ticket(summary='test third ticket')
+#       response = self.app.get('/projects/test/bugs/search/?q=!status%3Aclosed')
+#       assert '3 results' in response
+#       assert '[#3] test third ticket' in response

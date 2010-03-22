@@ -20,6 +20,7 @@
         <h1 class="title">ForgeTracker for $c.project.shortname</h1>
         <h2>Tickets</h2>
         <py:if test="not len(tickets)">No tickets have been created yet.</py:if>
+        <py:if test="count > 500">Too many results.  Showing the first 500 tickets.</py:if>
         <table py:if="len(tickets)" id="ticket-list">
           <thead>
             <tr>
