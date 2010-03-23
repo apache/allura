@@ -3,10 +3,14 @@ import logging
 from pylons import g, request
 from tg import flash, redirect, session, config
 from openid.consumer import consumer
-
 from pyforge import model as M
 
 log = logging.getLogger(__name__)
+
+# openid.oidutil outputs all logging to STDERR unless otherwise configured.
+# We follow the openid.oidutil instructions to install our own logging hook.
+from openid import oidutil
+oidutil.log = log.info
 
 def verify_oid(oid_url, failure_redirect=None, return_to=None,
                   **kw):
