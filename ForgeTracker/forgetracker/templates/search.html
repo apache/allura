@@ -46,7 +46,7 @@
           <td py:if="len(t.description) &gt; 70">${t.description[0:70]}...</td>
           <td py:if="len(t.description) &lt;= 70">$t.description</td>
           <td py:if="t.assigned_to_id">${t.assigned_to.display_name}</td>
-          <td py:if="not t.assigned_to_id">nobody</td>
+          <td py:if="not t.assigned_to_id"></td>
         </tr>
         <tr py:if="len(tickets) &lt; count">
           <td />
