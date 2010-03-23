@@ -5,20 +5,22 @@
 __all__ = ['Globals']
 import logging
 import socket
+import re
 from urllib import urlencode
 from ConfigParser import RawConfigParser
+from collections import defaultdict
 
 import pkg_resources
 
 from tg import config, session
 from pylons import c, request
-import paste.deploy.converters
 import pysolr
 import oembed
 import markdown
 from carrot.connection import BrokerConnection
 from carrot.messaging import Publisher
 from pymongo.bson import ObjectId
+from paste.deploy.converters import asint, asbool
 
 from pyforge import model as M
 from pyforge.lib.markdown_extensions import ForgeExtension
@@ -45,19 +47,22 @@ class Globals(object):
             self.solr =  pysolr.Solr(self.solr_server)
         else: # pragma no cover
             self.solr = None
-        self.use_queue = paste.deploy.converters.asbool(
-            config.get('use_queue', False))
+        self.use_queue = asbool(config.get('use_queue', False))
 
         # Setup RabbitMQ
-        self.conn = BrokerConnection(
-            hostname=config.get('amqp.hostname', 'localhost'),
-            port=config.get('amqp.port', 5672),
-            userid=config.get('amqp.userid', 'testuser'),
-            password=config.get('amqp.password', 'testpw'),
-            virtual_host=config.get('amqp.vhost', 'testvhost'))
-        self.publisher = dict(
-            audit=Publisher(connection=self.conn, exchange='audit', auto_declare=False),
-            react=Publisher(connection=self.conn, exchange='react', auto_declare=False))
+        if asbool(config.get('amqp.mock')):
+            self.mock_amq = MockAMQ()
+            self._publish = self.mock_amq.publish
+        else:
+            self.conn = BrokerConnection(
+                hostname=config.get('amqp.hostname', 'localhost'),
+                port=asint(config.get('amqp.port', 5672)),
+                userid=config.get('amqp.userid', 'testuser'),
+                password=config.get('amqp.password', 'testpw'),
+                virtual_host=config.get('amqp.vhost', 'testvhost'))
+            self.publisher = dict(
+                audit=Publisher(connection=self.conn, exchange='audit', auto_declare=False),
+                react=Publisher(connection=self.conn, exchange='react', auto_declare=False))
 
         # Setup markdown
         self.markdown = markdown.Markdown(
@@ -147,3 +152,53 @@ data       : %r
             return '%s://%s%s?%s' % (request.scheme, request.host, base, params)
         else:
             return '%s://%s%s' % (request.scheme, request.host, base)
+
+class MockAMQ(object):
+
+    def __init__(self):
+        self.exchanges = defaultdict(list)
+        self.queue_bindings = defaultdict(list)
+
+    def publish(self, xn, message, routing_key, **kw):
+        self.exchanges[xn].append(
+            dict(routing_key=routing_key, message=message, kw=kw))
+
+    def pop(self, xn):
+        return self.exchanges[xn].pop(0)
+
+    def setup_handlers(self):
+        from pyforge.command.reactor import plugin_consumers, ReactorCommand
+        self.plugins = [
+            (ep.name, ep.load()) for ep in pkg_resources.iter_entry_points('pyforge') ]
+        self.reactor = ReactorCommand()
+        for name, plugin in self.plugins:
+            for method, xn, qn, keys in plugin_consumers(name, plugin):
+                for k in keys:
+                    self.queue_bindings[xn].append(
+                        dict(key=k, plugin_name=name, method=method))
+            self.setup_plugin(name, plugin)
+
+    def handle(self, xn):
+        msg = self.pop(xn)
+        for handler in self.queue_bindings[xn]:
+            if self._route_matches(handler['key'], msg['routing_key']):
+                self._route(xn, msg, handler['plugin_name'], handler['method'])
+
+    def _route(self, xn, msg, plugin_name, method):
+        if xn == 'audit':
+            callback = self.reactor.route_audit(plugin_name, method)
+        else:
+            callback = self.reactor.route_react(plugin_name, method)
+        data = msg['message']
+        msg = mock.Mock()
+        msg.delivery_info['routing_key'] = msg['routing_key']
+        return callback(msg, data)
+
+    def _route_matches(self, pattern, key):
+        re_pattern = (pattern
+                      .replace('.', r'\.')
+                      .replace('*', r'(?:\w+)')
+                      .replace('#', r'(?:\w+)(?:\.\w+)*'))
+        return re.match(re_pattern+'$', key)
+
+

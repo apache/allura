@@ -17,7 +17,7 @@ class ProjectSession(Session):
 
     @property
     def db(self):
-        if c.project:
+        if getattr(c, 'project', None):
             return getattr(self.main_session.bind.conn, c.project.database)
         else:
             return None

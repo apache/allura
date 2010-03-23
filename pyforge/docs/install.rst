@@ -129,10 +129,10 @@ Forge SMTP server
       (anvil)~/src/forge/pyforge$ paster smtp_server development.ini
 
 SOLR server
-  This is our search and indexing server.  We can use the example schema directly from the
-  SOLR download::
+  This is our search and indexing server.  We have a custom config in
+  ~/src/forge/solr_config::
 
-      (anvil)~/<path_to_solr>/example$ java -jar start.jar
+      (anvil)~/<path_to_solr>/example$ java -Dsolr.solr.home=~/src/forge/solr_config -jar start.jar
 
 TurboGears application server
   This is the main application that will respond to web requests.  We'll get into
@@ -158,5 +158,58 @@ Part of the base system includes the test_admin and test_user accounts.  The
 password for both accounts is `foo`.  The `test` project has several plugins
 already configured; to configure more, you can visit the `Admin` plugin
 (accessible in the top navigation bar when inside the `test` project).  
+
+Running the Tests
+---------------------------------
+
+The test setup is a little bit different from the dev/production setup so as not
+to create conflicts between test data and development data.  This section will
+tell you how to set up your test environment.
+
+mongod
+  We'll need a test MongoDB server to keep from stomping on our development data::
+
+      (anvil)~/src$ mkdir -p ~/var/mongodata-test
+      (anvil)~/src$ mongod --port 27108 --dbpath ~/var/mongodata-test
+
+RabbitMQ
+  Here, we'll set up a second virtual host for testing.  We also need to set up
+  the RabbitMQ queues using reactor_setup::
+
+      (anvil)~/src$ sudo rabbitmqctl add_vhost vhost_testing
+      (anvil)~/src$ sudo rabbitmqctl set_permissions -p vhost_testing testuser ""  ".*" ".*"
+      (anvil)~/src$ cd forge/pyforge
+      (anvil)~/src/forge/pyforge$ paster reactor_setup test.ini
+
+SOLR server
+  We are using the multicore version of SOLR already, so all the changes to use
+  core1 (the testing core) rather than core0 (the dev core) are encapsulated in
+  test.ini.
+
+To actually run the tests, just go to the plugin directory you wish to test (or
+to the pyforge directory) and type::
+
+    (anvil)~/src/forge/pyforge$ nosetests
+
+Some options you might find useful for nosetests:
+
+--pdb
+  Drops into a PDB prompt on unexpected exceptions ("errors" in unittest
+  terminology)
+
+--pdb-fail
+  Drops into a PDB prompt on AssertionError exceptions in tests  ("failures" in unittest
+  terminology)
+
+-s
+  Do *not* capture stdout.  This is essential if you have embedded pdb
+  breakpoints in your test code.  (Otherwise, you will not see the prompt; your
+  test will just mysteriously hang forever.)
+
+-v
+  Print the name of the test as it runs.  This is useful if the test suite takes a while
+  to run and you want to let it continue to run while you begin debugging the
+  first (few) failures.
+
 
 Happy hacking!

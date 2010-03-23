@@ -9,20 +9,14 @@ from pylons import c, g
 
 from pyforge.command import reactor
 from pyforge import model as M
+from pyforge.tests import helpers
 
-test_config = environ.get('SANDBOX') and 'sandbox-test.ini' or 'test.ini'
-
+test_config = '%s#main_with_amqp' % (
+    environ.get('SANDBOX') and 'sandbox-test.ini' or 'test.ini')
 
 def setUp(self):
     """Method called by nose before running each test"""
-    # Loading the application:
-    conf_dir = config.here
-    wsgiapp = loadapp('config:%s#main' % test_config,
-                      relative_to=conf_dir)
-    # Setting it up:
-    test_file = path.join(conf_dir, test_config)
-    cmd = SetupCommand('setup-app')
-    cmd.run([test_file])
+    helpers.setup_basic_test(app_name='main_with_amqp')
 
 def test_reactor_setup():
     cmd = reactor.ReactorSetupCommand('setup')

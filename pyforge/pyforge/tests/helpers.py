@@ -39,3 +39,4 @@ def setup_global_objects():
     g.set_project('test')
     g.set_app('hello')
     c.user = M.User.query.get(username='test_admin')
+

@@ -55,6 +55,7 @@ def test_artifact():
     assert pg.app_config == c.app.config
     u = M.User.query.get(username='test_user')
     pg.give_access('delete', user=u)
+    ThreadLocalORMSession.flush_all()
     assert u.project_role()._id in pg.acl['delete']
     pg.revoke_access('delete', user=u)
     assert u.project_role()._id not in pg.acl['delete']

@@ -16,3 +16,6 @@ install/*
 ForgeSCM/forgescm/data/*
 */.test-data/*
 */.coverage
+pyforge/pyforge/templates/home/
+solr_config/core0/data/
+solr_config/core1/data/
