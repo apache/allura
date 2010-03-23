@@ -32,21 +32,21 @@
       <thead>
         <tr>
           <th>Ticket</th>
-          <th>Updated</th>
           <th>Status</th>
-          <th>Contents</th>
+          <th>Description</th>
           <th>Assigned To</th>
+          <th>Updated</th>
         </tr>
       </thead>
       <tbody>
         <tr py:for="t in tickets">
-          <td><a href="${t.url()}">#$t.ticket_num $t.summary</a></td>
-          <td>${h.ago(t.created_date)}</td>
-          <td>$t.status</td>
+          <td><a href="${t.url()}">[#${t.ticket_num}] $t.summary</a></td>
+          <td class="${t.status}">${t.status}</td>
           <td py:if="len(t.description) &gt; 70">${t.description[0:70]}...</td>
-          <td py:if="len(t.description) &lt;= 70">$t.description</td>
+          <td py:if="len(t.description) &lt;= 70">${t.description}</td>
           <td py:if="t.assigned_to_id">${t.assigned_to.display_name}</td>
           <td py:if="not t.assigned_to_id"></td>
+          <td>${h.ago(t.created_date)}</td>
         </tr>
         <tr py:if="len(tickets) &lt; count">
           <td />

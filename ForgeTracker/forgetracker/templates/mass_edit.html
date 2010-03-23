@@ -24,15 +24,23 @@
           <thead>
             <tr>
               <th></th>
-              <th>#</th>
-              <th>Summary</th>
+              <th>Ticket</th>
+              <th>Status</th>
+              <th>Description</th>
+              <th>Assigned To</th>
+              <th>Updated</th>
             </tr>
           </thead>
           <tbody class="ticket-list">
-            <tr py:for="ticket in tickets">
-              <td><input type="checkbox" name="${ticket._id}" value=""/></td>
-              <td><a href="${ticket.url()}">#$ticket.ticket_num</a></td>
-              <td>$ticket.summary</td>
+            <tr py:for="t in tickets">
+              <td><input type="checkbox" name="${t._id}" value=""/></td>
+              <td><a href="${t.url()}">[#${t.ticket_num}] ${t.summary}</a></td>
+              <td class="${t.status}">${t.status}</td>
+              <td py:if="len(t.description) &gt; 70">${t.description[0:70]}...</td>
+              <td py:if="len(t.description) &lt;= 70">${t.description}</td>
+              <td py:if="t.assigned_to_id">${t.assigned_to.display_name}</td>
+              <td py:if="not t.assigned_to_id"></td>
+              <td>${h.ago(t.created_date)}</td>
             </tr>
           </tbody>
         </table>

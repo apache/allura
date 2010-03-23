@@ -18,25 +18,23 @@
 
   <body>
         <h1 class="title">ForgeTracker for $c.project.shortname</h1>
-        <h2>Tickets</h2>
-        <py:if test="not len(tickets)">No tickets have been created yet.</py:if>
-        <py:if test="count > 500">Too many results.  Showing the first 500 tickets.</py:if>
+        <h2 title="!status:closed">Open Tickets</h2>
+        <py:if test="not len(tickets)">No open tickets.</py:if>
+        <py:if test="count > 500">Too many results.  Showing the first 500 open tickets.</py:if>
         <table py:if="len(tickets)" id="ticket-list">
           <thead>
             <tr>
-              <th>#</th>
-	            <th>Status</th>
-	      <th>Assigned</th>
-              <th>Summary</th>
+              <th>Ticket</th>
+	          <th>Status</th>
+	          <th>Assigned To</th>
             </tr>
           </thead>
           <tbody class="ticket-list">
-            <tr py:for="ticket in tickets">
-              <td><a href="$ticket.ticket_num/">$ticket.ticket_num</a></td>
-	            <td class="$ticket.status">$ticket.status</td>
-	      <td py:if="ticket.assigned_to_id"><a href="${ticket.assigned_to.url()}">${ticket.assigned_to.display_name}</a></td>
-	      <td py:if="not ticket.assigned_to_id"></td>
-              <td>$ticket.summary</td>
+            <tr py:for="t in tickets">
+              <td><a href="${t.ticket_num}/">[#${t.ticket_num}] ${t.summary}</a></td>
+	          <td class="$t.status">$t.status</td>
+	          <td py:if="t.assigned_to_id"><a href="${t.assigned_to.url()}">${t.assigned_to.display_name}</a></td>
+	          <td py:if="not t.assigned_to_id"></td>
             </tr>
           </tbody>
         </table>
@@ -54,7 +52,7 @@
             <tr py:for="change in changes">
               <td>${h.ago(change.change_date)}</td>
               <td>$change.change_type</td>
-              <td><a href="$change.ticket_num">$change.ticket_num</a></td>
+              <td><a href="$change.ticket_num">[#${change.ticket_num}]</a></td>
               <td py:if="len(change.change_text) &gt; 70">${change.change_text[0:70]}...</td>
               <td py:if="len(change.change_text) &lt;= 70">$change.change_text</td>
             </tr>
