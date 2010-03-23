@@ -1,62 +1,60 @@
 <div xmlns="http://www.w3.org/1999/xhtml"
      xmlns:py="http://genshi.edgewall.org/"
+     xmlns:xi="http://www.w3.org/2001/XInclude"
      py:strip="True">
+     <xi:include href="${g.pyforge_templates}/lib.html" />
   <?python from pyforge.lib.security import has_artifact_access?>
-  <div id="post-${value.slug}" class="title-pane">
-    <div class="title">
-      <py:if test="show_subject">
-        <strong>$value.subject</strong> by
-      </py:if>
-      <a href="${value.author().url()}">${value.author().display_name}</a>
-      ${h.ago(value.timestamp)}
-    </div>
-    <div class="content">
-      <div style="float:right">
-        <a href="${value.url()}">Permalink</a>
-        <div class="title-pane closed">
-          <div class="title">Post Controls</div>
-          <div class="content" style="background-color:#ccc; border:1px solid #333;">
-            ${widgets.flag_post.display(value=value, action=value.url() + 'flag')}
-            <py:if test="has_artifact_access('moderate', value)()">
 
-              ${widgets.moderate_post.display(value=value, action=value.url()+'moderate')}
 
-              <div class="title-pane closed">
-                <span class="title">Attach File</span>
-                <div class="content">
-                  ${widgets.attach_post.display(value=value, action=value.url() + 'attach')}
-                </div>
-              </div>
+  <div class="discussion-post">
+	<div class="push-$indent span-3 clear tcenter">
+		<p class="gravatar">
+			<a href="${value.author().url()}">${gravatar(value.author().preferences.email_address)}</a><br />
+			<a href="${value.author().url()}">${value.author().display_name}</a><br />${h.ago(value.timestamp)}
+		</p>
 
-              <div class="title-pane closed">
-                <span class="title">Edit Post</span>
-                <div class="content">
-                  ${widgets.edit_post.display(value=value, submit_text='Edit Post', action=value.url())}
-                </div>
-              </div>
-
-            </py:if>
-            <div py:if="has_artifact_access('post', value.thread)()" class="reply title-pane closed">
-              <div class="title">Reply to ${value.author().display_name}</div>
-              <div class="content">
-                  ${widgets.edit_post.display(
-                      value=value,
-                      submit_text='Post Reply',
-                      action=value.url()+'reply',
-                      value=dict(
-                          text=value.reply_text(),
-                          subject=value.reply_subject()),
-                      )}
-              </div>
-            </div>
-          </div>
+		<p>
+		  <input type="submit" value="Reply" py:if="has_artifact_access('post', value.thread)()" class="reply_post" /><br />
+		  <a href="${value.url()}">Permalink</a>
+      </p>
+	</div>
+	<div class="span-${16-indent} last">
+		<div class="content clear">${Markup(g.markdown.convert(value.text))}</div>
+        <div py:for="att in value.attachments">
+          ${widgets.attachment.display(post=value, value=att)}
         </div>
-      </div>
-
-      ${Markup(g.markdown.convert(value.text))}
-      <div py:for="att in value.attachments">
-        ${widgets.attachment.display(post=value, value=att)}
-      </div>
+	</div>
+	<div class="push-$indent clear span-3">&nbsp;</div>
+	<div class="span-2" py:if="has_artifact_access('moderate', value)()">
+	  ${widgets.moderate_post.display(value=value, action=value.url()+'moderate')}
+	</div>
+	<div class="span-2" py:if="has_artifact_access('post', value.thread)()">
+	  <a href="" class="edit_post"><span class="ui-icon ui-icon-pencil"></span>Edit</a>
     </div>
+	<div class="span-2" py:if="has_artifact_access('post', value.thread)()">
+	  <a href="" class="add_attachment"><span class="ui-icon ui-icon-document"></span>Attach</a>
+	</div>
+	<div class="span-2 last" py:if="has_artifact_access('moderate', value)()">
+	  ${widgets.flag_post.display(value=value, action=value.url()+'flag')}
+	</div>
+
+	<div class="add_attachment_form push-${3+indent}  span-${16-indent} last clear" style="display:none" py:if="has_artifact_access('post', value.thread)()">
+      ${widgets.attach_post.display(value=value, action=value.url() + 'attach')}
+	</div>
+	<div class="edit_post_form push-${3+indent} span-${16-indent} last clear" style="display:none" py:if="has_artifact_access('post', value.thread)()">
+	  ${widgets.edit_post.display(value=value, submit_text='Edit Post', action=value.url())}
+	</div>
+	<div class="reply_post_form push-${3+indent} span-${16-indent} last clear" style="display:none" py:if="has_artifact_access('post', value.thread)()">
+	  ${widgets.edit_post.display(
+          value=value,
+          submit_text='Post Reply',
+          action=value.url()+'reply',
+          value=dict(
+              text=value.reply_text(),
+              subject=value.reply_subject()),
+          )}
+	</div>
   </div>
+  <hr class="clear clearfix space"/>
+  <hr class="clear clearfix" />
 </div>

@@ -3,7 +3,7 @@
      py:strip="True">
   <?python from pyforge.lib.security import has_artifact_access?>
   <h1 class="title">$value.name</h1>
-  <p>Discussion Shortlink: <input readonly="true" value="[${value.shorthand_id()}]"/></p>
+  <p>Discussion Shortlink: <input readonly="true" value="[${value.shorthand_id()}]" class="title"/></p>
   <div>${Markup(g.markdown.convert(value.description))}</div>
   <a py:if="show_discussion_email"
      href="mailto:${value.email_link(subject=None)}">Post via Email</a>

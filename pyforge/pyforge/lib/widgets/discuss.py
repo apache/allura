@@ -13,13 +13,12 @@ class ModerateThread(ew.SimpleForm):
     submit_text=None
 
 class ModeratePost(ew.SimpleForm):
-    class buttons(ew.WidgetsList):
-        delete=ew.SubmitButton(label='Delete Post')
-        spam=ew.SubmitButton(label='Spam Post')
+    template='genshi:pyforge.lib.widgets.templates.moderate_post'
     submit_text=None
 
 class FlagPost(ew.SimpleForm):
-    submit_text='Flag post as inappropriate or spam'
+    template='genshi:pyforge.lib.widgets.templates.flag_post'
+    submit_text=None
 
 class AttachPost(ew.SimpleForm):
     submit_text='Attach File'
@@ -101,6 +100,14 @@ class SubscriptionForm(ew.SimpleForm):
     class fields(ew.WidgetsList):
         threads=_ThreadsTable()
     submit_text='Update Subscriptions'
+    def resources(self):
+        for r in super(SubscriptionForm, self).resources(): yield r
+        yield ew.JSScript('''
+        (function(){
+            $('.submit').button();
+            $('tbody').children(':even').addClass('even');
+        })();
+        ''')
 
 # Widgets
 class HierWidget(ew.Widget):
@@ -152,8 +159,9 @@ class PostThread(ew.Widget):
 
 class Post(HierWidget):
     template='genshi:pyforge.lib.widgets.templates.post'
-    params=['value', 'show_subject']
+    params=['value', 'show_subject', 'indent']
     value=None
+    indent=0
     show_subject=False
     widgets=dict(
         flag_post=FlagPost(),
@@ -161,6 +169,39 @@ class Post(HierWidget):
         edit_post=EditPost(submit_text='Edit Post'),
         attach_post=AttachPost(submit_text='Attach'),
         attachment=Attachment())
+    def resources(self):
+        for r in super(Post, self).resources(): yield r
+        yield ew.JSScript('''
+        (function(){
+            $('.discussion-post').each(function(){
+                var post = this;
+                $('.submit', post).button();
+                $('.flag_post, .delete_post', post).click(function(ele){
+                    this.parentNode.submit();
+                    return false;
+                });
+                if($('.edit_post', post)){
+                    $('.edit_post', post).click(function(ele){
+                        $('.edit_post_form', post).show();
+                        return false;
+                    });
+                }
+                if($('.reply_post', post)){
+                    $('.reply_post', post).click(function(ele){
+                        $('.reply_post_form', post).show();
+                        return false;
+                    });
+                    $('.reply_post', post).button();
+                }
+                if($('.add_attachment', post)){
+                    $('.add_attachment', post).click(function(ele){
+                        $('.add_attachment_form', post).show();
+                        return false;
+                    });
+                }
+            });
+        })();
+        ''')
 
 class Thread(HierWidget):
     template='genshi:pyforge.lib.widgets.templates.thread'

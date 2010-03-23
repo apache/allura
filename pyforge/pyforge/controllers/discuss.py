@@ -213,7 +213,6 @@ class PostController(object):
     @validate(pass_validator, error_handler=index)
     def moderate(self, **kw):
         require(has_artifact_access('moderate', self.post.thread))
-        kw = self.W.moderate_post.validate(kw, None)
         if kw.pop('delete', None):
             self.post.delete()
             self.thread.update_stats()
