@@ -179,7 +179,7 @@ RabbitMQ
       (anvil)~/src$ sudo rabbitmqctl add_vhost vhost_testing
       (anvil)~/src$ sudo rabbitmqctl set_permissions -p vhost_testing testuser ""  ".*" ".*"
       (anvil)~/src$ cd forge/pyforge
-      (anvil)~/src/forge/pyforge$ paster reactor_setup test.ini
+      (anvil)~/src/forge/pyforge$ paster reactor_setup test.ini#main_with_amqp
 
 SOLR server
   We are using the multicore version of SOLR already, so all the changes to use
