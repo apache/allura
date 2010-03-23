@@ -61,6 +61,7 @@ def search(q,**kw):
 def search_artifact(atype, q, history=False, rows=10, **kw):
     # first, grab an artifact and get the fields that it indexes
     a = atype.query.find().first()
+    if a is None: return # if there are no instance of atype, we won't find anything
     fields = a.index()
     # Now, we'll translate all the fld:
     for f in fields:
@@ -68,7 +69,7 @@ def search_artifact(atype, q, history=False, rows=10, **kw):
             base = f[:-2]
             actual = f
             q = q.replace(base+':', actual+':')
-    parts = [q]
+    parts = [q] if q else []
     parts.append('type_s:%s' % fields['type_s'])
     parts.append('project_id_s:%s' % c.project._id)
     parts.append('mount_point_s:%s' % c.app.config.options.mount_point)
