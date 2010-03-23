@@ -22,7 +22,7 @@
   </head>
 
   <body>
-    <form method="POST" action="../update_ticket">
+    <form method="POST" action="${ticket.url()}update_ticket">
       <div class="span-14">
         <div class="span-2">
           ${gravatar(ticket.reported_by.preferences.email_address, size=50)}<br/>

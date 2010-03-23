@@ -544,12 +544,18 @@ class TicketController(object):
     def index(self, **kw):
         require(has_artifact_access('read', self.ticket))
         c.thread = W.thread
+        c.markdown_editor = W.markdown_editor
         c.attachment_list = W.attachment_list
+        c.user_tag_edit = W.user_tag_edit
+        c.user_select = ffw.ProjectUserSelect()
+        c.attachment_list = W.attachment_list
+        user_tags = UserTags.upsert(c.user, self.ticket.dump_ref())
         if self.ticket is not None:
             globals = model.Globals.query.get(app_config_id=c.app.config._id)
             if globals.milestone_names is None:
                 globals.milestone_names = ''
-            return dict(ticket=self.ticket, globals=globals)
+            return dict(ticket=self.ticket, globals=globals,
+                        user_tags=user_tags, allow_edit=has_artifact_access('write', self.ticket)())
         else:
             redirect('not_found')
 
@@ -603,8 +609,9 @@ class TicketController(object):
         else: tags = []
         for k in ['summary', 'description', 'status', 'milestone']:
             setattr(self.ticket, k, post_data[k])
-        who = post_data['assigned_to']
-        self.ticket.assigned_to_id = ObjectId(who) if who else None
+        if 'assigned_to' in post_data:
+            who = post_data['assigned_to']
+            self.ticket.assigned_to_id = ObjectId(who) if who else None
         tag_artifact(self.ticket, c.user, tags)
 
         globals = model.Globals.query.get(app_config_id=c.app.config._id)
@@ -627,7 +634,7 @@ class TicketController(object):
         self.ticket.commit()
         if any_sums:
             self.ticket.dirty_sums()
-        redirect('edit/')
+        redirect('.')
 
     @expose()
     def attach(self, file_info=None):

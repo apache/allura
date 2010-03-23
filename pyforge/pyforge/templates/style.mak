@@ -325,10 +325,6 @@ tbody .even{
     background-color: #eee;
 }
 
-.editable .editor
-{
-    border: 1px solid black;
-}
 .forge_comment_body{
     margin-top: .5em;
     padding: .5em;

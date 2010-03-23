@@ -6,8 +6,8 @@
   <xi:include href="${g.pyforge_templates}/master.html"/>
   <xi:include href="${c.app.templates}/lib.html" />
 
-  <?python from pyforge import model as M?>
-
+  <?python from pyforge import model as M
+    from pyforge.lib.security import has_artifact_access?>
   <head>
     <meta content="text/html; charset=UTF-8" http-equiv="content-type" py:replace="''"/>
     <title>#$ticket.ticket_num $ticket.summary</title>
@@ -18,49 +18,120 @@
   </head>
 
   <body>
-      <h1 class="ticket_title title">#${ticket.ticket_num} ${ticket.summary}</h1>
+    <style type="text/css">
+      .wmd_edit{
+        width: 455px;
+      }
+      .wmd_preview{
+        width: 453px;
+      }
+    </style>
+    <form method="POST" action="${ticket.url()}update_ticket">
+      <span class="editable viewing" style="padding: 0">
+        <h1 class="title">
+          <py:if test="not allow_edit">#$ticket.ticket_num $ticket.summary</py:if>
+          <py:if test="allow_edit">
+            <span class="viewer">#$ticket.ticket_num $ticket.summary</span>
+            <span class="editor">
+              <input name="summary" value="$ticket.summary" class="title wide"/>
+            </span>
+          </py:if>
+        </h1>
+      </span>
       <div class="span-12 append-1">
         <div class="span-2 tright"><b>Created by:</b></div>
         <div class="span-10 last gravatar sm">
-          <a href="${ticket.reported_by.url()}">
-            ${gravatar(ticket.reported_by.preferences.email_address, size=16)}
-            ${ticket.reported_by.display_name}
-          </a>
+          ${gravatar(ticket.reported_by.preferences.email_address, size=16)}
+          <a href="${ticket.reported_by.url()}">${ticket.reported_by.display_name}</a>
           ${h.ago(ticket.created_date, round=True)}
         </div>
         <div class="span-2 tright clear" style="padding: 10px 0"><b>Assigned to:</b></div>
-        <div class="span-10 last gravatar sm" style="padding: 10px 0">
-          <a py:if="ticket.assigned_to_id" href="${ticket.assigned_to.url()}">
+        <div class="span-10 last gravatar sm${allow_edit and ' editable viewing' or ''}" style="padding: 10px 0">
+          <py:if test="ticket.assigned_to_id">
             ${gravatar(ticket.assigned_to.preferences.email_address, size=16)}
-            ${ticket.assigned_to_name()}
-          </a>
-          <py:if test="not ticket.assigned_to_id">${ticket.assigned_to_name()}</py:if>
+            <a py:if="not allow_edit" href="${ticket.assigned_to.url()}">${ticket.assigned_to_name()}</a>
+            <py:if test="allow_edit">
+              <span class="ticket-assigned-to viewer">
+                <a href="${ticket.assigned_to.url()}">${ticket.assigned_to_name()}</a>
+              </span>
+              <span class="editor">${c.user_select.display(name='assigned_to',value=ticket.assigned_to_id)}</span>
+            </py:if>
+          </py:if>
+          <py:if test="not ticket.assigned_to_id">
+            <span class="ticket-assigned-to ${allow_edit and 'viewer' or ''}">${ticket.assigned_to_name()}</span>
+            <span class="editor" py:if="allow_edit">${c.user_select.display(name='assigned_to',value=ticket.assigned_to_id)}</span>
+          </py:if>
         </div>
         <hr class="clear clearfix"/>
-        <div py:content="Markup(g.markdown.convert(ticket.description))"/>
+        <div py:if="not allow_edit" py:content="Markup(g.markdown.convert(ticket.description))"/>
+        <py:if test="allow_edit">
+          ${c.markdown_editor.display(name='description',value=ticket.description)}
+          <input type="submit" value="Save Changes" class="ui-button ui-widget ui-state-default ui-button-text-only"/>
+        </py:if>
         ${c.attachment_list.display(attachments=list(ticket.attachments), edit_mode=False)}
       </div>
 
       <div id="sidebar-right" class="span-6 last">
         <div class="span-3 tright"><b>Status:</b></div>
-        <div class="span-3 last"><span class="${ticket.status}">${ticket.status}</span></div>
+        <div class="span-3 last">
+          <span class="${allow_edit and ' editable viewing' or ''}">
+            <span class="${ticket.status}${allow_edit and ' viewer' or ''}">${ticket.status}</span>
+            <span class="editor" py:if="allow_edit">
+              <select name="status">
+                <option py:for="option in globals.status_names.split()" value="$option"
+                        selected="${'selected' if ticket.status==option else None}">$option</option>
+              </select>
+            </span>
+          </span>
+        </div>
         <hr class="clear clearfix"/>
         <div class="span-3 tright"><b>Milestone:</b></div>
-        <div class="span-3 last">${ticket.milestone or 'None'}</div>
+        <div class="span-3 last">
+          <span class="${allow_edit and ' editable viewing' or ''}">
+            <span class="${allow_edit and ' viewer' or ''}">${ticket.milestone or 'None'}</span>
+            <span class="editor" py:if="allow_edit">
+              <select name="milestone">
+                <option value="">None</option>
+                <option py:for="option in globals.milestone_names.split()" value="$option"
+                        selected="${'selected' if ticket.milestone==option else None}">$option</option>
+              </select>
+            </span>
+          </span>
+        </div>
         <hr class="clear clearfix"/>
         <py:for each="field in globals.custom_fields or []">
           <div class="span-3 tright"><b>${field.label}:</b></div>
-          <div class="span-3 last">${ticket.custom_fields.get(field.name, '')}</div>
-          <hr class="clear clearfix"/>
-        </py:for>
-        <py:if test="len(ticket.tags)">
-          <div class="span-3 tright"><b>Tags:</b></div>
           <div class="span-3 last">
-            <span py:for="tag in ticket.tags" class="ui-corner-all tag">
-              <a href="../search?q=tags:${h.urllib.quote_plus(tag.tag)}">$tag.tag (${ticket.artifacts_tagged_with(tag.tag).count()})</a>
+            <span class="${allow_edit and ' editable viewing' or ''}">
+              <span class="${allow_edit and ' viewer' or ''}">${ticket.custom_fields.get(field.name, '') or '&nbsp; &nbsp; &nbsp;'}</span>
+              <span class="editor" py:if="allow_edit">
+                <input py:if="field.type != 'select' and field.type != 'boolean'" name="${field.name}" type="text"
+                       value="${ticket.custom_fields.get(field.name, '')}" class="title wide"/>
+                <input py:if="field.type == 'boolean' and ticket.custom_fields.get(field.name, '') == 'True'"
+                       name="${field.name}" type="checkbox" value="True" checked="checked"/>
+                <input py:if="field.type == 'boolean' and ticket.custom_fields.get(field.name, '') != 'True'"
+                       name="${field.name}" type="checkbox" value="True"/>
+                <select py:if="field.type == 'select'" name="${field.name}">
+                  <option py:for="option in field.options.split()" value="${option}"
+                          selected="${'selected' if ticket.custom_fields.get(field.name, '')==option else None}">${option}</option>
+                </select>
+              </span>
             </span>
           </div>
-        </py:if>
+          <hr class="clear clearfix"/>
+        </py:for>
+        <div class="span-3 tright"><b>Tags:</b></div>
+        <div class="span-3 last">
+          <span class="${allow_edit and ' editable viewing' or ''}">
+            <span class="${allow_edit and ' viewer' or ''}">
+              <span py:for="tag in ticket.tags" class="ui-corner-all tag">
+                <a href="../search?q=tags:${h.urllib.quote_plus(tag.tag)}">$tag.tag (${ticket.artifacts_tagged_with(tag.tag).count()})</a>
+              </span>
+              <py:if test="not len(ticket.tags)">None</py:if>
+            </span>
+            <span class="editor" py:if="allow_edit">${c.user_tag_edit.display(name='tags', user_tags=user_tags)}</span>
+          </span>
+        </div>
         <span class="actions clear">
           <br/><br/>
           <a href="${ticket.email_link('#%s' % ticket.ticket_num)}"><span class="ui-icon ui-icon-mail-closed"></span> Email Ticket</a><br/>
@@ -69,8 +140,10 @@
           <a href="${ticket.url()}feed.rss"><span class="ui-icon ui-icon-signal-diag"></span> Follow this Ticket</a>
         </span>
       </div>
+    </form>
+    <div class="clear">&nbsp;</div>
 
-      <div py:with="thread=ticket.discussion_thread()" id="#comment">
+    <div py:with="thread=ticket.discussion_thread()" id="#comment">
       <h3><a href="${thread.url()}">Discussion</a></h3>
           <hr class="clear clearfix"/>
       ${c.thread.display(value=thread)}

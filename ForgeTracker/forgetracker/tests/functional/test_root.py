@@ -187,12 +187,23 @@ class TestFunctionalController(TestController):
         assert 'aaa' in response
         assert '#2' in response
 
+    def test_ticket_view_editable(self):
+        summary = 'test ticket view page can be edited'
+        self.new_ticket(summary=summary)
+        response = self.app.get('/projects/test/bugs/1/')
+        assert response.html.find('input', {'name': 'summary'})
+        assert response.html.find('select', {'name': 'assigned_to'})
+        assert response.html.find('textarea', {'name': 'description'})
+        assert response.html.find('input', {'value': "Save Changes"})
+        assert response.html.find('select', {'name': 'status'})
+        assert response.html.find('select', {'name': 'milestone'})
+        assert response.html.find('input', {'name': 'tags'})
 
     def test_assign_ticket(self):
         summary = 'test assign ticket'
         self.new_ticket(summary=summary)
-        response = self.app.get('/projects/test/bugs/1/edit/')
-        assert 'nobody' in response.html.find('span', {'class': 'viewer ticket-assigned-to'}).string
+        response = self.app.get('/projects/test/bugs/1/')
+        assert 'nobody' in response.html.find('span', {'class': 'ticket-assigned-to viewer'}).string
         test_user = response.html.find(id="assigned_to").findAll('option')[1]
         test_user_id = test_user['value']
         test_user_name = test_user.string
@@ -205,8 +216,8 @@ class TestFunctionalController(TestController):
             'tags':'',
             'tags_old':''
         })
-        response = self.app.get('/projects/test/bugs/1/edit/')
-        assert test_user_name in response.html.find('span', {'class': 'viewer ticket-assigned-to'}).find('a').string
+        response = self.app.get('/projects/test/bugs/1/')
+        assert test_user_name in response.html.find('span', {'class': 'ticket-assigned-to viewer'}).find('a').string
 
     def test_custom_fields(self):
         spec = """[{"label":"Priority","type":"select","options":"normal urgent critical"},

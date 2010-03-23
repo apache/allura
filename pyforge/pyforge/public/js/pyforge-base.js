@@ -15,7 +15,7 @@
 
     // Setup editable widgets
     var edit = '<a href="#" class="edit">Edit</a>';
-    var save = '<br/><button class="save">Save</button>';
+    var save = '<br/><input class="save ui-button ui-widget ui-state-default ui-button-text-only" type="submit" value="Save"/>';
     $('.editable')
         .find('.viewer').prepend($(edit)).end()
         .find('.editor').append($(save));
