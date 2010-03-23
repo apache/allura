@@ -3,6 +3,9 @@
 # Executes nosetest for each forge application in sequence.
 # Additional parameters passed to this script (such as --failed) will be passed to nosetest.
 
+# Remove existing .test-data directories; start each test run with clean data
+find . -name '.test-data' -type d | xargs rm -r
+
 for APP in pyforge *Forge*
 do
 	echo Testing $APP
