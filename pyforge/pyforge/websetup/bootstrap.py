@@ -22,12 +22,12 @@ def cache_test_data():
     log.info('Saving data to cache in .test-data')
     if os.path.exists('.test-data'):
         shutil.rmtree('.test-data')
-    os.system('mongodump -h 127.0.0.1:27018 -o .test-data > mongodump.log')
+    os.system('mongodump -h 127.0.0.1:27018 -o .test-data > mongodump.log 2>&1')
 
 def restore_test_data():
     if os.path.exists('.test-data'):
         log.info('Restoring data from cache in .test-data')
-        rc = os.system('mongorestore -h 127.0.0.1:27018 --dir .test-data > mongorestore.log')
+        rc = os.system('mongorestore -h 127.0.0.1:27018 --dir .test-data > mongorestore.log 2>&1')
         return rc == 0
     else:
         return False
