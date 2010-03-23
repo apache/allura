@@ -80,50 +80,10 @@ pushd NoWarnings
 python setup.py develop
 popd
 
-echo
-echo '# installing pyforge dependencies'
-pushd pyforge
-python setup.py develop
-popd
-
-echo
-echo '# installing ForgeForum dependencies'
-pushd ForgeForum
-python setup.py develop
-popd
-
-echo
-echo '# installing ForgeMail dependencies'
-pushd ForgeMail
-python setup.py develop
-popd
-
-echo
-echo '# installing ForgeSCM dependencies'
-pushd ForgeSCM
-python setup.py develop
-popd
-
-echo
-echo '# installing ForgeTracker dependencies'
-pushd ForgeTracker
-python setup.py develop
-popd
-
-echo
-echo '# installing ForgeWiki dependencies'
-pushd ForgeWiki
-python setup.py develop
-popd
-
-echo
-echo '# installing ForgeDiscussion dependencies'
-pushd ForgeDiscussion
-python setup.py develop
-popd
-
-echo
-echo '# installing HelloForge dependencies'
-pushd HelloForge
-python setup.py develop
-popd
+for APP in pyforge *Forge*
+do
+	echo "# installing $APP dependencies"
+	pushd $APP
+	python setup.py develop
+	popd
+done
