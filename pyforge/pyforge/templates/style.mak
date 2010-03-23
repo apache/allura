@@ -436,7 +436,8 @@ tbody .even{
 	.closed {color: #b35959 }
 	.open {color: #77b359;}
 	.accepted {color: #576875;}
-	#ticket-list tr > td:first-child, #ticket-list tr > th:first-child, #forum-list tr > th, #forum-list tr > td {text-align: center;}
+	/*#ticket-list tr > td:first-child, #ticket-list tr > th:first-child,*/
+	#forum-list tr > th, #forum-list tr > td {text-align: center;}
 	#forum-list tr > th:first-child, #forum-list tr > td:first-child, #forum-list tr > th:last-child, #forum-list tr > td:last-child {text-align: left;}
 	#forum-list tr > th:first-child, #forum-list tr > td:first-child {width: 50%;}
 	#forum-list h2 {font-size: 1em; font-weight: bold; margin: 0 0 .1em;}
