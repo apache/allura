@@ -23,8 +23,13 @@ class Command(command.Command):
         try:
             logging.config.fileConfig(self.args[0])
         except Exception:
-            print >> sys.stderr, (
-                'Could not configure logging with config file %s' % self.args[0])
+            try:
+                # logging does not understand section#subsection syntax,
+                # so strip away the #subsection and try again.
+                logging.config.fileConfig(self.args[0].split('#')[0])
+            except Exception:
+                print >> sys.stderr, (
+                    'Could not configure logging with config file %s' % self.args[0])
         from pyforge import model
         M=model
         log = logging.getLogger('pyforge.command')
