@@ -71,10 +71,18 @@ setup(
     search = pyforge.ext.search:SearchApp
     home = pyforge.ext.project_home:ProjectHomeApp
 
+    [flyway.migrations]
+    pyforge = pyforge.migrations
+
+    [flyway.test_migrations]
+    a = flyway.tests.migrations_a
+    b = flyway.tests.migrations_b
+
     [paste.paster_command]
     reactor_setup = pyforge.command:ReactorSetupCommand
     reactor = pyforge.command:ReactorCommand
     sendmsg = pyforge.command:SendMessageCommand
+    flyway = flyway.command:MigrateCommand
     
     [easy_widgets.resources]
     ew_resources=pyforge.config.resources:register_ew_resources

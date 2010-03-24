@@ -302,3 +302,65 @@ text
   Markdown-formatted body of the message (If the user has requested html or
   combined text+html messages in their preferences, the Markdown will be so
   rendered.  Otherwise a plain text message will be sent.)
+
+Migrations
+------------------
+
+Although Ming provides the Forge platform with some lazy migration facilities,
+there are some cases (adding an index, dropping an index, etc.) where this is
+insufficient.  In these cases, the Forge platform uses the Flyway migration
+system.  Migrations are organized into 'modules' which are specified by named
+entry points under the 'flyway.migrations' section.  For instance, to specify a
+migrations module for the ForgeForum, you might have the following entry point::
+
+    [flyway.migrations]
+    forum = forgeforum.migrations
+
+Inside the :mod:`forgeforum.migrations` module, you would specify the various
+migration scripts to be run::
+
+    from flyway import Migration
+
+    class V0(Migration):
+        version=0
+        def up(self):
+            # Do some stuff with self.session to upgrade
+        def down(self):
+            # Do some stuff with self.session to undo the 'up'
+
+    class V1(Migration):
+        version=1
+        def up(self):
+            # Do some stuff with self.session to upgrade
+        def down(self):
+            # Do some stuff with self.session to undo the 'up'
+
+You can optionally supply a `requires()` method for your migration if it requires
+something more complex than the previous migration in the same module::
+
+    class V3(Migration):
+        version=3
+        def requires(self):
+            yield ('pyforge', 3)
+            for r in super(V3, self).requires():
+                yield r
+
+To actually run the migration, you must call the paster command `flyway`::
+
+    # migrate all databases on localhost to latest versions of all modules
+    $ paster flyway
+
+    # migrate the 'pyforge' database on 'myserver' to the latest version
+    $ paster flyway -u mongo://myserver:27017/pyforge
+
+    # migrate all the databases on 'myserver' to the latest version
+    $ paster flyway -u mongo://myserver:27017/
+
+    # migrate the forgeforum module to the latest version on localhost
+    $ paster flyway forgeforum
+
+    # migrate the forgeforum module to the version 5 (up or down) on localhost
+    $ paster flyway forgeforum=5
+
+It's often helpful to see exactly what migrations flyway is planning on running;
+to get this behavior, pass the option `-d` or `--dry-run` to the flyway command.
