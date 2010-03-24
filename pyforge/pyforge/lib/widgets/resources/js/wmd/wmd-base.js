@@ -945,6 +945,7 @@ return true;
 return false;
 };
 var _e2=function(){
+_2.loadEnv()
 var _e3=_2.wmd_env.buttons.split(/\s+/);
 for(var _e4 in _e3){
 switch(_e3[_e4]){

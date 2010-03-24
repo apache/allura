@@ -12,51 +12,8 @@
 </head>
 
 <body>
-<h1 class="title">Create a Ticket</h1>
-<form method="POST" action="${action}">
-  <input type="hidden" name="ticket_num" value=""/>
-  <input type="hidden" name="super_id" value="${super_id}"/>
-  <div class="span-3 clear"><label for="summary">Name:</label></div>
-  <div class="span-13 last"><input name="summary" value="" class="title wide"/></div>
-  <div class="span-3 clear"><label for="description">Description:</label></div>
-  <div class="span-14 last">${c.markdown_editor.display(name='description',value='')}</div>
-  <div class="span-3 clear"><label for="status">Status:</label></div>
-  <div class="span-6">
-    <select name="status" class="title">
-      <option py:for="name in globals.status_names.split()" value="$name">$name</option>
-    </select>
-  </div>
-  <div class="span-3"><label for="assigned_to">Assigned To:</label></div>
-  <div class="span-4 append-2 last">${c.user_select.display(name='assigned_to')}</div>
-  
-  <div class="span-3 clear"><label for="milestone">Milestone:</label></div>
-  <div class="span-6">
-    <select name="milestone" class="title">
-      <option value="">None</option>
-      <option py:for="name in globals.milestone_names.split()" value="$name">$name</option>
-    </select>
-  </div>
-
-  <py:if test="globals.custom_fields">
-    <py:for each="i,field in enumerate(globals.custom_fields)">
-      <div class="span-3${i%2 and ' clear' or ''}"><label for="${field.name}">${field.label}:</label></div>
-      <div class="${i%2 and 'span-6' or 'span-4 append-2 last'}">
-        <input py:if="field.type != 'select' and field.type != 'boolean'" name="${field.name}" type="text" value="" class="title wide"/>
-        <input py:if="field.type == 'boolean'" name="${field.name}" type="checkbox" value="True"/>
-        <select py:if="field.type == 'select'" name="${field.name}" class="title wide">
-          <option py:for="option in field.options.split()" value="${option}">$option</option>
-        </select>
-      </div>
-    </py:for>
-  </py:if>
-
-  <div class="span-3 clear"><label for="tags">Tags</label></div>
-  <div class="span-13 last">${c.user_tag_edit.display(name='tags', user_tags={'tags':[]}, className='title wide')}</div>
-
-  <div class="span-14 push-3 last"><input type="submit" value="Create Ticket" class="ui-button ui-widget ui-state-default ui-button-text-only"/></div>
-</form>
-      <div class="clear"></div>
-
+  <h1 class="title">Create a Ticket</h1>
+  ${c.ticket_form.display(action=action, user_tags={'tags':[]}, value=dict(super_id=super_id))}
 </body>
 </html>
 

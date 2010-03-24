@@ -33,7 +33,7 @@ from pyforge.controllers import AppDiscussionController
 from forgetracker import model
 from forgetracker import version
 
-from forgetracker.widgets.ticket_form import ticket_form
+from forgetracker.widgets.ticket_form import TicketForm
 from forgetracker.widgets.bin_form import bin_form
 
 log = logging.getLogger(__name__)
@@ -45,6 +45,7 @@ class W:
     markdown_editor = ffw.MarkdownEdit()
     user_tag_edit = ffw.UserTagEdit()
     attachment_list = ffw.AttachmentList()
+    ticket_form = TicketForm()
 
 class ForgeTrackerApp(Application):
     __version__ = version.__version__
@@ -259,16 +260,9 @@ class RootController(object):
     @expose('forgetracker.templates.new_ticket')
     def new(self, super_id=None, **kw):
         require(has_artifact_access('write'))
-        tmpl_context.form = ticket_form
-        c.markdown_editor = W.markdown_editor
-        c.user_tag_edit = W.user_tag_edit
-        c.user_select = ffw.ProjectUserSelect()
-        globals = model.Globals.query.get(app_config_id=c.app.config._id)
-        if globals.milestone_names is None:
-            globals.milestone_names = ''
+        c.ticket_form = W.ticket_form
         return dict(action=c.app.config.url()+'save_ticket',
-                    super_id=super_id,
-                    globals=globals)
+                    super_id=super_id)
 
     @expose('forgetracker.templates.not_found')
     def not_found(self, **kw):
@@ -337,9 +331,11 @@ class RootController(object):
         other_custom_fields = set()
         for cf in globals.custom_fields or []:
             (custom_sums if cf.type=='sum' else other_custom_fields).add(cf.name)
-            if cf.type == 'boolean' and cf.name not in post_data:
-                post_data[cf.name] = 'False'
+            if cf.type == 'boolean' and 'custom_fields.'+cf.name not in post_data:
+                ticket.custom_fields[cf.name] = 'False'
         for k, v in post_data.iteritems():
+            if 'custom_fields.' in k:
+                k = k.split('custom_fields.')[1]
             if k in custom_sums:
                 # sums must be coerced to numeric type
                 try:
@@ -563,6 +559,9 @@ class TicketController(object):
     @expose('forgetracker.templates.edit_ticket')
     def edit(self, **kw):
         require(has_artifact_access('write', self.ticket))
+
+        c.ticket_form = W.ticket_form
+
         c.thread = W.thread
         c.markdown_editor = W.markdown_editor
         c.attachment_list = W.attachment_list
@@ -619,8 +618,8 @@ class TicketController(object):
             globals.milestone_names = ''
         any_sums = False
         for cf in globals.custom_fields or []:
-            if cf.type != 'boolean' or cf.name in post_data:
-                value = post_data[cf.name]
+            if cf.type != 'boolean' or 'custom_fields.'+cf.name in post_data:
+                value = post_data['custom_fields.'+cf.name]
                 if cf.type == 'sum':
                     any_sums = True
                     try:

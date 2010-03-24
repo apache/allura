@@ -105,13 +105,13 @@
             <span class="${allow_edit and ' editable viewing' or ''}">
               <span class="${allow_edit and ' viewer' or ''}">${ticket.custom_fields.get(field.name, '') or '&nbsp; &nbsp; &nbsp;'}</span>
               <span class="editor" py:if="allow_edit">
-                <input py:if="field.type != 'select' and field.type != 'boolean'" name="${field.name}" type="text"
+                <input py:if="field.type != 'select' and field.type != 'boolean'" name="custom_fields.${field.name}" type="text"
                        value="${ticket.custom_fields.get(field.name, '')}" class="title wide"/>
                 <input py:if="field.type == 'boolean' and ticket.custom_fields.get(field.name, '') == 'True'"
-                       name="${field.name}" type="checkbox" value="True" checked="checked"/>
+                       name="custom_fields.${field.name}" type="checkbox" value="True" checked="checked"/>
                 <input py:if="field.type == 'boolean' and ticket.custom_fields.get(field.name, '') != 'True'"
-                       name="${field.name}" type="checkbox" value="True"/>
-                <select py:if="field.type == 'select'" name="${field.name}">
+                       name="custom_fields.${field.name}" type="checkbox" value="True"/>
+                <select py:if="field.type == 'select'" name="custom_fields.${field.name}">
                   <option py:for="option in field.options.split()" value="${option}"
                           selected="${'selected' if ticket.custom_fields.get(field.name, '')==option else None}">${option}</option>
                 </select>

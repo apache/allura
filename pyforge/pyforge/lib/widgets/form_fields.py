@@ -5,7 +5,8 @@ import ew
 
 class MarkdownEdit(ew.Widget):
     template='genshi:pyforge.lib.widgets.templates.markdown_edit'
-    params=['name','value']
+    params=['name','value','show_label']
+    show_label=True
     name=None
     value=None
 
@@ -14,7 +15,8 @@ class MarkdownEdit(ew.Widget):
 
 class UserTagEdit(ew.Widget):
     template='genshi:pyforge.lib.widgets.templates.user_tag_edit'
-    params=['name','user_tags', 'className']
+    params=['name','user_tags', 'className', 'show_label']
+    show_label=True
     name=None
     user_tags=None
     className=''
@@ -24,7 +26,8 @@ class UserTagEdit(ew.Widget):
 
 class ProjectUserSelect(ew.Widget):
     template='genshi:pyforge.lib.widgets.templates.project_user_select'
-    params=['name', 'value', 'size', 'all', 'users']
+    params=['name', 'value', 'size', 'all', 'users', 'show_label']
+    show_label=True
     name=None
     value=None
     size=None
