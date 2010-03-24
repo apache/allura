@@ -11,6 +11,8 @@ import pyforge.command
 from pyforge.lib.helpers import find_project
 from pyforge.command import base
 
+from paste.deploy.converters import asint
+
 M = None
 
 class SMTPServerCommand(pyforge.command.Command):
@@ -29,7 +31,7 @@ class SMTPServerCommand(pyforge.command.Command):
         from pyforge import model
         M = model
         server = MailServer((tg.config.get('forgemail.host', '0.0.0.0'),
-                             tg.config.get('forgemail.port', 8825)),
+                             asint(tg.config.get('forgemail.port', 8825))),
                             None)
         asyncore.loop()
 
