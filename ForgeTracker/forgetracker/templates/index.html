@@ -54,7 +54,8 @@
               <td>${h.ago(change.change_date)}</td>
               <td>$change.change_type</td>
               <td><a href="$change.ticket_num">$change.ticket_num</a></td>
-              <td>$change.change_text</td>
+              <td py:if="len(change.change_text) &gt; 70">${change.change_text[0:70]}...</td>
+              <td py:if="len(change.change_text) &lt;= 70">$change.change_text</td>
             </tr>
           </tbody>
         </table>
