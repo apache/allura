@@ -21,7 +21,7 @@ popd
 # mongod & # already started for us
 # Start a second instance of mongo for tests
 mkdir -p /data/db-test
-mongod --port 27108 --dbpath /data/db-test &
+mongod --port 27018 --dbpath /data/db-test &
 
 
 # Start the forge
