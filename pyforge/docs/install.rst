@@ -170,7 +170,7 @@ mongod
   We'll need a test MongoDB server to keep from stomping on our development data::
 
       (anvil)~/src$ mkdir -p ~/var/mongodata-test
-      (anvil)~/src$ mongod --port 27108 --dbpath ~/var/mongodata-test
+      (anvil)~/src$ mongod --port 27018 --dbpath ~/var/mongodata-test
 
 RabbitMQ
   Here, we'll set up a second virtual host for testing.  We also need to set up
