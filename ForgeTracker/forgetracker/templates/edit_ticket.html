@@ -23,7 +23,7 @@
 
   <body>
     <h1 class="title">Edit ticket #$ticket.ticket_num</h1>
-    ${c.ticket_form.display(action=ticket.url()+'update_ticket', user_tags=user_tags, value=ticket)}
+    ${c.ticket_form.display(action=ticket.url()+'update_ticket_from_widget', user_tags=user_tags, value=dict(ticket_form=ticket))}
     <div class="span-12 push-2">
       ${c.attachment_list.display(attachments=list(ticket.attachments), edit_mode=has_artifact_access('write', ticket)())}
       <div py:if="has_artifact_access('write', ticket)()" class="reply title-pane closed">
@@ -37,10 +37,10 @@
       </div>
     </div>
     <hr/>
-    <div py:with="thread=ticket.discussion_thread()">
+    <!-- <div py:with="thread=ticket.discussion_thread()">
       <h2><a href="${thread.url()}">Discussion</a></h2>
-      ${c.thread.display(value=thread)}
-    </div>
+      ${c.thread.display(value=dict(thread=thread))}
+    </div> -->
     <script type="text/javascript" src="${g.app_static('js/comments.js')}"/>
   </body>
 </html>

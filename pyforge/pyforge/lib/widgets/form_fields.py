@@ -1,10 +1,12 @@
 from pylons import c
 from pyforge.model import User
+from formencode import validators as fev
 
 import ew
 
-class MarkdownEdit(ew.Widget):
+class MarkdownEdit(ew.InputField):
     template='genshi:pyforge.lib.widgets.templates.markdown_edit'
+    validator = fev.UnicodeString()
     params=['name','value','show_label']
     show_label=True
     name=None
@@ -13,8 +15,9 @@ class MarkdownEdit(ew.Widget):
     def resources(self):
         yield ew.resource.JSLink('js/wmd/wmd.js')
 
-class UserTagEdit(ew.Widget):
+class UserTagEdit(ew.InputField):
     template='genshi:pyforge.lib.widgets.templates.user_tag_edit'
+    validator = fev.UnicodeString()
     params=['name','user_tags', 'className', 'show_label']
     show_label=True
     name=None
@@ -24,7 +27,7 @@ class UserTagEdit(ew.Widget):
     def resources(self):
         yield ew.resource.JSLink('js/jquery.tag.editor.js')
 
-class ProjectUserSelect(ew.Widget):
+class ProjectUserSelect(ew.InputField):
     template='genshi:pyforge.lib.widgets.templates.project_user_select'
     params=['name', 'value', 'size', 'all', 'users', 'show_label']
     show_label=True

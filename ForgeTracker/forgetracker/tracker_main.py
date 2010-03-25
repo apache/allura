@@ -21,6 +21,7 @@ from ming.orm.ormsession import ThreadLocalORMSession
 # Pyforge-specific imports
 from pyforge.app import Application, ConfigOption, SitemapEntry, DefaultAdminController
 from pyforge.lib.helpers import push_config, tag_artifact, DateTimeConverter, square_image
+from pyforge.lib import helpers as h
 from pyforge.lib.search import search_artifact
 from pyforge.lib.decorators import audit, react
 from pyforge.lib.security import require, has_artifact_access
@@ -304,36 +305,41 @@ class RootController(object):
         return feed.writeString('utf-8')
 
     @expose()
-    def save_ticket(self, ticket_num, tags, tags_old=None, **post_data):
+    @h.vardec
+    @validate(W.ticket_form, error_handler=new)
+    def save_ticket(self, ticket_form=None, **post_data):
         require(has_artifact_access('write'))
         if request.method != 'POST':
             raise Exception('save_ticket must be a POST request')
         globals = model.Globals.query.get(app_config_id=c.app.config._id)
         if globals.milestone_names is None:
             globals.milestone_names = ''
-        if ticket_num:
+        if 'ticket_num' in ticket_form and ticket_form['ticket_num']:
             ticket = model.Ticket.query.get(app_config_id=c.app.config._id,
-                                          ticket_num=int(ticket_num))
+                                          ticket_num=int(ticket_form['ticket_num']))
             if not ticket:
                 raise Exception('Ticket number not found.')
-            del post_data['ticket_num']
+            del ticket_form['ticket_num']
         else:
             ticket = model.Ticket()
             ticket.app_config_id = c.app.config._id
             ticket.custom_fields = dict()
 
-            if tags: tags = tags.split(',')
-            else: tags = []
+            if 'tags' in ticket_form and len(ticket_form['tags']):
+                tags = ticket_form['tags'].split(',')
+                del ticket_form['tags']
+            else:
+                tags = []
             tag_artifact(ticket, c.user, tags)
-            post_data['ticket_num'] = model.Globals.next_ticket_num()
+            ticket_form['ticket_num'] = model.Globals.next_ticket_num()
 
         custom_sums = set()
         other_custom_fields = set()
         for cf in globals.custom_fields or []:
             (custom_sums if cf.type=='sum' else other_custom_fields).add(cf.name)
-            if cf.type == 'boolean' and 'custom_fields.'+cf.name not in post_data:
+            if cf.type == 'boolean' and 'custom_fields.'+cf.name not in ticket_form:
                 ticket.custom_fields[cf.name] = 'False'
-        for k, v in post_data.iteritems():
+        for k, v in ticket_form.iteritems():
             if 'custom_fields.' in k:
                 k = k.split('custom_fields.')[1]
             if k in custom_sums:
@@ -353,7 +359,7 @@ class RootController(object):
         ticket.commit()
         # flush so we can participate in a subticket search (if any)
         session(ticket).flush()
-        super_id = post_data.get('super_id')
+        super_id = ticket_form.get('super_id')
         if super_id:
             ticket.set_as_subticket_of(ObjectId(super_id))
         redirect(str(ticket.ticket_num)+'/')
@@ -563,10 +569,7 @@ class TicketController(object):
         c.ticket_form = W.ticket_form
 
         c.thread = W.thread
-        c.markdown_editor = W.markdown_editor
         c.attachment_list = W.attachment_list
-        c.user_tag_edit = W.user_tag_edit
-        c.user_select = ffw.ProjectUserSelect()
         globals = model.Globals.query.get(app_config_id=c.app.config._id)
         if globals.milestone_names is None:
             globals.milestone_names = ''
@@ -600,14 +603,35 @@ class TicketController(object):
         return feed.writeString('utf-8')
 
     @expose()
-    def update_ticket(self, tags=None, tags_old=None, **post_data):
+    def update_ticket(self, **post_data):
+        self._update_ticket(post_data)
+
+    @expose()
+    @h.vardec
+    @validate(W.ticket_form, error_handler=edit)
+    def update_ticket_from_widget(self, **post_data):
+        data = post_data['ticket_form']
+        # icky: handle custom fields like the non-widget form does
+        if 'custom_fields' in data:
+            for k in data['custom_fields']:
+                data['custom_fields.'+k] = data['custom_fields'][k]
+        self._update_ticket(data)
+        
+    def _update_ticket(self, post_data):
+        print post_data
         require(has_artifact_access('write', self.ticket))
         if request.method != 'POST':
             raise Exception('update_ticket must be a POST request')
-        if tags: tags = tags.split(',')
-        else: tags = []
+        if 'tags' in post_data and len(post_data['tags']):
+            tags = post_data['tags'].split(',')
+            del post_data['tags']
+        else:
+            tags = []
         for k in ['summary', 'description', 'status', 'milestone']:
-            setattr(self.ticket, k, post_data[k])
+            if k in post_data:
+                setattr(self.ticket, k, post_data[k])
+            else:
+                setattr(self.ticket, k, '')
         if 'assigned_to' in post_data:
             who = post_data['assigned_to']
             self.ticket.assigned_to_id = ObjectId(who) if who else None
@@ -618,7 +642,7 @@ class TicketController(object):
             globals.milestone_names = ''
         any_sums = False
         for cf in globals.custom_fields or []:
-            if cf.type != 'boolean' or 'custom_fields.'+cf.name in post_data:
+            if 'custom_fields.'+cf.name in post_data:
                 value = post_data['custom_fields.'+cf.name]
                 if cf.type == 'sum':
                     any_sums = True
@@ -627,8 +651,10 @@ class TicketController(object):
                     except ValueError:
                         value = 0
             # unchecked boolean won't be passed in, so make it False here
+            elif cf.type == 'boolean':
+                value = False
             else:
-                value = 'False'
+                value = ''
             self.ticket.custom_fields[cf.name] = value
         self.ticket.commit()
         if any_sums:

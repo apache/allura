@@ -2,8 +2,11 @@
       xmlns:py="http://genshi.edgewall.org/"
       xmlns:xi="http://www.w3.org/2001/XInclude"
       py:strip="True">
-  <py:for each="i, field in enumerate(c.widget.widget_type.fields)">
+  <py:for each="i, field in enumerate(c.widget.widget_type.fields)" py:with="ctx=c.widget.context_for(field.name)">
     <div class="span-3${i%2 and ' clear' or ''}"><label for="${field.name}">${field.label}:</label></div>
-    <div class="${i%2 and 'span-6' or 'span-4 append-2 last'}">${field.display(**c.widget.context_for(field.name))}</div>
+    <div class="${i%2 and 'span-6' or 'span-4 append-2 last'}">
+      ${field.display(**ctx)}
+      <py:if test="ctx.errors and field.show_errors"><div class="error">$ctx.errors</div></py:if>
+    </div>
   </py:for>
 </span>

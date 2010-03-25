@@ -4,6 +4,7 @@ from pyforge.lib.widgets import form_fields as ffw
 
 from pylons import c
 from forgetracker import model
+from formencode import validators as fev
 
 class TicketCustomFields(ew.CompoundField):
     template='genshi:forgetracker.widgets.templates.ticket_custom_fields'
@@ -11,28 +12,36 @@ class TicketCustomFields(ew.CompoundField):
     def fields(self):
         fields = []
         for field in model.Globals.query.get(app_config_id=c.app.config._id).custom_fields:
-            if field.type != 'select' and field.type != 'boolean':
-                fields.append(ew.InputField(label=field.label, name=field.name, attrs={'class':"title wide"}))
-            elif field.type == 'boolean':
-                fields.append(ew.Checkbox(label=field.label, name=field.name, suppress_label=True, value=True))
-            else:
-                fields.append(ew.SingleSelectField(label=field.label, name=field.name, attrs={'class':"title wide"},
+            if field.type == 'select':
+                fields.append(ew.SingleSelectField(label=field.label, name=str(field.name), attrs={'class':"title wide"},
                     options=[ew.Option(label=opt,html_value=opt,py_value=opt) for opt in field.options.split()]))
+            elif field.type == 'boolean':
+                fields.append(ew.Checkbox(label=field.label, name=str(field.name), suppress_label=True))
+            elif field.type == 'sum' or field.type == 'number':
+                fields.append(ew.NumberField(label=field.label, name=str(field.name), attrs={'class':"title wide"}))
+            else:
+                fields.append(ew.TextField(label=field.label, name=str(field.name), attrs={'class':"title wide"}))
         return fields
 
 class TicketForm(ew.SimpleForm):
     template='genshi:forgetracker.widgets.templates.ticket_form'
+    name="ticket_form"
     submit_text='Save Ticket'
     user_tags = []
     params=['user_tags', 'submit_text']
 
-    def display_field_by_idx(self, idx):
-        return self.fields[idx].display(**c.widget.context_for(self.fields[idx].name))
+    def display_field_by_idx(self, idx, ignore_errors=False):
+        field = self.fields[idx]
+        ctx = c.widget.context_for(field.name)
+        display = field.display(**ctx)
+        if ctx['errors'] and field.show_errors and not ignore_errors:
+            display = "%s<div class='error'>%s</div>" % (display, ctx['errors'])
+        return display
 
     @property
     def fields(self):
         fields = [
-            ew.InputField(name='summary', label='Name', attrs={'class':"title wide"}),
+            ew.TextField(name='summary', label='Name', attrs={'class':"title wide"}, validator=fev.UnicodeString(not_empty=True)),
             ffw.MarkdownEdit(label='Description',name='description'),
             ew.SingleSelectField(name='status', label='Status', attrs={'class':"title wide"},
                 options=lambda: model.Globals.query.get(app_config_id=c.app.config._id).status_names.split()),
