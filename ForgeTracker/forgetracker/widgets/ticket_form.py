@@ -53,7 +53,7 @@ class TicketForm(ew.SimpleForm):
             ew.SubmitButton(label=self.submit_text,name='submit',
                 attrs={'class':"ui-button ui-widget ui-state-default ui-button-text-only"}),
             ew.HiddenField(name='ticket_num'),
-            ew.HiddenField(name='super_id'),
-            TicketCustomFields(name="custom_fields")
-        ]
+            ew.HiddenField(name='super_id') ]
+        if model.Globals.query.get(app_config_id=c.app.config._id).custom_fields:
+            fields.append(TicketCustomFields(name="custom_fields"))
         return fields
