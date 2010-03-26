@@ -48,21 +48,21 @@
       <div id="project-admin-overview" style="overflow: auto">
         <h2>Project Overview</h2>
         <div py:if="not has_project_access('update')()">
-          <div class="span-3"><label>Name</label></div>
+          <div class="span-3 clear"><label>Name</label></div>
           <div class="span-15 last">$c.project.name</div>
 
-          <div class="span-3"><label>Icon</label></div>
+          <div class="span-3 clear"><label>Icon</label></div>
           <div class="span-15 last">
             <img py:if="c.project.icon" src="${c.project.url()}/icon"/>
             <span py:if="not c.project.icon">&nbsp;</span>
           </div>
 
-          <div class="span-3"><label>Short Description</label></div>
+          <div class="span-3 clear"><label>Summary</label></div>
           <div class="span-15 last"><pre>$c.project.short_description</pre></div>
 
-          <div class="span-3"><label>Description</label></div>
+          <div class="span-3 clear"><label>Description</label></div>
           <div class="span-15 last">${Markup(c.project.description_html)}</div>
-          <div class="span-3"><label>Screenshots</label></div>
+          <div class="span-3 clear"><label>Screenshots</label></div>
           <div class="span-15 last">
               <py:if test="len(c.project.get_screenshots())">
                 <a py:for="ss in c.project.get_screenshots()" href="${c.project.url()}screenshot/$ss.filename"><img src="${c.project.url()}screenshot/$ss.filename/thumb" style="margin-right: 1em"/></a>
@@ -87,7 +87,7 @@
               ${file_field('icon', 'File')}
             </div>
           </div>
-          <div class="span-3 clear"><label>Short Description</label></div>
+          <div class="span-3 clear"><label>Summary</label></div>
           <div class="editable viewing span-15 last">
             <div class="viewer"><pre>$c.project.short_description</pre></div>
             <div class="editor"><textarea name="short_description">$c.project.short_description</textarea></div>
