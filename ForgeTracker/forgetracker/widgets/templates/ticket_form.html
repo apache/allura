@@ -19,7 +19,7 @@
   <div class="span-3 clear"><label for="milestone">Milestone:</label></div>
   <div class="span-6">${Markup(c.widget.widget_type.display_field_by_idx(4))}</div>
 
-  <py:if test="len(fields) &lt; 9">
+  <py:if test="len(fields) &gt; 9">
   ${Markup(c.widget.widget_type.display_field_by_idx(9, ignore_errors=True))}
   </py:if>
 
