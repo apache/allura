@@ -12,12 +12,18 @@ class TestFeeds(TestController):
         TestController.setUp(self)
         self.app.get('/Wiki/')
         self.app.get('/Tickets/')
-        self.app.post('/Tickets/save_ticket', params=dict(
-                ticket_num='',
-                tags='',
-                summary='This is a ticket',
-                status='open',
-                description='This is a description'))
+        r = self.app.post(
+            '/Tickets/save_ticket',
+            params=variable_encode(dict(
+                    ticket_form=dict(
+                    ticket_num='',
+                    tags='',
+                    assigned_to='',
+                    milestone='',
+                    summary='This is a ticket',
+                    status='open',
+                    description='This is a description'))),
+            status=302)
 
     def test_project_feed(self):
         self.app.get('/feed.rss')
