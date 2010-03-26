@@ -22,10 +22,12 @@ function add_field(label, type, options){
     $('#custom-field-list').append($new_field);
 
     $new_field.find('select').change(show_hide_options).change();
+    manage_messages();
 }
 
 function delete_field(el){
     $(el).closest('div.custom-field').remove();
+    manage_messages();
 }
 
 function save_fields(){
@@ -62,6 +64,17 @@ function show_hide_options(){
     $this.closest('div.custom-field').find('span.options-wrapper').toggle(show)
 }
 
+function manage_messages(){
+    if($('div.custom-field').length){
+        $('#no_fields_message').hide();
+        $('#has_fields_message').show();
+    }
+    else{
+        $('#no_fields_message').show();
+        $('#has_fields_message').hide();
+    }
+}
+
 $(function(){
     $('div.custom-field-stub').each(function(){
         var $this=$(this), label=$this.attr('data-label'), type=$this.attr('data-type'), options=$this.attr('data-options');
@@ -69,4 +82,5 @@ $(function(){
         $this.remove();
     });
     $('#custom-field-list').sortable();
+    manage_messages();
 });

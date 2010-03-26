@@ -99,7 +99,8 @@
       <div id="app-custom-fields">
         <h3>Custom Fields</h3>
         <div>
-          <p>Drag and drop the fields to re-order.</p>
+          <p id="has_fields_message">Drag and drop the fields to re-order.</p>
+          <p id="no_fields_message">No custom fields have been created.</p>
           <div id="custom-field-list">
             <py:for each="field in globals.custom_fields">
               <div style="display:none" class="custom-field-stub"
