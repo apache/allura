@@ -419,6 +419,10 @@ tbody .even{
     text-decoration: underline;
 }
 
+input.title.wide.ticket_form_tags{
+    width: 482px;
+}
+
 /* Wes fix */
 	.span-3 label {display: block; text-align: right; vertical-align: middle;}
 	.wmd_holder div div {background: none !important;}
