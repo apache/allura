@@ -52,8 +52,8 @@ class TicketForm(ew.SimpleForm):
             ffw.UserTagEdit(label='Tags',name='tags', className='title wide'),
             ew.SubmitButton(label=self.submit_text,name='submit',
                 attrs={'class':"ui-button ui-widget ui-state-default ui-button-text-only"}),
-            ew.HiddenField(name='ticket_num'),
-            ew.HiddenField(name='super_id') ]
+            ew.HiddenField(name='ticket_num', validator=fev.UnicodeString(if_missing=None)),
+            ew.HiddenField(name='super_id', validator=fev.UnicodeString(if_missing=None)) ]
         if model.Globals.query.get(app_config_id=c.app.config._id).custom_fields:
             fields.append(TicketCustomFields(name="custom_fields"))
         return fields

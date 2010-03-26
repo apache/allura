@@ -618,7 +618,6 @@ class TicketController(object):
         self._update_ticket(data)
         
     def _update_ticket(self, post_data):
-        print post_data
         require(has_artifact_access('write', self.ticket))
         if request.method != 'POST':
             raise Exception('update_ticket must be a POST request')
