@@ -39,10 +39,17 @@ class Migration(object):
     def __init__(self, session):
         self.session = session
 
-    def requires(self):
-        '''Returns a list of requirements that must be met before upgrading to
-        this migration.  By default, returns the previous-versioned migration'''
+    def up_requires(self):
         return [ (self.module, self.version-1) ]
+
+    def down_requires(self):
+        return [ (self.module, self.version) ]
+
+    def up_postcondition(self):
+        return { self.module: self.version }
+
+    def down_postcondition(self):
+        return { self.module: self.version-1 }
 
     def up(self):
         '''Upgrade to a new schema version'''

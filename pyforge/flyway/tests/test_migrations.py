@@ -1,11 +1,13 @@
 import unittest
 import test_globals
 from flyway.command import MigrateCommand
+from flyway.migrate import Migration
 
 class MigrateTest(unittest.TestCase):
 
     def setUp(self):
         test_globals.migrations_run = []
+        # Migration.migrations_registry = {}
         self.cmd = MigrateCommand('flyway')
         self.cmd.entry_point_section='flyway.test_migrations'
         self.args = [
@@ -42,8 +44,13 @@ class MigrateTest(unittest.TestCase):
             ('a', 9, 'down'), ('a', 8, 'down'), ('a', 7, 'down'), ('a', 6, 'down') ]
         assert expected_migrations == test_globals.migrations_run
 
-    def test_stuck_migration(self):
+    def test_downup_migration(self):
         self.cmd.run(self.args + ['a']) # a=9, b=-1 now
-        # Can't migrate b because it requires a=0, which is unsatisfiable (we do
-        # not support downgrading a automagically so as to upgrade b)
-        self.assertRaises(ValueError, self.cmd.run, self.args + ['b'])
+        self.cmd.run(self.args + ['b']) # a=9, b=9 now
+        expected = [('a', ver, 'up') for ver in range(10) ]
+        expected += [('a', ver, 'down') for ver in range(9, 0, -1) ]
+        expected.append(('b', 0, 'up'))
+        expected += [
+            (ab, ver, 'up') for ver in range(1, 10) for ab in 'ab']
+        assert expected == test_globals.migrations_run
+

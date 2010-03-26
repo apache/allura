@@ -8,8 +8,12 @@ for version in range(10):
             test_globals.migrations_run.append((self.module, self.version, 'up'))
         def down(self):
             test_globals.migrations_run.append((self.module, self.version, 'down'))
-        def requires(self):
+        def up_requires(self):
             yield ('a', self.version)
-            for req in Migration.requires(self):
+            for req in Migration.up_requires(self):
+                yield req
+        def down_requires(self):
+            yield ('a', self.version+1)
+            for req in Migration.up_requires(self):
                 yield req
 
