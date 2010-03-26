@@ -29,21 +29,32 @@ function delete_field(el){
 }
 
 function save_fields(){
-    var json = '[' + $('#custom-field-list>div.custom-field').
-                map(function(){
-                    var $this=$(this);
-                    return ('{'
-                        + '"label":"' + $this.find('input.field-label').val() + '",'
-                        + '"type":"' + $this.find('select').val() + '",'
-                        + '"options":"' + $this.find('input.field-options').val() + '"'
-                        + '}'
-                    );
-                }).
-                get().
-                join(',') + ']';
-    $.post('set_custom_fields', { custom_fields: json }, function(){
-        location.reload();
+    var foundBlank = false;
+    $('#custom-field-list>div.custom-field input.field-label').each(function(ele){
+        if(this.value==''){
+            foundBlank = true;
+        }
     });
+    if(foundBlank){
+        alert('Every custom field must have a label.')
+    }
+    else{
+        var json = '[' + $('#custom-field-list>div.custom-field').
+                    map(function(){
+                        var $this=$(this);
+                        return ('{'
+                            + '"label":"' + $this.find('input.field-label').val() + '",'
+                            + '"type":"' + $this.find('select').val() + '",'
+                            + '"options":"' + $this.find('input.field-options').val() + '"'
+                            + '}'
+                        );
+                    }).
+                    get().
+                    join(',') + ']';
+        $.post('set_custom_fields', { custom_fields: json }, function(){
+            location.reload();
+        });
+    }
 }
 
 function show_hide_options(){
