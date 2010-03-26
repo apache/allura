@@ -12,6 +12,7 @@ from pymongo.bson import ObjectId
 
 
 from pyforge.app import Application, WidgetController, DefaultAdminController, SitemapEntry
+from pyforge.lib.security import has_artifact_access
 from pyforge.lib.helpers import vardec, square_image
 from pyforge import version
 from pyforge import model as M
@@ -66,12 +67,14 @@ class AdminApp(Application):
         self.templates = pkg_resources.resource_filename('pyforge.ext.admin', 'templates')
 
     def sidebar_menu(self):
-        return [SitemapEntry('Admin')]+[
-            SitemapEntry(ac.options.mount_point,
-                         ac.options.mount_point + '/',
-                         className='nav_child').bind_app(self)
-            for ac in c.project.app_configs
-            ]
+        links = []
+        for ac in c.project.app_configs:
+            app = c.project.app_instance(ac.options.mount_point)
+            if len(app.config_options) > 1 or (app.permissions and has_artifact_access('configure', app=app)()):
+                links.append(SitemapEntry(ac.options.mount_point,
+                             ac.options.mount_point + '/',
+                             className='nav_child').bind_app(self))
+        return [SitemapEntry('Admin')]+links
 
     def install(self, project):
         pass

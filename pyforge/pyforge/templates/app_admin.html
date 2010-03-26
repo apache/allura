@@ -14,10 +14,10 @@
   </head>
   
   <body>
-    <py:if test="not len(app.config_options) > 1 and not app.permissions">
+    <py:if test="not len(app.config_options) > 1 and not (app.permissions and allow_config)">
       Nothing to administer for ${app.config.plugin_name}.
     </py:if>
-    <py:if test="len(app.config_options) > 1 or app.permissions">
+    <py:if test="len(app.config_options) > 1 or (app.permissions and allow_config)">
       <div id="app_admin_tabs">
       	<ul>
       		<li><a href="#app-config" py:if="len(app.config_options) > 1">$app.config.plugin_name Options</a></li>

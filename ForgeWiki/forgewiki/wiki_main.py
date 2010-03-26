@@ -49,10 +49,6 @@ class ForgeWikiApp(Application):
     __version__ = version.__version__
     permissions = [ 'configure', 'read', 'create', 'edit', 'delete', 'edit_page_permissions',
                     'unmoderated_post', 'post', 'moderate', 'admin']
-    config_options = Application.config_options + [
-        ConfigOption('project_name', str, 'pname'),
-        ConfigOption('message', str, 'Custom message goes here'),
-        ]
 
     def __init__(self, project, config):
         Application.__init__(self, project, config)
