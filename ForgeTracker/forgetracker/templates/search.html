@@ -11,6 +11,7 @@
   <head>
     <meta content="text/html; charset=UTF-8" http-equiv="content-type" py:replace="''"/>
     <title>Search</title>
+    <link rel="stylesheet" type="text/css" href="/static/Tickets/css/tracker.css"/>
   </head>
   <body>
     <h1 class="title">Search</h1>
@@ -31,10 +32,10 @@
     <table py:if="count != 0 and q">
       <thead>
         <tr>
-          <th>Ticket</th>
-          <th>Status</th>
+          <th data-sort="ticket_num_i">Ticket</th>
+          <th data-sort="status_s">Status</th>
           <th>Description</th>
-          <th>Assigned To</th>
+          <th data-sort="assigned_to_s">Assigned To</th>
           <th>Updated</th>
         </tr>
       </thead>
@@ -48,15 +49,19 @@
           <td py:if="not t.assigned_to_id"></td>
           <td>${h.ago(t.created_date)}</td>
         </tr>
-        <tr py:if="len(tickets) &lt; count">
-          <td />
-          <td colspan="7">
-            <a href="${tg.url('.', q=q, history=history, limit=count)}">More Results</a>
-          </td>
-        </tr>
       </tbody>
     </table>
+    <div>
+        <span id="first-page" class="nav-button disabled">&lt;&lt;</span>
+        <span id="prev-page" class="nav-button disabled">&lt;</span>
+        <span id="next-page" class="nav-button disabled">&gt;</span>
+        <span id="last-page" class="nav-button disabled">&gt;&gt;</span>
+    </div>
     <a href="${tg.url('../edit/', q=q, limit=count)}" py:if="count != 0">Edit All</a>
   </body>
+  <script type="text/javascript">
+var q="$q", count=$count, limit=$limit, page=$page, sort="$sort";
+  </script>
+  <script type="text/javascript" src="/static/Tickets/js/ticket-list.js"/>
 
 </html>

@@ -198,10 +198,14 @@ class RootController(object):
         limit=-1 is NOT recognized as 'all'.  500 is a reasonable limit.
         """
 
+        page = max(page, 0)
         start = page * limit
         count = 0
         tickets = []
-        matches = search_artifact(model.Ticket, q, rows=limit, sort=sort, start=start, fl='ticket_num_i', **kw) if q else None
+        refined_sort = sort if sort else 'ticket_num_i asc'
+        if  'ticket_num_i' not in refined_sort:
+            refined_sort += ',ticket_num_i asc'
+        matches = search_artifact(model.Ticket, q, rows=limit, sort=refined_sort, start=start, fl='ticket_num_i', **kw) if q else None
         if matches:
             count = matches.hits
             # ticket_numbers is in sorted order
@@ -249,9 +253,11 @@ class RootController(object):
     @expose('forgetracker.templates.search')
     @validate(dict(q=validators.UnicodeString(if_empty=None),
                    history=validators.StringBool(if_empty=False),
-                   limit=validators.Int(if_empty=10)))
-    def search(self, q=None, history=False, limit=10):
-        return self.paged_query(q=q, limit=limit, history=history)
+                   limit=validators.Int(if_empty=10),
+                   page=validators.Int(if_empty=0),
+                   sort=validators.UnicodeString(if_empty=None)))
+    def search(self, **kw):
+        return self.paged_query(**kw)
 
     @expose()
     def _lookup(self, ticket_num, *remainder):
@@ -366,9 +372,11 @@ class RootController(object):
 
     @with_trailing_slash
     @expose('forgetracker.templates.mass_edit')
-    @validate(dict(q=validators.UnicodeString(if_empty=None)))
-    def edit(self, q=None, limit=10, **kw):
-        result = self.paged_query(q=q, limit=limit, **kw)
+    @validate(dict(q=validators.UnicodeString(if_empty=None),
+                   limit=validators.Int(if_empty=10),
+                   page=validators.Int(if_empty=0)))
+    def edit(self, **kw):
+        result = self.paged_query(**kw)
         globals = model.Globals.query.get(app_config_id=c.app.config._id)
         if globals.milestone_names is None:
             globals.milestone_names = ''

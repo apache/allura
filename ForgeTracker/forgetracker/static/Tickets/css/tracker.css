@@ -4,3 +4,7 @@
 .ticket_feed{
     float: right;
 }
+th[data-sort], .nav-button{ cursor: pointer; }
+th[data-sort]:hover, .nav-button:hover{ text-decoration: underline; }
+.nav-button.disabled{ color: gray; }
+.nav-button.disabled:hover{ text-decoration: none; }

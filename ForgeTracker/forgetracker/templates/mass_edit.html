@@ -11,6 +11,7 @@
     <title>ForgeTracker Index Page</title>
     <link rel="alternate" type="application/rss+xml" title="RSS" href="feed.rss"/>
     <link rel="alternate" type="application/atom+xml" title="Atom" href="feed.atom"/>
+    <link rel="stylesheet" type="text/css" href="/static/Tickets/css/tracker.css"/>
     <style type="text/css">
         div.ticket { font-size:160% }
     </style>
@@ -24,10 +25,10 @@
           <thead>
             <tr>
               <th></th>
-              <th>Ticket</th>
-              <th>Status</th>
+              <th data-sort="ticket_num_i">Ticket</th>
+              <th data-sort="status_s">Status</th>
               <th>Description</th>
-              <th>Assigned To</th>
+              <th data-sort="assigned_to_s">Assigned To</th>
               <th>Updated</th>
             </tr>
           </thead>
@@ -85,5 +86,9 @@
         <button onclick="update_tickets()">Update Tickets</button>
         <span id="result"></span>
   </body>
+  <script type="text/javascript">
+var q="$q", count=$count, limit=$limit, page=$page, sort="$sort";
+  </script>
+  <script type="text/javascript" src="/static/Tickets/js/ticket-list.js"/>
   <script type="text/javascript" src="/static/Tickets/js/mass-edit.js"/>
 </html>
