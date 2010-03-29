@@ -26,6 +26,10 @@ class TestRootController(TestController):
         links = response.html.findAll('a')
         assert_true(links, "Mummy, there are no links here!")
 
+    def test_markdown_to_html(self):
+        r = self.app.get('/markdown_to_html?markdown=*aaa*bb[WikiHome]&project=test&app=bugs')
+        assert '<p><em>aaa</em>bb<a href="/projects/test/wiki/WikiHome/">[WikiHome]</a></p>' in r
+
     def test_site_css(self):
         r = self.app.get('/site_style.css')
         assert("""a{

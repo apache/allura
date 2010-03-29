@@ -18,14 +18,6 @@
   </head>
 
   <body>
-    <style type="text/css">
-      .wmd_edit{
-        width: 455px;
-      }
-      .wmd_preview{
-        width: 453px;
-      }
-    </style>
     <form method="POST" action="${ticket.url()}update_ticket">
       <span class="editable viewing" style="padding: 0">
         <h1 class="title">
@@ -63,11 +55,22 @@
           </py:if>
         </div>
         <hr class="clear clearfix"/>
-        <div py:if="not allow_edit" py:content="Markup(g.markdown.convert(ticket.description))"/>
+
+
+        <div class="${allow_edit and ' editable viewing' or ''}">
+          <span class="${allow_edit and 'viewer' or ''}">
+            ${Markup(g.markdown.convert(ticket.description))}
+          </span>
+          <span class="editor" py:if="allow_edit">
+            ${c.markdown_editor.display(name='description',value=ticket.description)}
+          </span>
+        </div>
+
+        <!-- <div py:if="not allow_edit" py:content="Markup(g.markdown.convert(ticket.description))"/>
         <py:if test="allow_edit">
           ${c.markdown_editor.display(name='description',value=ticket.description)}
           <input type="submit" value="Save Changes" class="ui-button ui-widget ui-state-default ui-button-text-only"/>
-        </py:if>
+        </py:if> -->
         ${c.attachment_list.display(attachments=list(ticket.attachments), edit_mode=False)}
       </div>
 

@@ -1,28 +1,13 @@
 <div xmlns="http://www.w3.org/1999/xhtml"
-     xmlns:py="http://genshi.edgewall.org/"
-     class="wmd_holder">
-  <textarea id="wmd_edit_$name" class="wmd_edit" name="$name">$value</textarea>
-  <div id="wmd_preview_$name" class="wmd_preview"></div>
+     xmlns:py="http://genshi.edgewall.org/">
+  <textarea id="markdown_edit_$name" name="$name">$value</textarea>
 
   <script type="text/javascript">
-      wmd_options = { autostart: false, output:"Markdown" };
-  </script>
-  <script type="text/javascript">
+      /*<![CDATA[*/
       $(window).load(function() {
-          var textarea = document.getElementById('wmd_edit_$name');
-          var previewDiv = document.getElementById('wmd_preview_$name');
-
-          var previewManager = new Attacklab.wmd.previewManager({
-            input:textarea,
-            preview:previewDiv,
-            output:null
-          });
-
-          new Attacklab.wmd.editor(textarea,previewManager.refresh);
-
-          var link=$('a[href=http://www.wmd-editor.com/]');
-          link.prev().css({'padding-right':'15px'});
-          link.remove();
+          markdownSettings.previewParserPath = "/markdown_to_html?project=$c.project.shortname&app=${c.app.config.options['mount_point']}",
+          miu = $(document.getElementById('markdown_edit_$name')).markItUp(markdownSettings);
       });
+      /*]]>*/
   </script>
 </div>

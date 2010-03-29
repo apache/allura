@@ -1,0 +1,18 @@
+/* -------------------------------------------------------------------
+// SourceForge custom styling for markItUp
+// ------------------------------------------------------------------*/
+
+.markItUp{
+    border-width: 0;
+    width: 100%;
+}
+.markItUpEditor{
+    border-width: 1px;
+    background-image: none;
+    padding: 0;
+    width: 100%;
+    height: 200px;
+}
+.markItUpPreviewFrame{
+    height: 200px;
+}

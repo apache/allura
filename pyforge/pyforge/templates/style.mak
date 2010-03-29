@@ -358,21 +358,6 @@ tbody .even{
     float: left;
     margin: .5em;
 }
-
-.wmd_edit{
-    width: 45%;
-    float: left;
-}
-.wmd_preview{
-    width: 45%;
-    float: left;
-    margin: 1em 0 0 1em;
-    border: 1px solid #ccc;
-    padding: .5em;
-}
-.wmd_holder{
-    overflow: auto;
-}
 .tagEditor
 {
 	margin: 4px 0;
@@ -425,13 +410,9 @@ input.title.wide.ticket_form_tags{
 
 /* Wes fix */
 	.span-3 label {display: block; text-align: right; vertical-align: middle;}
-	.wmd_holder div div {background: none !important;}
-	.wmd_holder span {padding: 0 10px !important;}
-	input, textarea {border-color:${color2} !important;}
+	input, textarea, .markItUpContainer, .markItUpPreviewFrame {border-color:${color2} !important;}
 	input.title {font-size: 1em !important;}
 	textarea {height: 100px;}
-	.wmd_edit {width: 510px; height: 150px; margin: 0 0 1em; float: none;}
-	.wmd_preview {width: 510px; margin: 0 0 2em; float: none;}
 	.editable {padding: 2px;}
 	.editable .viewer {padding: 4px 0;}
 	.editor input, .editor textarea, .editor select {margin: 0;}

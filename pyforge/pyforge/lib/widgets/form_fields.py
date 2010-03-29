@@ -13,7 +13,11 @@ class MarkdownEdit(ew.InputField):
     value=None
 
     def resources(self):
-        yield ew.resource.JSLink('js/wmd/wmd.js')
+        yield ew.resource.JSLink('js/jquery.markitup.pack.js')
+        yield ew.resource.JSLink('js/jquery.markitup.markdown.js')
+        yield ew.resource.CSSLink('css/markitup.css')
+        yield ew.resource.CSSLink('css/markitup_markdown.css')
+        yield ew.resource.CSSLink('css/markitup_sf.css')
 
 class UserTagEdit(ew.InputField):
     template='genshi:pyforge.lib.widgets.templates.user_tag_edit'
