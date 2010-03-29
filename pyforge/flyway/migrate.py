@@ -17,10 +17,6 @@ class MigrationMeta(type):
             cls._current_migrations_module, cls.version] = cls
         cls.module = cls._current_migrations_module
 
-    def get(cls, module, version):
-        '''Load a Migration class from the registry'''
-        return cls.migrations_registry[module, version]
-
     def latest_versions(cls):
         result = {}
         for k,v in cls.migrations_registry:
@@ -51,11 +47,11 @@ class Migration(object):
     def down_postcondition(self):
         return { self.module: self.version-1 }
 
-    def up(self):
+    def up(self): # pragma no cover
         '''Upgrade to a new schema version'''
         raise NotImplementedError, 'up'
 
-    def down(self):
+    def down(self): # pragma no cover
         '''Downgrade from this schema version (undo an 'up') '''
         raise NotImplementedError, 'down'
 

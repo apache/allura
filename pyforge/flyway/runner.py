@@ -34,18 +34,8 @@ def plan_migration(session, info, target):
     satisfy the target requirements'''
     migrations = dict((k, v(session))
                       for k,v in Migration.migrations_registry.iteritems())
-    State, modules, states = graph.gen_migration_states(migrations)
-    state_index = graph.index_migration_states(modules, states)
-    nodes = graph.build_graph(states, state_index, migrations)
-    start = dict((m, -1) for m in modules)
-    start.update(info.versions)
-    end_states = set(graph.states_with(target.items(), state_index))
-    start_node = [ n for n in nodes if State(**start) == n.data ][0]
-    end_nodes = set(n for n in nodes if n.data in end_states)
-    path = graph.shortest_path(nodes, start_node, end_nodes)
-    return [
-        s for s in path
-        if isinstance(s, graph.MigrateStep) ]
+    g = graph.MigrationGraph(migrations)
+    return g.shortest_path(info.versions, target)
 
 def reset_migration(datastore, dry_run):
     '''Reset the state of the database to non-version-controlled WITHOUT migrating

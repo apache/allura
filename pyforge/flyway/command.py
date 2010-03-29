@@ -51,7 +51,7 @@ class MigrateCommand(command.Command):
                 run_migration(ds, self._target_versions(), dry_run=self.options.dry_run)
 
     def _setup_logging(self):
-        if self.options.logging_config_file:
+        if self.options.logging_config_file: # pragma no cover
             logging.config.fileConfig(self.options.logging_config_file)
         else:
             logging.basicConfig(

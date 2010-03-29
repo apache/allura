@@ -1,7 +1,6 @@
 import unittest
 import test_globals
 from flyway.command import MigrateCommand
-from flyway.migrate import Migration
 
 class MigrateTest(unittest.TestCase):
 
