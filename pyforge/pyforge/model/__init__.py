@@ -4,7 +4,7 @@
 from .session import ProjectSession
 from .project import Theme, Neighborhood, NeighborhoodFile, Project, ProjectFile, AppConfig, SearchConfig, ScheduledMessage
 from .discuss import Discussion, Thread, PostHistory, Post, Attachment
-from .artifact import Artifact, Message, VersionedArtifact, Snapshot, ArtifactLink, nonce, Feed
+from .artifact import Artifact, Message, VersionedArtifact, Snapshot, ArtifactLink, nonce, Feed, Award, AwardGrant
 from .auth import User, ProjectRole, OpenId, EmailAddress
 from .openid_model import OpenIdStore, OpenIdAssociation, OpenIdNonce
 from .filesystem import File
