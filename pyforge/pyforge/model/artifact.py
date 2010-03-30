@@ -1,6 +1,7 @@
 import re
 import os
 import logging
+import urllib
 from collections import defaultdict
 from time import sleep
 from datetime import datetime
@@ -494,4 +495,74 @@ class Message(Artifact):
 
     def shorthand_id(self):
         return self.slug
+
+class Award(Artifact):
+    class __mongometa__:
+        session = main_orm_session
+        name='award'
+        indexes = [ 'short' ]
+    type_s = 'Generic Award'
+
+    from .project import Project
+    _id=FieldProperty(S.ObjectId)
+    created_by_project_id = ForeignIdProperty(Project, if_missing=None)
+    created_by_project = RelationProperty(Project, via='created_by_project_id')
+    short=FieldProperty(str, if_missing=nonce)
+    timestamp=FieldProperty(datetime, if_missing=datetime.utcnow)
+    full=FieldProperty(str, if_missing='')
+
+    def index(self):
+        result = Artifact.index(self)
+        result.update(
+            _id_s=self._id,
+            short_s=self.short,
+            timestamp_dt=self.timestamp,
+            full_s=self.full)
+        if self.created_by:
+            result['created_by_s'] = self.created_by.name
+        return result
+
+    def url(self):
+        return urllib.unquote_plus(str(self.short))
+
+    def shorthand_id(self):
+        return self.short
+
+class AwardGrant(Artifact):
+    class __mongometa__:
+        session = main_orm_session
+        name='grant'
+        indexes = [ 'short' ]
+    type_s = 'Generic Award Grant'
+
+    from .auth import User
+    from .project import Project
+    _id=FieldProperty(S.ObjectId)
+    award_id = ForeignIdProperty(Award, if_missing=None)
+    award = RelationProperty(Award, via='award_id')
+    granted_by_project_id = ForeignIdProperty(Project, if_missing=None)
+    granted_by_project = RelationProperty(Project, via='granted_by_project_id')
+    granted_to_project_id = ForeignIdProperty(Project, if_missing=None)
+    granted_to_project = RelationProperty(Project, via='granted_to_project_id')
+    timestamp=FieldProperty(datetime, if_missing=datetime.utcnow)
+
+    def index(self):
+        result = Artifact.index(self)
+        result.update(
+            _id_s=self._id,
+            short_s=self.short,
+            timestamp_dt=self.timestamp,
+            full_s=self.full)
+        if self.award:
+            result['award_s'] = self.award.short
+        return result
+
+    def url(self):
+        return '.'
+
+    def shorthand_id(self):
+        if self.award:
+            return self.award.short
+        else:
+            return None
 
