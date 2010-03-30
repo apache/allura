@@ -6,7 +6,7 @@ from pyforge import model as M
 def setUp():
     helpers.setup_basic_test()
     helpers.setup_global_objects()
-    g.set_app('Forum')
+    g.set_app('Discussion')
 
 def test_role_assignments():
     role_developer = M.ProjectRole.query.get(name='Developer')._id

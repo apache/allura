@@ -1,9 +1,9 @@
 from setuptools import setup, find_packages
 import sys, os
 
-from forgeforum.version import __version__
+from forgediscussion.version import __version__
 
-setup(name='ForgeForum',
+setup(name='ForgeDiscussion',
       version=__version__,
       description="",
       long_description="""\
@@ -26,6 +26,6 @@ setup(name='ForgeForum',
       entry_points="""
       # -*- Entry points: -*-
       [pyforge]
-      Forum=forgeforum.forum_main:ForgeForumApp
+      Discussion=forgediscussion.forum_main:ForgeDiscussionApp
       """,
       )

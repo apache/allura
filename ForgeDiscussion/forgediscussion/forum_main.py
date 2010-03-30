@@ -17,14 +17,14 @@ from pyforge.lib.security import require, has_artifact_access
 from pyforge.model import ProjectRole
 
 # Local imports
-from forgeforum import model
-from forgeforum import version
+from forgediscussion import model
+from forgediscussion import version
 from .controllers import RootController
 
 
 log = logging.getLogger(__name__)
 
-class ForgeForumApp(Application):
+class ForgeDiscussionApp(Application):
     __version__ = version.__version__
     permissions = ['configure', 'read', 'unmoderated_post', 'post', 'moderate', 'admin']
     config_options = Application.config_options + [
@@ -60,7 +60,7 @@ class ForgeForumApp(Application):
             log.error("Can't find forum %s (routing key was %s)",
                           shortname, routing_key)
             return
-        super(ForgeForumApp, self).message_auditor(
+        super(ForgeDiscussionApp, self).message_auditor(
             routing_key, data, f, subject=data['headers'].get('Subject', '[No Subject]'))
 
     @audit('Forum.forum_stats.#')
@@ -152,7 +152,7 @@ class ForgeForumApp(Application):
         
     @property
     def templates(self):
-         return pkg_resources.resource_filename('forgeforum', 'templates')
+         return pkg_resources.resource_filename('forgediscussion', 'templates')
 
     def install(self, project):
         'Set up any default permissions and roles here'
@@ -180,7 +180,7 @@ class ForumAdminController(DefaultAdminController):
     def _check_security(self):
         require(has_artifact_access('admin', app=self.app), 'Admin access required')
 
-    @expose('forgeforum.templates.admin')
+    @expose('forgediscussion.templates.admin')
     def index(self):
         return dict(app=self.app)
 

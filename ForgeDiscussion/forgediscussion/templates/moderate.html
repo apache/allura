@@ -9,7 +9,7 @@
 
   <head>
     <meta content="text/html; charset=UTF-8" http-equiv="content-type" py:replace="''"/>
-    <title>ForgeForum Moderation Page</title>
+    <title>ForgeDiscussion Moderation Page</title>
   <?python
      from pyforge.lib.security import has_artifact_access
      ?>
@@ -20,7 +20,7 @@
       <ul>${crumbs(forum.breadcrumbs())}</ul>
     </div>
 
-    <h1>Moderation Queue</h1>
+    <h1 class="title">Moderation Queue</h1>
     <div>
       Displaying page $pgnum / $pages
     </div>

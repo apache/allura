@@ -74,9 +74,9 @@ Once this is done, we'll check out & set up out forge codebase::
     (anvil)~/src$ git clone ssh://engr.geek.net/forge
     (anvil)~/src$ cd forge/pyforge
     (anvil)~/src/forge/pyforge$ python setup.py develop
-    (anvil)~/src/forge/pyforge$ cd ../ForgeForum
-    (anvil)~/src/forge/ForgeForum$ python setup.py develop
-    (anvil)~/src/forge/ForgeForum$ cd ../ForgeMail
+    (anvil)~/src/forge/pyforge$ cd ../ForgeDiscussion
+    (anvil)~/src/forge/ForgeDiscussion$ python setup.py develop
+    (anvil)~/src/forge/ForgeDiscussion$ cd ../ForgeMail
     (anvil)~/src/forge/ForgeMail$ python setup.py develop
     (anvil)~/src/forge/ForgeMail$ cd ../ForgeSCM
     (anvil)~/src/forge/ForgeSCM$ python setup.py develop

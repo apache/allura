@@ -14,8 +14,8 @@ from pyforge.lib.security import require, has_artifact_access
 from pyforge.controllers import DiscussionController, ThreadController, PostController
 from pyforge.lib.widgets import discuss as DW
 
-from forgeforum import model
-from forgeforum import widgets as FW
+from forgediscussion import model
+from forgediscussion import widgets as FW
 
 log = logging.getLogger(__name__)
 

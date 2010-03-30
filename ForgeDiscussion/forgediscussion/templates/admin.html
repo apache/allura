@@ -13,7 +13,7 @@
   </head>
   
   <body>
-    <h1>Forum Admin for ${c.project.name}: $app.config.options.mount_point </h1>
+    <h1 class="title">Discussion Admin for ${c.project.name}: $app.config.options.mount_point </h1>
     <div id="app-config" py:if="len(app.config_options) > 1">
       <h3>Config Options</h3>
       <form method="post" action="configure">

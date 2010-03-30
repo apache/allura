@@ -6,10 +6,10 @@ import ew
 from pyforge.lib import validators as V
 from pyforge.lib.widgets import discuss as DW
 
-from forgeforum import model as M
+from forgediscussion import model as M
 
 class _ForumSummary(ew.Widget):
-    template='forgeforum.widgets.templates.forum_summary'
+    template='forgediscussion.widgets.templates.forum_summary'
     params=['value', 'show_label', 'label', 'name']
     name=None
     value=None
@@ -90,13 +90,13 @@ class ModeratePost(ew.SimpleForm):
         delete=ew.SubmitButton(label='Delete Post')
 
 class ForumHeader(DW.DiscussionHeader):
-    template='forgeforum.widgets.templates.forum_header'
+    template='forgediscussion.widgets.templates.forum_header'
     widgets=dict(DW.DiscussionHeader.widgets,
                  announcements_table=AnnouncementsTable(),
                  forum_subscription_form=ForumSubscriptionForm())
 
 class ThreadHeader(DW.ThreadHeader):
-    template='forgeforum.widgets.templates.thread_header'
+    template='forgediscussion.widgets.templates.thread_header'
     show_subject=True
     show_moderate=True
     widgets=dict(DW.ThreadHeader.widgets,

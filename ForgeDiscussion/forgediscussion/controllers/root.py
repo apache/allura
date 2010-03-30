@@ -14,8 +14,8 @@ from pyforge.lib.search import search
 from pyforge.lib import helpers as h
 
 from .forum import ForumController
-from forgeforum import model
-from forgeforum import widgets as FW
+from forgediscussion import model
+from forgediscussion import widgets as FW
 
 log = logging.getLogger(__name__)
 
@@ -25,7 +25,7 @@ class RootController(object):
         forum_subscription_form=FW.ForumSubscriptionForm()
         announcements_table=FW.AnnouncementsTable()
 
-    @expose('forgeforum.templates.index')
+    @expose('forgediscussion.templates.index')
     def index(self):
         c.forum_subscription_form = self.W.forum_subscription_form
         c.announcements_table = self.W.announcements_table
@@ -36,7 +36,7 @@ class RootController(object):
                 parent_id=None)),
                     announcements=announcements)
                   
-    @expose('forgeforum.templates.search')
+    @expose('forgediscussion.templates.search')
     @validate(dict(q=validators.UnicodeString(if_empty=None),
                    history=validators.StringBool(if_empty=False)))
     def search(self, q=None, history=None):
