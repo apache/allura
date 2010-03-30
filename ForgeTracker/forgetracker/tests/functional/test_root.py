@@ -194,7 +194,6 @@ class TestFunctionalController(TestController):
         assert response.html.find('input', {'name': 'summary'})
         assert response.html.find('select', {'name': 'assigned_to'})
         assert response.html.find('textarea', {'name': 'description'})
-        assert response.html.find('input', {'value': "Save Changes"})
         assert response.html.find('select', {'name': 'status'})
         assert response.html.find('select', {'name': 'milestone'})
         assert response.html.find('input', {'name': 'tags'})
