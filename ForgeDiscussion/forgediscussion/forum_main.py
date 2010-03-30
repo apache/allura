@@ -139,10 +139,10 @@ class ForgeDiscussionApp(Application):
 
     def sidebar_menu(self):
         try:
-            l =  [
-                SitemapEntry('Home', '.'),      
-                SitemapEntry('Search', 'search'),      
-                ]
+            l = [SitemapEntry('Home', '.')]
+            if has_artifact_access('admin', app=c.app)():
+                l.append(SitemapEntry('Admin', c.project.url()+'admin/'+self.config.options.mount_point))
+            l.append(SitemapEntry('Search', 'search'))
             l += [ SitemapEntry(f.name, f.url())
                    for f in self.top_forums ]
             return l

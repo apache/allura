@@ -232,6 +232,14 @@ class TestForum(TestController):
         assert 'Message posted' in r
         r = self.app.get('/Discussion/TestForum/moderate/')
 
+    def test_sidebar_menu(self):
+        r = self.app.get('/Discussion/')
+        sidebarmenu = str(r.html.find('ul',{'id':'sidebarmenu'}))
+        assert '<a href="." class=" ">Home</a>' in sidebarmenu
+        assert '<a href="/projects/test/admin/Discussion" class=" ">Admin</a>' in sidebarmenu
+        assert '<a href="search" class=" ">Search</a>' in sidebarmenu
+        assert '<a href="/projects/test/Discussion/TestForum/" class=" ">Test Forum</a>' in sidebarmenu
+
 class TestForumAdmin(TestController):
 
     def setUp(self):
