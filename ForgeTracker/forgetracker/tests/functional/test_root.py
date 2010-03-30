@@ -351,3 +351,15 @@ class TestFunctionalController(TestController):
 #       response = self.app.get('/projects/test/bugs/search/?q=!status%3Aclosed')
 #       assert '3 results' in response
 #       assert '[#3] test third ticket' in response
+
+    def test_touch(self):
+        self.new_ticket(summary='test touch')
+        h.set_context('test', 'bugs')
+        ticket = tm.Ticket.query.get(ticket_num=1)
+        old_date = ticket.mod_date
+        ticket.summary = 'changing the summary'
+        ThreadLocalORMSession.flush_all()
+        ThreadLocalORMSession.close_all()
+        ticket = tm.Ticket.query.get(ticket_num=1)
+        new_date = ticket.mod_date
+        assert new_date > old_date

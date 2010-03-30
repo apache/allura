@@ -179,10 +179,13 @@ class Artifact(MappedClass):
     class __mongometa__:
         session = artifact_orm_session
         name='artifact'
+        def before_save(data):
+            data['mod_date'] = datetime.utcnow()
     type_s = 'Generic Artifact'
 
     # Artifact base schema
     _id = FieldProperty(S.ObjectId)
+    mod_date = FieldProperty(datetime, if_missing=datetime.utcnow)
     app_config_id = ForeignIdProperty('AppConfig', if_missing=lambda:c.app.config._id)
     plugin_verson = FieldProperty(
         S.Object,
@@ -292,6 +295,7 @@ class Artifact(MappedClass):
         project = self.project
         return dict(
             id=self.index_id(),
+            mod_date_dt=self.mod_date,
             title_s='Artifact %s' % self._id,
             project_id_s=project._id,
             project_name_t=project.name,
@@ -418,7 +422,7 @@ class VersionedArtifact(Artifact):
         if len(history):
             return self.history().first().timestamp
         else:
-            return self.created_date
+            return self.mod_date
 
 class Message(Artifact):
     class __mongometa__:

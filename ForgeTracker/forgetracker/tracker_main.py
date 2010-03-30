@@ -224,7 +224,7 @@ class RootController(object):
         q = []
         tickets = model.Ticket.query.find(dict(app_config_id=c.app.config._id)).sort('ticket_num')
         for ticket in tickets:
-            q.append(dict(change_type='ticket',change_date=ticket.created_date,
+            q.append(dict(change_type='ticket',change_date=ticket.mod_date,
                           ticket_num=ticket.ticket_num,change_text=ticket.summary))
             for comment in ticket.discussion_thread().find_posts(limit=limit, style='linear'):
                 # for comment in ticket.ordered_comments(limit):
