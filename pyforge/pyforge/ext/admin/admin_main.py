@@ -63,6 +63,7 @@ class AdminApp(Application):
                 SitemapEntry('Plugins', '#plugin-admin'),
                 SitemapEntry('ACLs', '#acl-admin'),
                 SitemapEntry('Roles', '#role-admin'),
+                SitemapEntry('Awards', '#award-admin'),
                 ]]
         self.templates = pkg_resources.resource_filename('pyforge.ext.admin', 'templates')
 
@@ -84,6 +85,9 @@ class AdminApp(Application):
 
 class ProjectAdminController(object):
 
+    def __init__(self):
+        self.awards = AdminAwardsController(c.project)
+
     def _check_security(self):
         require(has_project_access('read'),
                 'Read access required')
@@ -97,7 +101,18 @@ class ProjectAdminController(object):
             name for (name, app) in plugins
             if app.installable ]
         c.markdown_editor = W.markdown_editor
+        psort = [(n, M.Project.query.find(dict(is_root=True, neighborhood_id=n._id)).all())
+                 for n in M.Neighborhood.query.find().sort('name')]
+        accolades = M.AwardGrant.query.find(dict(granted_to_project_id=c.project._id))
+        awards = M.Award.query.find(dict(created_by_project_id=c.project._id))
+        assigns = M.Award.query.find(dict(created_by_project_id=c.project._id))
+        grants = M.AwardGrant.query.find(dict(granted_by_project_id=c.project._id))
         return dict(
+            accolades=accolades,
+            projects=psort,
+            awards=awards,
+            assigns=assigns,
+            grants=grants,
             installable_plugin_names=installable_plugin_names,
             roles=M.ProjectRole.query.find().sort('_id').all(),
             users=[M.User.query.get(_id=id) for id in c.project.acl.read ])
@@ -229,9 +244,74 @@ class ProjectAdminController(object):
         if new.get('add'):
             M.ProjectRole(name=new['name'])
         redirect('.#role-admin')
-            
+
 class AdminAppAdminController(DefaultAdminController):
     '''Administer the admin app'''
     pass
 
-    
+
+class AdminAwardsController(object):
+
+    def __init__(self, project=None):
+        if project is not None:
+            self.project = project
+
+    @expose('pyforge.ext.admin.templates.awards')
+    def index(self, **kw):
+        awards = M.Award.query.find(dict(created_by_project_id=c.project._id))
+        count=0
+        count = len(awards)
+        return dict(awards=awards or [], count=count)
+
+    @expose('pyforge.ext.admin.templates.grants')
+    def grants(self, **kw):
+        grants = M.AwardGrant.query.find(dict(granted_by_project_id=c.project._id))
+        count=0
+        count = len(grants)
+        return dict(grants=grants or [], count=count)
+
+    @expose()
+    def award_save(self, short=None, full=None, **post_data):
+        if request.method != 'POST':
+            raise Exception('award_save must be a POST request')
+        award = M.Award()
+        award.short = short
+        award.full = full
+        award.created_by_project_id = c.project._id
+        award.app_config_id = c.app.config._id
+        # may want to have auxiliary data fields
+        for k,v in post_data.iteritems():
+            setattr(award, k, v)
+        redirect(request.referer)
+
+    @expose()
+    def award_grant(self, grant=None, recipient=None):
+        if request.method != 'POST':
+            raise Exception('award_grant must be a POST request')
+        grant_q = M.Award.query.find(dict(short=grant)).first()
+        recipient_q = M.Project.query.find(dict(name=recipient)).first()
+        award = M.AwardGrant()
+        award.award_id = grant_q._id
+        award.granted_to_project_id = recipient_q._id
+        award.granted_by_project_id = c.project._id
+        award.app_config_id = c.app.config._id
+        redirect(request.referer)
+
+    @expose()
+    def award_delete(self, award_id=None):
+        aid = ObjectId(award_id)
+        award = M.Award.query.find(dict(_id=aid)).first()
+        if award:
+            grants = M.AwardGrant.query.find(dict(award_id=award._id))
+            for grant in grants:
+                grant.delete()
+            award.delete()
+        redirect(request.referer)
+
+    @expose()
+    def grant_delete(self, grant_id=None):
+        gid = ObjectId(grant_id)
+        grant = M.AwardGrant.query.find(dict(_id=gid)).first()
+        grant.delete()
+        redirect(request.referer)
+
