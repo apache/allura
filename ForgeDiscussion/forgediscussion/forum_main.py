@@ -168,6 +168,13 @@ class ForgeDiscussionApp(Application):
             post=[role_auth],
             moderate=[role_developer],
             admin=c.project.acl['plugin'])
+        
+        self.admin.create_forum(new_forum=dict(
+            shortname='general',
+            create='on',
+            name='General Discussion',
+            description='Forum about anything you want to talk about.',
+            parent=''))
 
     def uninstall(self, project):
         "Remove all the plugin's artifacts from the database"
@@ -184,6 +191,24 @@ class ForumAdminController(DefaultAdminController):
     def index(self):
         return dict(app=self.app)
 
+    def create_forum(self, new_forum):    
+        if '.' in new_forum['shortname'] or '/' in new_forum['shortname']:
+            flash('Shortname cannot contain . or /', 'error')
+            redirect('.')
+        if new_forum['parent']:
+            parent_id = ObjectId(str(new_forum['parent']))
+            shortname = (model.Forum.query.get(_id=parent_id).shortname + '/'
+                         + new_forum['shortname'])
+        else:
+            parent_id=None
+            shortname = new_forum['shortname']
+        f = model.Forum(app_config_id=self.app.config._id,
+                        parent_id=parent_id,
+                        name=new_forum['name'],
+                        shortname=shortname,
+                        description=new_forum['description'])
+        return f
+
     @vardec
     @expose()
     def update_forums(self, forum=None, new_forum=None, **kw):
@@ -192,18 +217,7 @@ class ForumAdminController(DefaultAdminController):
             if '.' in new_forum['shortname'] or '/' in new_forum['shortname']:
                 flash('Shortname cannot contain . or /', 'error')
                 redirect('.')
-            if new_forum['parent']:
-                parent_id = ObjectId(str(new_forum['parent']))
-                shortname = (model.Forum.query.get(_id=parent_id).shortname + '/'
-                             + new_forum['shortname'])
-            else:
-                parent_id=None
-                shortname = new_forum['shortname']
-            f = model.Forum(app_config_id=self.app.config._id,
-                            parent_id=parent_id,
-                            name=new_forum['name'],
-                            shortname=shortname,
-                            description=new_forum['description'])
+            f = self.create_forum(new_forum)
         for f in forum:
             forum = model.Forum.query.get(_id=ObjectId(str(f['id'])))
             if f.get('delete'):
