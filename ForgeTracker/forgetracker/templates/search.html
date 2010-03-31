@@ -60,7 +60,7 @@
     <a href="${tg.url('../edit/', q=q, limit=count)}" py:if="count != 0">Edit All</a>
   </body>
   <script type="text/javascript">
-var q="$q", count=$count, limit=$limit, page=$page, sort="$sort";
+var q="${Markup(q)}", count=$count, limit=$limit, page=$page, sort="${Markup(sort)}";
   </script>
   <script type="text/javascript" src="/static/Tickets/js/ticket-list.js"/>
 

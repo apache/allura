@@ -256,8 +256,10 @@ class RootController(object):
                    limit=validators.Int(if_empty=10),
                    page=validators.Int(if_empty=0),
                    sort=validators.UnicodeString(if_empty=None)))
-    def search(self, **kw):
-        return self.paged_query(**kw)
+    def search(self, q=None, sort=None, **kw):
+        if q: q = urllib.unquote(q)
+        if sort: sort = urllib.unquote(sort)
+        return self.paged_query(q=q, sort=sort, **kw)
 
     @expose()
     def _lookup(self, ticket_num, *remainder):
@@ -374,9 +376,12 @@ class RootController(object):
     @expose('forgetracker.templates.mass_edit')
     @validate(dict(q=validators.UnicodeString(if_empty=None),
                    limit=validators.Int(if_empty=10),
-                   page=validators.Int(if_empty=0)))
-    def edit(self, **kw):
-        result = self.paged_query(**kw)
+                   page=validators.Int(if_empty=0),
+                   sort=validators.UnicodeString(if_empty=None)))
+    def edit(self, q=None, sort=None, **kw):
+        if q: q = urllib.unquote(q)
+        if sort: sort = urllib.unquote(sort)
+        result = self.paged_query(q=q, sort=sort, **kw)
         globals = model.Globals.query.get(app_config_id=c.app.config._id)
         if globals.milestone_names is None:
             globals.milestone_names = ''

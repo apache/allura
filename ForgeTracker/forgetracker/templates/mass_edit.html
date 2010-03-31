@@ -87,7 +87,7 @@
         <span id="result"></span>
   </body>
   <script type="text/javascript">
-var q="$q", count=$count, limit=$limit, page=$page, sort="$sort";
+var q="${Markup(q)}", count=$count, limit=$limit, page=$page, sort="${Markup(sort)}";
   </script>
   <script type="text/javascript" src="/static/Tickets/js/ticket-list.js"/>
   <script type="text/javascript" src="/static/Tickets/js/mass-edit.js"/>
