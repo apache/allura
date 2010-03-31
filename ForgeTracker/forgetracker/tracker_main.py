@@ -255,7 +255,7 @@ class RootController(object):
                    history=validators.StringBool(if_empty=False),
                    limit=validators.Int(if_empty=10),
                    page=validators.Int(if_empty=0),
-                   sort=validators.UnicodeString(if_empty=None)))
+                   sort=validators.UnicodeString(if_empty='ticket_num_i asc')))
     def search(self, q=None, sort=None, **kw):
         if q: q = urllib.unquote(q)
         if sort: sort = urllib.unquote(sort)
@@ -377,7 +377,7 @@ class RootController(object):
     @validate(dict(q=validators.UnicodeString(if_empty=None),
                    limit=validators.Int(if_empty=10),
                    page=validators.Int(if_empty=0),
-                   sort=validators.UnicodeString(if_empty=None)))
+                   sort=validators.UnicodeString(if_empty='ticket_num_i asc')))
     def edit(self, q=None, sort=None, **kw):
         if q: q = urllib.unquote(q)
         if sort: sort = urllib.unquote(sort)
