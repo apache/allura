@@ -112,24 +112,24 @@ class ForgeTrackerApp(Application):
                     related_urls.append(artifact.url())
                     title = '%s: %s' % (artifact.type_s, artifact.shorthand_id())
                     related_artifacts.append(SitemapEntry(title, artifact.url(), className='nav_child'))
-        if len(related_artifacts):
-            links.append(SitemapEntry('Related Artifacts'))
-            links = links + related_artifacts
         links.append(SitemapEntry('Search', self.config.url() + 'search/', ui_icon='search'))
-        links.append(SitemapEntry('Saved Searches'))
-        links.append(SitemapEntry('All', self.config.url() + 'bins', className='nav_child'))
         if len(search_bins):
+            links.append(SitemapEntry('Saved Searches'))
+            links.append(SitemapEntry('All', self.config.url() + 'bins', className='nav_child'))
             links = links + search_bins
         if ticket:
             if ticket.super_id:
                 links.append(SitemapEntry('Supertask'))
                 super = model.Ticket.query.get(_id=ticket.super_id, app_config_id=c.app.config._id)
-                links.append(SitemapEntry('Ticket {0}'.format(super.ticket_num), super.url(), className='nav_child'))
+                links.append(SitemapEntry('[#{0}]'.format(super.ticket_num), super.url(), className='nav_child'))
             links.append(SitemapEntry('Subtasks'))
             for sub_id in ticket.sub_ids or []:
                 sub = model.Ticket.query.get(_id=sub_id, app_config_id=c.app.config._id)
-                links.append(SitemapEntry('Ticket {0}'.format(sub.ticket_num), sub.url(), className='nav_child'))
+                links.append(SitemapEntry('[#{0}]'.format(sub.ticket_num), sub.url(), className='nav_child'))
             links.append(SitemapEntry('Create New Subtask', '{0}new/?super_id={1}'.format(self.config.url(), ticket._id), className='nav_child'))
+        if len(related_artifacts):
+            links.append(SitemapEntry('Related Artifacts'))
+            links = links + related_artifacts
         links.append(SitemapEntry('Help'))
         links.append(SitemapEntry('Ticket Help', self.config.url() + 'help', className='nav_child'))
         links.append(SitemapEntry('Markdown Syntax', self.config.url() + 'markdown_syntax', className='nav_child'))
