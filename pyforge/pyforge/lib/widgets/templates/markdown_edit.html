@@ -5,7 +5,8 @@
   <script type="text/javascript">
       /*<![CDATA[*/
       $(window).load(function() {
-          markdownSettings.previewParserPath = "/markdown_to_html?project=$c.project.shortname&app=${c.app.config.options['mount_point']}",
+          markdownSettings.previewParserPath = "/markdown_to_html?project=${c.project and c.project.shortname or ''}"+
+            "&app=${c.project and c.app.config.options['mount_point'] or ''}",
           miu = $(document.getElementById('markdown_edit_$name')).markItUp(markdownSettings);
       });
       /*]]>*/
