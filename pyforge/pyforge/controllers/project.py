@@ -235,6 +235,7 @@ class NeighborhoodAdminController(object):
 
     def __init__(self, neighborhood):
         self.neighborhood = neighborhood
+        self.awards = NeighborhoodAwardsController(self.neighborhood)
 
     def _check_security(self):
         require(has_neighborhood_access('admin', self.neighborhood),
@@ -243,7 +244,25 @@ class NeighborhoodAdminController(object):
     @expose('pyforge.templates.neighborhood_admin')
     def index(self):
         c.markdown_editor = W.markdown_editor
-        return dict(neighborhood=self.neighborhood)
+        psort = [(n, M.Project.query.find(dict(is_root=True, neighborhood_id=n._id)).all())
+                 for n in M.Neighborhood.query.find().sort('name')]
+#        accolades = M.AwardGrant.query.find(dict(granted_to_project_id=c.project._id))
+        awards = M.Award.query.find(dict(created_by_neighborhood_id=self.neighborhood._id))
+        awards_count = len(awards)
+        assigns = M.Award.query.find(dict(created_by_neighborhood_id=self.neighborhood._id))
+        assigns_count = len(assigns)
+        grants = M.AwardGrant.query.find(dict(granted_by_neighborhood_id=self.neighborhood._id))
+        grants_count = len(grants)
+        return dict(
+            projects=psort,
+#            accolades=accolades,
+            awards=awards,
+            awards_count=awards_count,
+            assigns=assigns,
+            assigns_count=assigns_count,
+            grants=grants,
+            grants_count=grants_count,
+            neighborhood=self.neighborhood)
 
     @expose()
     def update(self, name=None, css=None, homepage=None, icon=None,
@@ -353,4 +372,72 @@ class NeighborhoodModerateController(object):
             p.neighborhood_invitations.remove(self.neighborhood._id)
         flash('%s evicted to Projects' % pid)
         redirect('.')
+
+class NeighborhoodAwardsController(object):
+
+    def __init__(self, neighborhood=None):
+        if neighborhood is not None:
+            self.neighborhood = neighborhood
+
+    @expose('pyforge.templates.awards')
+    def index(self, **kw):
+        awards = M.Award.query.find(dict(created_by_neighborhood_id=self.neighborhood._id))
+        count=0
+        count = len(awards)
+        return dict(awards=awards or [], count=count)
+
+    @expose('pyforge.templates.grants')
+    def grants(self, **kw):
+        grants = M.AwardGrant.query.find(dict(granted_by_neighborhood_id=self.neighborhood._id))
+        count=0
+        count = len(grants)
+        return dict(grants=grants or [], count=count)
+
+    @expose()
+    def award_save(self, short=None, full=None, **post_data):
+        if request.method != 'POST':
+            raise Exception('award_save must be a POST request')
+        app_config_id = ObjectId()
+        plugin_verson = { 'neighborhood':'0' }
+        award = M.Award(app_config_id=app_config_id, plugin_verson=plugin_verson)
+        award.short = short
+        award.full = full
+        award.created_by_neighborhood_id = self.neighborhood._id
+        # may want to have auxiliary data fields
+        for k,v in post_data.iteritems():
+            setattr(award, k, v)
+        redirect(request.referer)
+
+    @expose()
+    def award_grant(self, grant=None, recipient=None):
+        if request.method != 'POST':
+            raise Exception('award_grant must be a POST request')
+        grant_q = M.Award.query.find(dict(short=grant)).first()
+        recipient_q = M.Project.query.find(dict(name=recipient)).first()
+        app_config_id = ObjectId()
+        plugin_verson = { 'neighborhood':'0' }
+        award = M.AwardGrant(app_config_id=app_config_id, plugin_verson=plugin_verson)
+        award.award_id = grant_q._id
+        award.granted_to_project_id = recipient_q._id
+        award.granted_by_neighborhood_id = self.neighborhood._id
+#        award.app_config_id = c.app.config._id
+        redirect(request.referer)
+
+    @expose()
+    def award_delete(self, award_id=None):
+        aid = ObjectId(award_id)
+        award = M.Award.query.find(dict(_id=aid)).first()
+        if award:
+            grants = M.AwardGrant.query.find(dict(award_id=award._id))
+            for grant in grants:
+                grant.delete()
+            award.delete()
+        redirect(request.referer)
+
+    @expose()
+    def grant_delete(self, grant_id=None):
+        gid = ObjectId(grant_id)
+        grant = M.AwardGrant.query.find(dict(_id=gid)).first()
+        grant.delete()
+        redirect(request.referer)
 

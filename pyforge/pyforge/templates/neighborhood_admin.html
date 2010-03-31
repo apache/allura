@@ -18,7 +18,9 @@
 	<ul>
 		<li><a href="#neighborhood-admin-overview">Overview</a></li>
 		<li><a href="#neighborhood-admin-permissions">Permissions</a></li>
+		<li><a href="#neighborhood-admin-awards">Awards</a></li>
 	</ul>
+<!-- ######################### -->
 	<div id="neighborhood-admin-overview" style="overflow: auto">
         <h2>Neighborhood Overview</h2>
         <form method="POST" action="update" enctype="multipart/form-data">
@@ -87,6 +89,7 @@
           <div class="push-3 span-15 last"><input type="submit" value="Save"/></div>
         </form>
       </div>
+<!-- ######################### -->
       <div id="neighborhood-admin-permissions">
         <h2 class="title">Neighborhood Permissions</h2>
         <p>The ACL determines neighborhood-level permissions.</p>
@@ -122,6 +125,123 @@
           </py:for>
         </div>
       </div>
+<!-- ######################### -->
+      <div id="neighborhood-admin-awards" style="overflow: auto">
+        <h2>Awards Admin</h2>
+	<p py:if="awards_count > 0">
+          <h3>Current Awards</h3>
+          <div id="award_list">
+            <table border="1">
+              <thead>
+                <tr>
+                  <th>Shortname</th>
+                  <th>Name</th>
+                  <th>Delete?</th>
+                </tr>
+              </thead>
+              <tbody>
+                <py:for each="award in awards">
+                  <tr>
+                    <td>$award.short</td>
+                    <td>$award.full</td>
+                    <td><a href="awards/award_delete?award_id=$award._id">[X]</a></td>
+                  </tr>
+                </py:for>
+              </tbody>
+            </table>
+          </div>
+        </p>
+        <h3>Create an Award</h3>
+        <form method="POST" action="awards/award_save">
+          <table border="1">
+            <thead>
+              <tr>
+                <th>Shortname</th>
+                <th>Name</th>
+                <th/>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>
+                  <input name="short"/>
+                </td>
+                <td>
+                  <input name="full"/>
+                </td>
+                <td>
+                  <input type="submit" value="Create"/>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </form>
+        <py:def function="project(n, subprojects)">
+          <option value="${n.name}">${n.name}</option>
+          <py:for each="p in subprojects">
+            ${project(p, p.subprojects)}
+          </py:for>
+        </py:def>
+        <p py:if="awards_count > 0">
+          <h3>Grant an Award</h3>
+          <form method="POST" action="awards/award_grant">
+            <table border="1">
+              <thead>
+                <tr>
+                  <th>Award</th>
+                  <th>Recipient</th>
+                  <th/>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>
+                    <select name="grant">
+                      <py:for each="assign in assigns">
+                        <option value="$assign.short">$assign.short</option>
+                      </py:for>
+                    </select>
+                  </td>
+                  <td>
+                    <select name="recipient">
+                    <py:for each="n, subprojects in projects">
+                      ${project(n, subprojects)}
+                    </py:for>
+                    </select>
+                  </td>
+                  <td>
+                    <input type="submit" value="Grant"/>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </form>
+        </p>
+        <p py:if="grants_count > 0">
+          <h3>Current Grants</h3>
+          <div id="grant_list">
+            <table border="1">
+              <thead>
+                <tr>
+                  <th>Award</th>
+                  <th>Recipient</th>
+                  <th>Delete?</th>
+                </tr>
+              </thead>
+              <tbody>
+                <py:for each="grant in grants">
+                  <tr>
+                    <td>${grant.award.short}</td>
+                    <td>${grant.granted_to_project.shortname}</td>
+                    <td><a href="awards/grant_delete?grant_id=${grant._id}">[X]</a></td>
+                  </tr>
+                </py:for>
+              </tbody>
+            </table>
+          </div>
+        </p>
+      </div>
+<!-- ######################### -->
     </div>
     <script type="text/javascript">
 	$(function() {
