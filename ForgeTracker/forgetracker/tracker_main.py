@@ -352,7 +352,7 @@ class RootController(object):
                 # sums must be coerced to numeric type
                 try:
                     ticket.custom_fields[k] = float(v)
-                except ValueError:
+                except (TypeError, ValueError):
                     ticket.custom_fields[k] = 0
             elif k in other_custom_fields:
                 # strings are good enough for any other custom fields
@@ -655,7 +655,7 @@ class TicketController(object):
                     any_sums = True
                     try:
                         value = float(value)
-                    except ValueError:
+                    except (TypeError, ValueError):
                         value = 0
             # unchecked boolean won't be passed in, so make it False here
             elif cf.type == 'boolean':

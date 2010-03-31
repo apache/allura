@@ -225,7 +225,7 @@ class Ticket(VersionedArtifact):
             for k in super_sums:
                 try:
                     v = float(self.custom_fields.get(k, 0))
-                except ValueError:
+                except (TypeError, ValueError):
                     v = 0
                 super_sums[k] += v
 
