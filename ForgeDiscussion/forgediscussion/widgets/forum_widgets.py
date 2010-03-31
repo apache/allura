@@ -85,9 +85,12 @@ class ModeratePost(ew.SimpleForm):
         ew.FieldSet(legend='Promote post to its own thread', fields=[
                 ew.TextField(name='subject', label='Thread title'),
                 ew.SubmitButton(name='promote', label='Promote to thread')])]
-    class buttons(ew.WidgetsList):
-        spam=ew.SubmitButton(label='Spam Post')
-        delete=ew.SubmitButton(label='Delete Post')
+
+class PromoteToThread(ew.SimpleForm):
+    submit_text=None
+    fields=[
+        ew.TextField(name='subject', label='Thread title'),
+        ew.SubmitButton(name='promote', label='Promote to thread')]
 
 class ForumHeader(DW.DiscussionHeader):
     template='forgediscussion.widgets.templates.forum_header'
@@ -106,7 +109,7 @@ class ThreadHeader(DW.ThreadHeader):
 class Post(DW.Post):
     show_subject=True
     widgets=dict(DW.Post.widgets,
-                 moderate_post=ModeratePost())
+                 promote_to_thread=PromoteToThread())
 
 class Thread(DW.Thread):
     params=['show_subject']

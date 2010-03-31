@@ -1,8 +1,8 @@
 <div xmlns="http://www.w3.org/1999/xhtml"
       xmlns:py="http://genshi.edgewall.org/">
   <?python from pyforge.lib.security import has_artifact_access ?>
-  <py:def function="show_post(post, indent)">
-    ${widgets.post.display(value=post, show_subject=show_subject, indent=indent)}
+  <py:def function="show_post(post, indent, supress_promote=False)">
+    ${widgets.post.display(value=post, show_subject=show_subject, indent=indent, supress_promote=supress_promote)}
     <py:for each="child in post.descendants()" py:if="child.parent_id == post._id">
       ${show_post(child, indent+1)}
     </py:for>
@@ -14,8 +14,8 @@
       <!-- <div style="width:220px; float:left">
         ${widgets.post_thread.display(value=post_threads)}
       </div> -->
-      <py:for each="post in posts" py:if="post.parent_id == None">
-        ${show_post(post, 0)}
+      <py:for each="i,post in enumerate(posts)" py:if="post.parent_id == None">
+        ${show_post(post, 0, supress_promote=(i==0))}
       </py:for>
     </div>
     <div py:if="style!='threaded'">

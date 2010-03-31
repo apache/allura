@@ -5,7 +5,6 @@
      <xi:include href="${g.pyforge_templates}/lib.html" />
   <?python from pyforge.lib.security import has_artifact_access?>
 
-
   <div class="discussion-post">
 	<div class="push-$indent span-3 clear tcenter">
 		<p class="gravatar">
@@ -37,6 +36,9 @@
 	<div class="span-2 last" py:if="has_artifact_access('moderate', value)()">
 	  ${widgets.flag_post.display(value=value, action=value.url()+'flag')}
 	</div>
+	<div class="span-2" py:if="has_artifact_access('moderate', value.thread)() and 'promote_to_thread' in widgets and not supress_promote">
+	  <a href="" class="promote_to_thread"><span class="ui-icon ui-icon-arrowthick-1-n"></span>Promote</a>
+	</div>
 
 	<div class="add_attachment_form push-${3+indent}  span-${16-indent} last clear" style="display:none" py:if="has_artifact_access('post', value.thread)()">
       ${widgets.attach_post.display(value=value, action=value.url() + 'attach')}
@@ -54,6 +56,10 @@
               subject=value.reply_subject()),
           )}
 	</div>
+  <div class="promote_to_thread_form push-${3+indent} span-${16-indent} last clear" style="display:none"
+       py:if="has_artifact_access('moderate', value.thread)() and 'promote_to_thread' in widgets and not supress_promote">
+    ${widgets.promote_to_thread.display(value=value, action=value.url()+'moderate')}
+  </div>
   </div>
   <hr class="clear clearfix space"/>
   <hr class="clear clearfix" />

@@ -159,10 +159,11 @@ class PostThread(ew.Widget):
 
 class Post(HierWidget):
     template='genshi:pyforge.lib.widgets.templates.post'
-    params=['value', 'show_subject', 'indent']
+    params=['value', 'show_subject', 'indent', 'supress_promote']
     value=None
     indent=0
     show_subject=False
+    supress_promote=False
     widgets=dict(
         flag_post=FlagPost(),
         moderate_post=ModeratePost(),
@@ -196,6 +197,12 @@ class Post(HierWidget):
                 if($('.add_attachment', post)){
                     $('.add_attachment', post).click(function(ele){
                         $('.add_attachment_form', post).show();
+                        return false;
+                    });
+                }
+                if($('.promote_to_thread', post)){
+                    $('.promote_to_thread', post).click(function(ele){
+                        $('.promote_to_thread_form', post).show();
                         return false;
                     });
                 }

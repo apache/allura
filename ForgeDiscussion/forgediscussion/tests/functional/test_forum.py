@@ -209,7 +209,7 @@ class TestForum(TestController):
     def test_forum_search(self):
         r = self.app.get('/Discussion/search')
         r = self.app.get('/Discussion/search', params=dict(q='foo'))
-
+    
     def test_forum_subscribe(self):
         r = self.app.get('/Discussion/subscribe', params={
                 'forum-0.shortname':'TestForum',
@@ -219,11 +219,11 @@ class TestForum(TestController):
                 'forum-0.shortname':'TestForum',
                 'forum-0.subscribed':'',
                 })
-
+    
     def test_forum_index(self):
         r = self.app.get('/Discussion/TestForum/')
         r = self.app.get('/Discussion/TestForum/ChildForum/')
-
+    
     def test_posting(self):
         r = self.app.get('/Discussion/TestForum/post', params=dict(
                 subject='Test Thread',
@@ -231,6 +231,23 @@ class TestForum(TestController):
         r = self.app.get(r.location)
         assert 'Message posted' in r
         r = self.app.get('/Discussion/TestForum/moderate/')
+
+    def test_thread(self):
+        thread = self.app.get('/Discussion/TestForum/post', params=dict(
+                subject='AAA',
+                text='aaa')).follow()
+        url = thread.request.url
+        rep_url = thread.html.find('div',{'class':'reply_post_form push-3 span-16 last clear'}).find('form').get('action')
+        thread = self.app.post(str(rep_url), params=dict(
+                subject='BBB',
+                text='bbb'))
+        thread = self.app.get(url)
+        # beautiful soup is getting some unicode error here - test without it
+        assert '<div class="content clear"><p>aaa</p></div>' in thread.response.body
+        assert '<div class="content clear"><p>bbb</p></div>' in thread.response.body
+        assert thread.response.body.count('<div class="promote_to_thread_form') == 1
+        assert thread.response.body.count('<div class="reply_post_form') == 2
+        assert thread.response.body.count('<div class="edit_post_form') == 2
 
     def test_sidebar_menu(self):
         r = self.app.get('/Discussion/')
