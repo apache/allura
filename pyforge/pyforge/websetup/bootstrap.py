@@ -185,6 +185,20 @@ ul#sidebarmenu li a.active {
     u0.set_password('foo')
     u1.set_password('foo')
     u0.claim_address('Beta@wiki.test.projects.sourceforge.net')
+
+    log.info('Creating basic project categories')
+    cat1 = M.ProjectCategory(name='clustering', label='Clustering')
+
+    cat2 = M.ProjectCategory(name='communications', label='Communications')
+    cat2_1 = M.ProjectCategory(name='synchronization', label='Synchronization', parent_id=cat2._id)
+    cat2_2 = M.ProjectCategory(name='streaming', label='Streaming', parent_id=cat2._id)
+    cat2_3 = M.ProjectCategory(name='fax', label='Fax', parent_id=cat2._id)
+    cat2_4 = M.ProjectCategory(name='bbs', label='BBS', parent_id=cat2._id)
+
+    cat3 = M.ProjectCategory(name='database', label='Database')
+    cat3_1 = M.ProjectCategory(name='front_ends', label='Front-Ends', parent_id=cat3._id)
+    cat3_2 = M.ProjectCategory(name='engines_servers', label='Engines/Servers', parent_id=cat3._id)
+
     log.info('Registering initial projects')
     p_adobe1 = n_adobe.register_project('Adobe 1', u_adobe)
     p_adobe2 = n_adobe.register_project('Adobe 2', u_adobe)

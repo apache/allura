@@ -87,7 +87,6 @@ class TestProjectAdmin(TestController):
                 'new.name':'test_role',
                 'role-0.id':str(role1._id)})
 
-
     def test_project_icon(self):
         file_name = 'adobe_header.png'
         file_path = os.path.join(pyforge.__path__[0],'public','images',file_name)

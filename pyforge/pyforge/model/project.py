@@ -212,6 +212,25 @@ class ProjectFile(File):
             category=str,
             filename=str))
 
+class ProjectCategory(MappedClass):
+    class __mongometa__:
+        session = main_orm_session
+        name='project_category'
+
+    _id=FieldProperty(S.ObjectId)
+    parent_id = FieldProperty(S.ObjectId, if_missing=None)
+    name=FieldProperty(str)
+    label=FieldProperty(str, if_missing='')
+    description=FieldProperty(str, if_missing='')
+
+    @property
+    def parent_category(self):
+        return self.query.get(_id=self.parent_id)
+
+    @property
+    def subcategories(self):
+        return self.query.find(dict(parent_id=self._id)).all()
+
 class Project(MappedClass):
     class __mongometa__:
         session = main_orm_session
@@ -238,6 +257,7 @@ class Project(MappedClass):
     neighborhood_invitations=FieldProperty([S.ObjectId])
     neighborhood = RelationProperty(Neighborhood)
     app_configs = RelationProperty('AppConfig')
+    category_id = FieldProperty(S.ObjectId, if_missing=None)
 
     def sidebar_menu(self):
         from pyforge.app import SitemapEntry
@@ -288,6 +308,10 @@ class Project(MappedClass):
     def parent_project(self):
         if self.is_root: return None
         return self.query.get(_id=self.parent_id)
+
+    @property
+    def category(self):
+        return ProjectCategory.query.find(dict(_id=self.category_id)).first()
 
     def sitemap(self):
         from pyforge.app import SitemapEntry

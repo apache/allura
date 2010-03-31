@@ -112,6 +112,7 @@ class ProjectAdminController(object):
 #            grants=grants,
             installable_plugin_names=installable_plugin_names,
             roles=M.ProjectRole.query.find().sort('_id').all(),
+            categories=M.ProjectCategory.query.find(dict(parent_id=None)).sort('label').all(),
             users=[M.User.query.get(_id=id) for id in c.project.acl.read ])
 
     @expose()
@@ -122,10 +123,14 @@ class ProjectAdminController(object):
         return app.admin, remainder
 
     @expose()
-    def update(self, name=None, short_description=None, description=None, icon=None, screenshot=None, **kw):
+    def update(self, name=None, short_description=None, description=None, icon=None, screenshot=None, category=None, **kw):
         c.project.name = name
         c.project.short_description = short_description
         c.project.description = description
+        if category:
+            c.project.category_id = ObjectId(category)
+        else:
+            c.project.category_id = None
         if icon is not None and icon != '' and 'image/' in icon.type:
             filename = icon.filename
             if icon.type: content_type = icon.type
