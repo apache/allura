@@ -503,10 +503,10 @@ class Award(Artifact):
         indexes = [ 'short' ]
     type_s = 'Generic Award'
 
-    from .project import Project
+    from .project import Neighborhood
     _id=FieldProperty(S.ObjectId)
-    created_by_project_id = ForeignIdProperty(Project, if_missing=None)
-    created_by_project = RelationProperty(Project, via='created_by_project_id')
+    created_by_neighborhood_id = ForeignIdProperty(Neighborhood, if_missing=None)
+    created_by_neighborhood = RelationProperty(Neighborhood, via='created_by_neighborhood_id')
     short=FieldProperty(str, if_missing=nonce)
     timestamp=FieldProperty(datetime, if_missing=datetime.utcnow)
     full=FieldProperty(str, if_missing='')
@@ -537,11 +537,12 @@ class AwardGrant(Artifact):
 
     from .auth import User
     from .project import Project
+    from .project import Neighborhood
     _id=FieldProperty(S.ObjectId)
     award_id = ForeignIdProperty(Award, if_missing=None)
     award = RelationProperty(Award, via='award_id')
-    granted_by_project_id = ForeignIdProperty(Project, if_missing=None)
-    granted_by_project = RelationProperty(Project, via='granted_by_project_id')
+    granted_by_neighborhood_id = ForeignIdProperty(Neighborhood, if_missing=None)
+    granted_by_neighborhood = RelationProperty(Neighborhood, via='granted_by_neighborhood_id')
     granted_to_project_id = ForeignIdProperty(Project, if_missing=None)
     granted_to_project = RelationProperty(Project, via='granted_to_project_id')
     timestamp=FieldProperty(datetime, if_missing=datetime.utcnow)
