@@ -32,7 +32,6 @@
     		       py:if="has_project_access('security')()">Permissions</a></li>
     		<li><a href="#project-admin-roles"
                py:if="c.project.is_root and has_project_access('security')()">Roles</a></li>
-    		<li><a href="#project-admin-awards">Awards</a></li>
     	</ul>
     	<div id="project-admin-invitations" py:if="len(c.project.neighborhood_invitations)">
         <h2>Neighborhood Invitation(s)</h2>
@@ -80,12 +79,6 @@
           </div>
           <div class="span-3 clear"><label>Shortname</label></div>
           <div class="span-15 last">$c.project.shortname</div>
-          <div class="span-3 clear"><label>Awards Received</label></div>
-          <div class="span-15 last">
-            <py:for each="accolade in accolades">
-              [${accolade.award.short}]
-            </py:for>
-          </div>
           <div class="span-3 clear"><label>Icon</label></div>
           <div class="editable viewing span-15 last" style="min-height: 2em">
             <div class="viewer" py:if="c.project.icon"><img src="${c.project.url()}/icon"/></div>
@@ -284,115 +277,6 @@
               </tbody>
             </table>
           </form>
-        </div>
-      </div>
-      <div id="project-admin-awards" style="overflow: auto">
-        <h2>Awards Admin</h2>
-        <h3>Current Awards</h3>
-        <div id="award_list">
-          <table border="1">
-            <thead>
-              <tr>
-                <th>Shortname</th>
-                <th>Name</th>
-		<th>Delete?</th>
-              </tr>
-            </thead>
-            <tbody>
-              <py:for each="award in awards">
-                <tr>
-                  <td>$award.short</td>
-                  <td>$award.full</td>
-		  <td><a href="awards/award_delete?award_id=$award._id">[X]</a></td>
-                </tr>
-              </py:for>
-            </tbody>
-          </table>
-        </div>
-        <h3>Create an Award</h3>
-        <form method="POST" action="awards/award_save">
-          <table border="1">
-            <thead>
-              <tr>
-                <th>Shortname</th>
-                <th>Name</th>
-                <th/>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td>
-                  <input name="short"/>
-                </td>
-                <td>
-                  <input name="full"/>
-                </td>
-                <td>
-                  <input type="submit" value="Create"/>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </form>
-        <h3>Grant an Award</h3>
-        <py:def function="project(n, subprojects)">
-          <option value="${n.name}">${n.name}</option>
-          <py:for each="p in subprojects">
-            ${project(p, p.subprojects)}
-          </py:for>
-        </py:def>
-        <form method="POST" action="awards/award_grant">
-          <table border="1">
-            <thead>
-              <tr>
-                <th>Award</th>
-                <th>Recipient</th>
-                <th/>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td>
-                  <select name="grant">
-                    <py:for each="assign in assigns">
-                      <option value="$assign.short">$assign.short</option>
-                    </py:for>
-                  </select>
-                </td>
-                <td>
-                  <select name="recipient">
-                  <py:for each="n, subprojects in projects">
-                    ${project(n, subprojects)}
-                  </py:for>
-                  </select>
-                </td>
-                <td>
-                  <input type="submit" value="Grant"/>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </form>
-        <h3>Current Grants</h3>
-        <div id="grant_list">
-          <table border="1">
-            <thead>
-              <tr>
-                <th>Award</th>
-                <th>Recipient</th>
-                <th>Delete?</th>
-              </tr>
-            </thead>
-            <tbody>
-              <py:for each="grant in grants">
-                <tr>
-                  <td>${grant.award.short}</td>
-		  <td>${grant.granted_to_project.shortname}</td>
-                  <td><a href="awards/grant_delete?grant_id=${grant._id}">[X]</a></td>
-                </tr>
-              </py:for>
-            </tbody>
-          </table>
         </div>
       </div>
     </div>
