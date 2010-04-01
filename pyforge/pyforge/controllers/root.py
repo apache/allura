@@ -16,6 +16,7 @@ import pyforge
 from pyforge.lib.base import BaseController
 from pyforge.controllers.error import ErrorController
 from pyforge import model as M
+from pyforge.lib.widgets import project_list as plw
 from .auth import AuthController
 from .search import SearchController
 from .static import StaticController
@@ -26,6 +27,9 @@ from mako.template import Template
 __all__ = ['RootController']
 
 log = logging.getLogger(__name__)
+
+class W:
+    project_summary = plw.ProjectSummary()
 
 class RootController(BaseController):
     """
@@ -77,13 +81,13 @@ class RootController(BaseController):
             g._publish(**msg)
         ming.orm.ormsession.ThreadLocalORMSession.close_all()
 
-    @expose('pyforge.templates.index')
+    @expose('pyforge.templates.project_list')
     @with_trailing_slash
     def index(self):
         """Handle the front-page."""
-        psort = [(n, M.Project.query.find(dict(is_root=True, neighborhood_id=n._id)).all())
-                 for n in M.Neighborhood.query.find().sort('name')]
-        return dict(projects=psort)
+        projects = M.Project.query.find().sort('name').all()
+        c.project_summary = W.project_summary
+        return dict(projects=projects,title="All Projects",text=None)
 
     @expose()
     @without_trailing_slash

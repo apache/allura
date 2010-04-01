@@ -55,7 +55,7 @@ class TestController(BaseController, ProjectController):
         proxy_root = RootController()
         self.dispatch = DispatchTest()
         self.security = SecurityTests()
-        for attr in ('site_style', 'markdown_to_html', 'auth', 'static', 'error'):
+        for attr in ('index', 'site_style', 'markdown_to_html', 'auth', 'static', 'error'):
             setattr(self, attr, getattr(proxy_root, attr))
         self.gsearch = proxy_root.search
 
@@ -75,11 +75,11 @@ class TestController(BaseController, ProjectController):
                 raise exc.HTTPNotFound, name
         c.app = app
         return app.root, remainder
-
-    @expose('pyforge.templates.project_index')
-    def index(self):
-        require(has_project_access('read'))
-        return dict()
+    # 
+    # @expose('pyforge.templates.project_index')
+    # def index(self):
+    #     require(has_project_access('read'))
+    #     return dict()
 
     def __call__(self, environ, start_response):
         c.app = None

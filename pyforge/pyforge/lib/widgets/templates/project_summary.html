@@ -1,0 +1,13 @@
+<div xmlns="http://www.w3.org/1999/xhtml"
+     xmlns:py="http://genshi.edgewall.org/"
+     xmlns:xi="http://www.w3.org/2001/XInclude"
+     py:strip="True">
+<a href="${value.url()}"><img src="${value.icon and value.url()+'icon' or '/images/project_default.png'}" alt="$value.name Icon" class="fleft icon clear" /></a>
+<!-- <?python import pdb; pdb.set_trace()?> -->
+<h2><a href="${value.url()}">$value.name</a></h2>
+<p>$value.short_description &hellip;<br />
+<a href="${accolade.award.url()}" py:for="accolade in value.accolades" title="$accolade.award.full"><small class="badge">$accolade.award.short</small></a>
+</p>
+
+
+</div>

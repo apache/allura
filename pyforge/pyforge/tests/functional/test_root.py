@@ -19,12 +19,10 @@ from ming.orm import session
 class TestRootController(TestController):
     def test_index(self):
         response = self.app.get('/')
-        # You can look for specific strings:
-        assert_true('ProjectController' in response)
-        
-        #Dumb test just looks for links on the page
-        links = response.html.findAll('a')
-        assert_true(links, "Mummy, there are no links here!")
+        assert response.html.find('h1').string == 'All Projects'
+        projects = response.html.find('ul',{'class':'display'}).find('li')
+        assert len(projects) == 9
+        assert projects.first().find('img').get('alt') == 'Adobe 1 Icon'
 
     def test_markdown_to_html(self):
         r = self.app.get('/markdown_to_html?markdown=*aaa*bb[WikiHome]&project=test&app=bugs')

@@ -5,7 +5,7 @@ import os
 
 from tg import expose, flash, redirect, validate, request, response
 from tg.decorators import with_trailing_slash, without_trailing_slash
-from pylons import c
+from pylons import c, g
 from webob import exc
 from pymongo.bson import ObjectId
 from formencode import validators
@@ -19,6 +19,7 @@ from pyforge.lib.helpers import vardec, DateTimeConverter
 from pyforge.controllers.error import ErrorController
 from pyforge.lib.security import require, has_project_access, has_neighborhood_access
 from pyforge.lib.widgets import form_fields as ffw
+from pyforge.lib.widgets import project_list as plw
 from .auth import AuthController
 from .search import SearchController
 from .static import StaticController
@@ -30,6 +31,7 @@ CACHED_CSS = dict()
 
 class W:
     markdown_editor = ffw.MarkdownEdit()
+    project_summary = plw.ProjectSummary()
 
 class NeighborhoodController(object):
     '''Manages a neighborhood of projects.
@@ -57,9 +59,14 @@ class NeighborhoodController(object):
         c.project = project
         return ProjectController(), remainder
 
-    @expose('pyforge.templates.neighborhood')
+    @expose('pyforge.templates.neighborhood_project_list')
     def index(self):
-        return dict(neighborhood=self.neighborhood)
+        c.project_summary = W.project_summary
+        projects = M.Project.query.find(dict(neighborhood_id=self.neighborhood._id)).sort('name').all()
+        return dict(neighborhood=self.neighborhood,
+                    title="Welcome to "+self.neighborhood.name,
+                    text=g.markdown.convert(self.neighborhood.homepage),
+                    projects=projects)
 
     @expose()
     def register(self, pid):

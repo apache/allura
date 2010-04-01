@@ -265,7 +265,8 @@
 .ui-icon-grip-solid-horizontal { background-position: -48px -224px; }
 .ui-icon-gripsmall-diagonal-se { background-position: -64px -224px; }
 .ui-icon-grip-diagonal-se { background-position: -80px -224px; }
-
+.ui-icon-list { background-position: -112px -208px;}
+.ui-icon-grid {	background-position: -96px -208px;} 
 
 /* Misc visuals
 ----------------------------------*/

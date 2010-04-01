@@ -206,7 +206,10 @@ class Theme(MappedClass):
     color3 = FieldProperty(str)
     color4 = FieldProperty(str)
 
-class ProjectFile(File):
+class ProjectFile(File):    
+    class __mongometa__:
+        session = main_orm_session
+
     metadata=FieldProperty(dict(
             project_id=S.ObjectId,
             category=str,
@@ -348,6 +351,11 @@ class Project(MappedClass):
         from . import auth
         roles = auth.ProjectRole.query.find().all()
         return sorted(roles, key=lambda r:r.display())
+
+    @property
+    def accolades(self):
+        from .artifact import AwardGrant
+        return AwardGrant.query.find(dict(granted_to_project_id=self._id)).all()
 
     def install_app(self, ep_name, mount_point, **override_options):
         assert self.app_instance(mount_point) is None
