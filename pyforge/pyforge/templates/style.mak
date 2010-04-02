@@ -162,6 +162,9 @@ ul#sidebarmenu li a.active {
 ul#sidebarmenu li a.nav_child {
     padding-left:2em;
 }
+ul#sidebarmenu li a.nav_child2 {
+    padding-left:4em;
+}
 
 ul#sidebarmenu span.ui-icon, ul#sidebarmenu a span.ui-icon,
 #sidebar-right span.ui-icon, #sidebar-right a span.ui-icon,

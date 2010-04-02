@@ -4,21 +4,21 @@ import logging, string, os
 from collections import defaultdict
 
 import pkg_resources
-from tg import expose, flash, redirect, session, config, response
+from tg import expose, flash, redirect, session, config, response, request
 from tg.decorators import with_trailing_slash, without_trailing_slash
 from pylons import c, g
-from webob import exc
 
 import ew
 import ming
 
 import pyforge
+from pyforge.app import SitemapEntry
 from pyforge.lib.base import BaseController
 from pyforge.controllers.error import ErrorController
 from pyforge import model as M
 from pyforge.lib.widgets import project_list as plw
 from .auth import AuthController
-from .search import SearchController
+from .search import SearchController, ProjectBrowseController
 from .static import StaticController
 from .project import NeighborhoodController, HostNeighborhoodController
 from .oembed import OEmbedController
@@ -69,6 +69,7 @@ class RootController(BaseController):
             if n.url_prefix.startswith('//'): continue
             n.bind_controller(self)
         self._ew_resources = ew.ResourceManager.get()
+        self.browse = ProjectBrowseController()
 
     def _cleanup_iterator(self, result):
         for x in result:
@@ -85,8 +86,12 @@ class RootController(BaseController):
     @with_trailing_slash
     def index(self):
         """Handle the front-page."""
-        projects = M.Project.query.find().sort('name').all()
         c.project_summary = W.project_summary
+        projects = M.Project.query.find().sort('name').all()
+        categories = M.ProjectCategory.query.find({'parent_id':None}).sort('name').all()
+        c.custom_sidebar_menu = [SitemapEntry('Categories')] + [
+            SitemapEntry(cat.label, '/browse/'+cat.name, className='nav_child') for cat in categories
+        ]
         return dict(projects=projects,title="All Projects",text=None)
 
     @expose()

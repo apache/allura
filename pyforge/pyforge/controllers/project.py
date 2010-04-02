@@ -14,6 +14,7 @@ import  ming.orm.ormsession
 
 import pyforge
 from pyforge import model as M
+from pyforge.app import SitemapEntry
 from pyforge.lib.base import BaseController
 from pyforge.lib.helpers import vardec, DateTimeConverter
 from pyforge.controllers.error import ErrorController
@@ -21,7 +22,7 @@ from pyforge.lib.security import require, has_project_access, has_neighborhood_a
 from pyforge.lib.widgets import form_fields as ffw
 from pyforge.lib.widgets import project_list as plw
 from .auth import AuthController
-from .search import SearchController
+from .search import SearchController, ProjectBrowseController
 from .static import StaticController
 
 from mako.template import Template
@@ -41,6 +42,7 @@ class NeighborhoodController(object):
         self.neighborhood_name = neighborhood_name
         self.neighborhood = M.Neighborhood.query.get(name=self.neighborhood_name)
         self.prefix = prefix
+        self.browse = NeighborhoodProjectBrowseController(neighborhood=self.neighborhood)
         self._admin = NeighborhoodAdminController(self.neighborhood)
         self._moderate = NeighborhoodModerateController(self.neighborhood)
     
@@ -63,6 +65,10 @@ class NeighborhoodController(object):
     def index(self):
         c.project_summary = W.project_summary
         projects = M.Project.query.find(dict(neighborhood_id=self.neighborhood._id)).sort('name').all()
+        categories = M.ProjectCategory.query.find({'parent_id':None}).sort('name').all()
+        c.custom_sidebar_menu = [SitemapEntry('Categories')] + [
+            SitemapEntry(cat.label, self.neighborhood.url()+'browse/'+cat.name, className='nav_child') for cat in categories
+        ]
         return dict(neighborhood=self.neighborhood,
                     title="Welcome to "+self.neighborhood.name,
                     text=g.markdown.convert(self.neighborhood.homepage),
@@ -115,6 +121,29 @@ class NeighborhoodController(object):
         response.headers['Content-Type'] = ''
         response.content_type = 'text/css'
         return css
+
+class NeighborhoodProjectBrowseController(ProjectBrowseController):
+    def __init__(self, neighborhood=None, category_name=None, parent_category=None):
+        self.neighborhood = neighborhood
+        super(NeighborhoodProjectBrowseController, self).__init__(category_name=category_name, parent_category=parent_category)
+        self.nav_stub = '%sbrowse/' % self.neighborhood.url()
+        self.additional_filters = {'neighborhood_id':self.neighborhood._id}
+
+    @expose()
+    def _lookup(self, category_name, *remainder):
+        return NeighborhoodProjectBrowseController(neighborhood=self.neighborhood, category_name=category_name, parent_category=self.category), remainder
+
+    @expose('pyforge.templates.neighborhood_project_list')
+    @without_trailing_slash
+    def index(self):
+        c.project_summary = W.project_summary
+        projects = self._find_projects()
+        title=self._build_title()
+        c.custom_sidebar_menu = self._build_nav()
+        return dict(projects=projects,
+                    title=title,
+                    text=None,
+                    neighborhood=self.neighborhood)
 
 class HostNeighborhoodController(BaseController, NeighborhoodController):
     '''Neighborhood controller with support for use as a root controller, for

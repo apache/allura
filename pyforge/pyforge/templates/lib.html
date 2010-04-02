@@ -69,7 +69,13 @@
   <py:def function="sidebar_menu()">
     <div id="sidebar" class="span-4">
       <span id="app-search" py:if="c.app"><input type="text" class="defaultText" title="Search App"/></span>
-      <py:if test="not c.app">&nbsp;</py:if>
+      <py:if test="not c.app and not getattr(c, 'custom_sidebar_menu', None)">&nbsp;</py:if>
+      <ul id="sidebarmenu" py:if="getattr(c, 'custom_sidebar_menu', None)">
+        <li py:for="s in c.custom_sidebar_menu">
+          <a py:if="s.url" href="$s.url" class="$s.className ${request.url.find(s.url,-len(s.url)) != -1 and 'active' or ''}"><span py:if="s.ui_icon" class="ui-icon ui-icon-$s.ui_icon"></span>$s.label</a>
+          <span py:if="not s.url" class="$s.className nav_head"><span py:if="s.ui_icon" class="ui-icon ui-icon-$s.ui_icon"></span>$s.label</span>
+        </li>
+      </ul>
       <ul id="sidebarmenu" py:if="getattr(c, 'app', None)">
         <li py:for="s in c.app.sidebar_menu()">
           <a py:if="s.url" href="$s.url" class="$s.className ${request.url.rfind(s.url,-len(s.url)) != -1 and 'active' or ''}"><span py:if="s.ui_icon" class="ui-icon ui-icon-$s.ui_icon"></span>$s.label</a>

@@ -28,7 +28,8 @@
         <a href="?offset=15">Next →</a>
       </div> -->
       <py:if test="text">${Markup(text)}</py:if>
-      <ul class="display">
+      <p py:if="not len(projects)">No projects found</p>
+      <ul class="display" py:if="len(projects)">
         <li py:for="project in projects">
           ${c.project_summary.display(value=project)}
         </li>
