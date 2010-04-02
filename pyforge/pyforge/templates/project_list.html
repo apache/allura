@@ -42,22 +42,7 @@
       </ul>
     </div>
     <script type="text/javascript"> 
-    		$(document).ready(function() {  
-    		    $(".potm").parent('a[title]').tooltip({
-    		        tip: '#tippotm',
-    		        opacity: '.9',
-    		        offset: [-10,0]
-    		    }); 
-    		    $(".cca").parent('a[title]').tooltip({
-    		        tip: '#tipcca',
-    		        opacity: '.9',
-    		        offset: [-10,0]
-    		    }); 
-    		    $(".sm img[title]").tooltip({
-    		        tip: '#tip',
-    		        opacity: '.9',
-    		        offset: [-10,0]
-    		    }); 
+		$(document).ready(function() {
     			$(".switch input.grid").click(function(){
     			 $(this).next().addClass('ui-state-active');
     			  $('.switch input.list').next().removeClass('ui-state-active');

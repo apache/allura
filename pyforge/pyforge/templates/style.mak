@@ -543,7 +543,7 @@ input.title.wide.ticket_form_tags{
 
     .tip {
     	display:none;
-    	background: ${color1};
+	background: #2C343B;
     	font-size:.85;
     	height:1.5em;
     	width:200px;
@@ -555,7 +555,7 @@ input.title.wide.ticket_form_tags{
     	-moz-border-radius: 4px;
     	border-radius: 4px;
     	text-align: center;
-    	border: 1px solid ${color1};
+	border: 1px solid #111517;
     }
 
     #tippotm {	text-align: left; height:3em; padding-left: 55px; width: 130px; background-image: url('images/project-of-the-month-final.png'); background-position: 5px 50%; background-repeat: no-repeat;}
