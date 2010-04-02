@@ -28,7 +28,7 @@
         <a href="?offset=15">Next →</a>
       </div> -->
       <py:def function="project(n, subprojects)">
-        <li><a href="${n.url}">${n.name}</a></li>
+      <li><a href="${n.url()}"><font size="+2">${n.name}</font></a></li>
         <li py:for="p in subprojects">
           ${c.project_summary.display(value=p)}
         </li>
