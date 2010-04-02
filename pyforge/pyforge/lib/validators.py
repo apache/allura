@@ -1,3 +1,4 @@
+from pymongo.bson import ObjectId
 from formencode import validators as fev
 
 class Ming(fev.FancyValidator):
@@ -7,7 +8,13 @@ class Ming(fev.FancyValidator):
         super(Ming, self).__init__(**kw)
 
     def _to_python(self, value, state):
-        return self.cls.query.get(_id=value)
+        result = self.cls.query.get(_id=value)
+        if result is None:
+            try:
+                result = self.cls.query.get(_id=ObjectId(value))
+            except:
+                pass
+        return result
 
     def _from_python(self, value, state):
         return value._id

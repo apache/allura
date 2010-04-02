@@ -13,11 +13,10 @@ from pymongo.bson import ObjectId
 
 from pyforge.app import Application, WidgetController, DefaultAdminController, SitemapEntry
 from pyforge.lib.security import has_artifact_access
-from pyforge.lib.helpers import vardec, square_image
+from pyforge.lib import helpers as h
 from pyforge import version
 from pyforge import model as M
 from pyforge.lib.security import require, has_project_access
-from pyforge.model import nonce
 from pyforge.lib.widgets import form_fields as ffw
 
 class W:
@@ -137,7 +136,7 @@ class ProjectAdminController(object):
             else: content_type = 'application/octet-stream'
             image = Image.open(icon.file)
             format = image.format
-            image = square_image(image)
+            image = h.square_image(image)
             image.thumbnail((48, 48), Image.ANTIALIAS)
             if c.project.icon:
                 M.ProjectFile.query.remove({'metadata.project_id':c.project._id, 'metadata.category':'icon'})
@@ -160,7 +159,7 @@ class ProjectAdminController(object):
                 project_id=c.project._id) as fp:
                 fp_name = fp.name
                 image.save(fp, format)
-            image = square_image(image)
+            image = h.square_image(image)
             image.thumbnail((150, 150), Image.ANTIALIAS)
             with M.ProjectFile.create(
                 content_type=content_type,
@@ -186,7 +185,7 @@ class ProjectAdminController(object):
         flash('Joined %s' % n.name)
         redirect(c.project.url() + 'admin/')
 
-    @vardec
+    @h.vardec
     @expose()
     def update_mounts(self, subproject=None, plugin=None, new=None, **kw):
         if subproject is None: subproject = []
@@ -200,13 +199,13 @@ class ProjectAdminController(object):
         if new.get('install'):
             if new['ep_name'] == '':
                 require(has_project_access('create'))
-                sp = c.project.new_subproject(new['mount_point'] or nonce())
+                sp = c.project.new_subproject(new['mount_point'] or h.nonce())
             else:
                 require(has_project_access('plugin'))
                 c.project.install_app(new['ep_name'], new['mount_point'] or new['ep_name'])
         redirect('.#mount-admin')
 
-    @vardec
+    @h.vardec
     @expose()
     def update_acl(self, permission=None, role=None, new=None, **kw):
         require(has_project_access('security'))
@@ -226,7 +225,7 @@ class ProjectAdminController(object):
                 c.project.acl[permission].append(role._id)
         redirect('.#acl-admin')
 
-    @vardec
+    @h.vardec
     @expose()
     def update_roles(self, role=None, new=None, **kw):
         require(has_project_access('security'))

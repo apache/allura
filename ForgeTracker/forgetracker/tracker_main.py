@@ -26,8 +26,10 @@ from pyforge.lib.search import search_artifact
 from pyforge.lib.decorators import audit, react
 from pyforge.lib.security import require, has_artifact_access
 from pyforge.model import ProjectRole, TagEvent, UserTags, ArtifactReference, Feed
+from pyforge.model import Subscriptions
 from pyforge.lib import widgets as w
 from pyforge.lib.widgets import form_fields as ffw
+from pyforge.lib.widgets.subscriptions import SubscribeForm
 from pyforge.controllers import AppDiscussionController
 
 # Local imports
@@ -47,6 +49,8 @@ class W:
     user_tag_edit = ffw.UserTagEdit()
     attachment_list = ffw.AttachmentList()
     ticket_form = TicketForm()
+    subscribe_form = SubscribeForm()
+    ticket_subscribe_form = SubscribeForm(thing='ticket')
 
 class ForgeTrackerApp(Application):
     __version__ = version.__version__
@@ -232,21 +236,16 @@ class RootController(object):
                               change_date=comment.timestamp,
                               ticket_num=ticket.ticket_num,
                               change_text=comment.text))
-        q.sort(reverse=True)
-        if limit:
-            n = len(q)
-            if n > limit:
-                z = []
-                for i in range(0, limit):
-                    z.append(q[i])
-                q = z
-        return q
+        q.sort(reverse=True, key=lambda d:d['change_date'])
+        return q[:limit]
 
     @with_trailing_slash
     @expose('forgetracker.templates.index')
     def index(self):
         result = self.paged_query(q='!status:closed', sort='ticket_num_i desc', limit=500)
         result['changes'] = self.ordered_history(5)
+        c.subscribe_form = W.subscribe_form
+        result['subscribed'] = Subscriptions.upsert().subscribed()
         return result
 
     @with_trailing_slash
@@ -489,6 +488,16 @@ class RootController(object):
                 closed=closed,
                 globals=globals)
 
+    @expose()
+    @validate(W.subscribe_form)
+    def subscribe(self, subscribe=None, unsubscribe=None):
+        require(has_artifact_access('read'))
+        if subscribe:
+            Subscriptions.upsert().subscribe('direct')
+        elif unsubscribe:
+            Subscriptions.upsert().unsubscribe()
+        redirect(request.referer)
+
 class BinController(object):
 
     def __init__(self, summary=None):
@@ -564,13 +573,15 @@ class TicketController(object):
         c.user_tag_edit = W.user_tag_edit
         c.user_select = ffw.ProjectUserSelect()
         c.attachment_list = W.attachment_list
+        c.subscribe_form = W.ticket_subscribe_form
         user_tags = UserTags.upsert(c.user, self.ticket.dump_ref())
         if self.ticket is not None:
             globals = model.Globals.query.get(app_config_id=c.app.config._id)
             if globals.milestone_names is None:
                 globals.milestone_names = ''
             return dict(ticket=self.ticket, globals=globals,
-                        user_tags=user_tags, allow_edit=has_artifact_access('write', self.ticket)())
+                        user_tags=user_tags, allow_edit=has_artifact_access('write', self.ticket)(),
+                        subscribed=Subscriptions.upsert().subscribed(artifact=self.ticket))
         else:
             redirect('not_found')
 
@@ -712,6 +723,16 @@ class TicketController(object):
                     if not s: break
                     fp.write(s)
         redirect('.')
+
+    @expose()
+    @validate(W.subscribe_form)
+    def subscribe(self, subscribe=None, unsubscribe=None):
+        require(has_artifact_access('read'))
+        if subscribe:
+            Subscriptions.upsert().subscribe('direct', artifact=self.ticket)
+        elif unsubscribe:
+            Subscriptions.upsert().unsubscribe(artifact=self.ticket)
+        redirect(request.referer)
 
 class AttachmentsController(object):
 

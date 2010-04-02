@@ -11,10 +11,9 @@ from pymongo.bson import ObjectId
 
 from pyforge import version
 from pyforge.app import Application, WidgetController, ConfigOption, SitemapEntry
-from pyforge.lib.helpers import push_config, html, vardec
+from pyforge.lib import helpers as h
 from pyforge.ext.project_home import model as M
 from pyforge.lib.security import require, has_project_access
-from pyforge.model import nonce
 
 log = logging.getLogger(__name__)
 
@@ -87,7 +86,7 @@ class ProjectHomeController(object):
             layout=config.layout,
             widget_types=widget_types)
 
-    @vardec
+    @h.vardec
     @expose()
     def update_configuration(self, divs=None, layout_class=None, new_div=None, **kw):
         config = M.PortalConfig.current()
@@ -101,7 +100,7 @@ class ProjectHomeController(object):
             new_divs.append(div)
         # Handle new divs
         if new_div:
-            new_divs.append(dict(name=nonce(), content=[]))
+            new_divs.append(dict(name=h.nonce(), content=[]))
         config.layout = []
         for div in new_divs:
             content = []

@@ -51,3 +51,6 @@ class AttachmentList(ew.Widget):
     params=['attachments','edit_mode']
     attachments=None
     edit_mode=None
+
+class SubmitButton(ew.SubmitButton):
+    attrs={'class':'ui-state-default ui-button ui-button-text'}

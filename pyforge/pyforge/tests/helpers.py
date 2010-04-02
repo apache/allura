@@ -34,9 +34,10 @@ def setup_functional_test(config=DFL_CONFIG, app_name=DFL_APP_NAME):
 def setup_global_objects():
     g._push_object(Globals())
     c._push_object(mock.Mock())
+    c.queued_messages = None
     request._push_object(Request.blank('/'))
     ThreadLocalORMSession.close_all()
     g.set_project('test')
-    g.set_app('hello')
+    g.set_app('wiki')
     c.user = M.User.query.get(username='test_admin')
 

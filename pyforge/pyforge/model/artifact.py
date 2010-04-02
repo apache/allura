@@ -17,7 +17,7 @@ from ming.orm.property import FieldProperty, ForeignIdProperty, RelationProperty
 from pymongo.errors import OperationFailure
 from webhelpers import feedgenerator as FG
 
-from pyforge.lib.helpers import nonce, push_config, push_context, absurl
+from pyforge.lib import helpers as h
 from .session import ProjectSession
 from .session import main_doc_session, main_orm_session
 from .session import project_doc_session, project_orm_session
@@ -25,12 +25,6 @@ from .session import artifact_orm_session
 from .types import ArtifactReference, ArtifactReferenceType
 
 log = logging.getLogger(__name__)
-
-def gen_message_id():
-    parts = c.project.url().split('/')[1:-1]
-    return '%s.%s@%s.sourceforge.net' % (nonce(40),
-                                         c.app.config.options['mount_point'],
-                                         '.'.join(reversed(parts)))
 
 class ArtifactLink(MappedClass):
     class __mongometa__:
@@ -111,7 +105,7 @@ class ArtifactLink(MappedClass):
         #
         # Actually search the projects
         #
-        with push_config(c, project=projects[0]):
+        with h.push_config(c, project=projects[0]):
             for p in projects:
                 links = cls.query.find(dict(project_id=p._id, link=artifact_id)).all()
                 for l in links:
@@ -132,14 +126,15 @@ class Feed(MappedClass):
     link=FieldProperty(str)
     pubdate = FieldProperty(datetime, if_missing=datetime.utcnow)
     description = FieldProperty(str)
-    unique_id = FieldProperty(str, if_missing=lambda:nonce(40))
+    unique_id = FieldProperty(str, if_missing=lambda:h.nonce(40))
     author_name = FieldProperty(str, if_missing=lambda:c.user.display_name)
     author_link = FieldProperty(str, if_missing=lambda:c.user.url())
 
     @classmethod
-    def post(cls, artifact, description=None):
+    def post(cls, artifact, title=None, description=None):
         idx = artifact.index()
-        title='%s modified by %s' % (idx['title_s'], c.user.display_name)
+        if title is None:
+            title='%s modified by %s' % (idx['title_s'], c.user.display_name)
         if description is None: description = title
         item = cls(artifact_reference=artifact.dump_ref(),
                    title=title,
@@ -150,7 +145,7 @@ class Feed(MappedClass):
     @classmethod
     def feed(cls, q, feed_type, title, link, description,
              since=None, until=None, offset=None, limit=None):
-        d = dict(title=title, link=absurl(link), description=description, language=u'en')
+        d = dict(title=title, link=h.absurl(link), description=description, language=u'en')
         if feed_type == 'atom':
             feed = FG.Atom1Feed(**d)
         elif feed_type == 'rss':
@@ -166,14 +161,13 @@ class Feed(MappedClass):
         if limit is not None: query = cur.limit(limit)
         if offset is not None: query = cur.offset(limit)
         for r in cur:
-            a = ArtifactReference(r.artifact_reference).to_artifact()
             feed.add_item(title=r.title,
-                          link=absurl(r.link),
+                          link=h.absurl(r.link),
                           pubdate=r.pubdate,
                           description=r.description,
                           unique_id=r.unique_id,
                           author_name=r.author_name,
-                          author_link=absurl(r.author_link))
+                          author_link=h.absurl(r.author_link))
         return feed
 
 class Artifact(MappedClass):
@@ -197,6 +191,17 @@ class Artifact(MappedClass):
     references = FieldProperty([ArtifactReferenceType])
     backreferences = FieldProperty({str:ArtifactReferenceType})
     app_config = RelationProperty('AppConfig')
+
+    def subscribe(self, topic=None, type='direct', n=1, unit='day', user=None):
+        from pyforge.model import Subscriptions
+        if user is None: user = c.user
+        s = Subscriptions.upsert(user=user)
+        s.subscribe(type, n, unit, self, topic)
+
+    def unsubscribe(self, topic=None):
+        from pyforge.model import Subscriptions
+        s = Subscriptions.upsert()
+        s.unsubscribe(self, topic)
 
     def primary(self, primary_class):
         '''If an artifact is a "secondary" artifact (discussion of a ticket, for
@@ -268,7 +273,7 @@ class Artifact(MappedClass):
     def give_access(self, *access_types, **kw):
         user = kw.pop('user', c.user)
         project = kw.pop('project', c.project)
-        with push_config(c, project=project):
+        with h.push_config(c, project=project):
             project_role_id = user.project_role()._id
         for at in access_types:
             l = self.acl.setdefault(at, [])
@@ -278,7 +283,7 @@ class Artifact(MappedClass):
     def revoke_access(self, *access_types, **kw):
         user = kw.pop('user', c.user)
         project = kw.pop('project', c.project)
-        with push_config(c, project=project):
+        with h.push_config(c, project=project):
             project_role_id = user.project_role()._id
         for at in access_types:
             l = self.acl.setdefault(at, [])
@@ -325,7 +330,7 @@ class Artifact(MappedClass):
         '''Return the discussion thread for this artifact (possibly made more
         specific by the message_data)'''
         from .discuss import Thread
-        return Thread.query.get(artifact_id=self._id)
+        return Thread.query.get(artifact_reference=self.dump_ref())
 
 class Snapshot(Artifact):
     class __mongometa__:
@@ -432,8 +437,8 @@ class Message(Artifact):
         indexes = [ 'slug', 'parent_id' ]
     type_s='Generic Message'
 
-    _id=FieldProperty(str, if_missing=gen_message_id)
-    slug=FieldProperty(str, if_missing=nonce)
+    _id=FieldProperty(str, if_missing=h.gen_message_id)
+    slug=FieldProperty(str, if_missing=h.nonce)
     full_slug=FieldProperty(str, if_missing=None)
     parent_id=FieldProperty(str)
     app_id=FieldProperty(S.ObjectId, if_missing=lambda:c.app.config._id)
@@ -443,7 +448,7 @@ class Message(Artifact):
 
     @classmethod
     def make_slugs(cls, parent=None, timestamp=None):
-        part = nonce()
+        part = h.nonce()
         if timestamp is None:
             timestamp = datetime.utcnow()
         dt = timestamp.strftime('%Y%m%d%H%M%S')
@@ -460,7 +465,7 @@ class Message(Artifact):
         return User.query.get(_id=self.author_id) or User.anonymous
 
     def reply(self):
-        new_id = gen_message_id()
+        new_id = h.gen_message_id()
         slug, full_slug = self.make_slugs(self)
         new_args = dict(
             state(self).document,
@@ -507,7 +512,7 @@ class Award(Artifact):
     _id=FieldProperty(S.ObjectId)
     created_by_neighborhood_id = ForeignIdProperty(Neighborhood, if_missing=None)
     created_by_neighborhood = RelationProperty(Neighborhood, via='created_by_neighborhood_id')
-    short=FieldProperty(str, if_missing=nonce)
+    short=FieldProperty(str, if_missing=h.nonce)
     timestamp=FieldProperty(datetime, if_missing=datetime.utcnow)
     full=FieldProperty(str, if_missing='')
 
@@ -535,16 +540,13 @@ class AwardGrant(Artifact):
         indexes = [ 'short' ]
     type_s = 'Generic Award Grant'
 
-    from .auth import User
-    from .project import Project
-    from .project import Neighborhood
     _id=FieldProperty(S.ObjectId)
     award_id = ForeignIdProperty(Award, if_missing=None)
     award = RelationProperty(Award, via='award_id')
-    granted_by_neighborhood_id = ForeignIdProperty(Neighborhood, if_missing=None)
-    granted_by_neighborhood = RelationProperty(Neighborhood, via='granted_by_neighborhood_id')
-    granted_to_project_id = ForeignIdProperty(Project, if_missing=None)
-    granted_to_project = RelationProperty(Project, via='granted_to_project_id')
+    granted_by_neighborhood_id = ForeignIdProperty('Neighborhood', if_missing=None)
+    granted_by_neighborhood = RelationProperty('Neighborhood', via='granted_by_neighborhood_id')
+    granted_to_project_id = ForeignIdProperty('Project', if_missing=None)
+    granted_to_project = RelationProperty('Project', via='granted_to_project_id')
     timestamp=FieldProperty(datetime, if_missing=datetime.utcnow)
 
     def index(self):

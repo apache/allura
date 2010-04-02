@@ -107,6 +107,8 @@ class SMTPClient(object):
         message['Subject'] = subject
         message['Message-ID'] = '<' + message_id + '>'
         if in_reply_to:
+            if isinstance(in_reply_to, basestring):
+                in_reply_to = [ in_reply_to ]
             message['In-Reply-To'] = ','.join(('<' + irt + '>') for irt in in_reply_to)
         content = message.as_string()
         try:

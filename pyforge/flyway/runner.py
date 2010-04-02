@@ -1,5 +1,7 @@
 import logging
 
+from ming.orm import ORMSession
+
 from .model import MigrationInfo
 from .migrate import Migration
 from . import graph
@@ -12,6 +14,7 @@ def run_migration(datastore, target_versions, dry_run):
     # Get the migration status of the db
     session = MigrationInfo.__mongometa__.session
     session.bind = datastore
+    ormsession = ORMSession(session)
     info = MigrationInfo.m.get()
     if info is None:
         info = MigrationInfo.make({})
@@ -21,7 +24,7 @@ def run_migration(datastore, target_versions, dry_run):
         islatest = ' (LATEST)' if v == latest_versions[k] else ''
         log.info('Target %s=%s%s (current=%s)', k, v, islatest, cur)
     # Create a migration plan
-    plan = list(plan_migration(session, info, target_versions))
+    plan = list(plan_migration(session, ormsession, info, target_versions))
     # Execute (or print) the plan
     for step in plan:
         log.info('Migrate %r', step)
@@ -29,10 +32,10 @@ def run_migration(datastore, target_versions, dry_run):
         step.apply(info.versions)
         info.m.save()
 
-def plan_migration(session, info, target):
+def plan_migration(session, ormsession, info, target):
     '''Return the optimal list of graph.MigrationSteps to run in order to
     satisfy the target requirements'''
-    migrations = dict((k, v(session))
+    migrations = dict((k, v(session, ormsession))
                       for k,v in Migration.migrations_registry.iteritems())
     g = graph.MigrationGraph(migrations)
     return g.shortest_path(info.versions, target)

@@ -126,7 +126,7 @@ class Globals(object):
             for k, v in message.items():
                 if isinstance(v, ObjectId):
                     message[k] = str(v)
-        if hasattr(c, 'queued_messages'):
+        if getattr(c, 'queued_messages', None) is not None:
             c.queued_messages.append(dict(
                     xn=xn,
                     message=message,
@@ -168,15 +168,19 @@ class MockAMQ(object):
 
     def setup_handlers(self):
         from pyforge.command.reactor import plugin_consumers, ReactorCommand
+        from pyforge.command import base
+        base.log = logging.getLogger('pyforge.command')
+        base.M = M
         self.plugins = [
             (ep.name, ep.load()) for ep in pkg_resources.iter_entry_points('pyforge') ]
-        self.reactor = ReactorCommand()
+        self.reactor = ReactorCommand('reactor_setup')
+        self.reactor.parse_args([])
         for name, plugin in self.plugins:
             for method, xn, qn, keys in plugin_consumers(name, plugin):
                 for k in keys:
                     self.queue_bindings[xn].append(
                         dict(key=k, plugin_name=name, method=method))
-            self.setup_plugin(name, plugin)
+            # self.setup_plugin(name, plugin)
 
     def handle(self, xn):
         msg = self.pop(xn)
@@ -184,15 +188,23 @@ class MockAMQ(object):
             if self._route_matches(handler['key'], msg['routing_key']):
                 self._route(xn, msg, handler['plugin_name'], handler['method'])
 
+    def handle_all(self):
+        for xn, messages in self.exchanges.items():
+            while messages:
+                self.handle(xn)
+
     def _route(self, xn, msg, plugin_name, method):
+        import mock
         if xn == 'audit':
             callback = self.reactor.route_audit(plugin_name, method)
         else:
             callback = self.reactor.route_react(plugin_name, method)
         data = msg['message']
-        msg = mock.Mock()
-        msg.delivery_info['routing_key'] = msg['routing_key']
-        return callback(msg, data)
+        message = mock.Mock()
+        message.delivery_info = dict(
+            routing_key=msg['routing_key'])
+        message.ack = lambda:None
+        return callback(data, message)
 
     def _route_matches(self, pattern, key):
         re_pattern = (pattern

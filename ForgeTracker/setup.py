@@ -26,5 +26,8 @@ setup(name='ForgeTracker',
       # -*- Entry points: -*-
       [pyforge]
       Tickets=forgetracker.tracker_main:ForgeTrackerApp
+
+      [flyway.migrations]
+      ForgeTracker=forgetracker.model.migrations
       """,
       )

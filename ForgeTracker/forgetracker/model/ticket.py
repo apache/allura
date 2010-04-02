@@ -13,7 +13,7 @@ from ming.orm.property import FieldProperty, ForeignIdProperty, RelationProperty
 from datetime import datetime
 
 from pyforge.model import Artifact, VersionedArtifact, Snapshot, Message, project_orm_session, Project
-from pyforge.model import File, User, Feed, Thread, Post
+from pyforge.model import File, User, Feed, Thread, Post, Notification
 from pyforge.lib import helpers as h
 
 common_suffix = tg.config.get('forgemail.domain', '.sourceforge.net')
@@ -112,7 +112,6 @@ class Ticket(VersionedArtifact):
     custom_fields = FieldProperty({str:None})
 
     reported_by = RelationProperty(User, via='reported_by_id')
-    assigned_to = RelationProperty(User, via='assigned_to_id')
 
     def index(self):
         result = VersionedArtifact.index(self)
@@ -132,6 +131,11 @@ class Ticket(VersionedArtifact):
         if self.assigned_to:
             result['assigned_to_s'] = self.assigned_to.username
         return result
+
+    @property
+    def assigned_to(self):
+        if self.assigned_to_id is None: return None
+        return User.query.get(_id=self.assigned_to_id)
 
     @property
     def email_address(self):
@@ -158,18 +162,22 @@ class Ticket(VersionedArtifact):
             if o != n:
                 changes.append('Owner updated: %r => %r' % (
                         o and o.username, n and n.username))
+                self.subscribe(user=n)
             if old.description != self.description:
                 changes.append('Description updated:')
                 changes.append(h.diff_text(old.description, self.description))
             description = '<br>'.join(changes)
+            subject = 'Ticket %s modified' % self.ticket_num
         else:
             description = 'Ticket %s created: %s' % (
                 self.ticket_num, self.summary)
+            subject = 'Ticket %s created' % self.ticket_num
+            self.subscribe(user=self.reported_by)
             Thread(discussion_id=self.app_config.discussion_id,
-                   artifact_id=self._id,
+                   artifact_reference=self.dump_ref(),
                    subject='#%s discussion' % self.ticket_num)
-
         Feed.post(self, description)
+        Notification.post(artifact=self, topic='metadata', text=description, subject=subject)
 
     def url(self):
         return self.app_config.url() + str(self.ticket_num) + '/'
@@ -250,63 +258,6 @@ class Ticket(VersionedArtifact):
             next_id = root.super_id
         if root is not None:
             root.recalculate_sums()
-
-
-# class Comment(Message):
-
-#     class __mongometa__:
-#         name = 'ticket_comment'
-
-#     type_s = 'Ticket Comment'
-#     version = FieldProperty(0)
-#     created_date = FieldProperty(datetime, if_missing=datetime.utcnow)
-
-#     ticket_id = ForeignIdProperty(Ticket)
-#     kind = FieldProperty(str, if_missing='comment')
-#     reply_to_id = FieldProperty(schema.ObjectId, if_missing=None)
-#     text = FieldProperty(str)
-
-#     ticket = RelationProperty('Ticket')
-
-#     def index(self):
-#         result = Message.index(self)
-#         author = self.author()
-#         result.update(
-#             title_s='Comment on %s by %s' % (
-#                 self.ticket.shorthand_id(),
-#                 author.display_name
-#             ),
-#             type_s=self.type_s
-#         )
-#         return result
-
-#     @property
-#     def posted_ago(self):
-#         comment_td = (datetime.utcnow() - self.timestamp)
-#         if comment_td.seconds < 3600 and comment_td.days < 1:
-#             return "%s minutes ago" % (comment_td.seconds / 60)
-#         elif comment_td.seconds >= 3600 and comment_td.days < 1:
-#             return "%s hours ago" % (comment_td.seconds / 3600)
-#         elif comment_td.days >= 1 and comment_td.days < 7:
-#             return "%s days ago" % comment_td.days
-#         elif comment_td.days >= 7 and comment_td.days < 30:
-#             return "%s weeks ago" % (comment_td.days / 7)
-#         elif comment_td.days >= 30 and comment_td.days < 365:
-#             return "%s months ago" % (comment_td.days / 30)
-#         else:
-#             return "%s years ago" % (comment_td.days / 365)
-
-#     def url(self):
-#         return self.ticket.url() + '#comment-' + str(self._id)
-
-#     def shorthand_id(self):
-#         return '%s-%s' % (self.ticket.shorthand_id, self._id)
-
-#     def reply(self, text):
-#         r = Message.reply(self)
-#         r.text = text
-#         Feed.post(self.ticket, 'Comment: %s', text)
-#         return r
 
 class Attachment(File):
     class __mongometa__:

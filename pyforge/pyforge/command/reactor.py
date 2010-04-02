@@ -232,6 +232,7 @@ def plugin_consumers(name, plugin):
         method = getattr(plugin, name)
         deco = ConsumerDecoration.get_decoration(method, False)
         if not deco: continue
+        if not hasattr(method, '__name__'): continue
         name = '%s.%s' % (method.__module__, method.__name__)
         if deco.audit_keys:
             qn = '%s/%d/audit' % (name, i)

@@ -32,8 +32,9 @@ class Migration(object):
     _current_migrations_module = None
 
 
-    def __init__(self, session):
+    def __init__(self, session, ormsession):
         self.session = session
+        self.ormsession = ormsession
 
     def up_requires(self):
         return [ (self.module, self.version-1) ]

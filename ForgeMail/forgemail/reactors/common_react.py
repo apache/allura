@@ -4,7 +4,7 @@ import tg
 from pylons import c, g
 from pymongo.bson import ObjectId
 
-from pyforge.lib.decorators import audit
+from pyforge.lib.decorators import audit, react
 from pyforge.lib.helpers import push_config
 from pyforge import model as M
 
@@ -14,6 +14,20 @@ log = logging.getLogger(__name__)
 
 common_suffix = tg.config.get('forgemail.domain', '.sourceforge.net')
 smtp_client = util.SMTPClient()
+
+@audit('search.check_commit')
+@react('forgemail.fire')
+def fire_ready_emails(routing_key, data):
+    M.Mailbox.fire_ready()
+
+@react('forgemail.notify')
+def received_notification(routing_key, data):
+    g.set_app(data['mount_point'])
+    M.Mailbox.deliver(
+        data['notification_id'],
+        data['artifact_index_id'],
+        data['topic'])
+    g.publish('react', 'forgemail.fire')
 
 @audit('forgemail.received_email')
 def received_email(routing_key, data):

@@ -11,10 +11,11 @@ from ming.orm.base import mapper, session
 from ming.orm.mapped_class import MappedClass
 from ming.orm.property import FieldProperty, RelationProperty, ForeignIdProperty
 
-from pyforge.lib.helpers import nonce, ago
+from pyforge.lib import helpers as h
 from pyforge.lib.security import require, has_artifact_access
-from .artifact import Artifact, VersionedArtifact, Snapshot, Message, gen_message_id
+from .artifact import Artifact, VersionedArtifact, Snapshot, Message
 from .filesystem import File
+from .types import ArtifactReference, ArtifactReferenceType
 
 log = logging.getLogger(__name__)
 
@@ -91,9 +92,10 @@ class Thread(Artifact):
         name='thread'
     type_s = 'Thread'
 
-    _id=FieldProperty(str, if_missing=lambda:nonce(8))
+    _id=FieldProperty(str, if_missing=lambda:h.nonce(8))
     discussion_id = ForeignIdProperty(Discussion)
-    artifact_id = ForeignIdProperty(Artifact, if_missing=None)
+    artifact_id = FieldProperty(None)
+    artifact_reference = FieldProperty(ArtifactReferenceType)
     subject = FieldProperty(str)
     num_replies = FieldProperty(int, if_missing=0)
     num_views = FieldProperty(int, if_missing=0)
@@ -116,6 +118,12 @@ class Thread(Artifact):
     def attachment_class(cls):
         return Attachment
 
+    @property
+    def artifact(self):
+        aref = ArtifactReference(self.artifact_reference)
+        if aref is None: return self.discussion
+        return aref.to_artifact()
+
     def primary(self, primary_class=None):
         result = primary_class.query.get(_id=self.artifact_id)
         if result is None: return self
@@ -123,7 +131,7 @@ class Thread(Artifact):
 
     def post(self, text, message_id=None, parent_id=None, **kw):
         require(has_artifact_access('post', self))
-        if message_id is None: message_id = gen_message_id()
+        if message_id is None: message_id = h.gen_message_id()
         parent = parent_id and self.post_class().query.get(_id=parent_id)
         slug, full_slug = self.post_class().make_slugs(parent)
         kwargs = dict(
@@ -292,7 +300,7 @@ class Post(Message, VersionedArtifact):
     def summary(self):
         return '<a href="%s">%s</a> %s' % (
             self.author().url(), self.author().display_name,
-            ago(self.timestamp))
+            h.ago(self.timestamp))
 
     def url(self):
         if self.thread:
@@ -326,6 +334,7 @@ class Post(Message, VersionedArtifact):
         super(Post, self).delete()
 
     def approve(self):
+        from pyforge.model.notification import Notification
         self.status = 'ok'
         if self.parent_id is None:
             thd = self.thread_class().query.get(_id=self.thread_id)
@@ -335,6 +344,14 @@ class Post(Message, VersionedArtifact):
         if c.app.config.options.get('PostingPolicy') == 'ApproveOnceModerated':
             c.app.config.grant_permission('unmoderated_post', self.author())
         g.publish('react', 'Discussion.new_post', dict(post_id=self._id))
+        if self.thread.artifact:
+            Notification.post(
+                self.thread.artifact, 'message',
+                post=self)
+        else:
+            Notification.post(
+                self.thread, 'message',
+                post=self)
         session(self).flush()
         self.thread.update_stats()
         self.discussion.update_stats()

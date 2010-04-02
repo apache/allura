@@ -16,6 +16,7 @@ from ming.orm.ormsession import ThreadLocalORMSession
 
 import pyforge.model.artifact
 from pyforge import model as M
+from pyforge.lib import helpers as h
 from pyforge.lib.app_globals import Globals
 from helloforge import model as HM
 
@@ -90,7 +91,7 @@ def test_artifactlink():
     assert q.count() == 0
 
 def test_gen_messageid():
-    assert re.match(r'[0-9a-zA-Z]*.hello@test.projects.sourceforge.net', M.artifact.gen_message_id())
+    assert re.match(r'[0-9a-zA-Z]*.hello@test.projects.sourceforge.net', h.gen_message_id())
 
 def test_versioning():
     pg = HM.Page(title='TestPage3')

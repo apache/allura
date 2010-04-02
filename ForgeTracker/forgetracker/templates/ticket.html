@@ -18,6 +18,8 @@
   </head>
 
   <body>
+    ${c.subscribe_form.display(value=subscribed, action='subscribe')}
+    <br/>
     <form method="POST" action="${ticket.url()}update_ticket">
       <span class="editable viewing" style="padding: 0">
         <h1 class="title">

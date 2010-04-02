@@ -25,5 +25,8 @@ setup(name='ForgeWiki',
       # -*- Entry points: -*-
       [pyforge]
       Wiki=forgewiki.wiki_main:ForgeWikiApp
+
+      [flyway.migrations]
+      ForgeWiki=forgewiki.model.migrations
       """,
       )

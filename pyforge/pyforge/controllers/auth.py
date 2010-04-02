@@ -1,7 +1,7 @@
 import logging, string
 from pprint import pformat
 
-from tg import expose, session, flash, redirect
+from tg import expose, session, flash, redirect, validate
 from tg.decorators import with_trailing_slash, without_trailing_slash
 from pylons import c, request
 from webob import exc
@@ -9,7 +9,8 @@ from webob import exc
 from pyforge import model as M
 from pyforge.lib.oid_helper import verify_oid, process_oid
 from pyforge.lib.security import require_authenticated
-from pyforge.lib.helpers import vardec
+from pyforge.lib import helpers as h
+from pyforge.lib.widgets import SubscriptionForm
 
 log = logging.getLogger(__name__)
 
@@ -26,6 +27,9 @@ OID_PROVIDERS=[
     ('Verisign', 'http://${username}.pip.verisignlabs.com/'),
     ('ClaimID', 'http://openid.claimid.com/${username}/'),
     ('AOL', 'http://openid.aol.com/${username}/') ]
+
+class F(object):
+    subscription_form=SubscriptionForm()
 
 class AuthController(object):
 
@@ -178,9 +182,23 @@ class PreferencesController(object):
     @expose('pyforge.templates.user_preferences')
     def index(self):
         require_authenticated()
-        return dict()
+        c.form = F.subscription_form
+        subscriptions = []
+        for subs in M.Subscriptions.query.find(dict(user_id=c.user._id)):
+            for s in subs.subscriptions:
+                with h.push_context(subs.project_id):
+                    subscriptions.append(dict(
+                            _id=subs._id,
+                            project_name=subs.project.name,
+                            mount_point=subs.app_config.options.mount_point,
+                            artifact_index_id=s.artifact_index_id,
+                            topic=s.topic,
+                            type=s.type,
+                            frequency=s.frequency.unit,
+                            artifact=s.artifact_index_id))
+        return dict(subscriptions=subscriptions)
 
-    @vardec
+    @h.vardec
     @expose()
     def update(self,
                display_name=None,
@@ -217,3 +235,13 @@ class PreferencesController(object):
             c.user.preferences[k] = v
         redirect('.')
         
+    @h.vardec
+    @expose()
+    @validate(F.subscription_form, error_handler=index)
+    def update_subscriptions(self, subscriptions=None, **kw):
+        for s in subscriptions:
+            if s['unsubscribe']:
+                s['_id'].unsubscribe(
+                    artifact_index_id=s['artifact_index_id'] or None,
+                    topic=s['topic'] or None)
+        redirect(request.referer)

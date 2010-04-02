@@ -7,7 +7,7 @@
       ${show_post(child, indent+1)}
     </py:for>
   </py:def>
-  <py:with vars="posts=value.find_posts(offset=offset, limit=pagesize, style=style)">
+  <py:with vars="posts=value.find_posts(offset=offset, limit=pagesize,style=style)">
     <div py:if="not posts">No posts found</div>
     <div py:if="style=='threaded'"
          py:with="post_threads=value.create_post_threads(posts)">

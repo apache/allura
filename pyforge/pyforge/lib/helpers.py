@@ -199,6 +199,12 @@ def diff_text(t1, t2):
             result += t1[i1:i2]
     return ''.join(result).replace('\n', '<br/>\n')
 
+def gen_message_id():
+    parts = c.project.url().split('/')[1:-1]
+    return '%s.%s@%s.sourceforge.net' % (nonce(40),
+                                         c.app.config.options['mount_point'],
+                                         '.'.join(reversed(parts)))
+
 class ProxiedAttrMeta(type):
     def __init__(cls, name, bases, dct):
         for v in dct.itervalues():

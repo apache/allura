@@ -13,6 +13,8 @@
   
   <body>
     <h1>User Preferences for $c.user.username</h1>
+    <h2>Subscriptions</h2>
+    ${c.form.display(action='update_subscriptions', value=dict(subscriptions=subscriptions))}
     <form action="update" method="post">
       ${text_field('display_name', 'Display Name', c.user.display_name)}
       ${select_field('preferences.email_format', 'Email Format',

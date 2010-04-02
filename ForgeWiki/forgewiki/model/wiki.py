@@ -118,7 +118,7 @@ class Page(VersionedArtifact):
                     app_config_id=context.app.config._id,
                     )
                 t = Thread(discussion_id=obj.app_config.discussion_id,
-                           artifact_id=obj._id,
+                           artifact_reference=obj.dump_ref(),
                            subject='Discussion for %s page' % title)
             return obj
         else:

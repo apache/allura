@@ -1,0 +1,20 @@
+<form xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:py="http://genshi.edgewall.org/"
+      xmlns:xi="http://www.w3.org/2001/XInclude"
+      name="$name"
+      id="$name"
+      method="$method"
+      action="$action"
+      enctype="$enctype"
+      py:attrs="attrs">
+  <py:if test="value">
+    You are currently subscribed to this ${thing}.
+    <br/>
+    ${fields['unsubscribe'].display()}
+  </py:if>
+  <py:if test="not value">
+    You are currently not subscribed to this ${thing}.
+    <br/>
+    ${fields['subscribe'].display()}
+  </py:if>
+</form>

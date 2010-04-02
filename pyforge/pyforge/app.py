@@ -141,10 +141,14 @@ class Application(object):
 
     def message_auditor(self, routing_key, data, artifact, **kw):
         # Find ancestor comment
-        parent_id = data.get('in_reply_to', [ None ])[0]
+        in_reply_to = data.get('in_reply_to', [])
+        if in_reply_to:
+            parent_id = in_reply_to[0]
+        else:
+            parent_id = None
         thd = artifact.discussion_thread(data)
         # Handle attachments
-        message_id = data['message_id']
+        message_id = data['message_id'][0]
         if data.get('filename'):
             log.info('Saving attachment %s', data['filename'])
             self.AttachmentClass.save(data['filename'],
