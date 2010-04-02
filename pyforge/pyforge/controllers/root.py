@@ -88,7 +88,7 @@ class RootController(BaseController):
         """Handle the front-page."""
         c.project_summary = W.project_summary
         projects = M.Project.query.find().sort('name').all()
-        psort = [(n, M.Project.query.find(dict(is_root=True, neighborhood_id=n._id)).all())
+        psort = [(n, M.Project.query.find(dict(is_root=True, neighborhood_id=n._id)).sort('shortname').all())
                  for n in M.Neighborhood.query.find().sort('name')]
         categories = M.ProjectCategory.query.find({'parent_id':None}).sort('name').all()
         c.custom_sidebar_menu = [SitemapEntry('Categories')] + [

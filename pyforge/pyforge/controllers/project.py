@@ -280,7 +280,7 @@ class NeighborhoodAdminController(object):
     @expose('pyforge.templates.neighborhood_admin')
     def index(self):
         c.markdown_editor = W.markdown_editor
-        psort = [(n, M.Project.query.find(dict(is_root=True, neighborhood_id=n._id)).all())
+        psort = [(n, M.Project.query.find(dict(is_root=True, neighborhood_id=n._id)).sort('shortname').all())
                  for n in M.Neighborhood.query.find().sort('name')]
 #        accolades = M.AwardGrant.query.find(dict(granted_to_project_id=c.project._id))
         awards = M.Award.query.find(dict(created_by_neighborhood_id=self.neighborhood._id))
