@@ -335,12 +335,13 @@ migration scripts to be run::
         def down(self):
             # Do some stuff with self.session to undo the 'up'
 
-You can optionally supply a `requires()` method for your migration if it requires
+You can optionally supply `up_requires()` and `down_requires()` methods for your
+migration if it requires
 something more complex than the previous migration in the same module::
 
     class V3(Migration):
         version=3
-        def requires(self):
+        def up_requires(self):
             yield ('pyforge', 3)
             for r in super(V3, self).requires():
                 yield r
