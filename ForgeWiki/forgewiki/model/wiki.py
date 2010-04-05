@@ -13,6 +13,7 @@ from ming.orm.mapped_class import MappedClass
 from ming.orm.property import FieldProperty, ForeignIdProperty, RelationProperty
 
 from pyforge.model import VersionedArtifact, Snapshot, Message, File, Feed, Thread, Post
+from pyforge.model import Notification
 from pyforge.lib import helpers as h
 
 common_suffix = tg.config.get('forgemail.domain', '.sourceforge.net')
@@ -67,9 +68,12 @@ class Page(VersionedArtifact):
             t1 = self.upsert(self.title, self.version-1).text
             t2 = self.text
             description = h.diff_text(t1, t2)
+            subject = 'Page %s modified' % self.title
         else:
             description = self.text
+            subject = 'Page %s created' % self.title
         Feed.post(self, description)
+        Notification.post(artifact=self, topic='metadata', text=description, subject=subject)
 
     @property
     def email_address(self):

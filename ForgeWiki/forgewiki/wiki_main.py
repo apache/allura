@@ -24,10 +24,11 @@ from pyforge.lib.search import search
 from pyforge.lib.decorators import audit, react
 from pyforge.lib.security import require, has_artifact_access
 from pyforge.model import ProjectRole, User, TagEvent, UserTags, ArtifactReference, Tag, Feed
-from pyforge.model import Discussion, Thread, Post, Attachment
+from pyforge.model import Discussion, Thread, Post, Attachment, Subscriptions
 from pyforge.controllers import AppDiscussionController
 from pyforge.lib import widgets as w
 from pyforge.lib.widgets import form_fields as ffw
+from pyforge.lib.widgets.subscriptions import SubscribeForm
 
 # Local imports
 from forgewiki import model
@@ -42,6 +43,8 @@ class W:
     markdown_editor = ffw.MarkdownEdit()
     user_tag_edit = ffw.UserTagEdit()
     attachment_list = ffw.AttachmentList()
+    subscribe_form = SubscribeForm()
+    page_subscribe_form = SubscribeForm(thing='page')
 
 
 class ForgeWikiApp(Application):
@@ -313,6 +316,7 @@ class PageController(object):
         require(has_artifact_access('read', self.page))
         c.thread = W.thread
         c.attachment_list = W.attachment_list
+        c.subscribe_form = W.page_subscribe_form
         page = self.get_version(version)
         if 'all' not in page.viewable_by and str(c.user._id) not in page.viewable_by:
             raise exc.HTTPForbidden(detail="You may not view this page.")
@@ -323,8 +327,10 @@ class PageController(object):
         if cur > 1: prev = cur-1
         else: prev = None
         next = cur+1
-        return dict(page=page,
-                    cur=cur, prev=prev, next=next)
+        return dict(
+            page=page,
+            cur=cur, prev=prev, next=next,
+            subscribed=Subscriptions.upsert().subscribed(artifact=self.page))
 
     @without_trailing_slash
     @expose('forgewiki.templates.page_edit')
@@ -449,6 +455,16 @@ class PageController(object):
                     if not s: break
                     fp.write(s)
         redirect('.')
+
+    @expose()
+    @validate(W.subscribe_form)
+    def subscribe(self, subscribe=None, unsubscribe=None):
+        require(has_artifact_access('read'))
+        if subscribe:
+            Subscriptions.upsert().subscribe('direct', artifact=self.page)
+        elif unsubscribe:
+            Subscriptions.upsert().unsubscribe(artifact=self.page)
+        redirect(request.referer)
 
 class AttachmentsController(object):
 
