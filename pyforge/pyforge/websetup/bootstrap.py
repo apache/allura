@@ -82,10 +82,6 @@ def bootstrap(command, conf, vars):
                              url_prefix='/adobe/',
                              acl=dict(read=[None], create=[],
                                       moderate=[root._id], admin=[root._id]))
-    n_mozilla = M.Neighborhood(name='Mozilla',
-                               url_prefix='/mozilla/',
-                               acl=dict(read=[None], create=[],
-                                        moderate=[root._id], admin=[root._id]))
     M.Theme(name='forge_default',
             label='Default Forge Theme',
             color1='#0088cc',
@@ -94,13 +90,6 @@ def bootstrap(command, conf, vars):
             color4='#6c7681',
             color5='#d8d8d8',
             color6='#ececec')
-    M.Theme(neighborhood_id = n_mozilla._id,
-            color1='#ccc',
-            color2='#666',
-            color3='#333',
-            color4='#aaa',
-            color5='#fff',
-            color6='#000')
     ThreadLocalORMSession.flush_all()
     ThreadLocalORMSession.close_all()
     # add the adobe icon
@@ -119,8 +108,6 @@ def bootstrap(command, conf, vars):
             if not s: break
             fp.write(s)
     log.info('Registering "regular users" (non-root)')
-    u_mozilla = M.User.register(dict(username='mozilla_admin',
-                                     display_name='Mozilla Admin'))
     u_adobe = M.User.register(dict(username='adobe_admin',
                                    display_name='Adobe Admin'))
     u0 = M.User.register(dict(username='test_admin',
@@ -130,8 +117,6 @@ def bootstrap(command, conf, vars):
     u2 = M.User.register(dict(username='test_user2',
                               display_name='Test User 2'))
     n_adobe.acl['admin'].append(u_adobe._id)
-    n_mozilla.acl['admin'].append(u_mozilla._id)
-    u_mozilla.set_password('foo')
     u_adobe.set_password('foo')
     u0.set_password('foo')
     u1.set_password('foo')
@@ -153,7 +138,6 @@ def bootstrap(command, conf, vars):
     log.info('Registering initial projects')
     p_adobe1 = n_adobe.register_project('adobe_1', u_adobe)
     p_adobe2 = n_adobe.register_project('adobe_2', u_adobe)
-    p_mozilla = n_mozilla.register_project('mozilla_1', u_mozilla)
     p0 = n_projects.register_project('test', u0)
     c.project = p0
     c.user = u0
