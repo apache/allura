@@ -163,7 +163,6 @@ class ForgeWikiApp(Application):
         Application.uninstall(self, project)
         model.Attachment.query.remove({'metadata.app_config_id':c.app.config._id})
         model.Page.query.remove(dict(app_config_id=c.app.config._id))
-        model.Comment.query.remove(dict(app_config_id=c.app.config._id))
         
 class RootController(object):
 
@@ -293,7 +292,6 @@ class PageController(object):
         exists = model.Page.query.find(dict(app_config_id=c.app.config._id, title=title)).first()
         self.title = title
         self.page = model.Page.upsert(title)
-        self.comments = CommentController(self.page)
         self.attachment = AttachmentsController(self.page)
         setattr(self, 'feed.atom', self.feed)
         setattr(self, 'feed.rss', self.feed)
@@ -502,53 +500,3 @@ class AttachmentController(object):
             return fp.read()
         return self.filename
 
-class CommentController(object):
-
-    def __init__(self, page, comment_id=None):
-        self.page = page
-        self.comment_id = comment_id
-        self.comment = model.Comment.query.get(slug=self.comment_id)
-
-    @expose()
-    def reply(self, text):
-        require(has_artifact_access('comment', self.page))
-        if self.comment_id:
-            c = self.comment.reply(text)
-        else:
-            c = self.page.reply(text)
-        email = ''
-        for addr in c.author().email_addresses:
-            email = email + ', ' + addr
-        data = {
-#            'destinations':email,
-            'text':text,
-            'from':str(self.page),
-            'subject':str('reply to '+c._id),
-            'message_id':c._id}
-        g.publish('audit', 'forgewiki.reply', data, 
-            serializer='yaml')
-        redirect(request.referer)
-
-    @expose()
-    def delete(self):
-        require(lambda:c.user._id == self.comment.author()._id)
-        self.comment.delete()
-        redirect(request.referer)
-
-    def _lookup(self, next, *remainder):
-        if self.comment_id:
-            return CommentController(
-                self.page,
-                self.comment_id + '/' + next), remainder
-        else:
-            return CommentController(
-                self.page, next), remainder
-
-MARKDOWN_EXAMPLE='''
-# First-level heading
-
-Some *emphasized* and **strong** text
-
-#### Fourth-level heading
-
-'''
