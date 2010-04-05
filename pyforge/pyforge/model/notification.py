@@ -63,8 +63,8 @@ class Notification(MappedClass):
             c.project.shortname, c.app.config.options.mount_point)
         if topic == 'message':
             post = kw.pop('post')
-            subject = post.subject
-            if post.parent_id and not post.subject.lower().startswith('re:'):
+            subject = post.subject or ''
+            if post.parent_id and not subject.lower().startswith('re:'):
                 subject = 'Re: ' + subject
             d = dict(
                 _id=post._id,

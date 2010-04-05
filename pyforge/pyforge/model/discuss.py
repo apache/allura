@@ -335,6 +335,7 @@ class Post(Message, VersionedArtifact):
 
     def approve(self):
         from pyforge.model.notification import Notification
+        if self.status == 'ok': return
         self.status = 'ok'
         if self.parent_id is None:
             thd = self.thread_class().query.get(_id=self.thread_id)

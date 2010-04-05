@@ -45,7 +45,7 @@ class ForgeDiscussionApp(Application):
         f = model.Forum.query.get(shortname=topic.replace('.', '/'))
         return has_artifact_access('post', f, user=user)()
 
-    @audit('Forum.msg.#')
+    @audit('Discussion.msg.#')
     def message_auditor(self, routing_key, data):
         log.info('Auditing data from %s (%s)',
                  routing_key, self.config.options.mount_point)
@@ -63,7 +63,7 @@ class ForgeDiscussionApp(Application):
         super(ForgeDiscussionApp, self).message_auditor(
             routing_key, data, f, subject=data['headers'].get('Subject', '[No Subject]'))
 
-    @audit('Forum.forum_stats.#')
+    @audit('Discussion.forum_stats.#')
     def forum_stats_auditor(self, routing_key, data):
         try:
             shortname = routing_key.split('.', 2)[-1]
@@ -77,7 +77,7 @@ class ForgeDiscussionApp(Application):
             return
         f.update_stats()
 
-    @audit('Forum.thread_stats.#')
+    @audit('Discussion.thread_stats.#')
     def thread_stats_auditor(self, routing_key, data):
         try:
             thread_id = routing_key.split('.', 2)[-1]
@@ -90,27 +90,6 @@ class ForgeDiscussionApp(Application):
                       thread_id, routing_key)
             return
         thread.update_stats()
-
-    @react('Forum.new_post')
-    def notify_subscribers(self, routing_key, data):
-        log.info('Got a new post: %s', data['post_id'])
-        post = model.ForumPost.query.get(_id=data.get('post_id'))
-        thread = post.thread
-        forum = thread.discussion
-        subs = set()
-        for un, sub in thread.subscriptions.iteritems():
-            if sub: subs.add(un)
-        for un, sub in forum.subscriptions.iteritems():
-            if sub: subs.add(un)
-        msg = {
-            'message_id':post._id,
-            'destinations':list(subs),
-            'from':forum.email_address,
-            'subject':'[%s] %s' % (forum.name, post.subject),
-            'text':post.text}
-        if post.parent:
-            msg['in_reply_to'] = [post.parent._id]
-        g.publish('audit', 'forgemail.send_email', msg)
 
     @property
     def sitemap(self):
