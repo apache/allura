@@ -177,7 +177,7 @@
                        value="$config.options.mount_point"/>
                 <tr py:if="has_project_access('plugin')()">
                   <td>
-                    <select name="new.ep_name">
+                    <select name="new.ep_name" class="new_ep_name">
                       <option value="">New Subproject</option>
                       <optgroup label="New Plugin">
                         <option py:for="name in installable_plugin_names" value="$name">$name</option>
@@ -185,7 +185,7 @@
                     </select>
                   </td>
                   <td>
-                    <input name="new.mount_point"/>
+                    <input name="new.mount_point" class="new_mount_point"/>
                   </td>
                   <td colspan="2">
                     <input type="submit" value="Install" name="new.install"/>
@@ -311,6 +311,9 @@
 			navigation: true
 		});
 	});
+    $('.new_ep_name').change(function() {
+        $(this).closest('tr').find('.new_mount_point').val($(this).val());
+    });
     </script>
     <script type="text/javascript" src="${g.app_static('js/admin.js')}"/>
   </body>
