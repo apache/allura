@@ -399,7 +399,7 @@ class PageController(object):
 
     @without_trailing_slash
     @expose()
-    def update(self, text, tags, tags_old, viewable_by):
+    def update(self, text=None, tags=None, tags_old=None, viewable_by=None):
         require(has_artifact_access('edit', self.page))
         if tags: tags = tags.split(',')
         else: tags = []
