@@ -154,7 +154,6 @@ class SecurityTest(object):
         pred = has_project_access('read')
         if not pred():
             print 'Inside needs_project_access, c.user = %s' % c.user
-            import pdb; pdb.set_trace()
         require(pred)
         return ''
 
