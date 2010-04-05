@@ -8,6 +8,7 @@ from pylons.i18n import _, ungettext, N_
 from pylons import c, g
 from tw.api import WidgetBunch
 import pyforge.model as model
+from paste.deploy.converters import asbool
 
 import pkg_resources
 from webob import exc
@@ -33,7 +34,8 @@ class BaseController(TGController):
           * sets up and cleans up the Ming/MongoDB Session
           * persists all Ming object changes to Mongo
         """
-        environ['wsgi.url_scheme'] = 'https'
+        if asbool(environ.get('HTTP_X_SFINC_SSL', 'false')):
+            environ['wsgi.url_scheme'] = 'https'
 
         app = self._wsgi_handler(environ)
         if app is None:
