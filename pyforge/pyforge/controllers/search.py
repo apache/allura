@@ -77,7 +77,7 @@ class ProjectBrowseController(object):
                 ids = ids + [cat._id for cat in self.category.subcategories]
             projects = M.Project.query.find(dict(category_id={'$in':ids}, **self.additional_filters)).sort('name').all()
         else:
-            projects = M.Project.query.find().sort('name').all()
+            projects = M.Project.query.find(self.additional_filters).sort('name').all()
         return projects
 
     @expose()
