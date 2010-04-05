@@ -51,6 +51,8 @@ class MigrationGraph(object):
         # Find the start node
         start = dict((m, -1) for m in self._modules)
         start.update(start_requirements)
+        start = dict((str(k), v) for k,v in start.iteritems()
+                     if k in self._State._fields)
         start_state = self._State(**start)
         start = self.node_by_state[start_state]
         # Find the end node(s)
