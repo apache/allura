@@ -33,6 +33,8 @@ class BaseController(TGController):
           * sets up and cleans up the Ming/MongoDB Session
           * persists all Ming object changes to Mongo
         """
+        environ['wsgi.url_scheme'] = 'https'
+
         app = self._wsgi_handler(environ)
         if app is None:
             """Invoke the Controller"""
