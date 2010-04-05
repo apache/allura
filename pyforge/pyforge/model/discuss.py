@@ -125,7 +125,7 @@ class Thread(Artifact):
         return aref.to_artifact()
 
     def primary(self, primary_class=None):
-        result = primary_class.query.get(_id=self.artifact_id)
+        result = primary_class.query.get(_id=self.artifact_reference.artifact_id)
         if result is None: return self
         return result
 
@@ -295,7 +295,7 @@ class Post(Message, VersionedArtifact):
         return self.attachment_class().by_metadata(post_id=self._id)
 
     def primary(self, primary_class=None):
-        return primary_class.query.get(_id=self.thread.artifact_id)
+        return self.thread.primary(primary_class)
 
     def summary(self):
         return '<a href="%s">%s</a> %s' % (
