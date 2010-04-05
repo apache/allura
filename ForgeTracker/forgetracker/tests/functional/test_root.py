@@ -312,7 +312,7 @@ class TestFunctionalController(TestController):
         # set a summary, submit, and check for success
         error_form.form['ticket_form.summary'] = summary
         success = error_form.form.submit().follow().html
-        assert success.find('form', {'action': '/projects/test/bugs/1/update_ticket'})
+        assert success.findAll('form')[1].get('action') == '/projects/test/bugs/1/update_ticket'
         assert success.find('input', {'name':'summary'}).get('value') == summary
 
     def test_edit_ticket_validation(self):
@@ -334,7 +334,7 @@ class TestFunctionalController(TestController):
         # set a summary, submit, and check for success
         error_form.forms[0]['ticket_form.summary'] = new_summary
         success = error_form.forms[0].submit().follow().html
-        assert success.find('form', {'action': '/projects/test/bugs/1/update_ticket'})
+        assert success.findAll('form')[1].get('action') == '/projects/test/bugs/1/update_ticket'
         assert success.find('input', {'name':'summary'}).get('value') == new_summary
 
 #   def test_home(self):

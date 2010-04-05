@@ -4,6 +4,7 @@ import ew
 
 from pyforge.lib import validators as V
 from pyforge.lib import helpers as h
+from pyforge.lib.widgets import form_fields as ffw
 from pyforge import model as M
 
 # Discussion forms
@@ -69,6 +70,14 @@ class PostFilter(ew.SimpleForm):
 class EditPost(ew.SimpleForm):
     show_subject=False
 
+    # this ickiness is to override the default submit button
+    def __call__(self, **kw):
+        result = super(EditPost, self).__call__(**kw)
+        submit_button = ffw.SubmitButton(label=result['submit_text'])
+        result['extra_fields'] = [submit_button]
+        result['buttons'] = [submit_button]
+        return result
+
     @property
     def fields(self):
         def _():
@@ -77,7 +86,7 @@ class EditPost(ew.SimpleForm):
                     yield ew.TextField(name='subject')
             else:
                 yield ew.TextField(name='subject', if_missing=None)
-            yield ew.TextArea(name='text')
+            yield ffw.MarkdownEdit(name='text')
         return _()
 
     def resources(self):
