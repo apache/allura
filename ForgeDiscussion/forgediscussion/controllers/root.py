@@ -16,6 +16,7 @@ from pyforge.lib import helpers as h
 from .forum import ForumController
 from forgediscussion import model
 from forgediscussion import widgets as FW
+from pyforge.lib.widgets import discuss as DW
 
 log = logging.getLogger(__name__)
 
@@ -23,11 +24,12 @@ class RootController(object):
 
     class W(object):
         forum_subscription_form=FW.ForumSubscriptionForm()
+        subscription_form=DW.SubscriptionForm(show_discussion_email=True, allow_create_thread=True, show_subject=True)
         announcements_table=FW.AnnouncementsTable()
 
     @expose('forgediscussion.templates.index')
     def index(self):
-        c.forum_subscription_form = self.W.forum_subscription_form
+        c.subscription_form = self.W.subscription_form
         c.announcements_table = self.W.announcements_table
         announcements=model.ForumThread.query.find(dict(
                 flags='Announcement')).all()

@@ -107,8 +107,15 @@ class _ThreadsTable(ew.TableField):
 
 class SubscriptionForm(ew.SimpleForm):
     template='pyforge.lib.widgets.templates.subscription_form'
+    value=None
+    show_discussion_email=False
+    show_subject=False
+    allow_create_thread=False
+    params=['value',
+            'show_discussion_email', 'show_subject', 'allow_create_thread']
     class fields(ew.WidgetsList):
         threads=_ThreadsTable()
+        new_topic = EditPost(submit_text='New Topic')
     submit_text='Update Subscriptions'
     def resources(self):
         for r in super(SubscriptionForm, self).resources(): yield r

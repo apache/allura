@@ -1,7 +1,6 @@
 <div xmlns="http://www.w3.org/1999/xhtml"
      xmlns:py="http://genshi.edgewall.org/"
      py:strip="True">
-  <?python from pyforge.lib.security import has_artifact_access?>
   <h1 class="title">$value.name</h1>
   <!--   <p>Discussion Shortlink: <input readonly="true" value="[${value.shorthand_id()}]" class="title"/></p> -->
   <div>${Markup(g.markdown.convert(value.description))}</div>

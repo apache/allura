@@ -1,5 +1,9 @@
 <div xmlns="http://www.w3.org/1999/xhtml"
       xmlns:py="http://genshi.edgewall.org/">
   ${widgets.discussion_header.display(value=value)}
-  ${widgets.subscription_form.display(value=value, action=value.url() + 'subscribe')}
+  ${widgets.subscription_form.display(value=value, 
+                                      action=value.url() + 'subscribe', 
+                                      allow_create_thread=allow_create_thread,
+                                      show_discussion_email=show_discussion_email,
+                                      show_subject=show_subject)}
 </div>

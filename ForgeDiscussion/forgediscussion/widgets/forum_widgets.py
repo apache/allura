@@ -46,6 +46,7 @@ class _ThreadsTable(DW._ThreadsTable):
 class ThreadSubscriptionForm(DW.SubscriptionForm):
     class fields(ew.WidgetsList):
         threads=_ThreadsTable()
+        new_topic = DW.EditPost(submit_text='New Topic')
 
 class AnnouncementsTable(DW._ThreadsTable):
     class fields(ew.WidgetsList):

@@ -69,6 +69,9 @@ class ForumController(DiscussionController):
     @expose()
     @validate(W.edit_post)
     def post(self, subject=None, text=None, **kw):
+        if 'new_topic' in kw:
+            subject = kw['new_topic']['subject']
+            text = kw['new_topic']['text']
         require(has_artifact_access('post', self.discussion))
         thd = self.discussion.discussion_thread(dict(
                 headers=dict(Subject=subject)))

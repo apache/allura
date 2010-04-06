@@ -9,17 +9,19 @@
 
   <head>
     <meta content="text/html; charset=UTF-8" http-equiv="content-type" py:replace="''"/>
-    <title>ForgeDiscussion Index Page</title>
+    <title>Forums for $c.project.shortname</title>
   </head>
   
   <body>
-    <h1 class="title">Welcome to ForgeDiscussion</h1>
-    <h2>Project: $c.project.shortname</h2>
+    <h1 class="title">Forums for $c.project.shortname</h1>
     <py:if test="announcements">
       <h3>Announcements</h3>
       ${c.announcements_table.display(value=announcements)}
     </py:if>
-    <h3>Forums</h3>
-    ${c.forum_subscription_form.display(action='subscribe', value=dict(forums=list(forums)))}
+    <div py:for="forum in forums">
+      <h2>$forum.name</h2>
+      ${Markup(g.markdown.convert(forum.description))}
+      ${c.subscription_form.display(value=forum, action=forum.url() + 'subscribe')}
+    </div>
   </body>
 </html>

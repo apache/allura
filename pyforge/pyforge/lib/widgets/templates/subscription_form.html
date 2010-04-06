@@ -19,7 +19,11 @@
     </div>
 	</div>
   <div class="clear new_topic_form" style="display: none" py:if="allow_create_thread and has_artifact_access('post', value)()">
-    ${widgets.edit_post.display(action=value.url() + 'post')}
+    <!-- <py:with var="context=c.widget.context_for('new_topic')">
+      <py:with var="context['action']=value.url() + 'post'"> -->
+        ${fields['new_topic'].display(action=value.url() + 'post',show_subject=show_subject)}
+      <!-- </py:with>  
+    </py:with> -->
   </div>
   <div class="clear"/>
   <form method="$method" action="$action" enctype="$enctype" class="follow_form">
