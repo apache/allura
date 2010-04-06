@@ -26,6 +26,7 @@ class Discussion(Artifact):
         name='discussion'
     type_s = 'Discussion'
 
+    parent_id = FieldProperty(schema.Deprecated)
     shortname = FieldProperty(str)
     name = FieldProperty(str)
     description = FieldProperty(str, if_missing='')

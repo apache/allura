@@ -11,7 +11,8 @@ import pymongo
 from pylons import c, g
 from ming import Document, Session, Field
 from ming import schema as S
-from ming.orm.base import mapper, session, state
+from ming import orm
+from ming.orm import mapper, state
 from ming.orm.mapped_class import MappedClass, MappedClassMeta
 from ming.orm.property import FieldProperty, ForeignIdProperty, RelationProperty
 from pymongo.errors import OperationFailure
@@ -54,14 +55,17 @@ class ArtifactLink(MappedClass):
     def add(cls, artifact):
         aid = artifact.index_id()
         entry = cls.query.get(_id=aid)
+        kw = dict(
+            link=artifact.shorthand_id(),
+            project_id=artifact.project_id,
+            plugin_name=artifact.app_config.plugin_name,
+            mount_point=artifact.app_config.options.mount_point,
+            url=artifact.url(),
+            artifact_reference = artifact.dump_ref())
         if entry is None:
-            entry = cls(_id=aid)
-        entry.link=artifact.shorthand_id()
-        entry.project_id=artifact.project_id
-        entry.plugin_name=artifact.app_config.plugin_name
-        entry.mount_point=artifact.app_config.options.mount_point
-        entry.url=artifact.url()
-        entry.artifact_reference = artifact.dump_ref()
+            entry = cls(_id=aid, **kw)
+        for k,v in kw.iteritems():
+            setattr(entry, k, v)
 
     @classmethod
     def remove(cls, artifact):

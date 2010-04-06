@@ -59,7 +59,10 @@ class ArtifactSessionExtension(SessionExtension):
             if self.objects_added:
                 search.add_artifacts(self.objects_added)
                 for obj in self.objects_added:
-                    ArtifactLink.add(obj)
+                    try:
+                        ArtifactLink.add(obj)
+                    except:
+                        log.exception('Error adding ArtifactLink for %s', obj)
                 session(ArtifactLink).flush()
         self.objects_added = []
         self.objects_deleted = []

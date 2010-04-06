@@ -19,10 +19,22 @@ class ArtifactReferenceType(S.Object):
 
     def __init__(self):
         self._base_schema = S.Object(dict(
-                project_id=S.ObjectId(if_missing=lambda:c.project._id),
-                mount_point=S.String(if_missing=lambda:c.app.config.options.mount_point),
+                project_id=S.ObjectId(if_missing=self.default_project_id),
+                mount_point=S.String(if_missing=self.default_mount_point),
                 artifact_type=S.Binary, # pickled class
                 artifact_id=S.Anything(if_missing=None)))
+
+    def default_project_id(self):
+        try:
+            return c.project._id
+        except AttributeError:
+            return None
+
+    def default_mount_point(self):
+        try:
+            return c.app.config.options.mount_point
+        except AttributeError:
+            return None
 
     def validate(self, value, **kw):
         result = self._base_schema.validate(value)

@@ -82,6 +82,8 @@ setup(
     reactor_setup = pyforge.command:ReactorSetupCommand
     reactor = pyforge.command:ReactorCommand
     sendmsg = pyforge.command:SendMessageCommand
+    models = pyforge.command:ShowModelsCommand
+    reindex = pyforge.command:ReindexCommand
     flyway = flyway.command:MigrateCommand
     
     [easy_widgets.resources]
