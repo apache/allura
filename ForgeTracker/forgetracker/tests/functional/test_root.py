@@ -258,12 +258,12 @@ class TestFunctionalController(TestController):
         # get a view on the first ticket, check for other ticket listed in sidebar
         ticket_view = self.app.get('/projects/test/bugs/1/')
         assert 'Supertask' not in ticket_view
-        assert 'Ticket 2' in ticket_view
+        assert sidebar_contains(ticket_view, '[#2]')
     
         # get a view on the second ticket, check for other ticket listed in sidebar
         ticket_view = self.app.get('/projects/test/bugs/2/')
         assert 'Supertask' in ticket_view
-        assert 'Ticket 1' in ticket_view
+        assert sidebar_contains(ticket_view, '[#1]')
     
     def test_custom_sums(self):
         # setup a custom sum field
@@ -312,7 +312,7 @@ class TestFunctionalController(TestController):
         # set a summary, submit, and check for success
         error_form.form['ticket_form.summary'] = summary
         success = error_form.form.submit().follow().html
-        assert success.find('form').get('action') == '/projects/test/bugs/1/update_ticket'
+        assert success.find('form', {'action': '/projects/test/bugs/1/update_ticket'})
         assert success.find('input', {'name':'summary'}).get('value') == summary
 
     def test_edit_ticket_validation(self):
@@ -334,7 +334,7 @@ class TestFunctionalController(TestController):
         # set a summary, submit, and check for success
         error_form.forms[0]['ticket_form.summary'] = new_summary
         success = error_form.forms[0].submit().follow().html
-        assert success.find('form').get('action') == '/projects/test/bugs/1/update_ticket'
+        assert success.find('form', {'action': '/projects/test/bugs/1/update_ticket'})
         assert success.find('input', {'name':'summary'}).get('value') == new_summary
 
 #   def test_home(self):
@@ -363,3 +363,9 @@ class TestFunctionalController(TestController):
         ticket = tm.Ticket.query.get(ticket_num=1)
         new_date = ticket.mod_date
         assert new_date > old_date
+
+
+def sidebar_contains(response, text):
+    sidebar_menu = response.html.find('ul', attrs={'id': 'sidebarmenu'})
+    return text in str(sidebar_menu)
+
