@@ -76,6 +76,7 @@ class ForumController(DiscussionController):
         thd = self.discussion.discussion_thread(dict(
                 headers=dict(Subject=subject)))
         post = thd.post(subject, text)
+        thd.first_post_id = post._id
         flash('Message posted')
         redirect(thd.url())
 

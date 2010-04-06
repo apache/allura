@@ -1,21 +1,41 @@
 <div xmlns="http://www.w3.org/1999/xhtml"
-     xmlns:py="http://genshi.edgewall.org/">
-  <input py:for="i,thread in enumerate(threads)"
-         type="hidden" name="thread-${i}.id" value="$thread._id"/>
-  <table id="threads">
-    <thead>
-      <tr>
-        <th>Topics</th>
-        <th>Replies</th>
-        <th>Views</th>
-        <th>Last Post</th>
-        <th>Subscribed</th>
-      </tr>
-    </thead>
-    <tbody>
-      <py:for each="i, thread in enumerate(threads)">
-        ${thread_row(i, thread)}
-      </py:for>
-    </tbody>
+     xmlns:py="http://genshi.edgewall.org/"
+     xmlns:xi="http://www.w3.org/2001/XInclude">
+     <xi:include href="${g.pyforge_templates}/lib.html" />
+  <table id="forum-list" class="forums clear"> 
+    <thead> 
+      <tr> 
+        <th>&nbsp;</th> 
+        <th class="topic">Topic</th> 
+        <th>Replies</th> 
+        <th>Views</th> 
+        <th>Last Post</th> 
+      </tr> 
+    </thead> 
+    <tbody class="forum-list"> 
+      <tr py:for="i,thread in enumerate(value)" py:if="thread.first_post"> 
+        <td>
+          <input type="checkbox" name="threads-${i}.subscription"
+                 py:if="thread.subscription" checked="checked"/>
+          <input type="checkbox" name="threads-${i}.subscription"
+                 py:if="not thread.subscription"/>
+          <input type="hidden" name="threads-${i}._id" value="$thread._id"/>
+        </td>
+        <td class="topic" py:with="author=thread.first_post.author()">
+          <a href="${thread.url()}" class="ui-button ui-state-default fleft"><span class="ui-icon ui-icon-pin-s"></span></a><h3><a href="${thread.url()}">${len(thread.subject) > 30 and '%s&hellip;' % thread.subject[:30] or thread.subject}</a></h3>
+
+          <span>By <a href="${author.url()}">$author.display_name</a></span> on ${thread.first_post.timestamp.strftime('%a %b %d, %Y %I:%M %p')}
+        </td> 
+        <td>$thread.num_replies</td> 
+        <td>$thread.num_views</td>
+        <td py:with="author=thread.last_post.author()">
+          <p class="gravatar sm">
+          By ${gravatar(author.preferences.email_address, size=16)}<a href="${author.url()}">$author.display_name</a><br />on ${thread.last_post.timestamp.strftime('%a %b %d, %Y %I:%M %p')}
+          </p>
+
+        </td> 
+      </tr> 
+    </tbody> 
   </table>
+
 </div>

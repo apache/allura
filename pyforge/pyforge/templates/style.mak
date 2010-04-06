@@ -426,12 +426,13 @@ input.title.wide.ticket_form_tags{
 	.open {color: #77b359;}
 	.accepted {color: #576875;}
 	/*#ticket-list tr > td:first-child, #ticket-list tr > th:first-child,*/
-	#forum-list tr > th, #forum-list tr > td {text-align: center;}
-	#forum-list tr > th:first-child, #forum-list tr > td:first-child, #forum-list tr > th:last-child, #forum-list tr > td:last-child {text-align: left;}
-	#forum-list tr > th:first-child, #forum-list tr > td:first-child {width: 50%;}
-	#forum-list h2 {font-size: 1em; font-weight: bold; margin: 0 0 .1em;}
-	#forum-list tr > td:first-child .ui-button {padding: 7px 2px 7px 7px; margin: 3px 10px 4px 5px; border-width: thin !important;}
-	#project-admin-overview .span-3 label {padding: 6px 0 11px;}
+/*  .forums tr > th, .forums tr > td {text-align: center;}*/
+	.forums tr .topic, .forums tr > th:last-child, .forums tr > td:last-child {text-align: left;}
+	.forums tr .topic {width: 60%;}
+	.forums {margin-bottom: 0;}
+	#content .forums h3 {font-size: 1em; font-weight: bold; margin: 3px 0 .1em;}
+	.forums tr .topic .ui-button {padding: 7px; margin: 3px 10px 4px 5px; border-width: thin !important;}
+    #project-admin-overview .span-3 label {padding: 6px 0 11px;}
 	.fakeinput {padding: .5em 2px;}
 	.ui-tabs .ui-tabs-panel {padding: 1em .5em 0 0;}
 

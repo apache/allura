@@ -93,7 +93,8 @@ class EditPost(ew.SimpleForm):
         for r in ew.TextField(name='subject').resources(): yield r
         for r in ffw.MarkdownEdit(name='text').resources(): yield r
 
-class _ThreadsTable(ew.TableField):
+class _ThreadsTable(ew.SimpleForm):
+    template='pyforge.lib.widgets.templates.threads_table'
     class hidden_fields(ew.WidgetsList):
         _id=ew.HiddenField(validator=V.Ming(M.Thread))
     class fields(ew.WidgetsList):
@@ -115,7 +116,7 @@ class SubscriptionForm(ew.SimpleForm):
             'show_discussion_email', 'show_subject', 'allow_create_thread']
     class fields(ew.WidgetsList):
         threads=_ThreadsTable()
-        new_topic = EditPost(submit_text='New Topic')
+        new_topic = EditPost(submit_text='New Topic', if_missing=None)
     submit_text='Update Subscriptions'
     def resources(self):
         for r in super(SubscriptionForm, self).resources(): yield r

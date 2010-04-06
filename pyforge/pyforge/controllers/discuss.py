@@ -65,11 +65,13 @@ class DiscussionController(object):
     @expose()
     @validate(pass_validator, error_handler=index)
     def subscribe(self, **kw):
-        kw = self.W.subscription_form.validate(kw, None)
         threads = kw.pop('threads')
         for t in threads:
-            thread = t['_id']
-            thread['subscription'] = t['subscription']
+            thread = self.M.Thread.query.find(dict(_id=t['_id'])).first()
+            if 'subscription' in t:
+                thread['subscription'] = True
+            else:
+                thread['subscription'] = False
         redirect(request.referer)
 
 class AppDiscussionController(DiscussionController):
@@ -135,6 +137,8 @@ class ThreadController(object):
         p = self.thread.post(**kw)
         p.commit()
         self.thread.num_replies += 1
+        if not self.thread.first_post:
+            self.thread.first_post_id = p._id
         flash('Message posted')
         redirect(request.referer)
 

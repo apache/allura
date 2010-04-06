@@ -98,7 +98,7 @@ class ForumThread(M.Thread):
 
     discussion = RelationProperty(Forum)
     posts = RelationProperty('ForumPost')
-    first_post = RelationProperty('ForumPost')
+    first_post = RelationProperty('ForumPost', via='first_post_id')
 
     @classmethod
     def attachment_class(cls):
