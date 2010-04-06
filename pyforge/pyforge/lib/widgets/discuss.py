@@ -91,7 +91,7 @@ class EditPost(ew.SimpleForm):
 
     def resources(self):
         for r in ew.TextField(name='subject').resources(): yield r
-        for r in ew.TextArea(name='text').resources(): yield r
+        for r in ffw.MarkdownEdit(name='text').resources(): yield r
 
 class _ThreadsTable(ew.TableField):
     class hidden_fields(ew.WidgetsList):
@@ -106,17 +106,30 @@ class _ThreadsTable(ew.TableField):
             href="${value['url']()}", show_label=True))
 
 class SubscriptionForm(ew.SimpleForm):
+    template='pyforge.lib.widgets.templates.subscription_form'
     class fields(ew.WidgetsList):
         threads=_ThreadsTable()
     submit_text='Update Subscriptions'
     def resources(self):
         for r in super(SubscriptionForm, self).resources(): yield r
         yield ew.JSScript('''
-        (function(){
-            $('.submit').button();
+        $(window).load(function() {
             $('tbody').children(':even').addClass('even');
-        })();
-        ''')
+            $('.discussion_subscription_form').each(function(){
+                var discussion = this;
+                $('.submit', discussion).button();
+                if($('.new_topic', discussion)){
+                    $('.new_topic', discussion).click(function(ele){
+                        $('.new_topic_form', discussion).show();
+                        return false;
+                    });
+                }
+                $('.follow', discussion).click(function(ele){
+                    $('.follow_form', discussion).submit();
+                    return false;
+                });
+            });
+        });''')
 
 # Widgets
 class HierWidget(ew.Widget):
@@ -181,6 +194,9 @@ class Post(HierWidget):
         attachment=Attachment())
     def resources(self):
         for r in super(Post, self).resources(): yield r
+        for w in self.widgets.itervalues():
+            for r in w.resources():
+                yield r
         yield ew.JSScript('''
         (function(){
             $('.discussion-post').each(function(){
@@ -246,5 +262,8 @@ class Discussion(HierWidget):
     allow_create_thread=False
     widgets=dict(
         discussion_header=DiscussionHeader(),
-        edit_post=EditPost(submit_text='New Thread'),
+        edit_post=EditPost(submit_text='New Topic'),
         subscription_form=SubscriptionForm())
+    
+    def resources(self):
+        for r in super(Discussion, self).resources(): yield r

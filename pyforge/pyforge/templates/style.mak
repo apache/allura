@@ -168,7 +168,8 @@ ul#sidebarmenu li a.nav_child2 {
 
 ul#sidebarmenu span.ui-icon, ul#sidebarmenu a span.ui-icon,
 #sidebar-right span.ui-icon, #sidebar-right a span.ui-icon,
-.discussion-post span.ui-icon, .discussion-post a span.ui-icon{
+.discussion-post span.ui-icon, .discussion-post a span.ui-icon,
+.ui-button-set span.ui-icon, .ui-button-set a span.ui-icon{
     float: left;
     margin-right: 5px;
 }
