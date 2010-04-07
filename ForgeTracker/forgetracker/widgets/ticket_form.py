@@ -11,7 +11,7 @@ class TicketCustomFields(ew.CompoundField):
     @property
     def fields(self):
         fields = []
-        for field in model.Globals.query.get(app_config_id=c.app.config._id).custom_fields:
+        for field in model.Globals.for_current_tracker().custom_fields:
             if field.type == 'select':
                 fields.append(ew.SingleSelectField(label=field.label, name=str(field.name), attrs={'class':"title wide"},
                     options=[ew.Option(label=opt,html_value=opt,py_value=opt) for opt in field.options.split()]))
@@ -43,16 +43,17 @@ class TicketForm(ew.SimpleForm):
             ew.TextField(name='summary', label='Name', attrs={'class':"title wide"}, validator=fev.UnicodeString(not_empty=True)),
             ffw.MarkdownEdit(label='Description',name='description'),
             ew.SingleSelectField(name='status', label='Status', attrs={'class':"title wide"},
-                options=lambda: model.Globals.query.get(app_config_id=c.app.config._id).status_names.split()),
+                options=lambda: model.Globals.for_current_tracker().status_names.split()),
             ffw.ProjectUserSelect(name='assigned_to', label='Assigned To'),
             ew.SingleSelectField(name='milestone', label='Milestone', attrs={'class':"title wide"},
                 options=lambda: [ew.Option(label='None',html_value='',py_value='')] +
-                                model.Globals.query.get(app_config_id=c.app.config._id).milestone_names.split()),
+                                model.Globals.for_current_tracker().milestone_names.split()),
             ffw.LabelEdit(label='Tags',name='labels', className='title wide ticket_form_tags'),
             ew.SubmitButton(label=self.submit_text,name='submit',
                 attrs={'class':"ui-button ui-widget ui-state-default ui-button-text-only"}),
             ew.HiddenField(name='ticket_num', validator=fev.UnicodeString(if_missing=None)),
             ew.HiddenField(name='super_id', validator=fev.UnicodeString(if_missing=None)) ]
-        if model.Globals.query.get(app_config_id=c.app.config._id).custom_fields:
+        if model.Globals.for_current_tracker().custom_fields:
             fields.append(TicketCustomFields(name="custom_fields"))
         return fields
+
