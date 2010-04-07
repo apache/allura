@@ -18,11 +18,11 @@
     <form method="GET" action=".">
       <input type="text" name="q" value="$q"/><br/>
       Search history? <input type="checkbox" name="history" checked="${history or None}"/><br/>
-      <input type="submit" value="Search"/>
+      <input type="submit" value="Search" class="ui-state-default ui-button ui-button-text"/>
     </form>
     <p py:if="q">
       <form method="GET" action="../bins/newbin">
-        <input type="submit" value="Save Search"/>
+        <input type="submit" value="Save Search" class="ui-state-default ui-button ui-button-text"/>
         <input type="hidden" name="q" value="$q"/>
       </form>
     </p>

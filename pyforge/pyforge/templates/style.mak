@@ -490,7 +490,7 @@ input.title.wide.ticket_form_tags{
         padding-left: 2em;
     }
 
-	a.ui-button {padding: .4em 1em .4em .4em; margin-right: .5em;}
+	a.ui-button {padding: .4em 1em .4em 1em; margin-right: .5em;}
 	#sidebar-right hr {margin: .2em 0 !important; padding: 0; background: #D7E8F5;}
 	#sidebar-right .span-2, #sidebar-right .span-3, #sidebar-right .span-4 {margin-bottom: .2em;}
 	#sidebar-right small.badge {margin: 0 .5em 0 0;}
