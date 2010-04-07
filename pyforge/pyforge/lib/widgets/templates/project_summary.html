@@ -4,7 +4,7 @@
      py:strip="True">
 <a href="${value.url()}"><img src="${value.icon and value.url()+'icon' or '/images/project_default.png'}" alt="$value.name Icon" class="fleft icon clear" /></a>
 <h2><a href="${value.url()}">$value.name</a></h2>
-<p>$value.short_description &hellip;<br />
+<p>${h.text.truncate(value.short_description, 50)}<br />
 <a href="${accolade.award.url()}" py:for="accolade in value.accolades" title="$accolade.award.full"><small class="badge $accolade.award.short">$accolade.award.short</small></a>
 </p>
 

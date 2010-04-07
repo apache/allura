@@ -22,10 +22,10 @@
           <input type="hidden" name="threads-${i}._id" value="$thread._id"/>
         </td>
         <td class="topic" py:if="not thread.first_post">
-          <h3><a href="${thread.url()}">${len(thread.subject) > 30 and '%s&hellip;' % thread.subject[:30] or thread.subject}</a></h3>
+          <h3><a href="${thread.url()}">${h.text.truncate(thread.subject, 30)}</a></h3>
         </td>
         <td class="topic" py:if="thread.first_post" py:with="author=thread.first_post.author()">
-          <a href="${thread.url()}" class="ui-button ui-state-default fleft"><span class="ui-icon ui-icon-pin-s"></span></a><h3><a href="${thread.url()}">${len(thread.subject) > 30 and '%s&hellip;' % thread.subject[:30] or thread.subject}</a></h3>
+          <a href="${thread.url()}" class="ui-button ui-state-default fleft"><span class="ui-icon ui-icon-pin-s"></span></a><h3><a href="${thread.url()}">${h.text.truncate(thread.subject, 30)}</a></h3>
 
           <span>By <a href="${author.url()}">$author.display_name</a></span> on ${thread.first_post.timestamp.strftime('%a %b %d, %Y %I:%M %p')}
         </td> 
