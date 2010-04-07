@@ -7,20 +7,11 @@
       ${show_post(child, indent+1)}
     </py:for>
   </py:def>
-  <py:with vars="posts=value.find_posts(offset=offset, limit=pagesize,style=style)">
+  <py:with vars="posts=value.find_posts(offset=offset, limit=pagesize)">
     <div py:if="not posts">No posts found</div>
-    <div py:if="style=='threaded'"
-         py:with="post_threads=value.create_post_threads(posts)">
-      <!-- <div style="width:220px; float:left">
-        ${widgets.post_thread.display(value=post_threads)}
-      </div> -->
-      <py:for each="i,post in enumerate(posts)" py:if="post.parent_id == None">
-        ${show_post(post, 0, supress_promote=(i==0))}
-      </py:for>
-    </div>
-    <div py:if="style!='threaded'">
-      <py:for each="post in posts" py:if="post.parent_id == None">
-        ${show_post(post, 0)}
+    <div py:if="posts">
+      <py:for each="t in value.create_post_threads(posts)">
+        ${show_post(t['post'], 0, supress_promote=True)}
       </py:for>
     </div>
   </py:with>

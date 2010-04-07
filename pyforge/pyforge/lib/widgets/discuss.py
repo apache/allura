@@ -247,13 +247,12 @@ class Post(HierWidget):
 class Thread(HierWidget):
     template='genshi:pyforge.lib.widgets.templates.thread'
     name='thread'
-    params=['value', 'offset', 'pagesize', 'total', 'style', 'show_subject']
+    params=['value', 'offset', 'pagesize', 'total', 'show_subject']
     value=None
     offset=None
     pagesize=None
     total=None
     show_subject=False
-    style='threaded'
     widgets=dict(
         thread_header=ThreadHeader(),
         post_thread=PostThread(),
