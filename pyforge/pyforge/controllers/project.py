@@ -16,7 +16,7 @@ import pyforge
 from pyforge import model as M
 from pyforge.app import SitemapEntry
 from pyforge.lib.base import BaseController
-from pyforge.lib.helpers import vardec, DateTimeConverter
+from pyforge.lib import helpers as h
 from pyforge.controllers.error import ErrorController
 from pyforge.lib.security import require, has_project_access, has_neighborhood_access
 from pyforge.lib.widgets import form_fields as ffw
@@ -52,7 +52,8 @@ class NeighborhoodController(object):
 
     @expose()
     def _lookup(self, pname, *remainder):
-        pname = unquote(pname)
+        if not h.re_path_portion.match(pname):
+            raise exc.HTTPNotFound, pname
         project = M.Project.query.get(shortname=self.prefix + pname)
         if project is None:
             raise exc.HTTPNotFound, pname
@@ -76,6 +77,9 @@ class NeighborhoodController(object):
 
     @expose()
     def register(self, pid):
+        if not h.re_path_portion.match(pid):
+            flash('Invalid project shortname "%s"' % pid, 'error')
+            redirect(request.referer)
         require(has_neighborhood_access('create', self.neighborhood), 'Create access required')
         try:
             p = self.neighborhood.register_project(pid)
@@ -164,7 +168,8 @@ class ProjectController(object):
 
     @expose()
     def _lookup(self, name, *remainder):
-        name=unquote(name)
+        if not h.re_path_portion.match(name):
+            raise exc.HTTPNotFound, name
         subproject = M.Project.query.get(shortname=c.project.shortname + '/' + name)
         if subproject:
             c.project = subproject
@@ -198,8 +203,8 @@ class ProjectController(object):
     @without_trailing_slash
     @expose()
     @validate(dict(
-            since=DateTimeConverter(if_empty=None),
-            until=DateTimeConverter(if_empty=None),
+            since=h.DateTimeConverter(if_empty=None),
+            until=h.DateTimeConverter(if_empty=None),
             offset=validators.Int(if_empty=None),
             limit=validators.Int(if_empty=None)))
     def feed(self, since=None, until=None, offset=None, limit=None):
@@ -341,7 +346,7 @@ class NeighborhoodAdminController(object):
                 image.save(fp, format)
         redirect('.')
 
-    @vardec
+    @h.vardec
     @expose()
     def update_acl(self, permission=None, user=None, new=None, **kw):
         if user is None: user = []

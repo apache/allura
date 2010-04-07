@@ -16,6 +16,7 @@ import  ming.orm.ormsession
 import pyforge
 from pyforge.lib.base import BaseController
 from pyforge.lib.security import require, require_authenticated, has_project_access, has_artifact_access
+from pyforge.lib import helpers as h
 from pyforge import model as M
 from .root import RootController
 from .project import ProjectController
@@ -61,12 +62,13 @@ class TestController(BaseController, ProjectController):
 
     @expose()
     def _lookup(self, name, *remainder):
+        if not h.re_path_portion.match(name):
+            raise exc.HTTPNotFound, name
         subproject = M.Project.query.get(shortname=c.project.shortname + '/' + name)
         if subproject:
             c.project = subproject
             c.app = None
             return ProjectController(), remainder
-        app = c.project.app_instance(name)
         app = c.project.app_instance(name)
         if app is None:
             c.project.install_app(name, name)

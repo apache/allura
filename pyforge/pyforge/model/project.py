@@ -13,7 +13,7 @@ from ming.orm.mapped_class import MappedClass
 from ming.orm.property import FieldProperty, RelationProperty, ForeignIdProperty
 from ming.orm.ormsession import ThreadLocalORMSession
 
-from pyforge.lib.helpers import push_config
+from pyforge.lib import helpers as h
 from .session import main_doc_session, main_orm_session
 from .session import project_doc_session, project_orm_session
 
@@ -126,6 +126,7 @@ class Neighborhood(MappedClass):
         '''Register a new project in the neighborhood.  The given user will
         become the project's superuser.  If no user is specified, c.user is used.
         '''
+        assert h.re_path_portion.match(shortname), 'Invalid project shortname'
         from . import auth
         if user is None: user = c.user
         p = Project.query.get(shortname=shortname)
@@ -145,7 +146,7 @@ class Neighborhood(MappedClass):
                                      + 'You can edit this description in the admin page'),
                         database=database,
                         is_root=True)
-            with push_config(c, project=p, user=user):
+            with h.push_config(c, project=p, user=user):
                 # Install default named roles (#78)
                 role_owner = auth.ProjectRole(name='Owner')
                 role_developer = auth.ProjectRole(name='Developer')
@@ -358,6 +359,7 @@ class Project(MappedClass):
         return AwardGrant.query.find(dict(granted_to_project_id=self._id)).all()
 
     def install_app(self, ep_name, mount_point, **override_options):
+        assert h.re_path_portion.match(mount_point), 'Invalid mount point'
         assert self.app_instance(mount_point) is None
         for ep in pkg_resources.iter_entry_points('pyforge', ep_name):
             App = ep.load()
@@ -373,7 +375,7 @@ class Project(MappedClass):
             options=options,
             acl=dict((p,[]) for p in App.permissions))
         app = App(self, cfg)
-        with push_config(c, project=self, app=app):
+        with h.push_config(c, project=self, app=app):
             session(cfg).flush()
             app.install(self)
         return app
@@ -381,7 +383,7 @@ class Project(MappedClass):
     def uninstall_app(self, mount_point):
         app = self.app_instance(mount_point)
         if app is None: return
-        with push_config(c, project=self, app=app):
+        with h.push_config(c, project=self, app=app):
             app.uninstall(self)
         app.config.delete()
 
@@ -404,6 +406,7 @@ class Project(MappedClass):
                 'options.mount_point':mount_point}).first()
 
     def new_subproject(self, name, install_apps=True):
+        assert h.re_path_portion.match(name), 'Invalid subproject shortname'
         shortname = self.shortname + '/' + name
         sp = Project(
             parent_id=self._id,
@@ -412,7 +415,7 @@ class Project(MappedClass):
             name=name,
             database=self.database,
             is_root=False)
-        with push_config(c, project=sp):
+        with h.push_config(c, project=sp):
             AppConfig.query.remove(dict(project_id=c.project._id))
             if install_apps:
                 sp.install_app('home', 'home')
@@ -431,7 +434,7 @@ class Project(MappedClass):
 
     def render_widget(self, widget):
         app = self.app_instance(widget['mount_point'])
-        with push_config(c, project=self, app=app):
+        with h.push_config(c, project=self, app=app):
             return getattr(app.widget(app), widget['widget_name'])()
 
     def breadcrumbs(self):

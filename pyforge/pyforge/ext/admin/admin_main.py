@@ -199,10 +199,18 @@ class ProjectAdminController(object):
         if new.get('install'):
             if new['ep_name'] == '':
                 require(has_project_access('create'))
-                sp = c.project.new_subproject(new['mount_point'] or h.nonce())
+                mount_point = new['mount_point'] or h.nonce()
+                if not h.re_path_portion.match(mount_point):
+                    flash('Invalid mount point', 'error')
+                    redirect(request.referer)
+                sp = c.project.new_subproject(mount_point)
             else:
                 require(has_project_access('plugin'))
-                c.project.install_app(new['ep_name'], new['mount_point'] or new['ep_name'])
+                mount_point = new['mount_point'] or new['ep_name']
+                if not h.re_path_portion.match(mount_point):
+                    flash('Invalid mount point', 'error')
+                    redirect(request.referer)
+                c.project.install_app(new['ep_name'], mount_point)
         redirect('.#mount-admin')
 
     @h.vardec

@@ -2,6 +2,7 @@
 import os
 import difflib
 import urllib
+import re
 from hashlib import sha1
 from datetime import datetime
 
@@ -16,6 +17,8 @@ from formencode.variabledecode import variable_decode
 from webhelpers import date, feedgenerator, html, number, misc, text
 
 from pymongo import bson
+
+re_path_portion = re.compile(r'^[a-z][_a-z0-9]{2,}$')
 
 def find_project(url_path):
     from pyforge import model as M

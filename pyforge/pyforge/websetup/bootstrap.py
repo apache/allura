@@ -216,7 +216,7 @@ ul#sidebarmenu li a.active {
         p0.install_app('Wiki', 'wiki')
         p0.install_app('Tickets', 'bugs')
         p0.install_app('Tickets', 'doc_bugs')
-        p0.install_app('Discussion', 'Discussion')
+        p0.install_app('Discussion', 'discussion')
         app.config.options['type'] = 'git'
         ThreadLocalORMSession.flush_all()
         ThreadLocalORMSession.close_all()

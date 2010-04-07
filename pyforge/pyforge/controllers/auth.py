@@ -75,7 +75,9 @@ class AuthController(object):
         return dict()
 
     @expose()
-    def save_new(self,display_name=None,open_ids=None,email_addresses=None,username=None,password=None):
+    def save_new(self,display_name=None,open_ids=None,email_addresses=None,
+                 username=None,password=None):
+        username = username.lower()
         if M.User.query.get(username=username):
             flash('That username is already taken. Please choose another.',
                   'error')
