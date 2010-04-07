@@ -206,7 +206,7 @@ class ProjectAdminController(object):
                 sp = c.project.new_subproject(mount_point)
             else:
                 require(has_project_access('plugin'))
-                mount_point = new['mount_point'] or new['ep_name']
+                mount_point = new['mount_point'] or new['ep_name'].lower()
                 if not h.re_path_portion.match(mount_point):
                     flash('Invalid mount point', 'error')
                     redirect(request.referer)
