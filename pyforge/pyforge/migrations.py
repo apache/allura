@@ -42,14 +42,14 @@ class DowncaseMountPoints(Migration):
     def up(self):
         # Fix neigborhoods
         for n in self.ormsession.find(M.Neighborhood, {}):
-            n.name = n.name.lower()
-            n.shortname_prefix = n.shortname_prefix.lower()
+            n.name = n.name.lower().replace(' ', '_')
+            n.shortname_prefix = n.shortname_prefix.lower().replace(' ', '_')
         # Fix Projects
         for p in self.ormsession.find(M.Project, {}):
-            p.shortname = p.shortname.lower()
+            p.shortname = p.shortname.lower().replace(' ', '_')
         # Fix AppConfigs
         for ac in self.ormsession.find(M.AppConfig, {}):
-            ac.options.mount_point = ac.options.mount_point.lower()
+            ac.options.mount_point = ac.options.mount_point.lower().replace(' ', '_')
             if ac.plugin_name == 'Forum':
                 ac.plugin_name = 'Discussion'
         self.ormsession.flush(); self.ormsession.clear()
@@ -73,7 +73,7 @@ class DowncaseMountPoints(Migration):
         for pc in self.ormsession.find(PM.PortalConfig):
             for layout in pc.layout:
                 for w in layout.content:
-                    w.mount_point = w.mount_point.lower()
+                    w.mount_point = w.mount_point.lower().replace(' ', '_')
         # Fix thread (has explicit artifact_reference property)
         for t in self.ormsession.find(M.Thread, {}):
             fix_aref(t.artifact_reference)
@@ -121,4 +121,4 @@ class DowncaseMountPoints(Migration):
 
 def fix_aref(aref):
     if aref and aref.mount_point:
-        aref.mount_point = aref.mount_point.lower()
+        aref.mount_point = aref.mount_point.lower().replace(' ', '_')
