@@ -40,6 +40,10 @@ class Globals(MappedClass):
             new=True)
         return g.last_ticket_num+1
 
+    @classmethod
+    def for_current_tracker(cls):
+        return cls.query.get(app_config_id=c.app.config._id)
+
 class TicketHistory(Snapshot):
 
     class __mongometa__:
