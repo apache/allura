@@ -13,7 +13,7 @@ asdfasdf<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   </head>
   
   <body>
-    <h1>$forum.name</h1>
+    <h1 class="title">$forum.name</h1>
     <p>Forum Shortlink: [${forum.shorthand_id()}]</p>
     <div>${Markup(g.markdown.convert(forum.description))}</div>
     <a href="mailto:$forum.email_address">Post via Email</a>

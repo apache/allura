@@ -24,7 +24,7 @@ class UserWidgets(WidgetController):
     def __init__(self, app): pass
 
     def welcome(self):
-        return self.portlet('<h1>Please configure your widgets </h1>')
+        return self.portlet('<p>Please configure your widgets </p>')
 
 class UserProfileApp(Application):
     __version__ = version.__version__
