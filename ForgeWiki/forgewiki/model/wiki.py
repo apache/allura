@@ -63,6 +63,7 @@ class Page(VersionedArtifact):
     viewable_by=FieldProperty([str])
 
     def commit(self):
+        self.subscribe()
         VersionedArtifact.commit(self)
         if self.version > 1:
             t1 = self.upsert(self.title, self.version-1).text
