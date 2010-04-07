@@ -34,7 +34,7 @@ class WidgetConfig(object):
     # Forms
     subscription_form = DW.SubscriptionForm()
     edit_post = DW.EditPost(show_subject=True)
-    moderate_post = FW.ModeratePost()
+    moderate_post = DW.ModeratePost()
     moderate_thread = FW.ModerateThread()
     flag_post = DW.FlagPost()
     post_filter = DW.PostFilter()
