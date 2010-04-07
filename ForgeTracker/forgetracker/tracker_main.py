@@ -119,7 +119,7 @@ class ForgeTrackerApp(Application):
         links.append(SitemapEntry('Search', self.config.url() + 'search/', ui_icon='search'))
         if len(search_bins):
             links.append(SitemapEntry('Saved Searches'))
-            links.append(SitemapEntry('All', self.config.url() + 'bins', className='nav_child'))
+            links.append(SitemapEntry('All Searches', self.config.url() + 'bins', className='nav_child'))
             links = links + search_bins
         if ticket:
             if ticket.super_id:
