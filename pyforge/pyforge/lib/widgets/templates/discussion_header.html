@@ -2,6 +2,6 @@
      xmlns:py="http://genshi.edgewall.org/"
      py:strip="True">
   <h1 class="title">$value.name</h1>
-  <!--   <p>Discussion Shortlink: <input readonly="true" value="[${value.shorthand_id()}]" class="title"/></p> -->
+  <p>Discussion Shortlink: [${value.shorthand_id()}]</p>
   <div>${Markup(g.markdown.convert(value.description))}</div>
 </div>
