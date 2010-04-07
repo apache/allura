@@ -126,7 +126,8 @@ class Neighborhood(MappedClass):
         '''Register a new project in the neighborhood.  The given user will
         become the project's superuser.  If no user is specified, c.user is used.
         '''
-        assert h.re_path_portion.match(shortname), 'Invalid project shortname'
+        assert h.re_path_portion.match(shortname.replace('/', '')), \
+            'Invalid project shortname'
         from . import auth
         if user is None: user = c.user
         p = Project.query.get(shortname=shortname)
@@ -364,14 +365,20 @@ class Project(MappedClass):
         for ep in pkg_resources.iter_entry_points('pyforge', ep_name):
             App = ep.load()
             break
-        else: # pragma no cover
-            raise exc.HTTPNotFound, ep_name
+        else: 
+            # Try case-insensitive install
+            for ep in pkg_resources.iter_entry_points('pyforge'):
+                if ep.name.lower() == ep_name:
+                    App = ep.load()
+                    break
+            else: # pragma no cover
+                raise exc.HTTPNotFound, ep_name
         options = App.default_options()
         options['mount_point'] = mount_point
         options.update(override_options)
         cfg = AppConfig(
             project_id=self._id,
-            plugin_name=ep_name,
+            plugin_name=ep.name,
             options=options,
             acl=dict((p,[]) for p in App.permissions))
         app = App(self, cfg)

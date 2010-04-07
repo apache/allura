@@ -19,8 +19,8 @@ class TestForumReactors(TestController):
 
     def setUp(self):
         TestController.setUp(self)
-        self.app.get('/Discussion/')
-        r = self.app.post('/admin/Discussion/update_forums',
+        self.app.get('/discussion/')
+        r = self.app.post('/admin/discussion/update_forums',
                           params={'new_forum.shortname':'test',
                                   'new_forum.create':'on',
                                   'new_forum.name':'Test Forum',
@@ -30,7 +30,7 @@ class TestForumReactors(TestController):
         r = self.app.get(r.location)
         assert 'error' not in r
         assert 'Test Forum' in r
-        r = self.app.post('/admin/Discussion/update_forums',
+        r = self.app.post('/admin/discussion/update_forums',
                           params={'new_forum.shortname':'test1',
                                   'new_forum.create':'on',
                                   'new_forum.name':'Test Forum 1',
@@ -95,7 +95,7 @@ class TestForumReactors(TestController):
     def test_threads(self):
         self._post('Discussion.msg.test', 'Test', 'test')
         thd = FM.ForumThread.query.find().first()
-        url = str('/Discussion/test/thread/%s/' % thd._id)
+        url = str('/discussion/test/thread/%s/' % thd._id)
         r = self.app.get(url)
         # Test moderate
         r = self.app.post(url + 'moderate',
@@ -109,10 +109,10 @@ class TestForumReactors(TestController):
     def test_posts(self):
         self._post('Discussion.msg.test', 'Test', 'test')
         thd = FM.ForumThread.query.find().first()
-        thd_url = str('/Discussion/test/thread/%s/' % thd._id)
+        thd_url = str('/discussion/test/thread/%s/' % thd._id)
         r = self.app.get(thd_url)
         p = FM.ForumPost.query.find().first()
-        url = str('/Discussion/test/thread/%s/%s/' % (thd._id, p.slug))
+        url = str('/discussion/test/thread/%s/%s/' % (thd._id, p.slug))
         r = self.app.get(url)
         r = self.app.post(url, params=dict(subject='New Subject', text='Asdf'))
         assert 'Asdf' in self.app.get(url)
@@ -180,9 +180,9 @@ class TestForum(TestController):
 
     def setUp(self):
         TestController.setUp(self)
-        self.app.get('/Discussion/')
-        r = self.app.get('/admin/Discussion/')
-        r = self.app.post('/admin/Discussion/update_forums',
+        self.app.get('/discussion/')
+        r = self.app.get('/admin/discussion/')
+        r = self.app.post('/admin/discussion/update_forums',
                           params={'new_forum.shortname':'TestForum',
                                   'new_forum.create':'on',
                                   'new_forum.name':'Test Forum',
@@ -194,8 +194,8 @@ class TestForum(TestController):
         assert 'TestForum' in r
         h.set_context('test', 'Discussion')
         frm = FM.Forum.query.get(shortname='TestForum')
-        r = self.app.get('/admin/Discussion/')
-        r = self.app.post('/admin/Discussion/update_forums',
+        r = self.app.get('/admin/discussion/')
+        r = self.app.post('/admin/discussion/update_forums',
                           params={'new_forum.shortname':'ChildForum',
                                   'new_forum.create':'on',
                                   'new_forum.name':'Child Forum',
@@ -207,33 +207,33 @@ class TestForum(TestController):
         assert 'ChildForum' in r
 
     def test_forum_search(self):
-        r = self.app.get('/Discussion/search')
-        r = self.app.get('/Discussion/search', params=dict(q='foo'))
+        r = self.app.get('/discussion/search')
+        r = self.app.get('/discussion/search', params=dict(q='foo'))
     
     def test_forum_subscribe(self):
-        r = self.app.get('/Discussion/subscribe', params={
+        r = self.app.get('/discussion/subscribe', params={
                 'forum-0.shortname':'TestForum',
                 'forum-0.subscribed':'on',
                 })
-        r = self.app.get('/Discussion/subscribe', params={
+        r = self.app.get('/discussion/subscribe', params={
                 'forum-0.shortname':'TestForum',
                 'forum-0.subscribed':'',
                 })
     
     def test_forum_index(self):
-        r = self.app.get('/Discussion/TestForum/')
-        r = self.app.get('/Discussion/TestForum/ChildForum/')
+        r = self.app.get('/discussion/TestForum/')
+        r = self.app.get('/discussion/TestForum/ChildForum/')
     
     def test_posting(self):
-        r = self.app.get('/Discussion/TestForum/post', params=dict(
+        r = self.app.get('/discussion/TestForum/post', params=dict(
                 subject='Test Thread',
                 text='This is a *test thread*'))
         r = self.app.get(r.location)
         assert 'Message posted' in r
-        r = self.app.get('/Discussion/TestForum/moderate/')
+        r = self.app.get('/discussion/TestForum/moderate/')
 
     def test_thread(self):
-        thread = self.app.get('/Discussion/TestForum/post', params=dict(
+        thread = self.app.get('/discussion/TestForum/post', params=dict(
                 subject='AAA',
                 text='aaa')).follow()
         url = thread.request.url
@@ -250,22 +250,22 @@ class TestForum(TestController):
         assert thread.response.body.count('<div class="edit_post_form') == 2
 
     def test_sidebar_menu(self):
-        r = self.app.get('/Discussion/')
+        r = self.app.get('/discussion/')
         sidebarmenu = str(r.html.find('ul',{'id':'sidebarmenu'}))
         assert '<a href="." class=" ">Home</a>' in sidebarmenu
-        assert '<a href="/projects/test/admin/Discussion" class=" ">Admin</a>' in sidebarmenu
+        assert '<a href="/projects/test/admin/discussion" class=" ">Admin</a>' in sidebarmenu
         assert '<a href="search" class=" ">Search</a>' in sidebarmenu
-        assert '<a href="/projects/test/Discussion/TestForum/" class=" ">Test Forum</a>' in sidebarmenu
+        assert '<a href="/projects/test/discussion/TestForum/" class=" ">Test Forum</a>' in sidebarmenu
 
 class TestForumAdmin(TestController):
 
     def setUp(self):
         TestController.setUp(self)
-        self.app.get('/Discussion/')
+        self.app.get('/discussion/')
 
     def test_forum_CRUD(self):
-        r = self.app.get('/admin/Discussion/')
-        r = self.app.post('/admin/Discussion/update_forums',
+        r = self.app.get('/admin/discussion/')
+        r = self.app.post('/admin/discussion/update_forums',
                           params={'new_forum.shortname':'TestForum',
                                   'new_forum.create':'on',
                                   'new_forum.name':'Test Forum',
@@ -277,7 +277,7 @@ class TestForumAdmin(TestController):
         assert 'TestForum' in r
         h.set_context('test', 'Forum')
         frm = FM.Forum.query.get(shortname='TestForum')
-        r = self.app.post('/admin/Discussion/update_forums',
+        r = self.app.post('/admin/discussion/update_forums',
                           params={'new_forum.create':'',
                                   'forum-0.delete':'',
                                   'forum-0.id':str(frm._id),
@@ -287,7 +287,7 @@ class TestForumAdmin(TestController):
         assert 'error' not in r
         assert 'New Test Forum' in r
         assert 'My desc' in r
-        r = self.app.post('/admin/Discussion/update_forums',
+        r = self.app.post('/admin/discussion/update_forums',
                           params={'new_forum.create':'',
                                   'forum-0.delete':'on',
                                   'forum-0.id':str(frm._id),
@@ -299,8 +299,8 @@ class TestForumAdmin(TestController):
         assert 'My desc' not in r
 
     def test_forum_CRUD_hier(self):
-        r = self.app.get('/admin/Discussion/')
-        r = self.app.post('/admin/Discussion/update_forums',
+        r = self.app.get('/admin/discussion/')
+        r = self.app.post('/admin/discussion/update_forums',
                           params={'new_forum.shortname':'TestForum',
                                   'new_forum.create':'on',
                                   'new_forum.name':'Test Forum',
@@ -312,8 +312,8 @@ class TestForumAdmin(TestController):
         assert 'TestForum' in r
         h.set_context('test', 'Discussion')
         frm = FM.Forum.query.get(shortname='TestForum')
-        r = self.app.get('/admin/Discussion/')
-        r = self.app.post('/admin/Discussion/update_forums',
+        r = self.app.get('/admin/discussion/')
+        r = self.app.post('/admin/discussion/update_forums',
                           params={'new_forum.shortname':'ChildForum',
                                   'new_forum.create':'on',
                                   'new_forum.name':'Child Forum',
@@ -323,7 +323,7 @@ class TestForumAdmin(TestController):
         r = self.app.get(r.location)
         assert 'error' not in r
         assert 'ChildForum' in r
-        r = self.app.post('/admin/Discussion/update_forums',
+        r = self.app.post('/admin/discussion/update_forums',
                           params={'new_forum.create':'',
                                   'forum-0.delete':'on',
                                   'forum-0.id':str(frm._id),
@@ -335,7 +335,7 @@ class TestForumAdmin(TestController):
         assert 'ChildForum' not in r
 
     def test_bad_forum_names(self):
-        r = self.app.post('/admin/Discussion/update_forums',
+        r = self.app.post('/admin/discussion/update_forums',
                           params={'new_forum.shortname':'Test.Forum',
                                   'new_forum.create':'on',
                                   'new_forum.name':'Test Forum',
@@ -344,7 +344,7 @@ class TestForumAdmin(TestController):
                                   })
         r = self.app.get(r.location)
         assert 'error' in r
-        r = self.app.post('/admin/Discussion/update_forums',
+        r = self.app.post('/admin/discussion/update_forums',
                           params={'new_forum.shortname':'Test/Forum',
                                   'new_forum.create':'on',
                                   'new_forum.name':'Test Forum',

@@ -152,6 +152,7 @@ ul#sidebarmenu li a.active {
             color3='#333',
             color4='#aaa')
     ThreadLocalORMSession.flush_all()
+    ThreadLocalORMSession.close_all()
     # add the adobe icon
     file_name = 'adobe_icon.png'
     file_path = os.path.join(pyforge.__path__[0],'public','images',file_name)
@@ -200,9 +201,9 @@ ul#sidebarmenu li a.active {
     cat3_2 = M.ProjectCategory(name='engines_servers', label='Engines/Servers', parent_id=cat3._id)
 
     log.info('Registering initial projects')
-    p_adobe1 = n_adobe.register_project('Adobe 1', u_adobe)
-    p_adobe2 = n_adobe.register_project('Adobe 2', u_adobe)
-    p_mozilla = n_mozilla.register_project('Mozilla 1', u_mozilla)
+    p_adobe1 = n_adobe.register_project('adobe_1', u_adobe)
+    p_adobe2 = n_adobe.register_project('adobe_2', u_adobe)
+    p_mozilla = n_mozilla.register_project('mozilla_1', u_mozilla)
     p0 = n_projects.register_project('test', u0)
     c.project = p0
     c.user = u0

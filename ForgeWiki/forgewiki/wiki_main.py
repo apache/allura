@@ -516,3 +516,11 @@ class AttachmentController(object):
             return fp.read()
         return self.filename
 
+MARKDOWN_EXAMPLE='''
+# First-level heading
+
+Some *emphasized* and **strong** text
+
+#### Fourth-level heading
+
+'''

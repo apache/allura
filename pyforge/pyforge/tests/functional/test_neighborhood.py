@@ -46,7 +46,7 @@ class TestNeighborhood(TestController):
     def test_invite(self):
         r = self.app.get('/mozilla/_moderate/', extra_environ=dict(username='root'))
         r = self.app.post('/mozilla/_moderate/invite',
-                          params=dict(pid='Mozilla 1', invite='on'),
+                          params=dict(pid='mozilla_1', invite='on'),
                           extra_environ=dict(username='root'))
         r = self.app.get(r.location, extra_environ=dict(username='root'))
         assert 'error' in r
@@ -92,7 +92,7 @@ class TestNeighborhood(TestController):
         r = self.app.get(r.location, extra_environ=dict(username='root'))
         assert 'error' in r
         r = self.app.post('/mozilla/_moderate/evict',
-                          params=dict(pid='Mozilla 1'),
+                          params=dict(pid='mozilla_1'),
                           extra_environ=dict(username='root'))
         r = self.app.get(r.location, extra_environ=dict(username='root'))
         assert 'error' not in r
@@ -111,12 +111,11 @@ class TestNeighborhood(TestController):
         r = self.app.post('/mozilla/register',
                           params=dict(pid='foo.mymoz'),
                           extra_environ=dict(username='root'))
-        r = self.app.get(r.location)
-        assert 'error' in r
+        assert 'error' in r.cookies_set['webflash']
 
     def test_neighborhood_project(self):
         r = self.app.get('/mozilla/test/home/', status=302)
-        r = self.app.get('/mozilla/Mozilla 1/home/', status=200)
+        r = self.app.get('/mozilla/mozilla_1/home/', status=200)
         r = self.app.get('/projects/test/sub1/home/')
         r = self.app.get('/projects/test/sub1/', status=302)
         r = self.app.get('/projects/test/no_such_app/', status=404)

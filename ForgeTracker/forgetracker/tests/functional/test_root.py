@@ -150,7 +150,7 @@ class TestFunctionalController(TestController):
         assert 'Create New Ticket' in response
         assert 'Update this Ticket' in response
         assert 'Related Artifacts' not in response
-        self.app.get('/Wiki/aaa/')
+        self.app.get('/wiki/aaa/')
         self.new_ticket(summary='bbb')
         
         # Fake out updating the pages since reactor doesn't work with tests

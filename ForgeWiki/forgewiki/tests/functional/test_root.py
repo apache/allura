@@ -24,127 +24,127 @@ from ming.orm.ormsession import ThreadLocalORMSession
 
 class TestRootController(TestController):
     def test_root_index(self):
-        response = self.app.get('/Wiki/TEST/index')
+        response = self.app.get('/wiki/TEST/index')
         assert 'TEST' in response
 
     def test_root_markdown_syntax(self):
-        response = self.app.get('/Wiki/markdown_syntax/')
+        response = self.app.get('/wiki/markdown_syntax/')
         assert 'Markdown Syntax' in response
 
     def test_root_wiki_help(self):
-        response = self.app.get('/Wiki/wiki_help/')
+        response = self.app.get('/wiki/wiki_help/')
         assert 'Wiki Help' in response
 
     def test_root_browse_tags(self):
-        response = self.app.get('/Wiki/browse_tags/')
+        response = self.app.get('/wiki/browse_tags/')
         assert 'Browse Tags' in response
 
     def test_root_browse_pages(self):
-        response = self.app.get('/Wiki/browse_pages/')
+        response = self.app.get('/wiki/browse_pages/')
         assert 'Browse Pages' in response
 
     def test_root_new_page(self):
-        response = self.app.get('/Wiki/new_page?title=TEST')
+        response = self.app.get('/wiki/new_page?title=TEST')
         assert 'TEST' in response
 
     def test_root_new_search(self):
-        self.app.get('/Wiki/TEST/index')
-        response = self.app.get('/Wiki/search?q=TEST')
+        self.app.get('/wiki/TEST/index')
+        response = self.app.get('/wiki/search?q=TEST')
         assert 'ForgeWiki Search' in response
 
     def test_page_index(self):
-        response = self.app.get('/Wiki/TEST/index/')
+        response = self.app.get('/wiki/TEST/index/')
         assert 'TEST' in response
 
     def test_page_edit(self):
-        self.app.get('/Wiki/TEST/index/')
-        response = self.app.post('/Wiki/TEST/edit')
+        self.app.get('/wiki/TEST/index/')
+        response = self.app.post('/wiki/TEST/edit')
         assert 'TEST' in response
 
     def test_page_history(self):
-        response = self.app.get('/Wiki/TEST/history')
+        response = self.app.get('/wiki/TEST/history')
         assert 'TEST' in response
 
     def test_page_diff(self):
-        self.app.get('/Wiki/TEST/index/')
-        self.app.get('/Wiki/TEST/revert?version=1')
-        response = self.app.get('/Wiki/TEST/diff?v1=0&v2=0')
+        self.app.get('/wiki/TEST/index/')
+        self.app.get('/wiki/TEST/revert?version=1')
+        response = self.app.get('/wiki/TEST/diff?v1=0&v2=0')
         assert 'TEST' in response
 
     def test_page_raw(self):
-        self.app.get('/Wiki/TEST/index/')
-        response = self.app.get('/Wiki/TEST/raw')
+        self.app.get('/wiki/TEST/index/')
+        response = self.app.get('/wiki/TEST/raw')
         assert 'TEST' in response
 
     def test_page_revert_no_text(self):
-        self.app.get('/Wiki/TEST/index/')
-        response = self.app.get('/Wiki/TEST/revert?version=1')
+        self.app.get('/wiki/TEST/index/')
+        response = self.app.get('/wiki/TEST/revert?version=1')
         assert 'TEST' in response
 
     def test_page_revert_with_text(self):
-        self.app.get('/Wiki/TEST/index/')
-        self.app.get('/Wiki/TEST/update?text=sometext&tags=&tags_old=&viewable_by=all')
-        response = self.app.get('/Wiki/TEST/revert?version=1')
+        self.app.get('/wiki/TEST/index/')
+        self.app.get('/wiki/TEST/update?text=sometext&tags=&tags_old=&viewable_by=all')
+        response = self.app.get('/wiki/TEST/revert?version=1')
         assert 'TEST' in response
 
     def test_page_update(self):
-        self.app.get('/Wiki/TEST/index/')
-        response = self.app.get('/Wiki/TEST/update?text=sometext&tags=&tags_old=&viewable_by=all')
+        self.app.get('/wiki/TEST/index/')
+        response = self.app.get('/wiki/TEST/update?text=sometext&tags=&tags_old=&viewable_by=all')
         assert 'TEST' in response
 
     def test_page_tag_untag(self):
-        self.app.get('/Wiki/TEST/index/')
-        response = self.app.get('/Wiki/TEST/update?text=sometext&tags=red,blue&tags_old=red,blue&viewable_by=all')
+        self.app.get('/wiki/TEST/index/')
+        response = self.app.get('/wiki/TEST/update?text=sometext&tags=red,blue&tags_old=red,blue&viewable_by=all')
         assert 'TEST' in response
-        response = self.app.get('/Wiki/TEST/update?text=sometext&tags=red&tags_old=red&viewable_by=all')
+        response = self.app.get('/wiki/TEST/update?text=sometext&tags=red&tags_old=red&viewable_by=all')
         assert 'TEST' in response
 
     def test_new_attachment(self):
-        self.app.get('/Wiki/TEST/index')
+        self.app.get('/wiki/TEST/index')
         content = file(__file__).read()
-        response = self.app.post('/Wiki/TEST/attach', upload_files=[('file_info', 'test_root.py', content)]).follow()
+        response = self.app.post('/wiki/TEST/attach', upload_files=[('file_info', 'test_root.py', content)]).follow()
         assert 'test_root.py' in response
 
     def test_new_text_attachment_content(self):
-        self.app.get('/Wiki/TEST/index')
+        self.app.get('/wiki/TEST/index')
         file_name = 'test_root.py'
         file_data = file(__file__).read()
         upload = ('file_info', file_name, file_data)
-        page_editor = self.app.post('/Wiki/TEST/attach', upload_files=[upload]).follow()
+        page_editor = self.app.post('/wiki/TEST/attach', upload_files=[upload]).follow()
         download = page_editor.click(description=file_name)
         assert_true(download.body == file_data)
 
     def test_new_image_attachment_content(self):
-        self.app.get('/Wiki/TEST/index')
+        self.app.get('/wiki/TEST/index')
         file_name = 'adobe_header.png'
         file_path = os.path.join(pyforge.__path__[0],'public','images',file_name)
         file_data = file(file_path).read()
         upload = ('file_info', file_name, file_data)
-        self.app.post('/Wiki/TEST/attach', upload_files=[upload])
+        self.app.post('/wiki/TEST/attach', upload_files=[upload])
         h.set_context('test', 'wiki')
         page = model.Page.query.find(dict(title='TEST')).first()
         filename = page.attachments.first().filename
 
         uploaded = Image.open(file_path)
-        r = self.app.get('/Wiki/TEST/attachment/'+filename)
+        r = self.app.get('/wiki/TEST/attachment/'+filename)
         downloaded = Image.open(StringIO.StringIO(r.body))
         assert uploaded.size == downloaded.size
-        r = self.app.get('/Wiki/TEST/attachment/'+filename+'/thumb')
+        r = self.app.get('/wiki/TEST/attachment/'+filename+'/thumb')
 
         thumbnail = Image.open(StringIO.StringIO(r.body))
         assert thumbnail.size == (101,101)
 
     def test_sidebar_static_page(self):
-        response = self.app.get('/Wiki/TEST/')
+        response = self.app.get('/wiki/TEST/')
         assert 'Edit this page' not in response
         assert 'Related Pages' not in response
 
     def test_sidebar_dynamic_page(self):
-        response = self.app.get('/Wiki/TEST/').follow()
+        response = self.app.get('/wiki/TEST/').follow()
         assert 'Edit this page' in response
         assert 'Related Pages' not in response
-        self.app.get('/Wiki/aaa/')
-        self.app.get('/Wiki/bbb/')
+        self.app.get('/wiki/aaa/')
+        self.app.get('/wiki/bbb/')
         
         # Fake out updating the pages since reactor doesn't work with tests
         app = search_main.SearchApp
@@ -175,13 +175,13 @@ class TestRootController(TestController):
         ThreadLocalORMSession.flush_all()
         ThreadLocalORMSession.close_all()
         
-        response = self.app.get('/Wiki/TEST/')
+        response = self.app.get('/wiki/TEST/')
         assert 'Related Pages' in response
         assert 'aaa' in response
         assert 'bbb' in response
 
     def test_page_permissions(self):
-        response = self.app.get('/Wiki/TEST/').follow()
+        response = self.app.get('/wiki/TEST/').follow()
         assert 'Viewable by' in response
-        self.app.get('/Wiki/TEST/update?text=sometext&tags=&tags_old=&viewable_by=')
-        self.app.get('/Wiki/TEST/', status=403)
+        self.app.get('/wiki/TEST/update?text=sometext&tags=&tags_old=&viewable_by=')
+        self.app.get('/wiki/TEST/', status=403)

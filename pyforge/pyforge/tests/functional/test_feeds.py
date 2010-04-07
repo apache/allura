@@ -10,10 +10,10 @@ class TestFeeds(TestController):
 
     def setUp(self):
         TestController.setUp(self)
-        self.app.get('/Wiki/')
-        self.app.get('/Tickets/')
+        self.app.get('/wiki/')
+        self.app.get('/tickets/')
         r = self.app.post(
-            '/Tickets/save_ticket',
+            '/tickets/save_ticket',
             params=variable_encode(dict(
                     ticket_form=dict(
                     ticket_num='',
@@ -30,22 +30,22 @@ class TestFeeds(TestController):
         self.app.get('/feed.atom')
 
     def test_wiki_feed(self):
-        self.app.get('/Wiki/feed.rss')
-        self.app.get('/Wiki/feed.atom')
+        self.app.get('/wiki/feed.rss')
+        self.app.get('/wiki/feed.atom')
 
     def test_wiki_page_feed(self):
-        self.app.get('/Wiki/Root/feed.rss')
-        self.app.get('/Wiki/Root/feed.atom')
+        self.app.get('/wiki/Root/feed.rss')
+        self.app.get('/wiki/Root/feed.atom')
 
     def test_ticket_list_feed(self):
-        self.app.get('/Tickets/feed.rss')
-        self.app.get('/Tickets/feed.atom')
+        self.app.get('/tickets/feed.rss')
+        self.app.get('/tickets/feed.atom')
 
     def test_ticket_feed(self):
-        self.app.get('/Tickets/1/feed.rss')
-        r = self.app.get('/Tickets/1/feed.atom')
+        self.app.get('/tickets/1/feed.rss')
+        r = self.app.get('/tickets/1/feed.atom')
         assert 'created' in r
-        self.app.post('/Tickets/1/update_ticket', params=dict(
+        self.app.post('/tickets/1/update_ticket', params=dict(
                 assigned_to='',
                 ticket_num='',
                 tags='',
@@ -54,7 +54,7 @@ class TestFeeds(TestController):
                 status='unread',
                 milestone='',
                 description='This is another description'))
-        r = self.app.get('/Tickets/1/feed.atom')
+        r = self.app.get('/tickets/1/feed.atom')
         assert '=&gt;' in r
         assert '&lt;ins&gt;' in r
 
