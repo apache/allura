@@ -132,7 +132,7 @@ class Thread(Artifact):
 
     def post(self, text, message_id=None, parent_id=None, **kw):
         require(has_artifact_access('post', self))
-        if self.artifact_id is not None:
+        if self.artifact_reference.artifact_id is not None:
             self.artifact.subscribe()
         if message_id is None: message_id = h.gen_message_id()
         parent = parent_id and self.post_class().query.get(_id=parent_id)
