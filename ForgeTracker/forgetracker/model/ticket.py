@@ -169,10 +169,12 @@ class Ticket(VersionedArtifact):
             description = '<br>'.join(changes)
             subject = 'Ticket %s modified' % self.ticket_num
         else:
+            self.subscribe()
+            if self.assigned_to_id:
+                self.subscribe(user=User.query.get(_id=self.assigned_to_id))
             description = 'Ticket %s created: %s' % (
                 self.ticket_num, self.summary)
             subject = 'Ticket %s created' % self.ticket_num
-            self.subscribe(user=self.reported_by)
             Thread(discussion_id=self.app_config.discussion_id,
                    artifact_reference=self.dump_ref(),
                    subject='#%s discussion' % self.ticket_num)

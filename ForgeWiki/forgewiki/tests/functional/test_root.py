@@ -57,7 +57,7 @@ class TestRootController(TestController):
         assert 'TEST' in response
 
     def test_page_edit(self):
-        self.app.get('/wiki/TEST/index/')
+        self.app.get('/wiki/TEST/index')
         response = self.app.post('/wiki/TEST/edit')
         assert 'TEST' in response
 
@@ -68,6 +68,8 @@ class TestRootController(TestController):
     def test_page_diff(self):
         self.app.get('/wiki/TEST/index/')
         self.app.get('/wiki/TEST/revert?version=1')
+        response = self.app.get('/wiki/TEST/')
+        assert 'You are currently subscribed' in response
         response = self.app.get('/wiki/TEST/diff?v1=0&v2=0')
         assert 'TEST' in response
 
