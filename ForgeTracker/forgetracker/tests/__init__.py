@@ -5,6 +5,17 @@ from paste.deploy import loadapp
 from paste.script.appinstall import SetupCommand
 from webtest import TestApp
 
+
+def run_app_setup():
+    test_config = environ.get('SANDBOX') and 'sandbox-test.ini' or 'test.ini'
+    conf_dir = config.here = path.abspath(
+        path.dirname(__file__) + '/../..')
+    test_file = path.join(conf_dir, test_config)
+    cmd = SetupCommand('setup-app')
+    cmd.run([test_file])
+    return test_config, conf_dir
+
+
 class TestController(object):
     """
     Base functional test case for the controllers.
@@ -23,21 +34,15 @@ class TestController(object):
     """
 
     application_under_test = 'main'
-    test_config = environ.get('SANDBOX') and 'sandbox-test.ini' or 'test.ini'
 
     def setUp(self):
         """Method called by nose before running each test"""
-        # Loading the application:
-        conf_dir = config.here = path.abspath(
-            path.dirname(__file__) + '/../..')
-        wsgiapp = loadapp('config:%s#%s' % (self.test_config, self.application_under_test),
+        test_config, conf_dir = run_app_setup()
+        wsgiapp = loadapp('config:%s#%s' % (test_config, self.application_under_test),
                           relative_to=conf_dir)
         self.app = TestApp(wsgiapp)
-        # Setting it up:
-        test_file = path.join(conf_dir, self.test_config)
-        cmd = SetupCommand('setup-app')
-        cmd.run([test_file])
 
     def tearDown(self):
         """Method called by nose after running each test"""
         pass
+
