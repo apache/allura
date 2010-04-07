@@ -194,7 +194,6 @@ class PostController(object):
                     url=self.post.url,
                     thread=self.post.thread,
                     reply_subject=self.post.reply_subject,
-                    reply_text=self.post.reply_text,
                     attachments=self.post.attachments,
                     )
             else:

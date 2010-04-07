@@ -99,7 +99,6 @@ def test_post_methods():
     assert 'Test Admin' in p.summary()
     assert 'wiki/_discuss' in p.url()
     assert p.reply_subject() == 'Re: Test Thread'
-    assert '> This is a post' in p.reply_text()
     ss = p.history().first()
     assert 'Version' in ss.index()['title_s']
     p.spam()

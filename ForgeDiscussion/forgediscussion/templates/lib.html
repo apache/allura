@@ -203,7 +203,7 @@
             <div class="content">
               <form method="post" action="${post.url() + 'reply'}">
                 ${text_field('subject', 'Subject', post.reply_subject())}
-                ${text_area('text', 'Content', post.reply_text())}
+                ${text_area('text', 'Content', '')}
                 ${submit_button('Send Reply')}
               </form>
             </div>

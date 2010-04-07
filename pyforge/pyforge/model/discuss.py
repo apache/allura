@@ -323,14 +323,6 @@ class Post(Message, VersionedArtifact):
         else:
             return 'Re: ' + self.subject
 
-    def reply_text(self):
-        if self.text:
-            l = [ '%s wrote:' % self.author().display_name ]
-            l += [ '> ' + line for line in self.text.split('\n') ]
-        else:
-            return ''
-        return '\n'.join(l)
-
     def delete(self):
         for att in self.attachment_class().by_metadata(post_id=self._id):
             att.delete()
