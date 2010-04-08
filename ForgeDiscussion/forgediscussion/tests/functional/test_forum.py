@@ -50,7 +50,7 @@ class TestForumReactors(TestController):
         cmd.options.proc = 1
         configs = cmd.command()
         self.cmd = cmd
-        h.set_context('test', 'Discussion')
+        h.set_context('test', 'discussion')
         self.user_id = M.User.query.get(username='root')._id
 
     def test_has_access(self):
@@ -58,42 +58,42 @@ class TestForumReactors(TestController):
         assert True == c.app.has_access(M.User.query.get(username='root'), 'test')
 
     def test_post(self):
-        self._post('Discussion.msg.test', 'Test Thread', 'Nothing here')
+        self._post('discussion.msg.test', 'Test Thread', 'Nothing here')
 
     def test_bad_post(self):
         self._post('Forumtest', 'Test Thread', 'Nothing here')
 
     # def test_notify(self):
-    #     self._post('Discussion.msg.test', 'Test Thread', 'Nothing here',
+    #     self._post('discussion.msg.test', 'Test Thread', 'Nothing here',
     #                message_id='test_notify@sf.net')
-    #     self._post('Discussion.msg.test', 'Test Reply', 'Nothing here, either',
+    #     self._post('discussion.msg.test', 'Test Reply', 'Nothing here, either',
     #                message_id='test_notify1@sf.net',
     #                in_reply_to=[ 'test_notify@sf.net' ])
     #     self._notify('test_notify@sf.net')
     #     self._notify('test_notify1@sf.net')
 
     def test_reply(self):
-        self._post('Discussion.msg.test', 'Test Thread', 'Nothing here',
+        self._post('discussion.msg.test', 'Test Thread', 'Nothing here',
                    message_id='test_reply@sf.net')
-        self._post('Discussion.msg.test', 'Test Reply', 'Nothing here, either',
+        self._post('discussion.msg.test', 'Test Reply', 'Nothing here, either',
                    message_id='test_reply1@sf.net',
                    in_reply_to=[ 'test_reply@sf.net' ])
         assert FM.ForumThread.query.find().count() == 1
         assert FM.ForumPost.query.find().count() == 2
 
     def test_attach(self):
-        self._post('Discussion.msg.test', 'Attachment Thread', 'This is a text file',
+        self._post('discussion.msg.test', 'Attachment Thread', 'This is a text file',
                    message_id='test.attach.100@sf.net',
                    filename='test.txt',
                    content_type='text/plain')
-        self._post('Discussion.msg.test', 'Test Thread', 'Nothing here',
+        self._post('discussion.msg.test', 'Test Thread', 'Nothing here',
                    message_id='test.attach.100@sf.net')
-        self._post('Discussion.msg.test', 'Attachment Thread', 'This is a text file',
+        self._post('discussion.msg.test', 'Attachment Thread', 'This is a text file',
                    message_id='test.attach.100@sf.net',
                    content_type='text/plain')
 
     def test_threads(self):
-        self._post('Discussion.msg.test', 'Test', 'test')
+        self._post('discussion.msg.test', 'Test', 'test')
         thd = FM.ForumThread.query.find().first()
         url = str('/discussion/test/thread/%s/' % thd._id)
         r = self.app.get(url)
@@ -107,7 +107,7 @@ class TestForumReactors(TestController):
         assert len(r.html.findAll('tr')) == 1
 
     def test_posts(self):
-        self._post('Discussion.msg.test', 'Test', 'test')
+        self._post('discussion.msg.test', 'Test', 'test')
         thd = FM.ForumThread.query.find().first()
         thd_url = str('/discussion/test/thread/%s/' % thd._id)
         r = self.app.get(thd_url)
@@ -119,7 +119,7 @@ class TestForumReactors(TestController):
         r = self.app.get(url, params=dict(version=1))
         r = self.app.post(url + 'reply',
                           params=dict(subject='Reply', text='text'))
-        self._post('Discussion.msg.test', 'Test Reply', 'Nothing here, either',
+        self._post('discussion.msg.test', 'Test Reply', 'Nothing here, either',
                    message_id='test_posts@sf.net',
                    in_reply_to=[ p._id ])
         reply = FM.ForumPost.query.find().all()[-1]
@@ -158,7 +158,7 @@ class TestForumReactors(TestController):
         message_id = kw.pop('message_id', '%s@test.com' % random.random())
         msg.data = dict(kw,
                         project_id=c.project._id,
-                        mount_point='Discussion',
+                        mount_point='discussion',
                         headers=dict(Subject=subject),
                         user_id=self.user_id,
                         payload=body,
@@ -166,13 +166,13 @@ class TestForumReactors(TestController):
         callback(msg.data, msg)
 
     def _notify(self, post_id, **kw):
-        callback = self.cmd.route_react('Discussion.new_post', c.app.notify_subscribers)
+        callback = self.cmd.route_react('discussion.new_post', c.app.notify_subscribers)
         msg = mock.Mock()
         msg.ack = lambda:None
-        msg.delivery_info = dict(routing_key='Discussion.new_post')
+        msg.delivery_info = dict(routing_key='discussion.new_post')
         msg.data = dict(kw,
                         project_id=c.project._id,
-                        mount_point='Discussion',
+                        mount_point='discussion',
                         post_id=post_id)
         callback(msg.data, msg)
 
@@ -192,7 +192,7 @@ class TestForum(TestController):
         r = self.app.get(r.location)
         assert 'error' not in r
         assert 'TestForum' in r
-        h.set_context('test', 'Discussion')
+        h.set_context('test', 'discussion')
         frm = FM.Forum.query.get(shortname='TestForum')
         r = self.app.get('/admin/discussion/')
         r = self.app.post('/admin/discussion/update_forums',
@@ -310,7 +310,7 @@ class TestForumAdmin(TestController):
         r = self.app.get(r.location)
         assert 'error' not in r
         assert 'TestForum' in r
-        h.set_context('test', 'Discussion')
+        h.set_context('test', 'discussion')
         frm = FM.Forum.query.get(shortname='TestForum')
         r = self.app.get('/admin/discussion/')
         r = self.app.post('/admin/discussion/update_forums',
