@@ -181,7 +181,7 @@ class Subscriptions(MappedClass):
             artifact_index_id = None
         new_subs = []
         for s in self.subscriptions:
-            if (s.artifact_index_id == artifact_index_id
+            if (s['artifact_index_id'] == artifact_index_id
                 and s.topic == topic):
                 return True
         return False
