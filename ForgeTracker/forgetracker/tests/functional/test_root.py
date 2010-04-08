@@ -109,6 +109,19 @@ class TestFunctionalController(TestController):
         ticket_editor = self.app.post('/bugs/1/attach', upload_files=[upload]).follow()
         assert_true(file_name in ticket_editor)
     
+    def test_delete_attachment(self):
+        file_name = 'test_root.py'
+        file_data = file(__file__).read()
+        upload = ('file_info', file_name, file_data)
+        self.new_ticket(summary='test new attachment')
+        ticket_editor = self.app.post('/bugs/1/attach', upload_files=[upload]).follow()
+        assert_true(file_name in ticket_editor)
+        req = self.app.get('/bugs/1/edit/')
+        assert req.html.findAll('form')[1].find('a').string == file_name
+        req.forms[1].submit()
+        deleted_form = self.app.get('/bugs/1/')
+        assert file_name not in deleted_form
+
     def test_new_text_attachment_content(self):
         file_name = 'test_root.py'
         file_data = file(__file__).read()

@@ -760,7 +760,8 @@ class AttachmentController(object):
             require(has_artifact_access('write', self.ticket))
             if delete:
                 self.attachment.delete()
-                self.thumb.delete()
+                if self.thumbnail:
+                    self.thumbnail.delete()
             redirect(request.referer)
         with self.attachment.open() as fp:
             filename = fp.metadata['filename']
