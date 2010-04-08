@@ -67,39 +67,6 @@
     </tr>
   </py:def>
 
-  <py:def function="forum_admin_row(i, forum)">
-    <tr>
-      <td>[icon]</td>
-      <td>
-        <div class="editable viewing">
-          <div class="viewer"><a href="${forum.url()}">$forum.name</a>($forum.shortname)</div>
-          <div class="editor">
-            ${text_field('forum-%s.name' % i, 'Forum Name', forum.name)}
-          </div>
-        </div>
-        <div class="editable viewing">
-          <div class="viewer">${Markup(g.markdown.convert(forum.description))}</div>
-          <div class="editor">
-            ${text_area('forum-%s.description' % i, 'Description', forum.description)}
-          </div>
-        </div>
-        <py:if test="forum.subforums">
-          <b>Subforums:</b>
-          <span py:for="i, sf in enumerate(forum.subforums)">
-            <py:if test="i != 0">, </py:if>
-            <a href="${sf.url()}">$sf.name</a> 
-          </span>
-        </py:if>
-      </td>
-      <td>${forum.num_topics}</td>
-      <td>${forum.num_posts}</td>
-      <td>${post_summary(forum.last_post)}</td>
-      <td>
-        ${submit_button('Delete', 'forum-%s.delete' % i)}
-      </td>
-    </tr>
-  </py:def>
-
   <py:def function="display_comment(comment)">
     <div id="comment-${comment._id}">
       <div class="forge_comment_body">

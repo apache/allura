@@ -10,7 +10,7 @@
   
   <head>
     <meta content="text/html; charset=UTF-8" http-equiv="content-type" py:replace="''"/>
-    <title>Admin for $c.project._id $app.config.options.mount_point</title>
+    <title>Admin for $c.project.name $app.config.options.mount_point</title>
   </head>
   
   <body>
@@ -39,8 +39,10 @@
               </div>
             </py:for>
             <div class="span-15 push-3 last">
-              <input type="submit" value="Update config" py:if="allow_config"/>
-              <input py:if="app.installable and allow_config" type="submit" name="delete" value="Delete Plugin"/>
+              <input type="submit" value="Update config" py:if="allow_config"
+                     class="ui-state-default ui-button ui-button-text"/>
+              <input py:if="app.installable and allow_config" type="submit" name="delete" value="Delete Plugin"
+                     class="ui-state-default ui-button ui-button-text"/>
             </div>
           </form>
         </div>

@@ -5,34 +5,94 @@
       xmlns:xi="http://www.w3.org/2001/XInclude">
   
   <xi:include href="master.html" />
-  <xi:include href="${app.templates}/lib.html" />
+      <xi:include href="${app.templates}/lib.html" />
+
+  <?python from pyforge.lib.security import has_artifact_access ?>
   
   <head>
     <meta content="text/html; charset=UTF-8" http-equiv="content-type" py:replace="''"/>
-    <title>Discussion Admin for ${c.project.name}: $app.config.options.mount_point</title>
+    <title>Admin for $c.project.name $app.config.options.mount_point</title>
   </head>
   
   <body>
-    <h1 class="title">Discussion Admin for ${c.project.name}: $app.config.options.mount_point </h1>
-    <div id="app-config" py:if="len(app.config_options) > 1">
-      <h3>Config Options</h3>
-      <form method="post" action="configure">
-        <div py:for="o in app.config_options" py:if="o.name != 'mount_point'">
-          <label for="$o.name">$o.name</label><br/>
-          <input name="$o.name" value="${app.config.options.get(o.name, o.default)}"/>
+    <div id="app_admin_tabs">
+	<ul>
+	<li><a href="#app-config" py:if="len(app.config_options) > 1">$app.config.plugin_name Options</a></li>
+		<li><a href="#app-acl"
+		       py:if="app.permissions and allow_config">Permissions</a></li>
+		<li><a href="#app-forums">Forums</a></li>
+	</ul>
+      <div id="app-config" py:if="len(app.config_options) > 1" style="overflow: auto">
+        <h3>$app.config.plugin_name Options</h3>
+        <form method="post" action="configure">
+          <py:for each="o in app.config_options" py:if="o.name != 'mount_point'">
+            <div class="span-3"><label for="$o.name" class="span-3">$o.name</label></div>
+            <div class="span-15 last" py:if="not allow_config">
+                 ${app.config.options.get(o.name, o.default)}
+            </div>
+            <div class="editable viewing span-15 last" style="min-height:1em;"
+                 py:if="allow_config">
+              <div class="viewer">${app.config.options.get(o.name, o.default)}</div>
+              <div class="editor"><input name="$o.name" value="${app.config.options.get(o.name, o.default)}"/></div>
+            </div>
+          </py:for>
+          <div class="span-15 push-3 last">
+            <input type="submit" value="Update config" py:if="allow_config"
+                   class="ui-state-default ui-button ui-button-text"/>
+            <input py:if="app.installable and allow_config" type="submit" name="delete" value="Delete Plugin"
+                   class="ui-state-default ui-button ui-button-text"/>
+          </div>
+        </form>
+      </div>
+      <div id="app-acl" py:if="app.permissions and allow_config">
+        <h3>Permissions</h3>
+        <div id="acl-admin">
+          <py:for each="p in app.permissions" >
+            <h3><a href="#">$p</a></h3>
+            <div>
+              <table>
+                <thead>
+                  <tr>
+                    <th>Role</th>
+                    <th/>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr py:for="role in h.make_roles(app.config.acl[p])">
+                    <td>${role.display()}</td>
+                    <td>
+                      <form method="POST" action="del_perm" style="display:inline">
+                        <input type="hidden" name="permission" value="$p"/>
+                        <input type="hidden" name="role" value="${role._id}"/>
+                        <input type="submit" value="Remove" py:if="role.display() != '*user-'+c.user.username"
+                               class="ui-state-default ui-button ui-button-text"/>
+                      </form>
+                    </td>
+                  </tr>
+                  <tr>
+                    <form method="POST" action="add_perm">
+                      <td>
+                        <select name="role">
+                          <option py:for="role in c.project.roles"
+                                  value="$role._id"
+                                  >${role.display()}</option>
+                        </select>
+                      </td>
+                      <td>
+                        <input type="hidden" name="permission" value="$p"/>
+                        <input type="submit" value="Add Permission" class="ui-state-default ui-button ui-button-text"/>
+                      </td>
+                    </form>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </py:for>
         </div>
-        <input type="submit" value="Update config"/>
-        <input py:if="app.installable" type="submit" name="delete" value="Delete Plugin"/>
-      </form>
-    </div>
-    <div id="forum" class="title-pane">
-      <h3 class="title">Forums</h3>
-      <div class="content">
-        <form method="POST" action="update_forums">
-          <input py:for="i, forum in enumerate(app.forums)"
-                 name="forum-${i}.id"
-                 type="hidden"
-                 value="$forum._id"/>
+      </div>
+      <div id="app-forums">
+        <h3>Forums</h3>
+          <form method="POST" action="update_forums">
           <table id="forums">
             <thead>
               <tr>
@@ -42,51 +102,84 @@
               </tr>
             </thead>
             <tbody>
-              <py:for each="i, forum in enumerate(app.forums)">
-                ${forum_admin_row(i, forum)}
-              </py:for>
+              <tr py:for="i, forum in enumerate(app.forums)" class="${i%2 and 'even' or ''}">
+                <td>[icon]</td>
+                <td>
+                  <div class="editable viewing">
+                    <span class="viewer"><a href="${forum.url()}">$forum.name</a>($forum.shortname)</span>
+                    <span class="editor">
+                      ${text_field('forum-%s.name' % i, 'Forum Name', forum.name)}
+                    </span>
+                  </div>
+                  <div class="editable viewing">
+                    <span class="viewer">${Markup(g.markdown.convert(forum.description))}</span>
+                    <span class="editor">
+                      ${text_area('forum-%s.description' % i, 'Description', forum.description)}
+                    </span>
+                  </div>
+                  <py:if test="forum.subforums">
+                    <b>Subforums:</b>
+                    <span py:for="j, sf in enumerate(forum.subforums)">
+                      <py:if test="j != 0">, </py:if>
+                      <a href="${sf.url()}">$sf.name</a>
+                    </span>
+                  </py:if>
+                </td>
+                <td>${forum.num_topics}</td>
+                <td>${forum.num_posts}</td>
+                <td>${post_summary(forum.last_post)}</td>
+                <td>
+                  <input name="forum-${i}.id" type="hidden" value="$forum._id"/>
+                  ${submit_button('Delete', 'forum-%s.delete' % i)}
+                </td>
+              </tr>
             </tbody>
           </table>
-          <div class="title-pane closed">
-            <div class="title">New Forum</div>
-            <div class="content">
-              ${text_field('new_forum.name', 'Name')}
-              ${text_field('new_forum.shortname', 'Short Name')}
-              ${select_field('new_forum.parent', 'Parent Forum', 
-              [('None', '')] + [ (f.name, f._id) for f in app.forums ])}
-              ${text_area('new_forum.description', 'Description', style="height:50px;")}
-              ${submit_button('Create Forum', 'new_forum.create')}
+            <input type="button" id="add_forum" value="Add another forum"
+                   class="ui-state-default ui-button ui-button-text"/>
+            <div id="add_forum_form" style="display:none">
+              <div class="span-3 clear"><label>Name:</label></div>
+              <div class="span-13 last"><input type="text" name="new_forum.name" class="title wide"/></div>
+              <div class="span-3 clear"><label>Short Name:</label></div>
+              <div class="span-13 last"><input type="text" name="new_forum.shortname" class="title wide"/></div>
+              <div class="span-3 clear"><label>Parent Forum:</label></div>
+              <div class="span-13 last">
+                <select name="new_forum.parent" class="title">
+                  <option value="">None</option>
+                  <option py:for="f in app.forums" value="$f._id">$f.name</option>
+                </select>
+              </div>
+              <div class="span-3 clear"><label>Description:</label></div>
+              <div class="span-13 last"><textarea name="new_forum.description" class="title" style="height:50px; width:100%"/></div>
+              <div class="push-3 clear span-13 last">
+                <input type="submit" id="new_forum.create" name="new_forum.create" value="Create Forum"
+                       class="ui-state-default ui-button ui-button-text"/>
+                <input type="button" id="add_forum_cancel" value="Cancel"
+                       class="ui-state-default ui-button ui-button-text"/>
+              </div>
             </div>
-          </div>
+            <div class="clear"/>
         </form>
       </div>
     </div>
-    <div id="app-acl" class="title-pane closed">
-      <h3 class="title">ACL Config</h3>
-      <div class="content">
-        <div py:for="p in app.permissions" >
-          <h4>$p</h4>
-          <ul>
-            <li py:for="role in h.make_roles(app.config.acl[p])">
-              ${role.display()}
-              <form method="POST" action="del_perm" style="display:inline">
-                <input type="hidden" name="permission" value="$p"/>
-                <input type="hidden" name="role" value="${role._id}"/>
-                <input type="submit" value="Remove"/>
-              </form>
-            </li>
-          </ul>
-          <form method="POST" action="add_perm">
-            <input type="hidden" name="permission" value="$p"/>
-            <select name="role">
-              <option py:for="role in c.project.roles"
-                      value="$role._id"
-                      >${role.display()}</option>
-            </select>
-            <input type="submit" value="Add role"/>
-          </form>
-        </div>
-      </div>
-    </div>
+    <script type="text/javascript">
+      $(function() {
+        $("#app_admin_tabs").tabs({cookie:{expires:30}});
+        $("#acl-admin").accordion({
+          autoHeight: false,
+          navigation: true
+        });
+        $("#add_forum").click(function(){
+          $("#add_forum_form").show();
+          $(this).hide();
+          return false;
+        });
+        $("#add_forum_cancel").click(function(){
+          $("#add_forum_form").hide();
+          $("#add_forum").show();
+          return false;
+        });
+      });
+	  </script>
   </body>
 </html>

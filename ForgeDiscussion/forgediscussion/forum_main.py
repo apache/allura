@@ -168,7 +168,8 @@ class ForumAdminController(DefaultAdminController):
 
     @expose('forgediscussion.templates.admin')
     def index(self):
-        return dict(app=self.app)
+        return dict(app=self.app,
+                    allow_config=has_artifact_access('configure', app=self.app)())
 
     def create_forum(self, new_forum):    
         if '.' in new_forum['shortname'] or '/' in new_forum['shortname']:
