@@ -200,14 +200,14 @@ class ProjectAdminController(object):
             ep_name = new['ep_name']
             if not ep_name:
                 require(has_project_access('create'))
-                mount_point = new['mount_point'].lower() or h.nonce()
+                mount_point = new['mount_point'] or h.nonce()
                 if not h.re_path_portion.match(mount_point):
                     flash('Invalid mount point', 'error')
                     redirect(request.referer)
                 sp = c.project.new_subproject(mount_point)
             else:
                 require(has_project_access('plugin'))
-                mount_point = new['mount_point'].lower() or ep_name.lower()
+                mount_point = new['mount_point'] or ep_name.lower()
                 if not h.re_path_portion.match(mount_point):
                     flash('Invalid mount point for %s' % ep_name, 'error')
                     redirect(request.referer)

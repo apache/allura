@@ -312,7 +312,7 @@
 		});
 	});
     $('.new_ep_name').change(function() {
-        $(this).closest('tr').find('.new_mount_point').val($(this).val());
+        $(this).closest('tr').find('.new_mount_point').val($(this).val().toLowerCase());
     });
     </script>
     <script type="text/javascript" src="${g.app_static('js/admin.js')}"/>
