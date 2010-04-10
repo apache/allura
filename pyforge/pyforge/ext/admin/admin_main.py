@@ -196,7 +196,7 @@ class ProjectAdminController(object):
         for p in plugin:
             if p.get('delete'):
                 c.project.uninstall_app(p['mount_point'])
-        if new.get('install'):
+        if new and new.get('install'):
             if new['ep_name'] == '':
                 require(has_project_access('create'))
                 mount_point = new['mount_point'] or h.nonce()
