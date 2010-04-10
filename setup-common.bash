@@ -117,6 +117,12 @@ python setup.py develop
 popd
 
 echo
+echo '# installing ForgeDiscussion dependencies'
+pushd ForgeDiscussion
+python setup.py develop
+popd
+
+echo
 echo '# installing HelloForge dependencies'
 pushd HelloForge
 python setup.py develop
