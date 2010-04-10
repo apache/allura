@@ -158,6 +158,13 @@ class ForgeWikiApp(Application):
         p = model.Page.upsert(self.root_page_name)
         p.viewable_by = ['all']
         p.text = 'This is the root page.'
+        url = c.app.url + 'markdown_syntax' + '/'
+        p.text = """Welcome to your wiki!
+
+This is the default page, edit it as you see fit. 
+
+The wiki uses [Markdown](%s) syntax.
+""" % url
         p.commit()
 
 
