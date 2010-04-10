@@ -54,6 +54,12 @@ Installing the code
     - libsasl2-dev
     - rabbitmq-server
 
+    To run Solr you need Java compiler. For Ubuntu::
+
+       $ sudo apt-get install sun-java6-bin sun-java6-demo sun-java6-jdk sun-java6-jre
+       $ sudo update-alternatives --config java # select Sun Java
+       $ export JAVA_HOME=/usr/lib/jvm/java-6-sun
+
 OK, now we can get down to actually getting the forge code and dependencies
 downloaded and ready to go.  The first thing we'll need to set up is `Ming
 <http://merciless.sourceforge.net>`_.  To do this, we'll check out the source
