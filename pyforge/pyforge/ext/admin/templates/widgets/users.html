@@ -6,7 +6,7 @@
      class="portlet">
   <h4>Project Users</h4>
   <ul>
-    <li py:for="user in project_users"
-        py:if="user">$user.display_name</li>
+    <li py:for="user in project_users">
+    <a href="${user.url()}profile/">$user.display_name</a></li>
   </ul>
 </div>
