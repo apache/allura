@@ -29,7 +29,14 @@ class AdminWidgets(WidgetController):
 
     @expose('pyforge.ext.admin.templates.widgets.users')
     def users(self):
-        return dict(project_roles=c.project.roles)
+        def uniq(users): 
+            t = {}
+            for user in users:
+                t[user.username] = user
+            return t.values()
+        # remove duplicates, ticket #195
+        project_users = uniq([r.user for r in c.project.roles])
+        return dict(project_users=project_users)
 
     @expose('pyforge.ext.admin.templates.widgets.plugin_status')
     def plugin_status(self):
