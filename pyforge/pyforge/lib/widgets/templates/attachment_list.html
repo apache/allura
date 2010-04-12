@@ -4,7 +4,7 @@
     <strong>Attachments</strong>
     <div class="attachment_images">
       <div py:for="att in attachments" py:strip="True">
-        <div py:if="att.contentType.startswith('image/')" class="attachment_thumb">
+        <div py:if="str(att.contentType).lower() in ['image/jpg','image/png','image/jpeg','image/gif']" class="attachment_thumb">
           <a href="${att.url()}">
             <img src="${att.url()}/thumb"/>
           </a><br/>
@@ -17,7 +17,7 @@
       </div>
     </div>
     <div py:for="att in attachments">
-      <form py:if="not att.contentType.startswith('image/')" method="post" action="${att.url()}">
+      <form py:if="str(att.contentType).lower() not in ['image/jpg','image/png','image/jpeg','image/gif']" method="post" action="${att.url()}">
         <a href="${att.url()}">${att.metadata.filename}</a>
         ($att.length bytes)
         <input type="hidden" name="delete" value="True"/>

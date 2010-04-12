@@ -137,43 +137,49 @@ class ProjectAdminController(object):
             c.project.category_id = ObjectId(category)
         else:
             c.project.category_id = None
-        if icon is not None and icon != '' and 'image/' in icon.type:
-            filename = icon.filename
-            if icon.type: content_type = icon.type
-            else: content_type = 'application/octet-stream'
-            image = Image.open(icon.file)
-            format = image.format
-            image = h.square_image(image)
-            image.thumbnail((48, 48), Image.ANTIALIAS)
-            if c.project.icon:
-                M.ProjectFile.query.remove({'metadata.project_id':c.project._id, 'metadata.category':'icon'})
-            with M.ProjectFile.create(
-                content_type=content_type,
-                filename=filename,
-                category='icon',
-                project_id=c.project._id) as fp:
-                image.save(fp, format)
-        if screenshot is not None and screenshot != '' and 'image/' in screenshot.type:
-            filename = screenshot.filename
-            if screenshot.type: content_type = screenshot.type
-            else: content_type = 'application/octet-stream'
-            image = Image.open(screenshot.file)
-            format = image.format
-            with M.ProjectFile.create(
-                content_type=content_type,
-                filename=filename,
-                category='screenshot',
-                project_id=c.project._id) as fp:
-                fp_name = fp.name
-                image.save(fp, format)
-            image = h.square_image(image)
-            image.thumbnail((150, 150), Image.ANTIALIAS)
-            with M.ProjectFile.create(
-                content_type=content_type,
-                filename=fp_name,
-                category='screenshot_thumb',
-                project_id=c.project._id) as fp:
-                image.save(fp, format)
+        if icon is not None and icon != '':
+            if str(icon.type).lower() in ['image/jpg','image/png','image/jpeg','image/gif']:
+                filename = icon.filename
+                if icon.type: content_type = icon.type
+                else: content_type = 'application/octet-stream'
+                image = Image.open(icon.file)
+                format = image.format
+                image = h.square_image(image)
+                image.thumbnail((48, 48), Image.ANTIALIAS)
+                if c.project.icon:
+                    M.ProjectFile.query.remove({'metadata.project_id':c.project._id, 'metadata.category':'icon'})
+                with M.ProjectFile.create(
+                    content_type=content_type,
+                    filename=filename,
+                    category='icon',
+                    project_id=c.project._id) as fp:
+                    image.save(fp, format)
+            else:
+                flash('The icon must be jpg, png, or gif format.')
+        if screenshot is not None and screenshot != '':
+            if str(screenshot.type).lower() in ['image/jpg','image/png','image/jpeg','image/gif']:
+                filename = screenshot.filename
+                if screenshot.type: content_type = screenshot.type
+                else: content_type = 'application/octet-stream'
+                image = Image.open(screenshot.file)
+                format = image.format
+                with M.ProjectFile.create(
+                    content_type=content_type,
+                    filename=filename,
+                    category='screenshot',
+                    project_id=c.project._id) as fp:
+                    fp_name = fp.name
+                    image.save(fp, format)
+                image = h.square_image(image)
+                image.thumbnail((150, 150), Image.ANTIALIAS)
+                with M.ProjectFile.create(
+                    content_type=content_type,
+                    filename=fp_name,
+                    category='screenshot_thumb',
+                    project_id=c.project._id) as fp:
+                    image.save(fp, format)
+            else:
+                flash('Screenshots must be jpg, png, or gif format.')
         redirect('.')
 
     @expose()

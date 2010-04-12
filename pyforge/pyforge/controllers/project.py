@@ -324,26 +324,29 @@ class NeighborhoodAdminController(object):
             theme.color2 = color2
             theme.color3 = color3
             theme.color4 = color4
-        if icon is not None and icon != '' and 'image/' in icon.type:
-            filename = icon.filename
-            if icon.type: content_type = icon.type
-            else: content_type = 'application/octet-stream'
-            image = Image.open(icon.file)
-            format = image.format
-            if image.size[0] < image.size[1]:
-                h_offset = (image.size[1]-image.size[0])/2
-                image = image.crop((0, h_offset, image.size[0], image.size[0]+h_offset))
-            elif image.size[0] > image.size[1]:
-                w_offset = (image.size[0]-image.size[1])/2
-                image = image.crop((w_offset, 0, image.size[1]+w_offset, image.size[1]))
-            image.thumbnail((48, 48), Image.ANTIALIAS)
-            if self.neighborhood.icon:
-                M.NeighborhoodFile.query.remove({'metadata.neighborhood_id':self.neighborhood._id})
-            with M.NeighborhoodFile.create(
-                content_type=content_type,
-                filename=filename,
-                neighborhood_id=self.neighborhood._id) as fp:
-                image.save(fp, format)
+        if icon is not None and icon != '':
+            if str(icon.type).lower() in ['image/jpg','image/png','image/jpeg','image/gif']:
+                filename = icon.filename
+                if icon.type: content_type = icon.type
+                else: content_type = 'application/octet-stream'
+                image = Image.open(icon.file)
+                format = image.format
+                if image.size[0] < image.size[1]:
+                    h_offset = (image.size[1]-image.size[0])/2
+                    image = image.crop((0, h_offset, image.size[0], image.size[0]+h_offset))
+                elif image.size[0] > image.size[1]:
+                    w_offset = (image.size[0]-image.size[1])/2
+                    image = image.crop((w_offset, 0, image.size[1]+w_offset, image.size[1]))
+                image.thumbnail((48, 48), Image.ANTIALIAS)
+                if self.neighborhood.icon:
+                    M.NeighborhoodFile.query.remove({'metadata.neighborhood_id':self.neighborhood._id})
+                with M.NeighborhoodFile.create(
+                    content_type=content_type,
+                    filename=filename,
+                    neighborhood_id=self.neighborhood._id) as fp:
+                    image.save(fp, format)
+            else:
+                flash('The icon must be jpg, png, or gif format.')
         redirect('.')
 
     @h.vardec

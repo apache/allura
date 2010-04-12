@@ -697,7 +697,7 @@ class TicketController(object):
         content_type = guess_type(filename)
         if content_type: content_type = content_type[0]
         else: content_type = 'application/octet-stream'
-        if 'image/' in file_info.type:
+        if str(file_info.type).lower() in ['image/jpg','image/png','image/jpeg','image/gif']:
             image = Image.open(file_info.file)
             format = image.format
             with model.Attachment.create(

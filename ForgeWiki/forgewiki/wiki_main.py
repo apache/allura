@@ -437,7 +437,7 @@ class PageController(object):
         content_type = guess_type(filename)
         if content_type: content_type = content_type[0]
         else: content_type = 'application/octet-stream'
-        if 'image/' in file_info.type:
+        if str(file_info.type).lower() in ['image/jpg','image/png','image/jpeg','image/gif']:
             image = Image.open(file_info.file)
             format = image.format
             with model.Attachment.create(
@@ -506,7 +506,7 @@ class AttachmentController(object):
             require(has_artifact_access('edit', self.page))
             if delete:
                 self.attachment.delete()
-                self.thumb.delete()
+                self.thumbnail.delete()
             redirect(request.referer)
         with self.attachment.open() as fp:
             filename = fp.metadata['filename']
