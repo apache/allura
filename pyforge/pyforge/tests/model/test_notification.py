@@ -13,6 +13,9 @@ class TestNotification(unittest.TestCase):
     def setUp(self):
         helpers.setup_basic_test()
         helpers.setup_global_objects()
+        _clear_subscriptions()
+        ThreadLocalORMSession.flush_all()
+        ThreadLocalORMSession.close_all()
 
     def test_subscribe_unsubscribe(self):
         s = M.Subscriptions.upsert()
@@ -38,6 +41,9 @@ class TestPostNotifications(unittest.TestCase):
         helpers.setup_basic_test()
         helpers.setup_global_objects()
         g.set_app('wiki')
+        _clear_subscriptions()
+        ThreadLocalORMSession.flush_all()
+        ThreadLocalORMSession.close_all()
         self.pg = WM.Page.query.get()
 
     def test_post_notification(self):
@@ -79,6 +85,9 @@ class TestSubscriptionTypes(unittest.TestCase):
         helpers.setup_basic_test()
         helpers.setup_global_objects()
         g.set_app('wiki')
+        _clear_subscriptions()
+        ThreadLocalORMSession.flush_all()
+        ThreadLocalORMSession.close_all()
         self.pg = WM.Page.query.get()
         g.mock_amq.setup_handlers()
 
@@ -121,6 +130,14 @@ class TestSubscriptionTypes(unittest.TestCase):
         msg = g.mock_amq.exchanges['audit'][0]['message']
         assert 'WikiHome@wiki.test.projects' in msg['from']
 
+    def _clear_subscriptions(self):
+        subs = M.Subscriptions.upsert()
+        for s in subs.subscriptions:
+            M.Mailbox.query.remove(dict(_id=s.mailbox_id))
+        subs.subscriptions = []
+        ThreadLocalORMSession.flush_all()
+        ThreadLocalORMSession.close_all()
+
     def _subscribe(self, type='direct', topic=None):
         s = M.Subscriptions.upsert()
         s.subscribe(type=type, topic=topic, artifact=self.pg)
@@ -130,6 +147,10 @@ class TestSubscriptionTypes(unittest.TestCase):
     def _post_notification(self, text=None):
         return M.Notification.post(self.pg, 'metadata', text=text)
 
-
+def _clear_subscriptions():
+        subs = M.Subscriptions.upsert()
+        for s in subs.subscriptions:
+            M.Mailbox.query.remove(dict(_id=s.mailbox_id))
+        subs.subscriptions = []
 
 
