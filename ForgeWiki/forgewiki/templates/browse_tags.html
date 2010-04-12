@@ -21,9 +21,9 @@
         </tr>
       </thead>
       <tbody>
-        <tr py:for="i, tag in enumerate(tags)" class="${i%2 and 'even' or ''}">
-          <td>$tag</td>
-          <td><span py:strip="True" py:for="p in tags[tag]"><a href="${p.url()}">$p.title</a> </span></td>
+        <tr py:for="i, label in enumerate(labels)" class="${i%2 and 'even' or ''}">
+          <td>$label</td>
+          <td><span py:strip="True" py:for="p in labels[label]"><a href="${p.url()}">$p.title</a> </span></td>
         </tr>
       </tbody>
     </table>

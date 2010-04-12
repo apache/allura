@@ -32,6 +32,18 @@ class UserTagEdit(ew.InputField):
     def resources(self):
         yield ew.resource.JSLink('js/jquery.tag.editor.js')
 
+class LabelEdit(ew.InputField):
+    template='genshi:pyforge.lib.widgets.templates.label_edit'
+    validator = fev.UnicodeString()
+    params=['name', 'className', 'show_label', 'value']
+    show_label=True
+    name=None
+    value=None
+    className=''
+
+    def resources(self):
+        yield ew.resource.JSLink('js/jquery.tag.editor.js')
+
 class ProjectUserSelect(ew.InputField):
     template='genshi:pyforge.lib.widgets.templates.project_user_select'
     params=['name', 'value', 'size', 'all', 'users', 'show_label']

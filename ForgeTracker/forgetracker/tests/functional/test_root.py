@@ -101,6 +101,34 @@ class TestFunctionalController(TestController):
         response = self.app.get('/bugs/1/')
         assert_true('zzz' in response)
     
+    def test_ticket_label_unlabel(self):
+        summary = 'test labeling and unlabeling a ticket'
+        self.new_ticket(summary=summary)
+        self.app.post('/bugs/1/update_ticket',{
+            'summary':'aaa',
+            'description':'bbb',
+            'status':'ccc',
+            'milestone':'',
+            'assigned_to':'',
+            'labels':'yellow,green',
+            'labels_old':'yellow,green'
+        })
+        response = self.app.get('/bugs/1/')
+        assert_true('yellow' in response)
+        assert_true('green' in response)
+        self.app.post('/bugs/1/update_ticket',{
+            'summary':'zzz',
+            'description':'bbb',
+            'status':'ccc',
+            'milestone':'',
+            'assigned_to':'',
+            'labels':'yellow',
+            'labels_old':'yellow'
+        })
+        response = self.app.get('/bugs/1/')
+        assert_true('yellow' in response)
+        assert_true('green' not in response)
+
     def test_new_attachment(self):
         file_name = 'test_root.py'
         file_data = file(__file__).read()
@@ -210,7 +238,7 @@ class TestFunctionalController(TestController):
         assert response.html.find('textarea', {'name': 'description'})
         assert response.html.find('select', {'name': 'status'})
         assert response.html.find('select', {'name': 'milestone'})
-        assert response.html.find('input', {'name': 'tags'})
+        assert response.html.find('input', {'name': 'labels'})
     
     def test_assign_ticket(self):
         summary = 'test assign ticket'
@@ -227,7 +255,9 @@ class TestFunctionalController(TestController):
             'milestone':'',
             'assigned_to':test_user_id,
             'tags':'',
-            'tags_old':''
+            'tags_old':'',
+            'labels':'',
+            'labels_old':''
         })
         response = self.app.get('/projects/test/bugs/1/')
         assert test_user_name in response.html.find('span', {'class': 'ticket-assigned-to viewer'}).find('a').string
@@ -251,7 +281,9 @@ class TestFunctionalController(TestController):
             'milestone':'aaa',
             'assigned_to':'',
             'tags':'',
-            'tags_old':''
+            'tags_old':'',
+            'labels':'',
+            'labels_old':''
         })
         ticket_view = self.app.get('/projects/test/bugs/1/')
         assert 'Milestone' in ticket_view

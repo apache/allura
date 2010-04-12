@@ -18,6 +18,7 @@ class TestFeeds(TestController):
                     ticket_form=dict(
                     ticket_num='',
                     tags='',
+                    labels='',
                     assigned_to='',
                     milestone='',
                     summary='This is a ticket',
@@ -48,6 +49,8 @@ class TestFeeds(TestController):
         self.app.post('/tickets/1/update_ticket', params=dict(
                 assigned_to='',
                 ticket_num='',
+                labels='',
+                labels_old='',
                 tags='',
                 tags_old='',
                 summary='This is a new ticket',

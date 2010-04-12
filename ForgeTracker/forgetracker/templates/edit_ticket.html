@@ -23,7 +23,7 @@
 
   <body>
     <h1 class="title">Edit ticket #$ticket.ticket_num</h1>
-    ${c.ticket_form.display(action=ticket.url()+'update_ticket_from_widget', user_tags=user_tags, value=ticket)}
+    ${c.ticket_form.display(action=ticket.url()+'update_ticket_from_widget', value=ticket)}
     <div class="span-12 push-2">
       ${c.attachment_list.display(attachments=list(ticket.attachments), edit_mode=has_artifact_access('write', ticket)())}
       <div py:if="has_artifact_access('write', ticket)()" class="reply title-pane closed">

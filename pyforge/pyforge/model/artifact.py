@@ -192,6 +192,7 @@ class Artifact(MappedClass):
         if_missing=lambda:{c.app.config.plugin_name:c.app.__version__})
     acl = FieldProperty({str:[S.ObjectId]})
     tags = FieldProperty([dict(tag=str, count=int)])
+    labels = FieldProperty([str])
     references = FieldProperty([ArtifactReferenceType])
     backreferences = FieldProperty({str:ArtifactReferenceType})
     app_config = RelationProperty('AppConfig')
@@ -216,6 +217,10 @@ class Artifact(MappedClass):
     @classmethod
     def artifacts_tagged_with(cls, tag):
         return cls.query.find({'tags.tag':tag})
+
+    @classmethod
+    def artifacts_labeled_with(cls, label):
+        return cls.query.find({'labels':label})
 
     def email_link(self, subject='artifact'):
         if subject:
@@ -316,6 +321,7 @@ class Artifact(MappedClass):
             url_s=self.url(),
             type_s=self.type_s,
             tags_t=','.join(t['tag'] for t in self.tags),
+            labels_t=','.join(l for l in self.labels),
             snippet_s='')
 
     def url(self):

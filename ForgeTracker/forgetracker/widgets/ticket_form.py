@@ -27,8 +27,7 @@ class TicketForm(ew.SimpleForm):
     template='genshi:forgetracker.widgets.templates.ticket_form'
     name="ticket_form"
     submit_text='Save Ticket'
-    user_tags = []
-    params=['user_tags', 'submit_text']
+    params=['submit_text']
 
     def display_field_by_idx(self, idx, ignore_errors=False):
         field = self.fields[idx]
@@ -49,7 +48,7 @@ class TicketForm(ew.SimpleForm):
             ew.SingleSelectField(name='milestone', label='Milestone', attrs={'class':"title wide"},
                 options=lambda: [ew.Option(label='None',html_value='',py_value='')] +
                                 model.Globals.query.get(app_config_id=c.app.config._id).milestone_names.split()),
-            ffw.UserTagEdit(label='Tags',name='tags', className='title wide ticket_form_tags'),
+            ffw.LabelEdit(label='Tags',name='labels', className='title wide ticket_form_tags'),
             ew.SubmitButton(label=self.submit_text,name='submit',
                 attrs={'class':"ui-button ui-widget ui-state-default ui-button-text-only"}),
             ew.HiddenField(name='ticket_num', validator=fev.UnicodeString(if_missing=None)),

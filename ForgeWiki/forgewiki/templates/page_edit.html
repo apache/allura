@@ -24,9 +24,9 @@
       <div class="span-3 clear"><label>Tags:</label></div>
       <div class="editable viewing span-15 last" style="min-height:2em;">
         <div class="viewer">
-          <span py:for="tag in page.tags">$tag.tag (${page.artifacts_tagged_with(tag.tag).count()}) </span>
+          <span py:for="label in page.labels"><a href="../browse_tags">$label (${page.artifacts_labeled_with(label).count()})</a></span>
         </div>
-        <div class="editor">${c.user_tag_edit.display(name='tags', user_tags=user_tags, className="title")}</div>
+        <div class="editor">${c.label_edit.display(name='labels', className="title", value=page.labels)}</div>
       </div>
         
       <py:if test="has_artifact_access('edit_page_permissions', page)()">

@@ -29,8 +29,8 @@
     <div>
       ${Markup(page.html_text)}
     </div>
-    <div py:if="len(page.tags)">
-    Tags: <span py:for="tag in page.tags"><a href="../browse_tags">$tag.tag (${page.artifacts_tagged_with(tag.tag).count()}) </a></span>
+    <div py:if="len(page.labels)">
+    Tags: <span py:for="label in page.labels"><a href="../browse_tags">$label (${page.artifacts_labeled_with(label).count()})</a></span>
     </div>
     ${c.attachment_list.display(attachments=list(page.attachments), edit_mode=False)}
     <hr/>

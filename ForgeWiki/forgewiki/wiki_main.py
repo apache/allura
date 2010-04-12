@@ -42,6 +42,7 @@ class W:
         style='linear')
     markdown_editor = ffw.MarkdownEdit()
     user_tag_edit = ffw.UserTagEdit()
+    label_edit = ffw.LabelEdit()
     attachment_list = ffw.AttachmentList()
     subscribe_form = SubscribeForm()
     page_subscribe_form = SubscribeForm(thing='page')
@@ -246,17 +247,24 @@ class RootController(object):
     @expose('forgewiki.templates.browse_tags')
     @validate(dict(sort=validators.UnicodeString(if_empty='alpha')))
     def browse_tags(self, sort='alpha'):
-        'list of all tags in the wiki'
-        tags = Tag.query.find({'artifact_ref.mount_point':c.app.config.options.mount_point,
-                               'artifact_ref.project_id':c.app.config.project_id}).all()
+        'list of all labels in the wiki'
         page_tags = {}
-        for tag in tags:
-            artifact = ArtifactReference(tag.artifact_ref).to_artifact()
-            if isinstance(artifact, model.Page):
-                if tag.tag not in page_tags:
-                    page_tags[tag.tag] = []
-                page_tags[tag.tag].append(artifact)
-        return dict(tags=page_tags)
+        # tags = Tag.query.find({'artifact_ref.mount_point':c.app.config.options.mount_point,
+        #                        'artifact_ref.project_id':c.app.config.project_id}).all()
+        # for tag in tags:
+        #     artifact = ArtifactReference(tag.artifact_ref).to_artifact()
+        #     if isinstance(artifact, model.Page):
+        #         if tag.tag not in page_tags:
+        #             page_tags[tag.tag] = []
+        #         page_tags[tag.tag].append(artifact)
+        q = model.Page.query.find(dict(app_config_id=c.app.config._id))
+        for page in q:
+            if page.labels:
+                for label in page.labels:
+                    if label not in page_tags:
+                        page_tags[label] = []
+                    page_tags[label].append(page)
+        return dict(labels=page_tags)
 
     @with_trailing_slash
     @expose('forgewiki.templates.markdown_syntax')
@@ -350,9 +358,8 @@ class PageController(object):
         c.markdown_editor = W.markdown_editor
         c.user_select = ffw.ProjectUserSelect()
         c.attachment_list = W.attachment_list
-        c.user_tag_edit = W.user_tag_edit
-        user_tags = UserTags.upsert(c.user, self.page.dump_ref())
-        return dict(page=self.page, user_tags=user_tags)
+        c.label_edit = W.label_edit
+        return dict(page=self.page)
 
     @without_trailing_slash
     @expose('forgewiki.templates.page_history')
@@ -411,11 +418,12 @@ class PageController(object):
 
     @without_trailing_slash
     @expose()
-    def update(self, text=None, tags=None, tags_old=None, viewable_by=None):
+    def update(self, text=None, tags=None, tags_old=None, labels=None, labels_old=None, viewable_by=None):
         require(has_artifact_access('edit', self.page))
         if tags: tags = tags.split(',')
         else: tags = []
         self.page.text = text
+        self.page.labels = labels.split(',')
         self.page.commit()
         tag_artifact(self.page, c.user, tags)
         self.page.viewable_by = isinstance(viewable_by, list) and viewable_by or viewable_by.split(',')

@@ -47,6 +47,7 @@ class W:
         style='linear')
     markdown_editor = ffw.MarkdownEdit()
     user_tag_edit = ffw.UserTagEdit()
+    label_edit = ffw.LabelEdit()
     attachment_list = ffw.AttachmentList()
     ticket_form = TicketForm()
     subscribe_form = SubscribeForm()
@@ -337,6 +338,11 @@ class RootController(object):
                 del ticket_form['tags']
             else:
                 tags = []
+            if 'labels' in ticket_form and len(ticket_form['labels']):
+                ticket.labels = ticket_form['labels'].split(',')
+                del ticket_form['labels']
+            else:
+                ticket.labels = []
             tag_artifact(ticket, c.user, tags)
             ticket_form['ticket_num'] = model.Globals.next_ticket_num()
 
@@ -570,17 +576,16 @@ class TicketController(object):
         c.thread = W.thread
         c.markdown_editor = W.markdown_editor
         c.attachment_list = W.attachment_list
-        c.user_tag_edit = W.user_tag_edit
+        c.label_edit = W.label_edit
         c.user_select = ffw.ProjectUserSelect()
         c.attachment_list = W.attachment_list
         c.subscribe_form = W.ticket_subscribe_form
-        user_tags = UserTags.upsert(c.user, self.ticket.dump_ref())
         if self.ticket is not None:
             globals = model.Globals.query.get(app_config_id=c.app.config._id)
             if globals.milestone_names is None:
                 globals.milestone_names = ''
             return dict(ticket=self.ticket, globals=globals,
-                        user_tags=user_tags, allow_edit=has_artifact_access('write', self.ticket)(),
+                        allow_edit=has_artifact_access('write', self.ticket)(),
                         subscribed=Subscriptions.upsert().subscribed(artifact=self.ticket))
         else:
             redirect('not_found')
@@ -589,17 +594,13 @@ class TicketController(object):
     @expose('forgetracker.templates.edit_ticket')
     def edit(self, **kw):
         require(has_artifact_access('write', self.ticket))
-
         c.ticket_form = W.ticket_form
-
         c.thread = W.thread
         c.attachment_list = W.attachment_list
         globals = model.Globals.query.get(app_config_id=c.app.config._id)
         if globals.milestone_names is None:
             globals.milestone_names = ''
-        user_tags = UserTags.upsert(c.user, self.ticket.dump_ref())
-        return dict(ticket=self.ticket, globals=globals,
-                    user_tags=user_tags)
+        return dict(ticket=self.ticket, globals=globals)
 
     @without_trailing_slash
     @expose()
@@ -650,6 +651,11 @@ class TicketController(object):
             del post_data['tags']
         else:
             tags = []
+        if 'labels' in post_data and len(post_data['labels']):
+            self.ticket.labels = post_data['labels'].split(',')
+            del post_data['labels']
+        else:
+            self.ticket.labels = []
         for k in ['summary', 'description', 'status', 'milestone']:
             if k in post_data:
                 setattr(self.ticket, k, post_data[k])
