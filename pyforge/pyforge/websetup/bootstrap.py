@@ -38,16 +38,7 @@ def bootstrap(command, conf, vars):
     ThreadLocalORMSession.close_all()
     c.queued_messages = []
     database=conf.get('db_prefix', '') + 'project:test'
-    conn = M.main_doc_session.bind.conn
-    for database in conn.database_names():
-        db = conn[database]
-        for coll in db.collection_names():
-            if coll.startswith('system.'): continue
-            log.info('Dropping collection %s:%s', database, coll)
-            try:
-                db.drop_collection(coll)
-            except:
-                pass
+    wipe_database()
     g._push_object(pyforge.lib.app_globals.Globals())
     try:
         g.solr.delete(q='*:*')
@@ -66,13 +57,8 @@ def bootstrap(command, conf, vars):
     anonymous = M.User(_id=None,
                        username='*anonymous',
                        display_name='Anonymous Coward')
-    root = M.User.register(dict(username='root', display_name='Root'),
-                           make_project=False)
-    root.set_password('foo')
-    n_projects = M.Neighborhood(name='Projects',
-                                url_prefix='/projects/',
-                                acl=dict(read=[None], create=[],
-                                         moderate=[root._id], admin=[root._id]))
+    root = create_user('Root')
+    n_projects = create_neighborhood('Projects', root)
     n_users = M.Neighborhood(name='Users',
                              url_prefix='/users/',
                              shortname_prefix='users/',
@@ -235,6 +221,35 @@ ul#sidebarmenu li a.active {
             g._publish(**msg)
         ThreadLocalORMSession.flush_all()
         ThreadLocalORMSession.close_all()
+
+
+def wipe_database():
+    conn = M.main_doc_session.bind.conn
+    for database in conn.database_names():
+        db = conn[database]
+        for coll in db.collection_names():
+            if coll.startswith('system.'): continue
+            log.info('Dropping collection %s:%s', database, coll)
+            try:
+                db.drop_collection(coll)
+            except:
+                pass
+
+
+def create_neighborhood(name, admin_user):
+    return M.Neighborhood(name=name,
+                          url_prefix='/%s/' % name.lower(),
+                          acl=dict(read=[None], create=[],
+                                   moderate=[admin_user._id], admin=[admin_user._id]))
+
+
+def create_user(display_name):
+    user = M.User.register(dict(username=display_name.lower(),
+                                display_name=display_name),
+                           make_project=False)
+    user.set_password('foo')
+    return user
+
 
 def pm(etype, value, tb): # pragma no cover
     import pdb, traceback
