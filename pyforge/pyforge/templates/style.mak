@@ -368,7 +368,7 @@ tbody .even{
 	padding: 0;
 }
 
-.tagEditor li
+.tagEditor li, .removable
 {
 	display: inline;
 	background-image: url(/images/minus_small.png);
