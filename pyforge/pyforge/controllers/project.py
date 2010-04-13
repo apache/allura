@@ -325,7 +325,7 @@ class NeighborhoodAdminController(object):
             theme.color3 = color3
             theme.color4 = color4
         if icon is not None and icon != '':
-            if str(icon.type).lower() in ['image/jpg','image/png','image/jpeg','image/gif']:
+            if h.supported_by_PIL(icon.type):
                 filename = icon.filename
                 if icon.type: content_type = icon.type
                 else: content_type = 'application/octet-stream'

@@ -138,7 +138,7 @@ class ProjectAdminController(object):
         else:
             c.project.category_id = None
         if icon is not None and icon != '':
-            if str(icon.type).lower() in ['image/jpg','image/png','image/jpeg','image/gif']:
+            if h.supported_by_PIL(icon.type):
                 filename = icon.filename
                 if icon.type: content_type = icon.type
                 else: content_type = 'application/octet-stream'
@@ -157,7 +157,7 @@ class ProjectAdminController(object):
             else:
                 flash('The icon must be jpg, png, or gif format.')
         if screenshot is not None and screenshot != '':
-            if str(screenshot.type).lower() in ['image/jpg','image/png','image/jpeg','image/gif']:
+            if h.supported_by_PIL(screenshot.type):
                 filename = screenshot.filename
                 if screenshot.type: content_type = screenshot.type
                 else: content_type = 'application/octet-stream'

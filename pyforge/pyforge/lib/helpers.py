@@ -177,6 +177,9 @@ def square_image(image):
         image = image.crop((w_offset, 0, image.size[1]+w_offset, image.size[1]))
     return image
 
+def supported_by_PIL(file_type):
+    return str(file_type).lower() in ['image/jpg','image/png','image/jpeg','image/gif']
+
 class DateTimeConverter(FancyValidator):
 
     def _to_python(self, value, state):

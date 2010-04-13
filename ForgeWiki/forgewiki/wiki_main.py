@@ -437,7 +437,7 @@ class PageController(object):
         content_type = guess_type(filename)
         if content_type: content_type = content_type[0]
         else: content_type = 'application/octet-stream'
-        if str(file_info.type).lower() in ['image/jpg','image/png','image/jpeg','image/gif']:
+        if h.supported_by_PIL(file_info.type):
             image = Image.open(file_info.file)
             format = image.format
             with model.Attachment.create(
