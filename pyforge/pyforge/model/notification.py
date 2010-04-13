@@ -182,7 +182,7 @@ class Subscriptions(MappedClass):
         new_subs = []
         for s in self.subscriptions:
             if (s['artifact_index_id'] == artifact_index_id
-                and s.topic == topic):
+                and s['topic'] == topic):
                 return True
         return False
 
