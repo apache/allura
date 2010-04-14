@@ -93,9 +93,9 @@ class NeighborhoodController(object):
     @expose()
     def icon(self):
         with self.neighborhood.icon.open() as fp:
-            filename = fp.metadata['filename']
+            filename = fp.metadata['filename'].encode('utf-8')
             response.headers['Content-Type'] = ''
-            response.content_type = fp.content_type
+            response.content_type = fp.content_type.encode('utf-8')
             response.headers.add('Content-Disposition',
                                      'attachment;filename=%s' % filename)
             return fp.read()
@@ -227,9 +227,9 @@ class ProjectController(object):
     @expose()
     def icon(self):
         with c.project.icon.open() as fp:
-            filename = fp.metadata['filename']
+            filename = fp.metadata['filename'].encode('utf-8')
             response.headers['Content-Type'] = ''
-            response.content_type = fp.content_type
+            response.content_type = fp.content_type.encode('utf-8')
             response.headers.add('Content-Disposition',
                                      'attachment;filename=%s' % filename)
             return fp.read()
@@ -250,9 +250,9 @@ class ScreenshotController(object):
     def index(self, embed=False):
         screenshot = M.ProjectFile.query.find({'metadata.project_id':c.project._id, 'metadata.category':'screenshot', 'filename':self.filename}).first()
         with screenshot.open() as fp:
-            filename = fp.metadata['filename']
+            filename = fp.metadata['filename'].encode('utf-8')
             response.headers['Content-Type'] = ''
-            response.content_type = fp.content_type
+            response.content_type = fp.content_type.encode('utf-8')
             if not embed:
                 response.headers.add('Content-Disposition',
                                      'attachment;filename=%s' % filename)
@@ -263,9 +263,9 @@ class ScreenshotController(object):
     def thumb(self, embed=False):
         thumb = M.ProjectFile.query.find({'metadata.project_id':c.project._id, 'metadata.category':'screenshot_thumb', 'metadata.filename':self.filename}).first()
         with thumb.open() as fp:
-            filename = fp.metadata['filename']
+            filename = fp.metadata['filename'].encode('utf-8')
             response.headers['Content-Type'] = ''
-            response.content_type = fp.content_type
+            response.content_type = fp.content_type.encode('utf-8')
             if not embed:
                 response.headers.add('Content-Disposition',
                                      'attachment;filename=%s' % filename)
