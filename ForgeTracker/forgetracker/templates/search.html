@@ -37,6 +37,7 @@
           <th>Description</th>
           <th data-sort="assigned_to_s">Assigned To</th>
           <th data-sort="mod_date_dt">Updated</th>
+          <th py:for="field in tracker_globals.custom_fields">${field.label}</th>
         </tr>
       </thead>
       <tbody>
@@ -47,6 +48,7 @@
           <td py:if="t.assigned_to_id">${t.assigned_to.display_name}</td>
           <td py:if="not t.assigned_to_id"></td>
           <td>${h.ago(t.mod_date)}</td>
+          <td py:for="field_value in t.ordered_custom_field_values">${field_value}</td>
         </tr>
       </tbody>
     </table>
