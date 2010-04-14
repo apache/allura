@@ -1,12 +1,12 @@
 from forgetracker.model import Globals
-from forgetracker.tests.unit import TestModel
+from forgetracker.tests.unit import TestWithModel
 from pylons import c
 from pyforge.lib import helpers as h
 
 from ming.orm.ormsession import ThreadLocalORMSession
 
 
-class TestGlobalsModel(TestModel):
+class TestGlobalsModel(TestWithModel):
     def test_it_has_current_tracker_globals(self):
         bugs_globals = Globals.query.get(app_config_id=c.app.config._id)
         assert Globals.for_current_tracker() == bugs_globals

@@ -1,11 +1,11 @@
 from ming.orm.ormsession import ThreadLocalORMSession
 
-from forgetracker.tests.unit import TestModel
+from forgetracker.tests.unit import TestWithModel
 from forgetracker.widgets import ticket_form
 from forgetracker.model import Globals
 
 
-class TestTicketCustomFields(TestModel):
+class TestTicketCustomFields(TestWithModel):
     def test_it_creates_string_fields(self):
         globals_ = Globals.for_current_tracker()
         globals_.custom_fields = [dict(name='_iteration_number',

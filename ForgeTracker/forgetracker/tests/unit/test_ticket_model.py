@@ -4,10 +4,10 @@ from pyforge.lib import helpers as h
 from ming.orm.ormsession import ThreadLocalORMSession
 
 from forgetracker.model import Ticket, Globals
-from forgetracker.tests.unit import TestModel
+from forgetracker.tests.unit import TestWithModel
 
 
-class TestTicketModel(TestModel):
+class TestTicketModel(TestWithModel):
     def test_that_it_has_ordered_custom_fields(self):
         field_names = field_values = not_sorted(['field1', 'field2'])
         custom_fields = dict(zip(field_names, field_values))
