@@ -46,11 +46,19 @@ class TestWhenSearchingWithCustomFields(WithUserAndBugsApp):
 
 
 class TestWhenLoadingFrontPage(WithUserAndBugsApp):
-    def test_that_recent_tickets_are_shown(self):
+    def setUp(self):
+        super(TestWhenLoadingFrontPage, self).setUp()
         with search_returning_colors_are_wrong_ticket():
-            response = tracker_main.RootController().index()
-        tickets = response['tickets']
+            self.response = tracker_main.RootController().index()
+
+    def test_that_recent_tickets_are_shown(self):
+        tickets = self.response['tickets']
         assert tickets[0].summary == 'colors are wrong'
+
+    def test_that_changes_are_shown(self):
+        change = self.response['changes'][0]
+        assert change['change_type'] == 'ticket'
+        assert change['change_text'] == 'colors are wrong'
 
 
 def search_returning_colors_are_wrong_ticket():
