@@ -29,7 +29,7 @@ class TestForumReactors(TestController):
                                   'new_forum.description':'',
                                   'new_forum.parent':'',
                                   })
-        r = self.app.get(r.location)
+        r = self.app.get('/admin/discussion/')
         assert 'error' not in r
         assert 'Test Forum' in r
         r = self.app.post('/admin/discussion/update_forums',
@@ -39,7 +39,7 @@ class TestForumReactors(TestController):
                                   'new_forum.description':'',
                                   'new_forum.parent':'',
                                   })
-        r = self.app.get(r.location)
+        r = self.app.get('/admin/discussion/')
         assert 'error' not in r
         assert 'Test Forum 1' in r
         conf_dir = getattr(config, 'here', os.getcwd())
@@ -191,7 +191,7 @@ class TestForum(TestController):
                                   'new_forum.description':'',
                                   'new_forum.parent':'',
                                   })
-        r = self.app.get(r.location)
+        r = self.app.get('/admin/discussion/')
         assert 'error' not in r
         assert 'TestForum' in r
         h.set_context('test', 'discussion')
@@ -204,7 +204,7 @@ class TestForum(TestController):
                                   'new_forum.description':'',
                                   'new_forum.parent':str(frm._id),
                                   })
-        r = self.app.get(r.location)
+        r = self.app.get('/admin/discussion/')
         assert 'error' not in r
         assert 'ChildForum' in r
 
@@ -230,7 +230,7 @@ class TestForum(TestController):
         r = self.app.get('/discussion/TestForum/post', params=dict(
                 subject='Test Thread',
                 text='This is a *test thread*'))
-        r = self.app.get(r.location)
+        r = self.app.get('/admin/discussion/')
         assert 'Message posted' in r
         r = self.app.get('/discussion/TestForum/moderate/')
 
@@ -274,7 +274,7 @@ class TestForumAdmin(TestController):
                                   'new_forum.description':'',
                                   'new_forum.parent':'',
                                   })
-        r = self.app.get(r.location)
+        r = self.app.get('/admin/discussion/')
         assert 'error' not in r
         assert 'TestForum' in r
         h.set_context('test', 'Forum')
@@ -285,7 +285,7 @@ class TestForumAdmin(TestController):
                                   'forum-0.id':str(frm._id),
                                   'forum-0.name':'New Test Forum',
                                   'forum-0.description':'My desc'})
-        r = self.app.get(r.location)
+        r = self.app.get('/admin/discussion/')
         assert 'error' not in r
         assert 'New Test Forum' in r
         assert 'My desc' in r
@@ -295,7 +295,7 @@ class TestForumAdmin(TestController):
                                   'forum-0.id':str(frm._id),
                                   'forum-0.name':'New Test Forum',
                                   'forum-0.description':'My desc'})
-        r = self.app.get(r.location)
+        r = self.app.get('/admin/discussion/')
         assert 'error' not in r
         assert 'New Test Forum' not in r
         assert 'My desc' not in r
@@ -309,7 +309,7 @@ class TestForumAdmin(TestController):
                                   'new_forum.description':'',
                                   'new_forum.parent':'',
                                   })
-        r = self.app.get(r.location)
+        r = self.app.get('/admin/discussion/')
         assert 'error' not in r
         assert 'TestForum' in r
         h.set_context('test', 'discussion')
@@ -322,7 +322,7 @@ class TestForumAdmin(TestController):
                                   'new_forum.description':'',
                                   'new_forum.parent':str(frm._id),
                                   })
-        r = self.app.get(r.location)
+        r = self.app.get('/admin/discussion/')
         assert 'error' not in r
         assert 'ChildForum' in r
         r = self.app.post('/admin/discussion/update_forums',
@@ -331,7 +331,7 @@ class TestForumAdmin(TestController):
                                   'forum-0.id':str(frm._id),
                                   'forum-0.name':'New Test Forum',
                                   'forum-0.description':'My desc'})
-        r = self.app.get(r.location)
+        r = self.app.get('/admin/discussion/')
         assert 'error' not in r
         assert 'TestForum' not in r
         assert 'ChildForum' not in r
@@ -344,7 +344,7 @@ class TestForumAdmin(TestController):
                                   'new_forum.description':'',
                                   'new_forum.parent':'',
                                   })
-        r = self.app.get(r.location)
+        r = self.app.get('/admin/discussion/')
         assert 'error' in r
         r = self.app.post('/admin/discussion/update_forums',
                           params={'new_forum.shortname':'Test/Forum',
@@ -353,7 +353,7 @@ class TestForumAdmin(TestController):
                                   'new_forum.description':'',
                                   'new_forum.parent':'',
                                   })
-        r = self.app.get(r.location)
+        r = self.app.get('/admin/discussion/')
         assert 'error' in r
 
     def test_forum_icon(self):

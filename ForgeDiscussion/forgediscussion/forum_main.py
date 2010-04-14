@@ -250,4 +250,4 @@ class ForumAdminController(DefaultAdminController):
                     else:
                         flash('The icon must be jpg, png, or gif format.')
         flash('Forums updated')
-        redirect('.')
+        redirect(request.referrer)

@@ -35,7 +35,7 @@ class RootController(object):
                 flags='Announcement')).all()
         return dict(forums=model.Forum.query.find(dict(
                 app_config_id=c.app.config._id,
-                parent_id=None)),
+                parent_id=None)).all(),
                     announcements=announcements)
                   
     @expose('forgediscussion.templates.search')
