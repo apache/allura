@@ -4,15 +4,16 @@ from ming.orm.ormsession import session
 from pyforge.lib import helpers as h
 from pyforge.model import User
 from pylons import c
-from forgetracker.tests import TestController
+from forgetracker.tests.unit import TestModel
 from forgetracker.model import Ticket, Globals
 from forgetracker import tracker_main
+from pyforge.model import User
 
 
-class WithUserAndBugsApp(TestController):
+class WithUserAndBugsApp(TestModel):
     def setUp(self):
         super(WithUserAndBugsApp, self).setUp()
-        c.user = User.query.get(username='test_user')
+        c.user = User(username='test_user')
         h.set_context('test', 'bugs')
 
 

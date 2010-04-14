@@ -13,7 +13,7 @@ def setUp():
     run_app_setup()
 
 
-class TestModel:
+class TestModel(object):
     def setUp(self):
         bootstrap.wipe_database()
         c.user = bootstrap.create_user('Test User')
