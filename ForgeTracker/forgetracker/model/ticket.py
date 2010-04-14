@@ -44,9 +44,10 @@ class Globals(MappedClass):
     def for_current_tracker(cls):
         return cls.query.get(app_config_id=c.app.config._id)
 
-    def custom_field_names(self):
-        tracker_globals = Globals.for_current_tracker()
-        return [field.label for field in tracker_globals.custom_fields]
+    def sortable_custom_fields(self):
+        return [dict(sortable_name='%s_s' % field.name,
+                     label=field.label)
+                for field in self.custom_fields]
 
 
 class TicketHistory(Snapshot):

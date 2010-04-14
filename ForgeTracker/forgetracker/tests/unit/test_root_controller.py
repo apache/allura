@@ -23,8 +23,10 @@ class TestWhenSearchingWithCustomFields(WithUserAndBugsApp):
         with search_returning_colors_are_wrong_ticket():
             self.response = tracker_main.RootController().search(q='friends')
 
-    def test_that_custom_field_names_are_present(self):
-        assert self.response['custom_field_names'] == ['Iteration Number']
+    def test_that_sortable_custom_fields_are_present(self):
+        expected = [dict(sortable_name='_iteration_number_s',
+                         label='Iteration Number')]
+        assert self.response['sortable_custom_fields'] == expected
 
     def test_that_tickets_are_listed(self):
         assert self.response['tickets'][0].summary == 'colors are wrong'
@@ -56,10 +58,10 @@ def search_returning_colors_are_wrong_ticket():
 
 
 def create_colors_are_wrong_ticket():
-    set_tracker_custom_fields([dict(name='iteration_number',
+    set_tracker_custom_fields([dict(name='_iteration_number',
                                     label='Iteration Number')])
     ticket = create_ticket(summary="colors are wrong",
-                           custom_fields=dict(iteration_number='Iteration 1'))
+                           custom_fields=dict(_iteration_number='Iteration 1'))
     ticket.commit()
     session(ticket).flush()
     return ticket

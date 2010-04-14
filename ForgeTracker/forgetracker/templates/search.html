@@ -37,7 +37,7 @@
           <th>Description</th>
           <th data-sort="assigned_to_s">Assigned To</th>
           <th data-sort="mod_date_dt">Updated</th>
-          <th py:for="field_name in custom_field_names">${field_name}</th>
+          <th py:for="field in sortable_custom_fields" data-sort="${field.sortable_name}">${field.label}</th>
         </tr>
       </thead>
       <tbody>

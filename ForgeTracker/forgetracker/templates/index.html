@@ -28,7 +28,7 @@
               <th>Ticket</th>
 	          <th>Status</th>
 	          <th>Assigned To</th>
-              <th py:for="field_name in custom_field_names">${field_name}</th>
+              <th py:for="field in sortable_custom_fields">${field.label}</th>
             </tr>
           </thead>
           <tbody class="ticket-list">
