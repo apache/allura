@@ -37,7 +37,7 @@
           <th>Description</th>
           <th data-sort="assigned_to_s">Assigned To</th>
           <th data-sort="mod_date_dt">Updated</th>
-          <th py:for="field in tracker_globals.custom_fields">${field.label}</th>
+          <th py:for="field_name in custom_field_names">${field_name}</th>
         </tr>
       </thead>
       <tbody>
