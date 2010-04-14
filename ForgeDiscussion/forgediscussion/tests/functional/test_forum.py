@@ -1,5 +1,7 @@
 import os
 import random
+import pyforge
+import Image
 from StringIO import StringIO
 
 import mock
@@ -354,4 +356,23 @@ class TestForumAdmin(TestController):
         r = self.app.get(r.location)
         assert 'error' in r
 
+    def test_forum_icon(self):
+        file_name = 'adobe_header.png'
+        file_path = os.path.join(pyforge.__path__[0],'public','images',file_name)
+        file_data = file(file_path).read()
+        upload = ('new_forum.icon', file_name, file_data)
+
+        h.set_context('test', 'discussion')
+        r = self.app.get('/admin/discussion/')
+        r = self.app.post('/admin/discussion/update_forums',
+                          params={'new_forum.shortname':'TestForum',
+                                  'new_forum.create':'on',
+                                  'new_forum.name':'Test Forum',
+                                  'new_forum.description':'',
+                                  'new_forum.parent':'',
+                                  },
+                          upload_files=[upload]),
+        r = self.app.get('/discussion/TestForum/icon')
+        image = Image.open(StringIO(r.body))
+        assert image.size == (48,48)
 

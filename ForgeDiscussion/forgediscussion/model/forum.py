@@ -87,6 +87,16 @@ class Forum(M.Discussion):
         # Otherwise it's a new thread
         return self.thread_class()(discussion_id=self._id,subject=subject)
 
+    @property
+    def icon(self):
+        return ForumFile.query.find({'metadata.forum_id':self._id}).first()
+
+class ForumFile(M.File):
+    # Override the metadata schema here
+    metadata=FieldProperty(dict(
+            forum_id=schema.ObjectId,
+            filename=str))
+
 class ForumThread(M.Thread):
     class __mongometa__:
         name='forum_thread'

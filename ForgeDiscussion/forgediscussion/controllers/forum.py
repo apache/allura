@@ -80,6 +80,17 @@ class ForumController(DiscussionController):
         flash('Message posted')
         redirect(thd.url())
 
+    @expose()
+    def icon(self):
+        with self.discussion.icon.open() as fp:
+            filename = fp.metadata['filename']
+            response.headers['Content-Type'] = ''
+            response.content_type = fp.content_type
+            response.headers.add('Content-Disposition',
+                                     'attachment;filename=%s' % filename)
+            return fp.read()
+        return self.discussion.icon.filename
+
 class ForumThreadController(ThreadController):
 
     @expose('pyforge.templates.discussion.thread')

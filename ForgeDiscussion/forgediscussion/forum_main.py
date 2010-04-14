@@ -3,6 +3,7 @@ import logging
 
 # Non-stdlib imports
 import pkg_resources
+import Image
 from pylons import g, c, request
 from tg import expose, redirect, flash
 from pymongo.bson import ObjectId
@@ -11,7 +12,7 @@ from ming import schema
 
 # Pyforge-specific imports
 from pyforge.app import Application, ConfigOption, SitemapEntry, DefaultAdminController
-from pyforge.lib.helpers import push_config, vardec
+from pyforge.lib.helpers import push_config, vardec, supported_by_PIL
 from pyforge.lib.decorators import audit, react
 from pyforge.lib.security import require, has_artifact_access
 from pyforge.model import ProjectRole
@@ -187,6 +188,25 @@ class ForumAdminController(DefaultAdminController):
                         name=new_forum['name'],
                         shortname=shortname,
                         description=new_forum['description'])
+        if 'icon' in new_forum and new_forum['icon'] is not None and new_forum['icon'] != '':
+            icon = new_forum['icon']
+            if supported_by_PIL(icon.type):
+                filename = icon.filename
+                if icon.type: content_type = icon.type
+                else: content_type = 'application/octet-stream'
+                image = Image.open(icon.file)
+                format = image.format
+                if image.size[0] < image.size[1]:
+                    h_offset = (image.size[1]-image.size[0])/2
+                    image = image.crop((0, h_offset, image.size[0], image.size[0]+h_offset))
+                elif image.size[0] > image.size[1]:
+                    w_offset = (image.size[0]-image.size[1])/2
+                    image = image.crop((w_offset, 0, image.size[1]+w_offset, image.size[1]))
+                image.thumbnail((48, 48), Image.ANTIALIAS)
+                with model.ForumFile.create(content_type=content_type,filename=filename,forum_id=f._id) as fp:
+                    image.save(fp, format)
+            else:
+                flash('The icon must be jpg, png, or gif format.')
         return f
 
     @vardec
@@ -205,5 +225,29 @@ class ForumAdminController(DefaultAdminController):
             else:
                 forum.name = f['name']
                 forum.description = f['description']
+                if 'icon' in f and f['icon'] is not None and f['icon'] != '':
+                    icon = f['icon']
+                    if supported_by_PIL(icon.type):
+                        filename = icon.filename
+                        if icon.type: content_type = icon.type
+                        else: content_type = 'application/octet-stream'
+                        image = Image.open(icon.file)
+                        format = image.format
+                        if image.size[0] < image.size[1]:
+                            h_offset = (image.size[1]-image.size[0])/2
+                            image = image.crop((0, h_offset, image.size[0], image.size[0]+h_offset))
+                        elif image.size[0] > image.size[1]:
+                            w_offset = (image.size[0]-image.size[1])/2
+                            image = image.crop((w_offset, 0, image.size[1]+w_offset, image.size[1]))
+                        image.thumbnail((48, 48), Image.ANTIALIAS)
+                        if forum.icon:
+                            model.ForumFile.query.remove({'metadata.forum_id':forum._id})
+                        with model.ForumFile.create(
+                            content_type=content_type,
+                            filename=filename,
+                            forum_id=forum._id) as fp:
+                            image.save(fp, format)
+                    else:
+                        flash('The icon must be jpg, png, or gif format.')
         flash('Forums updated')
         redirect('.')
