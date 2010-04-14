@@ -28,6 +28,7 @@
               <th>Ticket</th>
 	          <th>Status</th>
 	          <th>Assigned To</th>
+              <th py:for="field_name in custom_field_names">${field_name}</th>
             </tr>
           </thead>
           <tbody class="ticket-list">
@@ -36,6 +37,7 @@
 	          <td class="$t.status">$t.status</td>
 	          <td py:if="t.assigned_to_id"><a href="${t.assigned_to.url()}">${t.assigned_to.display_name}</a></td>
 	          <td py:if="not t.assigned_to_id"></td>
+              <td py:for="field_value in t.ordered_custom_field_values">${field_value}</td>
             </tr>
           </tbody>
         </table>
