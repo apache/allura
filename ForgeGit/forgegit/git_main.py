@@ -2,6 +2,7 @@
 import logging
 import re
 import sys
+import shutil
 from subprocess import Popen
 
 # Non-stdlib imports
@@ -64,7 +65,6 @@ class ForgeGitApp(Application):
     def install(self, project):
         'Set up any default permissions and roles here'
         self.config.options['project_name'] = project._id
-        self.uninstall(project)
         super(ForgeGitApp, self).install(project)
         # Setup permissions
         role_developer = ProjectRole.query.get(name='Developer')._id
@@ -79,10 +79,16 @@ class ForgeGitApp(Application):
 
 
     def uninstall(self, project):
-        "Remove all the plugin's artifacts from the database"
-        Application.uninstall(self, project)
+        g.publish('audit', 'scm.git.uninstall', dict(project_id=project._id))
+
+    @audit('scm.git.uninstall')
+    def _uninstall(self, routing_key, data):
+        "Remove all the plugin's artifacts and the physical repository"
+        repo = self.repo
+        if repo is not None and repo.path:
+            shutil.rmtree(repo.path, ignore_errors=True)
         model.GitRepository.query.remove(dict(app_config_id=self.config._id))
-        # physically remove the actual repository
+        Application.uninstall(self, project_id=data['project_id'])
 
 class RootController(object):
 
