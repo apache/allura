@@ -170,10 +170,10 @@ The wiki uses [Markdown](%s) syntax.
 
     def uninstall(self, project):
         "Remove all the plugin's artifacts from the database"
-        Application.uninstall(self, project)
         model.Attachment.query.remove({'metadata.app_config_id':c.app.config._id})
         model.Page.query.remove(dict(app_config_id=c.app.config._id))
-        
+        Application.uninstall(self, project)
+
 class RootController(object):
 
     def __init__(self):

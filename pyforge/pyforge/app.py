@@ -123,18 +123,20 @@ class Application(object):
         session(discussion).flush()
         self.config.discussion_id = discussion._id
 
-    def uninstall(self, project):
+    def uninstall(self, project=None, project_id=None):
         'Whatever logic is required to tear down a plugin'
+        if project_id is None: project_id = project._id
         # De-index all the artifacts belonging to this plugin in one fell swoop
         g.solr.delete('project_id_s:%s AND mount_point_s:%s' % (
-                project._id, self.config.options['mount_point']))
+                project_id, self.config.options['mount_point']))
         # Remove all tags referring to this plugin
         q_aref ={
-            'artifact_ref.project_id':project._id,
+            'artifact_ref.project_id':project_id,
             'artifact_ref.mount_point':self.config.options['mount_point']}
         model.Tag.query.remove(q_aref)
         model.TagEvent.query.remove(q_aref)
         model.UserTags.query.remove(q_aref)
+        self.config.delete()
 
     def sidebar_menu(self):
         return []

@@ -392,7 +392,6 @@ class Project(MappedClass):
         if app is None: return
         with h.push_config(c, project=self, app=app):
             app.uninstall(self)
-        app.config.delete()
 
     def app_instance(self, mount_point_or_config):
         if isinstance(mount_point_or_config, AppConfig):
