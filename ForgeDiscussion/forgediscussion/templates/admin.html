@@ -138,7 +138,8 @@
                 <td>${post_summary(forum.last_post)}</td>
                 <td>
                   <input name="forum-${i}.id" type="hidden" value="$forum._id"/>
-                  ${submit_button('Delete', 'forum-%s.delete' % i)}
+                  <py:if test="forum.deleted">${submit_button('Undelete', 'forum-%s.undelete' % i)}</py:if>
+                  <py:if test="not forum.deleted">${submit_button('Delete', 'forum-%s.delete' % i)}</py:if>
                 </td>
               </tr>
             </tbody>

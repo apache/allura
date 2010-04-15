@@ -65,10 +65,18 @@ class ForumController(DiscussionController):
     def _lookup(self, id, *remainder):
         return ForumController(self.discussion.shortname + '/' + id), remainder
 
+    @expose('pyforge.templates.discussion.index')
+    def index(self, **kw):
+        if self.discussion.deleted and not has_artifact_access('configure', app=c.app)():
+            redirect(self.discussion.url()+'deleted')
+        return super(ForumController, self).index(**kw)
+
     @h.vardec
     @expose()
     @validate(W.edit_post)
     def post(self, subject=None, text=None, **kw):
+        if self.discussion.deleted and not has_artifact_access('configure', app=c.app)():
+            redirect(self.deleted)
         if 'new_topic' in kw:
             subject = kw['new_topic']['subject']
             text = kw['new_topic']['text']
@@ -91,10 +99,17 @@ class ForumController(DiscussionController):
             return fp.read()
         return self.discussion.icon.filename
 
+    @expose('forgediscussion.templates.deleted')
+    def deleted(self):
+        return dict()
+
+
 class ForumThreadController(ThreadController):
 
     @expose('pyforge.templates.discussion.thread')
     def index(self, **kw):
+        if self.thread.discussion.deleted and not has_artifact_access('configure', app=c.app)():
+            redirect(self.thread.discussion.url()+'deleted')
         return super(ForumThreadController, self).index(**kw)
 
     @h.vardec
@@ -102,6 +117,8 @@ class ForumThreadController(ThreadController):
     @validate(pass_validator, index)
     def moderate(self, **kw):
         require(has_artifact_access('moderate', self.thread))
+        if self.thread.discussion.deleted and not has_artifact_access('configure', app=c.app)():
+            redirect(self.thread.discussion.url()+'deleted')
         args = self.W.moderate_thread.validate(kw, None)
         g.publish('audit', 'Forum.forum_stats.%s' % self.thread.discussion.shortname.replace('/', '.'))
         if args.pop('delete', None):
@@ -117,10 +134,18 @@ class ForumThreadController(ThreadController):
 
 class ForumPostController(PostController):
 
+    @expose('pyforge.templates.discussion.post')
+    def index(self, **kw):
+        if self.thread.discussion.deleted and not has_artifact_access('configure', app=c.app)():
+            redirect(self.thread.discussion.url()+'deleted')
+        return super(ForumPostController, self).index(**kw)
+
     @expose()
     @validate(pass_validator, error_handler=PostController.index)
     def moderate(self, **kw):
         require(has_artifact_access('moderate', self.post.thread))
+        if self.thread.discussion.deleted and not has_artifact_access('configure', app=c.app)():
+            redirect(self.thread.discussion.url()+'deleted')
         args = self.W.moderate_post.validate(kw, None)
         g.publish('audit', 'Forum.thread_stats.%s' % self.post.thread._id)
         g.publish('audit', 'Forum.forum_stats.%s' % self.post.discussion.shortname.replace('/', '.'))

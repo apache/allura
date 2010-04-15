@@ -289,16 +289,6 @@ class TestForumAdmin(TestController):
         assert 'error' not in r
         assert 'New Test Forum' in r
         assert 'My desc' in r
-        r = self.app.post('/admin/discussion/update_forums',
-                          params={'new_forum.create':'',
-                                  'forum-0.delete':'on',
-                                  'forum-0.id':str(frm._id),
-                                  'forum-0.name':'New Test Forum',
-                                  'forum-0.description':'My desc'})
-        r = self.app.get('/admin/discussion/')
-        assert 'error' not in r
-        assert 'New Test Forum' not in r
-        assert 'My desc' not in r
 
     def test_forum_CRUD_hier(self):
         r = self.app.get('/admin/discussion/')
@@ -325,16 +315,6 @@ class TestForumAdmin(TestController):
         r = self.app.get('/admin/discussion/')
         assert 'error' not in r
         assert 'ChildForum' in r
-        r = self.app.post('/admin/discussion/update_forums',
-                          params={'new_forum.create':'',
-                                  'forum-0.delete':'on',
-                                  'forum-0.id':str(frm._id),
-                                  'forum-0.name':'New Test Forum',
-                                  'forum-0.description':'My desc'})
-        r = self.app.get('/admin/discussion/')
-        assert 'error' not in r
-        assert 'TestForum' not in r
-        assert 'ChildForum' not in r
 
     def test_bad_forum_names(self):
         r = self.app.post('/admin/discussion/update_forums',
@@ -376,3 +356,43 @@ class TestForumAdmin(TestController):
         image = Image.open(StringIO(r.body))
         assert image.size == (48,48)
 
+    def test_delete_undelete(self):
+        r = self.app.get('/admin/discussion/')
+        r = self.app.post('/admin/discussion/update_forums',
+                          params={'new_forum.shortname':'TestForum',
+                                  'new_forum.create':'on',
+                                  'new_forum.name':'Test Forum',
+                                  'new_forum.description':'',
+                                  'new_forum.parent':'',
+                                  })
+        r = self.app.get('/admin/discussion/')
+        assert len(r.html.findAll('input',{'value':'Delete'})) == 2
+        assert len(r.html.findAll('input',{'value':'Undelete'})) == 0
+        r = self.app.get('/discussion/')
+        assert '(This forum has been deleted and is not visible to non-admin users)' not in r
+        h.set_context('test', 'Forum')
+        frm = FM.Forum.query.get(shortname='TestForum')
+
+        r = self.app.post('/admin/discussion/update_forums',
+                          params={'new_forum.create':'',
+                                  'forum-0.delete':'on',
+                                  'forum-0.id':str(frm._id),
+                                  'forum-0.name':'New Test Forum',
+                                  'forum-0.description':'My desc'})
+        r = self.app.get('/admin/discussion/')
+        assert len(r.html.findAll('input',{'value':'Delete'})) == 1
+        assert len(r.html.findAll('input',{'value':'Undelete'})) == 1
+        r = self.app.get('/discussion/')
+        assert '(This forum has been deleted and is not visible to non-admin users)' in r
+
+        r = self.app.post('/admin/discussion/update_forums',
+                          params={'new_forum.create':'',
+                                  'forum-0.undelete':'on',
+                                  'forum-0.id':str(frm._id),
+                                  'forum-0.name':'New Test Forum',
+                                  'forum-0.description':'My desc'})
+        r = self.app.get('/admin/discussion/')
+        assert len(r.html.findAll('input',{'value':'Delete'})) == 2
+        assert len(r.html.findAll('input',{'value':'Undelete'})) == 0
+        r = self.app.get('/discussion/')
+        assert '(This forum has been deleted and is not visible to non-admin users)' not in r

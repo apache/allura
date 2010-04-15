@@ -124,7 +124,7 @@ class ForgeDiscussionApp(Application):
                 l.append(SitemapEntry('Admin', c.project.url()+'admin/'+self.config.options.mount_point))
             l.append(SitemapEntry('Search', 'search'))
             l += [ SitemapEntry(f.name, f.url())
-                   for f in self.top_forums ]
+                   for f in self.top_forums if (not f.deleted or has_artifact_access('configure', app=c.app)()) ]
             return l
         except: # pragma no cover
             log.exception('sidebar_menu')
@@ -220,7 +220,9 @@ class ForumAdminController(DefaultAdminController):
         for f in forum:
             forum = model.Forum.query.get(_id=ObjectId(str(f['id'])))
             if f.get('delete'):
-                forum.delete()
+                forum.deleted=True
+            elif f.get('undelete'):
+                forum.deleted=False
             else:
                 forum.name = f['name']
                 forum.description = f['description']

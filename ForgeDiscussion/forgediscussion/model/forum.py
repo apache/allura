@@ -21,6 +21,7 @@ class Forum(M.Discussion):
     parent_id = FieldProperty(schema.ObjectId, if_missing=None)
     threads = RelationProperty('ForumThread')
     posts = RelationProperty('ForumPost')
+    deleted = FieldProperty(bool, if_missing=False)
 
     @classmethod
     def attachment_class(cls):
