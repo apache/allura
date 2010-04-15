@@ -1,4 +1,4 @@
-function add_field(label, type, options){
+function add_field(label, type, options, show_in_search){
     var $new_field = $('<div class="custom-field">'
                      +   '<div class="span-3 clear"><label>Label: </label></div><div class="span-13 last"><input class="field-label title wide" type="text"/></div>'
                      +   '<div class="span-3 clear"><label>Type: </label></div>'
@@ -11,6 +11,10 @@ function add_field(label, type, options){
                      +   '</select></div>'
                      +   '<span class="options-wrapper"><div class="span-3 clear"><label>Options: </label></div>'
                      +   '<div class="span-13 last"><input class="field-options title wide" type="text"/></div></span>'
+                     +   '<div class="prepend-3 span-13 last">'
+                     +   '  <input type="checkbox" class="field-show-in-search" />'
+                     +   '  <label>Show in search results</label>'
+                     +   '</div>'
                      +   '<div class="push-3 span-13 last"><input type="button" onclick="delete_field(this)" value="Delete" class="ui-state-default ui-button ui-button-text"/></div>'
                      +   '<div class="clear clearfix"/>'
                      + '</div>');
@@ -18,6 +22,7 @@ function add_field(label, type, options){
     label && $new_field.find('input.field-label').val(label);
     type && $new_field.find('option[value="'+type+'"]').attr('selected', 'selected');
     options && $new_field.find('input.field-options').val(options);
+    show_in_search && $new_field.find('input.field-show-in-search').attr('checked', show_in_search);
 
     $('#custom-field-list').append($new_field);
 
@@ -47,6 +52,7 @@ function save_fields(){
                         return ('{'
                             + '"label":"' + $this.find('input.field-label').val() + '",'
                             + '"type":"' + $this.find('select').val() + '",'
+                            + '"show_in_search":' + $this.find('input.field-show-in-search').is(':checked') + ','
                             + '"options":"' + $this.find('input.field-options').val() + '"'
                             + '}'
                         );
@@ -77,8 +83,13 @@ function manage_messages(){
 
 $(function(){
     $('div.custom-field-stub').each(function(){
-        var $this=$(this), label=$this.attr('data-label'), type=$this.attr('data-type'), options=$this.attr('data-options');
-        add_field(label, type, options);
+        var $this = $(this);
+        var label = $this.attr('data-label');
+        var type = $this.attr('data-type');
+        var options = $this.attr('data-options');
+        var show_in_search = $this.attr('data-show-in-search') == 'true';
+
+        add_field(label, type, options, show_in_search);
         $this.remove();
     });
     $('#custom-field-list').sortable();
