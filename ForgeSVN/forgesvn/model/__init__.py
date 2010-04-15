@@ -1,0 +1,1 @@
+from svn import SVNRepository
