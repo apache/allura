@@ -331,12 +331,7 @@ class NeighborhoodAdminController(object):
                 else: content_type = 'application/octet-stream'
                 image = Image.open(icon.file)
                 format = image.format
-                if image.size[0] < image.size[1]:
-                    h_offset = (image.size[1]-image.size[0])/2
-                    image = image.crop((0, h_offset, image.size[0], image.size[0]+h_offset))
-                elif image.size[0] > image.size[1]:
-                    w_offset = (image.size[0]-image.size[1])/2
-                    image = image.crop((w_offset, 0, image.size[1]+w_offset, image.size[1]))
+                image = h.square_image(image)
                 image.thumbnail((48, 48), Image.ANTIALIAS)
                 if self.neighborhood.icon:
                     M.NeighborhoodFile.query.remove({'metadata.neighborhood_id':self.neighborhood._id})

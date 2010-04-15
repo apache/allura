@@ -1,9 +1,9 @@
 #-*- python -*-
 import logging
+import Image
 
 # Non-stdlib imports
 import pkg_resources
-import Image
 from pylons import g, c, request
 from tg import expose, redirect, flash
 from pymongo.bson import ObjectId
@@ -12,7 +12,7 @@ from ming import schema
 
 # Pyforge-specific imports
 from pyforge.app import Application, ConfigOption, SitemapEntry, DefaultAdminController
-from pyforge.lib.helpers import push_config, vardec, supported_by_PIL
+from pyforge.lib.helpers import push_config, vardec, supported_by_PIL, square_image
 from pyforge.lib.decorators import audit, react
 from pyforge.lib.security import require, has_artifact_access
 from pyforge.model import ProjectRole
@@ -196,14 +196,12 @@ class ForumAdminController(DefaultAdminController):
                 else: content_type = 'application/octet-stream'
                 image = Image.open(icon.file)
                 format = image.format
-                if image.size[0] < image.size[1]:
-                    h_offset = (image.size[1]-image.size[0])/2
-                    image = image.crop((0, h_offset, image.size[0], image.size[0]+h_offset))
-                elif image.size[0] > image.size[1]:
-                    w_offset = (image.size[0]-image.size[1])/2
-                    image = image.crop((w_offset, 0, image.size[1]+w_offset, image.size[1]))
+                image = square_image(image)
                 image.thumbnail((48, 48), Image.ANTIALIAS)
-                with model.ForumFile.create(content_type=content_type,filename=filename,forum_id=f._id) as fp:
+                with model.ForumFile.create(
+                    content_type=content_type,
+                    filename=filename,
+                    forum_id=f._id) as fp:
                     image.save(fp, format)
             else:
                 flash('The icon must be jpg, png, or gif format.')
@@ -233,12 +231,7 @@ class ForumAdminController(DefaultAdminController):
                         else: content_type = 'application/octet-stream'
                         image = Image.open(icon.file)
                         format = image.format
-                        if image.size[0] < image.size[1]:
-                            h_offset = (image.size[1]-image.size[0])/2
-                            image = image.crop((0, h_offset, image.size[0], image.size[0]+h_offset))
-                        elif image.size[0] > image.size[1]:
-                            w_offset = (image.size[0]-image.size[1])/2
-                            image = image.crop((w_offset, 0, image.size[1]+w_offset, image.size[1]))
+                        image = square_image(image)
                         image.thumbnail((48, 48), Image.ANTIALIAS)
                         if forum.icon:
                             model.ForumFile.query.remove({'metadata.forum_id':forum._id})

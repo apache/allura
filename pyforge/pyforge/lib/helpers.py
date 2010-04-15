@@ -3,6 +3,7 @@ import os
 import difflib
 import urllib
 import re
+import Image
 from hashlib import sha1
 from datetime import datetime
 
@@ -169,9 +170,11 @@ def tag_artifact(artifact, user, tags):
     M.Tag.remove(aref, user, removed_tags)
 
 def square_image(image):
+    # image is wider than tall, so center horizontally and crop to square
     if image.size[0] < image.size[1]:
         h_offset = (image.size[1]-image.size[0])/2
         image = image.crop((0, h_offset, image.size[0], image.size[0]+h_offset))
+    # image is taller than wide, so center vertically and crop to square
     elif image.size[0] > image.size[1]:
         w_offset = (image.size[0]-image.size[1])/2
         image = image.crop((w_offset, 0, image.size[1]+w_offset, image.size[1]))
