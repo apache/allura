@@ -687,7 +687,16 @@ class TicketController(object):
             else:
                 value = ''
             self.ticket.custom_fields[cf.name] = value
-        p = self.ticket.discussion_thread().add_post(text='ticket updated')
+        thread = self.ticket.discussion_thread()
+        latest_post = thread.posts and thread.posts[-1] or None
+        if latest_post and latest_post.author() == c.user:
+            now = datetime.utcnow()
+            folding_window = timedelta(seconds=60*5)
+            if (latest_post.timestamp + folding_window) > now:
+                pass # folding into latest_post
+            else:
+                pass # adding anew
+        # p = thread.add_post(text='ticket updated')
         self.ticket.commit()
         if any_sums:
             self.ticket.dirty_sums()
