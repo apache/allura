@@ -134,11 +134,7 @@ class ThreadController(object):
     @validate(pass_validator, error_handler=index)
     def post(self, **kw):
         kw = self.W.edit_post.validate(kw, None)
-        p = self.thread.post(**kw)
-        p.commit()
-        self.thread.num_replies += 1
-        if not self.thread.first_post:
-            self.thread.first_post_id = p._id
+        p = self.thread.add_post(**kw)
         flash('Message posted')
         redirect(request.referer)
 

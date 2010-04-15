@@ -130,6 +130,15 @@ class Thread(Artifact):
         if result is None: return self
         return result
 
+    def add_post(self, **kw):
+        """Helper function to avoid code duplication."""
+        p = self.post(**kw)
+        p.commit()
+        self.num_replies += 1
+        if not self.first_post:
+            self.first_post_id = p._id
+        return p
+
     def post(self, text, message_id=None, parent_id=None, **kw):
         require(has_artifact_access('post', self))
         if self.artifact_reference.artifact_id is not None:

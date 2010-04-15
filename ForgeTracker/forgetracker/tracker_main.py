@@ -687,6 +687,7 @@ class TicketController(object):
             else:
                 value = ''
             self.ticket.custom_fields[cf.name] = value
+        p = self.ticket.discussion_thread().add_post(text='ticket updated')
         self.ticket.commit()
         if any_sums:
             self.ticket.dirty_sums()
