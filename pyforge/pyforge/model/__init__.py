@@ -10,6 +10,7 @@ from .openid_model import OpenIdStore, OpenIdAssociation, OpenIdNonce
 from .filesystem import File
 from .tag import TagEvent, Tag, UserTags
 from .notification import Notification, Subscriptions, Mailbox
+from .repository import Repository
 
 from .types import ArtifactReference, ArtifactReferenceType
 

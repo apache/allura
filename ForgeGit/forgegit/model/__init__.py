@@ -1,1 +1,1 @@
-from git import Repository
+from git import GitRepository

@@ -55,7 +55,7 @@ class ForgeGitApp(Application):
 
     @property
     def repo(self):
-        return model.Repository.query.get(app_config_id=self.config._id)
+        return model.GitRepository.query.get(app_config_id=self.config._id)
 
     @property
     def templates(self):
@@ -81,7 +81,7 @@ class ForgeGitApp(Application):
     def uninstall(self, project):
         "Remove all the plugin's artifacts from the database"
         Application.uninstall(self, project)
-        model.Repository.query.remove(dict(app_config_id=self.config._id))
+        model.GitRepository.query.remove(dict(app_config_id=self.config._id))
         # physically remove the actual repository
 
 class RootController(object):
@@ -92,8 +92,7 @@ class RootController(object):
 
     @expose('forgegit.templates.index')
     def index(self):
-        repo = model.Repository.query.get(app_config_id=c.app.config._id)
-        return dict(repo=repo, host=request.host)
+        return dict(repo=c.app.repo, host=request.host)
 
     @expose()
     def init(self, name=None):
@@ -102,7 +101,7 @@ class RootController(object):
             raise Exception('init must be a POST request')
         repo = c.app.repo
         if repo is None:
-            repo = model.Repository()
+            repo = model.GitRepository()
         if not name:
             name = c.project.shortname.split('/')[-1]
         if not name.endswith('.git'):

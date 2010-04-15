@@ -8,7 +8,8 @@
 
   <head>
     <meta content="text/html; charset=UTF-8" http-equiv="content-type" py:replace="''"/>
-    <title>Git Repository</title>
+    <title py:if="not repo">Git Repository</title>
+    <title py:if="repo">Git Repository: ${repo.name}</title>
   </head>
 
   <body>
