@@ -276,4 +276,4 @@ def render_genshi_plaintext(template_name, **template_vars):
     tt = genshi.template.NewTextTemplate(tpl_text,
             filepath=filepath, filename=template_name)
     stream = tt.generate(**template_vars)
-    return stream.render()
+    return stream.render(encoding='utf-8').decode('utf-8')
