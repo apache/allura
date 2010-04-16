@@ -136,8 +136,8 @@ class ForgeDiscussionApp(Application):
 
     def install(self, project):
         'Set up any default permissions and roles here'
+        # Don't call super install here, as that sets up discussion for a plugin
 
-        self.uninstall(project)
         # Setup permissions
         role_developer = ProjectRole.query.get(name='Developer')._id
         role_auth = ProjectRole.query.get(name='*authenticated')._id
@@ -161,6 +161,7 @@ class ForgeDiscussionApp(Application):
         model.Forum.query.remove(dict(app_config_id=self.config._id))
         model.ForumThread.query.remove(dict(app_config_id=self.config._id))
         model.ForumPost.query.remove(dict(app_config_id=self.config._id))
+        super(ForgeDiscussionApp, self).uninstall(project)
 
 class ForumAdminController(DefaultAdminController):
 

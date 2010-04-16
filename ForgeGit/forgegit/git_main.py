@@ -88,7 +88,7 @@ class ForgeGitApp(Application):
         if repo is not None and repo.path:
             shutil.rmtree(repo.path, ignore_errors=True)
         model.GitRepository.query.remove(dict(app_config_id=self.config._id))
-        Application.uninstall(self, project_id=data['project_id'])
+        super(ForgeGitApp, self).uninstall(project_id=data['project_id'])
 
 class RootController(object):
 

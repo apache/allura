@@ -91,8 +91,8 @@ class HelloForgeApp(Application):
         return pkg_resources.resource_filename('helloforge', 'templates')
 
     def install(self, project):
+        super(HelloForgeApp, self).install(project)
         self.config.options['project_name'] = project._id
-        self.uninstall(project)
         pr = c.user.project_role()
         if pr: 
             for perm in self.permissions:
@@ -108,6 +108,7 @@ class HelloForgeApp(Application):
     def uninstall(self, project):
         mapper(M.Page).remove(dict(project_id=c.project._id))
         mapper(M.Comment).remove(dict(project_id=c.project._id))
+        super(HelloForgeApp, self).uninstall(project)
 
 class RootController(object):
 

@@ -63,8 +63,8 @@ class {{egg}}App(Application):
 
     def install(self, project):
         'Set up any default permissions and roles here'
+        super({{egg}}App, self).install(project)
 
-        self.uninstall(project)
         # Give the installing user all the permissions
         pr = c.user.project_role()
         for perm in self.permissions:
@@ -79,6 +79,7 @@ class {{egg}}App(Application):
     def uninstall(self, project):
         "Remove all the plugin's artifacts from the database"
         pass
+        super({{egg}}App, self).uninstall(project)
 
 class RootController(object):
 

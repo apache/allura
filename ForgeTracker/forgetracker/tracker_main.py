@@ -150,7 +150,6 @@ class ForgeTrackerApp(Application):
     def install(self, project):
         'Set up any default permissions and roles here'
 
-        self.uninstall(project)
         super(ForgeTrackerApp, self).install(project)
         # Setup permissions
         role_developer = ProjectRole.query.get(name='Developer')._id
@@ -176,6 +175,7 @@ class ForgeTrackerApp(Application):
         model.Ticket.query.remove(app_config_id)
         # model.Comment.query.remove(app_config_id)
         model.Globals.query.remove(app_config_id)
+        super(ForgeTrackerApp, self).uninstall(project)
 
 class RootController(object):
 

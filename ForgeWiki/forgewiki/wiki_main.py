@@ -140,7 +140,6 @@ class ForgeWikiApp(Application):
     def install(self, project):
         'Set up any default permissions and roles here'
         self.config.options['project_name'] = project._id
-        self.uninstall(project)
         super(ForgeWikiApp, self).install(project)
         # Setup permissions
         role_developer = ProjectRole.query.get(name='Developer')._id
@@ -172,7 +171,7 @@ The wiki uses [Markdown](%s) syntax.
         "Remove all the plugin's artifacts from the database"
         model.Attachment.query.remove({'metadata.app_config_id':c.app.config._id})
         model.Page.query.remove(dict(app_config_id=c.app.config._id))
-        Application.uninstall(self, project)
+        super(ForgeWikiApp, self).uninstall(project)
 
 class RootController(object):
 

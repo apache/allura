@@ -74,8 +74,8 @@ class ForgeSCMApp(Application):
 
     def install(self, project):
         'Set up any default permissions and roles here'
+        super(ForgeSCMApp, self).install(project)
 
-        self.uninstall(project)
         # Give the installing user all the permissions
         pr = c.user.project_role()
         for perm in self.permissions:
@@ -97,6 +97,7 @@ class ForgeSCMApp(Application):
         "Remove all the plugin's artifacts from the database"
         repo = self.repo
         if repo: repo.delete()
+        super(ForgeSCMApp, self).uninstall(project)
 
 mixin_reactors(ForgeSCMApp, common_react)
 mixin_reactors(ForgeSCMApp, hg_react)
