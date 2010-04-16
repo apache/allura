@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import os
+import os.path
 import difflib
 import urllib
 import re
@@ -7,6 +8,7 @@ import Image
 from hashlib import sha1
 from datetime import datetime
 
+import genshi.template
 from formencode.validators import FancyValidator
 from dateutil.parser import parse
 from pymongo.bson import ObjectId
@@ -262,3 +264,15 @@ class proxy(object):
         return getattr(self._obj, name)
     def __call__(self, *args, **kwargs):
         return self._obj(*args, **kwargs)
+
+def render_genshi_plaintext(template_name, **template_vars):
+    fd = open(template_name)
+    try:
+        tpl_text = fd.read()
+    finally:
+        fd.close()
+    filepath = os.path.dirname(template_name)
+    tt = genshi.template.NewTextTemplate(tpl_text,
+            filepath=filepath, filename=template_name)
+    stream = tt.generate(**template_vars)
+    return stream.render()

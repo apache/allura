@@ -2,7 +2,6 @@ import os
 import sys
 import logging
 
-import genshi
 import pylons
 import pkg_resources
 from pymongo import bson
@@ -10,6 +9,7 @@ from pymongo import bson
 from forgescm import model as M
 from .command import Command
 from . import hg
+from pyforge.lib.helpers import render_genshi_plaintext
 
 log = logging.getLogger(__name__)
 
@@ -48,17 +48,12 @@ def setup_commit_hook(repo_dir, plugin_id):
     'Set up the svn post-commit hook'
     tpl_fn = pkg_resources.resource_filename(
         'forgescm', 'data/svn/post-commit_tmpl')
-    tpl_text = open(tpl_fn).read()
-    tt = genshi.template.NewTextTemplate(
-        tpl_text, filepath=os.path.dirname(tpl_fn), filename=tpl_fn)
-    context = dict(
+    text = render_genshi_plaintext(tpl_fn, 
         executable=sys.executable,
         repository=plugin_id,
         config=pylons.config['__file__'])
-    strm = tt.generate(**context)
     fn = os.path.join(repo_dir, 'hooks/post-commit')
     with open(fn, 'w') as fp:
-        fp.write(strm.render())
+        fp.write(text)
     os.chmod(fn, 0755)
 
-    

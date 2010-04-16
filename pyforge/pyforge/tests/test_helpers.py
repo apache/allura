@@ -4,6 +4,7 @@ from tg import config
 from pylons import c, g
 from paste.deploy import loadapp
 from paste.script.appinstall import SetupCommand
+from nose.tools import eq_
 
 from pyforge import model as M
 from pyforge.lib import helpers as h
@@ -20,6 +21,12 @@ def setUp(self):
     test_file = path.join(conf_dir, test_config)
     cmd = SetupCommand('setup-app')
     cmd.run([test_file])
+
+def test_render_genshi_plaintext():
+    here_dir = path.dirname(__file__)
+    tpl = path.join(here_dir, 'genshi_hello_tmpl')
+    text = h.render_genshi_plaintext(tpl, object='world')
+    eq_(u'Hello, world!\n', text)
 
 def test_find_project():
     proj, rest = h.find_project('/projects/test/foo')

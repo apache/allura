@@ -4,12 +4,12 @@ import shutil
 import logging
 
 import pkg_resources
-import genshi
 import pylons
 from pymongo import bson
 from dateutil.parser import parse as parse_dt
 
 from pyforge.lib.helpers import find_executable
+from pyforge.lib.helpers import render_genshi_plaintext
 from forgescm import model as M
 from .command import Command
 import glob
@@ -51,16 +51,13 @@ def setup_gitweb(repo_name, repo_dir):
     log.info("repo_name: " + repo_name)
     tpl_fn = pkg_resources.resource_filename(
         'forgescm', 'data/gitweb.conf_tmpl')
-    tpl_text = open(tpl_fn).read()
-    tt = genshi.template.NewTextTemplate(
-        tpl_text, filepath=os.path.dirname(tpl_fn), filename=tpl_fn)
-    cfg_strm = tt.generate(
+    text = render_genshi_plaintext(tpl_fn, 
         my_uri='/_wsgi_/scm/projects/' + repo_name,
         site_name='GitWeb Interface for ' + repo_name,
         project_root=os.path.join(repo_dir, ".."))
     cfg_fn = os.path.join(repo_dir, 'gitweb.conf')
     with open(cfg_fn, 'w') as fp:
-        fp.write(cfg_strm.render())
+        fp.write(text)
 
     with open(os.path.join(repo_dir, 'description'), 'w') as desc:
         desc.write(repo_name)
@@ -69,20 +66,16 @@ def setup_commit_hook(repo_dir, plugin_id):
     'Set up the git post-commit hook'
     tpl_fn = pkg_resources.resource_filename(
         'forgescm', 'data/git/post-receive_tmpl')
-    tpl_text = open(tpl_fn).read()
-    tt = genshi.template.NewTextTemplate(
-        tpl_text, filepath=os.path.dirname(tpl_fn), filename=tpl_fn)
     config = None
     if 'file' in pylons.config:
         config = pylons.config.__file__
-    context = dict(
+    text = render_genshi_plaintext(tpl_fn, 
         executable=sys.executable,
         repository=plugin_id,
         config=config)
-    strm = tt.generate(**context)
     fn = os.path.join(repo_dir, 'hooks', 'post-receive')
     with open(fn, 'w') as fp:
-        fp.write(strm.render())
+        fp.write(text)
     os.chmod(fn, 0755)
 
 class LogParser(object):
