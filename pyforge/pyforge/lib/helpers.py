@@ -266,6 +266,7 @@ class proxy(object):
         return self._obj(*args, **kwargs)
 
 def render_genshi_plaintext(template_name, **template_vars):
+    assert os.path.exists(template_name)
     fd = open(template_name)
     try:
         tpl_text = fd.read()
