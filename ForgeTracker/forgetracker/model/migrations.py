@@ -7,14 +7,12 @@ from pylons import c
 
 from flyway import Migration
 from pyforge.model import Thread, AppConfig, ArtifactReference
-from forgetracker.model import Ticket
+from forgetracker.model import Ticket, Globals
 
-class V0(Migration):
-    '''Migrate Thread.artifact_id to Thread.artifact_reference'''
-    version = 0
 
+class TrackerMigration(Migration):
     def __init__(self, *args, **kwargs):
-        super(V0, self).__init__(*args, **kwargs)
+        super(TrackerMigration, self).__init__(*args, **kwargs)
         try:
             c.project
         except TypeError:
@@ -26,6 +24,11 @@ class V0(Migration):
             c.app.config = EmptyClass()
             c.app.config.options = EmptyClass()
             c.app.config.options.mount_point = None
+
+
+class V0(TrackerMigration):
+    '''Migrate Thread.artifact_id to Thread.artifact_reference'''
+    version = 0
 
     def up(self):
         for pg in self.ormsession.find(Ticket):
@@ -53,4 +56,23 @@ class V0(Migration):
             mount_point=app_config.options.mount_point,
             artifact_type=pymongo.bson.Binary(pickle.dumps(art.__class__)),
             artifact_id=art._id))
-        
+
+
+class AddShowInSearchAttributeToAllCustomFields(TrackerMigration):
+    version = 1
+
+    def up(self):
+        for custom_field in self.each_custom_field():
+            custom_field['show_in_search'] = False
+        self.ormsession.flush()
+
+    def down(self):
+        for custom_field in self.each_custom_field():
+            del custom_field['show_in_search']
+        self.ormsession.flush()
+
+    def each_custom_field(self):
+        for tracker_globals in self.ormsession.find(Globals):
+            for custom_field in tracker_globals.custom_fields:
+                yield custom_field
+
