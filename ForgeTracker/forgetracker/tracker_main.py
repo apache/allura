@@ -10,6 +10,7 @@ import pkg_resources
 from tg import tmpl_context
 from tg import expose, validate, redirect, flash
 from tg import request, response
+from tg.render import render_mako
 from tg.decorators import with_trailing_slash, without_trailing_slash
 from pylons import g, c, request
 from formencode import validators
@@ -559,6 +560,57 @@ class BinController(object):
         bin.delete()
         redirect(request.referer)
 
+class changelog(object):
+    """
+    A dict-like object which keeps log about what keys have been changed.
+
+    >>> c = changelog()
+    >>> c['foo'] = 'bar'
+    >>> c['bar'] = 'baraban'
+    >>> c.get_changed()
+    []
+    >>> c['bar'] = 'drums'
+    >>> c.get_changed()
+    [('bar', ('baraban', 'drums'))]
+
+    The .get_changed() lists key in the same order they were added to the changelog:
+
+    >>> c['foo'] = 'quux'
+    >>> c.get_changed()
+    [('foo', ('bar', 'quux')), ('bar', ('baraban', 'drums'))]
+
+    When the key is set multiple times it still compares to the value that was set first.
+    If changed value equals to the value set first time it is not included.
+
+    >>> c['foo'] = 'bar'
+    >>> c['bar'] = 'koleso'
+    >>> c.get_changed()
+    [('bar', ('baraban', 'koleso'))]
+    """
+
+    def __init__(self):
+        self.keys = [] # to track insertion order
+        self.originals = {}
+        self.data = {}
+
+    def __setitem__(self, key, value):
+        if key not in self.keys:
+            self.keys.append(key)
+        if key not in self.originals:
+            self.originals[key] = value
+        self.data[key] = value
+
+    def get_changed(self):
+        t = []
+        for key in self.keys:
+            if key in self.originals:
+                orig_value = self.originals[key]
+                curr_value = self.data[key]
+                if not orig_value == curr_value:
+                    t.append((key, (orig_value, curr_value)))
+        return t
+
+
 class TicketController(object):
 
     def __init__(self, ticket_num=None):
@@ -648,24 +700,31 @@ class TicketController(object):
         require(has_artifact_access('write', self.ticket))
         if request.method != 'POST':
             raise Exception('update_ticket must be a POST request')
+        changes = changelog()
         if 'tags' in post_data and len(post_data['tags']):
             tags = post_data['tags'].split(',')
             del post_data['tags']
         else:
             tags = []
         if 'labels' in post_data and len(post_data['labels']):
+            changes['labels'] = self.ticket.labels
             self.ticket.labels = post_data['labels'].split(',')
+            changes['labels'] = self.ticket.labels
             del post_data['labels']
         else:
             self.ticket.labels = []
         for k in ['summary', 'description', 'status', 'milestone']:
+            changes[k] = getattr(self.ticket, k)
             if k in post_data:
                 setattr(self.ticket, k, post_data[k])
             else:
                 setattr(self.ticket, k, '')
+            changes[k] = getattr(self.ticket, k)
         if 'assigned_to' in post_data:
             who = post_data['assigned_to']
+            changes['assigned_to'] = self.ticket.assigned_to
             self.ticket.assigned_to_id = ObjectId(who) if who else None
+            changes['assigned_to'] = self.ticket.assigned_to
         tag_artifact(self.ticket, c.user, tags)
 
         globals = model.Globals.query.get(app_config_id=c.app.config._id)
@@ -686,17 +745,24 @@ class TicketController(object):
                 value = False
             else:
                 value = ''
+            changes['custom_field_%s'%cf.name] =self.ticket.custom_fields.get(cf.name)
             self.ticket.custom_fields[cf.name] = value
+            changes['custom_field_%s'%cf.name] =self.ticket.custom_fields.get(cf.name)
         thread = self.ticket.discussion_thread()
         latest_post = thread.posts and thread.posts[-1] or None
+        post = None
         if latest_post and latest_post.author() == c.user:
             now = datetime.utcnow()
             folding_window = timedelta(seconds=60*5)
             if (latest_post.timestamp + folding_window) > now:
-                pass # folding into latest_post
-            else:
-                pass # adding anew
-        # p = thread.add_post(text='ticket updated')
+                post = latest_post
+                log.info('Folding ticket updates into %s', post)
+        change_text = render_mako('forgetracker.templates.ticket_changes', 
+            dict(changelist=changes.get_changed()))
+        if post is None:
+            post = thread.add_post(text=change_text)
+        else:
+            post.text += '\n\n' + change_text
         self.ticket.commit()
         if any_sums:
             self.ticket.dirty_sums()
