@@ -10,7 +10,6 @@ import pkg_resources
 from tg import tmpl_context
 from tg import expose, validate, redirect, flash
 from tg import request, response
-from tg.render import render_mako
 from tg.decorators import with_trailing_slash, without_trailing_slash
 from pylons import g, c, request
 from formencode import validators
@@ -22,6 +21,7 @@ from ming.orm.ormsession import ThreadLocalORMSession
 # Pyforge-specific imports
 from pyforge.app import Application, ConfigOption, SitemapEntry, DefaultAdminController
 from pyforge.lib.helpers import push_config, tag_artifact, DateTimeConverter, square_image
+from pyforge.lib.helpers import render_genshi_plaintext
 from pyforge.lib import helpers as h
 from pyforge.lib.search import search_artifact
 from pyforge.lib.decorators import audit, react
@@ -757,8 +757,10 @@ class TicketController(object):
             if (latest_post.timestamp + folding_window) > now:
                 post = latest_post
                 log.info('Folding ticket updates into %s', post)
-        change_text = render_mako('forgetracker.templates.ticket_changes', 
-            dict(changelist=changes.get_changed()))
+        tpl_fn = pkg_resources.resource_filename(
+            'forgetracker', 'data/ticket_changed_tmpl')
+        change_text = render_genshi_plaintext(tpl_fn, 
+            changelist=changes.get_changed())
         if post is None:
             post = thread.add_post(text=change_text)
         else:
