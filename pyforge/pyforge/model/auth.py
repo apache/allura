@@ -186,7 +186,7 @@ class User(MappedClass):
 
     def private_project(self):
         from .project import Project
-        return Project.query.get(shortname='users/%s' % self.username)
+        return Project.query.get(shortname='users/%s' % self.username, deleted=False)
 
     @property
     def script_name(self):
@@ -195,7 +195,7 @@ class User(MappedClass):
     def my_projects(self):
         from .project import Project
         for p in self.projects:
-            yield Project.query.get(_id=p)
+            yield Project.query.get(_id=p, deleted=False)
 
     def role_iter(self):
         yield ProjectRole.query.get(name='*anonymous')

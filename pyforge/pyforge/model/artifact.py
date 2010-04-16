@@ -97,14 +97,14 @@ class ArtifactLink(MappedClass):
             else:
                 return None
         elif project_id.startswith('/'):
-            projects = Project.query.find(dict(shortname=project_id[1:])).all()
+            projects = Project.query.find(dict(shortname=project_id[1:], deleted=False)).all()
         else:
             if c.project:
                 project_id = os.path.normpath(
                     os.path.join('/' + c.project.shortname, project_id))
             else:
                 project_id = '/' + project_id
-            projects = Project.query.find(dict(shortname=project_id[1:])).all()
+            projects = Project.query.find(dict(shortname=project_id[1:], deleted=False)).all()
         if not projects: return None
         #
         # Actually search the projects

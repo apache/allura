@@ -369,7 +369,7 @@ class TestForumAdmin(TestController):
         assert len(r.html.findAll('input',{'value':'Delete'})) == 2
         assert len(r.html.findAll('input',{'value':'Undelete'})) == 0
         r = self.app.get('/discussion/')
-        assert '(This forum has been deleted and is not visible to non-admin users)' not in r
+        assert 'This forum has been deleted and is not visible to non-admin users' not in r
         h.set_context('test', 'Forum')
         frm = FM.Forum.query.get(shortname='TestForum')
 
@@ -383,8 +383,7 @@ class TestForumAdmin(TestController):
         assert len(r.html.findAll('input',{'value':'Delete'})) == 1
         assert len(r.html.findAll('input',{'value':'Undelete'})) == 1
         r = self.app.get('/discussion/')
-        assert '(This forum has been deleted and is not visible to non-admin users)' in r
-
+        assert 'This forum has been deleted and is not visible to non-admin users' in r
         r = self.app.post('/admin/discussion/update_forums',
                           params={'new_forum.create':'',
                                   'forum-0.undelete':'on',
@@ -395,4 +394,4 @@ class TestForumAdmin(TestController):
         assert len(r.html.findAll('input',{'value':'Delete'})) == 2
         assert len(r.html.findAll('input',{'value':'Undelete'})) == 0
         r = self.app.get('/discussion/')
-        assert '(This forum has been deleted and is not visible to non-admin users)' not in r
+        assert 'This forum has been deleted and is not visible to non-admin users' not in r

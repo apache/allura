@@ -32,13 +32,13 @@ def REACTING(message, post_name=None, appmount=None, apploc=None, proj=None, hos
 
     project_id = '/'.join(reversed(proj.split('.'))) + '/'
     try:
-        valid = M.Project.query.get(_id=project_id)
+        valid = M.Project.query.get(_id=project_id, deleted=False)
     except:
         logging.debug('REACT: project "' + proj + '" does not exist as project or user')
     else:
         logging.debug('REACT: project "' + proj + '" exists with id:' + project_id)
         try:
-            c.project = M.Project.query.get(_id=project_id)
+            c.project = M.Project.query.get(_id=project_id, deleted=False)
         except:
             logging.debug('REACT: cannot initialize valid project')
         else:

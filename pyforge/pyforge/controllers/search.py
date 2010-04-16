@@ -75,9 +75,9 @@ class ProjectBrowseController(object):
             # are only two levels deep like the existing site
             if self.category.subcategories:
                 ids = ids + [cat._id for cat in self.category.subcategories]
-            projects = M.Project.query.find(dict(category_id={'$in':ids}, **self.additional_filters)).sort('name').all()
+            projects = M.Project.query.find(dict(category_id={'$in':ids}, deleted=False, **self.additional_filters)).sort('name').all()
         else:
-            projects = M.Project.query.find(self.additional_filters).sort('name').all()
+            projects = M.Project.query.find(dict(deleted=False, **self.additional_filters)).sort('name').all()
         return projects
 
     @expose()

@@ -130,6 +130,16 @@ class ProjectAdminController(object):
 
     @expose()
     def update(self, name=None, short_description=None, description=None, icon=None, screenshot=None, category=None, **kw):
+        if 'delete' in kw:
+            c.project.deleted = True
+            for sp in c.project.subprojects:
+                sp.deleted = True
+            redirect('.')
+        elif 'undelete' in kw:
+            c.project.deleted = False
+            for sp in c.project.subprojects:
+                sp.deleted = False
+            redirect('.')
         c.project.name = name
         c.project.short_description = short_description
         c.project.description = description

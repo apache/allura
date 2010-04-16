@@ -102,7 +102,7 @@ class Globals(object):
               resource ])
 
     def set_project(self, pid):
-        c.project = M.Project.query.get(shortname=pid)
+        c.project = M.Project.query.get(shortname=pid, deleted=False)
 
     def set_app(self, name):
         c.app = c.project.app_instance(name)

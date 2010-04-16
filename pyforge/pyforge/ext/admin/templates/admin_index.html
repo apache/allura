@@ -23,6 +23,7 @@
   </head>
   
   <body>
+    <div py:if="c.project.deleted" class="notice">This project has been deleted and is not visible to non-admin users</div>
     <div id="project_admin_tabs">
     	<ul>
     		<li><a href="#project-admin-overview">Overview</a></li>
@@ -125,7 +126,16 @@
             </div>
             <div class="editor">${file_field('screenshot', 'File')}</div>
           </div>
-          <div class="push-3 span-15 last"><input type="submit" value="Save"/></div>
+          <div class="push-3 span-15 last">
+            <input type="submit" value="Save"
+                   class="ui-state-default ui-button ui-button-text"/>
+            <input type="submit" value="Delete Project" name="delete"
+                   class="ui-state-default ui-button ui-button-text"
+                   py:if="not c.project.deleted"/>
+            <input type="submit" value="Undelete Project" name="undelete"
+                   class="ui-state-default ui-button ui-button-text"
+                   py:if="c.project.deleted"/>
+          </div>
         </form>
       </div>
       <div id="project-admin-plugins">

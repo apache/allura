@@ -263,6 +263,7 @@ class Project(MappedClass):
     neighborhood = RelationProperty(Neighborhood)
     app_configs = RelationProperty('AppConfig')
     category_id = FieldProperty(S.ObjectId, if_missing=None)
+    deleted = FieldProperty(bool, if_missing=False)
 
     def sidebar_menu(self):
         from pyforge.app import SitemapEntry

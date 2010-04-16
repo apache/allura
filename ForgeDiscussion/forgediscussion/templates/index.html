@@ -27,7 +27,7 @@
       </div>
       <div class="span-14">
         <h2>$forum.name</h2>
-        <div py:if="forum.deleted" style="color: #f00">(This forum has been deleted and is not visible to non-admin users)</div>
+        <div py:if="forum.deleted" class="notice">This forum has been deleted and is not visible to non-admin users</div>
         ${Markup(g.markdown.convert(forum.description))}
       </div>
       ${c.subscription_form.display(value=forum, action=forum.url() + 'subscribe')}

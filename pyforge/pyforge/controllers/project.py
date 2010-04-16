@@ -18,7 +18,7 @@ from pyforge.app import SitemapEntry
 from pyforge.lib.base import BaseController
 from pyforge.lib import helpers as h
 from pyforge.controllers.error import ErrorController
-from pyforge.lib.security import require, has_project_access, has_neighborhood_access
+from pyforge.lib.security import require, has_project_access, has_neighborhood_access, has_artifact_access
 from pyforge.lib.widgets import form_fields as ffw
 from pyforge.lib.widgets import project_list as plw
 from .auth import AuthController
@@ -55,17 +55,17 @@ class NeighborhoodController(object):
         if not h.re_path_portion.match(pname):
             raise exc.HTTPNotFound, pname
         project = M.Project.query.get(shortname=self.prefix + pname)
-        if project is None:
+        c.project = project
+        if project is None or (project.deleted and not has_project_access('update')()):
             raise exc.HTTPNotFound, pname
         if project.neighborhood.name != self.neighborhood_name:
             redirect(project.url())
-        c.project = project
         return ProjectController(), remainder
 
     @expose('pyforge.templates.neighborhood_project_list')
     def index(self):
         c.project_summary = W.project_summary
-        projects = M.Project.query.find(dict(neighborhood_id=self.neighborhood._id)).sort('name').all()
+        projects = M.Project.query.find(dict(neighborhood_id=self.neighborhood._id, deleted=False)).sort('name').all()
         categories = M.ProjectCategory.query.find({'parent_id':None}).sort('name').all()
         c.custom_sidebar_menu = [SitemapEntry('Categories')] + [
             SitemapEntry(cat.label, self.neighborhood.url()+'browse/'+cat.name, className='nav_child') for cat in categories
@@ -170,7 +170,7 @@ class ProjectController(object):
     def _lookup(self, name, *remainder):
         if not h.re_path_portion.match(name):
             raise exc.HTTPNotFound, name
-        subproject = M.Project.query.get(shortname=c.project.shortname + '/' + name)
+        subproject = M.Project.query.get(shortname=c.project.shortname + '/' + name, deleted=False)
         if subproject:
             c.project = subproject
             c.app = None
@@ -285,7 +285,7 @@ class NeighborhoodAdminController(object):
     @expose('pyforge.templates.neighborhood_admin')
     def index(self):
         c.markdown_editor = W.markdown_editor
-        psort = [(n, M.Project.query.find(dict(is_root=True, neighborhood_id=n._id)).sort('shortname').all())
+        psort = [(n, M.Project.query.find(dict(is_root=True, neighborhood_id=n._id, deleted=False)).sort('shortname').all())
                  for n in M.Neighborhood.query.find().sort('name')]
 #        accolades = M.AwardGrant.query.find(dict(granted_to_project_id=c.project._id))
         awards = M.Award.query.find(dict(created_by_neighborhood_id=self.neighborhood._id))
@@ -374,7 +374,7 @@ class NeighborhoodModerateController(object):
 
     @expose()
     def invite(self, pid, invite=None, uninvite=None):
-        p = M.Project.query.get(shortname=pid)
+        p = M.Project.query.get(shortname=pid, deleted=False)
         if p is None:
             flash("Can't find %s" % pid, 'error')
             redirect('.')
@@ -397,7 +397,7 @@ class NeighborhoodModerateController(object):
 
     @expose()
     def evict(self, pid):
-        p = M.Project.query.get(shortname=pid, neighborhood_id=self.neighborhood._id)
+        p = M.Project.query.get(shortname=pid, neighborhood_id=self.neighborhood._id, deleted=False)
         if p is None:
             flash("Cannot evict  %s; it's not in the neighborhood"
                   % pid, 'error')
@@ -452,7 +452,7 @@ class NeighborhoodAwardsController(object):
         if request.method != 'POST':
             raise Exception('award_grant must be a POST request')
         grant_q = M.Award.query.find(dict(short=grant)).first()
-        recipient_q = M.Project.query.find(dict(name=recipient)).first()
+        recipient_q = M.Project.query.find(dict(name=recipient, deleted=False)).first()
         app_config_id = ObjectId()
         plugin_verson = { 'neighborhood':'0' }
         award = M.AwardGrant(app_config_id=app_config_id, plugin_verson=plugin_verson)
