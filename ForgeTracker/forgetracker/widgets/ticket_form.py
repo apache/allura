@@ -13,8 +13,15 @@ class TicketCustomFields(ew.CompoundField):
         fields = []
         for field in model.Globals.for_current_tracker().custom_fields:
             if field.type == 'select':
+                options = []
+                for opt in field.options.split():
+                    selected = False
+                    if opt.startswith('*'):
+                        opt = opt[1:]
+                        selected = True
+                    options.append(ew.Option(label=opt,html_value=opt,py_value=opt,selected=selected))
                 fields.append(ew.SingleSelectField(label=field.label, name=str(field.name), attrs={'class':"title wide"},
-                    options=[ew.Option(label=opt,html_value=opt,py_value=opt) for opt in field.options.split()]))
+                    options=options))
             elif field.type == 'boolean':
                 fields.append(ew.Checkbox(label=field.label, name=str(field.name), suppress_label=True))
             elif field.type == 'sum' or field.type == 'number':

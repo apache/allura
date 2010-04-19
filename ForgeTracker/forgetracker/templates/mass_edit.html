@@ -79,7 +79,10 @@
             <input py:if="field.type == 'boolean'" name="${field.name}" type="checkbox" value="True"/>
             <select py:if="field.type == 'select'" name="${field.name}">
               <option value="" selected="selected"></option>
-              <option py:for="option in field.options.split()" value="${option}">$option</option>
+              <py:for each="option in field.options.split()">
+                <option py:if="not option.startswith('*')" value="${option}">${option}</option>
+                <option py:if="option.startswith('*')" value="${option[1:]}" selected="selected">${option[1:]}</option>
+              </py:for>
             </select>
           </div>
         </div>
