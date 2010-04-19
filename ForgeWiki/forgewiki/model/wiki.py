@@ -74,6 +74,7 @@ class Page(VersionedArtifact):
             description = self.text
             subject = 'Page %s created' % self.title
         Feed.post(self, description)
+        description += "\n\Page URL: %s" % h.full_url(self.url())
         Notification.post(artifact=self, topic='metadata', text=description, subject=subject)
 
     @property
