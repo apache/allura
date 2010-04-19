@@ -82,6 +82,9 @@ class Notification(MappedClass):
                     idx['title_s'], artifact.email_address),
                 subject=subject_prefix + subject,
                 text=kw.pop('text', subject))
+        if hasattr(artifact, 'url'):
+            d['text'] += '\n\n%s URL: %s' % \
+                (artifact.__class__.__name__, h.full_url(artifact.url()))
         n = cls(artifact_reference=artifact.dump_ref(),
                 topic=topic,
                 link=kw.pop('link', artifact.url()),

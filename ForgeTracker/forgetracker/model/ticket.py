@@ -189,7 +189,6 @@ class Ticket(VersionedArtifact):
                    artifact_reference=self.dump_ref(),
                    subject='#%s discussion' % self.ticket_num)
         Feed.post(self, description)
-        description += "\n\nTicket URL: %s" % h.full_url(self.url())
         Notification.post(artifact=self, topic='metadata', text=description, subject=subject)
 
     def url(self):
