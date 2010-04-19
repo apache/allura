@@ -109,6 +109,7 @@ def send_email(routing_key, data):
     smtp_client.sendmail(
         addrs_multi,
         data['from'],
+        data['reply_to'],
         data['subject'],
         data['message_id'],
         data.get('in_reply_to', None),
@@ -116,6 +117,7 @@ def send_email(routing_key, data):
     smtp_client.sendmail(
         addrs_plain,
         data['from'],
+        data['reply_to'],
         data['subject'],
         data['message_id'],
         data.get('in_reply_to', None),
@@ -123,6 +125,7 @@ def send_email(routing_key, data):
     smtp_client.sendmail(
         addrs_html,
         data['from'],
+        data['reply_to'],
         data['subject'],
         data['message_id'],
         data.get('in_reply_to', None),

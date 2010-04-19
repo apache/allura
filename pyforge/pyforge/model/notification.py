@@ -45,6 +45,7 @@ class Notification(MappedClass):
     # Notification Content
     in_reply_to=FieldProperty(str)
     from_address=FieldProperty(str)
+    reply_to_address=FieldProperty(str)
     subject=FieldProperty(str)
     text=FieldProperty(str)
     link=FieldProperty(str)
@@ -67,10 +68,13 @@ class Notification(MappedClass):
             subject = post.subject or ''
             if post.parent_id and not subject.lower().startswith('re:'):
                 subject = 'Re: ' + subject
+            author = post.author()
             d = dict(
                 _id=post._id,
-                from_address='%s <%s>' % (
-                    post.author().display_name, getattr(artifact, 'email_address', 'noreply@in.sf.net')),
+                from_address='"%s" <%s>' % (
+                    author.display_name, author.preferences.email_address),
+                reply_to_address='"%s" <%s>' % (
+                    subject_prefix, getattr(artifact, 'email_address', 'noreply@in.sf.net')),
                 subject=subject_prefix + subject,
                 text=post.text,
                 in_reply_to=post.parent_id)
@@ -80,8 +84,12 @@ class Notification(MappedClass):
             d = dict(
                 from_address='%s <%s>' % (
                     idx['title_s'], artifact.email_address),
+                reply_to_address='"%s" <%s>' % (
+                    idx['title_s'], artifact.email_address),
                 subject=subject_prefix + subject,
                 text=kw.pop('text', subject))
+        if not d.get('text'):
+            d['text'] = ''
         if hasattr(artifact, 'url'):
             d['text'] += '\n\n%s URL: %s' % \
                 (artifact.__class__.__name__, h.full_url(artifact.url()))
@@ -110,6 +118,7 @@ To unsubscribe from further messages, please visit <%s/auth/prefs/>
         g.publish('audit', 'forgemail.send_email', {
                 'destinations':[str(user_id)],
                 'from':self.from_address,
+                'reply_to':self.reply_to_address,
                 'subject':self.subject,
                 'message_id':self._id,
                 'in_reply_to':self.in_reply_to,
@@ -130,6 +139,7 @@ To unsubscribe from further messages, please visit <%s/auth/prefs/>
         g.publish('audit', 'forgemail.send_email', {
                 'destinations':[str(user_id)],
                 'from':from_address,
+                'reply_to':from_address,
                 'subject':subject,
                 'message_id':h.gen_message_id(),
                 'text':text},
@@ -149,6 +159,7 @@ To unsubscribe from further messages, please visit <%s/auth/prefs/>
         g.publish('audit', 'forgemail.send_email', {
                 'destinations':[str(user_id)],
                 'from':from_address,
+                'reply_to':from_address,
                 'subject':subject,
                 'message_id':h.gen_message_id(),
                 'text':text},

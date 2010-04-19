@@ -10,7 +10,8 @@ class MigrateTest(unittest.TestCase):
         self.cmd = MigrateCommand('flyway')
         self.cmd.entry_point_section='flyway.test_migrations'
         self.args = [
-            '-u', 'mongo://127.0.0.1:27017/pyforge',
+            # '-u', 'mongo://127.0.0.1:27017/pyforge',
+            '-u', 'mim:///pyforge',
             ]
         self.cmd.run(self.args + ['--reset'])
 
