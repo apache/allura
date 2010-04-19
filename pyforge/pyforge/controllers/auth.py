@@ -1,4 +1,5 @@
 import logging, string
+from urllib import urlencode
 from pprint import pformat
 
 from tg import expose, session, flash, redirect, validate
@@ -39,17 +40,22 @@ class AuthController(object):
     @expose('pyforge.templates.login')
     @with_trailing_slash
     def index(self, *args, **kwargs):
-        return dict(oid_providers=OID_PROVIDERS)
+        orig_request = request.environ.get('pylons.original_request', None)
+        if orig_request:
+            came_from = orig_request.url
+        else:
+            came_from = request.referer
+        return dict(oid_providers=OID_PROVIDERS, came_from=came_from)
 
     @expose('pyforge.templates.custom_login')
-    def login_verify_oid(self, provider, username):
+    def login_verify_oid(self, provider, username, came_from=None):
         if provider:
             oid_url = string.Template(provider).safe_substitute(
                 username=username)
         else:
             oid_url = username
         return verify_oid(oid_url, failure_redirect='.',
-                          return_to='login_process_oid',
+                          return_to='login_process_oid?%s' % urlencode(dict(came_from=came_from)),
                           title='OpenID Login',
                           prompt='Click below to continue')
 
@@ -64,7 +70,7 @@ class AuthController(object):
                   % c.user.display_name)
             redirect('setup_openid_user')
         flash('Welcome back, %s' % c.user.display_name)
-        redirect('/')
+        redirect(kw.pop('came_from', '/'))
 
     @expose('pyforge.templates.setup_openid_user')
     def setup_openid_user(self):
@@ -164,7 +170,7 @@ class AuthController(object):
         redirect('/')
 
     @expose()
-    def do_login(self, username, password):
+    def do_login(self, username, password, came_from=None):
         user = M.User.query.get(username=username)
         if user is None:
             session['userid'] = None
@@ -177,6 +183,7 @@ class AuthController(object):
         session['userid'] = user._id
         session.save()
         flash('Welcome back, %s' % user.display_name)
+        if came_from: redirect(came_from)
         redirect('/')
 
 class PreferencesController(object):

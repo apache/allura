@@ -68,7 +68,8 @@ class TestPostNotifications(unittest.TestCase):
         M.Mailbox.fire_ready()
         assert len(g.mock_amq.exchanges['audit']) == 1
         msg = g.mock_amq.exchanges['audit'][0]['message']
-        assert msg['text'] == 'WikiPage WikiHome modified by Test Admin'
+        assert msg['text'].startswith('WikiPage WikiHome modified by Test Admin')
+        assert 'you indicated interest in ' in msg['text']
 
     def _subscribe(self):
         s = M.Subscriptions.upsert()

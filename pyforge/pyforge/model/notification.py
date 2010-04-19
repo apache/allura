@@ -19,6 +19,7 @@ Notifications are also available for use in feeds
 from datetime import datetime, timedelta
 
 from pylons import c, g
+from tg import config
 
 from ming import schema as S
 from ming.orm import MappedClass, FieldProperty, ForeignIdProperty, RelationProperty
@@ -91,6 +92,17 @@ class Notification(MappedClass):
                 topic=topic))
         return n
 
+    def footer(self):
+        prefix = config.get('forgemail.host', 'https://sourceforge.net')
+        return '''
+
+---
+
+Sent from sourceforge.net because you indicated interest in <%s%s>
+
+To unsubscribe from further messages, please visit <%s/auth/prefs/>
+''' % (prefix, self.link, prefix)
+
     def send_direct(self, user_id):
         g.publish('audit', 'forgemail.send_email', {
                 'destinations':[str(user_id)],
@@ -98,7 +110,7 @@ class Notification(MappedClass):
                 'subject':self.subject,
                 'message_id':self._id,
                 'in_reply_to':self.in_reply_to,
-                'text':self.text},
+                'text':(self.text or '') + self.footer()},
                   serializer='pickle')
 
     @classmethod
@@ -110,6 +122,7 @@ class Notification(MappedClass):
             text.append('Message-ID: %s' % n._id)
             text.append('')
             text.append(n.text or '-no text-')
+        text.append(n.footer())
         text = '\n'.join(text)
         g.publish('audit', 'forgemail.send_email', {
                 'destinations':[str(user_id)],
@@ -128,6 +141,7 @@ class Notification(MappedClass):
             text.append('Message-ID: %s' % n._id)
             text.append('')
             text.append(h.text.truncate(n.text or '-no text-', 128))
+        text.append(n.footer())
         text = '\n'.join(text)
         g.publish('audit', 'forgemail.send_email', {
                 'destinations':[str(user_id)],
