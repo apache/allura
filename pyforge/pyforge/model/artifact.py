@@ -516,6 +516,7 @@ class Message(Artifact):
 class AwardFile(File):
     class __mongometa__:
         session = main_orm_session
+        name = 'award_file.files'
 
     # Override the metadata schema here
     metadata=FieldProperty(dict(
