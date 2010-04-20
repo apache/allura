@@ -38,6 +38,7 @@ class TestCustomFields(TestWithModel):
                   name='_point_estimate',
                   show_in_search=True)])
         expected = [dict(sortable_name='_point_estimate_s',
+                         name='_point_estimate',
                          label='Point Estimate')]
         assert tracker_globals.sortable_custom_fields_shown_in_search() == expected
 

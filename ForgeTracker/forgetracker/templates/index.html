@@ -37,7 +37,7 @@
 	          <td class="$t.status">$t.status</td>
 	          <td py:if="t.assigned_to_id"><a href="${t.assigned_to.url()}">${t.assigned_to.display_name}</a></td>
 	          <td py:if="not t.assigned_to_id"></td>
-              <td py:for="field_value in t.ordered_custom_field_values">${field_value}</td>
+              <td py:for="field in sortable_custom_fields">${t.custom_fields[field.name]}</td>
             </tr>
           </tbody>
         </table>

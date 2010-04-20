@@ -46,6 +46,7 @@ class Globals(MappedClass):
 
     def sortable_custom_fields_shown_in_search(self):
         return [dict(sortable_name='%s_s' % field.name,
+                     name=field.name,
                      label=field.label)
                 for field in self.custom_fields
                 if field.show_in_search]
@@ -152,12 +153,6 @@ class Ticket(VersionedArtifact):
     def email_address(self):
         domain = '.'.join(reversed(self.app.url[1:-1].split('/')))
         return '%s@%s%s' % (self.ticket_num, domain, common_suffix)
-
-    @property
-    def ordered_custom_field_values(self):
-        tracker_globals = Globals.for_current_tracker()
-        return [self.custom_fields.get(field['name'], None)
-                for field in tracker_globals.custom_fields]
 
     def commit(self):
         VersionedArtifact.commit(self)

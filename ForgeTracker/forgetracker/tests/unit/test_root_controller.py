@@ -25,6 +25,7 @@ class TestWhenSearchingWithCustomFields(WithUserAndBugsApp):
 
     def test_that_sortable_custom_fields_are_present(self):
         expected = [dict(sortable_name='_iteration_number_s',
+                         name='_iteration_number',
                          label='Iteration Number')]
         assert self.response['sortable_custom_fields'] == expected
 
