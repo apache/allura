@@ -361,7 +361,7 @@ class TestFunctionalController(TestController):
         # try submitting with no summary set and check for error message
         error_form = form.submit()
         error_message = error_form.html.find('div', {'class':'error'})
-        eq_("Missing value", error_message.string)
+        eq_("Please enter a value", error_message.string)
         assert error_message.findPreviousSibling('input').get('name') == 'ticket_form.summary'
         # set a summary, submit, and check for success
         error_form.form['ticket_form.summary'] = summary

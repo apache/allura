@@ -3,7 +3,7 @@ from urllib import urlencode
 from mock import Mock, patch
 from tg import config
 from nose.tools import assert_true
-from ming.orm.ormsession import session
+from ming.orm.base import session
 
 from pyforge.lib import helpers as h
 from pyforge.model import User
