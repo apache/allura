@@ -10,13 +10,26 @@ from tg import config
 from pylons import c, g
 from paste.deploy.converters import asbool
 
-from ming.orm.base import session
+from flyway.model import MigrationInfo
+from ming import Session
 from ming.orm.ormsession import ThreadLocalORMSession
 
 import pyforge
 from pyforge import model as M
 
 log = logging.getLogger(__name__)
+
+def set_flyway_info():
+    versions = dict(
+        pyforge=1,
+        ForgeTracker=0,
+        ForgeWiki=0)
+    mi = MigrationInfo.make(dict(versions=versions))
+    conn = M.main_doc_session.bind.conn
+    for database in conn.database_names():
+        log.info('Initialize Flyway for %s', database)
+        session = DBSession(conn[database])
+        session.insert(mi)
 
 def cache_test_data():
     log.info('Saving data to cache in .test-data')
@@ -39,6 +52,7 @@ def bootstrap(command, conf, vars):
     c.queued_messages = []
     database=conf.get('db_prefix', '') + 'project:test'
     wipe_database()
+    set_flyway_info()
     g._push_object(pyforge.lib.app_globals.Globals())
     try:
         g.solr.delete(q='*:*')
@@ -226,6 +240,7 @@ ul#sidebarmenu li a.active {
 def wipe_database():
     conn = M.main_doc_session.bind.conn
     for database in conn.database_names():
+        log.info('Wiping database %s', database)
         db = conn[database]
         for coll in db.collection_names():
             if coll.startswith('system.'): continue
@@ -250,6 +265,19 @@ def create_user(display_name):
     user.set_password('foo')
     return user
 
+
+class DBSession(Session):
+    '''Simple session that takes a pymongo connection and a database name'''
+
+    def __init__(self, db):
+        self._db = db
+
+    @property
+    def db(self):
+        return self._db
+
+    def _impl(self, cls):
+        return self.db[cls.__mongometa__.name]
 
 def pm(etype, value, tb): # pragma no cover
     import pdb, traceback
