@@ -17,6 +17,7 @@
       <table border="1">
         <thead>
           <tr>
+            <th>Icon</th>
             <th>Award</th>
             <th>Recipient</th>
             <th>Delete?</th>
@@ -24,6 +25,11 @@
         </thead>
         <tbody>
           <tr>
+            <td>
+              <py:if test="grant.award.icon">
+                <img class="award_icon" src="icon"/>
+              </py:if>
+            </td>
             <td><a href="$(grant.longurl()">${grant.award.short}</a></td>
             <td><a href="${grant.longurl()}">${grant.granted_to_project.shortname}</a></td>
             <td><a href="${grant.longurl()}/revoke">[X]</a></td>
