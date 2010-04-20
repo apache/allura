@@ -26,13 +26,25 @@ class TestGlobalsModel(TestWithModel):
         h.set_context('test', 'doc_bugs')
         assert Globals.next_ticket_num() == 1
 
+
+class TestCustomFields(TestWithModel):
     def test_it_has_sortable_custom_fields(self):
-        tracker_globals = Globals.for_current_tracker()
-        tracker_globals.custom_fields = [dict(label='Iteration Number',
-                                              name='_iteration_number')]
-        ThreadLocalORMSession.flush_all()
-        tracker_globals = Globals.for_current_tracker()
-        expected = [dict(sortable_name='_iteration_number_s',
-                         label='Iteration Number')]
-        assert tracker_globals.sortable_custom_fields() == expected
+        tracker_globals = globals_with_custom_fields(
+            [dict(label='Iteration Number',
+                  name='_iteration_number',
+                  show_in_search=False),
+             dict(label='Point Estimate',
+                  name='_point_estimate',
+                  show_in_search=True)])
+        expected = [dict(sortable_name='_point_estimate_s',
+                         label='Point Estimate')]
+        assert tracker_globals.sortable_custom_fields_shown_in_search() == expected
+
+
+def globals_with_custom_fields(custom_fields):
+    tracker_globals = Globals.for_current_tracker()
+    tracker_globals.custom_fields = custom_fields
+    ThreadLocalORMSession.flush_all()
+    tracker_globals = Globals.for_current_tracker()
+    return tracker_globals
 

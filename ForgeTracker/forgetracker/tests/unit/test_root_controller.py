@@ -59,7 +59,8 @@ def search_returning_colors_are_wrong_ticket():
 
 def create_colors_are_wrong_ticket():
     set_tracker_custom_fields([dict(name='_iteration_number',
-                                    label='Iteration Number')])
+                                    label='Iteration Number',
+                                    show_in_search=True)])
     ticket = create_ticket(summary="colors are wrong",
                            custom_fields=dict(_iteration_number='Iteration 1'))
     ticket.commit()

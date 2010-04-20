@@ -226,7 +226,7 @@ class RootController(object):
             tickets = [ticket_for_num[tn] for tn in ticket_numbers]
         tracker_globals = model.Globals.for_current_tracker()
         return dict(tickets=tickets,
-                    sortable_custom_fields=tracker_globals.sortable_custom_fields(),
+                    sortable_custom_fields=tracker_globals.sortable_custom_fields_shown_in_search(),
                     count=count, q=q, limit=limit, page=page, sort=sort, **kw)
 
     def ordered_history(self, limit=None):
