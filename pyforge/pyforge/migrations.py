@@ -1,7 +1,7 @@
 from pylons import c
 from flyway import Migration
 import ming
-from ming.orm import mapper, ORMSession, session
+from ming.orm import mapper, ORMSession, session, state
 
 from pyforge import model as M
 from pyforge.ext.project_home import model as PM
@@ -11,6 +11,36 @@ from helloforge import model as HM
 from forgediscussion import model as DM
 from forgescm import model as SM
 
+
+class UpdateThemeToShinyBook(Migration):
+    version = 3
+
+    def up_requires(self):
+        yield ('pyforge', 1)
+
+    def up(self):
+        if self.session.db.name == 'pyforge':
+            theme = self.ormsession.find(M.Theme, {'name':'forge_default'}).first()
+            theme.color1='#0088cc'
+            theme.color2='#000000'
+            theme.color3='#454545'
+            theme.color4='#6c7681'
+            theme.color5='#d8d8d8'
+            theme.color6='#ececec'
+            self.ormsession.update_now(theme, state(theme))
+            self.ormsession.flush()
+
+    def down(self):
+        if self.session.db.name == 'pyforge':
+            theme = self.ormsession.find(M.Theme, {'name':'forge_default'}).first()
+            theme.color1='#104a75'
+            theme.color2='#aed0ea'
+            theme.color3='#EDF3FB'
+            theme.color4='#D7E8F5'
+            theme.color5='#000'
+            theme.color6='#000'
+            self.ormsession.update_now(theme, state(theme))
+            self.ormsession.flush()
 
 class RenameNeighborhoods(Migration):
     version = 2
