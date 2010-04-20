@@ -25,6 +25,8 @@ from .session import project_doc_session, project_orm_session
 from .session import artifact_orm_session
 from .types import ArtifactReference, ArtifactReferenceType
 
+from filesystem import File
+
 log = logging.getLogger(__name__)
 
 class ArtifactLink(MappedClass):
@@ -511,6 +513,15 @@ class Message(Artifact):
     def shorthand_id(self):
         return self.slug
 
+class AwardFile(File):
+    class __mongometa__:
+        session = main_orm_session
+
+    # Override the metadata schema here
+    metadata=FieldProperty(dict(
+            award_id=S.ObjectId,
+            filename=str))
+
 class Award(Artifact):
     class __mongometa__:
         session = main_orm_session
@@ -537,8 +548,16 @@ class Award(Artifact):
             result['created_by_s'] = self.created_by.name
         return result
 
+    @property
+    def icon(self):
+        return AwardFile.query.find({'metadata.award_id':self._id}).first()
+
     def url(self):
         return urllib.unquote_plus(str(self.short))
+
+    def longurl(self):
+        slug = str(self.created_by_neighborhood.url_prefix + "_admin/awards/" + self.short)
+        return urllib.unquote_plus(slug)
 
     def shorthand_id(self):
         return self.short
@@ -570,8 +589,19 @@ class AwardGrant(Artifact):
             result['award_s'] = self.award.short
         return result
 
+    @property
+    def icon(self):
+        return AwardFile.query.find({'metadata.award_id':self.award_id}).first()
+
     def url(self):
-        return '.'
+        slug = str(self.granted_to_project.shortname).replace('/','_')
+        return urllib.unquote_plus(slug)
+
+    def longurl(self):
+        slug = str(self.granted_to_project.shortname).replace('/','_')
+        slug = str(self.granted_by_neighborhood.url_prefix + "_admin/awards/"
+            + self.award.short + '/' + slug)
+        return urllib.unquote_plus(slug)
 
     def shorthand_id(self):
         if self.award:
