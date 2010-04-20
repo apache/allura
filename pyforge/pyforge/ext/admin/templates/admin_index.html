@@ -23,6 +23,7 @@
   </head>
   
   <body>
+    <h1 class="title">Project Admin</h1>
     <div py:if="c.project.deleted" class="notice">This project has been deleted and is not visible to non-admin users</div>
     <div id="project_admin_tabs">
     	<ul>
@@ -43,7 +44,7 @@
             <option py:for="n in h.make_neighborhoods(c.project.neighborhood_invitations)"
                     value="$n._id">$n.name</option>
           </select>
-          <input type="submit" value="Join Neighborhood"/>
+          <input type="submit" value="Join Neighborhood" class="ui-state-default ui-button ui-button-text"/>
         </form>
       </div>
       <div id="project-admin-overview" style="overflow: auto">
@@ -165,7 +166,8 @@
                   <td>$sp.shortname</td>
                   <td py:if="has_project_access('plugin')()"><a href="${sp.url() + 'admin/'}">Edit</a></td>
                   <td py:if="has_project_access('plugin')()"><input
-                             name="subproject-${i}.delete" type="submit" value="Delete"/></td>
+                             name="subproject-${i}.delete" type="submit" value="Delete"
+                             class="ui-state-default ui-button ui-button-text"/></td>
                 </tr>
                 <tr py:for="i, config in enumerate(c.project.app_configs)">
                   <td>Plugin: $config.plugin_name</td>
@@ -173,7 +175,8 @@
                   <td py:if="has_project_access('plugin')()"><a
                          href="$config.options.mount_point/">Edit</a></td>
                   <td py:if="has_project_access('plugin')() and config.load().installable"><input
-                             name="plugin-${i}.delete" type="submit" value="Delete"/></td>
+                             name="plugin-${i}.delete" type="submit" value="Delete"
+                             class="ui-state-default ui-button ui-button-text"/></td>
                 </tr>
               </form>
               <form method="POST" action="update_mounts">
@@ -198,7 +201,7 @@
                     <input name="new.mount_point" class="new_mount_point"/>
                   </td>
                   <td colspan="2">
-                    <input type="submit" value="Install" name="new.install"/>
+                    <input type="submit" value="Install" name="new.install" class="ui-state-default ui-button ui-button-text"/>
                   </td>
                 </tr>
               </form>
@@ -226,7 +229,7 @@
                     <tr py:for="i, r in enumerate(h.make_roles(role_ids))">
                       <td>${r.display()}</td>
                       <td>${r.user._id and r.user.username or ''}</td>
-                      <td><input type="submit" value="Remove" name="role-${i}.delete" /></td>
+                      <td><input type="submit" value="Remove" name="role-${i}.delete" class="ui-state-default ui-button ui-button-text" /></td>
                     </tr>
                     <tr>
                       <td>
@@ -242,7 +245,7 @@
                         <input name="new.username"/>
                       </td>
                       <td>
-                        <input type="submit" name="new.add" value="Add Permission"/>
+                        <input type="submit" name="new.add" value="Add Permission" class="ui-state-default ui-button ui-button-text"/>
                       </td>
                     </tr>
                   </tbody>

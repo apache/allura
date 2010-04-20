@@ -27,42 +27,45 @@
       ${Markup(c.project.neighborhood.css)}
     </style>
     <div id="mainmenu" class="span-24 last">
-      <div class="sf_logo span-10"><a href="/"><img src="/images/sf.png"/></a></div>
-      <div class="span-14 last">
+      <div class="sf_logo span-10"><a href="/"><img src="/images/sfc.png" alt="SourceForge"/><i>Reforged</i></a></div>
+      <div class="span-14 tright last">
         <a href="/auth/logout" py:if="c.user and c.user._id" class="sf_log_out">Log Out</a>
         <a href="/auth/" py:if="not c.user or not c.user._id" class="sf_log_in">Log In</a>
         <a href="${c.user.url()}" py:if="c.user and c.user._id" class="sf_user_link">$c.user.display_name</a>
         <a href="/auth/create_account" py:if="not c.user or not c.user._id" class="sf_create_account">Create Account</a>
-        <a href="/search/" class="sf_search_link">Search Site</a>
+        <a href="/search/" class="sf_search_link"><span class="ui-icon reverse ui-icon-search"></span> Search</a>
       </div>
     </div>
   </py:def>
 
   <py:def function="nav_menu()">
-    <div id="nav_menu_missing" class="span-24 last" py:if="not c.project"/>
-    <div id="nav_menu" class="span-24 last" py:if="c.project">
-
-      <div class="span-2">
+    <div id="nav_menu_missing" class="span-24 last ui-corner-tl" py:if="not c.project"/>
+    <div id="nav_menu" class="span-24 last ui-corner-tl" py:if="c.project">
+      <div class="span-1">
         <img py:if="c.project.icon" src="${c.project.url()}/icon" class="project_icon"/>
         <img py:if="not c.project.icon" src="/images/project_default.png" class="project_icon"/>
       </div>
-      <div class="span-15 project">
-        <a py:if="c.project" href="${c.project.url()}" class="project_name">$c.project.name</a>
-
+      <div class="span-16 project">
+	<span class="project_name">
+		<a py:if="c.project" href="${c.project.url()}">$c.project.name</a>
+	</span>
         <ul class="nav_links">
           <li py:for="s in c.project.sitemap()">
-            <a py:if="s.url and s.label != 'Home'" href="$s.url" class="$s.className ${s.url[:-1] in request.url and 'active' or ''}">$s.label</a>
-            <a py:if="s.url and s.label == 'Home'" href="$s.url" class="$s.className home_icon ${s.url[:-1] in request.url and 'active' or ''}"/>
+            <a href="$s.url" class="$s.className ${s.url[:-1] in request.url and 'active' or ''}">
+              <py:if test="s.url and s.label != 'Home'">$s.label</py:if>
+              <span py:if="s.url and s.label == 'Home'" class="ui-icon ui-icon-home"></span>
+            </a>
             <span py:if="not s.url" class="$s.className">$s.label</span>
           </li>
         </ul>
       </div>
-
-      <div class="span-5 neighborhood">
-        <a href="${c.project.neighborhood.url()}" class="neighborhood_name">$c.project.neighborhood.name</a><br/>
-        <em class="neighborhood_member">Neighborhood Member</em>
+      <div class="span-7 last tright">
+	<span class="neighborhood ui-corner-bl ui-corner-tr">
+		<img py:if="c.project.neighborhood.icon" src="${c.project.neighborhood.url()}/icon" class="project_icon"/>
+          <img py:if="not c.project.neighborhood.icon" src="/images/project_default.png" class="project_icon"/>
+          A${c.project.neighborhood.name.lower().startswith(('a','e','i','o','u')) and 'n' or ''} <a href="${c.project.neighborhood.url()}" class="neighborhood_name">$c.project.neighborhood.name</a> Project <span class="fright ui-icon ui-icon-triangle-1-s"></span>
+	</span>
       </div>
-      <div class="span-2 last"><img py:if="c.project.neighborhood.icon" src="${c.project.neighborhood.url()}/icon" class="neighborhood_icon"/></div>
     </div>
   </py:def>
 

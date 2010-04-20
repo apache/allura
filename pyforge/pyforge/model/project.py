@@ -207,6 +207,8 @@ class Theme(MappedClass):
     color2 = FieldProperty(str)
     color3 = FieldProperty(str)
     color4 = FieldProperty(str)
+    color5 = FieldProperty(str)
+    color6 = FieldProperty(str)
 
 class ProjectFile(File):    
     class __mongometa__:

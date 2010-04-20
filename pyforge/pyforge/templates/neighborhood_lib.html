@@ -6,27 +6,32 @@
 
   <py:def function="main_menu">
     <div id="mainmenu" class="span-24 last">
-      <div class="sf_logo span-10"><a href="/"><img src="/images/sf.png"/></a></div>
-      <div class="span-14 last">
+      <div class="sf_logo span-10"><a href="/"><img src="/images/sfc.png" alt="SourceForge"/><i>Reforged</i></a></div>
+      <div class="span-14 tright last">
         <a href="/auth/logout" py:if="c.user and c.user._id" class="sf_log_out">Log Out</a>
         <a href="/auth/" py:if="not c.user or not c.user._id" class="sf_log_in">Log In</a>
         <a href="${c.user.url()}" py:if="c.user and c.user._id" class="sf_user_link">$c.user.display_name</a>
         <a href="/auth/create_account" py:if="not c.user or not c.user._id" class="sf_create_account">Create Account</a>
-        <a href="/search/" class="sf_search_link">Search Site</a>
+        <a href="/search/" class="sf_search_link"><span class="ui-icon reverse ui-icon-search"></span> Search</a>
       </div>
     </div>
   </py:def>
   <py:def function="nav_menu()">
-    <div id="nav_menu" class="span-24 last" py:if="neighborhood">
-      <div class="span-2">
-        <img py:if="neighborhood.icon" src="${neighborhood.url()}/icon" class="neighborhood_icon"/>
-        <py:if test="not neighborhood.icon">&nbsp;</py:if>
+    <div id="nav_menu_missing" class="span-24 last ui-corner-tl" py:if="not neighborhood"/>
+    <div id="nav_menu" class="span-24 last ui-corner-tl" py:if="neighborhood">
+      <div class="span-1">
+        <img py:if="neighborhood.icon" src="${neighborhood.url()}/icon" class="project_icon"/>
+        <img py:if="not neighborhood.icon" src="/images/project_default.png" class="project_icon"/>
       </div>
-      <div class="span-13 project">
-        <a href="${neighborhood.url()}" class="neighborhood_name">$neighborhood.name</a><br/>
+      <div class="span-16 project">
+	<span class="project_name">
+		<a href="${neighborhood.url()}" class="neighborhood_name">$neighborhood.name</a><br/>
+	</span>
         <ul class="nav_links">
           <li>
-            <a href="${neighborhood.url()}" class="home_icon ${request.url.rfind(neighborhood.url(),-len(neighborhood.url())) != -1 and 'active' or ''}"/>
+            <a href="${neighborhood.url()}" class="${request.url.rfind(neighborhood.url(),-len(neighborhood.url())) != -1 and 'active' or ''}">
+              <span class="ui-icon ui-icon-home"></span>
+            </a>
           </li>
           <li py:if="has_neighborhood_access('admin', neighborhood)()">
             <a href="${neighborhood.url()}_admin/" class="${neighborhood.url()+'_admin' in request.url and 'active' or ''}">Admin</a>
@@ -36,14 +41,15 @@
           </li>
         </ul>
       </div>
-
-      <div class="span-9 neighborhood last">
-      <form py:if="has_neighborhood_access('create', neighborhood)()" style="margin: 5px 1em 0 0"
-            method="POST" action="${neighborhood.url()}/register">
-        <label for="pid">Register project</label>
-        <input name="pid" id="pid"/>
-        <input type="submit" value="Register"/>
-      </form>
+      <div class="span-7 last tright">
+	<span class="neighborhood ui-corner-bl ui-corner-tr">
+          <form py:if="has_neighborhood_access('create', neighborhood)()"
+                method="POST" action="${neighborhood.url()}/register">
+            <label for="pid">Register project</label>
+            <input name="pid" id="pid"/>
+            <input type="submit" value="Register" class="ui-state-default ui-button ui-button-text"/>
+          </form>
+	</span>
       </div>
     </div>
   </py:def>

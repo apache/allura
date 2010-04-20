@@ -80,60 +80,6 @@ def bootstrap(command, conf, vars):
                                       moderate=[root._id], admin=[root._id]))
     n_adobe = M.Neighborhood(name='Adobe',
                              url_prefix='/adobe/',
-                               css="""
-#nav_menu{
- background-color: #000;
- background-image: url(/images/adobe_header.png);
- color: #fff;
- border-width: 0;
-}
-#nav_menu a.neighborhood_name:link, 
-#nav_menu a.neighborhood_name:visited, 
-#nav_menu a.neighborhood_name:hover, 
-#nav_menu a.neighborhood_name:active, 
-#nav_menu a.project_name:link, 
-#nav_menu a.project_name:visited, 
-#nav_menu a.project_name:hover, 
-#nav_menu a.project_name:active{
- color: #fff;
-}
-#nav_menu ul.nav_links a:link, 
-#nav_menu ul.nav_links a:visited, 
-#nav_menu ul.nav_links a:hover, 
-#nav_menu ul.nav_links a:active{
- color: #fff;
-}
-#nav_menu ul.nav_links a.active:link, 
-#nav_menu ul.nav_links a.active:visited, 
-#nav_menu ul.nav_links a.active:hover, 
-#nav_menu ul.nav_links a.active:active{
- color: #000;
- background-color: #fff;
- -moz-border-radius: 3px 3px 0 0;
- -webkit-border-radius: 3px 3px 0 0;
-}
-
-#nav_menu .home_icon{
-   background-image: url(/images/white_home.png);
-   background-repeat: no-repeat;
-   background-position:center 7px;
-}
-
-#nav_menu .home_icon.active{
-   background-image: url(/images/black_home.png);
-}
-#content_holder{
- border-color: #000;
- border-width: 0 5px 5px 5px;
- width: 940px;
-}
-#content{
- border-width: 0;
-}
-ul#sidebarmenu li a.active {
- background-color: #000;
- color: #fff;
-}""",
                              acl=dict(read=[None], create=[],
                                       moderate=[root._id], admin=[root._id]))
     n_mozilla = M.Neighborhood(name='Mozilla',
@@ -142,15 +88,19 @@ ul#sidebarmenu li a.active {
                                         moderate=[root._id], admin=[root._id]))
     M.Theme(name='forge_default',
             label='Default Forge Theme',
-            color1='#104a75',
-            color2='#aed0ea',
-            color3='#EDF3FB',
-            color4='#D7E8F5')
+            color1='#0088cc',
+            color2='#000000',
+            color3='#454545',
+            color4='#6c7681',
+            color5='#d8d8d8',
+            color6='#ececec')
     M.Theme(neighborhood_id = n_mozilla._id,
             color1='#ccc',
             color2='#666',
             color3='#333',
-            color4='#aaa')
+            color4='#aaa',
+            color5='#fff',
+            color6='#000')
     ThreadLocalORMSession.flush_all()
     ThreadLocalORMSession.close_all()
     # add the adobe icon

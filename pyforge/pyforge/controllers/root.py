@@ -114,7 +114,9 @@ class RootController(BaseController):
         colors = dict(color1=theme.color1,
                       color2=theme.color2,
                       color3=theme.color3,
-                      color4=theme.color4)
+                      color4=theme.color4,
+                      color5=theme.color5,
+                      color6=theme.color6)
         css = Template(filename=file_path, module_directory=template_path).render(**colors)
         response.headers['Content-Type'] = ''
         response.content_type = 'text/css'
