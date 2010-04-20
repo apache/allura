@@ -173,6 +173,25 @@ class ForumAdminController(DefaultAdminController):
         return dict(app=self.app,
                     allow_config=has_artifact_access('configure', app=self.app)())
 
+    def save_forum_icon(self, forum, icon):                
+        if supported_by_PIL(icon.type):
+            filename = icon.filename
+            if icon.type: content_type = icon.type
+            else: content_type = 'application/octet-stream'
+            image = Image.open(icon.file)
+            format = image.format
+            image = square_image(image)
+            image.thumbnail((48, 48), Image.ANTIALIAS)
+            if forum.icon:
+                model.ForumFile.query.remove({'metadata.forum_id':forum._id})
+            with model.ForumFile.create(
+                content_type=content_type,
+                filename=filename,
+                forum_id=forum._id) as fp:
+                image.save(fp, format)
+        else:
+            flash('The icon must be jpg, png, or gif format.')
+
     def create_forum(self, new_forum):    
         if '.' in new_forum['shortname'] or '/' in new_forum['shortname']:
             flash('Shortname cannot contain . or /', 'error')
@@ -190,22 +209,7 @@ class ForumAdminController(DefaultAdminController):
                         shortname=shortname,
                         description=new_forum['description'])
         if 'icon' in new_forum and new_forum['icon'] is not None and new_forum['icon'] != '':
-            icon = new_forum['icon']
-            if supported_by_PIL(icon.type):
-                filename = icon.filename
-                if icon.type: content_type = icon.type
-                else: content_type = 'application/octet-stream'
-                image = Image.open(icon.file)
-                format = image.format
-                image = square_image(image)
-                image.thumbnail((48, 48), Image.ANTIALIAS)
-                with model.ForumFile.create(
-                    content_type=content_type,
-                    filename=filename,
-                    forum_id=f._id) as fp:
-                    image.save(fp, format)
-            else:
-                flash('The icon must be jpg, png, or gif format.')
+            self.save_forum_icon(f, new_forum['icon'])
         return f
 
     @vardec
@@ -227,23 +231,6 @@ class ForumAdminController(DefaultAdminController):
                 forum.name = f['name']
                 forum.description = f['description']
                 if 'icon' in f and f['icon'] is not None and f['icon'] != '':
-                    icon = f['icon']
-                    if supported_by_PIL(icon.type):
-                        filename = icon.filename
-                        if icon.type: content_type = icon.type
-                        else: content_type = 'application/octet-stream'
-                        image = Image.open(icon.file)
-                        format = image.format
-                        image = square_image(image)
-                        image.thumbnail((48, 48), Image.ANTIALIAS)
-                        if forum.icon:
-                            model.ForumFile.query.remove({'metadata.forum_id':forum._id})
-                        with model.ForumFile.create(
-                            content_type=content_type,
-                            filename=filename,
-                            forum_id=forum._id) as fp:
-                            image.save(fp, format)
-                    else:
-                        flash('The icon must be jpg, png, or gif format.')
+                    self.save_forum_icon(forum, f['icon'])
         flash('Forums updated')
         redirect(request.referrer)
