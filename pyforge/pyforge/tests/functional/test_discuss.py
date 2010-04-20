@@ -14,7 +14,7 @@ class TestDiscuss(TestController):
         link = [ a for a in home.html.findAll('a')
                  if 'thread' in a['href'] ][0]
         params = {
-            'threads-0._id':link['href'][len('/projects/test/wiki/_discuss/thread/'):-1],
+            'threads-0._id':link['href'][len('/p/test/wiki/_discuss/thread/'):-1],
             'threads-0.subscription':'on' }
         r = self.app.post('/wiki/_discuss/subscribe',
                           params=params,
@@ -24,7 +24,7 @@ class TestDiscuss(TestController):
                        if i.get('type') == 'checkbox'][0]
         assert subscribed.get('checked')
         params = {
-            'threads-0._id':link['href'][len('/projects/test/wiki/_discuss/thread/'):-1]
+            'threads-0._id':link['href'][len('/p/test/wiki/_discuss/thread/'):-1]
             }
         r = self.app.post('/wiki/_discuss/subscribe',
                           params=params,

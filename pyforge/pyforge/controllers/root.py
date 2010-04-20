@@ -50,9 +50,6 @@ class RootController(BaseController):
     error = ErrorController()
     static = StaticController()
     search = SearchController()
-    # projects = NeighborhoodController('Projects')
-    # users = NeighborhoodController('Users', 'users/')
-    # adobe = NeighborhoodController('Adobe')
 
     def __init__(self):
         """Create a user-aware root controller instance.

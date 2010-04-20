@@ -100,7 +100,7 @@ class TestProjectAdmin(TestController):
     #             short_description='A Test Project',
     #             description='A long description'), 
     #             upload_files=[upload])
-    #     r = self.app.get('/projects/test/icon')
+    #     r = self.app.get('/p/test/icon')
     #     image = Image.open(StringIO.StringIO(r.body))
     #     assert image.size == (48,48)
     # 
@@ -119,16 +119,16 @@ class TestProjectAdmin(TestController):
     #             upload_files=[upload])
     #     project = M.Project.query.find({'shortname':'test'}).first()
     #     filename = project.get_screenshots()[0].filename
-    #     r = self.app.get('/projects/test/screenshot/'+filename)
+    #     r = self.app.get('/p/test/screenshot/'+filename)
     #     uploaded = Image.open(file_path)
     #     screenshot = Image.open(StringIO.StringIO(r.body))
     #     assert uploaded.size == screenshot.size
-    #     r = self.app.get('/projects/test/screenshot/'+filename+'/thumb')
+    #     r = self.app.get('/p/test/screenshot/'+filename+'/thumb')
     #     thumb = Image.open(StringIO.StringIO(r.body))
     #     assert thumb.size == (101,101)
 
     def test_project_delete_undelete(self):
-        r = self.app.get('/projects/test/admin/')
+        r = self.app.get('/p/test/admin/')
         assert 'This project has been deleted and is not visible to non-admin users' not in r
         assert r.html.find('input',{'value':'Delete Project'})
         assert not r.html.find('input',{'value':'Undelete Project'})
@@ -138,7 +138,7 @@ class TestProjectAdmin(TestController):
                 short_description='A Test Project',
                 description='A long description',
                 delete='on'))
-        r = self.app.get('/projects/test/admin/')
+        r = self.app.get('/p/test/admin/')
         assert 'This project has been deleted and is not visible to non-admin users' in r
         assert not r.html.find('input',{'value':'Delete Project'})
         assert r.html.find('input',{'value':'Undelete Project'})
@@ -148,7 +148,7 @@ class TestProjectAdmin(TestController):
                 short_description='A Test Project',
                 description='A long description',
                 undelete='on'))
-        r = self.app.get('/projects/test/admin/')
+        r = self.app.get('/p/test/admin/')
         assert 'This project has been deleted and is not visible to non-admin users' not in r
         assert r.html.find('input',{'value':'Delete Project'})
         assert not r.html.find('input',{'value':'Undelete Project'})

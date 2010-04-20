@@ -82,9 +82,9 @@ def test_send_message():
     cmd = reactor.SendMessageCommand('send_message')
     cmd.args = [ test_config, 'audit', 'nobody.listening', '{}' ]
     cmd.options = mock.Mock()
-    cmd.options.context = '/projects/test/hello/'
+    cmd.options.context = '/p/test/hello/'
     cmd.command()
-    cmd.options.context = '/projects/test/'
+    cmd.options.context = '/p/test/'
     cmd.command()
     cmd.options.context = None
     cmd.command()

@@ -9,16 +9,16 @@ from pyforge import model as M
 class TestUserProfile(TestController):
 
     def test_profile(self):
-        response = self.app.get('/users/test_admin/profile/')
+        response = self.app.get('/u/test_admin/profile/')
         assert 'OpenIDs' in response
-        response = self.app.get('/users/test_admin/profile/configuration')
+        response = self.app.get('/u/test_admin/profile/configuration')
         assert 'Configure Dashboard' in response
 
     def test_neighborhood_profile(self):
-        response = self.app.get('/users/no_such_user/profile/', status=404)
+        response = self.app.get('/u/no_such_user/profile/', status=404)
 
     def test_seclusion(self):
-        response = self.app.get('/users/test_admin/profile/')
+        response = self.app.get('/u/test_admin/profile/')
         assert 'Email Addresses' in response
-        response = self.app.get('/users/test_user/profile/')
+        response = self.app.get('/u/test_user/profile/')
         assert 'Email Addresses' not in response

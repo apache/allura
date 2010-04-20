@@ -117,7 +117,7 @@ class User(MappedClass):
     plugin_preferences=FieldProperty({str:{str:None}}) # full mount point: prefs dict
 
     def url(self):
-        return '/users/' + self.username + '/'
+        return '/u/' + self.username + '/'
 
     def address_object(self, addr):
         return EmailAddress.query.get(_id=addr, claimed_by_user_id=self._id)
@@ -148,7 +148,7 @@ class User(MappedClass):
             result = cls._register_ldap(doc)
         if make_project:
             n = M.Neighborhood.query.get(name='Users')
-            n.register_project('users/' + result.username, result, user_project=True)
+            n.register_project('u/' + result.username, result, user_project=True)
         return result
 
     @classmethod
@@ -186,11 +186,11 @@ class User(MappedClass):
 
     def private_project(self):
         from .project import Project
-        return Project.query.get(shortname='users/%s' % self.username, deleted=False)
+        return Project.query.get(shortname='u/%s' % self.username, deleted=False)
 
     @property
     def script_name(self):
-        return '/projects/users/' + self.username + '/'
+        return '/projects/u/' + self.username + '/'
 
     def my_projects(self):
         from .project import Project

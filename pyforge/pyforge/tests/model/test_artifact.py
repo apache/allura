@@ -91,7 +91,7 @@ def test_artifactlink():
     assert q.count() == 0
 
 def test_gen_messageid():
-    assert re.match(r'[0-9a-zA-Z]*.hello@test.projects.sourceforge.net', h.gen_message_id())
+    assert re.match(r'[0-9a-zA-Z]*.hello@test.p.sourceforge.net', h.gen_message_id())
 
 def test_versioning():
     pg = HM.Page(title='TestPage3')

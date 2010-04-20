@@ -135,7 +135,7 @@ class AuthController(object):
         c.user.username = username
         c.user.display_name = display_name
         n = M.Neighborhood.query.get(name='Users')
-        n.register_project('users/' + username)
+        n.register_project('u/' + username)
         flash('Your username has been set to %s.' % username)
         redirect('/')
 

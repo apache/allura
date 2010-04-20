@@ -188,7 +188,7 @@ class ProjectController(object):
     @expose()
     @with_trailing_slash
     def index(self):
-        if c.project.shortname.startswith('users/'):
+        if c.project.shortname.startswith('u/'):
             redirect('profile/')
         else:
             redirect('home/')

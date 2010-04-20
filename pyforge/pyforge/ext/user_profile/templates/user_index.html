@@ -23,7 +23,7 @@
     <div class="project-list">
       <span class="title">Projects</span>
       <ul>
-        <li py:for="project in h.make_projects(user.projects)" py:if="not project.shortname.startswith('users/')">
+        <li py:for="project in h.make_projects(user.projects)" py:if="not project.shortname.startswith('u/')">
             <a class="project-name" href="${project.url()}">${project.name}</a>
         </li>
       </ul>

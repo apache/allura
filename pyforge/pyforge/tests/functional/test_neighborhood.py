@@ -116,12 +116,12 @@ class TestNeighborhood(TestController):
     def test_neighborhood_project(self):
         r = self.app.get('/mozilla/test/home/', status=302)
         r = self.app.get('/mozilla/mozilla_1/home/', status=200)
-        r = self.app.get('/projects/test/sub1/home/')
-        r = self.app.get('/projects/test/sub1/', status=302)
-        r = self.app.get('/projects/test/no_such_app/', status=404)
+        r = self.app.get('/p/test/sub1/home/')
+        r = self.app.get('/p/test/sub1/', status=302)
+        r = self.app.get('/p/test/no_such_app/', status=404)
 
     def test_site_css(self):
-        r = self.app.get('/projects/site_style.css')
+        r = self.app.get('/p/site_style.css')
         assert(
 """a{
     color: #104a75;
@@ -143,11 +143,11 @@ class TestNeighborhood(TestController):
     width: 789px;
     min-height: 400px;
 }""" in r)
-        self.app.post('/projects/_admin/update',
+        self.app.post('/p/_admin/update',
                           params=dict(name='Projects', css='', homepage='projects',
                           color1='#aaa', color2='#bbb', color3='#ccc', color4='#ddd'),
                           extra_environ=dict(username='root'))
-        r = self.app.get('/projects/site_style.css')
+        r = self.app.get('/p/site_style.css')
         assert(
 """a{
     color: #aaa;

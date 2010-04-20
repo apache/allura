@@ -8,6 +8,7 @@ from pylons import c, g, request
 from webtest import TestApp
 from webob import Request
 
+from flyway.command import MigrateCommand
 from ming.orm import ThreadLocalORMSession
 
 from pyforge.lib.app_globals import Globals
@@ -22,6 +23,8 @@ def setup_basic_test(config=DFL_CONFIG, app_name=DFL_APP_NAME):
     test_file = path.join(conf_dir, config)
     cmd = SetupCommand('setup-app')
     cmd.run([test_file])
+    cmd = MigrateCommand('flyway')
+    cmd.run(['-u', tg.config.get('ming.main.master')])
 
 def setup_functional_test(config=DFL_CONFIG, app_name=DFL_APP_NAME):
     '''Create clean environment for running tests.  Also return WSGI test app'''

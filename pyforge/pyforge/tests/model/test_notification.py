@@ -129,7 +129,7 @@ class TestSubscriptionTypes(unittest.TestCase):
         M.Mailbox.fire_ready()
         assert len(g.mock_amq.exchanges['audit']) == 1
         msg = g.mock_amq.exchanges['audit'][0]['message']
-        assert 'WikiHome@wiki.test.projects' in msg['reply_to']
+        assert 'WikiHome@wiki.test.p' in msg['reply_to']
         assert 'Test Admin' in msg['from']
 
     def _clear_subscriptions(self):

@@ -19,7 +19,7 @@ from pymongo.bson import ObjectId
 
 # Pyforge-specific imports
 from pyforge.app import Application, ConfigOption, SitemapEntry
-from pyforge.lib.helpers import push_config, tag_artifact, DateTimeConverter, diff_text, square_image
+from pyforge.lib import helpers as h
 from pyforge.lib.search import search
 from pyforge.lib.decorators import audit, react
 from pyforge.lib.security import require, has_artifact_access
@@ -96,7 +96,7 @@ class ForgeWikiApp(Application):
     @property
     def sitemap(self):
         menu_id = self.config.options.mount_point.title()
-        with push_config(c, app=self):
+        with h.push_config(c, app=self):
             pages = [
                 SitemapEntry(p.title, p.url())
                 for p in model.Page.query.find(dict(
@@ -280,8 +280,8 @@ class RootController(object):
     @without_trailing_slash
     @expose()
     @validate(dict(
-            since=DateTimeConverter(if_empty=None),
-            until=DateTimeConverter(if_empty=None),
+            since=h.DateTimeConverter(if_empty=None),
+            until=h.DateTimeConverter(if_empty=None),
             offset=validators.Int(if_empty=None),
             limit=validators.Int(if_empty=None)))
     def feed(self, since=None, until=None, offset=None, limit=None):
@@ -373,7 +373,7 @@ class PageController(object):
         require(has_artifact_access('read', self.page))
         p1 = self.get_version(int(v1))
         p2 = self.get_version(int(v2))
-        result = diff_text(p1.text, p2.text)
+        result = h.diff_text(p1.text, p2.text)
         return dict(p1=p1, p2=p2, edits=result)
 
     @without_trailing_slash
@@ -385,8 +385,8 @@ class PageController(object):
     @without_trailing_slash
     @expose()
     @validate(dict(
-            since=DateTimeConverter(if_empty=None),
-            until=DateTimeConverter(if_empty=None),
+            since=h.DateTimeConverter(if_empty=None),
+            until=h.DateTimeConverter(if_empty=None),
             offset=validators.Int(if_empty=None),
             limit=validators.Int(if_empty=None)))
     def feed(self, since=None, until=None, offset=None, limit=None):
@@ -424,7 +424,7 @@ class PageController(object):
         self.page.text = text
         self.page.labels = labels.split(',')
         self.page.commit()
-        tag_artifact(self.page, c.user, tags)
+        h.tag_artifact(self.page, c.user, tags)
         self.page.viewable_by = isinstance(viewable_by, list) and viewable_by or viewable_by.split(',')
         redirect('.')
 
@@ -447,7 +447,7 @@ class PageController(object):
                 app_config_id=c.app.config._id) as fp:
                 fp_name = fp.name
                 image.save(fp, format)
-            image = square_image(image)
+            image = h.square_image(image)
             image.thumbnail((150, 150), Image.ANTIALIAS)
             with model.Attachment.create(
                 content_type=content_type,

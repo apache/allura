@@ -66,13 +66,13 @@ class UserProfileController(object):
 
     @expose('pyforge.ext.user_profile.templates.user_index')
     def index(self):
-        username = c.project.shortname[len('users/'):]
+        username = c.project.shortname.split('/')[1]
         user = User.query.find({'username':username}).first()
         return dict(user=user)
 
     @expose('pyforge.ext.user_profile.templates.user_dashboard_configuration')
     def configuration(self):
-        username = c.project.shortname[len('users/'):]
+        username = c.project.shortname.split('/')[1]
         user = User.query.find({'username':username}).first()
         return dict(user=user)
 

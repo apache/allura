@@ -53,14 +53,14 @@ def test_openid():
     ThreadLocalORMSession.flush_all()
 
 def test_user():
-    assert c.user.url() .endswith('/users/test_admin/')
-    assert c.user.script_name .endswith('/users/test_admin/')
+    assert c.user.url() .endswith('/u/test_admin/')
+    assert c.user.script_name .endswith('/u/test_admin/')
     assert len(list(c.user.my_projects())) == 2
     assert M.User.anonymous().project_role().name == '*anonymous'
     u = M.User.register(dict(
             username='nosetest_user'))
     ThreadLocalORMSession.flush_all()
-    assert u.private_project().shortname == 'users/nosetest_user'
+    assert u.private_project().shortname == 'u/nosetest_user'
     assert len(list(u.role_iter())) == 3
     u.set_password('foo')
     assert u.validate_password('foo')
