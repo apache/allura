@@ -120,6 +120,24 @@ class TestNeighborhood(TestController):
         r = self.app.get('/p/test/sub1/', status=302)
         r = self.app.get('/p/test/no_such_app/', status=404)
 
+    def test_neighborhood_awards(self):
+        r = self.app.get('/mozilla/_admin/awards', extra_environ=dict(username='root'))
+        r = self.app.post('/mozilla/_admin/awards/create',
+                          params=dict(short='FOO', full='A Basic Foo Award'),
+                          extra_environ=dict(username='root'), upload_files=[upload])
+        r = self.app.get('/mozilla/_admin/awards/FOO')
+        r = self.app.get('/mozilla/_admin/awards/FOO/icon')
+        image = Image.open(StringIO.StringIO(r.body))
+        assert image.size == (48,48)
+        r = self.app.post('/mozilla/_admin/awards/grant',
+                          params=dict(grant='FOO', recipient='mozilla_1'),
+                          extra_environ=dict(username='root'))
+        r = self.app.get('/mozilla/_admin/awards/FOO/mozilla_1')
+        r = self.app.post('/mozilla/_admin/awards/FOO/mozilla_1/revoke',
+                          extra_environ=dict(username='root'))
+        r = self.app.post('/mozilla/_admin/awards/FOO/delete',
+                          extra_environ=dict(username='root'))
+
     def test_site_css(self):
         r = self.app.get('/p/site_style.css')
         assert(
