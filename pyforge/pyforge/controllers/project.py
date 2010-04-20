@@ -425,6 +425,10 @@ class NeighborhoodAwardsController(object):
         count = len(awards)
         return dict(awards=awards or [], count=count)
 
+    @expose('pyforge.templates.not_found')
+    def not_found(self, **kw):
+        return dict()
+
     @expose('pyforge.templates.grants')
     def grants(self, **kw):
         grants = M.AwardGrant.query.find(dict(granted_by_neighborhood_id=self.neighborhood._id))
@@ -433,22 +437,38 @@ class NeighborhoodAwardsController(object):
         return dict(grants=grants or [], count=count)
 
     @expose()
-    def award_save(self, short=None, full=None, **post_data):
+    def _lookup(self, short, *remainder):
+        return AwardController(short), remainder
+
+    @expose()
+    def create(self, icon=None, short=None, full=None):
         if request.method != 'POST':
             raise Exception('award_save must be a POST request')
         app_config_id = ObjectId()
         plugin_verson = { 'neighborhood':'0' }
-        award = M.Award(app_config_id=app_config_id, plugin_verson=plugin_verson)
-        award.short = short
-        award.full = full
-        award.created_by_neighborhood_id = self.neighborhood._id
-        # may want to have auxiliary data fields
-        for k,v in post_data.iteritems():
-            setattr(award, k, v)
+        if short is not None:
+            award = M.Award(app_config_id=app_config_id, plugin_verson=plugin_verson)
+            award.short = short
+            award.full = full
+            award.created_by_neighborhood_id = self.neighborhood._id
+            if icon is not None and icon != '':
+                if h.supported_by_PIL(icon.type):
+                    filename = icon.filename
+                    if icon.type: content_type = icon.type
+                    else: content_type = 'application/octet-stream'
+                    image = Image.open(icon.file)
+                    format = image.format
+                    image = h.square_image(image)
+                    image.thumbnail((48, 48), Image.ANTIALIAS)
+                    with M.AwardFile.create(
+                        content_type=content_type,
+                        filename=filename,
+                        award_id=award._id) as fp:
+                        image.save(fp, format)
         redirect(request.referer)
 
     @expose()
-    def award_grant(self, grant=None, recipient=None):
+    def grant(self, grant=None, recipient=None):
         if request.method != 'POST':
             raise Exception('award_grant must be a POST request')
         grant_q = M.Award.query.find(dict(short=grant)).first()
@@ -459,24 +479,100 @@ class NeighborhoodAwardsController(object):
         award.award_id = grant_q._id
         award.granted_to_project_id = recipient_q._id
         award.granted_by_neighborhood_id = self.neighborhood._id
-#        award.app_config_id = c.app.config._id
+        redirect(request.referer)
+
+class AwardController(object):
+
+    def __init__(self, short=None):
+        if short is not None:
+            self.short = short
+            self.award = M.Award.query.get(short=self.short)
+
+    @with_trailing_slash
+    @expose('pyforge.templates.award')
+    def index(self, **kw):
+        if self.award is not None:
+            return dict(award=self.award)
+        else:
+            redirect('not_found')
+
+    @expose('pyforge.templates.not_found')
+    def not_found(self, **kw):
+        return dict()
+
+    @expose()
+    def _lookup(self, recipient, *remainder):
+        return GrantController(self.award, recipient), remainder
+
+    @expose()
+    def icon(self):
+        with self.award.icon.open() as fp:
+            filename = fp.metadata['filename'].encode('utf-8')
+            response.headers['Content-Type'] = ''
+            response.content_type = fp.content_type.encode('utf-8')
+            response.headers.add('Content-Disposition',
+                                     'attachment;filename=%s' % filename)
+            return fp.read()
+        return self.award.icon.filename
+
+    @expose()
+    def grant(self, recipient=None):
+        if request.method != 'POST':
+            raise Exception('award_grant must be a POST request')
+        recipient_q = M.Project.query.find(dict(name=recipient, deleted=False)).first()
+        app_config_id = ObjectId()
+        plugin_verson = { 'neighborhood':'0' }
+        grant = M.AwardGrant(app_config_id=app_config_id, plugin_verson=plugin_verson)
+        grant.award_id = self.award._id
+        grant.granted_to_project_id = recipient_q._id
+        grant.granted_by_neighborhood_id = self.neighborhood._id
         redirect(request.referer)
 
     @expose()
-    def award_delete(self, award_id=None):
-        aid = ObjectId(award_id)
-        award = M.Award.query.find(dict(_id=aid)).first()
-        if award:
-            grants = M.AwardGrant.query.find(dict(award_id=award._id))
+    def delete(self):
+        if self.award:
+            grants = M.AwardGrant.query.find(dict(award_id=self.award._id))
             for grant in grants:
                 grant.delete()
-            award.delete()
-        redirect(request.referer)
+            M.AwardFile.query.remove({'metadata.award_id':self.award._id})
+            self.award.delete()
+        redirect('../..')
+
+class GrantController(object):
+
+    def __init__(self, award=None, recipient=None):
+        if recipient is not None and award is not None:
+            self.recipient = recipient.replace('users_','users/')
+            self.award = M.Award.query.get(_id=award._id)
+            self.project = M.Project.query.get(shortname=self.recipient)
+            self.grant = M.AwardGrant.query.get(award_id=self.award._id,
+                granted_to_project_id=self.project._id)
+
+    @with_trailing_slash
+    @expose('pyforge.templates.grant')
+    def index(self, **kw):
+        if self.grant is not None:
+            return dict(grant=self.grant)
+        else:
+            redirect('not_found')
+
+    @expose('pyforge.templates.not_found')
+    def not_found(self, **kw):
+        return dict()
 
     @expose()
-    def grant_delete(self, grant_id=None):
-        gid = ObjectId(grant_id)
-        grant = M.AwardGrant.query.find(dict(_id=gid)).first()
-        grant.delete()
+    def icon(self):
+        with self.award.icon.open() as fp:
+            filename = fp.metadata['filename'].encode('utf-8')
+            response.headers['Content-Type'] = ''
+            response.content_type = fp.content_type.encode('utf-8')
+            response.headers.add('Content-Disposition',
+                                     'attachment;filename=%s' % filename)
+            return fp.read()
+        return self.award.icon.filename
+
+    @expose()
+    def revoke(self):
+        self.grant.delete()
         redirect(request.referer)
 
