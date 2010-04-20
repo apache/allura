@@ -38,7 +38,15 @@ it::
 
 Now that that's out of the way, we'll go ahead and install turbogears::
 
+    (anvil)~$ easy_install pylons==0.9.7 # TurboGears 2 doesn't work with Pylons 1.0
     (anvil)~$ easy_install -i http://www.turbogears.org/2.1/downloads/current/index tg.devtools TurboGears2
+
+And the tip of easywidgets::
+
+    (anvil)~$ cd ~/src
+    (anvil)~/src$ hg clone http://bitbucket.org/rick446/easywidgets
+    (anvil)~/src$ cd easywidgets
+    (anvil)~/src/easywidgets$ python setup.py develop
 
 Installing the code
 -------------------------
@@ -67,7 +75,7 @@ from git::
 
     (anvil)~$ mkdir src
     (anvil)~$ cd src
-    (anvil)~/src$ git clone ssh://merciless.git.sourceforge.net/gitroot/merciless/merciless Ming
+    (anvil)~/src$ git clone git://merciless.git.sourceforge.net/gitroot/merciless/merciless Ming
 
 Now, we'll need to set up Ming for development work::
 
@@ -138,7 +146,7 @@ SOLR server
   This is our search and indexing server.  We have a custom config in
   ~/src/forge/solr_config::
 
-      (anvil)~/<path_to_solr>/example$ java -Dsolr.solr.home=~/src/forge/solr_config -jar start.jar
+      (anvil)~/<path_to_solr>/example$ java -Dsolr.solr.home=$(cd;pwd)/src/forge/solr_config -jar start.jar
 
 TurboGears application server
   This is the main application that will respond to web requests.  We'll get into
