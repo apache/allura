@@ -1,0 +1,36 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" 
+                      "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:py="http://genshi.edgewall.org/"
+      xmlns:xi="http://www.w3.org/2001/XInclude">
+
+  <xi:include href="master.html" />
+
+<head>
+  <meta content="text/html; charset=UTF-8" http-equiv="content-type" py:replace="''"/>
+  <title>Grant</title>
+</head>
+
+  <body>
+    <h1 class="title">Grant</h1>
+    <div id="grant">
+      <table border="1">
+        <thead>
+          <tr>
+            <th>Award</th>
+            <th>Recipient</th>
+            <th>Delete?</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><a href="$(grant.longurl()">${grant.award.short}</a></td>
+            <td><a href="${grant.longurl()}">${grant.granted_to_project.shortname}</a></td>
+            <td><a href="${grant.longurl()}/revoke">[X]</a></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  <a href="..">&#060;&#060; Back</a>
+  </body>
+</html>
