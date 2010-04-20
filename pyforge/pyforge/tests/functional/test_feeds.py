@@ -11,9 +11,9 @@ class TestFeeds(TestController):
     def setUp(self):
         TestController.setUp(self)
         self.app.get('/wiki/')
-        self.app.get('/tickets/')
+        self.app.get('/bugs/')
         r = self.app.post(
-            '/tickets/save_ticket',
+            '/bugs/save_ticket',
             params=variable_encode(dict(
                     ticket_form=dict(
                     ticket_num='',
@@ -39,14 +39,14 @@ class TestFeeds(TestController):
         self.app.get('/wiki/Root/feed.atom')
 
     def test_ticket_list_feed(self):
-        self.app.get('/tickets/feed.rss')
-        self.app.get('/tickets/feed.atom')
+        self.app.get('/bugs/feed.rss')
+        self.app.get('/bugs/feed.atom')
 
     def test_ticket_feed(self):
-        self.app.get('/tickets/1/feed.rss')
-        r = self.app.get('/tickets/1/feed.atom')
+        self.app.get('/bugs/1/feed.rss')
+        r = self.app.get('/bugs/1/feed.atom')
         assert 'created' in r
-        self.app.post('/tickets/1/update_ticket', params=dict(
+        self.app.post('/bugs/1/update_ticket', params=dict(
                 assigned_to='',
                 ticket_num='',
                 labels='',
@@ -57,7 +57,7 @@ class TestFeeds(TestController):
                 status='unread',
                 milestone='',
                 description='This is another description'))
-        r = self.app.get('/tickets/1/feed.atom')
+        r = self.app.get('/bugs/1/feed.atom')
         assert '=&gt;' in r
         assert '&lt;ins&gt;' in r
 
