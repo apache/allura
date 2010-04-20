@@ -17,7 +17,7 @@
       <table border="1">
         <thead>
           <tr>
-            <th>Grant</th>
+            <th>Award</th>
             <th>Recipient</th>
             <th>Delete?</th>
           </tr>
@@ -25,14 +25,14 @@
         <tbody>
           <py:for each="grant in grants">
             <tr>
-              <td>${grant.award.short}</td>
-              <td>${grant.granted_to_project.shortname}</td>
-              <td><a href="grant_delete?grant_id=$grant._id">[X]</a></td>
+              <td><a href="$(grant.longurl()">${grant.award.short}</a></td>
+              <td><a href="${grant.longurl()}">${grant.granted_to_project.shortname}</a></td>
+              <td><a href="${grant.longurl()}/revoke">[X]</a></td>
             </tr>
           </py:for>
         </tbody>
       </table>
     </div>
+  <a href="..">&#060;&#060; Back</a>
   </body>
 </html>
-
