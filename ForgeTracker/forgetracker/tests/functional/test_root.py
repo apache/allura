@@ -2,7 +2,7 @@ import os, urllib
 import Image, StringIO
 import pyforge
 
-from nose.tools import assert_true, assert_false
+from nose.tools import assert_true, assert_false, eq_
 from forgetracker.tests import TestController
 from pyforge import model
 from forgewiki import model as wm
@@ -22,7 +22,12 @@ class TestFunctionalController(TestController):
         form = response.form
         for k, v in kw.iteritems():
             form['ticket_form.%s' % k] = v
-        return form.submit().follow()
+        resp = form.submit()
+        if resp.status_int == 200:
+            #import pdb; pdb.set_trace()
+            resp.showbrowser()
+            assert 0, "form error?"
+        return resp.follow()
     
     def test_new_ticket(self):
         summary = 'test new ticket'
@@ -127,7 +132,8 @@ class TestFunctionalController(TestController):
         })
         response = self.app.get('/bugs/1/')
         assert_true('yellow' in response)
-        assert_true('green' not in response)
+        # the following assert is no longer true since "green" is shown in changelog
+        # assert_true('green' not in response)
 
     def test_new_attachment(self):
         file_name = 'test_root.py'
@@ -267,7 +273,9 @@ class TestFunctionalController(TestController):
                    {"label":"Category","type":"string","options":""}]"""
         spec = urllib.quote_plus(spec)
         r = self.app.post('/admin/bugs/set_custom_fields', { 'custom_fields': spec })
-        ticket_view = self.new_ticket(summary='test custom fields')
+        kw = {'custom_fields._priority':'normal',
+              'custom_fields._category':'helloworld'}
+        ticket_view = self.new_ticket(summary='test custom fields', **kw)
         assert 'Priority:' in ticket_view
         assert 'normal' in ticket_view
     
@@ -318,9 +326,10 @@ class TestFunctionalController(TestController):
         self.app.post('/admin/bugs/set_custom_fields', { 'custom_fields': spec })
     
         # create three tickets
-        self.new_ticket(summary='test superticket')
-        self.new_ticket(summary='test subticket-1')
-        self.new_ticket(summary='test subticket-2')
+        kw = {'custom_fields._days':0}
+        self.new_ticket(summary='test superticket', **kw)
+        self.new_ticket(summary='test subticket-1', **kw)
+        self.new_ticket(summary='test subticket-2', **kw)
         h.set_context('test', 'bugs')
         super = tm.Ticket.query.get(ticket_num=1)
         sub1 = tm.Ticket.query.get(ticket_num=2)
@@ -352,8 +361,7 @@ class TestFunctionalController(TestController):
         # try submitting with no summary set and check for error message
         error_form = form.submit()
         error_message = error_form.html.find('div', {'class':'error'})
-        assert error_message
-        assert error_message.string == 'Please enter a value'
+        eq_("Missing value", error_message.string)
         assert error_message.findPreviousSibling('input').get('name') == 'ticket_form.summary'
         # set a summary, submit, and check for success
         error_form.form['ticket_form.summary'] = summary
