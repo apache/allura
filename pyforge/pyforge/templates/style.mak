@@ -39,7 +39,7 @@ a:hover {text-decoration: underline;}
     border: 5px solid ${color2};
     border-width: 0 0 5px 0;
 }
-#nav_menu .neighborhood_icon, #nav_menu .project_icon{
+#nav_menu .neighborhood_icon, #nav_menu .project_icon, #nav_menu award_icon{
     width: 48px;
     height: 48px;
     display: block;
