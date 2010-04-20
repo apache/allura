@@ -125,8 +125,8 @@ class TestRootController(TestController):
 
     def test_new_image_attachment_content(self):
         self.app.get('/wiki/TEST/index')
-        file_name = 'adobe_header.png'
-        file_path = os.path.join(pyforge.__path__[0],'public','images',file_name)
+        file_name = 'ui-icons_454545_256x240.png'
+        file_path = os.path.join(pyforge.__path__[0],'public','css','forge','images',file_name)
         file_data = file(file_path).read()
         upload = ('file_info', file_name, file_data)
         self.app.post('/wiki/TEST/attach', upload_files=[upload])
@@ -141,7 +141,7 @@ class TestRootController(TestController):
         r = self.app.get('/wiki/TEST/attachment/'+filename+'/thumb')
 
         thumbnail = Image.open(StringIO.StringIO(r.body))
-        assert thumbnail.size == (101,101)
+        assert thumbnail.size == (150,150)
 
     def test_sidebar_static_page(self):
         response = self.app.get('/wiki/TEST/')

@@ -337,8 +337,8 @@ class TestForumAdmin(TestController):
         assert 'error' in r
 
     def test_forum_icon(self):
-        file_name = 'adobe_header.png'
-        file_path = os.path.join(pyforge.__path__[0],'public','images',file_name)
+        file_name = 'ui-icons_454545_256x240.png'
+        file_path = os.path.join(pyforge.__path__[0],'public','css','forge','images',file_name)
         file_data = file(file_path).read()
         upload = ('new_forum.icon', file_name, file_data)
 

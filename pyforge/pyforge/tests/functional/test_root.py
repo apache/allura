@@ -89,28 +89,16 @@ class TestRootController(TestController):
 
     def test_site_css(self):
         r = self.app.get('/site_style.css')
-        assert("""a{
-    color: #104a75;
+        assert(
+"""a {color: #0088cc; text-decoration: none;}""" in r)
+        assert(
+""".ui-state-default.ui-button:active:hover, .ui-state-active.ui-button {
+	text-decoration: none !important;
+	color: #000000 !important;""" in r)
+        assert(
+"""#footer a:link, #footer a:visited, #footer a:hover, #footer a:active{
+    color: #454545;
     text-decoration: none;
-}
-a:visited, a:hover {color: #104a75;}
-a:hover {text-decoration: underline;}
-""" in r)
-        assert(
-"""#nav_menu_missing{
-    height: 0;
-    padding-top: 5px;
-    border: 5px solid #aed0ea;
-    border-width: 0 0 5px 0;
-}""" in r)
-        assert(
-"""#content{
-    border-style: solid;
-    border-color: #D7E8F5 #aed0ea #D7E8F5 #D7E8F5;
-    border-right-color: #aed0ea;
-    border-width: 5px 1px 0 5px;
-    width: 789px;
-    min-height: 400px;
 }""" in r)
         theme = M.Theme.query.find(dict(name='forge_default')).first()
         theme.color1='#aaa'
@@ -119,27 +107,15 @@ a:hover {text-decoration: underline;}
         session(theme).flush()
         r = self.app.get('/site_style.css')
         assert(
-"""a{
-    color: #aaa;
+"""a {color: #aaa; text-decoration: none;}""" in r)
+        assert(
+""".ui-state-default.ui-button:active:hover, .ui-state-active.ui-button {
+	text-decoration: none !important;
+	color: #bbb !important;""" in r)
+        assert(
+"""#footer a:link, #footer a:visited, #footer a:hover, #footer a:active{
+    color: #ccc;
     text-decoration: none;
-}
-a:visited, a:hover {color: #aaa;}
-""" in r)
-        assert(
-"""#nav_menu_missing{
-    height: 0;
-    padding-top: 5px;
-    border: 5px solid #bbb;
-    border-width: 0 0 5px 0;
-}""" in r)
-        assert(
-"""#content{
-    border-style: solid;
-    border-color: #D7E8F5 #bbb #D7E8F5 #D7E8F5;
-    border-right-color: #bbb;
-    border-width: 5px 1px 0 5px;
-    width: 789px;
-    min-height: 400px;
 }""" in r)
         
         
