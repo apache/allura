@@ -255,9 +255,9 @@ class TestForum(TestController):
         r = self.app.get('/discussion/')
         sidebarmenu = str(r.html.find('ul',{'id':'sidebarmenu'}))
         assert '<a href="." class=" ">Home</a>' in sidebarmenu
-        assert '<a href="/projects/test/admin/discussion" class=" ">Admin</a>' in sidebarmenu
+        assert '<a href="/p/test/admin/discussion" class=" ">Admin</a>' in sidebarmenu
         assert '<a href="search" class=" ">Search</a>' in sidebarmenu
-        assert '<a href="/projects/test/discussion/TestForum/" class=" ">Test Forum</a>' in sidebarmenu
+        assert '<a href="/p/test/discussion/TestForum/" class=" ">Test Forum</a>' in sidebarmenu
 
 class TestForumAdmin(TestController):
 

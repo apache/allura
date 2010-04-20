@@ -194,7 +194,7 @@ class TestFunctionalController(TestController):
     def test_sidebar_ticket_page(self):
         summary = 'test sidebar logic for a ticket page'
         self.new_ticket(summary=summary)
-        response = self.app.get('/projects/test/bugs/1/')
+        response = self.app.get('/p/test/bugs/1/')
         assert 'Create New Ticket' in response
         assert 'Update this Ticket' in response
         assert 'Related Artifacts' not in response
@@ -230,7 +230,7 @@ class TestFunctionalController(TestController):
         ThreadLocalORMSession.flush_all()
         ThreadLocalORMSession.close_all()
         
-        response = self.app.get('/projects/test/bugs/1/')
+        response = self.app.get('/p/test/bugs/1/')
         assert 'Related Artifacts' in response
         assert 'aaa' in response
         assert '#2' in response
@@ -238,7 +238,7 @@ class TestFunctionalController(TestController):
     def test_ticket_view_editable(self):
         summary = 'test ticket view page can be edited'
         self.new_ticket(summary=summary)
-        response = self.app.get('/projects/test/bugs/1/')
+        response = self.app.get('/p/test/bugs/1/')
         assert response.html.find('input', {'name': 'summary'})
         assert response.html.find('select', {'name': 'assigned_to'})
         assert response.html.find('textarea', {'name': 'description'})
@@ -249,7 +249,7 @@ class TestFunctionalController(TestController):
     def test_assign_ticket(self):
         summary = 'test assign ticket'
         self.new_ticket(summary=summary)
-        response = self.app.get('/projects/test/bugs/1/')
+        response = self.app.get('/p/test/bugs/1/')
         assert 'nobody' in response.html.find('span', {'class': 'ticket-assigned-to viewer'}).string
         test_user = response.html.find(id="assigned_to").findAll('option')[1]
         test_user_id = test_user['value']
@@ -265,7 +265,7 @@ class TestFunctionalController(TestController):
             'labels':'',
             'labels_old':''
         })
-        response = self.app.get('/projects/test/bugs/1/')
+        response = self.app.get('/p/test/bugs/1/')
         assert test_user_name in response.html.find('span', {'class': 'ticket-assigned-to viewer'}).find('a').string
     
     def test_custom_fields(self):
@@ -293,7 +293,7 @@ class TestFunctionalController(TestController):
             'labels':'',
             'labels_old':''
         })
-        ticket_view = self.app.get('/projects/test/bugs/1/')
+        ticket_view = self.app.get('/p/test/bugs/1/')
         assert 'Milestone' in ticket_view
         assert 'aaa' in ticket_view
     
@@ -310,12 +310,12 @@ class TestFunctionalController(TestController):
         ThreadLocalORMSession.flush_all()
     
         # get a view on the first ticket, check for other ticket listed in sidebar
-        ticket_view = self.app.get('/projects/test/bugs/1/')
+        ticket_view = self.app.get('/p/test/bugs/1/')
         assert 'Supertask' not in ticket_view
         assert sidebar_contains(ticket_view, '[#2]')
     
         # get a view on the second ticket, check for other ticket listed in sidebar
-        ticket_view = self.app.get('/projects/test/bugs/2/')
+        ticket_view = self.app.get('/p/test/bugs/2/')
         assert 'Supertask' in ticket_view
         assert sidebar_contains(ticket_view, '[#1]')
     
@@ -345,12 +345,12 @@ class TestFunctionalController(TestController):
         ThreadLocalORMSession.flush_all()
     
         # get a view on the first ticket, check for other ticket listed in sidebar
-        ticket_view = self.app.get('/projects/test/bugs/1/')
+        ticket_view = self.app.get('/p/test/bugs/1/')
         assert 'Days' in ticket_view
         assert '6.5' in ticket_view
     
     def test_edit_all_button(self):
-        response = self.app.get('/projects/test/bugs/search/')
+        response = self.app.get('/p/test/bugs/search/')
         assert 'Edit All' not in response
 
     def test_new_ticket_validation(self):
@@ -366,7 +366,7 @@ class TestFunctionalController(TestController):
         # set a summary, submit, and check for success
         error_form.form['ticket_form.summary'] = summary
         success = error_form.form.submit().follow().html
-        assert success.findAll('form')[1].get('action') == '/projects/test/bugs/1/update_ticket'
+        assert success.findAll('form')[1].get('action') == '/p/test/bugs/1/update_ticket'
         assert success.find('input', {'name':'summary'}).get('value') == summary
 
     def test_edit_ticket_validation(self):
@@ -388,21 +388,21 @@ class TestFunctionalController(TestController):
         # set a summary, submit, and check for success
         error_form.forms[0]['ticket_form.summary'] = new_summary
         success = error_form.forms[0].submit().follow().html
-        assert success.findAll('form')[1].get('action') == '/projects/test/bugs/1/update_ticket'
+        assert success.findAll('form')[1].get('action') == '/p/test/bugs/1/update_ticket'
         assert success.find('input', {'name':'summary'}).get('value') == new_summary
 
 #   def test_home(self):
 #       self.new_ticket(summary='test first ticket')
 #       self.new_ticket(summary='test second ticket')
 #       self.new_ticket(summary='test third ticket')
-#       response = self.app.get('/projects/test/bugs/')
+#       response = self.app.get('/p/test/bugs/')
 #       assert '[#3] test third ticket' in response
 
 #   def test_search(self):
 #       self.new_ticket(summary='test first ticket')
 #       self.new_ticket(summary='test second ticket')
 #       self.new_ticket(summary='test third ticket')
-#       response = self.app.get('/projects/test/bugs/search/?q=!status%3Aclosed')
+#       response = self.app.get('/p/test/bugs/search/?q=!status%3Aclosed')
 #       assert '3 results' in response
 #       assert '[#3] test third ticket' in response
 

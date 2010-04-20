@@ -19,7 +19,7 @@ class TestRootController(TestController):
     def test_gitweb(self):
         test_helper.ensure_c_project_and_app()
         assert c.app
-        response = self.app.get('/_wsgi_/scm/projects/test/src_git/.git')
+        response = self.app.get('/_wsgi_/scm/p/test/src_git/.git')
         assert response
 
         

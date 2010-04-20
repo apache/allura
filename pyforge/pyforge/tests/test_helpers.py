@@ -9,18 +9,11 @@ from nose.tools import eq_
 from pyforge import model as M
 from pyforge.lib import helpers as h
 
+from . import helpers
+
 def setUp(self):
     """Method called by nose before running each test"""
-    test_config = environ.get('SANDBOX') and 'sandbox-test.ini' or 'test.ini'
-
-    # Loading the application:
-    conf_dir = config.here
-    wsgiapp = loadapp('config:%s#main' % test_config,
-                      relative_to=conf_dir)
-    # Setting it up:
-    test_file = path.join(conf_dir, test_config)
-    cmd = SetupCommand('setup-app')
-    cmd.run([test_file])
+    helpers.setup_basic_test()
 
 def test_render_genshi_plaintext():
     here_dir = path.dirname(__file__)
@@ -29,9 +22,9 @@ def test_render_genshi_plaintext():
     eq_(u'Hello, world!\n', text)
 
 def test_find_project():
-    proj, rest = h.find_project('/projects/test/foo')
+    proj, rest = h.find_project('/p/test/foo')
     assert proj is not None
-    proj, rest = h.find_project('/projects/testable/foo')
+    proj, rest = h.find_project('/p/testable/foo')
     assert proj is None
 
 def test_find_executable():

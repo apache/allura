@@ -15,7 +15,7 @@ common_suffix = tg.config.get('forgemail.domain', '.sourceforge.net')
 
 class Forum(M.Discussion):
     class __mongometa__:
-        name='discussion'
+        name='forum'
     type_s = 'Discussion'
 
     parent_id = FieldProperty(schema.ObjectId, if_missing=None)

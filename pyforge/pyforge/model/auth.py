@@ -190,7 +190,7 @@ class User(MappedClass):
 
     @property
     def script_name(self):
-        return '/projects/u/' + self.username + '/'
+        return '/u/' + self.username + '/'
 
     def my_projects(self):
         from .project import Project

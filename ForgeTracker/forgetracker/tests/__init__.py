@@ -5,14 +5,17 @@ from paste.deploy import loadapp
 from paste.script.appinstall import SetupCommand
 from webtest import TestApp
 
+from pyforge.tests import helpers
+
 
 def run_app_setup():
     test_config = environ.get('SANDBOX') and 'sandbox-test.ini' or 'test.ini'
     conf_dir = config.here = path.abspath(
         path.dirname(__file__) + '/../..')
     test_file = path.join(conf_dir, test_config)
-    cmd = SetupCommand('setup-app')
-    cmd.run([test_file])
+    helpers.setup_basic_test(test_file)
+    # cmd = SetupCommand('setup-app')
+    # cmd.run([test_file])
     return test_config, conf_dir
 
 

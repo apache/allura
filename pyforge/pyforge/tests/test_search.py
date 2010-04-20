@@ -13,64 +13,50 @@ from pyforge.command import reactor
 from pyforge.ext.search import search_main
 from pyforge.lib.app_globals import Globals
 
-from helloforge import model as HM
+from forgewiki import model as WM
+
+from . import helpers
 
 def setUp():
-    from pyforge.tests import TestController
-    TestController().setUp()
-    g._push_object(Globals())
-    c._push_object(mock.Mock())
-    request._push_object(Request.blank('/'))
-    ThreadLocalORMSession.close_all()
-    h.set_context('test', 'hello')
-    c.user = M.User.query.get(username='test_admin')
-    c.user.email_addresses = c.user.open_ids = []
-    c.user.projects = c.user.projects[:2]
-    c.user.project_role().roles = []
+    helpers.setup_basic_test()
+    helpers.setup_global_objects()
 
 def test_index_artifact():
-    a = HM.Page.query.find().first()
+    a = WM.Page.query.find().first()
     search.add_artifacts([a])
     search.solarize(a)
     a.text = None
     search.remove_artifacts([a])
     g.solr.add([search.solarize(a)])
-    r = search.search('Root')
+    r = search.search('WikiPage')
     assert r.hits == 1
-    r = search.search_artifact(HM.Page, 'title:"HelloForge WikiPage Root"')
+    r = search.search_artifact(WM.Page, 'title:"WikiPage WikiHome"')
     assert r.hits == 1
-    r = search.search_artifact(HM.Page, 'title:"Root"')
+    r = search.search_artifact(WM.Page, 'title:"WikiHome"')
     assert r.hits == 0
 
 def test_searchapp():
-    app = search_main.SearchApp
-    cmd = reactor.ReactorCommand('reactor')
-    cmd.args = [ os.environ.get('SANDBOX') and 'sandbox-test.ini' or 'test.ini' ]
-    cmd.options = mock.Mock()
-    cmd.options.dry_run = True
-    cmd.options.proc = 1
-    configs = cmd.command()
-    add_artifacts = cmd.route_audit('search', app.add_artifacts)
-    del_artifacts = cmd.route_audit('search', app.del_artifacts)
-    msg = mock.Mock()
-    msg.ack = lambda:None
-    msg.delivery_info = dict(routing_key='search.add_artifacts')
     h.set_context('test', 'wiki')
-    a = HM.Page.query.find().first()
-    a.text = '\n[Root]\n'
-    msg.data = dict(project_id=a.project_id,
-                    mount_point=a.app_config.options.mount_point,
-                    artifacts=[a.dump_ref()])
-    add_artifacts(msg.data, msg)
+    a = WM.Page.query.find().first()
+    a.text = '\n[WikiHome]\n'
     ThreadLocalORMSession.flush_all()
     ThreadLocalORMSession.close_all()
-    a = HM.Page.query.find().first()
+    g.mock_amq.setup_handlers()
+    g.publish('react', 'artifacts_altered', dict(project_id=a.project_id,
+                    mount_point=a.app_config.options.mount_point,
+                    artifacts=[a.dump_ref()]))
+    g.mock_amq.handle_all()
+    a = WM.Page.query.find().first()
     assert len(a.references) == 1
     assert len(a.backreferences) == 1
-    del_artifacts(msg.data, msg)
     ThreadLocalORMSession.flush_all()
     ThreadLocalORMSession.close_all()
-    a = HM.Page.query.find().first()
+    g.mock_amq.handle_all()
+    g.publish('react', 'artifacts_removed', dict(project_id=a.project_id,
+                    mount_point=a.app_config.options.mount_point,
+                    artifacts=[a.dump_ref()]))
+    g.mock_amq.handle_all()
+    a = WM.Page.query.find().first()
     assert len(a.references) == 1
     assert len(a.backreferences) == 0
 

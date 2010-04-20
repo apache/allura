@@ -12,6 +12,7 @@ from flyway.command import MigrateCommand
 from ming.orm import ThreadLocalORMSession
 
 from pyforge.lib.app_globals import Globals
+from pyforge.command import ReindexCommand
 from pyforge import model as M
 
 DFL_CONFIG = environ.get('SANDBOX') and 'sandbox-test.ini' or 'test.ini'
@@ -25,6 +26,8 @@ def setup_basic_test(config=DFL_CONFIG, app_name=DFL_APP_NAME):
     cmd.run([test_file])
     cmd = MigrateCommand('flyway')
     cmd.run(['-u', tg.config.get('ming.main.master')])
+    cmd = ReindexCommand('reindex')
+    cmd.run([test_file])
 
 def setup_functional_test(config=DFL_CONFIG, app_name=DFL_APP_NAME):
     '''Create clean environment for running tests.  Also return WSGI test app'''

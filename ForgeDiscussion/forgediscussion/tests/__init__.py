@@ -12,6 +12,7 @@ from webtest import TestApp
 from nose.tools import eq_
 
 from pyforge import model
+from pyforge.tests import helpers
 
 __all__ = ['setup_db', 'teardown_db', 'TestController', 'url_for']
 
@@ -53,8 +54,7 @@ class TestController(object):
         self.app = TestApp(wsgiapp)
         # Setting it up:
         test_file = path.join(conf_dir, self.test_config)
-        cmd = SetupCommand('setup-app')
-        cmd.run([test_file])
+        helpers.setup_basic_test(test_file)
 
     def tearDown(self):
         """Method called by nose after running each test"""

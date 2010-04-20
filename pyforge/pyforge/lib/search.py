@@ -69,13 +69,13 @@ def search_artifact(atype, q, history=False, rows=10, **kw):
             base = f[:-2]
             actual = f
             q = q.replace(base+':', actual+':')
-    parts = [q] if q else []
-    parts.append('type_s:%s' % fields['type_s'])
-    parts.append('project_id_s:%s' % c.project._id)
-    parts.append('mount_point_s:%s' % c.app.config.options.mount_point)
+    fq = [
+        'type_s:%s' % fields['type_s'],
+        'project_id_s:%s' % c.project._id,
+        'mount_point_s:%s' % c.app.config.options.mount_point ]
     if not history:
-        parts.append('is_history_b:False')
-    return g.solr.search(' AND '.join(parts), rows=rows, **kw)
+        fq.append('is_history_b:False')
+    return g.solr.search(q, fq=fq)
     
 def find_shortlinks(text):
     from pyforge import model as M

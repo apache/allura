@@ -52,7 +52,7 @@ def setup_gitweb(repo_name, repo_dir):
     tpl_fn = pkg_resources.resource_filename(
         'forgescm', 'data/gitweb.conf_tmpl')
     text = render_genshi_plaintext(tpl_fn, 
-        my_uri='/_wsgi_/scm/projects/' + repo_name,
+        my_uri='/_wsgi_/scm/p/' + repo_name,
         site_name='GitWeb Interface for ' + repo_name,
         project_root=os.path.join(repo_dir, ".."))
     cfg_fn = os.path.join(repo_dir, 'gitweb.conf')
