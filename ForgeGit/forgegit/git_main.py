@@ -37,7 +37,7 @@ log = logging.getLogger(__name__)
 class ForgeGitApp(Application):
     '''This is the Git app for PyForge'''
     __version__ = version.__version__
-    permissions = [ 'configure', 'read', 'create', 'edit', 'delete', 'admin' ]
+    permissions = [ 'read', 'write', 'create', 'admin' ]
 
     def __init__(self, project, config):
         Application.__init__(self, project, config)
@@ -70,11 +70,9 @@ class ForgeGitApp(Application):
         role_developer = ProjectRole.query.get(name='Developer')._id
         role_auth = ProjectRole.query.get(name='*authenticated')._id
         self.config.acl.update(
-            configure=c.project.acl['plugin'],
             read=c.project.acl['read'],
             create=[role_developer],
-            edit=[role_developer],
-            delete=[role_developer],
+            write=[role_developer],
             admin=c.project.acl['plugin'])
 
 
