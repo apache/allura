@@ -104,7 +104,7 @@ class Notification(MappedClass):
         return n
 
     def footer(self):
-        prefix = config.get('forgemail.host', 'https://sourceforge.net')
+        prefix = config.get('forgemail.url', 'https://sourceforge.net')
         return '''
 
 ---
