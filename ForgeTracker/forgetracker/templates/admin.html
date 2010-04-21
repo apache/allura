@@ -10,10 +10,11 @@
 
   <head>
     <meta content="text/html; charset=UTF-8" http-equiv="content-type" py:replace="''"/>
-    <title>Admin for $c.project.name $app.config.options.mount_point</title>
+    <title>$app.config.plugin_name Admin</title>
   </head>
 
   <body>
+    <h1 class="title">$app.config.plugin_name Admin</h1>
     <div id="app_admin_tabs">
     	<ul>
     		<li><a href="#app-acl"
@@ -23,7 +24,6 @@
     		<li><a href="#app-custom-fields">Custom Fields</a></li>
     	</ul>
       <div id="app-acl" py:if="app.permissions and allow_config">
-        <h3>Permissions</h3>
         <div id="acl-admin">
           <py:for each="p in app.permissions" >
             <h3><a href="#">$p</a></h3>
@@ -69,7 +69,6 @@
         </div>
       </div>
       <div id="app-status" style="overflow: auto">
-        <h3>Statuses</h3>
         <div>
           <form method="POST" action="set_status_names">
               <div class="span-3 clear"><label>Names:</label></div>
@@ -78,12 +77,12 @@
                        py:if="allow_config" class="title wide"/>
                 <span py:if="not allow_config">${globals.status_names}</span>
               </div>
+              <hr class="clear clearfix" />
               <div class="push-3 span-13 last"><input type="submit" value="Save" class="ui-state-default ui-button ui-button-text"/></div>
           </form>
         </div>
       </div>
       <div id="app-milestone" style="overflow: auto">
-        <h3>Milestones</h3>
         <div>
           <form method="POST" action="set_milestone_names">
               <div class="span-3 clear"><label>Names:</label></div>
@@ -92,12 +91,12 @@
                        py:if="allow_config" class="title wide"/>
                 <span py:if="not allow_config">${globals.milestone_names}</span>
               </div>
+              <hr class="clear clearfix" />
               <div class="push-3 span-13 last"><input type="submit" value="Save" class="ui-state-default ui-button ui-button-text"/></div>
           </form>
         </div>
       </div>
       <div id="app-custom-fields">
-        <h3>Custom Fields</h3>
         <div>
           <p id="has_fields_message">Drag and drop the fields to re-order.</p>
           <p id="no_fields_message">No custom fields have been created.</p>

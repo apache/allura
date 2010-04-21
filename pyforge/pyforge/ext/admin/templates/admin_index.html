@@ -36,7 +36,6 @@
                py:if="c.project.is_root and has_project_access('security')()">Roles</a></li>
     	</ul>
     	<div id="project-admin-invitations" py:if="len(c.project.neighborhood_invitations)">
-        <h2>Neighborhood Invitation(s)</h2>
         <form method="POST" action="join_neighborhood">
           <select name="nid">
             <option py:if="c.project.neighborhood.name != 'Projects'" value="">
@@ -48,25 +47,25 @@
         </form>
       </div>
       <div id="project-admin-overview" style="overflow: auto">
-        <h2>Project Overview</h2>
         <div py:if="not has_project_access('update')()">
           <div class="span-3 clear"><label>Name</label></div>
           <div class="span-15 last">$c.project.name</div>
-
+          <hr class="clear clearfix" />
           <div class="span-3 clear"><label>Category</label></div>
           <div class="span-15 last">${c.project.category and c.project.category.label or 'Uncategorized'}</div>
-
+          <hr class="clear clearfix" />
           <div class="span-3 clear"><label>Icon</label></div>
           <div class="span-15 last">
             <img py:if="c.project.icon" src="${c.project.url()}/icon"/>
             <span py:if="not c.project.icon">&nbsp;</span>
           </div>
-
+          <hr class="clear clearfix" />
           <div class="span-3 clear"><label>Summary</label></div>
           <div class="span-15 last"><pre>$c.project.short_description</pre></div>
-
+          <hr class="clear clearfix" />
           <div class="span-3 clear"><label>Description</label></div>
           <div class="span-15 last">${Markup(c.project.description_html)}</div>
+          <hr class="clear clearfix" />
           <div class="span-3 clear"><label>Screenshots</label></div>
           <div class="span-15 last">
               <py:if test="len(c.project.get_screenshots())">
@@ -76,17 +75,19 @@
           </div>
         </div>
         <form py:if="has_project_access('update')()" method="POST" action="update" enctype="multipart/form-data">
-
-          <div class="span-3 clear"><label>Name</label></div>
-          <div class="editable viewing span-15 last">
+          <div class="span-3"><label>Name:</label></div>
+          <div class="editable viewing span-13 last">
             <div class="viewer">$c.project.name</div>
             <div class="editor"><input name="name" value="$c.project.name"/></div>
           </div>
-          <div class="span-3 clear"><label>Shortname</label></div>
-          <div class="span-15 last">$c.project.shortname</div>
+          <hr class="clear clearfix" />
 
-          <div class="span-3 clear"><label>Category</label></div>
-          <div class="editable viewing span-15 last">
+          <div class="span-3"><label>Shortname:</label></div>
+          <div class="span-13 last fakeinput">$c.project.shortname</div>
+          <hr class="clear clearfix" />
+
+          <div class="span-3"><label>Category:</label></div>
+          <div class="editable viewing span-13 last">
             <div class="viewer">${c.project.category and c.project.category.label or 'Uncategorized'}</div>
             <div class="editor">
               <select name="category">
@@ -102,23 +103,29 @@
               </select>
             </div>
           </div>
-          <div class="span-3 clear"><label>Icon</label></div>
-          <div class="editable viewing span-15 last" style="min-height: 2em">
+          <hr class="clear clearfix" />
+
+          <div class="span-3"><label>Icon:</label></div>
+          <div class="editable viewing span-13 last">
             <div class="viewer" py:if="c.project.icon"><img src="${c.project.url()}/icon"/></div>
             <div class="viewer" py:if="not c.project.icon">No icon has been created.</div>
-            <div class="editor">
-              ${file_field('icon', 'File')}
-            </div>
+            <div class="editor">${file_field('icon', 'File')}</div>
           </div>
-          <div class="span-3 clear"><label>Summary</label></div>
-          <div class="editable viewing span-15 last">
+          <hr class="clear clearfix" />
+
+          <div class="span-3"><label>Summary:</label></div>
+          <div class="editable viewing span-13 last">
             <div class="viewer"><pre>$c.project.short_description</pre></div>
             <div class="editor"><textarea name="short_description">$c.project.short_description</textarea></div>
           </div>
-          <div class="span-3 clear"><label>Description</label></div>
-          <div class="span-15 last">${c.markdown_editor.display(name='description',value=c.project.description)}</div>
-          <div class="span-3 clear"><label>Screenshots</label></div>
-          <div class="editable viewing span-15 last">
+          <hr class="clear clearfix" />
+
+          <div class="span-3"><label>Description:</label></div>
+          <div class="span-13 last">${c.markdown_editor.display(name='description',value=c.project.description)}</div>
+          <hr class="clear clearfix" />
+
+          <div class="span-3"><label>Screenshots:</label></div>
+          <div class="editable viewing span-13 last">
             <div class="viewer">
               <py:if test="len(c.project.get_screenshots())">
                 <a py:for="ss in c.project.get_screenshots()" href="${c.project.url()}screenshot/$ss.filename"><img src="${c.project.url()}screenshot/$ss.filename/thumb" style="margin-right: 1em"/></a>
@@ -127,6 +134,8 @@
             </div>
             <div class="editor">${file_field('screenshot', 'File')}</div>
           </div>
+          <hr class="clear clearfix" />
+
           <div class="push-3 span-15 last">
             <input type="submit" value="Save"
                    class="ui-state-default ui-button ui-button-text"/>
@@ -140,7 +149,6 @@
         </form>
       </div>
       <div id="project-admin-plugins">
-        <h2>Plugin / Subproject Admin</h2>
         <div>
           <table>
             <thead>
@@ -152,7 +160,7 @@
               </tr>
             </thead>
             <tbody>
-              <form method="POST" action="update_mounts">
+              <form method="POST" action="update_mounts" id="mounts_edit">
                 <input py:for="i, sp in enumerate(c.project.direct_subprojects)"
                        type="hidden"
                        name="subproject-${i}.shortname"
@@ -164,19 +172,34 @@
                 <tr py:for="i, sp in enumerate(c.project.direct_subprojects)">
                   <td>Subproject</td>
                   <td>$sp.shortname</td>
-                  <td py:if="has_project_access('plugin')()"><a href="${sp.url() + 'admin/'}">Edit</a></td>
-                  <td py:if="has_project_access('plugin')()"><input
-                             name="subproject-${i}.delete" type="submit" value="Delete"
-                             class="ui-state-default ui-button ui-button-text"/></td>
+                  <td py:if="has_project_access('plugin')()"><a href="${sp.url() + 'admin/'}">
+                    <span class="ui-icon ui-icon-pencil"></span> Edit
+                  </a></td>
+                  <td class="plugin-delete">
+                    <a py:if="has_project_access('plugin')()"
+                       class="subproject-${i}" href="#">
+                       <span class="ui-icon ui-icon-close"></span> Delete
+                    </a>
+                  </td>
                 </tr>
                 <tr py:for="i, config in enumerate(c.project.app_configs)">
                   <td>Plugin: $config.plugin_name</td>
                   <td>$config.options.mount_point</td>
-                  <td py:if="has_project_access('plugin')()"><a
-                         href="$config.options.mount_point/">Edit</a></td>
-                  <td py:if="has_project_access('plugin')() and config.load().installable"><input
-                             name="plugin-${i}.delete" type="submit" value="Delete"
-                             class="ui-state-default ui-button ui-button-text"/></td>
+                  <td>
+                    <a py:if="has_project_access('plugin')()"
+                       href="$config.options.mount_point/">
+                       <span class="ui-icon ui-icon-pencil"></span> Edit
+                    </a>
+                  </td>
+                  <td class="plugin-delete">
+                    <a py:if="has_project_access('plugin')() and config.load().installable"
+                       class="plugin-${i}" href="#">
+                       <span class="ui-icon ui-icon-close"></span> Delete
+                    </a>
+                    <!-- <input py:if="has_project_access('plugin')() and config.load().installable"
+                                           name="plugin-${i}.delete" type="submit" value="Delete"
+                                           class="ui-state-default ui-button ui-button-text"/> -->
+                  </td>
                 </tr>
               </form>
               <form method="POST" action="update_mounts">
@@ -198,7 +221,7 @@
                     </select>
                   </td>
                   <td>
-                    <input name="new.mount_point" class="new_mount_point"/>
+                    <input name="new.mount_point" class="title"/>
                   </td>
                   <td colspan="2">
                     <input type="submit" value="Install" name="new.install" class="ui-state-default ui-button ui-button-text"/>
@@ -211,7 +234,6 @@
       </div>
       <div id="project-admin-permissions" 
            py:if="has_project_access('security')()">
-        <h2>Project ACL Admin</h2>
         <p>The project ACL determines project-level permissions.</p>
         <div id="acl-admin">
           <py:for each="permission, role_ids in c.project.acl.iteritems()">
@@ -242,7 +264,7 @@
                         </select>
                       </td>
                       <td>
-                        <input name="new.username"/>
+                        <input name="new.username" class="title"/>
                       </td>
                       <td>
                         <input type="submit" name="new.add" value="Add Permission" class="ui-state-default ui-button ui-button-text"/>
@@ -256,7 +278,6 @@
         </div>
       </div>
       <div id="project-admin-roles" py:if="c.project.is_root and has_project_access('security')()">
-        <h2>Role Admin</h2>
         <div class="content">
           <p>
             Each user on the project has a private role.
@@ -301,7 +322,7 @@
                   </td>
                 </tr>
                 <tr>
-                  <td><input name="new.name"/></td>
+                  <td><input name="new.name" class="title"/></td>
                   <td colspan="3">
                     <input type="submit" name="new.add" value="Create Role"
                       class="ui-state-default ui-button ui-button-text"/>
@@ -340,6 +361,14 @@
         $.post($('#roles_form')[0].action, vals+'&'+add_name+'=Add', function(){
           window.location.reload();
         });
+      });
+      $('td.plugin-delete a').click(function(e){
+        var vals = $('#mounts_edit').serialize();
+        var del_name = e.target.className+'.delete';
+        $.post($('#mounts_edit')[0].action, vals+'&'+del_name+'=Del', function(){
+          window.location.reload();
+        });
+        return false;
       });
       /*]]>*/
     </script>
