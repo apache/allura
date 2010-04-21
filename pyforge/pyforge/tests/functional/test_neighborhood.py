@@ -125,18 +125,19 @@ class TestNeighborhood(TestController):
         file_path = os.path.join(pyforge.__path__[0],'public','images',file_name)
         file_data = file(file_path).read()
         upload = ('icon', file_name, file_data)
+
         r = self.app.get('/mozilla/_admin/awards', extra_environ=dict(username='root'))
         r = self.app.post('/mozilla/_admin/awards/create',
-                          params=dict(short='FOO', full='A Basic Foo Award'),
+                          params=dict(short='FOO', full='A basic foo award'),
                           extra_environ=dict(username='root'), upload_files=[upload])
-        r = self.app.get('/mozilla/_admin/awards/FOO')
-        r = self.app.get('/mozilla/_admin/awards/FOO/icon')
+        r = self.app.get('/mozilla/_admin/awards/FOO', extra_environ=dict(username='root'))
+        r = self.app.get('/mozilla/_admin/awards/FOO/icon', extra_environ=dict(username='root'))
         image = Image.open(StringIO.StringIO(r.body))
         assert image.size == (48,48)
         r = self.app.post('/mozilla/_admin/awards/grant',
                           params=dict(grant='FOO', recipient='mozilla_1'),
                           extra_environ=dict(username='root'))
-        r = self.app.get('/mozilla/_admin/awards/FOO/mozilla_1')
+        r = self.app.get('/mozilla/_admin/awards/FOO/mozilla_1', extra_environ=dict(username='root'))
         r = self.app.post('/mozilla/_admin/awards/FOO/mozilla_1/revoke',
                           extra_environ=dict(username='root'))
         r = self.app.post('/mozilla/_admin/awards/FOO/delete',
