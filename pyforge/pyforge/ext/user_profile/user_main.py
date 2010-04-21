@@ -13,7 +13,7 @@ from pyforge import version
 from pyforge.app import Application, WidgetController, ConfigOption, SitemapEntry
 from pyforge.lib import helpers as h
 from pyforge.ext.project_home import model as M
-from pyforge.lib.security import require, has_project_access
+from pyforge.lib.security import require, has_project_access, has_artifact_access
 from pyforge.model import User
 
 log = logging.getLogger(__name__)
@@ -104,3 +104,19 @@ class UserProfileController(object):
                     name=div['name'],
                     content=content))
         redirect('configuration')
+
+    @expose('json')
+    def permissions(self, repo_path=None, **kw):
+        """Expects repo_path to be a filesystem path like
+            '/git/mygreatproject/source/repo.git'.
+            Returns JSON describing this user's permissions on that repo.
+        """
+        username = c.project.shortname.split('/')[1]
+        user = User.query.find({'username':username}).first()
+        parts = repo_path.split('/')
+        project_shortname = '/'.join(parts[2:-2])
+        mount_point = parts[-2]
+        h.set_context(project_shortname, mount_point)
+        return dict(allow_read=has_artifact_access('read')(user=user),
+                    allow_write=has_artifact_access('write')(user=user),
+                    allow_create=has_artifact_access('create')(user=user))
