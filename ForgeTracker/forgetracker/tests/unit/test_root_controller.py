@@ -7,7 +7,6 @@ from pylons import c
 from forgetracker.tests.unit import TestWithModel
 from forgetracker.model import Ticket, Globals
 from forgetracker import tracker_main
-from pyforge.model import User
 
 
 class WithUserAndBugsApp(TestWithModel):

@@ -1,8 +1,7 @@
-from os import path, system, environ
+from os import path, environ
 
 from tg import config
 from paste.deploy import loadapp
-from paste.script.appinstall import SetupCommand
 from webtest import TestApp
 
 from pyforge.tests import helpers

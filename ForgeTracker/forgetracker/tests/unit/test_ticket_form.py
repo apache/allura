@@ -1,6 +1,5 @@
 from mock import patch
 from ming.orm.ormsession import ThreadLocalORMSession
-import ew
 
 from forgetracker.tests.unit import TestWithModel
 from forgetracker.widgets import ticket_form

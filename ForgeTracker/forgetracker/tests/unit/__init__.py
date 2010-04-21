@@ -1,7 +1,4 @@
-from os import path, environ
-
 from pylons import c
-from paste.script.appinstall import SetupCommand
 from ming.orm.ormsession import ThreadLocalORMSession
 
 from pyforge.websetup import bootstrap

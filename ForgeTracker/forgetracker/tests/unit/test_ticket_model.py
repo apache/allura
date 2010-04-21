@@ -1,9 +1,6 @@
-from mock import Mock
-from pylons import c
-from pyforge.lib import helpers as h
 from ming.orm.ormsession import ThreadLocalORMSession
 
-from forgetracker.model import Ticket, Globals
+from forgetracker.model import Ticket
 from forgetracker.tests.unit import TestWithModel
 
 

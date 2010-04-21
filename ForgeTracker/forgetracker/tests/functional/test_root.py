@@ -4,7 +4,6 @@ import pyforge
 
 from nose.tools import assert_true, assert_false, eq_
 from forgetracker.tests import TestController
-from pyforge import model
 from forgewiki import model as wm
 from forgetracker import model as tm
 
