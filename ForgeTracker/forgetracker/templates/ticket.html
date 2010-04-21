@@ -37,7 +37,7 @@
         <div class="span-10 last gravatar sm">
           ${gravatar(ticket.reported_by.preferences.email_address, size=16)}
           <a href="${ticket.reported_by.url()}">${ticket.reported_by.display_name}</a>
-          ${h.ago(ticket.created_date, round=True)}
+          ${h.ago(ticket.created_date)}
         </div>
         <div class="span-2 tright clear" style="padding: 10px 0"><b>Assigned to:</b></div>
         <div class="span-10 last gravatar sm${allow_edit and ' editable viewing' or ''}" style="padding: 10px 0">

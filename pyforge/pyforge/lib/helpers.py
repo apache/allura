@@ -135,12 +135,23 @@ def vardec(fun):
 def nonce(length=4):
     return sha1(ObjectId().binary + os.urandom(10)).hexdigest()[:length]
 
-def ago(dt, round=False):
-    ago = date.distance_of_time_in_words(dt, datetime.utcnow(),
-                                          'minute',
-                                          round=True)
-    if round:
-        ago = ago.split(' and')[0]
+def ago(start_time):
+    """
+    Return time since starting time as a rounded, human readable string.
+    E.g., "3 hours ago"
+    """
+
+    granularities = ['century', 'decade', 'year', 'month', 'day', 'hour',
+                     'minute']
+    end_time = datetime.now()
+
+    while True:
+        granularity = granularities.pop()
+        ago = date.distance_of_time_in_words(
+            start_time, end_time, granularity, round=True)
+        rounded_to_one_granularity = 'and' not in ago
+        if rounded_to_one_granularity:
+            break
     return ago + ' ago'
 
 def tag_artifact(artifact, user, tags):
