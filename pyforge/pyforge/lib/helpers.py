@@ -135,6 +135,10 @@ def vardec(fun):
 def nonce(length=4):
     return sha1(ObjectId().binary + os.urandom(10)).hexdigest()[:length]
 
+def cryptographic_nonce(length=40):
+    hex_format = '%.2x' * length
+    return hex_format % tuple(map(ord, os.urandom(length)))
+
 def ago(start_time):
     """
     Return time since starting time as a rounded, human readable string.

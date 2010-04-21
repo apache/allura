@@ -34,7 +34,8 @@ setup(
         # "WebOb == 0.9.6.1",
         "python-oembed >= 0.1.1",
         "EasyWidgets >= 0.1.1",
-        "PIL >= 1.1.7"
+        "PIL >= 1.1.7",
+        "iso8601"
         ],
     setup_requires=["PasteScript >= 1.7"],
     paster_plugins=['PasteScript', 'Pylons', 'TurboGears2', 'tg.devtools', 'ForgeMail'],

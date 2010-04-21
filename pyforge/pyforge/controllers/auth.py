@@ -205,7 +205,8 @@ class PreferencesController(object):
                             type=s.type,
                             frequency=s.frequency.unit,
                             artifact=s.artifact_index_id))
-        return dict(subscriptions=subscriptions)
+        api_token = M.ApiToken.query.get(user_id=c.user._id)
+        return dict(subscriptions=subscriptions, api_token=api_token)
 
     @h.vardec
     @expose()
@@ -253,4 +254,20 @@ class PreferencesController(object):
                 s['_id'].unsubscribe(
                     artifact_index_id=s['artifact_index_id'] or None,
                     topic=s['topic'] or None)
+        redirect(request.referer)
+
+    @expose()
+    def gen_api_token(self):
+        tok = M.ApiToken.query.get(user_id=c.user._id)
+        if tok is None:
+            tok = M.ApiToken(user_id=c.user._id)
+        else:
+            tok.secret_key = h.cryptographic_nonce()
+        redirect(request.referer)
+
+    @expose()
+    def del_api_token(self):
+        tok = M.ApiToken.query.get(user_id=c.user._id)
+        if tok is None: return
+        tok.delete()
         redirect(request.referer)

@@ -88,6 +88,7 @@ class Application(object):
     templates=None # path to templates
     script_name=None
     root=None  # root controller
+    api_root=None
     permissions=[]
     sitemap = [ ]
     installable=True

@@ -1,23 +1,27 @@
 import logging
 import os
+import urllib
+import hmac
+import hashlib
+from datetime import timedelta, datetime
 from base64 import b64encode
 from random import randint
 from hashlib import sha256
 
 import ldap
+import iso8601
 from pylons import c, g
 from tg import config
 
 from ming.orm.ormsession import ThreadLocalORMSession
 from ming.orm.mapped_class import MappedClass
-from ming.orm.property import FieldProperty
+from ming.orm.property import FieldProperty, RelationProperty, ForeignIdProperty
 from ming import schema as S
 
-from pyforge.lib.helpers import push_config
+from pyforge.lib import helpers as h
 from .session import ProjectSession
 from .session import main_doc_session, main_orm_session
 from .session import project_doc_session, project_orm_session
-
 
 log = logging.getLogger(__name__)
 
@@ -29,6 +33,43 @@ def encode_password(password, salt=None):
                        for i in xrange(SALT_LENGTH))
     hashpass = sha256(salt + password.encode('utf-8')).digest()
     return 'sha256' + salt + b64encode(hashpass)
+
+class ApiToken(MappedClass):
+    class __mongometa__:
+        name='api_token'
+        session = main_orm_session
+
+    _id = FieldProperty(S.ObjectId)
+    user_id = ForeignIdProperty('User')
+    api_key = FieldProperty(str, if_missing=lambda:h.nonce(20))
+    secret_key = FieldProperty(str, if_missing=h.cryptographic_nonce)
+
+    user = RelationProperty('User')
+
+    def authenticate_request(self, path, params):
+        try:
+            # Validate timestamp
+            timestamp = iso8601.parse_date(params['api_timestamp'])
+            timestamp_utc = timestamp.replace(tzinfo=None) - timestamp.utcoffset()
+            if abs(datetime.utcnow() - timestamp_utc) > timedelta(minutes=10):
+                return False
+            # Validate signature
+            api_signature = params['api_signature']
+            params = sorted((k,v) for k,v in params.iteritems() if k != 'api_signature')
+            string_to_sign = path + '?' + urllib.urlencode(params)
+            digest = hmac.new(self.secret_key, string_to_sign, hashlib.sha256)
+            return digest.hexdigest() == api_signature
+        except KeyError:
+            return False
+
+    def sign_request(self, path, params):
+        if hasattr(params, 'items'): params = params.items()
+        params.append(('api_key', self.api_key))
+        params.append(('api_timestamp', datetime.utcnow().isoformat()))
+        string_to_sign = path + '?' + urllib.urlencode(sorted(params))
+        digest = hmac.new(self.secret_key, string_to_sign, hashlib.sha256)
+        params.append(('api_signature', digest.hexdigest()))
+        return path + '?' + urllib.urlencode(params)
 
 class EmailAddress(MappedClass):
     class __mongometa__:
@@ -208,7 +249,7 @@ class User(MappedClass):
 
     def project_role(self, project=None):
         if project is None: project = c.project
-        with push_config(c, project=project, user=self):
+        with h.push_config(c, project=project, user=self):
             if self._id is None:
                 return ProjectRole.query.get(name='*anonymous')
             obj = ProjectRole.query.get(user_id=self._id)

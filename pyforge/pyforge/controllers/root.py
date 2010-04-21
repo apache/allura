@@ -22,6 +22,7 @@ from .search import SearchController, ProjectBrowseController
 from .static import StaticController
 from .project import NeighborhoodController, HostNeighborhoodController
 from .oembed import OEmbedController
+from .rest import RestController
 from mako.template import Template
 
 __all__ = ['RootController']
@@ -50,6 +51,7 @@ class RootController(BaseController):
     error = ErrorController()
     static = StaticController()
     search = SearchController()
+    rest = RestController()
 
     def __init__(self):
         """Create a user-aware root controller instance.

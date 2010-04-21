@@ -62,6 +62,7 @@ class ForgeTrackerApp(Application):
     def __init__(self, project, config):
         Application.__init__(self, project, config)
         self.root = RootController()
+        self.api_root = RootRestController()
         self.admin = TrackerAdminController(self)
 
     def has_access(self, user, topic):
@@ -913,3 +914,9 @@ class TrackerAdminController(DefaultAdminController):
             field['label'] = field['label'].title()
         self.globals.custom_fields=custom_fields
         flash('Custom fields updated')
+
+class RootRestController(object):
+
+    @expose()
+    def index(self, **kw):
+        return 'Hi, %s' % c.user.username

@@ -13,6 +13,26 @@
   
   <body>
     <h1 class="title">User Preferences for $c.user.username</h1>
+    <h2>API Token</h2>
+    <py:if test="api_token">
+      <p>
+        <b>API Key:</b><br/>
+        $api_token.api_key<br/>
+        <b>Secret Key:</b><br/>
+        $api_token.secret_key<br/>
+      </p>
+      <form method="POST" action="del_api_token">
+        <input type="submit" value="Delete API Token"
+               class="ui-state-default ui-button ui-button-text"/>
+      </form>
+    </py:if>
+    <py:if test="not api_token">
+      No API token generated
+    </py:if>
+    <form method="POST" action="gen_api_token">
+      <input type="submit" value="(Re)generate API Token"
+               class="ui-state-default ui-button ui-button-text"/>
+    </form>
     <h2>Subscriptions</h2>
     ${c.form.display(action='update_subscriptions', value=dict(subscriptions=subscriptions))}
     <form action="update" method="post">
