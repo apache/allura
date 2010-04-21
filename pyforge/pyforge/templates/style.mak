@@ -488,6 +488,10 @@ ul#sidebarmenu li a.nav_child {
     padding-left:1.5em;
 }
 
+ul#sidebarmenu li a.nav_child2 {
+    padding-left:3em;
+}
+
 #sidebar-right hr {margin: .2em 0 !important; padding: 0; background: rgb(235,235,235);}
 
 #sidebar-right {

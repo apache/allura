@@ -153,9 +153,9 @@
     <div class="clear">&nbsp;</div>
 
     <div py:with="thread=ticket.discussion_thread()" id="#comment">
-      <h3><a href="${thread.url()}">Discussion</a></h3>
-          <hr class="clear clearfix"/>
-      ${c.thread.display(value=thread)}
+      <h2>Discussion</h2>
+      <hr class="clear clearfix"/>
+      ${c.thread.display(value=thread,new_post_text="New Comment")}
     </div>
     <script type="text/javascript" src="${g.app_static('js/comments.js')}"/>
   </body>

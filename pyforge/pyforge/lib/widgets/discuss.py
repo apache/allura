@@ -207,15 +207,15 @@ class Post(HierWidget):
                 yield r
         yield ew.JSScript('''
         (function(){
-            $('.discussion-post').each(function(){
+            $('div.discussion-post').each(function(){
                 var post = this;
                 $('.submit', post).button();
                 $('.flag_post, .delete_post', post).click(function(ele){
                     this.parentNode.submit();
                     return false;
                 });
-                if($('.edit_post', post)){
-                    $('.edit_post', post).click(function(ele){
+                if($('a.edit_post', post)){
+                    $('a.edit_post', post).click(function(ele){
                         $('.edit_post_form', post).show();
                         return false;
                     });
@@ -247,17 +247,33 @@ class Post(HierWidget):
 class Thread(HierWidget):
     template='genshi:pyforge.lib.widgets.templates.thread'
     name='thread'
-    params=['value', 'offset', 'pagesize', 'total', 'show_subject']
+    params=['value', 'offset', 'pagesize', 'total', 'show_subject','new_post_text']
     value=None
     offset=None
     pagesize=None
     total=None
     show_subject=False
+    new_post_text="New Post"
     widgets=dict(
         thread_header=ThreadHeader(),
         post_thread=PostThread(),
         post=Post(),
-        edit_post=EditPost(submit_text='New Post'))
+        edit_post=EditPost(submit_text='Submit'))
+    def resources(self):
+        for r in super(Thread, self).resources(): yield r
+        for w in self.widgets.itervalues():
+            for r in w.resources():
+                yield r
+        yield ew.JSScript('''
+        $(window).load(function(){
+            if($('#new_post_create')){
+                $('#new_post_create').click(function(e){
+                    $(e.target).hide();
+                    $('#new_post_holder').show();
+                });
+            }
+        });
+        ''')
 
 class Discussion(HierWidget):
     template='genshi:pyforge.lib.widgets.templates.discussion'

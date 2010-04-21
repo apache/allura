@@ -15,10 +15,10 @@
       </py:for>
     </div>
   </py:with>
-  <div py:if="has_artifact_access('post', value)()" class="title-pane closed">
-    <span class="title">New Post</span>
-    <div class="content">
+  <py:if test="has_artifact_access('post', value)()">
+    <input id="new_post_create" type="button" class="ui-state-default ui-button ui-button-text" value="$new_post_text"/>
+    <div id="new_post_holder" style="display:none">
       ${widgets.edit_post.display(submit_text='New Post', action=value.url() + 'post')}
     </div>
-  </div>
+  </py:if>
 </div>

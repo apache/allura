@@ -63,7 +63,7 @@
 	<span class="neighborhood ui-corner-bl ui-corner-tr">
 		<img py:if="c.project.neighborhood.icon" src="${c.project.neighborhood.url()}/icon" class="project_icon"/>
           <img py:if="not c.project.neighborhood.icon" src="/images/project_default.png" class="project_icon"/>
-          A${c.project.neighborhood.name.lower().startswith(('a','e','i','o','u')) and 'n' or ''} <a href="${c.project.neighborhood.url()}" class="neighborhood_name">$c.project.neighborhood.name</a> Project <span class="fright ui-icon ui-icon-triangle-1-s"></span>
+          <a href="${c.project.neighborhood.url()}" class="neighborhood_name">$c.project.neighborhood.name</a> Project
 	</span>
       </div>
     </div>
