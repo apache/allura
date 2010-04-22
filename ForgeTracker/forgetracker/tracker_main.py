@@ -878,7 +878,7 @@ class RootRestController(object):
     def __init__(self):
         self._discuss = AppDiscussionRestController()
 
-    @expose('json')
+    @expose('json:')
     def index(self, **kw):
         require(has_artifact_access('read'))
         return dict(tickets=[
@@ -915,7 +915,7 @@ class TicketRestController(object):
             self.ticket = model.Ticket.query.get(app_config_id=c.app.config._id,
                                                     ticket_num=self.ticket_num)
 
-    @expose('json')
+    @expose('json:')
     def index(self, **kw):
         require(has_artifact_access('read', self.ticket))
         return dict(ticket=self.ticket)

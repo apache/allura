@@ -412,7 +412,7 @@ class ModerationController(object):
 
 class PostRestController(PostController):
 
-    @expose('json')
+    @expose('json:')
     def index(self, **kw):
         return dict(post=self.post)
 
@@ -428,7 +428,7 @@ class PostRestController(PostController):
 
 class ThreadRestController(ThreadController):
 
-    @expose('json')
+    @expose('json:')
     def index(self, **kw):
         return dict(thread=self.thread)
 
@@ -445,7 +445,7 @@ class AppDiscussionRestController(AppDiscussionController):
     ThreadController = ThreadRestController
     PostController = PostRestController
 
-    @expose('json')
+    @expose('json:')
     def index(self, **kw):
         return dict(discussion=self.discussion)
 
