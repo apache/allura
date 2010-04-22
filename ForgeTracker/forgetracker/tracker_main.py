@@ -875,9 +875,12 @@ class TrackerAdminController(DefaultAdminController):
 
 class RootRestController(object):
 
-    @expose()
+    @expose('json')
     def index(self, **kw):
-        return 'Hi, %s' % c.user.username
+        require(has_artifact_access('read'))
+        return dict(tickets=[
+            dict(ticket_num=t.ticket_num, summary=t.summary)
+            for t in model.Ticket.query.find(dict(app_config_id=c.app.config._id)).sort('ticket_num') ])
 
     @expose()
     @h.vardec
@@ -911,13 +914,14 @@ class TicketRestController(object):
 
     @expose('json')
     def index(self):
+        require(has_artifact_access('read', self.ticket))
         return dict(ticket=self.ticket)
 
     @expose()
     @h.vardec
     @validate(W.ticket_form, error_handler=h.json_validation_error)
     def save(self, ticket_form=None, **post_data):
-        require(has_artifact_access('write'))
+        require(has_artifact_access('write', self.ticket))
         if request.method != 'POST':
             raise Exception('save_ticket must be a POST request')
         globals = model.Globals.query.get(app_config_id=c.app.config._id)

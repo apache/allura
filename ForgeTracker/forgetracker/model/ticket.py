@@ -320,6 +320,7 @@ class Ticket(VersionedArtifact):
 
     def __json__(self):
         return dict(
+            _id=str(self._id),
             created_date=self.created_date,
             super_id=self.super_id,
             sub_ids=self.sub_ids,

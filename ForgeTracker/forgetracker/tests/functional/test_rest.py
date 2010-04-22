@@ -1,3 +1,4 @@
+from pprint import pprint
 from datetime import datetime, timedelta
 from formencode import variabledecode
 
@@ -34,10 +35,7 @@ class TestRestApiBase(TestController):
             path,
             params=params,
             status=[200,302,400,403])
-        if response.status_int == 200:
-            response.showbrowser()
-            assert False, 'form error'
-        elif response.status_int == 302:
+        if response.status_int == 302:
             return response.follow()
         else:
             return response
@@ -85,6 +83,12 @@ class TestRestUpdateTicket(TestRestApiBase):
             milestone='',
             assigned_to='')
         self.ticket_args = ticket_view.json['ticket']
+
+    def test_ticket_index(self):
+        tickets = self.api_post('')
+        assert len(tickets.json['tickets']) == 1, tickets.json
+        assert (tickets.json['tickets'][0]
+                == dict(ticket_num=1, summary='test new ticket')), tickets.json['tickets'][0]
 
     def test_bad_signature(self):
         ticket_view = self.api_post('1/save', api_signature='foo')
