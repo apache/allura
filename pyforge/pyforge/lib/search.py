@@ -77,7 +77,7 @@ def search_artifact(atype, q, history=False, rows=10, **kw):
     if not history:
         fq.append('is_history_b:False')
     try:
-        return g.solr.search(q, fq=fq, **kw)
+        return g.solr.search(q, fq=fq, rows=rows, **kw)
     except pysolr.SolrError, e:
         log.info("Solr error: %s", e)
         return []
