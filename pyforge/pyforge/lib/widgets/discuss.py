@@ -81,7 +81,7 @@ class EditPost(ew.SimpleForm):
     @property
     def fields(self):
         def _():
-            if hasattr(c, 'widget'):
+            if getattr(c, 'widget', '') != '':
                 if c.widget.response.get('show_subject', self.show_subject):
                     yield ew.TextField(name='subject')
             else:
