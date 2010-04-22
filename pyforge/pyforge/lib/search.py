@@ -75,7 +75,7 @@ def search_artifact(atype, q, history=False, rows=10, **kw):
         'mount_point_s:%s' % c.app.config.options.mount_point ]
     if not history:
         fq.append('is_history_b:False')
-    return g.solr.search(q, fq=fq)
+    return g.solr.search(q, fq=fq, **kw)
     
 def find_shortlinks(text):
     from pyforge import model as M
