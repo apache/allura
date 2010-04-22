@@ -92,5 +92,3 @@ def pm(etype, value, tb): # pragma no cover
         traceback.print_exception(etype, value, tb)
         pdb.post_mortem(tb)
 
-sys.excepthook = pm
-
