@@ -67,6 +67,21 @@ class PostFilter(ew.SimpleForm):
                 ])
         ]
 
+class TagPost(ew.SimpleForm):
+
+    # this ickiness is to override the default submit button
+    def __call__(self, **kw):
+        result = super(TagPost, self).__call__(**kw)
+        submit_button = ffw.SubmitButton(label=result['submit_text'])
+        result['extra_fields'] = [submit_button]
+        result['buttons'] = [submit_button]
+        return result
+
+    fields=[ffw.LabelEdit(label='Tags',name='labels', className='title')]
+
+    def resources(self):
+        for r in ffw.LabelEdit(name='labels').resources(): yield r
+
 class EditPost(ew.SimpleForm):
     show_subject=False
 
@@ -253,11 +268,12 @@ class Thread(HierWidget):
     pagesize=None
     total=None
     show_subject=False
-    new_post_text="New Post"
+    new_post_text="+ New Comment"
     widgets=dict(
         thread_header=ThreadHeader(),
         post_thread=PostThread(),
         post=Post(),
+        tag_post=TagPost(),
         edit_post=EditPost(submit_text='Submit'))
     def resources(self):
         for r in super(Thread, self).resources(): yield r
@@ -265,12 +281,49 @@ class Thread(HierWidget):
             for r in w.resources():
                 yield r
         yield ew.JSScript('''
-        $(window).load(function(){
-            if($('#new_post_create')){
-                $('#new_post_create').click(function(e){
-                    $(e.target).hide();
-                    $('#new_post_holder').show();
+        $(document).ready(function(){
+            var thread_reply = $('a.sidebar_thread_reply');
+            var thread_tag = $('a.sidebar_thread_tag');
+            var thread_spam = $('a.sidebar_thread_spam');
+            var new_post_holder = $('#new_post_holder');
+            var new_post_create = $('#new_post_create');
+            var tag_thread_holder = $('#tag_thread_holder');
+            var allow_moderate = $('#allow_moderate');
+            if(new_post_create){
+                new_post_create.click(function(e){
+                    new_post_create.hide();
+                    new_post_holder.show();
                 });
+            }
+            if(thread_reply){
+                if(new_post_holder.length){
+                    thread_reply[0].style.display='block';
+                    thread_reply.click(function(e){
+                        new_post_create.hide();
+                        new_post_holder.show();
+                        // focus the submit to scroll to the bottom, then focus the subject for them to start typing
+                        $('input[type="submit"]', new_post_holder).focus();
+                        $('input[type="text"]', new_post_holder).focus();
+                        return false;
+                    });
+                }
+            }
+            if(thread_tag){
+                if(tag_thread_holder.length){
+                    thread_tag[0].style.display='block';
+                    thread_tag.click(function(e){
+                        tag_thread_holder.show();
+                        // focus the submit to scroll to the bottom, then focus the subject for them to start typing
+                        $('input[type="submit"]', tag_thread_holder).focus();
+                        $('input[type="text"]', tag_thread_holder).focus();
+                        return false;
+                    });
+                }
+            }
+            if(thread_spam){
+                if(allow_moderate.length){
+                    thread_spam[0].style.display='block';
+                }
             }
         });
         ''')

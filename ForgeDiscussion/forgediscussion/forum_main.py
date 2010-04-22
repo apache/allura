@@ -1,6 +1,7 @@
 #-*- python -*-
 import logging
 import Image
+import pymongo
 
 # Non-stdlib imports
 import pkg_resources
@@ -119,12 +120,26 @@ class ForgeDiscussionApp(Application):
 
     def sidebar_menu(self):
         try:
-            l = [SitemapEntry('Home', '.')]
+            l = [SitemapEntry('Home', c.app.url, ui_icon='home')]
+            # if we are in a thread, provide placeholder links to use in js
+            if '/thread/' in request.url:
+                l += [
+                    SitemapEntry('Reply to This', '#', ui_icon='comment', className='sidebar_thread_reply'),
+                    SitemapEntry('Tag This', '#', ui_icon='tag', className='sidebar_thread_tag'),
+                    SitemapEntry('Follow This', 'feed.rss', ui_icon='signal-diag'),
+                    SitemapEntry('Mark as Spam', 'flag_as_spam', ui_icon='flag', className='sidebar_thread_spam')
+                ]
+            else:
+                l.append(SitemapEntry('Search', c.app.url+'search', ui_icon='search'))
             if has_artifact_access('admin', app=c.app)():
-                l.append(SitemapEntry('Admin', c.project.url()+'admin/'+self.config.options.mount_point))
-            l.append(SitemapEntry('Search', 'search'))
-            l += [ SitemapEntry(f.name, f.url())
-                   for f in self.top_forums if (not f.deleted or has_artifact_access('configure', app=c.app)()) ]
+                l.append(SitemapEntry('Admin', c.project.url()+'admin/'+self.config.options.mount_point, ui_icon='wrench'))
+            l.append(SitemapEntry('Recent Topics'))
+            l += [ SitemapEntry(thread.subject, thread.url(), className='nav_child')
+                   for thread in model.ForumThread.query.find().sort('mod_date', pymongo.DESCENDING).limit(3)
+                   if (not thread.discussion.deleted or has_artifact_access('configure', app=c.app)()) ]
+            l.append(SitemapEntry('Forum Help'))
+            l.append(SitemapEntry('Forum Permissions', c.app.url + 'help', className='nav_child'))
+            l.append(SitemapEntry('Markdown Syntax', c.app.url + 'markdown_syntax', className='nav_child'))
             return l
         except: # pragma no cover
             log.exception('sidebar_menu')

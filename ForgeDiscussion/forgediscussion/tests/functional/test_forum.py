@@ -212,6 +212,16 @@ class TestForum(TestController):
         r = self.app.get('/discussion/search')
         r = self.app.get('/discussion/search', params=dict(q='foo'))
     
+    def test_render_help(self):
+        summary = 'test render help'
+        r = self.app.get('/discussion/help')
+        assert 'Forum Permissions' in r
+
+    def test_render_markdown_syntax(self):
+        summary = 'test render markdown syntax'
+        r = self.app.get('/discussion/markdown_syntax')
+        assert 'Markdown Syntax' in r
+
     def test_forum_subscribe(self):
         r = self.app.get('/discussion/subscribe', params={
                 'forum-0.shortname':'TestForum',
@@ -254,10 +264,24 @@ class TestForum(TestController):
     def test_sidebar_menu(self):
         r = self.app.get('/discussion/')
         sidebarmenu = str(r.html.find('ul',{'id':'sidebarmenu'}))
-        assert '<a href="." class=" ">Home</a>' in sidebarmenu
-        assert '<a href="/p/test/admin/discussion" class=" ">Admin</a>' in sidebarmenu
-        assert '<a href="search" class=" ">Search</a>' in sidebarmenu
-        assert '<a href="/p/test/discussion/TestForum/" class=" ">Test Forum</a>' in sidebarmenu
+        assert '<a href="/p/test/discussion/" class=" "><span class="ui-icon ui-icon-home"></span>Home</a>' in sidebarmenu
+        assert '<a href="/p/test/admin/discussion" class=" "><span class="ui-icon ui-icon-wrench"></span>Admin</a>' in sidebarmenu
+        assert '<a href="/p/test/discussion/search" class=" "><span class="ui-icon ui-icon-search"></span>Search</a>' in sidebarmenu
+        assert '<span class=" nav_head">Forum Help</span>' in sidebarmenu
+        assert '<a href="/p/test/discussion/help" class="nav_child ">Forum Permissions</a>' in sidebarmenu
+        assert '<a href="/p/test/discussion/markdown_syntax" class="nav_child ">Markdown Syntax</a>' in sidebarmenu
+        assert '<a href="#" class="sidebar_thread_reply "><span class="ui-icon ui-icon-comment"></span>Reply to This</a>' not in sidebarmenu
+        assert '<a href="#" class="sidebar_thread_tag "><span class="ui-icon ui-icon-tag"></span>Tag This</a>' not in sidebarmenu
+        assert '<a href="feed.rss" class=" "><span class="ui-icon ui-icon-signal-diag"></span>Follow This</a>' not in sidebarmenu
+        assert '<a href="flag_as_spam" class="sidebar_thread_spam "><span class="ui-icon ui-icon-flag"></span>Mark as Spam</a>' not in sidebarmenu
+        thread = self.app.get('/discussion/TestForum/post', params=dict(
+                subject='AAA',
+                text='aaa')).follow()
+        thread_sidebarmenu = str(thread.html.find('ul',{'id':'sidebarmenu'}))
+        assert '<a href="#" class="sidebar_thread_reply "><span class="ui-icon ui-icon-comment"></span>Reply to This</a>' in thread_sidebarmenu
+        assert '<a href="#" class="sidebar_thread_tag "><span class="ui-icon ui-icon-tag"></span>Tag This</a>' in thread_sidebarmenu
+        assert '<a href="feed.rss" class=" "><span class="ui-icon ui-icon-signal-diag"></span>Follow This</a>' in thread_sidebarmenu
+        assert '<a href="flag_as_spam" class="sidebar_thread_spam "><span class="ui-icon ui-icon-flag"></span>Mark as Spam</a>' in thread_sidebarmenu
 
 class TestForumAdmin(TestController):
 

@@ -15,10 +15,14 @@
       </py:for>
     </div>
   </py:with>
+  <div id="allow_moderate" py:if="has_artifact_access('moderate', value)()"/>
   <py:if test="has_artifact_access('post', value)()">
     <input id="new_post_create" type="button" class="ui-state-default ui-button ui-button-text" value="$new_post_text"/>
     <div id="new_post_holder" style="display:none">
       ${widgets.edit_post.display(submit_text='New Post', action=value.url() + 'post')}
+    </div>
+    <div id="tag_thread_holder" style="display:none">
+      ${widgets.tag_post.display(value=value,submit_text='Tag Post', action=value.url() + 'tag')}
     </div>
   </py:if>
 </div>

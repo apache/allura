@@ -13,7 +13,7 @@ from ming.orm.property import FieldProperty, RelationProperty, ForeignIdProperty
 
 from pyforge.lib import helpers as h
 from pyforge.lib.security import require, has_artifact_access
-from .artifact import Artifact, VersionedArtifact, Snapshot, Message
+from .artifact import Artifact, VersionedArtifact, Snapshot, Message, Feed
 from .filesystem import File
 from .types import ArtifactReference, ArtifactReferenceType
 
@@ -137,6 +137,7 @@ class Thread(Artifact):
         self.num_replies += 1
         if not self.first_post:
             self.first_post_id = p._id
+        Feed.post(self, title=p.subject, description=p.text)
         return p
 
     def post(self, text, message_id=None, parent_id=None, **kw):

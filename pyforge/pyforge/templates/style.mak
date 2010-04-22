@@ -688,7 +688,7 @@ border-bottom: 4px solid  rgb(215,215,215);}
 .tagEditor li
 {
 	display: inline;
-	background-image: url(https://newforge.sf.geek.net/images/minus_small.png);
+	background-image: url(/images/minus_small.png);
 	background-color: #eef;
 	background-position: right center;
 	background-repeat: no-repeat;
@@ -832,3 +832,6 @@ small.badge:hover {
 
 #tipcca {	text-align: left; height:3em; padding-left: 55px; width: 190px; background-image: url('images/cca.png'); background-position: 5px 50%; background-repeat: no-repeat;}
 
+ul#sidebarmenu li a.sidebar_thread_tag,
+ul#sidebarmenu li a.sidebar_thread_reply,
+ul#sidebarmenu li a.sidebar_thread_spam{display:none;}

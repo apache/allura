@@ -1,8 +1,9 @@
 from mimetypes import guess_type
 
 from tg import expose, redirect, validate, request, response, flash
-from tg.decorators import before_validate
+from tg.decorators import before_validate, with_trailing_slash, without_trailing_slash
 from pylons import c
+from formencode import validators
 from webob import exc
 
 from ming.base import Object
@@ -11,6 +12,7 @@ from ming.utils import LazyProperty
 from pyforge import model as model
 from pyforge.lib import helpers as h
 from pyforge.lib.security import require, has_artifact_access
+from pyforge.lib.helpers import DateTimeConverter
 
 from pyforge.lib.widgets import discuss as DW
 
@@ -133,10 +135,48 @@ class ThreadController(object):
     @expose()
     @validate(pass_validator, error_handler=index)
     def post(self, **kw):
+        require(has_artifact_access('post', self.thread))
         kw = self.W.edit_post.validate(kw, None)
         p = self.thread.add_post(**kw)
         flash('Message posted')
         redirect(request.referer)
+
+    @expose()
+    def tag(self, labels, **kw):
+        require(has_artifact_access('post', self.thread))
+        self.thread.labels = labels.split(',')
+        redirect(request.referer)
+
+    @expose()
+    def flag_as_spam(self, **kw):
+        require(has_artifact_access('moderate', self.thread))
+        self.thread.first_post.status='spam'
+        flash('Thread flagged as spam.')
+        redirect(request.referer)
+
+    @without_trailing_slash
+    @expose()
+    @validate(dict(
+            since=DateTimeConverter(if_empty=None),
+            until=DateTimeConverter(if_empty=None),
+            offset=validators.Int(if_empty=None),
+            limit=validators.Int(if_empty=None)))
+    def feed(self, since=None, until=None, offset=None, limit=None):
+        if request.environ['PATH_INFO'].endswith('.atom'):
+            feed_type = 'atom'
+        else:
+            feed_type = 'rss'
+        title = 'Recent posts to %s' % self.thread.subject
+        feed = model.Feed.feed(
+            {'artifact_reference':self.thread.dump_ref()},
+            feed_type,
+            title,
+            self.thread.url(),
+            title,
+            since, until, offset, limit)
+        response.headers['Content-Type'] = ''
+        response.content_type = 'application/xml'
+        return feed.writeString('utf-8')
 
 class PostController(object):
     __metaclass__=h.ProxiedAttrMeta

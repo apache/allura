@@ -56,6 +56,16 @@ class RootController(object):
             if results: count=results.hits
         return dict(q=q, history=history, results=results or [], count=count)
 
+    @expose('forgediscussion.templates.markdown_syntax')
+    def markdown_syntax(self):
+        'Static page explaining markdown.'
+        return dict()
+
+    @expose('forgediscussion.templates.help')
+    def help(self):
+        'Static help page.'
+        return dict()
+
     @expose()
     def _lookup(self, id, *remainder):
         return ForumController(id), remainder
