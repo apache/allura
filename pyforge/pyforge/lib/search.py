@@ -4,6 +4,7 @@ from pprint import pformat
 from itertools import islice, chain
 
 from pylons import c,g
+import pysolr
 
 from .markdown_extensions import ForgeExtension
 
@@ -75,8 +76,12 @@ def search_artifact(atype, q, history=False, rows=10, **kw):
         'mount_point_s:%s' % c.app.config.options.mount_point ]
     if not history:
         fq.append('is_history_b:False')
-    return g.solr.search(q, fq=fq, **kw)
-    
+    try:
+        return g.solr.search(q, fq=fq, **kw)
+    except pysolr.SolrError, e:
+        log.info("Solr error: %s", e)
+        return []
+
 def find_shortlinks(text):
     from pyforge import model as M
     for mo in re_SHORTLINK.finditer(text):
