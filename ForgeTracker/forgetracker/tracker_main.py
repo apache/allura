@@ -29,7 +29,7 @@ from pyforge.model import Subscriptions
 from pyforge.lib import widgets as w
 from pyforge.lib.widgets import form_fields as ffw
 from pyforge.lib.widgets.subscriptions import SubscribeForm
-from pyforge.controllers import AppDiscussionController
+from pyforge.controllers import AppDiscussionController, AppDiscussionRestController
 
 # Local imports
 from forgetracker import model
@@ -875,6 +875,9 @@ class TrackerAdminController(DefaultAdminController):
 
 class RootRestController(object):
 
+    def __init__(self):
+        self._discuss = AppDiscussionRestController()
+
     @expose('json')
     def index(self, **kw):
         require(has_artifact_access('read'))
@@ -913,7 +916,7 @@ class TicketRestController(object):
                                                     ticket_num=self.ticket_num)
 
     @expose('json')
-    def index(self):
+    def index(self, **kw):
         require(has_artifact_access('read', self.ticket))
         return dict(ticket=self.ticket)
 

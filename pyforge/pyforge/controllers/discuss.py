@@ -410,3 +410,31 @@ class ModerationController(object):
                 post.delete()
         redirect(request.referer)
 
+class PostRestController(PostController):
+
+    @expose('json')
+    def index(self, **kw):
+        return dict(post=self.post)
+
+class ThreadRestController(ThreadController):
+
+    @expose('json')
+    def index(self, **kw):
+        return dict(thread=self.thread)
+
+    @h.vardec
+    @expose()
+    @validate(pass_validator, error_handler=h.json_validation_error)
+    def new(self, **kw):
+        kw = self.W.edit_post.validate(kw, None)
+        p = self.thread.add_post(**kw)
+        redirect(p.slug + '/')
+
+class AppDiscussionRestController(AppDiscussionController):
+    ThreadController = ThreadRestController
+    PostController = PostRestController
+
+    @expose('json')
+    def index(self, **kw):
+        return dict(discussion=self.discussion)
+

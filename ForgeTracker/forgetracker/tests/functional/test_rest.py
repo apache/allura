@@ -23,8 +23,12 @@ class TestRestApiBase(TestController):
         session(self.token).flush()
         self.mount_point = '/rest/p/test/bugs/'
 
-    def api_post(self, path, api_key=None, api_timestamp=None, api_signature=None, **ticket_form):
-        params = dict(ticket_form=ticket_form)
+    def api_post(self, path, api_key=None, api_timestamp=None, api_signature=None,
+                 wrap_args='ticket_form', **ticket_form):
+        if wrap_args:
+            params = { wrap_args: ticket_form }
+        else:
+            params = dict(ticket_form)
         params = variabledecode.variable_encode(params, add_repetitions=False)
         if api_key: params['api_key'] = api_key
         if api_timestamp: params['api_timestamp'] = api_timestamp
@@ -112,3 +116,32 @@ class TestRestUpdateTicket(TestRestApiBase):
         json = ticket_view.json['ticket']
         assert json['summary'] == 'test update ticket', json
 
+class TestRestDiscussion(TestRestApiBase):
+
+    def setUp(self):
+        super(TestRestDiscussion, self).setUp()
+        summary = 'test new ticket'
+        ticket_view = self.api_post(
+            'new',
+            summary=summary,
+            status=self.tracker_globals.status_names.split()[0],
+            labels='',
+            description='',
+            milestone='',
+            assigned_to='')
+        self.ticket_args = ticket_view.json['ticket']
+
+    def test_index(self):
+        r = self.api_post('_discuss/')
+        assert len(r.json['discussion']['threads']) == 1, r.json
+        for t in r.json['discussion']['threads']:
+            r = self.api_post('_discuss/thread/%s/' % t['_id'])
+            assert len(r.json['thread']['posts']) == 0, r.json
+
+    def test_post(self):
+        discussion = self.api_post('_discuss/').json['discussion']
+        post = self.api_post('_discuss/thread/%s/new' % discussion['threads'][0]['_id'],
+                             text='This is a comment', wrap_args=None)
+        thread = self.api_post('_discuss/thread/%s/' % discussion['threads'][0]['_id'])
+        assert len(thread.json['thread']['posts']) == 1, thread.json
+        assert post.json['post']['text'] == 'This is a comment', post.json

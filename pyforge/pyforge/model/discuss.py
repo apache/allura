@@ -37,6 +37,15 @@ class Discussion(Artifact):
     threads = RelationProperty('Thread')
     posts = RelationProperty('Post')
 
+    def __json__(self):
+        return dict(
+            _id=str(self._id),
+            shortname=self.shortname,
+            name=self.name,
+            description=self.description,
+            threads=[dict(_id=t._id, subject=t.subject)
+                     for t in self.threads ])
+
     @classmethod
     def thread_class(cls):
         return cls.threads.related
@@ -106,6 +115,14 @@ class Thread(Artifact):
     discussion = RelationProperty(Discussion)
     posts = RelationProperty('Post', via='thread_id')
     first_post = RelationProperty('Post', via='first_post_id')
+
+    def __json__(self):
+        return dict(
+            _id=self._id,
+            discussion_id=str(self.discussion_id),
+            subject=self.subject,
+            posts=[dict(slug=p.slug, subject=p.subject)
+                   for p in self.posts ])
 
     @classmethod
     def discussion_class(cls):
@@ -282,6 +299,20 @@ class Post(Message, VersionedArtifact):
 
     thread = RelationProperty(Thread)
     discussion = RelationProperty(Discussion)
+
+    def __json__(self):
+        author = self.author()
+        return dict(
+            _id=str(self._id),
+            thread_id=self.thread_id,
+            slug=self.slug,
+            subject=self.subject,
+            status=self.status,
+            text=self.text,
+            flagged_by=map(str, self.flagged_by),
+            timestamp=self.timestamp,
+            author_id=str(author._id),
+            author=author.username)
 
     @classmethod
     def discussion_class(cls):
