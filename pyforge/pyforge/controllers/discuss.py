@@ -416,6 +416,16 @@ class PostRestController(PostController):
     def index(self, **kw):
         return dict(post=self.post)
 
+    @h.vardec
+    @expose()
+    @validate(pass_validator, error_handler=h.json_validation_error)
+    def reply(self, **kw):
+        require(has_artifact_access('post', self.thread))
+        kw = self.W.edit_post.validate(kw, None)
+        post = self.thread.post(parent_id=self.post._id, **kw)
+        self.thread.num_replies += 1
+        redirect(post.slug.split('/')[-1] + '/')
+
 class ThreadRestController(ThreadController):
 
     @expose('json')
@@ -426,6 +436,7 @@ class ThreadRestController(ThreadController):
     @expose()
     @validate(pass_validator, error_handler=h.json_validation_error)
     def new(self, **kw):
+        require(has_artifact_access('post', self.thread))
         kw = self.W.edit_post.validate(kw, None)
         p = self.thread.add_post(**kw)
         redirect(p.slug + '/')

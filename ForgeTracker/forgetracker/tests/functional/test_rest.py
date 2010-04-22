@@ -145,3 +145,12 @@ class TestRestDiscussion(TestRestApiBase):
         thread = self.api_post('_discuss/thread/%s/' % discussion['threads'][0]['_id'])
         assert len(thread.json['thread']['posts']) == 1, thread.json
         assert post.json['post']['text'] == 'This is a comment', post.json
+        reply = self.api_post(
+            '_discuss/thread/%s/%s/reply' % (thread.json['thread']['_id'], post.json['post']['slug']),
+            text='This is a reply', wrap_args=None)
+        assert reply.json['post']['text'] == 'This is a reply', reply.json
+        thread = self.api_post('_discuss/thread/%s/' % discussion['threads'][0]['_id'])
+        assert len(thread.json['thread']['posts']) == 2, thread.json
+
+
+
