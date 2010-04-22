@@ -3,14 +3,12 @@ from datetime import datetime
 
 import urllib
 import tg
+from pymongo import bson
 from pylons import c
-from pymongo.errors import OperationFailure
-import pymongo
 
 from ming import schema
-from ming.orm.mapped_class import MappedClass
-from ming.orm.property import FieldProperty, ForeignIdProperty, RelationProperty, ForeignIdProperty
-from datetime import datetime
+from ming.orm import MappedClass, session
+from ming.orm import FieldProperty, ForeignIdProperty, RelationProperty
 
 from pyforge.model import Artifact, VersionedArtifact, Snapshot, Message, project_orm_session, Project
 from pyforge.model import File, User, Feed, Thread, Post, Notification
@@ -150,6 +148,18 @@ class Ticket(VersionedArtifact):
         return User.query.get(_id=self.assigned_to_id)
 
     @property
+    def reported_by_username(self):
+        if self.reported_by:
+            return self.reported_by.username
+        return 'nobody'
+
+    @property
+    def assigned_to_username(self):
+        if self.assigned_to:
+            return self.assigned_to.username
+        return 'nobody'
+
+    @property
     def email_address(self):
         domain = '.'.join(reversed(self.app.url[1:-1].split('/')))
         return '%s@%s%s' % (self.ticket_num, domain, common_suffix)
@@ -272,6 +282,57 @@ class Ticket(VersionedArtifact):
             next_id = root.super_id
         if root is not None:
             root.recalculate_sums()
+
+    def update(self,ticket_form, tracker_globals):
+        tags = (ticket_form.pop('tags', None) or '').split(',')
+        labels = (ticket_form.pop('labels', None) or '').split(',')
+        self.labels = labels
+        h.tag_artifact(self, c.user, tags)
+        custom_sums = set()
+        other_custom_fields = set()
+        for cf in tracker_globals.custom_fields or []:
+            (custom_sums if cf.type=='sum' else other_custom_fields).add(cf.name)
+            if cf.type == 'boolean' and 'custom_fields.'+cf.name not in ticket_form:
+                self.custom_fields[cf.name] = 'False'
+        for k, v in ticket_form.iteritems():
+            if 'custom_fields.' in k:
+                k = k.split('custom_fields.')[1]
+            if k in custom_sums:
+                # sums must be coerced to numeric type
+                try:
+                    self.custom_fields[k] = float(v)
+                except (TypeError, ValueError):
+                    self.custom_fields[k] = 0
+            elif k in other_custom_fields:
+                # strings are good enough for any other custom fields
+                self.custom_fields[k] = v
+            elif k == 'assigned_to':
+                if v: self.assigned_to_id = bson.ObjectId(v)
+            elif k != 'super_id':
+                # if it's not a custom field, set it right on the ticket (but don't overwrite super_id)
+                setattr(self, k, v)
+        self.commit()
+        # flush so we can participate in a subticket search (if any)
+        session(self).flush()
+        super_id = ticket_form.get('super_id')
+        if super_id:
+            self.set_as_subticket_of(bson.ObjectId(super_id))
+
+    def __json__(self):
+        return dict(
+            created_date=self.created_date,
+            super_id=self.super_id,
+            sub_ids=self.sub_ids,
+            ticket_num=self.ticket_num,
+            summary=self.summary,
+            description=self.description,
+            reported_by=self.reported_by_username,
+            assigned_to=self.assigned_to_username,
+            reported_by_id=self.reported_by_id and str(self.reported_by_id) or None,
+            assigned_to_id=self.assigned_to_id and str(self.assigned_to_id) or None,
+            milestone=self.milestone,
+            status=self.status,
+            custom_fields=self.custom_fields)
 
 class Attachment(File):
     class __mongometa__:

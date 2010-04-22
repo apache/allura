@@ -24,6 +24,7 @@ from .auth import AuthController
 from .static import StaticController
 from .search import SearchController
 from .error import ErrorController
+from .rest import RestController
 from .oembed import OEmbedController
 
 __all__ = ['RootController']
@@ -59,6 +60,7 @@ class TestController(BaseController, ProjectController):
         for attr in ('index', 'browse', 'site_style', 'markdown_to_html', 'auth', 'static', 'error'):
             setattr(self, attr, getattr(proxy_root, attr))
         self.gsearch = proxy_root.search
+        self.rest = RestController()
 
     @expose()
     def _lookup(self, name, *remainder):

@@ -5,15 +5,17 @@ import difflib
 import urllib
 import re
 import Image
+import json
 from hashlib import sha1
 from datetime import datetime
 
+import tg
 import genshi.template
 from formencode.validators import FancyValidator
 from dateutil.parser import parse
 from pymongo.bson import ObjectId
 from contextlib import contextmanager
-from pylons import c
+from pylons import c, response
 from tg.decorators import before_validate
 from formencode.variabledecode import variable_decode
 
@@ -293,7 +295,6 @@ def render_genshi_plaintext(template_name, **template_vars):
     stream = tt.generate(**template_vars)
     return stream.render(encoding='utf-8').decode('utf-8')
 
-import tg
 site_url = None # cannot set it just yet since tg.config is empty
 
 def full_url(url):
@@ -309,4 +310,13 @@ def full_url(url):
     if url.startswith('/'):
         url = url[1:]
     return site_url + url
+
+@tg.expose(content_type='text/plain')
+def json_validation_error(controller, **kwargs):
+    result = dict(status='Validation Error',
+                errors=c.validation_exception.unpack_errors(),
+                value=c.validation_exception.value,
+                params=kwargs)
+    response.status=400
+    return json.dumps(result, indent=2)
 

@@ -64,12 +64,19 @@ class ApiToken(MappedClass):
 
     def sign_request(self, path, params):
         if hasattr(params, 'items'): params = params.items()
-        params.append(('api_key', self.api_key))
-        params.append(('api_timestamp', datetime.utcnow().isoformat()))
-        string_to_sign = path + '?' + urllib.urlencode(sorted(params))
-        digest = hmac.new(self.secret_key, string_to_sign, hashlib.sha256)
-        params.append(('api_signature', digest.hexdigest()))
-        return path + '?' + urllib.urlencode(params)
+        has_api_key = has_api_timestamp = has_api_signature = False
+        for k,v in params:
+            if k == 'api_key': has_api_key = True
+            if k == 'api_timestamp': has_api_timestamp = True
+            if k == 'api_signature': has_api_signature = True
+        if not has_api_key: params.append(('api_key', self.api_key))
+        if not has_api_timestamp:
+            params.append(('api_timestamp', datetime.utcnow().isoformat()))
+        if not has_api_signature:
+            string_to_sign = path + '?' + urllib.urlencode(sorted(params))
+            digest = hmac.new(self.secret_key, string_to_sign, hashlib.sha256)
+            params.append(('api_signature', digest.hexdigest()))
+        return params
 
 class EmailAddress(MappedClass):
     class __mongometa__:
