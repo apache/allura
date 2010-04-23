@@ -9,6 +9,7 @@ from paste.deploy import appconfig
 
 import ming
 from pyforge.config.environment import load_environment
+from pyforge.lib.base import MagicalC, environ
 
 class EmptyClass(object): pass
 
@@ -34,8 +35,10 @@ class Command(command.Command):
         M=model
         log = logging.getLogger('pyforge.command')
         log.info('Initialize reactor with config %r', self.args[0])
+        environ.set_environment({})
         load_environment(conf.global_conf, conf.local_conf)
-        pylons.c._push_object(EmptyClass())
+        if not pylons.c._object_stack():
+            pylons.c._push_object(MagicalC(EmptyClass()))
         from pyforge.lib.app_globals import Globals
         pylons.g._push_object(Globals())
         ming.configure(**conf)

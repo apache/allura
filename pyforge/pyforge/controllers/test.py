@@ -41,13 +41,6 @@ class TestController(BaseController, ProjectController):
     '''
 
     def __init__(self):
-        # This code fixes a race condition in our tests 
-        c.project = M.Project.query.get(shortname='test')
-        while c.project is None:
-            import sys, time
-            time.sleep(0.5)
-            print >> sys.stderr, 'Project "test" not found, retrying...'
-            c.project = M.Project.query.get(shortname='test')
         setattr(self, 'feed.rss', self.feed)
         setattr(self, 'feed.atom', self.feed)
         self.oembed = OEmbedController()
@@ -61,6 +54,15 @@ class TestController(BaseController, ProjectController):
             setattr(self, attr, getattr(proxy_root, attr))
         self.gsearch = proxy_root.search
         self.rest = RestController()
+
+    def _setup_request(self):
+        # This code fixes a race condition in our tests
+        c.project = M.Project.query.get(shortname='test')
+        while c.project is None:
+            import sys, time
+            time.sleep(0.5)
+            print >> sys.stderr, 'Project "test" not found, retrying...'
+            c.project = M.Project.query.get(shortname='test')
 
     @expose()
     def _lookup(self, name, *remainder):

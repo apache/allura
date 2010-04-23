@@ -17,6 +17,7 @@ from ming.orm.ormsession import ThreadLocalORMSession
 import pyforge.model.artifact
 from pyforge import model as M
 from pyforge.lib import helpers as h
+from pyforge.lib.base import MagicalC
 from pyforge.lib.app_globals import Globals
 from helloforge import model as HM
 
@@ -33,7 +34,7 @@ Checkmessage.compile_all()
 
 def setUp():
     g._push_object(Globals())
-    c._push_object(mock.Mock())
+    c._push_object(MagicalC(mock.Mock()))
     ThreadLocalORMSession.close_all()
     g.set_project('test')
     g.set_app('hello')

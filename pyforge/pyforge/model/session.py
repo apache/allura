@@ -1,12 +1,12 @@
 import logging
 from itertools import chain
 
-from pylons import c, g
 from ming import Session
 from ming.orm.base import state, session
 from ming.orm.ormsession import ThreadLocalORMSession, SessionExtension
 
 from pyforge.lib import search
+from pyforge.lib.base import environ
 
 log = logging.getLogger(__name__)
 
@@ -18,11 +18,8 @@ class ProjectSession(Session):
     @property
     def db(self):
         try:
-            if getattr(c, 'project', None):
-                return getattr(self.main_session.bind.conn, c.project.database)
-            else:
-                return None
-        except TypeError, te:
+            return getattr(self.main_session.bind.conn, environ['allura.project'].database)
+        except (KeyError, AttributeError), ex:
             return None
 
     def _impl(self, cls):

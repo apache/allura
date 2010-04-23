@@ -13,7 +13,7 @@ import ming
 
 import pyforge
 from pyforge.app import SitemapEntry
-from pyforge.lib.base import BaseController
+from pyforge.lib.base import BaseController, environ
 from pyforge.controllers.error import ErrorController
 from pyforge import model as M
 from pyforge.lib.widgets import project_list as plw
@@ -54,21 +54,20 @@ class RootController(BaseController):
     rest = RestController()
 
     def __init__(self):
-        """Create a user-aware root controller instance.
-        
-        The Controller is instantiated on each request before dispatch, 
-        so c.user will always point to the current user.
-        """
-        # Lookup user
+        for n in M.Neighborhood.query.find():
+            if n.url_prefix.startswith('//'): continue
+            n.bind_controller(self)
+        self.browse = ProjectBrowseController()
+
+    @property
+    def _ew_resources(self):
+        return ew.ResourceManager.get()
+
+    def _setup_request(self):
         uid = session.get('userid', None)
         c.project = c.app = None
         c.user = M.User.query.get(_id=uid) or M.User.anonymous()
         c.queued_messages = []
-        for n in M.Neighborhood.query.find():
-            if n.url_prefix.startswith('//'): continue
-            n.bind_controller(self)
-        self._ew_resources = ew.ResourceManager.get()
-        self.browse = ProjectBrowseController()
 
     def _cleanup_iterator(self, result):
         for x in result:
@@ -77,11 +76,8 @@ class RootController(BaseController):
 
     def _cleanup_request(self):
         ming.orm.ormsession.ThreadLocalORMSession.flush_all()
-        try:
-            for msg in c.queued_messages:
-                g._publish(**msg)
-        except TypeError:
-            pass
+        for msg in environ.get('allura.queued_messages', []):
+            g._publish(**msg)
         ming.orm.ormsession.ThreadLocalORMSession.close_all()
 
     @expose('pyforge.templates.project_list')

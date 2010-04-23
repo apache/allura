@@ -48,5 +48,4 @@ class ForgeConfig(AppConfig):
                     action='routes_placeholder')
         config['routes.map'] = map
 
-
 base_config = ForgeConfig()

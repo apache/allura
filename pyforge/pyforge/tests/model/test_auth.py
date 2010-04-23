@@ -61,7 +61,7 @@ def test_user():
             username='nosetest_user'))
     ThreadLocalORMSession.flush_all()
     assert u.private_project().shortname == 'u/nosetest_user'
-    assert len(list(u.role_iter())) == 3
+    assert len(list(u.role_iter())) == 6
     u.set_password('foo')
     assert u.validate_password('foo')
     assert not u.validate_password('foobar')
