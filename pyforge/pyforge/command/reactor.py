@@ -10,6 +10,25 @@ from carrot.messaging import Consumer, ConsumerSet
 
 from . import base
 
+class RestartableProcess(object):
+
+    def __init__(self, log, *args, **kwargs):
+        self._log = log
+        self._args, self._kwargs = args, kwargs
+        self.reinit()
+
+    def reinit(self):
+        self._process = Process(*self._args, **self._kwargs)
+
+    def check(self):
+        if not self.is_alive():
+            self._log.error('Process %d has died, restarting', self.pid)
+            self.reinit()
+            self.start()
+
+    def __getattr__(self, name):
+        return getattr(self._process, name)
+
 class ReactorSetupCommand(base.Command):
 
     summary = 'Configure the RabbitMQ queues and bindings for the given set of plugins'
@@ -63,14 +82,14 @@ class ReactorCommand(base.Command):
 
     def command(self):
         self.basic_setup()
-        processes = [ Process(target=self.periodic_main, args=()) ]
+        processes = [ RestartableProcess(target=self.periodic_main, args=()) ]
         configs = [
             dict(plugin_name=name,
                  method=method, xn=xn, qn=qn, keys=keys)
             for name, plugin in self.plugins
             for method, xn, qn, keys in plugin_consumers(name, plugin) ]
         for x in xrange(self.options.proc):
-            processes.append(Process(target=self.multi_worker_main,
+            processes.append(RestartableProcess(target=self.multi_worker_main,
                                      args=(configs,)))
             continue
         if self.options.dry_run: return configs
@@ -82,7 +101,9 @@ class ReactorCommand(base.Command):
             for p in processes:
                 p.start()
             while True:
-                time.sleep(300)
+                for x in xrange(60):
+                    time.sleep(5)
+                    for p in processes: p.check()
                 base.log.info('=== Mark ===')
 
     def multi_worker_main(self, configs):
@@ -98,6 +119,7 @@ class ReactorCommand(base.Command):
             cset.add_consumer(c)
         if self.options.dry_run: return
         else: # pragma no cover
+            base.log.info('Ready to handle messages')
             for x in cset.iterconsume():
                 pass
 
@@ -252,5 +274,3 @@ def debug(): # pragma no cover
     p.setup(sys._getframe(), None)
     p.cmdloop()
     p.forget()
-        
-    
