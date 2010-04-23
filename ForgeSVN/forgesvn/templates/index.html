@@ -24,8 +24,10 @@
     </py:if>
     <py:if test="repo">
       <dl>
-        <dt>repo</dt>
-        <dd>svn://svn.${host}${repo.path}${repo.name}/</dd>
+        <dt>read access</dt>
+        <dd>svn checkout svn://svn.${host}${repo.path}${repo.name}/</dd>
+        <dt>read/write access</dt>
+        <dd>svn checkout svn+ssh://svn.${host}${repo.path}${repo.name}/</dd>
         <dt>status</dt>
         <dd>${repo.status}</dd>
       </dl>
