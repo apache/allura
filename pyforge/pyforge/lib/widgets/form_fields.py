@@ -13,11 +13,11 @@ class MarkdownEdit(ew.InputField):
     value=None
 
     def resources(self):
-        yield ew.resource.JSLink('js/jquery.markitup.pack.js')
+        yield ew.resource.JSLink('js/jquery.markitup.pack.js', compress=False)
         yield ew.resource.JSLink('js/jquery.markitup.markdown.js')
         yield ew.resource.JSLink('js/sf_markitup.js')
-        yield ew.resource.CSSLink('css/markitup.css')
-        yield ew.resource.CSSLink('css/markitup_markdown.css')
+        yield ew.resource.CSSLink('css/markitup.css', compress=False)
+        yield ew.resource.CSSLink('css/markitup_markdown.css', compress=False)
         yield ew.resource.CSSLink('css/markitup_sf.css')
 
 class UserTagEdit(ew.InputField):
