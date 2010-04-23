@@ -121,7 +121,7 @@ class TestNeighborhood(TestController):
         r = self.app.get('/p/test/no_such_app/', status=404)
 
     def test_neighborhood_awards(self):
-        file_name = 'adobe_header.png'
+        file_name = 'adobe_icon.png'
         file_path = os.path.join(pyforge.__path__[0],'public','images',file_name)
         file_data = file(file_path).read()
         upload = ('icon', file_name, file_data)

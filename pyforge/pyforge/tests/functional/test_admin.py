@@ -100,7 +100,7 @@ class TestProjectAdmin(TestController):
                 short_description='A Test Project',
                 description='A long description'),
                 upload_files=[upload])
-        r = self.app.get('/projects/test/icon')
+        r = self.app.get('/p/test/icon')
         image = Image.open(StringIO.StringIO(r.body))
         assert image.size == (48,48)
 
@@ -119,11 +119,11 @@ class TestProjectAdmin(TestController):
                 upload_files=[upload])
         project = M.Project.query.find({'shortname':'test'}).first()
         filename = project.get_screenshots()[0].filename
-        r = self.app.get('/projects/test/screenshot/'+filename)
+        r = self.app.get('/p/test/screenshot/'+filename)
         uploaded = Image.open(file_path)
         screenshot = Image.open(StringIO.StringIO(r.body))
         assert uploaded.size == screenshot.size
-        r = self.app.get('/projects/test/screenshot/'+filename+'/thumb')
+        r = self.app.get('/p/test/screenshot/'+filename+'/thumb')
         thumb = Image.open(StringIO.StringIO(r.body))
         assert thumb.size == (150,150)
 
