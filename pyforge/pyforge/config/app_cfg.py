@@ -30,7 +30,7 @@ class ForgeConfig(AppConfig):
         self.renderers = [ 'json', 'genshi', 'mako' ]
         self.default_renderer = 'genshi'
         self.use_sqlalchemy = False
-        self.use_toscawidgets = False
+        self.use_toscawidgets = True
         self.use_transaction_manager = False
         # self.handle_status_codes = [ 403, 404 ]
         self.handle_status_codes = [ 403, 404 ]
