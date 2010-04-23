@@ -92,7 +92,7 @@ class HelloForgeApp(Application):
 
     def install(self, project):
         super(HelloForgeApp, self).install(project)
-        self.config.options['project_name'] = project._id
+        self.config.options['project_name'] = project.name
         pr = c.user.project_role()
         if pr: 
             for perm in self.permissions:

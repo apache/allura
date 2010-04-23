@@ -139,7 +139,7 @@ class ForgeWikiApp(Application):
 
     def install(self, project):
         'Set up any default permissions and roles here'
-        self.config.options['project_name'] = project._id
+        self.config.options['project_name'] = project.name
         super(ForgeWikiApp, self).install(project)
         # Setup permissions
         role_developer = ProjectRole.query.get(name='Developer')._id

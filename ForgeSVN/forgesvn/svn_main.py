@@ -64,7 +64,7 @@ class ForgeSVNApp(Application):
 
     def install(self, project):
         'Set up any default permissions and roles here'
-        self.config.options['project_name'] = project._id
+        self.config.options['project_name'] = project.name
         super(ForgeSVNApp, self).install(project)
         # Setup permissions
         role_developer = ProjectRole.query.get(name='Developer')._id
