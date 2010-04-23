@@ -21,7 +21,7 @@ class TestRootController(TestController):
         response = self.app.get('/')
         assert response.html.find('h1').string == 'All Projects'
         projects = response.html.findAll('ul',{'class':'display'})[0].findAll('li')
-        assert len(projects) == 13
+        assert len(projects) == 10
         assert projects[0].find('a').get('href') == '/adobe/'
         assert projects[1].find('img').get('alt') == 'adobe_1 Icon'
         cat_links = response.html.find('ul',{'id':'sidebarmenu'}).findAll('li')
@@ -36,17 +36,13 @@ class TestRootController(TestController):
         com_cat = M.ProjectCategory.query.find(dict(label='Communications')).first()
         fax_cat = M.ProjectCategory.query.find(dict(label='Fax')).first()
         M.Project.query.find(dict(name='adobe_1')).first().category_id = com_cat._id
-        M.Project.query.find(dict(name='mozilla_1')).first().category_id = fax_cat._id
         response = self.app.get('/browse')
-        assert len(response.html.findAll('img',{'alt':'mozilla_1 Icon'})) == 1
         assert len(response.html.findAll('img',{'alt':'adobe_1 Icon'})) == 1
         assert len(response.html.findAll('img',{'alt':'adobe_2 Icon'})) == 1
         response = self.app.get('/browse/communications')
-        assert len(response.html.findAll('img',{'alt':'mozilla_1 Icon'})) == 1
         assert len(response.html.findAll('img',{'alt':'adobe_1 Icon'})) == 1
         assert len(response.html.findAll('img',{'alt':'adobe_2 Icon'})) == 0
         response = self.app.get('/browse/communications/fax')
-        assert len(response.html.findAll('img',{'alt':'mozilla_1 Icon'})) == 1
         assert len(response.html.findAll('img',{'alt':'adobe_1 Icon'})) == 0
         assert len(response.html.findAll('img',{'alt':'adobe_2 Icon'})) == 0
 
@@ -69,17 +65,13 @@ class TestRootController(TestController):
         fax_cat = M.ProjectCategory.query.find(dict(label='Fax')).first()
         M.Project.query.find(dict(name='adobe_1')).first().category_id = com_cat._id
         M.Project.query.find(dict(name='adobe_2')).first().category_id = fax_cat._id
-        M.Project.query.find(dict(name='mozilla_1')).first().category_id = fax_cat._id
         response = self.app.get('/adobe/browse')
-        assert len(response.html.findAll('img',{'alt':'mozilla_1 Icon'})) == 0
         assert len(response.html.findAll('img',{'alt':'adobe_1 Icon'})) == 1
         assert len(response.html.findAll('img',{'alt':'adobe_2 Icon'})) == 1
         response = self.app.get('/adobe/browse/communications')
-        assert len(response.html.findAll('img',{'alt':'mozilla_1 Icon'})) == 0
         assert len(response.html.findAll('img',{'alt':'adobe_1 Icon'})) == 1
         assert len(response.html.findAll('img',{'alt':'adobe_2 Icon'})) == 1
         response = self.app.get('/adobe/browse/communications/fax')
-        assert len(response.html.findAll('img',{'alt':'mozilla_1 Icon'})) == 0
         assert len(response.html.findAll('img',{'alt':'adobe_1 Icon'})) == 0
         assert len(response.html.findAll('img',{'alt':'adobe_2 Icon'})) == 1
 

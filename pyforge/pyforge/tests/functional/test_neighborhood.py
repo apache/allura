@@ -10,22 +10,22 @@ from pyforge.tests import TestController
 class TestNeighborhood(TestController):
 
     def test_admin(self):
-        r = self.app.get('/mozilla/_admin/', extra_environ=dict(username='root'))
-        r = self.app.post('/mozilla/_admin/update_acl',
+        r = self.app.get('/adobe/_admin/', extra_environ=dict(username='root'))
+        r = self.app.post('/adobe/_admin/update_acl',
                           params={'permission':'moderate',
                                   'new.add':'on',
                                   'new.username':'test_user'},
                           extra_environ=dict(username='root'))
-        r = self.app.post('/mozilla/_admin/update_acl',
+        r = self.app.post('/adobe/_admin/update_acl',
                           params={'permission':'read',
                                   'new.username':'',
                                   'user-0.id':'',
                                   'user-0.delete':'on'},
                           extra_environ=dict(username='root'))
-        r = self.app.post('/mozilla/_admin/update',
+        r = self.app.post('/adobe/_admin/update',
                           params=dict(name='Mozq1', css='', homepage='# MozQ1!'),
                           extra_environ=dict(username='root'))
-        r = self.app.post('/mozilla/_admin/update',
+        r = self.app.post('/adobe/_admin/update',
                           params=dict(name='Mozq1', css='', homepage='# MozQ1!\n[Root]'),
                           extra_environ=dict(username='root'))
 
@@ -35,49 +35,49 @@ class TestNeighborhood(TestController):
         file_data = file(file_path).read()
         upload = ('icon', file_name, file_data)
 
-        r = self.app.get('/mozilla/_admin/', extra_environ=dict(username='root'))
-        r = self.app.post('/mozilla/_admin/update',
+        r = self.app.get('/adobe/_admin/', extra_environ=dict(username='root'))
+        r = self.app.post('/adobe/_admin/update',
                           params=dict(name='Mozq1', css='', homepage='# MozQ1'),
                           extra_environ=dict(username='root'), upload_files=[upload])
-        r = self.app.get('/mozilla/icon')
+        r = self.app.get('/adobe/icon')
         image = Image.open(StringIO.StringIO(r.body))
         assert image.size == (48,48)
 
     def test_invite(self):
-        r = self.app.get('/mozilla/_moderate/', extra_environ=dict(username='root'))
-        r = self.app.post('/mozilla/_moderate/invite',
-                          params=dict(pid='mozilla_1', invite='on'),
+        r = self.app.get('/adobe/_moderate/', extra_environ=dict(username='root'))
+        r = self.app.post('/adobe/_moderate/invite',
+                          params=dict(pid='adobe_1', invite='on'),
                           extra_environ=dict(username='root'))
         r = self.app.get(r.location, extra_environ=dict(username='root'))
         assert 'error' in r
-        r = self.app.post('/mozilla/_moderate/invite',
+        r = self.app.post('/adobe/_moderate/invite',
                           params=dict(pid='no_such_user', invite='on'),
                           extra_environ=dict(username='root'))
         r = self.app.get(r.location, extra_environ=dict(username='root'))
         assert 'error' in r
-        r = self.app.post('/mozilla/_moderate/invite',
+        r = self.app.post('/adobe/_moderate/invite',
                           params=dict(pid='test', invite='on'),
                           extra_environ=dict(username='root'))
         r = self.app.get(r.location, extra_environ=dict(username='root'))
         assert 'invited' in r
         assert 'warning' not in r
-        r = self.app.post('/mozilla/_moderate/invite',
+        r = self.app.post('/adobe/_moderate/invite',
                           params=dict(pid='test', invite='on'),
                           extra_environ=dict(username='root'))
         r = self.app.get(r.location, extra_environ=dict(username='root'))
         assert 'warning' in r
-        r = self.app.post('/mozilla/_moderate/invite',
+        r = self.app.post('/adobe/_moderate/invite',
                           params=dict(pid='test', uninvite='on'),
                           extra_environ=dict(username='root'))
         r = self.app.get(r.location, extra_environ=dict(username='root'))
         assert 'uninvited' in r
         assert 'warning' not in r
-        r = self.app.post('/mozilla/_moderate/invite',
+        r = self.app.post('/adobe/_moderate/invite',
                           params=dict(pid='test', uninvite='on'),
                           extra_environ=dict(username='root'))
         r = self.app.get(r.location, extra_environ=dict(username='root'))
         assert 'warning' in r
-        r = self.app.post('/mozilla/_moderate/invite',
+        r = self.app.post('/adobe/_moderate/invite',
                           params=dict(pid='test', invite='on'),
                           extra_environ=dict(username='root'))
         r = self.app.get(r.location, extra_environ=dict(username='root'))
@@ -85,37 +85,37 @@ class TestNeighborhood(TestController):
         assert 'warning' not in r
 
     def test_evict(self):
-        r = self.app.get('/mozilla/_moderate/', extra_environ=dict(username='root'))
-        r = self.app.post('/mozilla/_moderate/evict',
+        r = self.app.get('/adobe/_moderate/', extra_environ=dict(username='root'))
+        r = self.app.post('/adobe/_moderate/evict',
                           params=dict(pid='test'),
                           extra_environ=dict(username='root'))
         r = self.app.get(r.location, extra_environ=dict(username='root'))
         assert 'error' in r
-        r = self.app.post('/mozilla/_moderate/evict',
-                          params=dict(pid='mozilla_1'),
+        r = self.app.post('/adobe/_moderate/evict',
+                          params=dict(pid='adobe_1'),
                           extra_environ=dict(username='root'))
         r = self.app.get(r.location, extra_environ=dict(username='root'))
         assert 'error' not in r
 
     def test_home(self):
-        r = self.app.get('/mozilla/')
+        r = self.app.get('/adobe/')
 
     def test_register(self):
-        r = self.app.post('/mozilla/register',
+        r = self.app.post('/adobe/register',
                           params=dict(pid='mymoz'),
                           extra_environ=dict(username='*anonymous'),
                           status=401)
-        r = self.app.post('/mozilla/register',
+        r = self.app.post('/adobe/register',
                           params=dict(pid='mymoz'),
                           extra_environ=dict(username='root'))
-        r = self.app.post('/mozilla/register',
+        r = self.app.post('/adobe/register',
                           params=dict(pid='foo.mymoz'),
                           extra_environ=dict(username='root'))
         assert 'error' in r.cookies_set['webflash']
 
     def test_neighborhood_project(self):
-        r = self.app.get('/mozilla/test/home/', status=302)
-        r = self.app.get('/mozilla/mozilla_1/home/', status=200)
+        r = self.app.get('/adobe/test/home/', status=302)
+        r = self.app.get('/adobe/adobe_1/home/', status=200)
         r = self.app.get('/p/test/sub1/home/')
         r = self.app.get('/p/test/sub1/', status=302)
         r = self.app.get('/p/test/no_such_app/', status=404)
@@ -126,21 +126,21 @@ class TestNeighborhood(TestController):
         file_data = file(file_path).read()
         upload = ('icon', file_name, file_data)
 
-        r = self.app.get('/mozilla/_admin/awards', extra_environ=dict(username='root'))
-        r = self.app.post('/mozilla/_admin/awards/create',
+        r = self.app.get('/adobe/_admin/awards', extra_environ=dict(username='root'))
+        r = self.app.post('/adobe/_admin/awards/create',
                           params=dict(short='FOO', full='A basic foo award'),
                           extra_environ=dict(username='root'), upload_files=[upload])
-        r = self.app.get('/mozilla/_admin/awards/FOO', extra_environ=dict(username='root'))
-        r = self.app.get('/mozilla/_admin/awards/FOO/icon', extra_environ=dict(username='root'))
+        r = self.app.get('/adobe/_admin/awards/FOO', extra_environ=dict(username='root'))
+        r = self.app.get('/adobe/_admin/awards/FOO/icon', extra_environ=dict(username='root'))
         image = Image.open(StringIO.StringIO(r.body))
         assert image.size == (48,48)
-        r = self.app.post('/mozilla/_admin/awards/grant',
-                          params=dict(grant='FOO', recipient='mozilla_1'),
+        r = self.app.post('/adobe/_admin/awards/grant',
+                          params=dict(grant='FOO', recipient='adobe_1'),
                           extra_environ=dict(username='root'))
-        r = self.app.get('/mozilla/_admin/awards/FOO/mozilla_1', extra_environ=dict(username='root'))
-        r = self.app.post('/mozilla/_admin/awards/FOO/mozilla_1/revoke',
+        r = self.app.get('/adobe/_admin/awards/FOO/adobe_1', extra_environ=dict(username='root'))
+        r = self.app.post('/adobe/_admin/awards/FOO/adobe_1/revoke',
                           extra_environ=dict(username='root'))
-        r = self.app.post('/mozilla/_admin/awards/FOO/delete',
+        r = self.app.post('/adobe/_admin/awards/FOO/delete',
                           extra_environ=dict(username='root'))
 
     def test_site_css(self):
