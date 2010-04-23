@@ -295,7 +295,7 @@ class Thread(HierWidget):
                     new_post_holder.show();
                 });
             }
-            if(thread_reply){
+            if(thread_reply.length){
                 if(new_post_holder.length){
                     thread_reply[0].style.display='block';
                     thread_reply.click(function(e){
@@ -308,7 +308,7 @@ class Thread(HierWidget):
                     });
                 }
             }
-            if(thread_tag){
+            if(thread_tag.length){
                 if(tag_thread_holder.length){
                     thread_tag[0].style.display='block';
                     thread_tag.click(function(e){
@@ -320,7 +320,7 @@ class Thread(HierWidget):
                     });
                 }
             }
-            if(thread_spam){
+            if(thread_spam.length){
                 if(allow_moderate.length){
                     thread_spam[0].style.display='block';
                 }
