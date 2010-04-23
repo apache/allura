@@ -17,9 +17,12 @@ class ProjectSession(Session):
 
     @property
     def db(self):
-        if getattr(c, 'project', None):
-            return getattr(self.main_session.bind.conn, c.project.database)
-        else:
+        try:
+            if getattr(c, 'project', None):
+                return getattr(self.main_session.bind.conn, c.project.database)
+            else:
+                return None
+        except TypeError, te:
             return None
 
     def _impl(self, cls):
