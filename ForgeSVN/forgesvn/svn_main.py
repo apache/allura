@@ -7,7 +7,7 @@ from subprocess import Popen
 
 # Non-stdlib imports
 import pkg_resources
-from tg import expose, validate, redirect, response
+from tg import expose, validate, redirect, response, config
 from tg.decorators import with_trailing_slash, without_trailing_slash
 import pylons
 from pylons import g, c, request
@@ -96,7 +96,8 @@ class RootController(object):
 
     @expose('forgesvn.templates.index')
     def index(self):
-        return dict(repo=c.app.repo, host=request.host)
+        host = config.get('scm.host', request.host)
+        return dict(repo=c.app.repo, host=host)
 
     @expose()
     def init(self, name=None):
