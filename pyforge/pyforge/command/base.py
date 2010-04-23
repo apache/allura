@@ -37,7 +37,9 @@ class Command(command.Command):
         log.info('Initialize reactor with config %r', self.args[0])
         environ.set_environment({})
         load_environment(conf.global_conf, conf.local_conf)
-        if not pylons.c._object_stack():
+        try:
+            pylons.c._current_obj()
+        except TypeError:
             pylons.c._push_object(MagicalC(EmptyClass()))
         from pyforge.lib.app_globals import Globals
         pylons.g._push_object(Globals())
