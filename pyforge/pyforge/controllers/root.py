@@ -77,8 +77,11 @@ class RootController(BaseController):
 
     def _cleanup_request(self):
         ming.orm.ormsession.ThreadLocalORMSession.flush_all()
-        for msg in c.queued_messages:
-            g._publish(**msg)
+        try:
+            for msg in c.queued_messages:
+                g._publish(**msg)
+        except TypeError:
+            pass
         ming.orm.ormsession.ThreadLocalORMSession.close_all()
 
     @expose('pyforge.templates.project_list')
