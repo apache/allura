@@ -16,7 +16,7 @@ class UpdateThemeToShinyBook(Migration):
     version = 3
 
     def up_requires(self):
-        yield ('pyforge', 1)
+        yield ('pyforge', 2)
 
     def up(self):
         if self.session.db.name == 'pyforge':
