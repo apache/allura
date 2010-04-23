@@ -18,7 +18,6 @@
   </head>
 
   <body>
-    ${c.subscribe_form.display(value=subscribed, action='subscribe')}
     <br/>
     <form method="POST" action="${ticket.url()}update_ticket">
       <span class="editable viewing" style="padding: 0">
@@ -157,6 +156,7 @@
       <hr class="clear clearfix"/>
       ${c.thread.display(value=thread,new_post_text="New Comment")}
     </div>
+    ${c.subscribe_form.display(value=subscribed, action='subscribe')}
     <script type="text/javascript" src="${g.app_static('js/comments.js')}"/>
   </body>
 </html>

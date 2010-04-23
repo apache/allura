@@ -22,7 +22,6 @@
   </head>
   
   <body>
-    ${c.subscribe_form.display(value=subscribed, action='subscribe')}
     <br style="clear:both"/>
     <h1 class="title">$page.title</h1>
     <a href="${page.email_link(page.title)}">Email Page</a>
@@ -38,5 +37,6 @@
       <h2><a href="${thread.url()}">Discussion</a></h2>
       ${c.thread.display(value=thread)}
     </div>
+    ${c.subscribe_form.display(value=subscribed, action='subscribe')}
   </body>
 </html>

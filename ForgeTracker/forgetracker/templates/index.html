@@ -18,7 +18,6 @@
 
   <body>
         <h1 class="title">ForgeTracker for $c.project.shortname</h1>
-        ${c.subscribe_form.display(value=subscribed, action='subscribe')}
         <div class="clear">&nbsp;</div>
         <py:if test="not len(tickets)">No open tickets.</py:if>
         <py:if test="count > 500">Too many results.  Showing the first 500 open tickets.</py:if>
@@ -63,6 +62,7 @@
             </tr>
           </tbody>
         </table>
+        ${c.subscribe_form.display(value=subscribed, action='subscribe')}
         <script type="text/javascript">
             $('tbody.ticket-list').children(':even').addClass('even');
             $('tbody.change-list').children(':even').addClass('even');
