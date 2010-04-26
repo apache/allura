@@ -82,7 +82,7 @@ class ReactorCommand(base.Command):
 
     def command(self):
         self.basic_setup()
-        processes = [ RestartableProcess(target=self.periodic_main, args=()) ]
+        processes = [ RestartableProcess(target=self.periodic_main, log=base.log, args=()) ]
         configs = [
             dict(plugin_name=name,
                  method=method, xn=xn, qn=qn, keys=keys)
@@ -90,6 +90,7 @@ class ReactorCommand(base.Command):
             for method, xn, qn, keys in plugin_consumers(name, plugin) ]
         for x in xrange(self.options.proc):
             processes.append(RestartableProcess(target=self.multi_worker_main,
+                                     log=base.log,
                                      args=(configs,)))
             continue
         if self.options.dry_run: return configs
