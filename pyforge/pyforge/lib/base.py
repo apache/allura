@@ -23,6 +23,8 @@ class Environ(object):
         self._local.environ = environ
 
     def __getitem__(self, name):
+        if not hasattr(self._local, 'environ'):
+            self.set_environment({})
         try:
             return self._local.environ[name]
         except AttributeError:
@@ -30,12 +32,16 @@ class Environ(object):
             raise KeyError, name
 
     def __setitem__(self, name, value):
+        if not hasattr(self._local, 'environ'):
+            self.set_environment({})
         try:
             self._local.environ[name] = value
         except AttributeError:
             self._local.environ = {name:value}
 
     def __delitem__(self, name):
+        if not hasattr(self._local, 'environ'):
+            self.set_environment({})
         try:
             del self._local.environ[name]
         except AttributeError:
@@ -43,9 +49,13 @@ class Environ(object):
             raise KeyError, name
 
     def __getattr__(self, name):
+        if not hasattr(self._local, 'environ'):
+            self.set_environment({})
         return getattr(self._local.environ, name)
 
     def __repr__(self):
+        if not hasattr(self._local, 'environ'):
+            self.set_environment({})
         return repr(self._local.environ)
 
 environ = _environ = Environ()
