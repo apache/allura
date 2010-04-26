@@ -75,9 +75,8 @@ class Notification(MappedClass):
         if mbox is None:
             mbox = Mailbox(user_id=user._id, type='flash')
         n = cls._make_notification(artifact, topic, **kw)
-        mbox.query.update(
-            dict(_id=mbox._id),
-            {'$push':dict(queue=n._id)})
+        mbox.queue.append(n._id)
+        return n
 
     @classmethod
     def _make_notification(cls, artifact, topic, **kwargs):

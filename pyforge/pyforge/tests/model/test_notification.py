@@ -6,6 +6,7 @@ from ming.orm import ThreadLocalORMSession
 
 from pyforge.tests import helpers
 from pyforge import model as M
+from pyforge.lib import helpers as h
 from forgewiki import model as WM
 
 class TestNotification(unittest.TestCase):
@@ -51,6 +52,19 @@ class TestPostNotifications(unittest.TestCase):
         queue = g.mock_amq.exchanges['react']
         assert len(queue) == 1
         assert queue[0]['message']['artifact_index_id'] == self.pg.index()['id']
+
+    def test_post_user_notification(self):
+        u = M.User.query.get(username='test_admin')
+        n = M.Notification.post_user(u, self.pg, 'metadata')
+        ThreadLocalORMSession.flush_all()
+        ThreadLocalORMSession.close_all()
+        flash_msgs = list(h.pop_user_notifications(u))
+        assert len(flash_msgs) == 1, flash_msgs
+        msg = flash_msgs[0]
+        assert msg['text'].startswith('WikiPage WikiHome modified by Test Admin')
+        assert msg['subject'].startswith('[test:wiki]')
+        flash_msgs = list(h.pop_user_notifications(u))
+        assert not flash_msgs, flash_msgs
 
     def test_delivery(self):
         g.mock_amq.setup_handlers()
