@@ -1,0 +1,73 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+          "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:py="http://genshi.edgewall.org/"
+      xmlns:xi="http://www.w3.org/2001/XInclude"
+      py:strip="True">
+  <?python
+         from ew import ResourceManager
+         resource_manager = ResourceManager.get()
+         resource_manager.register_widgets(c)
+         ?>
+  <xi:include href="header.html" />
+  <xi:include href="sidebars.html" />
+  <xi:include href="footer.html" />
+  <xi:include href="lib.html" />
+  <head py:match="head" py:attrs="select('@*')">
+    <meta content="text/html; charset=UTF-8" http-equiv="content-type" py:replace="''"/>
+    <title py:replace="''">Your title goes here</title>
+    <meta py:replace="select('*')"/>
+    <py:for each="blob in resource_manager.emit('head_css')">$blob</py:for>
+    <py:for each="blob in resource_manager.emit('head_js')">$blob</py:for>
+    <link rel="stylesheet" type="text/css" media="screen, projection" href="${tg.url('/css/blueprint/screen.css')}" />
+    <link rel="stylesheet" type="text/css" media="print" href="${tg.url('/css/blueprint/print.css')}" />
+    <link rel="stylesheet" type="text/css" href="${tg.url('/css/forge/jquery-ui-1.8rc3.custom.css')}" />
+
+    <!--[if lt IE 8]>
+      <link rel="stylesheet" type="text/css" media="screen, projection" href="${tg.url('/css/blueprint/ie.css')}" />
+    <![endif]-->
+    <?python neighborhood = 'neighborhood' in locals() and neighborhood or None ?>
+    <link py:if="not c.project and not neighborhood" rel="stylesheet" type="text/css" media="screen" href="${tg.url('/site_style.css')}" />
+    <link py:if="c.project" rel="stylesheet" type="text/css" media="screen" href="${c.project.neighborhood.url()+'site_style.css'}" />
+    <link py:if="neighborhood" rel="stylesheet" type="text/css" media="screen" href="${neighborhood.url()+'site_style.css'}" />
+    <script type="text/javascript" src="/js/jquery-1.4.2.min.js"/>
+    <script type="text/javascript" src="/js/jquery-ui-1.8rc3.custom.min.js"></script>
+    <script type="text/javascript" src="/js/jquery.cookie.js"></script>
+  </head>
+
+  <body py:match="body" py:attrs="select('@*')">
+    <py:for each="blob in resource_manager.emit('body_top_js')">$blob</py:for>
+    <div class="nav"></div>
+    <div class="container">
+      ${main_menu()}
+      <div id="bunker" class="hide">
+	<div class="span-12">Stuff</div>
+	<div class="span-12 last">Stuff</div>
+      </div>
+      ${nav_menu()}
+      <div id="content_holder" class="span-24 last ui-corner-bottom">
+        <div id="content" class="index">
+          <div style="padding: 1em">
+            <py:with vars="flash=tg.flash_obj.render('flash', use_js=False)">
+              <div py:if="flash" py:content="XML(flash)" />
+            </py:with>
+            <!-- <div class="breadcrumbs" py:if="c.project or c.app">
+              <ul py:if="c.app">
+                ${crumbs(c.app.config.breadcrumbs())}
+              </ul>
+              <ul py:if="not c.app">
+                ${crumbs(c.project.breadcrumbs())}
+              </ul>
+            </div> -->
+            <div py:replace="select('*|text()')"/>
+            <!-- End of main_content -->
+          </div>
+        </div>
+      </div>
+      <div class="clear"/>
+      ${footer()}
+    </div>
+    <script type="text/javascript" src="/js/pyforge-base.js"/>
+    <py:for each="blob in resource_manager.emit('body_js')">$blob</py:for>
+  </body>
+</html>

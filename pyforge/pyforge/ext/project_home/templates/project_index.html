@@ -4,7 +4,7 @@
       xmlns:py="http://genshi.edgewall.org/"
       xmlns:xi="http://www.w3.org/2001/XInclude">
 
-  <xi:include href="master.html" />
+  <xi:include href="master_one_col.html" />
   <xi:include href="lib.html" />
 
   <?python from pyforge.lib.security import has_project_access ?>
@@ -19,11 +19,52 @@
   </head>
   
   <body>
-    ${Markup(c.project.description_html)}
-    <div class="$layout_class">
-      <div py:for="div in layout" class="$div.name">
-        <py:for each="w in div.content">${Markup(w)}</py:for>
+    <div class="span-17">
+      ${Markup(c.project.description_html)}
+      <div class="$layout_class">
+        <div py:for="div in layout" class="$div.name">
+          <py:for each="w in div.content">${Markup(w)}</py:for>
+        </div>
       </div>
+    </div>
+		<div class="span-6 last">
+			<p>
+				<a href="" class="ui-button ui-state-default ui-widget ui-corner-all ui-button-text-icon download">
+					<span class="ui-button-text">&darr; Download $c.project.name</span>
+				</a>
+			</p>
+      <div class="span-6 last" id="sidebar-right">
+        <div class="span-2 tright"><b>Awards:</b></div>
+        <div class="span-4 last">
+          <a py:if="len(c.project.accolades)" href="${accolade.award.longurl()}" py:for="accolade in c.project.accolades" title="$accolade.award.full">
+            <small class="badge $accolade.award.short">$accolade.award.short</small>
+          </a>
+          <span py:if="not len(c.project.accolades)">No Awards</span>
+        </div>
+        <hr class="clear clearfix" />
+        <div class="span-2 tright"><b>Tags:</b></div>
+        <div class="span-4 last">
+          <span py:if="len(c.project.labels)" py:for="label in c.project.labels" class="ui-corner-all tag">$label </span>
+          <span py:if="not len(c.project.labels)">No tags</span>
+        </div>
+        <hr class="clear clearfix" />
+        <div class="span-2 tright"><b>Developers:</b></div>
+        <div class="span-4 last gravatar sm">
+          <a py:for="u in c.project.users()" href="${u.url()}">${gravatar(u.preferences.email_address, size=24)}</a>
+        </div>
+        <span class="actions clear">
+        <br />
+        <a href="mailto:2@tickets.Forge.projects.sourceforge.net?subject=[Forge:tickets:#2] Re: #2"><span class="ui-icon ui-icon-mail-closed"></span> Email Project</a> <br />
+        <a href="#comment"><span class="ui-icon ui-icon-comment"></span> Leave a Comment</a><br />
+
+        <a href="/projects/Forge/tickets/2/feed.rss"><span class="ui-icon ui-icon-signal-diag"></span> Follow this Project</a>
+        </span>
+
+
+
+      </div>
+
+	    <div class="clear"></div>
     </div>
   </body>
 </html>

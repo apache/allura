@@ -13,6 +13,7 @@ from pyforge import version
 from pyforge.app import Application, WidgetController, ConfigOption, SitemapEntry
 from pyforge.lib import helpers as h
 from pyforge.ext.project_home import model as M
+from pyforge import model
 from pyforge.lib.security import require, has_project_access
 
 log = logging.getLogger(__name__)

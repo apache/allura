@@ -266,6 +266,7 @@ class Project(MappedClass):
     app_configs = RelationProperty('AppConfig')
     category_id = FieldProperty(S.ObjectId, if_missing=None)
     deleted = FieldProperty(bool, if_missing=False)
+    labels = FieldProperty([str])
 
     def sidebar_menu(self):
         from pyforge.app import SitemapEntry
@@ -452,6 +453,15 @@ class Project(MappedClass):
             return self.parent_project.breadcrumbs() + [ entry ]
         else:
             return [ (self.neighborhood.name, self.neighborhood.url())] + [ entry ]
+
+    def users(self):
+        def uniq(users):
+            t = {}
+            for user in users:
+                t[user.username] = user
+            return t.values()
+        project_users = uniq([r.user for r in self.roles if not r.user.username.startswith('*')])
+        return project_users
 
 class AppConfig(MappedClass):
     class __mongometa__:

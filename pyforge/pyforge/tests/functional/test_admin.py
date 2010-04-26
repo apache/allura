@@ -17,7 +17,8 @@ class TestProjectAdmin(TestController):
                 name='Test Project',
                 shortname='test',
                 short_description='A Test Project',
-                description='A long description'))
+                description='A long description',
+                labels='aaa,bbb'))
         # Add/Remove a subproject
         self.app.post('/admin/update_mounts', params={
                 'new.install':'install',

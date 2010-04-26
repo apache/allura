@@ -21,6 +21,7 @@ from pyforge.lib.widgets import form_fields as ffw
 
 class W:
     markdown_editor = ffw.MarkdownEdit()
+    label_edit = ffw.LabelEdit()
 
 class AdminWidgets(WidgetController):
     widgets=['users', 'plugin_status']
@@ -104,6 +105,7 @@ class ProjectAdminController(object):
             name for (name, app) in plugins
             if app.installable ]
         c.markdown_editor = W.markdown_editor
+        c.label_edit = W.label_edit
         psort = [(n, M.Project.query.find(dict(is_root=True, neighborhood_id=n._id)).sort('shortname').all())
                  for n in M.Neighborhood.query.find().sort('name')]
 #        accolades = M.AwardGrant.query.find(dict(granted_to_project_id=c.project._id))
@@ -147,6 +149,9 @@ class ProjectAdminController(object):
             c.project.category_id = ObjectId(category)
         else:
             c.project.category_id = None
+        if 'labels' in kw:
+            c.project.labels = kw['labels'].split(',')
+            del kw['labels']
         if icon is not None and icon != '':
             if h.supported_by_PIL(icon.type):
                 filename = icon.filename
