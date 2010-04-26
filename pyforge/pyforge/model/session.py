@@ -1,6 +1,8 @@
 import logging
 from itertools import chain
 
+from pylons import c
+
 from ming import Session
 from ming.orm.base import state, session
 from ming.orm.ormsession import ThreadLocalORMSession, SessionExtension
@@ -18,7 +20,14 @@ class ProjectSession(Session):
     @property
     def db(self):
         try:
-            return getattr(self.main_session.bind.conn, environ['allura.project'].database)
+            # Our MagicalC makes sure allura.project is set in the environ when
+            # c.project is set
+            p = environ.get('allura.project', None)
+            if p is None:
+                # But if we're not using MagicalC, as in paster shell....
+                p = getattr(c, 'project', None)
+            if p is None: return None
+            return getattr(self.main_session.bind.conn, p.database)
         except (KeyError, AttributeError), ex:
             return None
 
