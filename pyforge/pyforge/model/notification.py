@@ -60,11 +60,32 @@ class Notification(MappedClass):
     @classmethod
     def post(cls, artifact, topic, **kw):
         '''Create a notification and  send the notify message'''
+        n = cls._make_notification(artifact, topic, **kw)
+        idx = artifact.index()
+        g.publish('react', 'forgemail.notify', dict(
+                notification_id=n._id,
+                artifact_index_id=idx['id'],
+                topic=topic))
+        return n
+
+    @classmethod
+    def post_user(cls, user, artifact, topic, **kw):
+        '''Create a notification and deliver directly to a user's flash mailbox'''
+        mbox = Mailbox.query.get(user_id=user._id, type='flash')
+        if mbox is None:
+            mbox = Mailbox(user_id=user._id, type='flash')
+        n = cls._make_notification(artifact, topic, **kw)
+        mbox.query.update(
+            dict(_id=mbox._id),
+            {'$push':dict(queue=n._id)})
+
+    @classmethod
+    def _make_notification(cls, artifact, topic, **kwargs):
         idx = artifact.index()
         subject_prefix = '[%s:%s] ' % (
             c.project.shortname, c.app.config.options.mount_point)
         if topic == 'message':
-            post = kw.pop('post')
+            post = kwargs.pop('post')
             subject = post.subject or ''
             if post.parent_id and not subject.lower().startswith('re:'):
                 subject = 'Re: ' + subject
@@ -79,7 +100,7 @@ class Notification(MappedClass):
                 text=post.text,
                 in_reply_to=post.parent_id)
         else:
-            subject = kw.pop('subject', '%s modified by %s' % (
+            subject = kwargs.pop('subject', '%s modified by %s' % (
                     idx['title_s'], c.user.display_name))
             d = dict(
                 from_address='%s <%s>' % (
@@ -87,7 +108,7 @@ class Notification(MappedClass):
                 reply_to_address='"%s" <%s>' % (
                     idx['title_s'], artifact.email_address),
                 subject=subject_prefix + subject,
-                text=kw.pop('text', subject))
+                text=kwargs.pop('text', subject))
         if not d.get('text'):
             d['text'] = ''
         if hasattr(artifact, 'url'):
@@ -95,12 +116,8 @@ class Notification(MappedClass):
                 (artifact.__class__.__name__, h.full_url(artifact.url()))
         n = cls(artifact_reference=artifact.dump_ref(),
                 topic=topic,
-                link=kw.pop('link', artifact.url()),
+                link=kwargs.pop('link', artifact.url()),
                 **d)
-        g.publish('react', 'forgemail.notify', dict(
-                notification_id=n._id,
-                artifact_index_id=idx['id'],
-                topic=topic))
         return n
 
     def footer(self):
@@ -265,7 +282,7 @@ class Mailbox(MappedClass):
     topic = FieldProperty(str)
 
     # Subscription type
-    type = FieldProperty(S.OneOf, 'direct', 'digest', 'summary')
+    type = FieldProperty(S.OneOf, 'direct', 'digest', 'summary', 'flash')
     frequency = FieldProperty(dict(
             n=int,unit=S.OneOf('day', 'week', 'month')))
     next_scheduled = FieldProperty(datetime)
@@ -337,3 +354,4 @@ class Mailbox(MappedClass):
             Notification.send_summary(
                 self.user_id, 'noreply@in.sf.net', 'Digest Email',
                 notifications)
+

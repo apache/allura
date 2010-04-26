@@ -320,3 +320,11 @@ def json_validation_error(controller, **kwargs):
     response.status=400
     return json.dumps(result, indent=2)
 
+def pop_user_notifications():
+    from pyforge import model as M
+    mbox = M.Mailbox.query.get(user_id=c.user._id, type='flash')
+    if mbox:
+        notifications = M.Notification.query.find(dict(_id={'$in':mbox.queue}))
+        mbox.queue = []
+        for n in notifications: yield n
+    
