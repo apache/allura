@@ -36,7 +36,7 @@ class TestRestApiBase(TestController):
         path = self.mount_point + path
         params = self.token.sign_request(path, params)
         response = self.app.post(
-            path,
+            str(path),
             params=params,
             status=[200,302,400,403])
         if response.status_int == 302:

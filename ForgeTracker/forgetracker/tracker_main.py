@@ -106,8 +106,6 @@ class ForgeTrackerApp(Application):
         else:
             ticket = None
         links = [
-            SitemapEntry('Home', self.config.url(), ui_icon='home'),
-            SitemapEntry('Discuss', c.app.url + '_discuss/', ui_icon='comment'),
             SitemapEntry('Create New Ticket', self.config.url() + 'new/', ui_icon='plus')]
         if ticket:
             links.append(SitemapEntry('Update this Ticket',ticket.url() + 'edit/', ui_icon='check'))
@@ -117,7 +115,6 @@ class ForgeTrackerApp(Application):
                     related_urls.append(artifact.url())
                     title = '%s: %s' % (artifact.type_s, artifact.shorthand_id())
                     related_artifacts.append(SitemapEntry(title, artifact.url(), className='nav_child'))
-        links.append(SitemapEntry('Search', self.config.url() + 'search/', ui_icon='search'))
         if len(search_bins):
             links.append(SitemapEntry('Saved Searches'))
             links.append(SitemapEntry('All Searches', self.config.url() + 'bins', className='nav_child'))
