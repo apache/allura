@@ -34,6 +34,8 @@ paster smtp_server sandbox.ini &
 paster reactor_setup sandbox-test.ini#main_with_amqp
 
 paster setup-app sandbox.ini
+paster flyway
+paster reindex sandbox.ini
 paster serve --reload --daemon sandbox.ini
 
 sleep 5
