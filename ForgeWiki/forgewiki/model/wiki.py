@@ -78,7 +78,7 @@ class Page(VersionedArtifact):
 
     @property
     def email_address(self):
-        domain = '.'.join(reversed(self.app.url[1:-1].split('/')))
+        domain = '.'.join(reversed(self.app.url[1:-1].split('/'))).replace('_', '-')
         return '%s@%s%s' % (self.title.replace('/', '.'), domain, common_suffix)
 
     def url(self):
