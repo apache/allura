@@ -111,7 +111,7 @@
         <p>The ACL determines neighborhood-level permissions.</p>
         <div id="acl-admin">
           <py:for each="permission, users in neighborhood.acl.iteritems()">
-            <h3><a href="#">Permission: $permission</a></h3>
+            <h3><a href="#" id="permission_$permission">Permission: $permission</a></h3>
             <div>
               <form method="POST" action="update_acl">
                 <input type="hidden" name="permission" value="$permission"/>
@@ -276,9 +276,24 @@
 	$(function() {
 		$("#acl-admin").accordion({
 			autoHeight: false,
-			navigation: true
+			navigation: true,
+	change: function(event,ui) {
+		var hid = ui.newHeader.children('a').attr('id');
+	if (hid === undefined) {
+		$.cookie('neighborhood-acl-admin', null);
+	} else {
+		$.cookie('neighborhood-acl-admin', hid, { path: '/', expires: 2 });
+	}
+	}
 		});
 	});
+  $(document).ready(function(){
+    if($.cookie('neighborhood-acl-admin')) {
+	$('#acl-admin').accordion('option', 'animated', false);
+	$('#acl-admin').accordion('activate', $('#' + $.cookie('neighborhood-acl-admin')).parent('h3'));
+	$('#acl-admin').accordion('option', 'animated', 'slide');
+    }
+  });
 	</script>
   </body>
 </html>

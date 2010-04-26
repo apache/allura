@@ -51,7 +51,7 @@
     		     py:if="app.permissions and allow_config">
           <div id="acl-admin">
             <py:for each="p in app.permissions" >
-              <h3><a href="#">$p</a></h3>
+              <h3><a href="#" id="permission_$p">$p</a></h3>
               <div>
                 <table>
                   <thead>
@@ -93,11 +93,26 @@
       		$("#app_admin_tabs").tabs({cookie:{expires:30}});
       	});
         $(function() {
-               $("#acl-admin").accordion({
-                 autoHeight: false,
-                 navigation: true
-               });
-             });
+           $("#acl-admin").accordion({
+             autoHeight: false,
+             navigation: true,
+		change: function(event,ui) {
+			var hid = ui.newHeader.children('a').attr('id');
+		if (hid === undefined) {
+			$.cookie('app-acl-admin', null);
+		} else {
+			$.cookie('app-acl-admin', hid, { path: '/', expires: 2 });
+		}
+		}
+           });
+         });
+          $(document).ready(function(){
+            if($.cookie('app-acl-admin')) {
+		$('#acl-admin').accordion('option', 'animated', false);
+		$('#acl-admin').accordion('activate', $('#' + $.cookie('app-acl-admin')).parent('h3'));
+		$('#acl-admin').accordion('option', 'animated', 'slide');
+            }
+          });
   	  </script>
   	</py:if>
   </body>

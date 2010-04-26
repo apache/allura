@@ -244,7 +244,7 @@
         <p>The project ACL determines project-level permissions.</p>
         <div id="acl-admin">
           <py:for each="permission, role_ids in c.project.acl.iteritems()">
-            <h3><a href="#">Permission: $permission</a></h3>
+            <h3><a href="#" id="permission_$permission">Permission: $permission</a></h3>
             <div>
               <form method="POST" action="update_acl">
                 <input type="hidden" name="permission" value="$permission"/>
@@ -349,9 +349,24 @@
 	$(function() {
 		$("#acl-admin").accordion({
 			autoHeight: false,
-			navigation: true
+			navigation: true,
+		change: function(event,ui) {
+			var hid = ui.newHeader.children('a').attr('id');
+		if (hid === undefined) {
+			$.cookie('project-acl-admin', null);
+		} else {
+			$.cookie('project-acl-admin', hid, { path: '/', expires: 2 });
+		}
+		}
 		});
 	});
+      $(document).ready(function(){
+        if($.cookie('project-acl-admin')) {
+		$('#acl-admin').accordion('option', 'animated', false);
+		$('#acl-admin').accordion('activate', $('#' + $.cookie('project-acl-admin')).parent('h3'));
+		$('#acl-admin').accordion('option', 'animated', 'slide');
+        }
+      });
       $('.new_ep_name').change(function() {
         $(this).closest('tr').find('.new_mount_point').val($(this).val().toLowerCase());
       });

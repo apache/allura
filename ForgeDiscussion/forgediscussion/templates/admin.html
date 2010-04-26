@@ -48,7 +48,7 @@
       <div id="app-acl" py:if="app.permissions and allow_config">
         <div id="acl-admin">
           <py:for each="p in app.permissions" >
-            <h3><a href="#">$p</a></h3>
+            <h3><a href="#" id="permission_$p">$p</a></h3>
             <div>
               <table>
                 <thead>
@@ -177,7 +177,15 @@
         $("#app_admin_tabs").tabs({cookie:{expires:30}});
         $("#acl-admin").accordion({
           autoHeight: false,
-          navigation: true
+          navigation: true,
+		change: function(event,ui) {
+			var hid = ui.newHeader.children('a').attr('id');
+		if (hid === undefined) {
+			$.cookie('discussion-acl-admin', null);
+		} else {
+			$.cookie('discussion-acl-admin', hid, { path: '/', expires: 2 });
+		}
+		}
         });
         $("#add_forum").click(function(){
           $("#add_forum_form").show();
@@ -189,6 +197,13 @@
           $("#add_forum").show();
           return false;
         });
+      });
+      $(document).ready(function(){
+        if($.cookie('discussion-acl-admin')) {
+		$('#acl-admin').accordion('option', 'animated', false);
+		$('#acl-admin').accordion('activate', $('#' + $.cookie('discussion-acl-admin')).parent('h3'));
+		$('#acl-admin').accordion('option', 'animated', 'slide');
+        }
       });
 	  </script>
   </body>
