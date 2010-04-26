@@ -92,9 +92,13 @@ Once this is done, we'll check out & set up out forge codebase::
     (anvil)~/src/forge/ForgeDiscussion$ python setup.py develop
     (anvil)~/src/forge/ForgeDiscussion$ cd ../ForgeMail
     (anvil)~/src/forge/ForgeMail$ python setup.py develop
-    (anvil)~/src/forge/ForgeMail$ cd ../ForgeSCM
-    (anvil)~/src/forge/ForgeSCM$ python setup.py develop
-    (anvil)~/src/forge/ForgeSCM$ cd ../ForgeTracker
+    (anvil)~/src/forge/ForgeMail$ cd ../ForgeGit
+    (anvil)~/src/forge/ForgeGit$ python setup.py develop
+    (anvil)~/src/forge/ForgeGit$ cd ../ForgeSVN
+    (anvil)~/src/forge/ForgeSVN$ python setup.py develop
+    (anvil)~/src/forge/ForgeSVN$ cd ../ForgeHg
+    (anvil)~/src/forge/ForgeHg$ python setup.py develop
+    (anvil)~/src/forge/ForgeHg$ cd ../ForgeTracker
     (anvil)~/src/forge/ForgeTracker$ python setup.py develop
     (anvil)~/src/forge/ForgeTracker$ cd ../ForgeWiki
     (anvil)~/src/forge/ForgeWiki$ python setup.py develop

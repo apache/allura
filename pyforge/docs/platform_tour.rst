@@ -27,10 +27,10 @@ search
 home
   This plugin is installed in all projects, and provides the ability to customize
   the project landing page with "widgets" shared by other plugins.
-SCM
-  This plugin allows you to host a version control system in the
-  Forge.  It also provides the ability to "fork" another SCM in order to provide
-  your own extensions.
+Git, Hg, SVN
+  These plugins allow you to host a version control system in the Forge.
+  They also provides the ability to "fork" Git and Hg repos in order to
+  provide your own extensions.
 Wiki
   This plugin provides a basic wiki with support for comments, attachments, and
   notifications.
@@ -203,14 +203,11 @@ the `Forum.new_post` message::
 If there are a large number of reactors, you can define them in a separate module
 and use the `mixin_reactors()` method as in the SCM plugin::
 
-    from .reactors import common_react, hg_react, git_react, svn_react
+    from .reactors import reactors
     ...
-    class ForgeSCMApp(Application):
+    class ForgeGitApp(Application):
         ...
-    mixin_reactors(ForgeSCMApp, common_react)
-    mixin_reactors(ForgeSCMApp, hg_react)
-    mixin_reactors(ForgeSCMApp, git_react)
-    mixin_reactors(ForgeSCMApp, svn_react)
+    mixin_reactors(ForgeGitApp, reactors)
 
 .. sidebar:: Updating auditors and reactors
 
