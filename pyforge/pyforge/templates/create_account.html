@@ -21,7 +21,7 @@
       <div class="span-3 clear"><label for="open_ids">Open IDs:</label></div>
       <div class="span-16 last"><input type="text" name="open_ids" class="title"/></div>
       <div class="span-3 clear"><label for="username">Username:</label></div>
-      <div class="span-16 last"><input type="text" name="username" class="title"/></div>
+      <div class="span-16 last"><input type="text" name="username" id="username" class="title"/></div>
       <div class="span-3 clear"><label for="password">Password:</label></div>
       <div class="span-16 last"><input type="password" name="password" id="password" class="title"/></div>
       <div class="span-3 clear"><label>Confirm Password:</label></div>
@@ -33,6 +33,10 @@
     <script type="text/javascript">
       //<!--
       $('#create_account').submit(function(){
+        if(!$('#username').attr('value').match(/^[a-zA-Z0-9]+$/)){
+          alert('Username can only contain numbers and letters.');
+          return false;
+        }
         if($('#password').attr('value').length < 8){
           alert('Password must be at least 8 characters long.');
           return false;
