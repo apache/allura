@@ -110,7 +110,8 @@ class ForgeWikiApp(Application):
         page = request.path_info.split(self.url)[-1].split('/')[-2]
         page = model.Page.query.find(dict(app_config_id=self.config._id,title=page)).first()
         links = [SitemapEntry('Home',c.app.url, ui_icon='home'),
-                 SitemapEntry('Discuss', c.app.url + '_discuss/', ui_icon='comment') ]
+                 SitemapEntry('Discuss', c.app.url + '_discuss/', ui_icon='comment'),
+                 SitemapEntry('Create New Page', c.app.url, ui_icon='plus', className='add_wiki_page') ]
         if page:
             links.append(SitemapEntry('Edit this page','edit', ui_icon='check'))
             for aref in page.references+page.backreferences.values():

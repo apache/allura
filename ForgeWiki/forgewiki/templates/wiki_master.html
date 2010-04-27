@@ -1,0 +1,28 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+                      "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:py="http://genshi.edgewall.org/"
+      xmlns:xi="http://www.w3.org/2001/XInclude">
+  <xi:include href="${g.pyforge_templates}/master.html"/>
+
+  <head py:match="head" py:attrs="select('@*')">
+    <meta content="text/html; charset=UTF-8" http-equiv="content-type" py:replace="''"/>
+    <title py:replace="''">Your title goes here</title>
+    <meta py:replace="select('*')"/>
+    <py:for each="blob in resource_manager.emit('head_css')">$blob</py:for>
+    <py:for each="blob in resource_manager.emit('head_js')">$blob</py:for>
+    <script type="text/javascript" src="${g.app_static('js/wiki.js')}"></script>
+  </head>
+
+  <body py:match="body" py:attrs="select('@*')">
+    <py:for each="blob in resource_manager.emit('body_top_js')">$blob</py:for>
+    <div py:replace="select('*|text()')"/>
+    <div id="create_wiki_page_holder" title="Create New Page" style="display:none">
+      <form>
+        <div class="span-3 clear"><label>Name</label></div>
+        <div class="span-5 last"><input type="text" name="name" class="title wide"/></div>
+      </form>
+    </div>
+    <py:for each="blob in resource_manager.emit('body_js')">$blob</py:for>
+  </body>
+</html>
