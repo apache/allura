@@ -1,12 +1,9 @@
-<<<<<<< HEAD:ForgeGit/forgegit/reactors/reactors.py
-import errno, logging, os, stat, subprocess
-=======
 import os
 import sys
+import stat
 import errno
 import logging
 import subprocess
->>>>>>> be07491... [#223] - Work on git post-receive hook:ForgeGit/forgegit/reactors/reactors.py
 
 import pkg_resources
 import pylons
@@ -36,17 +33,25 @@ def init(routing_key, data):
     with open(magic_file, 'w') as f:
         f.write('git')
     os.chmod(magic_file, stat.S_IRUSR|stat.S_IRGRP|stat.S_IROTH)
+    _setup_receive_hook(
+        fullname,
+        pylons.c.app.config.script_name())
     repo.status = 'ready'
-    M.Notification.post_user(c.user, repo, 'created',
+    M.Notification.post_user(pylons.c.user, repo, 'created',
                              text='Repository %s created' % repo_name)
 
-def setup_commit_hook(repo_dir, plugin_id):
+@react('scm.git.refresh_commit')
+def refresh_commit(routing_key, data):
+    h.set_context(data['project_id'], data['mount_point'])
+    repo = pylons.c.app.repo
+    hash = data['hash']
+    log.info('Refresh commit %s', hash)
+
+def _setup_receive_hook(repo_dir, plugin_id):
     'Set up the git post-commit hook'
     tpl_fn = pkg_resources.resource_filename(
         'forgegit', 'data/post-receive_tmpl')
-    config = None
-    if 'file' in pylons.config:
-        config = pylons.config.__file__
+    config = pylons.config.get('__file__')
     text = h.render_genshi_plaintext(tpl_fn, 
         executable=sys.executable,
         repository=plugin_id,
