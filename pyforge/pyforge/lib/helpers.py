@@ -149,7 +149,7 @@ def ago(start_time):
 
     granularities = ['century', 'decade', 'year', 'month', 'day', 'hour',
                      'minute']
-    end_time = datetime.now()
+    end_time = datetime.utcnow()
 
     while True:
         granularity = granularities.pop()
