@@ -22,7 +22,7 @@ def init(routing_key, data):
     log.info('git init %s', fullname)
     result = subprocess.call(['git', 'init', '--bare', '--shared=all'],
                              cwd=fullname)
-    magic_file = repo_path + repo_name + '/.SOURCEFORGE-REPOSITORY'
+    magic_file = os.path.join(fullname, '.SOURCEFORGE-REPOSITORY')
     with open(magic_file, 'w') as f:
         f.write('git')
     os.chmod(magic_file, stat.S_IRUSR|stat.S_IRGRP|stat.S_IROTH)
