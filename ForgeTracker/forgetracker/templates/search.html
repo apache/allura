@@ -54,6 +54,12 @@
         </tr>
       </tbody>
     </table>
+    <p>Showing ${limit} results per page. </p>
+    <ul class="per_page">
+      <li py:for="per_page in [10, 25, 50, 100]">
+      <a href="${tg.url(request.path_info, q=q, limit=per_page)}" py:strip="limit == per_page">${per_page}</a>
+      </li>
+    </ul>
     <div>
         <span id="first-page" class="nav-button disabled">&lt;&lt;</span>
         <span id="prev-page" class="nav-button disabled">&lt;</span>
