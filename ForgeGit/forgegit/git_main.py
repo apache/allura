@@ -104,7 +104,7 @@ class RootController(object):
     @expose('forgegit.templates.index')
     def index(self, offset=0):
         offset=int(offset)
-        if c.app.repo:
+        if c.app.repo and c.app.repo.status=='ready':
             r = git.Repo(os.path.join(c.app.repo.path, c.app.repo.name))
             revisions = list(islice(r.iter_commits(), offset, offset+10))
         else:
@@ -116,11 +116,12 @@ class RootController(object):
                 author_url=None,
                 committer_url=None,
                 revision=r.sha,
-                authored_date=datetime.fromtimestamp(r.authored_date),
-                committed_date=datetime.fromtimestamp(r.committed_date),
+                authored_date=datetime.fromtimestamp(r.authored_date+r.author_tz_offset),
+                committed_date=datetime.fromtimestamp(r.committed_date+r.committer_tz_offset),
                 message=r.message,
                 )
             for r in revisions ]
+        print r.authored_date, r.author_tz_offset
         c.revision_widget=W.revision_widget
         return dict(repo=c.app.repo, host=request.host, revisions=revisions, offset=offset)
 
