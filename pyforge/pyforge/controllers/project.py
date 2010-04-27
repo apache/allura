@@ -449,9 +449,9 @@ class NeighborhoodAwardsController(object):
         if request.method != 'POST':
             raise Exception('award_save must be a POST request')
         app_config_id = ObjectId()
-        plugin_verson = { 'neighborhood':'0' }
+        tool_version = { 'neighborhood':'0' }
         if short is not None:
-            award = M.Award(app_config_id=app_config_id, plugin_verson=plugin_verson)
+            award = M.Award(app_config_id=app_config_id, tool_version=tool_version)
             award.short = short
             award.full = full
             award.created_by_neighborhood_id = self.neighborhood._id
@@ -478,8 +478,8 @@ class NeighborhoodAwardsController(object):
         grant_q = M.Award.query.find(dict(short=grant)).first()
         recipient_q = M.Project.query.find(dict(name=recipient, deleted=False)).first()
         app_config_id = ObjectId()
-        plugin_verson = { 'neighborhood':'0' }
-        award = M.AwardGrant(app_config_id=app_config_id, plugin_verson=plugin_verson)
+        tool_version = { 'neighborhood':'0' }
+        award = M.AwardGrant(app_config_id=app_config_id, tool_version=tool_version)
         award.award_id = grant_q._id
         award.granted_to_project_id = recipient_q._id
         award.granted_by_neighborhood_id = self.neighborhood._id
@@ -525,8 +525,8 @@ class AwardController(object):
             raise Exception('award_grant must be a POST request')
         recipient_q = M.Project.query.find(dict(name=recipient, deleted=False)).first()
         app_config_id = ObjectId()
-        plugin_verson = { 'neighborhood':'0' }
-        grant = M.AwardGrant(app_config_id=app_config_id, plugin_verson=plugin_verson)
+        tool_version = { 'neighborhood':'0' }
+        grant = M.AwardGrant(app_config_id=app_config_id, tool_version=tool_version)
         grant.award_id = self.award._id
         grant.granted_to_project_id = recipient_q._id
         grant.granted_by_neighborhood_id = self.neighborhood._id

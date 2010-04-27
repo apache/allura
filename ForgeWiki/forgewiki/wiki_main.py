@@ -146,16 +146,16 @@ class ForgeWikiApp(Application):
         role_developer = ProjectRole.query.get(name='Developer')._id
         role_auth = ProjectRole.query.get(name='*authenticated')._id
         self.config.acl.update(
-            configure=c.project.acl['plugin'],
+            configure=c.project.acl['tool'],
             read=c.project.acl['read'],
             create=[role_developer],
             edit=[role_developer],
             delete=[role_developer],
-            edit_page_permissions=c.project.acl['plugin'],
+            edit_page_permissions=c.project.acl['tool'],
             unmoderated_post=[role_developer],
             post=[role_auth],
             moderate=[role_developer],
-            admin=c.project.acl['plugin'])
+            admin=c.project.acl['tool'])
         p = model.Page.upsert(self.root_page_name)
         p.viewable_by = ['all']
         url = c.app.url + 'markdown_syntax' + '/'
@@ -169,7 +169,7 @@ The wiki uses [Markdown](%s) syntax.
 
 
     def uninstall(self, project):
-        "Remove all the plugin's artifacts from the database"
+        "Remove all the tool's artifacts from the database"
         model.Attachment.query.remove({'metadata.app_config_id':c.app.config._id})
         model.Page.query.remove(dict(app_config_id=c.app.config._id))
         super(ForgeWikiApp, self).uninstall(project)

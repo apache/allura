@@ -5,7 +5,7 @@ from tg import expose, redirect, flash, config, validate, request, response
 from webob import exc
 
 class StaticController(object):
-    '''Controller for mounting static resources in plugins by the plugin
+    '''Controller for mounting static resources in tools by the tool
     name'''
 
     @expose()

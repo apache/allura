@@ -26,8 +26,8 @@ Writing a PyForge based app
 .. toctree::
    :maxdepth: 3
    
-   tutorials/wiki-plugin
-   plugins
+   tutorials/wiki-tool
+   tools
 
 Inside the Platform Components
 =====================================================================

@@ -29,7 +29,7 @@
     	<ul>
     		<li><a href="#project-admin-overview">Overview</a></li>
     		<li py:if="len(c.project.neighborhood_invitations)"><a href="#project-admin-invitations">Neighborhood Invitation(s)</a></li>
-    		<li><a href="#project-admin-plugins">Plugins/Subprojects</a></li>
+		<li><a href="#project-admin-tools">Tools/Subprojects</a></li>
     		<li><a href="#project-admin-permissions" 
     		       py:if="has_project_access('security')()">Permissions</a></li>
     		<li><a href="#project-admin-roles"
@@ -155,15 +155,15 @@
           </div>
         </form>
       </div>
-      <div id="project-admin-plugins">
+      <div id="project-admin-tools">
         <div>
           <table>
             <thead>
               <tr>
                 <th>Type</th>
                 <th>Mount Point</th>
-                <th py:if="has_project_access('plugin')()">Edit</th>
-                <th py:if="has_project_access('plugin')()"></th>
+                <th py:if="has_project_access('tool')()">Edit</th>
+                <th py:if="has_project_access('tool')()"></th>
               </tr>
             </thead>
             <tbody>
@@ -174,37 +174,37 @@
                        value="$sp.shortname"/>
                 <input py:for="i, config in enumerate(c.project.app_configs)"
                        type="hidden"
-                       name="plugin-${i}.mount_point"
+                       name="tool-${i}.mount_point"
                        value="$config.options.mount_point"/>
                 <tr py:for="i, sp in enumerate(c.project.direct_subprojects)">
                   <td>Subproject</td>
                   <td>$sp.shortname</td>
-                  <td py:if="has_project_access('plugin')()"><a href="${sp.url() + 'admin/'}">
+                  <td py:if="has_project_access('tool')()"><a href="${sp.url() + 'admin/'}">
                     <span class="ui-icon ui-icon-pencil"></span> Edit
                   </a></td>
-                  <td class="plugin-delete">
-                    <a py:if="has_project_access('plugin')()"
+                  <td class="tool-delete">
+                    <a py:if="has_project_access('tool')()"
                        class="subproject-${i}" href="#">
                        <span class="ui-icon ui-icon-close"></span> Delete
                     </a>
                   </td>
                 </tr>
                 <tr py:for="i, config in enumerate(c.project.app_configs)">
-                  <td>Plugin: $config.plugin_name</td>
+                  <td>Tool: $config.tool_name</td>
                   <td>$config.options.mount_point</td>
                   <td>
-                    <a py:if="has_project_access('plugin')()"
+                    <a py:if="has_project_access('tool')()"
                        href="$config.options.mount_point/">
                        <span class="ui-icon ui-icon-pencil"></span> Edit
                     </a>
                   </td>
-                  <td class="plugin-delete">
-                    <a py:if="has_project_access('plugin')() and config.load().installable"
-                       class="plugin-${i}" href="#">
+                  <td class="tool-delete">
+                    <a py:if="has_project_access('tool')() and config.load().installable"
+                       class="tool-${i}" href="#">
                        <span class="ui-icon ui-icon-close"></span> Delete
                     </a>
-                    <!-- <input py:if="has_project_access('plugin')() and config.load().installable"
-                                           name="plugin-${i}.delete" type="submit" value="Delete"
+                    <!-- <input py:if="has_project_access('tool')() and config.load().installable"
+                                           name="tool-${i}.delete" type="submit" value="Delete"
                                            class="ui-state-default ui-button ui-button-text"/> -->
                   </td>
                 </tr>
@@ -216,14 +216,14 @@
                        value="$sp.shortname"/>
                 <input py:for="i, config in enumerate(c.project.app_configs)"
                        type="hidden"
-                       name="plugin-${i}.mount_point"
+                       name="tool-${i}.mount_point"
                        value="$config.options.mount_point"/>
-                <tr py:if="has_project_access('plugin')()">
+                <tr py:if="has_project_access('tool')()">
                   <td>
                     <select name="new.ep_name" class="new_ep_name">
                       <option value="">New Subproject</option>
-                      <optgroup label="New Plugin">
-                        <option py:for="name in installable_plugin_names" value="$name">$name</option>
+                      <optgroup label="New Tool">
+                        <option py:for="name in installable_tool_names" value="$name">$name</option>
                       </optgroup>
                     </select>
                   </td>
@@ -384,7 +384,7 @@
           window.location.reload();
         });
       });
-      $('td.plugin-delete a').click(function(e){
+      $('td.tool-delete a').click(function(e){
         var vals = $('#mounts_edit').serialize();
         var del_name = e.target.className+'.delete';
         $.post($('#mounts_edit')[0].action, vals+'&'+del_name+'=Del', function(){

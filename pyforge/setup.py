@@ -55,11 +55,11 @@ setup(
     entry_points="""
     [paste.app_factory]
     main = pyforge.config.middleware:make_app
-    plugin_test = pyforge.config.middleware:make_plugin_test_app
+    tool_test = pyforge.config.middleware:make_tool_test_app
 
     [paste.app_install]
     main = pylons.util:PylonsInstaller
-    plugin_test = pylons.util:PylonsInstaller
+    tool_test = pylons.util:PylonsInstaller
 
     [paste.paster_create_template]
     forgeapp=pyforge.pastetemplate:ForgeAppTemplate

@@ -14,6 +14,83 @@ from forgehg import model as HgM
 from forgesvn import model as SVNM
 
 
+class UpdateProjectsToTools(Migration):
+    version = 4
+
+    def up_requires(self):
+        yield ('pyforge', 3)
+        # yield ('ForgeWiki', 3)
+        # yield ('ForgeTracker', 3)
+
+    def up(self):
+        # if self.session.db.name == 'pyforge':
+        # import pdb; pdb.set_trace()
+        rename_key(self.session,M.User,'plugin_preferences','tool_preferences')
+        rename_key(self.session,M.AppConfig,'plugin_name','tool_name')
+        rename_key(self.session,M.ArtifactLink,'plugin_name','tool_name')
+        rename_key(self.session,M.Project,'plugin','tool',inside='acl')
+        # fix artifacts
+        for cls in (
+            M.Artifact,
+            M.VersionedArtifact,
+            M.Snapshot,
+            M.Message,
+            M.Post,
+            M.AwardGrant,
+            M.Discussion,
+            M.Award,
+            M.Thread,
+            M.Post,
+            M.PostHistory,
+            DM.Forum,
+            DM.ForumPost,
+            DM.forum.ForumPostHistory,
+            DM.ForumThread,
+            WM.Page,
+            WM.wiki.PageHistory,
+            SM.Repository,
+            SM.Commit,
+            TM.Bin,
+            TM.Ticket,
+            TM.ticket.TicketHistory,
+            PM.PortalConfig,
+            ):
+            rename_key(self.session,cls,'plugin_verson','tool_version')
+
+    def down(self):
+        # if self.session.db.name == 'pyforge':
+        rename_key(self.session,M.User,'tool_preferences','plugin_preferences')
+        rename_key(self.session,M.AppConfig,'tool_name','plugin_name')
+        rename_key(self.session,M.ArtifactLink,'tool_name','plugin_name')
+        rename_key(self.session,M.Project,'tool','plugin',inside='acl')
+        # fix artifacts
+        for cls in (
+            M.Artifact,
+            M.VersionedArtifact,
+            M.Snapshot,
+            M.Message,
+            M.Post,
+            M.AwardGrant,
+            M.Discussion,
+            M.Award,
+            M.Thread,
+            M.Post,
+            M.PostHistory,
+            DM.Forum,
+            DM.ForumPost,
+            DM.forum.ForumPostHistory,
+            DM.ForumThread,
+            WM.Page,
+            WM.wiki.PageHistory,
+            SM.Repository,
+            SM.Commit,
+            TM.Bin,
+            TM.Ticket,
+            TM.ticket.TicketHistory,
+            PM.PortalConfig,
+            ):
+            rename_key(self.session,cls,'tool_version','plugin_verson')
+
 class UpdateThemeToShinyBook(Migration):
     version = 3
 
@@ -109,8 +186,8 @@ class DowncaseMountPoints(Migration):
         # Fix AppConfigs
         for ac in self.ormsession.find(M.AppConfig, {}):
             ac.options.mount_point = ac.options.mount_point.lower().replace(' ', '_')
-            if ac.plugin_name == 'Forum':
-                ac.plugin_name = 'Discussion'
+            if ac.tool_name == 'Forum':
+                ac.tool_name = 'Discussion'
         self.ormsession.flush(); self.ormsession.clear()
         # Fix ArtifactLinks
         for al in self.ormsession.find(M.ArtifactLink, {}):
@@ -183,6 +260,19 @@ class V0(Migration):
     version = 0
     def up(self): pass
     def down(self):  pass
+
+def rename_key(session, cls, old_key, new_key, inside=None):
+    pm = session._impl(mapper(cls).doc_cls)
+    for item in pm.find():
+        if inside:
+            if inside in item and old_key in item[inside]:
+                item[inside][new_key] = item[inside][old_key]
+                del item[inside][old_key]
+        else:
+            if old_key in item:
+                item[new_key] = item[old_key]
+                del item[old_key]
+        pm.save(item)
 
 def fix_aref(aref):
     if aref and aref.mount_point:

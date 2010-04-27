@@ -22,7 +22,7 @@ def setUp():
     app_config = mock.Mock()
     app_config._id = None
     app_config.project_id = 'testproject/'
-    app_config.plugin_name = 'plugin'
+    app_config.tool_name = 'tool'
     app_config.options = Object(mount_point = 'foo')
     c.app = mock.Mock()
     c.app.config = app_config

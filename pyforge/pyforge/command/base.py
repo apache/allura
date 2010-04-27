@@ -44,7 +44,7 @@ class Command(command.Command):
         from pyforge.lib.app_globals import Globals
         pylons.g._push_object(Globals())
         ming.configure(**conf)
-        self.plugins = [
+        self.tools = [
             (ep.name, ep.load()) for ep in iter_entry_points('pyforge') ]
-        log.info('Loaded plugins')
+        log.info('Loaded tools')
 

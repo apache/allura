@@ -31,7 +31,7 @@ class SubscriptionForm(ew.SimpleForm):
 class SubscribeForm(ew.SimpleForm):
     template='pyforge.lib.widgets.templates.subscribe'
     params=['thing']
-    thing='plugin'
+    thing='tool'
     class fields(ew.WidgetsList):
         subscribe=SubmitButton()
         unsubscribe=SubmitButton()

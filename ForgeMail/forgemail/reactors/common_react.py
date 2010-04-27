@@ -35,7 +35,7 @@ def received_email(routing_key, data):
 
     <topic>@<mount_point>.<subproj2>.<subproj1>.<project>.projects.sourceforge.net
     goes to the audit with routing ID
-    <plugin name>.mail.<topic>
+    <tool name>.mail.<topic>
     '''
     msg = util.parse_message(data['data'])
     user = util.identify_sender(data['peer'], data['mailfrom'], msg)

@@ -48,7 +48,7 @@ def make_app(global_conf, full_stack=True, **app_conf):
     ew.ResourceManager.register_all_resources()
     return app
 
-def make_plugin_test_app(global_conf, full_stack=True, **app_conf):
+def make_tool_test_app(global_conf, full_stack=True, **app_conf):
     base_config = ForgeConfig('test')
     load_environment = base_config.make_load_environment()
     make_base_app = base_config.setup_tg_wsgi_app(load_environment)

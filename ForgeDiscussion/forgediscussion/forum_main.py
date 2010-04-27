@@ -151,18 +151,18 @@ class ForgeDiscussionApp(Application):
 
     def install(self, project):
         'Set up any default permissions and roles here'
-        # Don't call super install here, as that sets up discussion for a plugin
+        # Don't call super install here, as that sets up discussion for a tool
 
         # Setup permissions
         role_developer = ProjectRole.query.get(name='Developer')._id
         role_auth = ProjectRole.query.get(name='*authenticated')._id
         self.config.acl.update(
-            configure=c.project.acl['plugin'],
+            configure=c.project.acl['tool'],
             read=c.project.acl['read'],
             unmoderated_post=[role_developer],
             post=[role_auth],
             moderate=[role_developer],
-            admin=c.project.acl['plugin'])
+            admin=c.project.acl['tool'])
         
         self.admin.create_forum(new_forum=dict(
             shortname='general',
@@ -172,7 +172,7 @@ class ForgeDiscussionApp(Application):
             parent=''))
 
     def uninstall(self, project):
-        "Remove all the plugin's artifacts from the database"
+        "Remove all the tool's artifacts from the database"
         model.Forum.query.remove(dict(app_config_id=self.config._id))
         model.ForumThread.query.remove(dict(app_config_id=self.config._id))
         model.ForumPost.query.remove(dict(app_config_id=self.config._id))

@@ -142,7 +142,7 @@ Forge "reactor" server
       (anvil)~/src/forge/pyforge$ paster reactor development.ini
 
 Forge SMTP server
-  This server routes messages from email addresses to plugins in the forge::
+  This server routes messages from email addresses to tools in the forge::
     
       (anvil)~/src/forge/pyforge$ paster smtp_server development.ini
 
@@ -173,8 +173,8 @@ Logging In, Getting Around
 ----------------------------------------------
 
 Part of the base system includes the test_admin and test_user accounts.  The
-password for both accounts is `foo`.  The `test` project has several plugins
-already configured; to configure more, you can visit the `Admin` plugin
+password for both accounts is `foo`.  The `test` project has several tools
+already configured; to configure more, you can visit the `Admin` tool
 (accessible in the top navigation bar when inside the `test` project).  
 
 Running the Tests
@@ -204,7 +204,7 @@ SOLR server
   core1 (the testing core) rather than core0 (the dev core) are encapsulated in
   test.ini.
 
-To actually run the tests, just go to the plugin directory you wish to test (or
+To actually run the tests, just go to the tool directory you wish to test (or
 to the pyforge directory) and type::
 
     (anvil)~/src/forge/pyforge$ nosetests

@@ -18,7 +18,7 @@
     <h1 class="title">Discussion Admin</h1>
     <div id="app_admin_tabs">
 	<ul>
-        <li><a href="#app-config" py:if="len(app.config_options) > 1">$app.config.plugin_name Options</a></li>
+        <li><a href="#app-config" py:if="len(app.config_options) > 1">$app.config.tool_name Options</a></li>
         <li><a href="#app-acl"
                py:if="app.permissions and allow_config">Permissions</a></li>
         <li><a href="#app-forums">Forums</a></li>
@@ -40,7 +40,7 @@
           <div class="span-13 push-3 last">
             <input type="submit" value="Update config" py:if="allow_config"
                    class="ui-state-default ui-button ui-button-text"/>
-            <input py:if="app.installable and allow_config" type="submit" name="delete" value="Delete Plugin"
+            <input py:if="app.installable and allow_config" type="submit" name="delete" value="Delete Tool"
                    class="ui-state-default ui-button ui-button-text"/>
           </div>
         </form>

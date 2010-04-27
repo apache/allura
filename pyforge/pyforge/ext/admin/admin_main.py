@@ -24,7 +24,7 @@ class W:
     label_edit = ffw.LabelEdit()
 
 class AdminWidgets(WidgetController):
-    widgets=['users', 'plugin_status']
+    widgets=['users', 'tool_status']
 
     def __init__(self, app): pass
 
@@ -39,9 +39,9 @@ class AdminWidgets(WidgetController):
         project_users = uniq([r.user for r in c.project.roles])
         return dict(project_users=project_users)
 
-    @expose('pyforge.ext.admin.templates.widgets.plugin_status')
-    def plugin_status(self):
-        'Display # of ArtifactLinks for each (mounted) plugin'
+    @expose('pyforge.ext.admin.templates.widgets.tool_status')
+    def tool_status(self):
+        'Display # of ArtifactLinks for each (mounted) tool'
         links = defaultdict(list)
         for ac in c.project.app_configs:
             mp = ac.options.mount_point
@@ -67,7 +67,7 @@ class AdminApp(Application):
         self.root = ProjectAdminController()
         self.admin = AdminAppAdminController(self)
         self.sitemap = [ SitemapEntry('Admin', '.')[
-                SitemapEntry('Plugins', '#plugin-admin'),
+                SitemapEntry('Tools', '#tool-admin'),
                 SitemapEntry('ACLs', '#acl-admin'),
                 SitemapEntry('Roles', '#role-admin'),
                 SitemapEntry('Awards', '#award-admin'),
@@ -98,11 +98,11 @@ class ProjectAdminController(object):
 
     @expose('pyforge.ext.admin.templates.admin_index')
     def index(self):
-        plugins = [
+        tools = [
             (ep.name, ep.load())
             for ep in pkg_resources.iter_entry_points('pyforge') ]
-        installable_plugin_names = [ 
-            name for (name, app) in plugins
+        installable_tool_names = [
+            name for (name, app) in tools
             if app.installable ]
         c.markdown_editor = W.markdown_editor
         c.label_edit = W.label_edit
@@ -118,7 +118,7 @@ class ProjectAdminController(object):
 #            awards=awards,
 #            assigns=assigns,
 #            grants=grants,
-            installable_plugin_names=installable_plugin_names,
+            installable_tool_names=installable_tool_names,
             roles=M.ProjectRole.query.find().sort('_id').all(),
             categories=M.ProjectCategory.query.find(dict(parent_id=None)).sort('label').all(),
             users=[M.User.query.get(_id=id) for id in c.project.acl.read ])
@@ -215,13 +215,13 @@ class ProjectAdminController(object):
 
     @h.vardec
     @expose()
-    def update_mounts(self, subproject=None, plugin=None, new=None, **kw):
+    def update_mounts(self, subproject=None, tool=None, new=None, **kw):
         if subproject is None: subproject = []
-        if plugin is None: plugin = []
+        if tool is None: tool = []
         for sp in subproject:
             if sp.get('delete'):
                 M.Project.query.get(shortname=sp['shortname']).delete()
-        for p in plugin:
+        for p in tool:
             if p.get('delete'):
                 c.project.uninstall_app(p['mount_point'])
         if new and new.get('install'):
@@ -234,7 +234,7 @@ class ProjectAdminController(object):
                     redirect(request.referer)
                 sp = c.project.new_subproject(mount_point)
             else:
-                require(has_project_access('plugin'))
+                require(has_project_access('tool'))
                 mount_point = new['mount_point'] or ep_name.lower()
                 if not h.re_path_portion.match(mount_point):
                     flash('Invalid mount point for %s' % ep_name, 'error')

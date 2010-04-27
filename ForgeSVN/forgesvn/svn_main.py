@@ -80,7 +80,7 @@ class ForgeSVNApp(Application):
             read=c.project.acl['read'],
             create=[role_developer],
             write=[role_developer],
-            admin=c.project.acl['plugin'])
+            admin=c.project.acl['tool'])
 
 
     def uninstall(self, project):
@@ -88,7 +88,7 @@ class ForgeSVNApp(Application):
 
     @audit('scm.svn.uninstall')
     def _uninstall(self, routing_key, data):
-        "Remove all the plugin's artifacts and the physical repository"
+        "Remove all the tool's artifacts and the physical repository"
         repo = self.repo
         if repo is not None and repo.path:
             shutil.rmtree(repo.path, ignore_errors=True)

@@ -5,7 +5,7 @@ Email routing
 ---------------------------------------------------------------------
 
 routing mechanism will be a dotted path from the project to 
-the application/plugin to the specific artifact within that app that is 
+the application/tool to the specific artifact within that app that is
 used like this::
 
     subproject.app.artifact@project.example.com
@@ -17,7 +17,7 @@ turbogears, and it's bug tracker and ticket 142 in that tracker::
     
 
 And it in turn would be published to the message bus, which will assure
-that all plugins that are registered to be notified for that e-mail 
+that all tools that are registered to be notified for that e-mail
 addresses are called like that. 
 
 If your app has more than one artifact type, you could nest them inside 
@@ -68,7 +68,7 @@ thread the message belongs in the case of a messed up e-mail client that
 does not set the the headers for the reply properly. 
 
 The nice thing about this is that it's pretty much already implemented 
-for us via the meta plugin. 
+for us via the meta tool.
 
 This metadata syntax will let you set fields on tickets and otherwise 
 interact with the system via e-mail, assuming you have such permissions. 

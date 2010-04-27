@@ -1,4 +1,4 @@
-Overview of PyForge plugin Gadgets: 
+Overview of PyForge tool Gadgets:
 =====================================================================
 
 A pyforge gadget consists of a couple of distinct things: 

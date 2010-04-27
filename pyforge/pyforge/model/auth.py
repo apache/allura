@@ -162,7 +162,7 @@ class User(MappedClass):
     preferences=FieldProperty(dict(
             email_address=str,
             email_format=str))
-    plugin_preferences=FieldProperty({str:{str:None}}) # full mount point: prefs dict
+    tool_preferences=FieldProperty({str:{str:None}}) # full mount point: prefs dict
 
     def url(self):
         return '/u/' + self.username + '/'

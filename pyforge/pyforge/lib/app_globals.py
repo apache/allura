@@ -97,7 +97,7 @@ class Globals(object):
         app = app or c.app
         return ''.join(
             [ config['static_root'],
-              app.config.plugin_name,
+              app.config.tool_name,
               '/',
               resource ])
 
@@ -167,38 +167,38 @@ class MockAMQ(object):
         return self.exchanges[xn].pop(0)
 
     def setup_handlers(self):
-        from pyforge.command.reactor import plugin_consumers, ReactorCommand
+        from pyforge.command.reactor import tool_consumers, ReactorCommand
         from pyforge.command import base
         base.log = logging.getLogger('pyforge.command')
         base.M = M
-        self.plugins = [
+        self.tools = [
             (ep.name, ep.load()) for ep in pkg_resources.iter_entry_points('pyforge') ]
         self.reactor = ReactorCommand('reactor_setup')
         self.reactor.parse_args([])
-        for name, plugin in self.plugins:
-            for method, xn, qn, keys in plugin_consumers(name, plugin):
+        for name, tool in self.tools:
+            for method, xn, qn, keys in tool_consumers(name, tool):
                 for k in keys:
                     self.queue_bindings[xn].append(
-                        dict(key=k, plugin_name=name, method=method))
-            # self.setup_plugin(name, plugin)
+                        dict(key=k, tool_name=name, method=method))
+            # self.setup_tool(name, tool)
 
     def handle(self, xn):
         msg = self.pop(xn)
         for handler in self.queue_bindings[xn]:
             if self._route_matches(handler['key'], msg['routing_key']):
-                self._route(xn, msg, handler['plugin_name'], handler['method'])
+                self._route(xn, msg, handler['tool_name'], handler['method'])
 
     def handle_all(self):
         for xn, messages in self.exchanges.items():
             while messages:
                 self.handle(xn)
 
-    def _route(self, xn, msg, plugin_name, method):
+    def _route(self, xn, msg, tool_name, method):
         import mock
         if xn == 'audit':
-            callback = self.reactor.route_audit(plugin_name, method)
+            callback = self.reactor.route_audit(tool_name, method)
         else:
-            callback = self.reactor.route_react(plugin_name, method)
+            callback = self.reactor.route_react(tool_name, method)
         data = msg['message']
         message = mock.Mock()
         message.delivery_info = dict(

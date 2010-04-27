@@ -162,11 +162,11 @@ class Neighborhood(MappedClass):
                                   role_anon._id ]
                 p.acl['update'] = [ role_owner._id ]
                 p.acl['delete'] = [ role_owner._id ]
-                p.acl['plugin'] = [ role_owner._id ]
+                p.acl['tool'] = [ role_owner._id ]
                 p.acl['security'] = [ role_owner._id ]
                 pr = user.project_role()
                 pr.roles = [ role_owner._id, role_developer._id, role_member._id ]
-                # Setup builtin plugin applications
+                # Setup builtin tool applications
                 if user_project:
                     p.install_app('profile', 'profile')
                 else:
@@ -258,7 +258,7 @@ class Project(MappedClass):
             'read':[S.ObjectId],      # read project
             'update':[S.ObjectId],    # update project metadata
             'delete':[S.ObjectId],    # delete project, subprojects
-            'plugin':[S.ObjectId],    # install/delete/configure plugins
+            'tool':[S.ObjectId],    # install/delete/configure tools
             'security':[S.ObjectId],  # update ACL, roles
             })
     neighborhood_invitations=FieldProperty([S.ObjectId])
@@ -382,7 +382,7 @@ class Project(MappedClass):
         options.update(override_options)
         cfg = AppConfig(
             project_id=self._id,
-            plugin_name=ep.name,
+            tool_name=ep.name,
             options=options,
             acl=dict((p,[]) for p in App.permissions))
         app = App(self, cfg)
@@ -472,7 +472,7 @@ class AppConfig(MappedClass):
     _id=FieldProperty(S.ObjectId)
     project_id=ForeignIdProperty(Project)
     discussion_id=ForeignIdProperty('Discussion')
-    plugin_name=FieldProperty(str)
+    tool_name=FieldProperty(str)
     version=FieldProperty(str)
     options=FieldProperty(None)
     project = RelationProperty(Project, via='project_id')
@@ -483,7 +483,7 @@ class AppConfig(MappedClass):
 
     def load(self):
         for ep in pkg_resources.iter_entry_points(
-            'pyforge', self.plugin_name):
+            'pyforge', self.tool_name):
             return ep.load()
         return None
 

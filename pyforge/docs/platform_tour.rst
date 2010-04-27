@@ -4,41 +4,41 @@ Platform Tour
 Introduction
 ---------------
 
-The new Forge is implemented as a collection of plugin applications on top of a
+The new Forge is implemented as a collection of tool applications on top of a
 robust and open platform.  Some of the services provided by the platform include:
 
 - Indexing and search
 - Authentication and Authorization
-- Email integration (every plugin application gets its own email address)
+- Email integration (every tool application gets its own email address)
 - Asynchronous processing via RabbitMQ
 - Simple autolinking between different artifacts in the forge
 - Attachment handling
-- Plugin administration
+- Tool administration
 
-Plugins, on the other hand, provide the actual user interface and logic to
-manipulate forge artifacts.  Some of the plugins currently impemented include:
+Tools, on the other hand, provide the actual user interface and logic to
+manipulate forge artifacts.  Some of the tools currently impemented include:
 
 admin
-  This plugin is installed in all projects, and allows the administration of the
-  project's plugins, authentication, and authorization
+  This tool is installed in all projects, and allows the administration of the
+  project's tools, authentication, and authorization
 search
-  This plugin is installed in all projects, and provides the ability to search a
+  This tool is installed in all projects, and provides the ability to search a
   project for various types of artifacts.
 home
-  This plugin is installed in all projects, and provides the ability to customize
-  the project landing page with "widgets" shared by other plugins.
+  This tool is installed in all projects, and provides the ability to customize
+  the project landing page with "widgets" shared by other tools.
 Git, Hg, SVN
-  These plugins allow you to host a version control system in the Forge.
+  These tools allow you to host a version control system in the Forge.
   They also provides the ability to "fork" Git and Hg repos in order to
   provide your own extensions.
 Wiki
-  This plugin provides a basic wiki with support for comments, attachments, and
+  This tool provides a basic wiki with support for comments, attachments, and
   notifications.
 Tracker
-  This plugin provides an extensible ticketing system for tracking feature
+  This tool provides an extensible ticketing system for tracking feature
   requests, defects, or support requests.
 Forum
-  This plugin provides a forum interface with full email integration as well.
+  This tool provides a forum interface with full email integration as well.
   The forum also handles attachments to posts either via the web interface or via email.
 
 Ming Databases and the Context Object
@@ -56,7 +56,7 @@ project
   The current project, used to determine which database to use for
   other objects
 app
-  The current plugin application object.
+  The current tool application object.
 user
   The current user
 
@@ -82,7 +82,7 @@ The Forge platform provides the following functions to manage the context object
    Set the context object `c` according to the given `project_id` and optionally either a
    `mount_point`, an `app_config_id`.  `c.project` is set to the corresponding
    project object.  If the mount_point or app_config_id is
-   specified, then `c.app` will be set to the corresponding plugin application
+   specified, then `c.app` will be set to the corresponding tool application
    object.  
 
 
@@ -90,12 +90,12 @@ Artifacts
 -------------
 
 We've mentioned artifacts a couple of times now without definition.  An artifact,
-as used in the new Forge, is some object that a plugin needs to store in the
+as used in the new Forge, is some object that a tool needs to store in the
 forge.  The platform provides facilities for controlling access to individual
-artifacts if that's what the plugin designer favors.  For instance, the Forum
-plugin allows a user to edit or delete their own posts, but not to edit or delete
+artifacts if that's what the tool designer favors.  For instance, the Forum
+tool allows a user to edit or delete their own posts, but not to edit or delete
 others (unless the user has the 'moderate' permission on the forum itself).
-Some examples of artifacts in the current plugins:
+Some examples of artifacts in the current tools:
 
 - Forum: Forum, Thread, Post, Attachment
 - Wiki: Page, Comment, Attachment
@@ -142,22 +142,22 @@ things for you:
 - A shortlink is generated for the artifact (e.g. [MyWikiPage]).  This allows you
   to reference the artifact from other artifacts.  For instance, you might want
   to reference `[Ticket#151]` from `[Commit#abac332a]`.  Whenever the commit message
-  is displayed in the SCM plugin, any references to `[Ticket#151]` will be
+  is displayed in the SCM tool, any references to `[Ticket#151]` will be
   automatically linked to that Ticket's page.
 
 Shortlinks work only within a project hierarchy (in order to link to some other project's
 page, you'll have to use the full URL).  Sometimes, a shortlink may need to be
-differentiated based on its location in a subproject or in one of many plugins of
+differentiated based on its location in a subproject or in one of many tools of
 the same type within a project.  In order to do this, shortlinks may be prefixed
-by either the plugin mount point or a project ID and plugin mount point.  
+by either the tool mount point or a project ID and tool mount point.
 
 For
 instance, suppose we have an ticket tracker mounted at `projects/test/tracker`
 with Ticket #42 in it.  Further suppose that there is an SCM repository mounted at
 `projects/test/subproject/repo`.  A user could push a commit to that repository
 with the commit message `[projects/test:tracker:42] - Fix weird issue`.  If you
-then examined the commit in the SCM plugin, the shortlink would be clickable and
-would take you to the ticket itself.  The Tracker plugin would also list the
+then examined the commit in the SCM tool, the shortlink would be clickable and
+would take you to the ticket itself.  The Tracker tool would also list the
 commit message as a "related object" in a sidebar to allow for quick cross-referencing.
 
 Asynchronous Processing
@@ -184,16 +184,16 @@ Reactor
     used by the platform to set the context before calling the registered
     callback, and all of which reference the *source* of the message.  If the
     reactor callback is an instance method, it will be called once for each
-    instance of the plugin that exists for the given project for each message
+    instance of the tool that exists for the given project for each message
     received on its queue.  If it is a class method, it will be called once for
-    each message received on its queue.  For instance, the Tracker plugin may be
+    each message received on its queue.  For instance, the Tracker tool may be
     configured to react to SCM commit messages in order to generate links between
     SCM commits and Tracker tickets.  *All tracker instances* in a project will
     be notified of SCM commits in such a case.
 
 In order to create a callback function for an auditor or a reactor, simply add a
-method to the plugin application class that is decorated either with the `@audit`
-or the `@react` decorator.  For instance, the forum plugin defines a reactor on
+method to the tool application class that is decorated either with the `@audit`
+or the `@react` decorator.  For instance, the forum tool defines a reactor on
 the `Forum.new_post` message::
 
     @react('Forum.new_post')
@@ -201,7 +201,7 @@ the `Forum.new_post` message::
         ....
 
 If there are a large number of reactors, you can define them in a separate module
-and use the `mixin_reactors()` method as in the SCM plugin::
+and use the `mixin_reactors()` method as in the SCM tool::
 
     from .reactors import reactors
     ...
@@ -273,16 +273,16 @@ user_id
   The ID of the user who sent the message
 
 Once the message is generated, it is sent to the `audit` exchange with the
-routing key <Plugin Type>.<topic>.  For instance, a message to comment on a Wiki
+routing key <Tool Type>.<topic>.  For instance, a message to comment on a Wiki
 page might have the routing key `Wiki.MainPage`.
 
 The Forge platform also provides full support for *sending* email without
 worrying about the specifics of SMTP or sendmail handling.  In order to send an
-email, a plugin needs simply to send an `audit` message with the routing key
+email, a tool needs simply to send an `audit` message with the routing key
 `forgemail.send_email` and the following fields:
 
 from
-  Return address on the message (usually the topic@plugin_name that generated
+  Return address on the message (usually the topic@tool_name that generated
   it)
 subject
   Subject of the message
@@ -311,9 +311,9 @@ entry points under the 'flyway.migrations' section.  For instance, to specify a
 migrations module for the ForgeForum, you might have the following entry point::
 
     [flyway.migrations]
-    forum = forgeforum.migrations
+    forum = forgediscussion.migrations
 
-Inside the :mod:`forgeforum.migrations` module, you would specify the various
+Inside the :mod:`forgediscussion.migrations` module, you would specify the various
 migration scripts to be run::
 
     from flyway import Migration
@@ -354,11 +354,11 @@ To actually run the migration, you must call the paster command `flyway`::
     # migrate all the databases on 'myserver' to the latest version
     $ paster flyway -u mongo://myserver:27017/
 
-    # migrate the forgeforum module to the latest version on localhost
-    $ paster flyway forgeforum
+    # migrate the forgediscussion module to the latest version on localhost
+    $ paster flyway forgediscussion
 
-    # migrate the forgeforum module to the version 5 (up or down) on localhost
-    $ paster flyway forgeforum=5
+    # migrate the forgediscussion module to the version 5 (up or down) on localhost
+    $ paster flyway forgediscussion=5
 
 It's often helpful to see exactly what migrations flyway is planning on running;
 to get this behavior, pass the option `-d` or `--dry-run` to the flyway command.

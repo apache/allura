@@ -33,7 +33,7 @@ log = logging.getLogger(__name__)
 
 class TestController(BaseController, ProjectController):
     '''Root controller for testing -- it behaves just like a
-    ProjectController for test/ except that all plugins are mounted,
+    ProjectController for test/ except that all tools are mounted,
     on-demand, at the mount point that is the same as their entry point
     name.
 

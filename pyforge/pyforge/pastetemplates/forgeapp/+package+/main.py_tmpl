@@ -34,12 +34,12 @@ class {{egg}}App(Application):
         Application.__init__(self, project, config)
         self.root = RootController()
 
-    @audit('{{plugin_name}}.#')
+    @audit('{{tool_name}}.#')
     def auditor(self, routing_key, data):
         log.info('Auditing data from %s (%s)',
                  routing_key, self.config.options.mount_point)
 
-    @react('{{plugin_name}}.#')
+    @react('{{tool_name}}.#')
     def reactor(self, routing_key, data):
         log.info('Reacting to data from %s (%s)',
                  routing_key, self.config.options.mount_point)
@@ -77,7 +77,7 @@ class {{egg}}App(Application):
             text='This is a sample artifact')
 
     def uninstall(self, project):
-        "Remove all the plugin's artifacts from the database"
+        "Remove all the tool's artifacts from the database"
         pass
         super({{egg}}App, self).uninstall(project)
 
@@ -91,7 +91,7 @@ class RootController(object):
     @validate(dict(q=validators.UnicodeString(if_empty=None),
                    history=validators.StringBool(if_empty=False)))
     def search(self, q=None, history=None):
-        'local plugin search'
+        'local tool search'
         results = []
         count=0
         if not q:

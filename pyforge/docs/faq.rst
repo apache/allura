@@ -27,7 +27,7 @@ Sure we sacrifice the flexibility of Roundup's
 backend, but our main goal is to make usable, high performance system, 
 not to maximize the number of backend storages systems supported.
 
-Why create all the apps as plugins? 
+Why create all the apps as tools?
 ---------------------------------------------------------------------
 
 We know that some projects are going to want more locked down
@@ -36,18 +36,18 @@ processes.  These things are inevitable, and we really do want
 to support them, but at the same time they are going to conflict
 with the way many other projects want to work.   
 
-Building a plugin system, and standard integration points
+Building a tool system, and standard integration points
 makes it possible to serve everybody in one way or another. 
 
 Why not just allow web-based extensions? 
 ---------------------------------------------------------------------
 
 We talked about this quite a bit, and decided that we could write local
-native plugins more quickly and easily, and that we could build a 
-local app plugin that proxied out to an external webapp, and that
+native tools more quickly and easily, and that we could build a
+local app tool that proxied out to an external webapp, and that
 we could provide a lot more flexibility by allowing custom
 external webapp proxies -- which brought us right back to local 
-plugins. 
+tools.
 
 
 ---------------------------------------------------------------------

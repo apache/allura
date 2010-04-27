@@ -151,13 +151,13 @@ class ForgeTrackerApp(Application):
         role_developer = ProjectRole.query.get(name='Developer')._id
         role_auth = ProjectRole.query.get(name='*authenticated')._id
         self.config.acl.update(
-            configure=c.project.acl['plugin'],
+            configure=c.project.acl['tool'],
             read=c.project.acl['read'],
             write=[role_developer],
             unmoderated_post=[role_developer],
             post=[role_auth],
             moderate=[role_developer],
-            admin=c.project.acl['plugin'])
+            admin=c.project.acl['tool'])
         model.Globals(app_config_id=c.app.config._id,
             last_ticket_num=0,
             status_names='open unread accepted pending closed',
@@ -165,7 +165,7 @@ class ForgeTrackerApp(Application):
             custom_fields=[])
 
     def uninstall(self, project):
-        "Remove all the plugin's artifacts from the database"
+        "Remove all the tool's artifacts from the database"
         model.Attachment.query.remove({'metadata.app_config_id':c.app.config._id})
         app_config_id = {'app_config_id':c.app.config._id}
         model.Ticket.query.remove(app_config_id)

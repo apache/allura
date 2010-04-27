@@ -38,7 +38,7 @@ class ArtifactLink(MappedClass):
 
     core_re = r'''(\[
             (?:(?P<project_id>.*?):)?      # optional project ID
-            (?:(?P<app_id>.*?):)?      # optional plugin ID
+            (?:(?P<app_id>.*?):)?      # optional tool ID
             (?P<artifact_id>.*)             # artifact ID
     \])'''
 
@@ -48,7 +48,7 @@ class ArtifactLink(MappedClass):
     _id = FieldProperty(str)
     link = FieldProperty(str)
     project_id = ForeignIdProperty('Project')
-    plugin_name = FieldProperty(str)
+    tool_name = FieldProperty(str)
     mount_point = FieldProperty(str)
     url = FieldProperty(str)
     artifact_reference = FieldProperty(ArtifactReferenceType)
@@ -60,7 +60,7 @@ class ArtifactLink(MappedClass):
         kw = dict(
             link=artifact.shorthand_id(),
             project_id=artifact.project_id,
-            plugin_name=artifact.app_config.plugin_name,
+            tool_name=artifact.app_config.tool_name,
             mount_point=artifact.app_config.options.mount_point,
             url=artifact.url(),
             artifact_reference = artifact.dump_ref())
@@ -118,7 +118,7 @@ class ArtifactLink(MappedClass):
                     if app_id is None: return l
                     if app_id == l.mount_point: return l
                 for l in links:
-                    if app_id == l.plugin_name: return l
+                    if app_id == l.tool_name: return l
         return None
 
 class Feed(MappedClass):
@@ -188,10 +188,10 @@ class Artifact(MappedClass):
     _id = FieldProperty(S.ObjectId)
     mod_date = FieldProperty(datetime, if_missing=datetime.utcnow)
     app_config_id = ForeignIdProperty('AppConfig', if_missing=lambda:c.app.config._id)
-    plugin_verson = FieldProperty(
+    tool_version = FieldProperty(
         S.Object,
         { str: str },
-        if_missing=lambda:{c.app.config.plugin_name:c.app.__version__})
+        if_missing=lambda:{c.app.config.tool_name:c.app.__version__})
     acl = FieldProperty({str:[S.ObjectId]})
     tags = FieldProperty([dict(tag=str, count=int)])
     labels = FieldProperty([str])
@@ -317,7 +317,7 @@ class Artifact(MappedClass):
             project_id_s=project._id,
             project_name_t=project.name,
             project_shortname_t=project.shortname,
-            plugin_name_s=self.app_config.plugin_name,
+            tool_name_s=self.app_config.tool_name,
             mount_point_s=self.app_config.options.mount_point,
             is_history_b=False,
             url_s=self.url(),

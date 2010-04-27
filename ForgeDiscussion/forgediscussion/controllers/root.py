@@ -42,7 +42,7 @@ class RootController(object):
     @validate(dict(q=validators.UnicodeString(if_empty=None),
                    history=validators.StringBool(if_empty=False)))
     def search(self, q=None, history=None):
-        'local plugin search'
+        'local tool search'
         results = []
         count=0
         if not q:

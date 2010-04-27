@@ -31,15 +31,15 @@ class RestartableProcess(object):
 
 class ReactorSetupCommand(base.Command):
 
-    summary = 'Configure the RabbitMQ queues and bindings for the given set of plugins'
+    summary = 'Configure the RabbitMQ queues and bindings for the given set of tools'
     parser = base.Command.standard_parser(verbose=True)
 
     def command(self):
         self.basic_setup()
         self.backend = pylons.g.conn.create_backend()
         self.reset()
-        for name, plugin in self.plugins:
-            self.configure_plugin(name, plugin)
+        for name, tool in self.tools:
+            self.configure_tool(name, tool)
 
     def reset(self):
         'Tear down all queues and bindings'
@@ -60,10 +60,10 @@ class ReactorSetupCommand(base.Command):
         be.exchange_declare('audit', 'topic', True, False)
         be.exchange_declare('react', 'topic', True, False)
 
-    def configure_plugin(self, name, plugin):
-        base.log.info('Configuring plugin %s:%s', name, plugin)
+    def configure_tool(self, name, tool):
+        base.log.info('Configuring tool %s:%s', name, tool)
         be = self.backend
-        for method, xn, qn, keys in plugin_consumers(name, plugin):
+        for method, xn, qn, keys in tool_consumers(name, tool):
             if be.queue_exists(qn):
                 be.channel.queue_delete(qn)
             be.queue_declare(qn, True, False, False, True)
@@ -73,7 +73,7 @@ class ReactorSetupCommand(base.Command):
 
 class ReactorCommand(base.Command):
 
-    summary = 'Start up all the auditors and reactors for registered plugins'
+    summary = 'Start up all the auditors and reactors for registered tools'
     parser = base.Command.standard_parser(verbose=True)
     parser.add_option('-p', '--proc', dest='proc', type='int', default=1,
                       help='number of worker processes to spawn')
@@ -84,10 +84,10 @@ class ReactorCommand(base.Command):
         self.basic_setup()
         processes = [ RestartableProcess(target=self.periodic_main, log=base.log, args=()) ]
         configs = [
-            dict(plugin_name=name,
+            dict(tool_name=name,
                  method=method, xn=xn, qn=qn, keys=keys)
-            for name, plugin in self.plugins
-            for method, xn, qn, keys in plugin_consumers(name, plugin) ]
+            for name, tool in self.tools
+            for method, xn, qn, keys in tool_consumers(name, tool) ]
         for x in xrange(self.options.proc):
             processes.append(RestartableProcess(target=self.multi_worker_main,
                                      log=base.log,
@@ -114,9 +114,9 @@ class ReactorCommand(base.Command):
         for config in configs:
             c = Consumer(connection=pylons.g.conn, queue=config['qn'])
             if config['xn'] == 'audit':
-                c.register_callback(self.route_audit(config['plugin_name'], config['method']))
+                c.register_callback(self.route_audit(config['tool_name'], config['method']))
             else:
-                c.register_callback(self.route_react(config['plugin_name'], config['method']))
+                c.register_callback(self.route_react(config['tool_name'], config['method']))
             cset.add_consumer(c)
         if self.options.dry_run: return
         else: # pragma no cover
@@ -131,7 +131,7 @@ class ReactorCommand(base.Command):
             time.sleep(5)
             if self.options.dry_run: return
 
-    def route_audit(self, plugin_name, method):
+    def route_audit(self, tool_name, method):
         'Auditors only respond to their particluar mount point'
         def callback(data, msg):
             msg.ack()
@@ -168,7 +168,7 @@ class ReactorCommand(base.Command):
                     method(msg.delivery_info['routing_key'], data)
             except: # pragma no cover
                 base.log.exception('Exception audit handling %s: %s',
-                                   plugin_name, method)
+                                   tool_name, method)
                 if self.options.dry_run: raise
             else:
                 ming.orm.ormsession.ThreadLocalORMSession.flush_all()
@@ -177,8 +177,8 @@ class ReactorCommand(base.Command):
                 
         return callback
 
-    def route_react(self, plugin_name, method):
-        'All plugin instances respond to the react exchange'
+    def route_react(self, tool_name, method):
+        'All tool instances respond to the react exchange'
         def callback(data, msg):
             msg.ack()
             try:
@@ -203,7 +203,7 @@ class ReactorCommand(base.Command):
                         # Can't route it, so drop
                         return
                     for cfg in pylons.c.project.app_configs:
-                        if cfg.plugin_name != plugin_name: continue
+                        if cfg.tool_name != tool_name: continue
                         pylons.c.app = pylons.c.project.app_instance(
                             cfg.options.mount_point)
                         method(pylons.c.app, msg.delivery_info['routing_key'], data)
@@ -211,7 +211,7 @@ class ReactorCommand(base.Command):
                     # Classmethod or function -- just call once 
                     method(msg.delivery_info['routing_key'], data)
             except: # pragma no cover
-                base.log.exception('Exception react handling %s: %s', plugin_name, method)
+                base.log.exception('Exception react handling %s: %s', tool_name, method)
                 if self.options.dry_run: raise
             else:
                 ming.orm.ormsession.ThreadLocalORMSession.flush_all()
@@ -227,7 +227,7 @@ class SendMessageCommand(base.Command):
     parser = base.Command.standard_parser(verbose=True)
     parser.add_option('-c', '--context', dest='context',
                       help=('The context of the message (path to the project'
-                            ' and/or plugin'))
+                            ' and/or tool'))
 
     def command(self):
         from pyforge.lib.helpers import find_project
@@ -248,11 +248,11 @@ class SendMessageCommand(base.Command):
                       exchange, topic, base_message)
         pylons.g.publish(exchange, topic, base_message)
 
-def plugin_consumers(name, plugin):
+def tool_consumers(name, tool):
     from pyforge.lib.decorators import ConsumerDecoration
     i = 0
-    for name in dir(plugin):
-        method = getattr(plugin, name)
+    for name in dir(tool):
+        method = getattr(tool, name)
         deco = ConsumerDecoration.get_decoration(method, False)
         if not deco: continue
         if not hasattr(method, '__name__'): continue

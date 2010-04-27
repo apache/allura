@@ -115,7 +115,7 @@ class Application(object):
             for co in cls.config_options)
 
     def install(self, project):
-        'Whatever logic is required to initially set up a plugin'
+        'Whatever logic is required to initially set up a tool'
         # Create the discussion object
         discussion = self.DiscussionClass(
             shortname=self.config.options.mount_point,
@@ -125,12 +125,12 @@ class Application(object):
         self.config.discussion_id = discussion._id
 
     def uninstall(self, project=None, project_id=None):
-        'Whatever logic is required to tear down a plugin'
+        'Whatever logic is required to tear down a tool'
         if project_id is None: project_id = project._id
-        # De-index all the artifacts belonging to this plugin in one fell swoop
+        # De-index all the artifacts belonging to this tool in one fell swoop
         g.solr.delete('project_id_s:%s AND mount_point_s:%s' % (
                 project_id, self.config.options['mount_point']))
-        # Remove all tags referring to this plugin
+        # Remove all tags referring to this tool
         q_aref ={
             'artifact_ref.project_id':project_id,
             'artifact_ref.mount_point':self.config.options['mount_point']}
@@ -191,10 +191,10 @@ class DefaultAdminController(object):
     def configure(self, **kw):
         with push_config(c, app=self.app):
             require(has_artifact_access('configure', app=self.app), 'Must have configure permission')
-            is_admin = self.app.config.plugin_name == 'admin'
+            is_admin = self.app.config.tool_name == 'admin'
             if kw.pop('delete', False):
                 if is_admin:
-                    flash('Cannot delete the admin plugin, sorry....')
+                    flash('Cannot delete the admin tool, sorry....')
                     redirect('.')
                 c.project.uninstall_app(self.app.config.options.mount_point)
                 redirect('..')

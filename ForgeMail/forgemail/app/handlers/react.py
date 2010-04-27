@@ -46,12 +46,12 @@ def REACTING(message, post_name=None, appmount=None, apploc=None, proj=None, hos
             try:
                 c.project.app_config(appmount)
                 c.app = c.project.app_instance(appmount)
-                plugin_name=c.app.config.plugin_name
+                tool_name=c.app.config.tool_name
             except:
                 logging.debug('REACT: invalid mount point (' + appmount + ')')
             else:
-                logging.debug('REACT: valid mount point (' + appmount + ') with plugin_name:' + plugin_name)
-                routing_key = plugin_name + '.' + apploc
+                logging.debug('REACT: valid mount point (' + appmount + ') with tool_name:' + tool_name)
+                routing_key = tool_name + '.' + apploc
                 mailto = message.__getitem__('To')
                 mailfrom = message.__getitem__('From')
                 mailsubj = message.__getitem__('Subject')

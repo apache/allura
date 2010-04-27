@@ -23,7 +23,7 @@ class SMTPServerCommand(pyforge.command.Command):
     parser = command.Command.standard_parser(verbose=True)
     parser.add_option('-c', '--context', dest='context',
                       help=('The context of the message (path to the project'
-                            ' and/or plugin'))
+                            ' and/or tool'))
 
     def command(self):
         global M

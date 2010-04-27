@@ -24,6 +24,6 @@ setup(name='{{egg}}',
       entry_points="""
       # -*- Entry points: -*-
       [pyforge]
-      {{plugin_name}}={{package}}.main:{{egg}}App
+      {{tool_name}}={{package}}.main:{{egg}}App
       """,
       )

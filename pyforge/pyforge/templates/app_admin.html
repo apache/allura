@@ -10,20 +10,20 @@
   
   <head>
     <meta content="text/html; charset=UTF-8" http-equiv="content-type" py:replace="''"/>
-    <title>$app.config.plugin_name Admin</title>
+    <title>$app.config.tool_name Admin</title>
   </head>
   
   <body>
-    <h1 class="title">$app.config.plugin_name Admin</h1>
+    <h1 class="title">$app.config.tool_name Admin</h1>
     <py:if test="not len(app.config_options) > 1 and not (app.permissions and allow_config)">
-      Nothing to administer for ${app.config.plugin_name}.
+      Nothing to administer for ${app.config.tool_name}.
     </py:if>
     <py:if test="len(app.config_options) > 1 or (app.permissions and allow_config)">
       <div id="app_admin_tabs">
       	<ul>
-      		<li><a href="#app-config" py:if="len(app.config_options) > 1">$app.config.plugin_name Options</a></li>
+		<li><a href="#app-config" py:if="len(app.config_options) > 1">$app.config.tool_name Options</a></li>
       		<li><a href="#app-acl" 
-      		       py:if="app.permissions and allow_config">$app.config.plugin_name Permissions</a></li>
+		       py:if="app.permissions and allow_config">$app.config.tool_name Permissions</a></li>
       	</ul>
         <div id="app-config" py:if="len(app.config_options) > 1" style="overflow: auto">
           <form method="post" action="configure">
@@ -42,7 +42,7 @@
             <div class="span-13 push-3 last">
               <input type="submit" value="Update config" py:if="allow_config"
                      class="ui-state-default ui-button ui-button-text"/>
-              <input py:if="app.installable and allow_config" type="submit" name="delete" value="Delete Plugin"
+              <input py:if="app.installable and allow_config" type="submit" name="delete" value="Delete Tool"
                      class="ui-state-default ui-button ui-button-text"/>
             </div>
           </form>

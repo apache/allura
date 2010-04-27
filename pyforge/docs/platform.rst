@@ -13,7 +13,7 @@ Platform building blocks
 Before we get into the details of how to extend the pyforge platform, perhaps 
 it would be smart to explain some of the big pieces and why there are there. 
 
-We wanted PyForge plugins to be fast, we needed them to scale, and we had some 
+We wanted PyForge tools to be fast, we needed them to scale, and we had some
 complex requirements for data storage and extensibility.  So, we needed a 
 **fast,** flexible, and easy to use data persistence system.  
 
@@ -29,7 +29,7 @@ We were also impressed by the flexibility of Roundup's Hypertable system in
 allowing for ad-hock ticket schema additions. 
 
 It definitely seemed like something we wanted in a next generation forge, 
-because we wanted app plugins to be able to: 
+because we wanted app tools to be able to:
 
 * create and version their own document types, 
 * extend existing document structures, 
@@ -81,18 +81,18 @@ Nearly everything in roundup is implemented as either an auditor or a reactor, a
 TODO: Finish reactor overview (after reactor code is written)
 
 
-Application Plugins
+Application Tools
 ---------------------------------------------------------------------
 
-Writing a plugin for the new forge is as simple as defining a few controllers 
+Writing a tool for the new forge is as simple as defining a few controllers
 to handle particular URL's, templates to render pages, and defining the schemas 
-of any new forge document types that your plugin requires.  
+of any new forge document types that your tool requires.
 
-.. image:: _static/images/plugins.png
-   :alt: App Plugins
+.. image:: _static/images/tools.png
+   :alt: App Tools
    :align: right
 
-When you write PyForge plugins, you'll get lots of stuff for free: 
+When you write PyForge tools, you'll get lots of stuff for free:
 
 * Search-ability of your Artifacts
 * Artifact versioning for accountability and transparency
@@ -101,17 +101,17 @@ When you write PyForge plugins, you'll get lots of stuff for free:
 * A robust and flexible permissions system
 * Access to a real-time event publishing system
 
-What's in a plugin?
+What's in a tool?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-The most basic app plugin consists of a few things: 
+The most basic app tool consists of a few things:
 
 * A controller object (instantiated per request)
 * Template files (optional)
 * UI Widgets (optional)
 * Extensions to existing Artifacts (optional)
 * New Artifact types (optional)
-* Event listener plugins (optional)
+* Event listener tools (optional)
 * Event publisher (optional)
 
 Users/groups and Permissions

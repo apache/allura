@@ -29,35 +29,35 @@ class TestProjectAdmin(TestController):
                 'subproject-0.shortname':'test/test_subproject',
                 'new.ep_name':'',
                 })
-        # Add/Remove a plugin
+        # Add/Remove a tool
         self.app.post('/admin/update_mounts', params={
                 'new.install':'install',
                 'new.ep_name':'hello_forge',
-                'new.mount_point':'test_plugin'})
+                'new.mount_point':'test_tool'})
         self.app.post('/admin/update_mounts', params={
-                'plugin-0.delete':'on',
-                'plugin-0.mount_point':'test_plugin',
+                'tool-0.delete':'on',
+                'tool-0.mount_point':'test_tool',
                 'new.ep_name':'',
                 })
         # Update ACL
         h.set_context('test', 'hello')
         role = M.User.anonymous().project_role()
         self.app.post('/admin/update_acl', params={
-                'permission':'plugin',
+                'permission':'tool',
                 'new.add':'on',
                 'new.id':str(role._id)})
         self.app.post('/admin/update_acl', params={
                 'new.id':'',
-                'permission':'plugin',
+                'permission':'tool',
                 'role-0.delete':'on',
                 'role-0.id':str(role._id)})
         self.app.post('/admin/update_acl', params={
-                'permission':'plugin',
+                'permission':'tool',
                 'new.add':'on',
                 'new.id':'',
                 'new.username':'test_user'})
         self.app.post('/admin/update_acl', params={
-                'permission':'plugin',
+                'permission':'tool',
                 'new.add':'on',
                 'new.id':'',
                 'new.username':'no_such_user'})
