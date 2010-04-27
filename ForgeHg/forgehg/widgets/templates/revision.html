@@ -1,0 +1,18 @@
+<div xmlns="http://www.w3.org/1999/xhtml"
+     xmlns:py="http://genshi.edgewall.org/"
+     xmlns:xi="http://www.w3.org/2001/XInclude"
+     style="background-color:#eee;border-top:1px solid #333;">
+  <xi:include href="${g.pyforge_templates}/lib.html"/>
+  <b>Commit $value.revision: ${h.text.truncate(value.hash, 10)}: ${h.ago(value.date)}</b><br/>
+  <p>$value.message</p>
+  <p class="gravatar">
+    <py:if test="value.user_url is not None">
+      <a href="${value.user_url}">${gravatar(value.user.email)}</a><br/>
+      <a href="${value.user_url}">$value.user.name</a> (user)<br/>
+    </py:if>
+    <py:if test="value.user_url is None">
+      ${gravatar(value.user.email)}<br/>
+      $value.user.name<br/>
+    </py:if>
+  </p> 
+</div>

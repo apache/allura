@@ -1,0 +1,30 @@
+<div xmlns="http://www.w3.org/1999/xhtml"
+     xmlns:py="http://genshi.edgewall.org/"
+     xmlns:xi="http://www.w3.org/2001/XInclude"
+     style="background-color:#eee;border-top:1px solid #333;">
+  <xi:include href="${g.pyforge_templates}/lib.html"/>
+  <b>Commit ${h.text.truncate(value.revision, 10)}: ${h.ago(value.committed_date)}</b><br/>
+  <p>$value.message</p>
+  <p class="gravatar">
+    <py:if test="value.author_url is not None">
+      <a href="${value.author_url}">${gravatar(value.author.email)}</a><br/>
+      <a href="${value.author_url}">$value.author.name</a> (author)<br/>
+    </py:if>
+    <py:if test="value.author_url is None">
+      ${gravatar(value.author.email)}<br/>
+      $value.author.name (author)<br/>
+    </py:if>
+    ${h.ago(value.authored_date)}      
+  </p> 
+  <p py:if="value.committer != value.author" class="gravatar">
+    <py:if test="value.committer_url is not None">
+      <a href="${value.committer_url}">${gravatar(value.committer.email)}</a><br/>
+      <a href="${value.committer_url}">$value.committer.name</a> (committer)<br/>
+    </py:if>
+    <py:if test="value.committer_url is None">
+      ${gravatar(value.committer.email)}<br/>
+      $value.committer.name (committer)<br/>
+    </py:if>
+    ${h.ago(value.committed_date)}      
+  </p> 
+</div>

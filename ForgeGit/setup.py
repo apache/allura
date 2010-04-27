@@ -20,6 +20,7 @@ setup(name='ForgeGit',
       install_requires=[
           # -*- Extra requirements: -*-
           'pyforge',
+          'gitpython==0.2.0_beta1',
       ],
       entry_points="""
       # -*- Entry points: -*-

@@ -11,6 +11,7 @@ class Repository(Artifact):
     tool=FieldProperty(str)
     path=FieldProperty(str)
     status=FieldProperty(str)
+    email_address=''
 
     def url(self):
         return self.app_config.url() + self.name + '/'

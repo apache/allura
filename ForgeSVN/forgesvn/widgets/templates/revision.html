@@ -1,0 +1,18 @@
+<div xmlns="http://www.w3.org/1999/xhtml"
+     xmlns:py="http://genshi.edgewall.org/"
+     xmlns:xi="http://www.w3.org/2001/XInclude"
+     style="background-color:#eee;border-top:1px solid #333;">
+  <xi:include href="${g.pyforge_templates}/lib.html"/>
+  <b>Revision $value.revision: ${h.ago(value.date)}</b><br/>
+  <p>$value.message</p>
+  <p class="gravatar">
+    <py:if test="value.author">
+      <a href="${value.author.url()}">${gravatar(value.author.preferences.email_address)}</a><br />
+      <a href="${value.author.url()}">${value.author.display_name}</a><br />
+    </py:if>
+    <py:if test="not value.author">
+      ${gravatar(value.author_username)}<br/>
+      $value.author_username<br/>
+    </py:if>
+  </p>
+</div>

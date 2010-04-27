@@ -32,12 +32,10 @@
         <dd>${repo.status}</dd>
       </dl>
     </py:if>
-    <p>The app config follows</p>
-    <dl>
-      <py:for each="name, value in c.app.config.options.iteritems()">
-        <dt>$name</dt>
-        <dd>$value</dd>
-      </py:for>
-    </dl>
+    <h2>Commit History</h2>
+    <py:for each="r in revisions">
+      ${c.revision_widget.display(value=r)}
+    </py:for>
+    <a href="?offset=${offset+10}">More</a>
   </body>
 </html>

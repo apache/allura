@@ -1,9 +1,13 @@
 #-*- python -*-
 import logging
 import re
+import os
 import sys
 import shutil
+import email
 from subprocess import Popen
+from datetime import datetime
+from itertools import islice
 
 # Non-stdlib imports
 import pkg_resources
@@ -14,6 +18,7 @@ from pylons import g, c, request
 from formencode import validators
 from pymongo import bson
 from webob import exc
+from mercurial import ui, hg
 
 from ming.orm.base import mapper
 from pymongo.bson import ObjectId
@@ -29,10 +34,13 @@ from pyforge.model import ProjectRole, User, ArtifactReference, Feed
 # Local imports
 from forgehg import model
 from forgehg import version
+from .widgets import HgRevisionWidget
 from .reactors import reactors
 
 log = logging.getLogger(__name__)
 
+class W(object):
+    revision_widget = HgRevisionWidget()
 
 class ForgeHgApp(Application):
     '''This is the Hg app for PyForge'''
@@ -95,8 +103,33 @@ class RootController(object):
         setattr(self, 'feed.rss', self.feed)
 
     @expose('forgehg.templates.index')
-    def index(self):
-        return dict(repo=c.app.repo, host=request.host)
+    def index(self, offset=0):
+        offset=int(offset)
+        if c.app.repo:
+            r = hg.repository(ui.ui(), os.path.join(c.app.repo.path, c.app.repo.name))
+            revisions = islice(reversed(r), offset, offset+10)
+        else:
+            revisions = []
+        def to_utc_date((seconds, offset)):
+            return datetime.fromtimestamp(seconds + offset)
+        def to_display_name(u):
+            return email.utils.parseaddr(u)[0]
+        def to_email(u):
+            return email.utils.parseaddr(u)[1]
+        revisions = [
+            dict(
+                user=dict(
+                    name=to_display_name(r.user()),
+                    email=to_email(r.user())),
+                user_url=None,
+                revision=r.rev(),
+                hash=r.hex(),
+                date=to_utc_date(r.date()),
+                message=r.description(),
+                )
+            for r in revisions ]
+        c.revision_widget=W.revision_widget
+        return dict(repo=c.app.repo, host=request.host, revisions=revisions, offset=offset)
 
     @expose()
     def init(self, name=None):

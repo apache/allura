@@ -55,6 +55,7 @@
             <ul py:for="n in h.pop_user_notifications()">
               <b>$n.subject</b> $n.text
             </ul>
+            <br style="clear:both"/>
             <div py:replace="select('*|text()')"/>
             <!-- End of main_content -->
           </div>

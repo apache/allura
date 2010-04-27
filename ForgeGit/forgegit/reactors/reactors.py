@@ -11,16 +11,16 @@ def init(routing_key, data):
     repo = c.app.repo
     repo_name = data['repo_name']
     repo_path = data['repo_path']
-    if not repo_path.endswith('/'): repo_path += '/'
+    fullname = os.path.join(repo_path, repo_name)
     try:
-        os.makedirs(repo_path)
+        os.makedirs(fullname)
     except OSError, e:
         if e.errno != errno.EEXIST:
             raise
     # We may eventually require --template=...
-    log.info('git init '+repo_path+repo_name)
-    result = subprocess.call(['git', 'init', '--bare', '--shared=all', repo_name],
-                             cwd=repo_path)
+    log.info('git init %s', fullname)
+    result = subprocess.call(['git', 'init', '--bare', '--shared=all'],
+                             cwd=fullname)
     magic_file = repo_path + repo_name + '/.SOURCEFORGE-REPOSITORY'
     with open(magic_file, 'w') as f:
         f.write('git')

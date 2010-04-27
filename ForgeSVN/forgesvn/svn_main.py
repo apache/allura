@@ -3,10 +3,14 @@ import logging
 import re
 import sys
 import shutil
-from subprocess import Popen
+from datetime import datetime
+from itertools import islice
+
+sys.path.append('/usr/lib/python2.6/dist-packages')
 
 # Non-stdlib imports
 import pkg_resources
+import pysvn
 from tg import expose, validate, redirect, response, config
 from tg.decorators import with_trailing_slash, without_trailing_slash
 import pylons
@@ -29,10 +33,13 @@ from pyforge.model import ProjectRole, User, ArtifactReference, Feed
 # Local imports
 from forgesvn import model
 from forgesvn import version
+from .widgets import SVNRevisionWidget
 from .reactors import reactors
 
 log = logging.getLogger(__name__)
 
+class W(object):
+    revision_widget = SVNRevisionWidget()
 
 class ForgeSVNApp(Application):
     '''This is the SVN app for PyForge'''
@@ -95,9 +102,27 @@ class RootController(object):
         setattr(self, 'feed.rss', self.feed)
 
     @expose('forgesvn.templates.index')
-    def index(self):
+    def index(self, offset=0):
+        offset=int(offset)
         host = config.get('scm.host', request.host)
-        return dict(repo=c.app.repo, host=host)
+        if c.app.repo:
+            client = pysvn.Client()
+            revisions = islice(client.log(
+                'file://%s/%s' % (c.app.repo.path, c.app.repo.name)),
+                               offset, offset+10)
+        else:
+            revisions = []
+        revisions = [
+            dict(
+                author=User.query.get(username=r.author),
+                author_username=r.author,
+                revision=r.revision.number,
+                date=datetime.utcfromtimestamp(r.date),
+                message=r.message,
+                )
+            for r in revisions ]
+        c.revision_widget=W.revision_widget
+        return dict(repo=c.app.repo, host=host, revisions=revisions, offset=offset)
 
     @expose()
     def init(self, name=None):
@@ -116,11 +141,6 @@ class RootController(object):
         repo.status = 'creating'
         g.publish('audit', 'scm.svn.init', dict(repo_name=name, repo_path=path))
         redirect('.')
-
-    #Instantiate a Page object, and continue dispatch there
-#    @expose()
-#    def _lookup(self, pname, *remainder):
-#        return PageController(pname), remainder
 
     @with_trailing_slash
     @expose('forgewiki.templates.search')

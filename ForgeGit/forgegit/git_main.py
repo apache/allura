@@ -1,9 +1,12 @@
 #-*- python -*-
 import logging
 import re
+import os
 import sys
 import shutil
 from subprocess import Popen
+from itertools import islice
+from datetime import datetime
 
 # Non-stdlib imports
 import pkg_resources
@@ -14,6 +17,7 @@ from pylons import g, c, request
 from formencode import validators
 from pymongo import bson
 from webob import exc
+import git
 
 from ming.orm.base import mapper
 from pymongo.bson import ObjectId
@@ -29,10 +33,13 @@ from pyforge.model import ProjectRole, User, ArtifactReference, Feed
 # Local imports
 from forgegit import model
 from forgegit import version
+from .widgets import GitRevisionWidget
 from .reactors import reactors
 
 log = logging.getLogger(__name__)
 
+class W(object):
+    revision_widget = GitRevisionWidget()
 
 class ForgeGitApp(Application):
     '''This is the Git app for PyForge'''
@@ -95,8 +102,27 @@ class RootController(object):
         setattr(self, 'feed.rss', self.feed)
 
     @expose('forgegit.templates.index')
-    def index(self):
-        return dict(repo=c.app.repo, host=request.host)
+    def index(self, offset=0):
+        offset=int(offset)
+        if c.app.repo:
+            r = git.Repo(os.path.join(c.app.repo.path, c.app.repo.name))
+            revisions = list(islice(r.iter_commits(), offset, offset+10))
+        else:
+            revisions = []
+        revisions = [
+            dict(
+                author=r.author,
+                committer=r.committer,
+                author_url=None,
+                committer_url=None,
+                revision=r.sha,
+                authored_date=datetime.fromtimestamp(r.authored_date),
+                committed_date=datetime.fromtimestamp(r.committed_date),
+                message=r.message,
+                )
+            for r in revisions ]
+        c.revision_widget=W.revision_widget
+        return dict(repo=c.app.repo, host=request.host, revisions=revisions, offset=offset)
 
     @expose()
     def init(self, name=None):
