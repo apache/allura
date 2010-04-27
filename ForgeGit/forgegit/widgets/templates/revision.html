@@ -3,8 +3,9 @@
      xmlns:xi="http://www.w3.org/2001/XInclude"
      style="background-color:#eee;border-top:1px solid #333;">
   <xi:include href="${g.pyforge_templates}/lib.html"/>
-  <b>Commit ${h.text.truncate(value.revision, 10)}: ${h.ago(value.committed_date)}</b><br/>
-  <p>$value.message</p>
+  Commit <a href="${value.url()}">${h.text.truncate(value.sha, 10)}</a>: 
+  ${h.ago(value.committed_date)}<br/>
+  ${Markup(g.markdown.convert(value.message))}
   <p class="gravatar">
     <py:if test="value.author_url is not None">
       <a href="${value.author_url}">${gravatar(value.author.email)}</a><br/>
@@ -14,7 +15,7 @@
       ${gravatar(value.author.email)}<br/>
       $value.author.name (author)<br/>
     </py:if>
-    ${h.ago(value.authored_date)}      
+    ${h.ago(value.authored_datetime)}      
   </p> 
   <p py:if="value.committer != value.author" class="gravatar">
     <py:if test="value.committer_url is not None">
@@ -25,6 +26,6 @@
       ${gravatar(value.committer.email)}<br/>
       $value.committer.name (committer)<br/>
     </py:if>
-    ${h.ago(value.committed_date)}      
+    ${h.ago(value.committed_datetime)}      
   </p> 
 </div>

@@ -11,6 +11,9 @@ import pylons
 from pyforge.lib.decorators import audit, react
 from pyforge import model as M
 from pyforge.lib import helpers as h
+from pyforge.lib import search
+
+from forgegit import model as GM
 
 log = logging.getLogger(__name__)
 
@@ -46,6 +49,12 @@ def refresh_commit(routing_key, data):
     repo = pylons.c.app.repo
     hash = data['hash']
     log.info('Refresh commit %s', hash)
+    c_from, c_to = hash.split('..')
+    for commit in repo.repository.iter_commits(rev=hash):
+        cobj = GM.GitCommit(commit.sha)
+        aref = cobj.dump_ref()
+        for ref in search.find_shortlinks(commit.message):
+            M.ArtifactReference(ref.artifact_reference).to_artifact().backreferences['git_%s' % hash] = aref
 
 def _setup_receive_hook(repo_dir, plugin_id):
     'Set up the git post-commit hook'

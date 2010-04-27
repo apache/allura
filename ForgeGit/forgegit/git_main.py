@@ -17,7 +17,6 @@ from pylons import g, c, request
 from formencode import validators
 from pymongo import bson
 from webob import exc
-import git
 
 from ming.orm.base import mapper
 from pymongo.bson import ObjectId
@@ -104,26 +103,13 @@ class RootController(object):
     @expose('forgegit.templates.index')
     def index(self, offset=0):
         offset=int(offset)
-        if c.app.repo and c.app.repo.status=='ready':
-            r = git.Repo(os.path.join(c.app.repo.path, c.app.repo.name))
-            revisions = list(islice(r.iter_commits(), offset, offset+10))
+        repo = c.app.repo
+        if repo and c.app.repo.status=='ready':
+            revisions = list(islice(repo.iter_commits('master'), offset, offset+10))
         else:
             revisions = []
-        revisions = [
-            dict(
-                author=r.author,
-                committer=r.committer,
-                author_url=None,
-                committer_url=None,
-                revision=r.sha,
-                authored_date=datetime.fromtimestamp(r.authored_date+r.author_tz_offset),
-                committed_date=datetime.fromtimestamp(r.committed_date+r.committer_tz_offset),
-                message=r.message,
-                )
-            for r in revisions ]
-        print r.authored_date, r.author_tz_offset
         c.revision_widget=W.revision_widget
-        return dict(repo=c.app.repo, host=request.host, revisions=revisions, offset=offset)
+        return dict(repo=repo, host=request.host, revisions=revisions, offset=offset)
 
     @expose()
     def init(self, name=None):
@@ -144,11 +130,6 @@ class RootController(object):
         repo.status = 'initing'
         g.publish('audit', 'scm.git.init', dict(repo_name=name, repo_path=path))
         redirect('.')
-
-    #Instantiate a Page object, and continue dispatch there
-#    @expose()
-#    def _lookup(self, pname, *remainder):
-#        return PageController(pname), remainder
 
     @with_trailing_slash
     @expose('forgewiki.templates.search')
@@ -194,5 +175,26 @@ class RootController(object):
         response.headers['Content-Type'] = ''
         response.content_type = 'application/xml'
         return feed.writeString('utf-8')
+
+    @expose()
+    def _lookup(self, name, *remainder):
+        return RepoController(), remainder
+
+class RepoController(object):
+
+    @expose()
+    def _lookup(self, hash, *remainder):
+        return CommitController(hash), remainder
+
+class CommitController(object):
+
+    def __init__(self, hash):
+        self._hash = hash
+
+    @expose('forgegit.templates.commit')
+    def index(self):
+        commit = c.app.repo.commit(rev=self._hash)
+        c.revision_widget=W.revision_widget
+        return dict(commit=commit)
 
 mixin_reactors(ForgeGitApp, reactors)

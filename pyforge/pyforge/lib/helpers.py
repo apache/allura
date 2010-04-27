@@ -14,6 +14,7 @@ import genshi.template
 from formencode.validators import FancyValidator
 from dateutil.parser import parse
 from pymongo.bson import ObjectId
+from pymongo.errors import InvalidId
 from contextlib import contextmanager
 from pylons import c, response
 from tg.decorators import before_validate
@@ -95,8 +96,14 @@ def set_context(project_shortname, mount_point=None, app_config_id=None):
     from pyforge import model
     p = model.Project.query.get(shortname=project_shortname)
     if p is None:
-        p = model.Project.query.get(_id=ObjectId(str(project_shortname)))
+        try:
+            p = model.Project.query.get(_id=ObjectId(str(project_shortname)))
+        except InvalidId:
+            pass
     c.project = p
+    if p is None:
+        c.app = None
+        return
     if app_config_id is None:
         c.app = p.app_instance(mount_point)
     else:

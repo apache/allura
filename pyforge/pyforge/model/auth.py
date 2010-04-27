@@ -167,6 +167,12 @@ class User(MappedClass):
     def url(self):
         return '/u/' + self.username + '/'
 
+    @classmethod
+    def by_email_address(self, addr):
+        ea = EmailAddress.query.get(_id=addr)
+        if ea is None: return None
+        return ea.claimed_by_user()
+
     def address_object(self, addr):
         return EmailAddress.query.get(_id=addr, claimed_by_user_id=self._id)
 
