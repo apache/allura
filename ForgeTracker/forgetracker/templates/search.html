@@ -16,9 +16,10 @@
   <body>
     <h1 class="title">Search</h1>
     <form method="GET" action=".">
-      <input type="text" name="q" value="$q"/><br/>
-      Search history? <input type="checkbox" name="history" checked="${history or None}"/><br/>
+      <input type="text" name="q" value="$q"/>
       <input type="submit" value="Search" class="ui-state-default ui-button ui-button-text"/>
+      <br/>
+      Search history? <input type="checkbox" name="history" checked="${history or None}"/><br/>
     </form>
     <p py:if="q">
       <form method="GET" action="../bins/newbin">
