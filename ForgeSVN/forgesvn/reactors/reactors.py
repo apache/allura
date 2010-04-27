@@ -1,4 +1,4 @@
-import errno, logging, os, subprocess
+import errno, logging, os, stat, subprocess
 
 from pylons import c
 
@@ -21,4 +21,8 @@ def init(routing_key, data):
     log.info('svnadmin create '+repo_path+repo_name)
     result = subprocess.call(['svnadmin', 'create', repo_name],
                              cwd=repo_path)
+    magic_file = repo_path + repo_name + '/.SOURCEFORGE-REPOSITORY'
+    with open(magic_file, 'w') as f:
+        f.write('svn')
+    os.chmod(magic_file, stat.S_IRUSR|stat.S_IRGRP|stat.S_IROTH)
     repo.status = 'ready'
