@@ -733,7 +733,7 @@ border-bottom: 4px solid  rgb(215,215,215);}
 		background-image: -webkit-gradient(linear, 0% 0%, 0% 100%, from(rgb(235, 235, 235)), to(rgb(255, 255, 255)));
 		background-image: -moz-linear-gradient(100% 100% 90deg,rgb(255, 255, 255), rgb(235, 235, 235) 100%);
  }
-#ticket-list tr > td:first-child a:active:hover, #ticket-list tr > td:first-child a:visited {
+#ticket-list tr > td:first-child a:active:hover {
 	text-decoration: none !important;
 	color: ${color2} !important;
 	text-shadow: none;
