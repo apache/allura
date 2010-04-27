@@ -11,6 +11,7 @@ from .markdown_extensions import ForgeExtension
 # from pyforge.tasks.search import AddArtifacts, DelArtifacts
 
 re_SHORTLINK = re.compile(ForgeExtension.core_artifact_link)
+re_SOLR_ERROR = re.compile(r'<pre>(org.apache.lucene[^:]+: )?(?P<text>[^<]+)</pre>')
 
 log = getLogger(__name__)
 
@@ -60,6 +61,10 @@ def search(q,**kw):
     return g.solr.search(q, **kw)
 
 def search_artifact(atype, q, history=False, rows=10, **kw):
+    """Performs SOLR search.
+
+    Raises ValueError if SOLR returns an error.
+    """
     # first, grab an artifact and get the fields that it indexes
     a = atype.query.find().first()
     if a is None: return # if there are no instance of atype, we won't find anything
@@ -80,7 +85,12 @@ def search_artifact(atype, q, history=False, rows=10, **kw):
         return g.solr.search(q, fq=fq, rows=rows, **kw)
     except pysolr.SolrError, e:
         log.info("Solr error: %s", e)
-        return []
+        m = re_SOLR_ERROR.search(e.message)
+        if m:
+            text = m.group('text')
+        else:
+            text = "syntax error?"
+        raise ValueError(text)
 
 def find_shortlinks(text):
     from pyforge import model as M

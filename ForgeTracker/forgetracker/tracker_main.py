@@ -184,7 +184,7 @@ class RootController(object):
         self._discuss = AppDiscussionController()
         self.bins = BinController()
 
-    def paged_query(self, q=None, limit=10, page=0, sort='ticket_num_i asc', **kw):
+    def paged_query(self, q, limit=None, page=0, sort=None, **kw):
         """Query tickets, sorting and paginating the result.
 
         We do the sorting and skipping right in SOLR, before we ever ask
@@ -202,7 +202,8 @@ class RootController(object):
             count<=limit in the result
         limit=-1 is NOT recognized as 'all'.  500 is a reasonable limit.
         """
-
+        limit = limit or 10
+        sort = sort or 'ticket_num_i desc'
         page = max(page, 0)
         start = page * limit
         count = 0
@@ -210,7 +211,12 @@ class RootController(object):
         refined_sort = sort if sort else 'ticket_num_i asc'
         if  'ticket_num_i' not in refined_sort:
             refined_sort += ',ticket_num_i asc'
-        matches = search_artifact(model.Ticket, q, rows=limit, sort=refined_sort, start=start, fl='ticket_num_i', **kw) if q else None
+        try:
+            matches = search_artifact(model.Ticket, q, rows=limit, sort=refined_sort, start=start, fl='ticket_num_i', **kw) if q else None
+            solr_error = None
+        except ValueError, e:
+            solr_error = e.args[0]
+            matches = []
         if matches:
             count = matches.hits
             # ticket_numbers is in sorted order
@@ -226,7 +232,8 @@ class RootController(object):
         tracker_globals = model.Globals.for_current_tracker()
         return dict(tickets=tickets,
                     sortable_custom_fields=tracker_globals.sortable_custom_fields_shown_in_search(),
-                    count=count, q=q, limit=limit, page=page, sort=sort, **kw)
+                    count=count, q=q, limit=limit, page=page, sort=sort,
+                    solr_error=solr_error, **kw)
 
     def ordered_history(self, limit=None):
         q = []
@@ -246,7 +253,7 @@ class RootController(object):
     @with_trailing_slash
     @expose('forgetracker.templates.index')
     def index(self):
-        result = self.paged_query(q='!status:closed', sort='ticket_num_i desc', limit=500)
+        result = self.paged_query('!status:closed', sort='ticket_num_i desc', limit=500)
         result['changes'] = self.ordered_history(5)
         c.subscribe_form = W.subscribe_form
         result['subscribed'] = Subscriptions.upsert().subscribed()
@@ -254,15 +261,13 @@ class RootController(object):
 
     @with_trailing_slash
     @expose('forgetracker.templates.search')
-    @validate(dict(q=validators.UnicodeString(if_empty=None),
+    @validate(validators=dict(q=validators.UnicodeString(if_empty=None),
                    history=validators.StringBool(if_empty=False),
-                   limit=validators.Int(if_empty=10),
+                   limit=validators.Int(if_invalid=None),
                    page=validators.Int(if_empty=0),
-                   sort=validators.UnicodeString(if_empty='ticket_num_i asc')))
-    def search(self, q=None, sort=None, **kw):
-        if q: q = urllib.unquote(q)
-        if sort: sort = urllib.unquote(sort)
-        return self.paged_query(q=q, sort=sort, **kw)
+                   sort=validators.UnicodeString(if_empty=None)))
+    def search(self, q=None, **kw):
+        return self.paged_query(q, **kw)
 
     @expose()
     def _lookup(self, ticket_num, *remainder):
@@ -347,9 +352,7 @@ class RootController(object):
                    page=validators.Int(if_empty=0),
                    sort=validators.UnicodeString(if_empty='ticket_num_i asc')))
     def edit(self, q=None, sort=None, **kw):
-        if q: q = urllib.unquote(q)
-        if sort: sort = urllib.unquote(sort)
-        result = self.paged_query(q=q, sort=sort, **kw)
+        result = self.paged_query(q, sort=sort, **kw)
         globals = model.Globals.query.get(app_config_id=c.app.config._id)
         if globals.milestone_names is None:
             globals.milestone_names = ''
