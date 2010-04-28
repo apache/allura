@@ -858,26 +858,16 @@ class TrackerAdminController(DefaultAdminController):
         pass
 
     @expose()
-    def set_status_names(self, **post_data):
-        self.globals.status_names=post_data['status_names']
-        flash('Status names updated')
-        redirect('.')
-
-    @expose()
-    def set_milestone_names(self, **post_data):
-        self.globals.milestone_names=post_data['milestone_names']
-        flash('Milestone names updated')
-        redirect('.')
-
-    @expose()
     def set_custom_fields(self, **post_data):
+        self.globals.status_names=post_data['status_names']
+        self.globals.milestone_names=post_data['milestone_names']
         data = urllib.unquote_plus(post_data['custom_fields'])
         custom_fields = json.loads(data)
         for field in custom_fields:
             field['name'] = '_' + '_'.join([w for w in NONALNUM_RE.split(field['label'].lower()) if w])
             field['label'] = field['label'].title()
         self.globals.custom_fields=custom_fields
-        flash('Custom fields updated')
+        flash('Fields updated')
 
 class RootRestController(object):
 
