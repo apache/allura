@@ -4,7 +4,7 @@
      style="background-color:#eee;border-top:1px solid #333;">
   <xi:include href="${g.pyforge_templates}/lib.html"/>
   Commit <a href="${value.url()}">${h.text.truncate(value.sha, 10)}</a>: 
-  ${h.ago(value.committed_date)}<br/>
+  ${h.ago(value.committed_datetime)}<br/>
   ${Markup(g.markdown.convert(value.message))}
   <p class="gravatar">
     <py:if test="value.author_url is not None">
