@@ -46,7 +46,7 @@
 	<div class="edit_post_form push-${3+indent} span-${16-indent} last clear" style="display:none" py:if="has_artifact_access('post', value.thread)()">
 	  ${widgets.edit_post.display(value=value, submit_text='Edit Post', action=value.url())}
 	</div>
-	<div class="reply_post_form push-${3+indent} span-${16-indent} last clear" style="display:none" py:if="has_artifact_access('post', value.thread)()">
+	<div class="reply_post_form span-19 last clear" style="display:none" py:if="has_artifact_access('post', value.thread)()">
 	  ${widgets.edit_post.display(
           value=value,
           submit_text='Post Reply',
