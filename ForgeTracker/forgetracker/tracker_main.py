@@ -99,7 +99,7 @@ class ForgeTrackerApp(Application):
         search_bins = []
         related_urls = []
         ticket = request.path_info.split(self.url)[-1].split('/')[0]
-        for bin in model.Bin.query.find():
+        for bin in model.Bin.query.find().sort('summary'):
             search_bins.append(SitemapEntry(bin.shorthand_id(), bin.url(), className='nav_child'))
         if ticket.isdigit():
             ticket = model.Ticket.query.find(dict(app_config_id=self.config._id,ticket_num=int(ticket))).first()
