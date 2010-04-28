@@ -105,7 +105,7 @@ class RootController(object):
     def index(self, offset=0):
         offset=int(offset)
         host = config.get('scm.host', request.host)
-        if c.app.repo:
+        if c.app.repo and c.app.repo.status=='ready':
             client = pysvn.Client()
             revisions = islice(client.log(
                 'file://%s/%s' % (c.app.repo.path, c.app.repo.name)),

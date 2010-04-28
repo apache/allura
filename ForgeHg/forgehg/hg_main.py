@@ -105,7 +105,7 @@ class RootController(object):
     @expose('forgehg.templates.index')
     def index(self, offset=0):
         offset=int(offset)
-        if c.app.repo:
+        if c.app.repo and c.app.repo.status == 'ready':
             r = hg.repository(ui.ui(), os.path.join(c.app.repo.path, c.app.repo.name))
             revisions = islice(reversed(r), offset, offset+10)
         else:
