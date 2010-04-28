@@ -10,13 +10,13 @@
 
   <head>
     <meta content="text/html; charset=UTF-8" http-equiv="content-type" py:replace="''"/>
-    <title>Search</title>
+    <title>Search Project: $q</title>
   </head>
   <body>
-    <h1 class="title">Search</h1>
+    <h1 class="title">Search Project: $q</h1>
     <form method="GET" action=".">
       <input type="text" name="q" value="$q" class="title"/><br/>
-      Search all versions? <input type="checkbox" name="history" checked="${history or None}"/><br/>
+      Search history? <input type="checkbox" name="history" checked="${history or None}"/><br/>
       &nbsp;<br/>
       <input type="submit" value="Search" class="ui-state-default ui-button ui-button-text"/>
     </form>

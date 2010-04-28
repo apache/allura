@@ -35,6 +35,7 @@ class ForgeDiscussionApp(Application):
         ]
     PostClass=model.ForumPost
     AttachmentClass=model.ForumAttachment
+    searchable=True
 
     def __init__(self, project, config):
         Application.__init__(self, project, config)

@@ -26,15 +26,12 @@ class SearchApp(Application):
     '''
     __version__ = version.__version__
     installable = False
+    sitemap=[]
     
     def __init__(self, project, config):
         Application.__init__(self, project, config)
         self.root = SearchController()
         self.templates = pkg_resources.resource_filename('pyforge.ext.search', 'templates')
-
-    @property
-    def sitemap(self):
-        return [SitemapEntry('Search Project', '.')]
 
     @classmethod
     @react('artifacts_altered')

@@ -1,6 +1,8 @@
 import logging
+from urllib import urlencode
 
 from tg import expose, validate, redirect
+from tg.decorators import with_trailing_slash
 from pylons import g, c, request
 from formencode import validators
 from pymongo.bson import ObjectId
@@ -38,21 +40,26 @@ class RootController(object):
                 parent_id=None)).all(),
                     announcements=announcements)
                   
+    @with_trailing_slash
     @expose('forgediscussion.templates.search')
     @validate(dict(q=validators.UnicodeString(if_empty=None),
-                   history=validators.StringBool(if_empty=False)))
-    def search(self, q=None, history=None):
+                   history=validators.StringBool(if_empty=False),
+                   project=validators.StringBool(if_empty=False)))
+    def search(self, q=None, history=False, project=False):
         'local tool search'
+        if project:
+            redirect(c.project.url() + 'search?' + urlencode(dict(q=q, history=history)))
         results = []
         count=0
         if not q:
             q = ''
         else:
-            search_query = '''%s
-            AND is_history_b:%s
-            AND mount_point_s:%s''' % (
-                q, history, c.app.config.options.mount_point)
-            results = search(search_query)
+            results = search(
+                q,
+                fq=[
+                    'is_history_b:%s' % history,
+                    'project_id_s:%s' % c.project._id,
+                    'mount_point_s:%s'% c.app.config.options.mount_point ])
             if results: count=results.hits
         return dict(q=q, history=history, results=results or [], count=count)
 

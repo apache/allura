@@ -2,11 +2,12 @@
 import logging
 from mimetypes import guess_type
 import json, urllib, re
-import Image
 from datetime import datetime, timedelta
+from urllib import urlencode
 
 # Non-stdlib imports
 import pkg_resources
+import Image
 from tg import tmpl_context
 from tg import expose, validate, redirect, flash
 from tg import request, response
@@ -56,6 +57,7 @@ class ForgeTrackerApp(Application):
     __version__ = version.__version__
     permissions = ['configure', 'read', 'write',
                     'unmoderated_post', 'post', 'moderate', 'admin']
+    searchable=True
 
     def __init__(self, project, config):
         Application.__init__(self, project, config)
@@ -258,12 +260,16 @@ class RootController(object):
 
     @with_trailing_slash
     @expose('forgetracker.templates.search')
-    @validate(validators=dict(q=validators.UnicodeString(if_empty=None),
-                   history=validators.StringBool(if_empty=False),
-                   limit=validators.Int(if_invalid=None),
-                   page=validators.Int(if_empty=0),
-                   sort=validators.UnicodeString(if_empty=None)))
-    def search(self, q=None, **kw):
+    @validate(validators=dict(
+            q=validators.UnicodeString(if_empty=None),
+            history=validators.StringBool(if_empty=False),
+            project=validators.StringBool(if_empty=False),
+            limit=validators.Int(if_invalid=None),
+            page=validators.Int(if_empty=0),
+            sort=validators.UnicodeString(if_empty=None)))
+    def search(self, q=None, project=None, **kw):
+        if project:
+            redirect(c.project.url() + 'search?' + urlencode(dict(q=q, history=kw.get('history'))))
         return self.paged_query(q, **kw)
 
     @expose()

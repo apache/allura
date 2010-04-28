@@ -10,21 +10,23 @@
 
   <head>
     <meta content="text/html; charset=UTF-8" http-equiv="content-type" py:replace="''"/>
-    <title>Search</title>
+    <title>Search $c.app.config.options.mount_point: $q</title>
   </head>
   <body>
-    <h1 class="title">ForgeDiscussion Search</h1>
-    <form method="GET" action="search">
-      <input type="text" name="q" value="$q"/><br/>
+    <h1 class="title">Search $c.app.config.options.mount_point: $q</h1>
+    <form method="GET" action=".">
+      <input type="text" name="q" value="$q" class="defaultText" title="Search App"/><br/>
+      <input type="submit" value="Search App" class="ui-state-default ui-button ui-button-text"/>
+      <input type="submit" name="project" value="Search Entire Project" 
+             class="ui-state-default ui-button ui-button-text"/><br/>
       Search history? <input type="checkbox" name="history" checked="${history or None}"/><br/>
-      <input type="submit" value="Search"/>
     </form>
     <p py:if="count==0 and q">No results.</p>
     <p py:if="count==1 and q">$count result.</p>
     <p py:if="count > 1 and q">$count results.</p>
     <div py:for="doc in results">
       <a href="${doc['url_s']}">$doc.title_s</a><br/>
-      <pre>${pformat(doc)}</pre>
+      <p py:if="doc.get('snippet')">$doc.snippet</p>
       <hr/>
     </div>
   </body>

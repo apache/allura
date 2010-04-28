@@ -3,9 +3,10 @@ import difflib
 import logging
 from pprint import pformat
 from mimetypes import guess_type
-import Image
+from urllib import urlencode
 
 # Non-stdlib imports
+import Image
 import pkg_resources
 from tg import expose, validate, redirect, response
 from tg.decorators import with_trailing_slash, without_trailing_slash
@@ -53,6 +54,7 @@ class ForgeWikiApp(Application):
     __version__ = version.__version__
     permissions = [ 'configure', 'read', 'create', 'edit', 'delete', 'edit_page_permissions',
                     'unmoderated_post', 'post', 'moderate', 'admin']
+    searchable=True
 
     def __init__(self, project, config):
         Application.__init__(self, project, config)
@@ -198,20 +200,23 @@ class RootController(object):
     @with_trailing_slash
     @expose('forgewiki.templates.search')
     @validate(dict(q=validators.UnicodeString(if_empty=None),
-                   history=validators.StringBool(if_empty=False)))
-    def search(self, q=None, history=None):
+                   history=validators.StringBool(if_empty=False),
+                   project=validators.StringBool(if_empty=False)))
+    def search(self, q=None, history=None, project=None):
         'local wiki search'
+        if project:
+            redirect(c.project.url() + 'search?' + urlencode(dict(q=q, history=history)))
         results = []
         count=0
         if not q:
             q = ''
         else:
-            search_query = '''%s
-            AND is_history_b:%s
-            AND project_id_s:%s
-            AND mount_point_s:%s''' % (
-                q, history, c.project._id, c.app.config.options.mount_point)
-            results = search(search_query)
+            results = search(
+                q,
+                fq=[
+                    'is_history_b:%s' % history,
+                    'project_id_s:%s' % c.project._id,
+                    'mount_point_s:%s'% c.app.config.options.mount_point ])
             if results: count=results.hits
         return dict(q=q, history=history, results=results or [], count=count)
 

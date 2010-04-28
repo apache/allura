@@ -94,6 +94,7 @@ class Application(object):
     installable=True
     wsgi = WSGIHook()
     widget = WidgetController
+    searchable = False
     DiscussionClass = model.Discussion
     PostClass = model.Post
     AttachmentClass = model.Attachment

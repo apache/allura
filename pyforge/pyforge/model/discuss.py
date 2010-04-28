@@ -78,8 +78,10 @@ class Discussion(Artifact):
 
     def index(self):
         result = Artifact.index(self)
-        result.update(name_s=self.name,
-                      text=self.description)
+        result.update(
+            title_s='Discussion: %s' % self.name,
+            name_s=self.name,
+            text=self.description)
         return result
 
     def subscription(self):
@@ -236,9 +238,11 @@ class Thread(Artifact):
 
     def index(self):
         result = Artifact.index(self)
-        result.update(name_s=self.subject,
-                      views_i=self.num_views,
-                      text=self.subject)
+        result.update(
+           title_s='Thread: %s' % self.subject, 
+           name_s=self.subject,
+           views_i=self.num_views,
+           text=self.subject)
         return result
 
     def _get_subscription(self):
@@ -313,6 +317,16 @@ class Post(Message, VersionedArtifact):
             timestamp=self.timestamp,
             author_id=str(author._id),
             author=author.username)
+
+    def index(self):
+        result = super(Post, self).index()
+        result.update(
+            title_s='Post by %s on %s' % (
+                self.author().username, self.subject),
+            name_s=self.subject,
+            type_s='Post',
+            text=self.text)
+        return result
 
     @classmethod
     def discussion_class(cls):

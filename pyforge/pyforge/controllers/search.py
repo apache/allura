@@ -18,14 +18,15 @@ class SearchController(object):
     @validate(dict(q=V.UnicodeString(),
                    history=V.StringBool(if_empty=False)))
     @with_trailing_slash
-    def index(self, q=None, history=None):
+    def index(self, q=None, history=False):
         results = []
         count=0
         if not q:
             q = ''
         else:
-            search_query = '%s AND is_history_b:%s' % (q, history)
-            results = search.search(search_query, is_history_b=history)
+            results = search.search(
+                q, 
+                fq='is_history_b:%s' % history)
             if results: count=results.hits
         return dict(q=q, history=history, results=results or [], count=count)
 
