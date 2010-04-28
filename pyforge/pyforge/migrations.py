@@ -48,12 +48,13 @@ class UpdateProjectsToTools(Migration):
             DM.ForumThread,
             WM.Page,
             WM.wiki.PageHistory,
-            SM.Repository,
-            SM.Commit,
             TM.Bin,
             TM.Ticket,
             TM.ticket.TicketHistory,
             PM.PortalConfig,
+            GitM.GitRepository,
+            HgM.HgRepository,
+            SVNM.SVNRepository,
             ):
             rename_key(self.session,cls,'plugin_verson','tool_version')
 
@@ -82,8 +83,9 @@ class UpdateProjectsToTools(Migration):
             DM.ForumThread,
             WM.Page,
             WM.wiki.PageHistory,
-            SM.Repository,
-            SM.Commit,
+            GitM.GitRepository,
+            HgM.HgRepository,
+            SVNM.SVNRepository,
             TM.Bin,
             TM.Ticket,
             TM.ticket.TicketHistory,

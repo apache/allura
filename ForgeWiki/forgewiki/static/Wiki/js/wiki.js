@@ -2,7 +2,7 @@ $(document).ready(function(){
     var add_wiki_page_link = $('#sidebarmenu a.add_wiki_page');
     if(add_wiki_page_link.length){
         var add_page_form_holder = $('#create_wiki_page_holder');
-        $(add_page_form_holder).dialog({
+        add_page_form_holder.dialog({
 		autoOpen: false,
 		height: 150,
 		width: 400,
@@ -21,8 +21,8 @@ $(document).ready(function(){
 		}
 	});
 
-        $(add_wiki_page_link).click(function(e){
-		$(add_page_form_holder).dialog('open');
+        add_wiki_page_link.click(function(e){
+		add_page_form_holder.dialog('open');
             return false;
         });
     }

@@ -289,9 +289,9 @@
 	});
   $(document).ready(function(){
     if($.cookie('neighborhood-acl-admin')) {
-	$('#acl-admin').accordion('option', 'animated', false);
-	$('#acl-admin').accordion('activate', $('#' + $.cookie('neighborhood-acl-admin')).parent('h3'));
-	$('#acl-admin').accordion('option', 'animated', 'slide');
+	$('#acl-admin').accordion('option', 'animated', false)
+	               .accordion('activate', $('#' + $.cookie('neighborhood-acl-admin')).parent('h3'))
+	               .accordion('option', 'animated', 'slide');
     }
   });
 	</script>
