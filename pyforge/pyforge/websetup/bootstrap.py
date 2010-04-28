@@ -146,8 +146,8 @@ def bootstrap(command, conf, vars):
     if asbool(conf.get('load_test_data')):
         log.info('Loading test data')
         app = p0.install_app('hello_forge', 'hello')
-        app = p0.install_app('Repository', 'src')
-        app = p0.install_app('Repository', 'src_git')
+        app = p0.install_app('SVN', 'src')
+        app = p0.install_app('Git', 'src_git')
         p0.install_app('Wiki', 'wiki')
         p0.install_app('Tickets', 'bugs')
         p0.install_app('Tickets', 'doc_bugs')
@@ -162,8 +162,8 @@ def bootstrap(command, conf, vars):
         p0.install_app('Wiki', 'wiki')
         p0.install_app('Tickets', 'bugs')
         p0.install_app('Discussion', 'discussion')
-        # app = p0.install_app('Repository', 'src')
-        # app = p0.install_app('Repository', 'src_git')
+        # app = p0.install_app('SVN', 'src')
+        # app = p0.install_app('Git', 'src_git')
         ThreadLocalORMSession.flush_all()
         for msg in c.queued_messages:
             g._publish(**msg)
