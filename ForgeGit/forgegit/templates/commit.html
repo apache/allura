@@ -13,17 +13,19 @@
 
   <body>
     ${c.revision_widget.display(value=commit)}
-    <h2>Parent(s)</h2>
-    <ul>
-      <li py:for="c in commit.parents">
-        <a href="${c.url()}">$c.sha</a>
-      </li>
-    </ul>
-    <h2>Diffs</h2>
-    <ul>
-      <li py:for="d in commit.diff(commit.parents[0].sha)">
-        <pre>$d</pre>
-      </li>
-    </ul>
+    <div py:if="commit.parents">
+      <h2>Parent(s)</h2>
+      <ul>
+        <li py:for="c in commit.parents">
+          <a href="${c.url()}">$c.sha</a>
+        </li>
+      </ul>
+      <h2>Diffs</h2>
+      <ul>
+        <li py:for="d in commit.diff(commit.parents[0].sha)">
+          <pre>$d</pre>
+        </li>
+      </ul>
+    </div>
   </body>
 </html>
