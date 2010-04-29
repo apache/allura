@@ -1,7 +1,9 @@
 import os
+import cPickle as pickle
 import email as EM
 from datetime import datetime
 
+import pymongo
 from pylons import c
 from mercurial import ui, hg
 
@@ -9,7 +11,8 @@ from ming.orm.mapped_class import MappedClass
 from ming.orm.property import FieldProperty
 from ming.utils import LazyProperty
 
-from pyforge.model import Repository
+from pyforge.model import Repository, ArtifactReference
+from pyforge.lib import helpers as h
 
 class HgRepository(Repository):
     class __mongometa__:
@@ -52,7 +55,7 @@ class HgRepository(Repository):
         return getattr(self._impl, name)
 
     def __getitem__(self, name):
-        return self._impl[name]
+        return HgCommit.from_hg(self._impl[name], self)
 
     @property
     def tags(self):
@@ -80,5 +83,45 @@ class HgCommit(object):
 
     def __getattr__(self, name):
         return getattr(self._impl, name)
+
+    def dump_ref(self):
+        '''Return a pickle-serializable reference to an artifact'''
+        try:
+            d = ArtifactReference(dict(
+                    project_id=c.project._id,
+                    mount_point=c.app.config.options.mount_point,
+                    artifact_type=pymongo.bson.Binary(pickle.dumps(self.__class__)),
+                    artifact_id=self._id))
+            return d
+        except AttributeError:
+            return None
+
+    def url(self):
+        return self._repo.url() + self._id
+
+    def primary(self, *args):
+        return self
+
+    def shorthand_id(self):
+        return '[%s]' % self._id[:6]
+
+    def parents(self):
+        return tuple(HgCommit.from_hg(c, self._repo) for c in self._impl.parents())
+
+    @property
+    def diffs(self):
+        differ = h.diff_text_genshi
+        for fn in self.changeset()[3]:
+            fc = self._impl[fn]
+            if fc.parents():
+                a = fc.parents()[0].path()
+                a_text = fc.parents()[0].data()
+            else:
+                a = '<<null>>'
+                a_text = ''
+            yield (
+                a, fc.path(), ''.join(differ(a_text, fc.data())))
+        else:
+            pass
 
 MappedClass.compile_all()

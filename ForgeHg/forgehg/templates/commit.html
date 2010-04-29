@@ -9,7 +9,7 @@
   <head>
     <meta content="text/html; charset=UTF-8" http-equiv="content-type" py:replace="''"/>
     <link rel="stylesheet" type="text/css" href="/css/hilite.css"/>
-    <title>Git Commit</title>
+    <title>Hg Changeset</title>
     <style type="text/css">
       ins { text-decoration: none; background-color: #dfd; }
       del { text-decoration: none; background-color: #fdd; }
@@ -18,18 +18,18 @@
 
   <body>
     ${c.revision_widget.display(value=commit)}
-    <div py:if="commit.parents">
+    <div py:if="commit.parents()">
       <h2>Parent(s)</h2>
       <ul>
-        <li py:for="c in commit.parents">
-          <a href="${c.url()}">${h.text.truncate(c.sha ,10))</a>
+        <li py:for="c in commit.parents()">
+          <a href="${c.url()}">${h.text.truncate(c.hex(), 10)}</a>
         </li>
       </ul>
-      <py:if test="commit.parents">
-        <h2>Diffs</h2>
+      <py:if test="commit.files()">
+        <h2>Patches</h2>
         <div py:for="a, b, d in commit.diffs"
              class="title-pane closed">
-          <h3 class="title">diff a/$a.path/$a.name b/$b.path/$b.name</h3>
+          <h3 class="title">diff a/$a b/$b</h3>
           <pre class="content codehilite"><code>${Markup(d)}</code></pre>
         </div>
       </py:if>

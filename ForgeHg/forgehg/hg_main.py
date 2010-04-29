@@ -213,4 +213,25 @@ class RootController(object):
         response.content_type = 'application/xml'
         return feed.writeString('utf-8')
 
+    @expose()
+    def _lookup(self, name, *remainder):
+        return RepoController(), remainder
+
+class RepoController(object):
+
+    @expose()
+    def _lookup(self, hash, *remainder):
+        return CommitController(hash), remainder
+
+class CommitController(object):
+
+    def __init__(self, hash):
+        self._hash = hash
+
+    @expose('forgehg.templates.commit')
+    def index(self):
+        commit = c.app.repo[self._hash]
+        c.revision_widget=W.revision_widget
+        return dict(commit=commit)
+
 mixin_reactors(ForgeHgApp, reactors)
