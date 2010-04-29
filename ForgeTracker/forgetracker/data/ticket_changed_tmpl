@@ -6,7 +6,7 @@
 {% with oldv, newv = values %}
 {% choose %}
 {% when key == 'assigned_to' %}
-- **${key}**: {% if oldv %}${oldv.display_name} --> {% end %}${newv.display_name}
+- **${key}**: {% if oldv %}${oldv.display_name} --> {% end %}{% choose %}{% when newv %}${newv.display_name}{% end %}{% otherwise %} nobody {% end %}
 {% end %}
 {% when key == 'labels' %}
 - **${key}**: ${', '.join(oldv)} --> ${', '.join(newv)}

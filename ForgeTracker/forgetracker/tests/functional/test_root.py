@@ -18,7 +18,7 @@ class TestFunctionalController(TestController):
 
     def new_ticket(self, mount_point='/bugs/', **kw):
         response = self.app.get(mount_point + 'new/')
-        form = response.form
+        form = response.forms[1]
         for k, v in kw.iteritems():
             form['ticket_form.%s' % k] = v
         resp = form.submit()
@@ -44,7 +44,7 @@ class TestFunctionalController(TestController):
         test_user = response.html.find(id="ticket_form.assigned_to").findAll('option')[1]
         test_user_id = test_user['value']
         test_user_name = test_user.string
-        form = response.form
+        form = response.forms[1]
         form['ticket_form.summary'] = 'test new ticket form'
         form['ticket_form.assigned_to'] = test_user_id
         response = form.submit().follow()
@@ -149,8 +149,8 @@ class TestFunctionalController(TestController):
         ticket_editor = self.app.post('/bugs/1/attach', upload_files=[upload]).follow()
         assert_true(file_name in ticket_editor)
         req = self.app.get('/bugs/1/edit/')
-        assert req.html.findAll('form')[1].find('a').string == file_name
-        req.forms[1].submit()
+        assert req.html.findAll('form')[2].find('a').string == file_name
+        req.forms[2].submit()
         deleted_form = self.app.get('/bugs/1/')
         assert file_name not in deleted_form
 
@@ -359,7 +359,7 @@ class TestFunctionalController(TestController):
         summary = 'ticket summary'
         response = self.app.get('/bugs/new/')
         assert not response.html.find('div', {'class':'error'})
-        form = response.form
+        form = response.forms[1]
         # try submitting with no summary set and check for error message
         error_form = form.submit()
         error_message = error_form.html.find('div', {'class':'error'})
@@ -368,9 +368,9 @@ class TestFunctionalController(TestController):
                 error_message.string == 'Missing value')
         assert error_message.findPreviousSibling('input').get('name') == 'ticket_form.summary'
         # set a summary, submit, and check for success
-        error_form.form['ticket_form.summary'] = summary
-        success = error_form.form.submit().follow().html
-        assert success.findAll('form')[0].get('action') == '/p/test/bugs/1/update_ticket'
+        error_form.forms[1]['ticket_form.summary'] = summary
+        success = error_form.forms[1].submit().follow().html
+        assert success.findAll('form')[1].get('action') == '/p/test/bugs/1/update_ticket'
         assert success.find('input', {'name':'summary'}).get('value') == summary
 
     def test_edit_ticket_validation(self):
@@ -381,7 +381,7 @@ class TestFunctionalController(TestController):
         # check that existing form is valid
         assert response.html.find('input', {'name':'edit_ticket_form.summary'}).get('value') == old_summary
         assert not response.html.find('div', {'class':'error'})
-        form = response.forms[0]
+        form = response.forms[1]
         # try submitting with no summary set and check for error message
         form['edit_ticket_form.summary'] = ""
         error_form = form.submit()
@@ -390,9 +390,9 @@ class TestFunctionalController(TestController):
         assert error_message.string == 'Please enter a value'
         assert error_message.findPreviousSibling('input').get('name') == 'edit_ticket_form.summary'
         # set a summary, submit, and check for success
-        error_form.forms[0]['edit_ticket_form.summary'] = new_summary
-        success = error_form.forms[0].submit().follow().html
-        assert success.findAll('form')[0].get('action') == '/p/test/bugs/1/update_ticket'
+        error_form.forms[1]['edit_ticket_form.summary'] = new_summary
+        success = error_form.forms[1].submit().follow().html
+        assert success.findAll('form')[1].get('action') == '/p/test/bugs/1/update_ticket'
         assert success.find('input', {'name':'summary'}).get('value') == new_summary
 
 #   def test_home(self):

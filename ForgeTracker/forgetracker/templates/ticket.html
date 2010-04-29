@@ -19,41 +19,18 @@
 
   <body>
     <form method="POST" action="${ticket.url()}update_ticket">
-      <span class="editable viewing" style="padding: 0">
-        <h1 class="title">
-          <py:if test="not allow_edit">#$ticket.ticket_num $ticket.summary</py:if>
-          <py:if test="allow_edit">
-            <span class="viewer">#$ticket.ticket_num $ticket.summary</span>
-            <span class="editor">
-              <input name="summary" value="$ticket.summary" class="title wide"/>
-            </span>
-          </py:if>
-        </h1>
-      </span>
       <div class="span-12 append-1">
-        <div class="span-2 tright"><b>Created by:</b></div>
-        <div class="span-10 last gravatar sm">
-          ${gravatar(ticket.reported_by.preferences.email_address, size=16)}
-          <a href="${ticket.reported_by.url()}">${ticket.reported_by.display_name}</a>
-          ${h.ago(ticket.created_date)}
-        </div>
-        <div class="span-2 tright clear" style="padding: 10px 0"><b>Assigned to:</b></div>
-        <div class="span-10 last gravatar sm${allow_edit and ' editable viewing' or ''}" style="padding: 10px 0">
-          <py:if test="ticket.assigned_to_id">
-            ${gravatar(ticket.assigned_to.preferences.email_address, size=16)}
-            <a py:if="not allow_edit" href="${ticket.assigned_to.url()}">${ticket.assigned_to_name()}</a>
+        <span class="editable viewing" style="padding: 0">
+          <h1 class="title">
+            <py:if test="not allow_edit">#$ticket.ticket_num $ticket.summary</py:if>
             <py:if test="allow_edit">
-              <span class="ticket-assigned-to viewer">
-                <a href="${ticket.assigned_to.url()}">${ticket.assigned_to_name()}</a>
+              <span class="viewer">#$ticket.ticket_num $ticket.summary</span>
+              <span class="editor">
+                <input name="summary" value="$ticket.summary" class="title wide"/>
               </span>
-              <span class="editor">${c.user_select.display(name='assigned_to',value=ticket.assigned_to_id)}</span>
             </py:if>
-          </py:if>
-          <py:if test="not ticket.assigned_to_id">
-            <span class="ticket-assigned-to ${allow_edit and 'viewer' or ''}">${ticket.assigned_to_name()}</span>
-            <span class="editor" py:if="allow_edit">${c.user_select.display(name='assigned_to',value=ticket.assigned_to_id)}</span>
-          </py:if>
-        </div>
+          </h1>
+        </span>
         <hr class="clear clearfix"/>
 
 
@@ -75,6 +52,41 @@
       </div>
 
       <div id="sidebar-right" class="span-6 last">
+        
+        
+        <div class="span-3 tright"><b>Created by:</b></div>
+        <div class="span-3 last gravatar sm">
+          ${gravatar(ticket.reported_by.preferences.email_address, size=16)}
+          <a href="${ticket.reported_by.url()}">${ticket.reported_by.display_name}</a>
+        </div>
+        <hr class="clear clearfix"/>
+        <div class="span-3 tright clear"><b>Created Time:</b></div>
+        <div class="span-3 last">
+          ${h.ago(ticket.created_date)}
+        </div>
+        <hr class="clear clearfix"/>
+        <div class="span-3 tright clear"><b>Assigned to:</b></div>
+        <div class="span-3 last">
+          <div class="gravatar sm${allow_edit and ' editable viewing' or ''}">
+            <py:if test="ticket.assigned_to_id">
+              ${gravatar(ticket.assigned_to.preferences.email_address, size=16)}
+              <a py:if="not allow_edit" href="${ticket.assigned_to.url()}">${ticket.assigned_to_name()}</a>
+              <py:if test="allow_edit">
+                <span class="ticket-assigned-to viewer">
+                  <a href="${ticket.assigned_to.url()}">${ticket.assigned_to_name()}</a>
+                </span>
+                <span class="editor">${c.user_select.display(name='assigned_to',value=ticket.assigned_to_id)}</span>
+              </py:if>
+            </py:if>
+            <py:if test="not ticket.assigned_to_id">
+              <span class="ticket-assigned-to ${allow_edit and 'viewer' or ''}">${ticket.assigned_to_name()}</span>
+              <span class="editor" py:if="allow_edit">${c.user_select.display(name='assigned_to',value=ticket.assigned_to_id)}</span>
+            </py:if>
+          </div>
+        </div>
+        <hr class="clear clearfix"/>
+        
+        
         <div class="span-3 tright"><b>Status:</b></div>
         <div class="span-3 last">
           <span class="${allow_edit and ' editable viewing' or ''}">
@@ -142,7 +154,6 @@
         <span class="actions clear">
           <br/><br/>
           <a href="${ticket.email_link('#%s' % ticket.ticket_num)}"><span class="ui-icon ui-icon-mail-closed"></span> Email Ticket</a><br/>
-          <a href="#comment"><span class="ui-icon ui-icon-comment"></span> Leave a Comment</a><br/>
           <a href="edit"><span class="ui-icon ui-icon-pencil"></span> Edit this Ticket</a><br/>
           <a href="${ticket.url()}feed.rss"><span class="ui-icon ui-icon-signal-diag"></span> Follow this Ticket</a>
         </span>
