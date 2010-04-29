@@ -20,7 +20,7 @@ setup(name='ForgeHg',
       install_requires=[
           # -*- Extra requirements: -*-
           'pyforge',
-          'mercurial==1.4.1',
+          'mercurial >= 1.4.1, <= 1.4.3',
       ],
       entry_points="""
       # -*- Entry points: -*-
