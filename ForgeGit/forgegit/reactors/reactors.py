@@ -50,10 +50,9 @@ def refresh_commit(routing_key, data):
     hash = data['hash']
     log.info('Refresh commit %s', hash)
     c_from, c_to = hash.split('..')
-    for commit in repo.repository.iter_commits(rev=hash):
-        cobj = GM.GitCommit(commit.sha)
+    for cobj in repo.iter_commits(rev=hash):
         aref = cobj.dump_ref()
-        for ref in search.find_shortlinks(commit.message):
+        for ref in search.find_shortlinks(cobj.message):
             M.ArtifactReference(ref.artifact_reference).to_artifact().backreferences['git_%s' % hash] = aref
 
 def _setup_receive_hook(repo_dir, plugin_id):
