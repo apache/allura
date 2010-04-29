@@ -14,6 +14,7 @@ import ming
 import pyforge
 from pyforge.app import SitemapEntry
 from pyforge.lib.base import BaseController, environ
+from pyforge.lib import helpers as h
 from pyforge.controllers.error import ErrorController
 from pyforge import model as M
 from pyforge.lib.widgets import project_list as plw
@@ -23,7 +24,6 @@ from .static import StaticController
 from .project import NeighborhoodController, HostNeighborhoodController
 from .oembed import OEmbedController
 from .rest import RestController
-from mako.template import Template
 
 __all__ = ['RootController']
 
@@ -109,16 +109,15 @@ class RootController(BaseController):
     def site_style(self):
         """Display the css for the default theme."""
         theme = M.Theme.query.find(dict(name='forge_default')).first()
-    
-        template_path = pkg_resources.resource_filename('pyforge', 'templates')
-        file_path = os.path.join(template_path,'style.mak')
         colors = dict(color1=theme.color1,
                       color2=theme.color2,
                       color3=theme.color3,
                       color4=theme.color4,
                       color5=theme.color5,
                       color6=theme.color6)
-        css = Template(filename=file_path, module_directory=template_path).render(**colors)
+        tpl_fn = pkg_resources.resource_filename(
+            'pyforge', 'templates/style.css')
+        css = h.render_genshi_plaintext(tpl_fn,**colors)
         response.headers['Content-Type'] = ''
         response.content_type = 'text/css'
         return css

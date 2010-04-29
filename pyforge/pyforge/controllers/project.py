@@ -3,6 +3,7 @@ from mimetypes import guess_type
 import Image
 import os
 
+import pkg_resources
 from tg import expose, flash, redirect, validate, request, response
 from tg.decorators import with_trailing_slash, without_trailing_slash
 from pylons import c, g
@@ -25,7 +26,6 @@ from .auth import AuthController
 from .search import SearchController, ProjectBrowseController
 from .static import StaticController
 
-from mako.template import Template
 from pyforge.model.session import main_orm_session
 
 CACHED_CSS = dict()
@@ -112,17 +112,17 @@ class NeighborhoodController(object):
             if theme == None:
                 theme = M.Theme.query.find(dict(name='forge_default')).first()
             
-            template_path = os.path.join(pyforge.__path__[0],'templates')
-            file_path = os.path.join(template_path,'style.mak')
             colors = dict(color1=theme.color1,
                           color2=theme.color2,
                           color3=theme.color3,
                           color4=theme.color4,
                           color5=theme.color5,
                           color6=theme.color6)
-            css = Template(filename=file_path, module_directory=template_path).render(**colors)
+            tpl_fn = pkg_resources.resource_filename(
+                'pyforge', 'templates/style.css')
+            css = h.render_genshi_plaintext(tpl_fn,**colors)
             if self.neighborhood.css:
-                css = css + Template(self.neighborhood.css).render(**colors)
+                css = css + h.render_genshi_plaintext(self.neighborhood.css,**colors)
             CACHED_CSS[self.neighborhood._id] = css
         response.headers['Content-Type'] = ''
         response.content_type = 'text/css'
