@@ -8,7 +8,12 @@
 
   <head>
     <meta content="text/html; charset=UTF-8" http-equiv="content-type" py:replace="''"/>
+    <link rel="stylesheet" type="text/css" href="/css/hilite.css"/>
     <title>Git Commit</title>
+    <style type="text/css">
+      ins { text-decoration: none; background-color: #dfd; }
+      del { text-decoration: none; background-color: #fdd; }
+    </style>
   </head>
 
   <body>
@@ -20,12 +25,14 @@
           <a href="${c.url()}">$c.sha</a>
         </li>
       </ul>
-      <h2>Diffs</h2>
-      <ul>
-        <li py:for="d in commit.diff(commit.parents[0].sha)">
-          <pre>$d</pre>
-        </li>
-      </ul>
+      <py:if test="commit.parents">
+        <h2>Diffs</h2>
+        <div py:for="a, b, d in commit.diffs"
+             class="title-pane closed">
+          <h3 class="title">diff a/$a.path/$a.name b/$b.path/$b.name</h3>
+          <pre class="content codehilite"><code>${Markup(d)}</code></pre>
+        </div>
+      </py:if>
     </div>
   </body>
 </html>

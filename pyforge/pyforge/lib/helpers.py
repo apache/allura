@@ -234,6 +234,25 @@ def diff_text(t1, t2):
             result += t1[i1:i2]
     return ''.join(result).replace('\n', '<br/>\n')
 
+def diff_text_genshi(t1, t2):
+    Markup = genshi.Markup
+    differ = difflib.SequenceMatcher(None, t1, t2)
+    result = []
+    def esc(t):
+        return genshi.escape(t.replace('\n', '\n    '))
+    yield '    '
+    for tag, i1, i2, j1, j2 in differ.get_opcodes():
+        if tag in ('delete', 'replace'):
+            yield '<del>'
+            yield esc(t1[i1:i2])
+            yield '</del>'
+        if tag in ('insert', 'replace'):
+            yield '<ins>'
+            yield esc(t2[j1:j2])
+            yield '</ins>'
+        if tag == 'equal':
+            yield esc(t1[i1:i2])
+
 def gen_message_id():
     parts = c.project.url().split('/')[1:-1]
     return '%s.%s@%s.sourceforge.net' % (nonce(40),

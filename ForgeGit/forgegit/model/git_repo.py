@@ -12,6 +12,7 @@ from ming.orm.property import FieldProperty
 from ming.utils import LazyProperty
 
 from pyforge.model import Repository, ArtifactReference, User
+from pyforge.lib import helpers as h
 
 class GitRepository(Repository):
     class __mongometa__:
@@ -111,6 +112,18 @@ class GitCommit(object):
     @LazyProperty
     def parents(self):
         return tuple(GitCommit.from_git(c, self._repo) for c in self._impl.parents)
+
+    @property
+    def diffs(self):
+        if self.parents:
+            differ = h.diff_text_genshi
+            for d in self._impl.diff(self.parents[0].sha):
+                yield (
+                    d.a_blob,
+                    d.b_blob,
+                    ''.join(differ(d.a_blob.data, d.b_blob.data)))
+        else:
+            pass
 
 GitCommit.query = MockQuery(GitCommit)
 
