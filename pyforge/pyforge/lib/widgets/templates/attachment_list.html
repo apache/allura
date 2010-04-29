@@ -12,7 +12,7 @@
           $att.metadata.filename
           <form py:if="edit_mode" method="post" action="${att.url()}">
             <input type="hidden" name="delete" value="True"/>
-            <input type="submit" value="Delete File"/>
+            <input type="submit" value="Delete File" class="ui-button ui-widget ui-state-default ui-button-text-only"/>
           </form>
         </div>
       </div>
@@ -23,7 +23,7 @@
         ($att.length bytes)
         <input type="hidden" name="delete" value="True"/>
         <span py:if="edit_mode" py:strip="True">
-          <input type="submit" value="Delete File"/>
+          <input type="submit" value="Delete File" class="ui-button ui-widget ui-state-default ui-button-text-only"/>
         </span>
       </form>
     </div>

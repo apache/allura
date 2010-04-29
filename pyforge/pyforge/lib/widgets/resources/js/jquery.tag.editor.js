@@ -47,11 +47,11 @@
                 listBase = $(document.createElement('ul'));
                 listBase.attr('class', options.className);
                 $(this).after(listBase);
-
-                var plusIcon = $(document.createElement('span'));
-                plusIcon.attr('style', "display: inline-block");
-                plusIcon.attr('class', "ui-icon ui-icon-plus");
-                $(this).after(plusIcon);
+                //
+                // var plusIcon = $(document.createElement('span'));
+                // plusIcon.attr('style', "display: inline-block");
+                // plusIcon.attr('class', "ui-icon ui-icon-plus");
+                // $(this).after(plusIcon);
 
                 for (var i = 0; i < options.items.length; i++) {
                     addTag(jQuery.trim(options.items[i]));

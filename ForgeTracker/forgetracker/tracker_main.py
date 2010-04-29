@@ -36,7 +36,7 @@ from pyforge.controllers import AppDiscussionController, AppDiscussionRestContro
 from forgetracker import model
 from forgetracker import version
 
-from forgetracker.widgets.ticket_form import TicketForm
+from forgetracker.widgets.ticket_form import TicketForm, EditTicketForm
 from forgetracker.widgets.bin_form import bin_form
 
 log = logging.getLogger(__name__)
@@ -50,6 +50,7 @@ class W:
     label_edit = ffw.LabelEdit()
     attachment_list = ffw.AttachmentList()
     ticket_form = TicketForm()
+    edit_ticket_form = EditTicketForm()
     subscribe_form = SubscribeForm()
     ticket_subscribe_form = SubscribeForm(thing='ticket')
 
@@ -614,7 +615,7 @@ class TicketController(object):
     @expose('forgetracker.templates.edit_ticket')
     def edit(self, **kw):
         require(has_artifact_access('write', self.ticket))
-        c.ticket_form = W.ticket_form
+        c.ticket_form = W.edit_ticket_form
         c.thread = W.thread
         c.attachment_list = W.attachment_list
         globals = model.Globals.query.get(app_config_id=c.app.config._id)
@@ -653,9 +654,9 @@ class TicketController(object):
 
     @expose()
     @h.vardec
-    @validate(W.ticket_form, error_handler=edit)
+    @validate(W.edit_ticket_form, error_handler=edit)
     def update_ticket_from_widget(self, **post_data):
-        data = post_data['ticket_form']
+        data = post_data['edit_ticket_form']
         # icky: handle custom fields like the non-widget form does
         if 'custom_fields' in data:
             for k in data['custom_fields']:

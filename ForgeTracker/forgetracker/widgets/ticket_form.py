@@ -30,11 +30,14 @@ class TicketCustomFields(ew.CompoundField):
                 fields.append(ew.TextField(label=field.label, name=str(field.name), attrs={'class':"title wide"}))
         return fields
 
-class TicketForm(ew.SimpleForm):
-    template='genshi:forgetracker.widgets.templates.ticket_form'
+class EditTicketCustomFields(TicketCustomFields):
+    template='genshi:forgetracker.widgets.templates.edit_ticket_custom_fields'
+
+class GenericTicketForm(ew.SimpleForm):
     name="ticket_form"
     submit_text='Save Ticket'
-    params=['submit_text']
+    ticket=None
+    params=['submit_text','ticket']
 
     def display_field_by_idx(self, idx, ignore_errors=False):
         field = self.fields[idx]
@@ -60,7 +63,32 @@ class TicketForm(ew.SimpleForm):
                 attrs={'class':"ui-button ui-widget ui-state-default ui-button-text-only"}),
             ew.HiddenField(name='ticket_num', validator=fev.Int(if_missing=None)),
             ew.HiddenField(name='super_id', validator=fev.UnicodeString(if_missing=None)) ]
+        return fields
+
+class TicketForm(GenericTicketForm):
+    template='genshi:forgetracker.widgets.templates.ticket_form'
+    @property
+    def fields(self):
+        fields = super(TicketForm, self).fields
         if model.Globals.for_current_tracker().custom_fields:
             fields.append(TicketCustomFields(name="custom_fields"))
         return fields
 
+class EditTicketForm(GenericTicketForm):
+    template='genshi:forgetracker.widgets.templates.edit_ticket_form'
+    name="edit_ticket_form"
+    @property
+    def fields(self):
+        fields = super(EditTicketForm, self).fields
+        if model.Globals.for_current_tracker().custom_fields:
+            fields.append(EditTicketCustomFields(name="custom_fields"))
+        return fields
+    def resources(self):
+        for r in super(EditTicketForm, self).resources(): yield r
+        yield ew.CSSScript('''
+            #sidebar-right select{ margin: 0;}
+            #sidebar-right input.title{ padding: 0; margin: 0;}
+            #sidebar-right input[type="checkbox"], input[type="radio"], input.checkbox, input.radio{
+                top: 0;
+            }
+        ''')
