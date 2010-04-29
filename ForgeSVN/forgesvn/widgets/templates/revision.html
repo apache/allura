@@ -3,8 +3,9 @@
      xmlns:xi="http://www.w3.org/2001/XInclude"
      style="background-color:#eee;border-top:1px solid #333;">
   <xi:include href="${g.pyforge_templates}/lib.html"/>
-  <b>Revision $value.revision: ${h.ago(value.date)}</b><br/>
-  <p>$value.message</p>
+  <a href="${value.url()}">Revision $value.revision.number</a>:
+  ${h.ago(value.datetime)}<br/>
+  ${Markup(g.markdown.convert(value.message))}
   <p class="gravatar">
     <py:if test="value.author">
       <a href="${value.author.url()}">${gravatar(value.author.preferences.email_address)}</a><br />

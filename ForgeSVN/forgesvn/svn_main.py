@@ -5,6 +5,7 @@ import sys
 import shutil
 from datetime import datetime
 from itertools import islice
+from urllib import urlencode
 
 sys.path.append('/usr/lib/python2.6/dist-packages')
 
@@ -20,6 +21,7 @@ from pymongo import bson
 from webob import exc
 
 from ming.orm.base import mapper
+from ming.utils import LazyProperty
 from pymongo.bson import ObjectId
 
 # Pyforge-specific imports
@@ -104,25 +106,19 @@ class RootController(object):
     @expose('forgesvn.templates.index')
     def index(self, offset=0):
         offset=int(offset)
+        repo = c.app.repo
         host = config.get('scm.host', request.host)
-        if c.app.repo and c.app.repo.status=='ready':
-            client = pysvn.Client()
-            revisions = islice(client.log(
-                'file://%s/%s' % (c.app.repo.path, c.app.repo.name)),
-                               offset, offset+10)
+        if repo and repo.status=='ready':
+            revisions = islice(repo.log(), offset, offset+10)
         else:
             revisions = []
-        revisions = [
-            dict(
-                author=User.query.get(username=r.author),
-                author_username=r.author,
-                revision=r.revision.number,
-                date=datetime.utcfromtimestamp(r.date),
-                message=r.message,
-                )
-            for r in revisions ]
         c.revision_widget=W.revision_widget
-        return dict(repo=c.app.repo, host=host, revisions=revisions, offset=offset)
+        next_link='?' + urlencode(dict(offset=offset+10))
+        return dict(
+            repo=c.app.repo,
+            host=host,
+            revisions=revisions,
+            next_link=next_link)
 
     @expose()
     def init(self, name=None):
@@ -186,5 +182,31 @@ class RootController(object):
         response.headers['Content-Type'] = ''
         response.content_type = 'application/xml'
         return feed.writeString('utf-8')
+
+    @expose()
+    def _lookup(self, name, *remainder):
+        return RepoController(), remainder
+
+class RepoController(object):
+
+    @expose()
+    def _lookup(self, rev, *remainder):
+        return CommitController(rev), remainder
+
+class CommitController(object):
+
+    def __init__(self, rev):
+        self._rev = int(rev)
+
+    @LazyProperty
+    def revision(self):
+        return c.app.repo.revision(self._rev)
+
+    @expose('forgesvn.templates.commit')
+    def index(self):
+        c.revision_widget=W.revision_widget
+        return dict(prev=self._rev-1,
+                    next=self._rev+1,
+                    revision=self.revision)
 
 mixin_reactors(ForgeSVNApp, reactors)

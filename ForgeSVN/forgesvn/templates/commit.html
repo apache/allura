@@ -1,0 +1,25 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+                      "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:py="http://genshi.edgewall.org/"
+      xmlns:xi="http://www.w3.org/2001/XInclude">
+
+  <xi:include href="${g.pyforge_templates}/master.html"/>
+
+  <head>
+    <meta content="text/html; charset=UTF-8" http-equiv="content-type" py:replace="''"/>
+    <link rel="stylesheet" type="text/css" href="/css/hilite.css"/>
+    <title>SVN Changeset</title>
+    <style type="text/css">
+      ins { text-decoration: none; background-color: #dfd; }
+      del { text-decoration: none; background-color: #fdd; }
+    </style>
+  </head>
+
+  <body>
+    <a py:if="revision.revision.number" href="$prev">Prev</a>
+    <a href="$next">Next</a>
+    ${c.revision_widget.display(value=revision)}
+    <pre><code>${revision.diff()}</code></pre>
+  </body>
+</html>
