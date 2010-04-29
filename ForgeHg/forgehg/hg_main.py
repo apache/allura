@@ -7,7 +7,8 @@ import shutil
 import email
 from subprocess import Popen
 from datetime import datetime
-from itertools import islice
+from itertools import islice, chain
+from urllib import urlencode
 
 # Non-stdlib imports
 import pkg_resources
@@ -60,6 +61,22 @@ class ForgeHgApp(Application):
 
     def sidebar_menu(self):
         links = [ SitemapEntry('Home',c.app.url, ui_icon='home') ]
+        repo = c.app.repo
+        if repo and repo.status == 'ready':
+            branches= repo.branchmap().keys()
+            tags = repo.tags().keys()
+            if branches:
+                links.append(SitemapEntry('Branches'))
+                for b in branches:
+                    links.append(SitemapEntry(
+                            b, c.app.url + '?' + urlencode(dict(branch=b)),
+                            className='nav_child'))
+            if tags:
+                links.append(SitemapEntry('Tags'))
+                for b in tags:
+                    links.append(SitemapEntry(
+                            b, c.app.url + '?' + urlencode(dict(tag=b)),
+                            className='nav_child'))
         return links
 
     @property
@@ -103,33 +120,30 @@ class RootController(object):
         setattr(self, 'feed.rss', self.feed)
 
     @expose('forgehg.templates.index')
-    def index(self, offset=0):
+    def index(self, offset=0, branch=None, tag=None):
         offset=int(offset)
-        if c.app.repo and c.app.repo.status == 'ready':
-            r = hg.repository(ui.ui(), os.path.join(c.app.repo.path, c.app.repo.name))
-            revisions = islice(reversed(r), offset, offset+10)
+        repo = c.app.repo
+        if repo and repo.status == 'ready':
+            if branch == tag == None:
+                revisions = islice(repo, offset, offset+10)
+                next_link='?' + urlencode(dict(offset=offset+10))
+            elif branch is not None:
+                revisions = islice(repo.iter_branch(branch), offset, offset+10)
+                next_link='?' + urlencode(dict(branch=branch, offset=offset+10))
+            elif tag is not None:
+                revisions = islice(repo.iter_tag(tag), offset, offset+10)
+                next_link='?' + urlencode(dict(tag=tag, offset=offset+10))
         else:
             revisions = []
-        def to_utc_date((seconds, offset)):
-            return datetime.fromtimestamp(seconds + offset)
-        def to_display_name(u):
-            return email.utils.parseaddr(u)[0]
-        def to_email(u):
-            return email.utils.parseaddr(u)[1]
-        revisions = [
-            dict(
-                user=dict(
-                    name=to_display_name(r.user()),
-                    email=to_email(r.user())),
-                user_url=None,
-                revision=r.rev(),
-                hash=r.hex(),
-                date=to_utc_date(r.date()),
-                message=r.description(),
-                )
-            for r in revisions ]
+            next_link=None
         c.revision_widget=W.revision_widget
-        return dict(repo=c.app.repo, host=request.host, revisions=revisions, offset=offset)
+        return dict(repo=c.app.repo,
+                    branch=branch,
+                    tag=tag,
+                    host=request.host,
+                    revisions=revisions,
+                    next_link=next_link,
+                    offset=offset)
 
     @expose()
     def init(self, name=None):

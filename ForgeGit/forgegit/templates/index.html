@@ -31,9 +31,10 @@
       </dl>
     </py:if>
     <h2>Recent Commits</h2>
+    <h3 py:if="branch">Browsing $branch</h3>
     <py:for each="r in revisions">
       ${c.revision_widget.display(value=r)}
     </py:for>
-    <a href="?offset=${offset+10}">More</a>
+    <a py:if="next_link" href="$next_link">More</a>
   </body>
 </html>

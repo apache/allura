@@ -34,6 +34,14 @@ class GitRepository(Repository):
     def _impl(self):
         return git.Repo(os.path.join(self.path, self.name))
 
+    def __getattr__(self, name):
+        return getattr(self._impl, name)
+
+    @property
+    def tags(self):
+        '''Override Artifact.tags'''
+        return self._impl.tags
+
 class MockQuery(object):
     def __init__(self, cls):
         self._cls = cls

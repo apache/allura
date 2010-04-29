@@ -7,7 +7,7 @@
   <xi:include href="${g.pyforge_templates}/master.html"/>
 
   <head>
-    <meta content="text/html; charset=UTF-8" http-equiv="content-type" py:replace="''"/>
+    <meta content="text/html; charset=UTF-8" http-equiv="content-type" py:replace="''"/>n
     <title py:if="not repo">Mercurial Repository</title>
     <title py:if="repo">Mercurial Repository: ${repo.name}</title>
   </head>
@@ -31,9 +31,11 @@
       </dl>
     </py:if>
     <h2>Recent Commits</h2>
+    <h3 py:if="branch">Branch: $branch</h3>
+    <h3 py:if="tag">Tag: $tag</h3>
     <py:for each="r in revisions">
       ${c.revision_widget.display(value=r)}
     </py:for>
-    <a href="?offset=${offset+10}">More</a>
+    <a py:if="next_link" href="$next_link">More</a>
   </body>
 </html>

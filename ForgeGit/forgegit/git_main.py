@@ -7,6 +7,7 @@ import shutil
 from subprocess import Popen
 from itertools import islice
 from datetime import datetime
+from urllib import urlencode
 
 # Non-stdlib imports
 import pkg_resources
@@ -58,6 +59,22 @@ class ForgeGitApp(Application):
 
     def sidebar_menu(self):
         links = [ SitemapEntry('Home',c.app.url, ui_icon='home') ]
+        repo = c.app.repo
+        if repo and repo.status == 'ready':
+            branches= [ b.name for b in repo.branches ]
+            tags = [ t.name for t in repo.tags ]
+            if branches:
+                links.append(SitemapEntry('Branches'))
+                for b in branches:
+                    links.append(SitemapEntry(
+                            b, c.app.url + '?' + urlencode(dict(branch=b)),
+                            className='nav_child'))
+            if tags:
+                links.append(SitemapEntry('Tags'))
+                for b in tags:
+                    links.append(SitemapEntry(
+                            b, c.app.url + '?' + urlencode(dict(branch=b)),
+                            className='nav_child'))
         return links
 
     @property
@@ -101,15 +118,21 @@ class RootController(object):
         setattr(self, 'feed.rss', self.feed)
 
     @expose('forgegit.templates.index')
-    def index(self, offset=0):
+    def index(self, offset=0, branch='master'):
         offset=int(offset)
         repo = c.app.repo
         if repo and c.app.repo.status=='ready':
-            revisions = list(islice(repo.iter_commits('master'), offset, offset+10))
+            revisions = list(islice(repo.iter_commits(branch), offset, offset+10))
         else:
             revisions = []
         c.revision_widget=W.revision_widget
-        return dict(repo=repo, host=request.host, revisions=revisions, offset=offset)
+        next_link='?' + urlencode(dict(offset=offset+10, branch=branch))
+        return dict(repo=repo,
+                    branch=branch,
+                    host=request.host,
+                    revisions=revisions,
+                    next_link=next_link,
+                    offset=offset)
 
     @expose()
     def init(self, name=None):
