@@ -8,11 +8,9 @@ from pylons import c, g, request
 from webtest import TestApp
 from webob import Request
 
-from flyway.command import MigrateCommand
 from ming.orm import ThreadLocalORMSession
 
 from pyforge.lib.app_globals import Globals
-from pyforge.command import ReindexCommand
 from pyforge import model as M
 
 DFL_CONFIG = environ.get('SANDBOX') and 'sandbox-test.ini' or 'test.ini'
@@ -23,10 +21,6 @@ def setup_basic_test(config=DFL_CONFIG, app_name=DFL_APP_NAME):
     conf_dir = tg.config.here
     test_file = path.join(conf_dir, config)
     cmd = SetupCommand('setup-app')
-    cmd.run([test_file])
-    cmd = MigrateCommand('flyway')
-    cmd.run(['-u', tg.config.get('ming.main.master')])
-    cmd = ReindexCommand('reindex')
     cmd.run([test_file])
 
 def setup_functional_test(config=DFL_CONFIG, app_name=DFL_APP_NAME):

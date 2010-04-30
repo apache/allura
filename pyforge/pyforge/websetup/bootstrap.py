@@ -6,12 +6,13 @@ import logging
 import shutil
 from datetime import datetime
 from mimetypes import guess_type
-from tg import config
+
 from pylons import c, g
 from paste.deploy.converters import asbool
 
+from flyway.command import MigrateCommand
 from flyway.model import MigrationInfo
-from ming import Session
+from ming import Session, mim
 from ming.orm.ormsession import ThreadLocalORMSession
 
 import pyforge
@@ -50,10 +51,10 @@ def bootstrap(command, conf, vars):
     # Clean up all old stuff
     ThreadLocalORMSession.close_all()
     c.queued_messages = []
+    c.user = c.project = c.app = None
     database=conf.get('db_prefix', '') + 'project:test'
-    wipe_database()
-    set_flyway_info()
     g._push_object(pyforge.lib.app_globals.Globals())
+    wipe_database()
     try:
         g.solr.delete(q='*:*')
     except: # pragma no cover
@@ -72,10 +73,13 @@ def bootstrap(command, conf, vars):
                        username='*anonymous',
                        display_name='Anonymous Coward')
     root = create_user('Root')
-    n_projects = create_neighborhood('Projects', root)
+    n_projects = M.Neighborhood(name='Projects',
+                             url_prefix='/p/',
+                             acl=dict(read=[None], create=[],
+                                      moderate=[root._id], admin=[root._id]))
     n_users = M.Neighborhood(name='Users',
-                             url_prefix='/users/',
-                             shortname_prefix='users/',
+                             url_prefix='/u/',
+                             shortname_prefix='u/',
                              acl=dict(read=[None], create=[],
                                       moderate=[root._id], admin=[root._id]))
     n_adobe = M.Neighborhood(name='Adobe',
@@ -173,24 +177,27 @@ def bootstrap(command, conf, vars):
 
 def wipe_database():
     conn = M.main_doc_session.bind.conn
-    for database in conn.database_names():
-        log.info('Wiping database %s', database)
-        db = conn[database]
-        for coll in db.collection_names():
-            if coll.startswith('system.'): continue
-            log.info('Dropping collection %s:%s', database, coll)
-            try:
-                db.drop_collection(coll)
-            except:
-                pass
-
-
-def create_neighborhood(name, admin_user):
-    return M.Neighborhood(name=name,
-                          url_prefix='/%s/' % name.lower(),
-                          acl=dict(read=[None], create=[],
-                                   moderate=[admin_user._id], admin=[admin_user._id]))
-
+    cmd = MigrateCommand('flyway')
+    if isinstance(conn, mim.Connection):
+        for db in conn.database_names():
+            db=conn[db]
+            for coll in db.collection_names():
+                coll = db[coll]
+                coll._data = {}
+            cmd.run(['-u', 'mim:///'+db.name])
+    else:
+        for database in conn.database_names():
+            log.info('Wiping database %s', database)
+            db = conn[database]
+            for coll in db.collection_names():
+                if coll.startswith('system.'): continue
+                log.info('Dropping collection %s:%s', database, coll)
+                try:
+                    db.drop_collection(coll)
+                except:
+                    pass
+        # Run flyway
+        cmd.run(['-u', 'ming://%s:%s/' % (conn.host, conn.port)])
 
 def create_user(display_name):
     user = M.User.register(dict(username=display_name.lower(),

@@ -15,7 +15,7 @@ class TrackerMigration(Migration):
         super(TrackerMigration, self).__init__(*args, **kwargs)
         try:
             c.project
-        except TypeError:
+        except (TypeError, AttributeError), exc:
             class EmptyClass(): pass
             c._push_object(EmptyClass())
             c.project = EmptyClass()

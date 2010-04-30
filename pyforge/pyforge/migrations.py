@@ -102,6 +102,7 @@ class UpdateThemeToShinyBook(Migration):
     def up(self):
         if self.session.db.name == 'pyforge':
             theme = self.ormsession.find(M.Theme, {'name':'forge_default'}).first()
+            if not theme: return
             theme.color1='#0088cc'
             theme.color2='#000000'
             theme.color3='#454545'
@@ -114,6 +115,7 @@ class UpdateThemeToShinyBook(Migration):
     def down(self):
         if self.session.db.name == 'pyforge':
             theme = self.ormsession.find(M.Theme, {'name':'forge_default'}).first()
+            if not theme: return
             theme.color1='#104a75'
             theme.color2='#aed0ea'
             theme.color3='#EDF3FB'
