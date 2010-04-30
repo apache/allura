@@ -15,19 +15,12 @@
   <body>
     <h1 class="title">Welcome to ForgeSVN</h1>
     <h2>Project: $c.project.shortname</h2>
-    <py:if test="not repo">
-      <form method="post" action="init">
-        <p>Create a new repository:</p>
-        <input type="text" name="name" value=""/>
-        <input type="submit" value="Create"/>
-      </form>
-    </py:if>
     <py:if test="repo">
       <dl>
         <dt>read access</dt>
-        <dd>svn checkout svn://svn.${host}${repo.path}${repo.name}/</dd>
+        <dd>svn checkout svn://svn.${host}${repo.url_path}${repo.name}/</dd>
         <dt>read/write access</dt>
-        <dd>svn checkout svn+ssh://svn.${host}${repo.path}${repo.name}/</dd>
+        <dd>svn checkout svn+ssh://svn.${host}${repo.url_path}${repo.name}/</dd>
         <dt>status</dt>
         <dd>${repo.status}</dd>
       </dl>

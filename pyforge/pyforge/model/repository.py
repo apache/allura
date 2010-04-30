@@ -1,3 +1,5 @@
+import os
+
 from ming.orm.mapped_class import MappedClass
 from ming.orm.property import FieldProperty
 
@@ -9,12 +11,13 @@ class Repository(Artifact):
 
     name=FieldProperty(str)
     tool=FieldProperty(str)
-    path=FieldProperty(str)
+    fs_path=FieldProperty(str)
+    url_path=FieldProperty(str)
     status=FieldProperty(str)
     email_address=''
 
     def url(self):
-        return self.app_config.url() + self.name + '/'
+        return self.app_config.url()
 
     def shorthand_id(self):
         return self.name
@@ -24,5 +27,9 @@ class Repository(Artifact):
         result.update(
             name_s=self.name)
         return result
+
+    @property
+    def full_fs_path(self):
+        return os.path.join(self.fs_path, self.name)
 
 MappedClass.compile_all()

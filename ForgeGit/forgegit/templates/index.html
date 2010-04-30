@@ -15,17 +15,10 @@
   <body>
     <h1 class="title">Welcome to ForgeGit</h1>
     <h2>Project: $c.project.shortname</h2>
-    <py:if test="not repo">
-      <form method="post" action="init">
-        <p>Init a new repository:</p>
-        <input type="text" name="name" value=""/>
-        <input type="submit" value="Init"/>
-      </form>
-    </py:if>
     <py:if test="repo">
       <dl>
         <dt>repo</dt>
-        <dd>git://git.${host}${repo.path}${repo.name}</dd>
+        <dd>git://git.${host}${repo.url_path}${repo.name}</dd>
         <dt>status</dt>
         <dd>${repo.status}</dd>
       </dl>

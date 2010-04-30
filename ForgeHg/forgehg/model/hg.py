@@ -26,7 +26,7 @@ class HgRepository(Repository):
 
     @LazyProperty
     def _impl(self):
-        return hg.repository(ui.ui(), os.path.join(c.app.repo.path, c.app.repo.name))
+        return hg.repository(ui.ui(), os.path.join(c.app.repo.fs_path, c.app.repo.name))
 
     def __iter__(self):
         cs = self._impl[self._impl.heads()[0]]

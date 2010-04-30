@@ -22,7 +22,7 @@
       <h2>Parent(s)</h2>
       <ul>
         <li py:for="c in commit.parents">
-          <a href="${c.url()}">${h.text.truncate(c.sha ,10))</a>
+          <a href="${c.url()}">${h.text.truncate(c.sha ,10)}</a>
         </li>
       </ul>
       <py:if test="commit.parents">

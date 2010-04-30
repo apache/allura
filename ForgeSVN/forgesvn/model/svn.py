@@ -28,7 +28,7 @@ class SVNRepository(Repository):
 
     @LazyProperty
     def local_url(self):
-        return 'file://%s/%s' % (self.path, self.name)
+        return 'file://%s/%s' % (self.fs_path, self.name)
 
     def log(self, *args, **kwargs):
         return [SVNCommit.from_svn(entry, self)

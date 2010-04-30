@@ -83,6 +83,13 @@ class ForgeSVNApp(Application):
             create=[role_developer],
             write=[role_developer],
             admin=c.project.acl['tool'])
+        repo = model.SVNRepository()
+        repo.name = self.config.options.mount_point
+        repo.fs_path = '/svn/' + c.project.shortname + '/'
+        repo.url_path = '/' + c.project.shortname + '/'
+        repo.tool = 'svn'
+        repo.status = 'creating'
+        g.publish('audit', 'scm.svn.init', dict(repo_name=repo.name, repo_path=repo.fs_path))
 
 
     def uninstall(self, project):
@@ -92,8 +99,8 @@ class ForgeSVNApp(Application):
     def _uninstall(self, routing_key, data):
         "Remove all the tool's artifacts and the physical repository"
         repo = self.repo
-        if repo is not None and repo.path:
-            shutil.rmtree(repo.path, ignore_errors=True)
+        if repo is not None:
+            shutil.rmtree(repo.full_fs_path, ignore_errors=True)
         model.SVNRepository.query.remove(dict(app_config_id=self.config._id))
         super(ForgeSVNApp, self).uninstall(project_id=data['project_id'])
 
@@ -119,24 +126,6 @@ class RootController(object):
             host=host,
             revisions=revisions,
             next_link=next_link)
-
-    @expose()
-    def init(self, name=None):
-        require(has_artifact_access('create'))
-        if request.method != 'POST':
-            raise Exception('init must be a POST request')
-        repo = c.app.repo
-        if repo is None:
-            repo = model.SVNRepository()
-        if not name:
-            name = c.project.shortname.split('/')[-1]
-        path = '/svn/' + c.project.shortname + '/' + c.app.config.options.mount_point + '/'
-        repo.name = name
-        repo.path = path
-        repo.tool = 'svn'
-        repo.status = 'creating'
-        g.publish('audit', 'scm.svn.init', dict(repo_name=name, repo_path=path))
-        redirect('.')
 
     @with_trailing_slash
     @expose('forgewiki.templates.search')
@@ -182,12 +171,6 @@ class RootController(object):
         response.headers['Content-Type'] = ''
         response.content_type = 'application/xml'
         return feed.writeString('utf-8')
-
-    @expose()
-    def _lookup(self, name, *remainder):
-        return RepoController(), remainder
-
-class RepoController(object):
 
     @expose()
     def _lookup(self, rev, *remainder):
