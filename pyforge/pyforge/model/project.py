@@ -147,6 +147,7 @@ class Neighborhood(MappedClass):
                                      + 'You can edit this description in the admin page'),
                         database=database,
                         is_root=True)
+            p.configure_flyway_initial()
             with h.push_config(c, project=p, user=user):
                 # Install default named roles (#78)
                 role_owner = auth.ProjectRole(name='Owner')
@@ -465,6 +466,16 @@ class Project(MappedClass):
             return t.values()
         project_users = uniq([r.user for r in self.roles if not r.user.username.startswith('*')])
         return project_users
+
+    def configure_flyway_initial(self):
+        from flyway.model import MigrationInfo
+        from flyway.migrate import Migration
+        with h.push_config(c, project=self):
+            mi = project_doc_session.get(MigrationInfo)
+            if mi is None:
+                mi = MigrationInfo.make({})
+            mi.versions.update(Migration.latest_versions())
+            project_doc_session.save(mi)
 
 class AppConfig(MappedClass):
     class __mongometa__:

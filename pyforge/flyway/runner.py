@@ -32,6 +32,31 @@ def run_migration(datastore, target_versions, dry_run):
         step.apply(info.versions)
         info.m.save()
 
+def show_status(datastore):
+    # Get the migration status of the db
+    session = MigrationInfo.__mongometa__.session
+    session.bind = datastore
+    info = MigrationInfo.m.get()
+    if info is None:
+        info = MigrationInfo.make({})
+    for k,v in info.versions.iteritems():
+        log.info('%s=%s', k, v)
+
+def set_status(datastore, target_versions):
+    # Get the migration status of the db
+    session = MigrationInfo.__mongometa__.session
+    session.bind = datastore
+    info = MigrationInfo.m.get()
+    if info is None:
+        info = MigrationInfo.make({})
+    latest_versions = Migration.latest_versions()
+    for k,v in target_versions.iteritems():
+        cur = info.versions.get(k, -1)
+        islatest = ' (LATEST)' if v == latest_versions[k] else ''
+        log.info('FORCE %s=%s%s (current=%s)', k, v, islatest, cur)
+    info.versions.update(target_versions)
+    info.m.save()
+
 def plan_migration(session, ormsession, info, target):
     '''Return the optimal list of graph.MigrationSteps to run in order to
     satisfy the target requirements'''

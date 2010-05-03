@@ -22,11 +22,13 @@ class MigrateCommand(command.Command):
     parser.add_option('--log-level', dest='log_level', default='INFO')
     parser.add_option('--reset', dest='reset', action='store_true', default=False)
     parser.add_option('-d', '--dry-run', dest='dry_run', action='store_true', default=False)
+    parser.add_option('-s', '--status', dest='status_only', action='store_true', default=False)
+    parser.add_option('--force', dest='force', action='store_true', default=False)
 
     def command(self):
         self._setup_logging()
         self._load_migrations()
-        from .runner import run_migration, reset_migration
+        from .runner import run_migration, reset_migration, show_status, set_status
         parsed_connection_url = parse_uri(self.options.connection_url)
         if not parsed_connection_url['path']:
             parsed_connection_url['path'] += '/'
@@ -45,7 +47,11 @@ class MigrateCommand(command.Command):
                       parsed_connection_url['port'])
         for ds in datastores:
             self.log.info('Migrate DB: %s', ds.database)
-            if self.options.reset:
+            if self.options.status_only:
+                show_status(ds)
+            elif self.options.force:
+                set_status(ds, self._target_versions())
+            elif self.options.reset:
                 reset_migration(ds, dry_run=self.options.dry_run)
             else:
                 run_migration(ds, self._target_versions(), dry_run=self.options.dry_run)
