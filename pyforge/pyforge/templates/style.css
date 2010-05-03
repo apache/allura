@@ -577,7 +577,6 @@ border-bottom: 4px solid  rgb(215,215,215);}
 }
 
 /* Inline editing of content */
-
 .editor input, .editor textarea, .editor select {margin: 0;}
 .edit span.ui-icon {float: left; margin: auto; margin-right: 5px;}
 

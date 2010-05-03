@@ -14,17 +14,31 @@
     }
 
     // Setup editable widgets
-    var edit = '<a href="#" class="edit">Edit</a>';
-    var save = '<br/><input class="save ui-button ui-widget ui-state-default ui-button-text-only" type="submit" value="Save"/>';
-    $('.editable')
-        .find('.viewer').prepend($(edit)).end()
-        .find('.editor').append($(save));
-    $('.editable .edit').click(function() {
-        $(this).closest('.editable')
-            .addClass('editing')
-            .removeClass('viewing');
-        return false;
-    });
+    $('div.editable, span.editable, h1.editable')
+        .find('.viewer').mouseenter(function(e){
+            $(this).closest('.editable')
+                   .addClass('editing')
+                   .removeClass('viewing');
+        }).end()
+        .find('.editor').mouseleave(function(e){
+            $(this).closest('.editable')
+                      .addClass('viewing')
+                      .removeClass('editing');
+            $(this).find('input, select, textarea').blur();
+        }).end()
+        .find('input, select, textarea').focus(function(e){
+            $(this).closest('.editor').unbind('mouseleave');
+            if(this.tagName.toLowerCase() != 'textarea'){
+                $(this).keyup(function(e){
+                    if(e.keyCode == 13){
+                        $(this).closest('form').submit();
+                    }
+                });
+            }
+            $(this).blur(function(){
+                $(this).closest('form').submit();
+            });
+        });
 })(jQuery);
 
 $(document).ready(function()
