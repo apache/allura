@@ -3,6 +3,7 @@ from ming.orm.ormsession import ThreadLocalORMSession
 
 from pyforge.websetup import bootstrap
 from pyforge.lib import helpers as h
+from pyforge import model as M
 from forgetracker.tests import run_app_setup
 
 
@@ -14,7 +15,10 @@ class TestWithModel(object):
     def setUp(self):
         bootstrap.wipe_database()
         c.user = bootstrap.create_user('Test User')
-        neighborhood = bootstrap.create_neighborhood('Projects', c.user)
+        neighborhood = M.Neighborhood(name='Projects',
+                                 url_prefix='/p/',
+                                 acl=dict(read=[None], create=[],
+                                          moderate=[c.user._id], admin=[c.user._id]))
         c.project = neighborhood.register_project('test', c.user)
         app = c.project.install_app('Tickets', 'bugs')
         ThreadLocalORMSession.flush_all()

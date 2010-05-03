@@ -29,7 +29,7 @@ class TestForumReactors(TestController):
                                   'new_forum.description':'',
                                   'new_forum.parent':'',
                                   })
-        r = self.app.get('/admin/discussion/')
+        r = self.app.get('/admin/discussion/forums')
         assert 'error' not in r
         assert 'Test Forum' in r
         r = self.app.post('/admin/discussion/update_forums',
@@ -39,7 +39,7 @@ class TestForumReactors(TestController):
                                   'new_forum.description':'',
                                   'new_forum.parent':'',
                                   })
-        r = self.app.get('/admin/discussion/')
+        r = self.app.get('/admin/discussion/forums')
         assert 'error' not in r
         assert 'Test Forum 1' in r
         conf_dir = getattr(config, 'here', os.getcwd())
@@ -183,7 +183,7 @@ class TestForum(TestController):
     def setUp(self):
         TestController.setUp(self)
         self.app.get('/discussion/')
-        r = self.app.get('/admin/discussion/')
+        r = self.app.get('/admin/discussion/forums')
         r = self.app.post('/admin/discussion/update_forums',
                           params={'new_forum.shortname':'TestForum',
                                   'new_forum.create':'on',
@@ -191,7 +191,7 @@ class TestForum(TestController):
                                   'new_forum.description':'',
                                   'new_forum.parent':'',
                                   })
-        r = self.app.get('/admin/discussion/')
+        r = self.app.get('/admin/discussion/forums')
         assert 'error' not in r
         assert 'TestForum' in r
         h.set_context('test', 'discussion')
@@ -204,7 +204,7 @@ class TestForum(TestController):
                                   'new_forum.description':'',
                                   'new_forum.parent':str(frm._id),
                                   })
-        r = self.app.get('/admin/discussion/')
+        r = self.app.get('/admin/discussion/forums')
         assert 'error' not in r
         assert 'ChildForum' in r
 
@@ -240,7 +240,7 @@ class TestForum(TestController):
         r = self.app.get('/discussion/TestForum/post', params=dict(
                 subject='Test Thread',
                 text='This is a *test thread*'))
-        r = self.app.get('/admin/discussion/')
+        r = self.app.get('/admin/discussion/forums')
         assert 'Message posted' in r
         r = self.app.get('/discussion/TestForum/moderate/')
 
@@ -249,7 +249,7 @@ class TestForum(TestController):
                 subject='AAA',
                 text='aaa')).follow()
         url = thread.request.url
-        rep_url = thread.html.find('div',{'class':'reply_post_form push-3 span-16 last clear'}).find('form').get('action')
+        rep_url = thread.html.find('div',{'class':'reply_post_form span-19 last clear'}).find('form').get('action')
         thread = self.app.post(str(rep_url), params=dict(
                 subject='BBB',
                 text='bbb'))
@@ -290,7 +290,7 @@ class TestForumAdmin(TestController):
         self.app.get('/discussion/')
 
     def test_forum_CRUD(self):
-        r = self.app.get('/admin/discussion/')
+        r = self.app.get('/admin/discussion/forums')
         r = self.app.post('/admin/discussion/update_forums',
                           params={'new_forum.shortname':'TestForum',
                                   'new_forum.create':'on',
@@ -298,7 +298,7 @@ class TestForumAdmin(TestController):
                                   'new_forum.description':'',
                                   'new_forum.parent':'',
                                   })
-        r = self.app.get('/admin/discussion/')
+        r = self.app.get('/admin/discussion/forums')
         assert 'error' not in r
         assert 'TestForum' in r
         h.set_context('test', 'Forum')
@@ -309,13 +309,13 @@ class TestForumAdmin(TestController):
                                   'forum-0.id':str(frm._id),
                                   'forum-0.name':'New Test Forum',
                                   'forum-0.description':'My desc'})
-        r = self.app.get('/admin/discussion/')
+        r = self.app.get('/admin/discussion/forums')
         assert 'error' not in r
         assert 'New Test Forum' in r
         assert 'My desc' in r
 
     def test_forum_CRUD_hier(self):
-        r = self.app.get('/admin/discussion/')
+        r = self.app.get('/admin/discussion/forums')
         r = self.app.post('/admin/discussion/update_forums',
                           params={'new_forum.shortname':'TestForum',
                                   'new_forum.create':'on',
@@ -323,12 +323,12 @@ class TestForumAdmin(TestController):
                                   'new_forum.description':'',
                                   'new_forum.parent':'',
                                   })
-        r = self.app.get('/admin/discussion/')
+        r = self.app.get('/admin/discussion/forums')
         assert 'error' not in r
         assert 'TestForum' in r
         h.set_context('test', 'discussion')
         frm = FM.Forum.query.get(shortname='TestForum')
-        r = self.app.get('/admin/discussion/')
+        r = self.app.get('/admin/discussion/forums')
         r = self.app.post('/admin/discussion/update_forums',
                           params={'new_forum.shortname':'ChildForum',
                                   'new_forum.create':'on',
@@ -336,7 +336,7 @@ class TestForumAdmin(TestController):
                                   'new_forum.description':'',
                                   'new_forum.parent':str(frm._id),
                                   })
-        r = self.app.get('/admin/discussion/')
+        r = self.app.get('/admin/discussion/forums')
         assert 'error' not in r
         assert 'ChildForum' in r
 
@@ -348,7 +348,7 @@ class TestForumAdmin(TestController):
                                   'new_forum.description':'',
                                   'new_forum.parent':'',
                                   })
-        r = self.app.get('/admin/discussion/')
+        r = self.app.get('/admin/discussion/forums')
         assert 'error' in r
         r = self.app.post('/admin/discussion/update_forums',
                           params={'new_forum.shortname':'Test/Forum',
@@ -357,7 +357,7 @@ class TestForumAdmin(TestController):
                                   'new_forum.description':'',
                                   'new_forum.parent':'',
                                   })
-        r = self.app.get('/admin/discussion/')
+        r = self.app.get('/admin/discussion/forums')
         assert 'error' in r
 
     def test_forum_icon(self):
@@ -367,7 +367,7 @@ class TestForumAdmin(TestController):
         upload = ('new_forum.icon', file_name, file_data)
 
         h.set_context('test', 'discussion')
-        r = self.app.get('/admin/discussion/')
+        r = self.app.get('/admin/discussion/forums')
         r = self.app.post('/admin/discussion/update_forums',
                           params={'new_forum.shortname':'TestForum',
                                   'new_forum.create':'on',
@@ -381,7 +381,7 @@ class TestForumAdmin(TestController):
         assert image.size == (48,48)
 
     def test_delete_undelete(self):
-        r = self.app.get('/admin/discussion/')
+        r = self.app.get('/admin/discussion/forums')
         r = self.app.post('/admin/discussion/update_forums',
                           params={'new_forum.shortname':'TestForum',
                                   'new_forum.create':'on',
@@ -389,7 +389,7 @@ class TestForumAdmin(TestController):
                                   'new_forum.description':'',
                                   'new_forum.parent':'',
                                   })
-        r = self.app.get('/admin/discussion/')
+        r = self.app.get('/admin/discussion/forums')
         assert len(r.html.findAll('input',{'value':'Delete'})) == 2
         assert len(r.html.findAll('input',{'value':'Undelete'})) == 0
         r = self.app.get('/discussion/')
@@ -403,7 +403,7 @@ class TestForumAdmin(TestController):
                                   'forum-0.id':str(frm._id),
                                   'forum-0.name':'New Test Forum',
                                   'forum-0.description':'My desc'})
-        r = self.app.get('/admin/discussion/')
+        r = self.app.get('/admin/discussion/forums')
         assert len(r.html.findAll('input',{'value':'Delete'})) == 1
         assert len(r.html.findAll('input',{'value':'Undelete'})) == 1
         r = self.app.get('/discussion/')
@@ -414,7 +414,7 @@ class TestForumAdmin(TestController):
                                   'forum-0.id':str(frm._id),
                                   'forum-0.name':'New Test Forum',
                                   'forum-0.description':'My desc'})
-        r = self.app.get('/admin/discussion/')
+        r = self.app.get('/admin/discussion/forums')
         assert len(r.html.findAll('input',{'value':'Delete'})) == 2
         assert len(r.html.findAll('input',{'value':'Undelete'})) == 0
         r = self.app.get('/discussion/')

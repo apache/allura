@@ -46,6 +46,9 @@ class ProjectHomeApp(Application):
     def sidebar_menu(self):
         return [ SitemapEntry('Configure', 'configuration')]
 
+    def admin_menu(self):
+        return []
+
     # @property
     # def templates(self):
     #     return

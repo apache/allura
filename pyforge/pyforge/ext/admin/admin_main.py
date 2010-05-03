@@ -79,10 +79,12 @@ class AdminApp(Application):
         for ac in c.project.app_configs:
             app = c.project.app_instance(ac.options.mount_point)
             if len(app.config_options) > 1 or (app.permissions and has_artifact_access('configure', app=app)()):
-                links.append(SitemapEntry(ac.options.mount_point,
-                             ac.options.mount_point + '/',
-                             className='nav_child').bind_app(self))
+                links.append(SitemapEntry(ac.options.mount_point).bind_app(self))
+                links = links + app.admin_menu()
         return [SitemapEntry('Admin')]+links
+
+    def admin_menu(self):
+        return []
 
     def install(self, project):
         pass

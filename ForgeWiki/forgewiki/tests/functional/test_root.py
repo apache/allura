@@ -50,7 +50,7 @@ class TestRootController(TestController):
     def test_root_new_search(self):
         self.app.get('/wiki/TEST/index')
         response = self.app.get('/wiki/search?q=TEST')
-        assert 'ForgeWiki Search' in response
+        assert 'Search wiki: TEST' in response
 
     def test_page_index(self):
         response = self.app.get('/wiki/TEST/index/')

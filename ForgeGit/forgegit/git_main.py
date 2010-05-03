@@ -57,6 +57,9 @@ class ForgeGitApp(Application):
             return [
                 SitemapEntry(menu_id, '.')[self.sidebar_menu()] ]
 
+    def admin_menu(self):
+        return []
+
     def sidebar_menu(self):
         links = [ SitemapEntry('Home',c.app.url, ui_icon='home') ]
         repo = c.app.repo

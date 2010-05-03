@@ -11,86 +11,11 @@
   
   <head>
     <meta content="text/html; charset=UTF-8" http-equiv="content-type" py:replace="''"/>
-    <title>Admin for $c.project.name $app.config.options.mount_point</title>
+    <title>$app.config.options.mount_point Admin Forums</title>
   </head>
   
   <body>
-    <h1 class="title">Discussion Admin</h1>
-    <div id="app_admin_tabs">
-	<ul>
-        <li><a href="#app-config" py:if="len(app.config_options) > 1">$app.config.tool_name Options</a></li>
-        <li><a href="#app-acl"
-               py:if="app.permissions and allow_config">Permissions</a></li>
-        <li><a href="#app-forums">Forums</a></li>
-	</ul>
-      <div id="app-config" py:if="len(app.config_options) > 1" style="overflow: auto">
-        <form method="post" action="configure">
-          <py:for each="o in app.config_options" py:if="o.name != 'mount_point'">
-            <div class="span-3"><label for="$o.name" class="span-3">$o.name</label></div>
-            <div class="span-13 last" py:if="not allow_config">
-                 ${app.config.options.get(o.name, o.default)}
-            </div>
-            <div class="editable viewing span-13 last" style="min-height:1em;"
-                 py:if="allow_config">
-              <div class="viewer">${app.config.options.get(o.name, o.default)}</div>
-              <div class="editor"><input name="$o.name" value="${app.config.options.get(o.name, o.default)}"/></div>
-            </div>
-            <hr class="clear clearfix" />
-          </py:for>
-          <div class="span-13 push-3 last">
-            <input type="submit" value="Update config" py:if="allow_config"
-                   class="ui-state-default ui-button ui-button-text"/>
-            <input py:if="app.installable and allow_config" type="submit" name="delete" value="Delete Tool"
-                   class="ui-state-default ui-button ui-button-text"/>
-          </div>
-        </form>
-      </div>
-      <div id="app-acl" py:if="app.permissions and allow_config">
-        <div id="acl-admin">
-          <py:for each="p in app.permissions" >
-            <h3><a href="#" id="permission_$p">$p</a></h3>
-            <div>
-              <table>
-                <thead>
-                  <tr>
-                    <th>Role</th>
-                    <th/>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr py:for="role in h.make_roles(app.config.acl[p])">
-                    <td>${role.display()}</td>
-                    <td>
-                      <form method="POST" action="del_perm" style="display:inline">
-                        <input type="hidden" name="permission" value="$p"/>
-                        <input type="hidden" name="role" value="${role._id}"/>
-                        <input type="submit" value="Remove" py:if="role.display() != '*user-'+c.user.username"
-                               class="ui-state-default ui-button ui-button-text"/>
-                      </form>
-                    </td>
-                  </tr>
-                  <tr>
-                    <form method="POST" action="add_perm">
-                      <td>
-                        <select name="role">
-                          <option py:for="role in c.project.roles"
-                                  value="$role._id"
-                                  >${role.display()}</option>
-                        </select>
-                      </td>
-                      <td>
-                        <input type="hidden" name="permission" value="$p"/>
-                        <input type="submit" value="Add Permission" class="ui-state-default ui-button ui-button-text"/>
-                      </td>
-                    </form>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          </py:for>
-        </div>
-      </div>
-      <div id="app-forums">
+    <h1 class="title">$app.config.options.mount_point Admin Forums</h1>
           <form method="POST" action="update_forums" enctype="multipart/form-data">
           <table id="forums">
             <thead>
@@ -170,23 +95,8 @@
           </div>
           <div class="clear"/>
         </form>
-      </div>
-    </div>
     <script type="text/javascript">
       $(function() {
-        $("#app_admin_tabs").tabs({cookie:{expires:30}});
-        $("#acl-admin").accordion({
-          autoHeight: false,
-          navigation: true,
-		change: function(event,ui) {
-			var hid = ui.newHeader.children('a').attr('id');
-		if (hid === undefined) {
-			$.cookie('discussion-acl-admin', null);
-		} else {
-			$.cookie('discussion-acl-admin', hid, { path: '/', expires: 2 });
-		}
-		}
-        });
         $("#add_forum").click(function(){
           $("#add_forum_form").show();
           $(this).hide();
@@ -197,13 +107,6 @@
           $("#add_forum").show();
           return false;
         });
-      });
-      $(document).ready(function(){
-        if($.cookie('discussion-acl-admin')) {
-		$('#acl-admin').accordion('option', 'animated', false)
-		               .accordion('activate', $('#' + $.cookie('discussion-acl-admin')).parent('h3'))
-		               .accordion('option', 'animated', 'slide');
-        }
       });
 	  </script>
   </body>

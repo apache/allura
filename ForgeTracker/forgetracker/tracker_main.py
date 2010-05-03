@@ -97,6 +97,13 @@ class ForgeTrackerApp(Application):
             return [
                 SitemapEntry(menu_id, '.')[self.sidebar_menu()] ]
 
+    def admin_menu(self):
+        admin_url = c.project.url()+'admin/'+self.config.options.mount_point+'/'
+        links = [SitemapEntry('Field Management', admin_url + 'fields', className='nav_child')]
+        if self.permissions and has_artifact_access('configure', app=self)():
+            links.append(SitemapEntry('Permissions', admin_url + 'permissions', className='nav_child'))
+        return links
+
     def sidebar_menu(self):
         related_artifacts = []
         search_bins = []
@@ -849,8 +856,18 @@ class TrackerAdminController(DefaultAdminController):
             self.globals.milestone_names = ''
 
     @with_trailing_slash
-    @expose('forgetracker.templates.admin')
     def index(self):
+        redirect('permissions')
+
+    @without_trailing_slash
+    @expose('forgetracker.templates.admin_fields')
+    def fields(self):
+        return dict(app=self.app, globals=self.globals,
+                    allow_config=has_artifact_access('configure', app=self.app)())
+
+    @without_trailing_slash
+    @expose('forgetracker.templates.admin_permissions')
+    def permissions(self):
         return dict(app=self.app, globals=self.globals,
                     allow_config=has_artifact_access('configure', app=self.app)())
 

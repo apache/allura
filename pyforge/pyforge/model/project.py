@@ -283,6 +283,9 @@ class Project(MappedClass):
                 for p in sps ]
         return result
 
+    def admin_menu(self):
+        return []
+
     @property
     def script_name(self):
         url = self.url()

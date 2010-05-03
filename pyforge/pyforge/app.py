@@ -143,6 +143,15 @@ class Application(object):
     def sidebar_menu(self):
         return []
 
+    def admin_menu(self):
+        admin_url = c.project.url()+'admin/'+self.config.options.mount_point+'/'
+        links = []
+        if self.permissions and has_artifact_access('configure', app=self)():
+            links.append(SitemapEntry('Permissions', admin_url + 'permissions', className='nav_child'))
+        if len(self.config_options) > 1:
+            links.append(SitemapEntry('Options', admin_url + 'options', className='nav_child'))
+        return links
+
     def message_auditor(self, routing_key, data, artifact, **kw):
         # Find ancestor comment
         in_reply_to = data.get('in_reply_to', [])
@@ -183,8 +192,16 @@ class DefaultAdminController(object):
     def __init__(self, app):
         self.app = app
 
-    @expose('pyforge.templates.app_admin')
     def index(self):
+        return redirect('permissions')
+
+    @expose('pyforge.templates.app_admin_permissions')
+    def permissions(self):
+        return dict(app=self.app,
+                    allow_config=has_artifact_access('configure', app=self.app)())
+
+    @expose('pyforge.templates.app_admin_options')
+    def options(self):
         return dict(app=self.app,
                     allow_config=has_artifact_access('configure', app=self.app)())
 
@@ -216,12 +233,12 @@ class DefaultAdminController(object):
     def add_perm(self, permission, role):
         require(has_artifact_access('configure', app=self.app))
         self.app.config.acl[permission].append(ObjectId(role))
-        redirect('.#app-acl')
+        redirect('permissions')
 
     @expose()
     def del_perm(self, permission, role):
         require(has_artifact_access('configure', app=self.app))
         self.app.config.acl[permission].remove(ObjectId(role))
-        redirect('.#app-acl')
+        redirect('permissions')
         
 

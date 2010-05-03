@@ -45,6 +45,9 @@ class UserProfileApp(Application):
     def sidebar_menu(self):
         return [ SitemapEntry('Preferences', '/auth/prefs/')]
 
+    def admin_menu(self):
+        return []
+
     # @property
     # def templates(self):
     #     return

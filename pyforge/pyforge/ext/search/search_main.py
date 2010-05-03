@@ -90,6 +90,9 @@ class SearchApp(Application):
     def sidebar_menu(self):
         return [ ]
 
+    def admin_menu(self):
+        return []
+
     def install(self, project):
         pass # pragma no cover
 

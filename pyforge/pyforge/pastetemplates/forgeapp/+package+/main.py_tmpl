@@ -57,6 +57,9 @@ class {{egg}}App(Application):
             SitemapEntry('Search', 'search'),      
             ]
 
+    def admin_menu(self):
+        return []
+
     @property
     def templates(self):
          return pkg_resources.resource_filename('{{package}}', 'templates')

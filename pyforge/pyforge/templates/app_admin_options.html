@@ -1,0 +1,42 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+                    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:py="http://genshi.edgewall.org/"
+      xmlns:xi="http://www.w3.org/2001/XInclude">
+  
+  <xi:include href="master.html" />
+  
+  <head>
+    <meta content="text/html; charset=UTF-8" http-equiv="content-type" py:replace="''"/>
+    <title>$app.config.options.mount_point Options</title>
+  </head>
+  
+  <body>
+    <h1 class="title">$app.config.options.mount_point Options</h1>
+    <py:if test="not len(app.config_options) > 1">
+      No options to administer for ${app.config.options.mount_point}.
+    </py:if>
+    <py:if test="len(app.config_options) > 1">
+      <form method="post" action="configure">
+        <py:for each="o in app.config_options" py:if="o.name != 'mount_point'">
+          <div class="span-3"><label for="$o.name" class="span-3">$o.name</label></div>
+          <div class="span-13 last" py:if="not allow_config">
+               ${app.config.options.get(o.name, o.default)}
+          </div>
+          <div class="editable viewing span-13 last" style="min-height:1em;"
+               py:if="allow_config">
+            <div class="viewer">${app.config.options.get(o.name, o.default)}</div>
+            <div class="editor"><input name="$o.name" value="${app.config.options.get(o.name, o.default)}"/></div>
+          </div>
+          <hr class="clear clearfix" />
+        </py:for>
+        <div class="span-13 push-3 last">
+          <input type="submit" value="Update config" py:if="allow_config"
+                 class="ui-state-default ui-button ui-button-text"/>
+          <input py:if="app.installable and allow_config" type="submit" name="delete" value="Delete Tool"
+                 class="ui-state-default ui-button ui-button-text"/>
+        </div>
+      </form>
+    </py:if>
+  </body>
+</html>

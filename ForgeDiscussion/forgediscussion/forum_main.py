@@ -7,6 +7,7 @@ import pymongo
 import pkg_resources
 from pylons import g, c, request
 from tg import expose, redirect, flash
+from tg.decorators import with_trailing_slash, without_trailing_slash
 from pymongo.bson import ObjectId
 from ming.orm.base import session
 from ming import schema
@@ -119,6 +120,13 @@ class ForgeDiscussionApp(Application):
                 parent_id=parent_id,
                 )).all()
 
+    def admin_menu(self):
+        admin_url = c.project.url()+'admin/'+self.config.options.mount_point+'/'
+        links = super(ForgeDiscussionApp, self).admin_menu()
+        if has_artifact_access('configure', app=self)():
+            links.append(SitemapEntry('Forums', admin_url + 'forums', className='nav_child'))
+        return links
+
     def sidebar_menu(self):
         try:
             l = [SitemapEntry('Home', c.app.url, ui_icon='home')]
@@ -184,8 +192,12 @@ class ForumAdminController(DefaultAdminController):
     def _check_security(self):
         require(has_artifact_access('admin', app=self.app), 'Admin access required')
 
-    @expose('forgediscussion.templates.admin')
+    @with_trailing_slash
     def index(self):
+        redirect('permissions')
+
+    @expose('forgediscussion.templates.admin_forums')
+    def forums(self):
         return dict(app=self.app,
                     allow_config=has_artifact_access('configure', app=self.app)())
 
