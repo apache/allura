@@ -3,6 +3,7 @@ from tg.decorators import with_trailing_slash, without_trailing_slash
 from formencode import validators as V
 from pylons import c
 from webob import exc
+import pymongo
 
 from pyforge.lib import search
 from pyforge.app import SitemapEntry
@@ -69,16 +70,21 @@ class ProjectBrowseController(object):
                         className='nav_child2'))
         return nav
 
-    def _find_projects(self):
+    def _find_projects(self,sort='alpha'):
         if self.category:
             ids = [self.category._id]
             # warning! this is written with the assumption that categories
             # are only two levels deep like the existing site
             if self.category.subcategories:
                 ids = ids + [cat._id for cat in self.category.subcategories]
-            projects = M.Project.query.find(dict(category_id={'$in':ids}, deleted=False, **self.additional_filters)).sort('name').all()
+            pq = M.Project.query.find(dict(category_id={'$in':ids}, deleted=False, **self.additional_filters))
         else:
-            projects = M.Project.query.find(dict(deleted=False, **self.additional_filters)).sort('name').all()
+            pq = M.Project.query.find(dict(deleted=False, **self.additional_filters))
+        if sort=='alpha':
+            pq.sort('name')
+        else:
+            pq.sort('last_updated', pymongo.DESCENDING)
+        projects = pq.all()
         return projects
 
     @expose()

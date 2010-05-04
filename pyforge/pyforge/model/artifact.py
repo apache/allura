@@ -182,6 +182,8 @@ class Artifact(MappedClass):
         name='artifact'
         def before_save(data):
             data['mod_date'] = datetime.utcnow()
+            if c.project:
+                c.project.last_updated = datetime.utcnow()
     type_s = 'Generic Artifact'
 
     # Artifact base schema

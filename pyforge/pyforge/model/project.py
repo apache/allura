@@ -111,6 +111,7 @@ class Neighborhood(MappedClass):
             'admin':[S.ObjectId],  # update ACLs
             })
     projects = RelationProperty('Project')
+    allow_browse = FieldProperty(bool, if_missing=True)
 
     def url(self):
         url = self.url_prefix
@@ -141,11 +142,12 @@ class Neighborhood(MappedClass):
             p = Project(neighborhood_id=self._id,
                         shortname=shortname,
                         name=shortname,
-                        short_description='Please update with a short description',
+                        short_description='',
                         description=(shortname + '\n'
                                      + '=' * 80 + '\n\n'
                                      + 'You can edit this description in the admin page'),
                         database=database,
+                        last_updated = datetime.utcnow(),
                         is_root=True)
             p.configure_flyway_initial()
             with h.push_config(c, project=p, user=user):
@@ -268,6 +270,7 @@ class Project(MappedClass):
     category_id = FieldProperty(S.ObjectId, if_missing=None)
     deleted = FieldProperty(bool, if_missing=False)
     labels = FieldProperty([str])
+    last_updated = FieldProperty(datetime, if_missing=None)
 
     def sidebar_menu(self):
         from pyforge.app import SitemapEntry
@@ -359,8 +362,9 @@ class Project(MappedClass):
     @property
     def roles(self):
         from . import auth
-        roles = auth.ProjectRole.query.find().all()
-        return sorted(roles, key=lambda r:r.display())
+        with h.push_config(c, project=self):
+            roles = auth.ProjectRole.query.find().all()
+            return sorted(roles, key=lambda r:r.display())
 
     @property
     def accolades(self):
@@ -428,6 +432,7 @@ class Project(MappedClass):
             shortname=shortname,
             name=name,
             database=self.database,
+            last_updated = datetime.utcnow(),
             is_root=False)
         with h.push_config(c, project=sp):
             AppConfig.query.remove(dict(project_id=c.project._id))

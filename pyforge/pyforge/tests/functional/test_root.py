@@ -49,7 +49,7 @@ class TestRootController(TestController):
     def test_neighborhood_index(self):
         response = self.app.get('/adobe/')
         assert response.html.find('h1').string == 'Welcome to Adobe'
-        projects = response.html.findAll('ul',{'class':'display'})[0].findAll('li')
+        projects = response.html.findAll('ul',{'class':'display thumb_view'})[0].findAll('li')
         assert len(projects) == 2
         assert projects[0].find('img').get('alt') == 'adobe_1 Icon'
         cat_links = response.html.find('ul',{'id':'sidebarmenu'}).findAll('li')

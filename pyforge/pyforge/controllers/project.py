@@ -10,6 +10,7 @@ from tg.decorators import with_trailing_slash, without_trailing_slash
 from pylons import c, g
 from webob import exc
 from pymongo.bson import ObjectId
+import pymongo
 from formencode import validators
 
 import  ming.orm.ormsession
@@ -64,9 +65,14 @@ class NeighborhoodController(object):
         return ProjectController(), remainder
 
     @expose('pyforge.templates.neighborhood_project_list')
-    def index(self):
+    def index(self,sort='alpha'):
         c.project_summary = W.project_summary
-        projects = M.Project.query.find(dict(neighborhood_id=self.neighborhood._id, deleted=False)).sort('name').all()
+        pq = M.Project.query.find(dict(neighborhood_id=self.neighborhood._id, deleted=False))
+        if sort=='alpha':
+            pq.sort('name')
+        else:
+            pq.sort('last_updated', pymongo.DESCENDING)
+        projects = pq.all()
         categories = M.ProjectCategory.query.find({'parent_id':None}).sort('name').all()
         c.custom_sidebar_menu = [SitemapEntry('Categories')] + [
             SitemapEntry(cat.label, self.neighborhood.url()+'browse/'+cat.name, className='nav_child') for cat in categories
@@ -74,7 +80,8 @@ class NeighborhoodController(object):
         return dict(neighborhood=self.neighborhood,
                     title="Welcome to "+self.neighborhood.name,
                     text=g.markdown.convert(self.neighborhood.homepage),
-                    projects=projects)
+                    projects=projects,
+                    sort=sort)
 
     @expose()
     def register(self, pid):
@@ -144,15 +151,16 @@ class NeighborhoodProjectBrowseController(ProjectBrowseController):
 
     @expose('pyforge.templates.neighborhood_project_list')
     @without_trailing_slash
-    def index(self):
+    def index(self,sort='alpha'):
         c.project_summary = W.project_summary
-        projects = self._find_projects()
+        projects = self._find_projects(sort=sort)
         title=self._build_title()
         c.custom_sidebar_menu = self._build_nav()
         return dict(projects=projects,
                     title=title,
                     text=None,
-                    neighborhood=self.neighborhood)
+                    neighborhood=self.neighborhood,
+                    sort=sort)
 
 class HostNeighborhoodController(BaseController, NeighborhoodController):
     '''Neighborhood controller with support for use as a root controller, for
@@ -336,10 +344,12 @@ class NeighborhoodAdminController(object):
 
     @expose()
     def update(self, name=None, css=None, homepage=None, icon=None,
-               color1=None, color2=None, color3=None, color4=None, color5=None, color6=None):
+               color1=None, color2=None, color3=None, color4=None, color5=None, color6=None,
+               **kw):
         self.neighborhood.name = name
         self.neighborhood.homepage = homepage
         self.neighborhood.css = css
+        self.neighborhood.allow_browse = 'allow_browse' in kw
         if css and self.neighborhood._id in CACHED_CSS:
             del CACHED_CSS[self.neighborhood._id]
         if color1 or color2 or color3 or color4 or color5 or color6:

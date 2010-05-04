@@ -2,8 +2,13 @@
      xmlns:py="http://genshi.edgewall.org/"
      xmlns:xi="http://www.w3.org/2001/XInclude"
      py:strip="True">
+     <xi:include href="${g.pyforge_templates}/lib.html" />
+     <?python from itertools import islice ?>
 <a href="${value.url()}"><img src="${value.icon and value.url()+'icon' or '/images/project_default.png'}" alt="$value.name Icon" class="fleft icon clear" /></a>
 <h2><a href="${value.url()}">$value.name</a></h2>
+<div py:for="author in islice(value.users(), 5)" class="gravatar sm">
+  ${gravatar(author.preferences.email_address, size=16)}<a href="${author.url()}">$author.display_name</a>
+</div>
 <p>${h.text.truncate(value.short_description, 50)}<br />
 <a href="${accolade.award.longurl()}" py:for="accolade in value.accolades" title="$accolade.award.full"><small class="badge $accolade.award.short">$accolade.award.short</small></a>
 </p>

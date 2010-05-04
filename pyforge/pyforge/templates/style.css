@@ -95,13 +95,10 @@ ul.thumb_view li .content_block a img {
 }
 
 ul.thumb_view li h2,
-ul.display li h2 {padding-left: 58px; margin-bottom: 0;}
+ul.display li h2,
+ul.thumb_view li .gravatar,
+ul.display li .gravatar {padding-left: 58px; margin-bottom: 0;}
 
-.switch {
-	position: absolute;
-	top: -40px;
-	right: 0;
-}
 .switch .ui-button,
 .switch .ui-button:hover { -webkit-box-shadow: none; -moz-box-shadow: none;}
 

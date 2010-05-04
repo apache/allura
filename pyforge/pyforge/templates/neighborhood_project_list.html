@@ -4,10 +4,9 @@
       xmlns:py="http://genshi.edgewall.org/"
       xmlns:xi="http://www.w3.org/2001/XInclude">
 
-  <xi:include href="master.html" />
-  <xi:include href="neighborhood_lib.html" />
-
-  <?python from pyforge.lib.security import has_neighborhood_access ?>
+  <xi:include href="master.html" py:if="neighborhood.allow_browse" />
+  <xi:include href="master_one_col.html" py:if="not neighborhood.allow_browse" />
+  <xi:include href="neighborhood_lib.html"/>
 
   <head>
     <meta content="text/html; charset=UTF-8" http-equiv="content-type" py:replace="''"/>
@@ -17,10 +16,17 @@
   <body>
     <h1 class="title">$title</h1>
     <div id="grid">
+      <py:if test="text">${Markup(text)}</py:if>
       <div class="switch">
-        <div id="radio0" class="ui-button-set">
-          <input type="radio" id="radio01" name="radio" checked="checked" style="display: none;" class="list" /><label for="radio01" class="ui-corner-left ui-button ui-widget ui-state-default ui-button-icon-only ui-state-active"><span class="ui-button-icon-primary ui-icon ui-icon-list">List</span><span class="ui-button-text">List</span></label> <input type="radio" id="radio02" name="radio" style="display: none;" class="grid" /><label for="radio02" class="ui-corner-right ui-button ui-widget ui-state-default ui-button-icon-only"><span class="ui-button-icon-primary ui-icon ui-icon-grid">Grid</span><span class="ui-button-text">Grid</span></label>
+        <div id="radio0" class="ui-button-set" style="float: left">
+          <input type="radio" id="radio01" name="radio" style="display: none;" class="list" /><label for="radio01" class="ui-corner-left ui-button ui-widget ui-state-default ui-button-icon-only"><span class="ui-button-icon-primary ui-icon ui-icon-list">List</span><span class="ui-button-text">List</span></label> <input type="radio" id="radio02" name="radio" checked="checked" style="display: none;" class="grid" /><label for="radio02" class="ui-corner-right ui-button ui-widget ui-state-default ui-button-icon-only ui-state-active"><span class="ui-button-icon-primary ui-icon ui-icon-grid">Grid</span><span class="ui-button-text">Grid</span></label>
         </div>
+        Sort:
+        <a href=".?sort=alpha" py:if="sort != 'alpha'">Alphabetical</a>
+        <span py:if="sort == 'alpha'">Alphabetical</span>
+         |
+        <a href=".?sort=recent" py:if="sort != 'recent'">Most Recent</a>
+        <span py:if="sort == 'recent'">Most Recent</span>
       </div>  
       <!-- TODO: paging after demo <div class="span-3">
         <p>
@@ -30,9 +36,8 @@
       <div class="span-16 tright last">
         <a href="?offset=15">Next →</a>
       </div> -->
-      <py:if test="text">${Markup(text)}</py:if>
       <p py:if="not len(projects)">No projects found</p>
-      <ul class="display" py:if="len(projects)">
+      <ul class="display thumb_view" py:if="len(projects)" style="clear: both">
         <li py:for="project in projects">
           ${c.project_summary.display(value=project)}
         </li>
@@ -40,16 +45,16 @@
     </div>
     <script type="text/javascript"> 
 		$(document).ready(function() {
-    			$(".switch input.grid").click(function(){
+			$("div.switch input.grid").click(function(){
     			 $(this).next().addClass('ui-state-active');
-    			  $('.switch input.list').next().removeClass('ui-state-active');
+			  $('div.switch input.list').next().removeClass('ui-state-active');
     			  $("ul.display").fadeOut("fast", function() {
     			  	$(this).fadeIn("fast").addClass("thumb_view"); 
     				 });
     			}); 
-    			$(".switch input.list").click(function(){
+			$("div.switch input.list").click(function(){
     		      $(this).next().addClass('ui-state-active');
-    		      $('.switch input.grid').next().removeClass('ui-state-active');
+		      $('div.switch input.grid').next().removeClass('ui-state-active');
     			  $("ul.display").fadeOut("fast", function() {
     			  	$(this).fadeIn("fast").removeClass("thumb_view");
     				});
