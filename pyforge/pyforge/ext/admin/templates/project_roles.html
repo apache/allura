@@ -1,0 +1,98 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+                      "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:py="http://genshi.edgewall.org/"
+      xmlns:xi="http://www.w3.org/2001/XInclude">
+
+  <xi:include href="master.html" />
+  <xi:include href="lib.html" />
+
+  <head>
+    <meta content="text/html; charset=UTF-8" http-equiv="content-type" py:replace="''"/>
+    <title>Project Roles for $c.project.shortname</title>
+
+    <py:def function="role_select(name)">
+      <select name="$name">
+        <option py:for="r in c.project.roles"
+                value="$r._id">${r.display()}</option>
+      </select>
+    </py:def>
+    <link rel="stylesheet" type="text/css" media="screen" href="${g.app_static('css/admin.css')}"/>
+  </head>
+
+  <body>
+    <h1 class="title">Project Roles for $c.project.shortname</h1>
+    <div py:if="c.project.deleted" class="notice">This project has been deleted and is not visible to non-admin users</div>
+    <p>
+      Each user on the project has a private role.
+      Each role can have subroles.  A role inherits all the permissions
+      that its subroles have.  All users who have read access should
+      automatically appear here.
+    </p>
+    <form method="POST" action="update_roles" id="roles_form">
+      <input py:for="i,r in enumerate(c.project.roles)"
+        type="hidden"
+        name="role-${i}.id"
+        value="$r._id"/>
+      <table>
+        <thead>
+          <tr>
+            <th>User</th>
+            <th>Roles</th>
+            <th>Edit</th>
+            <th/>
+          </tr>
+        </thead>
+        <tbody>
+          <tr py:for="i, r in enumerate(c.project.roles)" class="${i%2 and 'even' or ''}">
+            <td>${r.display()}</td>
+            <td>
+              <span py:for="j, sr in enumerate(h.make_roles(r.roles))" class="removable">
+                ${sr.display()}
+                <input type="hidden" name="role-${i}.subroles-${j}.id" value="$sr._id"/>
+                <!--                       <input type="submit" name="role-${i}.subroles-${j}.delete" value="Del"/> -->
+              </span>
+            </td>
+            <td>
+              Acts as
+              <select name="role-${i}.new.id" style="width: 100px" class="add_role">
+                <option value=""> </option>
+                <option py:for="r in roles" py:if="not r.special" value="$r._id">
+                  ${r.display()}
+                </option>
+              </select>
+              <input py:if="not r.special" name="role-${i}.delete" type="submit" value="Delete"
+                class="ui-state-default ui-button ui-button-text"/>
+            </td>
+          </tr>
+          <tr>
+            <td><input name="new.name" class="title"/></td>
+            <td colspan="3">
+              <input type="submit" name="new.add" value="Create Role"
+                class="ui-state-default ui-button ui-button-text"/>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </form>
+    <script type="text/javascript">
+      /*<![CDATA[*/
+      $('span.removable').click(function(e){
+        var vals = $('#roles_form').serialize();
+        var del_name = $('input', this)[0].name.replace('.id','.delete');
+        $.post($('#roles_form')[0].action, vals+'&'+del_name+'=Del', function(){
+          e.target.parentNode.removeChild(e.target);
+        });
+      });
+      $('select.add_role').change(function(e){
+        var vals = $('#roles_form').serialize();
+        var add_name = e.target.name.replace('.id','.add');
+        $.post($('#roles_form')[0].action, vals+'&'+add_name+'=Add', function(){
+          window.location.reload();
+        });
+      });
+      /*]]>*/
+    </script>
+  </body>
+
+</html>

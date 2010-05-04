@@ -7,6 +7,7 @@ import Image
 import pkg_resources
 from pylons import c, request
 from tg import expose, redirect, flash
+from tg.decorators import with_trailing_slash, without_trailing_slash
 from webob import exc
 from pymongo.bson import ObjectId
 
@@ -75,13 +76,23 @@ class AdminApp(Application):
         self.templates = pkg_resources.resource_filename('pyforge.ext.admin', 'templates')
 
     def sidebar_menu(self):
-        links = []
+        admin_url = c.project.url()+'admin/'
+        links = [SitemapEntry('Project'),
+                 SitemapEntry('Overview', admin_url+'overview', className='nav_child'),
+                 SitemapEntry('Tools/Subprojects', admin_url+'tools', className='nav_child')]
+        if len(c.project.neighborhood_invitations):
+            links.append(SitemapEntry('Invitation(s)', admin_url+'invitations', className='nav_child'))
+        if has_project_access('security')():
+            links.append(SitemapEntry('Permissions', admin_url+'permissions', className='nav_child'))
+        if c.project.is_root and has_project_access('security')():
+            links.append(SitemapEntry('Roles', admin_url+'roles', className='nav_child'))
+
         for ac in c.project.app_configs:
             app = c.project.app_instance(ac.options.mount_point)
             if len(app.config_options) > 1 or (app.permissions and has_artifact_access('configure', app=app)()):
                 links.append(SitemapEntry(ac.options.mount_point).bind_app(self))
                 links = links + app.admin_menu()
-        return [SitemapEntry('Admin')]+links
+        return links
 
     def admin_menu(self):
         return []
@@ -98,8 +109,26 @@ class ProjectAdminController(object):
         require(has_project_access('read'),
                 'Read access required')
 
-    @expose('pyforge.ext.admin.templates.admin_index')
+    @with_trailing_slash
+    @expose()
     def index(self):
+        redirect('overview')
+
+    @without_trailing_slash
+    @expose('pyforge.ext.admin.templates.project_invitations')
+    def invitations(self):
+        return dict()
+
+    @without_trailing_slash
+    @expose('pyforge.ext.admin.templates.project_overview')
+    def overview(self):
+        c.markdown_editor = W.markdown_editor
+        c.label_edit = W.label_edit
+        return dict(categories=M.ProjectCategory.query.find(dict(parent_id=None)).sort('label').all())
+
+    @without_trailing_slash
+    @expose('pyforge.ext.admin.templates.project_tools')
+    def tools(self):
         tools = [
             (ep.name, ep.load())
             for ep in pkg_resources.iter_entry_points('pyforge') ]
@@ -110,20 +139,22 @@ class ProjectAdminController(object):
         c.label_edit = W.label_edit
         psort = [(n, M.Project.query.find(dict(is_root=True, neighborhood_id=n._id)).sort('shortname').all())
                  for n in M.Neighborhood.query.find().sort('name')]
-#        accolades = M.AwardGrant.query.find(dict(granted_to_project_id=c.project._id))
-#        awards = M.Award.query.find(dict(created_by_project_id=c.project._id))
-#        assigns = M.Award.query.find(dict(created_by_project_id=c.project._id))
-#        grants = M.AwardGrant.query.find(dict(granted_by_project_id=c.project._id))
         return dict(
-#            accolades=accolades,
             projects=psort,
-#            awards=awards,
-#            assigns=assigns,
-#            grants=grants,
             installable_tool_names=installable_tool_names,
             roles=M.ProjectRole.query.find().sort('_id').all(),
             categories=M.ProjectCategory.query.find(dict(parent_id=None)).sort('label').all(),
             users=[M.User.query.get(_id=id) for id in c.project.acl.read ])
+
+    @without_trailing_slash
+    @expose('pyforge.ext.admin.templates.project_permissions')
+    def permissions(self):
+        return dict()
+
+    @without_trailing_slash
+    @expose('pyforge.ext.admin.templates.project_roles')
+    def roles(self):
+        return dict(roles=M.ProjectRole.query.find().sort('_id').all())
 
     @expose()
     def _lookup(self, name, *remainder):
@@ -200,7 +231,7 @@ class ProjectAdminController(object):
                     image.save(fp, format)
             else:
                 flash('Screenshots must be jpg, png, or gif format.')
-        redirect('.')
+        redirect('overview')
 
     @expose()
     def join_neighborhood(self, nid):
@@ -216,7 +247,7 @@ class ProjectAdminController(object):
         c.project.neighborhood_id = nid
         n = M.Neighborhood.query.get(_id=nid)
         flash('Joined %s' % n.name)
-        redirect(c.project.url() + 'admin/')
+        redirect('invitations')
 
     @h.vardec
     @expose()
@@ -245,7 +276,7 @@ class ProjectAdminController(object):
                     flash('Invalid mount point for %s' % ep_name, 'error')
                     redirect(request.referer)
                 c.project.install_app(ep_name, mount_point)
-        redirect('.#mount-admin')
+        redirect('tools')
 
     @h.vardec
     @expose()
@@ -265,7 +296,7 @@ class ProjectAdminController(object):
                     redirect('.')
                 role = user.project_role()
                 c.project.acl[permission].append(role._id)
-        redirect('.#acl-admin')
+        redirect('permissions')
 
     @h.vardec
     @expose()
@@ -286,7 +317,7 @@ class ProjectAdminController(object):
                     role.roles.remove(ObjectId(str(sr['id'])))
         if new.get('add'):
             M.ProjectRole(name=new['name'])
-        redirect('.#role-admin')
+        redirect('roles')
 
 class AdminAppAdminController(DefaultAdminController):
     '''Administer the admin app'''

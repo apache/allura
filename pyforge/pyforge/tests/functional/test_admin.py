@@ -129,7 +129,7 @@ class TestProjectAdmin(TestController):
         assert thumb.size == (150,150)
 
     def test_project_delete_undelete(self):
-        r = self.app.get('/p/test/admin/')
+        r = self.app.get('/p/test/admin/overview')
         assert 'This project has been deleted and is not visible to non-admin users' not in r
         assert r.html.find('input',{'value':'Delete Project'})
         assert not r.html.find('input',{'value':'Undelete Project'})
@@ -139,7 +139,7 @@ class TestProjectAdmin(TestController):
                 short_description='A Test Project',
                 description='A long description',
                 delete='on'))
-        r = self.app.get('/p/test/admin/')
+        r = self.app.get('/p/test/admin/overview')
         assert 'This project has been deleted and is not visible to non-admin users' in r
         assert not r.html.find('input',{'value':'Delete Project'})
         assert r.html.find('input',{'value':'Undelete Project'})
@@ -149,7 +149,7 @@ class TestProjectAdmin(TestController):
                 short_description='A Test Project',
                 description='A long description',
                 undelete='on'))
-        r = self.app.get('/p/test/admin/')
+        r = self.app.get('/p/test/admin/overview')
         assert 'This project has been deleted and is not visible to non-admin users' not in r
         assert r.html.find('input',{'value':'Delete Project'})
         assert not r.html.find('input',{'value':'Undelete Project'})

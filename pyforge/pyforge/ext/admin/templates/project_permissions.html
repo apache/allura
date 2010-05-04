@@ -1,0 +1,96 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+                      "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:py="http://genshi.edgewall.org/"
+      xmlns:xi="http://www.w3.org/2001/XInclude">
+
+  <xi:include href="master.html" />
+  <xi:include href="lib.html" />
+
+  <head>
+    <meta content="text/html; charset=UTF-8" http-equiv="content-type" py:replace="''"/>
+    <title>Project Permissions for $c.project.shortname</title>
+
+    <py:def function="role_select(name)">
+      <select name="$name">
+        <option py:for="r in c.project.roles"
+                value="$r._id">${r.display()}</option>
+      </select>
+    </py:def>
+    <link rel="stylesheet" type="text/css" media="screen" href="${g.app_static('css/admin.css')}"/>
+  </head>
+
+  <body>
+    <h1 class="title">Project Permissions for $c.project.shortname</h1>
+    <div py:if="c.project.deleted" class="notice">This project has been deleted and is not visible to non-admin users</div>
+    <p>The project ACL determines project-level permissions.</p>
+    <div id="acl-admin">
+      <py:for each="permission, role_ids in c.project.acl.iteritems()">
+        <h3><a href="#" id="permission_$permission">Permission: $permission</a></h3>
+        <div>
+          <form method="POST" action="update_acl">
+            <input type="hidden" name="permission" value="$permission"/>
+            <input py:for="i,rid in enumerate(role_ids)"
+                   type="hidden" name="role-${i}.id" value="$rid"/>
+            <table>
+              <thead>
+                <tr><th>Role</th><th>Username</th><th/></tr>
+              </thead>
+              <tbody>
+                <tr py:for="i, r in enumerate(h.make_roles(role_ids))">
+                  <td>${r.display()}</td>
+                  <td>${r.user._id and r.user.username or ''}</td>
+                  <td><input type="submit" value="Remove" name="role-${i}.delete" class="ui-state-default ui-button ui-button-text" /></td>
+                </tr>
+                <tr>
+                  <td>
+                    <select name="new.id">
+                      <option value="">User</option>
+                      <optgroup label="Existing role">
+                        <option py:for="r in c.project.roles"
+                                value="$r._id">${r.display()}</option>
+                      </optgroup>
+                    </select>
+                  </td>
+                  <td>
+                    <input name="new.username" class="title"/>
+                  </td>
+                  <td>
+                    <input type="submit" name="new.add" value="Add Permission" class="ui-state-default ui-button ui-button-text"/>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </form>
+        </div>
+      </py:for>
+    </div>
+    <script type="text/javascript">
+      /*<![CDATA[*/
+      $(function() {
+        $("#acl-admin").accordion({
+          autoHeight: false,
+          navigation: true,
+          change: function(event,ui) {
+            var hid = ui.newHeader.children('a').attr('id');
+            if (hid === undefined) {
+              $.cookie('project-acl-admin', null);
+            } else {
+              $.cookie('project-acl-admin', hid, { path: '/', expires: 2 });
+            }
+          }
+        });
+      });
+      $(document).ready(function(){
+        if($.cookie('project-acl-admin')) {
+          $('#acl-admin').accordion('option', 'animated', false)
+                         .accordion('activate', $('#' + $.cookie('project-acl-admin')).parent('h3'))
+                         .accordion('option', 'animated', 'slide');
+        }
+      });
+      /*]]>*/
+    </script>
+    <script type="text/javascript" src="${g.app_static('js/admin.js')}"/>
+  </body>
+
+</html>
