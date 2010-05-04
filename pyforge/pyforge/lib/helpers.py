@@ -196,14 +196,18 @@ def tag_artifact(artifact, user, tags):
     M.Tag.remove(aref, user, removed_tags)
 
 def square_image(image):
-    # image is wider than tall, so center horizontally and crop to square
-    if image.size[0] < image.size[1]:
-        h_offset = (image.size[1]-image.size[0])/2
-        image = image.crop((0, h_offset, image.size[0], image.size[0]+h_offset))
-    # image is taller than wide, so center vertically and crop to square
-    elif image.size[0] > image.size[1]:
-        w_offset = (image.size[0]-image.size[1])/2
-        image = image.crop((w_offset, 0, image.size[1]+w_offset, image.size[1]))
+    # image is wider than tall, so center horizontally
+    height = image.size[0]
+    width = image.size[1]
+    if height < width:
+        new_image = Image.new("RGB", (width, width), 'white')
+        new_image.paste(image, ((width-height)/2, 0))
+        image = new_image
+    # image is taller than wide, so center vertically
+    elif height > width:
+        new_image = Image.new("RGB", (height, height), 'white')
+        new_image.paste(image, (0, (height-width)/2))
+        image = new_image
     return image
 
 def supported_by_PIL(file_type):

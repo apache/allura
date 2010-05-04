@@ -134,7 +134,10 @@ class ProjectAdminController(object):
 
     @expose()
     def update(self, name=None, short_description=None, description=None, icon=None, screenshot=None, category=None, **kw):
-        if 'delete' in kw:
+        if 'delete_icon' in kw:
+            M.ProjectFile.query.remove({'metadata.project_id':c.project._id, 'metadata.category':'icon'})
+            redirect('.')
+        elif 'delete' in kw:
             c.project.deleted = True
             for sp in c.project.subprojects:
                 sp.deleted = True
