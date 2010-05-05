@@ -1,3 +1,4 @@
+import logging
 import cPickle as pickle
 from datetime import datetime
 
@@ -11,6 +12,8 @@ from ming.utils import LazyProperty
 
 from pyforge.model import Repository, ArtifactReference, User
 from pyforge.lib import helpers as h
+
+log = logging.getLogger(__name__)
 
 class SVNRepository(Repository):
     class __mongometa__:
@@ -31,8 +34,12 @@ class SVNRepository(Repository):
         return 'file://%s/%s' % (self.fs_path, self.name)
 
     def log(self, *args, **kwargs):
-        return [SVNCommit.from_svn(entry, self)
-                for entry in self._impl.log(self.local_url, *args, **kwargs) ]
+        try:
+            return [SVNCommit.from_svn(entry, self)
+                    for entry in self._impl.log(self.local_url, *args, **kwargs) ]
+        except:
+            log.exception('Error performing SVN log:')
+            return []
 
     def revision(self, num):
         return self.log(
