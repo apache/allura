@@ -279,17 +279,37 @@ class NeighborhoodAdminController(object):
     def __init__(self, neighborhood):
         self.neighborhood = neighborhood
         self.awards = NeighborhoodAwardsController(self.neighborhood)
+        admin_url = neighborhood.url()+'_admin/'
+        c.custom_sidebar_menu = [SitemapEntry('Neighborhood Admin'),
+                 SitemapEntry('Overview', admin_url+'overview', className='nav_child'),
+                 SitemapEntry('Permissions', admin_url+'permissions', className='nav_child'),
+                 SitemapEntry('Awards', admin_url+'accolades', className='nav_child')]
 
     def _check_security(self):
         require(has_neighborhood_access('admin', self.neighborhood),
                 'Admin access required')
 
-    @expose('pyforge.templates.neighborhood_admin')
+    @with_trailing_slash
+    @expose()
     def index(self):
+        redirect('overview')
+
+    @without_trailing_slash
+    @expose('pyforge.templates.neighborhood_admin_overview')
+    def overview(self):
         c.markdown_editor = W.markdown_editor
+        return dict(neighborhood=self.neighborhood)
+
+    @without_trailing_slash
+    @expose('pyforge.templates.neighborhood_admin_permissions')
+    def permissions(self):
+        return dict(neighborhood=self.neighborhood)
+
+    @without_trailing_slash
+    @expose('pyforge.templates.neighborhood_admin_accolades')
+    def accolades(self):
         psort = [(n, M.Project.query.find(dict(is_root=True, neighborhood_id=n._id, deleted=False)).sort('shortname').all())
                  for n in M.Neighborhood.query.find().sort('name')]
-#        accolades = M.AwardGrant.query.find(dict(granted_to_project_id=c.project._id))
         awards = M.Award.query.find(dict(created_by_neighborhood_id=self.neighborhood._id))
         awards_count = len(awards)
         assigns = M.Award.query.find(dict(created_by_neighborhood_id=self.neighborhood._id))
@@ -298,7 +318,6 @@ class NeighborhoodAdminController(object):
         grants_count = len(grants)
         return dict(
             projects=psort,
-#            accolades=accolades,
             awards=awards,
             awards_count=awards_count,
             assigns=assigns,
@@ -346,7 +365,7 @@ class NeighborhoodAdminController(object):
                     image.save(fp, format)
             else:
                 flash('The icon must be jpg, png, or gif format.')
-        redirect('.')
+        redirect('overview')
 
     @h.vardec
     @expose()
@@ -361,7 +380,7 @@ class NeighborhoodAdminController(object):
         if new.get('add'):
             u = M.User.query.get(username=new['username'])
             self.neighborhood.acl[permission].append(u._id)
-        redirect('.#acl-admin')
+        redirect('permissions')
 
 class NeighborhoodModerateController(object):
 

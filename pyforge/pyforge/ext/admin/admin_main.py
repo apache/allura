@@ -67,12 +67,13 @@ class AdminApp(Application):
         Application.__init__(self, project, config)
         self.root = ProjectAdminController()
         self.admin = AdminAppAdminController(self)
-        self.sitemap = [ SitemapEntry('Admin', '.')[
-                SitemapEntry('Tools', '#tool-admin'),
-                SitemapEntry('ACLs', '#acl-admin'),
-                SitemapEntry('Roles', '#role-admin'),
-                SitemapEntry('Awards', '#award-admin'),
-                ]]
+        admin_url = c.project.url()+'admin/'
+        self.sitemap = [ SitemapEntry('Overview', admin_url+'overview'),
+                SitemapEntry('Tools/Subprojects', admin_url+'tools'),
+                SitemapEntry('Invitation(s)', admin_url+'invitations'),
+                SitemapEntry('Permissions', admin_url+'permissions'),
+                SitemapEntry('Roles', admin_url+'roles'),
+                ]
         self.templates = pkg_resources.resource_filename('pyforge.ext.admin', 'templates')
 
     def sidebar_menu(self):

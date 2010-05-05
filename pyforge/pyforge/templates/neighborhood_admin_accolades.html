@@ -1,0 +1,141 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+                      "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:py="http://genshi.edgewall.org/"
+      xmlns:xi="http://www.w3.org/2001/XInclude">
+
+  <xi:include href="master.html" />
+  <xi:include href="lib.html" />
+  <xi:include href="neighborhood_lib.html" />
+
+  <head>
+    <meta content="text/html; charset=UTF-8" http-equiv="content-type" py:replace="''"/>
+    <title>Award Administration for $neighborhood.name</title>
+  </head>
+
+  <body>
+    <h1 class="title">Award Administration for $neighborhood.name</h1>
+    <p py:if="awards_count > 0">
+    <a href="awards/"><h3>Current Awards</h3></a>
+      <div id="award_list">
+        <table border="1">
+          <thead>
+            <tr>
+              <th>Icon</th>
+              <th>Abbreviation</th>
+              <th>Description</th>
+              <th>Delete?</th>
+            </tr>
+          </thead>
+          <tbody>
+            <py:for each="award in awards">
+              <tr>
+                <td>
+                  <py:if test="award.icon">
+                    <img class="award_icon" src="awards/${award.url()}/icon"/>
+                  </py:if>
+                </td>
+                <td><a href="${award.longurl()}">${award.short}</a></td>
+                <td>$award.full</td>
+                <td><a href="${award.longurl()}/delete">[X]</a></td>
+              </tr>
+            </py:for>
+          </tbody>
+        </table>
+      </div>
+    </p>
+    <h3>Create an Award</h3>
+    <form enctype="multipart/form-data" method="POST" action="awards/create">
+      <table border="1">
+        <thead>
+          <tr>
+            <th>Icon</th>
+            <th>Abbreviation</th>
+            <th>Description</th>
+            <th/>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>
+              <input type="file" id="icon" name="icon" class="text" />
+            </td>
+            <td>
+              <input name="short"/>
+            </td>
+            <td>
+              <input name="full"/>
+            </td>
+            <td>
+              <input type="submit" value="Create" class="ui-state-default ui-button ui-button-text"/>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </form>
+    <py:def function="project(n, subprojects)">
+      <option value="${n.name}">${n.name}</option>
+      <py:for each="p in subprojects">
+        ${project(p, p.subprojects)}
+      </py:for>
+    </py:def>
+    <p py:if="awards_count > 0">
+      <h3>Grant an Award</h3>
+      <form method="POST" action="awards/grant">
+        <table border="1">
+          <thead>
+            <tr>
+              <th>Award</th>
+              <th>Recipient</th>
+              <th/>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>
+                <select name="grant">
+                  <py:for each="assign in assigns">
+                    <option value="$assign.short">$assign.short</option>
+                  </py:for>
+                </select>
+              </td>
+              <td>
+                <select name="recipient">
+                <py:for each="n, subprojects in projects">
+                  ${project(n, subprojects)}
+                </py:for>
+                </select>
+              </td>
+              <td>
+                <input type="submit" value="Grant" class="ui-state-default ui-button ui-button-text"/>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </form>
+    </p>
+    <p py:if="grants_count > 0">
+      <h3>Current Grants</h3>
+      <div id="grant_list">
+        <table border="1">
+          <thead>
+            <tr>
+              <th>Award</th>
+              <th>Recipient</th>
+              <th>Delete?</th>
+            </tr>
+          </thead>
+          <tbody>
+            <py:for each="grant in grants">
+              <tr>
+                <td><a href="$(grant.longurl()">${grant.award.short}</a></td>
+                <td><a href="${grant.longurl()}">${grant.granted_to_project.shortname}</a></td>
+                <td><a href="${grant.longurl()}/revoke">[X]</a></td>
+              </tr>
+            </py:for>
+          </tbody>
+        </table>
+      </div>
+    </p>
+  </body>
+</html>

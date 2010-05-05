@@ -76,6 +76,7 @@
           <input name="q" type="text" class="defaultText" title="Search ${c.app.config.options.mount_point.title()}"/>
         </span>
       </form>
+      <div py:if="not c.app or not c.app.searchable">&nbsp;</div>
       <py:if test="not c.app and not getattr(c, 'custom_sidebar_menu', None)">&nbsp;</py:if>
       <ul id="sidebarmenu" py:if="getattr(c, 'custom_sidebar_menu', None)">
         <li py:for="s in c.custom_sidebar_menu">

@@ -1,0 +1,112 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+                      "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:py="http://genshi.edgewall.org/"
+      xmlns:xi="http://www.w3.org/2001/XInclude">
+
+  <xi:include href="master.html" />
+  <xi:include href="lib.html" />
+  <xi:include href="neighborhood_lib.html" />
+
+  <head>
+    <meta content="text/html; charset=UTF-8" http-equiv="content-type" py:replace="''"/>
+    <title>Administration Overview for $neighborhood.name</title>
+  </head>
+
+  <body>
+    <h1 class="title">Administration Overview for $neighborhood.name</h1>
+    <form method="POST" action="update" enctype="multipart/form-data">
+      <div class="span-3"><label>Name</label></div>
+      <div class="editable viewing span-15 last">
+        <div class="viewer">$neighborhood.name</div>
+        <div class="editor">
+          <input name="name" value="$neighborhood.name"/>
+        </div>
+      </div>
+      <hr class="clear clearfix" />
+      <div class="span-3"><label>Home Content<br/>(Markdown)</label></div>
+      <div class="editable viewing span-15 last">
+        <div class="viewer" py:if="neighborhood.homepage">$neighborhood.homepage</div>
+        <div class="viewer" py:if="not neighborhood.homepage">None</div>
+        <div class="editor">${c.markdown_editor.display(name='homepage',value=neighborhood.homepage)}</div>
+      </div>
+      <hr class="clear clearfix" />
+      <div class="span-18 last">
+        Custom colors override the default theme for your neighborhood. You may also use them in your Custom CSS like "color: $${color1}"
+      </div>
+      <div class="span-3"><label>Custom Color 1</label></div>
+      <div class="editable viewing span-15 last">
+        <div class="viewer" py:if="neighborhood.theme">$neighborhood.theme.color1</div>
+        <div class="viewer" py:if="not neighborhood.theme">None</div>
+        <div class="editor">
+          <input name="color1" value="${neighborhood.theme and neighborhood.theme.color1 or ''}"/>
+        </div>
+      </div>
+      <hr class="clear clearfix" />
+      <div class="span-3"><label>Custom Color 2</label></div>
+      <div class="editable viewing span-15 last">
+        <div class="viewer" py:if="neighborhood.theme">$neighborhood.theme.color2</div>
+        <div class="viewer" py:if="not neighborhood.theme">None</div>
+        <div class="editor">
+          <input name="color2" value="${neighborhood.theme and neighborhood.theme.color2 or ''}"/>
+        </div>
+      </div>
+      <hr class="clear clearfix" />
+      <div class="span-3"><label>Custom Color 3</label></div>
+      <div class="editable viewing span-15 last">
+        <div class="viewer" py:if="neighborhood.theme">$neighborhood.theme.color3</div>
+        <div class="viewer" py:if="not neighborhood.theme">None</div>
+        <div class="editor">
+          <input name="color3" value="${neighborhood.theme and neighborhood.theme.color3 or ''}"/>
+        </div>
+      </div>
+      <hr class="clear clearfix" />
+      <div class="span-3"><label>Custom Color 4</label></div>
+      <div class="editable viewing span-15 last">
+        <div class="viewer" py:if="neighborhood.theme">$neighborhood.theme.color4</div>
+        <div class="viewer" py:if="not neighborhood.theme">None</div>
+        <div class="editor">
+          <input name="color4" value="${neighborhood.theme and neighborhood.theme.color4 or ''}"/>
+        </div>
+      </div>
+      <hr class="clear clearfix" />
+      <div class="span-3"><label>Custom Color 5</label></div>
+      <div class="editable viewing span-15 last">
+        <div class="viewer" py:if="neighborhood.theme">$neighborhood.theme.color5</div>
+        <div class="viewer" py:if="not neighborhood.theme">None</div>
+        <div class="editor">
+          <input name="color5" value="${neighborhood.theme and neighborhood.theme.color5 or ''}"/>
+        </div>
+      </div>
+      <hr class="clear clearfix" />
+      <div class="span-3"><label>Custom Color 6</label></div>
+      <div class="editable viewing span-15 last">
+        <div class="viewer" py:if="neighborhood.theme">$neighborhood.theme.color6</div>
+        <div class="viewer" py:if="not neighborhood.theme">None</div>
+        <div class="editor">
+          <input name="color6" value="${neighborhood.theme and neighborhood.theme.color6 or ''}"/>
+        </div>
+      </div>
+      <hr class="clear clearfix" />
+      <div class="span-3"><label>Custom CSS</label></div>
+      <div class="editable viewing span-15 last">
+        <div class="viewer" py:if="neighborhood.css"><pre>$neighborhood.css</pre></div>
+        <div class="viewer" py:if="not neighborhood.css">No CSS has been created</div>
+        <div class="editor">
+          <textarea name="css">$neighborhood.css</textarea>
+        </div>
+      </div>
+      <hr class="clear clearfix" />
+      <div class="span-3"><label>Icon</label></div>
+      <div class="editable viewing span-15 last">
+        <div class="viewer" py:if="neighborhood.icon"><img src="${neighborhood.url()}/icon"/></div>
+        <div class="viewer" py:if="not neighborhood.icon">No icon has been uploaded</div>
+        <div class="editor">
+          ${file_field('icon', 'File')}
+        </div>
+      </div>
+      <hr class="clear clearfix" />
+      <div class="push-3 span-15 last"><input type="submit" value="Save" class="ui-state-default ui-button ui-button-text"/></div>
+    </form>
+  </body>
+</html>
