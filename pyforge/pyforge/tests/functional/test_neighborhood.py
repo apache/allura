@@ -173,4 +173,13 @@ class TestNeighborhood(TestController):
     text-decoration: none;
 }""" in r)
 
+    def test_custom_css(self):
+        r = self.app.get('/adobe/site_style.css')
+        assert("body {background-color: #f00;}" not in r)
+        r = self.app.post('/adobe/_admin/update',
+                          params=dict(name='Adobe', css='body {background-color: #f00;}', homepage=''),
+                          extra_environ=dict(username='root'))
+        r = self.app.get('/adobe/site_style.css')
+        assert("body {background-color: #f00;}" in r)
+
 

@@ -4,6 +4,7 @@ import Image
 import os
 
 import pkg_resources
+import genshi.template
 from tg import expose, flash, redirect, validate, request, response
 from tg.decorators import with_trailing_slash, without_trailing_slash
 from pylons import c, g
@@ -122,7 +123,9 @@ class NeighborhoodController(object):
                 'pyforge', 'templates/style.css')
             css = h.render_genshi_plaintext(tpl_fn,**colors)
             if self.neighborhood.css:
-                css = css + h.render_genshi_plaintext(self.neighborhood.css,**colors)
+                tt = genshi.template.NewTextTemplate(self.neighborhood.css)
+                stream = tt.generate(**colors)
+                css = css + stream.render(encoding='utf-8').decode('utf-8')
             CACHED_CSS[self.neighborhood._id] = css
         response.headers['Content-Type'] = ''
         response.content_type = 'text/css'
