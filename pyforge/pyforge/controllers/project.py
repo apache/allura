@@ -282,15 +282,17 @@ class NeighborhoodAdminController(object):
     def __init__(self, neighborhood):
         self.neighborhood = neighborhood
         self.awards = NeighborhoodAwardsController(self.neighborhood)
-        admin_url = neighborhood.url()+'_admin/'
-        c.custom_sidebar_menu = [SitemapEntry('Neighborhood Admin'),
-                 SitemapEntry('Overview', admin_url+'overview', className='nav_child'),
-                 SitemapEntry('Permissions', admin_url+'permissions', className='nav_child'),
-                 SitemapEntry('Awards', admin_url+'accolades', className='nav_child')]
 
     def _check_security(self):
         require(has_neighborhood_access('admin', self.neighborhood),
                 'Admin access required')
+
+    def set_nav(self):
+        admin_url = self.neighborhood.url()+'_admin/'
+        c.custom_sidebar_menu = [SitemapEntry('Neighborhood Admin'),
+                 SitemapEntry('Overview', admin_url+'overview', className='nav_child'),
+                 SitemapEntry('Permissions', admin_url+'permissions', className='nav_child'),
+                 SitemapEntry('Awards', admin_url+'accolades', className='nav_child')]
 
     @with_trailing_slash
     @expose()
@@ -300,17 +302,20 @@ class NeighborhoodAdminController(object):
     @without_trailing_slash
     @expose('pyforge.templates.neighborhood_admin_overview')
     def overview(self):
+        self.set_nav()
         c.markdown_editor = W.markdown_editor
         return dict(neighborhood=self.neighborhood)
 
     @without_trailing_slash
     @expose('pyforge.templates.neighborhood_admin_permissions')
     def permissions(self):
+        self.set_nav()
         return dict(neighborhood=self.neighborhood)
 
     @without_trailing_slash
     @expose('pyforge.templates.neighborhood_admin_accolades')
     def accolades(self):
+        self.set_nav()
         psort = [(n, M.Project.query.find(dict(is_root=True, neighborhood_id=n._id, deleted=False)).sort('shortname').all())
                  for n in M.Neighborhood.query.find().sort('name')]
         awards = M.Award.query.find(dict(created_by_neighborhood_id=self.neighborhood._id))
