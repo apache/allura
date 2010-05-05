@@ -25,7 +25,11 @@ class ProjectSession(Session):
             p = environ.get('allura.project', None)
             if p is None:
                 # But if we're not using MagicalC, as in paster shell....
-                p = getattr(c, 'project', None)
+                try:
+                    p = getattr(c, 'project', None)
+                except TypeError:
+                     # running without MagicalC, inside a request (likely EasyWidgets)
+                    return None
             if p is None: return None
             return getattr(self.main_session.bind.conn, p.database)
         except (KeyError, AttributeError), ex:
