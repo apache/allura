@@ -68,6 +68,7 @@ class AdminApp(Application):
         self.root = ProjectAdminController()
         self.admin = AdminAppAdminController(self)
         self.templates = pkg_resources.resource_filename('pyforge.ext.admin', 'templates')
+        self.sitemap = [ SitemapEntry('Admin','.')]
 
     def sidebar_menu(self):
         admin_url = c.project.url()+'admin/'
