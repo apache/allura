@@ -109,10 +109,6 @@ class ForgeSVNApp(Application):
 
 class RootController(object):
 
-    def __init__(self):
-        setattr(self, 'feed.atom', self.feed)
-        setattr(self, 'feed.rss', self.feed)
-
     @expose('forgesvn.templates.index')
     def index(self, offset=0):
         offset=int(offset)
@@ -129,51 +125,6 @@ class RootController(object):
             host=host,
             revisions=revisions,
             next_link=next_link)
-
-    @with_trailing_slash
-    @expose('forgewiki.templates.search')
-    @validate(dict(q=validators.UnicodeString(if_empty=None),
-                   history=validators.StringBool(if_empty=False)))
-    def search(self, q=None, history=None):
-        'local wiki search'
-        results = []
-        count=0
-        if not q:
-            q = ''
-        else:
-            search_query = '''%s
-            AND is_history_b:%s
-            AND project_id_s:%s
-            AND mount_point_s:%s''' % (
-                q, history, c.project._id, c.app.config.options.mount_point)
-            results = search(search_query)
-            if results: count=results.hits
-        return dict(q=q, history=history, results=results or [], count=count)
-
-    @without_trailing_slash
-    @expose()
-    @validate(dict(
-            since=DateTimeConverter(if_empty=None),
-            until=DateTimeConverter(if_empty=None),
-            offset=validators.Int(if_empty=None),
-            limit=validators.Int(if_empty=None)))
-    def feed(self, since=None, until=None, offset=None, limit=None):
-        if request.environ['PATH_INFO'].endswith('.atom'):
-            feed_type = 'atom'
-        else:
-            feed_type = 'rss'
-        title = 'Recent changes to %s' % c.app.config.options.mount_point
-        feed = Feed.feed(
-            {'artifact_reference.mount_point':c.app.config.options.mount_point,
-             'artifact_reference.project_id':c.project._id},
-            feed_type,
-            title,
-            c.app.url,
-            title,
-            since, until, offset, limit)
-        response.headers['Content-Type'] = ''
-        response.content_type = 'application/xml'
-        return feed.writeString('utf-8')
 
     @expose()
     def _lookup(self, rev, *remainder):

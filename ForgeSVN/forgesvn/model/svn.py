@@ -103,7 +103,7 @@ class SVNCommit(object):
                     artifact_type=pymongo.bson.Binary(pickle.dumps(self.__class__)),
                     artifact_id=self._id))
             return d
-        except AttributeError:
+        except AttributeError: # pragma no cover
             return None
 
     def url(self):
@@ -113,13 +113,19 @@ class SVNCommit(object):
         return self
 
     def shorthand_id(self):
-        return '[%s]' % self._id[:6]
-
-    def parents(self):
-        return tuple(SvnCommit.from_hg(c, self._repo) for c in self._impl.parents())
+        return '[r%s]' % self._id
 
     def diff(self):
         return self._repo.diff(self._id-1, self._id)
 
+class MockQuery(object):
+    def __init__(self, cls):
+        self._cls = cls
+
+    def get(self, _id):
+        import pylons
+        return self._cls(_id, repo=pylons.c.app.repo)
+
+SVNCommit.query = MockQuery(SVNCommit)
 
 MappedClass.compile_all()
