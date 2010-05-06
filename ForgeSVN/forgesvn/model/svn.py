@@ -1,4 +1,8 @@
+import os
+import errno
+import stat
 import logging
+import subprocess
 import cPickle as pickle
 from datetime import datetime
 
@@ -16,6 +20,7 @@ from pyforge.lib import helpers as h
 log = logging.getLogger(__name__)
 
 class SVNRepository(Repository):
+    MAGIC_FILENAME='.SOURCEFORGE-REPOSITORY'
     class __mongometa__:
         name='svn-repository'
 
@@ -33,11 +38,27 @@ class SVNRepository(Repository):
     def local_url(self):
         return 'file://%s/%s' % (self.fs_path, self.name)
 
+    def init(self):
+        if not self.fs_path.endswith('/'): self.fs_path += '/'
+        try:
+            os.makedirs(self.fs_path)
+        except OSError, e: # pragma no cover
+            if e.errno != errno.EEXIST: raise
+        # We may eventually require --template=...
+        log.info('svnadmin create %s%s', self.fs_path, self.name)
+        result = subprocess.call(['svnadmin', 'create', self.name],
+                                 cwd=self.fs_path)
+        magic_file = os.path.join(self.fs_path, self.name, self.MAGIC_FILENAME)
+        with open(magic_file, 'w') as f:
+            f.write('svn')
+        os.chmod(magic_file, stat.S_IRUSR|stat.S_IRGRP|stat.S_IROTH)
+        self.status = 'ready'
+
     def log(self, *args, **kwargs):
         try:
             return [SVNCommit.from_svn(entry, self)
                     for entry in self._impl.log(self.local_url, *args, **kwargs) ]
-        except:
+        except:  # pragma no cover
             log.exception('Error performing SVN log:')
             return []
 

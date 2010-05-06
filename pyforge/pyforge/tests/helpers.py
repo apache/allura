@@ -1,4 +1,4 @@
-from os import path, environ
+from os import path, environ, getcwd
 
 import tg
 import mock
@@ -18,7 +18,10 @@ DFL_APP_NAME = 'main_without_authn'
 
 def setup_basic_test(config=DFL_CONFIG, app_name=DFL_APP_NAME):
     '''Create clean environment for running tests'''
-    conf_dir = tg.config.here
+    try:
+        conf_dir = tg.config.here
+    except AttributeError:
+        conf_dir = getcwd()
     test_file = path.join(conf_dir, config)
     cmd = SetupCommand('setup-app')
     cmd.run([test_file])
