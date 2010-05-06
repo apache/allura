@@ -92,15 +92,6 @@ class TestController(BaseController, ProjectController):
         c.user = M.User.query.get(username=environ.get('username', 'test_admin'))
         return BaseController.__call__(self, environ, start_response)
 
-    def _cleanup_iterator(self, result):
-        for x in result:
-            yield x
-        self._cleanup_request()
-
-    def _cleanup_request(self):
-        ming.orm.ormsession.ThreadLocalORMSession.flush_all()
-        ming.orm.ormsession.ThreadLocalORMSession.close_all()
-
 class DispatchTest(object):
 
     @expose()

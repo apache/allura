@@ -53,16 +53,6 @@ class Globals(object):
         if asbool(config.get('amqp.mock')):
             self.mock_amq = MockAMQ()
             self._publish = self.mock_amq.publish
-        else:
-            self.conn = BrokerConnection(
-                hostname=config.get('amqp.hostname', 'localhost'),
-                port=asint(config.get('amqp.port', 5672)),
-                userid=config.get('amqp.userid', 'testuser'),
-                password=config.get('amqp.password', 'testpw'),
-                virtual_host=config.get('amqp.vhost', 'testvhost'))
-            self.publisher = dict(
-                audit=Publisher(connection=self.conn, exchange='audit', auto_declare=False),
-                react=Publisher(connection=self.conn, exchange='react', auto_declare=False))
 
         # Setup markdown
         self.markdown = markdown.Markdown(
@@ -84,6 +74,27 @@ class Globals(object):
         self.gravatar = gravatar.url
 
         self.oid_store = M.OpenIdStore()
+
+    @property
+    def publisher(self):
+        from .base import environ
+        if 'allura.carrot.publisher' not in environ:
+            environ['allura.carrot.publisher'] = dict(
+                audit=Publisher(connection=self.conn, exchange='audit', auto_declare=False),
+                react=Publisher(connection=self.conn, exchange='react', auto_declare=False))
+        return environ['allura.carrot.publisher']
+
+    @property
+    def conn(self):
+        from .base import environ
+        if 'allura.carrot.connection' not in environ:
+            environ['allura.carrot.connection'] = BrokerConnection(
+                hostname=config.get('amqp.hostname', 'localhost'),
+                port=asint(config.get('amqp.port', 5672)),
+                userid=config.get('amqp.userid', 'testuser'),
+                password=config.get('amqp.password', 'testpw'),
+                virtual_host=config.get('amqp.vhost', 'testvhost'))
+        return environ['allura.carrot.connection']
 
     def oid_session(self):
         if 'openid_info' in session:

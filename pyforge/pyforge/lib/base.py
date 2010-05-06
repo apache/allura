@@ -58,6 +58,9 @@ class Environ(object):
             self.set_environment({})
         return repr(self._local.environ)
 
+    def __contains__(self, key):
+        return self._local.environ and key in self._local.environ
+
 environ = _environ = Environ()
 
 class BaseController(TGController):
@@ -95,12 +98,12 @@ class BaseController(TGController):
             self._setup_request()
             result = app(environ, start_response)
             if not isinstance(result, list):
-                return self._cleanup_iterator(result)
+                return self._cleanup_iterator(result, environ)
             else:
-                self._cleanup_request()
+                self._cleanup_request(environ)
                 return result
         except exc.HTTPRedirection:
-            self._cleanup_request()
+            self._cleanup_request(environ)
             raise
         except:
             ming.orm.ormsession.ThreadLocalORMSession.close_all()
@@ -125,9 +128,17 @@ class BaseController(TGController):
         '''Responsible for setting all the values we need to be set on pylons.c'''
         raise NotImplementedError, '_setup_request'
 
-    def _cleanup_request(self):
+    def _cleanup_iterator(self, result, environ):
+        for x in result:
+            yield x
+        self._cleanup_request(environ)
+
+    def _cleanup_request(self, environ):
         ming.orm.ormsession.ThreadLocalORMSession.flush_all()
         ming.orm.ormsession.ThreadLocalORMSession.close_all()
+        if 'allura.carrot.connection' in environ:
+            environ['allura.carrot.connection'].close()
+            del environ['allura.carrot.connection']
 
 class MagicalC(object):
     '''Magically saves various attributes to the environ'''
