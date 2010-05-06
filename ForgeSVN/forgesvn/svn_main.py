@@ -94,7 +94,6 @@ class ForgeSVNApp(Application):
             status = 'creating')
         g.publish('audit', 'scm.svn.init', dict(repo_name=repo.name, repo_path=repo.fs_path))
 
-
     def uninstall(self, project):
         g.publish('audit', 'scm.svn.uninstall', dict(project_id=project._id))
 

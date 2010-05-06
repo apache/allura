@@ -20,6 +20,6 @@
     <a py:if="revision.revision.number" href="$prev">Prev</a>
     <a href="$next">Next</a>
     ${c.revision_widget.display(value=revision)}
-    <pre><code>${revision.diff()}</code></pre>
+    <pre><code>${unicode(revision.diff(), 'utf-8')}</code></pre>
   </body>
 </html>
