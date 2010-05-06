@@ -13,6 +13,12 @@
         $(window.location.hash + '.title-pane').removeClass('closed');
     }
 
+    var defocus = function(ele){
+        ele.closest('.editable')
+                  .addClass('viewing')
+                  .removeClass('editing');
+        ele.find('input, select, textarea').blur();
+    }
     // Setup editable widgets
     $('div.editable, span.editable, h1.editable')
         .find('.viewer').mouseenter(function(e){
@@ -21,11 +27,8 @@
                    .removeClass('viewing');
         }).end()
         .find('.editor').mouseleave(function(e){
-            $(this).closest('.editable')
-                      .addClass('viewing')
-                      .removeClass('editing');
-            $(this).find('input, select, textarea').blur();
-        }).end()
+            defocus($(this));
+        })
         .find('input, select, textarea').focus(function(e){
             $(this).closest('.editor').unbind('mouseleave');
             if(this.tagName.toLowerCase() != 'textarea'){
@@ -35,9 +38,17 @@
                     }
                 });
             }
-            $(this).blur(function(){
-                $(this).closest('form').submit();
-            });
+        })
+        .change(function(e){
+            $(this).closest('form').submit();
+        })
+        .blur(function(e){
+            $(this).closest('.editable').find('.editor').mouseleave(function(e){
+                defocus($(this));
+            })
+            .end()
+            .addClass('viewing')
+            .removeClass('editing');
         });
 })(jQuery);
 
