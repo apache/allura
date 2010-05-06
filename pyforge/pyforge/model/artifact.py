@@ -190,6 +190,7 @@ class Artifact(MappedClass):
     _id = FieldProperty(S.ObjectId)
     mod_date = FieldProperty(datetime, if_missing=datetime.utcnow)
     app_config_id = ForeignIdProperty('AppConfig', if_missing=lambda:c.app.config._id)
+    plugin_verson = FieldProperty(S.Deprecated)
     tool_version = FieldProperty(
         S.Object,
         { str: str },

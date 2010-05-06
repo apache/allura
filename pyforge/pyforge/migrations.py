@@ -29,6 +29,8 @@ class UpdateProjectsToTools(Migration):
         rename_key(self.session,M.AppConfig,'plugin_name','tool_name')
         rename_key(self.session,M.ArtifactLink,'plugin_name','tool_name')
         rename_key(self.session,M.Project,'plugin','tool',inside='acl')
+        c.app.__version__ = '0.1'
+        c.app.config.tool_name = 'project_home'
         for pc in self.ormsession.find(PM.PortalConfig, {}):
             for div in pc.layout:
                 for widget in div.content:
@@ -70,6 +72,8 @@ class UpdateProjectsToTools(Migration):
         rename_key(self.session,M.AppConfig,'tool_name','plugin_name')
         rename_key(self.session,M.ArtifactLink,'tool_name','plugin_name')
         rename_key(self.session,M.Project,'tool','plugin',inside='acl')
+        c.app.__version__ = '0.1'
+        c.app.config.tool_name = 'project_home'
         for pc in self.ormsession.find(PM.PortalConfig, {}):
             for div in pc.layout:
                 for widget in div.content:
