@@ -1,4 +1,5 @@
 import os
+import shutil
 import sys
 import stat
 import errno
@@ -32,24 +33,47 @@ class GitRepository(Repository):
             type_s='GitRepository')
         return result
 
-    def init(self):
+    def _setup_paths(self, create_repo_dir=True):
         if not self.fs_path.endswith('/'): self.fs_path += '/'
         fullname = os.path.join(self.fs_path, self.name)
         try:
-            os.makedirs(fullname)
+            os.makedirs(fullname if create_repo_dir else self.fs_path)
         except OSError, e: # pragma no cover
             if e.errno != errno.EEXIST: raise
-        log.info('git init %s', fullname)
-        result = subprocess.call(['git', 'init', '--bare', '--shared=all'],
-                                 cwd=fullname)
-        magic_file = os.path.join(fullname, '.SOURCEFORGE-REPOSITORY')
-        if os.path.exists(magic_file): # pragma no cover
-            os.remove(magic_file)
+        return fullname
+
+    def _setup_special_files(self):
+        magic_file = os.path.join(self.fs_path, self.name, '.SOURCEFORGE-REPOSITORY')
         with open(magic_file, 'w') as f:
             f.write('git')
         os.chmod(magic_file, stat.S_IRUSR|stat.S_IRGRP|stat.S_IROTH)
         self._setup_receive_hook(
             pylons.c.app.config.script_name())
+
+    def init(self):
+        fullname = self._setup_paths()
+        log.info('git init %s', fullname)
+        result = subprocess.call(['git', 'init', '--bare', '--shared=all'],
+                                 cwd=fullname)
+        self._setup_special_files()
+        self.status = 'ready'
+
+    def init_as_clone(self, source_path):
+        """Make this new repo be a clone of the one at source_path.
+
+        Note that this is the opposite "direction" of git.Repo.clone().
+        """
+        fullname = self._setup_paths(create_repo_dir=False)
+        log.info('git clone %s %s' % (source_path, fullname))
+        # We may eventually require --template=...
+        result = subprocess.call(['git', 'clone', '--bare', source_path, self.name],
+                                 cwd=self.fs_path)
+        # we don't want merge requests from the originating repo,
+        # but local clones by default copy everything under the refs directory
+        # so delete refs/requests (our custom place for storing refs) by hand
+        requests = os.path.join(fullname, 'refs', 'requests')
+        shutil.rmtree(requests, ignore_errors=True)
+        self._setup_special_files()
         self.status = 'ready'
 
     def revision(self, rev):

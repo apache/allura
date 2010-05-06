@@ -22,6 +22,9 @@
         <dt>status</dt>
         <dd>${repo.status}</dd>
       </dl>
+      <form py:if="allow_fork" action="fork" method="GET">
+        <input type="submit" value="Fork" class="ui-state-default ui-button ui-button-text"/>
+      </form>
     </py:if>
     <h2>Recent Commits</h2>
     <h3 py:if="branch">Browsing $branch</h3>
