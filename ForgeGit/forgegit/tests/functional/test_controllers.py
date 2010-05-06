@@ -21,13 +21,12 @@ class TestRootController(TestController):
         ThreadLocalORMSession.close_all()
 
     def test_index(self):
-        resp = self.app.get('/src/')
-        assert 'git clone' in resp
+        resp = self.app.get('/src_git/')
+        assert 'git://' in resp
         assert 'ready' in resp
-        assert 'Revision 1' in resp
 
     def test_commit(self):
-        resp = self.app.get('/src/1/')
+        resp = self.app.get('/src_git/HEAD/')
         assert '+' in resp
 
 

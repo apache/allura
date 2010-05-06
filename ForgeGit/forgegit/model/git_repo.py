@@ -77,7 +77,7 @@ class GitRepository(Repository):
             executable=sys.executable,
             repository=plugin_id,
             config=config)
-        fn = os.path.join(os.path.join(self.fs_path, self.name), 'hooks', 'post-receive')
+        fn = os.path.join(self.fs_path, self.name, 'hooks', 'post-receive')
         with open(fn, 'w') as fp:
             fp.write(text)
         os.chmod(fn, 0755)
@@ -111,7 +111,7 @@ class GitCommit(object):
                     artifact_type=pymongo.bson.Binary(pickle.dumps(self.__class__)),
                     artifact_id=self._id))
             return d
-        except AttributeError:
+        except AttributeError: # pragma no cover
             return None
 
     def url(self):
@@ -157,10 +157,16 @@ class GitCommit(object):
         if self.parents:
             differ = h.diff_text_genshi
             for d in self._impl.diff(self.parents[0].sha):
-                yield (
-                    d.a_blob,
-                    d.b_blob,
-                    ''.join(differ(d.a_blob.data, d.b_blob.data)))
+                if d.deleted_file:
+                    yield (
+                        d.a_blob,
+                        d.a_blob,
+                        ''.join(differ(d.a_blob.data, '')))
+                else:
+                    yield (
+                        d.a_blob,
+                        d.b_blob,
+                        ''.join(differ(d.a_blob.data, d.b_blob.data)))
         else:
             pass
 

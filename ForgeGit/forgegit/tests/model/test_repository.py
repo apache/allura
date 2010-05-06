@@ -53,6 +53,8 @@ class TestGitRepo(unittest.TestCase):
         assert str(entry.author) == 'Rick Copeland'
         assert entry.message
 
+    def test_tags(self):
+        self.repo.repo_tags()
 
 class TestGitCommit(unittest.TestCase):
 
@@ -79,6 +81,9 @@ class TestGitCommit(unittest.TestCase):
 
     def test_url(self):
         assert self.rev.url().endswith('/HEAD')
+
+    def test_committer_url(self):
+        assert self.rev.committer_url is None
 
     def test_primary(self):
         assert self.rev.primary() == self.rev
