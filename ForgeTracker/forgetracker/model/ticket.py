@@ -169,7 +169,7 @@ class Ticket(VersionedArtifact):
         if self.version > 1:
             hist = TicketHistory.query.get(artifact_id=self._id, version=self.version-1)
             old = hist.data
-            changes = []
+            changes = ['Ticket %s has been modified: %s' % (self.ticket_num, self.summary)]
             fields = [
                 ('Summary', old.summary, self.summary),
                 ('Status', old.status, self.status) ]
@@ -189,7 +189,7 @@ class Ticket(VersionedArtifact):
                 changes.append('Description updated:')
                 changes.append(h.diff_text(old.description, self.description))
             description = '<br>'.join(changes)
-            subject = 'Ticket %s modified' % self.ticket_num
+            subject = 'Ticket %s modified: %s' % (self.ticket_num, self.summary)
         else:
             self.subscribe()
             if self.assigned_to_id:
