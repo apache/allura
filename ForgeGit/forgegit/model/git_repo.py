@@ -17,7 +17,7 @@ from ming.orm.mapped_class import MappedClass
 from ming.orm.property import FieldProperty
 from ming.utils import LazyProperty
 
-from pyforge.model import Repository, ArtifactReference, User
+from pyforge.model import Repository, Commit, ArtifactReference, User
 from pyforge.lib import helpers as h
 
 log = logging.getLogger(__name__)
@@ -82,43 +82,14 @@ class GitRepository(Repository):
             fp.write(text)
         os.chmod(fn, 0755)
 
-class MockQuery(object):
-    def __init__(self, cls):
-        self._cls = cls
-
-    def get(self, _id):
-        return self._cls(_id, repo=pylons.c.app.repo)
-
-class GitCommit(object):
+class GitCommit(Commit):
     type_s='GitCommit'
-
-    def __init__(self, id, repo):
-        self._id = id
-        self._repo = repo
 
     @classmethod
     def from_git(cls, c, repo):
         result = cls(id=c.sha, repo=repo)
         result.__dict__['_impl'] = c
         return result
-
-    def dump_ref(self):
-        '''Return a pickle-serializable reference to an artifact'''
-        try:
-            d = ArtifactReference(dict(
-                    project_id=pylons.c.project._id,
-                    mount_point=pylons.c.app.config.options.mount_point,
-                    artifact_type=pymongo.bson.Binary(pickle.dumps(self.__class__)),
-                    artifact_id=self._id))
-            return d
-        except AttributeError: # pragma no cover
-            return None
-
-    def url(self):
-        return self._repo.url() + self._id
-
-    def primary(self, *args):
-        return self
 
     def shorthand_id(self):
         return '[%s]' % self._id[:6]
@@ -162,6 +133,11 @@ class GitCommit(object):
                         d.a_blob,
                         d.a_blob,
                         ''.join(differ(d.a_blob.data, '')))
+                elif d.new_file:
+                    yield (
+                        d.b_blob,
+                        d.b_blob,
+                        ''.join(differ('', d.b_blob.data)))
                 else:
                     yield (
                         d.a_blob,
@@ -169,7 +145,5 @@ class GitCommit(object):
                         ''.join(differ(d.a_blob.data, d.b_blob.data)))
         else:
             pass
-
-GitCommit.query = MockQuery(GitCommit)
 
 MappedClass.compile_all()

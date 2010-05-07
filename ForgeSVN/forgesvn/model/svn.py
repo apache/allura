@@ -14,7 +14,7 @@ from ming.orm.mapped_class import MappedClass
 from ming.orm.property import FieldProperty
 from ming.utils import LazyProperty
 
-from pyforge.model import Repository, ArtifactReference, User
+from pyforge.model import Repository, Commit, ArtifactReference, User
 from pyforge.lib import helpers as h
 
 log = logging.getLogger(__name__)
@@ -75,7 +75,7 @@ class SVNRepository(Repository):
             '/tmp', self.local_url, r0,
             self.local_url, r1)
 
-class SVNCommit(object):
+class SVNCommit(Commit):
     type_s='SvnCommit'
 
     def __init__(self, id, repo):
@@ -117,15 +117,5 @@ class SVNCommit(object):
 
     def diff(self):
         return self._repo.diff(self._id-1, self._id)
-
-class MockQuery(object):
-    def __init__(self, cls):
-        self._cls = cls
-
-    def get(self, _id):
-        import pylons
-        return self._cls(_id, repo=pylons.c.app.repo)
-
-SVNCommit.query = MockQuery(SVNCommit)
 
 MappedClass.compile_all()

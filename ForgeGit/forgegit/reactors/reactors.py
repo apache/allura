@@ -1,11 +1,5 @@
-import os
-import sys
-import stat
-import errno
 import logging
-import subprocess
 
-import pkg_resources
 import pylons
 
 from pyforge.lib.decorators import audit, react

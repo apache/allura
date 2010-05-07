@@ -243,19 +243,27 @@ def diff_text_genshi(t1, t2):
     differ = difflib.SequenceMatcher(None, t1, t2)
     result = []
     def esc(t):
-        return genshi.escape(t.replace('\n', '\n    '))
+        try:
+            return genshi.escape(t.replace('\n', '\n    '))
+        except UnicodeDecodeError:
+            return '**UnicodeDecodeError**'
+    def excerpt(text, a, b):
+        if b-a > 1000:
+            return text[a:a+400] + '...' + text[b-400:b]
+        else:
+            return text[a:b]
     yield '    '
     for tag, i1, i2, j1, j2 in differ.get_opcodes():
         if tag in ('delete', 'replace'):
             yield '<del>'
-            yield esc(t1[i1:i2])
+            yield esc(excerpt(t1,i1,i2))
             yield '</del>'
         if tag in ('insert', 'replace'):
             yield '<ins>'
-            yield esc(t2[j1:j2])
+            yield esc(excerpt(t2,j1,j2))
             yield '</ins>'
         if tag == 'equal':
-            yield esc(t1[i1:i2])
+            yield excerpt(esc(t1,i1,i2))
 
 def gen_message_id():
     parts = c.project.url().split('/')[1:-1]

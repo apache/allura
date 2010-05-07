@@ -26,8 +26,7 @@ class TestRootController(TestController):
         assert 'ready' in resp
 
     def test_commit(self):
-        resp = self.app.get('/src_git/HEAD/')
-        assert '+' in resp
+        self.app.get('/src_git/HEAD/')
 
 
 
