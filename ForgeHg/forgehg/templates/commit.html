@@ -27,7 +27,7 @@
       </ul>
       <py:if test="commit.files()">
         <h2>Patches</h2>
-        <div py:for="a, b, d in commit.diffs"
+        <div py:for="a, b, d in commit.diffs()"
              class="title-pane closed">
           <h3 class="title">diff a/$a b/$b</h3>
           <pre class="content codehilite"><code>${Markup(d)}</code></pre>

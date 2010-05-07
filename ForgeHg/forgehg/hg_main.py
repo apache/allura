@@ -67,7 +67,7 @@ class ForgeHgApp(Application):
         repo = c.app.repo
         if repo and repo.status == 'ready':
             branches= repo.branchmap().keys()
-            tags = repo.tags().keys()
+            tags = repo.repo_tags().keys()
             if branches:
                 links.append(SitemapEntry('Branches'))
                 for b in branches:
@@ -125,24 +125,17 @@ class ForgeHgApp(Application):
 
 class RootController(object):
 
-    def __init__(self):
-        setattr(self, 'feed.atom', self.feed)
-        setattr(self, 'feed.rss', self.feed)
-
     @expose('forgehg.templates.index')
     def index(self, offset=0, branch=None, tag=None):
         offset=int(offset)
         repo = c.app.repo
         if repo and repo.status == 'ready':
-            if branch == tag == None:
-                revisions = islice(repo, offset, offset+10)
-                next_link='?' + urlencode(dict(offset=offset+10))
-            elif branch is not None:
-                revisions = islice(repo.iter_branch(branch), offset, offset+10)
-                next_link='?' + urlencode(dict(branch=branch, offset=offset+10))
-            elif tag is not None:
-                revisions = islice(repo.iter_tag(tag), offset, offset+10)
-                next_link='?' + urlencode(dict(tag=tag, offset=offset+10))
+            revisions = repo.log(branch=branch, tag=tag)
+            revisions = islice(revisions, offset, offset+10)
+            args = dict(offset=offset+10)
+            if branch: args['branch'] = branch
+            if tag: args['tag'] = tag
+            next_link = '?' + urlencode(args)
         else:
             revisions = []
             next_link=None
@@ -154,51 +147,6 @@ class RootController(object):
                     revisions=revisions,
                     next_link=next_link,
                     offset=offset)
-
-    @with_trailing_slash
-    @expose('forgewiki.templates.search')
-    @validate(dict(q=validators.UnicodeString(if_empty=None),
-                   history=validators.StringBool(if_empty=False)))
-    def search(self, q=None, history=None):
-        'local wiki search'
-        results = []
-        count=0
-        if not q:
-            q = ''
-        else:
-            search_query = '''%s
-            AND is_history_b:%s
-            AND project_id_s:%s
-            AND mount_point_s:%s''' % (
-                q, history, c.project._id, c.app.config.options.mount_point)
-            results = search(search_query)
-            if results: count=results.hits
-        return dict(q=q, history=history, results=results or [], count=count)
-
-    @without_trailing_slash
-    @expose()
-    @validate(dict(
-            since=DateTimeConverter(if_empty=None),
-            until=DateTimeConverter(if_empty=None),
-            offset=validators.Int(if_empty=None),
-            limit=validators.Int(if_empty=None)))
-    def feed(self, since=None, until=None, offset=None, limit=None):
-        if request.environ['PATH_INFO'].endswith('.atom'):
-            feed_type = 'atom'
-        else:
-            feed_type = 'rss'
-        title = 'Recent changes to %s' % c.app.config.options.mount_point
-        feed = Feed.feed(
-            {'artifact_reference.mount_point':c.app.config.options.mount_point,
-             'artifact_reference.project_id':c.project._id},
-            feed_type,
-            title,
-            c.app.url,
-            title,
-            since, until, offset, limit)
-        response.headers['Content-Type'] = ''
-        response.content_type = 'application/xml'
-        return feed.writeString('utf-8')
 
     @expose()
     def _lookup(self, hash, *remainder):

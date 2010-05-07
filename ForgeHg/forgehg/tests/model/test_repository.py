@@ -44,14 +44,18 @@ class TestHgRepo(unittest.TestCase):
         assert i['type_s'] == 'HgRepository', i
 
     def test_log(self):
+        committers = set([
+                'jwalsh04@gmail.com',
+                'rick446@usa.net',
+                'jbeard@geek.net'])
         for entry in self.repo.log():
-            assert str(entry.author)
-            assert entry.message
+            assert entry.user['email'] in committers, entry.user
+            assert entry.description()
 
     def test_revision(self):
-        entry = self.repo.revision('HEAD')
-        assert str(entry.author) == 'Rick Copeland'
-        assert entry.message
+        entry = self.repo.revision('tip')
+        assert entry.user['email'] == 'jwalsh04@gmail.com'
+        assert entry.description()
 
     def test_tags(self):
         self.repo.repo_tags()
@@ -80,7 +84,7 @@ class TestHgCommit(unittest.TestCase):
         assert self.rev._id == art._id
 
     def test_url(self):
-        assert self.rev.url().endswith('/HEAD')
+        assert self.rev.url().endswith('/6cf1b362918b747c873f1903064860726e9360ef')
 
     def test_user_url(self):
         assert self.rev.user_url is None
@@ -89,10 +93,10 @@ class TestHgCommit(unittest.TestCase):
         assert self.rev.primary() == self.rev
 
     def test_shorthand(self):
-        assert self.rev.shorthand_id() == '[HEAD]'
+        assert self.rev.shorthand_id() == '[6cf1b3]'
 
     def test_diff(self):
-        len(self.rev.diffs())
+        len(list(self.rev.diffs()))
         for d in self.rev.diffs():
             print d
 

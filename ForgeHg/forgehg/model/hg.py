@@ -34,7 +34,7 @@ class HgRepository(Repository):
         if not self.fs_path.endswith('/'): self.fs_path += '/'
         try:
             os.makedirs(self.fs_path)
-        except OSError, e:
+        except OSError, e: # pragma no cover
             if e.errno != errno.EEXIST:
                 raise
         # We may eventually require --template=...
@@ -52,30 +52,24 @@ class HgRepository(Repository):
         return hg.repository(ui.ui(), os.path.join(self.fs_path, self.name))
 
     def __iter__(self):
-        cs = self._impl[self._impl.heads()[0]]
-        return self.iter_changeset(cs)
+        return self.log()
 
     def revision(self, hash):
         return HgCommit.from_hg(self._impl[hash], self)
 
-    def iter_changeset(self, changeset):
-        yield HgCommit.from_hg(changeset, self)
-        for x in changeset.ancestors():
+    def log(self, changeset=None, branch=None, tag=None):
+        if branch and branch in self._impl.branchmap():
+            cs = self._impl.branchmap()[branch][0]
+        elif tag and tag in self._impl.tags():
+            cs = self._impl.tags()[tag]
+        elif changeset:
+            cs = changeset
+        else:
+            cs = self._impl.heads()[0]
+        cs = self._impl[cs]
+        yield HgCommit.from_hg(cs, self)
+        for x in cs.ancestors():
             yield HgCommit.from_hg(x, self)
-
-    def iter_branch(self, branch):
-        branch = self._impl.branchmap().get(branch, [])
-        if branch:
-            return self.iter_changeset(self._impl[branch[0]])
-        else:
-            return []
-
-    def iter_tag(self, tag):
-        tag = self._impl.tags().get(tag)
-        if tag:
-            return self.iter_changeset(self._impl[tag])
-        else:
-            return []
 
     def __getattr__(self, name):
         return getattr(self._impl, name)
@@ -83,10 +77,9 @@ class HgRepository(Repository):
     def __getitem__(self, name):
         return HgCommit.from_hg(self._impl[name], self)
 
-    @property
-    def tags(self):
+    def repo_tags(self):
         '''Override Artifact.tags'''
-        return self._impl.tags
+        return self._impl.tags()
 
 class HgCommit(Commit):
     type_s='HgCommit'
@@ -113,7 +106,6 @@ class HgCommit(Commit):
         return tuple(HgCommit.from_hg(p, self._repo)
                      for p in self._impl.parents())
 
-    @property
     def diffs(self):
         differ = h.diff_text_genshi
         for fn in self.changeset()[3]:
