@@ -201,10 +201,12 @@ class ProjectController(object):
     @expose()
     @with_trailing_slash
     def index(self):
-        if c.project.shortname.startswith('u/'):
+        if c.project.app_instance('home'):
+            redirect('home/')
+        elif c.project.app_instance('profile'):
             redirect('profile/')
         else:
-            redirect('home/')
+            redirect(c.project.app_configs[0].options.mount_point + '/')
 
     @expose('pyforge.templates.project_sitemap')
     @without_trailing_slash
