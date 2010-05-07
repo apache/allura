@@ -42,4 +42,7 @@ class TestProjectHome(TestController):
         r1 = str(self.app.get('/home/'))
         assert r0 != r1
 
-
+    def test_user_subproject_home_not_profile(self):
+        r = self.app.get('/u/test_admin/sub1/')
+        assert r.location.endswith('home/'), r.location
+        r.follow()

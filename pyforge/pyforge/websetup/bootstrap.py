@@ -149,6 +149,8 @@ def bootstrap(command, conf, vars):
     ThreadLocalORMSession.flush_all()
     if asbool(conf.get('load_test_data')):
         log.info('Loading test data')
+        u_proj = M.Project.query.get(shortname='u/test_admin')
+        u_proj.new_subproject('sub1')
         app = p0.install_app('hello_forge', 'hello')
         app = p0.install_app('SVN', 'src')
         app = p0.install_app('Git', 'src_git')
