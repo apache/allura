@@ -1,0 +1,10 @@
+<div xmlns="http://www.w3.org/1999/xhtml"
+     xmlns:py="http://genshi.edgewall.org/"
+     py:strip="True"
+  >
+  <a href="${c.widget.expand(href)}"
+     py:attrs="attrs">
+    <py:if test="text is None">${c.widget.expand(label)}</py:if>
+    <py:if test="text is not None">${c.widget.expand(text)}</py:if>
+  </a>
+</div>

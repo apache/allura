@@ -1,0 +1,12 @@
+<div xmlns="http://www.w3.org/1999/xhtml"
+     xmlns:py="http://genshi.edgewall.org/"
+     py:strip="True"
+  >
+  <input name="${name}"
+         class="${css_class}"
+         value="${value}"
+         readonly="${readonly or None}"
+         dojoType="$dojoType"
+         promptMessage="${hint and _(hint)}"
+         py:attrs="attrs"/>
+</div>

@@ -1,0 +1,14 @@
+<form xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:py="http://genshi.edgewall.org/"
+      xmlns:xi="http://www.w3.org/2001/XInclude"
+      name="$name"
+      id="$name"
+      method="$method"
+      action="$action"
+      enctype="$enctype">
+  <?python from pkg_resources import resource_filename?>
+  <xi:include href="${resource_filename('ew.templates', '_ew_lib.html')}" />
+  ${subfields(hidden_fields, fields, error_class='dijitError')}
+  <py:for each="b in buttons">${b.display()}</py:for>
+  <py:if test="submit_button">${submit_button.display()}</py:if>
+</form>

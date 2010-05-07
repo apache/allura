@@ -152,11 +152,13 @@ def bootstrap(command, conf, vars):
         app = p0.install_app('hello_forge', 'hello')
         app = p0.install_app('SVN', 'src')
         app = p0.install_app('Git', 'src_git')
+        app.config.options['type'] = 'git'
+        app = p0.install_app('Hg', 'src_hg')
+        app.config.options['type'] = 'hg'
         p0.install_app('Wiki', 'wiki')
         p0.install_app('Tickets', 'bugs')
         p0.install_app('Tickets', 'doc_bugs')
         p0.install_app('Discussion', 'discussion')
-        app.config.options['type'] = 'git'
         ThreadLocalORMSession.flush_all()
         ThreadLocalORMSession.close_all()
         if asbool(conf.get('cache_test_data')):

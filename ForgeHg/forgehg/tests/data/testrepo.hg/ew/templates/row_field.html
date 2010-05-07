@@ -1,0 +1,14 @@
+<tr xmlns="http://www.w3.org/1999/xhtml"
+     xmlns:py="http://genshi.edgewall.org/"
+     xmlns:xi="http://www.w3.org/2001/XInclude">
+  <td py:for="i, field in enumerate(fields)"
+      py:with="ctx=c.widget.context_for(field.name)">
+    <py:if test="i==0">
+      <py:for each="hidden_field in hidden_fields"
+              py:with="hidden_ctx=c.widget.context_for(hidden_field.name)">
+        ${hidden_field.display(**hidden_ctx)}
+      </py:for>
+    </py:if>
+    ${field.display(**ctx)}
+  </td>
+</tr>

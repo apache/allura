@@ -1,0 +1,13 @@
+<form xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:py="http://genshi.edgewall.org/"
+      xmlns:xi="http://www.w3.org/2001/XInclude"
+      name="$name"
+      id="$name"
+      method="$method"
+      action="$action"
+      enctype="$enctype"
+      py:attrs="attrs">
+  <xi:include href="_ew_lib.html" />
+  ${subfields(hidden_fields, fields)}
+  <py:for each="b in buttons">${b.display()}</py:for>
+</form>

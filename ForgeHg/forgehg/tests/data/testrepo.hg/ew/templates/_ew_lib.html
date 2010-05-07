@@ -1,0 +1,35 @@
+<div
+   xmlns:py="http://genshi.edgewall.org/"
+   xmlns:xi="http://www.w3.org/2001/XInclude"
+   py:strip="True">
+
+  <py:def function="subfields(hidden_fields, fields, error_class='fielderror')">
+    <py:for each="field in hidden_fields"
+            py:with="ctx=c.widget.context_for(field.name)">
+      ${field.display(**ctx)}<br/>
+    </py:for>
+    <py:for each="field in fields"
+            py:with="ctx=c.widget.context_for(field.name)">
+      <py:if test="field.show_label"><label for="$ctx.name">$field.label</label><br/></py:if>
+      <py:if test="ctx.errors and field.show_errors"><span class="$error_class">$ctx.errors</span><br/></py:if>
+      ${field.display(**ctx)}<br/>
+    </py:for>
+  </py:def>
+
+
+  <py:def function="table(**attrs)">
+    <table py:attrs="attrs">
+      <thead>
+        <tr><th py:for="col in field.fields"><py:if test="col.show_label">$col.label</py:if></th></tr>
+      </thead>
+      <tbody>
+        <py:for each="i in xrange(repetitions)"
+                py:with="ctx=c.widget.context_for(i)">
+          ${c.widget.subwidget(i, ctx).display()}
+        </py:for>
+      </tbody>
+    </table>
+  </py:def>
+
+
+</div>

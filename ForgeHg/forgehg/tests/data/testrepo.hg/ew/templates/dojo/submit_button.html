@@ -1,0 +1,14 @@
+<div xmlns="http://www.w3.org/1999/xhtml"
+     xmlns:py="http://genshi.edgewall.org/"
+     py:strip="True"
+  >
+  <input dojoType="dijit.form.Button"
+         label="${_(label)}"
+         type="submit"
+         name="${name}"
+         class="${css_class}"
+         value="${_(label)}"
+         promptMessage="${prompt and _(prompt)}"
+         title="${prompt and _(prompt)}"
+         py:attrs="attrs"/>
+</div>

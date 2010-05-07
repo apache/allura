@@ -1,0 +1,7 @@
+<div xmlns="http://www.w3.org/1999/xhtml"
+     xmlns:py="http://genshi.edgewall.org/"
+     py:strip="True"
+  >
+  <py:if test="text">${Markup(c.widget.expand(text))}</py:if>
+  <py:if test="unicode(value) and not text">${Markup(value)}</py:if>
+</div>

@@ -59,7 +59,7 @@ class GitRepository(Repository):
 
     @LazyProperty
     def _impl(self):
-        return git.Repo(os.path.join(self.fs_path, self.name))
+        return git.Repo(self.full_fs_path)
 
     def __getattr__(self, name):
         return getattr(self._impl, name)

@@ -1,0 +1,18 @@
+<div xmlns="http://www.w3.org/1999/xhtml"
+     xmlns:py="http://genshi.edgewall.org/"
+     py:strip="True"
+  >
+  <fieldset>
+    <legend>$label</legend>
+    <py:for each="o in (c.widget.widget_type.option_object_for(value, o) for o in options)">
+      <input type="checkbox"
+             name="$name"
+             checked="${o.selected or None}"
+             value="$o.html_value"/>
+      <label py:if="option_widget is None">$o.label</label>
+      <label py:if="option_widget is not None">
+        ${option_widget.display(**o())}</label>
+      <br/>
+    </py:for>
+  </fieldset>
+</div>

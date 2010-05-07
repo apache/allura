@@ -1,0 +1,11 @@
+<div xmlns="http://www.w3.org/1999/xhtml"
+     xmlns:py="http://genshi.edgewall.org/"
+     py:strip="True"
+  >
+  <input type="checkbox"
+         name="${name}"
+         class="${css_class}"
+         checked="${value and 'checked' or None}"
+         py:attrs="attrs"/>
+  <label py:if="not suppress_label" for="${name}">${_(label)}</label>
+</div>

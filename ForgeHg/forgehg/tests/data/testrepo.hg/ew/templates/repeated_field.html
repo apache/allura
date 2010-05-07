@@ -1,0 +1,9 @@
+<div xmlns="http://www.w3.org/1999/xhtml"
+     xmlns:py="http://genshi.edgewall.org/"
+     xmlns:xi="http://www.w3.org/2001/XInclude"
+     py:strip="True">
+  <py:for each="i in xrange(repetitions)"
+          py:with="ctx=c.widget.context_for(i)">
+    ${c.widget.subwidget(i, ctx).display()}
+  </py:for>
+</div>

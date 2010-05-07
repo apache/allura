@@ -1,4 +1,8 @@
 import os
+import stat
+import errno
+import logging
+import subprocess
 import cPickle as pickle
 import email as EM
 from datetime import datetime
@@ -11,8 +15,10 @@ from ming.orm.mapped_class import MappedClass
 from ming.orm.property import FieldProperty
 from ming.utils import LazyProperty
 
-from pyforge.model import Repository, ArtifactReference
+from pyforge.model import Repository, Commit, ArtifactReference
 from pyforge.lib import helpers as h
+
+log = logging.getLogger(__name__)
 
 class HgRepository(Repository):
     class __mongometa__:
@@ -24,13 +30,33 @@ class HgRepository(Repository):
             type_s='HgRepository')
         return result
 
+    def init(self):
+        if not self.fs_path.endswith('/'): self.fs_path += '/'
+        try:
+            os.makedirs(self.fs_path)
+        except OSError, e:
+            if e.errno != errno.EEXIST:
+                raise
+        # We may eventually require --template=...
+        log.info('hg init %s', self.full_fs_path)
+        result = subprocess.call(['hg', 'init', self.name],
+                                 cwd=self.fs_path)
+        magic_file = os.path.join(self.full_fs_path, '.SOURCEFORGE-REPOSITORY')
+        with open(magic_file, 'w') as f:
+            f.write('hg')
+        os.chmod(magic_file, stat.S_IRUSR|stat.S_IRGRP|stat.S_IROTH)
+        self.status = 'ready'
+
     @LazyProperty
     def _impl(self):
-        return hg.repository(ui.ui(), os.path.join(c.app.repo.fs_path, c.app.repo.name))
+        return hg.repository(ui.ui(), os.path.join(self.fs_path, self.name))
 
     def __iter__(self):
         cs = self._impl[self._impl.heads()[0]]
         return self.iter_changeset(cs)
+
+    def revision(self, hash):
+        return HgCommit.from_hg(self._impl[hash], self)
 
     def iter_changeset(self, changeset):
         yield HgCommit.from_hg(changeset, self)
@@ -62,12 +88,8 @@ class HgRepository(Repository):
         '''Override Artifact.tags'''
         return self._impl.tags
 
-class HgCommit(object):
+class HgCommit(Commit):
     type_s='HgCommit'
-
-    def __init__(self, id, repo):
-        self._id = id
-        self._repo = repo
 
     @classmethod
     def from_hg(cls, ctx ,repo):
@@ -84,29 +106,12 @@ class HgCommit(object):
     def __getattr__(self, name):
         return getattr(self._impl, name)
 
-    def dump_ref(self):
-        '''Return a pickle-serializable reference to an artifact'''
-        try:
-            d = ArtifactReference(dict(
-                    project_id=c.project._id,
-                    mount_point=c.app.config.options.mount_point,
-                    artifact_type=pymongo.bson.Binary(pickle.dumps(self.__class__)),
-                    artifact_id=self._id))
-            return d
-        except AttributeError:
-            return None
-
-    def url(self):
-        return self._repo.url() + self._id
-
-    def primary(self, *args):
-        return self
-
     def shorthand_id(self):
         return '[%s]' % self._id[:6]
 
     def parents(self):
-        return tuple(HgCommit.from_hg(c, self._repo) for c in self._impl.parents())
+        return tuple(HgCommit.from_hg(p, self._repo)
+                     for p in self._impl.parents())
 
     @property
     def diffs(self):

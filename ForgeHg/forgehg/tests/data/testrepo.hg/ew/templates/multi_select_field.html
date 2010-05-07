@@ -1,0 +1,15 @@
+<div xmlns="http://www.w3.org/1999/xhtml"
+     xmlns:py="http://genshi.edgewall.org/"
+     py:strip="True"
+  >
+  <select name="$name"
+          class="$css_class"
+          multiple="True"
+          py:attrs="attrs">
+    <option py:for="o in (c.widget.widget_type.option_object_for(value, o) for o in options)"
+            value="$o.html_value"
+            selected="${o.selected or None}">
+      ${_(o.label)}
+    </option>
+  </select>
+</div>
