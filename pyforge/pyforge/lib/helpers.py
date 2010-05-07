@@ -263,7 +263,7 @@ def diff_text_genshi(t1, t2):
             yield esc(excerpt(t2,j1,j2))
             yield '</ins>'
         if tag == 'equal':
-            yield excerpt(esc(t1,i1,i2))
+            yield esc(excerpt(t1,i1,i2))
 
 def gen_message_id():
     parts = c.project.url().split('/')[1:-1]
