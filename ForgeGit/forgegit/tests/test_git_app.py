@@ -28,4 +28,3 @@ class TestGitApp(unittest.TestCase):
         g.mock_amq.setup_handlers()
         c.app.uninstall(c.project)
         g.mock_amq.handle_all()
-

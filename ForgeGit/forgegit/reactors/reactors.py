@@ -19,7 +19,6 @@ def init(routing_key, data):
 
 @react('scm.git.refresh_commit')
 def refresh_commit(routing_key, data):
-    h.set_context(data['project_id'], data['mount_point'])
     repo = pylons.c.app.repo
     hash = data['hash']
     log.info('Refresh commit %s', hash)

@@ -43,6 +43,8 @@ class GitRepository(Repository):
         result = subprocess.call(['git', 'init', '--bare', '--shared=all'],
                                  cwd=fullname)
         magic_file = os.path.join(fullname, '.SOURCEFORGE-REPOSITORY')
+        if os.path.exists(magic_file): # pragma no cover
+            os.remove(magic_file)
         with open(magic_file, 'w') as f:
             f.write('git')
         os.chmod(magic_file, stat.S_IRUSR|stat.S_IRGRP|stat.S_IROTH)
