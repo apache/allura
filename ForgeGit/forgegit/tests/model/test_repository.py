@@ -50,7 +50,7 @@ class TestGitRepo(unittest.TestCase):
 
     def test_revision(self):
         entry = self.repo.revision('HEAD')
-        assert str(entry.author) == 'Rick Copeland'
+        assert str(entry.author) == 'Sebastian Thiel', entry.author
         assert entry.message
 
     def test_tags(self):
