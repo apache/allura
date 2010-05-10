@@ -25,7 +25,7 @@ from ming.utils import LazyProperty
 from pymongo.bson import ObjectId
 
 # Pyforge-specific imports
-from pyforge.app import Application, ConfigOption, SitemapEntry
+from pyforge.app import Application, ConfigOption, SitemapEntry, DefaultAdminController
 from pyforge.lib.helpers import push_config, DateTimeConverter, mixin_reactors
 from pyforge.lib.search import search
 from pyforge.lib.decorators import audit, react
@@ -51,6 +51,7 @@ class ForgeSVNApp(Application):
     def __init__(self, project, config):
         Application.__init__(self, project, config)
         self.root = RootController()
+        self.admin = SVNAdminController(self)
 
     @property
     def sitemap(self):
@@ -60,10 +61,12 @@ class ForgeSVNApp(Application):
                 SitemapEntry(menu_id, '.')[self.sidebar_menu()] ]
 
     def admin_menu(self):
-        return []
+        return super(ForgeSVNApp, self).admin_menu()
 
     def sidebar_menu(self):
         links = [ SitemapEntry('Home',c.app.url, ui_icon='home') ]
+        if has_artifact_access('admin', app=c.app)():
+            links.append(SitemapEntry('Admin', c.project.url()+'admin/'+self.config.options.mount_point, ui_icon='wrench'))
         return links
 
     @property
@@ -105,6 +108,14 @@ class ForgeSVNApp(Application):
             shutil.rmtree(repo.full_fs_path, ignore_errors=True)
         model.SVNRepository.query.remove(dict(app_config_id=self.config._id))
         super(ForgeSVNApp, self).uninstall(project_id=data['project_id'])
+
+
+class SVNAdminController(DefaultAdminController):
+
+    @with_trailing_slash
+    def index(self):
+        redirect('permissions')
+
 
 class RootController(object):
 
