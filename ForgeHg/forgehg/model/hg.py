@@ -30,21 +30,37 @@ class HgRepository(Repository):
             type_s='HgRepository')
         return result
 
-    def init(self):
+    def _setup_paths(self):
         if not self.fs_path.endswith('/'): self.fs_path += '/'
         try:
             os.makedirs(self.fs_path)
         except OSError, e: # pragma no cover
             if e.errno != errno.EEXIST:
                 raise
-        # We may eventually require --template=...
-        log.info('hg init %s', self.full_fs_path)
-        result = subprocess.call(['hg', 'init', self.name],
-                                 cwd=self.fs_path)
+
+    def _setup_special_files(self):
         magic_file = os.path.join(self.full_fs_path, '.SOURCEFORGE-REPOSITORY')
         with open(magic_file, 'w') as f:
             f.write('hg')
         os.chmod(magic_file, stat.S_IRUSR|stat.S_IRGRP|stat.S_IROTH)
+        # TO DO: set up equivalent of receive-hook here
+
+    def init(self):
+        self._setup_paths()
+        # We may eventually require --template=...
+        log.info('hg init %s', self.full_fs_path)
+        result = subprocess.call(['hg', 'init', self.name],
+                                 cwd=self.fs_path)
+        self._setup_special_files()
+        self.status = 'ready'
+
+    def init_as_clone(self, source_path):
+        self._setup_paths()
+        log.info('hg clone %s %s%s' % (source_path, self.fs_path, self.name))
+        result = subprocess.call(['hg', 'clone', '--noupdate', source_path, self.name],
+                                 cwd=self.fs_path)
+        # How do we want to handle merge-requests?  Will it be in repo?
+        self._setup_special_files()
         self.status = 'ready'
 
     @LazyProperty

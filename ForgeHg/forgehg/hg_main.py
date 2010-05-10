@@ -21,6 +21,7 @@ from pymongo import bson
 from webob import exc
 from mercurial import ui, hg
 
+from ming.orm.ormsession import ThreadLocalORMSession
 from ming.orm.base import mapper
 from pymongo.bson import ObjectId
 
@@ -30,7 +31,7 @@ from pyforge.lib.helpers import push_config, DateTimeConverter, mixin_reactors
 from pyforge.lib.search import search
 from pyforge.lib.decorators import audit, react
 from pyforge.lib.security import require, has_artifact_access
-from pyforge.model import ProjectRole, User, ArtifactReference, Feed
+from pyforge.model import Project, ProjectRole, User, ArtifactReference, Feed
 
 # Local imports
 from forgehg import model
@@ -47,6 +48,9 @@ class ForgeHgApp(Application):
     '''This is the Hg app for PyForge'''
     __version__ = version.__version__
     permissions = [ 'read', 'write', 'create', 'admin' ]
+    config_options = Application.config_options + [
+        ConfigOption('cloned_from', ObjectId, None)
+        ]
 
     def __init__(self, project, config):
         Application.__init__(self, project, config)
@@ -111,7 +115,15 @@ class ForgeHgApp(Application):
         repo.url_path = '/' + c.project.shortname + '/'
         repo.tool = 'hg'
         repo.status = 'initing'
-        g.publish('audit', 'scm.hg.init', dict(repo_name=repo.name, repo_path=repo.fs_path))
+        ThreadLocalORMSession.flush_all()
+        cloned_from_id = self.config.options.get('cloned_from')
+        if cloned_from_id is not None:
+            cloned_from = model.HgRepository.query.get(_id=cloned_from_id)
+            g.publish('audit', 'scm.hg.clone',
+                      dict(repo_name=repo.name, repo_path=repo.fs_path, cloned_from=cloned_from.full_fs_path))
+        else:
+            g.publish('audit', 'scm.hg.init',
+                      dict(repo_name=repo.name, repo_path=repo.fs_path))
 
 
     def uninstall(self, project):
@@ -157,7 +169,26 @@ class RootController(object):
                     host=request.host,
                     revisions=revisions,
                     next_link=next_link,
-                    offset=offset)
+                    offset=offset,
+                    allow_fork=True)
+
+    @with_trailing_slash
+    @expose('forgehg.templates.fork')
+    def fork(self, to_name=None):
+        from_repo = c.app.repo
+        to_project_name = 'u/' + c.user.username
+        to_project = Project.query.get(shortname=to_project_name)
+        if request.method!='POST' or to_name is None:
+            prefix_len = len(to_project_name+'/')
+            in_use = [sp.shortname[prefix_len:] for sp in to_project.direct_subprojects]
+            in_use += [ac.options['mount_point'] for ac in to_project.app_configs]
+            return dict(from_repo=from_repo,
+                        to_project_name=to_project_name,
+                        in_use=in_use,
+                        to_name=to_name or '')
+        else:
+            to_project.install_app('Hg', to_name, cloned_from=from_repo._id)
+            redirect('/'+to_project_name+'/'+to_name+'/')
 
     @expose()
     def _lookup(self, hash, *remainder):

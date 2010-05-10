@@ -14,3 +14,11 @@ def init(routing_key, data):
     M.Notification.post_user(
         pylons.c.user, repo, 'created',
         text='Repository %s created' % repo.name)
+
+@audit('scm.hg.clone')
+def clone(routing_key, data):
+    repo = pylons.c.app.repo
+    repo.init_as_clone(data['cloned_from'])
+    M.Notification.post_user(
+        pylons.c.user, repo, 'created',
+        text='Repository %s created' % repo.name)
