@@ -17,7 +17,7 @@
         ${to_project_name}/<input type="text" name="to_name" value="${to_name}"/>
         <input type="submit" value="Fork" class="ui-state-default ui-button ui-button-text"/>
     </form>
-    <div style="display:none">
+    <div id="in-use" style="display:none">
         <span py:for="used in in_use">${used}</span>
     </div>
   </body>

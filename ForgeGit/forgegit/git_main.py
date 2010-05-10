@@ -170,18 +170,21 @@ class RootController(object):
     def fork(self, to_name=None):
         from_repo = c.app.repo
         to_project_name = 'u/' + c.user.username
+        ThreadLocalORMSession.flush_all()
+        ThreadLocalORMSession.close_all()
         to_project = Project.query.get(shortname=to_project_name)
-        if request.method!='POST' or to_name is None:
-            prefix_len = len(to_project_name+'/')
-            in_use = [sp.shortname[prefix_len:] for sp in to_project.direct_subprojects]
-            in_use += [ac.options['mount_point'] for ac in to_project.app_configs]
-            return dict(from_repo=from_repo,
-                        to_project_name=to_project_name,
-                        in_use=in_use,
-                        to_name=to_name or '')
-        else:
-            to_project.install_app('Git', to_name, cloned_from=from_repo._id)
-            redirect('/'+to_project_name+'/'+to_name+'/')
+        with push_config(c, project=to_project):
+            if request.method!='POST' or to_name is None:
+                prefix_len = len(to_project_name+'/')
+                in_use = [sp.shortname[prefix_len:] for sp in to_project.direct_subprojects]
+                in_use += [ac.options['mount_point'] for ac in to_project.app_configs]
+                return dict(from_repo=from_repo,
+                            to_project_name=to_project_name,
+                            in_use=in_use,
+                            to_name=to_name or '')
+            else:
+                to_project.install_app('Git', to_name, cloned_from=from_repo._id)
+                redirect('/'+to_project_name+'/'+to_name+'/')
 
     @expose()
     def _lookup(self, hash, *remainder):
