@@ -46,7 +46,7 @@ class W(object):
 class ForgeSVNApp(Application):
     '''This is the SVN app for PyForge'''
     __version__ = version.__version__
-    permissions = [ 'read', 'write', 'create', 'admin' ]
+    permissions = [ 'read', 'write', 'create', 'admin', 'configure' ]
 
     def __init__(self, project, config):
         Application.__init__(self, project, config)
@@ -85,6 +85,7 @@ class ForgeSVNApp(Application):
         role_developer = ProjectRole.query.get(name='Developer')._id
         role_auth = ProjectRole.query.get(name='*authenticated')._id
         self.config.acl.update(
+            configure=c.project.acl['tool'],
             read=c.project.acl['read'],
             create=[role_developer],
             write=[role_developer],

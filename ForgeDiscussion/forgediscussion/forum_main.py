@@ -165,11 +165,12 @@ class ForgeDiscussionApp(Application):
         # Setup permissions
         role_developer = ProjectRole.query.get(name='Developer')._id
         role_auth = ProjectRole.query.get(name='*authenticated')._id
+        role_anon = ProjectRole.query.get(name='*anonymous')._id
         self.config.acl.update(
             configure=c.project.acl['tool'],
             read=c.project.acl['read'],
-            unmoderated_post=[role_developer],
-            post=[role_auth],
+            unmoderated_post=[role_auth],
+            post=[role_anon],
             moderate=[role_developer],
             admin=c.project.acl['tool'])
         

@@ -147,15 +147,16 @@ class ForgeWikiApp(Application):
         # Setup permissions
         role_developer = ProjectRole.query.get(name='Developer')._id
         role_auth = ProjectRole.query.get(name='*authenticated')._id
+        role_anon = ProjectRole.query.get(name='*anonymous')._id
         self.config.acl.update(
             configure=c.project.acl['tool'],
             read=c.project.acl['read'],
-            create=[role_developer],
-            edit=[role_developer],
+            create=[role_auth],
+            edit=[role_auth],
             delete=[role_developer],
             edit_page_permissions=c.project.acl['tool'],
-            unmoderated_post=[role_developer],
-            post=[role_auth],
+            unmoderated_post=[role_auth],
+            post=[role_anon],
             moderate=[role_developer],
             admin=c.project.acl['tool'])
         p = model.Page.upsert(self.root_page_name)
@@ -319,6 +320,8 @@ class PageController(object):
         setattr(self, 'feed.rss', self.feed)
         if not exists:
             self.page.viewable_by = ['all']
+            for u in ProjectRole.query.find({'name':'Admin'}).first().users_with_role():
+                self.page.subscribe(user=u)
             redirect(c.app.url+title+'/edit')
 
     def get_version(self, version):

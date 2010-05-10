@@ -45,7 +45,7 @@ class W(object):
 class ForgeGitApp(Application):
     '''This is the Git app for PyForge'''
     __version__ = version.__version__
-    permissions = [ 'read', 'write', 'create', 'admin' ]
+    permissions = [ 'read', 'write', 'create', 'admin', 'configure' ]
     config_options = Application.config_options + [
         ConfigOption('cloned_from', ObjectId, None)
         ]
@@ -103,6 +103,7 @@ class ForgeGitApp(Application):
         role_developer = ProjectRole.query.get(name='Developer')._id
         role_auth = ProjectRole.query.get(name='*authenticated')._id
         self.config.acl.update(
+            configure=c.project.acl['tool'],
             read=c.project.acl['read'],
             create=[role_developer],
             write=[role_developer],

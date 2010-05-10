@@ -47,7 +47,7 @@ class W(object):
 class ForgeHgApp(Application):
     '''This is the Hg app for PyForge'''
     __version__ = version.__version__
-    permissions = [ 'read', 'write', 'create', 'admin' ]
+    permissions = [ 'read', 'write', 'create', 'admin', 'configure' ]
     config_options = Application.config_options + [
         ConfigOption('cloned_from', ObjectId, None)
         ]
@@ -105,6 +105,7 @@ class ForgeHgApp(Application):
         role_developer = ProjectRole.query.get(name='Developer')._id
         role_auth = ProjectRole.query.get(name='*authenticated')._id
         self.config.acl.update(
+            configure=c.project.acl['tool'],
             read=c.project.acl['read'],
             write=[role_developer],
             create=[role_developer],
