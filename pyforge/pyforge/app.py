@@ -146,8 +146,8 @@ class Application(object):
     def admin_menu(self):
         admin_url = c.project.url()+'admin/'+self.config.options.mount_point+'/'
         links = []
-        if self.permissions and has_artifact_access('configure', app=self)():
-            links.append(SitemapEntry('Permissions', admin_url + 'permissions', className='nav_child'))
+        # if self.permissions and has_artifact_access('configure', app=self)():
+        #     links.append(SitemapEntry('Permissions', admin_url + 'permissions', className='nav_child'))
         if len(self.config_options) > 1:
             links.append(SitemapEntry('Options', admin_url + 'options', className='nav_child'))
         return links

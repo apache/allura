@@ -681,7 +681,7 @@ border-bottom: 4px solid  rgb(215,215,215);}
 	padding: 0;
 }
 
-.tagEditor li
+.tagEditor li, .removable
 {
 	display: inline;
 	background-image: url(/images/minus_small.png);

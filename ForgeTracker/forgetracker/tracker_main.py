@@ -100,8 +100,8 @@ class ForgeTrackerApp(Application):
     def admin_menu(self):
         admin_url = c.project.url()+'admin/'+self.config.options.mount_point+'/'
         links = [SitemapEntry('Field Management', admin_url + 'fields', className='nav_child')]
-        if self.permissions and has_artifact_access('configure', app=self)():
-            links.append(SitemapEntry('Permissions', admin_url + 'permissions', className='nav_child'))
+        # if self.permissions and has_artifact_access('configure', app=self)():
+        #     links.append(SitemapEntry('Permissions', admin_url + 'permissions', className='nav_child'))
         return links
 
     def sidebar_menu(self):

@@ -13,6 +13,40 @@ from forgegit import model as GitM
 from forgehg import model as HgM
 from forgesvn import model as SVNM
 
+class UnifyPermissions(Migration):
+    version = 5
+
+    def up_requires(self):
+        yield ('pyforge', 4)
+
+    def up(self):
+        perm_owner = self.ormsession.find(M.ProjectRole, dict(name='owner')).first()
+        perm_Owner = self.ormsession.find(M.ProjectRole, dict(name='Owner')).first()
+        if perm_owner:
+            perm_owner.name = 'Admin'
+        elif perm_Owner:
+            perm_Owner.name = 'Admin'
+        perm_member = self.ormsession.find(M.ProjectRole, dict(name='member')).first()
+        if perm_member:
+            perm_member.name = 'Member'
+        perm_developer = self.ormsession.find(M.ProjectRole, dict(name='developer')).first()
+        if perm_developer:
+            perm_developer.name = 'Developer'
+        if self.session.db.name != 'pyforge':
+            role_names = [r.name for r in self.ormsession.find(M.ProjectRole)]
+            if len(role_names) and 'Admin' not in role_names:
+                new_admin = M.ProjectRole(name='Admin')
+            if len(role_names) and 'Developer' not in role_names:
+                new_admin = M.ProjectRole(name='Developer')
+
+        self.ormsession.flush()
+
+    def down(self):
+        perm_Admin = self.ormsession.find(M.ProjectRole, dict(name='Admin')).first()
+        if perm_Admin:
+            perm_Admin.name = 'Owner'
+
+        self.ormsession.flush()
 
 class UpdateProjectsToTools(Migration):
     version = 4

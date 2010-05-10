@@ -83,8 +83,8 @@ def test_default_project_roles():
     roles = dict((pr.name, pr)
                  for pr in M.ProjectRole.query.find().all()
                  if pr.name)
-    assert 'Owner' in roles.keys(), roles.keys()
+    assert 'Admin' in roles.keys(), roles.keys()
     assert 'Developer' in roles.keys(), roles.keys()
     assert 'Member' in roles.keys(), roles.keys()
-    assert roles['Developer']._id in roles['Owner'].roles
+    assert roles['Developer']._id in roles['Admin'].roles
     assert roles['Member']._id in roles['Developer'].roles

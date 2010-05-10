@@ -152,7 +152,7 @@ class Neighborhood(MappedClass):
             p.configure_flyway_initial()
             with h.push_config(c, project=p, user=user):
                 # Install default named roles (#78)
-                role_owner = auth.ProjectRole(name='Owner')
+                role_owner = auth.ProjectRole(name='Admin')
                 role_developer = auth.ProjectRole(name='Developer')
                 role_member = auth.ProjectRole(name='Member')
                 role_auth = auth.ProjectRole(name='*authenticated')

@@ -78,9 +78,11 @@ class AdminApp(Application):
         if len(c.project.neighborhood_invitations):
             links.append(SitemapEntry('Invitation(s)', admin_url+'invitations', className='nav_child'))
         if has_project_access('security')():
-            links.append(SitemapEntry('Permissions', admin_url+'permissions', className='nav_child'))
-        if c.project.is_root and has_project_access('security')():
-            links.append(SitemapEntry('Roles', admin_url+'roles', className='nav_child'))
+            links.append(SitemapEntry('Permissions', admin_url+'perms', className='nav_child'))
+        # if has_project_access('security')():
+        #     links.append(SitemapEntry('Permissions', admin_url+'permissions', className='nav_child'))
+        # if c.project.is_root and has_project_access('security')():
+        #     links.append(SitemapEntry('Roles', admin_url+'roles', className='nav_child'))
 
         for ac in c.project.app_configs:
             app = c.project.app_instance(ac.options.mount_point)
@@ -142,8 +144,16 @@ class ProjectAdminController(object):
             users=[M.User.query.get(_id=id) for id in c.project.acl.read ])
 
     @without_trailing_slash
+    @expose('pyforge.ext.admin.templates.project_perms')
+    def perms(self):
+        """Simplfied permission management screen for the project"""
+        c.user_select = ffw.ProjectUserSelect()
+        return dict()
+
+    @without_trailing_slash
     @expose('pyforge.ext.admin.templates.project_permissions')
     def permissions(self):
+        """Advanced permission management screen for the project. Currently not linked to anywhere."""
         return dict()
 
     @without_trailing_slash
@@ -313,6 +323,22 @@ class ProjectAdminController(object):
         if new.get('add'):
             M.ProjectRole(name=new['name'])
         redirect('roles')
+
+    @h.vardec
+    @expose()
+    def update_user_roles(self, role=None, new=None, **kw):
+        require(has_project_access('security'))
+        if role is None: role = []
+        for r in role:
+            if r.get('new', {}).get('add'):
+                ur = M.ProjectRole.query.get(user_id=ObjectId(str(r['new']['id'])))
+                if ObjectId(str(r['id'])) not in ur.roles:
+                    ur.roles.append(ObjectId(str(r['id'])))
+            for u in r.get('users', []):
+                if u.get('delete'):
+                    ur = M.ProjectRole.query.get(user_id=ObjectId(str(u['id'])))
+                    ur.roles.remove(ObjectId(str(r['id'])))
+        redirect('perms')
 
 class AdminAppAdminController(DefaultAdminController):
     '''Administer the admin app'''

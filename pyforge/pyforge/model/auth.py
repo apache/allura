@@ -350,6 +350,9 @@ class ProjectRole(MappedClass):
     def user(self):
         return User.query.get(_id=self.user_id)
 
+    def users_with_role(self):
+        return [pr.user for pr in ProjectRole.query.find({'roles':self._id}).all() if pr.user_id]
+
     def role_iter(self, visited=None):
         if visited is None: visited = set()
         if self._id not in visited: 
