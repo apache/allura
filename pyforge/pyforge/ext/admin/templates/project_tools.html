@@ -50,7 +50,7 @@
               </a>
             </td>
           </tr>
-          <tr py:for="i, config in enumerate(c.project.app_configs)">
+          <tr py:for="i, config in enumerate(c.project.app_configs)" py:if="config.load().installable">
             <td>Tool: $config.tool_name</td>
             <td>$config.options.mount_point</td>
             <td>
@@ -60,7 +60,7 @@
               </a>
             </td>
             <td class="tool-delete">
-              <a py:if="has_project_access('tool')() and config.load().installable"
+              <a py:if="has_project_access('tool')()"
                  class="tool-${i}" href="#">
                  <span class="ui-icon ui-icon-close"></span> Delete
               </a>
