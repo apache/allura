@@ -84,14 +84,14 @@ class Bin(Artifact):
 
     type_s = 'Bin'
     _id = FieldProperty(schema.ObjectId)
-    summary = FieldProperty(str)
+    summary = FieldProperty(str, required=True)
     terms = FieldProperty(str, if_missing='')
 
     def url(self):
         return self.app_config.url() + 'search/?q=' + urllib.quote_plus(str(self.terms))
 
     def shorthand_id(self):
-        return str(self.summary)
+        return self.summary
 
     def index(self):
         result = Artifact.index(self)
