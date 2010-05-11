@@ -17,8 +17,10 @@
     <h2>Project: $c.project.shortname</h2>
     <py:if test="repo">
       <dl>
-        <dt>repo</dt>
-        <dd>hg://hg.${host}${repo.url_path}${repo.name}</dd>
+        <dt>read access</dt>
+        <dd>hg clone http://hg.${host}${repo.url_path}${repo.name}</dd>
+        <dt>read/write access</dt>
+        <dd>hg clone ssh://hg.${host}/${repo.url_path}${repo.name}</dd>
         <dt>status</dt>
         <dd>${repo.status}</dd>
       </dl>
