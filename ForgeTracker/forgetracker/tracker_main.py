@@ -236,7 +236,8 @@ class RootController(object):
             for t in query.all():
                 ticket_for_num[t.ticket_num] = t
             # and pull them out in the order given by ticket_numbers
-            tickets = [ticket_for_num[tn] for tn in ticket_numbers]
+            tickets = [ticket_for_num[tn] for tn in ticket_numbers
+                       if has_artifact_access('read', ticket_for_num[tn])()]
         tracker_globals = model.Globals.for_current_tracker()
         return dict(tickets=tickets,
                     sortable_custom_fields=tracker_globals.sortable_custom_fields_shown_in_search(),
@@ -261,6 +262,7 @@ class RootController(object):
     @with_trailing_slash
     @expose('forgetracker.templates.index')
     def index(self):
+        require(has_artifact_access('read'))
         result = self.paged_query('!status:closed', sort='ticket_num_i desc', limit=500)
         result['changes'] = self.ordered_history(5)
         c.subscribe_form = W.subscribe_form
@@ -277,9 +279,12 @@ class RootController(object):
             page=validators.Int(if_empty=0),
             sort=validators.UnicodeString(if_empty=None)))
     def search(self, q=None, project=None, **kw):
+        require(has_artifact_access('read'))
         if project:
             redirect(c.project.url() + 'search?' + urlencode(dict(q=q, history=kw.get('history'))))
-        return self.paged_query(q, **kw)
+        result = self.paged_query(q, **kw)
+        result['allow_edit'] = has_artifact_access('write')()
+        return result
 
     @expose()
     def _lookup(self, ticket_num, *remainder):
@@ -315,6 +320,7 @@ class RootController(object):
             offset=validators.Int(if_empty=None),
             limit=validators.Int(if_empty=None)))
     def feed(self, since=None, until=None, offset=None, limit=None):
+        require(has_artifact_access('read'))
         if request.environ['PATH_INFO'].endswith('.atom'):
             feed_type = 'atom'
         else:
@@ -366,6 +372,7 @@ class RootController(object):
                    page=validators.Int(if_empty=0),
                    sort=validators.UnicodeString(if_empty='ticket_num_i asc')))
     def edit(self, q=None, sort=None, **kw):
+        require(has_artifact_access('write'))
         result = self.paged_query(q, sort=sort, **kw)
         globals = model.Globals.query.get(app_config_id=c.app.config._id)
         if globals.milestone_names is None:
@@ -376,6 +383,12 @@ class RootController(object):
 
     @expose()
     def update_tickets(self, **post_data):
+        tickets = Ticket.query.find(dict(
+                _id={'$in':[ObjectId(id) for id in post_data['selected'].split(',')]},
+                app_config_id=c.app.config._id))
+        for ticket in tickets:
+            require(has_artifact_access('write', ticket))
+
         fields = set(['milestone', 'status'])
         values = {}
         for k in fields:
@@ -394,8 +407,7 @@ class RootController(object):
             v = post_data.get(k)
             if v: custom_values[k] = v
 
-        for id in post_data['selected'].split(','):
-            ticket = model.Ticket.query.get(_id=ObjectId(id), app_config_id=c.app.config._id)
+        for ticket in tickets:
             for k, v in values.iteritems():
                 setattr(ticket, k, v)
             for k, v in custom_values.iteritems():
@@ -438,6 +450,7 @@ class RootController(object):
     @with_trailing_slash
     @expose('forgetracker.templates.stats')
     def stats(self):
+        require(has_artifact_access('read'))
         total = model.Ticket.query.find(dict(app_config_id=c.app.config._id)).count()
         open = model.Ticket.query.find(dict(app_config_id=c.app.config._id,status='open')).count()
         closed = model.Ticket.query.find(dict(app_config_id=c.app.config._id,status='closed')).count()
@@ -493,6 +506,7 @@ class BinController(object):
     @with_trailing_slash
     @expose('forgetracker.templates.bin')
     def index(self, **kw):
+        require(has_artifact_access('read'))
         bins = model.Bin.query.find()
         count=0
         count = len(bins)
@@ -501,6 +515,7 @@ class BinController(object):
     @with_trailing_slash
     @expose('forgetracker.templates.bin')
     def bins(self):
+        require(has_artifact_access('read'))
         bins = model.Bin.query.find()
         count=0
         count = len(bins)
@@ -534,6 +549,7 @@ class BinController(object):
     @expose()
     def delbin(self, summary=None):
         bin = model.Bin.query.find(dict(summary=summary,)).first()
+        require(has_artifact_access('write', bin))
         bin.delete()
         redirect(request.referer)
 
@@ -641,6 +657,7 @@ class TicketController(object):
             offset=validators.Int(if_empty=None),
             limit=validators.Int(if_empty=None)))
     def feed(self, since=None, until=None, offset=None, limit=None):
+        require(has_artifact_access('read', self.ticket))
         if request.environ['PATH_INFO'].endswith('.atom'):
             feed_type = 'atom'
         else:
@@ -790,7 +807,7 @@ class TicketController(object):
     @expose()
     @validate(W.subscribe_form)
     def subscribe(self, subscribe=None, unsubscribe=None):
-        require(has_artifact_access('read'))
+        require(has_artifact_access('read', self.ticket))
         if subscribe:
             Subscriptions.upsert().subscribe('direct', artifact=self.ticket)
         elif unsubscribe:
@@ -880,6 +897,7 @@ class TrackerAdminController(DefaultAdminController):
 
     @expose()
     def set_custom_fields(self, **post_data):
+        require(has_artifact_access('configure', app=self.app))
         self.globals.status_names=post_data['status_names']
         self.globals.milestone_names=post_data['milestone_names']
         data = urllib.unquote_plus(post_data['custom_fields'])

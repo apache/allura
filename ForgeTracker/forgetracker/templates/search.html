@@ -67,7 +67,7 @@
         <span id="next-page" class="nav-button disabled">&gt;</span>
         <span id="last-page" class="nav-button disabled">&gt;&gt;</span>
     </div>
-    <a href="${tg.url('../edit/', dict(q=q, limit=count))}" py:if="count != 0">Edit All</a>
+    <a href="${tg.url('../edit/', dict(q=q, limit=count))}" py:if="allow_edit and count != 0">Edit All</a>
   </body>
   <script type="text/javascript">
 var q="${Markup(q)}", count=$count, limit=$limit, page=$page, sort="${Markup(sort)}";
