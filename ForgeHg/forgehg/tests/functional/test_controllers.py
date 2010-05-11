@@ -22,7 +22,7 @@ class TestRootController(TestController):
 
     def test_index(self):
         resp = self.app.get('/src_hg/')
-        assert 'hg://' in resp
+        assert 'hg clone http://' in resp, resp
         assert 'ready' in resp
 
     def test_commit(self):
