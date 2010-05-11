@@ -285,7 +285,11 @@ class Ticket(VersionedArtifact):
 
     def update(self,ticket_form, tracker_globals):
         tags = (ticket_form.pop('tags', None) or '').split(',')
+        if tags == ['']:
+            tags = []
         labels = (ticket_form.pop('labels', None) or '').split(',')
+        if labels == ['']:
+            labels = []
         self.labels = labels
         h.tag_artifact(self, c.user, tags)
         custom_sums = set()
