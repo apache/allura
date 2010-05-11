@@ -1,15 +1,22 @@
-#!/usr/bin/env bash
+#!/bin/bash
 
-# Executes nosetest for each forge application in sequence.
-# Additional parameters passed to this script (such as --failed) will be passed to nosetest.
+MODULES="\
+    pyforge \
+    ForgeDiscussion \
+    ForgeGit \
+    ForgeHg \
+    ForgeMail \
+    ForgeSVN \
+    ForgeTracker \
+    ForgeWiki"
 
-# Remove existing .test-data directories; start each test run with clean data
-find . -name '.test-data' -type d | xargs rm -r
-
-for APP in pyforge *Forge*
-do
-	echo Testing $APP
-	pushd $APP > /dev/null
-	nosetests $@
-	popd > /dev/null
+for module in $MODULES; do
+    (
+        echo "====================="
+        echo "Running tests in module $module"
+        cd $module
+        rm -r .test-data
+        nosetests $* || exit
+    ) || exit
 done
+

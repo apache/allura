@@ -17,7 +17,7 @@ class TestOEmbedController(TestController):
             'http://qik.com/video/49565',
             'http://revision3.com/diggnation/2008-04-17xsanned/',
             'http://www.hulu.com/watch/20807/late-night-with-conan-obrein-wed-may-21-2008',
-            'http://www.vimeo.com/757219',
+            # 'http://www.vimeo.com/757219',
             'http://www.amazon.com/Essential-SQLAlchemy-Rick-Copeland/dp/0596516142/',
             'http://www.polleverywhere.com/multiple_choice_polls/LTIwNzM1NTczNTE',
             'http://my.opera.com/cstrep/albums/show.dml?id=504322',
@@ -25,6 +25,5 @@ class TestOEmbedController(TestController):
             'http://twitter.com/mai_co_jp/statuses/822499364',
             ]
         for href in urls:
-            r = self.app.get('/oembed/', params=dict(href=href))
-
+            r = self.app.get('/oembed/', params=dict(href=href), status=[200,503])
 

@@ -5,6 +5,7 @@ import logging
 import oembed
 import mimetypes
 from pprint import pformat
+from urllib2 import HTTPError
 
 import pkg_resources
 from tg import expose, redirect, flash, config
@@ -23,7 +24,7 @@ class OEmbedController(BaseController):
     def index(self, href):
         try:
             response = g.oembed_consumer.embed(href)
-        except oembed.OEmbedNoEndpoint:
+        except (oembed.OEmbedNoEndpoint, HTTPError), ex:
             return dict(href=href)
         data = response.getData()
         log.info('Got response:\n%s', pformat(data))
