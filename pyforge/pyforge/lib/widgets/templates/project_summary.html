@@ -8,7 +8,7 @@
 <h2><a href="${value.url()}">$value.name</a></h2>
 <div class="gravatar sm">
   <a href="${author.url()}" py:for="i,author in enumerate(islice(value.users(), 8))">
-    ${gravatar(author.preferences.email_address, size=16)}<br py:if="i==3"/>
+    ${gravatar(author.preferences.email_address, size=16, title=author.display_name)}<br py:if="i==3"/>
   </a>
 </div>
 <p>${h.text.truncate(value.short_description, 50)}<br />
