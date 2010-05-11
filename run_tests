@@ -1,6 +1,7 @@
 #!/bin/bash
 
-MODULES="\
+if [ "$TEST_MODULES"  == "" ]; then
+    TEST_MODULES="\
     pyforge \
     ForgeDiscussion \
     ForgeGit \
@@ -9,10 +10,9 @@ MODULES="\
     ForgeSVN \
     ForgeTracker \
     ForgeWiki"
+fi
 
-MODULES="ForgeHg ForgeMail ForgeSVN ForgeTracker ForgeWiki"
-
-for module in $MODULES; do
+for module in $TEST_MODULES; do
     (
         echo "====================="
         echo "Running tests in module $module"
