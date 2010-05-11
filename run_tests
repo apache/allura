@@ -10,6 +10,8 @@ MODULES="\
     ForgeTracker \
     ForgeWiki"
 
+MODULES="ForgeHg ForgeMail ForgeSVN ForgeTracker ForgeWiki"
+
 for module in $MODULES; do
     (
         echo "====================="

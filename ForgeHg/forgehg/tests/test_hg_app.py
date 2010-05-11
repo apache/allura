@@ -20,7 +20,7 @@ class TestHgApp(unittest.TestCase):
         assert c.app.templates.endswith('forgehg/templates')
 
     def test_admin_menu(self):
-        assert c.app.admin_menu() == []
+        assert len(c.app.admin_menu()) == 1
 
     def test_uninstall(self):
         c.app.uninstall(c.project)
