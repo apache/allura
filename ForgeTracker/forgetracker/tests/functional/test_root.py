@@ -269,7 +269,7 @@ class TestFunctionalController(TestController):
             'labels_old':''
         })
         response = self.app.get('/p/test/bugs/1/')
-        assert test_user_name in response.html.find('span', {'class': 'ticket-assigned-to viewer'}).string
+        assert test_user_name in str(response.html.find('span', {'class': 'ticket-assigned-to viewer'}))
     
     def test_custom_fields(self):
         spec = """[{"label":"Priority","type":"select","options":"normal urgent critical"},
