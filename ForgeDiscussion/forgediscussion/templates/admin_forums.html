@@ -45,7 +45,7 @@
                   </div>
                   <div class="editable viewing">
                     <span class="viewer">${Markup(g.markdown.convert(forum.description))}</span>
-                    <span class="editor">
+                    <span class="editor multiline">
                       ${text_area('forum-%s.description' % i, 'Description', forum.description)}
                     </span>
                   </div>

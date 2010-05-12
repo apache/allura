@@ -92,7 +92,7 @@
       <div class="span-3"><label>Summary:</label></div>
       <div class="editable viewing span-13 last">
         <div class="viewer"><pre>$c.project.short_description</pre></div>
-        <div class="editor"><textarea name="short_description">$c.project.short_description</textarea></div>
+        <div class="editor multiline"><textarea name="short_description">$c.project.short_description</textarea></div>
       </div>
       <hr class="clear clearfix" />
 
@@ -115,7 +115,7 @@
           </py:if>
           <py:if test="not len(c.project.get_screenshots())">No screenshots have been created.</py:if>
         </div>
-        <div class="editor">${file_field('screenshot', 'File')}</div>
+        <div class="editor multiline">${file_field('screenshot', 'File')}</div>
       </div>
       <hr class="clear clearfix" />
 

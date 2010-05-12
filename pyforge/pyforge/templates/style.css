@@ -586,39 +586,51 @@ border-bottom: 4px solid  rgb(215,215,215);}
 {
     display: none;
 }
-		.edi .viewer {padding: 4px 0;}
-
-.editable .edit
-{
-    float:left;
-    display:none;
-}
-
-.editable
-{
+.editable .viewer {
+    padding: 4px 0;
+    display: block;
     position: relative;
-    margin-bottom: 5px;
-    padding: 2px;
+    min-height: 21px;
+}
+.editable .viewer:hover {
+    padding: 4px 4px;
+    border: 1px solid #ccc;
+}
+.editable .viewer .edit_btn{
+    display: none;
+    height:25px;
+    width:25px;
+    position: absolute;
+    top: 2px;
+    right: 0;
+}
+.editable .viewer:hover .edit_btn{
+    display: inline;
 }
 
 .editable + .editable
 {
     margin-top: 1em;
 }
-
-.editable:hover
-{
-    cursor: pointer;
+.editable .editor{
+    background-color: #ffc;
+    padding: 4px 4px;
+    border: 1px solid #ccc;
+    display: block;
+    overflow: hidden;
 }
-
-.editable:hover .edit
-{
-    float:left;
-    position: absolute;
-    top: -0.5em;
-    display:block;
-    border: 1px solid rgb(215,215,215);
-    background-color: ${color6};
+.editable .editor .holder_table{
+    margin: 0;
+}
+.editable .editor .save_controls{
+    width: 110px;
+}
+.editable .editor.multiline .save_holder{
+    margin-top: 4px;
+}
+.editable .editor.multiline.overlap{
+    position:absolute;
+    z-index:10;
 }
 
 
