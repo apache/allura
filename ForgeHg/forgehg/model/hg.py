@@ -1,4 +1,5 @@
 import os
+os.environ['HGRCPATH'] = '' # disable loading .hgrc
 import stat
 import errno
 import logging
