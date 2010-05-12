@@ -151,6 +151,8 @@ class Neighborhood(MappedClass):
                         is_root=True)
             p.configure_flyway_initial()
             with h.push_config(c, project=p, user=user):
+                assert auth.ProjectRole.query.find().count() == 0, \
+                    'Project roles already exist'
                 # Install default named roles (#78)
                 role_owner = auth.ProjectRole(name='Admin')
                 role_developer = auth.ProjectRole(name='Developer')

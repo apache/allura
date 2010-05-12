@@ -186,8 +186,7 @@ def wipe_database():
         for db in conn.database_names():
             db=conn[db]
             for coll in db.collection_names():
-                coll = db[coll]
-                coll._data = {}
+                db.drop_collection(coll)
             cmd.run(['-u', 'mim:///'+db.name])
     else:
         for database in conn.database_names():

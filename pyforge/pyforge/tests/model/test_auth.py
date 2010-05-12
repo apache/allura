@@ -3,7 +3,7 @@
 Model tests for auth
 """
 import mock
-from nose.tools import assert_true
+from nose.tools import with_setup
 from pylons import c, g, request
 from webob import Request
 
@@ -16,13 +16,16 @@ from pyforge.tests import helpers
 
 def setUp():
     helpers.setup_basic_test()
+    ThreadLocalORMSession.close_all()
     helpers.setup_global_objects()
 
+@with_setup(setUp)
 def test_password_encoder():
     # Verify salt
     assert M.auth.encode_password('test_pass') != M.auth.encode_password('test_pass')
     assert M.auth.encode_password('test_pass', '0000') == M.auth.encode_password('test_pass', '0000')
 
+@with_setup(setUp)
 def test_email_address():
     addr = M.EmailAddress(_id='test_admin@sf.net', claimed_by_user_id=c.user._id)
     ThreadLocalORMSession.flush_all()
@@ -39,6 +42,7 @@ def test_email_address():
     c.user.claim_address('test@SF.NET')
     assert 'test@sf.net' in c.user.email_addresses
 
+@with_setup(setUp)
 def test_openid():
     oid = M.OpenId.upsert('http://google.com/accounts/1', 'My Google OID')
     oid.claimed_by_user_id = c.user._id
@@ -52,6 +56,7 @@ def test_openid():
     assert oid2._id in c.user.open_ids
     ThreadLocalORMSession.flush_all()
 
+@with_setup(setUp)
 def test_user():
     assert c.user.url() .endswith('/u/test_admin/')
     assert c.user.script_name .endswith('/u/test_admin/')
@@ -61,7 +66,7 @@ def test_user():
             username='nosetest_user'))
     ThreadLocalORMSession.flush_all()
     assert u.private_project().shortname == 'u/nosetest_user'
-    assert len(list(u.role_iter())) == 6
+    assert len(list(u.role_iter())) == 3
     u.set_password('foo')
     assert u.validate_password('foo')
     assert not u.validate_password('foobar')
@@ -69,6 +74,7 @@ def test_user():
     assert u.validate_password('foobar')
     assert not u.validate_password('foo')
 
+@with_setup(setUp)
 def test_project_role():
     role = M.ProjectRole(name='test_role')
     c.user.project_role().roles.append(role._id)
@@ -79,10 +85,12 @@ def test_project_role():
         assert pr.user in (c.user, M.User.anonymous())
         list(pr.role_iter())
 
+@with_setup(setUp)
 def test_default_project_roles():
     roles = dict((pr.name, pr)
                  for pr in M.ProjectRole.query.find().all()
                  if pr.name)
+    assert len(roles) == M.ProjectRole.query.find().count()-1
     assert 'Admin' in roles.keys(), roles.keys()
     assert 'Developer' in roles.keys(), roles.keys()
     assert 'Member' in roles.keys(), roles.keys()
