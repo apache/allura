@@ -181,7 +181,7 @@ class Application(object):
                                   post_id=message_id)
             return
         thd.post(
-            text=data['payload'],
+            text=data['payload'] or '--no text body--',
             message_id=message_id,
             parent_id=parent_id,
             **kw)
