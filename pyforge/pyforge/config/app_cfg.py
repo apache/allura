@@ -40,6 +40,9 @@ class ForgeConfig(AppConfig):
         app = StatusCodeRedirect(app, [401], '/auth/')
         return app
 
+    def after_init_config(self):
+        config['pylons.strict_c'] = True
+
     def setup_routes(self):
         map = Mapper(directory=config['pylons.paths']['controllers'],
                      always_scan=config['debug'])
