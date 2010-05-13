@@ -54,7 +54,7 @@ class ProjectUserSelect(ew.InputField):
     all=False
 
     def __init__(self, **kw):
-      self.users = User.query.find({'_id':{'$in':[role.user_id for role in c.project.roles]}}).all()
+      self.users = User.query.find({'_id':{'$in':[role.user_id for role in c.project.roles]}}).sort('username').all()
       if not isinstance(self.value, list):
           self.value=[self.value]
       super(ProjectUserSelect, self).__init__(**kw)
