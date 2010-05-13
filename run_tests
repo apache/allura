@@ -9,7 +9,8 @@ if [ "$TEST_MODULES"  == "" ]; then
     ForgeMail \
     ForgeSVN \
     ForgeTracker \
-    ForgeWiki"
+    ForgeWiki \
+    ."
 fi
 
 for module in $TEST_MODULES; do
