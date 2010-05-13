@@ -14,10 +14,8 @@ fi
 
 for module in $TEST_MODULES; do
     (
-        echo "====================="
         echo "Running tests in module $module"
         cd $module
-        rm -r .test-data
         nosetests $* || exit
     ) || exit
 done
