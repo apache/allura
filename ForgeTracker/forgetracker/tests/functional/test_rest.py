@@ -111,7 +111,7 @@ class TestRestUpdateTicket(TestRestApiBase):
                     assigned_to=self.ticket_args['assigned_to_id'] or '',
                     reported_by=self.ticket_args['reported_by_id'] or '',
                     super_id=self.ticket_args['super_id'] or '')
-        ticket_view = self.api_post('1/save', **args)
+        ticket_view = self.api_post('1/save', **h.encode_keys(args))
         assert ticket_view.status_int == 200, ticket_view.showbrowser()
         json = ticket_view.json['ticket']
         assert json['summary'] == 'test update ticket', json
