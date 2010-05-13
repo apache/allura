@@ -202,14 +202,12 @@ class PostController(object):
         if result:
             redirect(result[0].url())
         else:
-            raise exc.HTTPNotFound
+            redirect('..')
 
     @h.vardec
     @expose('pyforge.templates.discussion.post')
     @validate(pass_validator)
     def index(self, version=None, **kw):
-        if self.post is None:
-            redirect('..')
         c.post = self.W.post
         if request.method == 'POST':
             require(has_artifact_access('moderate', self.post))
