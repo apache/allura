@@ -53,7 +53,7 @@ class GitRepository(Repository):
     def init(self):
         fullname = self._setup_paths()
         log.info('git init %s', fullname)
-        result = subprocess.call(['git', 'init', '--bare', '--shared=all'],
+        result = subprocess.call(['git', 'init', '--quiet', '--bare', '--shared=all'],
                                  cwd=fullname)
         self._setup_special_files()
         self.status = 'ready'
