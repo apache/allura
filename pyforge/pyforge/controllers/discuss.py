@@ -201,6 +201,8 @@ class PostController(object):
             if p.thread_id == self.thread._id: return p
         if result:
             redirect(result[0].url())
+        else:
+            raise exc.HTTPNotFound
 
     @h.vardec
     @expose('pyforge.templates.discussion.post')

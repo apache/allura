@@ -124,7 +124,7 @@ class TestForumReactors(TestController):
         self._post('discussion.msg.test', 'Test Reply', 'Nothing here, either',
                    message_id='test_posts@sf.net',
                    in_reply_to=[ p._id ])
-        reply = FM.ForumPost.query.find().all()[-1]
+        reply = FM.ForumPost.query.get(subject='Test Reply')
         r = self.app.get(thd_url + reply.slug + '/')
         # Check attachments
         r = self.app.post(url + 'attach',
