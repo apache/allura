@@ -1,0 +1,10 @@
+setlocal username test_admin
+setlocal password foo
+
+clear_extra_headers
+go ./auth/
+formvalue 1 username $username
+formvalue 1 password $password
+submit
+
+code 200

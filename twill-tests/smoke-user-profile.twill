@@ -1,0 +1,3 @@
+clear_extra_headers
+go ./u/test_admin/profile/
+code 200

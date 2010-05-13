@@ -1,0 +1,3 @@
+clear_extra_headers
+go ./p/test/bugs/
+code 200

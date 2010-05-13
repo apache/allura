@@ -1,0 +1,19 @@
+Twill Tests
+
+First, you'll need twill-sh:
+
+  sudo easy_install twill
+
+
+Files in this directory ending with '.twill' are tests to be run by twill-sh
+
+  twill-sh --url=http://url.of.forge.to.test/ twill-tests/*.twill
+
+e.g.,
+
+  twill-sh --url=http://re.sourceforge.net/ twill-tests/*.twill
+
+
+If you just want to run the quick "smoke tests":
+
+  twill-sh --url=... twill-tests/smoke*.twill

@@ -1,0 +1,3 @@
+clear_extra_headers
+go ./p/test/wiki/WikiHome/
+code 200
