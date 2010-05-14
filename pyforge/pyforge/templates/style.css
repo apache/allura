@@ -137,7 +137,7 @@ thead tr th {
 /* Forms */
 
 #comment textarea, #post textarea {width: 100%;}
-#comment input.title, #post input.title, input.title.wide {width: 100%;}
+#comment input.title, #post input.title, input.wide {width: 100%;}
 input.title.auto {width: auto;}
 input, textarea {}
 input.title {font-size: 1em !important;}

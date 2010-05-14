@@ -311,7 +311,10 @@ class Ticket(VersionedArtifact):
                 # strings are good enough for any other custom fields
                 self.custom_fields[k] = v
             elif k == 'assigned_to':
-                if v: self.assigned_to_id = bson.ObjectId(v)
+                if v:
+                    user = c.project.user_in_project(v)
+                    if user:
+                        self.assigned_to_id = user._id
             elif k != 'super_id':
                 # if it's not a custom field, set it right on the ticket (but don't overwrite super_id)
                 setattr(self, k, v)

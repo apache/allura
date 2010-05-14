@@ -1,7 +1,7 @@
 from urllib import unquote
 from mimetypes import guess_type
 import Image
-import os
+import os, re
 
 import pkg_resources
 import genshi.template
@@ -249,6 +249,16 @@ class ProjectController(object):
                                      'attachment;filename=%s' % filename)
             return fp.read()
         return c.project.icon.filename
+
+    @expose('json')
+    def user_search(self,term=''):
+        name_regex = re.compile('(?i)%s' % term)
+        users = M.User.query.find({
+                    '_id':{'$in':[role.user_id for role in c.project.roles]},
+                    'display_name':name_regex},
+                    ['display_name','username'])
+        users = [dict(label=u.display_name, value=u.username, id=u.username) for u in users.sort('username').all()]
+        return dict(users=users)
 
 class ScreenshotsController(object):
 

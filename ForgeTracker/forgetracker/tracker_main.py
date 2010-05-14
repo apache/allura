@@ -25,7 +25,7 @@ from pyforge.lib import helpers as h
 from pyforge.lib.search import search_artifact
 from pyforge.lib.decorators import audit, react
 from pyforge.lib.security import require, has_artifact_access
-from pyforge.model import ProjectRole, TagEvent, UserTags, ArtifactReference, Feed
+from pyforge.model import ProjectRole, TagEvent, UserTags, ArtifactReference, Feed, User
 from pyforge.model import Subscriptions
 from pyforge.lib import widgets as w
 from pyforge.lib.widgets import form_fields as ffw
@@ -398,7 +398,9 @@ class RootController(object):
         if assigned_to == '-':
             values['assigned_to_id'] = None
         elif assigned_to is not None:
-            values['assigned_to_id'] = ObjectId(assigned_to)
+            user = c.project.user_in_project(assigned_to)
+            if user:
+                values['assigned_to_id'] = user._id
 
         globals = model.Globals.query.get(app_config_id=c.app.config._id)
         custom_fields = set([cf.name for cf in globals.custom_fields or[]])
@@ -717,7 +719,12 @@ class TicketController(object):
         if 'assigned_to' in post_data:
             who = post_data['assigned_to']
             changes['assigned_to'] = self.ticket.assigned_to
-            self.ticket.assigned_to_id = ObjectId(who) if who else None
+            if who:
+                user = c.project.user_in_project(who)
+                if user:
+                    self.ticket.assigned_to_id = user._id
+            else:
+                self.ticket.assigned_to_id = None
             changes['assigned_to'] = self.ticket.assigned_to
         h.tag_artifact(self.ticket, c.user, tags)
 

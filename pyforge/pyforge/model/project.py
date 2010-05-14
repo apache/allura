@@ -474,6 +474,10 @@ class Project(MappedClass):
         project_users = uniq([r.user for r in self.roles if not r.user.username.startswith('*')])
         return project_users
 
+    def user_in_project(self, username=None):
+        from .auth import User
+        return User.query.find({'_id':{'$in':[role.user_id for role in c.project.roles]},'username':username}).first()
+
     def configure_flyway_initial(self):
         from flyway.model import MigrationInfo
         from flyway.migrate import Migration

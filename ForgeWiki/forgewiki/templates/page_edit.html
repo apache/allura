@@ -17,7 +17,7 @@
   
   <body>
     <h1 class="title">$page.title</h1>
-    <form method="post" action="update">
+    <form method="post" action="update" id="page_edit_form">
       <div class="span-3 clear"><label>Content:</label></div>
       <div class="span-15 last" style="min-height:2em;">${c.markdown_editor.display(name='text',value=page.text)}</div>
       <div class="span-3 clear"><label>Tags:</label></div>
@@ -31,14 +31,23 @@
       <py:if test="has_artifact_access('edit_page_permissions', page)()">
         <div class="span-3 clear"><label>Viewable by:</label></div>
         <div class="span-15 last">
-          ${c.user_select.display(name='viewable_by', value=page.viewable_by, size=4, all=True)}
+          <span py:for="j, u in enumerate(page.viewable_by)" class="removable">
+            ${u}
+            <input type="hidden" name="viewable_by-${j}.id" value="$u"/>
+          </span>
+        </div>
+      </py:if>
+      <py:if test="has_artifact_access('edit_page_permissions', page)()">
+        <div class="span-3 clear"><label>Add Viewer:</label></div>
+        <div class="span-15 last">
+          ${c.user_select.display(name='new_viewable_by', value='')}
         </div>
       </py:if>
       <div class="push-3 span-15 last">
         <input type="submit" value="Save Changes" class="ui-button ui-widget ui-state-default ui-button-text-only"/>
       </div>
     </form>
-    <br/>
+    <hr class="clear clearfix" />
     ${c.attachment_list.display(attachments=list(page.attachments), edit_mode=has_artifact_access('edit', page)())}
     <div py:if="has_artifact_access('edit', page)()" class="reply title-pane closed">
       <button class="title">Add Attachment</button>
@@ -49,5 +58,18 @@
         </form>
       </div>
     </div>
+    <script type="text/javascript">
+      /*<![CDATA[*/
+      $('span.removable').click(function(e){
+        var vals = $('#page_edit_form').serialize();
+        console.debug(vals)
+        var del_name = $('input', this)[0].name.replace('.id','.delete');
+        console.debug(del_name)
+        $.post($('#page_edit_form')[0].action, vals+'&'+del_name+'=Del', function(){
+          e.target.parentNode.removeChild(e.target);
+        });
+      });
+      /*]]>*/
+    </script>
   </body>
 </html>

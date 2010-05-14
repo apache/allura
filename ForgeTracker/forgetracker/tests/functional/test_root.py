@@ -41,14 +41,11 @@ class TestFunctionalController(TestController):
     
     def test_new_ticket_form(self):
         response = self.app.get('/bugs/new/')
-        test_user = response.html.find(id="ticket_form.assigned_to").findAll('option')[1]
-        test_user_id = test_user['value']
-        test_user_name = test_user.string
         form = response.forms[1]
         form['ticket_form.summary'] = 'test new ticket form'
-        form['ticket_form.assigned_to'] = test_user_id
+        form['ticket_form.assigned_to'] = 'test_admin'
         response = form.submit().follow()
-        assert test_user_name in response
+        assert 'Test Admin' in response
     
     def test_two_trackers(self):
         summary = 'test two trackers'
@@ -238,7 +235,7 @@ class TestFunctionalController(TestController):
         self.new_ticket(summary=summary)
         response = self.app.get('/p/test/bugs/1/')
         assert response.html.find('input', {'name': 'summary'})
-        assert response.html.find('select', {'name': 'assigned_to'})
+        assert response.html.find('input', {'name': 'assigned_to'})
         assert response.html.find('textarea', {'name': 'description'})
         assert response.html.find('select', {'name': 'status'})
         assert response.html.find('select', {'name': 'milestone'})
@@ -254,22 +251,19 @@ class TestFunctionalController(TestController):
         summary = 'test assign ticket'
         self.new_ticket(summary=summary)
         response = self.app.get('/p/test/bugs/1/')
-        test_user = response.html.find(id="assigned_to").findAll('option')[1]
-        test_user_id = test_user['value']
-        test_user_name = test_user.string
         self.app.post('/bugs/1/update_ticket',{
             'summary':'zzz',
             'description':'bbb',
             'status':'ccc',
             'milestone':'',
-            'assigned_to':test_user_id,
+            'assigned_to':'test_admin',
             'tags':'',
             'tags_old':'',
             'labels':'',
             'labels_old':''
         })
         response = self.app.get('/p/test/bugs/1/')
-        assert test_user_name in str(response.html.find('span', {'class': 'ticket-assigned-to viewer'}))
+        assert 'Test Admin' in str(response.html.find('span', {'class': 'ticket-assigned-to viewer'}))
     
     def test_custom_fields(self):
         spec = """[{"label":"Priority","type":"select","options":"normal urgent critical"},

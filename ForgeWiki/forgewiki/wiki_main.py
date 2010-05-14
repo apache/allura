@@ -340,7 +340,7 @@ class PageController(object):
         c.attachment_list = W.attachment_list
         c.subscribe_form = W.page_subscribe_form
         page = self.get_version(version)
-        if 'all' not in page.viewable_by and str(c.user._id) not in page.viewable_by:
+        if 'all' not in page.viewable_by and c.user.username not in page.viewable_by:
             raise exc.HTTPForbidden(detail="You may not view this page.")
         if page is None:
             if version: redirect('.?version=%d' % (version-1))
@@ -361,7 +361,7 @@ class PageController(object):
             require(has_artifact_access('create', self.page))
         else:
             require(has_artifact_access('edit', self.page))
-            if 'all' not in self.page.viewable_by and str(c.user._id) not in self.page.viewable_by:
+            if 'all' not in self.page.viewable_by and c.user.username not in self.page.viewable_by:
                 raise exc.HTTPForbidden(detail="You may not view this page.")
         c.markdown_editor = W.markdown_editor
         c.user_select = ffw.ProjectUserSelect()
@@ -425,8 +425,9 @@ class PageController(object):
         redirect('.')
 
     @without_trailing_slash
+    @h.vardec
     @expose()
-    def update(self, text=None, tags=None, tags_old=None, labels=None, labels_old=None, viewable_by=None):
+    def update(self, text=None, tags=None, tags_old=None, labels=None, labels_old=None, viewable_by=None,new_viewable_by=None,**kw):
         require(has_artifact_access('edit', self.page))
         if tags: tags = tags.split(',')
         else: tags = []
@@ -434,7 +435,22 @@ class PageController(object):
         self.page.labels = labels.split(',')
         self.page.commit()
         h.tag_artifact(self.page, c.user, tags)
-        self.page.viewable_by = isinstance(viewable_by, list) and viewable_by or viewable_by.split(',')
+        if new_viewable_by:
+            if new_viewable_by == 'all':
+                self.page.viewable_by.append('all')
+            else:
+                user = c.project.user_in_project(str(new_viewable_by))
+                if user:
+                    self.page.viewable_by.append(user.username)
+        if viewable_by:
+            for u in viewable_by:
+                if u.get('delete'):
+                    if u['id'] == 'all':
+                        self.page.viewable_by.remove('all')
+                    else:
+                        user = User.query.get(username=str(u['id']))
+                        if user:
+                            self.page.viewable_by.remove(user.username)
         redirect('.')
 
     @without_trailing_slash

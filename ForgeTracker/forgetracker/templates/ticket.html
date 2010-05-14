@@ -72,12 +72,12 @@
                 <span class="ticket-assigned-to viewer">
                   ${gravatar(ticket.assigned_to.preferences.email_address, size=16)} <a href="${ticket.assigned_to.url()}">${ticket.assigned_to_name()}</a>
                 </span>
-                <span class="multiline overlap editor">${c.user_select.display(name='assigned_to',value=ticket.assigned_to_id)}</span>
+                <span class="multiline overlap editor">${c.user_select.display(name='assigned_to',value=ticket.assigned_to.username,className='wide')}</span>
               </py:if>
             </py:if>
             <py:if test="not ticket.assigned_to_id">
               <span class="ticket-assigned-to ${allow_edit and 'viewer' or ''}">${ticket.assigned_to_name()}</span>
-              <span class="multiline overlap editor" py:if="allow_edit">${c.user_select.display(name='assigned_to',value=ticket.assigned_to_id)}</span>
+              <span class="multiline overlap editor" py:if="allow_edit">${c.user_select.display(name='assigned_to',value=ticket.assigned_to_id,className='wide')}</span>
             </py:if>
           </div>
         </div>

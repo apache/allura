@@ -47,7 +47,7 @@
               </span>
             </td>
             <td class="add_role">
-              ${c.user_select.display(name="role-%s.new.id" % i)}
+              ${c.user_select.display(name="role-%s.new.id" % i,value='')}
             </td>
           </tr>
         </tbody>
@@ -63,7 +63,7 @@
           e.target.parentNode.removeChild(e.target);
         });
       });
-      $('td.add_role select').change(function(e){
+      $('td.add_role input').change(function(e){
         var vals = $('#roles_form').serialize();
         var add_name = e.target.name.replace('.id','.add');
         $.post($('#roles_form')[0].action, vals+'&'+add_name+'=Add', function(){
