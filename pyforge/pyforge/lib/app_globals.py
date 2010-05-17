@@ -49,6 +49,9 @@ class Globals(object):
             self.solr = None
         self.use_queue = asbool(config.get('use_queue', False))
 
+        # Load login url
+        self.login_url = config.get('auth.login_url') # only used for SFX logins
+
         # Setup RabbitMQ
         if asbool(config.get('amqp.mock')):
             self.mock_amq = MockAMQ()
@@ -77,7 +80,7 @@ class Globals(object):
 
     @property
     def publisher(self):
-        from .base import environ
+        from .custom_middleware import environ
         if 'allura.carrot.publisher' not in environ:
             environ['allura.carrot.publisher'] = dict(
                 audit=Publisher(connection=self.conn, exchange='audit', auto_declare=False),
@@ -86,7 +89,7 @@ class Globals(object):
 
     @property
     def conn(self):
-        from .base import environ
+        from .custom_middleware import environ
         if 'allura.carrot.connection' not in environ:
             environ['allura.carrot.connection'] = BrokerConnection(
                 hostname=config.get('amqp.hostname', 'localhost'),

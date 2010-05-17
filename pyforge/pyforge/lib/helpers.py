@@ -367,3 +367,10 @@ def pop_user_notifications(user=None):
         mbox.queue = []
         for n in notifications: yield n
     
+def config_with_prefix(d, prefix):
+    '''Return a subdictionary keys with a given prefix,
+    with the prefix stripped
+    '''
+    plen=len(prefix)
+    return dict((k[plen:], v) for k,v in d.iteritems()
+                if k.startswith(prefix))

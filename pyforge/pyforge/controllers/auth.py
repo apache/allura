@@ -2,9 +2,9 @@ import logging, string
 from urllib import urlencode
 from pprint import pformat
 
-from tg import expose, session, flash, redirect, validate
+from tg import expose, session, flash, redirect, validate, config
 from tg.decorators import with_trailing_slash, without_trailing_slash
-from pylons import c, request
+from pylons import c, g, request
 from webob import exc
 
 from pyforge import model as M
@@ -40,6 +40,8 @@ class AuthController(object):
     @expose('pyforge.templates.login')
     @with_trailing_slash
     def index(self, *args, **kwargs):
+        if config.get('auth.method') == 'sfx':
+            redirect(g.login_url)
         orig_request = request.environ.get('pylons.original_request', None)
         if orig_request:
             came_from = orig_request.url
@@ -183,7 +185,8 @@ class AuthController(object):
         session['userid'] = user._id
         session.save()
         flash('Welcome back, %s' % user.display_name)
-        if came_from: redirect(came_from)
+        if came_from and came_from != request.url:
+            redirect(came_from)
         redirect('/')
 
 class PreferencesController(object):

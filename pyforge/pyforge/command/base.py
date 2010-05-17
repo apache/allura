@@ -9,7 +9,7 @@ from paste.deploy import appconfig
 
 import ming
 from pyforge.config.environment import load_environment
-from pyforge.lib.base import MagicalC, environ
+from pyforge.lib.custom_middleware import MagicalC, environ
 
 class EmptyClass(object): pass
 

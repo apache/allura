@@ -181,7 +181,6 @@ class Neighborhood(MappedClass):
                 ThreadLocalORMSession.flush_all()
         except:
             ThreadLocalORMSession.close_all()
-            p.delete()
             raise
         return p
 

@@ -12,7 +12,7 @@ from ming.orm import ThreadLocalORMSession
 
 from pyforge.lib.app_globals import Globals
 from pyforge import model as M
-from pyforge.lib.base import environ as ENV, MagicalC
+from pyforge.lib.custom_middleware import environ as ENV, MagicalC
 
 DFL_CONFIG = environ.get('SANDBOX') and 'sandbox-test.ini' or 'test.ini'
 DFL_APP_NAME = 'main_without_authn'
@@ -38,7 +38,7 @@ def setup_functional_test(config=DFL_CONFIG, app_name=DFL_APP_NAME):
 
 def setup_global_objects():
     g._push_object(Globals())
-    c._push_object(MagicalC(mock.Mock()))
+    c._push_object(MagicalC(mock.Mock(), ENV))
     c.queued_messages = None
     request._push_object(Request.blank('/'))
     ThreadLocalORMSession.close_all()

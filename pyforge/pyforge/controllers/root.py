@@ -13,7 +13,7 @@ import ming
 
 import pyforge
 from pyforge.app import SitemapEntry
-from pyforge.lib.base import BaseController, environ
+from pyforge.lib.base import BaseController
 from pyforge.lib import helpers as h
 from pyforge.controllers.error import ErrorController
 from pyforge import model as M
@@ -58,6 +58,7 @@ class RootController(BaseController):
             if n.url_prefix.startswith('//'): continue
             n.bind_controller(self)
         self.browse = ProjectBrowseController()
+        super(RootController, self).__init__()
 
     @property
     def _ew_resources(self):

@@ -15,11 +15,13 @@ convert them into boolean, for example, you should use the
 
 from tg.configuration import AppConfig, config
 from pylons.middleware import StatusCodeRedirect
+from paste.deploy.converters import asbool
 from routes import Mapper
 
 import pyforge
+import pyforge.lib.helpers as h
 from pyforge import model
-from pyforge.lib import app_globals, helpers
+from pyforge.lib import app_globals, custom_middleware
 
 class ForgeConfig(AppConfig):
 
@@ -42,6 +44,11 @@ class ForgeConfig(AppConfig):
 
     def after_init_config(self):
         config['pylons.strict_c'] = True
+
+    def add_core_middleware(self, app):
+        if asbool(config.get('auth.method', 'local')=='sfx'):
+            app = custom_middleware.SfxLoginMiddleware(app, h.config_with_prefix(config, 'auth.'))
+        return super(ForgeConfig, self).add_core_middleware(app)
 
     def setup_routes(self):
         map = Mapper(directory=config['pylons.paths']['controllers'],

@@ -8,7 +8,7 @@ from ming.orm.base import state, session
 from ming.orm.ormsession import ThreadLocalORMSession, SessionExtension
 
 from pyforge.lib import search
-from pyforge.lib.base import environ
+from pyforge.lib.custom_middleware import environ
 
 log = logging.getLogger(__name__)
 

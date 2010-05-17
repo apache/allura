@@ -53,6 +53,7 @@ class TestController(BaseController, ProjectController):
             setattr(self, attr, getattr(proxy_root, attr))
         self.gsearch = proxy_root.search
         self.rest = RestController()
+        super(TestController, self).__init__()
 
     def _setup_request(self):
         # This code fixes a race condition in our tests
