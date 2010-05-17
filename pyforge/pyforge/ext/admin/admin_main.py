@@ -333,7 +333,7 @@ class ProjectAdminController(object):
             if r.get('new', {}).get('add'):
                 user = M.User.query.find({'username':str(r['new']['id'])}).first()
                 if user:
-                    ur = M.ProjectRole.query.get(user_id=user._id)
+                    ur = user.project_role()
                     if ObjectId(str(r['id'])) not in ur.roles:
                         ur.roles.append(ObjectId(str(r['id'])))
             for u in r.get('users', []):
