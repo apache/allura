@@ -11,7 +11,7 @@
     <title>ForgeTracker Index Page</title>
     <link rel="alternate" type="application/rss+xml" title="RSS" href="feed.rss"/>
     <link rel="alternate" type="application/atom+xml" title="Atom" href="feed.atom"/>
-    <link rel="stylesheet" type="text/css" href="/static/Tickets/css/tracker.css"/>
+    <link rel="stylesheet" type="text/css" href="${g.app_static('css/tracker.css')}"/>
     <style type="text/css">
         div.ticket { font-size:160% }
     </style>
@@ -92,6 +92,6 @@
   <script type="text/javascript">
 var q="${Markup(q)}", count=$count, limit=$limit, page=$page, sort="${Markup(sort)}";
   </script>
-  <script type="text/javascript" src="/static/Tickets/js/ticket-list.js"/>
-  <script type="text/javascript" src="/static/Tickets/js/mass-edit.js"/>
+  <script type="text/javascript" src="${g.app_static('js/ticket-list.js')}"/>
+  <script type="text/javascript" src="${g.app_static('js/mass-edit.js')}"/>
 </html>

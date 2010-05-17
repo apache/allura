@@ -169,7 +169,7 @@ class HostNeighborhoodController(BaseController, NeighborhoodController):
 
     auth = AuthController()
     error = ErrorController()
-    static = StaticController()
+    nf = StaticController()
     search = SearchController()
 
 class ProjectController(object):

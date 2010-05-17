@@ -27,7 +27,7 @@
       ${Markup(c.project.neighborhood.css)}
     </style>
     <div id="mainmenu" class="span-24 last">
-      <div class="sf_logo span-10"><a href="/"><img src="/images/sfc.png" alt="SourceForge"/><i>Reforged</i></a></div>
+      <div class="sf_logo span-10"><a href="/"><img src="${g.forge_static('images/sfc.png')}" alt="SourceForge"/><i>Reforged</i></a></div>
       <div class="span-14 tright last">
         <a href="/auth/logout" py:if="c.user and c.user._id" class="sf_log_out">Log Out</a>
         <a href="/auth/" py:if="not c.user or not c.user._id" class="sf_log_in">Log In</a>
@@ -43,7 +43,7 @@
     <div id="nav_menu" class="span-24 last ui-corner-tl" py:if="c.project">
       <div class="span-1">
         <img py:if="c.project.icon" src="${c.project.url()}/icon" class="project_icon"/>
-        <img py:if="not c.project.icon" src="/images/project_default.png" class="project_icon"/>
+        <img py:if="not c.project.icon" src="${g.forge_static('images/project_default.png')}" class="project_icon"/>
       </div>
       <div class="span-16 project">
 	<span class="project_name">
@@ -62,7 +62,7 @@
       <div class="span-7 last tright">
 	<span class="neighborhood ui-corner-bl ui-corner-tr">
 		<img py:if="c.project.neighborhood.icon" src="${c.project.neighborhood.url()}/icon" class="project_icon"/>
-          <img py:if="not c.project.neighborhood.icon" src="/images/project_default.png" class="project_icon"/>
+          <img py:if="not c.project.neighborhood.icon" src="${g.forge_static('images/project_default.png')}" class="project_icon"/>
           <a href="${c.project.neighborhood.url()}" class="neighborhood_name">$c.project.neighborhood.name</a> Project
 	</span>
       </div>
@@ -157,7 +157,7 @@
 
   <py:def function="gravatar(email, title=None, **kw)">
     <img py:if="email" src="${g.gravatar(email, **kw)}" alt="${title or email}" title="${title or email}"/>
-    <img py:if="not email and 'size' not in kw" src="/images/user.png" alt="${title}" title="${title}"/>
-    <img py:if="not email and 'size' in kw" src="/images/user.png" alt="${title}" title="${title}" width="${kw['size']}" height="${kw['size']}"/>
+    <img py:if="not email and 'size' not in kw" src="${g.forge_static('images/user.png')}" alt="${title}" title="${title}"/>
+    <img py:if="not email and 'size' in kw" src="${g.forge_static('images/user.png')}" alt="${title}" title="${title}" width="${kw['size']}" height="${kw['size']}"/>
   </py:def>
 </html>

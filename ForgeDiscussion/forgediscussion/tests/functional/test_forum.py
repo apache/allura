@@ -362,7 +362,7 @@ class TestForumAdmin(TestController):
 
     def test_forum_icon(self):
         file_name = 'ui-icons_454545_256x240.png'
-        file_path = os.path.join(pyforge.__path__[0],'public','css','forge','images',file_name)
+        file_path = os.path.join(pyforge.__path__[0],'public','nf','css','forge','images',file_name)
         file_data = file(file_path).read()
         upload = ('new_forum.icon', file_name, file_data)
 

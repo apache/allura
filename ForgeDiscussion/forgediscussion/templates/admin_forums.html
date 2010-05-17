@@ -31,7 +31,7 @@
                   <div class="editable viewing">
                     <span class="viewer">
                       <img py:if="forum.icon" src="${forum.url()}/icon"/>
-                      <img py:if="not forum.icon" src="/images/project_default.png"/>
+                      <img py:if="not forum.icon" src="${g.forge_static('images/project_default.png')}"/>
                     </span>
                     <span class="editor">${file_field('forum-%s.icon' % i, '')}</span>
                   </div>

@@ -107,6 +107,11 @@ class Globals(object):
             session.save()
             return result
         
+    def forge_static(self, resource):
+        return ''.join(
+            [ config['static_root'],
+              resource ])
+        
     def app_static(self, resource, app=None):
         app = app or c.app
         return ''.join(

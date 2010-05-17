@@ -11,7 +11,7 @@
   <head>
     <meta content="text/html; charset=UTF-8" http-equiv="content-type" py:replace="''"/>
     <title>Search $c.app.config.options.mount_point: $q</title>
-    <link rel="stylesheet" type="text/css" href="/static/Tickets/css/tracker.css"/>
+    <link rel="stylesheet" type="text/css" href="${g.app_static('css/tracker.css')}"/>
   </head>
   <body>
     <h1 class="title">Search $c.app.config.options.mount_point: $q</h1>
@@ -72,6 +72,6 @@
   <script type="text/javascript">
 var q="${Markup(q)}", count=$count, limit=$limit, page=$page, sort="${Markup(sort)}";
   </script>
-  <script type="text/javascript" src="/static/Tickets/js/ticket-list.js"/>
+  <script type="text/javascript" src="${g.app_static('js/ticket-list.js')}"/>
 
 </html>

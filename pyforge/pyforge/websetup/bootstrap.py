@@ -98,7 +98,7 @@ def bootstrap(command, conf, vars):
     ThreadLocalORMSession.close_all()
     # add the adobe icon
     file_name = 'adobe_icon.png'
-    file_path = os.path.join(pyforge.__path__[0],'public','images',file_name)
+    file_path = os.path.join(pyforge.__path__[0],'public','nf','images',file_name)
     f = file(file_path, 'r')
     content_type = guess_type(file_name)
     if content_type: content_type = content_type[0]

@@ -23,7 +23,7 @@
          py:if="not forum.deleted or has_artifact_access('configure', app=c.app)()">
       <div class="span-2 last">
           <img py:if="forum.icon" src="${forum.url()}/icon"/>
-          <img py:if="not forum.icon" src="/images/project_default.png"/>
+          <img py:if="not forum.icon" src="${g.forge_static('images/project_default.png')}"/>
       </div>
       <div class="span-14">
         <h2>$forum.name</h2>

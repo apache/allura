@@ -6,7 +6,7 @@
 
   <py:def function="main_menu">
     <div id="mainmenu" class="span-24 last">
-      <div class="sf_logo span-10"><a href="/"><img src="/images/sfc.png" alt="SourceForge"/><i>Reforged</i></a></div>
+      <div class="sf_logo span-10"><a href="/"><img src="${g.forge_static('images/sfc.png')}" alt="SourceForge"/><i>Reforged</i></a></div>
       <div class="span-14 tright last">
         <a href="/auth/logout" py:if="c.user and c.user._id" class="sf_log_out">Log Out</a>
         <a href="/auth/" py:if="not c.user or not c.user._id" class="sf_log_in">Log In</a>
@@ -21,7 +21,7 @@
     <div id="nav_menu" class="span-24 last ui-corner-tl" py:if="neighborhood">
       <div class="span-1">
         <img py:if="neighborhood.icon" src="${neighborhood.url()}/icon" class="project_icon"/>
-        <img py:if="not neighborhood.icon" src="/images/project_default.png" class="project_icon"/>
+        <img py:if="not neighborhood.icon" src="${g.forge_static('images/project_default.png')}" class="project_icon"/>
       </div>
       <div class="span-16 project">
 	<span class="project_name">

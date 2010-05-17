@@ -163,7 +163,7 @@ class TestFunctionalController(TestController):
     def test_new_image_attachment_content(self):
         h.set_context('test', 'bugs')
         file_name = 'ui-icons_454545_256x240.png'
-        file_path = os.path.join(pyforge.__path__[0],'public','css','forge','images',file_name)
+        file_path = os.path.join(pyforge.__path__[0],'public','nf','css','forge','images',file_name)
         file_data = file(file_path).read()
         upload = ('file_info', file_name, file_data)
         self.new_ticket(summary='test new attachment')

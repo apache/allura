@@ -22,7 +22,7 @@ class StaticAppController(object):
     def __init__(self, ep):
         self.ep = ep
         self.fn = pkg_resources.resource_filename(
-            ep.module_name, 'static/%s' % ep.name)
+            ep.module_name, 'nf/%s' % ep.name)
 
     @expose()
     def default(self, *args):

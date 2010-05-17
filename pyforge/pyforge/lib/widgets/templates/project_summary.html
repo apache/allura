@@ -4,7 +4,7 @@
      py:strip="True">
      <xi:include href="${g.pyforge_templates}/lib.html" />
      <?python from itertools import islice ?>
-<a href="${value.url()}"><img src="${value.icon and value.url()+'icon' or '/images/project_default.png'}" alt="$value.name Icon" class="fleft icon clear" /></a>
+<a href="${value.url()}"><img src="${value.icon and value.url()+'icon' or g.forge_static('images/project_default.png')}" alt="$value.name Icon" class="fleft icon clear" /></a>
 <h2><a href="${value.url()}">$value.name</a></h2>
 <div class="gravatar sm">
   <a href="${author.url()}" py:for="i,author in enumerate(islice(value.users(), 8))">

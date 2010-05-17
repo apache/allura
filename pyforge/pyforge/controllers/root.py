@@ -49,7 +49,7 @@ class RootController(BaseController):
     
     auth = AuthController()
     error = ErrorController()
-    static = StaticController()
+    nf = StaticController()
     search = SearchController()
     rest = RestController()
 

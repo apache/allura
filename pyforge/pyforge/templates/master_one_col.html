@@ -19,9 +19,9 @@
     <meta py:replace="select('*')"/>
     <py:for each="blob in resource_manager.emit('head_css')">$blob</py:for>
     <py:for each="blob in resource_manager.emit('head_js')">$blob</py:for>
-    <link rel="stylesheet" type="text/css" media="screen, projection" href="${tg.url('/css/blueprint/screen.css')}" />
-    <link rel="stylesheet" type="text/css" media="print" href="${tg.url('/css/blueprint/print.css')}" />
-    <link rel="stylesheet" type="text/css" href="${tg.url('/css/forge/jquery-ui-1.8rc3.custom.css')}" />
+    <link rel="stylesheet" type="text/css" media="screen, projection" href="${g.forge_static('css/blueprint/screen.css')}" />
+    <link rel="stylesheet" type="text/css" media="print" href="${g.forge_static('css/blueprint/print.css')}" />
+    <link rel="stylesheet" type="text/css" href="${g.forge_static('css/forge/jquery-ui-1.8rc3.custom.css')}" />
 
     <!--[if lt IE 8]>
       <link rel="stylesheet" type="text/css" media="screen, projection" href="${tg.url('/css/blueprint/ie.css')}" />
@@ -30,9 +30,9 @@
     <link py:if="not c.project and not neighborhood" rel="stylesheet" type="text/css" media="screen" href="${tg.url('/site_style.css')}" />
     <link py:if="c.project" rel="stylesheet" type="text/css" media="screen" href="${c.project.neighborhood.url()+'site_style.css'}" />
     <link py:if="neighborhood" rel="stylesheet" type="text/css" media="screen" href="${neighborhood.url()+'site_style.css'}" />
-    <script type="text/javascript" src="/js/jquery-1.4.2.min.js"/>
-    <script type="text/javascript" src="/js/jquery-ui-1.8rc3.custom.min.js"></script>
-    <script type="text/javascript" src="/js/jquery.cookie.js"></script>
+    <script type="text/javascript" src="${g.forge_static('js/jquery-1.4.2.min.js')}"/>
+    <script type="text/javascript" src="${g.forge_static('js/jquery-ui-1.8rc3.custom.min.js')}"></script>
+    <script type="text/javascript" src="${g.forge_static('js/jquery.cookie.js')}"></script>
   </head>
 
   <body py:match="body" py:attrs="select('@*')">
@@ -67,7 +67,7 @@
       <div class="clear"/>
       ${footer()}
     </div>
-    <script type="text/javascript" src="/js/pyforge-base.js"/>
+    <script type="text/javascript" src="${g.forge_static('js/pyforge-base.js')}"/>
     <py:for each="blob in resource_manager.emit('body_js')">$blob</py:for>
   </body>
 </html>

@@ -31,7 +31,7 @@ class TestNeighborhood(TestController):
 
     def test_icon(self):
         file_name = 'ui-icons_454545_256x240.png'
-        file_path = os.path.join(pyforge.__path__[0],'public','css','forge','images',file_name)
+        file_path = os.path.join(pyforge.__path__[0],'public','nf','css','forge','images',file_name)
         file_data = file(file_path).read()
         upload = ('icon', file_name, file_data)
 
@@ -122,7 +122,7 @@ class TestNeighborhood(TestController):
 
     def test_neighborhood_awards(self):
         file_name = 'adobe_icon.png'
-        file_path = os.path.join(pyforge.__path__[0],'public','images',file_name)
+        file_path = os.path.join(pyforge.__path__[0],'public','nf','images',file_name)
         file_data = file(file_path).read()
         upload = ('icon', file_name, file_data)
 

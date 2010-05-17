@@ -29,7 +29,7 @@ def test_app_globals():
     g.oid_session()
     g.set_project('test')
     g.set_app('hello')
-    assert g.app_static('css/style.css') == '/static/hello_forge/css/style.css', g.app_static('css/style.css')
+    assert g.app_static('css/style.css') == '/nf/hello_forge/css/style.css', g.app_static('css/style.css')
     assert g.url('/foo', a='foo bar') == 'http://localhost:80/foo?a=foo+bar', g.url('/foo', a='foo bar')
     assert g.url('/foo') == 'http://localhost:80/foo', g.url('/foo')
 
@@ -66,7 +66,7 @@ def test_oembed():
         'http://qik.com/video/49565',
         'http://revision3.com/diggnation/2008-04-17xsanned/',
         'http://www.hulu.com/watch/20807/late-night-with-conan-obrein-wed-may-21-2008',
-        # 'http://www.vimeo.com/757219', # vimeo's stuff is broken
+        'http://www.vimeo.com/757219',
         # 'http://www.amazon.com/Essential-SQLAlchemy-Rick-Copeland/dp/0596516142/',
         'http://www.polleverywhere.com/multiple_choice_polls/LTIwNzM1NTczNTE',
         'http://my.opera.com/cstrep/albums/show.dml?id=504322',
@@ -75,10 +75,10 @@ def test_oembed():
         ]
     for url in urls:
         result = g.markdown.convert('[embed#%s]' % url)
-        assert ('cannot be embedded' not in result or 'HTTP Error' in result)
+        assert 'cannot be embedded' not in result
     for url in urls:
         result = g.markdown.convert('[embed#(100%%,400)%s]' % url)
-        assert ('cannot be embedded' not in result or 'HTTP Error' in result)
+        assert 'cannot be embedded' not in result
     assert 'cannot be embedded' in g.markdown.convert(
         '[embed#http://www.amazon.com/Essential-SQLAlchemy-Rick-Copeland/dp/0596516142/]')
     assert 'cannot be embedded' in g.markdown.convert(
