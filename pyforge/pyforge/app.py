@@ -232,7 +232,7 @@ class DefaultAdminController(object):
     @expose()
     def add_perm(self, permission, role):
         require(has_artifact_access('configure', app=self.app))
-        self.app.config.acl[permission].append(ObjectId(role))
+        self.app.config.acl.setdefault(permission, []).append(ObjectId(role))
         redirect('permissions')
 
     @expose()
