@@ -100,3 +100,17 @@ class TestAuth(TestController):
         assert 'Welcome back, Test Me' in r
         r = self.app.post('/auth/save_new', params=dict(username='aaa',password='12345678')).follow()
         assert 'That username is already taken. Please choose another.' in r
+
+    def test_one_project_role(self):
+        """Make sure when a user goes to a new project only one project role is created.
+           There was an issue with extra project roles getting created if a user went directly to
+           an admin page."""
+        self.app.post('/auth/save_new', params=dict(username='aaa',
+                                                        password='12345678',
+                                                        display_name='Test Me',
+                                                        open_ids='http://somewhere',
+                                                        email_addresses='test@test.com')).follow()
+        user = M.User.query.get(username='aaa')
+        assert len(M.ProjectRole.query.find(dict(user_id=user._id)).all()) == 0
+        self.app.get('/p/test/admin/perms',extra_environ=dict(username='aaa'))
+        assert len(M.ProjectRole.query.find(dict(user_id=user._id)).all()) == 1
