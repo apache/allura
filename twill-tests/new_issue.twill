@@ -1,0 +1,19 @@
+setlocal username test_admin
+setlocal password foo
+
+clear_extra_headers
+go ./auth/
+formvalue 1 username $username
+formvalue 1 password $password
+submit
+
+code 200
+
+go ./p/test/bugs/new/
+
+code 200
+
+formvalue 2 "ticket_form.summary" "test create ticket"
+submit
+
+code 200
