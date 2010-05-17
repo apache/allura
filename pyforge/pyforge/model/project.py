@@ -138,18 +138,18 @@ class Neighborhood(MappedClass):
                     shortname, p.neighborhood.name))
             return p
         database = 'project:' + shortname.replace('/', ':').replace(' ', '_')
+        p = Project(neighborhood_id=self._id,
+                    shortname=shortname,
+                    name=shortname,
+                    short_description='',
+                    description=(shortname + '\n'
+                                 + '=' * 80 + '\n\n'
+                                 + 'You can edit this description in the admin page'),
+                    database=database,
+                    last_updated = datetime.utcnow(),
+                    is_root=True)
         try:
-            p = Project(neighborhood_id=self._id,
-                        shortname=shortname,
-                        name=shortname,
-                        short_description='',
-                        description=(shortname + '\n'
-                                     + '=' * 80 + '\n\n'
-                                     + 'You can edit this description in the admin page'),
-                        database=database,
-                        last_updated = datetime.utcnow(),
-                        is_root=True)
-            p.configure_flyway_initial()
+            p.configure_project_database()
             with h.push_config(c, project=p, user=user):
                 assert auth.ProjectRole.query.find().count() == 0, \
                     'Project roles already exist'
@@ -181,6 +181,7 @@ class Neighborhood(MappedClass):
                 ThreadLocalORMSession.flush_all()
         except:
             ThreadLocalORMSession.close_all()
+            session(p).impl.connection.drop_database(database)
             raise
         return p
 
@@ -477,7 +478,8 @@ class Project(MappedClass):
         from .auth import User
         return User.query.find({'_id':{'$in':[role.user_id for role in c.project.roles]},'username':username}).first()
 
-    def configure_flyway_initial(self):
+    def configure_project_database(self):
+        # Configure flyway migration info
         from flyway.model import MigrationInfo
         from flyway.migrate import Migration
         with h.push_config(c, project=self):
@@ -486,6 +488,10 @@ class Project(MappedClass):
                 mi = MigrationInfo.make({})
             mi.versions.update(Migration.latest_versions())
             project_doc_session.save(mi)
+            # Configure indexes
+            for mc in MappedClass._registry.itervalues():
+                if mc.__mongometa__.session == project_orm_session:
+                    project_orm_session.ensure_indexes(mc)
 
 class AppConfig(MappedClass):
     class __mongometa__:

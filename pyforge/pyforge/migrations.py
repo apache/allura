@@ -1,3 +1,4 @@
+from collections import defaultdict
 from pylons import c
 from flyway import Migration
 import ming
@@ -12,6 +13,58 @@ from forgediscussion import model as DM
 from forgegit import model as GitM
 from forgehg import model as HgM
 from forgesvn import model as SVNM
+
+class MergeDuplicateRoles(Migration):
+    version = 6
+
+    def up_requires(self): yield ('pyforge', 5)
+    def down_requires(self): yield ('pyforge', 6)
+
+    def up(self):
+        if self.session.db.name == 'pyforge': self.up_pyforge()
+        else: self.up_project()
+
+    def down(self):
+        pass
+
+    def up_pyforge(self):
+        # Uniquify User.projects list
+        for u in self.session.find(self.User):
+            u.projects = list(set(u.projects))
+            self.session.save(u)
+
+    def up_project(self):
+        # Consolidate roles by user_id
+        roles_by_user = defaultdict(list)
+        for role in self.session.find(self.Role):
+            if role.get('user_id') is None: continue
+            roles_by_user[role.user_id].append(role)
+        for user_id, roles in roles_by_user.iteritems():
+            if len(roles) <= 1: continue
+            main_role = roles[0]
+            subroles = set()
+            for r in roles:
+                for sr_id in r.get('roles', []):
+                    subroles.add(sr_id)
+            main_role.roles = list(subroles)
+            self.session.save(main_role)
+            for r in roles[1:]:
+                self.session.delete(r)
+        # Add index
+        try:
+            self.session.drop_indexes(self.Role)
+        except:
+            pass
+        self.session.ensure_indexes(self.Role)
+
+    class User(ming.Document):
+        class __mongometa__:
+            name='user'
+
+    class Role(ming.Document):
+        class __mongometa__:
+            name='user'
+            unique_indexes = [ ('user_id', 'name') ]
 
 class UnifyPermissions(Migration):
     version = 5

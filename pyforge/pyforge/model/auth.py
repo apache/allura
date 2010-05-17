@@ -10,13 +10,14 @@ from hashlib import sha256
 
 import ldap
 import iso8601
+import pymongo
 from pylons import c, g
 from tg import config
 
-from ming.orm.ormsession import ThreadLocalORMSession
-from ming.orm.mapped_class import MappedClass
-from ming.orm.property import FieldProperty, RelationProperty, ForeignIdProperty
 from ming import schema as S
+from ming.orm.ormsession import ThreadLocalORMSession
+from ming.orm import session, state, MappedClass
+from ming.orm import FieldProperty, RelationProperty, ForeignIdProperty
 
 from pyforge.lib import helpers as h
 from .session import ProjectSession
@@ -265,11 +266,14 @@ class User(MappedClass):
         with h.push_config(c, project=project, user=self):
             if self._id is None:
                 return ProjectRole.query.get(name='*anonymous')
-            obj = ProjectRole.query.get(user_id=self._id)
-            if obj is None:
+            try:
                 obj = ProjectRole(user_id=self._id)
+                session(obj).insert_now(obj, state(obj))
                 self.projects.append(c.project._id)
-            return obj
+                return obj
+            except pymongo.errors.DuplicateKeyError:
+                session(obj).expunge(obj)
+                return ProjectRole.query.get(user_id=self._id)
 
     def set_password(self, password):
         method = config.get('auth.method', 'local')
@@ -322,6 +326,7 @@ class ProjectRole(MappedClass):
     class __mongometa__:
         session = project_orm_session
         name='user'
+        unique_indexes = [ ('name', 'user_id') ]
     
     _id = FieldProperty(S.ObjectId)
     name = FieldProperty(str)
