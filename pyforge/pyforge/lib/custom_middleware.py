@@ -2,7 +2,7 @@ import logging
 from contextlib import contextmanager
 from threading import local
 
-from pylons import c
+import pylons
 from webob import exc, Request
 
 log = logging.getLogger(__name__)
@@ -23,8 +23,8 @@ class ForgeMiddleware(object):
 
     def __call__(self, environ, start_response):
         _environ.set_environment(environ)
-        magical_c = MagicalC(c._current_obj(), environ)
-        c._push_object(magical_c)
+        magical_c = MagicalC(pylons.c._current_obj(), environ)
+        pylons.c._push_object(magical_c)
         try:
             result = self.app(environ, start_response)
             if isinstance(result, list):
@@ -33,7 +33,7 @@ class ForgeMiddleware(object):
             else:
                 return self._cleanup_iterator(result, environ)
         finally:
-            c._pop_object(magical_c)
+            pylons.c._pop_object(magical_c)
 
     def _cleanup_request(self, environ):
         carrot = environ.pop('allura.carrot.connection', None)
@@ -86,7 +86,7 @@ class SfxLoginMiddleware(object):
             user_data = mgr.user_data(server_name, sfx_user_id)
             user = M.User.query.get(username=user_data['username'])
             if not user:
-                with fake_pylons_context():
+                with fake_pylons_context(request):
                     user = M.User(username=user_data['username'],
                                   display_name=user_data['name'])
                     n = M.Neighborhood.query.get(name='Users')
@@ -195,11 +195,15 @@ class MagicalC(object):
         object.__delattr__(self, name)
 
 @contextmanager
-def fake_pylons_context():
-    from pylons import c
+def fake_pylons_context(request):
+    from pyforge.lib.app_globals import Globals
     class EmptyClass(object): pass
-    c._push_object(MagicalC(EmptyClass(), environ))
+    pylons.c._push_object(MagicalC(EmptyClass(), environ))
+    pylons.g._push_object(Globals())
+    pylons.request._push_object(request)
     yield
-    c._pop_object()
+    pylons.c._pop_object()
+    pylons.g._pop_object()
+    pylons.request._pop_object()
 
 on_import()
