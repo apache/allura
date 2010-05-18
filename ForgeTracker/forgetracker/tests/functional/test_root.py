@@ -263,7 +263,7 @@ class TestFunctionalController(TestController):
             'labels_old':''
         })
         response = self.app.get('/p/test/bugs/1/')
-        assert 'Test Admin' in str(response.html.find('span', {'class': 'ticket-assigned-to viewer'}))
+        assert 'nobody' in str(response.html.find('span', {'class': 'ticket-assigned-to viewer'}))
     
     def test_custom_fields(self):
         spec = """[{"label":"Priority","type":"select","options":"normal urgent critical"},
