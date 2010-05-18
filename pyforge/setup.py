@@ -70,6 +70,7 @@ setup(
     admin = pyforge.ext.admin:AdminApp
     search = pyforge.ext.search:SearchApp
     home = pyforge.ext.project_home:ProjectHomeApp
+    sfx = pyforge.ext.sfx:SFXApp
 
     [flyway.migrations]
     pyforge = pyforge.migrations

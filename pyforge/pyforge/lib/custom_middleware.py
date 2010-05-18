@@ -5,8 +5,6 @@ from threading import local
 from pylons import c
 from webob import exc, Request
 
-from sf.phpsession import SFXSessionMgr, SfHttpHttpsMiddleware
-
 log = logging.getLogger(__name__)
 
 environ = _environ = None
@@ -50,6 +48,7 @@ class ForgeMiddleware(object):
 class SfxLoginMiddleware(object):
 
     def __init__(self, app, config):
+        from sf.phpsession import SFXSessionMgr
         self.app = app
         self.config = config
         self.sfx_session_mgr = SFXSessionMgr()
@@ -94,7 +93,9 @@ class SfxLoginMiddleware(object):
                     n.register_project('u/' + user.username, user, user_project=True)
             if user.display_name != user_data['name']:
                 user.display_name = user_data['name']
-
+            sfx_user_id_num = int(sfx_user_id.split(':')[-1])
+            if user.sfx_userid != sfx_user_id_num:
+                user.sfx_userid = sfx_user_id_num
             session['sfx-sessid'] = request.cookies[cookie_name]
             session['userid'] = user._id
             session.save()

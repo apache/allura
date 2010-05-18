@@ -40,7 +40,7 @@ class Command(command.Command):
         try:
             pylons.c._current_obj()
         except TypeError:
-            pylons.c._push_object(MagicalC(EmptyClass()))
+            pylons.c._push_object(MagicalC(EmptyClass(), environ))
         from pyforge.lib.app_globals import Globals
         pylons.g._push_object(Globals())
         ming.configure(**conf)

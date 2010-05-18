@@ -154,6 +154,7 @@ class User(MappedClass):
         unique_indexes = [ 'username' ]
 
     _id=FieldProperty(S.ObjectId)
+    sfx_userid=FieldProperty(int)
     username=FieldProperty(str)
     display_name=FieldProperty(str)
     open_ids=FieldProperty([str])

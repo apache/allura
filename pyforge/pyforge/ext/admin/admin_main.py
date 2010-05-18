@@ -5,7 +5,7 @@ from mimetypes import guess_type
 import Image
 
 import pkg_resources
-from pylons import c, request
+from pylons import c, g, request
 from tg import expose, redirect, flash
 from tg.decorators import with_trailing_slash, without_trailing_slash
 from webob import exc
@@ -236,6 +236,7 @@ class ProjectAdminController(object):
                     image.save(fp, format)
             else:
                 flash('Screenshots must be jpg, png, or gif format.')
+        g.publish('react', 'forge.project_updated')
         redirect('overview')
 
     @expose()

@@ -60,3 +60,29 @@ def require_authenticated():
     from pyforge import model as M
     if c.user == M.User.anonymous():
         raise exc.HTTPUnauthorized()
+
+def roles_with_project_access(access_type, project=None):
+    '''Return all ProjectRoles' _ids who directly or transitively have the given access
+    '''
+    from pyforge import model as M
+    if project is None: project = c.project
+    # Direct roles
+    result = set(project.acl.get(access_type, []))
+    roles = M.ProjectRole.query.find().all()
+    # Compute roles who can reach the direct roles
+    found = True
+    while found:
+        found = False
+        new_roles = []
+        for r in roles:
+            if r in result: continue
+            for rr_id in r.roles:
+                if rr_id in result:
+                    result.add(r._id)
+                    found = True
+                    break
+            else:
+                new_roles.append(r)
+        roles =new_roles
+    return [ M.ProjectRole.query.get(_id=r) for r in result ]
+

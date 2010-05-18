@@ -183,6 +183,7 @@ class Neighborhood(MappedClass):
             ThreadLocalORMSession.close_all()
             session(p).impl.connection.drop_database(database)
             raise
+        g.publish('react', 'forge.project_created')
         return p
 
     def bind_controller(self, controller):
@@ -442,6 +443,7 @@ class Project(MappedClass):
                 sp.install_app('home', 'home')
                 sp.install_app('admin', 'admin')
                 sp.install_app('search', 'search')
+            g.publish('react', 'forge.project_created')
         return sp
 
     def delete(self):
