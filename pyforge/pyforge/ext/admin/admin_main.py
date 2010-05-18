@@ -302,6 +302,7 @@ class ProjectAdminController(object):
                     redirect('.')
                 role = user.project_role()
                 c.project.acl[permission].append(role._id)
+        g.publish('react', 'forge.project_updated')
         redirect('permissions')
 
     @h.vardec
@@ -323,6 +324,7 @@ class ProjectAdminController(object):
                     role.roles.remove(ObjectId(str(sr['id'])))
         if new.get('add'):
             M.ProjectRole(name=new['name'])
+        g.publish('react', 'forge.project_updated')
         redirect('roles')
 
     @h.vardec
@@ -341,6 +343,7 @@ class ProjectAdminController(object):
                 if u.get('delete'):
                     ur = M.ProjectRole.query.get(user_id=ObjectId(str(u['id'])))
                     ur.roles.remove(ObjectId(str(r['id'])))
+        g.publish('react', 'forge.project_updated')
         redirect('perms')
 
 class AdminAppAdminController(DefaultAdminController):
