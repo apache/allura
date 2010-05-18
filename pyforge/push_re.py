@@ -65,9 +65,9 @@ def make_ticket_text(engineer):
         postlaunch = '-none-'
     if prelaunch:
         prelaunch = [ 'From sfu-scmprocess-1 so the following:\n' ] + prelaunch
-        postlaunch = '\n'.join(postlaunch)
+        prelaunch = '\n'.join(prelaunch)
     else:
-        postlaunch = '-none-'
+        prelaunch = '-none-'
     return TICKET_TEMPLATE.substitute(locals()), tag
     
 
