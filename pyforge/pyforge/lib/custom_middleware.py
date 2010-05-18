@@ -19,7 +19,9 @@ class ForgeMiddleware(object):
     within the TGController.__call__ method because it depends on pylons.c and pylons.g'''
 
     def __init__(self, app):
+        from pyforge.lib.app_globals import Globals
         self.app = app
+        self.g = Globals()
 
     def __call__(self, environ, start_response):
         _environ.set_environment(environ)
@@ -36,6 +38,8 @@ class ForgeMiddleware(object):
             pylons.c._pop_object(magical_c)
 
     def _cleanup_request(self, environ):
+        for msg in environ.get('allura.queued_messages', []):
+            self.g._publish(**msg)
         carrot = environ.pop('allura.carrot.connection', None)
         if carrot: carrot.close()
         _environ.set_environment({})

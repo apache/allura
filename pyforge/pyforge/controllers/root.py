@@ -70,15 +70,6 @@ class RootController(BaseController):
         c.user = M.User.query.get(_id=uid) or M.User.anonymous()
         c.queued_messages = []
 
-    def _cleanup_request(self, environ):
-        ming.orm.ormsession.ThreadLocalORMSession.flush_all()
-        for msg in environ.get('allura.queued_messages', []):
-            g._publish(**msg)
-        if 'allura.carrot.connection' in environ:
-            environ['allura.carrot.connection'].close()
-            del environ['allura.carrot.connection']
-        ming.orm.ormsession.ThreadLocalORMSession.close_all()
-
     @expose('pyforge.templates.project_list')
     @with_trailing_slash
     def index(self):
