@@ -64,9 +64,8 @@ class ReactorSetupCommand(base.Command):
         base.log.info('Configuring tool %s:%s', name, tool)
         be = self.backend
         for method, xn, qn, keys in tool_consumers(name, tool):
-            if be.queue_exists(qn):
-                be.channel.queue_delete(qn)
-            be.queue_declare(qn, True, False, False, True)
+            if not be.queue_exists(qn):
+                be.queue_declare(qn, True, False, False, True)
             for k in keys:
                 be.queue_bind(exchange=xn, queue=qn, routing_key=k)
             base.log.info('... %s %s %r', xn, qn, keys)
