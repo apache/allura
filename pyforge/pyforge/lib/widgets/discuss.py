@@ -231,6 +231,7 @@ class Post(HierWidget):
                 });
                 if($('a.edit_post', post)){
                     $('a.edit_post', post).click(function(ele){
+                        $('.display_post', post).hide();
                         $('.edit_post_form', post).show();
                         return false;
                     });

@@ -18,10 +18,13 @@
       </p>
 	</div>
 	<div class="span-${16-indent} last">
-		<div class="content clear">${Markup(g.markdown.convert(value.text))}</div>
-        <div py:for="att in value.attachments">
-          ${widgets.attachment.display(post=value, value=att)}
-        </div>
+		<div class="display_post content clear">${Markup(g.markdown.convert(value.text))}</div>
+	<div class="edit_post_form content clear" style="display:none" py:if="has_artifact_access('post', value.thread)()">
+	  ${widgets.edit_post.display(value=value, submit_text='Edit Post', action=value.url())}
+	</div>
+    <div py:for="att in value.attachments">
+      ${widgets.attachment.display(post=value, value=att)}
+    </div>
 	</div>
 	<div class="push-$indent clear span-3">&nbsp;</div>
 	<div class="span-2" py:if="has_artifact_access('moderate', value)()">
@@ -42,9 +45,6 @@
 
 	<div class="add_attachment_form push-${3+indent}  span-${16-indent} last clear" style="display:none" py:if="has_artifact_access('post', value.thread)()">
       ${widgets.attach_post.display(value=value, action=value.url() + 'attach')}
-	</div>
-	<div class="edit_post_form push-${3+indent} span-${16-indent} last clear" style="display:none" py:if="has_artifact_access('post', value.thread)()">
-	  ${widgets.edit_post.display(value=value, submit_text='Edit Post', action=value.url())}
 	</div>
 	<div class="reply_post_form span-19 last clear" style="display:none" py:if="has_artifact_access('post', value.thread)()">
 	  ${widgets.edit_post.display(
