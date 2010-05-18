@@ -17,7 +17,7 @@
   
   <body>
     <h1 class="title">$page.title</h1>
-    <form method="post" action="update" id="page_edit_form">
+    <form method="POST" class="can-retry" action="update" id="page_edit_form">
       <div class="span-3 clear"><label>Content:</label></div>
       <div class="span-15 last" style="min-height:2em;">${c.markdown_editor.display(name='text',value=page.text)}</div>
       <div class="span-3 clear"><label>Tags:</label></div>

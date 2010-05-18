@@ -843,3 +843,12 @@ small.badge:hover {
 ul#sidebarmenu li a.sidebar_thread_tag,
 ul#sidebarmenu li a.sidebar_thread_reply,
 ul#sidebarmenu li a.sidebar_thread_spam{display:none;}
+
+#save-message {
+    position:fixed;
+    top:5px;
+    left:40%;
+    opacity:0.8;
+    -moz-border-radius:0.7em;
+    -webkit-border-radius:0.7em;
+}

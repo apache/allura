@@ -78,3 +78,25 @@ $(document).ready(function()
 
     $(".defaultText").blur();
 });
+
+function attach_form_retry( form ){
+    $(form).submit(function(){
+        $form = $(this);
+
+        var $message = $('#save-message');
+        $message.length || ($message = $('<div id="save-message" class="notice"><p>saving...</p></div>').appendTo('body'));
+        setTimeout(function(){
+            // After 7 seconds, express our concern.
+            $message.addClass('error').removeClass('notice').html('<p>The server is taking too long to respond.  Retrying in 30 seconds.</p>');
+            setTimeout(function(){
+                // After 30 seconds total, give up and try again.
+                $message.html('<p>retrying...</p>');
+                $form.submit();
+            }, 23000)
+        }, 7000);
+    });
+}
+
+$(function(){
+    attach_form_retry('form.can-retry')
+});
