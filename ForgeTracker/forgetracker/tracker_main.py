@@ -539,12 +539,10 @@ class BinController(object):
         require(has_artifact_access('write'))
         if request.method != 'POST':
             raise Exception('save_bin must be a POST request')
-        bin = model.Bin()
+        bin = model.Bin(**post_data)
         bin.app_config_id = c.app.config._id
         bin.custom_fields = dict()
         globals = model.Globals.query.get(app_config_id=c.app.config._id)
-        for k,v in post_data.iteritems():
-            setattr(bin, k, v)
         redirect(request.referer)
 
     @with_trailing_slash
