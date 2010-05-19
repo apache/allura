@@ -72,7 +72,7 @@ class SFXAuthenticationProvider(M.AuthenticationProvider):
                 return M.User.anonymous()
             elif self.request.cookies[cookie_name] == self.session.get('sfx-sessid'):
                 # already logged in
-                return super(M.AuthPlugin, self).authenticate_request()
+                return super(M.AuthenticationProvider, self).authenticate_request()
         sfx_user_id = mgr.userid_from_session_cookie(self.request.cookies)
         if sfx_user_id:
             server_name = self.request.environ['HTTP_HOST']
