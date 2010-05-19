@@ -29,9 +29,10 @@
     </div>
 		<div class="span-6 last">
 			<p>
-				<a href="" class="ui-button ui-state-default ui-widget ui-corner-all ui-button-text-icon download">
-					<span class="ui-button-text">&darr; Download $c.project.name</span>
-				</a>
+        <div id="download-button"></div>
+        <script>
+            jQuery("#download-button").load("${c.project.oldforge_url()}best_release.html");
+        </script>
 			</p>
       <div class="span-6 last" id="sidebar-right">
         <div class="span-2 tright"><b>Awards:</b></div>

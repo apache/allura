@@ -259,6 +259,14 @@ class Project(MappedClass):
         else:
             return url
 
+    def oldforge_url(self):
+        shortname = self.shortname[len(self.neighborhood.shortname_prefix):]
+        short_split = shortname.split('/')
+        short_split.reverse()
+        short_split = '.'.join(short_split)
+        proj_name = short_split + '.' + self.neighborhood.url_prefix.replace('/','')
+        return '/projects/%s/' % proj_name
+
     def get_screenshots(self):
         return ProjectFile.query.find({'metadata.project_id':self._id, 'metadata.category':'screenshot'}).all()
 
