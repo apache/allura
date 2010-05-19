@@ -94,9 +94,10 @@ class AuthController(object):
             flash('Password must be at least 8 characters.',
                   'error')
             redirect('create_account')
-        user = M.User.register(dict(username=username,
-                                    display_name=display_name))
-        user.set_password(password)
+        user = M.User.register(
+            dict(username=username,
+                 display_name=display_name,
+                 password=password))
         if email_addresses:
             for email in email_addresses.split(','):
                 addr = M.EmailAddress.upsert(email)
@@ -106,7 +107,9 @@ class AuthController(object):
             for open_id in open_ids.split(','):
                 oid = M.OpenId.upsert(open_id, display_name+"'s OpenId")
                 user.claim_openid(open_id)
-        self.do_login(username,password)
+        M.AuthenticationProvider.get(request).login(user)
+        flash('User "%s" registered' % user.display_name)
+        redirect('/')
 
     @expose()
     def send_verification_link(self, a):
@@ -172,18 +175,8 @@ class AuthController(object):
         redirect('/')
 
     @expose()
-    def do_login(self, username, password, came_from=None):
-        user = M.User.by_username(username)
-        if user is None:
-            session['userid'] = None
-            session.save()
-            raise exc.HTTPUnauthorized()
-        if not user.validate_password(password):
-            session['userid'] = None
-            session.save()
-            raise exc.HTTPUnauthorized()
-        session['userid'] = user._id
-        session.save()
+    def do_login(self, came_from=None, **kw):
+        user = M.AuthenticationProvider.get(request).login()
         flash('Welcome back, %s' % user.display_name)
         if came_from and came_from != request.url:
             redirect(came_from)

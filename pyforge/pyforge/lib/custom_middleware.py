@@ -68,31 +68,8 @@ class SfxLoginMiddleware(object):
         return resp(environ, start_response)
 
     def handle(self, request):
-        from pyforge import model as M
         session = request.environ['beaker.session']
-        cookie_name = self.sfx_session_mgr.cookie_name
-        mgr = self.sfx_session_mgr
-        if 'userid' in session:
-            if cookie_name not in request.cookies:
-                # user should be logged out
-                session.clear()
-                session.save()
-                # don't redirect or show message though, since they might've logged out of sf.net days ago
-                # and just now returned to this app
-                return
-            elif request.cookies[cookie_name] == session.get('sfx-sessid'):
-                # already logged in
-                return
-
-        sfx_user_id = mgr.userid_from_session_cookie(request.cookies)
-        if sfx_user_id:
-            server_name = request.environ['HTTP_HOST']
-            user_data = mgr.user_data(server_name, sfx_user_id)
-            with fake_pylons_context(request):
-                user = M.User.by_username(user_data['username'], user_data)
-            session['sfx-sessid'] = request.cookies[cookie_name]
-            session['userid'] = user._id
-            session.save()
+        session['allura.sfx_session_manager'] = self.sfx_session_mgr
 
 class SSLMiddleware(object):
     'Verify the https/http schema is correct'

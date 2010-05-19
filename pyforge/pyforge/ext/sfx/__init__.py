@@ -1,1 +1,1 @@
-from sfx_main import SFXApp
+from sfx_main import SFXApp, SFXAuthenticationProvider

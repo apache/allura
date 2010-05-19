@@ -67,7 +67,7 @@ class RootController(BaseController):
     def _setup_request(self):
         uid = session.get('userid', None)
         c.project = c.app = None
-        c.user = M.User.query.get(_id=uid) or M.User.anonymous()
+        c.user = M.AuthenticationProvider.get(request).authenticate_request()
         c.queued_messages = []
 
     @expose('pyforge.templates.project_list')

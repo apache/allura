@@ -11,10 +11,13 @@ from hashlib import sha256
 import ldap
 import iso8601
 import pymongo
-from pylons import c, g
+import pkg_resources
+from pylons import c, g, request
 from tg import config
+from webob import exc
 
 from ming import schema as S
+from ming.utils import LazyProperty
 from ming.orm.ormsession import ThreadLocalORMSession
 from ming.orm import session, state, MappedClass
 from ming.orm import FieldProperty, RelationProperty, ForeignIdProperty
@@ -176,13 +179,8 @@ class User(MappedClass):
         return ea.claimed_by_user()
 
     @classmethod
-    def by_username(cls, name, extra=None):
-        u = cls.query.get(username=name)
-        if u is None and config.get('auth.method', 'local') == 'sfx':
-            from pyforge.ext.sfx.lib import sfx_api
-            api = sfx_api.SFXUserApi()
-            u = api.upsert_user(name, extra)
-        return u
+    def by_username(cls, name):
+        return AuthenticationProvider.get(request).by_username(name)
 
     def address_object(self, addr):
         return EmailAddress.query.get(_id=addr, claimed_by_user_id=self._id)
@@ -206,47 +204,10 @@ class User(MappedClass):
     @classmethod
     def register(cls, doc, make_project=True):
         from pyforge import model as M
-        method = config.get('auth.method', 'local')
-        if method == 'local':
-            result = cls._register_local(doc)
-        elif method == 'ldap': # pragma no cover
-            result = cls._register_ldap(doc)
-        if make_project:
+        result = AuthenticationProvider.get(request).register_user(doc)
+        if result and make_project:
             n = M.Neighborhood.query.get(name='Users')
             n.register_project('u/' + result.username, result, user_project=True)
-        return result
-
-    @classmethod
-    def _register_local(cls, doc):
-        return cls(**doc)
-
-    @classmethod
-    def _register_ldap(cls, doc):
-        password = doc.pop('password', None)
-        result = cls(**doc)
-        dn = 'uid=%s,%s' % (doc['username'], config['auth.ldap.suffix'])
-        try:
-            con = ldap.initialize(config['auth.ldap.server'])
-            con.bind_s(config['auth.ldap.admin_dn'],
-                       config['auth.ldap.admin_password'])
-            ldap_info = dict(
-                uid=doc['username'],
-                displayName=doc['display_name'],
-                cn=doc['display_name'],
-                userPassword=password,
-                objectClass=['inetOrgPerson'],
-                givenName=doc['display_name'].split()[0],
-                sn=doc['display_name'].split()[-1])
-            ldap_info = dict((k,v) for k,v in ldap_info.iteritems()
-                             if v is not None)
-            try:
-                con.add_s(dn, ldap_info.items())
-            except ldap.ALREADY_EXISTS:
-                con.modify_s(dn, [(ldap.MOD_REPLACE, k, v)
-                                  for k,v in ldap_info.iteritems()])
-            con.unbind_s()
-        except:
-            raise
         return result
 
     def private_project(self):
@@ -285,48 +246,9 @@ class User(MappedClass):
                 session(obj).expunge(obj)
                 return ProjectRole.query.get(user_id=self._id)
 
-    def set_password(self, password):
-        method = config.get('auth.method', 'local')
-        if method == 'local':
-            return self._set_password_local(password)
-        elif method == 'ldap':
-            return self._set_password_ldap(password)
-
-    def _set_password_local(self, password):
-        self.password = encode_password(password)
-
-    def _set_password_ldap(self, password):
-        try:
-            dn = 'uid=%s,%s' % (self.username, config['auth.ldap.suffix'])
-            con = ldap.initialize(config['auth.ldap.server'])
-            con.bind_s(dn, password)
-            con.modify_s(dn, [(ldap.MOD_REPLACE, 'userPassword', password)])
-            con.unbind_s()
-        except ldap.INVALID_CREDENTIALS:
-            return False
-        
-    def validate_password(self, password):
-        method = config.get('auth.method', 'local')
-        if method == 'local':
-            return self._validate_password_local(password)
-        elif method == 'ldap':
-            return self._validate_password_ldap(password)
-
-    def _validate_password_ldap(self, password):
-        try:
-            dn = 'uid=%s,%s' % (self.username, config['auth.ldap.suffix'])
-            con = ldap.initialize(config['auth.ldap.server'])
-            con.bind_s(dn, password)
-            con.unbind_s()
-        except ldap.INVALID_CREDENTIALS:
-            return False
-        return True
-    
-    def _validate_password_local(self, password):
-        if not self.password: return False
-        salt = str(self.password[6:6+self.SALT_LEN])
-        check = encode_password(password, salt)
-        return check == self.password
+    def set_password(self, new_password):
+        return AuthenticationProvider.get(request).set_password(
+            self, self.password, new_password)
 
     @classmethod
     def anonymous(cls):
@@ -378,4 +300,129 @@ class ProjectRole(MappedClass):
                 if pr is None: continue
                 for rr in pr.role_iter(visited):
                     yield rr
+
+class AuthenticationProvider(object):
+
+    def __init__(self, request):
+        self.request = request
+
+    @classmethod
+    def get(cls, request):
+        method = config.get('auth.method', 'local')
+        for ep in pkg_resources.iter_entry_points('pyforge.auth', method):
+            return ep.load()(request)
+        return None
+
+    @LazyProperty
+    def session(self):
+        return self.request.environ['beaker.session']
+
+    def authenticate_request(self):
+        return User.query.get(_id=self.session.get('userid', None))
+
+    def register_user(self, user_doc):
+        raise NotImplementedError, 'register_user'
+
+    def _login(self):
+        raise NotImplementedError, '_login'
+
+    def login(self, user=None):
+        try:
+            if user is None: user = self._login()
+            self.session['userid'] = user._id
+            self.session.save()
+            return user
+        except exc.HTTPUnauthorized:
+            self.logout()
+            raise
+
+    def logout(self):
+        self.session['userid'] = None
+        self.session.save()
+
+    def by_username(self, username):
+        raise NotImplementedError, 'by_username'
+
+    def set_password(self, user, old_password, new_password):
+        raise NotImplementedError, 'set_password'
+
+class LocalAuthenticationProvider(AuthenticationProvider):
+
+    def register_user(self, user_doc):
+        return User(**user_doc)
+
+    def _login(self):
+        user = self.by_username(self.request.params['username'])
+        if not self._validate_password(user, self.request.params['password']):
+            raise exc.HTTPUnauthorized()
+        return user
+
+    def _validate_password(self, user, password):
+        if user is None: return False
+        if not user.password: return False
+        salt = str(user.password[6:6+user.SALT_LEN])
+        check = encode_password(self.request.params['password'], salt)
+        if check != user.password: return False
+        return True
+
+    def by_username(self, username):
+        return User.query.get(username=username)
+
+    def set_password(self, user, old_password, new_password):
+        user.password = encode_password(new_password)
+
+class LdapAuthenticationProvider(AuthenticationProvider):
+
+    def register_user(self, user_doc):
+        password = user_doc.pop('password', None)
+        result = User(**user_doc)
+        dn = 'uid=%s,%s' % (user_doc['username'], config['auth.ldap.suffix'])
+        try:
+            con = ldap.initialize(config['auth.ldap.server'])
+            con.bind_s(config['auth.ldap.admin_dn'],
+                       config['auth.ldap.admin_password'])
+            ldap_info = dict(
+                uid=user_doc['username'],
+                displayName=user_doc['display_name'],
+                cn=user_doc['display_name'],
+                userPassword=password,
+                objectClass=['inetOrgPerson'],
+                givenName=user_doc['display_name'].split()[0],
+                sn=user_doc['display_name'].split()[-1])
+            ldap_info = dict((k,v) for k,v in ldap_info.iteritems()
+                             if v is not None)
+            try:
+                con.add_s(dn, ldap_info.items())
+            except ldap.ALREADY_EXISTS:
+                con.modify_s(dn, [(ldap.MOD_REPLACE, k, v)
+                                  for k,v in ldap_info.iteritems()])
+            con.unbind_s()
+        except:
+            raise
+        return result
+
+    def by_username(self, username):
+        return User.query.get(username=username)
+
+    def set_password(self, user, old_password, new_password):
+        try:
+            dn = 'uid=%s,%s' % (self.username, config['auth.ldap.suffix'])
+            con = ldap.initialize(config['auth.ldap.server'])
+            con.bind_s(dn, old_password)
+            con.modify_s(dn, [(ldap.MOD_REPLACE, 'userPassword', new_password)])
+            con.unbind_s()
+        except ldap.INVALID_CREDENTIALS:
+            raise exc.HTTPUnauthorized()
+
+    def _login(self):
+        user = User.query.get(username=self.request.params['username'])
+        if user is None: raise exc.HTTPUnauthorized()
+        try:
+            dn = 'uid=%s,%s' % (user.username, config['auth.ldap.suffix'])
+            con = ldap.initialize(config['auth.ldap.server'])
+            con.bind_s(dn, self.request.params['password'])
+            con.unbind_s()
+        except ldap.INVALID_CREDENTIALS:
+            raise exc.HTTPUnauthorized()
+        return user
 

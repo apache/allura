@@ -97,7 +97,7 @@ class TestAuth(TestController):
                                                         display_name='Test Me',
                                                         open_ids='http://somewhere',
                                                         email_addresses='test@test.com')).follow()
-        assert 'Welcome back, Test Me' in r
+        assert 'User "Test Me" registered' in r
         r = self.app.post('/auth/save_new', params=dict(username='aaa',password='12345678')).follow()
         assert 'That username is already taken. Please choose another.' in r
 

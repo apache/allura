@@ -181,7 +181,13 @@ class Neighborhood(MappedClass):
                 ThreadLocalORMSession.flush_all()
         except:
             ThreadLocalORMSession.close_all()
-            session(p).impl.connection.drop_database(database)
+            log.exception('Error registering project, attempting to drop %s',
+                          database)
+            try:
+                session(p).impl.bind._conn.drop_database(database)
+            except:
+                log.exception('Error dropping database %s', database)
+                pass
             raise
         g.publish('react', 'forge.project_created')
         return p
