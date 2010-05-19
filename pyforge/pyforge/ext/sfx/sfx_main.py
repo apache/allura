@@ -64,8 +64,8 @@ class SFXAuthenticationProvider(M.AuthenticationProvider):
         raise TypeError, "We don't provide user registration; that's SFX's job"
 
     def authenticate_request(self):
-        cookie_name = self.sfx_session_mgr.cookie_name
-        mgr = self.sfx_session_mgr
+        cookie_name = self.sfx_session_manager.cookie_name
+        mgr = self.sfx_session_manager
         if 'userid' in self.session:
             if cookie_name not in self.request.cookies:
                 self.logout()
