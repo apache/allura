@@ -112,15 +112,15 @@ class UserProfileController(object):
     @expose('json')
     def permissions(self, repo_path=None, **kw):
         """Expects repo_path to be a filesystem path like
-        '/git/mygreatproject/reponame.git', or
-        '/svn/someproject/subproject/reponame/'.
+        '/git/p/mygreatproject/reponame.git', or
+        '/svn/adobe/someproject/subproject/reponame/'.
 
         Explicitly: (1) The path starts with a containing directory,
         e.g., /git, which is not relevant.  (2) The final component of
         the path is the repo name, and may include a trailing slash.
         Less a '.git' suffix, the repo name _is_ the mount point.
         (3) Everything between the containing directory and the repo is
-        an exact match for a project shortname.  Multiple components
+        an exact match for a project URL.  Multiple components
         signify sub-projects.
 
         Note that project and user _names_ are built with slashes, but
@@ -132,11 +132,13 @@ class UserProfileController(object):
         """
 
         username = c.project.shortname.split('/')[1]
-        user = User.query.find({'username':username}).first()
+        user = User.query.get(username=username)
         parts = [p for p in repo_path.split(os.path.sep) if p]
-        project_shortname = '/'.join(parts[1:-1])
+        project_path = '/' + '/'.join(parts[1:])
+        project, rest = h.find_project(project_path)
         mount_point = os.path.splitext(parts[-1])[0]
-        h.set_context(project_shortname, mount_point)
+        c.project = project
+        c.app = p.app_instance(mount_point)
         return dict(allow_read=has_artifact_access('read')(user=user),
                     allow_write=has_artifact_access('write')(user=user),
                     allow_create=has_artifact_access('create')(user=user))
