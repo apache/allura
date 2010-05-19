@@ -68,7 +68,7 @@ def test_user():
     assert u.private_project().shortname == 'u/nosetest_user'
     assert len(list(u.role_iter())) == 3
     u.set_password('foo')
-    provider = M.LocalAuthenticationProvider(None)
+    provider = M.LocalAuthenticationProvider(Request.blank('/'))
     assert provider._validate_password(u, 'foo')
     assert not provider._validate_password(u, 'foobar')
     u.set_password('foobar')

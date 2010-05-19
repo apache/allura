@@ -170,8 +170,7 @@ class AuthController(object):
 
     @expose()
     def logout(self):
-        session['userid'] = None
-        session.save()
+        M.AuthenticationProvider.get(request).logout()
         redirect('/')
 
     @expose()

@@ -35,7 +35,7 @@ class ForgeMiddleware(object):
             else:
                 return self._cleanup_iterator(result, environ)
         finally:
-            pylons.c._pop_object(magical_c)
+            pylons.c._pop_object()
 
     def _cleanup_request(self, environ):
         for msg in environ.get('allura.queued_messages', []):
@@ -69,7 +69,7 @@ class SfxLoginMiddleware(object):
 
     def handle(self, request):
         session = request.environ['beaker.session']
-        session['allura.sfx_session_manager'] = self.sfx_session_mgr
+        request.environ['allura.sfx_session_manager'] = self.sfx_session_mgr
 
 class SSLMiddleware(object):
     'Verify the https/http schema is correct'

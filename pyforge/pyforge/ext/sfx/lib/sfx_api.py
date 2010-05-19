@@ -31,7 +31,7 @@ class SFXUserApi(object):
         """
         try:
             url = self._userid_api_url(int(username))
-        except TypeError:
+        except ValueError:
             url = self._username_api_url(username)
         url_handle = urllib2.urlopen(url, timeout=timeout)
         return json.load(url_handle)['User']
@@ -45,9 +45,10 @@ class SFXUserApi(object):
             n = M.Neighborhood.query.get(name='Users')
             n.register_project('u/' + u.username, u, user_project=True)
         if u.display_name != user_data['name']:
-            u.display_name = user_data.name
+            u.display_name = user_data['name']
         if u.sfx_userid != user_data['id']:
             u.sfx_userid = user_data['id']
+        return u
 
 class SFXProjectApi(object):
 

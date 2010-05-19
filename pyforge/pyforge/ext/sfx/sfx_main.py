@@ -58,7 +58,7 @@ class SFXAuthenticationProvider(M.AuthenticationProvider):
 
     def __init__(self, request):
         super(SFXAuthenticationProvider, self).__init__(request)
-        self.sfx_session_manager = self.session['allura.sfx_session_manager']
+        self.sfx_session_manager = request.environ['allura.sfx_session_manager']
 
     def register_user(self, user_doc):
         raise TypeError, "We don't provide user registration; that's SFX's job"
@@ -72,7 +72,7 @@ class SFXAuthenticationProvider(M.AuthenticationProvider):
                 return M.User.anonymous()
             elif self.request.cookies[cookie_name] == self.session.get('sfx-sessid'):
                 # already logged in
-                return super(M.AuthenticationProvider, self).authenticate_request()
+                return super(SFXAuthenticationProvider, self).authenticate_request()
         sfx_user_id = mgr.userid_from_session_cookie(self.request.cookies)
         if sfx_user_id:
             server_name = self.request.environ['HTTP_HOST']
@@ -81,17 +81,30 @@ class SFXAuthenticationProvider(M.AuthenticationProvider):
             self.session['sfx-sessid'] = self.request.cookies[cookie_name]
             self.session['userid'] = user._id
             self.session.save()
+            log.info('Saving session %r', self.session)
             return user
         else:
             return M.User.anonymous()
 
+    def logout(self):
+        self.session['sfx-sessid'] = None
+        try:
+            from pylons import response
+            response.delete_cookie(self.sfx_session_manager.cookie_name)
+        except:
+            pass
+        super(SFXAuthenticationProvider, self).logout()
+
     def _login(self):
         raise TypeError, "We don't provide user login; that's SFX's job"
 
-    def by_username(self, username):
+    def by_username(self, username, extra=None):
         api = SFXUserApi()
-        with fake_pylons_context(self.request):
-            return api.upsert_user(username)
+        try:
+            return api.upsert_user(username, extra)
+        except:
+            with fake_pylons_context(self.request):
+                return api.upsert_user(username, extra)
 
 
 @contextmanager

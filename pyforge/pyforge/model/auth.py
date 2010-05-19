@@ -361,7 +361,7 @@ class LocalAuthenticationProvider(AuthenticationProvider):
         if user is None: return False
         if not user.password: return False
         salt = str(user.password[6:6+user.SALT_LEN])
-        check = encode_password(self.request.params['password'], salt)
+        check = encode_password(password, salt)
         if check != user.password: return False
         return True
 
