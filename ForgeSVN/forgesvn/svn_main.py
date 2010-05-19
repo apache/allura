@@ -122,7 +122,6 @@ class RootController(object):
     def index(self, offset=0):
         offset=int(offset)
         repo = c.app.repo
-        host = config.get('scm.host', request.host)
         if repo and repo.status=='ready':
             revisions = islice(repo.log(), offset, offset+10)
         else:
@@ -131,7 +130,6 @@ class RootController(object):
         next_link='?' + urlencode(dict(offset=offset+10))
         return dict(
             repo=c.app.repo,
-            host=host,
             revisions=revisions,
             next_link=next_link)
 

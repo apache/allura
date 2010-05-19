@@ -165,7 +165,6 @@ class RootController(object):
         return dict(repo=c.app.repo,
                     branch=branch,
                     tag=tag,
-                    host=request.host,
                     revisions=revisions,
                     next_link=next_link,
                     offset=offset,

@@ -2,6 +2,7 @@ import os
 import cPickle as pickle
 
 import pylons
+from tg import config
 import pymongo.bson
 
 from ming.orm.mapped_class import MappedClass
@@ -49,6 +50,13 @@ class Repository(Artifact):
     @property
     def full_fs_path(self):
         return os.path.join(self.fs_path, self.name)
+
+    def scm_host(self):
+        return self.tool + config.get('scm.host_suffix', '.' + pylons.request.host)
+
+    @property
+    def scm_url_path(self):
+        return self.scm_host() + self.url_path
 
     def init(self):
         raise NotImplementedError, 'init'

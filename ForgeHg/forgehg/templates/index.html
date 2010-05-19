@@ -18,9 +18,9 @@
     <py:if test="repo">
       <dl>
         <dt>read access</dt>
-        <dd>hg clone http://hg.${host}${repo.url_path}${repo.name}</dd>
+        <dd>hg clone http://$repo.scm_url_path</dd>
         <dt>read/write access</dt>
-        <dd>hg clone ssh://hg.${host}/${repo.url_path}${repo.name}</dd>
+        <dd>hg clone ssh://$repo.scm_url_path</dd>
         <dt>status</dt>
         <dd>${repo.status}</dd>
       </dl>

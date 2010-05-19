@@ -18,9 +18,9 @@
     <py:if test="repo">
       <dl>
         <dt>read access</dt>
-        <dd>git clone git://git.${host}${repo.url_path}${repo.name}</dd>
+        <dd>git clone git://$repo.scm_url_path</dd>
         <dt>read/write access</dt>
-        <dd>git clone ssh://git.${host}${repo.url_path}${repo.name}</dd>
+        <dd>git clone ssh://$repo.scm_url_path</dd>
         <dt>status</dt>
         <dd>${repo.status}</dd>
       </dl>

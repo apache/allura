@@ -157,7 +157,6 @@ class RootController(object):
         next_link='?' + urlencode(dict(offset=offset+10, branch=branch))
         return dict(repo=repo,
                     branch=branch,
-                    host=request.host,
                     revisions=revisions,
                     next_link=next_link,
                     offset=offset,

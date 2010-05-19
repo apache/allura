@@ -18,9 +18,9 @@
     <py:if test="repo">
       <dl>
         <dt>read access</dt>
-        <dd>svn checkout svn://svn.${host}${repo.url_path}${repo.name}/</dd>
+        <dd>svn checkout svn://$repo.scm_url_path</dd>
         <dt>read/write access</dt>
-        <dd>svn checkout svn+ssh://svn.${host}${repo.url_path}${repo.name}/</dd>
+        <dd>svn checkout svn+ssh://$repo.scm_url_path</dd>
         <dt>status</dt>
         <dd>${repo.status}</dd>
       </dl>
