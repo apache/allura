@@ -4,7 +4,7 @@ function add_field(label, type, options, show_in_search){
                      +   '<div class="span-3 clear"><label>Type: </label></div>'
                      +   '<div class="span-9 last"><select class="title wide">'
                      +     '<option value="string">text</option>'
-                     +     '<option value="sum">sum</option>'
+                  // +     '<option value="sum">sum</option>'
                      +     '<option value="number">number</option>'
                      +     '<option value="boolean">boolean</option>'
                      +     '<option value="select">select</option>'
