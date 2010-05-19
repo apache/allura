@@ -110,12 +110,10 @@ class ForgeHgApp(Application):
             write=[role_developer],
             create=[role_developer],
             admin=c.project.acl['tool'])
-        repo = model.HgRepository()
-        repo.name = self.config.options.mount_point
-        repo.fs_path = '/hg/' + c.project.shortname + '/'
-        repo.url_path = '/' + c.project.shortname + '/'
-        repo.tool = 'hg'
-        repo.status = 'initing'
+        repo = model.HgRepository(
+            name=self.config.options.mount_point,
+            tool='hg',
+            status='initing')
         ThreadLocalORMSession.flush_all()
         cloned_from_id = self.config.options.get('cloned_from')
         if cloned_from_id is not None:

@@ -108,12 +108,10 @@ class ForgeGitApp(Application):
             create=[role_developer],
             write=[role_developer],
             admin=c.project.acl['tool'])
-        repo = model.GitRepository()
-        repo.name = self.config.options.mount_point + '.git'
-        repo.fs_path = '/git/' + c.project.shortname + '/'
-        repo.url_path = '/' + c.project.shortname + '/'
-        repo.tool = 'git'
-        repo.status = 'initing'
+        repo = model.GitRepository(
+            name=self.config.options.mount_point + '.git',
+            tool='git',
+            status='initing')
         ThreadLocalORMSession.flush_all()
         cloned_from_id = self.config.options.get('cloned_from')
         if cloned_from_id is not None:

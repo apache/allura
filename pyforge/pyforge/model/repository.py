@@ -21,6 +21,19 @@ class Repository(Artifact):
     status=FieldProperty(str)
     email_address=''
 
+    def __init__(self, **kw):
+        if 'name' in kw and 'tool' in kw:
+            if 'fs_path' not in kw:
+                kw['fs_path'] = '/' + os.path.join(
+                    kw['tool'],
+                    pylons.c.project.url()[1:],
+                    kw['name'])
+            if 'url_path' not in kw:
+                kw['url_path'] = os.path.join(
+                    pylons.c.project.url(),
+                    kw['name'])
+        super(Repository, self).__init__(**kw)
+
     def url(self):
         return self.app_config.url()
 

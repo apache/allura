@@ -92,8 +92,6 @@ class ForgeSVNApp(Application):
             admin=c.project.acl['tool'])
         repo = model.SVNRepository(
             name=self.config.options.mount_point,
-            fs_path='/svn/' + c.project.shortname + '/',
-            url_path = '/' + c.project.shortname + '/',
             tool = 'svn',
             status = 'creating')
         g.publish('audit', 'scm.svn.init', dict(repo_name=repo.name, repo_path=repo.fs_path))
