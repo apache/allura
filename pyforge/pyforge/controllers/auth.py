@@ -86,7 +86,7 @@ class AuthController(object):
     def save_new(self,display_name=None,open_ids=None,email_addresses=None,
                  username=None,password=None):
         username = username.lower()
-        if M.User.query.get(username=username):
+        if M.User.by_username(username):
             flash('That username is already taken. Please choose another.',
                   'error')
             redirect('create_account')
@@ -130,7 +130,7 @@ class AuthController(object):
 
     @expose()
     def do_setup_openid_user(self, username=None, display_name=None):
-        if M.User.query.get(username=username) and username != c.user.username:
+        if M.User.by_username(username) and username != c.user.username:
             flash('That username is already taken.  Please choose another.',
                   'error')
             redirect('setup_openid_user')
@@ -173,7 +173,7 @@ class AuthController(object):
 
     @expose()
     def do_login(self, username, password, came_from=None):
-        user = M.User.query.get(username=username)
+        user = M.User.by_username(username)
         if user is None:
             session['userid'] = None
             session.save()

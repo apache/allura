@@ -408,7 +408,7 @@ class NeighborhoodAdminController(object):
                 else:
                     self.neighborhood.acl[permission].remove(None)
         if new.get('add'):
-            u = M.User.query.get(username=new['username'])
+            u = M.User.by_username(new['username'])
             self.neighborhood.acl[permission].append(u._id)
         redirect('permissions')
 

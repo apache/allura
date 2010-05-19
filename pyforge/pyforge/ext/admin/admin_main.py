@@ -296,7 +296,7 @@ class ProjectAdminController(object):
             if new['id']:
                 c.project.acl[permission].append(ObjectId(str(new['id'])))
             else:
-                user = M.User.query.get(username=new['username'])
+                user = M.User.by_username(new['username'])
                 if user is None:
                     flash('No user %s' % new['username'], 'error')
                     redirect('.')
@@ -334,7 +334,7 @@ class ProjectAdminController(object):
         if role is None: role = []
         for r in role:
             if r.get('new', {}).get('add'):
-                user = M.User.query.find({'username':str(r['new']['id'])}).first()
+                user = M.User.by_username(str(r['new']['id']))
                 if user:
                     ur = user.project_role()
                     if ObjectId(str(r['id'])) not in ur.roles:

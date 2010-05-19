@@ -448,7 +448,7 @@ class PageController(object):
                     if u['id'] == 'all':
                         self.page.viewable_by.remove('all')
                     else:
-                        user = User.query.get(username=str(u['id']))
+                        user = User.by_username(str(u['id']))
                         if user:
                             self.page.viewable_by.remove(user.username)
         redirect('.')

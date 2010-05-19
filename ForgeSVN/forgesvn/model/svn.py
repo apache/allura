@@ -87,7 +87,7 @@ class SVNCommit(Commit):
         result = cls(id=entry.revision.number, repo=repo)
         result.__dict__['_impl'] = entry
         result.author_username=entry.author
-        result.author=User.query.get(username=entry.author)
+        result.author=User.by_username(entry.author)
         result.datetime=datetime.utcfromtimestamp(entry.date)
         return result
 

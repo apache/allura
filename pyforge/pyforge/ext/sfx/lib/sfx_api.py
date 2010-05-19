@@ -1,11 +1,53 @@
 import json
 import httplib
+import urllib2
 from contextlib import closing
 
 from tg import config
 from pylons import c, request
 
+from pyforge import model as M
 from pyforge.lib.security import roles_with_project_access
+
+class SFXUserApi(object):
+    
+    def __init__(self):
+        self.project_host = config.get('sfx.api.host', None)
+        self.project_path = config.get('sfx.api.project_path', '/api/user')
+
+    def _username_api_url(self, username):
+        return 'http://%s/api/user/username/%s/json' % (
+            self.project_host or request.host,
+            username)
+
+    def _userid_api_url(self, id):
+        return 'http://%s/api/user/id/%s/json' % (
+            self.project_host or request.host,
+            id)
+
+    def user_data(self, username, timeout=2):
+        """
+        given a sfnet hostname and userid, returns a dict of user data
+        """
+        try:
+            url = self._userid_api_url(int(username))
+        except TypeError:
+            url = self._username_api_url(username)
+        url_handle = urllib2.urlopen(url, timeout=timeout)
+        return json.load(url_handle)['User']
+
+    def upsert_user(self, username, user_data=None):
+        if user_data is None:
+            user_data = self.user_data(username)
+        u = M.User.query.get(username=username)
+        if u is None:
+            u = M.User(username=username)
+            n = M.Neighborhood.query.get(name='Users')
+            n.register_project('u/' + u.username, u, user_project=True)
+        if u.display_name != user_data['name']:
+            u.display_name = user_data.name
+        if u.sfx_userid != user_data['id']:
+            u.sfx_userid = user_data['id']
 
 class SFXProjectApi(object):
 

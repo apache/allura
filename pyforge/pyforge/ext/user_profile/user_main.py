@@ -71,13 +71,13 @@ class UserProfileController(object):
     @expose('pyforge.ext.user_profile.templates.user_index')
     def index(self):
         username = c.project.shortname.split('/')[1]
-        user = User.query.find({'username':username}).first()
+        user = User.by_username(username)
         return dict(user=user)
 
     @expose('pyforge.ext.user_profile.templates.user_dashboard_configuration')
     def configuration(self):
         username = c.project.shortname.split('/')[1]
-        user = User.query.find({'username':username}).first()
+        user = User.by_username(username)
         return dict(user=user)
 
     @h.vardec
@@ -132,7 +132,7 @@ class UserProfileController(object):
         """
 
         username = c.project.shortname.split('/')[1]
-        user = User.query.get(username=username)
+        user = User.by_username(username)
         parts = [p for p in repo_path.split(os.path.sep) if p]
         project_path = '/' + '/'.join(parts[1:])
         project, rest = h.find_project(project_path)

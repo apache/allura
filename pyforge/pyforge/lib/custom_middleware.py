@@ -88,18 +88,8 @@ class SfxLoginMiddleware(object):
         if sfx_user_id:
             server_name = request.environ['HTTP_HOST']
             user_data = mgr.user_data(server_name, sfx_user_id)
-            user = M.User.query.get(username=user_data['username'])
-            if not user:
-                with fake_pylons_context(request):
-                    user = M.User(username=user_data['username'],
-                                  display_name=user_data['name'])
-                    n = M.Neighborhood.query.get(name='Users')
-                    n.register_project('u/' + user.username, user, user_project=True)
-            if user.display_name != user_data['name']:
-                user.display_name = user_data['name']
-            sfx_user_id_num = int(sfx_user_id.split(':')[-1])
-            if user.sfx_userid != sfx_user_id_num:
-                user.sfx_userid = sfx_user_id_num
+            with fake_pylons_context(request):
+                user = M.User.by_username(user_data['username'], user_data)
             session['sfx-sessid'] = request.cookies[cookie_name]
             session['userid'] = user._id
             session.save()

@@ -170,10 +170,19 @@ class User(MappedClass):
         return '/u/' + self.username + '/'
 
     @classmethod
-    def by_email_address(self, addr):
+    def by_email_address(cls, addr):
         ea = EmailAddress.query.get(_id=addr)
         if ea is None: return None
         return ea.claimed_by_user()
+
+    @classmethod
+    def by_username(cls, name, extra=None):
+        u = cls.query.get(username=name)
+        if u is None and config.get('auth.method', 'local') == 'sfx':
+            from pyforge.ext.sfx.lib import sfx_api
+            api = sfx_api.SFXUserApi()
+            u = api.upsert_user(name, extra)
+        return u
 
     def address_object(self, addr):
         return EmailAddress.query.get(_id=addr, claimed_by_user_id=self._id)

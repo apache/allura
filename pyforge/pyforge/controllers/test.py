@@ -90,7 +90,7 @@ class TestController(BaseController, ProjectController):
     def __call__(self, environ, start_response):
         c.app = None
         c.project = M.Project.query.get(shortname='test')
-        c.user = M.User.query.get(username=environ.get('username', 'test_admin'))
+        c.user = M.User.by_username(environ.get('username', 'test_admin'))
         return BaseController.__call__(self, environ, start_response)
 
 class DispatchTest(object):
