@@ -136,7 +136,7 @@ class UserProfileController(object):
         parts = [p for p in repo_path.split(os.path.sep) if p]
         project_path = '/' + '/'.join(parts)
         project, rest = h.find_project(project_path)
-        mount_point = os.path.splitext(parts[-1])[0]
+        mount_point = os.path.splitext(rest[0])[0]
         c.project = project
         c.app = project.app_instance(mount_point)
         return dict(allow_read=has_artifact_access('read')(user=user),
