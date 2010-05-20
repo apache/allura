@@ -134,7 +134,7 @@ class UserProfileController(object):
         username = c.project.shortname.split('/')[1]
         user = User.by_username(username)
         parts = [p for p in repo_path.split(os.path.sep) if p]
-        project_path = '/' + '/'.join(parts[1:])
+        project_path = '/' + '/'.join(parts)
         project, rest = h.find_project(project_path)
         mount_point = os.path.splitext(parts[-1])[0]
         c.project = project
