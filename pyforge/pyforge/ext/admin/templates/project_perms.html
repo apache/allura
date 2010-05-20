@@ -52,6 +52,7 @@
           </tr>
         </tbody>
       </table>
+      <input type="submit" value="Save Changes"/>
     </form>
   </body>
     <script type="text/javascript">
@@ -63,12 +64,17 @@
           e.target.parentNode.removeChild(e.target);
         });
       });
-      $('td.add_role input').change(function(e){
-        var vals = $('#roles_form').serialize();
-        var add_name = e.target.name.replace('.id','.add');
-        $.post($('#roles_form')[0].action, vals+'&'+add_name+'=Add', function(){
+      $('#roles_form').submit(function(e){
+        var vals = $(this).serialize();
+        $('td.add_role input', this).each(function(){
+          if(this.value){
+            vals = vals+'&'+this.name.replace('.id','.add')+'=Add'
+          }
+        });
+        $.post(this.action, vals, function(){
           window.location.reload();
         });
+        return false;
       });
       /*]]>*/
     </script>
