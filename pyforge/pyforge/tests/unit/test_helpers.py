@@ -48,6 +48,6 @@ class TestAgo(TestCase):
     def time_since(self, *time_components):
         end_time = datetime(*time_components)
         with patch('pyforge.lib.helpers.datetime') as datetime_class:
-            datetime_class.now.return_value = end_time
+            datetime_class.utcnow.return_value = end_time
             return helpers.ago(self.start_time)
 
