@@ -27,12 +27,9 @@ class Repository(Artifact):
             if 'fs_path' not in kw:
                 kw['fs_path'] = '/' + os.path.join(
                     kw['tool'],
-                    pylons.c.project.url()[1:],
-                    kw['name'])
+                    pylons.c.project.url()[1:])
             if 'url_path' not in kw:
-                kw['url_path'] = os.path.join(
-                    pylons.c.project.url(),
-                    kw['name'])
+                kw['url_path'] = pylons.c.project.url()
         super(Repository, self).__init__(**kw)
 
     def url(self):
@@ -56,7 +53,7 @@ class Repository(Artifact):
 
     @property
     def scm_url_path(self):
-        return self.scm_host() + self.url_path
+        return self.scm_host() + self.url_path + self.name
 
     def init(self):
         raise NotImplementedError, 'init'
