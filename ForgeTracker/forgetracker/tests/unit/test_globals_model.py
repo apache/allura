@@ -1,12 +1,12 @@
 from forgetracker.model import Globals
-from forgetracker.tests.unit import TestWithModel
+from forgetracker.tests.unit import TrackerTestWithModel
 from pylons import c
 from pyforge.lib import helpers as h
 
 from ming.orm.ormsession import ThreadLocalORMSession
 
 
-class TestGlobalsModel(TestWithModel):
+class TestGlobalsModel(TrackerTestWithModel):
     def setUp(self):
         super(TestGlobalsModel, self).setUp()
         c.project.install_app('Tickets', 'doc-bugs')
@@ -28,7 +28,7 @@ class TestGlobalsModel(TestWithModel):
         assert Globals.next_ticket_num() == 1
 
 
-class TestCustomFields(TestWithModel):
+class TestCustomFields(TrackerTestWithModel):
     def test_it_has_sortable_custom_fields(self):
         tracker_globals = globals_with_custom_fields(
             [dict(label='Iteration Number',

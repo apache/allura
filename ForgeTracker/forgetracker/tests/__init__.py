@@ -1,21 +1,9 @@
 from os import path, environ
 
-from tg import config
 from paste.deploy import loadapp
 from webtest import TestApp
 
 from pyforge.tests import helpers
-
-
-def run_app_setup():
-    test_config = environ.get('SANDBOX') and 'sandbox-test.ini' or 'test.ini'
-    conf_dir = config.here = path.abspath(
-        path.dirname(__file__) + '/../..')
-    test_file = path.join(conf_dir, test_config)
-    helpers.setup_basic_test(test_file)
-    # cmd = SetupCommand('setup-app')
-    # cmd.run([test_file])
-    return test_config, conf_dir
 
 
 class TestController(object):
@@ -39,7 +27,7 @@ class TestController(object):
 
     def setUp(self):
         """Method called by nose before running each test"""
-        test_config, conf_dir = run_app_setup()
+        test_config, conf_dir = helpers.run_app_setup()
         wsgiapp = loadapp('config:%s#%s' % (test_config, self.application_under_test),
                           relative_to=conf_dir)
         self.app = TestApp(wsgiapp)

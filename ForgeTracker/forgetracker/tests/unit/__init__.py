@@ -4,14 +4,14 @@ from ming.orm.ormsession import ThreadLocalORMSession
 from pyforge.websetup import bootstrap
 from pyforge.lib import helpers as h
 from pyforge import model as M
-from forgetracker.tests import run_app_setup
+from pyforge.tests.helpers import run_app_setup
 
 
 def setUp():
     run_app_setup()
 
 
-class TestWithModel(object):
+class TrackerTestWithModel(object):
     def setUp(self):
         bootstrap.wipe_database()
         c.user = bootstrap.create_user('Test User')

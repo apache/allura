@@ -4,12 +4,12 @@ from ming.orm.ormsession import session
 from pyforge.lib import helpers as h
 from pyforge.model import User
 from pylons import c
-from forgetracker.tests.unit import TestWithModel
+from forgetracker.tests.unit import TrackerTestWithModel
 from forgetracker.model import Ticket, Globals
 from forgetracker import tracker_main
 
 
-class WithUserAndBugsApp(TestWithModel):
+class WithUserAndBugsApp(TrackerTestWithModel):
     def setUp(self):
         super(WithUserAndBugsApp, self).setUp()
         c.user = User(username='test-user')

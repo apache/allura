@@ -1,12 +1,12 @@
 from mock import patch
 from ming.orm.ormsession import ThreadLocalORMSession
 
-from forgetracker.tests.unit import TestWithModel
+from forgetracker.tests.unit import TrackerTestWithModel
 from forgetracker.widgets import ticket_form
 from forgetracker.model import Globals
 
 
-class TestTicketForm(TestWithModel):
+class TestTicketForm(TrackerTestWithModel):
     def test_it_creates_status_field(self):
         Globals.for_current_tracker().status_names = 'open closed'
         ThreadLocalORMSession.flush_all()
