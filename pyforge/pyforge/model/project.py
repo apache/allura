@@ -2,6 +2,7 @@ import logging
 import warnings
 from datetime import datetime, timedelta
 
+from tg import config
 from pylons import c, g, request
 import pkg_resources
 from webob import exc
@@ -14,6 +15,7 @@ from ming.orm.property import FieldProperty, RelationProperty, ForeignIdProperty
 from ming.orm.ormsession import ThreadLocalORMSession
 
 from pyforge.lib import helpers as h
+from pyforge.lib import plugin
 from .session import main_doc_session, main_orm_session
 from .session import project_doc_session, project_orm_session
 
@@ -127,70 +129,8 @@ class Neighborhood(MappedClass):
         '''Register a new project in the neighborhood.  The given user will
         become the project's superuser.  If no user is specified, c.user is used.
         '''
-        assert h.re_path_portion.match(shortname.replace('/', '')), \
-            'Invalid project shortname'
-        from . import auth
-        if user is None: user = c.user
-        p = Project.query.get(shortname=shortname)
-        if p:
-            assert p.neighborhood == self, (
-                'Project %s exists in neighborhood %s' % (
-                    shortname, p.neighborhood.name))
-            return p
-        database = 'project:' + shortname.replace('/', ':').replace(' ', '_')
-        p = Project(neighborhood_id=self._id,
-                    shortname=shortname,
-                    name=shortname,
-                    short_description='',
-                    description=(shortname + '\n'
-                                 + '=' * 80 + '\n\n'
-                                 + 'You can edit this description in the admin page'),
-                    database=database,
-                    last_updated = datetime.utcnow(),
-                    is_root=True)
-        try:
-            p.configure_project_database()
-            with h.push_config(c, project=p, user=user):
-                assert auth.ProjectRole.query.find().count() == 0, \
-                    'Project roles already exist'
-                # Install default named roles (#78)
-                role_owner = auth.ProjectRole(name='Admin')
-                role_developer = auth.ProjectRole(name='Developer')
-                role_member = auth.ProjectRole(name='Member')
-                role_auth = auth.ProjectRole(name='*authenticated')
-                role_anon = auth.ProjectRole(name='*anonymous')
-                # Setup subroles
-                role_owner.roles = [ role_developer._id ]
-                role_developer.roles = [ role_member._id ]
-                p.acl['create'] = [ role_owner._id ]
-                p.acl['read'] = [ role_owner._id, role_developer._id, role_member._id,
-                                  role_anon._id ]
-                p.acl['update'] = [ role_owner._id ]
-                p.acl['delete'] = [ role_owner._id ]
-                p.acl['tool'] = [ role_owner._id ]
-                p.acl['security'] = [ role_owner._id ]
-                pr = user.project_role()
-                pr.roles = [ role_owner._id, role_developer._id, role_member._id ]
-                # Setup builtin tool applications
-                if user_project:
-                    p.install_app('profile', 'profile')
-                else:
-                    p.install_app('home', 'home')
-                p.install_app('admin', 'admin')
-                p.install_app('search', 'search')
-                ThreadLocalORMSession.flush_all()
-        except:
-            ThreadLocalORMSession.close_all()
-            log.exception('Error registering project, attempting to drop %s',
-                          database)
-            try:
-                session(p).impl.bind._conn.drop_database(database)
-            except:
-                log.exception('Error dropping database %s', database)
-                pass
-            raise
-        g.publish('react', 'forge.project_created')
-        return p
+        provider = plugin.ProjectRegistrationProvider.get()
+        return provider.register_project(self, shortname, user or c.user, user_project)
 
     def bind_controller(self, controller):
         from pyforge.controllers.project import NeighborhoodController
@@ -434,24 +374,8 @@ class Project(MappedClass):
                 'options.mount_point':mount_point}).first()
 
     def new_subproject(self, name, install_apps=True):
-        assert h.re_path_portion.match(name), 'Invalid subproject shortname'
-        shortname = self.shortname + '/' + name
-        sp = Project(
-            parent_id=self._id,
-            neighborhood_id=self.neighborhood_id,
-            shortname=shortname,
-            name=name,
-            database=self.database,
-            last_updated = datetime.utcnow(),
-            is_root=False)
-        with h.push_config(c, project=sp):
-            AppConfig.query.remove(dict(project_id=c.project._id))
-            if install_apps:
-                sp.install_app('home', 'home')
-                sp.install_app('admin', 'admin')
-                sp.install_app('search', 'search')
-            g.publish('react', 'forge.project_created')
-        return sp
+        provider = plugin.ProjectRegistrationProvider.get()
+        return provider.register_subproject(self, name, install_apps)
 
     def delete(self):
         # Cascade to subprojects

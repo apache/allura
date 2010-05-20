@@ -73,9 +73,13 @@ setup(
     sfx = pyforge.ext.sfx:SFXApp
 
     [pyforge.auth]
-    local = pyforge.model.auth:LocalAuthenticationProvider
-    ldap = pyforge.model.auth.LdapAuthenticationProvider
+    local = pyforge.lib.plugin:LocalAuthenticationProvider
+    ldap = pyforge.lib.plugin:LdapAuthenticationProvider
     sfx = pyforge.ext.sfx:SFXAuthenticationProvider
+
+    [pyforge.project_registration]
+    local = pyforge.lib.plugin:LocalProjectRegistrationProvider
+    sfx = pyforge.ext.sfx:SFXProjectRegistrationProvider
 
     [flyway.migrations]
     pyforge = pyforge.migrations

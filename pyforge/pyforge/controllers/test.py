@@ -16,6 +16,7 @@ import pyforge
 from pyforge.lib.base import BaseController
 from pyforge.lib.security import require, require_authenticated, has_project_access, has_artifact_access
 from pyforge.lib import helpers as h
+from pyforge.lib import plugin
 from pyforge import model as M
 from .root import RootController
 from .project import ProjectController
@@ -90,7 +91,7 @@ class TestController(BaseController, ProjectController):
     def __call__(self, environ, start_response):
         c.app = None
         c.project = M.Project.query.get(shortname='test')
-        c.user = M.AuthenticationProvider.get(request).by_username(
+        c.user = plugin.AuthenticationProvider.get(request).by_username(
             environ.get('username', 'test_admin'))
         return BaseController.__call__(self, environ, start_response)
 

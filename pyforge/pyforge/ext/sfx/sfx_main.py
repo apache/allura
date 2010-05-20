@@ -10,6 +10,8 @@ from pyforge import version
 from pyforge.app import Application
 from pyforge.lib.decorators import react
 from pyforge.lib import search
+from pyforge.lib import helpers as h
+from pyforge.lib import plugin
 from pyforge import model as M
 
 from .lib.sfx_api import SFXProjectApi, SFXUserApi
@@ -28,7 +30,7 @@ class SFXApp(Application):
     @react('forge.project_created')
     def project_created(cls, routing_key, doc):
         api = SFXProjectApi()
-        api.create(pylons.c.project)
+        api.update(pylons.c.project)
 
     @classmethod
     @react('forge.project_updated')
@@ -54,7 +56,7 @@ class SFXApp(Application):
     def uninstall(self, project):
         pass # pragma no cover
 
-class SFXAuthenticationProvider(M.AuthenticationProvider):
+class SFXAuthenticationProvider(plugin.AuthenticationProvider):
 
     def __init__(self, request):
         super(SFXAuthenticationProvider, self).__init__(request)
@@ -106,6 +108,24 @@ class SFXAuthenticationProvider(M.AuthenticationProvider):
             with fake_pylons_context(self.request):
                 return api.upsert_user(username, extra)
 
+class SFXProjectRegistrationProvider(plugin.ProjectRegistrationProvider):
+
+    def __init__(self):
+        self.api = SFXUserApi()
+
+    def register_project(self, neighborhood, shortname, user_project):
+        # Reserve project name with SFX
+        r = self.api.create(neighborhood, shortname)
+        log.info('SFX Project creation returned: %s', r)
+        p = super(SFXProjectRegistrationProvider, self).register_project(
+            neighborhood, shortname, user_project)
+        return p
+
+    def register_subproject(self, project, name, install_apps):
+        r = self.api.create(project.neighborhood, project.shortname + '/' + name)
+        log.info('SFX Subproject creation returned: %s', r)
+        return super(SFXProjectRegistrationProvider, self).register_subproject(
+            project, name, install_apps)
 
 @contextmanager
 def fake_pylons_context(request):

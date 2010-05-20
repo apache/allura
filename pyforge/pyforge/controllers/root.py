@@ -15,6 +15,7 @@ import pyforge
 from pyforge.app import SitemapEntry
 from pyforge.lib.base import BaseController
 from pyforge.lib import helpers as h
+from pyforge.lib import plugin
 from pyforge.controllers.error import ErrorController
 from pyforge import model as M
 from pyforge.lib.widgets import project_list as plw
@@ -67,7 +68,7 @@ class RootController(BaseController):
     def _setup_request(self):
         uid = session.get('userid', None)
         c.project = c.app = None
-        c.user = M.AuthenticationProvider.get(request).authenticate_request()
+        c.user = plugin.AuthenticationProvider.get(request).authenticate_request()
         c.queued_messages = []
 
     @expose('pyforge.templates.project_list')

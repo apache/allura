@@ -12,6 +12,7 @@ from ming.orm.ormsession import ThreadLocalORMSession
 import pyforge.model.auth
 from pyforge.lib.app_globals import Globals
 from pyforge import model as M
+from pyforge.lib import plugin
 from pyforge.tests import helpers
 
 def setUp():
@@ -22,8 +23,9 @@ def setUp():
 @with_setup(setUp)
 def test_password_encoder():
     # Verify salt
-    assert M.auth.encode_password('test_pass') != M.auth.encode_password('test_pass')
-    assert M.auth.encode_password('test_pass', '0000') == M.auth.encode_password('test_pass', '0000')
+    ep = plugin.LocalAuthenticationProvider(Request.blank('/'))._encode_password
+    assert ep('test_pass') != ep('test_pass')
+    assert ep('test_pass', '0000') == ep('test_pass', '0000')
 
 @with_setup(setUp)
 def test_email_address():
@@ -66,9 +68,10 @@ def test_user():
             username='nosetest_user'))
     ThreadLocalORMSession.flush_all()
     assert u.private_project().shortname == 'u/nosetest_user'
-    assert len(list(u.role_iter())) == 3
+    roles = list(u.role_iter())
+    assert len(roles) == 3, roles
     u.set_password('foo')
-    provider = M.LocalAuthenticationProvider(Request.blank('/'))
+    provider = plugin.LocalAuthenticationProvider(Request.blank('/'))
     assert provider._validate_password(u, 'foo')
     assert not provider._validate_password(u, 'foobar')
     u.set_password('foobar')

@@ -11,6 +11,7 @@ from pyforge import model as M
 from pyforge.lib.oid_helper import verify_oid, process_oid
 from pyforge.lib.security import require_authenticated
 from pyforge.lib import helpers as h
+from pyforge.lib import plugin
 from pyforge.lib.widgets import SubscriptionForm
 
 log = logging.getLogger(__name__)
@@ -107,7 +108,7 @@ class AuthController(object):
             for open_id in open_ids.split(','):
                 oid = M.OpenId.upsert(open_id, display_name+"'s OpenId")
                 user.claim_openid(open_id)
-        M.AuthenticationProvider.get(request).login(user)
+        plugin.AuthenticationProvider.get(request).login(user)
         flash('User "%s" registered' % user.display_name)
         redirect('/')
 
@@ -170,12 +171,12 @@ class AuthController(object):
 
     @expose()
     def logout(self):
-        M.AuthenticationProvider.get(request).logout()
+        plugin.AuthenticationProvider.get(request).logout()
         redirect('/')
 
     @expose()
     def do_login(self, came_from=None, **kw):
-        user = M.AuthenticationProvider.get(request).login()
+        user = plugin.AuthenticationProvider.get(request).login()
         flash('Welcome back, %s' % user.display_name)
         if came_from and came_from != request.url:
             redirect(came_from)

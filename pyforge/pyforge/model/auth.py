@@ -4,39 +4,24 @@ import urllib
 import hmac
 import hashlib
 from datetime import timedelta, datetime
-from base64 import b64encode
-from random import randint
 from hashlib import sha256
 
-import ldap
 import iso8601
 import pymongo
-import pkg_resources
 from pylons import c, g, request
-from tg import config
-from webob import exc
 
 from ming import schema as S
-from ming.utils import LazyProperty
 from ming.orm.ormsession import ThreadLocalORMSession
 from ming.orm import session, state, MappedClass
 from ming.orm import FieldProperty, RelationProperty, ForeignIdProperty
 
 from pyforge.lib import helpers as h
+from pyforge.lib import plugin
 from .session import ProjectSession
 from .session import main_doc_session, main_orm_session
 from .session import project_doc_session, project_orm_session
 
 log = logging.getLogger(__name__)
-
-SALT_LENGTH=8
-
-def encode_password(password, salt=None):
-    if salt is None:
-        salt = ''.join(chr(randint(1, 0x7f))
-                       for i in xrange(SALT_LENGTH))
-    hashpass = sha256(salt + password.encode('utf-8')).digest()
-    return 'sha256' + salt + b64encode(hashpass)
 
 class ApiToken(MappedClass):
     class __mongometa__:
@@ -180,7 +165,7 @@ class User(MappedClass):
 
     @classmethod
     def by_username(cls, name):
-        return AuthenticationProvider.get(request).by_username(name)
+        return plugin.AuthenticationProvider.get(request).by_username(name)
 
     def address_object(self, addr):
         return EmailAddress.query.get(_id=addr, claimed_by_user_id=self._id)
@@ -204,7 +189,7 @@ class User(MappedClass):
     @classmethod
     def register(cls, doc, make_project=True):
         from pyforge import model as M
-        result = AuthenticationProvider.get(request).register_user(doc)
+        result = plugin.AuthenticationProvider.get(request).register_user(doc)
         if result and make_project:
             n = M.Neighborhood.query.get(name='Users')
             n.register_project('u/' + result.username, result, user_project=True)
@@ -247,7 +232,7 @@ class User(MappedClass):
                 return ProjectRole.query.get(user_id=self._id)
 
     def set_password(self, new_password):
-        return AuthenticationProvider.get(request).set_password(
+        return plugin.AuthenticationProvider.get(request).set_password(
             self, self.password, new_password)
 
     @classmethod
@@ -300,129 +285,4 @@ class ProjectRole(MappedClass):
                 if pr is None: continue
                 for rr in pr.role_iter(visited):
                     yield rr
-
-class AuthenticationProvider(object):
-
-    def __init__(self, request):
-        self.request = request
-
-    @classmethod
-    def get(cls, request):
-        method = config.get('auth.method', 'local')
-        for ep in pkg_resources.iter_entry_points('pyforge.auth', method):
-            return ep.load()(request)
-        return None
-
-    @LazyProperty
-    def session(self):
-        return self.request.environ['beaker.session']
-
-    def authenticate_request(self):
-        return User.query.get(_id=self.session.get('userid', None))
-
-    def register_user(self, user_doc):
-        raise NotImplementedError, 'register_user'
-
-    def _login(self):
-        raise NotImplementedError, '_login'
-
-    def login(self, user=None):
-        try:
-            if user is None: user = self._login()
-            self.session['userid'] = user._id
-            self.session.save()
-            return user
-        except exc.HTTPUnauthorized:
-            self.logout()
-            raise
-
-    def logout(self):
-        self.session['userid'] = None
-        self.session.save()
-
-    def by_username(self, username):
-        raise NotImplementedError, 'by_username'
-
-    def set_password(self, user, old_password, new_password):
-        raise NotImplementedError, 'set_password'
-
-class LocalAuthenticationProvider(AuthenticationProvider):
-
-    def register_user(self, user_doc):
-        return User(**user_doc)
-
-    def _login(self):
-        user = self.by_username(self.request.params['username'])
-        if not self._validate_password(user, self.request.params['password']):
-            raise exc.HTTPUnauthorized()
-        return user
-
-    def _validate_password(self, user, password):
-        if user is None: return False
-        if not user.password: return False
-        salt = str(user.password[6:6+user.SALT_LEN])
-        check = encode_password(password, salt)
-        if check != user.password: return False
-        return True
-
-    def by_username(self, username):
-        return User.query.get(username=username)
-
-    def set_password(self, user, old_password, new_password):
-        user.password = encode_password(new_password)
-
-class LdapAuthenticationProvider(AuthenticationProvider):
-
-    def register_user(self, user_doc):
-        password = user_doc.pop('password', None)
-        result = User(**user_doc)
-        dn = 'uid=%s,%s' % (user_doc['username'], config['auth.ldap.suffix'])
-        try:
-            con = ldap.initialize(config['auth.ldap.server'])
-            con.bind_s(config['auth.ldap.admin_dn'],
-                       config['auth.ldap.admin_password'])
-            ldap_info = dict(
-                uid=user_doc['username'],
-                displayName=user_doc['display_name'],
-                cn=user_doc['display_name'],
-                userPassword=password,
-                objectClass=['inetOrgPerson'],
-                givenName=user_doc['display_name'].split()[0],
-                sn=user_doc['display_name'].split()[-1])
-            ldap_info = dict((k,v) for k,v in ldap_info.iteritems()
-                             if v is not None)
-            try:
-                con.add_s(dn, ldap_info.items())
-            except ldap.ALREADY_EXISTS:
-                con.modify_s(dn, [(ldap.MOD_REPLACE, k, v)
-                                  for k,v in ldap_info.iteritems()])
-            con.unbind_s()
-        except:
-            raise
-        return result
-
-    def by_username(self, username):
-        return User.query.get(username=username)
-
-    def set_password(self, user, old_password, new_password):
-        try:
-            dn = 'uid=%s,%s' % (self.username, config['auth.ldap.suffix'])
-            con = ldap.initialize(config['auth.ldap.server'])
-            con.bind_s(dn, old_password)
-            con.modify_s(dn, [(ldap.MOD_REPLACE, 'userPassword', new_password)])
-            con.unbind_s()
-        except ldap.INVALID_CREDENTIALS:
-            raise exc.HTTPUnauthorized()
-
-    def _login(self):
-        user = User.query.get(username=self.request.params['username'])
-        if user is None: raise exc.HTTPUnauthorized()
-        try:
-            dn = 'uid=%s,%s' % (user.username, config['auth.ldap.suffix'])
-            con = ldap.initialize(config['auth.ldap.server'])
-            con.bind_s(dn, self.request.params['password'])
-            con.unbind_s()
-        except ldap.INVALID_CREDENTIALS:
-            raise exc.HTTPUnauthorized()
-        return user
 

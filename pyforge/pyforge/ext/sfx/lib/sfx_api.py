@@ -59,32 +59,31 @@ class SFXProjectApi(object):
     def _connect(self):
         return closing(httplib.HTTPConnection(self.project_host or request.host))
 
-    def _unix_group_name(self, p):
-        if p.neighborhood.url_prefix != 'p/':
-            path = p.neighborhood.url_prefix + p.shortname
+    def _unix_group_name(self, neighborhood, shortname):
+        if neighborhood.url_prefix != 'p/':
+            path = neighborhood.url_prefix + shortname
         else:
-            path = p.shortname
+            path = shortname
         parts = path.split('/')[1:]
         return '.'.join(reversed(parts))
 
-    def create(self, p):
+    def create(self, neighborhood, shortname, short_description='No description'):
         with self._connect() as conn:
-            ug_name = self._unix_group_name(p)
+            ug_name = self._unix_group_name(neighborhood, shortname)
             args = dict(
                 user_id=c.user.sfx_userid,
                 unix_group_name=ug_name,
-                group_name=p.shortname,
-                short_description=p.short_description)
+                group_name=shortname,
+                short_description=short_description)
             conn.request('POST', self.project_path, json.dumps(args))
             response = conn.getresponse()
             assert response.status == 201, \
                 'Bad status from sfx create: %s' % (response.status)
-            response.read()
-            self.update(p)
+            return response.read()
 
     def read(self, p):
         with self._connect() as conn:
-            ug_name = self._unix_group_name(p)
+            ug_name = self._unix_group_name(p.neighborhood, p.shortname)
             conn.request('GET', self.project_path + '/name/' + ug_name + '/json')
             response = conn.getresponse()
             assert response.status == 200, \
@@ -93,7 +92,7 @@ class SFXProjectApi(object):
 
     def update(self, p):
         with self._connect() as conn:
-            ug_name = self._unix_group_name(p)
+            ug_name = self._unix_group_name(p.neighborhood, p.shortname)
             args = dict(
                 user_id=c.user.sfx_userid,
                 group_name=p.shortname,
@@ -110,7 +109,7 @@ class SFXProjectApi(object):
 
     def delete(self, p):
         with self._connect() as conn:
-            ug_name = self._unix_group_name(p)
+            ug_name = self._unix_group_name(p.neighborhood, p.shortname)
             conn.request('DELETE', self.project_path + '/' + ug_name)
             response = conn.getresponse()
             assert response.status in (200, 404, 410), \
