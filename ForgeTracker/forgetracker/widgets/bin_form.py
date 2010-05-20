@@ -1,12 +1,18 @@
 import tw.forms as twf
+import ew
+from pyforge.lib.widgets import form_fields as ffw
+
 from pylons import c
 from forgetracker import model
+from formencode import validators as fev
 
-bin_form = twf.TableForm('bin_form', action='../save_bin', children=[
-    twf.TextField('summary'),
-    twf.Spacer(),
-    twf.TextField('terms'),
+class BinForm(ew.SimpleForm):
+    name="bin_form"
+    submit_text = "Save Bin"
 
-    twf.SingleSelectField('status',
-        options=lambda: model.Globals.query.get(app_config_id=c.app.config._id).status_names.split(','))
-])
+    @property
+    def fields(self):
+        fields = [
+            ew.TextField(name='summary', label='Bin Name', validator=fev.UnicodeString(not_empty=True)),
+            ew.TextField(name='terms', label='Search Terms', validator=fev.UnicodeString(not_empty=True))]
+        return fields

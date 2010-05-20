@@ -13,18 +13,7 @@
 
 <body>
   <h1 class="title">New bin for $q</h1>
-  <form method="POST" action="save_bin">
-    <label for="summary">Bin Name:</label>
-    <br/>
-    <input name="summary" value="$q"/>
-    <br/>
-    <label for="terms">Search Terms:</label>
-    <br/>
-    <input name="terms" value="$q"/>
-    <br/>
-
-    <input type="submit" value="Save Bin"/>
-  </form>
+  ${c.bin_form.display(value=dict(summary=q,terms=q), action='save_bin')}
 
 </body>
 </html>

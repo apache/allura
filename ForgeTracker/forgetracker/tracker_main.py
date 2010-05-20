@@ -37,7 +37,7 @@ from forgetracker import model
 from forgetracker import version
 
 from forgetracker.widgets.ticket_form import TicketForm, EditTicketForm
-from forgetracker.widgets.bin_form import bin_form
+from forgetracker.widgets.bin_form import BinForm
 
 log = logging.getLogger(__name__)
 
@@ -49,6 +49,7 @@ class W:
     user_tag_edit = ffw.UserTagEdit()
     label_edit = ffw.LabelEdit()
     attachment_list = ffw.AttachmentList()
+    bin_form = BinForm()
     ticket_form = TicketForm()
     edit_ticket_form = EditTicketForm()
     subscribe_form = SubscribeForm()
@@ -528,22 +529,24 @@ class BinController(object):
     @expose('forgetracker.templates.new_bin')
     def newbin(self, q=None, **kw):
         require(has_artifact_access('write'))
-        tmpl_context.form = bin_form
+        c.bin_form = W.bin_form
         globals = model.Globals.query.get(app_config_id=c.app.config._id)
         return dict(q=q or '', bin=bin or '', modelname='Bin', page='New Bin', globals=globals)
         redirect(request.referer)
 
     @with_trailing_slash
+    @h.vardec
     @expose()
-    def save_bin(self, **post_data):
+    @validate(W.bin_form, error_handler=newbin)
+    def save_bin(self, bin_form=None, **post_data):
         require(has_artifact_access('write'))
         if request.method != 'POST':
             raise Exception('save_bin must be a POST request')
-        bin = model.Bin(**post_data)
+        bin = model.Bin(summary=bin_form['summary'], terms=bin_form['terms'])
         bin.app_config_id = c.app.config._id
         bin.custom_fields = dict()
         globals = model.Globals.query.get(app_config_id=c.app.config._id)
-        redirect(request.referer)
+        redirect('%ssearch/?q=%s' % (c.app.url, bin_form['terms']))
 
     @with_trailing_slash
     @expose()
