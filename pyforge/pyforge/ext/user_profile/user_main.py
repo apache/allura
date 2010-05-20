@@ -138,7 +138,7 @@ class UserProfileController(object):
         project, rest = h.find_project(project_path)
         mount_point = os.path.splitext(parts[-1])[0]
         c.project = project
-        c.app = p.app_instance(mount_point)
+        c.app = project.app_instance(mount_point)
         return dict(allow_read=has_artifact_access('read')(user=user),
                     allow_write=has_artifact_access('write')(user=user),
                     allow_create=has_artifact_access('create')(user=user))
