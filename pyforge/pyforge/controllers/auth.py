@@ -72,7 +72,6 @@ class AuthController(object):
             flash('Please choose a user name for SourceForge, %s.'
                   % c.user.display_name)
             redirect('setup_openid_user')
-        flash('Welcome back, %s' % c.user.display_name)
         redirect(kw.pop('came_from', '/'))
 
     @expose('pyforge.templates.setup_openid_user')
@@ -177,7 +176,6 @@ class AuthController(object):
     @expose()
     def do_login(self, came_from=None, **kw):
         user = plugin.AuthenticationProvider.get(request).login()
-        flash('Welcome back, %s' % user.display_name)
         if came_from and came_from != request.url:
             redirect(came_from)
         redirect('/')
