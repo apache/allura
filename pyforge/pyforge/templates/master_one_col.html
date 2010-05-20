@@ -27,7 +27,7 @@
       <link rel="stylesheet" type="text/css" media="screen, projection" href="${tg.url('/css/blueprint/ie.css')}" />
     <![endif]-->
     <?python neighborhood = 'neighborhood' in locals() and neighborhood or None ?>
-    <link py:if="not c.project and not neighborhood" rel="stylesheet" type="text/css" media="screen" href="${tg.url('/site_style.css')}" />
+    <link py:if="not c.project and not neighborhood" rel="stylesheet" type="text/css" media="screen" href="${tg.url('/nf/site_style.css')}" />
     <link py:if="c.project" rel="stylesheet" type="text/css" media="screen" href="${c.project.neighborhood.url()+'site_style.css'}" />
     <link py:if="neighborhood" rel="stylesheet" type="text/css" media="screen" href="${neighborhood.url()+'site_style.css'}" />
     <script type="text/javascript" src="${g.forge_static('js/jquery-1.4.2.min.js')}"/>

@@ -80,7 +80,7 @@ class TestRootController(TestController):
         assert '<p><em>aaa</em>bb<a href="/p/test/wiki/WikiHome/">[WikiHome]</a></p>' in r
 
     def test_site_css(self):
-        r = self.app.get('/site_style.css')
+        r = self.app.get('/nf/site_style.css')
         assert(
 """a {color: #0088cc; text-decoration: none;}""" in r)
         assert(
@@ -97,7 +97,7 @@ class TestRootController(TestController):
         theme.color2='#bbb'
         theme.color3='#ccc'
         session(theme).flush()
-        r = self.app.get('/site_style.css')
+        r = self.app.get('/nf/site_style.css')
         assert(
 """a {color: #aaa; text-decoration: none;}""" in r)
         assert(
