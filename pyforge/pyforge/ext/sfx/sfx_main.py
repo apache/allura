@@ -111,7 +111,7 @@ class SFXAuthenticationProvider(plugin.AuthenticationProvider):
 class SFXProjectRegistrationProvider(plugin.ProjectRegistrationProvider):
 
     def __init__(self):
-        self.api = SFXUserApi()
+        self.api = SFXProjectApi()
 
     def register_project(self, neighborhood, shortname, user, user_project):
         # Reserve project name with SFX
