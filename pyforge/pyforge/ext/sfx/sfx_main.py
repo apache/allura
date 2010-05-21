@@ -113,7 +113,7 @@ class SFXProjectRegistrationProvider(plugin.ProjectRegistrationProvider):
     def __init__(self):
         self.api = SFXUserApi()
 
-    def register_project(self, neighborhood, shortname, user_project):
+    def register_project(self, neighborhood, shortname, user, user_project):
         # Reserve project name with SFX
         r = self.api.create(neighborhood, shortname)
         log.info('SFX Project creation returned: %s', r)
