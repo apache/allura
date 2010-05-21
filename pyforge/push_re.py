@@ -59,12 +59,12 @@ def make_ticket_text(engineer):
         prelaunch.append('* dump the database in case we need to roll back')
         postlaunch.append('* paster flyway --url mongo://sfn-mongo-1:27017/')
     if postlaunch:
-        postlaunch = [ 'From sfu-scmprocess-1 so the following:\n' ] + postlaunch
+        postlaunch = [ 'From sfu-scmprocess-1 do the following:\n' ] + postlaunch
         postlaunch = '\n'.join(postlaunch)
     else:
         postlaunch = '-none-'
     if prelaunch:
-        prelaunch = [ 'From sfu-scmprocess-1 so the following:\n' ] + prelaunch
+        prelaunch = [ 'From sfn-mongo-1 do the following:\n' ] + prelaunch
         prelaunch = '\n'.join(prelaunch)
     else:
         prelaunch = '-none-'
