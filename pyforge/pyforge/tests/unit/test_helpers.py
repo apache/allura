@@ -6,7 +6,7 @@ from datetime import datetime
 from pyforge.lib import helpers
 
 
-class TestAgo(TestCase):
+class TestAgo:
     def setUp(self):
         self.start_time = datetime(2010, 1, 1, 0, 0, 0)
 
@@ -43,7 +43,7 @@ class TestAgo(TestCase):
         self.assertTimeSince('2 years ago', 2011, 8, 1, 0, 0, 0)
 
     def assertTimeSince(self, time_string, *time_components):
-        self.assertEquals(time_string, self.time_since(*time_components))
+        assert time_string == self.time_since(*time_components)
 
     def time_since(self, *time_components):
         end_time = datetime(*time_components)
