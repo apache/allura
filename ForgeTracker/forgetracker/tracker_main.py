@@ -383,9 +383,9 @@ class RootController(object):
 
     @expose()
     def update_tickets(self, **post_data):
-        tickets = Ticket.query.find(dict(
+        tickets = model.Ticket.query.find(dict(
                 _id={'$in':[ObjectId(id) for id in post_data['selected'].split(',')]},
-                app_config_id=c.app.config._id))
+                app_config_id=c.app.config._id)).all()
         for ticket in tickets:
             require(has_artifact_access('write', ticket))
 

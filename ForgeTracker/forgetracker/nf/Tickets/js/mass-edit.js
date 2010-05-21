@@ -19,9 +19,5 @@ function update_tickets(){
 }
 
 $(function(){
-    var $at=$('select[name=assigned_to]');
-    // set the 'nobody' option to a value recognized by ../update_tickets
-    $at.find('option[value=]').attr('value', '-');
-    // but the default is 'no change'
-    $at.prepend('<option selected="selected" value=""></option>');
+    $('#assigned_to').val('');
 });
