@@ -44,6 +44,7 @@ class UserProfileApp(Application):
         menu_id = 'User'
         return []
 
+    @h.exceptionless([], log)
     def sidebar_menu(self):
         return [ SitemapEntry('Preferences', '/auth/prefs/')]
 

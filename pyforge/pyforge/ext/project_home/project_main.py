@@ -44,6 +44,7 @@ class ProjectHomeApp(Application):
         return [
             SitemapEntry('Home', '.') ]
 
+    @h.exceptionless([], log)
     def sidebar_menu(self):
         return [ SitemapEntry('Configure', 'configuration')]
 

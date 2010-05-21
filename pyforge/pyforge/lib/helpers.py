@@ -77,11 +77,14 @@ def push_config(obj, **kw):
         except AttributeError:
             new_attrs.append(k)
         setattr(obj, k, v)
-    yield obj
-    for k,v in saved_attrs.iteritems():
-        setattr(obj, k, v)
-    for k in new_attrs:
-        delattr(obj, k)
+    try:
+        yield obj
+    finally:
+        for k,v in saved_attrs.iteritems():
+            setattr(obj, k, v)
+        for k in new_attrs:
+            delattr(obj, k)
+
 
 def mixin_reactors(cls, module, prefix=None):
     'attach the reactor-decorated functions in module to the given class'
@@ -117,15 +120,17 @@ def push_context(project_id, mount_point=None, app_config_id=None):
     project = getattr(c, 'project', ())
     app = getattr(c, 'app', ())
     set_context(project_id, mount_point, app_config_id)
-    yield
-    if project == ():
-        del c.project
-    else:
-        c.project = project
-    if app == ():
-        del c.app
-    else:
-        c.app = app
+    try:
+        yield
+    finally:
+        if project == ():
+            del c.project
+        else:
+            c.project = project
+        if app == ():
+            del c.app
+        else:
+            c.app = app
                       
 def encode_keys(d):
     '''Encodes the unicode keys of d, making the result

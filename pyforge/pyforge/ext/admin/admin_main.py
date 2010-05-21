@@ -1,4 +1,5 @@
 import difflib
+import logging
 from pprint import pformat
 from collections import defaultdict
 from mimetypes import guess_type
@@ -19,6 +20,8 @@ from pyforge import version
 from pyforge import model as M
 from pyforge.lib.security import require, has_project_access
 from pyforge.lib.widgets import form_fields as ffw
+
+log = logging.getLogger(__name__)
 
 class W:
     markdown_editor = ffw.MarkdownEdit()
@@ -70,6 +73,7 @@ class AdminApp(Application):
         self.templates = pkg_resources.resource_filename('pyforge.ext.admin', 'templates')
         self.sitemap = [ SitemapEntry('Admin','.')]
 
+    @h.exceptionless([], log)
     def sidebar_menu(self):
         admin_url = c.project.url()+'admin/'
         links = [SitemapEntry('Project'),
@@ -121,7 +125,8 @@ class ProjectAdminController(object):
     def overview(self):
         c.markdown_editor = W.markdown_editor
         c.label_edit = W.label_edit
-        return dict(categories=M.ProjectCategory.query.find(dict(parent_id=None)).sort('label').all())
+        categories = M.ProjectCategory.query.find(dict(parent_id=None)).sort('label').all()
+        return dict(categories=categories)
 
     @without_trailing_slash
     @expose('pyforge.ext.admin.templates.project_tools')

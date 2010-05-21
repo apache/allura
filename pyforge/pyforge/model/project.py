@@ -221,6 +221,7 @@ class Project(MappedClass):
     labels = FieldProperty([str])
     last_updated = FieldProperty(datetime, if_missing=None)
 
+    @h.exceptionless([], log)
     def sidebar_menu(self):
         from pyforge.app import SitemapEntry
         result = []

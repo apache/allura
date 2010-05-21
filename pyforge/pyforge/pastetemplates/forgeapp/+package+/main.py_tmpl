@@ -52,6 +52,7 @@ class {{egg}}App(Application):
             return [
                 SitemapEntry(menu_id, '.')[self.sidebar_menu()] ]
 
+    @h.exceptionless([], log)
     def sidebar_menu(self):
         return [
             SitemapEntry('Home', '.'),      

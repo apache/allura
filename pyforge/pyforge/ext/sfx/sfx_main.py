@@ -135,8 +135,10 @@ def fake_pylons_context(request):
     pylons.c._push_object(MagicalC(EmptyClass(), environ))
     pylons.g._push_object(Globals())
     pylons.request._push_object(request)
-    yield
-    pylons.c._pop_object()
-    pylons.g._pop_object()
-    pylons.request._pop_object()
+    try:
+        yield
+    finally:
+        pylons.c._pop_object()
+        pylons.g._pop_object()
+        pylons.request._pop_object()
 
