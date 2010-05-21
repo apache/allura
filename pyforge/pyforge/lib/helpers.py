@@ -95,6 +95,11 @@ def mixin_reactors(cls, module, prefix=None):
         if ConsumerDecoration.get_decoration(value, False):
             setattr(cls, prefix + name, staticmethod(value))
 
+
+class NoSuchProjectError(Exception):
+    pass
+
+
 def set_context(project_shortname, mount_point=None, app_config_id=None):
     from pyforge import model
     p = model.Project.query.get(shortname=project_shortname)
@@ -103,10 +108,12 @@ def set_context(project_shortname, mount_point=None, app_config_id=None):
             p = model.Project.query.get(_id=ObjectId(str(project_shortname)))
         except InvalidId:
             pass
-    c.project = p
+
     if p is None:
-        c.app = None
-        return
+        raise NoSuchProjectError("Couldn't find project %s" %
+                                 repr(project_shortname))
+    c.project = p
+
     if app_config_id is None:
         c.app = p.app_instance(mount_point)
     else:

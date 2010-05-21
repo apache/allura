@@ -192,10 +192,9 @@ def wipe_database():
     conn = M.main_doc_session.bind.conn
     cmd = MigrateCommand('flyway')
     if isinstance(conn, mim.Connection):
+        clear_all_database_tables()
         for db in conn.database_names():
-            db=conn[db]
-            for coll in db.collection_names():
-                db.drop_collection(coll)
+            db = conn[db]
             cmd.run(['-u', 'mim:///'+db.name])
     else:
         for database in conn.database_names():
@@ -210,6 +209,15 @@ def wipe_database():
                     pass
         # Run flyway
         cmd.run(['-u', 'ming://%s:%s/' % (conn.host, conn.port)])
+
+
+def clear_all_database_tables():
+    conn = M.main_doc_session.bind.conn
+    for db in conn.database_names():
+        db = conn[db]
+        for coll in db.collection_names():
+            db.drop_collection(coll)
+
 
 def create_user(display_name):
     user = M.User.register(dict(username=display_name.lower(),

@@ -2,14 +2,13 @@ from mock import Mock
 
 from pyforge.app import Application
 from pyforge import model
+from pyforge.websetup.bootstrap import wipe_database
 
-# XXX: PULL ME TO HIGHER PACKAGE LEVEL
 from pyforge.tests.unit import ForgeTestWithModel
-from pyforge.tests.helpers import run_app_setup
 
 
 def setUp():
-    run_app_setup()
+    wipe_database()
 
 
 class TestInstall(ForgeTestWithModel):
