@@ -39,6 +39,7 @@ class UserProfileApp(Application):
             'pyforge.ext.user_profile', 'templates')
 
     @property
+    @h.exceptionless([], log)
     def sitemap(self):
         menu_id = 'User'
         return []

@@ -25,7 +25,7 @@ from pymongo.bson import ObjectId
 
 # Pyforge-specific imports
 from pyforge.app import Application, ConfigOption, SitemapEntry, DefaultAdminController
-from pyforge.lib.helpers import push_config, DateTimeConverter, mixin_reactors
+from pyforge.lib import helpers as h
 from pyforge.lib.search import search
 from pyforge.lib.decorators import audit, react
 from pyforge.lib.security import require, has_artifact_access
@@ -56,9 +56,10 @@ class ForgeGitApp(Application):
         self.admin = GitAdminController(self)
 
     @property
+    @h.exceptionless([], log)
     def sitemap(self):
         menu_id = self.config.options.mount_point.title()
-        with push_config(c, app=self):
+        with h.push_config(c, app=self):
             return [
                 SitemapEntry(menu_id, '.')[self.sidebar_menu()] ]
 
@@ -170,7 +171,7 @@ class RootController(object):
         ThreadLocalORMSession.flush_all()
         ThreadLocalORMSession.close_all()
         to_project = Project.query.get(shortname=to_project_name)
-        with push_config(c, project=to_project):
+        with h.push_config(c, project=to_project):
             if request.method!='POST' or to_name is None:
                 prefix_len = len(to_project_name+'/')
                 in_use = [sp.shortname[prefix_len:] for sp in to_project.direct_subprojects]
@@ -198,4 +199,4 @@ class CommitController(object):
         c.revision_widget=W.revision_widget
         return dict(commit=commit)
 
-mixin_reactors(ForgeGitApp, reactors)
+h.mixin_reactors(ForgeGitApp, reactors)

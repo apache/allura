@@ -14,7 +14,7 @@ from ming import schema
 
 # Pyforge-specific imports
 from pyforge.app import Application, ConfigOption, SitemapEntry, DefaultAdminController
-from pyforge.lib.helpers import push_config, vardec, supported_by_PIL, square_image
+from pyforge.lib import helpers as h
 from pyforge.lib.decorators import audit, react
 from pyforge.lib.security import require, has_artifact_access
 from pyforge.model import ProjectRole
@@ -96,15 +96,12 @@ class ForgeDiscussionApp(Application):
         thread.update_stats()
 
     @property
+    @h.exceptionless([], log)
     def sitemap(self):
-        try:
-            menu_id = self.config.options.mount_point.title()
-            with push_config(c, app=self):
-                return [
-                    SitemapEntry(menu_id, '.')[self.sidebar_menu()] ]
-        except: # pragma no cover
-            log.exception('sitemap')
-            return []
+        menu_id = self.config.options.mount_point.title()
+        with h.push_config(c, app=self):
+            return [
+                SitemapEntry(menu_id, '.')[self.sidebar_menu()] ]
 
     @property
     def forums(self):
@@ -203,13 +200,13 @@ class ForumAdminController(DefaultAdminController):
                     allow_config=has_artifact_access('configure', app=self.app)())
 
     def save_forum_icon(self, forum, icon):                
-        if supported_by_PIL(icon.type):
+        if h.supported_by_PIL(icon.type):
             filename = icon.filename
             if icon.type: content_type = icon.type
             else: content_type = 'application/octet-stream'
             image = Image.open(icon.file)
             format = image.format
-            image = square_image(image)
+            image = h.square_image(image)
             image.thumbnail((48, 48), Image.ANTIALIAS)
             if forum.icon:
                 model.ForumFile.query.remove({'metadata.forum_id':forum._id})
@@ -241,7 +238,7 @@ class ForumAdminController(DefaultAdminController):
             self.save_forum_icon(f, new_forum['icon'])
         return f
 
-    @vardec
+    @h.vardec
     @expose()
     def update_forums(self, forum=None, new_forum=None, **kw):
         if forum is None: forum = []

@@ -38,6 +38,7 @@ class ProjectHomeApp(Application):
             'pyforge.ext.project_home', 'templates')
 
     @property
+    @h.exceptionless([], log)
     def sitemap(self):
         menu_id = 'Home'
         return [

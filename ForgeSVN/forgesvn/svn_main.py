@@ -26,7 +26,7 @@ from pymongo.bson import ObjectId
 
 # Pyforge-specific imports
 from pyforge.app import Application, ConfigOption, SitemapEntry, DefaultAdminController
-from pyforge.lib.helpers import push_config, DateTimeConverter, mixin_reactors
+from pyforge.lib import helpers as h
 from pyforge.lib.search import search
 from pyforge.lib.decorators import audit, react
 from pyforge.lib.security import require, has_artifact_access
@@ -54,9 +54,10 @@ class ForgeSVNApp(Application):
         self.admin = SVNAdminController(self)
 
     @property
+    @h.exceptionless([], log)
     def sitemap(self):
         menu_id = self.config.options.mount_point.title()
-        with push_config(c, app=self):
+        with h.push_config(c, app=self):
             return [
                 SitemapEntry(menu_id, '.')[self.sidebar_menu()] ]
 
@@ -153,4 +154,4 @@ class CommitController(object):
                     next=self._rev+1,
                     revision=self.revision)
 
-mixin_reactors(ForgeSVNApp, reactors)
+h.mixin_reactors(ForgeSVNApp, reactors)

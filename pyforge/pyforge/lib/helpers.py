@@ -374,3 +374,25 @@ def config_with_prefix(d, prefix):
     plen=len(prefix)
     return dict((k[plen:], v) for k,v in d.iteritems()
                 if k.startswith(prefix))
+
+class exceptionless(object):
+    '''Decorator making the decorated function return 'error_result' on any
+    exceptions rather than propagating exceptions up the stack
+    '''
+
+    def __init__(self, error_result, log=None):
+        self.error_result = error_result
+        self.log = log
+
+    def __call__(self, fun):
+        fname = 'exceptionless(%s)' % fun.__name__
+        def inner(*args, **kwargs):
+            try:
+                return fun(*args, **kwargs)
+            except:
+                if self.log:
+                    self.log.exception('Error calling %s', fname)
+                return self.error_result
+        inner.__name__ = fname
+        return inner
+

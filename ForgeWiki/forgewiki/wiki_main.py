@@ -96,6 +96,7 @@ class ForgeWikiApp(Application):
         return self.config.options.mount_point.title() + 'Home'
 
     @property
+    @h.exceptionless([], log)
     def sitemap(self):
         menu_id = self.config.options.mount_point.title()
         with h.push_config(c, app=self):
