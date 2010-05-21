@@ -112,33 +112,39 @@ class UserProfileController(object):
     @expose('json')
     def permissions(self, repo_path=None, **kw):
         """Expects repo_path to be a filesystem path like
-        '/git/p/mygreatproject/reponame.git', or
-        '/svn/adobe/someproject/subproject/reponame/'.
-
-        Explicitly: (1) The path starts with a containing directory,
-        e.g., /git, which is not relevant.  (2) The final component of
-        the path is the repo name, and may include a trailing slash.
-        Less a '.git' suffix, the repo name _is_ the mount point.
-        (3) Everything between the containing directory and the repo is
-        an exact match for a project URL.  Multiple components
-        signify sub-projects.
-
-        Note that project and user _names_ are built with slashes, but
-        the supplied repo_path will use the os file separator character.
-        We know we'll get a user from our query because we're at that
-        user's profile page.
+            <tool>/<project>.<neighborhood>/reponame[.git]
+        unless the <neighborhood> is 'p', in which case it is
+            <tool>/<project>/reponame[.git]
 
         Returns JSON describing this user's permissions on that repo.
         """
 
+        disallow = dict(allow_read=False, allow_write=False, allow_create=False)
+        # Find the user
         username = c.project.shortname.split('/')[1]
         user = User.by_username(username)
+
         parts = [p for p in repo_path.split(os.path.sep) if p]
+        # strip the tool name
+        parts = parts[1:]
+        if '.' in parts[0]:
+            project, neighborhood = parts[0].split('.')
+        else:
+            project, neighborhood = parts[0], 'p'
+        parts = [ neighborhood, project ] + parts[1:]
         project_path = '/' + '/'.join(parts)
         project, rest = h.find_project(project_path)
+        if project is None:
+            log.info("Can't find project at %s from repo_path %s",
+                     project_path, repo_path)
+            return disallow
         mount_point = os.path.splitext(rest[0])[0]
         c.project = project
         c.app = project.app_instance(mount_point)
+        if c.app is None:
+            log.info("Can't find repo at %s on repo_path %s",
+                     mount_point, repo_path)
+            return disallow
         return dict(allow_read=has_artifact_access('read')(user=user),
                     allow_write=has_artifact_access('write')(user=user),
                     allow_create=has_artifact_access('create')(user=user))
