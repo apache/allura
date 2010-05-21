@@ -50,10 +50,6 @@ class UserProfileApp(Application):
     def admin_menu(self):
         return []
 
-    # @property
-    # def templates(self):
-    #     return
-
     def install(self, project):
         pr = c.user.project_role()
         if pr:
@@ -119,7 +115,8 @@ class UserProfileController(object):
 
         Returns JSON describing this user's permissions on that repo.
         """
-
+        if not repo_path:
+            return {"error":"no path specified"}
         disallow = dict(allow_read=False, allow_write=False, allow_create=False)
         # Find the user
         username = c.project.shortname.split('/')[1]
