@@ -1,5 +1,5 @@
 import logging
-from urllib import urlencode
+from urllib import urlencode, unquote
 
 from tg import expose, validate, redirect
 from tg.decorators import with_trailing_slash
@@ -75,6 +75,7 @@ class RootController(object):
 
     @expose()
     def _lookup(self, id, *remainder):
+        id = unquote(id)
         return ForumController(id), remainder
 
     @h.vardec
