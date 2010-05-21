@@ -27,6 +27,58 @@ class ForgeForm(ew.SimpleForm):
             display = "%s<div class='error'>%s</div>" % (display, ctx['errors'])
         return display
 
+class PasswordChangeForm(ForgeForm):
+    class fields(ew_core.NameList):
+        oldpw = ew.PasswordField(
+            label='Old Password', validator=fev.UnicodeString(not_empty=True))
+        pw = ew.PasswordField(
+            label='New Password',
+            validator=fev.UnicodeString(not_empty=True, min=6))
+        pw2 = ew.PasswordField(
+            label='New Password (again)',
+            validator=fev.UnicodeString(not_empty=True))
+
+    @ew_core.core.validator
+    def to_python(self, value, state):
+        d = super(PasswordChangeForm, self).to_python(value, state)
+        if d['pw'] != d['pw2']:
+            raise formencode.Invalid('Passwords must match', value, state)
+        return d
+
+class UploadKeyForm(ForgeForm):
+    class fields(ew_core.NameList):
+        key = ew.TextArea(label='SSH Public Key')
+
+class RegistrationForm(ForgeForm):
+    class fields(ew_core.NameList):
+        display_name = ew.TextField(label='Displayed Name')
+        username = ew.TextField(
+            label='Desired Username',
+            validator=fev.Regex(
+                h.re_path_portion))
+        username.validator._messages['invalid'] = (
+            'Usernames must include only letters, numbers, and dashes,'
+            ' and must start with a letter and be at least 3 characters'
+            ' long.')
+        pw = ew.PasswordField(
+            label='New Password',
+            validator=fev.UnicodeString(not_empty=True, min=8))
+        pw2 = ew.PasswordField(
+            label='New Password (again)',
+            validator=fev.UnicodeString(not_empty=True))
+
+    @ew_core.core.validator
+    def to_python(self, value, state):
+        d = super(RegistrationForm, self).to_python(value, state)
+        value['username'] = username = value['username'].lower()
+        if M.User.by_username(username):
+            raise formencode.Invalid('That username is already taken. Please choose another.',
+                                    value, state)
+        if d['pw'] != d['pw2']:
+            raise formencode.Invalid('Passwords must match', value, state)
+        return d
+
+
 class AdminForm(ForgeForm):
     template='jinja:widgets/admin_form.html'
 

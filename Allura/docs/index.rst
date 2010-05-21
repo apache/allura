@@ -18,6 +18,7 @@ Getting Started
    :maxdepth: 2
 
    platform_tour
+   scm_host
 
 Writing a PyForge based app
 =====================================================================

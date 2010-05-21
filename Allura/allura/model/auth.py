@@ -192,6 +192,36 @@ class OpenId(MappedClass):
                 make_project=False)
             self.claimed_by_user_id = result._id
         return result
+
+class AuthGlobals(MappedClass):
+    class __mongometa__:
+        name='auth_globals'
+        session = main_orm_session
+
+    _id = FieldProperty(int)
+    next_uid = FieldProperty(int, if_missing=10000)
+
+    @classmethod
+    def upsert(cls):
+        r = cls.query.get()
+        if r is not None: return r
+        try:
+            r = cls(_id=0)
+            session(r).flush(r)
+            return r
+        except pymongo.errors.DuplicateKeyError: # pragma no cover
+            session(r).flush(r)
+            r = cls.query.get()
+            return r
+
+    @classmethod
+    def get_next_uid(cls):
+        cls.upsert()
+        g = cls.query.find_and_modify(
+            query={}, update={'$inc':{'next_uid': 1}},
+            new=True)
+        return g.next_uid
+
             
 class User(MappedClass):
     SALT_LEN=8

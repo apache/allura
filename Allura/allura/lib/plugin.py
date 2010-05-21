@@ -1,8 +1,10 @@
 '''
 Allura plugins for authentication and project registration
 '''
-import logging
 import re
+import os
+import logging
+import subprocess
 
 from random import randint
 from hashlib import sha256
@@ -10,6 +12,7 @@ from base64 import b64encode
 from datetime import datetime
 
 import ldap
+from ldap import modlist
 import pkg_resources
 from tg import config
 from pylons import g, c
@@ -80,6 +83,9 @@ class AuthenticationProvider(object):
     def set_password(self, user, old_password, new_password):
         raise NotImplementedError, 'set_password'
 
+    def upload_sshkey(self, username, pubkey):
+        raise NotImplemented, 'upload_sshkey'
+
 class LocalAuthenticationProvider(AuthenticationProvider):
 
     def register_user(self, user_doc):
@@ -123,32 +129,54 @@ class LdapAuthenticationProvider(AuthenticationProvider):
 
     def register_user(self, user_doc):
         from allura import model as M
-        password = user_doc.pop('password', None)
+        password = user_doc['password'].encode('utf-8')
         result = M.User(**user_doc)
-        dn = 'uid=%s,%s' % (user_doc['username'], config['auth.ldap.suffix'])
+        dn_u = 'uid=%s,%s' % (user_doc['username'], config['auth.ldap.suffix'])
+        uid = str(M.AuthGlobals.get_next_uid())
         try:
             con = ldap.initialize(config['auth.ldap.server'])
             con.bind_s(config['auth.ldap.admin_dn'],
                        config['auth.ldap.admin_password'])
-            ldap_info = dict(
-                uid=user_doc['username'],
-                displayName=user_doc['display_name'],
-                cn=user_doc['display_name'],
+            uname = user_doc['username'].encode('utf-8')
+            display_name = user_doc['display_name'].encode('utf-8')
+            ldif_u = modlist.addModlist(dict(
+                uid=uname,
                 userPassword=password,
-                objectClass=['inetOrgPerson'],
-                givenName=user_doc['display_name'].split()[0],
-                sn=user_doc['display_name'].split()[-1])
-            ldap_info = dict((k,v) for k,v in ldap_info.iteritems()
-                             if v is not None)
+                objectClass=['account', 'posixAccount' ],
+                cn=display_name,
+                uidNumber=uid,
+                gidNumber='10001',
+                homeDirectory='/home/' + uname,
+                loginShell='/bin/bash',
+                gecos=uname,
+                description='SCM user account'))
             try:
-                con.add_s(dn, ldap_info.items())
+                con.add_s(dn_u, ldif_u)
             except ldap.ALREADY_EXISTS:
-                con.modify_s(dn, [(ldap.MOD_REPLACE, k, v)
-                                  for k,v in ldap_info.iteritems()])
+                log.exception('Trying to create existing user %s', uname)
+                raise
             con.unbind_s()
+            argv = ('schroot -d / -c %s -u root /ldap-userconfig.py init %s' % (
+                config['auth.ldap.schroot_name'], user_doc['username'])).split()
+            p = subprocess.Popen(argv, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+            rc = p.wait()
+            if rc != 0:
+                log.error('Error creating home directory for %s',
+                          user_doc['username'])
         except:
             raise
         return result
+
+    def upload_sshkey(self, username, pubkey):
+            argv = ('schroot -d / -c %s -u root /ldap-userconfig.py upload %s' % (
+                config['auth.ldap.schroot_name'], username)).split() + [ pubkey ]
+            p = subprocess.Popen(argv, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+            rc = p.wait()
+            if rc != 0:
+                errmsg = p.stdout.read()
+                log.exception('Error uploading public SSH key for %s: %s',
+                              username, errmsg)
+                assert False, errmsg
 
     def by_username(self, username):
         from allura import model as M
@@ -156,10 +184,11 @@ class LdapAuthenticationProvider(AuthenticationProvider):
 
     def set_password(self, user, old_password, new_password):
         try:
-            dn = 'uid=%s,%s' % (self.username, config['auth.ldap.suffix'])
+            import pdb; pdb.set_trace()
+            dn = 'uid=%s,%s' % (user.username, config['auth.ldap.suffix'])
             con = ldap.initialize(config['auth.ldap.server'])
-            con.bind_s(dn, old_password)
-            con.modify_s(dn, [(ldap.MOD_REPLACE, 'userPassword', new_password)])
+            con.bind_s(dn, old_password.encode('utf-8'))
+            con.modify_s(dn, [(ldap.MOD_REPLACE, 'userPassword', new_password.encode('utf-8'))])
             con.unbind_s()
         except ldap.INVALID_CREDENTIALS:
             raise exc.HTTPUnauthorized()
@@ -301,6 +330,16 @@ class ThemeProvider(object):
         }
     }
 
+    @LazyProperty
+    def password_change_form(self):
+        from allura.lib.widgets.forms import PasswordChangeForm
+        return PasswordChangeForm(action='/auth/prefs/change_password')
+
+    @LazyProperty
+    def upload_key_form(self):
+        from allura.lib.widgets.forms import UploadKeyForm
+        return UploadKeyForm(action='/auth/prefs/upload_sshkey')
+
     @property
     def master(self):
         return self.master_template
@@ -327,7 +366,6 @@ class ThemeProvider(object):
                     return app_class.icon_url(size)
         else:
             return app.icon_url(size)
-
 
 class LocalProjectRegistrationProvider(ProjectRegistrationProvider):
     pass

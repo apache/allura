@@ -6,13 +6,16 @@ import bson
 from tg import expose, session, flash, redirect, validate, config
 from tg.decorators import with_trailing_slash, without_trailing_slash
 from pylons import c, g, request, response
+from webob import exc as wexc
 
 from allura import model as M
+from allura.lib import validators as V
 from allura.lib.oid_helper import verify_oid, process_oid
 from allura.lib.security import require_authenticated, has_artifact_access
 from allura.lib import helpers as h
 from allura.lib import plugin
 from allura.lib.widgets import SubscriptionForm, OAuthApplicationForm, OAuthRevocationForm
+from allura.lib.widgets import forms
 from allura.lib import exceptions as exc
 from allura.controllers import BaseController
 
@@ -34,6 +37,7 @@ OID_PROVIDERS=[
 
 class F(object):
     subscription_form=SubscriptionForm()
+    registration_form = forms.RegistrationForm(action='/auth/save_new')
     oauth_application_form = OAuthApplicationForm(action='register')
     oauth_revocation_form = OAuthRevocationForm(action='revoke_oauth')
 
@@ -84,34 +88,17 @@ class AuthController(BaseController):
         return dict()
 
     @expose('jinja:create_account.html')
-    def create_account(self):
+    def create_account(self, **kw):
+        c.form = F.registration_form
         return dict()
 
     @expose()
-    def save_new(self,display_name=None,open_ids=None,email_addresses=None,
-                 username=None,password=None, **kw):
-        username = username.lower()
-        if M.User.by_username(username):
-            flash('That username is already taken. Please choose another.',
-                  'error')
-            redirect('create_account')
-        if len(password) < 8:
-            flash('Password must be at least 8 characters.',
-                  'error')
-            redirect('create_account')
+    @validate(F.registration_form, error_handler=create_account)
+    def save_new(self,display_name=None,username=None,pw=None, **kw):
         user = M.User.register(
             dict(username=username,
                  display_name=display_name,
-                 password=password))
-        if email_addresses:
-            for email in email_addresses.split(','):
-                addr = M.EmailAddress.upsert(email)
-                addr.send_verification_link()
-                user.claim_address(email)
-        if open_ids:
-            for open_id in open_ids.split(','):
-                oid = M.OpenId.upsert(open_id, display_name+"'s OpenId")
-                user.claim_openid(open_id)
+                 password=pw))
         plugin.AuthenticationProvider.get(request).login(user)
         flash('User "%s" registered' % user.display_name)
         redirect('/')
@@ -358,6 +345,29 @@ class PreferencesController(BaseController):
             redirect('.')
         tok.delete()
         flash('Application access revoked')
+        redirect('.')
+
+    @expose()
+    @validate(V.NullValidator(), error_handler=index)
+    def change_password(self, **kw):
+        kw = g.theme.password_change_form.to_python(kw, None)
+        ap = plugin.AuthenticationProvider.get(request)
+        try:
+            ap.set_password(c.user, kw['oldpw'], kw['pw'])
+        except wexc.HTTPUnauthorized:
+            flash('Incorrect password', 'error')
+            redirect('.')
+        flash('Password changed')
+        redirect('.')
+
+    @expose()
+    def upload_sshkey(self, key=None):
+        ap = plugin.AuthenticationProvider.get(request)
+        try:
+            ap.upload_sshkey(c.user.username, key)
+        except AssertionError, ae:
+            flash('Error uploading key: %s' % ae, 'error')
+        flash('Key uploaded')
         redirect('.')
 
 class OAuth(BaseController):

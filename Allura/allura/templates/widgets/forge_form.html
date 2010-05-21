@@ -1,6 +1,9 @@
 <form method="{{method}}"
       {% if enctype %}enctype="{{enctype}}"{% endif %}
       action="{{action}}">
+  {% if errors and not errors.iteritems and show_errors %}
+  <div class="grid-19"><span {{widget.j2_attrs({'class':error_class})}}>{{errors}}</span></div>
+  {% endif %}
   {% for field in widget.fields %}
     {% set ctx=widget.context_for(field) %}
     {% if field.field_type != 'hidden' %}

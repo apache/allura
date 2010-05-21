@@ -35,10 +35,15 @@ class Repository(M.Repository):
         self._impl = SVNImplementation(self)
 
     def readonly_clone_command(self):
-        return 'svn checkout svn://%s' % self.scm_url_path
+        ro_path = self.readonly_path(c.user.username)
+        if ro_path:
+            return 'svn checkout %s %s' % (ro_path, c.project.shortname)
+        else:
+            return None
 
     def readwrite_clone_command(self):
-        return 'svn checkout svn+ssh://%s@%s' % (c.user.username, self.scm_url_path)
+        rw_path = self.readwrite_path(c.user.username)
+        return 'svn checkout %s %s' % (rw_path, c.project.shortname)
 
     def _log(self, rev, skip, max_count):
         ci = self.commit(rev)

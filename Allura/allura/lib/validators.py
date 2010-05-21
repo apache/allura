@@ -28,3 +28,14 @@ class UniqueOAuthApplicationName(fev.UnicodeString):
         if app is not None:
             raise fe.Invalid('That name is already taken, please choose another', value, state)
         return value
+
+class NullValidator(fev.Validator):
+
+    def to_python(self, value, state):
+        return value
+
+    def from_python(self, value, state):
+        return value
+
+    def validate(self, value, state):
+        return value

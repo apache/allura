@@ -3,6 +3,7 @@ import stat
 import errno
 import mimetypes
 import logging
+import string
 from hashlib import sha1
 from datetime import datetime
 from collections import defaultdict
@@ -205,8 +206,13 @@ class Repository(Artifact):
     def scm_url_path(self):
         return self.scm_host() + self.url_path + self.name
 
-    def scm_host(self):
-        return self.tool + config.get('scm.host', '.' + pylons.request.host)
+    def readonly_path(self, username):
+        tpl = string.Template(config.get('scm.host.ro.%s' % self.tool))
+        return tpl.substitute(dict(username=username, path=self.url_path+self.name))
+
+    def readwrite_path(self, username):
+        tpl = string.Template(config.get('scm.host.rw.%s' % self.tool))
+        return tpl.substitute(dict(username=username, path=self.url_path+self.name))
 
     def merge_requests_by_statuses(self, *statuses):
         return MergeRequest.query.find(dict(

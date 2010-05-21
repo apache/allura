@@ -6,22 +6,9 @@
 {% block header %}Create an Account{% endblock %}
 
 {% block content %}
-  <form action="/auth/save_new" method="post" id="create_account">
-    <label for="display_name" class="grid-4">Display Name:</label>
-    <div class="grid-18"><input type="text" name="display_name" id="display_name"/></div>
-    <label for="email_addresses" class="grid-4">Email address:</label>
-    <div class="grid-18"><input type="text" name="email_addresses" id="email_addresses"/></div>
-    <label for="open_ids" class="grid-4">Open IDs:</label>
-    <div class="grid-18"><input type="text" name="open_ids" id="open_ids"/></div>
-    <label for="username" class="grid-4">Username:</label>
-    <div class="grid-18"><input type="text" name="username" id="username"/></div>
-    <label for="password" class="grid-4">Password:</label>
-    <div class="grid-18"><input type="password" name="password" id="password"/></div>
-    <label class="grid-4">Confirm Password:</label>
-    <div class="grid-18"><input type="password" id="confirm_password"/></div>
-    <label class="grid-4">&nbsp;</label>
-    <div class="grid-18"><input type="submit" id="submit" value="Create"/></div>
-  </form>
+<div class="grid-20">
+  {{ c.form.display() }}
+</div>
 {% endblock %}
 
 {% block extra_js %}

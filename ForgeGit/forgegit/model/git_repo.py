@@ -30,11 +30,15 @@ class Repository(M.Repository):
         self._impl = GitImplementation(self)
 
     def readonly_clone_command(self):
-        return 'git clone git://%s %s' % (self.scm_url_path, c.project.shortname)
+        ro_path = self.readonly_path(c.user.username)
+        if ro_path:
+            return 'git clone %s %s' % (ro_path, c.project.shortname)
+        else:
+            return None
 
     def readwrite_clone_command(self):
-        return 'git clone ssh://%s@%s %s' % (
-            c.user.username, self.scm_url_path, c.project.shortname)
+        rw_path = self.readwrite_path(c.user.username)
+        return 'git clone %s %s' % (rw_path, c.project.shortname)
 
     def merge_command(self, merge_request):
         '''Return the command to merge a given commit to a given target branch'''

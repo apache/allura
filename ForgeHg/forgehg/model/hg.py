@@ -35,11 +35,15 @@ class Repository(M.Repository):
         self._impl = HgImplementation(self)
 
     def readonly_clone_command(self):
-        return 'hg clone http://%s %s' % (self.scm_url_path, c.project.shortname)
+        ro_path = self.readonly_path(c.user.username)
+        if ro_path:
+            return 'hg clone %s %s' % (ro_path, c.project.shortname)
+        else:
+            return None
 
     def readwrite_clone_command(self):
-        return 'hg clone ssh://%s@%s %s' % (
-            c.user.username, self.scm_url_path, c.project.shortname)
+        rw_path = self.readwrite_path(c.user.username)
+        return 'hg clone %s %s' % (rw_path, c.project.shortname)
 
     def merge_command(self, merge_request):
         '''Return the command to merge a given commit into a given target branch'''

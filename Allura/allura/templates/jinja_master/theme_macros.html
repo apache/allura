@@ -4,7 +4,7 @@
         <nav>
           {% if userid %}
             <a href="/account/">Account</a>
-            <a href="/users/{{username}}">{{name}}</a>
+            <a href="/u/{{username}}/">{{name}}</a>
             <a href="{{logout_url}}">Log Out</a>
           {% else %}
             <a href="/auth/create_account">Register</a>

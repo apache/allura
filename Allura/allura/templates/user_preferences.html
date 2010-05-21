@@ -6,6 +6,20 @@
 {% block header %}User Preferences for {{c.user.username}}{% endblock %}
 
 {% block content %}
+  {% if g.theme.password_change_form %}
+  <div class="grid-20">
+    <h2>Change Password</h2>
+    {{ g.theme.password_change_form.display() }}
+  </div>
+  {% endif %}
+  {% if g.theme.upload_key_form %}
+  <div class="grid-20">
+    <h2>Upload ssh public key</h2>
+    {{ g.theme.upload_key_form.display() }}
+  </div>
+  {% endif %}
+</div>
+<br style="clear:both"/>
   <h2>API Token</h2>
   {% if api_token %}
     <p>
