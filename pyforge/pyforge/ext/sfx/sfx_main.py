@@ -118,7 +118,7 @@ class SFXProjectRegistrationProvider(plugin.ProjectRegistrationProvider):
         r = self.api.create(neighborhood, shortname)
         log.info('SFX Project creation returned: %s', r)
         p = super(SFXProjectRegistrationProvider, self).register_project(
-            neighborhood, shortname, user_project)
+            neighborhood, shortname, user, user_project)
         return p
 
     def register_subproject(self, project, name, install_apps):
