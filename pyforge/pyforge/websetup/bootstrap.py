@@ -164,6 +164,7 @@ def bootstrap(command, conf, vars):
         p0.install_app('Tickets', 'bugs')
         p0.install_app('Tickets', 'doc_bugs')
         p0.install_app('Discussion', 'discussion')
+        p0.install_app('Link', 'link')
         ThreadLocalORMSession.flush_all()
         ThreadLocalORMSession.close_all()
         if asbool(conf.get('cache_test_data')):
