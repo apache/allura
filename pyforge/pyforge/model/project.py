@@ -382,9 +382,9 @@ class Project(MappedClass):
                 'project_id':self._id,
                 'options.mount_point':mount_point}).first()
 
-    def new_subproject(self, name, install_apps=True):
+    def new_subproject(self, name, install_apps=True, user=None):
         provider = plugin.ProjectRegistrationProvider.get()
-        return provider.register_subproject(self, name, install_apps)
+        return provider.register_subproject(self, name, user or c.user, install_apps)
 
     def delete(self):
         # Cascade to subprojects

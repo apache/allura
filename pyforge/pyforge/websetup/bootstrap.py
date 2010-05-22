@@ -7,6 +7,7 @@ import shutil
 from datetime import datetime
 from mimetypes import guess_type
 
+import tg
 from pylons import c, g
 from paste.deploy.converters import asbool
 
@@ -48,6 +49,8 @@ def restore_test_data():
 
 def bootstrap(command, conf, vars):
     """Place any commands to setup pyforge here"""
+    # Our bootstrap doesn't play nicely with SFX project and user APIs
+    tg.config['auth.method'] = tg.config['registration.method'] = 'local'
     # Clean up all old stuff
     ThreadLocalORMSession.close_all()
     c.queued_messages = []

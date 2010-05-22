@@ -192,7 +192,7 @@ class User(MappedClass):
         result = plugin.AuthenticationProvider.get(request).register_user(doc)
         if result and make_project:
             n = M.Neighborhood.query.get(name='Users')
-            n.register_project('u/' + result.username, result, user_project=True)
+            n.register_project('u/' + result.username, user=result, user_project=True)
         return result
 
     def private_project(self):

@@ -238,7 +238,7 @@ class ProjectRegistrationProvider(object):
         g.publish('react', 'forge.project_created')
         return p
 
-    def register_subproject(self, project, name, install_apps):
+    def register_subproject(self, project, name, user, install_apps):
         from pyforge import model as M
         assert h.re_path_portion.match(name), 'Invalid subproject shortname'
         shortname = project.shortname + '/' + name

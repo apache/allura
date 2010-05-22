@@ -60,18 +60,18 @@ class SFXProjectApi(object):
         return closing(httplib.HTTPConnection(self.project_host or request.host))
 
     def _unix_group_name(self, neighborhood, shortname):
-        if neighborhood.url_prefix != 'p/':
-            path = neighborhood.url_prefix + shortname
-        else:
+        if neighborhood.url_prefix == 'p':
             path = shortname
-        parts = path.split('/')[1:]
+        else:
+            path = neighborhood.url_prefix + shortname[len(neighborhood.shortname_prefix):]
+        parts = [ p for p in path.split('/') if p ]
         return '.'.join(reversed(parts))
 
-    def create(self, neighborhood, shortname, short_description='No description'):
+    def create(self, user, neighborhood, shortname, short_description='No description'):
         with self._connect() as conn:
             ug_name = self._unix_group_name(neighborhood, shortname)
             args = dict(
-                user_id=c.user.sfx_userid,
+                user_id=user.sfx_userid,
                 unix_group_name=ug_name,
                 group_name=shortname,
                 short_description=short_description)
@@ -90,11 +90,11 @@ class SFXProjectApi(object):
                 'Bad status from sfx retrieve: %s' % (response.status)
             return json.loads(response.read())
 
-    def update(self, p):
+    def update(self, user, p):
         with self._connect() as conn:
             ug_name = self._unix_group_name(p.neighborhood, p.shortname)
             args = dict(
-                user_id=c.user.sfx_userid,
+                user_id=user.sfx_userid,
                 group_name=p.shortname,
                 short_description=p.short_description,
                 developers = [

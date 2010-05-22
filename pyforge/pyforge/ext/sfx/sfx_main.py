@@ -30,19 +30,19 @@ class SFXApp(Application):
     @react('forge.project_created')
     def project_created(cls, routing_key, doc):
         api = SFXProjectApi()
-        api.update(pylons.c.project)
+        api.update(pylons.c.user, pylons.c.project)
 
     @classmethod
     @react('forge.project_updated')
     def project_updated(cls, routing_key, doc):
         api = SFXProjectApi()
-        api.update(pylons.c.project)
+        api.update(pylons.c.user, pylons.c.project)
 
     @classmethod
     @react('forge.project_deleted')
     def project_deleted(cls, routing_key, doc):
         api = SFXProjectApi()
-        api.delete(pylons.c.project)
+        api.delete(pylons.c.user, pylons.c.project)
 
     def sidebar_menu(self):
         return [ ]
@@ -61,9 +61,17 @@ class SFXAuthenticationProvider(plugin.AuthenticationProvider):
     def __init__(self, request):
         super(SFXAuthenticationProvider, self).__init__(request)
         self.sfx_session_manager = request.environ['allura.sfx_session_manager']
+        self.local_ap = plugin.LocalAuthenticationProvider(request)
 
     def register_user(self, user_doc):
-        raise TypeError, "We don't provide user registration; that's SFX's job"
+        log.warning("We don't provide user registration; that's SFX's job."
+                    "  Delegating to a LocalAuthenticationProvider...")
+        return self.local_ap.register_user(user_doc)
+
+    def set_password(self, user, old_password, new_password):
+        log.warning("We don't provide password services; that's SFX's job."
+                    "  Delegating to a LocalAuthenticationProvider...")
+        return self.local_ap.set_password(user, old_password, new_password)
 
     def authenticate_request(self):
         cookie_name = self.sfx_session_manager.cookie_name
@@ -115,17 +123,17 @@ class SFXProjectRegistrationProvider(plugin.ProjectRegistrationProvider):
 
     def register_project(self, neighborhood, shortname, user, user_project):
         # Reserve project name with SFX
-        r = self.api.create(neighborhood, shortname)
+        r = self.api.create(user, neighborhood, shortname)
         log.info('SFX Project creation returned: %s', r)
         p = super(SFXProjectRegistrationProvider, self).register_project(
             neighborhood, shortname, user, user_project)
         return p
 
-    def register_subproject(self, project, name, install_apps):
-        r = self.api.create(project.neighborhood, project.shortname + '/' + name)
+    def register_subproject(self, project, name, user, install_apps):
+        r = self.api.create(user, project.neighborhood, project.shortname + '/' + name)
         log.info('SFX Subproject creation returned: %s', r)
         return super(SFXProjectRegistrationProvider, self).register_subproject(
-            project, name, install_apps)
+            project, name, user, install_apps)
 
 @contextmanager
 def fake_pylons_context(request):
