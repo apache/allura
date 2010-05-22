@@ -41,7 +41,10 @@ class SFXUserApi(object):
             user_data = self.user_data(username)
         u = M.User.query.get(username=username)
         if u is None:
-            u = M.User(username=username)
+            u = M.User(
+                username=username,
+                display_name=user_data['name'],
+                sfx_userid=user_data['id'])
             n = M.Neighborhood.query.get(name='Users')
             n.register_project('u/' + u.username, u, user_project=True)
         if u.display_name != user_data['name']:
