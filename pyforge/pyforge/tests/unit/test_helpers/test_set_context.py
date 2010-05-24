@@ -1,19 +1,12 @@
 from itertools import count
 
 from mock import Mock, patch
-from pyforge.websetup.bootstrap import clear_all_database_tables
 from nose.tools import assert_raises
 
 from pyforge.lib.helpers import set_context, NoSuchProjectError
-from pyforge.tests.unit import MockPatchTestCase
+from pyforge.tests.unit import WithDatabase
 from pyforge.tests.unit.factories import (create_project,
                                           create_app_config)
-
-
-class WithDatabase(MockPatchTestCase):
-    def setUp(self):
-        super(WithDatabase, self).setUp()
-        clear_all_database_tables()
 
 
 def fake_c_patch(test_case):

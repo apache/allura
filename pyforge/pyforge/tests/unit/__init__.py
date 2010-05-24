@@ -1,10 +1,5 @@
-from pylons import c
-from ming.orm.ormsession import ThreadLocalORMSession
-
 from pyforge.tests.helpers import run_app_setup
-from pyforge.websetup import bootstrap
-from pyforge.lib import helpers
-from pyforge import model
+from pyforge.websetup.bootstrap import clear_all_database_tables
 
 
 def setUp(self):
@@ -22,4 +17,10 @@ class MockPatchTestCase(object):
     def tearDown(self):
         for patch_instance in self._patch_instances:
             patch_instance.__exit__()
+
+
+class WithDatabase(MockPatchTestCase):
+    def setUp(self):
+        super(WithDatabase, self).setUp()
+        clear_all_database_tables()
 

@@ -5,14 +5,8 @@ from pylons import c
 
 from pyforge.app import Application
 from pyforge import model
-from pyforge.websetup.bootstrap import wipe_database
-from pyforge.websetup.bootstrap import clear_all_database_tables
+from pyforge.tests.unit import WithDatabase
 from pyforge.tests.unit.factories import create_project, create_app_config
-
-
-class WithDatabase(object):
-    def setUp(self):
-        clear_all_database_tables()
 
 
 class TestInstall(WithDatabase):
