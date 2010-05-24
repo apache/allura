@@ -27,11 +27,12 @@
       ${Markup(c.project.neighborhood.css)}
     </style>
     <div id="mainmenu" class="span-24 last">
-      <div class="sf_logo span-10"><a href="/"><img src="${g.forge_static('images/sfc.png')}" alt="SourceForge"/><i>Reforged</i></a></div>
+      <div class="sf_logo span-10"><a href="/"><img src="${g.forge_static('images/sfc.png')}" alt="SourceForge"/></a></div>
       <div class="span-14 tright last">
         <a href="/auth/logout" py:if="c.user and c.user._id" class="sf_log_out">Log Out</a>
         <a href="/auth/" py:if="not c.user or not c.user._id" class="sf_log_in">Log In</a>
-        <a href="${c.user.url()}" py:if="c.user and c.user._id" class="sf_user_link">$c.user.display_name</a>
+        <a href="/account/" py:if="c.user and c.user._id" class="sf_user_link">Account</a>
+        <a href="/users/${c.user.username}" py:if="c.user and c.user._id" class="sf_user_link">$c.user.display_name</a>
         <a href="/auth/create_account" py:if="not c.user or not c.user._id" class="sf_create_account">Create Account</a>
         <a href="/search/" class="sf_search_link"><span class="ui-icon reverse ui-icon-search"></span> Search</a>
       </div>
