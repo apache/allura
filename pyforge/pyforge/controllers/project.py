@@ -54,6 +54,7 @@ class NeighborhoodController(object):
 
     @expose()
     def _lookup(self, pname, *remainder):
+        pname = unquote(pname)
         if not h.re_path_portion.match(pname):
             raise exc.HTTPNotFound, pname
         project = M.Project.query.get(shortname=self.prefix + pname)
@@ -147,6 +148,7 @@ class NeighborhoodProjectBrowseController(ProjectBrowseController):
 
     @expose()
     def _lookup(self, category_name, *remainder):
+        category_name=unquote(category_name)
         return NeighborhoodProjectBrowseController(neighborhood=self.neighborhood, category_name=category_name, parent_category=self.category), remainder
 
     @expose('pyforge.templates.neighborhood_project_list')
@@ -181,6 +183,7 @@ class ProjectController(object):
 
     @expose()
     def _lookup(self, name, *remainder):
+        name=unquote(name)
         if not h.re_path_portion.match(name):
             raise exc.HTTPNotFound, name
         subproject = M.Project.query.get(shortname=c.project.shortname + '/' + name, deleted=False)
@@ -264,6 +267,7 @@ class ScreenshotsController(object):
 
     @expose()
     def _lookup(self, filename, *args):
+        filename=unquote(filename)
         return ScreenshotController(filename), args
 
 class ScreenshotController(object):
@@ -491,6 +495,7 @@ class NeighborhoodAwardsController(object):
 
     @expose()
     def _lookup(self, short, *remainder):
+        short=unquote(short)
         return AwardController(short), remainder
 
     @expose()
@@ -555,6 +560,7 @@ class AwardController(object):
 
     @expose()
     def _lookup(self, recipient, *remainder):
+        recipient=unquote(recipient)
         return GrantController(self.award, recipient), remainder
 
     @expose()

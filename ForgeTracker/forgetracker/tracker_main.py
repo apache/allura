@@ -3,7 +3,7 @@ import logging
 from mimetypes import guess_type
 import json, urllib, re
 from datetime import datetime, timedelta
-from urllib import urlencode
+from urllib import urlencode, unquote
 
 # Non-stdlib imports
 import pkg_resources
@@ -829,6 +829,7 @@ class AttachmentsController(object):
 
     @expose()
     def _lookup(self, filename, *args):
+        filename = unquote(filename)
         return AttachmentController(filename), args
 
 class AttachmentController(object):

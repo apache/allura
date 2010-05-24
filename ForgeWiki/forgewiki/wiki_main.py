@@ -3,7 +3,7 @@ import difflib
 import logging
 from pprint import pformat
 from mimetypes import guess_type
-from urllib import urlencode
+from urllib import urlencode, unquote
 
 # Non-stdlib imports
 import Image
@@ -193,6 +193,7 @@ class RootController(object):
     #Instantiate a Page object, and continue dispatch there
     @expose()
     def _lookup(self, pname, *remainder):
+        pname=unquote(pname)
         return PageController(pname), remainder
 
     @expose()
@@ -512,6 +513,7 @@ class AttachmentsController(object):
 
     @expose()
     def _lookup(self, filename, *args):
+        filename=unquote(filename)
         return AttachmentController(filename), args
 
 class AttachmentController(object):

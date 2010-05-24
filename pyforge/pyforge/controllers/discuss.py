@@ -1,4 +1,5 @@
 from mimetypes import guess_type
+from urllib import unquote
 
 from tg import expose, redirect, validate, request, response, flash
 from tg.decorators import before_validate, with_trailing_slash, without_trailing_slash
@@ -95,6 +96,7 @@ class ThreadsController(object):
 
     @expose()
     def _lookup(self, id, *remainder):
+        id=unquote(id)
         return self.ThreadController(self._discussion_controller, id), remainder
 
 class ThreadController(object):
@@ -115,6 +117,7 @@ class ThreadController(object):
 
     @expose()
     def _lookup(self, id, *remainder):
+        id=unquote(id)
         return self.PostController(self._discussion_controller, self.thread, id), remainder
 
     @expose('pyforge.templates.discussion.thread')
@@ -291,6 +294,7 @@ class PostController(object):
 
     @expose()
     def _lookup(self, id, *remainder):
+        id=unquote(id)
         return self.PostController(
             self._discussion_controller,
             self.thread, self._post_slug + '/' + id), remainder
@@ -309,6 +313,7 @@ class AttachmentsController(object):
 
     @expose()
     def _lookup(self, filename, *args):
+        filename=unquote(filename)
         return self.AttachmentController(self._discussion_controller, filename), args
 
 class AttachmentController(object):
