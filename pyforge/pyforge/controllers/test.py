@@ -50,7 +50,7 @@ class TestController(BaseController, ProjectController):
         proxy_root = RootController()
         self.dispatch = DispatchTest()
         self.security = SecurityTests()
-        for attr in ('index', 'browse', 'markdown_to_html', 'auth', 'nf', 'error'):
+        for attr in ('index', 'browse', 'auth', 'nf', 'error'):
             setattr(self, attr, getattr(proxy_root, attr))
         self.gsearch = proxy_root.search
         self.rest = RestController()

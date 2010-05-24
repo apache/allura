@@ -5,7 +5,7 @@
   <script type="text/javascript">
       /*<![CDATA[*/
       $(window).load(function() {
-          markdownSettings.previewParserPath = "/markdown_to_html?project=${c.project and c.project.shortname or ''}"+
+          markdownSettings.previewParserPath = "/nf/markdown_to_html?project=${c.project and c.project.shortname or ''}"+
             "&app=${(c.project and c.app) and c.app.config.options['mount_point'] or ''}";
       });
       /*]]>*/

@@ -83,14 +83,3 @@ class RootController(BaseController):
             SitemapEntry(cat.label, '/browse/'+cat.name, className='nav_child') for cat in categories
         ]
         return dict(projects=psort,title="All Projects",text=None)
-
-    @expose()
-    @without_trailing_slash
-    def markdown_to_html(self, markdown, project=None, app=None):
-        """Convert markdown to html."""
-        if project:
-            g.set_project(project)
-            if app:
-                g.set_app(app)
-        html = g.markdown.convert(markdown)
-        return html

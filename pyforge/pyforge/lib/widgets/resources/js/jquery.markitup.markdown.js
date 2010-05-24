@@ -11,7 +11,7 @@
 // Feel free to add more tags
 // -------------------------------------------------------------------
 markdownSettings = {
-	previewParserPath:	'/markdown_to_html',
+	previewParserPath:	'/nf/markdown_to_html',
 	previewAutoRefresh: true,
 	previewParserVar: 'markdown',
 	onShiftEnter:		{keepDefault:false, openWith:'\n\n'},

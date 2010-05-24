@@ -5,6 +5,7 @@ from tg import expose, redirect, flash, config, validate, request, response
 from tg.decorators import with_trailing_slash, without_trailing_slash
 from webob import exc
 
+from pylons import c, g
 from pyforge.lib import helpers as h
 from pyforge import model as M
 
@@ -37,6 +38,17 @@ class StaticController(object):
         response.headers['Content-Type'] = ''
         response.content_type = 'text/css'
         return css
+
+    @expose()
+    @without_trailing_slash
+    def markdown_to_html(self, markdown, project=None, app=None):
+        """Convert markdown to html."""
+        if project:
+            g.set_project(project)
+            if app:
+                g.set_app(app)
+        html = g.markdown.convert(markdown)
+        return html
         
 
 class StaticAppController(object):
