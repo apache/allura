@@ -339,11 +339,17 @@ class ProjectAdminController(object):
         if role is None: role = []
         for r in role:
             if r.get('new', {}).get('add'):
-                user = M.User.by_username(str(r['new']['id']))
+                username = str(r['new']['id'])
+                try:
+                    user = M.User.by_username(username)
+                except AssertionError:
+                    user = None
                 if user:
                     ur = user.project_role()
                     if ObjectId(str(r['id'])) not in ur.roles:
                         ur.roles.append(ObjectId(str(r['id'])))
+                else:
+                    flash('No user %s' % username, 'error')
             for u in r.get('users', []):
                 if u.get('delete'):
                     ur = M.ProjectRole.query.get(user_id=ObjectId(str(u['id'])))

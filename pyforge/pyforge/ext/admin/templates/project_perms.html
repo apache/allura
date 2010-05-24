@@ -23,7 +23,7 @@
   <body>
     <h1 class="title">Project Permissions for $c.project.shortname</h1>
     <div py:if="c.project.deleted" class="notice">This project has been deleted and is not visible to non-admin users</div>
-    <form method="POST" action="update_user_roles" id="roles_form">
+    <form method="POST" class="can-retry" action="update_user_roles" id="roles_form">
       <input py:for="i,r in enumerate(c.project.roles)" py:if="r.name in ['Developer','Admin']"
         type="hidden"
         name="role-${i}.id"
