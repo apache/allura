@@ -55,9 +55,3 @@ def test_widget_controller():
     wc = app.WidgetController(c.app)
     assert 'portlet' in wc.portlet('Foo'), wc.portlet('Foo')
 
-def test_app():
-    c.app = app.Application(c.project, c.app.config)
-    # test default deny
-    assert not c.app.has_access(M.User.anonymous, 'any.topic')
-    # test default sidebar menu
-    assert c.app.sidebar_menu() == []
