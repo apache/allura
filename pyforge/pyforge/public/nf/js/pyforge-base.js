@@ -98,5 +98,13 @@ function attach_form_retry( form ){
 }
 
 $(function(){
-    attach_form_retry('form.can-retry')
+    attach_form_retry('form.can-retry');
+
+    // Make life a little better for Chrome users by setting tab-order on inputs.
+    // This won't stop Chrome from tabbing over links, but should stop links from
+    // coming "in between" fields.
+    var i = 0;
+    $('input,textarea,select,button').each(function(){
+        $(this).attr('tabindex', i++);
+    });
 });
