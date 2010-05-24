@@ -78,26 +78,6 @@ class TestDiscuss(TestController):
         self.app.post(permalinks[1]+'moderate', params=dict(delete='delete'))
         self.app.post(permalinks[0]+'moderate', params=dict(spam='spam'))
 
-    def test_moderation(self):
-        r = self._make_post('This is a post 1')
-        r = self._make_post('This is a post 2')
-        r = self._make_post('This is a post 3')
-        permalinks = [ link['href'].encode('utf-8') for link in r.html.findAll('a')
-                       if 'Permalink' in str(link) ]
-        mod = self.app.get('/wiki/_discuss/moderate/', params=dict(
-                offset=0, limit=50, status='ok', flag=10))
-        mod = self.app.get('/wiki/_discuss/moderate/')
-        params = {}
-        for i in mod.html.findAll('input'):
-            if i['type'] == 'checkbox':
-                params[i['name']] = 'on'
-            elif i['type'] == 'hidden':
-                params[i['name']] = i['value']
-        r = self.app.post('/wiki/_discuss/moderate/moderate', params=dict(params, approve='on'))
-        r = self.app.post('/wiki/_discuss/moderate/moderate', params=dict(params, spam='on'))
-        r = self.app.post('/wiki/_discuss/moderate/moderate', params=dict(params, delete='on'))
-        mod = self.app.get('/wiki/_discuss/moderate/')
-
 class TestAttachment(TestController):
 
     def setUp(self):

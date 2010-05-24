@@ -5,26 +5,13 @@ from nose.tools import assert_raises
 
 from pyforge.lib.helpers import set_context, NoSuchProjectError
 from pyforge.tests.unit import WithDatabase
+from pyforge.tests.unit import patches
 from pyforge.tests.unit.factories import (create_project,
                                           create_app_config)
 
 
-def fake_c_patch(test_case):
-    test_case.c = Mock()
-    return patch('pyforge.lib.helpers.c', test_case.c)
-
-
-def project_app_loading_patch(test_case):
-    test_case.fake_app = Mock()
-    test_case.project_app_instance_function = Mock()
-    test_case.project_app_instance_function.return_value = test_case.fake_app
-
-    return patch('pyforge.model.project.Project.app_instance',
-                 test_case.project_app_instance_function)
-
-
 class TestWhenProjectIsFoundAndAppIsNot(WithDatabase):
-    patches = [fake_c_patch]
+    patches = [patches.fake_c_patch]
 
     def setUp(self):
         super(TestWhenProjectIsFoundAndAppIsNot, self).setUp()

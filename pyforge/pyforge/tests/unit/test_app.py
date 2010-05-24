@@ -6,10 +6,13 @@ from pylons import c
 from pyforge.app import Application
 from pyforge import model
 from pyforge.tests.unit import WithDatabase
+from pyforge.tests.unit.patches import fake_app_patch
 from pyforge.tests.unit.factories import create_project, create_app_config
 
 
 class TestInstall(WithDatabase):
+    patches = [fake_app_patch]
+
     def test_that_it_creates_a_discussion(self):
         original_discussion_count = self.discussion_count()
         install_app()
@@ -20,6 +23,8 @@ class TestInstall(WithDatabase):
 
 
 class TestDefaultDiscussion(WithDatabase):
+    patches = [fake_app_patch]
+
     def setUp(self):
         super(TestDefaultDiscussion, self).setUp()
         install_app()
@@ -38,6 +43,8 @@ class TestDefaultDiscussion(WithDatabase):
 
 
 class TestAppDefaults(WithDatabase):
+    patches = [fake_app_patch]
+
     def setUp(self):
         super(TestAppDefaults, self).setUp()
         self.app = install_app()
@@ -52,18 +59,8 @@ class TestAppDefaults(WithDatabase):
 def install_app():
     project = create_project('myproject')
     app_config = create_app_config(project, 'my_mounted_app')
-    with fake_app(app_config):
-        # XXX: Remove project argument to install; it's redundant
-        app = Application(project, app_config)
-        app.install(project)
+    # XXX: Remove project argument to install; it's redundant
+    app = Application(project, app_config)
+    app.install(project)
     return app
-
-
-@contextmanager
-def fake_app(app_config):
-    c.app = Mock()
-    c.app.__version__ = '0'
-    c.app.config = app_config
-    yield
-    del c.app
 

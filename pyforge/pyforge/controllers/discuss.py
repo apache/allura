@@ -371,20 +371,20 @@ class ModerationController(object):
     @expose('pyforge.templates.discussion.moderate')
     @validate(pass_validator)
     def index(self, **kw):
-        kw = self.W.post_filter.validate(kw, None)
+        kw = WidgetConfig.post_filter.validate(kw, None)
         offset = kw.pop('offset', 0)
         limit = kw.pop('limit', 50)
         status = kw.pop('status', '-')
         flag = kw.pop('flag', None)
-        c.post_filter = self.W.post_filter
-        c.moderate_posts = self.W.moderate_posts
+        c.post_filter = WidgetConfig.post_filter
+        c.moderate_posts = WidgetConfig.moderate_posts
         query = dict(
             discussion_id=self.discussion._id)
         if status != '-':
             query['status'] = status
         if flag:
             query['flags'] = {'$gte': int(flag) }
-        q = self.M.Post.query.find(query)
+        q = model.Post.query.find(query)
         count = q.count()
         offset = int(offset)
         limit = int(limit)
@@ -406,9 +406,10 @@ class ModerationController(object):
                  **kw):
         for args in post:
             if not args.get('checked', False): continue
-            post = self.M.Post.query.get(slug=args['slug'])
+            post = model.Post.query.get(slug=args['slug'])
             if approve:
-                if post.status != 'ok': post.approve()
+                if post.status != 'ok':
+                    post.approve()
             elif spam:
                 if post.status != 'spam': post.spam()
             elif delete:
