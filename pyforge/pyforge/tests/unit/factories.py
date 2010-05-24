@@ -25,5 +25,5 @@ def create_app_config(project, mount_point):
         options={'mount_point': 'my_mounted_app'},
         acl={})
     ThreadLocalORMSession.flush_all()
-    return app_config
+    return AppConfig.query.get(_id=app_config._id)
 
