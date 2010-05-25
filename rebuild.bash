@@ -14,6 +14,10 @@ echo '# setup ForgeHg...'
 pushd ForgeHg
 python setup.py develop
 popd
+echo '# setup ForgeLink...'
+pushd ForgeLink
+python setup.py develop
+popd
 echo '# setup ForgeSVN...'
 pushd ForgeSVN
 python setup.py develop
