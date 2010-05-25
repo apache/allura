@@ -49,25 +49,24 @@
         </py:if>
       </ul>
     </div>
-    <script type="text/javascript"> 
-		$(document).ready(function() {
-    			$(".switch input.grid").click(function(){
-    			 $(this).next().addClass('ui-state-active');
-    			  $('.switch input.list').next().removeClass('ui-state-active');
-    			  $("ul.display").fadeOut("fast", function() {
-    			  	$(this).fadeIn("fast").addClass("thumb_view"); 
-    				 });
-    			}); 
-    			$(".switch input.list").click(function(){
-    		      $(this).next().addClass('ui-state-active');
-    		      $('.switch input.grid').next().removeClass('ui-state-active');
-    			  $("ul.display").fadeOut("fast", function() {
-    			  	$(this).fadeIn("fast").removeClass("thumb_view");
-    				});
-    			});  
-
-    		});
-    	</script>
-    
   </body>
+  <script type="text/javascript">
+	$(document).ready(function() {
+			$(".switch input.grid").click(function(){
+			 $(this).next().addClass('ui-state-active');
+			  $('.switch input.list').next().removeClass('ui-state-active');
+			  $("ul.display").fadeOut("fast", function() {
+				$(this).fadeIn("fast").addClass("thumb_view");
+				 });
+			});
+			$(".switch input.list").click(function(){
+		      $(this).next().addClass('ui-state-active');
+		      $('.switch input.grid').next().removeClass('ui-state-active');
+			  $("ul.display").fadeOut("fast", function() {
+				$(this).fadeIn("fast").removeClass("thumb_view");
+				});
+			});
+
+		});
+	</script>
 </html>

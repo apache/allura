@@ -64,19 +64,19 @@
       </div>
       <div class="clear"/>
     </form>
-    <script type="text/javascript" py:if="has_artifact_access('configure', app=c.app)()">
-      $(function() {
-        $("#add_forum").click(function(){
-          $("#add_forum_form").show();
-          $(this).hide();
-          return false;
-        });
-        $("#add_forum_cancel").click(function(){
-          $("#add_forum_form").hide();
-          $("#add_forum").show();
-          return false;
-        });
-      });
-	  </script>
   </body>
+  <script type="text/javascript" py:if="has_artifact_access('configure', app=c.app)()">
+    $(function() {
+      $("#add_forum").click(function(){
+        $("#add_forum_form").show();
+        $(this).hide();
+        return false;
+      });
+      $("#add_forum_cancel").click(function(){
+        $("#add_forum_form").hide();
+        $("#add_forum").show();
+        return false;
+      });
+    });
+  </script>
 </html>

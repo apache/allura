@@ -58,18 +58,18 @@
         </form>
       </div>
     </div>
-    <script type="text/javascript">
-      /*<![CDATA[*/
-      $('span.removable').click(function(e){
-        var vals = $('#page_edit_form').serialize();
-        console.debug(vals)
-        var del_name = $('input', this)[0].name.replace('.id','.delete');
-        console.debug(del_name)
-        $.post($('#page_edit_form')[0].action, vals+'&'+del_name+'=Del', function(){
-          e.target.parentNode.removeChild(e.target);
-        });
-      });
-      /*]]>*/
-    </script>
   </body>
+  <script type="text/javascript">
+    /*<![CDATA[*/
+    $('span.removable').click(function(e){
+      var vals = $('#page_edit_form').serialize();
+      console.debug(vals)
+      var del_name = $('input', this)[0].name.replace('.id','.delete');
+      console.debug(del_name)
+      $.post($('#page_edit_form')[0].action, vals+'&'+del_name+'=Del', function(){
+        e.target.parentNode.removeChild(e.target);
+      });
+    });
+    /*]]>*/
+  </script>
 </html>

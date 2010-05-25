@@ -16,98 +16,98 @@
   
   <body>
     <h1 class="title">$app.config.options.mount_point Admin Forums</h1>
-          <form method="POST" action="update_forums" enctype="multipart/form-data">
-          <table id="forums">
-            <thead>
-              <tr>
-                <th/>
-                <th>Forum</th><th>Topics</th><th>Posts</th><th>Last Post</th>
-                <th/>
-              </tr>
-            </thead>
-            <tbody>
-              <tr py:for="i, forum in enumerate(app.forums)" class="${i%2 and ' even' or ''}">
-                <td>
-                  <div class="editable viewing">
-                    <span class="viewer">
-                      <img py:if="forum.icon" src="${forum.url()}/icon"/>
-                      <img py:if="not forum.icon" src="${g.forge_static('images/project_default.png')}"/>
-                    </span>
-                    <span class="editor">${file_field('forum-%s.icon' % i, '')}</span>
-                  </div>
-                </td>
-                <td>
-                  <div class="editable viewing">
-                    <span class="viewer"><a href="${forum.url()}">$forum.name</a>($forum.shortname)</span>
-                    <span class="editor">
-                      ${text_field('forum-%s.name' % i, 'Forum Name', forum.name)}
-                    </span>
-                  </div>
-                  <div class="editable viewing">
-                    <span class="viewer">${Markup(g.markdown.convert(forum.description))}</span>
-                    <span class="editor multiline">
-                      ${text_area('forum-%s.description' % i, 'Description', forum.description)}
-                    </span>
-                  </div>
-                  <py:if test="forum.subforums">
-                    <b>Subforums:</b>
-                    <span py:for="j, sf in enumerate(forum.subforums)">
-                      <py:if test="j != 0">, </py:if>
-                      <a href="${sf.url()}">$sf.name</a>
-                    </span>
-                  </py:if>
-                </td>
-                <td>${forum.num_topics}</td>
-                <td>${forum.num_posts}</td>
-                <td>${post_summary(forum.last_post)}</td>
-                <td>
-                  <input name="forum-${i}.id" type="hidden" value="$forum._id"/>
-                  <py:if test="forum.deleted">${submit_button('Undelete', 'forum-%s.undelete' % i)}</py:if>
-                  <py:if test="not forum.deleted">${submit_button('Delete', 'forum-%s.delete' % i)}</py:if>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-          <input type="button" id="add_forum" value="Add another forum"
-                 class="ui-state-default ui-button ui-button-text"/>
-          <div id="add_forum_form" style="display:none">
-            <div class="span-3 clear"><label>Name:</label></div>
-            <div class="span-13 last"><input type="text" name="new_forum.name" class="title wide"/></div>
-            <div class="span-3 clear"><label>Short Name:</label></div>
-            <div class="span-13 last"><input type="text" name="new_forum.shortname" class="title wide"/></div>
-            <div class="span-3 clear"><label>Parent Forum:</label></div>
-            <div class="span-13 last">
-              <select name="new_forum.parent" class="title">
-                <option value="">None</option>
-                <option py:for="f in app.forums" value="$f._id">$f.name</option>
-              </select>
+    <form method="POST" action="update_forums" enctype="multipart/form-data">
+    <table id="forums">
+      <thead>
+        <tr>
+          <th/>
+          <th>Forum</th><th>Topics</th><th>Posts</th><th>Last Post</th>
+          <th/>
+        </tr>
+      </thead>
+      <tbody>
+        <tr py:for="i, forum in enumerate(app.forums)" class="${i%2 and ' even' or ''}">
+          <td>
+            <div class="editable viewing">
+              <span class="viewer">
+                <img py:if="forum.icon" src="${forum.url()}/icon"/>
+                <img py:if="not forum.icon" src="${g.forge_static('images/project_default.png')}"/>
+              </span>
+              <span class="editor">${file_field('forum-%s.icon' % i, '')}</span>
             </div>
-            <div class="span-3 clear"><label>Description:</label></div>
-            <div class="span-13 last"><textarea name="new_forum.description" class="title" style="height:50px; width:100%"/></div>
-            <div class="span-3 clear"><label>Icon</label></div>
-            <div class="span-13 last">${file_field('new_forum.icon', '')}</div>
-            <div class="push-3 clear span-13 last">
-              <input type="submit" id="new_forum.create" name="new_forum.create" value="Create Forum"
-                     class="ui-state-default ui-button ui-button-text"/>
-              <input type="button" id="add_forum_cancel" value="Cancel"
-                     class="ui-state-default ui-button ui-button-text"/>
+          </td>
+          <td>
+            <div class="editable viewing">
+              <span class="viewer"><a href="${forum.url()}">$forum.name</a>($forum.shortname)</span>
+              <span class="editor">
+                ${text_field('forum-%s.name' % i, 'Forum Name', forum.name)}
+              </span>
             </div>
-          </div>
-          <div class="clear"/>
-        </form>
-    <script type="text/javascript">
-      $(function() {
-        $("#add_forum").click(function(){
-          $("#add_forum_form").show();
-          $(this).hide();
-          return false;
-        });
-        $("#add_forum_cancel").click(function(){
-          $("#add_forum_form").hide();
-          $("#add_forum").show();
-          return false;
-        });
-      });
-	  </script>
+            <div class="editable viewing">
+              <span class="viewer">${Markup(g.markdown.convert(forum.description))}</span>
+              <span class="editor multiline">
+                ${text_area('forum-%s.description' % i, 'Description', forum.description)}
+              </span>
+            </div>
+            <py:if test="forum.subforums">
+              <b>Subforums:</b>
+              <span py:for="j, sf in enumerate(forum.subforums)">
+                <py:if test="j != 0">, </py:if>
+                <a href="${sf.url()}">$sf.name</a>
+              </span>
+            </py:if>
+          </td>
+          <td>${forum.num_topics}</td>
+          <td>${forum.num_posts}</td>
+          <td>${post_summary(forum.last_post)}</td>
+          <td>
+            <input name="forum-${i}.id" type="hidden" value="$forum._id"/>
+            <py:if test="forum.deleted">${submit_button('Undelete', 'forum-%s.undelete' % i)}</py:if>
+            <py:if test="not forum.deleted">${submit_button('Delete', 'forum-%s.delete' % i)}</py:if>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+    <input type="button" id="add_forum" value="Add another forum"
+           class="ui-state-default ui-button ui-button-text"/>
+    <div id="add_forum_form" style="display:none">
+      <div class="span-3 clear"><label>Name:</label></div>
+      <div class="span-13 last"><input type="text" name="new_forum.name" class="title wide"/></div>
+      <div class="span-3 clear"><label>Short Name:</label></div>
+      <div class="span-13 last"><input type="text" name="new_forum.shortname" class="title wide"/></div>
+      <div class="span-3 clear"><label>Parent Forum:</label></div>
+      <div class="span-13 last">
+        <select name="new_forum.parent" class="title">
+          <option value="">None</option>
+          <option py:for="f in app.forums" value="$f._id">$f.name</option>
+        </select>
+      </div>
+      <div class="span-3 clear"><label>Description:</label></div>
+      <div class="span-13 last"><textarea name="new_forum.description" class="title" style="height:50px; width:100%"/></div>
+      <div class="span-3 clear"><label>Icon</label></div>
+      <div class="span-13 last">${file_field('new_forum.icon', '')}</div>
+      <div class="push-3 clear span-13 last">
+        <input type="submit" id="new_forum.create" name="new_forum.create" value="Create Forum"
+               class="ui-state-default ui-button ui-button-text"/>
+        <input type="button" id="add_forum_cancel" value="Cancel"
+               class="ui-state-default ui-button ui-button-text"/>
+      </div>
+    </div>
+    <div class="clear"/>
+  </form>
   </body>
+  <script type="text/javascript">
+    $(function() {
+      $("#add_forum").click(function(){
+        $("#add_forum_form").show();
+        $(this).hide();
+        return false;
+      });
+      $("#add_forum_cancel").click(function(){
+        $("#add_forum_form").hide();
+        $("#add_forum").show();
+        return false;
+      });
+    });
+  </script>
 </html>

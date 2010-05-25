@@ -65,32 +65,31 @@
         </div>
       </py:for>
     </div>
-    <script type="text/javascript">
-      /*<![CDATA[*/
-      $(function() {
-        $("#acl-admin").accordion({
-          autoHeight: false,
-          navigation: true,
-          change: function(event,ui) {
-            var hid = ui.newHeader.children('a').attr('id');
-            if (hid === undefined) {
-              $.cookie('project-acl-admin', null);
-            } else {
-              $.cookie('project-acl-admin', hid, { path: '/', expires: 2 });
-            }
+  </body>
+  <script type="text/javascript">
+    /*<![CDATA[*/
+    $(function() {
+      $("#acl-admin").accordion({
+        autoHeight: false,
+        navigation: true,
+        change: function(event,ui) {
+          var hid = ui.newHeader.children('a').attr('id');
+          if (hid === undefined) {
+            $.cookie('project-acl-admin', null);
+          } else {
+            $.cookie('project-acl-admin', hid, { path: '/', expires: 2 });
           }
-        });
-      });
-      $(document).ready(function(){
-        if($.cookie('project-acl-admin')) {
-          $('#acl-admin').accordion('option', 'animated', false)
-                         .accordion('activate', $('#' + $.cookie('project-acl-admin')).parent('h3'))
-                         .accordion('option', 'animated', 'slide');
         }
       });
-      /*]]>*/
-    </script>
-    <script type="text/javascript" src="${g.app_static('js/admin.js')}"/>
-  </body>
-
+    });
+    $(document).ready(function(){
+      if($.cookie('project-acl-admin')) {
+        $('#acl-admin').accordion('option', 'animated', false)
+                       .accordion('activate', $('#' + $.cookie('project-acl-admin')).parent('h3'))
+                       .accordion('option', 'animated', 'slide');
+      }
+    });
+    /*]]>*/
+  </script>
+  <script type="text/javascript" src="${g.app_static('js/admin.js')}"/>
 </html>

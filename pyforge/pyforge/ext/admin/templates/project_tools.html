@@ -98,21 +98,20 @@
         </form>
       </tbody>
     </table>
-    <script type="text/javascript">
-      /*<![CDATA[*/
-      $('select.new_ep_name').change(function() {
-        $(this).closest('tr').find('input.new_mount_point').val($(this).val().toLowerCase());
-      });
-      $('td.tool-delete a').click(function(e){
-        var vals = $('#mounts_edit').serialize();
-        var del_name = e.target.className+'.delete';
-        $.post($('#mounts_edit')[0].action, vals+'&'+del_name+'=Del', function(){
-          window.location.reload();
-        });
-        return false;
-      });
-      /*]]>*/
-    </script>
   </body>
-
+  <script type="text/javascript">
+    /*<![CDATA[*/
+    $('select.new_ep_name').change(function() {
+      $(this).closest('tr').find('input.new_mount_point').val($(this).val().toLowerCase());
+    });
+    $('td.tool-delete a').click(function(e){
+      var vals = $('#mounts_edit').serialize();
+      var del_name = e.target.className+'.delete';
+      $.post($('#mounts_edit')[0].action, vals+'&'+del_name+'=Del', function(){
+        window.location.reload();
+      });
+      return false;
+    });
+    /*]]>*/
+  </script>
 </html>

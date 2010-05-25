@@ -30,23 +30,23 @@
         <input type="submit" id="submit" value="Create" class="ui-state-default ui-button ui-button-text"/>
       </div>
     </form>
-    <script type="text/javascript">
-      //<!--
-      $('#create_account').submit(function(){
-        if(!$('#username').attr('value').match(/^[a-zA-Z0-9]+$/)){
-          alert('Username can only contain numbers and letters.');
-          return false;
-        }
-        if($('#password').attr('value').length < 8){
-          alert('Password must be at least 8 characters long.');
-          return false;
-        }
-        if($('#password').attr('value') != $('#confirm_password').attr('value')){
-          alert('Password and Confirm Password must match.');
-          return false;
-        }
-      });
-      // -->
-    </script>
   </body>
+  <script type="text/javascript">
+    //<!--
+    $('#create_account').submit(function(){
+      if(!$('#username').attr('value').match(/^[a-zA-Z0-9]+$/)){
+        alert('Username can only contain numbers and letters.');
+        return false;
+      }
+      if($('#password').attr('value').length < 8){
+        alert('Password must be at least 8 characters long.');
+        return false;
+      }
+      if($('#password').attr('value') != $('#confirm_password').attr('value')){
+        alert('Password and Confirm Password must match.');
+        return false;
+      }
+    });
+    // -->
+  </script>
 </html>

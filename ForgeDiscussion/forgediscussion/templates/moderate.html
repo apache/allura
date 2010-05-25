@@ -76,21 +76,19 @@
         </tbody>
       </table>
     </form>
-    <script type="text/javascript">
-      (function($){
-          var tbl = $('form table');
-          var checkboxes = $('input[type=checkbox]', tbl);
-          console.log(tbl);
-          console.log(checkboxes);
-          $('a[href=#]', tbl).click(function() {
-              console.log(this);
-              checkboxes.each(function() {
-                  if(this.checked) { this.checked = false; }
-                  else { this.checked = true; }
-              });
-              return false;
-          });
-      }(jQuery));
-    </script>
   </body>
+  <script type="text/javascript">
+    (function($){
+        var tbl = $('form table');
+        var checkboxes = $('input[type=checkbox]', tbl);
+        $('a[href=#]', tbl).click(function() {
+            console.log(this);
+            checkboxes.each(function() {
+                if(this.checked) { this.checked = false; }
+                else { this.checked = true; }
+            });
+            return false;
+        });
+    }(jQuery));
+  </script>
 </html>

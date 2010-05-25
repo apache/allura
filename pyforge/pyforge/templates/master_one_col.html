@@ -30,9 +30,6 @@
     <link py:if="not c.project and not neighborhood" rel="stylesheet" type="text/css" media="screen" href="${tg.url('/nf/site_style.css')}" />
     <link py:if="c.project" rel="stylesheet" type="text/css" media="screen" href="${c.project.neighborhood.url()+'site_style.css'}" />
     <link py:if="neighborhood" rel="stylesheet" type="text/css" media="screen" href="${neighborhood.url()+'site_style.css'}" />
-    <script type="text/javascript" src="${g.forge_static('js/jquery-1.4.2.min.js')}"/>
-    <script type="text/javascript" src="${g.forge_static('js/jquery-ui-1.8rc3.custom.min.js')}"></script>
-    <script type="text/javascript" src="${g.forge_static('js/jquery.cookie.js')}"></script>
   </head>
 
   <body py:match="body" py:attrs="select('@*')">
@@ -67,6 +64,9 @@
       <div class="clear"/>
       ${footer()}
     </div>
+    <script type="text/javascript" src="${g.forge_static('js/jquery-1.4.2.min.js')}"/>
+    <script type="text/javascript" src="${g.forge_static('js/jquery-ui-1.8rc3.custom.min.js')}"></script>
+    <script type="text/javascript" src="${g.forge_static('js/jquery.cookie.js')}"></script>
     <script type="text/javascript" src="${g.forge_static('js/pyforge-base.js')}"/>
     <py:for each="blob in resource_manager.emit('body_js')">$blob</py:for>
   </body>
