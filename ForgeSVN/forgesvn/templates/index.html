@@ -20,7 +20,7 @@
         <dt>read access</dt>
         <dd>svn checkout svn://$repo.scm_url_path</dd>
         <dt>read/write access</dt>
-        <dd>svn checkout svn+ssh://$repo.scm_url_path</dd>
+        <dd>svn checkout svn+ssh://${username or 'USERNAME'}@$repo.scm_url_path</dd>
         <dt>status</dt>
         <dd>${repo.status}</dd>
       </dl>

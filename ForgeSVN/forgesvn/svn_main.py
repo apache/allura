@@ -129,10 +129,14 @@ class RootController(object):
             revisions = []
         c.revision_widget=W.revision_widget
         next_link='?' + urlencode(dict(offset=offset+10))
+        username = ''
+        if c.user and c.user != User.anonymous():
+            username = c.user.username
         return dict(
             repo=c.app.repo,
             revisions=revisions,
-            next_link=next_link)
+            next_link=next_link,
+            username=username)
 
     @expose()
     def _lookup(self, rev, *remainder):
