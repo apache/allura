@@ -25,14 +25,14 @@
           <a href="${c.url()}">${h.text.truncate(c.sha ,10)}</a>
         </li>
       </ul>
-      <py:if test="commit.parents">
-        <h2>Diffs</h2>
-        <div py:for="a, b, d in commit.diffs"
-             class="title-pane closed">
-          <h3 class="title">diff a/$a.path/$a.name b/$b.path/$b.name</h3>
-          <pre class="content codehilite"><code>${Markup(d)}</code></pre>
-        </div>
-      </py:if>
     </div>
+    <py:if test="commit.diffs">
+      <h2>Diffs</h2>
+      <div py:for="a, b, d in commit.diffs"
+           class="title-pane closed">
+        <h3 class="title">diff a/$a.path b/$b.path</h3>
+        <pre class="content codehilite"><code>${Markup(d)}</code></pre>
+      </div>
+    </py:if>
   </body>
 </html>

@@ -149,11 +149,11 @@ class GitCommit(Commit):
     def parents(self):
         return tuple(GitCommit.from_git(c, self._repo) for c in self._impl.parents)
 
-    @property
+    @LazyProperty
     def diffs(self):
+        differ = h.diff_text_genshi
         if self.parents:
-            differ = h.diff_text_genshi
-            for d in self._impl.diff(self.parents[0].sha):
+            for d in self.parents[0].diff(self.sha):
                 if d.deleted_file:
                     yield (
                         d.a_blob,
@@ -170,6 +170,8 @@ class GitCommit(Commit):
                         d.b_blob,
                         ''.join(differ(d.a_blob.data, d.b_blob.data)))
         else:
+            for blob in self.tree:
+                yield (blob, blob, ''.join(differ('', blob.data)))
             pass
 
 MappedClass.compile_all()
