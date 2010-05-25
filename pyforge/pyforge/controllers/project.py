@@ -24,6 +24,7 @@ from pyforge.controllers.error import ErrorController
 from pyforge.lib.security import require, has_project_access, has_neighborhood_access, has_artifact_access
 from pyforge.lib.widgets import form_fields as ffw
 from pyforge.lib.widgets import project_list as plw
+from pyforge.lib import plugin
 from .auth import AuthController
 from .search import SearchController, ProjectBrowseController
 from .static import StaticController
@@ -59,7 +60,14 @@ class NeighborhoodController(object):
             raise exc.HTTPNotFound, pname
         project = M.Project.query.get(shortname=self.prefix + pname)
         if project is None:
-            project = M.Project.query.get(shortname=self.neighborhood.url_prefix[1:] + '__init__')
+            project = M.Project.query.get(
+                shortname='__init__',
+                neighborhood_id=self.neighborhood._id)
+            if not project:
+                # Go ahead and register it
+                project_reg = plugin.ProjectRegistrationProvider.get()
+                users = M.User.query.find(dict(_id={'$in':self.neighborhood.acl.admin})).all()
+                project = project_reg.register_neighborhood_project(self.neighborhood, users)
             if project:
                 c.project = project
                 return ProjectController()._lookup(pname, *remainder)
@@ -75,7 +83,11 @@ class NeighborhoodController(object):
         if self.neighborhood.redirect:
             redirect(self.neighborhood.redirect)
         c.project_summary = W.project_summary
-        pq = M.Project.query.find(dict(neighborhood_id=self.neighborhood._id, deleted=False))
+        pq = M.Project.query.find(dict(
+                neighborhood_id=self.neighborhood._id,
+                deleted=False,
+                shortname={'$ne':'__init__'}
+                ))
         if sort=='alpha':
             pq.sort('name')
         else:

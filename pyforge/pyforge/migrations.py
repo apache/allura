@@ -5,6 +5,7 @@ import ming
 from ming.orm import mapper, ORMSession, session, state
 
 from pyforge import model as M
+from pyforge.lib import plugin
 from pyforge.ext.project_home import model as PM
 from forgetracker import model as TM
 from forgewiki import model as WM

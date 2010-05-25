@@ -172,9 +172,9 @@ class ProjectRegistrationProvider(object):
         for ep in pkg_resources.iter_entry_points('pyforge.project_registration', method):
             return ep.load()()
 
-    def register_neighborhood_project(self, neighborhood, user):
+    def register_neighborhood_project(self, neighborhood, users):
         from pyforge import model as M
-        shortname=neighborhood.url_prefix[1:] + '__init__'
+        shortname='__init__'
         p = M.Project.query.get(
             neighborhood_id=neighborhood._id,
             shortname=shortname)
@@ -183,7 +183,8 @@ class ProjectRegistrationProvider(object):
                 'Project %s exists in neighborhood %s' % (
                     shortname, p.neighborhood.name))
             return p
-        database = 'project:' + shortname.replace('/', ':').replace(' ', '_')
+        database = 'project%s__init__' % neighborhood.url_prefix
+        database = database.replace('/', ':').replace(' ', '_')
         name = 'Home Project for %s' % neighborhood.name
         p = M.Project(neighborhood_id=neighborhood._id,
                     shortname=shortname,
@@ -196,7 +197,7 @@ class ProjectRegistrationProvider(object):
                     is_root=True)
         try:
             p.configure_project_database()
-            with h.push_config(c, project=p, user=user):
+            with h.push_config(c, project=p):
                 assert M.ProjectRole.query.find().count() == 0, \
                     'Project roles already exist'
                 # Install default named roles (#78)
@@ -215,11 +216,13 @@ class ProjectRegistrationProvider(object):
                 p.acl['delete'] = [ role_owner._id ]
                 p.acl['tool'] = [ role_owner._id ]
                 p.acl['security'] = [ role_owner._id ]
-                pr = user.project_role()
-                pr.roles = [ role_owner._id, role_developer._id, role_member._id ]
-                # Setup builtin tool applications
-                p.install_app('wiki', 'home')
-                p.install_app('admin', 'admin')
+                for user in users:
+                    with h.push_config(c, user=user):
+                        pr = user.project_role()
+                        pr.roles = [ role_owner._id, role_developer._id, role_member._id ]
+                        # Setup builtin tool applications
+                        p.install_app('wiki', 'home')
+                        p.install_app('admin', 'admin')
                 ThreadLocalORMSession.flush_all()
         except:
             ThreadLocalORMSession.close_all()
