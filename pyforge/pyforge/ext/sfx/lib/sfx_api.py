@@ -63,7 +63,7 @@ class SFXProjectApi(object):
         return closing(httplib.HTTPConnection(self.project_host or request.host))
 
     def _unix_group_name(self, neighborhood, shortname):
-        if neighborhood.url_prefix == 'p':
+        if neighborhood.url_prefix == '/p/':
             path = shortname
         else:
             path = neighborhood.url_prefix + shortname[len(neighborhood.shortname_prefix):]
