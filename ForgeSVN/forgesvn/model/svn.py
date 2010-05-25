@@ -38,6 +38,14 @@ class SVNRepository(Repository):
     def local_url(self):
         return 'file://%s/%s' % (self.fs_path, self.name)
 
+    @LazyProperty
+    def last_revision(self):
+        info = self._impl.info2(
+            self.local_url,
+            revision=pysvn.Revision(pysvn.opt_revision_kind.head),
+            recurse=False)
+        return info[0][1].rev.number
+
     def init(self):
         if not self.fs_path.endswith('/'): self.fs_path += '/'
         try:
@@ -63,10 +71,12 @@ class SVNRepository(Repository):
             return []
 
     def revision(self, num):
-        return self.log(
+        r = self.log(
             revision_start=pysvn.Revision(
                 pysvn.opt_revision_kind.number, num),
-            limit=1)[0]
+            limit=1)
+        if r: return r[0]
+        else: return None
 
     def diff(self, r0, r1):
         r0 = pysvn.Revision(pysvn.opt_revision_kind.number, r0)

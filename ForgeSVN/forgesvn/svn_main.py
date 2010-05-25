@@ -154,8 +154,17 @@ class CommitController(object):
     @expose('forgesvn.templates.commit')
     def index(self):
         c.revision_widget=W.revision_widget
-        return dict(prev=self._rev-1,
-                    next=self._rev+1,
-                    revision=self.revision)
+        if self._rev <= 1:
+            prev = None
+        else:
+            prev = self._rev-1
+        if self._rev >= c.app.repo.last_revision:
+            next = None
+        else:
+            next = self._rev + 1;
+        return dict(
+            prev=prev,
+            next=next,
+            revision=self.revision)
 
 h.mixin_reactors(ForgeSVNApp, reactors)

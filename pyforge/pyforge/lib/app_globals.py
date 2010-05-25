@@ -12,11 +12,15 @@ from collections import defaultdict
 
 import pkg_resources
 
-from tg import config, session
-from pylons import c, request
 import pysolr
 import oembed
 import markdown
+import pygments
+import pygments.lexers
+import pygments.formatters
+import pygments.util
+from tg import config, session
+from pylons import c, request
 from carrot.connection import BrokerConnection
 from carrot.messaging import Publisher
 from pymongo.bson import ObjectId
@@ -77,6 +81,21 @@ class Globals(object):
         self.gravatar = gravatar.url
 
         self.oid_store = M.OpenIdStore()
+
+        # Setup pygments
+        self.pygments_formatter = pygments.formatters.HtmlFormatter(cssclass='codehilite')
+
+    def highlight(self, text, lexer=None, filename=None):
+        if lexer is None:
+            try:
+                lexer = pygments.lexers.get_lexer_for_filename(filename)
+            except pygments.util.ClassNotFound:
+                return text
+        else:
+            lexer = pygments.lexers.get_lexer_by_name(lexer)
+        return pygments.highlight(text, lexer, self.pygments_formatter)
+
+
 
     @property
     def publisher(self):

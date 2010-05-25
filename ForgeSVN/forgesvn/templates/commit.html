@@ -8,18 +8,21 @@
 
   <head>
     <meta content="text/html; charset=UTF-8" http-equiv="content-type" py:replace="''"/>
-    <link rel="stylesheet" type="text/css" href="/css/hilite.css"/>
     <title>SVN Changeset</title>
     <style type="text/css">
       ins { text-decoration: none; background-color: #dfd; }
       del { text-decoration: none; background-color: #fdd; }
     </style>
+    <link rel="stylesheet" type="text/css" media="screen, projection" href="${g.forge_static('css/forge/hilite.css')}" />
   </head>
 
   <body>
-    <a py:if="revision.revision.number" href="$prev">Prev</a>
-    <a href="$next">Next</a>
-    ${c.revision_widget.display(value=revision)}
-    <pre><code>${unicode(revision.diff(), 'utf-8')}</code></pre>
+    <a py:if="prev" href="$prev">Prev</a>
+    <a py:if="next" href="$next">Next</a>
+    <p py:if="revision is None">Unknown revision</p>
+    <py:if test="revision is not None">
+      ${c.revision_widget.display(value=revision)}
+      ${Markup(g.highlight(unicode(revision.diff(), 'utf-8'), 'diff'))}
+    </py:if>
   </body>
 </html>
