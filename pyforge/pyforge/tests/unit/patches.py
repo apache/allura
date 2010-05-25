@@ -13,11 +13,6 @@ def fake_app_patch(test_case):
     return patch_object(c, 'app', app, create=True)
 
 
-def fake_c_patch(test_case):
-    test_case.c = Mock()
-    return patch('pyforge.lib.helpers.c', test_case.c)
-
-
 def project_app_loading_patch(test_case):
     test_case.fake_app = Mock()
     test_case.project_app_instance_function = Mock()
