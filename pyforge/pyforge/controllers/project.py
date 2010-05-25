@@ -58,6 +58,11 @@ class NeighborhoodController(object):
         if not h.re_path_portion.match(pname):
             raise exc.HTTPNotFound, pname
         project = M.Project.query.get(shortname=self.prefix + pname)
+        if project is None:
+            project = M.Project.query.get(shortname=self.neighborhood.url_prefix[1:] + '__init__')
+            if project:
+                c.project = project
+                return ProjectController()._lookup(pname, *remainder)
         c.project = project
         if project is None or (project.deleted and not has_project_access('update')()):
             raise exc.HTTPNotFound, pname
@@ -67,6 +72,8 @@ class NeighborhoodController(object):
 
     @expose('pyforge.templates.neighborhood_project_list')
     def index(self,sort='alpha'):
+        if self.neighborhood.redirect:
+            redirect(self.neighborhood.redirect)
         c.project_summary = W.project_summary
         pq = M.Project.query.find(dict(neighborhood_id=self.neighborhood._id, deleted=False))
         if sort=='alpha':
@@ -363,6 +370,7 @@ class NeighborhoodAdminController(object):
                color1=None, color2=None, color3=None, color4=None, color5=None, color6=None,
                **kw):
         self.neighborhood.name = name
+        self.neighborhood.redirect = kw.pop('redirect', '')
         self.neighborhood.homepage = homepage
         self.neighborhood.css = css
         self.neighborhood.allow_browse = 'allow_browse' in kw

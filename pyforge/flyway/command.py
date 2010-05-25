@@ -39,7 +39,8 @@ class MigrateCommand(command.Command):
                 parsed_connection_url['port'])
             databases = connection.database_names()
             datastores = [ DataStore(self.options.connection_url + db)
-                           for db in connection.database_names() ]
+                           for db in connection.database_names()
+                           if db not in ('admin', 'local')]
         else:
             datastores = [ DataStore(self.options.connection_url) ]
         self.log.info('Migrate server: %s:%s',

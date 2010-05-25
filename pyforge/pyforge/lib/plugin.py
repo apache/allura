@@ -40,7 +40,10 @@ class AuthenticationProvider(object):
 
     def authenticate_request(self):
         from pyforge import model as M
-        return M.User.query.get(_id=self.session.get('userid', None))
+        user = M.User.query.get(_id=self.session.get('userid', None))
+        if user is None:
+            return M.User.anonymous()
+        return user
 
     def register_user(self, user_doc):
         raise NotImplementedError, 'register_user'
@@ -168,7 +171,67 @@ class ProjectRegistrationProvider(object):
         method = config.get('registration.method', 'local')
         for ep in pkg_resources.iter_entry_points('pyforge.project_registration', method):
             return ep.load()()
-        return None
+
+    def register_neighborhood_project(self, neighborhood, user):
+        from pyforge import model as M
+        shortname=neighborhood.url_prefix[1:] + '__init__'
+        p = M.Project.query.get(
+            neighborhood_id=neighborhood._id,
+            shortname=shortname)
+        if p:
+            assert p.neighborhood == neighborhood, (
+                'Project %s exists in neighborhood %s' % (
+                    shortname, p.neighborhood.name))
+            return p
+        database = 'project:' + shortname.replace('/', ':').replace(' ', '_')
+        name = 'Home Project for %s' % neighborhood.name
+        p = M.Project(neighborhood_id=neighborhood._id,
+                    shortname=shortname,
+                    name=name,
+                    short_description='',
+                    description=('# ' + name + '\n\n'
+                                 + 'You can edit this description in the admin page'),
+                    database=database,
+                    last_updated = datetime.utcnow(),
+                    is_root=True)
+        try:
+            p.configure_project_database()
+            with h.push_config(c, project=p, user=user):
+                assert M.ProjectRole.query.find().count() == 0, \
+                    'Project roles already exist'
+                # Install default named roles (#78)
+                role_owner = M.ProjectRole(name='Admin')
+                role_developer = M.ProjectRole(name='Developer')
+                role_member = M.ProjectRole(name='Member')
+                role_auth = M.ProjectRole(name='*authenticated')
+                role_anon = M.ProjectRole(name='*anonymous')
+                # Setup subroles
+                role_owner.roles = [ role_developer._id ]
+                role_developer.roles = [ role_member._id ]
+                p.acl['create'] = [ role_owner._id ]
+                p.acl['read'] = [ role_owner._id, role_developer._id, role_member._id,
+                                  role_anon._id ]
+                p.acl['update'] = [ role_owner._id ]
+                p.acl['delete'] = [ role_owner._id ]
+                p.acl['tool'] = [ role_owner._id ]
+                p.acl['security'] = [ role_owner._id ]
+                pr = user.project_role()
+                pr.roles = [ role_owner._id, role_developer._id, role_member._id ]
+                # Setup builtin tool applications
+                p.install_app('wiki', 'home')
+                p.install_app('admin', 'admin')
+                ThreadLocalORMSession.flush_all()
+        except:
+            ThreadLocalORMSession.close_all()
+            log.exception('Error registering project, attempting to drop %s',
+                          database)
+            try:
+                session(p).impl.bind._conn.drop_database(database)
+            except:
+                log.exception('Error dropping database %s', database)
+                pass
+            raise
+        return p
 
     def register_project(self, neighborhood, shortname, user, user_project):
         '''Register a new project in the neighborhood.  The given user will

@@ -17,6 +17,7 @@ from ming import Session, mim
 from ming.orm.ormsession import ThreadLocalORMSession
 
 import pyforge
+from pyforge.lib import plugin
 from pyforge import model as M
 
 log = logging.getLogger(__name__)
@@ -89,6 +90,10 @@ def bootstrap(command, conf, vars):
                              url_prefix='/adobe/',
                              acl=dict(read=[None], create=[],
                                       moderate=[root._id], admin=[root._id]))
+    project_reg = plugin.ProjectRegistrationProvider.get()
+    p_projects = project_reg.register_neighborhood_project(n_projects, root)
+    p_users = project_reg.register_neighborhood_project(n_users, root)
+    p_adobe = project_reg.register_neighborhood_project(n_adobe, root)
     M.Theme(name='forge_default',
             label='Default Forge Theme',
             color1='#0088cc',
