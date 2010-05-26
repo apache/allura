@@ -58,23 +58,21 @@
     <script type="text/javascript">
       /*<![CDATA[*/
       $('span.removable').click(function(e){
-        var vals = $('#roles_form').serialize();
+        var vals = $('#roles_form').serializeArray();
         var del_name = $('input', this)[0].name.replace('.id','.delete');
-        $.post($('#roles_form')[0].action, vals+'&'+del_name+'=Del', function(){
+        vals.push({name:del_name, value:'Del'});
+        $.post($('#roles_form')[0].action, vals, function(){
           e.target.parentNode.removeChild(e.target);
         });
       });
       $('#roles_form').submit(function(e){
-        var vals = $(this).serialize();
+        var roles_form = $(this);
+        var vals = roles_form.serialize();
         $('td.add_role input', this).each(function(){
           if(this.value){
-            vals = vals+'&'+this.name.replace('.id','.add')+'=Add'
+            roles_form.append('<input type="hidden" name="'+this.name.replace('.id','.add')+'" value="Add"/>');
           }
         });
-        $.post(this.action, vals, function(){
-          window.location.reload();
-        });
-        return false;
       });
       /*]]>*/
     </script>
