@@ -21,7 +21,7 @@ class TestRootController(TestController):
         response = self.app.get('/')
         assert response.html.find('h1').string == 'All Projects'
         projects = response.html.findAll('ul',{'class':'display'})[0].findAll('li')
-        assert len(projects) == 10
+        assert len(projects) == 10, len(projects)
         assert projects[0].find('a').get('href') == '/adobe/'
         assert projects[1].find('img').get('alt') == 'adobe_1 Icon'
         cat_links = response.html.find('ul',{'id':'sidebarmenu'}).findAll('li')

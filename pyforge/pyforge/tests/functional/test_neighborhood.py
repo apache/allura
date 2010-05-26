@@ -9,6 +9,23 @@ from pyforge.tests import TestController
 
 class TestNeighborhood(TestController):
 
+    def test_home_project(self):
+        r = self.app.get('/adobe/home/')
+        assert r.location.endswith('/adobe/home/HomeHome/')
+        r = r.follow()
+        assert 'Welcome' in str(r), str(r)
+        r = self.app.get('/adobe/admin/')
+        assert r.location.endswith('/adobe/admin/overview')
+        r = r.follow()
+        assert 'admin' in str(r), str(r)
+
+    def test_redirect(self):
+        r = self.app.post('/adobe/_admin/update',
+                          params=dict(redirect='home/HomeHome/'),
+                          extra_environ=dict(username='root'))
+        r = self.app.get('/adobe/')
+        assert r.location.endswith('/adobe/home/HomeHome/')
+
     def test_admin(self):
         r = self.app.get('/adobe/_admin/', extra_environ=dict(username='root'))
         r = self.app.post('/adobe/_admin/update_acl',

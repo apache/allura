@@ -91,9 +91,9 @@ def bootstrap(command, conf, vars):
                              acl=dict(read=[None], create=[],
                                       moderate=[root._id], admin=[root._id]))
     project_reg = plugin.ProjectRegistrationProvider.get()
-    p_projects = project_reg.register_neighborhood_project(n_projects, root)
-    p_users = project_reg.register_neighborhood_project(n_users, root)
-    p_adobe = project_reg.register_neighborhood_project(n_adobe, root)
+    p_projects = project_reg.register_neighborhood_project(n_projects, [root])
+    p_users = project_reg.register_neighborhood_project(n_users, [root])
+    p_adobe = project_reg.register_neighborhood_project(n_adobe, [root])
     M.Theme(name='forge_default',
             label='Default Forge Theme',
             color1='#0088cc',

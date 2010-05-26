@@ -221,8 +221,9 @@ class ProjectRegistrationProvider(object):
                         pr = user.project_role()
                         pr.roles = [ role_owner._id, role_developer._id, role_member._id ]
                         # Setup builtin tool applications
-                        p.install_app('wiki', 'home')
-                        p.install_app('admin', 'admin')
+                with h.push_config(c, user=users[0]):
+                    p.install_app('wiki', 'home')
+                    p.install_app('admin', 'admin')
                 ThreadLocalORMSession.flush_all()
         except:
             ThreadLocalORMSession.close_all()

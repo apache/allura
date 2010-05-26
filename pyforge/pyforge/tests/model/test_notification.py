@@ -168,5 +168,6 @@ def _clear_subscriptions():
         for s in subs.subscriptions:
             M.Mailbox.query.remove(dict(_id=s.mailbox_id))
         subs.subscriptions = []
+        M.Mailbox.query.remove({})
 
 
