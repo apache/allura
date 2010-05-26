@@ -17,7 +17,7 @@
     <h1 class="title">$title</h1>
     <div id="grid">
       <py:if test="text">${Markup(text)}</py:if>
-      <div class="switch">
+      <div class="switch" py:if="neighborhood.allow_browse">
         <div id="radio0" class="ui-button-set" style="float: left">
           <input type="radio" id="radio01" name="radio" style="display: none;" class="list" /><label for="radio01" class="ui-corner-left ui-button ui-widget ui-state-default ui-button-icon-only"><span class="ui-button-icon-primary ui-icon ui-icon-list">List</span><span class="ui-button-text">List</span></label> <input type="radio" id="radio02" name="radio" checked="checked" style="display: none;" class="grid" /><label for="radio02" class="ui-corner-right ui-button ui-widget ui-state-default ui-button-icon-only ui-state-active"><span class="ui-button-icon-primary ui-icon ui-icon-grid">Grid</span><span class="ui-button-text">Grid</span></label>
         </div>
@@ -36,16 +36,18 @@
       <div class="span-16 tright last">
         <a href="?offset=15">Next →</a>
       </div> -->
-      <p py:if="not len(projects)">No projects found</p>
-      <ul class="display thumb_view" py:if="len(projects)" style="clear: both">
-        <li py:for="project in projects">
-          ${c.project_summary.display(value=project)}
-        </li>
-      </ul>
+      <py:if test="neighborhood.allow_browse">
+        <p py:if="not len(projects)">No projects found</p>
+        <ul class="display thumb_view" py:if="len(projects)" style="clear: both">
+          <li py:for="project in projects">
+            ${c.project_summary.display(value=project)}
+          </li>
+        </ul>
+      </py:if>
     </div>
     
   </body>
-  <script type="text/javascript">
+  <script type="text/javascript" py:if="neighborhood.allow_browse">
 	$(document).ready(function() {
 		$("div.switch input.grid").click(function(){
 			 $(this).next().addClass('ui-state-active');
