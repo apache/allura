@@ -30,7 +30,7 @@ from pyforge.app import Application, ConfigOption, SitemapEntry, DefaultAdminCon
 from pyforge.lib import helpers as h
 from pyforge.lib.search import search
 from pyforge.lib.decorators import audit, react
-from pyforge.lib.security import require, has_artifact_access
+from pyforge.lib.security import require, has_artifact_access, has_project_access
 from pyforge.model import Project, ProjectRole, User, ArtifactReference, Feed
 
 # Local imports
@@ -148,6 +148,9 @@ class HgAdminController(DefaultAdminController):
 
 class RootController(object):
 
+    def _check_security(self):
+        require(has_artifact_access('read'))
+
     @expose('forgehg.templates.index')
     def index(self, offset=0, branch=None, tag=None):
         offset=int(offset)
@@ -179,6 +182,7 @@ class RootController(object):
         ThreadLocalORMSession.flush_all()
         ThreadLocalORMSession.close_all()
         to_project = Project.query.get(shortname=to_project_name)
+        require(has_project_access('tool', to_project))
         with h.push_config(c, project=to_project):
             if request.method!='POST' or to_name is None:
                 prefix_len = len(to_project_name+'/')

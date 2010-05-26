@@ -119,6 +119,9 @@ class SVNAdminController(DefaultAdminController):
 
 class RootController(object):
 
+    def _check_security(self):
+        require(has_artifact_access('read'))
+
     @expose('forgesvn.templates.index')
     def index(self, offset=0):
         offset=int(offset)

@@ -185,6 +185,9 @@ class RootController(object):
         setattr(self, 'feed.rss', self.feed)
         self._discuss = AppDiscussionController()
 
+    def _check_security(self):
+        require(has_artifact_access('read'))
+
     @expose('forgewiki.templates.index')
     def index(self):
         redirect(c.app.root_page_name+'/')

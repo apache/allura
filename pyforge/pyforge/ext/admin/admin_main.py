@@ -174,7 +174,15 @@ class ProjectAdminController(object):
         return app.admin, remainder
 
     @expose()
-    def update(self, name=None, short_description=None, description=None, icon=None, screenshot=None, category=None, **kw):
+    def update(self, name=None,
+               short_description=None,
+               description=None,
+               icon=None,
+               screenshot=None,
+               category=None,
+               **kw):
+        require(has_project_access('update'), 'Update access required')
+
         if 'delete_icon' in kw:
             M.ProjectFile.query.remove({'metadata.project_id':c.project._id, 'metadata.category':'icon'})
             redirect('.')
@@ -246,6 +254,7 @@ class ProjectAdminController(object):
 
     @expose()
     def join_neighborhood(self, nid):
+        require(has_project_access('update'), 'Update access required')
         if not nid:
             n = M.Neighborhood.query.get(name='Projects')
             c.project.neighborhood_id = n._id
@@ -267,9 +276,11 @@ class ProjectAdminController(object):
         if tool is None: tool = []
         for sp in subproject:
             if sp.get('delete'):
+                require(has_project_access('delete'), 'Delete access required')
                 M.Project.query.get(shortname=sp['shortname']).delete()
         for p in tool:
             if p.get('delete'):
+                require(has_project_access('tool'), 'Delete access required')
                 c.project.uninstall_app(p['mount_point'])
         if new and new.get('install'):
             ep_name = new['ep_name']

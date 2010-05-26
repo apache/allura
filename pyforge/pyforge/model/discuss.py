@@ -395,8 +395,10 @@ class Post(Message, VersionedArtifact):
             g.publish('react', 'Discussion.new_thread', dict(thread_id=thd._id))
         self.give_access('moderate', user=self.author())
         self.commit()
-        if c.app.config.options.get('PostingPolicy') == 'ApproveOnceModerated':
-            c.app.config.grant_permission('unmoderated_post', self.author())
+        author = self.author()
+        if (c.app.config.options.get('PostingPolicy') == 'ApproveOnceModerated'
+            and author._id != None):
+            c.app.config.grant_permission('unmoderated_post', author)
         g.publish('react', 'Discussion.new_post', dict(post_id=self._id))
         artifact = self.thread.artifact or self.thread
         Notification.post(artifact, 'message', post=self)

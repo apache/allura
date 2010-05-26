@@ -10,7 +10,7 @@ from pymongo.bson import ObjectId
 from ming.orm.base import session
 
 from pyforge.app import Application, ConfigOption, SitemapEntry, DefaultAdminController
-from pyforge.lib.security import require, has_artifact_access
+from pyforge.lib.security import require, has_artifact_access, has_project_access, require_authenticated
 from pyforge.model import ProjectRole
 from pyforge.lib.search import search
 from pyforge.lib import helpers as h
@@ -28,6 +28,9 @@ class RootController(object):
         forum_subscription_form=FW.ForumSubscriptionForm()
         subscription_form=DW.SubscriptionForm(show_discussion_email=True, allow_create_thread=True, show_subject=True)
         announcements_table=FW.AnnouncementsTable()
+
+    def _check_security(self):
+        require(has_artifact_access('read'))
 
     @expose('forgediscussion.templates.index')
     def index(self):
@@ -82,6 +85,7 @@ class RootController(object):
     @expose()
     @validate(W.forum_subscription_form)
     def subscribe(self, **kw):
+        require_authenticated()
         forum = kw.pop('forum', [])
         thread = kw.pop('thread', [])
         objs = []

@@ -81,6 +81,7 @@ class UserProfileController(object):
     @h.vardec
     @expose()
     def update_configuration(self, divs=None, layout_class=None, new_div=None, **kw):
+        require(has_project_access('update'), 'Update access required')
         config = M.PortalConfig.current()
         config.layout_class = layout_class
         # Handle updated and deleted divs

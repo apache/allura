@@ -66,6 +66,9 @@ class ForgeLinkApp(Application):
 
 class RootController(object):
 
+    def _check_security(self):
+        require(has_artifact_access('read'))
+
     @expose('forgelink.templates.index')
     def index(self):
         url = c.app.config.options.get('url')
@@ -77,5 +80,4 @@ class LinkAdminController(DefaultAdminController):
 
     @expose()
     def index(self):
-        print 'a'
         redirect('options')
