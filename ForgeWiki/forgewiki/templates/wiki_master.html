@@ -22,7 +22,7 @@
         <div class="span-5 last"><input type="text" name="name" class="title wide"/></div>
       </form>
     </div>
+    <py:for each="blob in resource_manager.emit('body_js')">$blob</py:for>
+    <script type="text/javascript" src="${g.app_static('js/wiki.js')}"></script>
   </body>
-  <py:for each="blob in resource_manager.emit('body_js')">$blob</py:for>
-  <script type="text/javascript" src="${g.app_static('js/wiki.js')}"></script>
 </html>
