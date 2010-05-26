@@ -1,13 +1,4 @@
 <div xmlns="http://www.w3.org/1999/xhtml"
      xmlns:py="http://genshi.edgewall.org/">
   <textarea class="sf_markdown_edit" name="$name">$value</textarea>
-
-  <script type="text/javascript">
-      /*<![CDATA[*/
-      $(window).load(function() {
-          markdownSettings.previewParserPath = "/nf/markdown_to_html?project=${c.project and c.project.shortname or ''}"+
-            "&app=${(c.project and c.app) and c.app.config.options['mount_point'] or ''}";
-      });
-      /*]]>*/
-  </script>
 </div>

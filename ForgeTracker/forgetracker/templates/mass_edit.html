@@ -45,9 +45,6 @@
             </tr>
           </tbody>
         </table>
-        <script type="text/javascript">
-            $('tbody.ticket-list').children(':even').addClass('even');
-        </script>
 
         <h2>Update</h2>
         <div id="update-values">
@@ -89,6 +86,9 @@
         <button onclick="update_tickets()">Update Tickets</button>
         <span id="result"></span>
   </body>
+  <script type="text/javascript">
+      $('tbody.ticket-list').children(':even').addClass('even');
+  </script>
   <script type="text/javascript">
 var q="${Markup(q)}", count=$count, limit=$limit, page=$page, sort="${Markup(sort)}";
   </script>

@@ -19,6 +19,12 @@ class MarkdownEdit(ew.InputField):
         yield ew.resource.CSSLink('css/markitup.css', compress=False)
         yield ew.resource.CSSLink('css/markitup_markdown.css', compress=False)
         yield ew.resource.CSSLink('css/markitup_sf.css')
+        yield ew.JSScript('''
+          $(window).load(function() {
+              markdownSettings.previewParserPath = "/nf/markdown_to_html?project=%s"+
+                "&app=%s";
+          });
+        ''' % (c.project and c.project.shortname or '', (c.project and c.app) and c.app.config.options['mount_point'] or ''))
 
 class UserTagEdit(ew.InputField):
     template='genshi:pyforge.lib.widgets.templates.user_tag_edit'
@@ -31,6 +37,15 @@ class UserTagEdit(ew.InputField):
 
     def resources(self):
         yield ew.resource.JSLink('js/jquery.tag.editor.js')
+        yield ew.JSScript('''
+        $(window).load(function(){
+          $('input.user_tag_edit').tagEditor({
+            confirmRemoval: false,
+            completeOnSeparator: true,
+            completeOnBlur: true
+          });
+        });
+        ''')
 
 class LabelEdit(ew.InputField):
     template='genshi:pyforge.lib.widgets.templates.label_edit'
@@ -43,6 +58,15 @@ class LabelEdit(ew.InputField):
 
     def resources(self):
         yield ew.resource.JSLink('js/jquery.tag.editor.js')
+        yield ew.JSScript('''
+        $(window).load(function(){
+          $('input.label_edit').tagEditor({
+            confirmRemoval: false,
+            completeOnSeparator: true,
+            completeOnBlur: true
+          });
+        });
+        ''')
 
 class ProjectUserSelect(ew.InputField):
     template='genshi:pyforge.lib.widgets.templates.project_user_select'
@@ -56,6 +80,27 @@ class ProjectUserSelect(ew.InputField):
       if not isinstance(self.value, list):
           self.value=[self.value]
       super(ProjectUserSelect, self).__init__(**kw)
+
+    def resources(self):
+        for r in super(ProjectUserSelect, self).resources(): yield r
+        yield ew.JSScript('''
+        $(window).load(function(){
+          $('input.project_user_select').autocomplete({
+            source: function(request, response) {
+              $.ajax({
+                url: "%suser_search",
+                dataType: "json",
+                data: {
+                  term: request.term
+                },
+                success: function(data) {
+                  response(data.users);
+                }
+              });
+            },
+            minLength: 2
+          });
+        });''' % c.project.url())
 
 class AttachmentList(ew.Widget):
     template='genshi:pyforge.lib.widgets.templates.attachment_list'

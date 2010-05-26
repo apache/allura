@@ -1,13 +1,4 @@
 <div xmlns="http://www.w3.org/1999/xhtml"
   xmlns:py="http://genshi.edgewall.org/">
-  <input id="$name" name="$name" type="text" value="${value and ','.join(value) or ''}" class="$className" />
-  <script type="text/javascript">
-    $(window).load(function(){
-      $(document.getElementById("$name")).tagEditor({
-        confirmRemoval: false,
-        completeOnSeparator: true,
-        completeOnBlur: true
-      });
-    });
-  </script>
+  <input id="$name" name="$name" type="text" value="${value and ','.join(value) or ''}" class="label_edit $className" />
 </div>

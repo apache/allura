@@ -30,9 +30,6 @@
 		<div class="span-6 last">
 			<p>
         <div id="download-button"></div>
-        <script>
-            jQuery("#download-button").load("${c.project.oldforge_url()}best_release.html");
-        </script>
 			</p>
       <div class="span-6 last" id="sidebar-right">
         <div class="span-2 tright"><b>Awards:</b></div>
@@ -68,4 +65,7 @@
 	    <div class="clear"></div>
     </div>
   </body>
+  <script type="text/javascript">
+      $("#download-button").load("${c.project.oldforge_url()}best_release.html");
+  </script>
 </html>
