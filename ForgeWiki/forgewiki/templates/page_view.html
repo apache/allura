@@ -4,6 +4,7 @@
       xmlns:py="http://genshi.edgewall.org/"
       xmlns:xi="http://www.w3.org/2001/XInclude">
   <xi:include href="wiki_master.html"/>
+  <?python from pyforge.lib import helpers as h?>
 
   <head>
     <meta content="text/html; charset=UTF-8" http-equiv="content-type" py:replace="''"/>
@@ -20,21 +21,51 @@
   </head>
   
   <body>
-    <br style="clear:both"/>
-    <h1 class="title">$page.title</h1>
-    <a href="${page.email_link(page.title)}">Email Page</a>
-    <div>
+    <div class="span-11 append-1">
+      <h1 class="title">$page.title</h1>
       ${Markup(page.html_text)}
     </div>
-    <div py:if="len(page.labels)">
-    Tags: <span py:for="label in page.labels"><a href="../browse_tags">$label (${page.artifacts_labeled_with(label).count()})</a></span>
+    <div id="sidebar-right" class="span-7 last">
+      <div py:if="len(page.labels)">
+        Tags: <span py:for="label in page.labels"><a href="../browse_tags">$label (${page.artifacts_labeled_with(label).count()})</a></span>
+        <hr/>
+      </div>
+      <div class="gravatar sm">
+        Authors:
+        <a href="${author.url()}" py:for="author in page.authors()">
+          ${gravatar(author.preferences.email_address, size=16, title=author.display_name)}
+        </a>
+      </div>
+      ${}
+      <div py:if="page.attachments">
+        <hr/>
+        <strong>Attachments</strong>
+      </div>
+      <py:for each="att in page.attachments">
+        <hr/>
+        <div py:if="h.supported_by_PIL(att.contentType)" class="attachment_thumb">
+          <a href="${att.url()}">
+            <img src="${att.url()}/thumb"/>
+          </a><br/>
+          <a href="${att.url()}">${att.metadata.filename}</a>
+          ($att.length bytes)
+        </div>
+        <div py:if="not h.supported_by_PIL(att.contentType)">
+          <a href="${att.url()}">${att.metadata.filename}</a>
+          ($att.length bytes)
+        </div>
+      </py:for>
     </div>
-    ${c.attachment_list.display(attachments=list(page.attachments), edit_mode=False)}
     <hr/>
     <div py:if="page.discussion_thread()" py:with="thread=page.discussion_thread()" id="#comment">
       <h2><a href="${thread.url()}">Discussion</a></h2>
       ${c.thread.display(value=thread)}
     </div>
-    ${c.subscribe_form.display(value=subscribed, action='subscribe')}
+    <a title="Email Page" href="${page.email_link(page.title)}"
+       class="artifact_email ui-button ui-widget ui-state-default ui-corner-all ui-button-icon-only">
+      <span class="ui-button-icon-primary ui-icon ui-icon-mail-closed"></span>
+      <span class="ui-button-text">Email Page</span>
+    </a>
+    ${c.subscribe_form.display(value=subscribed, action='subscribe', style='icon')}
   </body>
 </html>

@@ -69,7 +69,7 @@ class TestRootController(TestController):
         self.app.get('/wiki/TEST/index/')
         self.app.get('/wiki/TEST/revert?version=1')
         response = self.app.get('/wiki/TEST/')
-        assert 'You are currently subscribed' in response
+        assert 'Unsubscribe' in response
         response = self.app.get('/wiki/TEST/diff?v1=0&v2=0')
         assert 'TEST' in response
 
@@ -141,7 +141,7 @@ class TestRootController(TestController):
         r = self.app.get('/wiki/TEST/attachment/'+filename+'/thumb')
 
         thumbnail = Image.open(StringIO.StringIO(r.body))
-        assert thumbnail.size == (150,150)
+        assert thumbnail.size == (255,255)
 
     def test_sidebar_static_page(self):
         response = self.app.get('/wiki/TEST/')

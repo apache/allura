@@ -12,7 +12,7 @@ from ming.orm.base import state, session
 from ming.orm.mapped_class import MappedClass
 from ming.orm.property import FieldProperty, ForeignIdProperty, RelationProperty
 
-from pyforge.model import VersionedArtifact, Snapshot, Message, File, Feed, Thread, Post
+from pyforge.model import VersionedArtifact, Snapshot, Message, File, Feed, Thread, Post, User
 from pyforge.model import Notification
 from pyforge.lib import helpers as h
 
@@ -139,6 +139,16 @@ class Page(VersionedArtifact):
     def html_text(self):
         """A markdown processed version of the page text"""
         return g.markdown_wiki.convert(self.text)
+
+    def authors(self):
+        """All the users that have edited this page"""
+        def uniq(users):
+            t = {}
+            for user in users:
+                t[user.username] = user.id
+            return t.values()
+        user_ids = uniq([r.author for r in self.history().all()])
+        return User.query.find({'_id':{'$in':user_ids}}).all()
 
 class Attachment(File):
     class __mongometa__:

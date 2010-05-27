@@ -112,11 +112,10 @@ class ForgeWikiApp(Application):
         related_urls = []
         page = request.path_info.split(self.url)[-1].split('/')[-2]
         page = model.Page.query.find(dict(app_config_id=self.config._id,title=page)).first()
-        links = [SitemapEntry('Home',c.app.url, ui_icon='home'),
-                 SitemapEntry('Discuss', c.app.url + '_discuss/', ui_icon='comment'),
-                 SitemapEntry('Create New Page', c.app.url, ui_icon='plus', className='add_wiki_page') ]
+        links = [SitemapEntry('Create New Page', c.app.url, ui_icon='plus', className='add_wiki_page') ]
         if page:
-            links.append(SitemapEntry('Edit this page','edit', ui_icon='check'))
+            links.append(SitemapEntry('Edit this page','edit', ui_icon='pencil'))
+            links.append(SitemapEntry('View History','history', ui_icon='search'))
             for aref in page.references+page.backreferences.values():
                 artifact = ArtifactReference(aref).to_artifact()
                 if isinstance(artifact, model.Page) and artifact.url() not in related_urls:
@@ -125,12 +124,10 @@ class ForgeWikiApp(Application):
         if len(related_pages):
             links.append(SitemapEntry('Related Pages'))
             links = links + related_pages
-        links.append(SitemapEntry('Wiki Nav'))
-        if page:
-            links.append(SitemapEntry('View History','history', className='nav_child'))
         links = links + [
-		    SitemapEntry('Browse Pages',c.app.url+'browse_pages/', className='nav_child'),
-		    SitemapEntry('Browse Tags',c.app.url+'browse_tags/', className='nav_child'),
+            SitemapEntry('Wiki Home',c.app.url),
+            SitemapEntry('Browse Pages',c.app.url+'browse_pages/'),
+		    SitemapEntry('Browse Tags',c.app.url+'browse_tags/'),
 		    SitemapEntry('Help'),
 		    SitemapEntry('Wiki Help',c.app.url+'wiki_help/', className='nav_child'),
 		    SitemapEntry('Markdown Syntax',c.app.url+'markdown_syntax/', className='nav_child')
@@ -478,7 +475,7 @@ class PageController(object):
                 fp_name = fp.name
                 image.save(fp, format)
             image = h.square_image(image)
-            image.thumbnail((150, 150), Image.ANTIALIAS)
+            image.thumbnail((255, 255), Image.ANTIALIAS)
             with model.Attachment.create(
                 content_type=content_type,
                 filename=fp_name,

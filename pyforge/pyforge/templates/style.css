@@ -852,3 +852,15 @@ ul#sidebarmenu li a.sidebar_thread_spam{display:none;}
     -moz-border-radius:0.7em;
     -webkit-border-radius:0.7em;
 }
+
+#content{
+    position: relative;
+}
+.artifact_subscribe, .artifact_unsubscribe, .artifact_email{
+    position: absolute;
+    top: 5px;
+    left: 398px;
+}
+.artifact_email{
+    left: 430px;
+}
