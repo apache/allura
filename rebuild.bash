@@ -34,7 +34,3 @@ echo '# setup ForgeWiki...'
 pushd ForgeWiki
 python setup.py develop
 popd
-echo '# setup HelloForge...'
-pushd HelloForge
-python setup.py develop
-popd

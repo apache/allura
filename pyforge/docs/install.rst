@@ -102,9 +102,7 @@ Once this is done, we'll check out & set up out forge codebase::
     (anvil)~/src/forge/ForgeTracker$ python setup.py develop
     (anvil)~/src/forge/ForgeTracker$ cd ../ForgeWiki
     (anvil)~/src/forge/ForgeWiki$ python setup.py develop
-    (anvil)~/src/forge/ForgeWiki$ cd ../HelloForge
-    (anvil)~/src/forge/HelloForge$ python setup.py develop
-    (anvil)~/src/forge/HelloForge$ cd ..
+    (anvil)~/src/forge/ForgeWiki$ cd ..
 
 Hopefully everything completed without errors.
 
