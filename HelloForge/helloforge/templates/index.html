@@ -1,0 +1,30 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" 
+                      "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:py="http://genshi.edgewall.org/"
+      xmlns:xi="http://www.w3.org/2001/XInclude">
+
+  <xi:include href="${g.pyforge_templates}/master.html"/>
+
+  <head>
+    <meta content="text/html; charset=UTF-8" http-equiv="content-type" py:replace="''"/>
+    <title>HelloForge Index Page</title>
+  </head>
+  
+  <body>
+    <h1>Welcome to HelloForge</h1>
+    <h2>Project: $c.project.shortname</h2>
+    <form method="GET" ACTION="new_page">
+      New Page Title: <input name="title"/><br/>
+    </form>
+    <h2>The message is <span style="background-color:#fdd">$message</span></h2>
+    <a href="Root/">Root Page</a>
+    <p>The app config follows</p>
+    <dl>
+      <py:for each="name, value in c.app.config.options.iteritems()">
+        <dt>$name</dt>
+        <dd>$value</dd>
+      </py:for>
+    </dl>
+  </body>
+</html>
