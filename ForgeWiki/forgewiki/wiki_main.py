@@ -10,6 +10,7 @@ import Image
 import pkg_resources
 from tg import expose, validate, redirect, response
 from tg.decorators import with_trailing_slash, without_trailing_slash
+from tg.controllers import RestController
 from pylons import g, c, request
 from formencode import validators
 from pymongo import bson
@@ -59,6 +60,7 @@ class ForgeWikiApp(Application):
     def __init__(self, project, config):
         Application.__init__(self, project, config)
         self.root = RootController()
+        self.api_root = RootRestController()
 
     def has_access(self, user, topic):
         return has_artifact_access('post', user=user)
@@ -565,3 +567,31 @@ Some *emphasized* and **strong** text
 #### Fourth-level heading
 
 '''
+
+class RootRestController(RestController):
+
+    @expose('json:')
+    def get_one(self, title):
+        page = model.Page.query.get(app_config_id=c.app.config._id, title=title)
+        if page is None:
+            raise exc.HTTPNotFound, title
+        require(has_artifact_access('read', page))
+        return dict(title=page.title, text=page.text, tags=page.tags, labels=page.labels)
+
+    @h.vardec
+    @expose()
+    def post(self, title, **post_data):
+        exists = model.Page.query.find(dict(app_config_id=c.app.config._id, title=title)).first()
+        if not exists:
+            require(has_artifact_access('create'))
+        page = model.Page.upsert(title)
+        if not exists:
+            page.viewable_by = ['all']
+        require(has_artifact_access('edit', page))
+        page.text = post_data['text']
+        if 'labels' in post_data:
+            page.labels = post_data['labels'].split(',')
+        page.commit()
+        if 'tags' in post_data:
+            tags = post_data['tags']
+            h.tag_artifact(page, c.user, tags.split(',') if tags else [])
