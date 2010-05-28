@@ -88,7 +88,8 @@ class Bin(Artifact):
     terms = FieldProperty(str, if_missing='')
 
     def url(self):
-        return self.app_config.url() + 'search/?q=' + urllib.quote_plus(str(self.terms))
+        base = self.app_config.url() + 'search/?'
+        return base + urllib.urlencode(dict(q=(self.terms or '')))
 
     def shorthand_id(self):
         return self.summary
@@ -135,7 +136,7 @@ class Ticket(VersionedArtifact):
             status_s=self.status,
             text=self.description)
         for k,v in self.custom_fields.iteritems():
-            result[k + '_s'] = str(v)
+            result[k + '_s'] = unicode(v)
         if self.reported_by:
             result['reported_by_s'] = self.reported_by.username
         if self.assigned_to:

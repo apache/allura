@@ -340,9 +340,9 @@ class AttachmentController(object):
             if delete: self.attachment.delete()
             redirect(request.referer)
         with self.attachment.open() as fp:
-            filename = fp.metadata['filename']
+            filename = fp.metadata['filename'].encode('utf-8')
             response.headers['Content-Type'] = ''
-            response.content_type = fp.content_type
+            response.content_type = fp.content_type.encode('utf-8')
             if not embed:
                 response.headers.add('Content-Disposition',
                                      'attachment;filename=%s' % filename)

@@ -91,9 +91,9 @@ class ForumController(DiscussionController):
     @expose()
     def icon(self):
         with self.discussion.icon.open() as fp:
-            filename = fp.metadata['filename']
+            filename = fp.metadata['filename'].encode('utf-8')
             response.headers['Content-Type'] = ''
-            response.content_type = fp.content_type
+            response.content_type = fp.content_type.encode('utf-8')
             response.headers.add('Content-Disposition',
                                      'attachment;filename=%s' % filename)
             return fp.read()

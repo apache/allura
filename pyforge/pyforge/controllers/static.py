@@ -67,9 +67,9 @@ class StaticAppController(object):
         path = os.path.join(self.fn, '/'.join(args))
         mtype, menc = mimetypes.guess_type(path)
         if mtype:
-            response.headers['Content-Type'] = mtype
+            response.headers['Content-Type'] = mtype.encode('utf-8')
         if menc: # pragma no cover
-            response.headers['Content-Encoding'] = menc
+            response.headers['Content-Encoding'] = menc.encode('utf-8')
         try:
             return open(path, 'rb')
         except IOError:
