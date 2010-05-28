@@ -1,13 +1,14 @@
 from os import path, environ
 
 import mock
+from nose.tools import assert_raises
 
 from tg import config
 from paste.deploy import loadapp
 from paste.script.appinstall import SetupCommand
 from pylons import c, g
 
-from pyforge.command import reactor
+from pyforge.command import reactor, script
 from pyforge import model as M
 from pyforge.tests import helpers
 
@@ -89,3 +90,9 @@ def test_send_message():
     cmd.options.context = None
     cmd.command()
 
+def test_script():
+    cmd = script.ScriptCommand('script')
+    cmd.args = [ test_config, 'pyforge/tests/tscript.py' ]
+    cmd.command()
+    cmd.args = [ test_config, 'pyforge/tests/tscript_error.py' ]
+    assert_raises(ValueError, cmd.command)

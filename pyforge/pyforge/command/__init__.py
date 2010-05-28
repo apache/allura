@@ -3,3 +3,4 @@ from reactor import ReactorSetupCommand
 from reactor import ReactorCommand
 from reactor import SendMessageCommand
 from show_models import ShowModelsCommand, ReindexCommand
+from script import ScriptCommand

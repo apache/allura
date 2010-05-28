@@ -84,5 +84,5 @@ def roles_with_project_access(access_type, project=None):
             else:
                 new_roles.append(r)
         roles =new_roles
-    return M.ProjectRole.query.find(dict(_id={'$in':result})).all()
+    return M.ProjectRole.query.find(dict(_id={'$in':list(result)})).all()
 

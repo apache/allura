@@ -94,6 +94,7 @@ setup(
     sendmsg = pyforge.command:SendMessageCommand
     models = pyforge.command:ShowModelsCommand
     reindex = pyforge.command:ReindexCommand
+    script = pyforge.command:ScriptCommand
     flyway = flyway.command:MigrateCommand
     
     [easy_widgets.resources]
