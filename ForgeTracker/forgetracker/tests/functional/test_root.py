@@ -423,14 +423,14 @@ class TestFunctionalController(TestController):
 
     def test_paging_prefs_saved(self):
         req = self.app.get('/bugs/search/')
-        'Showing 100 results per page' not in req
-        'Showing 25 results per page' in req
+        assert 'Showing 100 results per page' not in req
+        assert 'Showing 25 results per page' in req
         req = self.app.get('/bugs/search/?limit=100')
-        'Showing 100 results per page' in req
-        'Showing 25 results per page' not in req
+        assert 'Showing 100 results per page' in req
+        assert 'Showing 25 results per page' not in req
         req = self.app.get('/bugs/search/')
-        'Showing 100 results per page' in req
-        'Showing 25 results per page' not in req
+        assert 'Showing 100 results per page' in req
+        assert 'Showing 25 results per page' not in req
 
 
 def sidebar_contains(response, text):
