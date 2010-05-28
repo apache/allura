@@ -8,6 +8,7 @@ from urllib import urlencode, unquote
 # Non-stdlib imports
 import pkg_resources
 import Image
+import tg
 from tg import tmpl_context
 from tg import expose, validate, redirect, flash
 from tg import request, response
@@ -211,7 +212,18 @@ class RootController(object):
             count<=limit in the result
         limit=-1 is NOT recognized as 'all'.  500 is a reasonable limit.
         """
-        limit = limit or 10
+
+        if limit:
+            if c.user in (None, User.anonymous()):
+                tg.session['results_per_page'] = limit
+                tg.session.save()
+            else:
+                c.user.preferences.results_per_page = limit
+        else:
+            if c.user in (None, User.anonymous()):
+                limit = 'results_per_page' in tg.session and tg.session['results_per_page'] or 25
+            else:
+                limit = c.user.preferences.results_per_page or 25
         sort = sort or 'ticket_num_i desc'
         page = max(page, 0)
         start = page * limit

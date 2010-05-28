@@ -150,6 +150,7 @@ class User(MappedClass):
     password=FieldProperty(str)
     projects=FieldProperty([S.ObjectId])
     preferences=FieldProperty(dict(
+            results_per_page=int,
             email_address=str,
             email_format=str))
     tool_preferences=FieldProperty({str:{str:None}}) # full mount point: prefs dict
