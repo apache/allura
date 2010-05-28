@@ -108,7 +108,7 @@ class UserProfileController(object):
                     content=content))
         redirect('configuration')
 
-    @expose('json')
+    @expose('json:')
     def permissions(self, repo_path=None, **kw):
         """Expects repo_path to be a filesystem path like
             <tool>/<project>.<neighborhood>/reponame[.git]

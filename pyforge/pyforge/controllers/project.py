@@ -272,7 +272,7 @@ class ProjectController(object):
             return fp.read()
         return c.project.icon.filename
 
-    @expose('json')
+    @expose('json:')
     def user_search(self,term=''):
         name_regex = re.compile('(?i)%s' % term)
         users = M.User.query.find({
