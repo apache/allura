@@ -33,9 +33,6 @@ class UnderToDash(Migration):
 
     def up(self):
         def fixup(s):
-            if '_' in s:
-                print s
-                import pdb; pdb.set_trace()
             return s.replace('_', '-')
         fix_pathnames(self.ormsession,fixup)
 
