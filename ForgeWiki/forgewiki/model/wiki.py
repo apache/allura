@@ -13,10 +13,22 @@ from ming.orm.mapped_class import MappedClass
 from ming.orm.property import FieldProperty, ForeignIdProperty, RelationProperty
 
 from pyforge.model import VersionedArtifact, Snapshot, Message, File, Feed, Thread, Post, User
-from pyforge.model import Notification
+from pyforge.model import Notification, project_orm_session
 from pyforge.lib import helpers as h
 
 common_suffix = tg.config.get('forgemail.domain', '.sourceforge.net')
+
+class Globals(MappedClass):
+
+    class __mongometa__:
+        name = 'wiki-globals'
+        session = project_orm_session
+
+    type_s = 'WikiGlobals'
+    _id = FieldProperty(schema.ObjectId)
+    app_config_id = ForeignIdProperty('AppConfig', if_missing=lambda:context.app.config._id)
+    root = FieldProperty(str)
+
 
 class PageHistory(Snapshot):
     class __mongometa__:

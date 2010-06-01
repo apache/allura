@@ -8,7 +8,7 @@ from urllib import urlencode, unquote
 # Non-stdlib imports
 import Image
 import pkg_resources
-from tg import expose, validate, redirect, response
+from tg import expose, validate, redirect, response, flash
 from tg.decorators import with_trailing_slash, without_trailing_slash
 from tg.controllers import RestController
 from pylons import g, c, request
@@ -20,7 +20,7 @@ from ming.orm.base import mapper
 from pymongo.bson import ObjectId
 
 # Pyforge-specific imports
-from pyforge.app import Application, ConfigOption, SitemapEntry
+from pyforge.app import Application, ConfigOption, SitemapEntry, DefaultAdminController
 from pyforge.lib import helpers as h
 from pyforge.lib.search import search
 from pyforge.lib.decorators import audit, react
@@ -61,6 +61,7 @@ class ForgeWikiApp(Application):
         Application.__init__(self, project, config)
         self.root = RootController()
         self.api_root = RootRestController()
+        self.admin = WikiAdminController(self)
 
     def has_access(self, user, topic):
         return has_artifact_access('post', user=user)
@@ -94,8 +95,17 @@ class ForgeWikiApp(Application):
             data, serializer='yaml')
 
     @property
-    def root_page_name(self):
+    def default_root_page_name(self):
         return self.config.options.mount_point.title() + 'Home'
+
+    @property
+    def root_page_name(self):
+        globals = model.Globals.query.get(app_config_id=self.config._id)
+        if globals is not None:
+            page_name = globals.root
+        else:
+            page_name = self.default_root_page_name
+        return page_name
 
     @property
     @h.exceptionless([], log)
@@ -108,6 +118,11 @@ class ForgeWikiApp(Application):
                         app_config_id=self.config._id)) ]
             return [
                 SitemapEntry(menu_id, '.')[SitemapEntry('Pages')[pages]] ]
+
+    def admin_menu(self):
+        admin_url = c.project.url()+'admin/'+self.config.options.mount_point+'/'
+        links = [SitemapEntry('Set Home', admin_url + 'home/', className='nav_child')]
+        return links
 
     def sidebar_menu(self):
         related_pages = []
@@ -159,22 +174,31 @@ class ForgeWikiApp(Application):
             post=[role_anon],
             moderate=[role_developer],
             admin=c.project.acl['tool'])
-        p = model.Page.upsert(self.root_page_name)
-        p.viewable_by = ['all']
-        url = c.app.url + 'markdown_syntax' + '/'
-        p.text = """Welcome to your wiki!
+        root_page_name = self.default_root_page_name
+        model.Globals(app_config_id=c.app.config._id, root=root_page_name)
+        self.upsert_root(root_page_name)
+
+    def upsert_root(self, new_root):
+        p = model.Page.query.get(app_config_id=self.config._id, title=new_root)
+        if p is None:
+            with h.push_config(c, app=self):
+                p = model.Page.upsert(new_root)
+                p.viewable_by = ['all']
+                url = c.app.url + 'markdown_syntax' + '/'
+                p.text = """Welcome to your wiki!
 
 This is the default page, edit it as you see fit. To add a page simply reference it with camel case, e.g.: SamplePage.
 
 The wiki uses [Markdown](%s) syntax.
 """ % url
-        p.commit()
+                p.commit()
 
 
     def uninstall(self, project):
         "Remove all the tool's artifacts from the database"
         model.Attachment.query.remove({'metadata.app_config_id':c.app.config._id})
         model.Page.query.remove(dict(app_config_id=c.app.config._id))
+        model.Globals.query.remove(dict(app_config_id=c.app.config._id))
         super(ForgeWikiApp, self).uninstall(project)
 
 class RootController(object):
@@ -595,3 +619,33 @@ class RootRestController(RestController):
         if 'tags' in post_data:
             tags = post_data['tags']
             h.tag_artifact(page, c.user, tags.split(',') if tags else [])
+
+
+class WikiAdminController(DefaultAdminController):
+
+    def __init__(self, app):
+        self.app = app
+
+    @with_trailing_slash
+    def index(self):
+        redirect('home')
+
+    @with_trailing_slash
+    @expose('forgewiki.templates.admin_home')
+    def home(self):
+        return dict(app=self.app,
+                    home=self.app.root_page_name,
+                    allow_config=has_artifact_access('configure', app=self.app)())
+
+    @without_trailing_slash
+    @expose()
+    def set_home(self, new_home):
+        require(has_artifact_access('configure', app=self.app))
+        globals = model.Globals.query.get(app_config_id=self.app.config._id)
+        if globals is not None:
+            globals.root = new_home
+        else:
+            globals = model.Globals(app_config_id=self.app.config._id, root=new_home)
+        self.app.upsert_root(new_home)
+        flash('Home updated')
+        redirect(c.project.url()+self.app.config.options.mount_point+'/'+new_home+'/')
