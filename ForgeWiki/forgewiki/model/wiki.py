@@ -24,6 +24,9 @@ class PageHistory(Snapshot):
 
     def original(self):
         return Page.query.get(_id=self.artifact_id)
+
+    def authors(self):
+        return self.original().authors()
         
     def shorthand_id(self):
         return '%s#%s' % (self.original().shorthand_id(), self.version)
