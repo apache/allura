@@ -3,6 +3,7 @@ import difflib
 import logging
 from pprint import pformat
 
+from pylons import c, g
 import pkg_resources
 from pylons import c, request
 from tg import expose, redirect, flash
@@ -15,7 +16,7 @@ from pyforge.app import Application, WidgetController, ConfigOption, SitemapEntr
 from pyforge.lib import helpers as h
 from pyforge.ext.project_home import model as M
 from pyforge.lib.security import require, has_project_access, has_artifact_access
-from pyforge.model import User
+from pyforge.model import User, Subscriptions, ArtifactLink
 
 log = logging.getLogger(__name__)
 
@@ -71,6 +72,17 @@ class UserProfileController(object):
         username = c.project.shortname.split('/')[1]
         user = User.by_username(username)
         return dict(user=user)
+    # This will be fully implemented in a future iteration
+    # @expose('pyforge.ext.user_profile.templates.user_subscriptions')
+    # def subscriptions(self):
+    #     username = c.project.shortname.split('/')[1]
+    #     user = User.by_username(username)
+    #     subs = Subscriptions.query.find({'user_id':user._id}).all()
+    #     for sub in subs:
+    #         for s in sub.subscriptions:
+    #             r = g.solr.search(s.artifact_index_id)
+    #             print r.docs
+    #     return dict(user=user)
 
     @expose('pyforge.ext.user_profile.templates.user_dashboard_configuration')
     def configuration(self):
