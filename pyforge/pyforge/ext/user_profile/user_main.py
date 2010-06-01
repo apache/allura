@@ -119,3 +119,45 @@ class UserProfileController(object):
                     name=div['name'],
                     content=content))
         redirect('configuration')
+
+
+    @expose('json:')
+    def permissions(self, repo_path=None, **kw):
+        """Expects repo_path to be a filesystem path like
+            <tool>/<project>.<neighborhood>/reponame[.git]
+        unless the <neighborhood> is 'p', in which case it is
+            <tool>/<project>/reponame[.git]
+
+        Returns JSON describing this user's permissions on that repo.
+        """
+        if not repo_path:
+            return {"error":"no path specified"}
+        disallow = dict(allow_read=False, allow_write=False, allow_create=False)
+        # Find the user
+        username = c.project.shortname.split('/')[1]
+        user = User.by_username(username)
+
+        parts = [p for p in repo_path.split(os.path.sep) if p]
+        # strip the tool name
+        parts = parts[1:]
+        if '.' in parts[0]:
+            project, neighborhood = parts[0].split('.')
+        else:
+            project, neighborhood = parts[0], 'p'
+        parts = [ neighborhood, project ] + parts[1:]
+        project_path = '/' + '/'.join(parts)
+        project, rest = h.find_project(project_path)
+        if project is None:
+            log.info("Can't find project at %s from repo_path %s",
+                     project_path, repo_path)
+            return disallow
+        mount_point = os.path.splitext(rest[0])[0]
+        c.project = project
+        c.app = project.app_instance(mount_point)
+        if c.app is None:
+            log.info("Can't find repo at %s on repo_path %s",
+                     mount_point, repo_path)
+            return disallow
+        return dict(allow_read=has_artifact_access('read')(user=user),
+                    allow_write=has_artifact_access('write')(user=user),
+                    allow_create=has_artifact_access('create')(user=user))
