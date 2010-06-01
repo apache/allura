@@ -96,7 +96,7 @@ class LocalAuthenticationProvider(AuthenticationProvider):
         from pyforge import model as M
         un = re.escape(username)
         un = un.replace(r'\_', '[-_]')
-        rex = re.compile(un)
+        rex = re.compile('^' + un + '$')
         return M.User.query.get(username=rex)
 
     def set_password(self, user, old_password, new_password):
