@@ -17,7 +17,7 @@ class TestRestApiBase(TestController):
         super(TestRestApiBase, self).setUp()
         helpers.setup_global_objects()
         h.set_context('test', 'bugs')
-        user = M.User.query.get(username='test_admin')
+        user = M.User.query.get(username='test-admin')
         self.token = M.ApiToken(user_id=user._id)
         self.tracker_globals = TM.Globals.for_current_tracker()
         session(self.token).flush()
@@ -71,7 +71,7 @@ class TestRestNewTicket(TestRestApiBase):
         json = ticket_view.json['ticket']
         assert json['status'] == 'open', json
         assert json['summary'] == 'test new ticket', json
-        assert json['reported_by'] == 'test_admin'
+        assert json['reported_by'] == 'test-admin'
 
 class TestRestUpdateTicket(TestRestApiBase):
 

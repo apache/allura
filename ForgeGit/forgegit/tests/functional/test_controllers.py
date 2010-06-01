@@ -11,7 +11,7 @@ class TestRootController(TestController):
 
     def setUp(self):
         TestController.setUp(self)
-        h.set_context('test', 'src_git')
+        h.set_context('test', 'src-git')
         repo_dir = pkg_resources.resource_filename(
             'forgegit', 'tests/data')
         c.app.repo.fs_path = repo_dir
@@ -21,12 +21,12 @@ class TestRootController(TestController):
         ThreadLocalORMSession.close_all()
 
     def test_index(self):
-        resp = self.app.get('/src_git/')
+        resp = self.app.get('/src-git/')
         assert 'git://' in resp
         assert 'ready' in resp
 
     def test_commit(self):
-        self.app.get('/src_git/HEAD/')
+        self.app.get('/src-git/HEAD/')
 
 
 

@@ -14,7 +14,7 @@ class TestHgRepo(unittest.TestCase):
     def setUp(self):
         helpers.setup_basic_test()
         helpers.setup_global_objects()
-        h.set_context('test', 'src_hg')
+        h.set_context('test', 'src-hg')
         repo_dir = pkg_resources.resource_filename(
             'forgehg', 'tests/data')
         self.repo = HM.HgRepository(
@@ -65,7 +65,7 @@ class TestHgCommit(unittest.TestCase):
     def setUp(self):
         helpers.setup_basic_test()
         helpers.setup_global_objects()
-        h.set_context('test', 'src_hg')
+        h.set_context('test', 'src-hg')
         repo_dir = pkg_resources.resource_filename(
             'forgehg', 'tests/data')
         self.repo = HM.HgRepository(

@@ -49,7 +49,7 @@ class TestFunctionalController(TestController):
     
     def test_two_trackers(self):
         summary = 'test two trackers'
-        ticket_view = self.new_ticket('/doc_bugs/', summary=summary)
+        ticket_view = self.new_ticket('/doc-bugs/', summary=summary)
         assert_true(summary in ticket_view)
         index_view = self.app.get('/bugs/')
         assert_false(summary in index_view)

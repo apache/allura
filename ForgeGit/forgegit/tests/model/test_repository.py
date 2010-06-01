@@ -14,7 +14,7 @@ class TestGitRepo(unittest.TestCase):
     def setUp(self):
         helpers.setup_basic_test()
         helpers.setup_global_objects()
-        h.set_context('test', 'src_git')
+        h.set_context('test', 'src-git')
         repo_dir = pkg_resources.resource_filename(
             'forgegit', 'tests/data')
         self.repo = GM.GitRepository(

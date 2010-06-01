@@ -12,7 +12,7 @@ from forgetracker import tracker_main
 class WithUserAndBugsApp(TestWithModel):
     def setUp(self):
         super(WithUserAndBugsApp, self).setUp()
-        c.user = User(username='test_user')
+        c.user = User(username='test-user')
         h.set_context('test', 'bugs')
 
 

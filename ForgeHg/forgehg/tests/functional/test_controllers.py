@@ -11,7 +11,7 @@ class TestRootController(TestController):
 
     def setUp(self):
         TestController.setUp(self)
-        h.set_context('test', 'src_hg')
+        h.set_context('test', 'src-hg')
         repo_dir = pkg_resources.resource_filename(
             'forgehg', 'tests/data')
         c.app.repo.fs_path = repo_dir
@@ -21,12 +21,12 @@ class TestRootController(TestController):
         ThreadLocalORMSession.close_all()
 
     def test_index(self):
-        resp = self.app.get('/src_hg/')
+        resp = self.app.get('/src-hg/')
         assert 'hg clone http://' in resp, resp
         assert 'ready' in resp
 
     def test_commit(self):
-        resp = self.app.get('/src_hg/tip/')
+        resp = self.app.get('/src-hg/tip/')
         assert '<ins>' in resp
 
 

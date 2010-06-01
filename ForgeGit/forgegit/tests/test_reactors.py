@@ -14,7 +14,7 @@ class TestGitReactors(unittest.TestCase):
     def setUp(self):
         helpers.setup_basic_test()
         helpers.setup_global_objects()
-        h.set_context('test', 'src_git')
+        h.set_context('test', 'src-git')
         ThreadLocalORMSession.flush_all()
         ThreadLocalORMSession.close_all()
 
