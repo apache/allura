@@ -85,27 +85,27 @@ class TestRootController(TestController):
 
     def test_page_revert_with_text(self):
         self.app.get('/wiki/TEST/index/')
-        self.app.get('/wiki/TEST/update?text=sometext&tags=&tags_old=&labels=&labels_old=&viewable_by-0.id=all')
+        self.app.get('/wiki/TEST/update?title=TEST&text=sometext&tags=&tags_old=&labels=&labels_old=&viewable_by-0.id=all')
         response = self.app.get('/wiki/TEST/revert?version=1')
         assert 'TEST' in response
 
     def test_page_update(self):
         self.app.get('/wiki/TEST/index/')
-        response = self.app.get('/wiki/TEST/update?text=sometext&tags=&tags_old=&labels=&labels_old=&viewable_by-0.id=all')
+        response = self.app.get('/wiki/TEST/update?title=TEST&text=sometext&tags=&tags_old=&labels=&labels_old=&viewable_by-0.id=all')
         assert 'TEST' in response
 
     def test_page_tag_untag(self):
         self.app.get('/wiki/TEST/index/')
-        response = self.app.get('/wiki/TEST/update?text=sometext&tags=red,blue&tags_old=red,blue&labels=&labels_old=&viewable_by-0.id=all')
+        response = self.app.get('/wiki/TEST/update?title=TEST&text=sometext&tags=red,blue&tags_old=red,blue&labels=&labels_old=&viewable_by-0.id=all')
         assert 'TEST' in response
-        response = self.app.get('/wiki/TEST/update?text=sometext&tags=red&tags_old=red&labels=&labels_old=&viewable_by-0.id=all')
+        response = self.app.get('/wiki/TEST/update?title=TEST&text=sometext&tags=red&tags_old=red&labels=&labels_old=&viewable_by-0.id=all')
         assert 'TEST' in response
 
     def test_page_label_unlabel(self):
         self.app.get('/wiki/TEST/index/')
-        response = self.app.get('/wiki/TEST/update?text=sometext&tags=&tags_old=&labels=yellow,green&labels_old=yellow,green&viewable_by-0.id=all')
+        response = self.app.get('/wiki/TEST/update?title=TEST&text=sometext&tags=&tags_old=&labels=yellow,green&labels_old=yellow,green&viewable_by-0.id=all')
         assert 'TEST' in response
-        response = self.app.get('/wiki/TEST/update?text=sometext&tags=&tags_old=&labels=yellow&labels_old=yellow&viewable_by-0.id=all')
+        response = self.app.get('/wiki/TEST/update?title=TEST&text=sometext&tags=&tags_old=&labels=yellow&labels_old=yellow&viewable_by-0.id=all')
         assert 'TEST' in response
 
     def test_new_attachment(self):
@@ -192,5 +192,5 @@ class TestRootController(TestController):
     def test_page_permissions(self):
         response = self.app.get('/wiki/TEST/').follow()
         assert 'Viewable by' in response
-        self.app.get('/wiki/TEST/update?text=sometext&tags=&tags_old=&labels=&labels_old=&viewable_by-0.id=all&viewable_by-0.delete=True')
+        self.app.get('/wiki/TEST/update?title=TEST&text=sometext&tags=&tags_old=&labels=&labels_old=&viewable_by-0.id=all&viewable_by-0.delete=True')
         self.app.get('/wiki/TEST/', status=403)

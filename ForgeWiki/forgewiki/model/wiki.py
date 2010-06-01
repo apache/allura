@@ -81,10 +81,13 @@ class Page(VersionedArtifact):
         self.subscribe()
         VersionedArtifact.commit(self)
         if self.version > 1:
-            t1 = self.upsert(self.title, self.version-1).text
-            t2 = self.text
-            description = h.diff_text(t1, t2)
-            subject = 'Page %s modified' % self.title
+            v1 = self.get_version(self.version-1)
+            v2 = self
+            description = h.diff_text(v1.text, v2.text)
+            if v1.title != v2.title:
+                subject = 'Page %s renamed from %s' % (v2.title, v1.title)
+            else:
+                subject = 'Page %s modified' % self.title
         else:
             description = self.text
             subject = 'Page %s created' % self.title
@@ -140,6 +143,10 @@ class Page(VersionedArtifact):
             HC = cls.__mongometa__.history_class
             ss = HC.query.find({'artifact_id':pg._id, 'version':int(version)}).one()
             return ss
+
+    def get_version(self, version):
+        HC = Page.__mongometa__.history_class
+        return HC.query.find({'artifact_id':self._id, 'version':int(version)}).one()
 
     def reply(self, text):
         Feed.post(self, text)

@@ -1,6 +1,7 @@
 #-*- python -*-
 import difflib
 import logging
+import re
 from pprint import pformat
 from mimetypes import guess_type
 from urllib import urlencode, unquote
@@ -355,7 +356,7 @@ class PageController(object):
     def get_version(self, version):
         if not version: return self.page
         try:
-            return model.Page.upsert(self.title, version=int(version))
+            return self.page.get_version(version)
         except ValueError:
             return None
 
@@ -455,10 +456,12 @@ class PageController(object):
     @without_trailing_slash
     @h.vardec
     @expose()
-    def update(self, text=None, tags=None, tags_old=None, labels=None, labels_old=None, viewable_by=None,new_viewable_by=None,**kw):
+    def update(self, title=None, text=None, tags=None, tags_old=None, labels=None, labels_old=None, viewable_by=None,new_viewable_by=None,**kw):
         require(has_artifact_access('edit', self.page))
         if tags: tags = tags.split(',')
         else: tags = []
+        ws = re.compile('\s+')
+        self.page.title = ''.join(ws.split(title))
         self.page.text = text
         self.page.labels = labels.split(',')
         self.page.commit()
@@ -479,7 +482,7 @@ class PageController(object):
                         user = User.by_username(str(u['id']))
                         if user:
                             self.page.viewable_by.remove(user.username)
-        redirect('.')
+        redirect('../'+self.page.title+'/')
 
     @without_trailing_slash
     @expose()
