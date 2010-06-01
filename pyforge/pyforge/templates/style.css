@@ -856,11 +856,11 @@ ul#sidebarmenu li a.sidebar_thread_spam{display:none;}
 #content{
     position: relative;
 }
-.artifact_subscribe, .artifact_unsubscribe, .artifact_email{
+.artifact_subscribe, .artifact_unsubscribe, .artifact_rss{
     position: absolute;
     top: 5px;
-    left: 398px;
-}
-.artifact_email{
     left: 430px;
+}
+.artifact_rss{
+    left: 398px;
 }

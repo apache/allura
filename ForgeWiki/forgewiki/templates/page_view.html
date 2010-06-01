@@ -61,10 +61,11 @@
       <h2><a href="${thread.url()}">Discussion</a></h2>
       ${c.thread.display(value=thread)}
     </div>
-    <a title="Email Page" href="${page.email_link(page.title)}"
-       class="artifact_email ui-button ui-widget ui-state-default ui-corner-all ui-button-icon-only">
-      <span class="ui-button-icon-primary ui-icon ui-icon-mail-closed"></span>
-      <span class="ui-button-text">Email Page</span>
+    <a title="Email Page" href="${page.email_link(page.title)}">Email Page</a>
+    <a title="Subscribe to rss" href="${page.url()}feed"
+       class="artifact_rss ui-button ui-widget ui-state-default ui-corner-all ui-button-icon-only">
+      <span class="ui-button-icon-primary ui-icon ui-icon-signal-diag"></span>
+      <span class="ui-button-text">Subscribe to rss</span>
     </a>
     ${c.subscribe_form.display(value=subscribed, action='subscribe', style='icon')}
   </body>
