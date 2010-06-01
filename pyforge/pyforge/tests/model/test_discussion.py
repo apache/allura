@@ -29,7 +29,7 @@ def setUp():
     h.set_context('test', 'wiki')
     ThreadLocalORMSession.flush_all()
     ThreadLocalORMSession.close_all()
-    c.user = M.User.query.get(username='test_admin')
+    c.user = M.User.query.get(username='test-admin')
 
 
 def tearDown():

@@ -31,7 +31,7 @@ class TestNeighborhood(TestController):
         r = self.app.post('/adobe/_admin/update_acl',
                           params={'permission':'moderate',
                                   'new.add':'on',
-                                  'new.username':'test_user'},
+                                  'new.username':'test-user'},
                           extra_environ=dict(username='root'))
         r = self.app.post('/adobe/_admin/update_acl',
                           params={'permission':'read',
@@ -63,7 +63,7 @@ class TestNeighborhood(TestController):
     def test_invite(self):
         r = self.app.get('/adobe/_moderate/', extra_environ=dict(username='root'))
         r = self.app.post('/adobe/_moderate/invite',
-                          params=dict(pid='adobe_1', invite='on'),
+                          params=dict(pid='adobe-1', invite='on'),
                           extra_environ=dict(username='root'))
         r = self.app.get(r.location, extra_environ=dict(username='root'))
         assert 'error' in r
@@ -109,7 +109,7 @@ class TestNeighborhood(TestController):
         r = self.app.get(r.location, extra_environ=dict(username='root'))
         assert 'error' in r
         r = self.app.post('/adobe/_moderate/evict',
-                          params=dict(pid='adobe_1'),
+                          params=dict(pid='adobe-1'),
                           extra_environ=dict(username='root'))
         r = self.app.get(r.location, extra_environ=dict(username='root'))
         assert 'error' not in r
@@ -132,10 +132,10 @@ class TestNeighborhood(TestController):
 
     def test_neighborhood_project(self):
         r = self.app.get('/adobe/test/home/', status=302)
-        r = self.app.get('/adobe/adobe_1/home/', status=200)
+        r = self.app.get('/adobe/adobe-1/home/', status=200)
         r = self.app.get('/p/test/sub1/home/')
         r = self.app.get('/p/test/sub1/', status=302)
-        r = self.app.get('/p/test/no_such_app/', status=404)
+        r = self.app.get('/p/test/no-such-app/', status=404)
 
     def test_neighborhood_awards(self):
         file_name = 'adobe_icon.png'
@@ -152,10 +152,10 @@ class TestNeighborhood(TestController):
         image = Image.open(StringIO.StringIO(r.body))
         assert image.size == (48,48)
         r = self.app.post('/adobe/_admin/awards/grant',
-                          params=dict(grant='FOO', recipient='adobe_1'),
+                          params=dict(grant='FOO', recipient='adobe-1'),
                           extra_environ=dict(username='root'))
-        r = self.app.get('/adobe/_admin/awards/FOO/adobe_1', extra_environ=dict(username='root'))
-        r = self.app.post('/adobe/_admin/awards/FOO/adobe_1/revoke',
+        r = self.app.get('/adobe/_admin/awards/FOO/adobe-1', extra_environ=dict(username='root'))
+        r = self.app.post('/adobe/_admin/awards/FOO/adobe-1/revoke',
                           extra_environ=dict(username='root'))
         r = self.app.post('/adobe/_admin/awards/FOO/delete',
                           extra_environ=dict(username='root'))

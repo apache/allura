@@ -120,13 +120,13 @@ def bootstrap(command, conf, vars):
             if not s: break
             fp.write(s)
     log.info('Registering "regular users" (non-root)')
-    u_adobe = M.User.register(dict(username='adobe_admin',
+    u_adobe = M.User.register(dict(username='adobe-admin',
                                    display_name='Adobe Admin'))
-    u0 = M.User.register(dict(username='test_admin',
+    u0 = M.User.register(dict(username='test-admin',
                               display_name='Test Admin'))
-    u1 = M.User.register(dict(username='test_user',
+    u1 = M.User.register(dict(username='test-user',
                               display_name='Test User'))
-    u2 = M.User.register(dict(username='test_user2',
+    u2 = M.User.register(dict(username='test-user2',
                               display_name='Test User 2'))
     n_adobe.acl['admin'].append(u_adobe._id)
     u_adobe.set_password('foo')
@@ -148,8 +148,8 @@ def bootstrap(command, conf, vars):
     cat3_2 = M.ProjectCategory(name='engines_servers', label='Engines/Servers', parent_id=cat3._id)
 
     log.info('Registering initial projects')
-    p_adobe1 = n_adobe.register_project('adobe_1', u_adobe)
-    p_adobe2 = n_adobe.register_project('adobe_2', u_adobe)
+    p_adobe1 = n_adobe.register_project('adobe-1', u_adobe)
+    p_adobe2 = n_adobe.register_project('adobe-2', u_adobe)
     p0 = n_projects.register_project('test', u0)
     c.project = p0
     c.user = u0
@@ -157,17 +157,17 @@ def bootstrap(command, conf, vars):
     ThreadLocalORMSession.flush_all()
     if asbool(conf.get('load_test_data')):
         log.info('Loading test data')
-        u_proj = M.Project.query.get(shortname='u/test_admin')
+        u_proj = M.Project.query.get(shortname='u/test-admin')
         u_proj.new_subproject('sub1')
         app = p0.install_app('hello_forge', 'hello')
         app = p0.install_app('SVN', 'src')
-        app = p0.install_app('Git', 'src_git')
+        app = p0.install_app('Git', 'src-git')
         app.config.options['type'] = 'git'
-        app = p0.install_app('Hg', 'src_hg')
+        app = p0.install_app('Hg', 'src-hg')
         app.config.options['type'] = 'hg'
         p0.install_app('Wiki', 'wiki')
         p0.install_app('Tickets', 'bugs')
-        p0.install_app('Tickets', 'doc_bugs')
+        p0.install_app('Tickets', 'doc-bugs')
         p0.install_app('Discussion', 'discussion')
         p0.install_app('Link', 'link')
         ThreadLocalORMSession.flush_all()
@@ -180,7 +180,7 @@ def bootstrap(command, conf, vars):
         p0.install_app('Tickets', 'bugs')
         p0.install_app('Discussion', 'discussion')
         # app = p0.install_app('SVN', 'src')
-        # app = p0.install_app('Git', 'src_git')
+        # app = p0.install_app('Git', 'src-git')
         ThreadLocalORMSession.flush_all()
         for msg in c.queued_messages:
             g._publish(**msg)

@@ -2,26 +2,21 @@
 """
 Model tests for project
 """
-import mock
 from datetime import datetime
+
+import mock
+from nose.tools import with_setup
 from pylons import c, g, request
 from webob import Request
 from ming.orm.ormsession import ThreadLocalORMSession
 
 from pyforge import model as M
 from pyforge.lib.app_globals import Globals
+from pyforge.tests import helpers
 
 def setUp():
-    g._push_object(Globals())
-    c._push_object(mock.Mock())
-    request._push_object(Request.blank('/'))
-    ThreadLocalORMSession.close_all()
-    g.set_project('test')
-    g.set_app('hello')
-    M.File.remove({})
-    M.Project.query.remove(dict(_id='projects/test/test_project_nose/'))
-    c.user = M.User.query.get(username='test_admin')
-    M.ScheduledMessage.query.remove(dict(_id=None))
+    helpers.setup_basic_test()
+    helpers.setup_global_objects()
 
 def test_search_config():
     "just make sure needs_commit doesn't throw an exception"
@@ -34,6 +29,7 @@ def test_scheduled_messages():
     ThreadLocalORMSession.flush_all()
     M.ScheduledMessage.fire_when_ready()
 
+@with_setup(setUp)
 def test_project():
     assert type(c.project.sidebar_menu()) == list
     assert c.project.script_name in c.project.url()
@@ -43,20 +39,20 @@ def test_project():
     assert type(c.project.sitemap()) == list
     assert old_proj in list(c.project.parent_iter())
     g.set_project('test')
-    p = M.Project.query.get(shortname='adobe_1')
+    p = M.Project.query.get(shortname='adobe-1')
     # assert 'http' in p.url() # We moved adobe into /adobe/, not http://adobe....
     assert p.script_name in p.url()
     assert c.project.shortname == 'test'
     assert '<p>' in c.project.description_html
     c.project.roles
     try:
-        c.project.uninstall_app('hello_test_mount_point')
+        c.project.uninstall_app('hello-test-mount-point')
         ThreadLocalORMSession.flush_all()
     except:
         pass
-    c.project.install_app('hello_forge', 'hello_test_mount_point')
+    c.project.install_app('hello_forge', 'hello-test-mount-point')
     ThreadLocalORMSession.flush_all()
-    c.project.uninstall_app('hello_test_mount_point')
+    c.project.uninstall_app('hello-test-mount-point')
     ThreadLocalORMSession.flush_all()
     app_config = c.project.app_config('hello')
     app_inst = c.project.app_instance(app_config)
@@ -69,7 +65,7 @@ def test_project():
     c.app.config.breadcrumbs()
 
 def test_subproject():
-    sp = c.project.new_subproject('test_project_nose')
+    sp = c.project.new_subproject('test-project-nose')
     spp = sp.new_subproject('spp')
     ThreadLocalORMSession.flush_all()
     sp.delete()

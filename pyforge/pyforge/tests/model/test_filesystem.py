@@ -16,7 +16,7 @@ def setUp():
     g.set_project('test')
     g.set_app('hello')
     M.File.remove({})
-    c.user = M.User.query.get(username='test_admin')
+    c.user = M.User.query.get(username='test-admin')
 
 def test_file():
     f = M.File.save('test.txt', 'text/plain', '')

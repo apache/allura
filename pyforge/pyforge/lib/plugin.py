@@ -2,6 +2,7 @@
 Pyforge plugins for authentication and project registration
 '''
 import logging
+import re
 
 from random import randint
 from hashlib import sha256
@@ -93,7 +94,10 @@ class LocalAuthenticationProvider(AuthenticationProvider):
 
     def by_username(self, username):
         from pyforge import model as M
-        return M.User.query.get(username=username)
+        un = re.escape(username)
+        un = un.replace(r'\_', '[-_]')
+        rex = re.compile(un)
+        return M.User.query.get(username=rex)
 
     def set_password(self, user, old_password, new_password):
         user.password = self._encode_password(new_password)
@@ -184,7 +188,7 @@ class ProjectRegistrationProvider(object):
                     shortname, p.neighborhood.name))
             return p
         database = 'project%s__init__' % neighborhood.url_prefix
-        database = database.replace('/', ':').replace(' ', '_')
+        database = database.replace('/', ':').replace('-', '_')
         name = 'Home Project for %s' % neighborhood.name
         p = M.Project(neighborhood_id=neighborhood._id,
                     shortname=shortname,
@@ -250,7 +254,7 @@ class ProjectRegistrationProvider(object):
                 'Project %s exists in neighborhood %s' % (
                     shortname, p.neighborhood.name))
             return p
-        database = 'project:' + shortname.replace('/', ':').replace(' ', '_')
+        database = 'project:' + shortname.replace('/', ':').replace('-', '_')
         p = M.Project(neighborhood_id=neighborhood._id,
                     shortname=shortname,
                     name=shortname,

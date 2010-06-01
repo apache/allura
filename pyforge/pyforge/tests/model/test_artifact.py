@@ -42,7 +42,7 @@ def setUp():
     HM.Page.query.remove({})
     HM.PageHistory.query.remove({})
     M.ArtifactLink.query.remove({})
-    c.user = M.User.query.get(username='test_admin')
+    c.user = M.User.query.get(username='test-admin')
     Checkmessage.project = c.project
     Checkmessage.app_config = c.app.config
 
@@ -55,7 +55,7 @@ def test_artifact():
     assert pg.project_id == c.project._id
     assert pg.app.config == c.app.config
     assert pg.app_config == c.app.config
-    u = M.User.query.get(username='test_user')
+    u = M.User.query.get(username='test-user')
     pg.give_access('delete', user=u)
     ThreadLocalORMSession.flush_all()
     assert u.project_role()._id in pg.acl['delete']

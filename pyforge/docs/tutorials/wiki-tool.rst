@@ -41,7 +41,7 @@ Whenever you use the :class:`pyforge.tests.TestController` app property, the
 test harness sets up the context so that `c.project` is always the
 `projects/test` project and whichever tool name you request is mounted at its
 entry point (so the Wiki tool will be mounted at /Wiki/).  `c.user` is always
-set to the `test_admin` user to avoid authentication issues.
+set to the `test-admin` user to avoid authentication issues.
 
 The framework used to generate the WSGI environment for testing your tools is
 provided by the `WebTest <http://pythonpaste.org/webtest/>`_ module, where you can
@@ -62,7 +62,7 @@ technique follows::
         c._push_object(mock.Mock())
         g.set_project('projects/test')
         g.set_app('hello')
-        c.user = M.User.query.get(username='test_admin')
+        c.user = M.User.query.get(username='test-admin')
 
 Testing the reactors/auditors is similar to testing models.  Generally, you will
 simply want to call your callback methods directly rather than setting up a full mocking

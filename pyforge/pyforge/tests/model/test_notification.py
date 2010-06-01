@@ -54,7 +54,7 @@ class TestPostNotifications(unittest.TestCase):
         assert queue[0]['message']['artifact_index_id'] == self.pg.index()['id']
 
     def test_post_user_notification(self):
-        u = M.User.query.get(username='test_admin')
+        u = M.User.query.get(username='test-admin')
         n = M.Notification.post_user(u, self.pg, 'metadata')
         ThreadLocalORMSession.flush_all()
         ThreadLocalORMSession.close_all()

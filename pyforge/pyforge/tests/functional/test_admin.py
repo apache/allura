@@ -23,20 +23,20 @@ class TestProjectAdmin(TestController):
         self.app.post('/admin/update_mounts', params={
                 'new.install':'install',
                 'new.ep_name':'',
-                'new.mount_point':'test_subproject'})
+                'new.mount_point':'test-subproject'})
         self.app.post('/admin/update_mounts', params={
                 'subproject-0.delete':'on',
-                'subproject-0.shortname':'test/test_subproject',
+                'subproject-0.shortname':'test/test-subproject',
                 'new.ep_name':'',
                 })
         # Add/Remove a tool
         self.app.post('/admin/update_mounts', params={
                 'new.install':'install',
                 'new.ep_name':'hello_forge',
-                'new.mount_point':'test_tool'})
+                'new.mount_point':'test-tool'})
         self.app.post('/admin/update_mounts', params={
                 'tool-0.delete':'on',
-                'tool-0.mount_point':'test_tool',
+                'tool-0.mount_point':'test-tool',
                 'new.ep_name':'',
                 })
         # Update ACL
@@ -55,7 +55,7 @@ class TestProjectAdmin(TestController):
                 'permission':'tool',
                 'new.add':'on',
                 'new.id':'',
-                'new.username':'test_user'})
+                'new.username':'test-user'})
         self.app.post('/admin/update_acl', params={
                 'permission':'tool',
                 'new.add':'on',

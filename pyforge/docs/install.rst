@@ -172,7 +172,7 @@ And now you should be able to visit the server running on your
 Logging In, Getting Around
 ----------------------------------------------
 
-Part of the base system includes the test_admin and test_user accounts.  The
+Part of the base system includes the test-admin and test-user accounts.  The
 password for both accounts is `foo`.  The `test` project has several tools
 already configured; to configure more, you can visit the `Admin` tool
 (accessible in the top navigation bar when inside the `test` project).  

@@ -46,7 +46,7 @@ class SFXUserApi(object):
                 display_name=user_data['name'],
                 sfx_userid=user_data['id'])
             n = M.Neighborhood.query.get(name='Users')
-            n.register_project('u/' + u.username, u, user_project=True)
+            n.register_project('u/' + u.username.replace('_', '-'), u, user_project=True)
         if u.display_name != user_data['name']:
             u.display_name = user_data['name']
         if u.sfx_userid != user_data['id']:

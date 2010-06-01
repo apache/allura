@@ -1,15 +1,15 @@
-import logging, string
+import logging, string, os
 from urllib import urlencode
 from pprint import pformat
 
 from tg import expose, session, flash, redirect, validate, config
 from tg.decorators import with_trailing_slash, without_trailing_slash
-from pylons import c, g, request
+from pylons import c, g, request, response
 from webob import exc
 
 from pyforge import model as M
 from pyforge.lib.oid_helper import verify_oid, process_oid
-from pyforge.lib.security import require_authenticated
+from pyforge.lib.security import require_authenticated, has_artifact_access
 from pyforge.lib import helpers as h
 from pyforge.lib import plugin
 from pyforge.lib.widgets import SubscriptionForm
@@ -179,6 +179,51 @@ class AuthController(object):
         if came_from and came_from != request.url:
             redirect(came_from)
         redirect('/')
+
+
+    @expose('json:')
+    def repo_permissions(self, repo_path=None, username=None, **kw):
+        """Expects repo_path to be a filesystem path like
+            <tool>/<project>.<neighborhood>/reponame[.git]
+        unless the <neighborhood> is 'p', in which case it is
+            <tool>/<project>/reponame[.git]
+
+        Returns JSON describing this user's permissions on that repo.
+        """
+        disallow = dict(allow_read=False, allow_write=False, allow_create=False)
+        if not repo_path:
+            response.status=400
+            return dict(disallow, error='no path specified')
+        # Find the user
+        user = M.User.by_username(username)
+        if not user:
+            response.status=404
+            return dict(disallow, error='unknown user')
+        parts = [p for p in repo_path.split(os.path.sep) if p]
+        # strip the tool name
+        parts = parts[1:]
+        if '.' in parts[0]:
+            project, neighborhood = parts[0].split('.')
+        else:
+            project, neighborhood = parts[0], 'p'
+        parts = [ neighborhood, project ] + parts[1:]
+        project_path = '/' + '/'.join(parts)
+        project, rest = h.find_project(project_path)
+        if project is None:
+            log.info("Can't find project at %s from repo_path %s",
+                     project_path, repo_path)
+            response.status = 404
+            return dict(disallow, error='unknown project')
+        mount_point = os.path.splitext(rest[0])[0]
+        c.project = project
+        c.app = project.app_instance(mount_point)
+        if c.app is None:
+            log.info("Can't find repo at %s on repo_path %s",
+                     mount_point, repo_path)
+            return disallow
+        return dict(allow_read=has_artifact_access('read')(user=user),
+                    allow_write=has_artifact_access('write')(user=user),
+                    allow_create=has_artifact_access('create')(user=user))
 
 class PreferencesController(object):
 

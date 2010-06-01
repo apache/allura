@@ -37,7 +37,7 @@ class TestController(BaseController, ProjectController):
     on-demand, at the mount point that is the same as their entry point
     name.
 
-    Also, the test_admin is perpetually logged in here.
+    Also, the test-admin is perpetually logged in here.
     '''
 
     def __init__(self):
@@ -92,7 +92,7 @@ class TestController(BaseController, ProjectController):
         c.app = None
         c.project = M.Project.query.get(shortname='test')
         c.user = plugin.AuthenticationProvider.get(request).by_username(
-            environ.get('username', 'test_admin'))
+            environ.get('username', 'test-admin'))
         return BaseController.__call__(self, environ, start_response)
 
 class DispatchTest(object):

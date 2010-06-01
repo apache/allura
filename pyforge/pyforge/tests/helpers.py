@@ -44,5 +44,5 @@ def setup_global_objects():
     ThreadLocalORMSession.close_all()
     g.set_project('test')
     g.set_app('wiki')
-    c.user = M.User.query.get(username='test_admin')
+    c.user = M.User.query.get(username='test-admin')
 

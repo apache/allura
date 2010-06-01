@@ -18,12 +18,12 @@ class TestAuth(TestController):
         assert 'class="error"' not in r
         r = self.app.get('/auth/logout')
         r = self.app.get('/auth/do_login', params=dict(
-                username='test_user', password='foo'))
+                username='test-user', password='foo'))
         r = self.app.get('/auth/do_login', params=dict(
-                username='test_user', password='food'),
+                username='test-user', password='food'),
                          status=401)
         r = self.app.get('/auth/do_login', params=dict(
-                username='test_usera', password='foo'),
+                username='test-usera', password='foo'),
                          status=401)
 
     def test_prefs(self):
@@ -74,11 +74,11 @@ class TestAuth(TestController):
         assert result.status_int == 302
         r = self.app.get('/auth/setup_openid_user')
         r = self.app.post('/auth/do_setup_openid_user', params=dict(
-                username='test_admin', display_name='Test Admin'))
+                username='test-admin', display_name='Test Admin'))
         r = self.app.post('/auth/do_setup_openid_user', params=dict(
-                username='test_user', display_name='Test User'))
+                username='test-user', display_name='Test User'))
         r = self.app.post('/auth/do_setup_openid_user', params=dict(
-                username='test_admin', display_name='Test Admin'))
+                username='test-admin', display_name='Test Admin'))
         r = self.app.get('/auth/claim_oid')
         result = self.app.get('/auth/claim_verify_oid', params=dict(
                 provider='http://www.google.com/accounts/o8/id', username='rick446@usa.net'))
