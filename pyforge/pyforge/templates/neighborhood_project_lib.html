@@ -1,0 +1,91 @@
+<html xmlns:py="http://genshi.edgewall.org/"
+      xmlns:xi="http://www.w3.org/2001/XInclude"
+      py:strip="">
+
+  <?python from pyforge.lib.security import has_neighborhood_access ?>
+
+  <py:def function="main_menu">
+    <div id="mainmenu" class="span-24 last">
+      <div class="sf_logo span-10"><a href="/"><img src="${g.forge_static('images/sfc.png')}" alt="SourceForge"/></a></div>
+      <div class="span-14 tright last">
+        <a href="/auth/logout" py:if="c.user and c.user._id" class="sf_log_out">Log Out</a>
+        <a href="/auth/" py:if="not c.user or not c.user._id" class="sf_log_in">Log In</a>
+        <a href="/users/${c.user.username}" py:if="c.user and c.user._id" class="sf_user_link">$c.user.display_name</a>
+        <a href="/auth/create_account" py:if="not c.user or not c.user._id" class="sf_create_account">Create Account</a>
+        <a href="/search/" class="sf_search_link"><span class="ui-icon reverse ui-icon-search"></span> Search</a>
+      </div>
+    </div>
+  </py:def>
+  <py:def function="nav_menu()">
+    <div id="nav_menu_missing" class="span-24 last ui-corner-tl" py:if="not c.project.neighborhood"/>
+    <div id="nav_menu" class="span-24 last ui-corner-tl" py:if="c.project.neighborhood">
+      <div class="span-1">
+        <img py:if="c.project.neighborhood.icon" src="${c.project.neighborhood.url()}/icon" class="project_icon"/>
+        <img py:if="not c.project.neighborhood.icon" src="${g.forge_static('images/project_default.png')}" class="project_icon"/>
+      </div>
+      <div class="span-16 project">
+	<span class="project_name">
+		<a href="${c.project.neighborhood.url()}" class="neighborhood_name">$c.project.neighborhood.name</a><br/>
+	</span>
+        <ul class="nav_links">
+          <li>
+            <a href="${c.project.neighborhood.url()}" class="${request.url.rfind(c.project.neighborhood.url(),-len(c.project.neighborhood.url())) != -1 and 'active' or ''}">
+              <span class="ui-icon ui-icon-home"></span>
+            </a>
+          </li>
+          <li py:if="has_neighborhood_access('admin', c.project.neighborhood)()">
+            <a href="${c.project.neighborhood.url()}_admin/" class="${c.project.neighborhood.url()+'_admin' in request.url and 'active' or ''}">Admin</a>
+          </li>
+          <li py:if="has_neighborhood_access('moderate', c.project.neighborhood)()">
+            <a href="${c.project.neighborhood.url()}_moderate/" class="${c.project.neighborhood.url()+'_moderate' in request.url and 'active' or ''}">Moderate</a>
+          </li>
+        </ul>
+      </div>
+      <div class="span-7 last tright">
+	<span class="neighborhood ui-corner-bl ui-corner-tr">
+          <form py:if="has_neighborhood_access('create', c.project.neighborhood)()"
+                method="POST" action="${c.project.neighborhood.url()}/register">
+            <label for="pid">Register project</label>
+            <input name="pid" id="pid"/>
+            <input type="submit" value="Register" class="ui-state-default ui-button ui-button-text"/>
+          </form>
+	</span>
+      </div>
+    </div>
+  </py:def>
+
+  <py:def function="sidebar_menu()">
+    <div id="sidebar" class="span-4">
+      <form py:if="c.app and c.app.searchable" method="GET" action="${c.app.url + 'search/'}">
+        <span id="app-search">
+          <input name="q" type="text" class="defaultText" title="Search ${c.app.config.options.mount_point.title()}"/>
+        </span>
+      </form>
+      <div py:if="not c.app or not c.app.searchable">&nbsp;</div>
+      <py:if test="not c.app and not getattr(c, 'custom_sidebar_menu', None)">&nbsp;</py:if>
+      <ul id="sidebarmenu" py:if="getattr(c, 'custom_sidebar_menu', None)">
+        <li py:for="s in c.custom_sidebar_menu">
+          <a py:if="s.url" href="$s.url" class="$s.className ${request.url.find(s.url,-len(s.url)) != -1 and 'active' or ''}"><span py:if="s.ui_icon" class="ui-icon ui-icon-$s.ui_icon"></span>$s.label</a>
+          <span py:if="not s.url" class="$s.className nav_head"><span py:if="s.ui_icon" class="ui-icon ui-icon-$s.ui_icon"></span>$s.label</span>
+        </li>
+      </ul>
+      <ul id="sidebarmenu" py:if="getattr(c, 'app', None)">
+          <li py:if="has_neighborhood_access('admin', c.project.neighborhood)()">
+            <a href="${c.project.neighborhood.url()}_admin/" class="${c.project.neighborhood.url()+'_admin' in request.url and 'active' or ''}">Admin Neighborhood</a>
+          </li>
+        <li py:for="s in c.app.sidebar_menu()">
+          <a py:if="s.url" href="$s.url" class="$s.className ${request.url.rfind(s.url,-len(s.url)) != -1 and 'active' or ''}"><span py:if="s.ui_icon" class="ui-icon ui-icon-$s.ui_icon"></span>$s.label</a>
+          <span py:if="not s.url" class="$s.className nav_head"><span py:if="s.ui_icon" class="ui-icon ui-icon-$s.ui_icon"></span>$s.label</span>
+        </li>
+      </ul>
+      <ul id="sidebarmenu"
+          py:if="getattr(c, 'project', None) and not getattr(c, 'app', None)">
+        <li py:for="s in c.project.sidebar_menu()">
+          <a py:if="s.url" href="$s.url" class="$s.className ${s.url[:-1] in request.url and 'active' or ''}">$s.label</a>
+          <span py:if="not s.url" class="$s.className nav_head">$s.label</span>
+        </li>
+      </ul>
+    </div>
+  </py:def>
+
+</html>
