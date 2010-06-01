@@ -31,7 +31,7 @@ class TestFunctionalController(TestController):
         summary = 'test new ticket'
         ticket_view = self.new_ticket(summary=summary)
         assert_true(summary in ticket_view)
-        assert 'You are currently subscribed' in ticket_view
+        assert 'class="artifact_unsubscribe' in ticket_view
     
     def test_new_with_milestone(self):
         tm.Globals.milestone_names = 'sprint-9 sprint-10 sprint-11'
