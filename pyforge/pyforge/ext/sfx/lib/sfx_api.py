@@ -8,6 +8,13 @@ from pylons import c, request
 
 from pyforge import model as M
 from pyforge.lib.security import roles_with_project_access
+from . import exceptions as sfx_exc
+
+def read_response(response, *expected):
+    if not expected: expected = (200,)
+    if response.status in expected:return json.loads(response.read())
+    cls = sfx_exc.SFXAPIError.status_map.get(response.status, sfx_exc.SFXAPIError)
+    raise cls('Error status %s' % response.status, response.read())
 
 class SFXUserApi(object):
     
@@ -80,18 +87,14 @@ class SFXProjectApi(object):
                 short_description=short_description)
             conn.request('POST', self.project_path, json.dumps(args))
             response = conn.getresponse()
-            assert response.status == 201, \
-                'Bad status from sfx create: %s' % (response.status)
-            return response.read()
+            return read_response(response, 201)
 
     def read(self, p):
         with self._connect() as conn:
             ug_name = self._unix_group_name(p.neighborhood, p.shortname)
             conn.request('GET', self.project_path + '/name/' + ug_name + '/json')
             response = conn.getresponse()
-            assert response.status == 200, \
-                'Bad status from sfx retrieve: %s' % (response.status)
-            return json.loads(response.read())
+            return read_response(response)
 
     def update(self, user, p):
         with self._connect() as conn:
@@ -106,14 +109,11 @@ class SFXProjectApi(object):
                     if pr.user is not None and pr.user.sfx_userid is not None ])
             conn.request('PUT', self.project_path + '/' + ug_name, json.dumps(args))
             response = conn.getresponse()
-            assert response.status == 200, \
-                'Bad status from sfx update: %s' % (response.status)
-            response.read()
+            return read_response(response)
 
     def delete(self, p):
         with self._connect() as conn:
             ug_name = self._unix_group_name(p.neighborhood, p.shortname)
             conn.request('DELETE', self.project_path + '/' + ug_name)
             response = conn.getresponse()
-            assert response.status in (200, 404, 410), \
-                'Bad status from sfx update: %s' % (response.status)
+            return read_response(response, 200,404,410)

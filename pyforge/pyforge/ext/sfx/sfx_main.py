@@ -15,6 +15,7 @@ from pyforge.lib import plugin
 from pyforge import model as M
 
 from .lib.sfx_api import SFXProjectApi, SFXUserApi
+from .lib import exceptions as sfx_exc
 
 log = logging.getLogger(__name__)
 
@@ -123,8 +124,14 @@ class SFXProjectRegistrationProvider(plugin.ProjectRegistrationProvider):
 
     def register_project(self, neighborhood, shortname, user, user_project):
         # Reserve project name with SFX
-        r = self.api.create(user, neighborhood, shortname)
-        log.info('SFX Project creation returned: %s', r)
+        try:
+            r = self.api.create(user, neighborhood, shortname)
+            log.info('SFX Project creation returned: %s', r)
+        except sfx_exc.SFXAPIError, exc:
+            if user_project: 
+                log.exception('SFX project creation error: %r', exc)
+            else:
+                raise
         p = super(SFXProjectRegistrationProvider, self).register_project(
             neighborhood, shortname, user, user_project)
         return p
