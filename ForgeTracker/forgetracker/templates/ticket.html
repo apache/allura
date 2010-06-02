@@ -50,8 +50,6 @@
       </div>
 
       <div id="sidebar-right" class="span-7 last">
-        
-        
         <div class="span-3 tright"><b>Created by:</b></div>
         <div class="span-4 last gravatar sm">
           ${gravatar(ticket.reported_by.preferences.email_address, size=16)}
@@ -63,60 +61,82 @@
           ${h.ago(ticket.created_date)}
         </div>
         <hr class="clear clearfix"/>
-        <div class="span-3 tright clear"><b>Assigned to:</b></div>
-        <div class="span-4 last">
-          <div class="gravatar sm${allow_edit and ' editable viewing' or ''}">
-            <py:if test="ticket.assigned_to_id">
-              <a py:if="not allow_edit" href="${ticket.assigned_to.url()}">${ticket.assigned_to_name()}</a>
-              <py:if test="allow_edit">
-                <span class="ticket-assigned-to viewer">
+
+
+        <div class="${allow_edit and 'editable viewing' or ''}">
+          <span class="viewer">
+            <div class="span-3 tright clear"><b>Assigned to:</b></div>
+            <div class="span-3 last">
+              <div class="gravatar sm">
+                <span class="ticket-assigned-to" py:if="ticket.assigned_to_id">
                   ${gravatar(ticket.assigned_to.preferences.email_address, size=16)} <a href="${ticket.assigned_to.url()}">${ticket.assigned_to_name()}</a>
                 </span>
-                <span class="multiline overlap editor">${c.user_select.display(name='assigned_to',value=ticket.assigned_to.username,className='wide')}</span>
+                <span py:if="not ticket.assigned_to_id" class="ticket-assigned-to">
+                  ${ticket.assigned_to_name()}
+                </span>
+              </div>
+            </div>
+            <hr class="clear clearfix"/>
+
+            <div class="span-3 tright"><b>Status:</b></div>
+            <div class="span-3 last">
+                <span class="${ticket.status}">${ticket.status}</span>
+            </div>
+            <hr class="clear clearfix"/>
+
+            <div class="span-3 tright"><b>Milestone:</b></div>
+            <div class="span-3 last">${ticket.milestone or 'None'}</div>
+            <hr class="clear clearfix"/>
+
+            <py:for each="field in globals.custom_fields or []">
+              <div class="span-3 tright"><b>${field.label}:</b></div>
+              <div class="span-3 last">${ticket.custom_fields.get(field.name, '') or '&nbsp; &nbsp; &nbsp;'}</div>
+              <hr class="clear clearfix"/>
+            </py:for>
+
+            <div class="span-3 tright"><b>Tags:</b></div>
+            <div class="span-3 last">
+              <span py:for="label in ticket.labels" class="ui-corner-all tag">
+                <a href="../search?q=labels:${h.urllib.quote_plus(label)}">$label (${ticket.artifacts_labeled_with(label).count()})</a>
+              </span>
+              <py:if test="not len(ticket.labels)">None</py:if>
+            </div>
+            <div class="clear clearfix"/>
+          </span>
+          <span class="multiline editor">
+            <div class="span-3 tright clear"><b>Assigned to:</b></div>
+            <div class="span-3 last">
+              <py:if test="ticket.assigned_to_id">
+                ${c.user_select.display(name='assigned_to',value=ticket.assigned_to.username,className='wide')}
               </py:if>
-            </py:if>
-            <py:if test="not ticket.assigned_to_id">
-              <span class="ticket-assigned-to ${allow_edit and 'viewer' or ''}">${ticket.assigned_to_name()}</span>
-              <span class="multiline overlap editor" py:if="allow_edit">${c.user_select.display(name='assigned_to',value=ticket.assigned_to_id,className='wide')}</span>
-            </py:if>
-          </div>
-        </div>
-        <hr class="clear clearfix"/>
-        
-        
-        <div class="span-3 tright"><b>Status:</b></div>
-        <div class="span-4 last">
-          <span class="${allow_edit and ' editable viewing' or ''}">
-            <span class="${ticket.status}${allow_edit and ' viewer' or ''}">${ticket.status}</span>
-            <span class="multiline overlap editor" py:if="allow_edit">
+              <py:if test="not ticket.assigned_to_id">
+                ${c.user_select.display(name='assigned_to',value=ticket.assigned_to_id,className='wide')}
+              </py:if>
+            </div>
+            <hr class="clear clearfix"/>
+
+            <div class="span-3 tright"><b>Status:</b></div>
+            <div class="span-3 last">
               <select name="status">
                 <option py:for="option in globals.status_names.split()" value="$option"
                         selected="${'selected' if ticket.status==option else None}">$option</option>
               </select>
-            </span>
-          </span>
-        </div>
-        <hr class="clear clearfix"/>
-        <div class="span-3 tright"><b>Milestone:</b></div>
-        <div class="span-4 last">
-          <span class="${allow_edit and ' editable viewing' or ''}">
-            <span class="${allow_edit and ' viewer' or ''}">${ticket.milestone or 'None'}</span>
-            <span class="multiline overlap editor" py:if="allow_edit">
+            </div>
+            <hr class="clear clearfix"/>
+
+            <div class="span-3 tright"><b>Milestone:</b></div>
+            <div class="span-3 last">
               <select name="milestone">
                 <option value="">None</option>
                 <option py:for="option in globals.milestone_names.split()" value="$option"
                         selected="${'selected' if ticket.milestone==option else None}">$option</option>
               </select>
-            </span>
-          </span>
-        </div>
-        <hr class="clear clearfix"/>
-        <py:for each="field in globals.custom_fields or []">
-          <div class="span-3 tright"><b>${field.label}:</b></div>
-          <div class="span-4 last">
-            <span class="${allow_edit and ' editable viewing' or ''}">
-              <span class="${allow_edit and ' viewer' or ''}">${ticket.custom_fields.get(field.name, '') or '&nbsp; &nbsp; &nbsp;'}</span>
-              <span class="multiline overlap editor" py:if="allow_edit">
+            </div>
+            <hr class="clear clearfix"/>
+
+            <py:for each="field in globals.custom_fields or []">
+              <div class="span-3 tright"><b>${field.label}:</b></div>
+              <div class="span-3 last">
                 <input py:if="field.type != 'select' and field.type != 'boolean'" name="custom_fields.${field.name}" type="text"
                        value="${ticket.custom_fields.get(field.name, '')}" class="title wide"/>
                 <input py:if="field.type == 'boolean' and ticket.custom_fields.get(field.name, '') == 'True'"
@@ -131,21 +151,13 @@
                             selected="${'selected' if ticket.custom_fields.get(field.name, '')==option[1:] or ticket.custom_fields.get(field.name, '')==None else None}">${option[1:]}</option>
                   </py:for>
                 </select>
-              </span>
-            </span>
-          </div>
-          <hr class="clear clearfix"/>
-        </py:for>
-        <div class="span-3 tright"><b>Tags:</b></div>
-        <div class="span-4 last">
-          <span class="${allow_edit and ' editable viewing' or ''}">
-            <span class="${allow_edit and ' viewer' or ''}">
-              <span py:for="label in ticket.labels" class="ui-corner-all tag">
-                <a href="../search?q=labels:${h.urllib.quote_plus(label)}">$label (${ticket.artifacts_labeled_with(label).count()})</a>
-              </span>
-              <py:if test="not len(ticket.labels)">None</py:if>
-            </span>
-            <span class="multiline overlap editor" py:if="allow_edit">${c.label_edit.display(name='labels', value=ticket.labels)}</span>
+              </div>
+              <hr class="clear clearfix"/>
+            </py:for>
+
+            <div class="span-3 tright"><b>Tags:</b></div>
+            <div class="span-3 last">${c.label_edit.display(name='labels', value=ticket.labels)}</div>
+            <div class="save_holder push-3 span-3 last"/>
           </span>
         </div>
         <span class="actions clear">

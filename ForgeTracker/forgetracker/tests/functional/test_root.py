@@ -245,7 +245,7 @@ class TestFunctionalController(TestController):
         summary = 'test default assignment'
         self.new_ticket(summary=summary)
         response = self.app.get('/p/test/bugs/1/')
-        assert 'nobody' in str(response.html.find('span', {'class': 'ticket-assigned-to viewer'}))
+        assert 'nobody' in str(response.html.find('span', {'class': 'ticket-assigned-to'}))
     
     def test_assign_ticket(self):
         summary = 'test assign ticket'
@@ -263,7 +263,7 @@ class TestFunctionalController(TestController):
             'labels_old':''
         })
         response = self.app.get('/p/test/bugs/1/')
-        assert 'nobody' in str(response.html.find('span', {'class': 'ticket-assigned-to viewer'}))
+        assert 'nobody' in str(response.html.find('span', {'class': 'ticket-assigned-to'}))
     
     def test_custom_fields(self):
         spec = """[{"label":"Priority","type":"select","options":"normal urgent critical"},

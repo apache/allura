@@ -40,11 +40,12 @@
             };
 
             return this.each(function() {
-                hiddenText = $(document.createElement('input'));
+                var textBase = $(this);
+                var hiddenText = $(document.createElement('input'));
                 hiddenText.attr('type', 'hidden');
                 textBase.after(hiddenText);
 
-                listBase = $(document.createElement('ul'));
+                var listBase = $(document.createElement('ul'));
                 listBase.attr('class', options.className);
                 $(this).after(listBase);
                 //
