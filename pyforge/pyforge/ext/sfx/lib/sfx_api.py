@@ -12,9 +12,14 @@ from . import exceptions as sfx_exc
 
 def read_response(response, *expected):
     if not expected: expected = (200,)
-    if response.status in expected:return json.loads(response.read())
+    text = response.read()
+    if response.status in expected:
+        try:
+            return json.loads(text)
+        except ValueError:
+            return text
     cls = sfx_exc.SFXAPIError.status_map.get(response.status, sfx_exc.SFXAPIError)
-    raise cls('Error status %s' % response.status, response.read())
+    raise cls('Error status %s' % response.status, text)
 
 class SFXUserApi(object):
     
@@ -107,6 +112,7 @@ class SFXProjectApi(object):
                     pr.user.sfx_userid
                     for pr in roles_with_project_access('update', p)
                     if pr.user is not None and pr.user.sfx_userid is not None ])
+            args['admins'] = args['developers']
             conn.request('PUT', self.project_path + '/' + ug_name, json.dumps(args))
             response = conn.getresponse()
             return read_response(response)
