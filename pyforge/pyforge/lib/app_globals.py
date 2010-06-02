@@ -53,8 +53,9 @@ class Globals(object):
             self.solr = None
         self.use_queue = asbool(config.get('use_queue', False))
 
-        # Load login url
-        self.login_url = config.get('auth.login_url') # only used for SFX logins
+        # Load login/logout urls; only used for SFX logins
+        self.login_url = config.get('auth.login_url')
+        self.logout_url = config.get('auth.logout_url')
 
         # Setup RabbitMQ
         if asbool(config.get('amqp.mock')):

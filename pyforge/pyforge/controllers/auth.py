@@ -171,7 +171,10 @@ class AuthController(object):
     @expose()
     def logout(self):
         plugin.AuthenticationProvider.get(request).logout()
-        redirect('/')
+        if config.get('auth.method', 'local') == 'sfx':
+            redirect(g.logout_url)
+        else:
+            redirect('/')
 
     @expose()
     def do_login(self, came_from=None, **kw):
