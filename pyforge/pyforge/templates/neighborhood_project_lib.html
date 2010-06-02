@@ -70,9 +70,6 @@
         </li>
       </ul>
       <ul id="sidebarmenu" py:if="getattr(c, 'app', None)">
-          <li py:if="has_neighborhood_access('admin', c.project.neighborhood)()">
-            <a href="${c.project.neighborhood.url()}_admin/" class="${c.project.neighborhood.url()+'_admin' in request.url and 'active' or ''}">Admin Neighborhood</a>
-          </li>
         <li py:for="s in c.app.sidebar_menu()">
           <a py:if="s.url" href="$s.url" class="$s.className ${request.url.rfind(s.url,-len(s.url)) != -1 and 'active' or ''}"><span py:if="s.ui_icon" class="ui-icon ui-icon-$s.ui_icon"></span>$s.label</a>
           <span py:if="not s.url" class="$s.className nav_head"><span py:if="s.ui_icon" class="ui-icon ui-icon-$s.ui_icon"></span>$s.label</span>

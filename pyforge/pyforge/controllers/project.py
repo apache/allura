@@ -331,11 +331,16 @@ class NeighborhoodAdminController(object):
                 'Admin access required')
 
     def set_nav(self):
-        admin_url = self.neighborhood.url()+'_admin/'
-        c.custom_sidebar_menu = [SitemapEntry('Neighborhood Admin'),
-                 SitemapEntry('Overview', admin_url+'overview', className='nav_child'),
-                 SitemapEntry('Permissions', admin_url+'permissions', className='nav_child'),
-                 SitemapEntry('Awards', admin_url+'accolades', className='nav_child')]
+        project = M.Project.query.find({'shortname':'__init__','neighborhood_id':self.neighborhood._id}).first()
+        if project:
+            c.project = project
+            g.set_app('admin')
+        else:
+            admin_url = self.neighborhood.url()+'_admin/'
+            c.custom_sidebar_menu = [SitemapEntry('Neighborhood Admin'),
+                     SitemapEntry('Overview', admin_url+'overview', className='nav_child'),
+                     SitemapEntry('Permissions', admin_url+'permissions', className='nav_child'),
+                     SitemapEntry('Awards', admin_url+'accolades', className='nav_child')]
 
     @with_trailing_slash
     @expose()

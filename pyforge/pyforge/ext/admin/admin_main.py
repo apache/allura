@@ -75,8 +75,15 @@ class AdminApp(Application):
 
     @h.exceptionless([], log)
     def sidebar_menu(self):
+        links = []
+        if c.project.shortname == '__init__':
+            admin_url = c.project.neighborhood.url()+'_admin/'
+            links = links + [SitemapEntry('Neighborhood Admin'),
+                     SitemapEntry('Overview', admin_url+'overview', className='nav_child'),
+                     SitemapEntry('Permissions', admin_url+'permissions', className='nav_child'),
+                     SitemapEntry('Awards', admin_url+'accolades', className='nav_child')]
         admin_url = c.project.url()+'admin/'
-        links = [SitemapEntry('Project'),
+        links = links + [SitemapEntry('Project'),
                  SitemapEntry('Overview', admin_url+'overview', className='nav_child'),
                  SitemapEntry('Tools/Subprojects', admin_url+'tools', className='nav_child')]
         if len(c.project.neighborhood_invitations):
