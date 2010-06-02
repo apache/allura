@@ -1,6 +1,3 @@
-from itertools import count
-
-from mock import Mock, patch
 from nose.tools import assert_raises
 from pylons import c
 

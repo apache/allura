@@ -1,4 +1,4 @@
-from mock import Mock, patch
+from mock import Mock
 from ming.orm import ThreadLocalORMSession
 
 from pyforge.tests.unit import WithDatabase

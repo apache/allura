@@ -1,8 +1,3 @@
-from contextlib import contextmanager
-
-from mock import Mock, patch
-from pylons import c
-
 from pyforge.tests.unit import WithDatabase
 from pyforge.tests.unit import patches
 from pyforge.tests.unit.factories import create_post

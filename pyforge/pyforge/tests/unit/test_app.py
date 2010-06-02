@@ -1,8 +1,3 @@
-from contextlib import contextmanager
-
-from mock import Mock
-from pylons import c
-
 from pyforge.app import Application
 from pyforge import model
 from pyforge.tests.unit import WithDatabase
