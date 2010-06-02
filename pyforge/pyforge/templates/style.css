@@ -50,7 +50,7 @@ a:hover {text-decoration: underline;}
 
 
 /* View */
-#grid {position: relative;}
+.grid {position: relative;}
 ul.display {
 	float: left;
 	margin: 0;

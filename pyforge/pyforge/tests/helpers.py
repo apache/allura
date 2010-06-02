@@ -2,11 +2,12 @@ from os import path, environ, getcwd
 
 import tg
 import mock
+import beaker.session
 from paste.deploy import loadapp
 from paste.script.appinstall import SetupCommand
-from pylons import c, g, request
+from pylons import c, g, h, url, request, response, session
 from webtest import TestApp
-from webob import Request
+from webob import Request, Response
 
 from ming.orm import ThreadLocalORMSession
 
@@ -37,10 +38,16 @@ def setup_functional_test(config=DFL_CONFIG, app_name=DFL_APP_NAME):
     return TestApp(wsgiapp)
 
 def setup_global_objects():
+    from pyforge.lib import helpers
     g._push_object(Globals())
     c._push_object(MagicalC(mock.Mock(), ENV))
+    h._push_object(helpers)
+    url._push_object(lambda:None)
+    c.widget = None
     c.queued_messages = None
     request._push_object(Request.blank('/'))
+    response._push_object(Response())
+    session._push_object(beaker.session.SessionObject({}))
     ThreadLocalORMSession.close_all()
     g.set_project('test')
     g.set_app('wiki')

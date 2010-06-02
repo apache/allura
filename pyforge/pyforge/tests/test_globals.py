@@ -1,28 +1,17 @@
 from os import path, environ
 
-import beaker.session
 import webob
 from tg import config
 from paste.deploy import loadapp
 from paste.script.appinstall import SetupCommand
-from pylons import g, session, request
+from pylons import c, g, session, request
 
-
+from . import helpers
 
 def setUp(self):
     """Method called by nose before running each test"""
-    test_config = environ.get('SANDBOX') and 'sandbox-test.ini' or 'test.ini'
-
-    # Loading the application:
-    conf_dir = config.here
-    wsgiapp = loadapp('config:%s#main' % test_config,
-                      relative_to=conf_dir)
-    # Setting it up:
-    test_file = path.join(conf_dir, test_config)
-    cmd = SetupCommand('setup-app')
-    cmd.run([test_file])
-    session._push_object(beaker.session.SessionObject({}))
-    request._push_object(webob.Request.blank('/test'))
+    helpers.setup_basic_test()
+    helpers.setup_global_objects()
 
 def test_app_globals():
     g.oid_session()
@@ -46,6 +35,8 @@ def test_markdown():
     assert '<a href=' in g.markdown_wiki.convert('This is a WikiPage')
     assert '<br>' in g.markdown.convert('Multi\nLine')
     assert '<br>' not in g.markdown.convert('Multi\n\nLine')
+    r = g.markdown.convert('[[projects]]')
+    assert '<div class="gravatar sm">' in r
     assert '<br>' not in g.markdown.convert('''# Header
 
 Some text in a regular paragraph

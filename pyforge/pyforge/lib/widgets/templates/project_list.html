@@ -1,0 +1,12 @@
+<div xmlns:py="http://genshi.edgewall.org/"
+     xmlns:xi="http://www.w3.org/2001/XInclude"
+   class="grid">
+  <p py:if="not len(projects)">No projects found</p>
+  <ul class="display ${display_mode == 'grid' and 'thumb_view' or None}" py:if="len(projects)" style="clear: both">
+    <li py:for="project in projects">
+      ${project_summary.display(value=project)}
+    </li>
+  </ul>
+  <br style="clear:both"/>
+</div>
+

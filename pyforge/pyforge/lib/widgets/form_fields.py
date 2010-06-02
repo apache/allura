@@ -1,5 +1,4 @@
 from pylons import c
-from pyforge.model import User
 from formencode import validators as fev
 
 import ew

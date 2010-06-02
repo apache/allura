@@ -1,6 +1,3 @@
-from pylons import c
-from pyforge.model import User
-
 import ew
 
 class ProjectSummary(ew.Widget):
@@ -28,3 +25,13 @@ class ProjectSummary(ew.Widget):
             }
 		});
         ''')
+
+class ProjectList(ew.Widget):
+    template='genshi:pyforge.lib.widgets.templates.project_list'
+    params=['projects', 'project_summary']
+    projects=[]
+    project_summary=ProjectSummary()
+
+    def resources(self):
+        for r in self.project_summary.resources():
+            yield r

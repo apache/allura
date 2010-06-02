@@ -11,6 +11,8 @@ from pylons import g
 import oembed
 import markdown
 
+from . import macro
+
 log = logging.getLogger(__name__)
 
 class ForgeExtension(markdown.Extension):
@@ -27,6 +29,7 @@ class ForgeExtension(markdown.Extension):
         md.inlinePatterns['artifact'] = ArtifactLinkPattern(self.core_artifact_link)
         if self._use_wiki:
             md.inlinePatterns['wiki'] = WikiLinkPattern(r'\b([A-Z]\w+[A-Z]+\w+)')
+        md.postprocessors['macro'] = MacroPostprocessor()
 
 class LineOrientedTreeProcessor(markdown.treeprocessors.Treeprocessor):
     '''Once MD is satisfied with the etree, this runs to replace \n with <br/>
@@ -112,4 +115,22 @@ class OEmbedPattern(markdown.inlinepatterns.LinkPattern):
         iframe.set('width', str(width))
         iframe.set('height', str(height))
         return iframe
+
+class MacroPattern(markdown.inlinepatterns.LinkPattern):
+
+    def handleMatch(self, mo):
+        macro_text = mo.group(2)
+        result = macro.parse(markdown, macro_text)
+        if result is None:
+            result = markdown.etree.Element('span')
+            result.text = '[[-%s-]]' % macro_text
+        return result
+
+class MacroPostprocessor(markdown.postprocessors.Postprocessor):
+    macro_re = re.compile(r'\[\[(.*?)\]\]')
+    def run(self, text):
+        def repl(mo):
+            result = macro.parse(mo.group(1))
+            return result
+        return self.macro_re.sub(repl, text)
 

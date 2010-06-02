@@ -69,6 +69,7 @@ class Globals(object):
         self.markdown_wiki = markdown.Markdown(
             extensions=['codehilite', ForgeExtension(wiki=True),'meta'],
             output_format='html4')
+        # self.markdown.stripTopLevelTags = self.markdown_wiki.stripTopLevelTags=False
 
         # Setup OEmbed
         cp = RawConfigParser()
