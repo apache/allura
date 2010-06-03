@@ -23,6 +23,49 @@ from .session import project_doc_session, project_orm_session
 
 log = logging.getLogger(__name__)
 
+def smart_str(s, encoding='utf-8', strings_only=False, errors='strict'):
+    """
+    Returns a bytestring version of 's', encoded as specified in 'encoding'.
+
+    If strings_only is True, don't convert (some) non-string-like objects.
+
+    This function was borrowed from Django
+    """
+    if strings_only and isinstance(s, (types.NoneType, int)):
+        return s
+    elif not isinstance(s, basestring):
+        try:
+            return str(s)
+        except UnicodeEncodeError:
+            if isinstance(s, Exception):
+                # An Exception subclass containing non-ASCII data that doesn't
+                # know how to print itself properly. We shouldn't raise a
+                # further exception.
+                return ' '.join([smart_str(arg, encoding, strings_only,
+                        errors) for arg in s])
+            return unicode(s).encode(encoding, errors)
+    elif isinstance(s, unicode):
+        r = s.encode(encoding, errors)
+        return r
+    elif s and encoding != 'utf-8':
+        return s.decode('utf-8', errors).encode(encoding, errors)
+    else:
+        return s
+
+def generate_smart_str(params):
+    for (key, value) in params:
+        if value is None: continue
+        yield smart_str(key), smart_str(value)
+
+def urlencode(params):
+    """
+    A version of Python's urllib.urlencode() function that can operate on
+    unicode strings. The parameters are first case to UTF-8 encoded strings and
+    then encoded as per normal.
+    """
+    return urllib.urlencode([i for i in generate_smart_str(params)])
+
+
 class ApiToken(MappedClass):
     class __mongometa__:
         name='api_token'
@@ -45,7 +88,7 @@ class ApiToken(MappedClass):
             # Validate signature
             api_signature = params['api_signature']
             params = sorted((k,v) for k,v in params.iteritems() if k != 'api_signature')
-            string_to_sign = path + '?' + urllib.urlencode(params)
+            string_to_sign = path + '?' + urlencode(params)
             digest = hmac.new(self.secret_key, string_to_sign, hashlib.sha256)
             return digest.hexdigest() == api_signature
         except KeyError:
@@ -62,7 +105,7 @@ class ApiToken(MappedClass):
         if not has_api_timestamp:
             params.append(('api_timestamp', datetime.utcnow().isoformat()))
         if not has_api_signature:
-            string_to_sign = path + '?' + urllib.urlencode(sorted(params))
+            string_to_sign = path + '?' + urlencode(sorted(params))
             digest = hmac.new(self.secret_key, string_to_sign, hashlib.sha256)
             params.append(('api_signature', digest.hexdigest()))
         return params
