@@ -42,7 +42,7 @@
 	          <td py:if="t.assigned_to_id"><a href="${t.assigned_to.url()}">${t.assigned_to.display_name}</a></td>
 	          <td py:if="not t.assigned_to_id"></td>
 	            <td>$t.summary</td>
-              <td py:for="field in sortable_custom_fields">${t.custom_fields[field.name]}</td>
+              <td py:for="field in sortable_custom_fields">${t.custom_fields.get(field.name)}</td>
             </tr>
           </tbody>
         </table>
