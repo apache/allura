@@ -45,20 +45,29 @@ class SFXUserApi(object):
             url = self._userid_api_url(int(username))
         except ValueError:
             url = self._username_api_url(username)
-        url_handle = urllib2.urlopen(url, timeout=timeout)
-        return json.load(url_handle)['User']
+        try:
+            url_handle = urllib2.urlopen(url, timeout=timeout)
+            return json.load(url_handle)['User']
+        except urllib2.HTTPError, ex:
+            if ex.code == 404: return None
+            raise
 
     def upsert_user(self, username, user_data=None):
-        if user_data is None:
-            user_data = self.user_data(username)
         u = M.User.query.get(username=username)
+        if user_data is None:
+            if u is not None and u.sfx_userid:
+                user_data = self.user_data(u.sfx_userid)
+            else:
+                user_data = self.user_data(username)
         if u is None:
+            if user_data is None: return None
             u = M.User(
                 username=username,
                 display_name=user_data['name'],
                 sfx_userid=user_data['id'])
             n = M.Neighborhood.query.get(name='Users')
             n.register_project('u/' + u.username.replace('_', '-'), u, user_project=True)
+        if user_data is None: return u
         if u.display_name != user_data['name']:
             u.display_name = user_data['name']
         if u.sfx_userid != user_data['id']:
