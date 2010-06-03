@@ -41,7 +41,6 @@ def smart_str(s, encoding='utf-8', strings_only=False, errors='strict'):
 
 def generate_smart_str(params):
     for (key, value) in params:
-        if value is None: continue
         yield smart_str(key), smart_str(value)
 
 def urlencode(params):
