@@ -264,6 +264,8 @@ class TestFunctionalController(TestController):
         })
         response = self.app.get('/p/test/bugs/1/')
         assert 'nobody' in str(response.html.find('span', {'class': 'ticket-assigned-to'}))
+        assert '<li><strong>summary</strong>: test assign ticket --&gt; zzz</li>' in response
+        assert '<li><strong>status</strong>: open --&gt; ccc</li>' in response
     
     def test_custom_fields(self):
         spec = """[{"label":"Priority","type":"select","options":"normal urgent critical"},
@@ -275,7 +277,7 @@ class TestFunctionalController(TestController):
         ticket_view = self.new_ticket(summary='test custom fields', **kw)
         assert 'Priority:' in ticket_view
         assert 'normal' in ticket_view
-    
+
     def test_milestone_names(self):
         self.app.post('/admin/bugs/set_custom_fields', {
             'milestone_names': 'aaa bbb ccc',
@@ -297,7 +299,9 @@ class TestFunctionalController(TestController):
         ticket_view = self.app.get('/p/test/bugs/1/')
         assert 'Milestone' in ticket_view
         assert 'aaa' in ticket_view
-    
+        assert '<li><strong>summary</strong>: test milestone names --&gt; zzz</li>' in ticket_view
+        assert '<p><strong>status</strong>: aa --&gt; ccc</p>' in ticket_view
+
     def test_subtickets(self):
         # create two tickets
         self.new_ticket(summary='test superticket')
