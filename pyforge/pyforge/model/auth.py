@@ -198,7 +198,7 @@ class User(MappedClass):
     tool_preferences=FieldProperty({str:{str:None}}) # full mount point: prefs dict
 
     def url(self):
-        return '/u/' + self.username + '/'
+        return '/u/' + self.username.replace('_', '-') + '/'
 
     @classmethod
     def by_email_address(cls, addr):
