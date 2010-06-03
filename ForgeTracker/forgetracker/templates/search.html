@@ -51,7 +51,7 @@
           <td py:if="t.assigned_to_id">${t.assigned_to.display_name}</td>
           <td py:if="not t.assigned_to_id"></td>
           <td>${h.ago(t.mod_date)}</td>
-          <td py:for="field in sortable_custom_fields">${t.custom_fields[field.name]}</td>
+          <td py:for="field in sortable_custom_fields">${t.custom_fields.get(field.name)}</td>
         </tr>
       </tbody>
     </table>
