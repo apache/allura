@@ -206,3 +206,17 @@ class TestRootController(TestController):
         assert not options_admin2.form['show_discussion'].checked
         wiki_page2 = self.app.get('/wiki/TEST/')
         assert not wiki_page2.html.find('div',{'id':'new_post_holder'})
+
+    def test_show_left_bar(self):
+        self.app.get('/wiki/TEST/')
+        wiki_page = self.app.get('/wiki/TEST/')
+        assert wiki_page.html.find('ul',{'id':'sidebarmenu'})
+        options_admin = self.app.get('/admin/wiki/options')
+        assert options_admin.form['show_left_bar'].checked
+        options_admin.form['show_left_bar'].checked = False
+        options_admin2 = options_admin.form.submit().follow()
+        assert not options_admin2.form['show_left_bar'].checked
+        wiki_page2 = self.app.get('/wiki/TEST/',extra_environ=dict(username='*anonymous'))
+        assert not wiki_page2.html.find('ul',{'id':'sidebarmenu'})
+        wiki_page3 = self.app.get('/wiki/TEST/')
+        assert wiki_page3.html.find('ul',{'id':'sidebarmenu'})

@@ -3,8 +3,10 @@
 <html xmlns="http://www.w3.org/1999/xhtml"
       xmlns:py="http://genshi.edgewall.org/"
       xmlns:xi="http://www.w3.org/2001/XInclude">
-  <xi:include href="wiki_master.html"/>
   <?python from pyforge.lib import helpers as h?>
+  <?python from pyforge.lib.security import has_artifact_access?>
+  <xi:include href="wiki_master.html" py:if="c.app.show_left_bar or has_artifact_access('edit', app=c.app)()"/>
+  <xi:include href="master_one_col.html" py:if="not c.app.show_left_bar and not has_artifact_access('edit', app=c.app)()" />
 
   <head>
     <meta content="text/html; charset=UTF-8" http-equiv="content-type" py:replace="''"/>
@@ -21,7 +23,7 @@
   </head>
   
   <body>
-    <div class="span-11 append-1">
+    <div class="span-${(c.app.show_left_bar or has_artifact_access('edit', app=c.app)()) and '11' or '14'} append-1">
       <h1 class="title">$page.title</h1>
       ${Markup(page.html_text)}
     </div>

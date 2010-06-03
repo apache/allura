@@ -116,6 +116,13 @@ class ForgeWikiApp(Application):
             return True
 
     @property
+    def show_left_bar(self):
+        if 'show_left_bar' in self.config.options:
+            return self.config.options['show_left_bar']
+        else:
+            return True
+
+    @property
     @h.exceptionless([], log)
     def sitemap(self):
         menu_id = self.config.options.mount_point.title()
@@ -675,10 +682,13 @@ class WikiAdminController(DefaultAdminController):
 
     @without_trailing_slash
     @expose()
-    def set_options(self, show_discussion=False):
+    def set_options(self, show_discussion=False, show_left_bar=False):
         require(has_artifact_access('configure', app=self.app))
         if show_discussion:
             show_discussion = True
+        if show_left_bar:
+            show_left_bar = True
         self.app.config.options['show_discussion'] = show_discussion
+        self.app.config.options['show_left_bar'] = show_left_bar
         flash('Options updated')
         redirect('options')
