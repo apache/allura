@@ -11,7 +11,7 @@ import ming
 from pyforge.config.app_cfg import base_config
 from pyforge.config.environment import load_environment
 from pyforge.config.app_cfg import ForgeConfig
-from pyforge.lib.custom_middleware import SfxLoginMiddleware, SSLMiddleware
+from pyforge.lib.custom_middleware import StatsMiddleware, SSLMiddleware
 
 __all__ = ['make_app']
 
@@ -47,8 +47,6 @@ def _make_core_app(root, global_conf, full_stack=True, **app_conf):
     
    
     """
-    import pyforge.lib.helpers as h
-
     # Create base app
     base_config = ForgeConfig(root)
     load_environment = base_config.make_load_environment()
@@ -65,6 +63,8 @@ def _make_core_app(root, global_conf, full_stack=True, **app_conf):
 
     # Wrap your base TurboGears 2 application with custom middleware here
     # app = MingMiddleware(app)
+    if app_conf.get('stats.sample_rate', '0.25') != '0':
+        app = StatsMiddleware(app, app_conf)
 
     if asbool(app_conf.get('auth.method', 'local')=='sfx'):
         app = SSLMiddleware(app)

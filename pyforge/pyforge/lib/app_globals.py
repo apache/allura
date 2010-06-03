@@ -97,8 +97,6 @@ class Globals(object):
             lexer = pygments.lexers.get_lexer_by_name(lexer)
         return pygments.highlight(text, lexer, self.pygments_formatter)
 
-
-
     @property
     def publisher(self):
         from .custom_middleware import environ
