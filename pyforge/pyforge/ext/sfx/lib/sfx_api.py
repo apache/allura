@@ -1,3 +1,4 @@
+import re
 import json
 import httplib
 import urllib2
@@ -53,7 +54,11 @@ class SFXUserApi(object):
             raise
 
     def upsert_user(self, username, user_data=None):
-        u = M.User.query.get(username=username)
+        un = re.escape(username)
+        un = un.replace(r'\_', '[-_]')
+        un = un.replace(r'\-', '[-_]')
+        rex = re.compile('^' + un + '$')
+        u = M.User.query.get(username=rex)
         if user_data is None:
             if u is not None and u.sfx_userid:
                 user_data = self.user_data(u.sfx_userid)
