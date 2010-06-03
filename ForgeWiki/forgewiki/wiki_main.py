@@ -109,6 +109,13 @@ class ForgeWikiApp(Application):
         return page_name
 
     @property
+    def show_discussion(self):
+        if 'show_discussion' in self.config.options:
+            return self.config.options['show_discussion']
+        else:
+            return True
+
+    @property
     @h.exceptionless([], log)
     def sitemap(self):
         menu_id = self.config.options.mount_point.title()
@@ -122,7 +129,8 @@ class ForgeWikiApp(Application):
 
     def admin_menu(self):
         admin_url = c.project.url()+'admin/'+self.config.options.mount_point+'/'
-        links = [SitemapEntry('Set Home', admin_url + 'home/', className='nav_child')]
+        links = [SitemapEntry('Set Home', admin_url + 'home', className='nav_child'),
+                 SitemapEntry('Options', admin_url + 'options', className='nav_child')]
         return links
 
     def sidebar_menu(self):
@@ -639,11 +647,17 @@ class WikiAdminController(DefaultAdminController):
     def index(self):
         redirect('home')
 
-    @with_trailing_slash
+    @without_trailing_slash
     @expose('forgewiki.templates.admin_home')
     def home(self):
         return dict(app=self.app,
                     home=self.app.root_page_name,
+                    allow_config=has_artifact_access('configure', app=self.app)())
+
+    @without_trailing_slash
+    @expose('forgewiki.templates.admin_options')
+    def options(self):
+        return dict(app=self.app,
                     allow_config=has_artifact_access('configure', app=self.app)())
 
     @without_trailing_slash
@@ -658,3 +672,13 @@ class WikiAdminController(DefaultAdminController):
         self.app.upsert_root(new_home)
         flash('Home updated')
         redirect(c.project.url()+self.app.config.options.mount_point+'/'+new_home+'/')
+
+    @without_trailing_slash
+    @expose()
+    def set_options(self, show_discussion=False):
+        require(has_artifact_access('configure', app=self.app))
+        if show_discussion:
+            show_discussion = True
+        self.app.config.options['show_discussion'] = show_discussion
+        flash('Options updated')
+        redirect('options')

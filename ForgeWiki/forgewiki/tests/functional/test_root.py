@@ -194,3 +194,15 @@ class TestRootController(TestController):
         assert 'Viewable by' in response
         self.app.get('/wiki/TEST/update?title=TEST&text=sometext&tags=&tags_old=&labels=&labels_old=&viewable_by-0.id=all&viewable_by-0.delete=True')
         self.app.get('/wiki/TEST/', status=403)
+
+    def test_show_discussion(self):
+        self.app.get('/wiki/TEST/')
+        wiki_page = self.app.get('/wiki/TEST/')
+        assert wiki_page.html.find('div',{'id':'new_post_holder'})
+        options_admin = self.app.get('/admin/wiki/options')
+        assert options_admin.form['show_discussion'].checked
+        options_admin.form['show_discussion'].checked = False
+        options_admin2 = options_admin.form.submit().follow()
+        assert not options_admin2.form['show_discussion'].checked
+        wiki_page2 = self.app.get('/wiki/TEST/')
+        assert not wiki_page2.html.find('div',{'id':'new_post_holder'})
