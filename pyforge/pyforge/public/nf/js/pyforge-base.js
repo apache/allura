@@ -39,7 +39,7 @@
             var save_btns = $('<div class="save_holder"><input type="submit" value="Save" class="ui-button ui-widget ui-state-default ui-button-text-only"/> <a href="#" class="cancel_btn">Cancel</a></div>')
             if(editor.hasClass('multiline')){
                 var save_holder = editor.find('.save_holder');
-                if(save_holder){
+                if(save_holder.length){
                     save_holder.append(save_btns);
                 }
                 else{
