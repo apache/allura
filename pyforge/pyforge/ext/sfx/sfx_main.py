@@ -137,6 +137,9 @@ class SFXProjectRegistrationProvider(plugin.ProjectRegistrationProvider):
         return p
 
     def register_subproject(self, project, name, user, install_apps):
+        if not project.is_root:
+            raise sfx_exc.SFXIllegalProject, (
+                'Subprojects more than one level deep not supported')
         r = self.api.create(user, project.neighborhood, project.shortname + '/' + name)
         log.info('SFX Subproject creation returned: %s', r)
         return super(SFXProjectRegistrationProvider, self).register_subproject(

@@ -20,6 +20,7 @@ from pyforge import version
 from pyforge import model as M
 from pyforge.lib.security import require, has_project_access
 from pyforge.lib.widgets import form_fields as ffw
+from pyforge.lib import exceptions as forge_exc
 
 log = logging.getLogger(__name__)
 
@@ -297,7 +298,10 @@ class ProjectAdminController(object):
                 if not h.re_path_portion.match(mount_point):
                     flash('Invalid mount point', 'error')
                     redirect(request.referer)
-                sp = c.project.new_subproject(mount_point)
+                try:
+                    sp = c.project.new_subproject(mount_point)
+                except forge_exc.ForgeToolError, exc:
+                    flash(repr(exc), 'error')
             else:
                 require(has_project_access('tool'))
                 mount_point = new['mount_point'] or ep_name.lower()

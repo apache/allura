@@ -1,6 +1,7 @@
 from pyforge.lib import exceptions
 
 class SFXError(exceptions.ToolError): pass
+class SFXIllegalProject(SFXError): pass
 class SFXAPIError(SFXError): pass
 class SFXBadRequest(SFXAPIError): pass
 class SFXUnauthorized(SFXAPIError): pass
