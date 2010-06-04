@@ -25,6 +25,7 @@ from pyforge.lib.security import require, has_project_access, has_neighborhood_a
 from pyforge.lib.widgets import form_fields as ffw
 from pyforge.lib.widgets import project_list as plw
 from pyforge.lib import plugin
+from pyforge.lib import exceptions as forge_exc
 from .auth import AuthController
 from .search import SearchController, ProjectBrowseController
 from .static import StaticController
@@ -111,6 +112,11 @@ class NeighborhoodController(object):
         require(has_neighborhood_access('create', self.neighborhood), 'Create access required')
         try:
             p = self.neighborhood.register_project(pid)
+        except forge_exc.ProjectConflict:
+            flash(
+                'A project already exists with that name, please choose another.', 'error')
+            ming.orm.ormsession.ThreadLocalORMSession.close_all()
+            redirect('.')
         except Exception, ex:
             c.project = None
             ming.orm.ormsession.ThreadLocalORMSession.close_all()

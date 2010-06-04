@@ -129,6 +129,10 @@ class TestNeighborhood(TestController):
                           params=dict(pid='foo.mymoz'),
                           extra_environ=dict(username='root'))
         assert 'error' in r.cookies_set['webflash']
+        r = self.app.post('/p/register',
+                          params=dict(pid='test'),
+                          extra_environ=dict(username='root'))
+        assert 'error' in r.cookies_set['webflash']
 
     def test_neighborhood_project(self):
         r = self.app.get('/adobe/test/home/', status=302)

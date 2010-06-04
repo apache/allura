@@ -16,7 +16,7 @@ SFXAPIError.status_map = {
         401:SFXUnauthorized,
         403:SFXForbidden,
         404:SFXNotFound,
-        409:SFXConflict,
+        409:exceptions.ProjectConflict,
         410:SFXGone }
     
 

@@ -20,6 +20,7 @@ from ming.orm import session
 from ming.orm import ThreadLocalORMSession
 
 from pyforge.lib import helpers as h
+from pyforge.lib import exceptions as forge_exc
 
 log = logging.getLogger(__name__)
 
@@ -183,11 +184,7 @@ class ProjectRegistrationProvider(object):
         p = M.Project.query.get(
             neighborhood_id=neighborhood._id,
             shortname=shortname)
-        if p:
-            assert p.neighborhood == neighborhood, (
-                'Project %s exists in neighborhood %s' % (
-                    shortname, p.neighborhood.name))
-            return p
+        if p: raise forge_exc.ProjectConflict()
         database = 'project%s__init__' % neighborhood.url_prefix
         database = database.replace('/', ':').replace('-', '_')
         name = 'Home Project for %s' % neighborhood.name
@@ -250,11 +247,7 @@ class ProjectRegistrationProvider(object):
         assert h.re_path_portion.match(shortname.replace('/', '')), \
             'Invalid project shortname'
         p = M.Project.query.get(shortname=shortname)
-        if p:
-            assert p.neighborhood == neighborhood, (
-                'Project %s exists in neighborhood %s' % (
-                    shortname, p.neighborhood.name))
-            return p
+        if p: raise forge_exc.ProjectConflict()
         database = 'project:' + shortname.replace('/', ':').replace('-', '_')
         p = M.Project(neighborhood_id=neighborhood._id,
                     shortname=shortname,

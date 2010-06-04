@@ -133,14 +133,16 @@ class AuthController(object):
 
     @expose()
     def do_setup_openid_user(self, username=None, display_name=None):
-        if M.User.by_username(username) and username != c.user.username:
+        u = M.User.by_username(username)
+        if u and username != c.user.username:
             flash('That username is already taken.  Please choose another.',
                   'error')
             redirect('setup_openid_user')
         c.user.username = username
         c.user.display_name = display_name
-        n = M.Neighborhood.query.get(name='Users')
-        n.register_project('u/' + username)
+        if u is None:
+            n = M.Neighborhood.query.get(name='Users')
+            n.register_project('u/' + username)
         flash('Your username has been set to %s.' % username)
         redirect('/')
 
