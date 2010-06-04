@@ -265,6 +265,8 @@ class User(MappedClass):
         with h.push_config(c, project=project, user=self):
             if self._id is None:
                 return ProjectRole.query.get(name='*anonymous')
+            pr = ProjectRole.query.get(user_id=self._id)
+            if pr: return pr
             try:
                 obj = ProjectRole(user_id=self._id)
                 session(obj).insert_now(obj, state(obj))

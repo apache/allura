@@ -6,7 +6,7 @@ from collections import defaultdict
 import pkg_resources
 from tg import expose, flash, redirect, session, config, response, request
 from tg.decorators import with_trailing_slash, without_trailing_slash
-from pylons import c, g
+from pylons import c, g, cache
 
 import ew
 import ming
@@ -76,15 +76,16 @@ class RootController(BaseController):
     def index(self):
         """Handle the front-page."""
         c.project_summary = W.project_summary
-        psort = [
-            (n, M.Project.query.find(
-                    dict(is_root=True,
-                         shortname={'$ne':'__init__'},
-                         neighborhood_id=n._id,
-                         deleted=False)).sort('shortname').all())
-                 for n in M.Neighborhood.query.find().sort('name')]
+        projects = M.Project.query.find(
+            dict(is_root=True,
+                 shortname={'$ne':'__init__'},
+                 deleted=False)).sort('shortname').all()
+        neighborhoods = M.Neighborhood.query.find().sort('name')
+        psort = [ (n, [ p for p in projects if p.neighborhood_id==n._id ])
+                  for n in neighborhoods ]
         categories = M.ProjectCategory.query.find({'parent_id':None}).sort('name').all()
         c.custom_sidebar_menu = [SitemapEntry('Categories')] + [
             SitemapEntry(cat.label, '/browse/'+cat.name, className='nav_child') for cat in categories
         ]
         return dict(projects=psort,title="All Projects",text=None)
+

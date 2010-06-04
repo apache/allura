@@ -1,9 +1,13 @@
 import logging
 from contextlib import contextmanager
 from threading import local
+from random import random
 
 import pylons
+from tg.controllers import DecoratedController
 from webob import exc, Request
+
+from pyforge.lib.stats import timing, StatsRecord
 
 log = logging.getLogger(__name__)
 
@@ -96,6 +100,49 @@ class SSLMiddleware(object):
         if resp is None:
             resp = req.get_response(self.app)
         return resp(environ, start_response)
+
+class StatsMiddleware(object):
+
+    def __init__(self, app, config):
+        self.app = app
+        self.config = config
+        self.log = logging.getLogger('stats')
+        self.active = False
+        try:
+            self.sample_rate = config.get('stats.sample_rate', 0.25)
+            self.instrument_pymongo()
+            self.instrument_template()
+            self.active = True
+        except KeyError:
+            self.sample_rate = 0
+
+    def instrument_pymongo(self):
+        import pymongo.collection
+        import ming.orm
+        timing('mongo').decorate(pymongo.collection.Collection,
+                                 'count find find_one')
+        timing('ming').decorate(ming.orm.ormsession.ORMSession,
+                                'flush find get')
+        timing('ming').decorate(ming.orm.ormsession.ORMCursor,
+                                'next')
+
+    def instrument_template(self):
+        import genshi.template
+        timing('template').decorate(genshi.template.Template,
+                                    '_prepare _parse generate')
+        timing('render').decorate(genshi.Stream,
+                                  'render')
+
+
+    def __call__(self, environ, start_response):
+        req = Request(environ)
+        req.environ['sf.stats'] = s = StatsRecord(req, random() < self.sample_rate)
+        with s.timing('total'):
+            resp = req.get_response(self.app)
+            result = resp(environ, start_response)
+        if s.active:
+            self.log.info('Stats: %r', s)
+        return result
 
 class Environ(object):
     _local = local()
