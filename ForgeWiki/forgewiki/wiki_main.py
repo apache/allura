@@ -492,7 +492,10 @@ class PageController(object):
             else:
                 self.page.title = new_title
         self.page.text = text
-        self.page.labels = labels.split(',')
+        if len(labels):
+            self.page.labels = labels.split(',')
+        else:
+            self.page.labels = []
         self.page.commit()
         h.tag_artifact(self.page, c.user, tags)
         if new_viewable_by:
