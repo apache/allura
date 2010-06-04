@@ -33,6 +33,7 @@ def test_markdown():
     assert '<a href=' in g.markdown.convert('This is http://sf.net')
     assert '<a href=' not in g.markdown.convert('http://sf.net is this') # Meta ext grabs it
     assert '<a href=' in g.markdown_wiki.convert('This is a WikiPage')
+    assert '<a href=' not in g.markdown_wiki.convert('This is a WIKIPAGE')
     assert '<br>' in g.markdown.convert('Multi\nLine')
     assert '<br>' not in g.markdown.convert('Multi\n\nLine')
     r = g.markdown.convert('[[projects]]')

@@ -28,7 +28,7 @@ class ForgeExtension(markdown.Extension):
         md.inlinePatterns['autolink_1'] = AutolinkPattern(r'(http(?:s?)://\S*)')
         md.inlinePatterns['artifact'] = ArtifactLinkPattern(self.core_artifact_link)
         if self._use_wiki:
-            md.inlinePatterns['wiki'] = WikiLinkPattern(r'\b([A-Z]\w+[A-Z]+\w+)')
+            md.inlinePatterns['wiki'] = WikiLinkPattern(r'\b([A-Z][a-z]\w*[A-Z][a-z]\w*)')
         md.postprocessors['macro'] = MacroPostprocessor()
 
 class LineOrientedTreeProcessor(markdown.treeprocessors.Treeprocessor):
