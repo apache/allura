@@ -32,19 +32,22 @@
         <div id="download-button"></div>
 			</p>
       <div class="span-6 last" id="sidebar-right">
-        <div class="span-2 tright"><b>Awards:</b></div>
-        <div class="span-4 last">
-          <a py:if="len(c.project.accolades)" href="${accolade.award.longurl()}" py:for="accolade in c.project.accolades" title="$accolade.award.full">
-            <small class="badge $accolade.award.short">$accolade.award.short</small>
-          </a>
-          <span py:if="not len(c.project.accolades)">No Awards</span>
-        </div>
-        <hr class="clear clearfix" />
-        <div class="span-2 tright"><b>Tags:</b></div>
-        <div class="span-4 last">
-          <span py:if="len(c.project.labels)" py:for="label in c.project.labels" class="ui-corner-all tag">$label </span>
-          <span py:if="not len(c.project.labels)">No tags</span>
-        </div>
+        <py:if test="c.project.accolades">
+          <div class="span-2 tright"><b>Awards:</b></div>
+          <div class="span-4 last">
+            <a href="${accolade.award.longurl()}" py:for="accolade in c.project.accolades" title="$accolade.award.full">
+              <small class="badge $accolade.award.short">$accolade.award.short</small>
+            </a>
+            <span py:if="not len(c.project.accolades)">No Awards</span>
+          </div>
+        </py:if>
+        <hr py:if="c.project.labels and c.project.accolades" class="clear clearfix" />
+        <py:if test="c.project.labels">
+          <div class="span-2 tright"><b>Tags:</b></div>
+          <div class="span-4 last">
+            <span py:for="label in c.project.labels" class="ui-corner-all tag">$label </span>
+          </div>
+        </py:if>
         <hr class="clear clearfix" />
         <div class="span-2 tright"><b>Developers:</b></div>
         <div class="span-4 last gravatar sm">
