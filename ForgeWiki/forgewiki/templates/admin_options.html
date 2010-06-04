@@ -26,6 +26,12 @@
                  py:if="allow_config"/>
           <span py:if="not allow_config">${app.show_left_bar}</span>
         </div>
+        <div class="span-3 clear"><label>Show right bar:</label></div>
+        <div class="span-13 last">
+          <input type="checkbox" name="show_right_bar" id="show_right_bar" checked="${app.show_right_bar or None}"
+                 py:if="allow_config"/>
+          <span py:if="not allow_config">${app.show_right_bar}</span>
+        </div>
         <hr class="clear clearfix" />
         <div class="push-3 span-13 last">
           <input type="submit" class="ui-state-default ui-button ui-button-text"

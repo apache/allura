@@ -220,3 +220,15 @@ class TestRootController(TestController):
         assert not wiki_page2.html.find('ul',{'id':'sidebarmenu'})
         wiki_page3 = self.app.get('/wiki/TEST/')
         assert wiki_page3.html.find('ul',{'id':'sidebarmenu'})
+
+    def test_show_right_bar(self):
+        self.app.get('/wiki/TEST/')
+        wiki_page = self.app.get('/wiki/TEST/')
+        assert wiki_page.html.find('div',{'id':'sidebar-right'})
+        options_admin = self.app.get('/admin/wiki/options')
+        assert options_admin.form['show_right_bar'].checked
+        options_admin.form['show_right_bar'].checked = False
+        options_admin2 = options_admin.form.submit().follow()
+        assert not options_admin2.form['show_right_bar'].checked
+        wiki_page2 = self.app.get('/wiki/TEST/')
+        assert not wiki_page2.html.find('div',{'id':'sidebar-right'})

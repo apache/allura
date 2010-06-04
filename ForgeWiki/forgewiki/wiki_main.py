@@ -123,6 +123,13 @@ class ForgeWikiApp(Application):
             return True
 
     @property
+    def show_right_bar(self):
+        if 'show_right_bar' in self.config.options:
+            return self.config.options['show_right_bar']
+        else:
+            return True
+
+    @property
     @h.exceptionless([], log)
     def sitemap(self):
         menu_id = self.config.options.mount_point.title()
@@ -174,6 +181,7 @@ class ForgeWikiApp(Application):
     def install(self, project):
         'Set up any default permissions and roles here'
         self.config.options['project_name'] = project.name
+        self.config.options['show_right_bar'] = True
         super(ForgeWikiApp, self).install(project)
         # Setup permissions
         role_developer = ProjectRole.query.get(name='Developer')._id
@@ -682,13 +690,16 @@ class WikiAdminController(DefaultAdminController):
 
     @without_trailing_slash
     @expose()
-    def set_options(self, show_discussion=False, show_left_bar=False):
+    def set_options(self, show_discussion=False, show_left_bar=False, show_right_bar=False):
         require(has_artifact_access('configure', app=self.app))
         if show_discussion:
             show_discussion = True
         if show_left_bar:
             show_left_bar = True
+        if show_right_bar:
+            show_right_bar = True
         self.app.config.options['show_discussion'] = show_discussion
         self.app.config.options['show_left_bar'] = show_left_bar
+        self.app.config.options['show_right_bar'] = show_right_bar
         flash('Options updated')
         redirect('options')

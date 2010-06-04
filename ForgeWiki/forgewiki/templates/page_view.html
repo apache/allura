@@ -23,11 +23,11 @@
   </head>
   
   <body>
-    <div class="span-${(c.app.show_left_bar or has_artifact_access('edit', app=c.app)()) and '11' or '14'} append-1">
+    <div class="span-${((c.app.show_left_bar or has_artifact_access('edit', app=c.app)()) and 11 or 14) + (not c.app.show_right_bar and 7 or 0)} append-1">
       <h1 class="title">$page.title</h1>
       ${Markup(page.html_text)}
     </div>
-    <div id="sidebar-right" class="span-7 last">
+    <div py:if="c.app.show_right_bar" id="sidebar-right" class="span-7 last">
       <div py:if="len(page.labels)">
         Tags: <span py:for="label in page.labels"><a href="../browse_tags">$label (${page.artifacts_labeled_with(label).count()})</a></span>
         <hr/>
