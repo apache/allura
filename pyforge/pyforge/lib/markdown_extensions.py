@@ -23,7 +23,7 @@ class ForgeExtension(markdown.Extension):
         self._use_wiki = wiki
 
     def extendMarkdown(self, md, md_globals):
-        md.treeprocessors['br'] = LineOrientedTreeProcessor()
+        md.treeprocessors['br'] = LineOrientedTreeProcessor(md)
         md.inlinePatterns['oembed'] = OEmbedPattern(r'\[embed#(.*?)\]')
         md.inlinePatterns['autolink_1'] = AutolinkPattern(r'(http(?:s?)://\S*)')
         md.inlinePatterns['artifact'] = ArtifactLinkPattern(self.core_artifact_link)
@@ -35,15 +35,27 @@ class LineOrientedTreeProcessor(markdown.treeprocessors.Treeprocessor):
     '''Once MD is satisfied with the etree, this runs to replace \n with <br/>
     within <p>s.
     '''
+
+    def __init__(self, md):
+        self._markdown = md
+    
     def run(self, root):
         for node in root.getiterator('p'):
-            text = markdown.etree.tostring(node).strip()
+            if not node.text: continue
+            if '\n' not in node.text: continue
+            text = self._markdown.serializer(node)
+            text = self._markdown.postprocessors['raw_html'].run(text)
+            text = text.strip()
             if '\n' not in text: continue
             new_text = text.replace('\n', '<br/>')
-            new_node = markdown.etree.fromstring(new_text)
-            node.clear()
-            node.text = new_node.text
-            node[:] = list(new_node)
+            try:
+                new_node = markdown.etree.fromstring(new_text)
+                node.clear()
+                node.text = new_node.text
+                node[:] = list(new_node)
+            except SyntaxError:
+                log.exception('Error adding <br> tags')
+                pass
         return root
 
 class ArtifactLinkPattern(markdown.inlinepatterns.LinkPattern):
