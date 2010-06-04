@@ -77,7 +77,7 @@ class AdminApp(Application):
     @h.exceptionless([], log)
     def sidebar_menu(self):
         links = []
-        if c.project.shortname == '__init__':
+        if c.project.shortname == '--init--':
             admin_url = c.project.neighborhood.url()+'_admin/'
             links = links + [SitemapEntry('Neighborhood Admin'),
                      SitemapEntry('Overview', admin_url+'overview', className='nav_child'),

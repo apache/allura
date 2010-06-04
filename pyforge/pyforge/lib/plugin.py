@@ -178,7 +178,7 @@ class ProjectRegistrationProvider(object):
 
     def register_neighborhood_project(self, neighborhood, users):
         from pyforge import model as M
-        shortname='__init__'
+        shortname='--init--'
         p = M.Project.query.get(
             neighborhood_id=neighborhood._id,
             shortname=shortname)

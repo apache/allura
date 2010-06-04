@@ -41,7 +41,7 @@ def projects(category=None, display_mode='grid', sort='last_updated'):
     q = dict(
         neighborhood_id=c.project.neighborhood_id,
         deleted=False,
-        shortname={'$ne':'__init__'})
+        shortname={'$ne':'--init--'})
     if category is not None:
         category = M.ProjectCategory.query.get(name=category)
     if category is not None:

@@ -78,7 +78,7 @@ class RootController(BaseController):
         c.project_summary = W.project_summary
         projects = M.Project.query.find(
             dict(is_root=True,
-                 shortname={'$ne':'__init__'},
+                 shortname={'$ne':'--init--'},
                  deleted=False)).sort('shortname').all()
         neighborhoods = M.Neighborhood.query.find().sort('name')
         psort = [ (n, [ p for p in projects if p.neighborhood_id==n._id ])

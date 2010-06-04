@@ -157,7 +157,7 @@ class Project(MappedClass):
             return url
 
     def url(self):
-        if self.shortname.endswith('__init__'):
+        if self.shortname.endswith('--init--'):
             return self.neighborhood.url()
         shortname = self.shortname[len(self.neighborhood.shortname_prefix):]
         url = self.neighborhood.url_prefix + shortname + '/'

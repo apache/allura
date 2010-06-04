@@ -61,7 +61,7 @@ class NeighborhoodController(object):
         project = M.Project.query.get(shortname=self.prefix + pname)
         if project is None:
             project = M.Project.query.get(
-                shortname='__init__',
+                shortname='--init--',
                 neighborhood_id=self.neighborhood._id)
             if not project:
                 # Go ahead and register it
@@ -86,7 +86,7 @@ class NeighborhoodController(object):
         pq = M.Project.query.find(dict(
                 neighborhood_id=self.neighborhood._id,
                 deleted=False,
-                shortname={'$ne':'__init__'}
+                shortname={'$ne':'--init--'}
                 ))
         if sort=='alpha':
             pq.sort('name')
@@ -331,7 +331,7 @@ class NeighborhoodAdminController(object):
                 'Admin access required')
 
     def set_nav(self):
-        project = M.Project.query.find({'shortname':'__init__','neighborhood_id':self.neighborhood._id}).first()
+        project = M.Project.query.find({'shortname':'--init--','neighborhood_id':self.neighborhood._id}).first()
         if project:
             c.project = project
             g.set_app('admin')

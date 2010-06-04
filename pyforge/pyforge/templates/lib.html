@@ -47,10 +47,10 @@
         <img py:if="not c.project.icon" src="${g.forge_static('images/project_default.png')}" class="project_icon"/>
       </div>
       <div class="span-16 project" >
-	<span class="project_name"  py:if="c.project.shortname.endswith('__init__')">
+	<span class="project_name"  py:if="c.project.shortname.endswith('--init--')">
 		<a href="${c.project.url()}">$c.project.neighborhood.name</a>
 	</span>
-	<span class="project_name"  py:if="not c.project.shortname.endswith('__init__')">
+	<span class="project_name"  py:if="not c.project.shortname.endswith('--init--')">
 		<a py:if="c.project" href="${c.project.url()}">$c.project.name</a>
 	</span>
         <ul class="nav_links">

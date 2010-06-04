@@ -14,6 +14,30 @@ from forgegit import model as GitM
 from forgehg import model as HgM
 from forgesvn import model as SVNM
 
+class RemoveOldInitProjects(Migration):
+    version=8
+
+    def __init__(self, *args, **kwargs):
+        super(RemoveOldInitProjects, self).__init__(*args, **kwargs)
+        try:
+            c.project
+        except TypeError:
+            class EmptyClass(): pass
+            c._push_object(EmptyClass())
+            c.project = EmptyClass()
+            c.project._id = None
+            c.app = EmptyClass()
+            c.app.config = EmptyClass()
+            c.app.config.options = EmptyClass()
+            c.app.config.options.mount_point = None
+
+    def up(self):
+        self.ormsession.remove(M.Project, {'shortname':'--init--'})
+        self.ormsession.update(M.Project, {'shortname':'__init__'}, {'$set':{'shortname':'--init--'}})
+
+    def down(self):
+        pass # Do nothing
+
 class UnderToDash(Migration):
     version = 7
 
