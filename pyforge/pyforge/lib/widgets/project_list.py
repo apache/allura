@@ -28,9 +28,10 @@ class ProjectSummary(ew.Widget):
 
 class ProjectList(ew.Widget):
     template='genshi:pyforge.lib.widgets.templates.project_list'
-    params=['projects', 'project_summary']
+    params=['projects', 'project_summary', 'display_mode']
     projects=[]
     project_summary=ProjectSummary()
+    display_mode='list'
 
     def resources(self):
         for r in self.project_summary.resources():
