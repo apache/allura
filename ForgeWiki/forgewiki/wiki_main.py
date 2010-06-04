@@ -461,7 +461,13 @@ class PageController(object):
         if tags: tags = tags.split(',')
         else: tags = []
         ws = re.compile('\s+')
-        self.page.title = ''.join(ws.split(title))
+        new_title = ''.join(ws.split(title))
+        if self.page.title != new_title:
+            exists = model.Page.query.find(dict(app_config_id=c.app.config._id, title=new_title)).first()
+            if exists:
+                flash('There is already a page named "%s".' % new_title, 'error')
+            else:
+                self.page.title = new_title
         self.page.text = text
         self.page.labels = labels.split(',')
         self.page.commit()
