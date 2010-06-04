@@ -37,6 +37,8 @@ def test_markdown():
     assert '<br>' not in g.markdown.convert('Multi\n\nLine')
     r = g.markdown.convert('[[projects]]')
     assert '<div class="gravatar sm">' in r
+    r = g.markdown.convert('[[include ref=Root id=foo]]')
+    assert '<div id="foo">' in r, r
     assert '<br>' not in g.markdown.convert('''# Header
 
 Some text in a regular paragraph

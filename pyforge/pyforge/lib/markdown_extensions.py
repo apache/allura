@@ -37,14 +37,13 @@ class LineOrientedTreeProcessor(markdown.treeprocessors.Treeprocessor):
     '''
     def run(self, root):
         for node in root.getiterator('p'):
-            if node.text is None: continue
-            parts = node.text.split('\n')
-            if len(parts) == 1: continue
-            node.text = parts[0]
-            for p in parts[1:]:
-                br = markdown.etree.Element('br')
-                br.tail = p
-                node.append(br)
+            text = markdown.etree.tostring(node).strip()
+            if '\n' not in text: continue
+            new_text = text.replace('\n', '<br/>')
+            new_node = markdown.etree.fromstring(new_text)
+            node.clear()
+            node.text = new_node.text
+            node[:] = list(new_node)
         return root
 
 class ArtifactLinkPattern(markdown.inlinepatterns.LinkPattern):

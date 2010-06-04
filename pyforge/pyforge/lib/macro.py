@@ -3,7 +3,7 @@ import logging
 
 import ew
 import pymongo
-from pylons import c
+from pylons import c, request
 
 from . import helpers as h
 
@@ -20,6 +20,9 @@ def parse(s):
     if not parts: return None
     macro = _macros.get(parts[0], None)
     if not macro: return None
+    for t in parts[1:]:
+        if '=' not in t:
+            return '[-%s: missing =-]' % ' '.join(parts)
     try:
         args = dict(t.split('=', 1) for t in parts[1:])
         response = macro(**h.encode_keys(args))
@@ -52,3 +55,22 @@ def projects(category=None, display_mode='grid', sort='last_updated'):
     ew.ResourceManager.get().register(pl)
     response = pl.display(projects=pq.all(), display_mode=display_mode)
     return response
+
+@macro
+def include(ref=None, **kw):
+    from pyforge import model as M
+    from pyforge.lib.widgets.macros import Include
+    if ref is None: return '[-include-]'
+    link = M.ArtifactLink.lookup('[' + ref + ']')
+    aref = M.ArtifactReference(link.artifact_reference)
+    artifact = aref.to_artifact()
+    included = request.environ.setdefault('allura.macro.included', set())
+    if artifact in included:
+        return '[-...-]'
+    else:
+        included.add(artifact)
+    sb = Include()
+    ew.ResourceManager.get().register(sb)
+    response = sb.display(artifact=artifact, attrs=kw)
+    return response
+    
