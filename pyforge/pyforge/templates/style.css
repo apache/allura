@@ -593,6 +593,7 @@ border-bottom: 4px solid  rgb(215,215,215);}
     min-height: 21px;
 }
 .editable .viewer:hover {
+    margin: -1px -5px;
     padding: 4px 4px;
     border: 1px solid #ccc;
 }
