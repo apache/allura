@@ -300,7 +300,7 @@ class ProjectAdminController(object):
                     redirect(request.referer)
                 try:
                     sp = c.project.new_subproject(mount_point)
-                except forge_exc.ForgeToolError, exc:
+                except forge_exc.ToolError, exc:
                     flash(repr(exc), 'error')
             else:
                 require(has_project_access('tool'))
