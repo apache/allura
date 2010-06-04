@@ -84,11 +84,10 @@ class SFXProjectApi(object):
         return closing(httplib.HTTPConnection(self.project_host or request.host))
 
     def _unix_group_name(self, neighborhood, shortname):
-        if neighborhood.url_prefix == '/p/':
-            path = shortname
-        else:
-            path = neighborhood.url_prefix + shortname[len(neighborhood.shortname_prefix):]
+        path = neighborhood.url_prefix + shortname[len(neighborhood.shortname_prefix):]
         parts = [ p for p in path.split('/') if p ]
+        if len(parts) == 2 and parts[0] == 'p':
+            parts = parts[1:]
         return '.'.join(reversed(parts))
 
     def create(self, user, neighborhood, shortname, short_description='No description'):
