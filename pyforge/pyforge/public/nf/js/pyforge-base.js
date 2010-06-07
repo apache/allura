@@ -118,4 +118,13 @@ $(function(){
     $('input,textarea,select,button').each(function(){
         $(this).attr('tabindex', i++);
     });
+
+    // Provide prompt text for otherwise empty viewers
+    var ws = /^\s*$/;
+    $('[data-prompt]').each(function(){
+        var $this = $(this);
+        if ( ws.test($this.text()) ) {
+            $this.css('color', 'gray').text($this.attr('data-prompt'))
+        }
+    });
 });
