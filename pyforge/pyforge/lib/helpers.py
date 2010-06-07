@@ -6,6 +6,7 @@ import urllib
 import re
 import Image
 import json
+import logging
 from hashlib import sha1
 from datetime import datetime
 
@@ -16,7 +17,7 @@ from dateutil.parser import parse
 from pymongo.bson import ObjectId
 from pymongo.errors import InvalidId
 from contextlib import contextmanager
-from pylons import c, response
+from pylons import c, response, request
 from tg.decorators import before_validate
 from formencode.variabledecode import variable_decode
 
@@ -408,3 +409,72 @@ class exceptionless(object):
         inner.__name__ = fname
         return inner
 
+class log_action(object):
+    extra_proto = dict(
+        action=None,
+        action_type=None,
+        tool_type=None,
+        tool_mount=None,
+        project=None,
+        neighborhood=None,
+        username=None,
+        url=None,
+        ip_address=None)
+
+    def __init__(self, logger, action):
+        self._logger = logger
+        self._action = action
+
+    def log(self, level, message, *args, **kwargs):
+        kwargs = dict(kwargs)
+        extra = kwargs.setdefault('extra', {})
+        meta = kwargs.pop('meta', {})
+        kwpairs = extra.setdefault('kwpairs', {})
+        for k,v in meta.iteritems():
+            kwpairs['meta_%s' % k] = v
+        extra.update(self._make_extra())
+        self._logger.log(level, self._action + ': ' + message, *args, **kwargs)
+
+    def info(self, message, *args, **kwargs):
+        self.log(logging.INFO, message, *args, **kwargs)
+
+    def debug(self, message, *args, **kwargs):
+        self.log(logging.DEBUG, message, *args, **kwargs)
+
+    def error(self, message, *args, **kwargs):
+        self.log(logging.ERROR, message, *args, **kwargs)
+
+    def critical(self, message, *args, **kwargs):
+        self.log(logging.CRITICAL, message, *args, **kwargs)
+
+    def exception(self, message, *args, **kwargs):
+        self.log(logging.EXCEPTION, message, *args, **kwargs)
+
+    def warning(self, message, *args, **kwargs):
+        self.log(logging.EXCEPTION, message, *args, **kwargs)
+    warn=warning
+
+    def _make_extra(self):
+        result = dict(self.extra_proto, action=self._action)
+        try:
+            if hasattr(c, 'app') and c.app:
+                result['tool_type'] = c.app.config.tool_name
+                result['tool_mount'] = c.app.config.options['mount_point']
+            if hasattr(c, 'project') and c.project:
+                result['project'] = c.project.shortname
+                result['neighborhood'] = c.project.neighborhood.name
+            if hasattr(c, 'user') and c.user:
+                result['username'] = c.user.username
+            else:
+                result['username'] = '*system'
+            try:
+                result['url'] = request.url
+                ip_address = request.headers.get('X_FORWARDED_FOR', request.remote_addr)
+                ip_address = ip_address.split(',')[0].strip()
+                result['ip_address'] = ip_address
+            except TypeError:
+                pass
+            return result
+        except:
+            self._logger.warning('Error logging to rtstats, some info may be missing', exc_info=True)
+            return result

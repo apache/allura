@@ -54,7 +54,7 @@ class LineOrientedTreeProcessor(markdown.treeprocessors.Treeprocessor):
                 node.text = new_node.text
                 node[:] = list(new_node)
             except SyntaxError:
-                log.exception('Error adding <br> tags')
+                log.exception('Error adding <br> tags: new text is %s', new_text)
                 pass
         return root
 

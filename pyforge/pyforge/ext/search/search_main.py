@@ -12,10 +12,10 @@ from formencode import validators as V
 from pyforge.app import Application, ConfigOption, SitemapEntry
 from pyforge import version
 from pyforge.model import ProjectRole, SearchConfig, ScheduledMessage, Project
-from pyforge.lib.helpers import push_config
 from pyforge.lib.security import require, has_artifact_access
 from pyforge.lib.decorators import audit, react
 from pyforge.lib import search
+from pyforge.lib import helpers as h
 from pyforge import model as M
 
 log = logging.getLogger(__name__)
@@ -39,9 +39,10 @@ class SearchApp(Application):
         log.info('Adding %d artifacts', len(doc['artifacts']))
         obj = SearchConfig.query.find().first()
         obj.pending_commit += len(doc['artifacts'])
-        artifacts = ( ref.to_artifact() for ref in doc['artifacts'] )
+        artifacts = [ ref.to_artifact() for ref in doc['artifacts'] ]
         artifacts = ((a, search.solarize(a)) for a in artifacts)
         artifacts = [ (a, s) for a,s in artifacts if s is not None ]
+
         # Add to solr
         g.solr.add([ s for a,s in artifacts])
         # Add backreferences

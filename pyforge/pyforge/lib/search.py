@@ -1,4 +1,5 @@
 import re
+import cPickle as pickle
 from logging import getLogger
 from pprint import pformat
 from itertools import islice, chain
@@ -6,6 +7,7 @@ from itertools import islice, chain
 from pylons import c,g
 import pysolr
 
+from . import helpers as h
 from .markdown_extensions import ForgeExtension
 
 # from pyforge.tasks.search import AddArtifacts, DelArtifacts
@@ -41,6 +43,13 @@ def add_artifacts(obj_iter):
     artifact_iterator = ( o.dump_ref() for o in obj_iter)
     while True:
         artifacts = list(islice(artifact_iterator, 1000))
+        for aref in artifacts:
+            aname = pickle.loads(aref.artifact_type).__name__
+            h.log_action(log, 'upsert artifact').info(
+                'upsert artifact %s', aname,
+                meta=dict(
+                    type=aname,
+                    id=aref.artifact_id))
         if not artifacts: break
         g.publish('react', 'artifacts_altered',
                   dict(artifacts=artifacts),
@@ -51,6 +60,13 @@ def remove_artifacts(obj_iter):
     artifact_iterator = ( o.dump_ref() for o in obj_iter)
     while True:
         artifacts = list(islice(artifact_iterator, 1000))
+        for aref in artifacts:
+            aname = pickle.loads(aref.artifact_type).__name__
+            h.log_action(log, 'delete artifact').info(
+                'delete artifact %s', aname,
+                meta=dict(
+                    type=aname,
+                    id=aref.artifact_id))
         if not artifacts: break
         g.publish('react', 'artifacts_removed',
                   dict(artifacts=artifacts),

@@ -25,8 +25,5 @@ setup(name='ForgeDownloads',
       # -*- Entry points: -*-
       [pyforge]
       Downloads=forgedownloads.dl_main:ForgeDownloadsApp
-
-      [flyway.migrations]
-      ForgeDownloads=forgedownloads.model.migrations
       """,
       )

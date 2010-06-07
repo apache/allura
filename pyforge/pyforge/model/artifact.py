@@ -2,10 +2,10 @@ import re
 import os
 import logging
 import urllib
+import cPickle as pickle
 from collections import defaultdict
 from time import sleep
 from datetime import datetime
-import cPickle as pickle
 
 import pymongo
 from pylons import c, g

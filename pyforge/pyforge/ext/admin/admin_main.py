@@ -193,29 +193,42 @@ class ProjectAdminController(object):
 
         if 'delete_icon' in kw:
             M.ProjectFile.query.remove({'metadata.project_id':c.project._id, 'metadata.category':'icon'})
+            h.log_action(log, 'remove project icon').info('')
             redirect('.')
         elif 'delete' in kw:
+            h.log_action(log, 'delete project').info('')
             c.project.deleted = True
             for sp in c.project.subprojects:
                 sp.deleted = True
             redirect('.')
         elif 'undelete' in kw:
+            h.log_action(log, 'undelete project').info('')
             c.project.deleted = False
             for sp in c.project.subprojects:
                 sp.deleted = False
             redirect('.')
-        c.project.name = name
-        c.project.short_description = short_description
-        c.project.description = description
-        if category:
-            c.project.category_id = ObjectId(category)
-        else:
-            c.project.category_id = None
-        if 'labels' in kw:
-            c.project.labels = kw['labels'].split(',')
-            del kw['labels']
+        if name != c.project.name:
+            h.log_action(log, 'change project name').info('')
+            c.project.name = name
+        if short_description != c.project.short_description:
+            h.log_action(log, 'change project short description').info('')
+            c.project.short_description = short_description
+        if description != c.project.description:
+            h.log_action(log, 'change project description').info('')
+            c.project.description = description
+        category = category and ObjectId(category) or None
+        if category != c.project.category_id:
+            h.log_action(log, 'change project category').info('')
+            c.project.category_id = category
+        labels = kw.pop('labels', None)
+        if labels is not None:
+            labels = labels.split(',')
+            if labels != c.project.labels:
+                h.log_action(log, 'update project labels').info('')
+                c.project.labels = labels
         if icon is not None and icon != '':
             if h.supported_by_PIL(icon.type):
+                h.log_action(log, 'update icon').info('')
                 filename = icon.filename
                 if icon.type: content_type = icon.type
                 else: content_type = 'application/octet-stream'
@@ -285,10 +298,16 @@ class ProjectAdminController(object):
         for sp in subproject:
             if sp.get('delete'):
                 require(has_project_access('delete'), 'Delete access required')
+                h.log_action(log, 'delete subproject').info(
+                    'delete subproject %s', sp['shortname'],
+                    meta=dict(name=sp['shortname']))
                 M.Project.query.get(shortname=sp['shortname']).delete()
         for p in tool:
             if p.get('delete'):
                 require(has_project_access('tool'), 'Delete access required')
+                h.log_action(log, 'uninstall tool').info(
+                    'uninstall tool %s', p['mount_point'],
+                    meta=dict(mount_point=p['mount_point']))
                 c.project.uninstall_app(p['mount_point'])
         if new and new.get('install'):
             ep_name = new['ep_name']
@@ -299,6 +318,9 @@ class ProjectAdminController(object):
                     flash('Invalid mount point', 'error')
                     redirect(request.referer)
                 try:
+                    h.log_action(log, 'create subproject').info(
+                        'create subproject %s', mount_point,
+                        meta=dict(mount_point=mount_point))
                     sp = c.project.new_subproject(mount_point)
                 except forge_exc.ToolError, exc:
                     flash(repr(exc), 'error')
@@ -308,6 +330,9 @@ class ProjectAdminController(object):
                 if not h.re_path_portion.match(mount_point):
                     flash('Invalid mount point for %s' % ep_name, 'error')
                     redirect(request.referer)
+                h.log_action(log, 'install tool').info(
+                    'install tool %s', mount_point,
+                    meta=dict(tool_type=ep_name, mount_point=mount_point))
                 c.project.install_app(ep_name, mount_point)
         redirect('tools')
 
@@ -370,12 +395,18 @@ class ProjectAdminController(object):
                     ur = user.project_role()
                     if ObjectId(str(r['id'])) not in ur.roles:
                         ur.roles.append(ObjectId(str(r['id'])))
+                        h.log_action(log, 'add_user_to_role').info(
+                            '%s to %s', user.username, r['id'],
+                            meta=dict(user=user.username, role=r['id']))
                 else:
                     flash('No user %s' % username, 'error')
             for u in r.get('users', []):
                 if u.get('delete'):
                     ur = M.ProjectRole.query.get(user_id=ObjectId(str(u['id'])))
                     ur.roles.remove(ObjectId(str(r['id'])))
+                    h.log_action(log, 'remove_user_from_role').info(
+                        '%s from %s', u['id'], r['id'],
+                        meta=dict(user_role=u['id'], role=r['id']))
         g.publish('react', 'forge.project_updated')
         redirect('perms')
 
