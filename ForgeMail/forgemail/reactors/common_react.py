@@ -94,8 +94,9 @@ def send_email(routing_key, data):
                 log.warning('User %s has not set primary email address, using %s',
                             user._id, addr)
             if not addr:
-                log.error("User %s has not set any email address, can't deliver",
-                          user._id)
+                log.error("User %s (%s) has not set any email address, can't deliver",
+                          user._id, user.username)
+                continue
             if user.preferences.email_format == 'plain':
                 addrs_plain.append(addr)
             elif user.preferences.email_format == 'html':

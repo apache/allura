@@ -92,7 +92,6 @@ class SFXAuthenticationProvider(plugin.AuthenticationProvider):
             self.session['sfx-sessid'] = self.request.cookies[cookie_name]
             self.session['userid'] = user._id
             self.session.save()
-            log.info('Saving session %r', self.session)
             return user
         else:
             return M.User.anonymous()

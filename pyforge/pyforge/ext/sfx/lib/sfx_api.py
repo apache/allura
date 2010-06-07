@@ -2,6 +2,7 @@ import re
 import json
 import httplib
 import urllib2
+import logging
 from contextlib import closing
 
 from tg import config
@@ -10,6 +11,8 @@ from pylons import c, request
 from pyforge import model as M
 from pyforge.lib.security import roles_with_project_access
 from . import exceptions as sfx_exc
+
+log = logging.getLogger(__name__)
 
 def read_response(response, *expected):
     if not expected: expected = (200,)
@@ -77,6 +80,10 @@ class SFXUserApi(object):
             u.display_name = user_data['name']
         if u.sfx_userid != user_data['id']:
             u.sfx_userid = user_data['id']
+        if u.email_addresses != [ user_data['sf_email'] ]:
+            u.email_addresses = [ user_data['sf_email'] ]
+        if u.preferences.email_address != user_data['sf_email']:
+            u.preferences.email_address = user_data['sf_email']
         return u
 
 class SFXProjectApi(object):
