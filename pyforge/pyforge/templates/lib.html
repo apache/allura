@@ -23,85 +23,88 @@
   </py:def>
 
   <py:def function="main_menu()">
-    <style py:if="c.project">
-      ${Markup(c.project.neighborhood.css)}
-    </style>
-    <div id="mainmenu" class="span-24 last">
-      <div class="sf_logo span-10"><a href="/"><img src="${g.forge_static('images/sfc.png')}" alt="SourceForge"/></a></div>
-      <div class="span-14 tright last">
-        <a href="/auth/logout" py:if="c.user and c.user._id" class="sf_log_out">Log Out</a>
-        <a href="/auth/" py:if="not c.user or not c.user._id" class="sf_log_in">Log In</a>
-        <a href="/account/" py:if="c.user and c.user._id" class="sf_user_link">Account</a>
-        <a href="/users/${c.user.username}" py:if="c.user and c.user._id" class="sf_user_link">$c.user.display_name</a>
-        <a href="/auth/create_account" py:if="not c.user or not c.user._id" class="sf_create_account">Create Account</a>
-        <a href="/search/" class="sf_search_link"><span class="ui-icon reverse ui-icon-search"></span> Search</a>
+    <div class="nav">
+      <div id="mainmenu" class="row">
+        <div class="column grid_2"><a href="/" class="sf_logo"><img src="${g.forge_static('images/sf10.png')}" alt="SourceForge"/></a></div>
+        <div class="column grid_10 tright">
+          <a href="/account/" py:if="c.user and c.user._id">Account</a>
+          <a href="/users/${c.user.username}" py:if="c.user and c.user._id">$c.user.display_name</a>
+          <a href="/auth/create_account" py:if="not c.user or not c.user._id">Register</a>
+          <a href="/auth/logout" py:if="c.user and c.user._id">Log Out</a>
+          <a href="/auth/" py:if="not c.user or not c.user._id">Log In</a>
+        </div>
       </div>
     </div>
   </py:def>
 
   <py:def function="nav_menu()">
-    <div id="nav_menu_missing" class="span-24 last ui-corner-tl" py:if="not c.project"/>
-    <div id="nav_menu" class="span-24 last ui-corner-tl" py:if="c.project">
-      <div class="span-1">
+    <div id="nav_menu_missing" py:if="not c.project"/>
+    <py:if test="c.project">
+	<div class="column grid_1">
         <img py:if="c.project.icon" src="${c.project.url()}/icon" class="project_icon"/>
         <img py:if="not c.project.icon" src="${g.forge_static('images/project_default.png')}" class="project_icon"/>
-      </div>
-      <div class="span-16 project" >
-	<span class="project_name"  py:if="c.project.shortname.endswith('--init--')">
-		<a href="${c.project.url()}">$c.project.neighborhood.name</a>
-	</span>
-	<span class="project_name"  py:if="not c.project.shortname.endswith('--init--')">
-		<a py:if="c.project" href="${c.project.url()}">$c.project.name</a>
-	</span>
-        <ul class="nav_links">
-          <li py:for="s in c.project.sitemap()">
-            <a href="$s.url" class="$s.className ${s.url[:-1] in request.url and 'active' or ''}">
-              <py:if test="s.url and s.label != 'Home'">$s.label</py:if>
-              <span py:if="s.url and s.label == 'Home'" class="ui-icon ui-icon-home"></span>
-            </a>
-            <span py:if="not s.url" class="$s.className">$s.label</span>
-          </li>
-        </ul>
-      </div>
-      <div class="span-7 last tright">
-	<span class="neighborhood ui-corner-bl ui-corner-tr">
-		<img py:if="c.project.neighborhood.icon" src="${c.project.neighborhood.url()}/icon" class="project_icon"/>
-          <img py:if="not c.project.neighborhood.icon" src="${g.forge_static('images/project_default.png')}" class="project_icon"/>
-          <a href="${c.project.neighborhood.url()}" class="neighborhood_name">$c.project.neighborhood.name</a> Project
-	</span>
-      </div>
-    </div>
+	</div>
+	<div class="column grid_9">
+		<h1>
+		<a href="${c.project.url()}" py:if="c.project.shortname.endswith('--init--')">$c.project.neighborhood.name</a>
+		<a py:if="not c.project.shortname.endswith('--init--')" href="${c.project.url()}">$c.project.name</a>
+		</h1>
+	</div>
+	<div class="column grid_2">
+		<p class="neighborhood tright" py:if="c.project.neighborhood.name not in ['Projects', 'Users']">
+			<a href="${c.project.neighborhood.url()}">
+				<small>Project by</small><br/>
+				$c.project.neighborhood.name
+            <img py:if="c.project.neighborhood.icon" src="${c.project.neighborhood.url()}/icon" alt="$c.project.neighborhood.name Project"/>
+            <img py:if="not c.project.neighborhood.icon" src="${g.forge_static('images/project_default.png')}" alt="$c.project.neighborhood.name Project"/>
+			</a>
+		</p>
+	</div>
+	</py:if>
+  </py:def>
+
+  <py:def function="top_nav()">
+		<div class="row project" py:if="c.project">
+			<div class="column grid_9">
+				<ul class="ui-tab">
+					<li py:for="s in c.project.sitemap()" class="$s.className ${s.url[:-1] in request.url and 'active' or ''}">
+						<a py:if="s.url" href="$s.url" class="ico-l"><b class="ui-icon ui-icon-gear"></b> <span>$s.label</span></a>
+            <span py:if="not s.url">$s.label</span>
+					</li>
+				</ul>
+			</div>
+		</div>
+  </py:def>
+
+  <py:def function="sidebar_item(s)">
+    <li py:if="s.url" class="${request.url.find(s.url,-len(s.url)) != -1 and 'active' or None}">
+      <a href="$s.url" class="$s.className${s.ui_icon and ' ico-l' or ''}"><b py:if="s.ui_icon" class="ui-icon ui-icon-$s.ui_icon"></b> <span>$s.label</span></a>
+    </li>
+    <py:if test="not s.url">
+      ${Markup('&lt;/ul>')}
+      <span class="$s.className nav_head"><span py:if="s.ui_icon" class="ui-icon ui-icon-$s.ui_icon"></span>$s.label</span>
+      ${Markup('&lt;ul class="sidebarmenu">')}
+    </py:if>
   </py:def>
 
   <py:def function="sidebar_menu()">
-    <div id="sidebar" class="span-4">
-      <form py:if="c.app and c.app.searchable" method="GET" action="${c.app.url + 'search/'}">
-        <span id="app-search">
-          <input name="q" type="text" class="defaultText" title="Search ${c.app.config.options.mount_point.title()}"/>
-        </span>
-      </form>
+		<div id="sidebar" class="column grid_2 menu">
+			<form id="search" py:if="c.app and c.app.searchable" method="GET" action="${c.app.url + 'search/'}">
+				<input name="q" class="border defaultText" type="text" title="Search ${c.app.config.options.mount_point.title()}"/>
+			</form>
       <div py:if="not c.app or not c.app.searchable">&nbsp;</div>
-      <py:if test="not c.app and not getattr(c, 'custom_sidebar_menu', None)">&nbsp;</py:if>
-      <ul id="sidebarmenu" py:if="getattr(c, 'custom_sidebar_menu', None)">
-        <li py:for="s in c.custom_sidebar_menu">
-          <a py:if="s.url" href="$s.url" class="$s.className ${request.url.find(s.url,-len(s.url)) != -1 and 'active' or ''}"><span py:if="s.ui_icon" class="ui-icon ui-icon-$s.ui_icon"></span>$s.label</a>
-          <span py:if="not s.url" class="$s.className nav_head"><span py:if="s.ui_icon" class="ui-icon ui-icon-$s.ui_icon"></span>$s.label</span>
-        </li>
-      </ul>
-      <ul id="sidebarmenu" py:if="getattr(c, 'app', None)">
-        <li py:for="s in c.app.sidebar_menu()">
-          <a py:if="s.url" href="$s.url" class="$s.className ${request.url.rfind(s.url,-len(s.url)) != -1 and 'active' or ''}"><span py:if="s.ui_icon" class="ui-icon ui-icon-$s.ui_icon"></span>$s.label</a>
-          <span py:if="not s.url" class="$s.className nav_head"><span py:if="s.ui_icon" class="ui-icon ui-icon-$s.ui_icon"></span>$s.label</span>
-        </li>
-      </ul>
-      <ul id="sidebarmenu"
-          py:if="getattr(c, 'project', None) and not getattr(c, 'app', None)">
-        <li py:for="s in c.project.sidebar_menu()">
-          <a py:if="s.url" href="$s.url" class="$s.className ${s.url[:-1] in request.url and 'active' or ''}">$s.label</a>
-          <span py:if="not s.url" class="$s.className nav_head">$s.label</span>
-        </li>
-      </ul>
-    </div>
+			<ul class="sidebarmenu">
+			  <py:if test="getattr(c, 'custom_sidebar_menu', None)">
+			    <py:for each="s in c.custom_sidebar_menu">${sidebar_item(s)}</py:for>
+			  </py:if>
+			  <py:if test="getattr(c, 'app', None)">
+			    <py:for each="s in c.app.sidebar_menu()">${sidebar_item(s)}</py:for>
+			  </py:if>
+			  <py:if test="getattr(c, 'project', None) and not getattr(c, 'app', None)">
+			    <py:for each="s in c.project.sidebar_menu()">${sidebar_item(s)}</py:for>
+			  </py:if>
+			</ul>
+		</div>
   </py:def>
 
   <py:def function="crumbs(trail)">

@@ -4,7 +4,7 @@
       xmlns:py="http://genshi.edgewall.org/"
       xmlns:xi="http://www.w3.org/2001/XInclude">
   
-  <xi:include href="master.html" />
+  <xi:include href="master_one_col.html" />
   
   <head>
     <meta content="text/html; charset=UTF-8" http-equiv="content-type" py:replace="''"/>
@@ -17,9 +17,9 @@
         <input type="hidden" name="came_from" value="$came_from"/>
         <h2><span>Password Login</span></h2>
         <div class="span-3 clear"><label for="username">Username:</label></div>
-        <div class="span-10 last"><input type="text" id="username" name="username" class="title wide"/></div>
+        <div class="span-10 last"><input type="text" id="username" name="username"/></div>
         <div class="span-3 clear"><label for="password">Password:</label></div>
-        <div class="span-10 last"><input type="password" id="password" name="password" class="title wide"/></div>
+        <div class="span-10 last"><input type="password" id="password" name="password"/></div>
         <div class="push-3 span-15 clear last">
           <input type="submit" id="submit" value="Login" class="ui-state-default ui-button ui-button-text"/>
         </div>
@@ -31,12 +31,12 @@
         <h2><span>OpenID Login</span></h2>
         <div class="span-3 clear"><label for="provider">Provider</label></div>
         <div class="span-10 last">
-          <select id="provider" name="provider" class="title wide">
+          <select id="provider" name="provider">
             <option py:for="label, url in oid_providers" value="$url">$label</option>
           </select>
         </div>
         <div class="span-3 clear"><label for="username">Username:</label></div>
-        <div class="span-10 last"><input type="text" id="username" name="username" class="title wide"/></div>
+        <div class="span-10 last"><input type="text" id="username" name="username"/></div>
         <div class="push-3 span-15 clear last">
           <input type="submit" id="submit" value="Login" class="ui-state-default ui-button ui-button-text"/>
         </div>

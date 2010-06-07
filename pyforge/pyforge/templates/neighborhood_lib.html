@@ -4,68 +4,36 @@
 
   <?python from pyforge.lib.security import has_neighborhood_access ?>
 
-  <py:def function="main_menu">
-    <div id="mainmenu" class="span-24 last">
-      <div class="sf_logo span-10"><a href="/"><img src="${g.forge_static('images/sfc.png')}" alt="SourceForge"/></a></div>
-      <div class="span-14 tright last">
-        <a href="/auth/logout" py:if="c.user and c.user._id" class="sf_log_out">Log Out</a>
-        <a href="/auth/" py:if="not c.user or not c.user._id" class="sf_log_in">Log In</a>
-        <a href="/users/${c.user.username}" py:if="c.user and c.user._id" class="sf_user_link">$c.user.display_name</a>
-        <a href="/auth/create_account" py:if="not c.user or not c.user._id" class="sf_create_account">Create Account</a>
-        <a href="/search/" class="sf_search_link"><span class="ui-icon reverse ui-icon-search"></span> Search</a>
-      </div>
-    </div>
-  </py:def>
   <py:def function="nav_menu()">
-    <div id="nav_menu_missing" class="span-24 last ui-corner-tl" py:if="not neighborhood"/>
-    <div id="nav_menu" class="span-24 last ui-corner-tl" py:if="neighborhood">
-      <div class="span-1">
+    <div id="nav_menu_missing" py:if="not neighborhood"/>
+    <py:if test="neighborhood">
+	<div class="column grid_1">
         <img py:if="neighborhood.icon" src="${neighborhood.url()}/icon" class="project_icon"/>
         <img py:if="not neighborhood.icon" src="${g.forge_static('images/project_default.png')}" class="project_icon"/>
-      </div>
-      <div class="span-16 project">
-	<span class="project_name">
-		<a href="${neighborhood.url()}" class="neighborhood_name">$neighborhood.name</a><br/>
-	</span>
-        <ul class="nav_links">
-          <li>
-            <a href="${neighborhood.url()}" class="${request.url.rfind(neighborhood.url(),-len(neighborhood.url())) != -1 and 'active' or ''}">
-              <span class="ui-icon ui-icon-home"></span>
-            </a>
-          </li>
-          <li py:if="has_neighborhood_access('admin', neighborhood)()">
-            <a href="${neighborhood.url()}_admin/" class="${neighborhood.url()+'_admin' in request.url and 'active' or ''}">Admin</a>
-          </li>
-          <li py:if="has_neighborhood_access('moderate', neighborhood)()">
-            <a href="${neighborhood.url()}_moderate/" class="${neighborhood.url()+'_moderate' in request.url and 'active' or ''}">Moderate</a>
-          </li>
-        </ul>
-      </div>
-      <div class="span-7 last tright">
-	<span class="neighborhood ui-corner-bl ui-corner-tr">
-          <form py:if="has_neighborhood_access('create', neighborhood)()"
-                method="POST" action="${neighborhood.url()}/register">
-            <label for="pid">Register project</label>
-            <input name="pid" id="pid"/>
-            <input type="submit" value="Register" class="ui-state-default ui-button ui-button-text"/>
-          </form>
-	</span>
-      </div>
-    </div>
+	</div>
+	<div class="column grid_9">
+		<h1>
+		<a href="${neighborhood.url()}">$neighborhood.name</a><br/>
+		</h1>
+	</div>
+	<div class="column grid_2">&nbsp;</div>
+	</py:if>
   </py:def>
 
-
-
-<!--     <div id="mainmenu">
-      <div id="project-menu">
-        <div class="pti"><img py:if="neighborhood.icon" src="${neighborhood.url()}/icon"/> Neighborhood: <a href="${neighborhood.url()}">$neighborhood.name</a></div>
-        <form py:if="has_neighborhood_access('create', neighborhood)()" style="float:right"
-              method="POST" action="${neighborhood.url()}/register">
-          <label for="pid">Register project</label>
-          <input name="pid" id="pid"/>
-          <input type="submit" value="Register"/>
-        </form>
-      </div>
-    </div> -->
-
+  <py:def function="top_nav()">
+		<div class="row project" py:if="neighborhood">
+			<div class="column grid_9">
+				<ul class="ui-tab">
+					<li py:if="has_neighborhood_access('admin', neighborhood)()"
+					    class="${neighborhood.url()+'_admin' in request.url and 'active' or ''}">
+              <a href="${neighborhood.url()}_admin/" class="ico-l"><b class="ui-icon ui-icon-gear"></b> <span>Admin</span></a>
+					</li>
+					<li py:if="has_neighborhood_access('moderate', neighborhood)()"
+					    class="${neighborhood.url()+'_moderate' in request.url and 'active' or ''}">
+              <a href="${neighborhood.url()}_moderate/" class="ico-l"><b class="ui-icon ui-icon-gear"></b> <span>Moderate</span></a>
+					</li>
+				</ul>
+			</div>
+		</div>
+  </py:def>
 </html>

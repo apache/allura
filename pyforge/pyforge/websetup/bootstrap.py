@@ -96,12 +96,12 @@ def bootstrap(command, conf, vars):
     p_adobe = project_reg.register_neighborhood_project(n_adobe, [root])
     M.Theme(name='forge_default',
             label='Default Forge Theme',
-            color1='#0088cc',
-            color2='#000000',
+            color1='#295d78',
+            color2='#272727',
             color3='#454545',
-            color4='#6c7681',
-            color5='#d8d8d8',
-            color6='#ececec')
+            color4='#c3c3c3',
+            color5='#d7d7d7',
+            color6='#ebebeb')
     ThreadLocalORMSession.flush_all()
     ThreadLocalORMSession.close_all()
     # add the adobe icon

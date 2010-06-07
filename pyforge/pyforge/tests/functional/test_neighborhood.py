@@ -163,16 +163,12 @@ class TestNeighborhood(TestController):
     def test_site_css(self):
         r = self.app.get('/p/site_style.css')
         assert(
-"""a {color: #0088cc; text-decoration: none;}""" in r)
+"""a {color: #295d78; text-decoration: none;}""" in r)
         assert(
-""".ui-state-default.ui-button:active:hover, .ui-state-active.ui-button {
-	text-decoration: none !important;
-	color: #000000 !important;""" in r)
+""".active {
+	color: #272727 !important;""" in r)
         assert(
-"""#footer a:link, #footer a:visited, #footer a:hover, #footer a:active{
-    color: #454545;
-    text-decoration: none;
-}""" in r)
+"""#header h1 a {color: #454545; text-shadow: #fff 0 1px;}""" in r)
         self.app.post('/p/_admin/update',
                           params=dict(name='Projects', css='', homepage='projects',
                           color1='#aaa', color2='#bbb', color3='#ccc', color4='#ddd'),
@@ -181,14 +177,10 @@ class TestNeighborhood(TestController):
         assert(
 """a {color: #aaa; text-decoration: none;}""" in r)
         assert(
-""".ui-state-default.ui-button:active:hover, .ui-state-active.ui-button {
-	text-decoration: none !important;
+""".active {
 	color: #bbb !important;""" in r)
         assert(
-"""#footer a:link, #footer a:visited, #footer a:hover, #footer a:active{
-    color: #ccc;
-    text-decoration: none;
-}""" in r)
+"""#header h1 a {color: #ccc; text-shadow: #fff 0 1px;}""" in r)
 
     def test_custom_css(self):
         r = self.app.get('/adobe/site_style.css')

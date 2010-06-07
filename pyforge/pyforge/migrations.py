@@ -14,6 +14,35 @@ from forgegit import model as GitM
 from forgehg import model as HgM
 from forgesvn import model as SVNM
 
+class UpdateThemeToOnyx(Migration):
+    version = 9
+
+    def up(self):
+        if self.session.db.name == 'pyforge':
+            theme = self.ormsession.find(M.Theme, {'name':'forge_default'}).first()
+            if not theme: return
+            theme.color1='#295d78'
+            theme.color2='#272727'
+            theme.color3='#454545'
+            theme.color4='#c3c3c3'
+            theme.color5='#d7d7d7'
+            theme.color6='#ebebeb'
+            self.ormsession.update_now(theme, state(theme))
+            self.ormsession.flush()
+
+    def down(self):
+        if self.session.db.name == 'pyforge':
+            theme = self.ormsession.find(M.Theme, {'name':'forge_default'}).first()
+            if not theme: return
+            theme.color1='#0088cc'
+            theme.color2='#000000'
+            theme.color3='#454545'
+            theme.color4='#6c7681'
+            theme.color5='#d8d8d8'
+            theme.color6='#ececec'
+            self.ormsession.update_now(theme, state(theme))
+            self.ormsession.flush()
+
 class RemoveOldInitProjects(Migration):
     version=8
 

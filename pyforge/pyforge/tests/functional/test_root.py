@@ -19,18 +19,18 @@ from ming.orm import session
 class TestRootController(TestController):
     def test_index(self):
         response = self.app.get('/')
-        assert response.html.find('h1').string == 'All Projects'
+        assert response.html.find('h1',{'class':'title'}).string == 'All Projects'
         projects = response.html.findAll('ul',{'class':'display'})[0].findAll('li')
         assert len(projects) == 10, len(projects)
         assert projects[0].find('a').get('href') == '/adobe/'
         assert projects[1].find('img').get('alt') == 'adobe-1 Icon'
-        cat_links = response.html.find('ul',{'id':'sidebarmenu'}).findAll('li')
+        cat_links = response.html.find('div',{'id':'sidebar'}).findAll('li')
         assert len(cat_links) == 4
-        assert cat_links[0].find('span').get('class') == ' nav_head'
-        assert cat_links[0].find('span').string == 'Categories'
-        assert cat_links[1].find('a').get('href') == '/browse/clustering'
-        assert cat_links[1].find('a').get('class') == 'nav_child '
-        assert cat_links[1].find('a').string == 'Clustering'
+        assert cat_links[0].find('a').get('href') == '/browse/clustering'
+        assert cat_links[0].find('a').get('class') == 'nav_child'
+        assert cat_links[0].find('a').find('span').string == 'Clustering'
+        nav_heads = response.html.find('div',{'id':'sidebar'}).findAll('span',{'class': ' nav_head'})
+        assert nav_heads[0].string == 'Categories'
 
     def test_project_browse(self):
         com_cat = M.ProjectCategory.query.find(dict(label='Communications')).first()
@@ -48,17 +48,17 @@ class TestRootController(TestController):
 
     def test_neighborhood_index(self):
         response = self.app.get('/adobe/')
-        assert response.html.find('h1').string == 'Welcome to Adobe'
+        assert response.html.find('h1',{'class':'title'}).string == 'Welcome to Adobe'
         projects = response.html.findAll('ul',{'class':'display thumb_view'})[0].findAll('li')
         assert len(projects) == 2
         assert projects[0].find('img').get('alt') == 'adobe-1 Icon'
-        cat_links = response.html.find('ul',{'id':'sidebarmenu'}).findAll('li')
+        cat_links = response.html.find('div',{'id':'sidebar'}).findAll('li')
         assert len(cat_links) == 4
-        assert cat_links[0].find('span').get('class') == ' nav_head'
-        assert cat_links[0].find('span').string == 'Categories'
-        assert cat_links[1].find('a').get('href') == '/adobe/browse/clustering'
-        assert cat_links[1].find('a').get('class') == 'nav_child '
-        assert cat_links[1].find('a').string == 'Clustering'
+        assert cat_links[0].find('a').get('href') == '/adobe/browse/clustering'
+        assert cat_links[0].find('a').get('class') == 'nav_child'
+        assert cat_links[0].find('a').find('span').string == 'Clustering'
+        nav_heads = response.html.find('div',{'id':'sidebar'}).findAll('span',{'class': ' nav_head'})
+        assert nav_heads[0].string == 'Categories'
 
     def test_neighborhood_project_browse(self):
         com_cat = M.ProjectCategory.query.find(dict(label='Communications')).first()
@@ -82,16 +82,12 @@ class TestRootController(TestController):
     def test_site_css(self):
         r = self.app.get('/nf/site_style.css')
         assert(
-"""a {color: #0088cc; text-decoration: none;}""" in r)
+"""a {color: #295d78; text-decoration: none;}""" in r)
         assert(
-""".ui-state-default.ui-button:active:hover, .ui-state-active.ui-button {
-	text-decoration: none !important;
-	color: #000000 !important;""" in r)
+""".active {
+	color: #272727 !important;""" in r)
         assert(
-"""#footer a:link, #footer a:visited, #footer a:hover, #footer a:active{
-    color: #454545;
-    text-decoration: none;
-}""" in r)
+"""#header h1 a {color: #454545; text-shadow: #fff 0 1px;}""" in r)
         theme = M.Theme.query.find(dict(name='forge_default')).first()
         theme.color1='#aaa'
         theme.color2='#bbb'
@@ -101,14 +97,10 @@ class TestRootController(TestController):
         assert(
 """a {color: #aaa; text-decoration: none;}""" in r)
         assert(
-""".ui-state-default.ui-button:active:hover, .ui-state-active.ui-button {
-	text-decoration: none !important;
+""".active {
 	color: #bbb !important;""" in r)
         assert(
-"""#footer a:link, #footer a:visited, #footer a:hover, #footer a:active{
-    color: #ccc;
-    text-decoration: none;
-}""" in r)
+"""#header h1 a {color: #ccc; text-shadow: #fff 0 1px;}""" in r)
         
         
 
