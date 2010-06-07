@@ -483,11 +483,12 @@ class PageController(object):
         require(has_artifact_access('edit', self.page))
         if tags: tags = tags.split(',')
         else: tags = []
+        name_conflict = None
         ws = re.compile('\s+')
         new_title = ''.join(ws.split(title))
         if self.page.title != new_title:
-            exists = model.Page.query.find(dict(app_config_id=c.app.config._id, title=new_title)).first()
-            if exists:
+            name_conflict = model.Page.query.find(dict(app_config_id=c.app.config._id, title=new_title)).first()
+            if name_conflict:
                 flash('There is already a page named "%s".' % new_title, 'error')
             else:
                 self.page.title = new_title
@@ -514,7 +515,7 @@ class PageController(object):
                         user = User.by_username(str(u['id']))
                         if user:
                             self.page.viewable_by.remove(user.username)
-        redirect('../'+self.page.title+'/')
+        redirect('../' + self.page.title + ('/' if not name_conflict else '/edit'))
 
     @without_trailing_slash
     @expose()
