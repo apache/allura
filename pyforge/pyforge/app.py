@@ -1,4 +1,5 @@
 import logging
+from urllib import basejoin
 
 from tg import expose, redirect, flash
 from pylons import c, g
@@ -55,8 +56,8 @@ class SitemapEntry(object):
         url = self.url
         if callable(lbl):
             lbl = lbl(app)
-        if url is not None and not url.startswith('/'):
-            url = app.url + url
+        if url is not None:
+            url = basejoin(app.url, url)
         return SitemapEntry(lbl, url, [
                 ch.bind_app(app) for ch in self.children], className=self.className)
 
