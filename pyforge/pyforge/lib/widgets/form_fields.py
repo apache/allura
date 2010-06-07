@@ -107,5 +107,21 @@ class AttachmentList(ew.Widget):
     attachments=None
     edit_mode=None
 
+class AttachmentAdd(ew.Widget):
+    template='genshi:pyforge.lib.widgets.templates.attachment_add'
+    params=['action','name']
+    action=None
+    name=None
+
+    def resources(self):
+        for r in super(AttachmentAdd, self).resources(): yield r
+        yield ew.JSScript('''
+        $(window).load(function(){
+            $("input.attachment_form_add_button").click(function(){
+                $(this).hide();
+                $(".attachment_form_fields", this.parentNode).show();
+            });
+        });''')
+
 class SubmitButton(ew.SubmitButton):
     attrs={'class':'ui-state-default ui-button ui-button-text'}

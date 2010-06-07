@@ -1,5 +1,5 @@
 $(document).ready(function(){
-    var add_wiki_page_link = $('#sidebarmenu a.add_wiki_page');
+    var add_wiki_page_link = $('#sidebar a.add_wiki_page');
     if(add_wiki_page_link.length){
         var add_page_form_holder = $('#create_wiki_page_holder');
         var make_page = function() {

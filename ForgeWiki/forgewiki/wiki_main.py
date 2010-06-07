@@ -46,6 +46,7 @@ class W:
     markdown_editor = ffw.MarkdownEdit()
     user_tag_edit = ffw.UserTagEdit()
     label_edit = ffw.LabelEdit()
+    attachment_add = ffw.AttachmentAdd()
     attachment_list = ffw.AttachmentList()
     subscribe_form = SubscribeForm()
     page_subscribe_form = SubscribeForm(thing='page')
@@ -152,10 +153,9 @@ class ForgeWikiApp(Application):
         related_urls = []
         page = request.path_info.split(self.url)[-1].split('/')[-2]
         page = model.Page.query.find(dict(app_config_id=self.config._id,title=page)).first()
-        links = [SitemapEntry('Create New Page', c.app.url, ui_icon='plus', className='add_wiki_page') ]
+        links = [SitemapEntry('Create New Page', c.app.url, ui_icon='plus', className='add_wiki_page'),
+	             SitemapEntry('')]
         if page:
-            links.append(SitemapEntry('Edit this page','edit', ui_icon='pencil'))
-            links.append(SitemapEntry('View History','history', ui_icon='search'))
             for aref in page.references+page.backreferences.values():
                 artifact = ArtifactReference(aref).to_artifact()
                 if isinstance(artifact, model.Page) and artifact.url() not in related_urls:
@@ -168,7 +168,7 @@ class ForgeWikiApp(Application):
             SitemapEntry('Wiki Home',c.app.url),
             SitemapEntry('Browse Pages',c.app.url+'browse_pages/'),
 		    SitemapEntry('Browse Tags',c.app.url+'browse_tags/'),
-		    SitemapEntry('Help'),
+		    SitemapEntry(''),
 		    SitemapEntry('Wiki Help',c.app.url+'wiki_help/', className='nav_child'),
 		    SitemapEntry('Markdown Syntax',c.app.url+'markdown_syntax/', className='nav_child')
         ]
@@ -235,10 +235,9 @@ class RootController(object):
     def _check_security(self):
         require(has_artifact_access('read'))
 
-    @expose('forgewiki.templates.index')
+    @expose()
     def index(self):
         redirect(c.app.root_page_name+'/')
-        return dict(message=c.app.config.options['message'])
 
     #Instantiate a Page object, and continue dispatch there
     @expose()
@@ -417,6 +416,7 @@ class PageController(object):
                 raise exc.HTTPForbidden(detail="You may not view this page.")
         c.markdown_editor = W.markdown_editor
         c.user_select = ffw.ProjectUserSelect()
+        c.attachment_add = W.attachment_add
         c.attachment_list = W.attachment_list
         c.label_edit = W.label_edit
         return dict(page=self.page)

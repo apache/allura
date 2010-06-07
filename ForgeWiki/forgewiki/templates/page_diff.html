@@ -18,11 +18,17 @@
   
   <body>
     <h1 class="title">$p1.title</h1>
-    <p>Comparing <a href=".?version=$p1.version">Version $p1.version</a>
-      with <a href=".?version=$p2.version">Version $p2.version</a></p>
-    <hr/>
-    <div style="font-family: fixed">
-      ${Markup(edits)}
+		<div class="content">
+			<div class="row">
+				<div class="column grid_12">
+          <p>Comparing <a href=".?version=$p1.version">Version $p1.version</a>
+            with <a href=".?version=$p2.version">Version $p2.version</a></p>
+          <hr/>
+          <div style="font-family: fixed">
+            ${Markup(edits)}
+          </div>
+        </div>
+      </div>
     </div>
   </body>
 </html>

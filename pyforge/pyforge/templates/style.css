@@ -276,7 +276,7 @@ form textarea {
 	margin-bottom: 5px;
 }
 
-form button, form input[type=submit], form input[type=reset] {font-size: 1em;}
+form button, form input[type=submit], form input[type=reset], form input[type=button] {font-size: 1em;}
 
 
 form input[type=radio],
@@ -302,7 +302,7 @@ form input[type=checkbox] {
 
 
 /* Buttons - lui */
-.btn, button, input[type=submit], input[type=reset] {
+.btn, button, input[type=submit], input[type=reset], input[type=button] {
 	font: .9em/1.3em Helvetica;
 	font-weight: bold;
 	text-shadow: rgb(255,255,255) 0 1px;
@@ -325,13 +325,13 @@ form input[type=checkbox] {
 		background-image: -webkit-gradient(linear, 0% 0%, 0% 100%, from(rgb(255,255,255)), to(${color6}));
 		background-image: -moz-linear-gradient(100% 100% 90deg,${color6}, rgb(255,255,255) 100%);
 }
-button, input[type=submit], input[type=reset] {padding: .35em .8em .3em;}
+button, input[type=submit], input[type=reset], input[type=button] {padding: .35em .8em .3em;}
 
 .btn:hover {
 	cursor: pointer;
 	text-decoration: none;
 }
-.btn:active:hover, button:active:hover, input[type=submit]:active:hover, input[type=reset]:active:hover {
+.btn:active:hover, button:active:hover, input[type=submit]:active:hover, input[type=reset]:active:hover, input[type=button]:active:hover, .btn_activate {
 	background: rgba(0, 0, 0, 0.4);
 	box-shadow: inset rgba(0, 0, 0, 0.4) 0 -5px 12px, inset rgba(0, 0, 0, .8) 0 1px 3px;
 		-moz-box-shadow: inset rgba(0, 0, 0, 0.4) 0 -5px 12px, inset rgba(0, 0, 0, .8) 0 1px 3px;
@@ -766,8 +766,8 @@ ul.ui-tab li a {
 	font-size: 1.2em;
 }
 .content {padding: 0 20px 20px;}
-.actions {position: absolute; right: 10px; top: 5px; font-size: .85em; text-transform: uppercase;}
-.actions .btn {background: none; border: none; text-shadow: none; padding-right: .8em;}
+.actions {position: absolute; right: 10px; top: 5px; font-size: .85em; text-transform: uppercase; width: 100%;}
+.actions .btn {background: none; border: none; text-shadow: none; padding-right: .8em; float: right;}
 .actions .btn.ico-l {line-height: 1.8em; padding-bottom: .1em;}
 
 /* Discussion */
@@ -1024,3 +1024,58 @@ ul.ui-tab li a {
 .ui-icon-grip-solid-horizontal { background-position: -48px -224px; }
 .ui-icon-gripsmall-diagonal-se { background-position: -64px -224px; }
 .ui-icon-grip-diagonal-se { background-position: -80px -224px; }
+
+/* Attachments */
+
+.attachment_images{
+    overflow: auto;
+}
+.attachment_thumb{
+    float: left;
+    margin: .5em;
+}
+
+/* WMD WYSIWIG */
+
+.wmd_edit {width: 510px; height: 150px; margin: 0 0 1em; float: none;}
+
+.wmd_preview{
+    border: 1px solid rgb(215,215,215);
+    padding: .5em;
+    width: 510px;
+    margin: 0 0 2em;
+    float: none;
+}
+.wmd_holder{
+    overflow: auto;
+}
+
+.wmd_holder div div {background: none !important;}
+.wmd_holder span {padding: 0 10px !important;}
+
+/* Tags */
+.tagEditor
+{
+	margin: 4px 0;
+	padding: 0;
+}
+
+.tagEditor li, .removable
+{
+	display: inline;
+	background-image: url(/nf/images/minus_small.png);
+	background-color: #eef;
+	background-position: right center;
+	background-repeat: no-repeat;
+	list-style-type: none;
+	padding: 0 18px 0 6px;
+	margin: 0 4px;
+	cursor: pointer;
+	-moz-border-radius: 5px;
+	-webkit-border-radius: 5px;
+}
+
+.tagEditor li:hover
+{
+	background-color: ${color6};
+}
