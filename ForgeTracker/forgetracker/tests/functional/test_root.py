@@ -317,12 +317,12 @@ class TestFunctionalController(TestController):
         # get a view on the first ticket, check for other ticket listed in sidebar
         ticket_view = self.app.get('/p/test/bugs/1/')
         assert 'Supertask' not in ticket_view
-        assert sidebar_contains(ticket_view, '[#2]')
-    
+        assert '[#2]' in ticket_view
+ 
         # get a view on the second ticket, check for other ticket listed in sidebar
         ticket_view = self.app.get('/p/test/bugs/2/')
         assert 'Supertask' in ticket_view
-        assert sidebar_contains(ticket_view, '[#1]')
+        assert '[#1]' in ticket_view
     
     def test_custom_sums(self):
         # setup a custom sum field
