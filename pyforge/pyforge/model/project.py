@@ -109,6 +109,7 @@ class Project(MappedClass):
     neighborhood_id = ForeignIdProperty(Neighborhood)
     shortname = FieldProperty(str)
     name=FieldProperty(str)
+    show_download_button=FieldProperty(bool, if_missing=True)
     short_description=FieldProperty(str, if_missing='')
     description=FieldProperty(str, if_missing='')
     database=FieldProperty(str)
