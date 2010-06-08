@@ -1,11 +1,10 @@
 <div xmlns:py="http://genshi.edgewall.org/"
-   class="grid">
+   class="list">
   <p py:if="not len(projects)">No projects found</p>
-  <ul class="display ${display_mode == 'grid' and 'thumb_view' or None}" py:if="len(projects)" style="clear: both">
-    <li py:for="project in projects">
+  <div py:if="len(projects)" class="list">
+    <py:for each="project in projects">
       ${project_summary.display(value=project)}
-    </li>
-  </ul>
-  <br style="clear:both"/>
+    </py:for>
+	</div>
 </div>
 

@@ -11,59 +11,28 @@
   <head>
     <meta content="text/html; charset=UTF-8" http-equiv="content-type" py:replace="''"/>
     <title>$title</title>
+    <style type="text/css">
+    #section .base .pad{
+      background-color: inherit;
+	border-radius: 0;
+		-moz-border-radius: 0;
+		-webkit-border-radius: 0;
+	box-shadow: rgba(0,0,0, 0) 0 0 0;
+		-moz-box-shadow:  rgba(0,0,0, 0) 0 0 0;
+		-webkit-box-shadow:  rgba(0,0,0, 0) 0 0 0;
+    }
+    </style>
   </head>
 
   <body id="neighborhood_project_list">
-    <h1 class="title">$title</h1>
-    <div class="grid">
-      <py:if test="text">${Markup(text)}</py:if>
-      <div class="switch" py:if="neighborhood.allow_browse">
-        <div id="radio0" class="ui-button-set" style="float: left">
-          <input type="radio" id="radio01" name="radio" style="display: none;" class="list" /><label for="radio01" class="ui-corner-left ui-button ui-widget ui-state-default ui-button-icon-only"><span class="ui-button-icon-primary ui-icon ui-icon-list">List</span><span class="ui-button-text">List</span></label> <input type="radio" id="radio02" name="radio" checked="checked" style="display: none;" class="grid" /><label for="radio02" class="ui-corner-right ui-button ui-widget ui-state-default ui-button-icon-only ui-state-active"><span class="ui-button-icon-primary ui-icon ui-icon-grid">Grid</span><span class="ui-button-text">Grid</span></label>
-        </div>
-        Sort:
-        <a href=".?sort=alpha" py:if="sort != 'alpha'">Alphabetical</a>
-        <span py:if="sort == 'alpha'">Alphabetical</span>
-         |
-        <a href=".?sort=recent" py:if="sort != 'recent'">Most Recent</a>
-        <span py:if="sort == 'recent'">Most Recent</span>
-      </div>  
-      <!-- TODO: paging after demo <div class="span-3">
-        <p>
-          Page 1 of 2
-        </p>
-      </div>
-      <div class="span-16 tright last">
-        <a href="?offset=15">Next →</a>
-      </div> -->
       <py:if test="neighborhood.allow_browse">
         <p py:if="not len(projects)">No projects found</p>
-        <ul class="display thumb_view" py:if="len(projects)" style="clear: both">
-          <li py:for="project in projects">
+        <div py:if="len(projects)" class="list">
+          <py:for each="project in projects">
             ${c.project_summary.display(value=project)}
-          </li>
-        </ul>
+          </py:for>
+				</div>
       </py:if>
-    </div>
     
   </body>
-  <script type="text/javascript" py:if="neighborhood.allow_browse">
-	$(document).ready(function() {
-		$("div.switch input.grid").click(function(){
-			 $(this).next().addClass('ui-state-active');
-		  $('div.switch input.list').next().removeClass('ui-state-active');
-			  $("ul.display").fadeOut("fast", function() {
-				$(this).fadeIn("fast").addClass("thumb_view");
-				 });
-			});
-		$("div.switch input.list").click(function(){
-		      $(this).next().addClass('ui-state-active');
-	      $('div.switch input.grid').next().removeClass('ui-state-active');
-			  $("ul.display").fadeOut("fast", function() {
-				$(this).fadeIn("fast").removeClass("thumb_view");
-				});
-			});
-
-		});
-	</script>
 </html>

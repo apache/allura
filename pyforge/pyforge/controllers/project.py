@@ -93,7 +93,7 @@ class NeighborhoodController(object):
             pq.sort('last_updated', pymongo.DESCENDING)
         projects = pq.all()
         categories = M.ProjectCategory.query.find({'parent_id':None}).sort('name').all()
-        c.custom_sidebar_menu = [SitemapEntry('Categories')] + [
+        c.custom_sidebar_menu = [
             SitemapEntry(cat.label, self.neighborhood.url()+'browse/'+cat.name, className='nav_child') for cat in categories
         ]
         return dict(neighborhood=self.neighborhood,

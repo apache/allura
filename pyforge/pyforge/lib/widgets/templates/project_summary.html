@@ -1,19 +1,27 @@
 <div
-     xmlns:py="http://genshi.edgewall.org/"
-     xmlns:xi="http://www.w3.org/2001/XInclude"
-     py:strip="True">
-     <xi:include href="${g.pyforge_templates}/lib.html" />
+   xmlns:py="http://genshi.edgewall.org/"
+   xmlns:xi="http://www.w3.org/2001/XInclude"
+   py:strip="True">
+   <xi:include href="${g.pyforge_templates}/lib.html" />
 
-     <?python from itertools import islice ?>
-<a href="${value.url()}"><img src="${value.icon and value.url()+'icon' or g.forge_static('images/project_default.png')}" alt="$value.name Icon" class="fleft icon clear" /></a>
-<h2><a href="${value.url()}">$value.name</a></h2>
-<div class="gravatar sm">
-  <a href="${author.url()}" py:for="i,author in enumerate(islice(value.users(), 8))">
-    ${gravatar(author.preferences.email_address, size=16, title=author.display_name)}<br py:if="i==3"/>
-  </a>
-</div>
-<p>${h.text.truncate(value.short_description, 50)}<br />
-<a href="${accolade.award.longurl()}" py:for="accolade in value.accolades" title="$accolade.award.full"><small class="badge $accolade.award.short">$accolade.award.short</small></a>
-</p>
+  <div class="border card">
+	<div class="box notch sponsor" py:if="len(value.accolades)">
+		<div class="feature">${value.accolades[0].award.short}</div>
+		<img src="${value.icon and value.url()+'icon' or g.forge_static('images/project_default.png')}" alt="$value.name Logo"/>
+	</div>
+	<div class="box" py:if="not len(value.accolades)">
+		<img src="${value.icon and value.url()+'icon' or g.forge_static('images/project_default.png')}" alt="$value.name Logo"/>
+	</div>
+	<h2>
+		<a href="${value.url()}">$value.name</a>
+	</h2>
+	<p class="desc">${h.text.truncate(value.short_description, 50)}</p>
+	<?python g.set_project(value.shortname)?>
+	<div class="quik">
+		<a py:for="i, config in enumerate(value.app_configs)"
+		   py:if="config.load().installable"
+		   href="${value.url()}$config.options.mount_point" class="ico-l"><b class="ui-icon ui-icon-gear"></b> <span>$config.options.mount_point</span></a>
+	</div>
+  </div>
 
 </div>

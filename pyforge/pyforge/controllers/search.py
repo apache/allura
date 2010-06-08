@@ -55,7 +55,7 @@ class ProjectBrowseController(object):
 
     def _build_nav(self):
         categories = M.ProjectCategory.query.find({'parent_id':None}).sort('name').all()
-        nav = [SitemapEntry('Categories')]
+        nav = []
         for cat in categories:
             nav.append(SitemapEntry(
                 cat.label, 

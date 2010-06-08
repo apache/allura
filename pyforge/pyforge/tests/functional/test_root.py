@@ -23,42 +23,37 @@ class TestRootController(TestController):
         projects = response.html.findAll('ul',{'class':'display'})[0].findAll('li')
         assert len(projects) == 10, len(projects)
         assert projects[0].find('a').get('href') == '/adobe/'
-        assert projects[1].find('img').get('alt') == 'adobe-1 Icon'
+        assert projects[1].find('img').get('alt') == 'adobe-1 Logo'
         cat_links = response.html.find('div',{'id':'sidebar'}).findAll('li')
-        assert len(cat_links) == 4
+        assert len(cat_links) == 3
         assert cat_links[0].find('a').get('href') == '/browse/clustering'
         assert cat_links[0].find('a').get('class') == 'nav_child'
         assert cat_links[0].find('a').find('span').string == 'Clustering'
-        nav_heads = response.html.find('div',{'id':'sidebar'}).findAll('span',{'class': ' nav_head'})
-        assert nav_heads[0].string == 'Categories'
 
     def test_project_browse(self):
         com_cat = M.ProjectCategory.query.find(dict(label='Communications')).first()
         fax_cat = M.ProjectCategory.query.find(dict(label='Fax')).first()
         M.Project.query.find(dict(name='adobe-1')).first().category_id = com_cat._id
         response = self.app.get('/browse')
-        assert len(response.html.findAll('img',{'alt':'adobe-1 Icon'})) == 1
-        assert len(response.html.findAll('img',{'alt':'adobe-2 Icon'})) == 1
+        assert len(response.html.findAll('img',{'alt':'adobe-1 Logo'})) == 1
+        assert len(response.html.findAll('img',{'alt':'adobe-2 Logo'})) == 1
         response = self.app.get('/browse/communications')
-        assert len(response.html.findAll('img',{'alt':'adobe-1 Icon'})) == 1
-        assert len(response.html.findAll('img',{'alt':'adobe-2 Icon'})) == 0
+        assert len(response.html.findAll('img',{'alt':'adobe-1 Logo'})) == 1
+        assert len(response.html.findAll('img',{'alt':'adobe-2 Logo'})) == 0
         response = self.app.get('/browse/communications/fax')
-        assert len(response.html.findAll('img',{'alt':'adobe-1 Icon'})) == 0
-        assert len(response.html.findAll('img',{'alt':'adobe-2 Icon'})) == 0
+        assert len(response.html.findAll('img',{'alt':'adobe-1 Logo'})) == 0
+        assert len(response.html.findAll('img',{'alt':'adobe-2 Logo'})) == 0
 
     def test_neighborhood_index(self):
         response = self.app.get('/adobe/')
-        assert response.html.find('h1',{'class':'title'}).string == 'Welcome to Adobe'
-        projects = response.html.findAll('ul',{'class':'display thumb_view'})[0].findAll('li')
+        projects = response.html.findAll('div',{'class':'border card'})
         assert len(projects) == 2
-        assert projects[0].find('img').get('alt') == 'adobe-1 Icon'
+        assert projects[0].find('img').get('alt') == 'adobe-1 Logo'
         cat_links = response.html.find('div',{'id':'sidebar'}).findAll('li')
-        assert len(cat_links) == 4
+        assert len(cat_links) == 3
         assert cat_links[0].find('a').get('href') == '/adobe/browse/clustering'
         assert cat_links[0].find('a').get('class') == 'nav_child'
         assert cat_links[0].find('a').find('span').string == 'Clustering'
-        nav_heads = response.html.find('div',{'id':'sidebar'}).findAll('span',{'class': ' nav_head'})
-        assert nav_heads[0].string == 'Categories'
 
     def test_neighborhood_project_browse(self):
         com_cat = M.ProjectCategory.query.find(dict(label='Communications')).first()
@@ -66,14 +61,14 @@ class TestRootController(TestController):
         M.Project.query.find(dict(name='adobe-1')).first().category_id = com_cat._id
         M.Project.query.find(dict(name='adobe-2')).first().category_id = fax_cat._id
         response = self.app.get('/adobe/browse')
-        assert len(response.html.findAll('img',{'alt':'adobe-1 Icon'})) == 1
-        assert len(response.html.findAll('img',{'alt':'adobe-2 Icon'})) == 1
+        assert len(response.html.findAll('img',{'alt':'adobe-1 Logo'})) == 1
+        assert len(response.html.findAll('img',{'alt':'adobe-2 Logo'})) == 1
         response = self.app.get('/adobe/browse/communications')
-        assert len(response.html.findAll('img',{'alt':'adobe-1 Icon'})) == 1
-        assert len(response.html.findAll('img',{'alt':'adobe-2 Icon'})) == 1
+        assert len(response.html.findAll('img',{'alt':'adobe-1 Logo'})) == 1
+        assert len(response.html.findAll('img',{'alt':'adobe-2 Logo'})) == 1
         response = self.app.get('/adobe/browse/communications/fax')
-        assert len(response.html.findAll('img',{'alt':'adobe-1 Icon'})) == 0
-        assert len(response.html.findAll('img',{'alt':'adobe-2 Icon'})) == 1
+        assert len(response.html.findAll('img',{'alt':'adobe-1 Logo'})) == 0
+        assert len(response.html.findAll('img',{'alt':'adobe-2 Logo'})) == 1
 
     def test_markdown_to_html(self):
         r = self.app.get('/nf/markdown_to_html?markdown=*aaa*bb[WikiHome]&project=test&app=bugs')
