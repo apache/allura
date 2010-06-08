@@ -38,3 +38,6 @@ echo '# setup HelloForge...'
 pushd HelloForge
 python setup.py develop
 popd
+pushd ForgeDownloads
+python setup.py develop
+popd
