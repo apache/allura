@@ -263,25 +263,25 @@ class TestForum(TestController):
 
     def test_sidebar_menu(self):
         r = self.app.get('/discussion/')
-        sidebarmenu = str(r.html.find('ul',{'id':'sidebarmenu'}))
-        assert '<a href="/p/test/discussion/" class=" "><span class="ui-icon ui-icon-home"></span>Home</a>' in sidebarmenu
-        assert '<a href="/p/test/admin/discussion" class=" "><span class="ui-icon ui-icon-wrench"></span>Admin</a>' in sidebarmenu
-        assert '<a href="/p/test/discussion/search" class=" "><span class="ui-icon ui-icon-search"></span>Search</a>' in sidebarmenu
+        sidebarmenu = str(r.html.find('div',{'id':'sidebar'}))
+        assert '<a href="/p/test/discussion/" class=" ico-l"><b class="ui-icon ui-icon-home"></b> <span>Home</span></a>' in sidebarmenu
+        assert '<a href="/p/test/admin/discussion" class=" ico-l"><b class="ui-icon ui-icon-wrench"></b> <span>Admin</span></a>' in sidebarmenu
+        assert '<a href="/p/test/discussion/search" class=" ico-l"><b class="ui-icon ui-icon-search"></b> <span>Search</span></a>' in sidebarmenu
         assert '<span class=" nav_head">Forum Help</span>' in sidebarmenu
-        assert '<a href="/p/test/discussion/help" class="nav_child ">Forum Permissions</a>' in sidebarmenu
-        assert '<a href="/p/test/discussion/markdown_syntax" class="nav_child ">Markdown Syntax</a>' in sidebarmenu
-        assert '<a href="#" class="sidebar_thread_reply "><span class="ui-icon ui-icon-comment"></span>Reply to This</a>' not in sidebarmenu
-        assert '<a href="#" class="sidebar_thread_tag "><span class="ui-icon ui-icon-tag"></span>Tag This</a>' not in sidebarmenu
-        assert '<a href="feed.rss" class=" "><span class="ui-icon ui-icon-signal-diag"></span>Follow This</a>' not in sidebarmenu
-        assert '<a href="flag_as_spam" class="sidebar_thread_spam "><span class="ui-icon ui-icon-flag"></span>Mark as Spam</a>' not in sidebarmenu
+        assert '<a href="/p/test/discussion/help" class="nav_child"> <span>Forum Permissions</span></a>' in sidebarmenu
+        assert '<a href="/p/test/discussion/markdown_syntax" class="nav_child"> <span>Markdown Syntax</span></a>' in sidebarmenu
+        assert '<a href="#" class="sidebar_thread_reply ico-l"><b class="ui-icon ui-icon-comment"></b> <span>Reply to This</span></a>' not in sidebarmenu
+        assert '<a href="#" class="sidebar_thread_tag ico-l"><b class="ui-icon ui-icon-tag"></b> <span>Tag This</span></a>' not in sidebarmenu
+        assert '<a href="feed.rss" class=" ico-l"><b class="ui-icon ui-icon-signal-diag"></b> <span>Follow This</span></a>' not in sidebarmenu
+        assert '<a href="flag_as_spam" class="sidebar_thread_spam ico-l"><b class="ui-icon ui-icon-flag"></b> <span>Mark as Spam</span></a>' not in sidebarmenu
         thread = self.app.get('/discussion/TestForum/post', params=dict(
                 subject='AAA',
                 text='aaa')).follow()
-        thread_sidebarmenu = str(thread.html.find('ul',{'id':'sidebarmenu'}))
-        assert '<a href="#" class="sidebar_thread_reply "><span class="ui-icon ui-icon-comment"></span>Reply to This</a>' in thread_sidebarmenu
-        assert '<a href="#" class="sidebar_thread_tag "><span class="ui-icon ui-icon-tag"></span>Tag This</a>' in thread_sidebarmenu
-        assert '<a href="feed.rss" class=" "><span class="ui-icon ui-icon-signal-diag"></span>Follow This</a>' in thread_sidebarmenu
-        assert '<a href="flag_as_spam" class="sidebar_thread_spam "><span class="ui-icon ui-icon-flag"></span>Mark as Spam</a>' in thread_sidebarmenu
+        thread_sidebarmenu = str(thread.html.find('div',{'id':'sidebar'}))
+        assert '<a href="#" class="sidebar_thread_reply ico-l"><b class="ui-icon ui-icon-comment"></b> <span>Reply to This</span></a>' in thread_sidebarmenu
+        assert '<a href="#" class="sidebar_thread_tag ico-l"><b class="ui-icon ui-icon-tag"></b> <span>Tag This</span></a>' in thread_sidebarmenu
+        assert '<a href="feed.rss" class=" ico-l"><b class="ui-icon ui-icon-signal-diag"></b> <span>Follow This</span></a>' in thread_sidebarmenu
+        assert '<a href="flag_as_spam" class="sidebar_thread_spam ico-l"><b class="ui-icon ui-icon-flag"></b> <span>Mark as Spam</span></a>' in thread_sidebarmenu
 
 class TestForumAdmin(TestController):
 
