@@ -47,7 +47,9 @@ class LineOrientedTreeProcessor(markdown.treeprocessors.Treeprocessor):
             text = self._markdown.postprocessors['raw_html'].run(text)
             text = text.strip()
             if '\n' not in text: continue
-            new_text = text.replace('\n', '<br/>')
+            new_text = (text
+                        .replace('<br>', '<br/>')
+                        .replace('\n', '<br/>'))
             try:
                 new_node = markdown.etree.fromstring(new_text)
                 node.clear()

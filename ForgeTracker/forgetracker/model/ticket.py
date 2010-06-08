@@ -1,5 +1,5 @@
 from time import sleep
-from datetime import datetime
+from datetime import datetime, timedelta
 
 import urllib
 import tg
@@ -13,6 +13,7 @@ from ming.orm import FieldProperty, ForeignIdProperty, RelationProperty
 from pyforge.model import Artifact, VersionedArtifact, Snapshot, Message, project_orm_session, Project
 from pyforge.model import File, User, Feed, Thread, Post, Notification
 from pyforge.lib import helpers as h
+from pyforge.lib.search import search_artifact
 
 common_suffix = tg.config.get('forgemail.domain', '.sourceforge.net')
 
@@ -29,6 +30,8 @@ class Globals(MappedClass):
     status_names = FieldProperty(str)
     milestone_names = FieldProperty(str, if_missing='')
     custom_fields = FieldProperty([{str:None}])
+    _bin_counts = FieldProperty({str:int})
+    _bin_counts_expire = FieldProperty(datetime)
 
     @classmethod
     def next_ticket_num(cls):
@@ -37,6 +40,22 @@ class Globals(MappedClass):
             update={'$inc': { 'last_ticket_num': 1}},
             new=True)
         return g.last_ticket_num+1
+
+    @property
+    def bin_counts(self):
+        if self._bin_counts_expire is None or datetime.utcnow() > self._bin_counts_expire:
+            for b in Bin.query.find(dict(
+                    app_config_id=self.app_config_id)):
+                r = search_artifact(Ticket, b.terms, rows=0)
+                self._bin_counts[b.summary] = r.hits
+            self._bin_counts_expire = datetime.utcnow() + timedelta(minutes=60)
+        return self._bin_counts
+
+    def invalidate_bin_counts(self):
+        '''Expire it just a bit in the future to allow data to propagate through
+        the search reactors
+        '''
+        self._bin_counts_expire = datetime.utcnow() + timedelta(seconds=5)
 
     @classmethod
     def for_current_tracker(cls):

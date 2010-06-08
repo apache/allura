@@ -112,8 +112,11 @@ class ForgeTrackerApp(Application):
         search_bins = []
         related_urls = []
         ticket = request.path_info.split(self.url)[-1].split('/')[0]
+        tracker_globals = model.Globals.for_current_tracker()
         for bin in model.Bin.query.find().sort('summary'):
-            search_bins.append(SitemapEntry(bin.shorthand_id(), bin.url(), className='nav_child'))
+            label = '%s: (%s)' % (
+                bin.shorthand_id(), tracker_globals.bin_counts.get(bin.shorthand_id(), 0))
+            search_bins.append(SitemapEntry(label, bin.url(), className='nav_child'))
         if ticket.isdigit():
             ticket = model.Ticket.query.find(dict(app_config_id=self.config._id,ticket_num=int(ticket))).first()
         else:
@@ -360,6 +363,7 @@ class RootController(object):
         if request.method != 'POST':
             raise Exception('save_ticket must be a POST request')
         globals = model.Globals.query.get(app_config_id=c.app.config._id)
+        globals.invalidate_bin_counts()
         if globals.milestone_names is None:
             globals.milestone_names = ''
         ticket_num = ticket_form.pop('ticket_num', None)
@@ -397,6 +401,8 @@ class RootController(object):
 
     @expose()
     def update_tickets(self, **post_data):
+        globals = model.Globals.query.get(app_config_id=c.app.config._id)
+        globals.invalidate_bin_counts()
         tickets = model.Ticket.query.find(dict(
                 _id={'$in':[ObjectId(id) for id in post_data['selected'].split(',')]},
                 app_config_id=c.app.config._id)).all()
@@ -553,6 +559,8 @@ class BinController(object):
     @validate(W.bin_form, error_handler=newbin)
     def save_bin(self, bin_form=None, **post_data):
         require(has_artifact_access('write'))
+        globals = model.Globals.query.get(app_config_id=c.app.config._id)
+        globals.invalidate_bin_counts()
         if request.method != 'POST':
             raise Exception('save_bin must be a POST request')
         bin = model.Bin(summary=bin_form['summary'], terms=bin_form['terms'])
@@ -566,6 +574,8 @@ class BinController(object):
     def delbin(self, summary=None):
         bin = model.Bin.query.find(dict(summary=summary,)).first()
         require(has_artifact_access('write', bin))
+        globals = model.Globals.query.get(app_config_id=c.app.config._id)
+        globals.invalidate_bin_counts()
         bin.delete()
         redirect(request.referer)
 
@@ -693,12 +703,16 @@ class TicketController(object):
 
     @expose()
     def update_ticket(self, **post_data):
+        globals = model.Globals.query.get(app_config_id=c.app.config._id)
+        globals.invalidate_bin_counts()
         self._update_ticket(post_data)
 
     @expose()
     @h.vardec
     @validate(W.edit_ticket_form, error_handler=edit)
     def update_ticket_from_widget(self, **post_data):
+        globals = model.Globals.query.get(app_config_id=c.app.config._id)
+        globals.invalidate_bin_counts()
         data = post_data['edit_ticket_form']
         # icky: handle custom fields like the non-widget form does
         if 'custom_fields' in data:
@@ -982,9 +996,10 @@ class TicketRestController(object):
     @validate(W.ticket_form, error_handler=h.json_validation_error)
     def save(self, ticket_form=None, **post_data):
         require(has_artifact_access('write', self.ticket))
+        globals = model.Globals.query.get(app_config_id=c.app.config._id)
+        globals.invalidate_bin_counts()
         if request.method != 'POST':
             raise Exception('save_ticket must be a POST request')
-        globals = model.Globals.query.get(app_config_id=c.app.config._id)
         if globals.milestone_names is None:
             globals.milestone_names = ''
         self.ticket.update(ticket_form, globals)
