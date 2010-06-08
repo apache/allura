@@ -32,8 +32,6 @@ from .static import StaticController
 
 from pyforge.model.session import main_orm_session
 
-CACHED_CSS = dict()
-
 class W:
     markdown_editor = ffw.MarkdownEdit()
     project_summary = plw.ProjectSummary()
@@ -139,27 +137,23 @@ class NeighborhoodController(object):
     @without_trailing_slash
     def site_style(self):
         """Display the css for the default theme."""
-        if self.neighborhood._id in CACHED_CSS:
-            css = CACHED_CSS[self.neighborhood._id]
-        else:
-            theme = M.Theme.query.find(dict(neighborhood_id=self.neighborhood._id)).first()
-            if theme == None:
-                theme = M.Theme.query.find(dict(name='forge_default')).first()
-            
-            colors = dict(color1=theme.color1,
-                          color2=theme.color2,
-                          color3=theme.color3,
-                          color4=theme.color4,
-                          color5=theme.color5,
-                          color6=theme.color6)
-            tpl_fn = pkg_resources.resource_filename(
-                'pyforge', 'templates/style.css')
-            css = h.render_genshi_plaintext(tpl_fn,**colors)
-            if self.neighborhood.css:
-                tt = genshi.template.NewTextTemplate(self.neighborhood.css)
-                stream = tt.generate(**colors)
-                css = css + stream.render(encoding='utf-8').decode('utf-8')
-            CACHED_CSS[self.neighborhood._id] = css
+        theme = M.Theme.query.find(dict(neighborhood_id=self.neighborhood._id)).first()
+        if theme == None:
+            theme = M.Theme.query.find(dict(name='forge_default')).first()
+
+        colors = dict(color1=theme.color1,
+                      color2=theme.color2,
+                      color3=theme.color3,
+                      color4=theme.color4,
+                      color5=theme.color5,
+                      color6=theme.color6)
+        tpl_fn = pkg_resources.resource_filename(
+            'pyforge', 'templates/style.css')
+        css = h.render_genshi_plaintext(tpl_fn,**colors)
+        if self.neighborhood.css:
+            tt = genshi.template.NewTextTemplate(self.neighborhood.css)
+            stream = tt.generate(**colors)
+            css = css + stream.render(encoding='utf-8').decode('utf-8')
         response.headers['Content-Type'] = ''
         response.content_type = 'text/css'
         return css
@@ -397,11 +391,7 @@ class NeighborhoodAdminController(object):
         self.neighborhood.homepage = homepage
         self.neighborhood.css = css
         self.neighborhood.allow_browse = 'allow_browse' in kw
-        if css and self.neighborhood._id in CACHED_CSS:
-            del CACHED_CSS[self.neighborhood._id]
         if color1 or color2 or color3 or color4 or color5 or color6:
-            if self.neighborhood._id in CACHED_CSS:
-                del CACHED_CSS[self.neighborhood._id]
             if not self.neighborhood.theme:
                 theme = M.Theme(neighborhood_id=self.neighborhood._id)
             else:
