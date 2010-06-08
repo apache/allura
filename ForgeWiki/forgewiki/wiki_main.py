@@ -479,7 +479,11 @@ class PageController(object):
     @without_trailing_slash
     @h.vardec
     @expose()
-    def update(self, title=None, text=None, tags=None, tags_old=None, labels=None, labels_old=None, viewable_by=None,new_viewable_by=None,**kw):
+    def update(self, title=None, text=None,
+               tags=None, tags_old=None,
+               labels=None, labels_old=None,
+               viewable_by=None,
+               new_viewable_by=None,**kw):
         require(has_artifact_access('edit', self.page))
         if tags: tags = tags.split(',')
         else: tags = []
@@ -493,7 +497,7 @@ class PageController(object):
             else:
                 self.page.title = new_title
         self.page.text = text
-        if len(labels):
+        if labels:
             self.page.labels = labels.split(',')
         else:
             self.page.labels = []
@@ -575,6 +579,8 @@ class AttachmentsController(object):
 
     @expose()
     def _lookup(self, filename, *args):
+        if not args:
+            filename = request.path.rsplit('/', 1)[-1]
         filename=unquote(filename)
         return AttachmentController(filename), args
 
@@ -586,6 +592,8 @@ class AttachmentController(object):
     def __init__(self, filename):
         self.filename = filename
         self.attachment = model.Attachment.query.get(filename=filename)
+        if self.attachment is None:
+            self.attachment = model.Attachment.by_metadata(filename=filename).first()
         self.thumbnail = model.Attachment.by_metadata(filename=filename).first()
         self.page = self.attachment.page
 

@@ -4,6 +4,7 @@ from datetime import datetime
 import tg
 from pylons import g #g is a namespace for globally accessable app helpers
 from pylons import c as context
+from pylons import request
 
 from pymongo.errors import OperationFailure
 
@@ -192,6 +193,9 @@ class Attachment(File):
 
     def url(self):
         return self.page.url() + 'attachment/' + self.filename
+
+    def is_embedded(self):
+        return self.metadata.filename in request.environ.get('allura.macro.att_embedded', [])
 
 
 MappedClass.compile_all()

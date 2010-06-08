@@ -143,6 +143,19 @@ class TestRootController(TestController):
         thumbnail = Image.open(StringIO.StringIO(r.body))
         assert thumbnail.size == (255,255)
 
+        # Make sure thumbnail is present
+        r = self.app.get('/wiki/TEST/')
+        img_srcs = [ i['src'] for i in r.html.findAll('img') ]
+        assert ('/p/test/wiki/TEST/attachment/' + filename + '/thumb') in img_srcs, img_srcs
+        # Update the page to embed the image, make sure the thumbnail is absent
+        self.app.post('/wiki/TEST/update', params=dict(
+                title='TEST',
+                text='sometext\n[[img src=%s]]' % file_name))
+        r = self.app.get('/wiki/TEST/')
+        img_srcs = [ i['src'] for i in r.html.findAll('img') ]
+        assert ('/p/test/wiki/TEST/attachment/' + filename) not in img_srcs, img_srcs
+        assert ('attachment/' + file_name) in img_srcs, img_srcs
+
     def test_sidebar_static_page(self):
         response = self.app.get('/wiki/TEST/')
         assert 'Edit this page' not in response

@@ -52,14 +52,14 @@
           </div>
           <py:for each="att in page.attachments">
             <hr/>
-            <div py:if="h.supported_by_PIL(att.contentType)" class="attachment_thumb">
+            <div py:if="h.supported_by_PIL(att.contentType) and not att.is_embedded()" class="attachment_thumb">
               <a href="${att.url()}">
                 <img src="${att.url()}/thumb"/>
               </a><br/>
               <a href="${att.url()}">${att.metadata.filename}</a>
               ($att.length bytes)
             </div>
-            <div py:if="not h.supported_by_PIL(att.contentType)">
+            <div py:if="not h.supported_by_PIL(att.contentType) or att.is_embedded()">
               <a href="${att.url()}">${att.metadata.filename}</a>
               ($att.length bytes)
             </div>

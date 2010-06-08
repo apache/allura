@@ -74,3 +74,9 @@ def include(ref=None, **kw):
     response = sb.display(artifact=artifact, attrs=kw)
     return response
     
+@macro
+def img(src=None, **kw):
+    attrs = ('%s="%s"' % t for t in kw.iteritems())
+    included = request.environ.setdefault('allura.macro.att_embedded', set())
+    included.add(src)
+    return '<img src="attachment/%s" %s/>' % (src, ' '.join(attrs))
