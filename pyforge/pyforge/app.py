@@ -2,6 +2,7 @@ import logging
 from urllib import basejoin
 
 from tg import expose, redirect, flash
+from tg.decorators import without_trailing_slash
 from pylons import c, g
 from pymongo.bson import ObjectId
 
@@ -198,6 +199,7 @@ class DefaultAdminController(object):
         return redirect('permissions')
 
     @expose('pyforge.templates.app_admin_permissions')
+    @without_trailing_slash
     def permissions(self):
         return dict(app=self.app,
                     allow_config=has_artifact_access('configure', app=self.app)())
@@ -232,13 +234,13 @@ class DefaultAdminController(object):
                 redirect('../' + self.app.config.options.mount_point + '/')
 
     @expose()
-    def add_perm(self, permission, role):
+    def add_perm(self, permission=None, role=None):
         require(has_artifact_access('configure', app=self.app))
         self.app.config.acl.setdefault(permission, []).append(ObjectId(role))
         redirect('permissions')
 
     @expose()
-    def del_perm(self, permission, role):
+    def del_perm(self, permission=None, role=None):
         require(has_artifact_access('configure', app=self.app))
         self.app.config.acl[permission].remove(ObjectId(role))
         redirect('permissions')
