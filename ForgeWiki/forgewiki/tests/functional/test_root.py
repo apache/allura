@@ -163,7 +163,7 @@ class TestRootController(TestController):
 
     def test_sidebar_dynamic_page(self):
         response = self.app.get('/wiki/TEST/').follow()
-        assert 'Edit this page' in response
+        assert 'Edit TEST' in response
         assert 'Related Pages' not in response
         self.app.get('/wiki/aaa/')
         self.app.get('/wiki/bbb/')
@@ -223,16 +223,16 @@ class TestRootController(TestController):
     def test_show_left_bar(self):
         self.app.get('/wiki/TEST/')
         wiki_page = self.app.get('/wiki/TEST/')
-        assert wiki_page.html.find('ul',{'id':'sidebarmenu'})
+        assert wiki_page.html.find('ul',{'class':'sidebarmenu'})
         options_admin = self.app.get('/admin/wiki/options')
         assert options_admin.form['show_left_bar'].checked
         options_admin.form['show_left_bar'].checked = False
         options_admin2 = options_admin.form.submit().follow()
         assert not options_admin2.form['show_left_bar'].checked
         wiki_page2 = self.app.get('/wiki/TEST/',extra_environ=dict(username='*anonymous'))
-        assert not wiki_page2.html.find('ul',{'id':'sidebarmenu'})
+        assert not wiki_page2.html.find('ul',{'class':'sidebarmenu'})
         wiki_page3 = self.app.get('/wiki/TEST/')
-        assert wiki_page3.html.find('ul',{'id':'sidebarmenu'})
+        assert wiki_page3.html.find('ul',{'class':'sidebarmenu'})
 
     def test_show_right_bar(self):
         self.app.get('/wiki/TEST/')
