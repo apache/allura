@@ -81,11 +81,9 @@
       <a href="$s.url" class="$s.className${s.ui_icon and ' ico-l' or ''}"><b py:if="s.ui_icon" class="ui-icon ui-icon-$s.ui_icon"></b> <span>$s.label</span></a>
     </li>
     <py:if test="not s.url">
-      <py:if test="s.label">
-        ${Markup('&lt;/ul>')}
-        <span class="$s.className nav_head"><span py:if="s.ui_icon" class="ui-icon ui-icon-$s.ui_icon"></span>$s.label</span>
-        ${Markup('&lt;ul class="sidebarmenu">')}
-      </py:if>
+      ${Markup('&lt;/ul>')}
+        <span py:if="s.label" class="$s.className nav_head"><span py:if="s.ui_icon" class="ui-icon ui-icon-$s.ui_icon"></span>$s.label</span>
+      ${Markup('&lt;ul class="sidebarmenu">')}
     </py:if>
   </py:def>
 
