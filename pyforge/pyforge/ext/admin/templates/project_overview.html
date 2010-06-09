@@ -146,6 +146,12 @@
                 </li>
                 <hr class="clear clearfix" />
                 <li>
+                    <label for="show_download_button">Downloads:</label>
+                    <input name="show_download_button" type="checkbox"
+                           checked="${c.project.show_download_button and 'CHECKED' or None}"/>
+                </li>
+                <hr class="clear clearfix" />
+                <li>
                     <label>&nbsp;</label>
                     <input type="submit" value="Save"
                            class="ui-state-default ui-button ui-button-text"/>
