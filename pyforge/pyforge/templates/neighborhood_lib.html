@@ -24,6 +24,9 @@
 		<div class="row project" py:if="neighborhood">
 			<div class="column grid_9">
 				<ul class="ui-tab">
+				  <li class="${request.url.rfind(c.project.neighborhood.url(),-len(c.project.neighborhood.url())) != -1 and 'active' or ''}">
+            <a href="${c.project.neighborhood.url()}" class="ico-l"><b class="ui-icon ui-icon-home"></b> <span>Home</span></a>
+          </li>
 					<li py:if="has_neighborhood_access('admin', neighborhood)()"
 					    class="${neighborhood.url()+'_admin' in request.url and 'active' or ''}">
               <a href="${neighborhood.url()}_admin/" class="ico-l"><b class="ui-icon ui-icon-gear"></b> <span>Admin</span></a>
