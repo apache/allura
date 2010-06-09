@@ -40,7 +40,7 @@
               </a>
               <span py:if="not len(c.project.accolades)">No Awards</span>
           </py:if>
-          <div class="listed" py:if="c.project.labels">
+          <div class="listed" py:if="len(c.project.labels) and not (len(c.project.labels)==1 and c.project.labels[0]=='')">
             Tags: <span py:for="label in c.project.labels" class="ui-corner-all tag">$label </span>
           </div>
           <div class="listed last gravatar sm">
