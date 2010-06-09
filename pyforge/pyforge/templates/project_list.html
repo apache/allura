@@ -9,33 +9,48 @@
 <head>
   <meta content="text/html; charset=UTF-8" http-equiv="content-type" py:replace="''"/>
   <title>$title</title>
+  <style type="text/css">
+  #section .base .pad{
+    background-color: inherit;
+    border-radius: 0;
+      -moz-border-radius: 0;
+      -webkit-border-radius: 0;
+    box-shadow: rgba(0,0,0, 0) 0 0 0;
+      -moz-box-shadow:  rgba(0,0,0, 0) 0 0 0;
+      -webkit-box-shadow:  rgba(0,0,0, 0) 0 0 0;
+  }
+  </style>
 </head>
 
   <body>
-    <h1 class="title">$title</h1>
     <div class="content">
       <div class="row">
         <div class="column grid_12">
           <py:def function="project(n, subprojects)">
-          <li><a href="${n.url()}"><font size="+2">${n.name}</font></a></li>
-            <li py:for="p in subprojects">
-              ${c.project_summary.display(value=p)}
-            </li>
+            <div style="clear:both;><a href="${n.url()}"><font size="+2">${n.name}</font></a></div>
+            <div class="list" style="clear:both">
+              <py:for each="p in subprojects">
+                ${c.project_summary.display(value=p)}
+              </py:for>
+            </div>
           </py:def>
           <py:if test="text">${Markup(text)}</py:if>
           <p py:if="not len(projects)">No projects found</p>
-          <ul class="display" py:if="len(projects)">
+          
+          <div py:if="len(projects)">
             <py:if test="len(projects) and isinstance(projects[0], tuple)">
               <py:for each="n, subprojects in projects">
                 ${project(n, subprojects)}
               </py:for>
             </py:if>
             <py:if test="len(projects) and not isinstance(projects[0], tuple)">
-              <li py:for="project in projects">
-                ${c.project_summary.display(value=project)}
-              </li>
+              <div class="list">
+                <py:for each="project in projects">
+                  ${c.project_summary.display(value=project)}
+                </py:for>
+              </div>
             </py:if>
-          </ul>
+          </div>
         </div>
       </div>
     </div>
