@@ -126,10 +126,12 @@ class RootController(object):
     def index(self, offset=0):
         offset=int(offset)
         repo = c.app.repo
-        if repo and repo.status=='ready':
-            revisions = islice(repo.log(), offset, offset+10)
-        else:
-            revisions = []
+        #avoid the repo.log() call as it might be timing out
+        revisions = []
+        #if repo and repo.status=='ready':
+        #    revisions = islice(repo.log(), offset, offset+10)
+        #else:
+        #    revisions = []
         c.revision_widget=W.revision_widget
         next_link='?' + urlencode(dict(offset=offset+10))
         username = ''
