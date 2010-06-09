@@ -63,7 +63,12 @@ class SVNRepository(Repository):
         self.status = 'ready'
 
     def log(self, *args, **kwargs):
+        offset = kwargs.pop('offset', 0)
         try:
+            if offset != 0:
+                entry = self._impl.log(self.local_url, limit=1)[0]
+                kwargs = dict(kwargs, revision_start=pysvn.Revision(
+                        pysvn.opt_revision_kind.number, entry.revision.number-offset))
             return [SVNCommit.from_svn(entry, self)
                     for entry in self._impl.log(self.local_url, *args, **kwargs) ]
         except:  # pragma no cover
@@ -96,8 +101,7 @@ class SVNCommit(Commit):
     def from_svn(cls, entry, repo):
         result = cls(id=entry.revision.number, repo=repo)
         result.__dict__['_impl'] = entry
-        result.author_username=entry.author
-        result.author=User.by_username(entry.author)
+        result.author_username=entry.get('author')
         result.datetime=datetime.utcfromtimestamp(entry.date)
         return result
 
@@ -127,5 +131,9 @@ class SVNCommit(Commit):
 
     def diff(self):
         return self._repo.diff(self._id-1, self._id)
+
+    @LazyProperty
+    def author(self):
+        return User.by_username(self.author_username)
 
 MappedClass.compile_all()
