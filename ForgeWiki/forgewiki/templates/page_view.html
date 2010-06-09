@@ -25,9 +25,11 @@
   <body>
     <h1 class="title">$page.title</h1>
 		<div class="actions">
+		  <py:if test="c.user and c.user != c.user.anonymous()">
 			<a href="edit" class="btn ico-l"><b class="ui-icon ui-icon-pencil"></b> <span>Edit</span></a>
 			<a href="history" class="btn ico-l"><b class="ui-icon ui-icon-search"></b> <span>History</span></a>
       ${c.subscribe_form.display(value=subscribed, action='subscribe', style='icon')}
+      </py:if>
 			<a href="feed" class="btn ico"><b class="ui-icon ui-icon-signal-diag"></b> <span>RSS</span></a>
 		</div>
     <div class="content">
