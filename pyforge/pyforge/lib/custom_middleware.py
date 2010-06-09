@@ -68,7 +68,7 @@ class LoginRedirectMiddleware(object):
             self.app, environ, catch_exc_info=True)
         if status[:3] == '401':
             login_url = tg.config.get('auth.login_url', '/auth/')
-            location = tg.url(login_url, return_to=environ['PATH_INFO'])
+            location = tg.url(login_url, dict(return_to=environ['PATH_INFO']))
             r = exc.HTTPFound(location=location)
             return r(environ, start_response)
         start_response(status, headers, exc_info)

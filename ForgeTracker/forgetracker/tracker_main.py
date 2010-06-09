@@ -980,7 +980,7 @@ class TicketRestController(object):
     @validate(W.ticket_form, error_handler=h.json_validation_error)
     def save(self, ticket_form=None, **post_data):
         require(has_artifact_access('write', self.ticket))
-        c.app.globals.globals.invalidate_bin_counts()
+        c.app.globals.invalidate_bin_counts()
         if request.method != 'POST':
             raise Exception('save_ticket must be a POST request')
         if c.app.globals.milestone_names is None:
