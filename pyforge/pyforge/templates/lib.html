@@ -45,7 +45,7 @@
         <img py:if="not c.project.icon" src="${g.forge_static('images/project_default.png')}" class="project_icon"/>
 	</div>
 	<div class="column grid_9">
-		<h1>
+		<h1 class="title">
 		<a href="${c.project.url()}" py:if="c.project.shortname.endswith('--init--')">$c.project.neighborhood.name</a>
 		<a py:if="not c.project.shortname.endswith('--init--')" href="${c.project.url()}">$c.project.name</a>
 		</h1>
