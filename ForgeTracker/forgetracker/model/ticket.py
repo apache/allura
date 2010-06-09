@@ -7,6 +7,7 @@ from pymongo import bson
 from pylons import c
 
 from ming import schema
+from ming.utils import LazyProperty
 from ming.orm import MappedClass, session
 from ming.orm import FieldProperty, ForeignIdProperty, RelationProperty
 
@@ -184,6 +185,10 @@ class Ticket(VersionedArtifact):
         domain = '.'.join(reversed(self.app.url[1:-1].split('/'))).replace('_', '-')
         return '%s@%s%s' % (self.ticket_num, domain, common_suffix)
 
+    @LazyProperty
+    def globals(self):
+        return Globals.query.get(app_config_id=self.app_config_id)
+
     def commit(self):
         VersionedArtifact.commit(self)
         if self.version > 1:
@@ -303,7 +308,8 @@ class Ticket(VersionedArtifact):
         if root is not None:
             root.recalculate_sums()
 
-    def update(self,ticket_form, tracker_globals):
+    def update(self,ticket_form):
+        self.globals.invalidate_bin_counts()
         tags = (ticket_form.pop('tags', None) or '').split(',')
         if tags == ['']:
             tags = []
@@ -314,7 +320,7 @@ class Ticket(VersionedArtifact):
         h.tag_artifact(self, c.user, tags)
         custom_sums = set()
         other_custom_fields = set()
-        for cf in tracker_globals.custom_fields or []:
+        for cf in self.globals.custom_fields or []:
             (custom_sums if cf.type=='sum' else other_custom_fields).add(cf.name)
             if cf.type == 'boolean' and 'custom_fields.'+cf.name not in ticket_form:
                 self.custom_fields[cf.name] = 'False'

@@ -64,6 +64,7 @@ class ForgeTrackerApp(Application):
 
     def __init__(self, project, config):
         Application.__init__(self, project, config)
+        self.globals = model.Globals.query.get(app_config_id=config._id)
         self.root = RootController()
         self.api_root = RootRestController()
         self.admin = TrackerAdminController(self)
@@ -112,10 +113,9 @@ class ForgeTrackerApp(Application):
         search_bins = []
         related_urls = []
         ticket = request.path_info.split(self.url)[-1].split('/')[0]
-        tracker_globals = model.Globals.for_current_tracker()
         for bin in model.Bin.query.find().sort('summary'):
             label = '%s: (%s)' % (
-                bin.shorthand_id(), tracker_globals.bin_counts.get(bin.shorthand_id(), 0))
+                bin.shorthand_id(), c.app.globals.bin_counts.get(bin.shorthand_id(), 0))
             search_bins.append(SitemapEntry(label, bin.url(), className='nav_child'))
         if ticket.isdigit():
             ticket = model.Ticket.query.find(dict(app_config_id=self.config._id,ticket_num=int(ticket))).first()
@@ -175,7 +175,7 @@ class ForgeTrackerApp(Application):
             post=[role_anon],
             moderate=[role_developer],
             admin=c.project.acl['tool'])
-        model.Globals(app_config_id=c.app.config._id,
+        self.globals = model.Globals(app_config_id=c.app.config._id,
             last_ticket_num=0,
             status_names='open unread accepted pending closed',
             milestone_names='',
@@ -255,9 +255,8 @@ class RootController(object):
             # and pull them out in the order given by ticket_numbers
             tickets = [ticket_for_num[tn] for tn in ticket_numbers
                        if has_artifact_access('read', ticket_for_num[tn])()]
-        tracker_globals = model.Globals.for_current_tracker()
         return dict(tickets=tickets,
-                    sortable_custom_fields=tracker_globals.sortable_custom_fields_shown_in_search(),
+                    sortable_custom_fields=c.app.globals.sortable_custom_fields_shown_in_search(),
                     count=count, q=q, limit=limit, page=page, sort=sort,
                     solr_error=solr_error, **kw)
 
@@ -362,10 +361,8 @@ class RootController(object):
         require(has_artifact_access('write'))
         if request.method != 'POST':
             raise Exception('save_ticket must be a POST request')
-        globals = model.Globals.query.get(app_config_id=c.app.config._id)
-        globals.invalidate_bin_counts()
-        if globals.milestone_names is None:
-            globals.milestone_names = ''
+        if c.app.globals.milestone_names is None:
+            c.app.globals.milestone_names = ''
         ticket_num = ticket_form.pop('ticket_num', None)
         if ticket_num:
             ticket = model.Ticket.query.get(
@@ -377,8 +374,8 @@ class RootController(object):
             ticket = model.Ticket(
                 app_config_id=c.app.config._id,
                 custom_fields=dict(),
-                ticket_num=globals.next_ticket_num())
-        ticket.update(ticket_form, globals)
+                ticket_num=c.app.globals.next_ticket_num())
+        ticket.update(ticket_form)
         for u in ProjectRole.query.find({'name':'Admin'}).first().users_with_role():
             ticket.subscribe(user=u)
         redirect(str(ticket.ticket_num)+'/')
@@ -392,17 +389,15 @@ class RootController(object):
     def edit(self, q=None, sort=None, **kw):
         require(has_artifact_access('write'))
         result = self.paged_query(q, sort=sort, **kw)
-        globals = model.Globals.query.get(app_config_id=c.app.config._id)
-        if globals.milestone_names is None:
-            globals.milestone_names = ''
+        if c.app.globals.milestone_names is None:
+            c.app.globals.milestone_names = ''
         result['globals'] = globals
         c.user_select = ffw.ProjectUserSelect()
         return result
 
     @expose()
     def update_tickets(self, **post_data):
-        globals = model.Globals.query.get(app_config_id=c.app.config._id)
-        globals.invalidate_bin_counts()
+        c.app.globals.invalidate_bin_counts()
         tickets = model.Ticket.query.find(dict(
                 _id={'$in':[ObjectId(id) for id in post_data['selected'].split(',')]},
                 app_config_id=c.app.config._id)).all()
@@ -422,8 +417,7 @@ class RootController(object):
             if user:
                 values['assigned_to_id'] = user._id
 
-        globals = model.Globals.query.get(app_config_id=c.app.config._id)
-        custom_fields = set([cf.name for cf in globals.custom_fields or[]])
+        custom_fields = set([cf.name for cf in c.app.globals.custom_fields or[]])
         custom_values = {}
         for k in custom_fields:
             v = post_data.get(k)
@@ -490,7 +484,7 @@ class RootController(object):
         week_comments=self.ticket_comments_since(week_ago)
         fortnight_comments=self.ticket_comments_since(fortnight_ago)
         month_comments=self.ticket_comments_since(month_ago)
-        globals = model.Globals.query.get(app_config_id=c.app.config._id)
+        globals = c.app.globals
         c.user_select = ffw.ProjectUserSelect()
         return dict(
                 now=str(now),
@@ -549,8 +543,7 @@ class BinController(object):
     def newbin(self, q=None, **kw):
         require(has_artifact_access('write'))
         c.bin_form = W.bin_form
-        globals = model.Globals.query.get(app_config_id=c.app.config._id)
-        return dict(q=q or '', bin=bin or '', modelname='Bin', page='New Bin', globals=globals)
+        return dict(q=q or '', bin=bin or '', modelname='Bin', page='New Bin', globals=c.app.globals)
         redirect(request.referer)
 
     @with_trailing_slash
@@ -559,14 +552,12 @@ class BinController(object):
     @validate(W.bin_form, error_handler=newbin)
     def save_bin(self, bin_form=None, **post_data):
         require(has_artifact_access('write'))
-        globals = model.Globals.query.get(app_config_id=c.app.config._id)
-        globals.invalidate_bin_counts()
+        c.app.globals.invalidate_bin_counts()
         if request.method != 'POST':
             raise Exception('save_bin must be a POST request')
         bin = model.Bin(summary=bin_form['summary'], terms=bin_form['terms'])
         bin.app_config_id = c.app.config._id
         bin.custom_fields = dict()
-        globals = model.Globals.query.get(app_config_id=c.app.config._id)
         redirect('%ssearch/?q=%s' % (c.app.url, bin_form['terms']))
 
     @with_trailing_slash
@@ -574,8 +565,7 @@ class BinController(object):
     def delbin(self, summary=None):
         bin = model.Bin.query.find(dict(summary=summary,)).first()
         require(has_artifact_access('write', bin))
-        globals = model.Globals.query.get(app_config_id=c.app.config._id)
-        globals.invalidate_bin_counts()
+        c.app.globals.invalidate_bin_counts()
         bin.delete()
         redirect(request.referer)
 
@@ -654,10 +644,9 @@ class TicketController(object):
         c.attachment_list = W.attachment_list
         c.subscribe_form = W.ticket_subscribe_form
         if self.ticket is not None:
-            globals = model.Globals.query.get(app_config_id=c.app.config._id)
-            if globals.milestone_names is None:
-                globals.milestone_names = ''
-            return dict(ticket=self.ticket, globals=globals,
+            if c.app.globals.milestone_names is None:
+                c.app.globals.milestone_names = ''
+            return dict(ticket=self.ticket, globals=c.app.globals,
                         allow_edit=has_artifact_access('write', self.ticket)(),
                         subscribed=Subscriptions.upsert().subscribed(artifact=self.ticket))
         else:
@@ -670,10 +659,9 @@ class TicketController(object):
         c.ticket_form = W.edit_ticket_form
         c.thread = W.thread
         c.attachment_list = W.attachment_list
-        globals = model.Globals.query.get(app_config_id=c.app.config._id)
-        if globals.milestone_names is None:
-            globals.milestone_names = ''
-        return dict(ticket=self.ticket, globals=globals)
+        if c.app.globals.milestone_names is None:
+            c.app.globals.milestone_names = ''
+        return dict(ticket=self.ticket, globals=c.app.globals)
 
     @without_trailing_slash
     @expose()
@@ -703,16 +691,14 @@ class TicketController(object):
 
     @expose()
     def update_ticket(self, **post_data):
-        globals = model.Globals.query.get(app_config_id=c.app.config._id)
-        globals.invalidate_bin_counts()
+        c.app.globals.invalidate_bin_counts()
         self._update_ticket(post_data)
 
     @expose()
     @h.vardec
     @validate(W.edit_ticket_form, error_handler=edit)
     def update_ticket_from_widget(self, **post_data):
-        globals = model.Globals.query.get(app_config_id=c.app.config._id)
-        globals.invalidate_bin_counts()
+        c.app.globals.invalidate_bin_counts()
         data = post_data['edit_ticket_form']
         # icky: handle custom fields like the non-widget form does
         if 'custom_fields' in data:
@@ -756,11 +742,10 @@ class TicketController(object):
             changes['assigned_to'] = self.ticket.assigned_to
         h.tag_artifact(self.ticket, c.user, tags)
 
-        globals = model.Globals.query.get(app_config_id=c.app.config._id)
-        if globals.milestone_names is None:
-            globals.milestone_names = ''
+        if c.app.globals.milestone_names is None:
+            c.app.globals.milestone_names = ''
         any_sums = False
-        for cf in globals.custom_fields or []:
+        for cf in c.app.globals.custom_fields or []:
             if 'custom_fields.'+cf.name in post_data:
                 value = post_data['custom_fields.'+cf.name]
                 if cf.type == 'sum':
@@ -907,9 +892,8 @@ class TrackerAdminController(DefaultAdminController):
 
     def __init__(self, app):
         self.app = app
-        self.globals = model.Globals.query.get(app_config_id=self.app.config._id)
-        if self.globals and self.globals.milestone_names is None:
-            self.globals.milestone_names = ''
+        if self.app.globals and self.app.globals.milestone_names is None:
+            self.app.globals.milestone_names = ''
 
     @with_trailing_slash
     def index(self):
@@ -918,13 +902,13 @@ class TrackerAdminController(DefaultAdminController):
     @without_trailing_slash
     @expose('forgetracker.templates.admin_fields')
     def fields(self):
-        return dict(app=self.app, globals=self.globals,
+        return dict(app=self.app, globals=self.app.globals,
                     allow_config=has_artifact_access('configure', app=self.app)())
 
     @without_trailing_slash
     @expose('forgetracker.templates.admin_permissions')
     def permissions(self):
-        return dict(app=self.app, globals=self.globals,
+        return dict(app=self.app, globals=self.app.globals,
                     allow_config=has_artifact_access('configure', app=self.app)())
 
     @expose()
@@ -934,14 +918,14 @@ class TrackerAdminController(DefaultAdminController):
     @expose()
     def set_custom_fields(self, **post_data):
         require(has_artifact_access('configure', app=self.app))
-        self.globals.status_names=post_data['status_names']
-        self.globals.milestone_names=post_data['milestone_names']
+        self.app.globals.status_names=post_data['status_names']
+        self.app.globals.milestone_names=post_data['milestone_names']
         data = urllib.unquote_plus(post_data['custom_fields'])
         custom_fields = json.loads(data)
         for field in custom_fields:
             field['name'] = '_' + '_'.join([w for w in NONALNUM_RE.split(field['label'].lower()) if w])
             field['label'] = field['label'].title()
-        self.globals.custom_fields=custom_fields
+        self.app.globals.custom_fields=custom_fields
         flash('Fields updated')
 
 class RootRestController(object):
@@ -961,18 +945,17 @@ class RootRestController(object):
     @validate(W.ticket_form, error_handler=h.json_validation_error)
     def new(self, ticket_form=None, **post_data):
         require(has_artifact_access('write'))
-        globals.invalidate_bin_counts()
+        c.app.globals.invalidate_bin_counts()
         if request.method != 'POST':
             raise Exception('save_ticket must be a POST request')
-        globals = model.Globals.query.get(app_config_id=c.app.config._id)
-        if globals.milestone_names is None:
-            globals.milestone_names = ''
+        if c.app.globals.milestone_names is None:
+            c.app.globals.milestone_names = ''
         ticket = model.Ticket(
             app_config_id=c.app.config._id,
             custom_fields=dict(),
-            ticket_num=globals.next_ticket_num())
+            ticket_num=c.app.globals.next_ticket_num())
         ticket_form.pop('ticket_num', None)
-        ticket.update(ticket_form, globals)
+        ticket.update(ticket_form)
         redirect(str(ticket.ticket_num)+'/')
 
     @expose()
@@ -997,12 +980,11 @@ class TicketRestController(object):
     @validate(W.ticket_form, error_handler=h.json_validation_error)
     def save(self, ticket_form=None, **post_data):
         require(has_artifact_access('write', self.ticket))
-        globals = model.Globals.query.get(app_config_id=c.app.config._id)
-        globals.invalidate_bin_counts()
+        c.app.globals.globals.invalidate_bin_counts()
         if request.method != 'POST':
             raise Exception('save_ticket must be a POST request')
-        if globals.milestone_names is None:
-            globals.milestone_names = ''
-        self.ticket.update(ticket_form, globals)
+        if c.app.globals.milestone_names is None:
+            c.app.globals.milestone_names = ''
+        self.ticket.update(ticket_form, c.app.globals)
         redirect('.')
 
