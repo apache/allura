@@ -77,4 +77,7 @@ def img(src=None, **kw):
     attrs = ('%s="%s"' % t for t in kw.iteritems())
     included = request.environ.setdefault('allura.macro.att_embedded', set())
     included.add(src)
-    return '<img src="attachment/%s" %s/>' % (src, ' '.join(attrs))
+    if '://' in src:
+        return '<img src="%s" %s/>' % (src, ' '.join(attrs))
+    else:
+        return '<img src="attachment/%s" %s/>' % (src, ' '.join(attrs))
