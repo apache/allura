@@ -21,10 +21,10 @@ class TestAuth(TestController):
                 username='test-user', password='foo'))
         r = self.app.get('/auth/do_login', params=dict(
                 username='test-user', password='food'),
-                         status=401)
+                         status=302)
         r = self.app.get('/auth/do_login', params=dict(
                 username='test-usera', password='foo'),
-                         status=401)
+                         status=302)
 
     def test_prefs(self):
         r = self.app.get('/auth/prefs/')

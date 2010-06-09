@@ -121,7 +121,7 @@ class TestNeighborhood(TestController):
         r = self.app.post('/adobe/register',
                           params=dict(pid='mymoz'),
                           extra_environ=dict(username='*anonymous'),
-                          status=401)
+                          status=302)
         r = self.app.post('/adobe/register',
                           params=dict(pid='mymoz'),
                           extra_environ=dict(username='root'))
