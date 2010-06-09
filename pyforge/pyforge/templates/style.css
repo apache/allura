@@ -73,8 +73,8 @@ img {border: none;}
 .nav {
 	margin: 0;
 	background: rgb(0,0,0);
-		background-image: -webkit-gradient(linear, 0% 0%, 0% 100%, from(${color3}), to(rgb(0,0,0)));
-		background-image: -moz-linear-gradient(100% 100% 90deg,rgb(0,0,0), ${color3} 100%);
+		background-image: -webkit-gradient(linear, 0% 0%, 0% 100%, to(${color3}), from(rgb(0,0,0)));
+		background-image: -moz-linear-gradient(100% 100% 90deg, ${color3}, rgb(0,0,0) 100%);
 	box-shadow: ${color3} -3px 1px 3px;
 		-moz-box-shadow: ${color3} -3px 1px 3px;
 		-webkit-box-shadow: ${color3}  -3px 1px 3px;
@@ -133,6 +133,7 @@ img {border: none;}
 }
 
 .base .card h2 {margin: 10px 0 0;}
+.card h2 {line-height: 1.4em; margin-top: 15px !important;}
 .card .desc {margin: 5px 0 0;}
 .card .quik {position: absolute; bottom: 10px; left: 0px;}
 .card .quik a {margin: 0; padding: 4px 0 0 22.5px !important; color: rgb(0,0,0); font-size: .8em; text-shadow: rgb(255,255,255) 0 1px;}
@@ -527,7 +528,7 @@ ul.row {margin: 0; padding: 0;}
 	z-index: 1;
 }
 #header {margin-top: 20px; display: block;}
-#header .row {position: relative;}
+#header .row {position: relative; padding-bottom: 12px;}
 #header h1 {font-size: 1.6em !important; position: absolute; left: 60px; top: -4px;}
 #header h1 a {color: ${color3}; text-shadow: #fff 0 1px;}
 #header p {padding: 5px 3px 5px 5px; margin: 0;}
@@ -722,6 +723,35 @@ ul.ui-tab li a {
 .menu .ico-l {margin: 0;}
 .menu .btn b, .menu .ico-r b, .menu .ico-l b, .menu .ico b {margin: 0; top: 5px;}
 
+.sidebarmenu .active:first-child {
+	border-top-left-radius: 5px;
+	border-top-right-radius: 5px;
+		-webkit-border-top-left-radius: 5px; 
+		-webkit-border-top-right-radius: 5px; 
+		-moz-border-radius-topleft: 5px; 
+		-moz-border-radius-topright: 5px;
+}
+.sidebarmenu .active:last-child {
+	border-bottom-left-radius: 5px;
+	border-bottom-right-radius: 5px;
+		-webkit-border-bottom-left-radius: 5px; 
+		-webkit-border-bottom-right-radius: 5px; 
+		-moz-border-radius-bottomleft: 5px; 
+		-moz-border-radius-bottomright: 5px;
+}
+
+.sidebarmenu li a {
+	font-weight: bold;
+}
+.nav_head {
+	font-size: 75%;
+	margin-left: 5px;
+	margin-bottom: 10px; 
+	color: rgb(69,69,69); 
+	text-transform: uppercase;	
+	text-shadow: rgba(255,255,255, .5) 0 1px;
+}
+
 /* Content */
 .base {
 	background: ${color5};
@@ -738,6 +768,11 @@ ul.ui-tab li a {
 }
 .base h2 {color: rgb(115,115,115); margin: 10px 5px 5px; text-shadow: ${color6} 0 1px;}
 .base .pad h2 {margin: 0; color: rgb(0,0,0);}
+.pad h3, .pad h4, .base .pad h2 {
+    font-size: 1em;
+    font-weight: bold;
+    text-shadow: none;
+}
 
 .base .pad {
 	background: rgb(255,255,255);
@@ -765,6 +800,8 @@ ul.ui-tab li a {
 	text-shadow: rgb(0,0,0) 0 -1px;
 	font-size: 1.2em;
 }
+.pad ul li, .pad ol li {font-size: .9em;}
+.pad ul li ul li, .pad ol li ol li  {font-size: 100%;}
 .content {padding: 0 20px 20px;}
 .actions {position: absolute; right: 10px; top: 5px; font-size: .85em; text-transform: uppercase; width: 100%;}
 .actions .btn {background: none; border: none; text-shadow: none; padding-right: .8em; float: right;}
@@ -815,6 +852,12 @@ ul.ui-tab li a {
 		-moz-box-shadow:  rgba(0,0,0, 0.4) 0 1px 4px;
 		-webkit-box-shadow:  rgba(0,0,0, 0.4) 0 1px 4px;
 }
+.gravatar.sm img {
+    box-shadow: rgba(0, 0, 0, 0.3) 0px 1px 3px;
+    -moz-box-shadow: rgba(0, 0, 0, 0.3) 0px 1px 3px;
+    -webkit-box-shadow: rgba(0, 0, 0, 0.3) 0px 1px 3px;
+    border: 1px solid white;
+}
 
 .reply {
 	clear: both;
@@ -844,6 +887,16 @@ ul.ui-tab li a {
 	border-left: 1px solid ${color5};
 	position: absolute; top: 20px; left: 2px;
 }
+
+.solo {
+   position: absolute; top: 40px; right: 40px; width: 275px;
+}
+.solo ul {list-style: none; margin: 0; padding: 0 5px;} 
+.solo li {    margin: 0 0 .5em;
+    padding: 0 0 .5em;
+    font-size: .9em;
+    border-bottom: 1px solid rgb(215,215,215);}
+.solo li:last-child {border: none;}
 
 /* Icons */
 .actions .ui-icon {background-image: url('/nf/images/ui-icons_ffffff_256x240.png');}
