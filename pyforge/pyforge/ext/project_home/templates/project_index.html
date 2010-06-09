@@ -34,19 +34,21 @@
             <div py:if="c.project.show_download_button" id="download-button"></div>
 			</p>
           <py:if test="c.project.accolades">
-            Awards:
+            <div class="listed">
+              <b>Awards:</b>
               <a href="${accolade.award.longurl()}" py:for="accolade in c.project.accolades" title="$accolade.award.full">
                 <small class="badge $accolade.award.short">$accolade.award.short</small>
               </a>
               <span py:if="not len(c.project.accolades)">No Awards</span>
+            </div>
           </py:if>
           <div class="listed" py:if="len(c.project.labels) and not (len(c.project.labels)==1 and c.project.labels[0]=='')">
-            Tags: <span py:for="label in c.project.labels" class="ui-corner-all tag">$label </span>
+            <b>Tags:</b> <span py:for="label in c.project.labels" class="ui-corner-all tag">$label </span>
           </div>
           <div class="listed last gravatar sm">
-            Developers:
+            <b>Developers:</b>
             <a href="${u.url()}" py:for="u in c.project.users()">
-              ${gravatar(u.preferences.email_address, size=16)}
+              ${gravatar(u.preferences.email_address, size=24)}
             </a>
           </div>
         </div>
