@@ -25,6 +25,14 @@
     <link py:if="not c.project and not neighborhood" rel="stylesheet" type="text/css" media="screen" href="${tg.url('/nf/site_style.css')}" />
     <link py:if="c.project" rel="stylesheet" type="text/css" media="screen" href="${c.project.neighborhood.url()+'site_style.css'}" />
     <link py:if="neighborhood" rel="stylesheet" type="text/css" media="screen" href="${neighborhood.url()+'site_style.css'}" />
+<!--[if lt IE 9]>
+		<link rel="stylesheet" href="/nf/css/forge/ie.css" type="text/css" charset="utf-8">
+<![endif]-->
+<!--[if IE]>
+		<style type="text/css">
+			.sfdl p.hide, .sfdls p.hide {display: none !important;}
+		</style>
+<![endif]-->
   </head>
   
   <body py:match="body" py:attrs="select('@*')">
