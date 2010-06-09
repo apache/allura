@@ -40,22 +40,15 @@
               </a>
               <span py:if="not len(c.project.accolades)">No Awards</span>
           </py:if>
-          <hr py:if="c.project.labels and c.project.accolades" />
-          <div py:if="c.project.labels">
+          <div class="listed" py:if="c.project.labels">
             Tags: <span py:for="label in c.project.labels" class="ui-corner-all tag">$label </span>
           </div>
-          <hr py:if="c.project.labels" />
-          <div class="gravatar sm">
+          <div class="listed last gravatar sm">
             Developers:
             <a href="${u.url()}" py:for="u in c.project.users()">
               ${gravatar(u.preferences.email_address, size=16)}
             </a>
           </div>
-          <br />
-
-          <a href="mailto:2@tickets.Forge.projects.sourceforge.net?subject=[Forge:tickets:#2] Re: #2" class="ico-l"><b class="ui-icon ui-icon-mail-closed"></b> <span>Email Project</span></a>
-          <br/>
-          <a href="feed" class="ico-l"><b class="ui-icon ui-icon-signal-diag"></b> <span>Follow this Project</span></a>
         </div>
       </div>
     </div>
