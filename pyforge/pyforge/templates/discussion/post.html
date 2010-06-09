@@ -13,14 +13,20 @@
 
   <body>
     <h1 class="title">$post.thread.subject</h1>
-    <div>
-      Version:
-      <a href="?version=1">&lt;&lt;</a>
-      <a href="?version=${post.version-1}">&lt;</a>
-      $post.version
-      <a href="?version=${post.version+1}">&gt;</a>
-      <a href=".">&gt;&gt;</a>
+    <div class="content">
+      <div class="row">
+        <div class="column grid_12">
+          <div>
+            Version:
+            <a href="?version=1">&lt;&lt;</a>
+            <a href="?version=${post.version-1}">&lt;</a>
+            $post.version
+            <a href="?version=${post.version+1}">&gt;</a>
+            <a href=".">&gt;&gt;</a>
+          </div>
+          ${c.post.display(value=post)}
+        </div>
+      </div>
     </div>
-    ${c.post.display(value=post)}
   </body>
 </html>

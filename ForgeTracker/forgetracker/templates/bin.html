@@ -18,23 +18,29 @@
 
   <body>
     <h1 class="title">Saved Search Bins</h1>
-    <py:if test="not len(bins)">No saved search bins have been created yet.</py:if>
-    <table py:if="len(bins)">
-      <thead>
-        <tr>
-          <th>Name</th>
-          <th>Terms</th>
-          <th>&nbsp;</th>
-        </tr>
-      </thead>
-      <tbody class="bin-list">
-        <tr py:for="bin in bins">
-          <td><a href="${bin.url()}">$bin.summary</a></td>
-	  <td>$bin.terms</td>
-	  <td><a href="delbin?summary=${bin.summary}" class="ui-button ui-state-default ui-button-text-only">Delete</a></td>
-        </tr>
-      </tbody>
-    </table>
+    <div class="content">
+      <div class="row">
+        <div class="column grid_12">
+          <py:if test="not len(bins)">No saved search bins have been created yet.</py:if>
+          <table py:if="len(bins)">
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Terms</th>
+                <th>&nbsp;</th>
+              </tr>
+            </thead>
+            <tbody class="bin-list">
+              <tr py:for="bin in bins">
+                <td><a href="${bin.url()}">$bin.summary</a></td>
+      	  <td>$bin.terms</td>
+      	  <td><a href="delbin?summary=${bin.summary}" class="ui-button ui-state-default ui-button-text-only">Delete</a></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
   </body>
   <script type="text/javascript">
     $('tbody.bin-list').children(':even').addClass('even');

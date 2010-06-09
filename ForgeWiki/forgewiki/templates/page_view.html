@@ -30,7 +30,7 @@
       ${c.subscribe_form.display(value=subscribed, action='subscribe', style='icon')}
 			<a href="feed" class="btn ico"><b class="ui-icon ui-icon-signal-diag"></b> <span>RSS</span></a>
 		</div>
-		<div class="content">
+    <div class="content">
 			<div class="row dual">
 				<div class="column grid_${((c.app.show_left_bar or has_artifact_access('edit', app=c.app)()) and 8 or 12) + (not c.app.show_right_bar and 2 or 0)}">
           ${Markup(page.html_text)}

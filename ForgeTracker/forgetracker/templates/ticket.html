@@ -19,7 +19,6 @@
 
   <body>
     <form method="POST" class="can-retry" action="${ticket.url()}update_ticket">
-      <div class="span-11 append-1">
         <span class="editable viewing" style="padding: 0">
           <py:if test="not allow_edit"><h1 class="title">#$ticket.ticket_num $ticket.summary</h1></py:if>
           <py:if test="allow_edit">
@@ -29,144 +28,148 @@
             </span>
           </py:if>
         </span>
-        <hr class="clear clearfix"/>
+        <div class="content">
+    			<div class="row dual">
+    				<div class="column grid_8">
 
 
-        <div class="${allow_edit and ' editable viewing' or ''}">
-          <span class="${allow_edit and 'viewer' or ''}">
-            ${Markup(g.markdown.convert(ticket.description))}
-          </span>
-          <span class="multiline editor" py:if="allow_edit">
-            ${c.markdown_editor.display(name='description',value=ticket.description)}
-          </span>
-        </div>
-
-        <!-- <div py:if="not allow_edit" py:content="Markup(g.markdown.convert(ticket.description))"/>
-        <py:if test="allow_edit">
-          ${c.markdown_editor.display(name='description',value=ticket.description)}
-          <input type="submit" value="Save Changes" class="ui-button ui-widget ui-state-default ui-button-text-only"/>
-        </py:if> -->
-        ${c.attachment_list.display(attachments=list(ticket.attachments), edit_mode=False)}
-      </div>
-
-      <div id="sidebar-right" class="span-7 last">
-        <div class="span-3 tright"><b>Created by:</b></div>
-        <div class="span-4 last gravatar sm">
-          ${gravatar(ticket.reported_by.preferences.email_address, size=16)}
-          <a href="${ticket.reported_by.url()}">${ticket.reported_by.display_name}</a>
-        </div>
-        <hr class="clear clearfix"/>
-        <div class="span-3 tright clear"><b>Created Time:</b></div>
-        <div class="span-4 last">
-          ${h.ago(ticket.created_date)}
-        </div>
-        <hr class="clear clearfix"/>
-
-
-        <div class="${allow_edit and 'editable viewing' or ''}">
-          <span class="viewer">
-            <div class="span-3 tright clear"><b>Assigned to:</b></div>
-            <div class="span-3 last">
-              <div class="gravatar sm">
-                <span class="ticket-assigned-to" py:if="ticket.assigned_to_id">
-                  ${gravatar(ticket.assigned_to.preferences.email_address, size=16)} <a href="${ticket.assigned_to.url()}">${ticket.assigned_to_name()}</a>
+              <div class="${allow_edit and ' editable viewing' or ''}">
+                <span class="${allow_edit and 'viewer' or ''}">
+                  ${Markup(g.markdown.convert(ticket.description))}
                 </span>
-                <span py:if="not ticket.assigned_to_id" class="ticket-assigned-to">
-                  ${ticket.assigned_to_name()}
+                <span class="multiline editor" py:if="allow_edit">
+                  ${c.markdown_editor.display(name='description',value=ticket.description)}
                 </span>
               </div>
+
+              <!-- <div py:if="not allow_edit" py:content="Markup(g.markdown.convert(ticket.description))"/>
+              <py:if test="allow_edit">
+                ${c.markdown_editor.display(name='description',value=ticket.description)}
+                <input type="submit" value="Save Changes" class="ui-button ui-widget ui-state-default ui-button-text-only"/>
+              </py:if> -->
+              ${c.attachment_list.display(attachments=list(ticket.attachments), edit_mode=False)}
             </div>
-            <hr class="clear clearfix"/>
 
-            <div class="span-3 tright"><b>Status:</b></div>
-            <div class="span-3 last">
-                <span class="${ticket.status}">${ticket.status}</span>
-            </div>
-            <hr class="clear clearfix"/>
-
-            <div class="span-3 tright"><b>Milestone:</b></div>
-            <div class="span-3 last">${ticket.milestone or 'None'}</div>
-            <hr class="clear clearfix"/>
-
-            <py:for each="field in globals.custom_fields or []">
-              <div class="span-3 tright"><b>${field.label}:</b></div>
-              <div class="span-3 last">${ticket.custom_fields.get(field.name, '') or '&nbsp; &nbsp; &nbsp;'}</div>
+            <div id="sidebar-right" class="column grid_4 fright">
+              <div class="span-3 tright"><b>Created by:</b></div>
+              <div class="span-4 last gravatar sm">
+                ${gravatar(ticket.reported_by.preferences.email_address, size=16)}
+                <a href="${ticket.reported_by.url()}">${ticket.reported_by.display_name}</a>
+              </div>
               <hr class="clear clearfix"/>
-            </py:for>
+              <div class="span-3 tright clear"><b>Created Time:</b></div>
+              <div class="span-4 last">
+                ${h.ago(ticket.created_date)}
+              </div>
+              <hr class="clear clearfix"/>
 
-            <div class="span-3 tright"><b>Tags:</b></div>
-            <div class="span-3 last">
-              <span py:for="label in ticket.labels" class="ui-corner-all tag">
-                <a href="../search?q=labels:${h.urllib.quote_plus(label)}">$label (${ticket.artifacts_labeled_with(label).count()})</a>
-              </span>
-              <py:if test="not len(ticket.labels)">None</py:if>
-            </div>
-            <div class="clear clearfix"/>
-          </span>
-          <span class="multiline editor" py:if="allow_edit">
-            <div class="span-3 tright clear"><b>Assigned to:</b></div>
-            <div class="span-3 last">
-              <py:if test="ticket.assigned_to_id">
-                ${c.user_select.display(name='assigned_to',value=ticket.assigned_to.username,className='wide')}
-              </py:if>
-              <py:if test="not ticket.assigned_to_id">
-                ${c.user_select.display(name='assigned_to',value=ticket.assigned_to_id,className='wide')}
-              </py:if>
-            </div>
-            <hr class="clear clearfix"/>
 
-            <div class="span-3 tright"><b>Status:</b></div>
-            <div class="span-3 last">
-              <select name="status">
-                <option py:for="option in globals.status_names.split()" value="$option"
-                        selected="${'selected' if ticket.status==option else None}">$option</option>
-              </select>
-            </div>
-            <hr class="clear clearfix"/>
+              <div class="${allow_edit and 'editable viewing' or ''}">
+                <span class="viewer">
+                  <div class="span-3 tright clear"><b>Assigned to:</b></div>
+                  <div class="span-3 last">
+                    <div class="gravatar sm">
+                      <span class="ticket-assigned-to" py:if="ticket.assigned_to_id">
+                        ${gravatar(ticket.assigned_to.preferences.email_address, size=16)} <a href="${ticket.assigned_to.url()}">${ticket.assigned_to_name()}</a>
+                      </span>
+                      <span py:if="not ticket.assigned_to_id" class="ticket-assigned-to">
+                        ${ticket.assigned_to_name()}
+                      </span>
+                    </div>
+                  </div>
+                  <hr class="clear clearfix"/>
 
-            <div class="span-3 tright"><b>Milestone:</b></div>
-            <div class="span-3 last">
-              <select name="milestone">
-                <option value="">None</option>
-                <option py:for="option in globals.milestone_names.split()" value="$option"
-                        selected="${'selected' if ticket.milestone==option else None}">$option</option>
-              </select>
-            </div>
-            <hr class="clear clearfix"/>
+                  <div class="span-3 tright"><b>Status:</b></div>
+                  <div class="span-3 last">
+                      <span class="${ticket.status}">${ticket.status}</span>
+                  </div>
+                  <hr class="clear clearfix"/>
 
-            <py:for each="field in globals.custom_fields or []">
-              <div class="span-3 tright"><b>${field.label}:</b></div>
-              <div class="span-3 last">
-                <input py:if="field.type != 'select' and field.type != 'boolean'" name="custom_fields.${field.name}" type="text"
-                       value="${ticket.custom_fields.get(field.name, '')}" class="title wide"/>
-                <input py:if="field.type == 'boolean' and ticket.custom_fields.get(field.name, '') == 'True'"
-                       name="custom_fields.${field.name}" type="checkbox" value="True" checked="checked"/>
-                <input py:if="field.type == 'boolean' and ticket.custom_fields.get(field.name, '') != 'True'"
-                       name="custom_fields.${field.name}" type="checkbox" value="True"/>
-                <select py:if="field.type == 'select'" name="custom_fields.${field.name}">
-                  <py:for each="option in field.options.split()">
-                    <option py:if="not option.startswith('*')" value="${option}"
-                            selected="${'selected' if ticket.custom_fields.get(field.name, '')==option else None}">${option}</option>
-                    <option py:if="option.startswith('*')" value="${option[1:]}"
-                            selected="${'selected' if ticket.custom_fields.get(field.name, '')==option[1:] or ticket.custom_fields.get(field.name, '')==None else None}">${option[1:]}</option>
+                  <div class="span-3 tright"><b>Milestone:</b></div>
+                  <div class="span-3 last">${ticket.milestone or 'None'}</div>
+                  <hr class="clear clearfix"/>
+
+                  <py:for each="field in globals.custom_fields or []">
+                    <div class="span-3 tright"><b>${field.label}:</b></div>
+                    <div class="span-3 last">${ticket.custom_fields.get(field.name, '') or '&nbsp; &nbsp; &nbsp;'}</div>
+                    <hr class="clear clearfix"/>
                   </py:for>
-                </select>
-              </div>
-              <hr class="clear clearfix"/>
-            </py:for>
 
-            <div class="span-3 tright"><b>Tags:</b></div>
-            <div class="span-3 last">${c.label_edit.display(name='labels', value=ticket.labels)}</div>
-            <div class="save_holder push-3 span-3 last"/>
-          </span>
+                  <div class="span-3 tright"><b>Tags:</b></div>
+                  <div class="span-3 last">
+                    <span py:for="label in ticket.labels" class="ui-corner-all tag">
+                      <a href="../search?q=labels:${h.urllib.quote_plus(label)}">$label (${ticket.artifacts_labeled_with(label).count()})</a>
+                    </span>
+                    <py:if test="not len(ticket.labels)">None</py:if>
+                  </div>
+                  <div class="clear clearfix"/>
+                </span>
+                <span class="multiline editor" py:if="allow_edit">
+                  <div class="span-3 tright clear"><b>Assigned to:</b></div>
+                  <div class="span-3 last">
+                    <py:if test="ticket.assigned_to_id">
+                      ${c.user_select.display(name='assigned_to',value=ticket.assigned_to.username,className='wide')}
+                    </py:if>
+                    <py:if test="not ticket.assigned_to_id">
+                      ${c.user_select.display(name='assigned_to',value=ticket.assigned_to_id,className='wide')}
+                    </py:if>
+                  </div>
+                  <hr class="clear clearfix"/>
+
+                  <div class="span-3 tright"><b>Status:</b></div>
+                  <div class="span-3 last">
+                    <select name="status">
+                      <option py:for="option in globals.status_names.split()" value="$option"
+                              selected="${'selected' if ticket.status==option else None}">$option</option>
+                    </select>
+                  </div>
+                  <hr class="clear clearfix"/>
+
+                  <div class="span-3 tright"><b>Milestone:</b></div>
+                  <div class="span-3 last">
+                    <select name="milestone">
+                      <option value="">None</option>
+                      <option py:for="option in globals.milestone_names.split()" value="$option"
+                              selected="${'selected' if ticket.milestone==option else None}">$option</option>
+                    </select>
+                  </div>
+                  <hr class="clear clearfix"/>
+
+                  <py:for each="field in globals.custom_fields or []">
+                    <div class="span-3 tright"><b>${field.label}:</b></div>
+                    <div class="span-3 last">
+                      <input py:if="field.type != 'select' and field.type != 'boolean'" name="custom_fields.${field.name}" type="text"
+                             value="${ticket.custom_fields.get(field.name, '')}" class="title wide"/>
+                      <input py:if="field.type == 'boolean' and ticket.custom_fields.get(field.name, '') == 'True'"
+                             name="custom_fields.${field.name}" type="checkbox" value="True" checked="checked"/>
+                      <input py:if="field.type == 'boolean' and ticket.custom_fields.get(field.name, '') != 'True'"
+                             name="custom_fields.${field.name}" type="checkbox" value="True"/>
+                      <select py:if="field.type == 'select'" name="custom_fields.${field.name}">
+                        <py:for each="option in field.options.split()">
+                          <option py:if="not option.startswith('*')" value="${option}"
+                                  selected="${'selected' if ticket.custom_fields.get(field.name, '')==option else None}">${option}</option>
+                          <option py:if="option.startswith('*')" value="${option[1:]}"
+                                  selected="${'selected' if ticket.custom_fields.get(field.name, '')==option[1:] or ticket.custom_fields.get(field.name, '')==None else None}">${option[1:]}</option>
+                        </py:for>
+                      </select>
+                    </div>
+                    <hr class="clear clearfix"/>
+                  </py:for>
+
+                  <div class="span-3 tright"><b>Tags:</b></div>
+                  <div class="span-3 last">${c.label_edit.display(name='labels', value=ticket.labels)}</div>
+                  <div class="save_holder push-3 span-3 last"/>
+                </span>
+              </div>
+              <span class="actions clear">
+                <br/><br/>
+                <a href="${ticket.email_link('#%s' % ticket.ticket_num)}"><span class="ui-icon ui-icon-mail-closed"></span> Email Ticket</a><br/>
+                <a href="edit"><span class="ui-icon ui-icon-pencil"></span> Edit this Ticket</a><br/>
+                <a href="${ticket.url()}feed.rss"><span class="ui-icon ui-icon-signal-diag"></span> Follow this Ticket</a>
+              </span>
+            </div>
+          </div>
         </div>
-        <span class="actions clear">
-          <br/><br/>
-          <a href="${ticket.email_link('#%s' % ticket.ticket_num)}"><span class="ui-icon ui-icon-mail-closed"></span> Email Ticket</a><br/>
-          <a href="edit"><span class="ui-icon ui-icon-pencil"></span> Edit this Ticket</a><br/>
-          <a href="${ticket.url()}feed.rss"><span class="ui-icon ui-icon-signal-diag"></span> Follow this Ticket</a>
-        </span>
-      </div>
     </form>
     <div class="clear">&nbsp;</div>
 

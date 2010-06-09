@@ -13,8 +13,13 @@
 
 <body>
   <h1 class="title">New bin for $q</h1>
-  ${c.bin_form.display(value=dict(summary=q,terms=q), action='save_bin')}
-
+	<div class="content">
+		<div class="row">
+			<div class="column grid_12">
+        ${c.bin_form.display(value=dict(summary=q,terms=q), action='save_bin')}
+      </div>
+    </div>
+  </div>
 </body>
 </html>
 

@@ -15,23 +15,29 @@
 
   <body>
     <h1 class="title">$neighborhood.name Moderation</h1>
-    <div>
-      <h2>Invite Projects?</h2>
-      <form method="POST" action="invite">
-        <label for="pid">Project Shortname</label>
-        <input name="pid"/>
-        <input type="submit" name="invite" value="Invite!"/>
-        <input type="submit" name="uninvite" value="Cancel Invitation!"/>
-      </form>
-      <h2>Evict Projects?</h2>
-      <form method="POST" action="evict">
-        <select name="pid">
-          <option py:for="p in neighborhood.projects" py:if="p.is_root" value="$p.shortname">
-            $p.name ($p.shortname)
-          </option>
-        </select>
-        <input type="submit" value="Evict!"/>
-      </form>
+    <div class="content">
+      <div class="row">
+        <div class="column grid_12">
+          <div>
+            <h2>Invite Projects?</h2>
+            <form method="POST" action="invite">
+              <label for="pid">Project Shortname</label>
+              <input name="pid"/>
+              <input type="submit" name="invite" value="Invite!"/>
+              <input type="submit" name="uninvite" value="Cancel Invitation!"/>
+            </form>
+            <h2>Evict Projects?</h2>
+            <form method="POST" action="evict">
+              <select name="pid">
+                <option py:for="p in neighborhood.projects" py:if="p.is_root" value="$p.shortname">
+                  $p.name ($p.shortname)
+                </option>
+              </select>
+              <input type="submit" value="Evict!"/>
+            </form>
+          </div>
+        </div>
+      </div>
     </div>
   </body>
 </html>

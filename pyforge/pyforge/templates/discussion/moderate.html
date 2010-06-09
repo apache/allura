@@ -14,12 +14,18 @@
 
   <body>
     <h1 class="title">Moderation Queue</h1>
-    <div>
-      Displaying page $pgnum / $pages
+    <div class="content">
+      <div class="row">
+        <div class="column grid_12">
+          <div>
+            Displaying page $pgnum / $pages
+          </div>
+          <a href="?status=$status&amp;flag=$flag&amp;offset=${offset-limit}">Previous Page</a>
+          <a href="?status=$status&amp;flag=$flag&amp;offset=${offset+limit}">Next Page</a><br/>
+          ${c.post_filter.display(action='.', value=dict(status=status, flag=flag))}
+          ${c.moderate_posts.display(value=dict(posts=posts), action='moderate')}
+        </div>
+      </div>
     </div>
-    <a href="?status=$status&amp;flag=$flag&amp;offset=${offset-limit}">Previous Page</a>
-    <a href="?status=$status&amp;flag=$flag&amp;offset=${offset+limit}">Next Page</a><br/>
-    ${c.post_filter.display(action='.', value=dict(status=status, flag=flag))}
-    ${c.moderate_posts.display(value=dict(posts=posts), action='moderate')}
   </body>
 </html>

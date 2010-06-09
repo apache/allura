@@ -13,32 +13,38 @@
 
   <body>
     <h1 class="title">Current Awards</h1>
-    <div id="award_list">
-      <table border="1">
-        <thead>
-          <tr>
-            <th>Icon</th>
-            <th>Abbreviation</th>
-            <th>Description</th>
-            <th>Delete?</th>
-          </tr>
-        </thead>
-        <tbody>
-          <py:for each="award in awards">
-            <tr>
-              <td>
-                <py:if test="award.icon">
-                  <img class="award_icon" src="${award.url()}/icon"/>
-                </py:if>
-              </td>
-              <td><a href="${award.longurl()}">${award.short}</a></td>
-              <td>$award.full</td>
-              <td><a href="${award.longurl()}/delete">[X]</a></td>
-            </tr>
-          </py:for>
-        </tbody>
-      </table>
+    <div class="content">
+      <div class="row">
+        <div class="column grid_12">
+          <div id="award_list">
+            <table border="1">
+              <thead>
+                <tr>
+                  <th>Icon</th>
+                  <th>Abbreviation</th>
+                  <th>Description</th>
+                  <th>Delete?</th>
+                </tr>
+              </thead>
+              <tbody>
+                <py:for each="award in awards">
+                  <tr>
+                    <td>
+                      <py:if test="award.icon">
+                        <img class="award_icon" src="${award.url()}/icon"/>
+                      </py:if>
+                    </td>
+                    <td><a href="${award.longurl()}">${award.short}</a></td>
+                    <td>$award.full</td>
+                    <td><a href="${award.longurl()}/delete">[X]</a></td>
+                  </tr>
+                </py:for>
+              </tbody>
+            </table>
+          </div>
+          <a href="..">&#060;&#060; Back</a>
+        </div>
+      </div>
     </div>
-  <a href="..">&#060;&#060; Back</a>
   </body>
 </html>

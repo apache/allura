@@ -13,17 +13,23 @@
   
   <body>
     <h1 class="title">OpenId Claim Form</h1>
-    <div id="loginform_oid">
-      <form action="claim_verify_oid" method="post" class="loginfields">
-        <label for="provider">Provider</label>
-        <select id="provider" name="provider">
-          <option py:for="label, url in oid_providers" value="$url">$label</option>
-        </select>
-        <br/>
-        <label for="username">Username:</label>
-        <input type="text" id="username" name="username" class="text"/><br/>
-        <input type="submit" id="submit" value="Claim" />
-      </form>
+    <div class="content">
+      <div class="row">
+        <div class="column grid_12">
+          <div id="loginform_oid">
+            <form action="claim_verify_oid" method="post" class="loginfields">
+              <label for="provider">Provider</label>
+              <select id="provider" name="provider">
+                <option py:for="label, url in oid_providers" value="$url">$label</option>
+              </select>
+              <br/>
+              <label for="username">Username:</label>
+              <input type="text" id="username" name="username" class="text"/><br/>
+              <input type="submit" id="submit" value="Claim" />
+            </form>
+          </div>
+        </div>
+      </div>
     </div>
   </body>
 </html>

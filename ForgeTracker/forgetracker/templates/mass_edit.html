@@ -18,73 +18,79 @@
   </head>
 
   <body>
-        <h1 class="title">ForgeTracker for $c.project.shortname</h1>
-        <h2>Tickets</h2>
-        <py:if test="not len(tickets)">No tickets found.</py:if>
-        <table py:if="len(tickets)">
-          <thead>
-            <tr>
-              <th></th>
-              <th data-sort="ticket_num_i">Ticket</th>
-              <th data-sort="status_s">Status</th>
-              <th>Description</th>
-              <th data-sort="assigned_to_s">Assigned To</th>
-              <th data-sort="mod_date_dt">Updated</th>
-            </tr>
-          </thead>
-          <tbody class="ticket-list">
-            <tr py:for="t in tickets">
-              <td><input type="checkbox" name="${t._id}" value=""/></td>
-              <td><a href="${t.url()}">[#${t.ticket_num}] ${t.summary}</a></td>
-              <td class="${t.status}">${t.status}</td>
-              <td py:if="len(t.description) &gt; 70">${t.description[0:70]}...</td>
-              <td py:if="len(t.description) &lt;= 70">${t.description}</td>
-              <td py:if="t.assigned_to_id">${t.assigned_to.display_name}</td>
-              <td py:if="not t.assigned_to_id"></td>
-              <td>${h.ago(t.mod_date)}</td>
-            </tr>
-          </tbody>
-        </table>
+    <h1 class="title">ForgeTracker for $c.project.shortname</h1>
+    <div class="content">
+      <div class="row">
+        <div class="column grid_12">
+          <h2>Tickets</h2>
+          <py:if test="not len(tickets)">No tickets found.</py:if>
+          <table py:if="len(tickets)">
+            <thead>
+              <tr>
+                <th></th>
+                <th data-sort="ticket_num_i">Ticket</th>
+                <th data-sort="status_s">Status</th>
+                <th>Description</th>
+                <th data-sort="assigned_to_s">Assigned To</th>
+                <th data-sort="mod_date_dt">Updated</th>
+              </tr>
+            </thead>
+            <tbody class="ticket-list">
+              <tr py:for="t in tickets">
+                <td><input type="checkbox" name="${t._id}" value=""/></td>
+                <td><a href="${t.url()}">[#${t.ticket_num}] ${t.summary}</a></td>
+                <td class="${t.status}">${t.status}</td>
+                <td py:if="len(t.description) &gt; 70">${t.description[0:70]}...</td>
+                <td py:if="len(t.description) &lt;= 70">${t.description}</td>
+                <td py:if="t.assigned_to_id">${t.assigned_to.display_name}</td>
+                <td py:if="not t.assigned_to_id"></td>
+                <td>${h.ago(t.mod_date)}</td>
+              </tr>
+            </tbody>
+          </table>
 
-        <h2>Update</h2>
-        <div id="update-values">
-          <div>
-            <label for="assigned_to">Assigned To:</label>
-            <br/>
-            ${c.user_select.display(name='assigned_to')}
+          <h2>Update</h2>
+          <div id="update-values">
+            <div>
+              <label for="assigned_to">Assigned To:</label>
+              <br/>
+              ${c.user_select.display(name='assigned_to')}
+            </div>
+            <div>
+              <label for="status">Status:</label>
+              <br/>
+              <select name="status">
+                <option value="" selected="selected"></option>
+                <option py:for="option in globals.status_names.split()" value="${option}">$option</option>
+              </select>
+            </div>
+            <div>
+              <label for="milestone">Milestone:</label>
+              <br/>
+              <select name="milestone">
+                <option value="" selected="selected">None</option>
+                <option py:for="option in globals.milestone_names.split()" value="${option}">$option</option>
+              </select>
+            </div>
+            <div py:for="field in globals.custom_fields" py:if="field.type != 'sum'">
+              <label for="${field.name}">${field.label}:</label>
+              <br/>
+              <input py:if="field.type != 'select' and field.type != 'boolean'" name="${field.name}" type="text" value=""/>
+              <input py:if="field.type == 'boolean'" name="${field.name}" type="checkbox" value="True"/>
+              <select py:if="field.type == 'select'" name="${field.name}">
+                <option value="" selected="selected"></option>
+                <py:for each="option in field.options.split()">
+                  <option py:if="not option.startswith('*')" value="${option}">${option}</option>
+                  <option py:if="option.startswith('*')" value="${option[1:]}" selected="selected">${option[1:]}</option>
+                </py:for>
+              </select>
+            </div>
           </div>
-          <div>
-            <label for="status">Status:</label>
-            <br/>
-            <select name="status">
-              <option value="" selected="selected"></option>
-              <option py:for="option in globals.status_names.split()" value="${option}">$option</option>
-            </select>
-          </div>
-          <div>
-            <label for="milestone">Milestone:</label>
-            <br/>
-            <select name="milestone">
-              <option value="" selected="selected">None</option>
-              <option py:for="option in globals.milestone_names.split()" value="${option}">$option</option>
-            </select>
-          </div>
-          <div py:for="field in globals.custom_fields" py:if="field.type != 'sum'">
-            <label for="${field.name}">${field.label}:</label>
-            <br/>
-            <input py:if="field.type != 'select' and field.type != 'boolean'" name="${field.name}" type="text" value=""/>
-            <input py:if="field.type == 'boolean'" name="${field.name}" type="checkbox" value="True"/>
-            <select py:if="field.type == 'select'" name="${field.name}">
-              <option value="" selected="selected"></option>
-              <py:for each="option in field.options.split()">
-                <option py:if="not option.startswith('*')" value="${option}">${option}</option>
-                <option py:if="option.startswith('*')" value="${option[1:]}" selected="selected">${option[1:]}</option>
-              </py:for>
-            </select>
-          </div>
+          <button onclick="update_tickets()">Update Tickets</button>
+          <span id="result"></span>
         </div>
-        <button onclick="update_tickets()">Update Tickets</button>
-        <span id="result"></span>
+      </div>
+    </div>
   </body>
   <script type="text/javascript">
       $('tbody.ticket-list').children(':even').addClass('even');

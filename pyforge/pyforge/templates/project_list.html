@@ -13,51 +13,31 @@
 
   <body>
     <h1 class="title">$title</h1>
-    <div id="grid">
-      <div class="switch">
-        <div id="radio0" class="ui-button-set">
-          <input type="radio" id="radio01" name="radio" checked="checked" style="display: none;" class="list" /><label for="radio01" class="ui-corner-left ui-button ui-widget ui-state-default ui-button-icon-only ui-state-active"><span class="ui-button-icon-primary ui-icon ui-icon-list">List</span><span class="ui-button-text">List</span></label> <input type="radio" id="radio02" name="radio" style="display: none;" class="grid" /><label for="radio02" class="ui-corner-right ui-button ui-widget ui-state-default ui-button-icon-only"><span class="ui-button-icon-primary ui-icon ui-icon-grid">Grid</span><span class="ui-button-text">Grid</span></label>
+    <div class="content">
+      <div class="row">
+        <div class="column grid_12">
+          <py:def function="project(n, subprojects)">
+          <li><a href="${n.url()}"><font size="+2">${n.name}</font></a></li>
+            <li py:for="p in subprojects">
+              ${c.project_summary.display(value=p)}
+            </li>
+          </py:def>
+          <py:if test="text">${Markup(text)}</py:if>
+          <p py:if="not len(projects)">No projects found</p>
+          <ul class="display" py:if="len(projects)">
+            <py:if test="len(projects) and isinstance(projects[0], tuple)">
+              <py:for each="n, subprojects in projects">
+                ${project(n, subprojects)}
+              </py:for>
+            </py:if>
+            <py:if test="len(projects) and not isinstance(projects[0], tuple)">
+              <li py:for="project in projects">
+                ${c.project_summary.display(value=project)}
+              </li>
+            </py:if>
+          </ul>
         </div>
-      </div>  
-      <py:def function="project(n, subprojects)">
-      <li><a href="${n.url()}"><font size="+2">${n.name}</font></a></li>
-        <li py:for="p in subprojects">
-          ${c.project_summary.display(value=p)}
-        </li>
-      </py:def>
-      <py:if test="text">${Markup(text)}</py:if>
-      <p py:if="not len(projects)">No projects found</p>
-      <ul class="display" py:if="len(projects)">
-        <py:if test="len(projects) and isinstance(projects[0], tuple)">
-          <py:for each="n, subprojects in projects">
-            ${project(n, subprojects)}
-          </py:for>
-        </py:if>
-        <py:if test="len(projects) and not isinstance(projects[0], tuple)">
-          <li py:for="project in projects">
-            ${c.project_summary.display(value=project)}
-          </li>
-        </py:if>
-      </ul>
+      </div>
     </div>
   </body>
-  <script type="text/javascript">
-	$(document).ready(function() {
-			$(".switch input.grid").click(function(){
-			 $(this).next().addClass('ui-state-active');
-			  $('.switch input.list').next().removeClass('ui-state-active');
-			  $("ul.display").fadeOut("fast", function() {
-				$(this).fadeIn("fast").addClass("thumb_view");
-				 });
-			});
-			$(".switch input.list").click(function(){
-		      $(this).next().addClass('ui-state-active');
-		      $('.switch input.grid').next().removeClass('ui-state-active');
-			  $("ul.display").fadeOut("fast", function() {
-				$(this).fadeIn("fast").removeClass("thumb_view");
-				});
-			});
-
-		});
-	</script>
 </html>

@@ -16,87 +16,93 @@
 
   <body>
     <h1 class="title">Project Tools/Subprojects for $c.project.shortname</h1>
-    <div py:if="c.project.deleted" class="notice">This project has been deleted and is not visible to non-admin users</div>
-    <table>
-      <thead>
-        <tr>
-          <th>Type</th>
-          <th>Mount Point</th>
-          <th py:if="has_project_access('tool')()">Edit</th>
-          <th py:if="has_project_access('tool')()"></th>
-        </tr>
-      </thead>
-      <tbody>
-        <form method="POST" action="update_mounts" id="mounts_edit">
-          <input py:for="i, sp in enumerate(c.project.direct_subprojects)"
-                 type="hidden"
-                 name="subproject-${i}.shortname"
-                 value="$sp.shortname"/>
-          <input py:for="i, config in enumerate(c.project.app_configs)"
-                 type="hidden"
-                 name="tool-${i}.mount_point"
-                 value="$config.options.mount_point"/>
-          <tr py:for="i, sp in enumerate(c.project.direct_subprojects)">
-            <td>Subproject</td>
-            <td>$sp.shortname</td>
-            <td py:if="has_project_access('tool')()"><a href="${sp.url() + 'admin/'}">
-              <span class="ui-icon ui-icon-pencil"></span> Edit
-            </a></td>
-            <td class="tool-delete">
-              <a py:if="has_project_access('tool')()"
-                 class="subproject-${i}" href="#">
-                 <span class="ui-icon ui-icon-close"></span> Delete
-              </a>
-            </td>
-          </tr>
-          <tr py:for="i, config in enumerate(c.project.app_configs)" py:if="config.load().installable">
-            <td>Tool: $config.tool_name</td>
-            <td>$config.options.mount_point</td>
-            <td>
-              <a py:if="has_project_access('tool')()"
-                 href="$config.options.mount_point/">
-                 <span class="ui-icon ui-icon-pencil"></span> Edit
-              </a>
-            </td>
-            <td class="tool-delete">
-              <a py:if="has_project_access('tool')()"
-                 class="tool-${i}" href="#">
-                 <span class="ui-icon ui-icon-close"></span> Delete
-              </a>
-              <!-- <input py:if="has_project_access('tool')() and config.load().installable"
-                                     name="tool-${i}.delete" type="submit" value="Delete"
-                                     class="ui-state-default ui-button ui-button-text"/> -->
-            </td>
-          </tr>
-        </form>
-        <form method="POST" action="update_mounts">
-          <input py:for="i, sp in enumerate(c.project.direct_subprojects)"
-                 type="hidden"
-                 name="subproject-${i}.shortname"
-                 value="$sp.shortname"/>
-          <input py:for="i, config in enumerate(c.project.app_configs)"
-                 type="hidden"
-                 name="tool-${i}.mount_point"
-                 value="$config.options.mount_point"/>
-          <tr py:if="has_project_access('tool')()">
-            <td>
-              <select name="new.ep_name" class="new_ep_name">
-                <option value="">New Subproject</option>
-                <optgroup label="New Tool">
-                  <option py:for="name in installable_tool_names" value="$name">$name</option>
-                </optgroup>
-              </select>
-            </td>
-            <td>
-              <input name="new.mount_point" class="title new_mount_point"/>
-            </td>
-            <td colspan="2">
-              <input type="submit" value="Install" name="new.install" class="ui-state-default ui-button ui-button-text"/>
-            </td>
-          </tr>
-        </form>
-      </tbody>
-    </table>
+    <div class="content">
+      <div class="row">
+        <div class="column grid_12">
+          <div py:if="c.project.deleted" class="notice">This project has been deleted and is not visible to non-admin users</div>
+          <table>
+            <thead>
+              <tr>
+                <th>Type</th>
+                <th>Mount Point</th>
+                <th py:if="has_project_access('tool')()">Edit</th>
+                <th py:if="has_project_access('tool')()"></th>
+              </tr>
+            </thead>
+            <tbody>
+              <form method="POST" action="update_mounts" id="mounts_edit">
+                <input py:for="i, sp in enumerate(c.project.direct_subprojects)"
+                       type="hidden"
+                       name="subproject-${i}.shortname"
+                       value="$sp.shortname"/>
+                <input py:for="i, config in enumerate(c.project.app_configs)"
+                       type="hidden"
+                       name="tool-${i}.mount_point"
+                       value="$config.options.mount_point"/>
+                <tr py:for="i, sp in enumerate(c.project.direct_subprojects)">
+                  <td>Subproject</td>
+                  <td>$sp.shortname</td>
+                  <td py:if="has_project_access('tool')()"><a href="${sp.url() + 'admin/'}">
+                    <span class="ui-icon ui-icon-pencil"></span> Edit
+                  </a></td>
+                  <td class="tool-delete">
+                    <a py:if="has_project_access('tool')()"
+                       class="subproject-${i}" href="#">
+                       <span class="ui-icon ui-icon-close"></span> Delete
+                    </a>
+                  </td>
+                </tr>
+                <tr py:for="i, config in enumerate(c.project.app_configs)" py:if="config.load().installable">
+                  <td>Tool: $config.tool_name</td>
+                  <td>$config.options.mount_point</td>
+                  <td>
+                    <a py:if="has_project_access('tool')()"
+                       href="$config.options.mount_point/">
+                       <span class="ui-icon ui-icon-pencil"></span> Edit
+                    </a>
+                  </td>
+                  <td class="tool-delete">
+                    <a py:if="has_project_access('tool')()"
+                       class="tool-${i}" href="#">
+                       <span class="ui-icon ui-icon-close"></span> Delete
+                    </a>
+                    <!-- <input py:if="has_project_access('tool')() and config.load().installable"
+                                           name="tool-${i}.delete" type="submit" value="Delete"
+                                           class="ui-state-default ui-button ui-button-text"/> -->
+                  </td>
+                </tr>
+              </form>
+              <form method="POST" action="update_mounts">
+                <input py:for="i, sp in enumerate(c.project.direct_subprojects)"
+                       type="hidden"
+                       name="subproject-${i}.shortname"
+                       value="$sp.shortname"/>
+                <input py:for="i, config in enumerate(c.project.app_configs)"
+                       type="hidden"
+                       name="tool-${i}.mount_point"
+                       value="$config.options.mount_point"/>
+                <tr py:if="has_project_access('tool')()">
+                  <td>
+                    <select name="new.ep_name" class="new_ep_name">
+                      <option value="">New Subproject</option>
+                      <optgroup label="New Tool">
+                        <option py:for="name in installable_tool_names" value="$name">$name</option>
+                      </optgroup>
+                    </select>
+                  </td>
+                  <td>
+                    <input name="new.mount_point" class="title new_mount_point"/>
+                  </td>
+                  <td colspan="2">
+                    <input type="submit" value="Install" name="new.install" class="ui-state-default ui-button ui-button-text"/>
+                  </td>
+                </tr>
+              </form>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
   </body>
   <script type="text/javascript">
     /*<![CDATA[*/

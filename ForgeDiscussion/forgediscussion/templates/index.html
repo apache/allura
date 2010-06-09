@@ -15,55 +15,61 @@
   
   <body>
     <h1 class="title">Forums for $c.project.shortname</h1>
-    <py:if test="announcements">
-      <h3>Announcements</h3>
-      ${c.announcements_table.display(value=announcements)}
-    </py:if>
-    <div py:for="forum in forums"
-         py:if="not forum.deleted or has_artifact_access('configure', app=c.app)()">
-      <div class="span-2 last">
-          <img py:if="forum.icon" src="${forum.url()}/icon"/>
-          <img py:if="not forum.icon" src="${g.forge_static('images/project_default.png')}"/>
+    <div class="content">
+      <div class="row">
+        <div class="column grid_12">
+          <py:if test="announcements">
+            <h3>Announcements</h3>
+            ${c.announcements_table.display(value=announcements)}
+          </py:if>
+          <div py:for="forum in forums"
+               py:if="not forum.deleted or has_artifact_access('configure', app=c.app)()">
+            <div class="span-2 last">
+                <img py:if="forum.icon" src="${forum.url()}/icon"/>
+                <img py:if="not forum.icon" src="${g.forge_static('images/project_default.png')}"/>
+            </div>
+            <div class="span-14">
+              <h2>$forum.name</h2>
+              <div py:if="forum.deleted" class="notice">This forum has been deleted and is not visible to non-admin users</div>
+              ${Markup(g.markdown.convert(forum.description))}
+            </div>
+            ${c.subscription_form.display(value=forum, action=forum.url() + 'subscribe')}
+            &nbsp;
+            <div class="clear"/>
+          </div>
+          <form method="POST" enctype="multipart/form-data" id="new_forum_form"
+            action="${c.project.url()}admin/${c.app.config.options.mount_point}/update_forums"
+            py:if="has_artifact_access('configure', app=c.app)()">
+            <input type="button" id="add_forum" value="Add another forum"
+                   class="ui-state-default ui-button ui-button-text"/>
+            <div id="add_forum_form" style="display:none">
+              <div class="span-3 clear"><label>Name:</label></div>
+              <div class="span-13 last"><input type="text" name="new_forum.name" class="title wide"/></div>
+              <div class="span-3 clear"><label>Short Name:</label></div>
+              <div class="span-13 last"><input type="text" name="new_forum.shortname" class="title wide"/></div>
+              <div class="span-3 clear"><label>Parent Forum:</label></div>
+              <div class="span-13 last">
+                <select name="new_forum.parent" class="title">
+                  <option value="">None</option>
+                  <option py:for="f in forums" value="$f._id">$f.name</option>
+                </select>
+              </div>
+              <div class="span-3 clear"><label>Description:</label></div>
+              <div class="span-13 last"><textarea name="new_forum.description" class="title" style="height:50px; width:100%"/></div>
+              <div class="span-3 clear"><label>Icon</label></div>
+              <div class="span-13 last">${file_field('new_forum.icon', '')}</div>
+              <div class="push-3 clear span-13 last">
+                <input type="submit" id="new_forum.create" name="new_forum.create" value="Create Forum"
+                       class="ui-state-default ui-button ui-button-text"/>
+                <input type="button" id="add_forum_cancel" value="Cancel"
+                       class="ui-state-default ui-button ui-button-text"/>
+              </div>
+            </div>
+            <div class="clear"/>
+          </form>
+        </div>
       </div>
-      <div class="span-14">
-        <h2>$forum.name</h2>
-        <div py:if="forum.deleted" class="notice">This forum has been deleted and is not visible to non-admin users</div>
-        ${Markup(g.markdown.convert(forum.description))}
-      </div>
-      ${c.subscription_form.display(value=forum, action=forum.url() + 'subscribe')}
-      &nbsp;
-      <div class="clear"/>
     </div>
-    <form method="POST" enctype="multipart/form-data" id="new_forum_form"
-      action="${c.project.url()}admin/${c.app.config.options.mount_point}/update_forums"
-      py:if="has_artifact_access('configure', app=c.app)()">
-      <input type="button" id="add_forum" value="Add another forum"
-             class="ui-state-default ui-button ui-button-text"/>
-      <div id="add_forum_form" style="display:none">
-        <div class="span-3 clear"><label>Name:</label></div>
-        <div class="span-13 last"><input type="text" name="new_forum.name" class="title wide"/></div>
-        <div class="span-3 clear"><label>Short Name:</label></div>
-        <div class="span-13 last"><input type="text" name="new_forum.shortname" class="title wide"/></div>
-        <div class="span-3 clear"><label>Parent Forum:</label></div>
-        <div class="span-13 last">
-          <select name="new_forum.parent" class="title">
-            <option value="">None</option>
-            <option py:for="f in forums" value="$f._id">$f.name</option>
-          </select>
-        </div>
-        <div class="span-3 clear"><label>Description:</label></div>
-        <div class="span-13 last"><textarea name="new_forum.description" class="title" style="height:50px; width:100%"/></div>
-        <div class="span-3 clear"><label>Icon</label></div>
-        <div class="span-13 last">${file_field('new_forum.icon', '')}</div>
-        <div class="push-3 clear span-13 last">
-          <input type="submit" id="new_forum.create" name="new_forum.create" value="Create Forum"
-                 class="ui-state-default ui-button ui-button-text"/>
-          <input type="button" id="add_forum_cancel" value="Cancel"
-                 class="ui-state-default ui-button ui-button-text"/>
-        </div>
-      </div>
-      <div class="clear"/>
-    </form>
   </body>
   <script type="text/javascript" py:if="has_artifact_access('configure', app=c.app)()">
     $(function() {

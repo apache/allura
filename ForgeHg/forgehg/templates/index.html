@@ -14,26 +14,32 @@
 
   <body>
     <h1 class="title">Welcome to ForgeHg</h1>
-    <h2>Project: $c.project.shortname</h2>
-    <py:if test="repo">
-      <dl>
-        <dt>read access</dt>
-        <dd>hg clone http://$repo.scm_url_path</dd>
-        <dt>read/write access</dt>
-        <dd>hg clone ssh://$repo.scm_url_path</dd>
-        <dt>status</dt>
-        <dd>${repo.status}</dd>
-      </dl>
-      <form py:if="allow_fork" action="fork" method="GET">
-        <input type="submit" value="Fork" class="ui-state-default ui-button ui-button-text"/>
-      </form>
-    </py:if>
-    <h2>Recent Commits</h2>
-    <h3 py:if="branch">Branch: $branch</h3>
-    <h3 py:if="tag">Tag: $tag</h3>
-    <py:for each="r in revisions">
-      ${c.revision_widget.display(value=r)}
-    </py:for>
-    <a py:if="next_link" href="$next_link">More</a>
+    <div class="content">
+      <div class="row">
+        <div class="column grid_12">
+          <h2>Project: $c.project.shortname</h2>
+          <py:if test="repo">
+            <dl>
+              <dt>read access</dt>
+              <dd>hg clone http://$repo.scm_url_path</dd>
+              <dt>read/write access</dt>
+              <dd>hg clone ssh://$repo.scm_url_path</dd>
+              <dt>status</dt>
+              <dd>${repo.status}</dd>
+            </dl>
+            <form py:if="allow_fork" action="fork" method="GET">
+              <input type="submit" value="Fork" class="ui-state-default ui-button ui-button-text"/>
+            </form>
+          </py:if>
+          <h2>Recent Commits</h2>
+          <h3 py:if="branch">Branch: $branch</h3>
+          <h3 py:if="tag">Tag: $tag</h3>
+          <py:for each="r in revisions">
+            ${c.revision_widget.display(value=r)}
+          </py:for>
+          <a py:if="next_link" href="$next_link">More</a>
+        </div>
+      </div>
+    </div>
   </body>
 </html>

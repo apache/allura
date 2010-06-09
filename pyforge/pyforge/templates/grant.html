@@ -13,30 +13,36 @@
 
   <body>
     <h1 class="title">Grant</h1>
-    <div id="grant">
-      <table border="1">
-        <thead>
-          <tr>
-            <th>Icon</th>
-            <th>Award</th>
-            <th>Recipient</th>
-            <th>Delete?</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td>
-              <py:if test="grant.award.icon">
-                <img class="award_icon" src="icon"/>
-              </py:if>
-            </td>
-            <td><a href="$(grant.longurl()">${grant.award.short}</a></td>
-            <td><a href="${grant.longurl()}">${grant.granted_to_project.shortname}</a></td>
-            <td><a href="${grant.longurl()}/revoke">[X]</a></td>
-          </tr>
-        </tbody>
-      </table>
+    <div class="content">
+      <div class="row">
+        <div class="column grid_12">
+          <div id="grant">
+            <table border="1">
+              <thead>
+                <tr>
+                  <th>Icon</th>
+                  <th>Award</th>
+                  <th>Recipient</th>
+                  <th>Delete?</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>
+                    <py:if test="grant.award.icon">
+                      <img class="award_icon" src="icon"/>
+                    </py:if>
+                  </td>
+                  <td><a href="$(grant.longurl()">${grant.award.short}</a></td>
+                  <td><a href="${grant.longurl()}">${grant.granted_to_project.shortname}</a></td>
+                  <td><a href="${grant.longurl()}/revoke">[X]</a></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <a href="..">&#060;&#060; Back</a>
+        </div>
+      </div>
     </div>
-  <a href="..">&#060;&#060; Back</a>
   </body>
 </html>

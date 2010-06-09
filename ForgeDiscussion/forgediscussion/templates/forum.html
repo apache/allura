@@ -14,38 +14,44 @@ asdfasdf<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   
   <body>
     <h1 class="title">$forum.name</h1>
-    <p>Forum Shortlink: [${forum.shorthand_id()}]</p>
-    <div>${Markup(g.markdown.convert(forum.description))}</div>
-    <a href="mailto:$forum.email_address">Post via Email</a>
-    <div py:if="has_artifact_access('moderate', forum)()">
-      <a href="moderate/">Moderate Messages</a>
-    </div>
-    <div py:if="forum.parent" class="breadcrumbs" >
-      <ul>${crumbs(forum.breadcrumbs())}</ul>
-    </div>
+    <div class="content">
+      <div class="row">
+        <div class="column grid_12">
+          <p>Forum Shortlink: [${forum.shorthand_id()}]</p>
+          <div>${Markup(g.markdown.convert(forum.description))}</div>
+          <a href="mailto:$forum.email_address">Post via Email</a>
+          <div py:if="has_artifact_access('moderate', forum)()">
+            <a href="moderate/">Moderate Messages</a>
+          </div>
+          <div py:if="forum.parent" class="breadcrumbs" >
+            <ul>${crumbs(forum.breadcrumbs())}</ul>
+          </div>
 
-    <py:if test="forum.subforums">
-      <h2>SubForums</h2>
-      ${forums_table(parent_id=forum._id)}
-    </py:if>
+          <py:if test="forum.subforums">
+            <h2>SubForums</h2>
+            ${forums_table(parent_id=forum._id)}
+          </py:if>
 
-    <h2>Topics</h2>
-    <py:if test="announcements">
-      <h3>Announcements</h3>
-      ${c.announcements_table(value=announcements)}
-    </py:if>
-    <form method="post" action="${c.app.script_name}subscribe">
-      ${threads_table(threads)}
-      ${submit_button('Update Subscriptions')}
-    </form>
-    <div class="title-pane closed">
-      <h2 class="title">New Topic</h2>
-      <div class="content">
-        <form method="post" action="thread/new">
-          ${text_field('subject', 'Subject')}
-          ${text_area('content', 'Content')}
-          ${submit_button('Create new topic')}
-        </form>
+          <h2>Topics</h2>
+          <py:if test="announcements">
+            <h3>Announcements</h3>
+            ${c.announcements_table(value=announcements)}
+          </py:if>
+          <form method="post" action="${c.app.script_name}subscribe">
+            ${threads_table(threads)}
+            ${submit_button('Update Subscriptions')}
+          </form>
+          <div class="title-pane closed">
+            <h2 class="title">New Topic</h2>
+            <div class="content">
+              <form method="post" action="thread/new">
+                ${text_field('subject', 'Subject')}
+                ${text_area('content', 'Content')}
+                ${submit_button('Create new topic')}
+              </form>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   </body>

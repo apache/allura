@@ -13,26 +13,32 @@
 
   <body>
     <h1 class="title">Grants List</h1>
-    <div id="award_list">
-      <table border="1">
-        <thead>
-          <tr>
-            <th>Award</th>
-            <th>Recipient</th>
-            <th>Delete?</th>
-          </tr>
-        </thead>
-        <tbody>
-          <py:for each="grant in grants">
-            <tr>
-              <td><a href="$(grant.longurl()">${grant.award.short}</a></td>
-              <td><a href="${grant.longurl()}">${grant.granted_to_project.shortname}</a></td>
-              <td><a href="${grant.longurl()}/revoke">[X]</a></td>
-            </tr>
-          </py:for>
-        </tbody>
-      </table>
+    <div class="content">
+      <div class="row">
+        <div class="column grid_12">
+          <div id="award_list">
+            <table border="1">
+              <thead>
+                <tr>
+                  <th>Award</th>
+                  <th>Recipient</th>
+                  <th>Delete?</th>
+                </tr>
+              </thead>
+              <tbody>
+                <py:for each="grant in grants">
+                  <tr>
+                    <td><a href="$(grant.longurl()">${grant.award.short}</a></td>
+                    <td><a href="${grant.longurl()}">${grant.granted_to_project.shortname}</a></td>
+                    <td><a href="${grant.longurl()}/revoke">[X]</a></td>
+                  </tr>
+                </py:for>
+              </tbody>
+            </table>
+          </div>
+          <a href="..">&#060;&#060; Back</a>
+        </div>
+      </div>
     </div>
-  <a href="..">&#060;&#060; Back</a>
   </body>
 </html>

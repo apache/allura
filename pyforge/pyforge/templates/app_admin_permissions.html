@@ -13,47 +13,53 @@
   
   <body>
     <h1 class="title">$app.config.options.mount_point Permissions</h1>
-    <py:if test="not (app.permissions and allow_config)">
-      You are not allowed to edit permissions for ${app.config.options.mount_point}.
-    </py:if>
-    <py:if test="app.permissions and allow_config">
-      <div id="acl-admin">
-        <py:for each="p in app.permissions" >
-          <h3><a href="#" id="permission_$p">$p</a></h3>
-          <div>
-            <table>
-              <thead>
-                <tr>
-                  <th>Role</th>
-                  <th/>
-                </tr>
-              </thead>
-              <tbody>
-                <tr py:for="role in h.make_roles(app.config.acl.get(p, []))">
-                  <td>${role.display()}</td>
-                  <td>
-                    <form method="POST" action="del_perm" style="display:inline">
-                      <input type="hidden" name="permission" value="$p"/>
-                      <input type="hidden" name="role" value="${role._id}"/>
-                    <input type="submit" value="Remove" py:if="role.display() != '*user-'+c.user.username"/>
-                    </form>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-            <form method="POST" action="add_perm">
-              <input type="hidden" name="permission" value="$p"/>
-              <select name="role">
-                <option py:for="role in c.project.roles"
-                        value="$role._id"
-                        >${role.display()}</option>
-              </select>
-              <input type="submit" value="Add role"/>
-            </form>
-          </div>
-        </py:for>
+    <div class="content">
+      <div class="row">
+        <div class="column grid_12">
+          <py:if test="not (app.permissions and allow_config)">
+            You are not allowed to edit permissions for ${app.config.options.mount_point}.
+          </py:if>
+          <py:if test="app.permissions and allow_config">
+            <div id="acl-admin">
+              <py:for each="p in app.permissions" >
+                <h3><a href="#" id="permission_$p">$p</a></h3>
+                <div>
+                  <table>
+                    <thead>
+                      <tr>
+                        <th>Role</th>
+                        <th/>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr py:for="role in h.make_roles(app.config.acl.get(p, []))">
+                        <td>${role.display()}</td>
+                        <td>
+                          <form method="POST" action="del_perm" style="display:inline">
+                            <input type="hidden" name="permission" value="$p"/>
+                            <input type="hidden" name="role" value="${role._id}"/>
+                          <input type="submit" value="Remove" py:if="role.display() != '*user-'+c.user.username"/>
+                          </form>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                  <form method="POST" action="add_perm">
+                    <input type="hidden" name="permission" value="$p"/>
+                    <select name="role">
+                      <option py:for="role in c.project.roles"
+                              value="$role._id"
+                              >${role.display()}</option>
+                    </select>
+                    <input type="submit" value="Add role"/>
+                  </form>
+                </div>
+              </py:for>
+            </div>
+        	</py:if>
+        </div>
       </div>
-  	</py:if>
+    </div>
   </body>
 
   <script type="text/javascript">

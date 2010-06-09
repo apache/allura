@@ -14,22 +14,28 @@
   
   <body>
     <h1 class="title">$forum.name</h1>
-    <h2>Tags: 
-      <py:for each="t in tags">$t, </py:for>
-      <form method="GET" action="." style="display:inline">
-        <input name="tag"/>
-      </form>
-    </h2>
-    <p>Forum Shortlink: [${forum.shorthand_id()}]</p>
-    <div>${Markup(g.markdown.convert(forum.description))}</div>
-    <a href="mailto:$forum.email_address">Post via Email</a>
-    <div py:if="forum.parent" class="breadcrumbs" >
-      <ul>${crumbs(forum.breadcrumbs())}</ul>
+    <div class="content">
+      <div class="row">
+        <div class="column grid_12">
+          <h2>Tags: 
+            <py:for each="t in tags">$t, </py:for>
+            <form method="GET" action="." style="display:inline">
+              <input name="tag"/>
+            </form>
+          </h2>
+          <p>Forum Shortlink: [${forum.shorthand_id()}]</p>
+          <div>${Markup(g.markdown.convert(forum.description))}</div>
+          <a href="mailto:$forum.email_address">Post via Email</a>
+          <div py:if="forum.parent" class="breadcrumbs" >
+            <ul>${crumbs(forum.breadcrumbs())}</ul>
+          </div>
+          <h2>Topics</h2>
+          <form method="post" action="${c.app.script_name}subscribe">
+            ${threads_table(threads)}
+            ${submit_button('Update Subscriptions')}
+          </form>
+        </div>
+      </div>
     </div>
-    <h2>Topics</h2>
-    <form method="post" action="${c.app.script_name}subscribe">
-      ${threads_table(threads)}
-      ${submit_button('Update Subscriptions')}
-    </form>
   </body>
 </html>

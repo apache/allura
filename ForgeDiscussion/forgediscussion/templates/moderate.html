@@ -21,61 +21,67 @@
     </div>
 
     <h1 class="title">Moderation Queue</h1>
-    <div>
-      Displaying page $pgnum / $pages
+    <div class="content">
+      <div class="row">
+        <div class="column grid_12">
+          <div>
+            Displaying page $pgnum / $pages
+          </div>
+          <a href="?status=$status&amp;flag=$flag&amp;offset=${offset-limit}">Previous Page</a>
+          <a href="?status=$status&amp;flag=$flag&amp;offset=${offset+limit}">Next Page</a><br/>
+
+          <form method="GET" action=".">
+            <fieldset>
+              <legend>Post Filter</legend>
+              ${select_field('status', 'Show posts with status',
+                  [('Any', '-'), ('Spam', 'spam'),('Pending moderation', 'pending'),('Ok', 'ok')], status)}
+              ${text_field('flag', 'Show posts with at least n flags', flag)}
+              ${submit_button('Filter Posts')}
+            </fieldset>
+          </form>
+
+          <form method="POST" action="moderate">
+            <fieldset>
+              <legend>Update marked posts</legend>
+              <input type="submit" name="approve" value="Approve Marked"/>
+              <input type="submit" name="spam" value="Spam Marked"/>
+              <input type="submit" name="delete" value="Delete Marked"/>
+            </fieldset>
+            <table>
+              <thead>
+                <tr>
+                  <th><a href="#">[x]</a></th>
+                  <th>Timestamp</th>
+                  <th>Status</th>
+                  <th>Flags?</th>
+                  <th>Author</th>
+                  <th>Subject</th>
+                  <th>Text</th>
+                  <th>Attachments</th>
+                </tr>
+              </thead>
+              <tbody>
+                <py:for each="i, post in enumerate(posts)">
+                  <tr>
+                    <td>
+                      <input type="hidden" name="post-${i}.slug" value="$post.slug"/>
+                      <input type="checkbox" name="post-${i}.checked"/>
+                    </td>
+                    <td>$post.timestamp</td>
+                    <td>$post.status</td>
+                    <td>$post.flags</td>
+                    <td py:with="author=post.author()">$author.display_name ($author.username)</td>
+                    <td>$post.subject</td>
+                    <td>${h.text.truncate(post.text)}</td>
+                    <td>${len(post.attachments)}</td>
+                  </tr>
+                </py:for>
+              </tbody>
+            </table>
+          </form>
+        </div>
+      </div>
     </div>
-    <a href="?status=$status&amp;flag=$flag&amp;offset=${offset-limit}">Previous Page</a>
-    <a href="?status=$status&amp;flag=$flag&amp;offset=${offset+limit}">Next Page</a><br/>
-
-    <form method="GET" action=".">
-      <fieldset>
-        <legend>Post Filter</legend>
-        ${select_field('status', 'Show posts with status',
-            [('Any', '-'), ('Spam', 'spam'),('Pending moderation', 'pending'),('Ok', 'ok')], status)}
-        ${text_field('flag', 'Show posts with at least n flags', flag)}
-        ${submit_button('Filter Posts')}
-      </fieldset>
-    </form>
-
-    <form method="POST" action="moderate">
-      <fieldset>
-        <legend>Update marked posts</legend>
-        <input type="submit" name="approve" value="Approve Marked"/>
-        <input type="submit" name="spam" value="Spam Marked"/>
-        <input type="submit" name="delete" value="Delete Marked"/>
-      </fieldset>
-      <table>
-        <thead>
-          <tr>
-            <th><a href="#">[x]</a></th>
-            <th>Timestamp</th>
-            <th>Status</th>
-            <th>Flags?</th>
-            <th>Author</th>
-            <th>Subject</th>
-            <th>Text</th>
-            <th>Attachments</th>
-          </tr>
-        </thead>
-        <tbody>
-          <py:for each="i, post in enumerate(posts)">
-            <tr>
-              <td>
-                <input type="hidden" name="post-${i}.slug" value="$post.slug"/>
-                <input type="checkbox" name="post-${i}.checked"/>
-              </td>
-              <td>$post.timestamp</td>
-              <td>$post.status</td>
-              <td>$post.flags</td>
-              <td py:with="author=post.author()">$author.display_name ($author.username)</td>
-              <td>$post.subject</td>
-              <td>${h.text.truncate(post.text)}</td>
-              <td>${len(post.attachments)}</td>
-            </tr>
-          </py:for>
-        </tbody>
-      </table>
-    </form>
   </body>
   <script type="text/javascript">
     (function($){

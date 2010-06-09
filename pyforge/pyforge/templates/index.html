@@ -21,14 +21,20 @@
       </ul>
     </py:def>
     <h1 class="title">All Projects</h1>
-    Add a new project at this url:
-    <form method="post" action="projects/register">
-      /projects/<input name="pid" class="title"/>/ &nbsp; <input type="submit" value="Register Project" class="ui-state-default ui-button ui-button-text"/>
-    </form>
-    <div id="pyforge_directory">
-      <py:for each="n, subprojects in projects">
-        ${project(n, subprojects)}
-      </py:for>
+    <div class="content">
+      <div class="row">
+        <div class="column grid_12">
+          Add a new project at this url:
+          <form method="post" action="projects/register">
+            /projects/<input name="pid" class="title"/>/ &nbsp; <input type="submit" value="Register Project" class="ui-state-default ui-button ui-button-text"/>
+          </form>
+          <div id="pyforge_directory">
+            <py:for each="n, subprojects in projects">
+              ${project(n, subprojects)}
+            </py:for>
+          </div>
+        </div>
+      </div>
     </div>
   </body>
 </html>

@@ -15,37 +15,43 @@
 
   <body>
     <h1 class="title">Permissions for $neighborhood.name</h1>
-    <p>The ACL determines neighborhood-level permissions.</p>
-    <div id="acl-admin">
-      <py:for each="permission, users in neighborhood.acl.iteritems()">
-        <h3><a href="#" id="permission_$permission">Permission: $permission</a></h3>
-        <div>
-          <form method="POST" action="update_acl">
-            <input type="hidden" name="permission" value="$permission"/>
-            <input py:for="i,uid in enumerate(users)"
-                   type="hidden" name="user-${i}.id" value="$uid"/>
-            <table>
-              <thead>
-                <tr><th>Username</th><th/></tr>
-              </thead>
-              <tbody>
-                <tr py:for="i,u in enumerate(h.make_users(users))">
-                  <td>$u.username</td>
-                  <td><input type="submit" value="Remove" name="user-${i}.delete" class="ui-state-default ui-button ui-button-text" /></td>
-                </tr>
-                <tr>
-                  <td>
-                    <input name="new.username"/>
-                  </td>
-                  <td>
-                    <input type="submit" name="new.add" value="Add Permission" class="ui-state-default ui-button ui-button-text"/>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </form>
+    <div class="content">
+      <div class="row">
+        <div class="column grid_12">
+          <p>The ACL determines neighborhood-level permissions.</p>
+          <div id="acl-admin">
+            <py:for each="permission, users in neighborhood.acl.iteritems()">
+              <h3><a href="#" id="permission_$permission">Permission: $permission</a></h3>
+              <div>
+                <form method="POST" action="update_acl">
+                  <input type="hidden" name="permission" value="$permission"/>
+                  <input py:for="i,uid in enumerate(users)"
+                         type="hidden" name="user-${i}.id" value="$uid"/>
+                  <table>
+                    <thead>
+                      <tr><th>Username</th><th/></tr>
+                    </thead>
+                    <tbody>
+                      <tr py:for="i,u in enumerate(h.make_users(users))">
+                        <td>$u.username</td>
+                        <td><input type="submit" value="Remove" name="user-${i}.delete" class="ui-state-default ui-button ui-button-text" /></td>
+                      </tr>
+                      <tr>
+                        <td>
+                          <input name="new.username"/>
+                        </td>
+                        <td>
+                          <input type="submit" name="new.add" value="Add Permission" class="ui-state-default ui-button ui-button-text"/>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </form>
+              </div>
+            </py:for>
+          </div>
         </div>
-      </py:for>
+      </div>
     </div>
   </body>
   <script type="text/javascript">

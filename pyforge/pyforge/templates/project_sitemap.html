@@ -17,8 +17,14 @@
   
   <body>
     <h1 class="title">ProjectController for ${project_links(c.project)}</h1>
-    <ul>
-      <li py:for="s in c.project.sitemap()">${nav(s)}</li>
-    </ul>
+    <div class="content">
+      <div class="row">
+        <div class="column grid_12">
+          <ul>
+            <li py:for="s in c.project.sitemap()">${nav(s)}</li>
+          </ul>
+        </div>
+      </div>
+    </div>
   </body>
 </html>

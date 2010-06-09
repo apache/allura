@@ -13,7 +13,13 @@
 
 <body>
   <h1 class="title">Create a Ticket</h1>
-  ${c.ticket_form.display(action=action, value=dict(super_id=super_id))}
+	<div class="content">
+		<div class="row">
+			<div class="column grid_12">
+        ${c.ticket_form.display(action=action, value=dict(super_id=super_id))}
+      </div>
+    </div>
+  </div>
 </body>
 </html>
 

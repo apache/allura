@@ -14,21 +14,27 @@
 
   <body>
     <h1 class="title">Welcome to ForgeSVN</h1>
-    <h2>Project: $c.project.shortname</h2>
-    <py:if test="repo">
-      <dl>
-        <dt>read access</dt>
-        <dd>svn checkout svn://$repo.scm_url_path</dd>
-        <dt>read/write access</dt>
-        <dd>svn checkout svn+ssh://${username or 'USERNAME'}@$repo.scm_url_path</dd>
-        <dt>status</dt>
-        <dd>${repo.status}</dd>
-      </dl>
-    </py:if>
-    <h2>Commit History</h2>
-    <py:for each="r in revisions">
-      ${c.revision_widget.display(value=r)}
-    </py:for>
-    <a py:if="next_link" href="$next_link">More</a>
+    <div class="content">
+      <div class="row">
+        <div class="column grid_12">
+          <h2>Project: $c.project.shortname</h2>
+          <py:if test="repo">
+            <dl>
+              <dt>read access</dt>
+              <dd>svn checkout svn://$repo.scm_url_path</dd>
+              <dt>read/write access</dt>
+              <dd>svn checkout svn+ssh://${username or 'USERNAME'}@$repo.scm_url_path</dd>
+              <dt>status</dt>
+              <dd>${repo.status}</dd>
+            </dl>
+          </py:if>
+          <h2>Commit History</h2>
+          <py:for each="r in revisions">
+            ${c.revision_widget.display(value=r)}
+          </py:for>
+          <a py:if="next_link" href="$next_link">More</a>
+        </div>
+      </div>
+    </div>
   </body>
 </html>

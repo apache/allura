@@ -13,28 +13,34 @@
 
   <body>
     <h1 class="title">Award</h1>
-    <table border="1">
-      <thead>
-        <tr>
-          <th>Icon</th>
-          <th>Abbreviation</th>
-          <th>Description</th>
-          <th>Delete?</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td>
-            <py:if test="award.icon">
-              <img class="award_icon" src="icon"/>
-            </py:if>
-          </td>
-          <td><a href="${award.longurl()}">${award.short}</a></td>
-          <td>$award.full</td>
-          <td><a href="${award.longurl()}/delete">[X]</a></td>
-        </tr>
-      </tbody>
-    </table>
-  <a href="..">&#060;&#060; Back</a>
+    <div class="content">
+      <div class="row">
+        <div class="column grid_12">
+          <table border="1">
+            <thead>
+              <tr>
+                <th>Icon</th>
+                <th>Abbreviation</th>
+                <th>Description</th>
+                <th>Delete?</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>
+                  <py:if test="award.icon">
+                    <img class="award_icon" src="icon"/>
+                  </py:if>
+                </td>
+                <td><a href="${award.longurl()}">${award.short}</a></td>
+                <td>$award.full</td>
+                <td><a href="${award.longurl()}/delete">[X]</a></td>
+              </tr>
+            </tbody>
+          </table>
+          <a href="..">&#060;&#060; Back</a>
+        </div>
+      </div>
+    </div>
   </body>
 </html>

@@ -16,16 +16,22 @@
 
   <body>
     <h1 class="title">Neighborhood Invitation(s) for $c.project.shortname</h1>
-    <div py:if="c.project.deleted" class="notice">This project has been deleted and is not visible to non-admin users</div>
-    <form method="POST" action="join_neighborhood">
-      <select name="nid">
-        <option py:if="c.project.neighborhood.name != 'Projects'" value="">
-          Leave $c.project.neighborhood.name</option>
-        <option py:for="n in h.make_neighborhoods(c.project.neighborhood_invitations)"
-                value="$n._id">$n.name</option>
-      </select>
-      <input type="submit" value="Join Neighborhood" class="ui-state-default ui-button ui-button-text"/>
-    </form>
+    <div class="content">
+      <div class="row">
+        <div class="column grid_12">
+          <div py:if="c.project.deleted" class="notice">This project has been deleted and is not visible to non-admin users</div>
+          <form method="POST" action="join_neighborhood">
+            <select name="nid">
+              <option py:if="c.project.neighborhood.name != 'Projects'" value="">
+                Leave $c.project.neighborhood.name</option>
+              <option py:for="n in h.make_neighborhoods(c.project.neighborhood_invitations)"
+                      value="$n._id">$n.name</option>
+            </select>
+            <input type="submit" value="Join Neighborhood" class="ui-state-default ui-button ui-button-text"/>
+          </form>
+        </div>
+      </div>
+    </div>
   </body>
 
 </html>

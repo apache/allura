@@ -13,14 +13,20 @@
   
   <body>
     <h1 class="title">Choose Login Name</h1>
-    <div id="loginform">
-      <form method="POST" action="do_setup_openid_user">
-        <label for="username">Login Name:</label>
-        <input id="username" name="username"/>
-        <label for="display_name">Displayed Name:</label>
-        <input id="display_name" name="display_name"/>
-        <input type="submit" value="Setup Account"/>
-      </form>
+    <div class="content">
+      <div class="row">
+        <div class="column grid_12">
+          <div id="loginform">
+            <form method="POST" action="do_setup_openid_user">
+              <label for="username">Login Name:</label>
+              <input id="username" name="username"/>
+              <label for="display_name">Displayed Name:</label>
+              <input id="display_name" name="display_name"/>
+              <input type="submit" value="Setup Account"/>
+            </form>
+          </div>
+        </div>
+      </div>
     </div>
   </body>
 </html>

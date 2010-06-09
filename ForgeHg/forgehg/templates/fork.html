@@ -13,12 +13,18 @@
 
   <body>
     <h1 class="title">Fork ${from_repo.name}</h1>
-    <form action="." method="POST">
-        ${to_project_name}/<input type="text" name="to_name" value="${to_name}"/>
-        <input type="submit" value="Fork" class="ui-state-default ui-button ui-button-text"/>
-    </form>
-    <div id="in-use" style="display:none">
-        <span py:for="used in in_use">${used}</span>
+    <div class="content">
+      <div class="row">
+        <div class="column grid_12">
+          <form action="." method="POST">
+              ${to_project_name}/<input type="text" name="to_name" value="${to_name}"/>
+              <input type="submit" value="Fork" class="ui-state-default ui-button ui-button-text"/>
+          </form>
+          <div id="in-use" style="display:none">
+              <span py:for="used in in_use">${used}</span>
+          </div>
+        </div>
+      </div>
     </div>
   </body>
 </html>

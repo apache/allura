@@ -13,77 +13,83 @@
   
   <body>
     <h1 class="title">User Preferences for $c.user.username</h1>
-    <h2>API Token</h2>
-    <py:if test="api_token">
-      <p>
-        <b>API Key:</b><br/>
-        $api_token.api_key<br/>
-        <b>Secret Key:</b><br/>
-        $api_token.secret_key<br/>
-      </p>
-      <form method="POST" action="del_api_token">
-        <input type="submit" value="Delete API Token"
-               class="ui-state-default ui-button ui-button-text"/>
-      </form>
-    </py:if>
-    <py:if test="not api_token">
-      No API token generated
-    </py:if>
-    <form method="POST" action="gen_api_token">
-      <input type="submit" value="(Re)generate API Token"
-               class="ui-state-default ui-button ui-button-text"/>
-    </form>
-    <h2>Subscriptions</h2>
-    ${c.form.display(action='update_subscriptions', value=dict(subscriptions=subscriptions))}
-    <form action="update" method="post">
-      ${text_field('display_name', 'Display Name', c.user.display_name)}
-      ${select_field('preferences.email_format', 'Email Format',
-                     [('Plain Text', 'plain'), ('HTML', 'html'), ('Combined', 'both')],
-                     c.user.preferences.email_format)}
-      <input py:for="i,a in enumerate(c.user.email_addresses)"
-             name="addr-${i}.ord" value="$i" type="hidden"/>
-      <fieldset>
-        <legend>Email Addresses</legend>
-        <table>
-          <tr>
-            <th>Primary?</th>
-            <th>Address</th>
-            <th>Confirmed</th>
-            <th></th>
-          </tr>
-          <tr py:for="i, a in enumerate(c.user.email_addresses)"
-              py:with="obj=c.user.address_object(a)">
-            <td>${radio_button('primary_addr', None, a, c.user.preferences.email_address)}</td>
-            <td>$a</td>
-            <td py:if="obj">
-              <py:if test="obj.confirmed">yes</py:if>
-              <py:if test="not obj.confirmed">no 
-                (<a href="${g.url('/auth/send_verification_link', a=a)}">verify</a>)
-              </py:if>
-            </td>
-            <td py:if="not obj">Unknown addr obj $a</td>
-            <td>${submit_button('Delete', 'addr-%s.delete' % i)}</td>
-          </tr>
-        </table>
-        ${text_field('new_addr.addr', 'New Address')}
-        ${submit_button('Claim Address', name='new_addr.claim')}
-      </fieldset>
-      <fieldset>
-        <legend>OpenIDs Claimed</legend>
-        <table>
-          <tr>
-            <th>OpenID</th>
-            <th></th>
-          </tr>
-          <tr py:for="i, oid in enumerate(c.user.open_ids)"
-              py:with="obj=c.user.openid_object(oid)">
-            <td>$oid</td>
-            <td>${submit_button('Delete', 'oid-%s.delete' % i)}</td>
-          </tr>
-        </table>
-        <a href="/auth/claim_oid">Claim New OpenID</a>
-      </fieldset>
-      ${submit_button('Save Changes')}
-    </form>
+    <div class="content">
+      <div class="row">
+        <div class="column grid_12">
+          <h2>API Token</h2>
+          <py:if test="api_token">
+            <p>
+              <b>API Key:</b><br/>
+              $api_token.api_key<br/>
+              <b>Secret Key:</b><br/>
+              $api_token.secret_key<br/>
+            </p>
+            <form method="POST" action="del_api_token">
+              <input type="submit" value="Delete API Token"
+                     class="ui-state-default ui-button ui-button-text"/>
+            </form>
+          </py:if>
+          <py:if test="not api_token">
+            No API token generated
+          </py:if>
+          <form method="POST" action="gen_api_token">
+            <input type="submit" value="(Re)generate API Token"
+                     class="ui-state-default ui-button ui-button-text"/>
+          </form>
+          <h2>Subscriptions</h2>
+          ${c.form.display(action='update_subscriptions', value=dict(subscriptions=subscriptions))}
+          <form action="update" method="post">
+            ${text_field('display_name', 'Display Name', c.user.display_name)}
+            ${select_field('preferences.email_format', 'Email Format',
+                           [('Plain Text', 'plain'), ('HTML', 'html'), ('Combined', 'both')],
+                           c.user.preferences.email_format)}
+            <input py:for="i,a in enumerate(c.user.email_addresses)"
+                   name="addr-${i}.ord" value="$i" type="hidden"/>
+            <fieldset>
+              <legend>Email Addresses</legend>
+              <table>
+                <tr>
+                  <th>Primary?</th>
+                  <th>Address</th>
+                  <th>Confirmed</th>
+                  <th></th>
+                </tr>
+                <tr py:for="i, a in enumerate(c.user.email_addresses)"
+                    py:with="obj=c.user.address_object(a)">
+                  <td>${radio_button('primary_addr', None, a, c.user.preferences.email_address)}</td>
+                  <td>$a</td>
+                  <td py:if="obj">
+                    <py:if test="obj.confirmed">yes</py:if>
+                    <py:if test="not obj.confirmed">no 
+                      (<a href="${g.url('/auth/send_verification_link', a=a)}">verify</a>)
+                    </py:if>
+                  </td>
+                  <td py:if="not obj">Unknown addr obj $a</td>
+                  <td>${submit_button('Delete', 'addr-%s.delete' % i)}</td>
+                </tr>
+              </table>
+              ${text_field('new_addr.addr', 'New Address')}
+              ${submit_button('Claim Address', name='new_addr.claim')}
+            </fieldset>
+            <fieldset>
+              <legend>OpenIDs Claimed</legend>
+              <table>
+                <tr>
+                  <th>OpenID</th>
+                  <th></th>
+                </tr>
+                <tr py:for="i, oid in enumerate(c.user.open_ids)"
+                    py:with="obj=c.user.openid_object(oid)">
+                  <td>$oid</td>
+                  <td>${submit_button('Delete', 'oid-%s.delete' % i)}</td>
+                </tr>
+              </table>
+              <a href="/auth/claim_oid">Claim New OpenID</a>
+            </fieldset>
+            ${submit_button('Save Changes')}
+          </form>
+        </div>
+      </div>
+    </div>
   </body>
 </html>
