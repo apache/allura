@@ -198,7 +198,14 @@ class ProjectController(object):
     def __init__(self):
         setattr(self, 'feed.rss', self.feed)
         setattr(self, 'feed.atom', self.feed)
+        setattr(self, '_nav.json', self._nav)
         self.screenshot = ScreenshotsController()
+
+    @expose('json:')
+    def _nav(self):
+        return dict(menu=[
+                dict(name=s.label, url=s.url, icon=s.ui_icon)
+                for s in c.project.sitemap() ])
 
     @expose()
     def _lookup(self, name, *remainder):
