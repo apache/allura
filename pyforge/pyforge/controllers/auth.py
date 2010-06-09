@@ -41,24 +41,24 @@ class AuthController(object):
     @expose('pyforge.templates.login')
     @with_trailing_slash
     def index(self, *args, **kwargs):
-        if config.get('auth.method') == 'sfx':
-            redirect(g.login_url)
         orig_request = request.environ.get('pylons.original_request', None)
-        if orig_request:
-            came_from = orig_request.url
+        if 'return_to' in kwargs:
+            return_to = kwargs.pop('return_to')
+        elif orig_request:
+            return_to = orig_request.url
         else:
-            came_from = request.referer
-        return dict(oid_providers=OID_PROVIDERS, came_from=came_from)
+            return_to = request.referer
+        return dict(oid_providers=OID_PROVIDERS, return_to=return_to)
 
     @expose('pyforge.templates.custom_login')
-    def login_verify_oid(self, provider, username, came_from=None):
+    def login_verify_oid(self, provider, username, return_to=None):
         if provider:
             oid_url = string.Template(provider).safe_substitute(
                 username=username)
         else:
             oid_url = username
         return verify_oid(oid_url, failure_redirect='.',
-                          return_to='login_process_oid?%s' % urlencode(dict(came_from=came_from)),
+                          return_to='login_process_oid?%s' % urlencode(dict(return_to=return_to)),
                           title='OpenID Login',
                           prompt='Click below to continue')
 
@@ -72,7 +72,7 @@ class AuthController(object):
             flash('Please choose a user name for SourceForge, %s.'
                   % c.user.display_name)
             redirect('setup_openid_user')
-        redirect(kw.pop('came_from', '/'))
+        redirect(kw.pop('return_to', '/'))
 
     @expose('pyforge.templates.setup_openid_user')
     def setup_openid_user(self):
@@ -179,10 +179,10 @@ class AuthController(object):
             redirect('/')
 
     @expose()
-    def do_login(self, came_from=None, **kw):
+    def do_login(self, return_to=None, **kw):
         user = plugin.AuthenticationProvider.get(request).login()
-        if came_from and came_from != request.url:
-            redirect(came_from)
+        if return_to and return_to != request.url:
+            redirect(return_to)
         redirect('/')
 
 

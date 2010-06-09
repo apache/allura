@@ -39,7 +39,7 @@ class ForgeConfig(AppConfig):
 
     def add_error_middleware(self, global_conf, app):
         app = AppConfig.add_error_middleware(self, global_conf, app)
-        app = StatusCodeRedirect(app, [401], '/auth/')
+        app = custom_middleware.LoginRedirectMiddleware(app)
         return app
 
     def after_init_config(self):

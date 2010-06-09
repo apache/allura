@@ -3,7 +3,9 @@ from contextlib import contextmanager
 from threading import local
 from random import random
 
+import tg
 import pylons
+from pylons.util import call_wsgi_application
 from tg.controllers import DecoratedController
 from webob import exc, Request
 
@@ -52,6 +54,26 @@ class ForgeMiddleware(object):
         for x in result:
             yield x
         self._cleanup_request(environ)
+
+class LoginRedirectMiddleware(object):
+    '''Actually converts a 401 into a 302 so we can do a redirect to a different
+    app for login.  (StatusCodeRedirect does a WSGI-only redirect which cannot
+    go to a URL not managed by the WSGI stack).'''
+
+    def __init__(self, app):
+        self.app = app
+
+    def __call__(self, environ, start_response):
+        status, headers, app_iter, exc_info = call_wsgi_application(
+            self.app, environ, catch_exc_info=True)
+        if status[:3] == '401':
+            login_url = tg.config.get('auth.login_url', '/auth/')
+            location = tg.url(login_url, return_to=environ['PATH_INFO'])
+            r = exc.HTTPFound(location=location)
+            return r(environ, start_response)
+        start_response(status, headers, exc_info)
+        return app_iter
+
 
 class SfxLoginMiddleware(object):
 
