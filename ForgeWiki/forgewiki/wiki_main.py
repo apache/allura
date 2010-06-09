@@ -235,6 +235,7 @@ class RootController(object):
     def _check_security(self):
         require(has_artifact_access('read'))
 
+    @with_trailing_slash
     @expose()
     def index(self):
         redirect(c.app.root_page_name+'/')

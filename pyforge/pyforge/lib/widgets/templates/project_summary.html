@@ -20,7 +20,7 @@
 	<div class="quik">
 		<a py:for="i, config in enumerate(value.app_configs)"
 		   py:if="config.load().installable"
-		   href="${value.url()}$config.options.mount_point" class="ico-l"><b class="ui-icon ui-icon-gear"></b> <span>$config.options.mount_point</span></a>
+		   href="${config.url()}" class="ico-l"><b class="ui-icon ui-icon-gear"></b> <span>$config.options.mount_point</span></a>
 	</div>
   </div>
 
