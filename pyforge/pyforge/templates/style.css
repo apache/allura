@@ -1079,3 +1079,37 @@ ul.ui-tab li a {
 {
 	background-color: ${color6};
 }
+
+.editable.viewing .editor
+{
+	display: none;
+}
+
+.editable .viewer:hover .edit_btn
+{
+	display: inline;
+}
+
+.editable + .editable
+{
+	margin-top: 1em;
+}
+
+.editable .editor
+{
+	background-color: #ffc;
+	padding: 4px 4px;
+	border: 1px solid #ccc;
+	display: block;
+	overflow: hidden;
+}
+
+.editable .editor .holder_table { margin: 0; }
+.editable .editor .save_controls { width: 110px; }
+.editable .editor.multiline .save_holder { margin-top: 4px; }
+.editable .editor.multiline.overplap
+{
+	position: absolute;
+	z-index: 10;
+}
+
