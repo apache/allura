@@ -11,28 +11,32 @@
   <head>
     <meta content="text/html; charset=UTF-8" http-equiv="content-type" py:replace="''"/>
     <title>$title</title>
-    <style type="text/css">
+    <style type="text/css" py:if="neighborhood.allow_browse">
     #section .base .pad{
       background-color: inherit;
-	border-radius: 0;
-		-moz-border-radius: 0;
-		-webkit-border-radius: 0;
-	box-shadow: rgba(0,0,0, 0) 0 0 0;
-		-moz-box-shadow:  rgba(0,0,0, 0) 0 0 0;
-		-webkit-box-shadow:  rgba(0,0,0, 0) 0 0 0;
+      border-radius: 0;
+        -moz-border-radius: 0;
+        -webkit-border-radius: 0;
+      box-shadow: rgba(0,0,0, 0) 0 0 0;
+        -moz-box-shadow:  rgba(0,0,0, 0) 0 0 0;
+        -webkit-box-shadow:  rgba(0,0,0, 0) 0 0 0;
     }
     </style>
   </head>
 
   <body id="neighborhood_project_list">
-      <py:if test="neighborhood.allow_browse">
-        <p py:if="not len(projects)">No projects found</p>
-        <div py:if="len(projects)" class="list">
-          <py:for each="project in projects">
-            ${c.project_summary.display(value=project)}
-          </py:for>
-				</div>
-      </py:if>
+    <py:if test="neighborhood.homepage">
+      &nbsp;<br/>
+  	  ${Markup(neighborhood.homepage)}
+  	</py:if>
+    <py:if test="neighborhood.allow_browse">
+      <p py:if="not len(projects)">No projects found</p>
+      <div py:if="len(projects)" class="list">
+        <py:for each="project in projects">
+          ${c.project_summary.display(value=project)}
+        </py:for>
+			</div>
+    </py:if>
     
   </body>
 </html>
