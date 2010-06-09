@@ -27,7 +27,7 @@
       <div class="row">
         <div class="column grid_12">
           <py:def function="project(n, subprojects)">
-            <div style="clear:both;><a href="${n.url()}"><font size="+2">${n.name}</font></a></div>
+            <div style="clear:both;"><a href="${n.url()}"><font size="+2">${n.name}</font></a></div>
             <div class="list" style="clear:both">
               <py:for each="p in subprojects">
                 ${c.project_summary.display(value=p)}
