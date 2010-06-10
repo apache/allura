@@ -53,15 +53,18 @@ def find_executable(exe_name):
     
 def make_neighborhoods(uids):
     from pyforge import model as M
-    return (M.Neighborhood.query.get(_id=uid) for uid in uids)
+    result = (M.Neighborhood.query.get(_id=uid) for uid in uids)
+    return (r for r in result if r is not None)
 
 def make_projects(uids):
     from pyforge import model as M
-    return (M.Project.query.get(_id=uid) for uid in uids)
+    result = (M.Project.query.get(_id=uid) for uid in uids)
+    return (r for r in result if r is not None)
 
 def make_users(uids):
     from pyforge import model as M
-    return (M.User.query.get(_id=uid) for uid in uids)
+    result = (M.User.query.get(_id=uid) for uid in uids)
+    return (r for r in result if r is not None)
 
 def make_roles(ids):
     from pyforge import model as M

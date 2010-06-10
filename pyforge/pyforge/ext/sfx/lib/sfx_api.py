@@ -126,7 +126,7 @@ class SFXProjectApi(object):
             ug_name = self._unix_group_name(p.neighborhood, p.shortname)
             args = dict(
                 user_id=user.sfx_userid,
-                group_name=p.shortname,
+                group_name=p.name,
                 short_description=p.short_description,
                 developers = [
                     pr.user.sfx_userid

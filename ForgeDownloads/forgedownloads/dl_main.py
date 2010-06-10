@@ -38,7 +38,7 @@ class ForgeDownloadsApp(Application):
     def sitemap(self):
         menu_id = self.config.options.mount_point.title()
         api = SFXProjectApi()
-        url='http://sf.net/downloads/' + api._unix_group_name(c.project.neighborhood, c.project.shortname) + '/'
+        url='/downloads/' + api._unix_group_name(c.project.neighborhood, c.project.shortname) + '/'
         return [SitemapEntry(menu_id, url)[self.sidebar_menu()] ]
 
     def sidebar_menu(self):

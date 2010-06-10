@@ -20,10 +20,10 @@ class TestRootController(TestController):
     def test_index(self):
         response = self.app.get('/')
         assert response.html.find('h1',{'class':'title'}).string == 'All Projects'
-        projects = response.html.findAll('ul',{'class':'display'})[0].findAll('li')
-        assert len(projects) == 10, len(projects)
-        assert projects[0].find('a').get('href') == '/adobe/'
-        assert projects[1].find('img').get('alt') == 'adobe-1 Logo'
+        projects = response.html.findAll('div',{'class':'border card'})
+        assert len(projects) == 7, len(projects)
+        assert projects[0].find('a').get('href') == '/adobe/adobe-1/'
+        assert projects[0].find('img').get('alt') == 'adobe-1 Logo'
         cat_links = response.html.find('div',{'id':'sidebar'}).findAll('li')
         assert len(cat_links) == 3
         assert cat_links[0].find('a').get('href') == '/browse/clustering'

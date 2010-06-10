@@ -985,6 +985,6 @@ class TicketRestController(object):
             raise Exception('save_ticket must be a POST request')
         if c.app.globals.milestone_names is None:
             c.app.globals.milestone_names = ''
-        self.ticket.update(ticket_form, c.app.globals)
+        self.ticket.update(ticket_form)
         redirect('.')
 
