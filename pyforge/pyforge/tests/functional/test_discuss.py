@@ -55,7 +55,7 @@ class TestDiscuss(TestController):
         r = self._make_post('This is a post')
         assert 'This is a post' in r, r
         for link in r.html.findAll('a'):
-            if 'ermalink' in str(link):
+            if 'ui-icon-link' in str(link):
                 break
         post_link = str(link['href'])
         r = self.app.get(post_link)
@@ -66,14 +66,14 @@ class TestDiscuss(TestController):
         r = r.follow()
         assert 'This is a new post' in r, r
         r = self.app.get(post_link)
-        assert str(r).count('This is a new post') == 2
+        assert str(r).count('This is a new post') == 3
         r = self.app.post(post_link + 'reply',
                           params=dict(text='Tis a reply'),
                           headers={'Referer':post_link.encode("utf-8")})
         r = self.app.get(thread_link)
         assert 'Tis a reply' in r, r
         permalinks = [ link['href'].encode('utf-8') for link in r.html.findAll('a')
-                       if 'Permalink' in str(link) ]
+                       if 'ui-icon-link' in str(link) ]
         self.app.post(permalinks[1]+'flag')
         self.app.post(permalinks[1]+'moderate', params=dict(delete='delete'))
         self.app.post(permalinks[0]+'moderate', params=dict(spam='spam'))
@@ -95,7 +95,7 @@ class TestAttachment(TestController):
                           headers={'Referer':self.thread_link})
         r = r.follow()
         for link in r.html.findAll('a'):
-            if 'ermalink' in str(link):
+            if 'ui-icon-link' in str(link):
                 break
         self.post_link = str(link['href'])
 

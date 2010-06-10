@@ -1,28 +1,53 @@
 <div xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:py="http://genshi.edgewall.org/">
+     xmlns:xi="http://www.w3.org/2001/XInclude"
+     xmlns:py="http://genshi.edgewall.org/" py:strip="True">
+     <xi:include href="${g.pyforge_templates}/lib.html"/>
   <?python from pyforge.lib.security import has_artifact_access ?>
-  <py:def function="show_post(post, indent, supress_promote=False)">
-    ${widgets.post.display(value=post, show_subject=show_subject, indent=indent, supress_promote=supress_promote)}
-    <py:for each="child in post.descendants()" py:if="child.parent_id == post._id">
-      ${show_post(child, indent+1)}
-    </py:for>
-  </py:def>
-  <py:with vars="posts=value.find_posts(offset=offset, limit=pagesize)">
-    <div py:if="not posts">No posts found</div>
-    <div py:if="posts">
-      <py:for each="t in value.create_post_threads(posts)">
-        ${show_post(t['post'], 0, supress_promote=True)}
-      </py:for>
-    </div>
-  </py:with>
-  <div id="allow_moderate" py:if="has_artifact_access('moderate', value)()"/>
+  <div id="comment">
+    <h2 class="fleft"><a href="${value.url()}">Discussion</a></h2>
+    <py:if test="has_artifact_access('post', value)()">
+      <a href="#new_post_holder" class="btn ico"><b class="ui-icon ui-icon-plus"></b> <span>$new_post_text</span></a>
+    </py:if>
+    <py:def function="show_post(post, indent, supress_promote=False)">
+      <li>
+        ${widgets.post.display(value=post, show_subject=show_subject, indent=indent, supress_promote=supress_promote)}
+        <ul>
+        <py:for each="child in post.descendants()" py:if="child.parent_id == post._id">
+          <li>${show_post(child, indent+1)}</li>
+        </py:for>
+        </ul>
+      </li>
+    </py:def>
+    <py:with vars="posts=value.find_posts(offset=offset, limit=pagesize)">
+      <div py:if="not posts">No posts found</div>
+        <py:if test="posts">
+          <ul py:for="t in value.create_post_threads(posts)">
+            ${show_post(t['post'], 0, supress_promote=True)}
+          </ul>
+        </py:if>
+    </py:with>
+    <div id="allow_moderate" py:if="has_artifact_access('moderate', value)()"/>
+    <py:if test="has_artifact_access('post', value)()">
+      <div id="tag_thread_holder" style="display:none">
+        ${widgets.tag_post.display(value=value,submit_text='Tag Post', action=value.url() + 'tag')}
+      </div>
+    </py:if>
+  </div>
   <py:if test="has_artifact_access('post', value)()">
-    <input id="new_post_create" type="button" class="ui-state-default ui-button ui-button-text" value="$new_post_text"/>
-    <div id="new_post_holder" style="display:none">
-      ${widgets.edit_post.display(submit_text='New Post', action=value.url() + 'post')}
-    </div>
-    <div id="tag_thread_holder" style="display:none">
-      ${widgets.tag_post.display(value=value,submit_text='Tag Post', action=value.url() + 'tag')}
+    <div id="new_post_holder">
+      <a name="comment"></a>
+      <div class="row reply">
+      	<div class="column grid_1 tcenter">
+      		<p class="gravatar">
+      			${gravatar(c.user.preferences.email_address)}<br/><br/>
+      			<a href="${c.user.url()}">$c.user.display_name</a>
+      		</p>
+      	</div>
+      	<div class="column grid_8">
+          ${widgets.edit_post.display(submit_text='New Post', action=value.url() + 'post')}
+        </div>
+      </div>
     </div>
   </py:if>
+  &nbsp;
 </div>

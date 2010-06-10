@@ -173,7 +173,7 @@
     </form>
     <div class="clear">&nbsp;</div>
 
-    <div py:with="thread=ticket.discussion_thread()" id="#comment">
+    <div py:with="thread=ticket.discussion_thread()" id="comment">
       <h2>Discussion</h2>
       <hr class="clear clearfix"/>
       ${c.thread.display(value=thread,new_post_text="New Comment")}

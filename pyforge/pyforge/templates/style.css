@@ -801,7 +801,7 @@ ul.ui-tab li a {
 	font-size: 1.2em;
 }
 .pad ul li, .pad ol li {font-size: .9em;}
-.pad ul li ul li, .pad ol li ol li  {font-size: 100%;}
+.pad ul li ul li, .pad ol li ol li, #comment ul li {font-size: 100%;}
 .content {padding: 0 20px 20px;}
 .actions {position: absolute; right: 10px; top: 5px; font-size: .85em; text-transform: uppercase; width: 100%;}
 .actions .btn {background: none; border: none; text-shadow: none; padding-right: .8em; float: right;}
@@ -826,9 +826,11 @@ ul.ui-tab li a {
 #comment .row .options {position: absolute; top: 10px; right: 10px; padding: 0; font-size: .85em;}
 #comment .row .options a:first-child {font-weight: bold;}
 #comment .row .options a {color: ${color3};}
-#comment ul {list-style: none; margin: 10px 0 0 5px; padding: 0; float: right; clear: right;}
-#comment ul ul ul {margin: 0 0 0 20px !important;}
-#comment ul ul {margin: 0 0 0 40px !important;}
+#comment ul {list-style: none; margin: 5px 0 0 0; padding: 0; float: right; clear: right; width:98%;}
+#comment ul ul li {margin-right: 20px;}
+#comment ul ul {margin: 0 !important;}
+#comment ul ul ul li {margin-right: 0 !important;}
+#comment ul .reply {border-top-width: 0; margin-top: 0 !important; background-color: #fff;overflow:auto;padding-bottom:30px;}
 
 #comment ul .row {margin: 0;}
 #comment ul ul .row {
@@ -839,7 +841,7 @@ ul.ui-tab li a {
 	border-bottom-left-radius: 0;
 		-webkit-border-bottom-left-radius: 5px;
 		-moz-border-radius-bottomleft: 5px;
-	margin: -3px 20px 0 0;
+	margin: -3px 0 0 0;
 	position: relative;
 	z-index: 0;
 }

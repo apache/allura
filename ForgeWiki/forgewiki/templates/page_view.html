@@ -67,11 +67,10 @@
             </div>
           </py:for>
         </div>
-        <div style="clear: both"/>
-        <div py:if="page.discussion_thread() and c.app.show_discussion" py:with="thread=page.discussion_thread()" id="#comment">
-          <h2><a href="${thread.url()}">Discussion</a></h2>
-          ${c.thread.display(value=thread)}
-        </div>
+      </div>
+      <div style="clear:both;"/>
+      <div py:if="page.discussion_thread() and c.app.show_discussion" py:with="thread=page.discussion_thread()">
+        ${c.thread.display(value=thread)}
       </div>
     </div>
   </body>

@@ -12,16 +12,20 @@
   </head>
   
   <body>
-    <div id="loginform" class="span-18 last">
-      <form action="/auth/do_login" method="post" class="loginfields">
-        <input type="hidden" name="return_to" value="$return_to"/>
-        <h2><span>Password Login</span></h2>
-        <div class="span-3 clear"><label for="username">Username:</label></div>
-        <div class="span-10 last"><input type="text" id="username" name="username"/></div>
-        <div class="span-3 clear"><label for="password">Password:</label></div>
-        <div class="span-10 last"><input type="password" id="password" name="password"/></div>
-        <div class="push-3 span-15 clear last">
-          <input type="submit" id="submit" value="Login" class="ui-state-default ui-button ui-button-text"/>
+    <div id="loginform" class="content">
+      <div class="row">
+        <div class="column grid_12">
+          <form action="/auth/do_login" method="post" class="loginfields">
+            <input type="hidden" name="return_to" value="$return_to"/>
+            <h2><span>Password Login</span></h2>
+            <div class="span-3 clear"><label for="username">Username:</label></div>
+            <div class="span-10 last"><input type="text" id="username" name="username"/></div>
+            <div class="span-3 clear"><label for="password">Password:</label></div>
+            <div class="span-10 last"><input type="password" id="password" name="password"/></div>
+            <div class="push-3 span-15 clear last">
+              <input type="submit" id="submit" value="Login" class="ui-state-default ui-button ui-button-text"/>
+            </div>
+          </form>
         </div>
       </form>
     </div>
@@ -40,7 +44,7 @@
         <div class="push-3 span-15 clear last">
           <input type="submit" id="submit" value="Login" class="ui-state-default ui-button ui-button-text"/>
         </div>
-      </form>
+      </div>
     </div>
   </body>
 </html>

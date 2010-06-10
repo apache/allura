@@ -84,14 +84,9 @@ class TagPost(ew.SimpleForm):
 
 class EditPost(ew.SimpleForm):
     show_subject=False
-
-    # this ickiness is to override the default submit button
-    def __call__(self, **kw):
-        result = super(EditPost, self).__call__(**kw)
-        submit_button = ffw.SubmitButton(label=result['submit_text'])
-        result['extra_fields'] = [submit_button]
-        result['buttons'] = [submit_button]
-        return result
+    value=None
+    template='pyforge.lib.widgets.templates.edit_post'
+    params=['value']
 
     @property
     def fields(self):
