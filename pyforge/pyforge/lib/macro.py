@@ -4,7 +4,7 @@ import logging
 
 import ew
 import pymongo
-from pylons import c, request
+from pylons import c, g, request
 
 from . import helpers as h
 
@@ -52,7 +52,7 @@ def projects(category=None, display_mode='grid', sort='last_updated'):
     else:
         pq.sort('last_updated', pymongo.DESCENDING)
     pl = ProjectList()
-    ew.ResourceManager.get().register(pl)
+    g.resource_manager.register(pl)
     response = pl.display(projects=pq.all(), display_mode=display_mode)
     return response
 
@@ -70,7 +70,7 @@ def include(ref=None, **kw):
     else:
         included.add(artifact)
     sb = Include()
-    ew.ResourceManager.get().register(sb)
+    g.resource_manager.register(sb)
     response = sb.display(artifact=artifact, attrs=kw)
     return response
     

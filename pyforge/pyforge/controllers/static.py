@@ -9,17 +9,7 @@ from pylons import c, g
 from pyforge.lib import helpers as h
 from pyforge import model as M
 
-class StaticController(object):
-    '''Controller for mounting static resources in tools by the tool
-    name'''
-
-    @expose()
-    def _lookup(self, ep_name, *remainder):
-        for ep in pkg_resources.iter_entry_points('pyforge', ep_name):
-            result = StaticAppController(ep)
-            # setattr(self, ep_name, result)
-            return result, ['default'] + list(remainder)
-        raise exc.HTTPNotFound, ep_name
+class NewForgeController(object):
 
     @expose()
     @without_trailing_slash
@@ -50,27 +40,3 @@ class StaticController(object):
         html = g.markdown.convert(markdown)
         return html
         
-
-class StaticAppController(object):
-
-    def __init__(self, ep):
-        self.ep = ep
-        self.fn = pkg_resources.resource_filename(
-            ep.module_name, 'nf/%s' % ep.name)
-
-    @expose()
-    def default(self, *args):
-        # Stick the !@#$!@ extension back on args[-1]
-        fn = request.path.rsplit('/', 1)[-1]
-        ext = fn.rsplit('.', 1)[-1]
-        args = list(args[:-1]) + [ args[-1] + '.' + ext ]
-        path = os.path.join(self.fn, '/'.join(args))
-        mtype, menc = mimetypes.guess_type(path)
-        if mtype:
-            response.headers['Content-Type'] = mtype.encode('utf-8')
-        if menc: # pragma no cover
-            response.headers['Content-Encoding'] = menc.encode('utf-8')
-        try:
-            return open(path, 'rb')
-        except IOError:
-            raise exc.HTTPNotFound, request.path

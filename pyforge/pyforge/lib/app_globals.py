@@ -26,6 +26,8 @@ from carrot.messaging import Publisher
 from pymongo.bson import ObjectId
 from paste.deploy.converters import asint, asbool
 
+import ew
+
 from pyforge import model as M
 from pyforge.lib.markdown_extensions import ForgeExtension
 
@@ -98,6 +100,10 @@ class Globals(object):
         return pygments.highlight(text, lexer, self.pygments_formatter)
 
     @property
+    def resource_manager(self):
+        return request.environ.get('ew.resource_manager', ew.ResourceManager())
+
+    @property
     def publisher(self):
         from .custom_middleware import environ
         if 'allura.carrot.publisher' not in environ:
@@ -128,13 +134,13 @@ class Globals(object):
         
     def forge_static(self, resource):
         return ''.join(
-            [ config['static_root'],
+            [ config['static.url_base'],
               resource ])
         
     def app_static(self, resource, app=None):
         app = app or c.app
         return ''.join(
-            [ config['static_root'],
+            [ config['static.url_base'],
               app.config.tool_name,
               '/',
               resource ])

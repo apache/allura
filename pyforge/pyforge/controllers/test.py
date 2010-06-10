@@ -21,7 +21,7 @@ from pyforge import model as M
 from .root import RootController
 from .project import ProjectController
 from .auth import AuthController
-from .static import StaticController
+from .static import NewForgeController
 from .search import SearchController
 from .error import ErrorController
 from .rest import RestController

@@ -1,3 +1,4 @@
+import os
 import logging
 from contextlib import contextmanager
 from threading import local
@@ -5,6 +6,8 @@ from random import random
 
 import tg
 import pylons
+import pkg_resources
+from paste import fileapp
 from pylons.util import call_wsgi_application
 from tg.controllers import DecoratedController
 from webob import exc, Request
@@ -55,6 +58,49 @@ class ForgeMiddleware(object):
             yield x
         self._cleanup_request(environ)
 
+class StaticFilesMiddleware(object):
+    '''Custom static file middleware
+
+    Map everything in pyforge/public/nf/* to <script_name>/*
+    For each plugin, map everything <module>/nf/<ep_name>/* to <script_name>/<ep_name>/*
+    '''
+    CACHE_MAX_AGE=60*60*24*365
+
+    def __init__(self, app, script_name=''):
+        self.app = app
+        self.script_name = script_name
+        self.directories = [
+            (self.script_name + ep.name + '/', ep)
+            for ep in pkg_resources.iter_entry_points('pyforge') ]
+
+    def __call__(self, environ, start_response):
+        environ['static.script_name'] = self.script_name
+        if not environ['PATH_INFO'].startswith(self.script_name):
+            return self.app(environ, start_response)
+        try:
+            app = self.get_app(environ)
+            app.cache_control(public=True, max_age=self.CACHE_MAX_AGE)
+            return app(environ, start_response)
+        except OSError:
+            return exc.HTTPNotFound()(environ, start_response)
+
+    def get_app(self, environ):
+        for prefix, ep in self.directories:
+            if environ['PATH_INFO'].startswith(prefix):
+                filename = environ['PATH_INFO'][len(prefix):]
+                file_path = pkg_resources.resource_filename(
+                    ep.module_name, os.path.join(
+                        'nf',
+                        ep.name,
+                        filename))
+                return fileapp.FileApp(file_path)
+        filename = environ['PATH_INFO'][len(self.script_name):]
+        file_path = pkg_resources.resource_filename(
+            'pyforge', os.path.join(
+                'public', 'nf',
+                filename))
+        return fileapp.FileApp(file_path)
+
 class LoginRedirectMiddleware(object):
     '''Actually converts a 401 into a 302 so we can do a redirect to a different
     app for login.  (StatusCodeRedirect does a WSGI-only redirect which cannot
@@ -94,7 +140,6 @@ class SfxLoginMiddleware(object):
         return resp(environ, start_response)
 
     def handle(self, request):
-        session = request.environ['beaker.session']
         request.environ['allura.sfx_session_manager'] = self.sfx_session_mgr
 
 class SSLMiddleware(object):

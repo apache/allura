@@ -11,7 +11,7 @@ import ming
 from pyforge.config.app_cfg import base_config
 from pyforge.config.environment import load_environment
 from pyforge.config.app_cfg import ForgeConfig
-from pyforge.lib.custom_middleware import StatsMiddleware, SSLMiddleware
+from pyforge.lib.custom_middleware import StatsMiddleware, SSLMiddleware, StaticFilesMiddleware
 
 __all__ = ['make_app']
 
@@ -56,11 +56,6 @@ def _make_core_app(root, global_conf, full_stack=True, **app_conf):
     # Configure MongoDB
     ming.configure(**app_conf)
 
-    # Configure EW
-    if hasattr(ew.ResourceManager, 'configure'):
-        ew.ResourceManager.configure(compress=not asbool(global_conf['debug']))
-    ew.ResourceManager.register_all_resources()
-
     # Wrap your base TurboGears 2 application with custom middleware here
     # app = MingMiddleware(app)
     if app_conf.get('stats.sample_rate', '0.25') != '0':
@@ -68,6 +63,14 @@ def _make_core_app(root, global_conf, full_stack=True, **app_conf):
 
     if asbool(app_conf.get('auth.method', 'local')=='sfx'):
         app = SSLMiddleware(app)
+
+    app = ew.ResourceMiddleware(
+        app,
+        compress=not asbool(global_conf['debug']),
+        script_name=app_conf.get('ew.script_name', '/_ew_resources/'),
+        url_base=app_conf.get('ew.url_base', '/_ew_resources/'))
+
+    app = StaticFilesMiddleware(app, app_conf.get('static.script_name'))
 
     return app
     

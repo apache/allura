@@ -18,7 +18,7 @@ def test_app_globals():
     g.oid_session()
     g.set_project('test')
     g.set_app('hello')
-    assert g.app_static('css/style.css') == '/nf/hello_forge/css/style.css', g.app_static('css/style.css')
+    assert g.app_static('css/style.css') == '/nf/_static_/hello_forge/css/style.css', g.app_static('css/style.css')
     assert g.url('/foo', a='foo bar') == 'http://localhost:80/foo?a=foo+bar', g.url('/foo', a='foo bar')
     assert g.url('/foo') == 'http://localhost:80/foo', g.url('/foo')
 

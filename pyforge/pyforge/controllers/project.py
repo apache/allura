@@ -28,7 +28,7 @@ from pyforge.lib import plugin
 from pyforge.lib import exceptions as forge_exc
 from .auth import AuthController
 from .search import SearchController, ProjectBrowseController
-from .static import StaticController
+from .static import NewForgeController
 
 from pyforge.model.session import main_orm_session
 
@@ -190,7 +190,7 @@ class HostNeighborhoodController(BaseController, NeighborhoodController):
 
     auth = AuthController()
     error = ErrorController()
-    nf = StaticController()
+    nf = NewForgeController()
     search = SearchController()
 
 class ProjectController(object):

@@ -21,7 +21,7 @@ from pyforge import model as M
 from pyforge.lib.widgets import project_list as plw
 from .auth import AuthController
 from .search import SearchController, ProjectBrowseController
-from .static import StaticController
+from .static import NewForgeController
 from .project import NeighborhoodController, HostNeighborhoodController
 from .oembed import OEmbedController
 from .rest import RestController
@@ -50,7 +50,7 @@ class RootController(BaseController):
     
     auth = AuthController()
     error = ErrorController()
-    nf = StaticController()
+    nf = NewForgeController()
     search = SearchController()
     rest = RestController()
 
@@ -61,12 +61,7 @@ class RootController(BaseController):
         self.browse = ProjectBrowseController()
         super(RootController, self).__init__()
 
-    @property
-    def _ew_resources(self):
-        return ew.ResourceManager.get()
-
     def _setup_request(self):
-        uid = session.get('userid', None)
         c.project = c.app = None
         c.user = plugin.AuthenticationProvider.get(request).authenticate_request()
         c.queued_messages = []
