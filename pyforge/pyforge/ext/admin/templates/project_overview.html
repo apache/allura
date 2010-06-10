@@ -99,16 +99,22 @@
                 </li>
                 <hr class="clear clearfix" />
                 <li>
-                    <label for="icon">Icon:</label>
-                    <div class="editable viewing">
-                        <div class="viewer" py:if="c.project.icon"><img src="${c.project.url()}/icon"/></div>
-                        <div class="viewer" py:if="not c.project.icon">No icon has been created.</div>
-                        <div class="editor">${file_field('icon', 'File')}</div>
+                  <div class="row dual">
+                    <div class="column" style="margin-right:0">
+                      <label for="icon">Icon:</label>
                     </div>
-                    <div py:if="c.project.icon">
-                        <input type="submit" name="delete_icon" value="Delete Icon"
-                               class="ui-state-default ui-button ui-button-text clear clearfix"/>
+                    <div class="column grid_10" style="margin-left:0">
+                      <div class="editable viewing">
+                          <div class="viewer" py:if="c.project.icon"><img src="${c.project.url()}/icon"/></div>
+                          <div class="viewer" py:if="not c.project.icon">No icon has been created.</div>
+                          <div class="editor">${file_field('icon', '')}</div>
+                      </div>    
+                          <div py:if="c.project.icon">
+                              <input type="submit" name="delete_icon" value="Delete Icon"
+                                     class="ui-state-default ui-button ui-button-text clear clearfix"/>
+                          </div>
                     </div>
+                  </div>
                 </li>
                 <hr class="clear clearfix" />
                 <li>
@@ -120,8 +126,14 @@
                 </li>
                 <hr class="clear clearfix" />
                 <li>
-                    <label for="description">Description:</label>
-                    ${c.markdown_editor.display(name='description',value=c.project.description)}
+                  <div class="row dual">
+                    <div class="column" style="margin-right:0">
+                      <label for="description">Description:</label>
+                    </div>
+                    <div class="column grid_10" style="margin-left:0">
+                      ${c.markdown_editor.display(name='description',value=c.project.description)}
+                    </div>
+                  </div>
                 </li>
                 <hr class="clear clearfix" />
                 <li>
@@ -146,20 +158,14 @@
                 </li>
                 <hr class="clear clearfix" />
                 <li>
-                    <label for="show_download_button">Downloads:</label>
-                    <input name="show_download_button" type="checkbox"
-                           checked="${c.project.show_download_button and 'CHECKED' or None}"/>
-                </li>
-                <hr class="clear clearfix" />
-                <li>
                     <label>&nbsp;</label>
                     <input type="submit" value="Save"
-                           class="ui-state-default ui-button ui-button-text"/>
+                          />
                     <input type="submit" value="Delete Project" name="delete"
-                           class="ui-state-default ui-button ui-button-text"
+                          
                            py:if="not c.project.deleted"/>
                     <input type="submit" value="Undelete Project" name="undelete"
-                           class="ui-state-default ui-button ui-button-text"
+                          
                            py:if="c.project.deleted"/>
                 </li>
             </ol>

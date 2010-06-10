@@ -17,33 +17,33 @@
       <div class="row">
         <div class="column grid_12">
           <form method="POST" action="set_options">
-			<ol>
-				<li>
-					<label for="title">Show discussion:</label>
+            <ol>
+              <li>
+                <label for="title">Show discussion:</label>
                 <input type="checkbox" name="show_discussion" id="show_discussion" checked="${app.show_discussion or None}"
                        py:if="allow_config"/>
                 <span py:if="not allow_config">${app.show_discussion}</span>
-				</li>
+              </li>
               <hr/>
               <li>
-					<label for="title">Show left bar:</label>
+                <label for="title">Show left bar:</label>
                 <input type="checkbox" name="show_left_bar" id="show_left_bar" checked="${app.show_left_bar or None}"
                        py:if="allow_config"/>
                 <span py:if="not allow_config">${app.show_left_bar}</span>
-				</li>
+              </li>
               <hr/>
               <li>
-					<label for="title">Show right bar:</label>
+                <label for="title">Show right bar:</label>
                 <input type="checkbox" name="show_right_bar" id="show_right_bar" checked="${app.show_right_bar or None}"
                        py:if="allow_config"/>
                 <span py:if="not allow_config">${app.show_right_bar}</span>
-				</li>
+              </li>
               <hr/>
-				<li>
-					<label>&nbsp;</label>
+              <li>
+                <label>&nbsp;</label>
                 <input type="submit" py:if="allow_config" value="Save"/>
-				</li>
-			</ol>
+              </li>
+            </ol>
           </form>
         </div>
       </div>

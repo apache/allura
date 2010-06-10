@@ -72,31 +72,41 @@
             </tbody>
           </table>
           <input type="button" id="add_forum" value="Add another forum"
-                 class="ui-state-default ui-button ui-button-text"/>
+                />
           <div id="add_forum_form" style="display:none">
-            <div class="span-3 clear"><label>Name:</label></div>
-            <div class="span-13 last"><input type="text" name="new_forum.name" class="title wide"/></div>
-            <div class="span-3 clear"><label>Short Name:</label></div>
-            <div class="span-13 last"><input type="text" name="new_forum.shortname" class="title wide"/></div>
-            <div class="span-3 clear"><label>Parent Forum:</label></div>
-            <div class="span-13 last">
-              <select name="new_forum.parent" class="title">
-                <option value="">None</option>
-                <option py:for="f in app.forums" value="$f._id">$f.name</option>
-              </select>
-            </div>
-            <div class="span-3 clear"><label>Description:</label></div>
-            <div class="span-13 last"><textarea name="new_forum.description" class="title" style="height:50px; width:100%"/></div>
-            <div class="span-3 clear"><label>Icon</label></div>
-            <div class="span-13 last">${file_field('new_forum.icon', '')}</div>
-            <div class="push-3 clear span-13 last">
-              <input type="submit" id="new_forum.create" name="new_forum.create" value="Create Forum"
-                     class="ui-state-default ui-button ui-button-text"/>
-              <input type="button" id="add_forum_cancel" value="Cancel"
-                     class="ui-state-default ui-button ui-button-text"/>
-            </div>
+            <ol>
+              <li>
+       				  <label>Name:</label>
+       				  <input type="text" name="new_forum.name"/>
+              </li>
+              <li>
+       				  <label>Short Name:</label>
+       				  <input type="text" name="new_forum.shortname"/>
+              </li>
+              <li>
+       				  <label>Parent Forum:</label>
+       				  <select name="new_forum.parent">
+                  <option value="">None</option>
+                  <option py:for="f in app.forums" value="$f._id">$f.name</option>
+                </select>
+              </li>
+              <li>
+       				  <label>Description:</label>
+       				  <textarea name="new_forum.description" style="height:50px;"/>
+              </li>
+              <li>
+       				  <label>Icon:</label>
+       				  ${file_field('new_forum.icon', '')}
+              </li>
+              <li>
+       				  <label>&nbsp;</label>
+       				  <input type="submit" id="new_forum.create" name="new_forum.create" value="Create Forum"
+                      />
+                <input type="button" id="add_forum_cancel" value="Cancel"
+                      />
+              </li>
+            </ol>
           </div>
-          <div class="clear"/>
         </form>
       </div>
     </div>

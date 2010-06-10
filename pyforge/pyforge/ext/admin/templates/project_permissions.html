@@ -43,7 +43,7 @@
                       <tr py:for="i, r in enumerate(h.make_roles(role_ids))">
                         <td>${r.display()}</td>
                         <td>${r.user._id and r.user.username or ''}</td>
-                        <td><input type="submit" value="Remove" name="role-${i}.delete" class="ui-state-default ui-button ui-button-text" /></td>
+                        <td><input type="submit" value="Remove" name="role-${i}.delete" /></td>
                       </tr>
                       <tr>
                         <td>
@@ -59,7 +59,7 @@
                           <input name="new.username" class="title"/>
                         </td>
                         <td>
-                          <input type="submit" name="new.add" value="Add Permission" class="ui-state-default ui-button ui-button-text"/>
+                          <input type="submit" name="new.add" value="Add Permission"/>
                         </td>
                       </tr>
                     </tbody>

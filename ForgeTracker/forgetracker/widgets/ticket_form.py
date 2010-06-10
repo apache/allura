@@ -20,14 +20,14 @@ class TicketCustomFields(ew.CompoundField):
                         opt = opt[1:]
                         selected = True
                     options.append(ew.Option(label=opt,html_value=opt,py_value=opt,selected=selected))
-                fields.append(ew.SingleSelectField(label=field.label, name=str(field.name), attrs={'class':"title wide"},
+                fields.append(ew.SingleSelectField(label=field.label, name=str(field.name),
                     options=options))
             elif field.type == 'boolean':
                 fields.append(ew.Checkbox(label=field.label, name=str(field.name), suppress_label=True))
             elif field.type == 'sum' or field.type == 'number':
-                fields.append(ew.NumberField(label=field.label, name=str(field.name), attrs={'class':"title wide"}))
+                fields.append(ew.NumberField(label=field.label, name=str(field.name)))
             else:
-                fields.append(ew.TextField(label=field.label, name=str(field.name), attrs={'class':"title wide"}))
+                fields.append(ew.TextField(label=field.label, name=str(field.name)))
         return fields
 
 class EditTicketCustomFields(TicketCustomFields):
@@ -50,15 +50,15 @@ class GenericTicketForm(ew.SimpleForm):
     @property
     def fields(self):
         fields = [
-            ew.TextField(name='summary', label='Name', attrs={'class':"title wide"}, validator=fev.UnicodeString(not_empty=True)),
+            ew.TextField(name='summary', label='Name', validator=fev.UnicodeString(not_empty=True)),
             ffw.MarkdownEdit(label='Description',name='description'),
-            ew.SingleSelectField(name='status', label='Status', attrs={'class':"title wide"},
+            ew.SingleSelectField(name='status', label='Status',
                 options=lambda: model.Globals.for_current_tracker().status_names.split()),
             ffw.ProjectUserSelect(name='assigned_to', label='Assigned To'),
-            ew.SingleSelectField(name='milestone', label='Milestone', attrs={'class':"title wide"},
+            ew.SingleSelectField(name='milestone', label='Milestone',
                 options=lambda: [ew.Option(label='None',html_value='',py_value='')] +
                                 model.Globals.for_current_tracker().milestone_names.split()),
-            ffw.LabelEdit(label='Tags',name='labels', className='title wide ticket_form_tags'),
+            ffw.LabelEdit(label='Tags',name='labels', className='ticket_form_tags'),
             ew.SubmitButton(label=self.submit_text,name='submit',
                 attrs={'class':"ui-button ui-widget ui-state-default ui-button-text-only"}),
             ew.HiddenField(name='ticket_num', validator=fev.Int(if_missing=None)),

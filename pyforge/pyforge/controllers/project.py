@@ -344,7 +344,7 @@ class NeighborhoodAdminController(object):
             g.set_app('admin')
         else:
             admin_url = self.neighborhood.url()+'_admin/'
-            c.custom_sidebar_menu = [SitemapEntry('Neighborhood Admin'),
+            c.custom_sidebar_menu = [
                      SitemapEntry('Overview', admin_url+'overview', className='nav_child'),
                      SitemapEntry('Permissions', admin_url+'permissions', className='nav_child'),
                      SitemapEntry('Awards', admin_url+'accolades', className='nav_child')]

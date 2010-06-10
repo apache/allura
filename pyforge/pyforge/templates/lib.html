@@ -122,7 +122,7 @@
   </py:def>
 
   <py:def function="file_field(name, label)">
-    <label for="$name">$label</label><br/>
+    <label for="$name" py:if="label">$label</label><br py:if="label"/>
     <input type="file" id="$name" name="$name" class="text" /><br/>
   </py:def>
 
@@ -159,7 +159,7 @@
   </py:def>
 
   <py:def function="submit_button(value, name=None)">
-    <input type="submit" name="$name" value="$value" class="ui-state-default ui-button ui-button-text"/><br/>
+    <input type="submit" name="$name" value="$value"/><br/>
   </py:def>
 
   <py:def function="gravatar(email, title=None, **kw)">

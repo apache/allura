@@ -249,16 +249,16 @@ class TestForum(TestController):
                 subject='AAA',
                 text='aaa')).follow()
         url = thread.request.url
-        rep_url = thread.html.find('div',{'class':'reply_post_form span-19 last clear'}).find('form').get('action')
+        rep_url = thread.html.find('div',{'class':'row reply_post_form'}).find('form').get('action')
         thread = self.app.post(str(rep_url), params=dict(
                 subject='BBB',
                 text='bbb'))
         thread = self.app.get(url)
         # beautiful soup is getting some unicode error here - test without it
-        assert '<div class="display_post content clear"><p>aaa</p></div>' in thread.response.body
-        assert '<div class="display_post content clear"><p>bbb</p></div>' in thread.response.body
+        assert '<div class="display_post"><p>aaa</p></div>' in thread.response.body
+        assert '<div class="display_post"><p>bbb</p></div>' in thread.response.body
         assert thread.response.body.count('<div class="promote_to_thread_form') == 1
-        assert thread.response.body.count('<div class="reply_post_form') == 2
+        assert thread.response.body.count('<div class="row reply_post_form') == 2
         assert thread.response.body.count('<div class="edit_post_form') == 2
 
     def test_sidebar_menu(self):

@@ -17,19 +17,19 @@
       <div class="row">
         <div class="column grid_12">
           <form method="POST" action="set_home">
-			<ol>
-				<li>
-					<label for="title">Wiki Home Page:</label>
+            <ol>
+              <li>
+                <label for="title">Wiki Home Page:</label>
                 <input type="text" name="new_home" id="new_home" value="${home}"
                        py:if="allow_config"/>
                 <span py:if="not allow_config">${home}</span>
-				</li>
+              </li>
               <hr/>
-				<li>
-					<label>&nbsp;</label>
+              <li>
+                <label>&nbsp;</label>
                 <input type="submit" py:if="allow_config" value="Save"/>
-				</li>
-			</ol>
+              </li>
+            </ol>
           </form>
         </div>
       </div>

@@ -26,7 +26,7 @@
             </p>
             <form method="POST" action="del_api_token">
               <input type="submit" value="Delete API Token"
-                     class="ui-state-default ui-button ui-button-text"/>
+                    />
             </form>
           </py:if>
           <py:if test="not api_token">
@@ -34,7 +34,7 @@
           </py:if>
           <form method="POST" action="gen_api_token">
             <input type="submit" value="(Re)generate API Token"
-                     class="ui-state-default ui-button ui-button-text"/>
+                    />
           </form>
           <h2>Subscriptions</h2>
           ${c.form.display(action='update_subscriptions', value=dict(subscriptions=subscriptions))}

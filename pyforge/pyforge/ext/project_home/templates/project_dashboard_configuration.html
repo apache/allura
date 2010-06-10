@@ -32,13 +32,13 @@
               </select>
             </div>
             <div class="span-5 last">
-              <input type="submit" value="Update Layout" class="ui-state-default ui-button ui-button-text"/>
+              <input type="submit" value="Update Layout"/>
             </div>
             <div py:for="i, div in enumerate(layout)" style="margin-bottom: 1em; border: 1px solid #ddd" class="span-18 last">
               <div class="span-3 clear"><label for="divs-${i}.name">Div Name</label></div>
               <div class="span-14 last">
                 <input name="divs-${i}.name" id="divs-${i}.name" value="$div.name" class="title span-10"/> &nbsp;
-                <input type="submit" name="divs-${i}.del" value="Remove Div" class="ui-state-default ui-button ui-button-text"/>
+                <input type="submit" name="divs-${i}.del" value="Remove Div"/>
               </div>
               <div class="span-3 clear"><label>Widgets</label></div>
               <div class="span-14 last">
@@ -61,18 +61,18 @@
                       </td>
                       <td>
                         <input type="submit" name="divs-${i}.content-${j}.del"
-                               value="Remove Widget" class="ui-state-default ui-button ui-button-text"/>
+                               value="Remove Widget"/>
                       </td>
                     </tr>
                   </tbody>
                 </table>
               </div>
               <div class="push-3 span-14 clear last">
-                <input type="submit" name="divs-${i}.new_widget" value="Add new widget" class="ui-state-default ui-button ui-button-text"/>
+                <input type="submit" name="divs-${i}.new_widget" value="Add new widget"/>
               </div>
             </div>
             <div class="clear">
-              <input type="submit" name="new_div" value="Add new div" class="ui-state-default ui-button ui-button-text"/>
+              <input type="submit" name="new_div" value="Add new div"/>
             </div>
           </form>
         </div>

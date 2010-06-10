@@ -37,7 +37,7 @@
                           <input type="hidden" name="permission" value="$p"/>
                           <input type="hidden" name="role" value="${role._id}"/>
                           <input type="submit" value="Remove" py:if="role.display() != '*user-'+c.user.username"
-                                 class="ui-state-default ui-button ui-button-text"/>
+                                />
                         </form>
                       </td>
                     </tr>
@@ -52,7 +52,7 @@
                         </td>
                         <td>
                           <input type="hidden" name="permission" value="$p"/>
-                          <input type="submit" value="Add Permission" class="ui-state-default ui-button ui-button-text"/>
+                          <input type="submit" value="Add Permission"/>
                         </td>
                       </form>
                     </tr>

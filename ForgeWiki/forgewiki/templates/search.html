@@ -18,9 +18,9 @@
         <div class="column grid_12">
           <form method="GET" action=".">
             <input type="text" name="q" value="$q" class="defaultText" title="Search App"/><br/>
-            <input type="submit" value="Search App" class="ui-state-default ui-button ui-button-text"/>
+            <input type="submit" value="Search App"/>
             <input type="submit" name="project" value="Search Entire Project"
-                   class="ui-state-default ui-button ui-button-text"/><br/>
+                  /><br/>
             Search history? <input type="checkbox" name="history" checked="${history or None}"/><br/>
           </form>
           <p py:if="count==0 and q">No results.</p>

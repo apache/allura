@@ -42,13 +42,13 @@
                 <tr py:for="i, sp in enumerate(c.project.direct_subprojects)">
                   <td>Subproject</td>
                   <td>$sp.shortname</td>
-                  <td py:if="has_project_access('tool')()"><a href="${sp.url() + 'admin/'}">
-                    <span class="ui-icon ui-icon-pencil"></span> Edit
+                  <td py:if="has_project_access('tool')()"><a href="${sp.url() + 'admin/'}" class="ico-l">
+                    <b class="ui-icon ui-icon-pencil"></b> <span>Edit</span>
                   </a></td>
                   <td class="tool-delete">
                     <a py:if="has_project_access('tool')()"
-                       class="subproject-${i}" href="#">
-                       <span class="ui-icon ui-icon-close"></span> Delete
+                       class="subproject-${i} ico-l" href="#">
+                       <b class="ui-icon ui-icon-close"></b> <span>Delete</span>
                     </a>
                   </td>
                 </tr>
@@ -57,18 +57,20 @@
                   <td>$config.options.mount_point</td>
                   <td>
                     <a py:if="has_project_access('tool')()"
-                       href="$config.options.mount_point/">
-                       <span class="ui-icon ui-icon-pencil"></span> Edit
+                       href="$config.options.mount_point/"
+                       class="ico-l">
+                       <b class="ui-icon ui-icon-pencil"></b> <span>Edit</span>
                     </a>
                   </td>
                   <td class="tool-delete">
                     <a py:if="has_project_access('tool')()"
-                       class="tool-${i}" href="#">
-                       <span class="ui-icon ui-icon-close"></span> Delete
+                       class="tool-${i} ico-l" href="#">
+                       <b class="ui-icon ui-icon-close"></b> <span>Delete</span>
+                       
                     </a>
                     <!-- <input py:if="has_project_access('tool')() and config.load().installable"
                                            name="tool-${i}.delete" type="submit" value="Delete"
-                                           class="ui-state-default ui-button ui-button-text"/> -->
+                                          /> -->
                   </td>
                 </tr>
               </form>
@@ -91,10 +93,10 @@
                     </select>
                   </td>
                   <td>
-                    <input name="new.mount_point" class="title new_mount_point"/>
+                    <input name="new.mount_point" class="new_mount_point"/>
                   </td>
                   <td colspan="2">
-                    <input type="submit" value="Install" name="new.install" class="ui-state-default ui-button ui-button-text"/>
+                    <input type="submit" value="Install" name="new.install"/>
                   </td>
                 </tr>
               </form>

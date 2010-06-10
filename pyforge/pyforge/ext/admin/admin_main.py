@@ -79,14 +79,15 @@ class AdminApp(Application):
         links = []
         if c.project.shortname == '--init--':
             admin_url = c.project.neighborhood.url()+'_admin/'
-            links = links + [SitemapEntry('Neighborhood Admin'),
+            links = links + [
                      SitemapEntry('Overview', admin_url+'overview', className='nav_child'),
                      SitemapEntry('Permissions', admin_url+'permissions', className='nav_child'),
                      SitemapEntry('Awards', admin_url+'accolades', className='nav_child')]
         admin_url = c.project.url()+'admin/'
-        links = links + [SitemapEntry('Project'),
-                 SitemapEntry('Overview', admin_url+'overview', className='nav_child'),
-                 SitemapEntry('Tools/Subprojects', admin_url+'tools', className='nav_child')]
+        if len(links):
+            links.append(SitemapEntry('Project'))
+        links = links + [SitemapEntry('Overview', admin_url+'overview', className='nav_child'),
+                         SitemapEntry('Tools/Subprojects', admin_url+'tools', className='nav_child')]
         if len(c.project.neighborhood_invitations):
             links.append(SitemapEntry('Invitation(s)', admin_url+'invitations', className='nav_child'))
         if has_project_access('security')():

@@ -24,7 +24,7 @@
           <py:if test="allow_edit">
             <span class="viewer"><h1 class="title">#$ticket.ticket_num $ticket.summary</h1></span>
             <span class="editor">
-              <input name="summary" value="$ticket.summary" class="title wide"/>
+              <input name="summary" value="$ticket.summary"/>
             </span>
           </py:if>
         </span>
@@ -139,7 +139,7 @@
                     <div class="span-3 tright"><b>${field.label}:</b></div>
                     <div class="span-3 last">
                       <input py:if="field.type != 'select' and field.type != 'boolean'" name="custom_fields.${field.name}" type="text"
-                             value="${ticket.custom_fields.get(field.name, '')}" class="title wide"/>
+                             value="${ticket.custom_fields.get(field.name, '')}"/>
                       <input py:if="field.type == 'boolean' and ticket.custom_fields.get(field.name, '') == 'True'"
                              name="custom_fields.${field.name}" type="checkbox" value="True" checked="checked"/>
                       <input py:if="field.type == 'boolean' and ticket.custom_fields.get(field.name, '') != 'True'"

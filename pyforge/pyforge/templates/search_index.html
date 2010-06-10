@@ -21,7 +21,7 @@
             <input type="text" name="q" value="$q" class="title"/><br/>
             Search history? <input type="checkbox" name="history" checked="${history or None}"/><br/>
             &nbsp;<br/>
-            <input type="submit" value="Search" class="ui-state-default ui-button ui-button-text"/>
+            <input type="submit" value="Search"/>
           </form>
           <p py:if="count==0 and q">No results.</p>
           <p py:if="count==1 and q">$count result.</p>

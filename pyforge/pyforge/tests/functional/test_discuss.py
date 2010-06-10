@@ -66,7 +66,7 @@ class TestDiscuss(TestController):
         r = r.follow()
         assert 'This is a new post' in r, r
         r = self.app.get(post_link)
-        assert str(r).count('This is a new post') == 3
+        assert str(r).count('This is a new post') == 2
         r = self.app.post(post_link + 'reply',
                           params=dict(text='Tis a reply'),
                           headers={'Referer':post_link.encode("utf-8")})

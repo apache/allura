@@ -1,8 +1,8 @@
 function add_field(label, type, options, show_in_search){
     var $new_field = $('<div class="custom-field">'
-                     +   '<div class="span-3 clear"><label>Label: </label></div><div class="span-9 last"><input class="field-label title wide" type="text"/></div>'
+                     +   '<div class="span-3 clear"><label>Label: </label></div><div class="span-9 last"><input class="field-label" type="text"/></div>'
                      +   '<div class="span-3 clear"><label>Type: </label></div>'
-                     +   '<div class="span-9 last"><select class="title wide">'
+                     +   '<div class="span-9 last"><select>'
                      +     '<option value="string">text</option>'
                   // +     '<option value="sum">sum</option>'
                      +     '<option value="number">number</option>'
@@ -10,12 +10,13 @@ function add_field(label, type, options, show_in_search){
                      +     '<option value="select">select</option>'
                      +   '</select></div>'
                      +   '<span class="options-wrapper"><div class="span-3 clear"><label>Options: </label></div>'
-                     +   '<div class="span-9 last"><input class="field-options title wide" type="text"/></div></span>'
-                     +   '<div class="prepend-3 span-9 last">'
+                     +   '<div class="span-9 last"><input class="field-options" type="text"/></div></span>'
+                     +   '<div class="span-3 clear"><label>Show in search: </label></div>'
+                     +   '<div class="span-9 last">'
                      +   '  <input type="checkbox" class="field-show-in-search" />'
-                     +   '  <label>Show in search results</label>'
                      +   '</div>'
-                     +   '<div class="push-3 span-9 last"><input type="button" onclick="delete_field(this)" value="Delete" class="ui-state-default ui-button ui-button-text"/></div>'
+                     +   '<div class="span-3 clear"><label>&nbsp;</label></div>'
+                     +   '<div class="span-9 last"><input type="button" onclick="delete_field(this)" value="Delete"/></div>'
                      +   '<div class="clear clearfix"/>'
                      + '</div>');
 
