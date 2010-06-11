@@ -24,9 +24,9 @@ class ForgeExtension(markdown.Extension):
         self._use_wiki = wiki
 
     def extendMarkdown(self, md, md_globals):
-        macro_engine = Macro()
+        macro_engine = Macro(md)
+        md.preprocessors.add('macro', macro_engine.preprocessor, '<html_block')
         md.treeprocessors['br'] = LineOrientedTreeProcessor(md)
-        md.inlinePatterns['macro'] = macro_engine.pattern
         md.inlinePatterns['oembed'] = OEmbedPattern(r'\[embed#(.*?)\]')
         md.inlinePatterns['autolink_1'] = AutolinkPattern(r'(http(?:s?)://[a-zA-Z0-9./\-_0]+)')
         md.inlinePatterns['artifact'] = ArtifactLinkPattern(self.core_artifact_link)
@@ -159,9 +159,9 @@ class Macro(object):
     macro_re_text = r'\[\[(.*?)\]\]'
     macro_re = re.compile(macro_re_text)
 
-    def __init__(self):
-        self.pattern = MacroPattern(self)
-        self.postprocessor = MacroPostprocessor(self)
+    def __init__(self, md):
+        self.preprocessor = MacroPreprocessor(md, self)
+        self.postprocessor = MacroPostprocessor(md, self)
         self.macros = {}
 
     def register(self, text):
@@ -169,24 +169,28 @@ class Macro(object):
         self.macros[k] = text
         return k
 
-class MacroPattern(markdown.inlinepatterns.LinkPattern):
+class MacroPreprocessor(markdown.preprocessors.Preprocessor):
     '''Strip macros from the incoming text and save them for later'''
 
-    def __init__(self, macro):
-        markdown.inlinepatterns.LinkPattern.__init__(self, macro.macro_re_text)
+    def __init__(self, md, macro):
+        markdown.preprocessors.Preprocessor.__init__(self, md)
         self.macro = macro
 
-    def handleMatch(self, mo):
-        macro_text = mo.group(2)
-        placeholder = self.macro.register(macro_text)
-        result = markdown.etree.Element('span')
-        result.text = '[[%s]]' % placeholder
-        return result
+    def run(self, lines):
+        def repl(mo):
+            macro_text = mo.group(1)
+            if macro_text.startswith('\\'):
+                macro_text = 'quote ' + macro_text[1:]
+            placeholder = self.macro.register(macro_text)
+            return '[[%s]]' % placeholder
+        return [ self.macro.macro_re.sub(repl,line)
+                 for line in lines ]
 
 class MacroPostprocessor(markdown.postprocessors.Postprocessor):
     '''Expand macro placeholders'''
 
-    def __init__(self, macro):
+    def __init__(self, md, macro):
+        markdown.postprocessors.Postprocessor.__init__(self, md)
         self.macro = macro
         
     def run(self, text):

@@ -17,6 +17,8 @@ def macro(func):
     return func
 
 def parse(s):
+    if s.startswith('quote '):
+        return '[[' + s[len('quote '):] + ']]'
     try:
         parts = [ unicode(x, 'utf-8') for x in shlex.split(s.encode('utf-8')) ]
         if not parts: return None
