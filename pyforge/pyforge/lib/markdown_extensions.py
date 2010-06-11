@@ -55,7 +55,7 @@ class RelativeLinkRewriter(markdown.postprocessors.Postprocessor):
             rewrite(link, 'href')
         for link in soup.findAll('img'):
             rewrite(link, 'src')
-        return unicode(soup).encode('utf-8')
+        return unicode(soup)
 
 class LineOrientedTreeProcessor(markdown.treeprocessors.Treeprocessor):
     '''Once MD is satisfied with the etree, this runs to replace \n with <br/>
