@@ -383,6 +383,11 @@ class PageController(object):
         except ValueError:
             return None
 
+    @expose()
+    def _lookup(self, pname, *remainder):
+        url = '../' + '/'.join((pname,) + remainder)
+        redirect(url)
+
     @with_trailing_slash
     @expose('forgewiki.templates.page_view')
     @validate(dict(version=validators.Int(if_empty=None)))
