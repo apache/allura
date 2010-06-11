@@ -80,4 +80,4 @@ def img(src=None, **kw):
     if '://' in src:
         return '<img src="%s" %s/>' % (src, ' '.join(attrs))
     else:
-        return '<img src="attachment/%s" %s/>' % (src, ' '.join(attrs))
+        return '<img src="./attachment/%s" %s/>' % (src, ' '.join(attrs))

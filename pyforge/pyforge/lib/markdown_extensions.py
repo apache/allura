@@ -6,7 +6,8 @@ from ConfigParser import RawConfigParser
 from pprint import pformat
 
 from tg import config
-from pylons import g
+from pylons import g, request
+from BeautifulSoup import BeautifulSoup
 
 import oembed
 import markdown
@@ -32,6 +33,29 @@ class ForgeExtension(markdown.Extension):
         if self._use_wiki:
             md.inlinePatterns['wiki'] = WikiLinkPattern(r'\b([A-Z][a-z]\w*[A-Z][a-z]\w*)')
         md.postprocessors['macro'] = macro_engine.postprocessor
+        md.postprocessors['rewrite_relative_links'] = RelativeLinkRewriter()
+
+class RelativeLinkRewriter(markdown.postprocessors.Postprocessor):
+
+    def run(self, text):
+        try:
+            if not request.path_info.endswith('/'): return text
+        except:
+            # Must be being called outside the request context
+            pass
+        soup = BeautifulSoup(text)
+        def rewrite(tag, attr):
+            val = tag.get(attr)
+            if val is None: return
+            if '://' in val: return
+            if val.startswith('/'): return
+            if val.startswith('.'): return
+            tag[attr] = '../' + val
+        for link in soup.findAll('a'):
+            rewrite(link, 'href')
+        for link in soup.findAll('img'):
+            rewrite(link, 'src')
+        return unicode(soup).encode('utf-8')
 
 class LineOrientedTreeProcessor(markdown.treeprocessors.Treeprocessor):
     '''Once MD is satisfied with the etree, this runs to replace \n with <br/>

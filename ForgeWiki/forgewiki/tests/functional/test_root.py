@@ -154,7 +154,7 @@ class TestRootController(TestController):
         r = self.app.get('/wiki/TEST/')
         img_srcs = [ i['src'] for i in r.html.findAll('img') ]
         assert ('/p/test/wiki/TEST/attachment/' + filename) not in img_srcs, img_srcs
-        assert ('attachment/' + file_name) in img_srcs, img_srcs
+        assert ('./attachment/' + file_name) in img_srcs, img_srcs
 
     def test_sidebar_static_page(self):
         response = self.app.get('/wiki/TEST/')

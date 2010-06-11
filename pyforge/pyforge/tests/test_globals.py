@@ -34,12 +34,14 @@ def test_markdown():
     assert '<a href=' not in g.markdown.convert('http://sf.net is this') # Meta ext grabs it
     assert '<a href=' in g.markdown_wiki.convert('This is a WikiPage')
     assert '<a href=' not in g.markdown_wiki.convert('This is a WIKIPAGE')
-    assert '<br>' in g.markdown.convert('Multi\nLine')
-    assert '<br>' not in g.markdown.convert('Multi\n\nLine')
+    assert '<br' in g.markdown.convert('Multi\nLine'), g.markdown.convert('Multi\nLine')
+    assert '<br' not in g.markdown.convert('Multi\n\nLine')
     r = g.markdown.convert('[[projects]]')
     assert '<div class="border card">' in r
     r = g.markdown.convert('[[include ref=Root id=foo]]')
     assert '<div id="foo">' in r, r
+    assert 'href="../foo"' in g.markdown.convert('[My foo](foo)')
+    assert 'href="..' not in g.markdown.convert('[My foo](./foo)')
     assert '<br>' not in g.markdown.convert('''# Header
 
 Some text in a regular paragraph
