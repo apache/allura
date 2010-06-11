@@ -23,13 +23,15 @@ class ForgeExtension(markdown.Extension):
         self._use_wiki = wiki
 
     def extendMarkdown(self, md, md_globals):
+        macro_engine = Macro()
         md.treeprocessors['br'] = LineOrientedTreeProcessor(md)
+        md.inlinePatterns['macro'] = macro_engine.pattern
         md.inlinePatterns['oembed'] = OEmbedPattern(r'\[embed#(.*?)\]')
         md.inlinePatterns['autolink_1'] = AutolinkPattern(r'(http(?:s?)://[a-zA-Z0-9./\-_0]+)')
         md.inlinePatterns['artifact'] = ArtifactLinkPattern(self.core_artifact_link)
         if self._use_wiki:
             md.inlinePatterns['wiki'] = WikiLinkPattern(r'\b([A-Z][a-z]\w*[A-Z][a-z]\w*)')
-        md.postprocessors['macro'] = MacroPostprocessor()
+        md.postprocessors['macro'] = macro_engine.postprocessor
 
 class LineOrientedTreeProcessor(markdown.treeprocessors.Treeprocessor):
     '''Once MD is satisfied with the etree, this runs to replace \n with <br/>
@@ -129,21 +131,44 @@ class OEmbedPattern(markdown.inlinepatterns.LinkPattern):
         iframe.set('height', str(height))
         return iframe
 
+class Macro(object):
+    macro_re_text = r'\[\[(.*?)\]\]'
+    macro_re = re.compile(macro_re_text)
+
+    def __init__(self):
+        self.pattern = MacroPattern(self)
+        self.postprocessor = MacroPostprocessor(self)
+        self.macros = {}
+
+    def register(self, text):
+        k = '-%d-' % len(self.macros)
+        self.macros[k] = text
+        return k
+
 class MacroPattern(markdown.inlinepatterns.LinkPattern):
+    '''Strip macros from the incoming text and save them for later'''
+
+    def __init__(self, macro):
+        markdown.inlinepatterns.LinkPattern.__init__(self, macro.macro_re_text)
+        self.macro = macro
 
     def handleMatch(self, mo):
         macro_text = mo.group(2)
-        result = macro.parse(markdown, macro_text)
-        if result is None:
-            result = markdown.etree.Element('span')
-            result.text = '[[-%s-]]' % macro_text
+        placeholder = self.macro.register(macro_text)
+        result = markdown.etree.Element('span')
+        result.text = '[[%s]]' % placeholder
         return result
 
 class MacroPostprocessor(markdown.postprocessors.Postprocessor):
-    macro_re = re.compile(r'\[\[(.*?)\]\]')
+    '''Expand macro placeholders'''
+
+    def __init__(self, macro):
+        self.macro = macro
+        
     def run(self, text):
         def repl(mo):
-            result = macro.parse(mo.group(1))
+            macro_text = self.macro.macros[mo.group(1)]
+            result = macro.parse(macro_text)
             return result
-        return self.macro_re.sub(repl, text)
+        return self.macro.macro_re.sub(repl, text)
 

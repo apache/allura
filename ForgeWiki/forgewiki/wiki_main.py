@@ -364,7 +364,7 @@ class RootController(object):
 class PageController(object):
 
     def __init__(self, title):
-        exists = model.Page.query.find(dict(app_config_id=c.app.config._id, title=title)).first()
+        exists = model.Page.query.get(app_config_id=c.app.config._id, title=title)
         self.title = title
         self.page = model.Page.upsert(title)
         self.attachment = AttachmentsController(self.page)
@@ -595,6 +595,8 @@ class AttachmentController(object):
         self.attachment = model.Attachment.query.get(filename=filename)
         if self.attachment is None:
             self.attachment = model.Attachment.by_metadata(filename=filename).first()
+        if self.attachment is None:
+            raise exc.HTTPNotFound()
         self.thumbnail = model.Attachment.by_metadata(filename=filename).first()
         self.page = self.attachment.page
 

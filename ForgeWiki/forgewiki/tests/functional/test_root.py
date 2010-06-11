@@ -24,7 +24,7 @@ from ming.orm.ormsession import ThreadLocalORMSession
 
 class TestRootController(TestController):
     def test_root_index(self):
-        response = self.app.get('/wiki/TEST/index')
+        response = self.app.get('/wiki/TEST/')
         assert 'TEST' in response
 
     def test_root_markdown_syntax(self):
@@ -48,12 +48,12 @@ class TestRootController(TestController):
         assert 'TEST' in response
 
     def test_root_new_search(self):
-        self.app.get('/wiki/TEST/index')
+        self.app.get('/wiki/TEST/')
         response = self.app.get('/wiki/search?q=TEST')
         assert 'Search wiki: TEST' in response
 
     def test_page_index(self):
-        response = self.app.get('/wiki/TEST/index/')
+        response = self.app.get('/wiki/TEST/')
         assert 'TEST' in response
 
     def test_page_edit(self):
@@ -66,7 +66,7 @@ class TestRootController(TestController):
         assert 'TEST' in response
 
     def test_page_diff(self):
-        self.app.get('/wiki/TEST/index/')
+        self.app.get('/wiki/TEST/')
         self.app.get('/wiki/TEST/revert?version=1')
         response = self.app.get('/wiki/TEST/')
         assert 'Unsubscribe' in response
@@ -74,48 +74,48 @@ class TestRootController(TestController):
         assert 'TEST' in response
 
     def test_page_raw(self):
-        self.app.get('/wiki/TEST/index/')
+        self.app.get('/wiki/TEST/')
         response = self.app.get('/wiki/TEST/raw')
         assert 'TEST' in response
 
     def test_page_revert_no_text(self):
-        self.app.get('/wiki/TEST/index/')
+        self.app.get('/wiki/TEST/')
         response = self.app.get('/wiki/TEST/revert?version=1')
         assert 'TEST' in response
 
     def test_page_revert_with_text(self):
-        self.app.get('/wiki/TEST/index/')
+        self.app.get('/wiki/TEST/')
         self.app.get('/wiki/TEST/update?title=TEST&text=sometext&tags=&tags_old=&labels=&labels_old=&viewable_by-0.id=all')
         response = self.app.get('/wiki/TEST/revert?version=1')
         assert 'TEST' in response
 
     def test_page_update(self):
-        self.app.get('/wiki/TEST/index/')
+        self.app.get('/wiki/TEST/')
         response = self.app.get('/wiki/TEST/update?title=TEST&text=sometext&tags=&tags_old=&labels=&labels_old=&viewable_by-0.id=all')
         assert 'TEST' in response
 
     def test_page_tag_untag(self):
-        self.app.get('/wiki/TEST/index/')
+        self.app.get('/wiki/TEST/')
         response = self.app.get('/wiki/TEST/update?title=TEST&text=sometext&tags=red,blue&tags_old=red,blue&labels=&labels_old=&viewable_by-0.id=all')
         assert 'TEST' in response
         response = self.app.get('/wiki/TEST/update?title=TEST&text=sometext&tags=red&tags_old=red&labels=&labels_old=&viewable_by-0.id=all')
         assert 'TEST' in response
 
     def test_page_label_unlabel(self):
-        self.app.get('/wiki/TEST/index/')
+        self.app.get('/wiki/TEST/')
         response = self.app.get('/wiki/TEST/update?title=TEST&text=sometext&tags=&tags_old=&labels=yellow,green&labels_old=yellow,green&viewable_by-0.id=all')
         assert 'TEST' in response
         response = self.app.get('/wiki/TEST/update?title=TEST&text=sometext&tags=&tags_old=&labels=yellow&labels_old=yellow&viewable_by-0.id=all')
         assert 'TEST' in response
 
     def test_new_attachment(self):
-        self.app.get('/wiki/TEST/index')
+        self.app.get('/wiki/TEST/')
         content = file(__file__).read()
         response = self.app.post('/wiki/TEST/attach', upload_files=[('file_info', 'test_root.py', content)]).follow()
         assert 'test_root.py' in response
 
     def test_new_text_attachment_content(self):
-        self.app.get('/wiki/TEST/index')
+        self.app.get('/wiki/TEST/')
         file_name = 'test_root.py'
         file_data = file(__file__).read()
         upload = ('file_info', file_name, file_data)
@@ -124,7 +124,7 @@ class TestRootController(TestController):
         assert_true(download.body == file_data)
 
     def test_new_image_attachment_content(self):
-        self.app.get('/wiki/TEST/index')
+        self.app.get('/wiki/TEST/')
         file_name = 'ui-icons_454545_256x240.png'
         file_path = os.path.join(pyforge.__path__[0],'public','nf','css','forge','images',file_name)
         file_data = file(file_path).read()
