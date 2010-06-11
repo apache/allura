@@ -67,7 +67,7 @@ class Signer(object):
         return params
 
 def main():
-    usage = 'usage: %prog [options] PageName [file]'
+    usage = 'usage: %prog [options] [PageName [file]]'
     op = OptionParser(usage=usage)
     op.add_option('-c', '--config', metavar='CONFIG')
     op.add_option('-a', '--api-key', metavar='KEY')
@@ -75,9 +75,19 @@ def main():
     op.add_option('-u', '--url', metavar='URL')
     (options, args) = op.parse_args()
 
-    page = args[0]
-    f = open(args[1], 'r') if len(args)>1 else stdin
-    markdown = f.read()
+    pagename = None
+    markdown = None
+    method = 'GET'
+
+    pagename_given = len(args) >= 1
+    if pagename_given:
+        pagename = args[0]
+
+    filename_given = len(args) > 1
+    if filename_given:
+        method = 'PUT'
+        f = open(args[1], 'r')
+        markdown = f.read()
 
     config = ConfigParser()
     config.read([str(os.path.expanduser('~/.forge-api.ini')), str(options.config)])
@@ -86,12 +96,18 @@ def main():
     secret_key = options.secret_key or config.get('keys', 'secret-key')
     # print an error message if no keys are found
 
-    url = urljoin(options.url or config.get('wiki', 'url'), page)
+    url = options.url or config.get('wiki', 'url')
+    if pagename_given:
+        url = urljoin(url, pagename)
 
     sign = Signer(secret_key, api_key)
-    params = sign(urlparse(url).path, [('text', markdown)])
+    params = [('text', markdown)] if method=='PUT' else []
+    params = sign(urlparse(url).path, params)
     try:
-        result = urlopen(url, urlencode(params))
+        if method=='PUT':
+            result = urlopen(url, urlencode(params))
+        else:
+            result = urlopen(url+'?'+urlencode(params))
         stdout.write(result.read())
     except HTTPError, e:
         stdout.write(e.read())

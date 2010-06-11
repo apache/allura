@@ -647,7 +647,16 @@ Some *emphasized* and **strong** text
 class RootRestController(RestController):
 
     @expose('json:')
-    def get_one(self, title):
+    def get_all(self, **kw):
+        page_titles = []
+        pages = model.Page.query.find(dict(app_config_id=c.app.config._id))
+        for page in pages:
+            if has_artifact_access('read', page)():
+                page_titles.append(page.title)
+        return dict(pages=page_titles)
+
+    @expose('json:')
+    def get_one(self, title, **kw):
         page = model.Page.query.get(app_config_id=c.app.config._id, title=title)
         if page is None:
             raise exc.HTTPNotFound, title
