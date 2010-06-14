@@ -99,7 +99,7 @@ def option(section, key, prompt=None):
 TICKET_TEMPLATE=string.Template('''
 (engr) Name of Engineer pushing: $engineer
 (engr) Which code tree(s): allura
-(engr) Is configtree to be pushed?:
+(engr) Is configtree to be pushed?: no
 (engr) Which release/revision is going to be synced?: $tag
 (engr) Itemized list of changes to be launched with sync:
 
@@ -113,7 +113,7 @@ Post-launch dependencies:
 
 $postlaunch
 
-(engr) Approved for release (Dean/Jason): none
+(engr) Approved for release (Dean/Dave/John): None
 (sog) Approval for sync provided by (Jacob/Jay/David/Wayne): None
 (sog) Outcome of sync:
 
