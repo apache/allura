@@ -146,8 +146,8 @@ class TestFunctionalController(TestController):
         ticket_editor = self.app.post('/bugs/1/attach', upload_files=[upload]).follow()
         assert_true(file_name in ticket_editor)
         req = self.app.get('/bugs/1/edit/')
-        assert req.html.findAll('form')[2].find('a').string == file_name
-        req.forms[2].submit()
+        assert req.html.findAll('form')[3].find('a').string == file_name
+        req.forms[3].submit()
         deleted_form = self.app.get('/bugs/1/')
         assert file_name not in deleted_form
 
@@ -183,7 +183,6 @@ class TestFunctionalController(TestController):
     def test_sidebar_static_page(self):
         response = self.app.get('/bugs/search/')
         assert 'Create New Ticket' in response
-        assert 'Update this Ticket' not in response
         assert 'Related Artifacts' not in response
     
     def test_sidebar_ticket_page(self):
@@ -191,7 +190,6 @@ class TestFunctionalController(TestController):
         self.new_ticket(summary=summary)
         response = self.app.get('/p/test/bugs/1/')
         assert 'Create New Ticket' in response
-        assert 'Update this Ticket' in response
         assert 'Related Artifacts' not in response
         self.app.get('/wiki/aaa/')
         self.new_ticket(summary='bbb')
@@ -384,7 +382,7 @@ class TestFunctionalController(TestController):
         # check that existing form is valid
         assert response.html.find('input', {'name':'edit_ticket_form.summary'}).get('value') == old_summary
         assert not response.html.find('div', {'class':'error'})
-        form = response.forms[1]
+        form = response.forms[2]
         # try submitting with no summary set and check for error message
         form['edit_ticket_form.summary'] = ""
         error_form = form.submit()
@@ -393,8 +391,8 @@ class TestFunctionalController(TestController):
         assert error_message.string == 'Please enter a value'
         assert error_message.findPreviousSibling('input').get('name') == 'edit_ticket_form.summary'
         # set a summary, submit, and check for success
-        error_form.forms[1]['edit_ticket_form.summary'] = new_summary
-        success = error_form.forms[1].submit().follow().html
+        error_form.forms[2]['edit_ticket_form.summary'] = new_summary
+        success = error_form.forms[2].submit().follow().html
         assert success.findAll('form')[1].get('action') == '/p/test/bugs/1/update_ticket'
         assert success.find('input', {'name':'summary'}).get('value') == new_summary
 

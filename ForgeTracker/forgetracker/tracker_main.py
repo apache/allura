@@ -114,9 +114,8 @@ class ForgeTrackerApp(Application):
         related_urls = []
         ticket = request.path_info.split(self.url)[-1].split('/')[0]
         for bin in model.Bin.query.find().sort('summary'):
-            label = '%s: (%s)' % (
-                bin.shorthand_id(), c.app.globals.bin_counts.get(bin.shorthand_id(), 0))
-            search_bins.append(SitemapEntry(label, bin.url(), className='nav_child'))
+            label = bin.shorthand_id()
+            search_bins.append(SitemapEntry(label, bin.url(), className='nav_child', small=c.app.globals.bin_counts.get(bin.shorthand_id())))
         if ticket.isdigit():
             ticket = model.Ticket.query.find(dict(app_config_id=self.config._id,ticket_num=int(ticket))).first()
         else:
@@ -124,7 +123,6 @@ class ForgeTrackerApp(Application):
         links = [
             SitemapEntry('Create New Ticket', self.config.url() + 'new/', ui_icon='plus')]
         if ticket:
-            links.append(SitemapEntry('Update this Ticket',ticket.url() + 'edit/', ui_icon='check'))
             for aref in ticket.references+ticket.backreferences.values():
                 artifact = ArtifactReference(aref).to_artifact().primary(model.Ticket)
                 if artifact.url() not in related_urls:
@@ -391,7 +389,7 @@ class RootController(object):
         result = self.paged_query(q, sort=sort, **kw)
         if c.app.globals.milestone_names is None:
             c.app.globals.milestone_names = ''
-        result['globals'] = globals
+        result['globals'] = c.app.globals
         c.user_select = ffw.ProjectUserSelect()
         return result
 
@@ -659,9 +657,11 @@ class TicketController(object):
         c.ticket_form = W.edit_ticket_form
         c.thread = W.thread
         c.attachment_list = W.attachment_list
+        c.subscribe_form = W.ticket_subscribe_form
         if c.app.globals.milestone_names is None:
             c.app.globals.milestone_names = ''
-        return dict(ticket=self.ticket, globals=c.app.globals)
+        return dict(ticket=self.ticket, globals=c.app.globals,
+                    subscribed=Subscriptions.upsert().subscribed(artifact=self.ticket))
 
     @without_trailing_slash
     @expose()

@@ -16,7 +16,7 @@
     // Setup editable widgets
     $('div.editable, span.editable, h1.editable')
         .find('.viewer')
-        .append('<button class="edit_btn ui-button ui-widget ui-state-default ui-button-icon-only" title="Edit"><span class="ui-button-icon-primary ui-icon ui-icon-pencil"></span><span class="ui-button-text">Button with icon only</span></button>')
+        .append('<button class="edit_btn ui-button ui-widget ui-state-default ui-button-icon-only" title="Edit"><span class="ui-button-icon-primary ui-icon ui-icon-pencil"></span><span class="ui-button-text">Edit</span></button>')
         .click(function(e){
             var editable = $(this).closest('.editable');
             var editor = editable.find('.editor');
@@ -35,27 +35,26 @@
         .end()
         .find('.editor')
         .find('input, select, textarea').each(function(i){
-            var editor = $(this).closest('.editor');
-            var save_btns = $('<div class="save_holder"><input type="submit" value="Save" class="ui-button ui-widget ui-state-default ui-button-text-only"/> <a href="#" class="cancel_btn">Cancel</a></div>')
-            if(editor.hasClass('multiline')){
-                var save_holder = editor.find('.save_holder');
-                if(save_holder.length){
-                    save_holder.append(save_btns);
-                }
-                else{
-                    editor.append(save_btns);
-                }
-            }
-            else{
-                editor.append($('<table class="holder_table"><tr/></table>')
-                            .append($('<td/>').append($(this)))
-                            .append($('<td class="save_controls"/>').append($(save_btns)))
-                );
-            }
             // we only want one submit button for each editor even if there are multiple inputs
             // make sure the visually important one is first!
-            if(i==2){
-                return false;
+            var editor = $(this).closest('.editor');
+            if(!$('a.cancel_btn', editor).length){
+                var save_btns = $('<div class="save_holder"><input type="submit" value="Save"/> &nbsp; <a href="#" class="cancel_btn">Cancel</a></div>');
+                if(editor.hasClass('multiline')){
+                    var save_holder = editor.find('.save_holder');
+                    if(save_holder.length){
+                        save_holder.append(save_btns);
+                    }
+                    else{
+                        editor.append(save_btns);
+                    }
+                }
+                else{
+                    editor.append($('<table class="holder_table"><tr/></table>')
+                                .append($('<td/>').append($(this)))
+                                .append($('<td class="save_controls"/>').append($(save_btns)))
+                    );
+                }
             }
         })
         .end()

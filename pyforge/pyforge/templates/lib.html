@@ -78,7 +78,7 @@
 
   <py:def function="sidebar_item(s)">
     <li py:if="s.url" class="${request.url.find(s.url,-len(s.url)) != -1 and 'active' or None}">
-      <a href="$s.url" class="$s.className${s.ui_icon and ' ico-l' or ''}"><b py:if="s.ui_icon" class="ui-icon ui-icon-$s.ui_icon"></b> <span>$s.label</span></a>
+      <a href="$s.url" class="$s.className${s.ui_icon and ' ico-l' or ''}"><b py:if="s.ui_icon" class="ui-icon ui-icon-$s.ui_icon"></b> <span>$s.label</span><small py:if="s.small is not None">$s.small</small></a>
     </li>
     <py:if test="not s.url">
       ${Markup('&lt;/ul>')}
@@ -122,7 +122,7 @@
   </py:def>
 
   <py:def function="file_field(name, label)">
-    <label for="$name" py:if="label">$label</label><br py:if="label"/>
+    <label for="$name" py:if="label">$label</label>
     <input type="file" id="$name" name="$name" class="text" /><br/>
   </py:def>
 

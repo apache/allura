@@ -4,7 +4,6 @@
       xmlns:py="http://genshi.edgewall.org/"
       xmlns:xi="http://www.w3.org/2001/XInclude">
   <xi:include href="${g.pyforge_templates}/master.html"/>
-  <xi:include href="${c.app.templates}/lib.html" />
 
   <?python
     from pprint import pformat
@@ -23,6 +22,13 @@
 
   <body>
     <h1 class="title">Edit ticket #$ticket.ticket_num</h1>
+    <div class="actions">
+		  <py:if test="c.user and c.user != c.user.anonymous()">
+			<a href="${ticket.url()}" class="btn ico-l"><b class="ui-icon ui-icon-search"></b> <span>View</span></a>
+        ${c.subscribe_form.display(value=subscribed, action='subscribe', style='icon')}
+      </py:if>
+			<a href="${ticket.url()}feed.rss" class="btn ico"><b class="ui-icon ui-icon-signal-diag"></b> <span>Follow this Ticket</span></a>
+    </div>
     <div class="content">
       <div class="row">
         <div class="column grid_12">
@@ -30,26 +36,20 @@
           <div class="span-19">
             ${c.attachment_list.display(attachments=list(ticket.attachments), edit_mode=has_artifact_access('write', ticket)())}
             <div py:if="has_artifact_access('write', ticket)()">
-              <input type="button" value="Add Attachment"
-                     onclick="$('#artifact_form').show()"
-                     class="ui-button ui-widget ui-state-default ui-button-text-only"/>
-              <div id="artifact_form" style="display: none">
+              <input type="button" value="Add Attachment" onclick="$('#artifact_form').show(); $(this).hide();"/>
+              <div id="artifact_form" style="display: none; clear:both">
                 <form method="post"
                       action="${ticket.url() + 'attach'}" enctype="multipart/form-data">
-                  ${file_field('file_info', 'File to upload')}
-                  ${submit_button('Attach file')}
+                  <ol>
+                    <li>${file_field('file_info', 'File to upload')}</li>
+                    <li><label>&nbsp;</label>${submit_button('Attach file')}</li>
+                  </ol>
                 </form>
               </div>
             </div>
           </div>
-          <hr/>
-          <!-- <div py:with="thread=ticket.discussion_thread()">
-            <h2><a href="${thread.url()}">Discussion</a></h2>
-            ${c.thread.display(value=dict(thread=thread))}
-          </div> -->
         </div>
       </div>
     </div>
   </body>
-  <script type="text/javascript" src="${g.app_static('js/comments.js')}"/>
 </html>

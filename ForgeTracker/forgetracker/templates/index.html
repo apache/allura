@@ -18,6 +18,11 @@
 
   <body>
     <h1 class="title">ForgeTracker for $c.project.shortname</h1>
+		<div class="actions">
+		  <py:if test="c.user and c.user != c.user.anonymous()">
+      ${c.subscribe_form.display(value=subscribed, action='subscribe', style='icon')}
+      </py:if>
+		</div>
     <div class="content">
       <div class="row">
         <div class="column grid_12">
@@ -65,7 +70,6 @@
               </tr>
             </tbody>
           </table>
-          ${c.subscribe_form.display(value=subscribed, action='subscribe', style='icon')}
         </div>
       </div>
     </div>

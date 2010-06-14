@@ -50,53 +50,51 @@
           </table>
 
           <h2>Update</h2>
-          <div id="update-values">
-            <div>
-              <label for="assigned_to">Assigned To:</label>
-              <br/>
-              ${c.user_select.display(name='assigned_to')}
-            </div>
-            <div>
-              <label for="status">Status:</label>
-              <br/>
-              <select name="status">
-                <option value="" selected="selected"></option>
-                <option py:for="option in globals.status_names.split()" value="${option}">$option</option>
-              </select>
-            </div>
-            <div>
-              <label for="milestone">Milestone:</label>
-              <br/>
-              <select name="milestone">
-                <option value="" selected="selected">None</option>
-                <option py:for="option in globals.milestone_names.split()" value="${option}">$option</option>
-              </select>
-            </div>
-            <div py:for="field in globals.custom_fields" py:if="field.type != 'sum'">
-              <label for="${field.name}">${field.label}:</label>
-              <br/>
-              <input py:if="field.type != 'select' and field.type != 'boolean'" name="${field.name}" type="text" value=""/>
-              <input py:if="field.type == 'boolean'" name="${field.name}" type="checkbox" value="True"/>
-              <select py:if="field.type == 'select'" name="${field.name}">
-                <option value="" selected="selected"></option>
-                <py:for each="option in field.options.split()">
-                  <option py:if="not option.startswith('*')" value="${option}">${option}</option>
-                  <option py:if="option.startswith('*')" value="${option[1:]}" selected="selected">${option[1:]}</option>
-                </py:for>
-              </select>
-            </div>
-          </div>
-          <button onclick="update_tickets()">Update Tickets</button>
+          <form id="update-values">
+            <ol>
+              <li>
+                <label for="assigned_to">Assigned To:</label>
+                ${c.user_select.display(name='assigned_to')}
+              </li>
+              <li>
+                <label for="status">Status:</label>
+                <select name="status">
+                  <option value="" selected="selected"></option>
+                  <option py:for="option in globals.status_names.split()" value="${option}">$option</option>
+                </select>
+              </li>
+              <li>
+                <label for="milestone">Milestone:</label>
+                <select name="milestone">
+                  <option value="" selected="selected">None</option>
+                  <option py:for="option in globals.milestone_names.split()" value="${option}">$option</option>
+                </select>
+              </li>
+              <li py:for="field in globals.custom_fields" py:if="field.type != 'sum'">
+                <label for="${field.name}">${field.label}:</label>
+                <input py:if="field.type != 'select' and field.type != 'boolean'" name="${field.name}" type="text" value=""/>
+                <input py:if="field.type == 'boolean'" name="${field.name}" type="checkbox" value="True"/>
+                <select py:if="field.type == 'select'" name="${field.name}">
+                  <option value="" selected="selected"></option>
+                  <py:for each="option in field.options.split()">
+                    <option py:if="not option.startswith('*')" value="${option}">${option}</option>
+                    <option py:if="option.startswith('*')" value="${option[1:]}" selected="selected">${option[1:]}</option>
+                  </py:for>
+                </select>
+              </li>
+              <li>
+                <label>&nbsp;</label>
+                <input type="button" onclick="update_tickets()" value="Update Tickets"/>
+              </li>
+            </ol>
+          </form>
           <span id="result"></span>
         </div>
       </div>
     </div>
   </body>
   <script type="text/javascript">
-      $('tbody.ticket-list').children(':even').addClass('even');
-  </script>
-  <script type="text/javascript">
-var q="${Markup(q)}", count=$count, limit=$limit, page=$page, sort="${Markup(sort)}";
+    var q="${Markup(q)}", count=$count, limit=$limit, page=$page, sort="${Markup(sort)}";
   </script>
   <script type="text/javascript" src="${g.app_static('js/ticket-list.js')}"/>
   <script type="text/javascript" src="${g.app_static('js/mass-edit.js')}"/>

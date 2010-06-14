@@ -19,7 +19,7 @@
       </li>
     </py:def>
     <py:with vars="posts=value.find_posts(offset=offset, limit=pagesize)">
-      <div py:if="not posts">No posts found</div>
+      <div py:if="not posts" style="clear:both">No posts found</div>
         <py:if test="posts">
           <ul py:for="t in value.create_post_threads(posts)">
             ${show_post(t['post'], 0, supress_promote=True)}

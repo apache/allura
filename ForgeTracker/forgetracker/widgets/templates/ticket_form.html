@@ -4,31 +4,53 @@
       method="POST"
       action="$action"
       py:attrs="attrs">
-  <div class="span-3 clear"><label for="summary">Name:</label></div>
-  <div class="span-13 last">${Markup(c.widget.widget_type.display_field_by_idx(0))}</div>
+      <ol>
+        <li>
+          <label for="summary">Name:</label>
+          ${Markup(c.widget.widget_type.display_field_by_idx(0))}
+        </li>
+        <li>
+          <div class="row dual">
+            <div class="column" style="margin-right:0">
+              <label for="description">Description:</label>
+            </div>
+            <div class="column" style="margin-left:0">
+              ${Markup(c.widget.widget_type.display_field_by_idx(1))}
+            </div>
+          </div>
+        </li>
+        <li>
+          <label for="status">Status:</label>
+          ${Markup(c.widget.widget_type.display_field_by_idx(2))}
+        </li>
+        <li>
+          <label for="assigned_to">Assigned To:</label>
+          ${Markup(c.widget.widget_type.display_field_by_idx(3))}
+        </li>
+        <li>
+          <label for="milestone">Milestone:</label>
+          ${Markup(c.widget.widget_type.display_field_by_idx(4))}
+        </li>
 
-  <div class="span-3 clear"><label for="description">Description:</label></div>
-  <div class="span-14 last">${Markup(c.widget.widget_type.display_field_by_idx(1))}</div>
+        <py:if test="len(fields) &gt; 9">
+        ${Markup(c.widget.widget_type.display_field_by_idx(9, ignore_errors=True))}
+        </py:if>
 
-  <div class="span-3 clear"><label for="status">Status:</label></div>
-  <div class="span-6">${Markup(c.widget.widget_type.display_field_by_idx(2))}</div>
-
-  <div class="span-3"><label for="assigned_to">Assigned To:</label></div>
-  <div class="span-4 append-2 last">${Markup(c.widget.widget_type.display_field_by_idx(3))}</div>
-
-  <div class="span-3 clear"><label for="milestone">Milestone:</label></div>
-  <div class="span-6">${Markup(c.widget.widget_type.display_field_by_idx(4))}</div>
-
-  <py:if test="len(fields) &gt; 9">
-  ${Markup(c.widget.widget_type.display_field_by_idx(9, ignore_errors=True))}
-  </py:if>
-
-
-  <div class="span-3 clear"><label for="tags">Tags</label></div>
-  <div class="span-13 last">${Markup(c.widget.widget_type.display_field_by_idx(5))}</div>
-
-  <div class="span-14 push-3 last">${Markup(c.widget.widget_type.display_field_by_idx(6))}</div>
-  <div class="clear"></div>
-  ${Markup(c.widget.widget_type.display_field_by_idx(7))}
-  ${Markup(c.widget.widget_type.display_field_by_idx(8))}
+        <li>
+          <div class="row dual">
+            <div class="column" style="margin-right:0">
+              <label for="tags">Tags:</label>
+            </div>
+            <div class="column" style="margin-left:0">
+              ${Markup(c.widget.widget_type.display_field_by_idx(5))}
+            </div>
+          </div>
+        </li>
+        <li>
+          <label>&nbsp;</label>
+          ${Markup(c.widget.widget_type.display_field_by_idx(6))}
+        </li>
+        ${Markup(c.widget.widget_type.display_field_by_idx(7))}
+        ${Markup(c.widget.widget_type.display_field_by_idx(8))}
+      </ol>
 </form>
