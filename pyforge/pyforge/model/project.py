@@ -170,13 +170,9 @@ class Project(MappedClass):
         else:
             return url
 
-    def oldforge_url(self):
-        shortname = self.shortname[len(self.neighborhood.shortname_prefix):]
-        short_split = shortname.split('/')
-        short_split.reverse()
-        short_split = '.'.join(short_split)
-        proj_name = short_split + '.' + self.neighborhood.url_prefix.replace('/','')
-        return '/projects/%s/' % proj_name
+    def best_download_url(self):
+        provider = plugin.ProjectRegistrationProvider.get()
+        return provider.best_download_url(self)
 
     def get_screenshots(self):
         return ProjectFile.query.find({'metadata.project_id':self._id, 'metadata.category':'screenshot'}).all()

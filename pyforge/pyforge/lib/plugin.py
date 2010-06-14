@@ -324,6 +324,11 @@ class ProjectRegistrationProvider(object):
             g.publish('react', 'forge.project_created')
         return sp
 
+    def best_download_url(self, project):
+        '''This is the url needed to render a download button.
+           It should be overridden for your specific envirnoment'''
+        return None
+
 
 class LocalProjectRegistrationProvider(ProjectRegistrationProvider):
     pass

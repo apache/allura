@@ -144,6 +144,15 @@ class SFXProjectRegistrationProvider(plugin.ProjectRegistrationProvider):
         return super(SFXProjectRegistrationProvider, self).register_subproject(
             project, name, user, install_apps)
 
+    def best_download_url(self, project):
+        shortname = project.shortname[len(project.neighborhood.shortname_prefix):]
+        short_split = shortname.split('/')
+        short_split.reverse()
+        short_split = '.'.join(short_split)
+        neighborhood_prefix = project.neighborhood.url_prefix.replace('/','')
+        proj_name = short_split + (neighborhood_prefix != 'p' and '.' + neighborhood_prefix or '')
+        return '/projects/%s/best_release.html' % proj_name
+
 @contextmanager
 def fake_pylons_context(request):
     from pyforge.lib.app_globals import Globals

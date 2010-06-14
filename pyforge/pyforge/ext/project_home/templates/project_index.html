@@ -55,7 +55,7 @@
       </div>
     </div>
   </body>
-  <script type="text/javascript">
-      $("#download-button").load("${c.project.oldforge_url()}best_release.html");
+  <script type="text/javascript" py:if="c.project.best_download_url()">
+      $("#download-button").load("${c.project.best_download_url()}");
   </script>
 </html>
