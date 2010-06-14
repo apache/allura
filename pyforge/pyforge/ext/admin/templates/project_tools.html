@@ -45,11 +45,9 @@
                   <td py:if="has_project_access('tool')()"><a href="${sp.url() + 'admin/'}" class="ico-l">
                     <b class="ui-icon ui-icon-pencil"></b> <span>Edit</span>
                   </a></td>
-                  <td class="tool-delete">
-                    <a py:if="has_project_access('tool')()"
-                       class="subproject-${i} ico-l" href="#">
-                       <b class="ui-icon ui-icon-close"></b> <span>Delete</span>
-                    </a>
+                  <td>
+                    <input py:if="has_project_access('tool')()"
+                           name="subproject-${i}.delete" type="submit" value="Delete"/>
                   </td>
                 </tr>
                 <tr py:for="i, config in enumerate(c.project.app_configs)" py:if="config.load().installable">
@@ -62,15 +60,9 @@
                        <b class="ui-icon ui-icon-pencil"></b> <span>Edit</span>
                     </a>
                   </td>
-                  <td class="tool-delete">
-                    <a py:if="has_project_access('tool')()"
-                       class="tool-${i} ico-l" href="#">
-                       <b class="ui-icon ui-icon-close"></b> <span>Delete</span>
-                       
-                    </a>
-                    <!-- <input py:if="has_project_access('tool')() and config.load().installable"
-                                           name="tool-${i}.delete" type="submit" value="Delete"
-                                          /> -->
+                  <td>
+                    <input py:if="has_project_access('tool')() and config.load().installable"
+                           name="tool-${i}.delete" type="submit" value="Delete"/>
                   </td>
                 </tr>
               </form>
@@ -110,14 +102,6 @@
     /*<![CDATA[*/
     $('select.new_ep_name').change(function() {
       $(this).closest('tr').find('input.new_mount_point').val($(this).val().toLowerCase());
-    });
-    $('td.tool-delete a').click(function(e){
-      var vals = $('#mounts_edit').serialize();
-      var del_name = e.target.className+'.delete';
-      $.post($('#mounts_edit')[0].action, vals+'&'+del_name+'=Del', function(){
-        window.location.reload();
-      });
-      return false;
     });
     /*]]>*/
   </script>
