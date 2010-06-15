@@ -13,6 +13,11 @@
   <head>
     <meta content="text/html; charset=UTF-8" http-equiv="content-type" py:replace="''"/>
     <title>$page.title</title>
+    <style type="text/css">
+      textarea[name=text]{
+        height: 600px;
+      }
+    </style>
   </head>
   
   <body>
@@ -30,14 +35,9 @@
 					<input type="text" name="title" id="title" value="${page.title}" placeholder="Page name" required="required" autofocus="autofocus"/>
 				</li>
 				<li>
-				  <div class="row dual">
-					<div class="column" style="margin-right:0">
 					<label for="text">Content:</label>
-				</div>
-				<div class="column" style="margin-left:0">
+					<div style="clear:both"/>
 					${c.markdown_editor.display(name='text',value=page.text)}
-				</div>
-			</div>
 				</li>
 				<li>
 				  <div class="row dual">
