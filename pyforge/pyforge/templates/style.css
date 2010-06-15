@@ -1199,3 +1199,7 @@ ul.ui-tab li a {
 #sidebar-right input[type="text"]{
     width: 120px;
 }
+#header .project_icon{
+    width: 32px;
+    height: 32px;
+}
