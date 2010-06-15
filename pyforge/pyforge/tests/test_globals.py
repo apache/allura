@@ -29,9 +29,7 @@ def test_markdown():
     g.set_app('hello')
     assert '<a href=' in g.markdown.convert('# Foo!\n[Root]')
     assert '<a href=' not in g.markdown.convert('# Foo!\n[Rooted]')
-    assert '<a href=' not in g.markdown.convert('http://sf.net') # Meta ext grabs it
     assert '<a href=' in g.markdown.convert('This is http://sf.net')
-    assert '<a href=' not in g.markdown.convert('http://sf.net is this') # Meta ext grabs it
     assert '<a href=' in g.markdown_wiki.convert('This is a WikiPage')
     assert '<a href=' not in g.markdown_wiki.convert('This is a WIKIPAGE')
     assert '<br' in g.markdown.convert('Multi\nLine'), g.markdown.convert('Multi\nLine')
