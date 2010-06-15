@@ -141,8 +141,8 @@ class TestRootController(TestController):
 
     def test_new_image_attachment_content(self):
         self.app.get('/wiki/TEST/')
-        file_name = 'ui-icons_454545_256x240.png'
-        file_path = os.path.join(pyforge.__path__[0],'public','nf','css','forge','images',file_name)
+        file_name = 'neo-icon-set-454545-256x350.png'
+        file_path = os.path.join(pyforge.__path__[0],'public','nf','images',file_name)
         file_data = file(file_path).read()
         upload = ('file_info', file_name, file_data)
         self.app.post('/wiki/TEST/attach', upload_files=[upload])

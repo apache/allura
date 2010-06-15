@@ -920,8 +920,8 @@ ul.ui-tab li a {
 .solo li:last-child {border: none;}
 
 /* Icons */
-.actions .ui-icon {background-image: url('${g.forge_static("images/ui-icons_ffffff_256x240.png")}');}
-.ui-icon {background-image: url('${g.forge_static("images/ui-icons_454545_256x240.png")}');}
+.actions .ui-icon {background-image: url('${g.forge_static("images/neo-icon-set-ffffff-256x350.png")}');}
+.ui-icon {background-image: url('${g.forge_static("images/neo-icon-set-454545-256x350.png")}');}
 
 .ui-icon-carat-1-n { background-position: 0 0; }
 .ui-icon-carat-1-ne { background-position: -16px 0; }
@@ -1098,6 +1098,16 @@ ul.ui-tab li a {
 .ui-icon-grip-solid-horizontal { background-position: -48px -224px; }
 .ui-icon-gripsmall-diagonal-se { background-position: -64px -224px; }
 .ui-icon-grip-diagonal-se { background-position: -80px -224px; }
+
+.ui-icon-tool-home { background-position: 0 -112px; }
+.ui-icon-tool-Wiki { background-position: 0 -320px; }
+.ui-icon-tool-Git, .ui-icon-tool-SVN, .ui-icon-tool-Hg { background-position: -16px -320px; }
+.ui-icon-tool-Stats { background-position: -32px -320px; }
+.ui-icon-tool-admin { background-position: -48px -320px; }
+.ui-icon-tool-Discussion { background-position: -64px -320px; }
+.ui-icon-tool-Tickets { background-position: -80px -320px; }
+.ui-icon-tool-Downloads { background-position: -96px -320px; }
+.ui-icon-tool-Link { background-position: -32px -80px; }
 
 /* Attachments */
 

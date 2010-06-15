@@ -89,8 +89,8 @@ class TestProjectAdmin(TestController):
                 'role-0.id':str(role1._id)})
 
     def test_project_icon(self):
-        file_name = 'ui-icons_454545_256x240.png'
-        file_path = os.path.join(pyforge.__path__[0],'public','nf','css','forge','images',file_name)
+        file_name = 'neo-icon-set-454545-256x350.png'
+        file_path = os.path.join(pyforge.__path__[0],'public','nf','images',file_name)
         file_data = file(file_path).read()
         upload = ('icon', file_name, file_data)
 
@@ -106,8 +106,8 @@ class TestProjectAdmin(TestController):
         assert image.size == (48,48)
 
     def test_project_screenshot(self):
-        file_name = 'ui-icons_454545_256x240.png'
-        file_path = os.path.join(pyforge.__path__[0],'public','nf','css','forge','images',file_name)
+        file_name = 'neo-icon-set-454545-256x350.png'
+        file_path = os.path.join(pyforge.__path__[0],'public','nf','images',file_name)
         file_data = file(file_path).read()
         upload = ('screenshot', file_name, file_data)
 

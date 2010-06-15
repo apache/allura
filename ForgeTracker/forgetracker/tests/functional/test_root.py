@@ -60,8 +60,10 @@ class TestFunctionalController(TestController):
         ticket_view.mustcontain(summary, 'Discussion', 'No posts found')
     
     def test_render_index(self):
+        summary = 'test render index'
+        self.new_ticket(summary=summary)
         index_view = self.app.get('/bugs/')
-        assert 'Showing 250 results per page.' in index_view
+        assert_true(summary in index_view)
     
     def test_render_help(self):
         summary = 'test render help'
@@ -160,8 +162,8 @@ class TestFunctionalController(TestController):
     
     def test_new_image_attachment_content(self):
         h.set_context('test', 'bugs')
-        file_name = 'ui-icons_454545_256x240.png'
-        file_path = os.path.join(pyforge.__path__[0],'public','nf','css','forge','images',file_name)
+        file_name = 'neo-icon-set-454545-256x350.png'
+        file_path = os.path.join(pyforge.__path__[0],'public','nf','images',file_name)
         file_data = file(file_path).read()
         upload = ('file_info', file_name, file_data)
         self.new_ticket(summary='test new attachment')

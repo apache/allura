@@ -203,8 +203,12 @@ class Project(MappedClass):
         for ac in self.app_configs:
             App = ac.load()
             app = App(self, ac)
+            app_sitemap = []
             if app.is_visible_to(c.user):
-                app_sitemap = [ sm.bind_app(app) for sm in app.sitemap ]
+                for sm in app.sitemap:
+                    entry = sm.bind_app(app)
+                    entry.ui_icon='tool-%s' % ac.tool_name
+                    app_sitemap.append(entry)
                 sitemap.extend(app_sitemap)
         return sitemap.children
 
