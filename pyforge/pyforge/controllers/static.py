@@ -21,7 +21,8 @@ class NewForgeController(object):
                       color3=theme.color3,
                       color4=theme.color4,
                       color5=theme.color5,
-                      color6=theme.color6)
+                      color6=theme.color6,
+                      g=g)
         tpl_fn = pkg_resources.resource_filename(
             'pyforge', 'templates/style.css')
         css = h.render_genshi_plaintext(tpl_fn,**colors)

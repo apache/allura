@@ -788,7 +788,7 @@ ul.ui-tab li a {
 }
 .base .pad .title, .title, .actions a {color: rgb(255,255,255) !important;}
 .base .pad .title, .title {
-	background: rgb(0,0,0) url('/nf/images/al.png') repeat-x 0 100%;
+	background: rgb(0,0,0) url('${g.forge_static("images/al.png")}') repeat-x 0 100%;
 	border-top-left-radius: 5px;
 	border-top-right-radius: 5px;
 		-webkit-border-top-left-radius: 5px;
@@ -901,8 +901,8 @@ ul.ui-tab li a {
 .solo li:last-child {border: none;}
 
 /* Icons */
-.actions .ui-icon {background-image: url('/nf/images/ui-icons_ffffff_256x240.png');}
-.ui-icon {background-image: url('/nf/images/ui-icons_454545_256x240.png');}
+.actions .ui-icon {background-image: url('${g.forge_static("images/ui-icons_ffffff_256x240.png")}');}
+.ui-icon {background-image: url('${g.forge_static("images/ui-icons_454545_256x240.png")}');}
 
 .ui-icon-carat-1-n { background-position: 0 0; }
 .ui-icon-carat-1-ne { background-position: -16px 0; }
@@ -1118,7 +1118,7 @@ ul.ui-tab li a {
 .tagEditor li, .removable
 {
 	display: inline;
-	background-image: url(/nf/images/minus_small.png);
+	background-image: url('${g.forge_static("images/minus_small.png")}');
 	background-color: #eef;
 	background-position: right center;
 	background-repeat: no-repeat;
