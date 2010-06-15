@@ -197,6 +197,8 @@ class Project(MappedClass):
     def sitemap(self):
         from pyforge.app import SitemapEntry
         sitemap = SitemapEntry('root')
+        for sub in self.direct_subprojects:
+            sitemap.children.append(SitemapEntry(sub.name, sub.url()))
         for ac in self.app_configs:
             App = ac.load()
             app = App(self, ac)
