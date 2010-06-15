@@ -62,8 +62,24 @@ class TestRootController(TestController):
         assert 'TEST' in response
 
     def test_page_history(self):
+        self.app.get('/wiki/TEST/')
+        self.app.get('/wiki/TEST/update?title=TEST&text=text1&tags=&tags_old=&labels=&labels_old=&viewable_by-0.id=all')
+        self.app.get('/wiki/TEST/update?title=TEST&text=text2&tags=&tags_old=&labels=&labels_old=&viewable_by-0.id=all')
         response = self.app.get('/wiki/TEST/history')
         assert 'TEST' in response
+        # two revisions are shown
+        assert '2 by Test Admin' in response
+        assert '1 by Test Admin' in response
+        # you can revert to an old revison, but not the current one
+        assert response.html.find('a',{'href':'./revert?version=1'})
+        assert not response.html.find('a',{'href':'./revert?version=2'})
+        response = self.app.get('/wiki/TEST/history', extra_environ=dict(username='*anonymous'))
+        # two revisions are shown
+        assert '2 by Test Admin' in response
+        assert '1 by Test Admin' in response
+        # you cannot revert to any revision
+        assert not response.html.find('a',{'href':'./revert?version=1'})
+        assert not response.html.find('a',{'href':'./revert?version=2'})
 
     def test_page_diff(self):
         self.app.get('/wiki/TEST/')

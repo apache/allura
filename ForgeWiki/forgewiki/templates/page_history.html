@@ -5,12 +5,13 @@
       xmlns:xi="http://www.w3.org/2001/XInclude">
 
   <xi:include href="wiki_master.html"/>
+  <?python from pyforge.lib.security import has_artifact_access?>
 
   <head>
     <meta content="text/html; charset=UTF-8" http-equiv="content-type" py:replace="''"/>
     <title>$title</title>
   </head>
-  
+
   <body>
     <h1 class="title">$title</h1>
 		<div class="actions">
@@ -32,13 +33,13 @@
                 </tr>
               </thead>
               <tbody>
-                <tr py:for="p in pages">
+                <tr py:for="i, p in enumerate(pages)">
                   <td>$p.version by $p.author.display_name</td>
                   <td><input name="v1" type="radio" value="$p.version"/></td>
                   <td><input name="v2" type="radio" value="$p.version"/></td>
                   <td>
                     <a href="./?version=$p.version" class="btn">View Revision</a>
-                    <a href="./revert?version=$p.version" class="btn">Revert to version $p.version</a>
+                    <a href="./revert?version=$p.version" class="btn" py:if="i != 0 and has_artifact_access('edit', p)()">Revert to version $p.version</a>
                   </td>
                 </tr>
               </tbody>
