@@ -64,10 +64,10 @@ class Globals(object):
 
         # Setup markdown
         self.markdown = markdown.Markdown(
-            extensions=['codehilite', ForgeExtension(), 'meta', 'tables'],
+            extensions=['codehilite', ForgeExtension(), 'tables'],
             output_format='html4')
         self.markdown_wiki = markdown.Markdown(
-            extensions=['codehilite', ForgeExtension(wiki=True), 'meta', 'tables'],
+            extensions=['codehilite', ForgeExtension(wiki=True), 'tables'],
             output_format='html4')
         # self.markdown.stripTopLevelTags = self.markdown_wiki.stripTopLevelTags=False
 
