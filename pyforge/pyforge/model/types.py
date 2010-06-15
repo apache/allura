@@ -15,6 +15,13 @@ class ArtifactReference(Object):
             obj = cls.query.get(_id=self.artifact_id)
             return obj
 
+    def exists(self):
+        if self.artifact_type is None: return False
+        with h.push_context(self.project_id, self.mount_point):
+            cls = pickle.loads(str(self.artifact_type))
+            count = cls.query.find(dict(_id=self.artifact_id)).count()
+            return count > 0
+
 class ArtifactReferenceType(S.Object):
 
     def __init__(self):

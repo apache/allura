@@ -113,7 +113,9 @@ class ArtifactLink(MappedClass):
         #
         with h.push_config(c, project=projects[0]):
             for p in projects:
-                links = cls.query.find(dict(project_id=p._id, link=artifact_id)).all()
+                links = [
+                    l for l in cls.query.find(dict(project_id=p._id, link=artifact_id))
+                    if ArtifactReference(l.artifact_reference).exists() ]
                 for l in links:
                     if app_id is None: return l
                     if app_id == l.mount_point: return l
