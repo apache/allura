@@ -133,17 +133,17 @@ class Globals(object):
             return result
         
     def forge_static(self, resource):
-        return ''.join(
-            [ config['static.url_base'],
-              resource ])
+        base = config['static.url_base']
+        if base.startswith(':'):
+            base = request.scheme + base
+        return base + resource
         
     def app_static(self, resource, app=None):
+        base = config['static.url_base']
         app = app or c.app
-        return ''.join(
-            [ config['static.url_base'],
-              app.config.tool_name,
-              '/',
-              resource ])
+        if base.startswith(':'):
+            base = request.scheme + base
+        return (base + app.config.tool_name + '/' + resource)
 
     def set_project(self, pid):
         c.project = M.Project.query.get(shortname=pid, deleted=False)
