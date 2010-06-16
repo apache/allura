@@ -48,8 +48,8 @@
               <py:with vars="flash=tg.flash_obj.render('flash', use_js=False)">
                 <div py:if="flash" py:content="XML(flash)" />
               </py:with>
-              <ul py:for="n in h.pop_user_notifications()" style="clear:both">
-                <b>$n.subject</b> $n.text
+              <ul py:for="n in h.pop_user_notifications()" style="clear:both" class="notice">
+                $n.text
               </ul>
               <div py:replace="select('*|text()')"/>
           </div>

@@ -110,9 +110,6 @@ class Notification(MappedClass):
                 text=kwargs.pop('text', subject))
         if not d.get('text'):
             d['text'] = ''
-        if hasattr(artifact, 'url'):
-            d['text'] += '\n\n%s URL: %s' % \
-                (artifact.__class__.__name__, h.full_url(artifact.url()))
         n = cls(artifact_reference=artifact.dump_ref(),
                 topic=topic,
                 link=kwargs.pop('link', artifact.url()),

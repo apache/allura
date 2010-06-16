@@ -14,4 +14,4 @@ def init(routing_key, data):
     repo.init()
     M.Notification.post_user(
         c.user, repo, 'created',
-        text='Repository %s created' % repo.name)
+        text='SVN repository created')

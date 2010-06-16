@@ -15,7 +15,7 @@ def init(routing_key, data):
     repo.init()
     M.Notification.post_user(
         pylons.c.user, repo, 'created',
-        text='Repository %s created' % repo.name)
+        text='Git repository created')
 
 @audit('scm.git.clone')
 def clone(routing_key, data):
@@ -23,7 +23,7 @@ def clone(routing_key, data):
     repo.init_as_clone(data['cloned_from'])
     M.Notification.post_user(
         pylons.c.user, repo, 'created',
-        text='Repository %s created' % repo.name)
+        text='Git repository created')
 
 @react('scm.git.refresh_commit')
 def refresh_commit(routing_key, data):
