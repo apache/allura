@@ -232,7 +232,7 @@ class TestFunctionalController(TestController):
         summary = 'test ticket view page can be edited'
         self.new_ticket(summary=summary)
         response = self.app.get('/p/test/bugs/1/')
-        assert response.html.find('input', {'name': 'summary'})
+        assert response.html.find('textarea', {'name': 'summary'})
         assert response.html.find('input', {'name': 'assigned_to'})
         assert response.html.find('textarea', {'name': 'description'})
         assert response.html.find('select', {'name': 'status'})
@@ -367,12 +367,12 @@ class TestFunctionalController(TestController):
         assert error_message
         assert (error_message.string == 'Please enter a value' or \
                 error_message.string == 'Missing value')
-        assert error_message.findPreviousSibling('input').get('name') == 'ticket_form.summary'
+        assert error_message.findPreviousSibling('textarea').get('name') == 'ticket_form.summary'
         # set a summary, submit, and check for success
         error_form.forms[1]['ticket_form.summary'] = summary
         success = error_form.forms[1].submit().follow().html
         assert success.findAll('form')[1].get('action') == '/p/test/bugs/1/update_ticket'
-        assert success.find('input', {'name':'summary'}).get('value') == summary
+        assert success.find('textarea', {'name':'summary'}).string == summary
 
     def test_edit_ticket_validation(self):
         old_summary = 'edit ticket test'
@@ -380,7 +380,7 @@ class TestFunctionalController(TestController):
         self.new_ticket(summary=old_summary)
         response = self.app.get('/bugs/1/edit/')
         # check that existing form is valid
-        assert response.html.find('input', {'name':'edit_ticket_form.summary'}).get('value') == old_summary
+        assert response.html.find('textarea', {'name':'edit_ticket_form.summary'}).string == old_summary
         assert not response.html.find('div', {'class':'error'})
         form = response.forms[2]
         # try submitting with no summary set and check for error message
@@ -389,12 +389,12 @@ class TestFunctionalController(TestController):
         error_message = error_form.html.find('div', {'class':'error'})
         assert error_message
         assert error_message.string == 'Please enter a value'
-        assert error_message.findPreviousSibling('input').get('name') == 'edit_ticket_form.summary'
+        assert error_message.findPreviousSibling('textarea').get('name') == 'edit_ticket_form.summary'
         # set a summary, submit, and check for success
         error_form.forms[2]['edit_ticket_form.summary'] = new_summary
         success = error_form.forms[2].submit().follow().html
         assert success.findAll('form')[1].get('action') == '/p/test/bugs/1/update_ticket'
-        assert success.find('input', {'name':'summary'}).get('value') == new_summary
+        assert success.find('textarea', {'name':'summary'}).string == new_summary
 
 #   def test_home(self):
 #       self.new_ticket(summary='test first ticket')
