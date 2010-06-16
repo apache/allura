@@ -1,0 +1,33 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+                      "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:py="http://genshi.edgewall.org/"
+      xmlns:xi="http://www.w3.org/2001/XInclude">
+
+  <xi:include href="${g.pyforge_templates}/master.html"/>
+
+  <head>
+    <meta content="text/html; charset=UTF-8" http-equiv="content-type" py:replace="''"/>
+    <title>Git Diff</title>
+    <link rel="stylesheet" type="text/css" media="screen, projection" href="${g.forge_static('css/forge/hilite.css')}" />
+  </head>
+
+  <body>
+    <div style="background-color:#ddd;-moz-border-radius:5px;padding:1em;">
+
+      <a href="${a._commit.url()}">${h.text.truncate(a._commit._id, 10)}:</a>
+      <a href="${a.url()}">${a.path()}</a><br/>
+      ..<br/>
+      <a href="${b._commit.url()}">${h.text.truncate(b._commit._id, 10)}:</a>
+      <a href="${b.url()}">${b.path()}</a>
+
+      <py:if test="not a.has_html_view or not b.has_html_view">
+        $a.name cannot be displayed in your browser.
+        You may, however, <a href="?format=raw">download this file</a> instead.
+      </py:if>
+      <py:if test="a.has_html_view and b.has_html_view">
+        ${Markup(g.highlight(diff, lexer='diff'))}
+      </py:if>
+    </div>
+  </body>
+</html>

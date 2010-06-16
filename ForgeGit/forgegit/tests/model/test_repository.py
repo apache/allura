@@ -80,7 +80,7 @@ class TestGitCommit(unittest.TestCase):
         assert self.rev._id == art._id
 
     def test_url(self):
-        assert self.rev.url().endswith('/HEAD')
+        assert self.rev.url().endswith('/HEAD/')
 
     def test_committer_url(self):
         assert self.rev.committer_url is None

@@ -6,29 +6,36 @@ import errno
 import logging
 import subprocess
 import pkg_resources
-from itertools import islice
 import cPickle as pickle
+from itertools import islice
 from datetime import datetime
+from cStringIO import StringIO
 
 import git
 import pylons
 import pymongo.bson
+from webob import exc
 
 from ming.orm.mapped_class import MappedClass
 from ming.orm.property import FieldProperty
 from ming.utils import LazyProperty
 
-from pyforge.model import Repository, Commit, ArtifactReference, User
+from pyforge import model as M
 from pyforge.lib import helpers as h
 
 log = logging.getLogger(__name__)
 
-class GitRepository(Repository):
+def on_import():
+    GitRepository.CommitClass = GitCommit
+    GitCommit.TreeClass = GitTree
+    GitTree.BlobClass = GitBlob
+
+class GitRepository(M.Repository):
     class __mongometa__:
         name='git-repository'
 
     def index(self):
-        result = Repository.index(self)
+        result = super(GitRepository, self).index()
         result.update(
             type_s='GitRepository')
         return result
@@ -79,9 +86,14 @@ class GitRepository(Repository):
     def revision(self, rev):
         return GitCommit(rev, self)
 
-    def log(self, *args, **kwargs):
-        return (GitCommit.from_git(c, self)
-                for c in self._impl.iter_commits(*args, **kwargs))
+    def _log(self, **kwargs):
+        kwargs.setdefault('topo_order', True)
+        commits = self._impl.iter_commits(**kwargs)
+        return [ self.CommitClass.from_repo_object(entry, self)
+                 for entry in commits ]
+
+    def log(self, branch='master', offset=0, limit=10):
+        return self._log(rev=branch, skip=offset, max_count=limit)
 
     @LazyProperty
     def _impl(self):
@@ -108,17 +120,20 @@ class GitRepository(Repository):
             fp.write(text)
         os.chmod(fn, 0755)
 
-class GitCommit(Commit):
+class GitCommit(M.Commit):
     type_s='GitCommit'
 
     @classmethod
-    def from_git(cls, c, repo):
-        result = cls(id=c.sha, repo=repo)
-        result.__dict__['_impl'] = c
+    def from_repo_object(cls, ci, repo):
+        result = cls(id=ci.sha, repo=repo)
+        result.__dict__['_impl'] = ci
         return result
 
     def shorthand_id(self):
         return '[%s]' % self._id[:6]
+
+    def url(self):
+        return self._repo.url() + 'ci/' + self._id + '/'
 
     @LazyProperty
     def _impl(self):
@@ -137,41 +152,129 @@ class GitCommit(Commit):
 
     @LazyProperty
     def author_url(self):
-        u = User.by_email_address(self.author.email)
+        u = M.User.by_email_address(self.author.email)
         if u: return u.url()
 
     @LazyProperty
     def committer_url(self):
-        u = User.by_email_address(self.committer.email)
+        u = M.User.by_email_address(self.committer.email)
         if u: return u.url()
 
     @LazyProperty
     def parents(self):
-        return tuple(GitCommit.from_git(c, self._repo) for c in self._impl.parents)
+        return tuple(GitCommit.from_repo_object(c, self._repo)
+                     for c in self._impl.parents)
 
-    @LazyProperty
-    def diffs(self):
-        differ = h.diff_text_genshi
+    def diff_summarize(self):
         if self.parents:
             for d in self.parents[0].diff(self.sha):
                 if d.deleted_file:
-                    yield (
-                        d.a_blob,
-                        d.a_blob,
-                        ''.join(differ(d.a_blob.data, '')))
+                    yield 'remove', d.a_blob.path
                 elif d.new_file:
-                    yield (
-                        d.b_blob,
-                        d.b_blob,
-                        ''.join(differ('', d.b_blob.data)))
+                    yield 'add', d.b_blob.path
                 else:
-                    yield (
-                        d.a_blob,
-                        d.b_blob,
-                        ''.join(differ(d.a_blob.data, d.b_blob.data)))
+                    yield 'change', d.a_blob.path
         else:
             for blob in self.tree:
-                yield (blob, blob, ''.join(differ('', blob.data)))
-            pass
+                yield 'add', blob.path
 
+    def context(self, branch):
+        entries = self._repo._log(
+            branches=branch)
+        prev=next=None
+        found_ci = False
+        for ent in entries:
+            if ent.sha == self._id:
+                found_ci = True
+            elif found_ci:
+                prev=ent
+                break
+            else:
+                next=ent
+        return dict(prev=prev, next=next)
+
+class GitTree(M.Tree):
+
+    def __init__(self, repo, branch, commit, parent=None, name=None):
+        super(GitTree, self).__init__(repo, branch, commit, parent, name)
+        if parent is None:
+            self._tree = self._commit._impl.tree
+        else:
+            try:
+                self._tree = self._parent._tree[name]
+            except KeyError:
+                raise exc.HTTPNotFound()
+
+    def ls(self):
+        for dirent in self._tree:
+            name = dirent.name
+            date = datetime.min
+            href = name
+            if isinstance(dirent, git.Tree):
+                href = href + '/'
+                kind='dir'
+            else:
+                kind='file'
+            yield dict(
+                dirent=dirent,
+                name=name,
+                date=date,
+                href=href,
+                kind=kind,
+                last_author='',
+                )
+
+    def is_blob(self, name):
+        try:
+            dirent = self._tree[name]
+            return isinstance(dirent, git.Blob)
+        except:
+            log.exception('Error checking blob-ness of %s', name)
+            return False
+
+class GitBlob(M.Blob):
+
+    def __init__(self, repo, branch, commit, tree, filename):
+        super(GitBlob, self).__init__(
+            repo, branch, commit, tree, filename)
+        self._blob = tree._tree[filename]
+        self.content_type, self.content_encoding = (
+            self._blob.mime_type, None)
+
+    def __iter__(self):
+        fp = StringIO(self.text)
+        return iter(fp)
+
+    @LazyProperty
+    def text(self):
+        return self._blob.data
+
+    def context(self, branch):
+        path = self._tree.path().split('/')[1:-1]
+        result = dict(prev=None, next=None)
+        entries = self._repo._log(
+            paths=self._blob.path,
+            branches=branch)
+        prev=next=None
+        found_ci = False
+        for ent in entries:
+            if ent.sha == self._commit.sha:
+                found_ci = True
+            elif found_ci:
+                prev=ent
+                break
+            else:
+                next=ent
+        if prev:
+            tree = prev.tree(self._branch)
+            result['prev'] = tree.get_blob(self.filename, path)
+        if next:
+            tree = next.tree(self._branch)
+            result['next'] = tree.get_blob(self.filename, path)
+        return result
+
+    def __getattr__(self, name):
+        return getattr(self._blob, name)
+
+on_import()
 MappedClass.compile_all()

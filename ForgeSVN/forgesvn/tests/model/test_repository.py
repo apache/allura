@@ -49,14 +49,14 @@ class TestSVNRepo(unittest.TestCase):
             assert entry.author_username == 'rick446@usa.net'
             assert entry.message
 
-    def test_revision(self):
-        entry = self.repo.revision(1)
+    def test_commit(self):
+        entry = self.repo.commit(None, 1)
         assert entry.author_username == 'rick446@usa.net'
         assert entry.message
 
-    def test_diff(self):
-        diff = self.repo.diff(1,2)
-        assert '+' in diff
+    def test_diff_summarize(self):
+        diff = self.repo.diff_summarize(1,2)
+        assert 'clutch' in diff[0].path
 
 
 class TestSVNRev(unittest.TestCase):
@@ -73,7 +73,7 @@ class TestSVNRev(unittest.TestCase):
             url_path = '/test/',
             tool = 'svn',
             status = 'creating')
-        self.rev = self.repo.revision(1)
+        self.rev = self.repo.commit(None, 1)
         ThreadLocalORMSession.flush_all()
         ThreadLocalORMSession.close_all()
 
@@ -83,7 +83,7 @@ class TestSVNRev(unittest.TestCase):
         assert self.rev._id == art._id
 
     def test_url(self):
-        assert self.rev.url().endswith('/1')
+        assert self.rev.url().endswith('/1/')
 
     def test_primary(self):
         assert self.rev.primary() == self.rev
@@ -92,6 +92,7 @@ class TestSVNRev(unittest.TestCase):
         assert self.rev.shorthand_id() == '[r1]'
 
     def test_diff(self):
-        assert '+' in self.rev.diff()
+        diff = self.rev.diff_summarize(0)
+        assert diff.next() == ('added', 'trunk/requirements.txt')
 
 

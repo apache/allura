@@ -1,47 +1,30 @@
 #-*- python -*-
 import logging
-import re
 import sys
 import shutil
-from datetime import datetime
-from itertools import islice
-from urllib import urlencode
 
 sys.path.append('/usr/lib/python2.6/dist-packages')
 
 # Non-stdlib imports
 import pkg_resources
-import pysvn
-from tg import expose, validate, redirect, response, config
-from tg.decorators import with_trailing_slash, without_trailing_slash
-import pylons
-from pylons import g, c, request
-from formencode import validators
-from pymongo import bson
-from webob import exc
-
-from ming.orm.base import mapper
-from ming.utils import LazyProperty
-from pymongo.bson import ObjectId
+from pylons import c, g
+from tg import redirect
+from tg.decorators import with_trailing_slash
 
 # Pyforge-specific imports
-from pyforge.app import Application, ConfigOption, SitemapEntry, DefaultAdminController
+from pyforge import model as M
+from pyforge.app import Application, SitemapEntry, DefaultAdminController
 from pyforge.lib import helpers as h
-from pyforge.lib.search import search
-from pyforge.lib.decorators import audit, react
-from pyforge.lib.security import require, has_artifact_access
-from pyforge.model import ProjectRole, User, ArtifactReference, Feed
+from pyforge.lib.decorators import audit
+from pyforge.lib.security import has_artifact_access
 
 # Local imports
 from forgesvn import model
 from forgesvn import version
-from .widgets import SVNRevisionWidget
 from .reactors import reactors
+from .controllers import BranchBrowser
 
 log = logging.getLogger(__name__)
-
-class W(object):
-    revision_widget = SVNRevisionWidget()
 
 class ForgeSVNApp(Application):
     '''This is the SVN app for PyForge'''
@@ -50,7 +33,7 @@ class ForgeSVNApp(Application):
 
     def __init__(self, project, config):
         Application.__init__(self, project, config)
-        self.root = RootController()
+        self.root = BranchBrowser()
         self.admin = SVNAdminController(self)
 
     @property
@@ -83,8 +66,7 @@ class ForgeSVNApp(Application):
         self.config.options['project_name'] = project.name
         super(ForgeSVNApp, self).install(project)
         # Setup permissions
-        role_developer = ProjectRole.query.get(name='Developer')._id
-        role_auth = ProjectRole.query.get(name='*authenticated')._id
+        role_developer = M.ProjectRole.query.get(name='Developer')._id
         self.config.acl.update(
             configure=c.project.acl['tool'],
             read=c.project.acl['read'],
@@ -115,59 +97,5 @@ class SVNAdminController(DefaultAdminController):
     @with_trailing_slash
     def index(self):
         redirect('permissions')
-
-
-class RootController(object):
-
-    def _check_security(self):
-        require(has_artifact_access('read'))
-
-    @expose('forgesvn.templates.index')
-    def index(self, offset=0):
-        offset=int(offset)
-        repo = c.app.repo
-        if repo and repo.status=='ready':
-            revisions = repo.log(offset=offset, limit=10)
-        else:
-            revisions = []
-        c.revision_widget=W.revision_widget
-        next_link='?' + urlencode(dict(offset=offset+10))
-        username = ''
-        if c.user and c.user != User.anonymous():
-            username = c.user.username
-        return dict(
-            repo=c.app.repo,
-            revisions=revisions,
-            next_link=next_link,
-            username=username)
-
-    @expose()
-    def _lookup(self, rev, *remainder):
-        return CommitController(rev), remainder
-
-class CommitController(object):
-
-    def __init__(self, rev):
-        self._rev = int(rev)
-
-    @LazyProperty
-    def revision(self):
-        return c.app.repo.revision(self._rev)
-
-    @expose('forgesvn.templates.commit')
-    def index(self):
-        c.revision_widget=W.revision_widget
-        if self._rev <= 1:
-            prev = None
-        else:
-            prev = self._rev-1
-        if self._rev >= c.app.repo.last_revision:
-            next = None
-        else:
-            next = self._rev + 1;
-        return dict(
-            prev=prev,
-            next=next,
-            revision=self.revision)
 
 h.mixin_reactors(ForgeSVNApp, reactors)

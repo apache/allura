@@ -1,0 +1,27 @@
+<table xmlns:py="http://genshi.edgewall.org/">
+  <thead>
+    <tr>
+      <th>Kind</th>
+      <th>File</th>
+      <th>Date</th>
+      <th>Author</th>
+      <th>Commit</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr py:if="tree._parent">
+      <td></td>
+      <td><a href="..">[Up one dir]</a></td>
+      <td></td>
+      <td></td>
+      <td></td>
+    </tr>
+    <tr py:for="dirent in tree.ls()">
+      <td>$dirent.kind</td>
+      <td><a href="$dirent.href">$dirent.name</a></td>
+      <td>${h.ago(dirent.date)}</td>
+      <td>$dirent.last_author</td>
+      <td>---</td>
+    </tr>
+  </tbody>
+</table>

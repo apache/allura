@@ -8,8 +8,8 @@
 
   <head>
     <meta content="text/html; charset=UTF-8" http-equiv="content-type" py:replace="''"/>
-    <title py:if="not repo">SVN Repository</title>
-    <title py:if="repo">SVN Repository: ${repo.name}</title>
+    <title py:if="not c.app.repo">SVN Repository</title>
+    <title py:if="c.app.repo">SVN Repository: ${c.app.repo.name}</title>
   </head>
 
   <body>
@@ -18,19 +18,20 @@
       <div class="row">
         <div class="column grid_12">
           <h2>Project: $c.project.shortname</h2>
-          <py:if test="repo">
+          <a href="LATEST/tree/">Files</a>
+          <py:if test="c.app.repo">
             <dl>
               <dt>read access</dt>
-              <dd>svn checkout svn://$repo.scm_url_path</dd>
+              <dd>svn checkout svn://$c.app.repo.scm_url_path</dd>
               <dt>read/write access</dt>
-              <dd>svn checkout svn+ssh://${username or 'USERNAME'}@$repo.scm_url_path</dd>
+              <dd>svn checkout svn+ssh://${username or 'USERNAME'}@$c.app.repo.scm_url_path</dd>
               <dt>status</dt>
-              <dd>${repo.status}</dd>
+              <dd>${c.app.repo.status}</dd>
             </dl>
           </py:if>
           <h2>Commit History</h2>
-          <py:for each="r in revisions">
-            ${c.revision_widget.display(value=r)}
+          <py:for each="commit in log">
+            ${c.revision_widget.display(value=commit)}
           </py:for>
           <a py:if="next_link" href="$next_link">More</a>
         </div>

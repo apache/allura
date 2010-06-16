@@ -8,25 +8,16 @@
 
   <head>
     <meta content="text/html; charset=UTF-8" http-equiv="content-type" py:replace="''"/>
-    <title>SVN Commit</title>
+    <title>SVN Tree</title>
     <link rel="stylesheet" type="text/css" media="screen, projection" href="${g.forge_static('css/forge/hilite.css')}" />
   </head>
 
   <body>
-    <a py:if="prev" href="$prev">Prev</a>
-    <a py:if="next" href="$next">Next</a>
-    <p py:if="commit is None">Unknown revision</p>
-    <py:if test="commit is not None">
-      ${c.revision_widget.display(value=commit)}
-      <a href="./tree/">Tree</a>
-      <table>
-        <tbody>
-          <tr py:for="kind, path in commit.diff_summarize()">
-            <td>$kind</td>
-            <td><a href="./tree/$path">$path</a></td>
-          </tr>
-        </tbody>
-      </table>
-    </py:if>
+    <div style="background-color:#ddd;-moz-border-radius:5px;padding:1em;">
+      <a href="${tree._commit.url()}">@r${tree._commit._id}</a>:
+      ${path_links(tree.path().split('/')[1:-1])}
+      <br/>
+      ${c.tree_widget.display(tree=tree)}
+    </div>
   </body>
 </html>

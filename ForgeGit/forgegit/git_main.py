@@ -7,11 +7,11 @@ import shutil
 from subprocess import Popen
 from itertools import islice
 from datetime import datetime
-from urllib import urlencode
+from urllib import quote, unquote
 
 # Non-stdlib imports
 import pkg_resources
-from tg import expose, validate, redirect, response
+from tg import expose, validate, redirect, response, url
 from tg.decorators import with_trailing_slash, without_trailing_slash
 import pylons
 from pylons import g, c, request
@@ -36,6 +36,7 @@ from forgegit import model
 from forgegit import version
 from .widgets import GitRevisionWidget
 from .reactors import reactors
+from .controllers import BranchBrowser, CommitBrowser
 
 log = logging.getLogger(__name__)
 
@@ -78,13 +79,13 @@ class ForgeGitApp(Application):
                 links.append(SitemapEntry('Branches'))
                 for b in branches:
                     links.append(SitemapEntry(
-                            b, c.app.url + '?' + urlencode(dict(branch=b)),
+                            b, url(c.app.url, dict(branch=b)),
                             className='nav_child'))
             if tags:
                 links.append(SitemapEntry('Tags'))
                 for b in tags:
                     links.append(SitemapEntry(
-                            b, c.app.url + '?' + urlencode(dict(branch=b)),
+                            b, url(c.app.url, dict(branch=b)),
                             className='nav_child'))
         return links
 
@@ -149,22 +150,14 @@ class RootController(object):
     def _check_security(self):
         require(has_artifact_access('read'))
 
+    def __init__(self):
+        self.ref = Refs()
+        self.ci = Commits()
+
     @expose('forgegit.templates.index')
     def index(self, offset=0, branch='master'):
-        offset=int(offset)
-        repo = c.app.repo
-        if repo and c.app.repo.status=='ready':
-            revisions = list(islice(repo.log(branch), offset, offset+10))
-        else: # pragma no cover
-            revisions = []
-        c.revision_widget=W.revision_widget
-        next_link='?' + urlencode(dict(offset=offset+10, branch=branch))
-        return dict(repo=repo,
-                    branch=branch,
-                    revisions=revisions,
-                    next_link=next_link,
-                    offset=offset,
-                    allow_fork=True)
+        # Add the colon so we know where the branch part ends
+        redirect(url(quote('ref/%s:/' % branch), dict(offset=offset)))
 
     @with_trailing_slash
     @expose('forgegit.templates.fork')
@@ -188,19 +181,23 @@ class RootController(object):
                 to_project.install_app('Git', to_name, cloned_from=from_repo._id)
                 redirect('/'+to_project_name+'/'+to_name+'/')
 
+class Refs(object):
+
     @expose()
-    def _lookup(self, hash, *remainder):
-        return CommitController(hash), remainder
+    def _lookup(self, *parts):
+        parts = map(unquote, parts)
+        ref = []
+        while parts:
+            part = parts.pop(0)
+            ref.append(part)
+            if part.endswith(':'): break
+        ref = '/'.join(ref)[:-1]
+        return BranchBrowser(ref), parts
 
-class CommitController(object):
+class Commits(object):
 
-    def __init__(self, hash):
-        self._hash = hash
-
-    @expose('forgegit.templates.commit')
-    def index(self):
-        commit = c.app.repo.revision(rev=self._hash)
-        c.revision_widget=W.revision_widget
-        return dict(commit=commit)
+    @expose()
+    def _lookup(self, ci, *remainder):
+        return CommitBrowser(ci), remainder
 
 h.mixin_reactors(ForgeGitApp, reactors)

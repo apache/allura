@@ -67,10 +67,12 @@ class Globals(object):
         # Setup markdown
         self.markdown = markdown.Markdown(
             extensions=['codehilite', ForgeExtension(), 'tables'],
-            output_format='html4')
+            output_format='html4',
+            safe_mode='escape')
         self.markdown_wiki = markdown.Markdown(
             extensions=['codehilite', ForgeExtension(wiki=True), 'tables'],
-            output_format='html4')
+            output_format='html4',
+            safe_mode='escape')
         # self.markdown.stripTopLevelTags = self.markdown_wiki.stripTopLevelTags=False
 
         # Setup OEmbed
@@ -87,7 +89,9 @@ class Globals(object):
         self.oid_store = M.OpenIdStore()
 
         # Setup pygments
-        self.pygments_formatter = pygments.formatters.HtmlFormatter(cssclass='codehilite')
+        self.pygments_formatter = pygments.formatters.HtmlFormatter(
+            cssclass='codehilite',
+            linenos='inline')
 
     def document_class(self, neighborhood):
         classes = ''
@@ -106,7 +110,7 @@ class Globals(object):
             try:
                 lexer = pygments.lexers.get_lexer_for_filename(filename)
             except pygments.util.ClassNotFound:
-                return text
+                return '<pre>' + text + '</pre>'
         else:
             lexer = pygments.lexers.get_lexer_by_name(lexer)
         return pygments.highlight(text, lexer, self.pygments_formatter)

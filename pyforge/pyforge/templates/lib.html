@@ -116,6 +116,13 @@
     </py:for>
   </py:def>
 
+  <py:def function="path_links(parts)">
+    <py:for each="i, part in enumerate(parts)">/
+      <a href="${'./' + '../' * (len(parts)-i-1)}">$part
+      </a>
+    </py:for>/
+  </py:def>
+
   <py:def function="text_field(name, label, value=None)">
     <label for="$name">$label</label><br/>
     <input type="text" id="$name" name="$name" class="text" value="$value"/><br/>

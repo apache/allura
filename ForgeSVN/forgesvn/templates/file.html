@@ -1,0 +1,42 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+                      "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:py="http://genshi.edgewall.org/"
+      xmlns:xi="http://www.w3.org/2001/XInclude">
+
+  <xi:include href="${g.pyforge_templates}/master.html"/>
+
+  <head>
+    <meta content="text/html; charset=UTF-8" http-equiv="content-type" py:replace="''"/>
+    <title>SVN File</title>
+    <link rel="stylesheet" type="text/css" media="screen, projection" href="${g.forge_static('css/forge/hilite.css')}" />
+  </head>
+
+  <body>
+    <div style="background-color:#ddd;-moz-border-radius:5px;padding:1em;">
+      <py:if test="prev">
+        <a href="${prev.url()}">@r${prev._commit._id}</a>
+        <a href="?diff=prev">&mdash; diff &mdash;</a>
+      </py:if>
+
+      <a href="${blob._commit.url()}">@r${blob._commit._id}</a>:
+      ${path_links(blob.path().split('/')[1:-1])} $blob.filename
+
+      <py:if test="next">
+        <a href="?diff=next">&mdash; diff &mdash;</a>
+        <a href="${next.url()}">@r${next._commit._id}</a>
+      </py:if>
+
+      <br/>
+
+      <py:if test="not blob.has_html_view">
+        $blob.name cannot be displayed in your browser.
+        You may, however, <a href="?format=raw">download this file</a> instead.
+      </py:if>
+      <py:if test="blob.has_html_view">
+        <a href="?format=raw">Download this file</a>
+        ${Markup(g.highlight(blob.text, filename=blob.filename))}
+      </py:if>
+    </div>
+  </body>
+</html>

@@ -84,7 +84,7 @@ class TestHgCommit(unittest.TestCase):
         assert self.rev._id == art._id
 
     def test_url(self):
-        assert self.rev.url().endswith('/6cf1b362918b747c873f1903064860726e9360ef')
+        assert self.rev.url().endswith('/6cf1b362918b747c873f1903064860726e9360ef/')
 
     def test_user_url(self):
         assert self.rev.user_url is None

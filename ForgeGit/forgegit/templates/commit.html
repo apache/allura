@@ -17,22 +17,34 @@
   </head>
 
   <body>
+      <py:if test="prev">
+        <a href="${prev.url()}">@${h.text.truncate(prev._id, 10)}</a>
+      </py:if>
+
+      <b>This Version</b>
+
+      <py:if test="next">
+        <a href="${next.url()}">@${h.text.truncate(next._id, 10)}</a>
+      </py:if>
+      <br/>
+
     ${c.revision_widget.display(value=commit)}
+    <a href="./tree/">Tree</a>
     <div py:if="commit.parents">
       <h2>Parent(s)</h2>
       <ul>
-        <li py:for="c in commit.parents">
-          <a href="${c.url()}">${h.text.truncate(c.sha ,10)}</a>
+        <li py:for="p in commit.parents">
+          <a href="${p.url()}">${h.text.truncate(p.sha ,10)}</a>
         </li>
       </ul>
     </div>
-    <py:if test="commit.diffs">
-      <h2>Diffs</h2>
-      <div py:for="a, b, d in commit.diffs"
-           class="title-pane closed">
-        <h3 class="title">diff a/$a.path b/$b.path</h3>
-        <pre class="content codehilite"><code>${Markup(d)}</code></pre>
-      </div>
-    </py:if>
+    <table>
+      <tbody>
+        <tr py:for="kind, path in commit.diff_summarize()">
+          <td>$kind</td>
+          <td><a href="./tree/$path">$path</a></td>
+        </tr>
+      </tbody>
+    </table>
   </body>
 </html>

@@ -242,8 +242,9 @@ def absurl(url):
     if '://' in url: return url
     return request.scheme + '://' + request.host + url
 
-def diff_text(t1, t2):
-    differ = difflib.SequenceMatcher(None, t1, t2)
+def diff_text(t1, t2, differ=None):
+    if differ is None:
+        differ = difflib.SequenceMatcher(None, t1, t2)
     result = []
     for tag, i1, i2, j1, j2 in differ.get_opcodes():
         if tag in ('delete', 'replace'):
