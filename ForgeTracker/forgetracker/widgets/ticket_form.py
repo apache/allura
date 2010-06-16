@@ -50,7 +50,9 @@ class GenericTicketForm(ew.SimpleForm):
     @property
     def fields(self):
         fields = [
-            ew.TextField(name='summary', label='Name', validator=fev.UnicodeString(not_empty=True)),
+            ffw.AutoResizeTextarea(name='summary', label='Name',
+                attrs={'style':'height:1em; width: 425px'},
+                validator=fev.UnicodeString(not_empty=True)),
             ffw.MarkdownEdit(label='Description',name='description'),
             ew.SingleSelectField(name='status', label='Status',
                 options=lambda: model.Globals.for_current_tracker().status_names.split()),

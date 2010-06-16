@@ -22,9 +22,9 @@
           <py:if test="not allow_edit"><h1 class="title">#$ticket.ticket_num $ticket.summary</h1></py:if>
           <py:if test="allow_edit">
             <h1 class="title">
-              <span class="viewer" style="padding: 0; width:400px">#$ticket.ticket_num $ticket.summary</span>
-              <span class="editor" style="padding: 0; font-size: 11px; text-shadow: 0 0; width:400px">
-                <input name="summary" value="$ticket.summary"/>
+              <span class="viewer" style="padding: 0; width:600px">#$ticket.ticket_num $ticket.summary</span>
+              <span class="editor" style="padding: 0; font-size: 11px; text-shadow: 0 0; width:600px">
+                ${c.auto_resize_textarea.display(value=ticket.summary,name='summary',attrs={'style':'height:1em; width: 425px'})}
               </span>
             </h1>
           </py:if>

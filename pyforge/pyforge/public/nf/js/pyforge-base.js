@@ -25,7 +25,9 @@
                 editor.width(viewer.width());
             }
             editable.addClass('editing')
-                    .removeClass('viewing')
+                    .removeClass('viewing');
+            // autoresize textareas will be the wrong size the first time due to being hidden, so nudge them
+            editor.find('textarea').change();
             return false;
         })
         .find('a').click(function(event){
@@ -39,7 +41,7 @@
             // make sure the visually important one is first!
             var editor = $(this).closest('.editor');
             if(!$('a.cancel_btn', editor).length){
-                var save_btns = $('<div class="save_holder"><input type="submit" value="Save"/> &nbsp; <a href="#" class="cancel_btn">Cancel</a></div>');
+                var save_btns = $('<div class="save_holder"><input type="submit" value="Save"/><a href="#" class="cancel_btn">Cancel</a></div>');
                 if(editor.hasClass('multiline')){
                     var save_holder = editor.find('.save_holder');
                     if(save_holder.length){

@@ -1195,6 +1195,16 @@ ul.ui-tab li a {
     position:absolute;
     z-index:10;
 }
+.editable .editor .save_holder .cancel_btn{
+    float: left;
+    margin: 5px 1em 0;
+}
+.editable .editor .save_controls .save_holder .cancel_btn{
+    margin: -5px 1em 0 1em;
+}
+.editable .editor .save_holder input{
+    float: left;
+}
 
 #sidebar-right input[type="text"]{
     width: 120px;

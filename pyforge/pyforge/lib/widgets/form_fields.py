@@ -125,3 +125,28 @@ class AttachmentAdd(ew.Widget):
 
 class SubmitButton(ew.SubmitButton):
     attrs={'class':'ui-state-default ui-button ui-button-text'}
+
+class AutoResizeTextarea(ew.TextArea):
+    params=['name', 'value']
+    name=None
+    value=None
+    css_class="auto_resize"
+
+    def resources(self):
+        yield ew.resource.JSLink('js/jquery.autoresize.min.js')
+        yield ew.JSScript('''
+        $('textarea.auto_resize').autoResize({
+            // On resize:
+            onResize : function() {
+                $(this).css({opacity:0.8});
+            },
+            // After resize:
+            animateCallback : function() {
+                $(this).css({opacity:1});
+            },
+            // Quite slow animation:
+            animateDuration : 300,
+            // More extra space:
+            extraSpace : 0
+        });
+        ''')

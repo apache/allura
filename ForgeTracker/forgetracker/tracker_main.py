@@ -54,6 +54,8 @@ class W:
     ticket_form = TicketForm()
     edit_ticket_form = EditTicketForm()
     subscribe_form = SubscribeForm()
+    user_select = ffw.ProjectUserSelect()
+    auto_resize_textarea = ffw.AutoResizeTextarea()
     ticket_subscribe_form = SubscribeForm(thing='ticket')
 
 class ForgeTrackerApp(Application):
@@ -638,9 +640,10 @@ class TicketController(object):
         c.markdown_editor = W.markdown_editor
         c.attachment_list = W.attachment_list
         c.label_edit = W.label_edit
-        c.user_select = ffw.ProjectUserSelect()
+        c.user_select = W.user_select
         c.attachment_list = W.attachment_list
         c.subscribe_form = W.ticket_subscribe_form
+        c.auto_resize_textarea = W.auto_resize_textarea
         if self.ticket is not None:
             if c.app.globals.milestone_names is None:
                 c.app.globals.milestone_names = ''
