@@ -11,6 +11,7 @@ from BeautifulSoup import BeautifulSoup
 
 import oembed
 import markdown
+import feedparser
 
 from . import macro
 
@@ -34,6 +35,7 @@ class ForgeExtension(markdown.Extension):
             md.inlinePatterns['wiki'] = WikiLinkPattern(r'\b([A-Z][a-z]\w*[A-Z][a-z]\w*)')
         md.postprocessors['macro'] = macro_engine.postprocessor
         md.postprocessors['rewrite_relative_links'] = RelativeLinkRewriter()
+        md.postprocessors['sanitize_html'] = HTMLSanitizer()
 
 class RelativeLinkRewriter(markdown.postprocessors.Postprocessor):
 
@@ -56,6 +58,13 @@ class RelativeLinkRewriter(markdown.postprocessors.Postprocessor):
         for link in soup.findAll('img'):
             rewrite(link, 'src')
         return unicode(soup)
+
+class HTMLSanitizer(markdown.postprocessors.Postprocessor):
+
+    def run(self, text):
+        p = feedparser._HTMLSanitizer('utf-8')
+        p.feed(text.encode('utf-8'))
+        return unicode(p.output(), 'utf-8')
 
 class LineOrientedTreeProcessor(markdown.treeprocessors.Treeprocessor):
     '''Once MD is satisfied with the etree, this runs to replace \n with <br/>
