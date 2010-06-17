@@ -68,27 +68,21 @@
         });
 })(jQuery);
 
-$(document).ready(function()
-{
-    $(".defaultText").focus(function(srcc)
-    {
-        if ($(this).val() == $(this)[0].title)
-        {
-            $(this).removeClass("defaultTextActive");
-            $(this).val("");
-        }
-    });
-
-    $(".defaultText").blur(function()
-    {
-        if ($(this).val() == "")
-        {
-            $(this).addClass("defaultTextActive");
-            $(this).val($(this)[0].title);
-        }
-    });
-
-    $(".defaultText").blur();
+$(function(){
+    $('.defaultText').
+        focus(function(){
+            var $this = $(this);
+            if ( $this.val() == $this[0].title ){
+                $this.removeClass('defaultTextActive').val('');
+            }
+        }).
+        blur(function(){
+            var $this = $(this);
+            if ( !$this.val() ){
+                $this.addClass('defaultTextActive').val($this[0].title);
+            }
+        }).
+        blur();
 });
 
 function attach_form_retry( form ){
