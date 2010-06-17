@@ -120,12 +120,12 @@ class NeighborhoodController(object):
             flash(
                 'A project already exists with that name, please choose another.', 'error')
             ming.orm.ormsession.ThreadLocalORMSession.close_all()
-            redirect('.')
+            redirect('add_project?add_project.pid=%s' % add_project['pid'])
         except Exception, ex:
             c.project = None
             ming.orm.ormsession.ThreadLocalORMSession.close_all()
             flash('%s: %s' % (ex.__class__, str(ex)), 'error')
-            redirect('.')
+            redirect('add_project?add_project.pid=%s' % add_project['pid'])
         redirect(p.script_name + 'admin/')
 
     @expose()
