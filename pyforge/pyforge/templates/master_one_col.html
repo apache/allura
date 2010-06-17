@@ -25,7 +25,7 @@
   <body py:match="body" py:attrs="select('@*')">
     <py:for each="blob in g.resource_manager.emit('body_top_js')">$blob</py:for>
     ${main_menu()}
-    <div class="container">
+    <div class="container${neighborhood and ' neighborhood-%s' % neighborhood.name or ''}${(not neighborhood and c.project) and ' neighborhood-%s' % c.project.neighborhood.name or ''}${c.project and ' project-%s' % c.project.shortname or ''}${c.app and ' mountpoint-%s' % c.app.config.options.mount_point or ''}">
 			<div id="header">
 	      <div class="row">
           ${nav_menu()}
