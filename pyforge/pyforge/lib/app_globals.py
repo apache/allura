@@ -89,6 +89,18 @@ class Globals(object):
         # Setup pygments
         self.pygments_formatter = pygments.formatters.HtmlFormatter(cssclass='codehilite')
 
+    def document_class(self, neighborhood):
+        classes = ''
+        if neighborhood:
+            classes += ' neighborhood-%s' % neighborhood.name
+        if not neighborhood and c.project:
+            classes += ' neighborhood-%s' % c.project.neighborhood.name
+        if c.project:
+            classes += ' project-%s' % c.project.shortname
+        if c.app:
+            classes += ' mountpoint-%s' % c.app.config.options.mount_point
+        return classes
+
     def highlight(self, text, lexer=None, filename=None):
         if lexer is None:
             try:
