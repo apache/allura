@@ -1,0 +1,18 @@
+<form xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:py="http://genshi.edgewall.org/"
+      xmlns:xi="http://www.w3.org/2001/XInclude"
+      method="POST"
+      action="$action">
+  <ol>
+    <li>
+      <label for="pid">Project ID:</label>
+      ${Markup(c.widget.widget_type.display_field_by_idx(0))}
+      <!-- if ctx['errors'] and field.show_errors and not ignore_errors:
+          display = "%s<div class='error'>%s</div>" % (display, ctx['errors']) -->
+    </li>
+    <li>
+      <label>&nbsp;</label>
+      <input type="submit" id="submit" value="Create"/>
+    </li>
+  </ol>
+</form>

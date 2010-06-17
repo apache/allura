@@ -35,6 +35,7 @@ from pyforge.model.session import main_orm_session
 class W:
     markdown_editor = ffw.MarkdownEdit()
     project_summary = plw.ProjectSummary()
+    add_project = ffw.NeighborhoodAddProjectForm()
 
 class NeighborhoodController(object):
     '''Manages a neighborhood of projects.
@@ -93,7 +94,8 @@ class NeighborhoodController(object):
             pq.sort('last_updated', pymongo.DESCENDING)
         projects = pq.all()
         categories = M.ProjectCategory.query.find({'parent_id':None}).sort('name').all()
-        c.custom_sidebar_menu = [
+        c.custom_sidebar_menu = [SitemapEntry('+ Add a Project', self.neighborhood.url()+'add_project'), SitemapEntry('')]
+        c.custom_sidebar_menu = c.custom_sidebar_menu + [
             SitemapEntry(cat.label, self.neighborhood.url()+'browse/'+cat.name, className='nav_child') for cat in categories
         ]
         return dict(neighborhood=self.neighborhood,
@@ -102,14 +104,18 @@ class NeighborhoodController(object):
                     projects=projects,
                     sort=sort)
 
+    @expose('pyforge.templates.neighborhood_add_project')
+    def add_project(self, **kw):
+        c.add_project = W.add_project
+        return dict(neighborhood=self.neighborhood, add_project=kw)
+
+    @h.vardec
     @expose()
-    def register(self, pid):
-        if not h.re_path_portion.match(pid):
-            flash('Invalid project shortname "%s"' % pid, 'error')
-            redirect(request.referer)
+    @validate(W.add_project, error_handler=add_project)
+    def register(self, add_project=None):
         require(has_neighborhood_access('create', self.neighborhood), 'Create access required')
         try:
-            p = self.neighborhood.register_project(pid)
+            p = self.neighborhood.register_project(add_project['pid'].lower())
         except forge_exc.ProjectConflict:
             flash(
                 'A project already exists with that name, please choose another.', 'error')
