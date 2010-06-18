@@ -44,8 +44,8 @@ class Repository(Artifact):
     def log(self, branch, offset, limit):
         return []
 
-    def commit(self, branch, revision):
-        return self.CommitClass(revision, self)
+    def commit(self, revision):
+        raise NotImplementedError, 'commit'
 
     def url(self):
         return self.app_config.url()
@@ -95,15 +95,16 @@ class Commit(object):
         self._repo = repo
 
     def __repr__(self):
-        return '<Commit %s>' % self._id
+        return '<%s %s>' % (
+            self.__class__.__name__, self._id)
 
-    def tree(self, branch):
-        return self.TreeClass(self._repo, branch, self)
+    def tree(self):
+        return self.TreeClass(self._repo, self)
 
     def from_repo_object(self, repo, obj):
         raise NotImplementedError, 'from_repo_object'
 
-    def context(self, branch):
+    def context(self):
         '''Returns {'prev':Commit, 'next':Commit}'''
         raise NotImplementedError, 'context'
 
@@ -131,9 +132,8 @@ class Commit(object):
 class Tree(object):
     BlobClass=None
 
-    def __init__(self, repo, branch, commit, parent=None, name=None):
+    def __init__(self, repo, commit, parent=None, name=None):
         self._repo = repo
-        self._branch = branch
         self._commit = commit
         self._parent = parent
         self._name = name
@@ -151,19 +151,18 @@ class Tree(object):
         return False
 
     def get_tree(self, name):
-        return self.__class__(self._repo, self._branch, self._commit, self, name)
+        return self.__class__(self._repo, self._commit, self, name)
 
     def get_blob(self, name, path=None):
         if not path:
-            return self.BlobClass(self._repo, self._branch, self._commit, self, name)
+            return self.BlobClass(self._repo, self._commit, self, name)
         else:
             return self.get_tree(path[0]).get_blob(name, path[1:])
 
 class Blob(object):
 
-    def __init__(self, repo, branch, commit, tree, filename):
+    def __init__(self, repo, commit, tree, filename):
         self._repo = repo
-        self._branch = branch
         self._commit = commit
         self._tree = tree
         self.filename = filename
@@ -182,7 +181,8 @@ class Blob(object):
         return self._tree.url() + self.filename
 
     def __repr__(self):
-        return '<Blob %s of %r>' % (self.path(), self._commit)
+        return '<%s %s of %r>' % (
+            self.__class__.__name__, self.path(), self._commit)
 
     def path(self):
         return self._tree.path() + self.filename
@@ -191,7 +191,7 @@ class Blob(object):
     def has_html_view(self):
         return self.content_type.startswith('text/')
 
-    def context(self, branch):
+    def context(self):
         '''Returns {'prev':Blob, 'next':Blob}'''
         raise NotImplementedError, 'context'
 

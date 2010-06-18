@@ -5,6 +5,9 @@
   <xi:include href="${g.pyforge_templates}/lib.html"/>
   <a href="${value.url()}">Revision $value.revision.number</a>:
   ${h.ago(value.datetime)}<br/>
+  <a href="${value.tree().url()}">Tree</a><br/>
+  <py:if test="prev">Previous: <a href="${prev.url()}">$prev._id</a><br/></py:if>
+  <py:if test="next">Next: <a href="${next.url()}">$next._id</a><br/></py:if>
   ${Markup(g.markdown.convert(value.message))}
   <p class="gravatar">
     <py:if test="value.author">

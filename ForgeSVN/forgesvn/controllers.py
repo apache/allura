@@ -50,7 +50,7 @@ class CommitBrowser(repository.CommitBrowser):
     def __init__(self, rev):
         if rev == 'LATEST':
             rev = c.app.repo.latest.revision.number
-        super(CommitBrowser, self).__init__(None, int(rev))
+        super(CommitBrowser, self).__init__(int(rev))
 
     @expose('forgesvn.templates.commit')
     @with_trailing_slash
@@ -81,6 +81,8 @@ class FileBrowser(repository.FileBrowser):
     def index(self, **kw):
         if 'diff' in kw:
             override_template(self.index, 'genshi:forgesvn.templates.diff')
-        return super(FileBrowser, self).index(**kw)
+            return self.diff(int(kw['diff']))
+        result = super(FileBrowser, self).index(**kw)
+        return result
 
 on_import()

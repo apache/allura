@@ -48,8 +48,8 @@ class TestGitRepo(unittest.TestCase):
             assert str(entry.author)
             assert entry.message
 
-    def test_revision(self):
-        entry = self.repo.revision('HEAD')
+    def test_commit(self):
+        entry = self.repo.commit('HEAD')
         assert str(entry.author) == 'Sebastian Thiel', entry.author
         assert entry.message
 
@@ -70,7 +70,7 @@ class TestGitCommit(unittest.TestCase):
             url_path = '/test/',
             tool = 'git',
             status = 'creating')
-        self.rev = self.repo.revision('HEAD')
+        self.rev = self.repo.commit('HEAD')
         ThreadLocalORMSession.flush_all()
         ThreadLocalORMSession.close_all()
 
@@ -80,7 +80,7 @@ class TestGitCommit(unittest.TestCase):
         assert self.rev._id == art._id
 
     def test_url(self):
-        assert self.rev.url().endswith('/HEAD/')
+        assert self.rev.url().endswith('3061/')
 
     def test_committer_url(self):
         assert self.rev.committer_url is None
@@ -89,7 +89,7 @@ class TestGitCommit(unittest.TestCase):
         assert self.rev.primary() == self.rev
 
     def test_shorthand(self):
-        assert self.rev.shorthand_id() == '[HEAD]'
+        assert len(self.rev.shorthand_id()) == 8
 
     def test_diff(self):
         len(self.rev.diff())

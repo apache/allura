@@ -17,27 +17,7 @@
   </head>
 
   <body>
-      <py:if test="prev">
-        <a href="${prev.url()}">@${h.text.truncate(prev._id, 10)}</a>
-      </py:if>
-
-      <b>This Version</b>
-
-      <py:if test="next">
-        <a href="${next.url()}">@${h.text.truncate(next._id, 10)}</a>
-      </py:if>
-      <br/>
-
-    ${c.revision_widget.display(value=commit)}
-    <a href="./tree/">Tree</a>
-    <div py:if="commit.parents">
-      <h2>Parent(s)</h2>
-      <ul>
-        <li py:for="p in commit.parents">
-          <a href="${p.url()}">${h.text.truncate(p.sha ,10)}</a>
-        </li>
-      </ul>
-    </div>
+    ${c.revision_widget.display(value=commit, prev=prev, next=next)}
     <table>
       <tbody>
         <tr py:for="kind, path in commit.diff_summarize()">

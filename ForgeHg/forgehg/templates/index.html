@@ -35,7 +35,7 @@
           <h3 py:if="branch">Branch: $branch</h3>
           <h3 py:if="tag">Tag: $tag</h3>
           <py:for each="r in revisions">
-            ${c.revision_widget.display(value=r)}
+            ${c.revision_widget.display(**r)}
           </py:for>
           <a py:if="next_link" href="$next_link">More</a>
         </div>

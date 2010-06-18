@@ -53,7 +53,7 @@ class TestHgRepo(unittest.TestCase):
             assert entry.description()
 
     def test_revision(self):
-        entry = self.repo.revision('tip')
+        entry = self.repo.commit('tip')
         assert entry.user['email'] == 'jwalsh04@gmail.com'
         assert entry.description()
 
@@ -74,7 +74,7 @@ class TestHgCommit(unittest.TestCase):
             url_path = '/test/',
             tool = 'hg',
             status = 'creating')
-        self.rev = self.repo.revision('tip')
+        self.rev = self.repo.commit('tip')
         ThreadLocalORMSession.flush_all()
         ThreadLocalORMSession.close_all()
 

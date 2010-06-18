@@ -6,9 +6,9 @@ from pyforge.controllers import repository
 from pyforge.lib.security import require, has_artifact_access
 from pyforge.lib import patience
 
-from .widgets import GitRevisionWidget
+from .widgets import HgRevisionWidget
 
-revision_widget = GitRevisionWidget()
+revision_widget = HgRevisionWidget()
 
 def on_import():
     BranchBrowser.CommitBrowserClass = CommitBrowser
@@ -18,7 +18,7 @@ class BranchBrowser(repository.BranchBrowser):
     def _check_security(self):
         require(has_artifact_access('read', c.app.repo))
 
-    @expose('forgegit.templates.index')
+    @expose('forgehg.templates.index')
     @with_trailing_slash
     def index(self, offset=0, limit=10, **kw):
         c.revision_widget=revision_widget
@@ -30,11 +30,14 @@ class BranchBrowser(repository.BranchBrowser):
         return CommitBrowser(rev), remainder
 
 class CommitBrowser(repository.CommitBrowser):
-    revision_widget = GitRevisionWidget()
+    revision_widget = HgRevisionWidget()
 
-    @expose('forgegit.templates.commit')
+    @expose('forgehg.templates.commit')
     @with_trailing_slash
     def index(self):
-        return super(CommitBrowser, self).index()
+        result = super(CommitBrowser, self).index()
+        c.revision_widget = revision_widget
+        result.update(self._commit.context())
+        return result
 
 on_import()

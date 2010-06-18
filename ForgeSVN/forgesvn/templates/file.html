@@ -16,14 +16,14 @@
     <div style="background-color:#ddd;-moz-border-radius:5px;padding:1em;">
       <py:if test="prev">
         <a href="${prev.url()}">@r${prev._commit._id}</a>
-        <a href="?diff=prev">&mdash; diff &mdash;</a>
+        <a href="?diff=$prev._commit._id">&mdash; diff &mdash;</a>
       </py:if>
 
       <a href="${blob._commit.url()}">@r${blob._commit._id}</a>:
       ${path_links(blob.path().split('/')[1:-1])} $blob.filename
 
       <py:if test="next">
-        <a href="?diff=next">&mdash; diff &mdash;</a>
+        <a href="${next.url()}?diff=$blob._commit._id">&mdash; diff &mdash;</a>
         <a href="${next.url()}">@r${next._commit._id}</a>
       </py:if>
 

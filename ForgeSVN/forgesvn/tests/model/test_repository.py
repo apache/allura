@@ -50,7 +50,7 @@ class TestSVNRepo(unittest.TestCase):
             assert entry.message
 
     def test_commit(self):
-        entry = self.repo.commit(None, 1)
+        entry = self.repo.commit(1)
         assert entry.author_username == 'rick446@usa.net'
         assert entry.message
 
@@ -73,7 +73,7 @@ class TestSVNRev(unittest.TestCase):
             url_path = '/test/',
             tool = 'svn',
             status = 'creating')
-        self.rev = self.repo.commit(None, 1)
+        self.rev = self.repo.commit(1)
         ThreadLocalORMSession.flush_all()
         ThreadLocalORMSession.close_all()
 

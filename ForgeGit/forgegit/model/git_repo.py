@@ -57,6 +57,9 @@ class GitRepository(M.Repository):
         self._setup_receive_hook(
             pylons.c.app.config.script_name())
 
+    def commit(self, hash):
+        return self.CommitClass.from_repo_object(self._impl.commit(hash), self)
+
     def init(self):
         fullname = self._setup_paths()
         log.info('git init %s', fullname)
@@ -82,9 +85,6 @@ class GitRepository(M.Repository):
         shutil.rmtree(requests, ignore_errors=True)
         self._setup_special_files()
         self.status = 'ready'
-
-    def revision(self, rev):
-        return GitCommit(rev, self)
 
     def _log(self, **kwargs):
         kwargs.setdefault('topo_order', True)
@@ -178,25 +178,18 @@ class GitCommit(M.Commit):
             for blob in self.tree:
                 yield 'add', blob.path
 
-    def context(self, branch):
-        entries = self._repo._log(
-            branches=branch)
-        prev=next=None
-        found_ci = False
-        for ent in entries:
-            if ent.sha == self._id:
-                found_ci = True
-            elif found_ci:
-                prev=ent
-                break
-            else:
-                next=ent
+    def context(self):
+        prev = self.parents
+        next = []
+        for ci in self._repo._impl.iter_commits():
+            if self._impl in ci.parents:
+                next.append(self.from_repo_object(ci, self._repo))
         return dict(prev=prev, next=next)
 
 class GitTree(M.Tree):
 
-    def __init__(self, repo, branch, commit, parent=None, name=None):
-        super(GitTree, self).__init__(repo, branch, commit, parent, name)
+    def __init__(self, repo, commit, parent=None, name=None):
+        super(GitTree, self).__init__(repo, commit, parent, name)
         if parent is None:
             self._tree = self._commit._impl.tree
         else:
@@ -208,7 +201,7 @@ class GitTree(M.Tree):
     def ls(self):
         for dirent in self._tree:
             name = dirent.name
-            date = datetime.min
+            date = None
             href = name
             if isinstance(dirent, git.Tree):
                 href = href + '/'
@@ -222,6 +215,7 @@ class GitTree(M.Tree):
                 href=href,
                 kind=kind,
                 last_author='',
+                commit=None,
                 )
 
     def is_blob(self, name):
@@ -234,9 +228,9 @@ class GitTree(M.Tree):
 
 class GitBlob(M.Blob):
 
-    def __init__(self, repo, branch, commit, tree, filename):
+    def __init__(self, repo, commit, tree, filename):
         super(GitBlob, self).__init__(
-            repo, branch, commit, tree, filename)
+            repo, commit, tree, filename)
         self._blob = tree._tree[filename]
         self.content_type, self.content_encoding = (
             self._blob.mime_type, None)
@@ -249,12 +243,11 @@ class GitBlob(M.Blob):
     def text(self):
         return self._blob.data
 
-    def context(self, branch):
+    def context(self):
         path = self._tree.path().split('/')[1:-1]
         result = dict(prev=None, next=None)
         entries = self._repo._log(
-            paths=self._blob.path,
-            branches=branch)
+            paths=self._blob.path)
         prev=next=None
         found_ci = False
         for ent in entries:
@@ -266,11 +259,11 @@ class GitBlob(M.Blob):
             else:
                 next=ent
         if prev:
-            tree = prev.tree(self._branch)
-            result['prev'] = tree.get_blob(self.filename, path)
+            tree = prev.tree()
+            result['prev'] = [ tree.get_blob(self.filename, path) ]
         if next:
-            tree = next.tree(self._branch)
-            result['next'] = tree.get_blob(self.filename, path)
+            tree = next.tree()
+            result['next'] = [ tree.get_blob(self.filename, path) ]
         return result
 
     def __getattr__(self, name):

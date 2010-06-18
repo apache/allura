@@ -17,22 +17,17 @@
   </head>
 
   <body>
-    ${c.revision_widget.display(value=commit)}
-    <div py:if="commit.parents()">
-      <h2>Parent(s)</h2>
-      <ul>
-        <li py:for="c in commit.parents()">
-          <a href="${c.url()}">${h.text.truncate(c.hex(), 10)}</a>
-        </li>
-      </ul>
-      <py:if test="commit.files()">
-        <h2>Patches</h2>
-        <div py:for="a, b, d in commit.diffs()"
-             class="title-pane closed">
-          <h3 class="title">diff a/$a b/$b</h3>
-          <pre class="content codehilite"><code>${Markup(d)}</code></pre>
-        </div>
-      </py:if>
-    </div>
+    ${c.revision_widget.display(value=commit, prev=prev, next=next)}
+    <table>
+      <tbody>
+        <tr py:for="kind, path in commit.diff_summarize()">
+          <td>$kind</td>
+          <td>
+            <a py:if="kind != 'remove'" href="./tree/$path">$path</a>
+            <py:if test="kind == 'remove'">$path</py:if>
+          </td>
+        </tr>
+      </tbody>
+    </table>
   </body>
 </html>

@@ -5,6 +5,17 @@
   <xi:include href="${g.pyforge_templates}/lib.html"/>
   Commit <a href="${value.url()}">${h.text.truncate(value.sha, 10)}</a>: 
   ${h.ago(value.committed_datetime)}<br/>
+  <a href="${value.tree().url()}">Tree</a><br/>
+  <py:if test="prev">
+    Parent(s):
+    <py:for each="ci in prev"><a href="${ci.url()}">${h.text.truncate(ci._id, 10)}</a></py:for>
+    <br/>
+  </py:if>
+  <py:if test="next">
+    Child(ren):
+    <py:for each="ci in next"><a href="${ci.url()}">${h.text.truncate(ci._id, 10)}</a></py:for>
+    <br/>
+  </py:if>
   ${Markup(g.markdown.convert(value.message))}
   <p class="gravatar">
     <py:if test="value.author_url is not None">

@@ -27,8 +27,23 @@ class TestRootController(TestController):
         assert 'Revision 1' in resp
 
     def test_commit(self):
-        resp = self.app.get('/src/1/')
-        assert '+' in resp
+        resp = self.app.get('/src/3/')
+        assert len(resp.html.findAll('tr')) > 3, resp.showbrowser()
+
+    def test_tree(self):
+        resp = self.app.get('/src/1/tree/')
+        assert len(resp.html.findAll('tr')) == 2, resp.showbrowser()
+        resp = self.app.get('/src/1/tree/trunk/')
+        assert len(resp.html.findAll('tr')) >= 2, resp.showbrowser()
+
+    def test_file(self):
+        resp = self.app.get('/src/1/tree/trunk/debug.py')
+        assert 'postmortem debugging' in resp, resp.showbrowser()
+
+    def test_diff(self):
+        resp = self.app.get('/src/3/tree/trunk/clutch/command.py?diff=1')
+        assert 'configure_logging' in resp, resp.showbrowser()
+        assert '+++' in resp, resp.showbrowser()
 
 
 

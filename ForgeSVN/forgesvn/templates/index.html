@@ -31,7 +31,7 @@
           </py:if>
           <h2>Commit History</h2>
           <py:for each="commit in log">
-            ${c.revision_widget.display(value=commit)}
+            ${c.revision_widget.display(**commit)}
           </py:for>
           <a py:if="next_link" href="$next_link">More</a>
         </div>

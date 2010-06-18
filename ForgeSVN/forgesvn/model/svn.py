@@ -99,7 +99,7 @@ class SVNRepository(M.Repository):
         else:
             return None
 
-    def commit(self, branch, revision):
+    def commit(self, revision):
         r = self._impl.log(
             self.local_url,
             revision_start=pysvn.Revision(
@@ -118,9 +118,10 @@ class SVNRepository(M.Repository):
     def diff_summarize(self, r0, r1):
         r0 = pysvn.Revision(pysvn.opt_revision_kind.number, r0)
         r1 = pysvn.Revision(pysvn.opt_revision_kind.number, r1)
-        return self._impl.diff_summarize(
+        result = self._impl.diff_summarize(
             self.local_url, r0,
             self.local_url, r1)
+        return result
 
 class SVNCommit(M.Commit):
     type_s='SvnCommit'
@@ -137,9 +138,13 @@ class SVNCommit(M.Commit):
     def revision(self):
         return pysvn.Revision(pysvn.opt_revision_kind.number, self._id)
 
-    @LazyProperty
     def context(self):
-        pass
+        prev = next = None
+        if self.revision.number < self._repo.latest.revision.number:
+            next = self._repo.commit(self.revision.number+1)
+        if self.revision.number > 1:
+            prev = self._repo.commit(self.revision.number-1)
+        return dict(prev=prev, next=next)
 
     def __getattr__(self, name):
         return getattr(self._impl, name)
@@ -181,15 +186,20 @@ class SVNCommit(M.Commit):
 class SVNTree(M.Tree):
 
     def ls(self):
-        for dirent in self._repo._impl.ls(
-            self._repo.local_url + self.path(),
-            revision=self._commit.revision):
-            name = dirent.name.rsplit('/')[-1]
-            date = datetime.fromtimestamp(dirent.time)
-            href = name
-            if dirent.kind == pysvn.node_kind.dir:
-                href = href + '/'
-            yield dict(dirent, name=name, date=date, href=href)
+        try:
+            for dirent in self._repo._impl.ls(
+                self._repo.local_url + self.path(),
+                revision=self._commit.revision):
+                name = dirent.name.rsplit('/')[-1]
+                date = datetime.fromtimestamp(dirent.time)
+                href = name
+                if dirent.kind == pysvn.node_kind.dir:
+                    href = href + '/'
+                commit = self._repo.commit(dirent.created_rev.number)
+                yield dict(dirent, name=name, date=date, href=href,
+                           commit=commit)
+        except pysvn.ClientError:
+            pass
 
     def is_blob(self, name):
         dirent = self._repo._impl.ls(
@@ -203,10 +213,6 @@ class SVNTree(M.Tree):
 
 class SVNBlob(M.Blob):
 
-    def __init__(self, repo, branch, commit, tree, filename):
-        super(SVNBlob, self).__init__(
-            repo, branch, commit, tree, filename)
-
     def __iter__(self):
         fp = StringIO(self.text)
         return iter(fp)
@@ -217,7 +223,7 @@ class SVNBlob(M.Blob):
             self._repo.local_url + self.path(),
             revision=self._commit.revision)
 
-    def context(self, branch=None):
+    def context(self):
         entries = self._repo._log(self._repo.local_url + self.path())
         result = dict(prev=None, next=None)
         path = self._tree.path().split('/')[1:-1]
@@ -230,10 +236,10 @@ class SVNBlob(M.Blob):
                 next=ent
         if prev:
             ci = SVNCommit.from_repo_object(prev, self._repo)
-            result['prev'] = ci.tree(self._branch).get_blob(self.filename, path)
+            result['prev'] = ci.tree().get_blob(self.filename, path)
         if next:
             ci = SVNCommit.from_repo_object(next, self._repo)
-            result['next'] = ci.tree(self._branch).get_blob(self.filename, path)
+            result['next'] = ci.tree().get_blob(self.filename, path)
         return result
 
 on_import()

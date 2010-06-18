@@ -15,10 +15,11 @@
   <body>
     <div style="background-color:#ddd;-moz-border-radius:5px;padding:1em;">
 
-      diff
-      <a href="${a.url()}">@r${a._commit._id}: ${a.path()}</a>
-
-      <a href="${b.url()}">@r${b._commit._id}: ${b.path()}</a>
+      <a href="${a._commit.url()}">Revision $a._commit._id:</a>
+      <a href="${a.url()}">${a.path()}</a><br/>
+      ..<br/>
+      <a href="${b._commit.url()}">Revision $b._commit._id:</a>
+      <a href="${b.url()}">${b.path()}</a>
 
       <py:if test="not a.has_html_view or not b.has_html_view">
         $a.name cannot be displayed in your browser.
@@ -26,7 +27,8 @@
       </py:if>
       <py:if test="a.has_html_view and b.has_html_view">
         ${Markup(g.highlight(diff, lexer='diff'))}
-      </py:if>
+     </py:if>
+
     </div>
   </body>
 </html>

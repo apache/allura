@@ -8,7 +8,9 @@
 
   <head>
     <meta content="text/html; charset=UTF-8" http-equiv="content-type" py:replace="''"/>
-    <title>Git Diff</title>
+    <title>
+      Diff ${h.text.truncate(a._commit._id, 10)}..${h.text.truncate(b._commit._id, 10)}
+      $a.filename</title>
     <link rel="stylesheet" type="text/css" media="screen, projection" href="${g.forge_static('css/forge/hilite.css')}" />
   </head>
 
@@ -27,7 +29,7 @@
       </py:if>
       <py:if test="a.has_html_view and b.has_html_view">
         ${Markup(g.highlight(diff, lexer='diff'))}
-      </py:if>
+     </py:if>
     </div>
   </body>
 </html>

@@ -34,7 +34,7 @@
           <h2>Recent Commits</h2>
           <h3 py:if="branch">Browsing $branch</h3>
           <py:for each="ci in log">
-            ${c.revision_widget.display(value=ci)}
+            ${c.revision_widget.display(**ci)}
           </py:for>
           <a py:if="next_link" href="$next_link">More</a>
         </div>

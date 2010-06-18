@@ -8,7 +8,7 @@ import email
 from subprocess import Popen
 from datetime import datetime
 from itertools import islice, chain
-from urllib import urlencode
+from urllib import urlencode, quote, unquote
 
 # Non-stdlib imports
 import pkg_resources
@@ -38,6 +38,7 @@ from forgehg import model
 from forgehg import version
 from .widgets import HgRevisionWidget
 from .reactors import reactors
+from .controllers import BranchBrowser, CommitBrowser
 
 log = logging.getLogger(__name__)
 
@@ -152,13 +153,16 @@ class RootController(object):
     def _check_security(self):
         require(has_artifact_access('read'))
 
+    def __init__(self):
+        self.ref = Refs()
+        self.ci = Commits()
+
     @expose('forgehg.templates.index')
-    def index(self, offset=0, branch=None, tag=None):
+    def index(self, offset=0, limit=10, branch=None, tag=None):
         offset=int(offset)
         repo = c.app.repo
         if repo and repo.status == 'ready':
-            revisions = repo.log(branch=branch, tag=tag)
-            revisions = islice(revisions, offset, offset+10)
+            revisions = repo.log(branch=branch, tag=tag, offset=offset, limit=limit)
             args = dict(offset=offset+10)
             if branch: args['branch'] = branch
             if tag: args['tag'] = tag
@@ -167,6 +171,9 @@ class RootController(object):
             revisions = []
             next_link=None
         c.revision_widget=W.revision_widget
+        revisions = [ dict(value=r) for r in revisions ]
+        for r in revisions:
+            r.update(r['value'].context())
         return dict(repo=c.app.repo,
                     branch=branch,
                     tag=tag,
@@ -197,19 +204,23 @@ class RootController(object):
                 to_project.install_app('Hg', to_name, cloned_from=from_repo._id)
                 redirect('/'+to_project_name+'/'+to_name+'/')
 
+class Refs(object):
+
     @expose()
-    def _lookup(self, hash, *remainder):
-        return CommitController(hash), remainder
+    def _lookup(self, *parts):
+        parts = map(unquote, parts)
+        ref = []
+        while parts:
+            part = parts.pop(0)
+            ref.append(part)
+            if part.endswith(':'): break
+        ref = '/'.join(ref)[:-1]
+        return BranchBrowser(ref), parts
 
-class CommitController(object):
+class Commits(object):
 
-    def __init__(self, hash):
-        self._hash = hash
-
-    @expose('forgehg.templates.commit')
-    def index(self):
-        commit = c.app.repo[self._hash]
-        c.revision_widget=W.revision_widget
-        return dict(commit=commit)
+    @expose()
+    def _lookup(self, ci, *remainder):
+        return CommitBrowser(ci), remainder
 
 h.mixin_reactors(ForgeHgApp, reactors)

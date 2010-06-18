@@ -1,7 +1,8 @@
+import os
 from urllib import unquote
 
 from pylons import c, request, response
-from tg import redirect, expose, url
+from tg import redirect, expose, url, override_template
 
 from pyforge.lib import patience
 from pyforge.lib.widgets.file_browser import TreeWidget
@@ -21,14 +22,18 @@ class BranchBrowser(object):
         offset=int(offset)
         limit=int(limit)
         next_link = url('.', dict(offset=offset+10))
+        revisions = c.app.repo.log(
+                branch=self._branch,
+                offset=offset,
+                limit=limit)
+        revisions = [ dict(value=r) for r in revisions ]
+        for r in revisions:
+            r.update(r['value'].context())
         return dict(
             username=c.user._id and c.user.username,
             branch=self._branch,
             next_link=next_link,
-            log=c.app.repo.log(
-                branch=self._branch,
-                offset=offset,
-                limit=limit))
+            log=revisions)
 
     @expose()
     def _lookup(self, commit, *rest):
@@ -37,37 +42,36 @@ class BranchBrowser(object):
 
 class CommitBrowser(object):
     TreeBrowserClass=None
+    revision_widget = None
 
-    def __init__(self, branch, revision):
-        self._branch = branch
+    def __init__(self, revision):
         self._revision = revision
-        self._commit = c.app.repo.commit(branch, revision)
-        self.tree = self.TreeBrowserClass(self._branch, self._commit)
+        self._commit = c.app.repo.commit(revision)
+        self.tree = self.TreeBrowserClass(self._commit)
 
     def index(self):
-        return dict(
-            branch=self._branch,
-            commit=self._commit)
+        c.revision_widget = self.revision_widget
+        result = dict(commit=self._commit)
+        result.update(self._commit.context())
+        return result
 
 class TreeBrowser(object):
     FileBrowserClass=None
     tree_widget=TreeWidget()
 
-    def __init__(self, branch, commit, parent=None, name=None):
-        self._branch = branch
+    def __init__(self, commit, parent=None, name=None):
         self._commit = commit
         self._parent = parent
         self._name = name
         if parent:
             self._tree = parent.get_tree(name)
         else:
-            self._tree = self._commit.tree(
-                self._branch)
+            self._tree = self._commit.tree()
 
+    @expose('pyforge.templates.repo.tree')
     def index(self):
         c.tree_widget = self.tree_widget
         return dict(
-            branch=self._branch,
             commit=self._commit,
             tree=self._tree,
             parent=self._parent)
@@ -80,33 +84,32 @@ class TreeBrowser(object):
             filename = request.environ['PATH_INFO'].rsplit('/')[-1]
             if filename and self._tree.is_blob(filename):
                 return self.FileBrowserClass(
-                    self._branch,
                     self._commit,
                     self._tree,
                     filename), rest
         return self.__class__(
-            self._branch,
             self._commit,
             self._tree,
             next), rest
 
 class FileBrowser(object):
 
-    def __init__(self, branch, commit, tree, filename):
-        self._branch = branch
+    def __init__(self, commit, tree, filename):
         self._commit = commit
         self._tree = tree
         self._filename = filename
         self._blob = self._tree.get_blob(filename)
 
+    @expose('pyforge.templates.repo.file')
     def index(self, **kw):
-        self._blob.context(self._branch)
+        self._blob.context()
         if kw.pop('format', 'html') == 'raw':
             return self.raw()
         elif 'diff' in kw:
-            return self.diff()
+            override_template(self.index, 'genshi:pyforge.templates.repo.diff')
+            return self.diff(kw['diff'])
         else:
-            context = self._blob.context(self._branch)
+            context = self._blob.context()
             return dict(
                 blob=self._blob,
                 prev=context.get('prev', None),
@@ -127,17 +130,22 @@ class FileBrowser(object):
             'Content-Disposition', 'attachment;filename=' + filename)
         return iter(self._blob)
 
-    def diff(self):
-        d = self._blob.context(self._branch)
-        a = d['prev']
+    def diff(self, commit):
+        try:
+            path, filename = os.path.split(self._blob.path())
+            a_ci = c.app.repo.commit(commit)
+            a_tree = a_ci.tree()
+            a = a_tree.get_blob(filename, path[1:].split('/'))
+        except:
+            a = []
         b = self._blob
-        la=list(a)
-        lb=list(b)
-        # differ = patience.SequenceMatcher(None, la, lb)
-        # opcodes = differ.get_opcodes()
+        la = list(a)
+        lb = list(b)
         diff = ''.join(patience.unified_diff(
                 la, lb,
                 'a' + a.path(), 'b' + b.path()))
         return dict(
             a=a, b=b,
             diff=diff)
+
+on_import()

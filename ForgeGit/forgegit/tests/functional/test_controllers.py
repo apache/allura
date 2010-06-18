@@ -25,8 +25,33 @@ class TestRootController(TestController):
         assert 'git://' in resp
         assert 'ready' in resp
 
-    def test_commit(self):
-        self.app.get('/src-git/ref/HEAD/')
+    def _get_ci(self):
+        resp = self.app.get('/src-git/ref/master:/')
+        for tag in resp.html.findAll('a'):
+            if tag['href'].startswith('/p/test/src-git/ci/'): break
+        return tag['href']
 
+    def test_commit(self):
+        ci = self._get_ci()
+        resp = self.app.get(ci)
+        assert 'Sebastian' in resp, resp.showbrowser()
+
+    def test_tree(self):
+        ci = self._get_ci()
+        resp = self.app.get(ci + 'tree/')
+        assert len(resp.html.findAll('tr')) > 6, resp.showbrowser()
+        resp = self.app.get(ci + 'tree/doc/')
+        assert 'roadmap.rst' in resp, resp.showbrowser()
+
+    def test_file(self):
+        ci = self._get_ci()
+        resp = self.app.get(ci + 'tree/doc/index.rst')
+        assert 'GitPython' in resp, resp.showbrowser()
+
+    def test_diff(self):
+        ci = self._get_ci()
+        resp = self.app.get(ci + 'tree/doc/index.rst?diff=501bf602abea7d21c3dbb409b435976e92033145')
+        assert 'GitPython Documentation' in resp, resp.showbrowser()
+        assert '+++' in resp, resp.showbrowser()
 
 

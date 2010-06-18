@@ -8,7 +8,7 @@
 
   <head>
     <meta content="text/html; charset=UTF-8" http-equiv="content-type" py:replace="''"/>
-    <title>Git File</title>
+    <title>${blob.filename} @${h.text.truncate(blob._commit._id, 10)}</title>
     <link rel="stylesheet" type="text/css" media="screen, projection" href="${g.forge_static('css/forge/hilite.css')}" />
   </head>
 
@@ -18,18 +18,22 @@
       ${path_links(blob.path().split('/')[1:-1])} $blob.filename<br/>
 
       <py:if test="prev">
-        <a href="${prev.url()}">@${h.text.truncate(prev._commit._id, 10)}</a>
-        <a href="?diff=1">&mdash; diff &mdash;</a>
+        Parent(s):
+        <py:for each="b in prev">
+          <a href="${b.url()}">${h.text.truncate(b._commit._id, 10)}</a>
+          <a href="?diff=${b._commit._id}">(diff)</a>
+        </py:for>
+        <br/>
       </py:if>
-
-      <b>This Version</b>
 
       <py:if test="next">
-        <a href="${next.url()}?diff=1">&mdash; diff &mdash;</a>
-        <a href="${next.url()}">@${h.text.truncate(next._commit._id, 10)}</a>
+        Child(ren):
+        <py:for each="b in next">
+          <a href="${b.url()}">${h.text.truncate(b._commit._id, 10)}</a>
+          <a href="${b.url()}?diff=${blob._commit._id}">(diff)</a>
+        </py:for>
+        <br/>
       </py:if>
-
-      <br/>
 
       <py:if test="not blob.has_html_view">
         $blob.name cannot be displayed in your browser.
