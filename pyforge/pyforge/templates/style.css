@@ -517,13 +517,23 @@ button, input[type=submit], input[type=reset], input[type=button] {padding: .35e
 	right: -5px;
 	}
 
-#save-message {
+#notifications {
     position:fixed;
     top:5px;
-    left:40%;
+    left:5px;
+    right:5px;
+}
+#notifications > div {
+    display:block;
+    width:40%;
+    min-width:18em;
+    text-align:center;
+    margin-left:auto;
+    margin-right:auto;
+    margin-bottom:5px;
     opacity:0.8;
     -moz-border-radius:0.7em;
-    -webit-border-radius:0.7em;
+    -webkit-border-radius:0.7em;
 }
 
 

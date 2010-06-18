@@ -85,18 +85,27 @@ $(function(){
         blur();
 });
 
+function flash( html, kind ){
+    kind || (kind = 'notice');
+    return $('<div class="'+kind+'">').append(html).prependTo('#notifications');
+}
+
 function attach_form_retry( form ){
     $(form).submit(function(){
         $form = $(this);
 
         var $message = $('#save-message');
-        $message.length || ($message = $('<div id="save-message" class="notice"><p>saving...</p></div>').appendTo('body'));
+        $message.length || ($message = flash('<p>saving...</p>').attr('id', 'save-message'));
         setTimeout(function(){
             // After 7 seconds, express our concern.
-            $message.addClass('error').removeClass('notice').html('<p>The server is taking too long to respond.  Retrying in 30 seconds.</p>');
+            $message.
+                addClass('error').
+                removeClass('notice').
+                html('<p>The server is taking too long to respond.<br/>Retrying in 30 seconds.</p>').
+                show();
             setTimeout(function(){
                 // After 30 seconds total, give up and try again.
-                $message.html('<p>retrying...</p>');
+                $message.html('<p>retrying...</p>').show();
                 $form.submit();
             }, 23000)
         }, 7000);
@@ -104,6 +113,13 @@ function attach_form_retry( form ){
 }
 
 $(function(){
+    // Setup notifications.
+    $('#flash > div').prependTo('#notifications');
+    $('#notifications > div').live('click', function(){
+        $(this).hide();
+    });
+
+    // Add notifications for form submission.
     attach_form_retry('form.can-retry');
 
     // Make life a little better for Chrome users by setting tab-order on inputs.

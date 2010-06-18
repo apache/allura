@@ -48,14 +48,16 @@
               <py:with vars="flash=tg.flash_obj.render('flash', use_js=False)">
                 <div py:if="flash" py:content="XML(flash)" />
               </py:with>
-              <ul py:for="n in h.pop_user_notifications()" style="clear:both" class="notice">
-                $n.text
-              </ul>
               <div py:replace="select('*|text()')"/>
           </div>
         </div>
       </div>
       ${footer()}
+    </div>
+    <div id="notifications">
+      <div py:for="n in h.pop_user_notifications()" class="notice">
+        $n.text
+      </div>
     </div>
     <script type="text/javascript" src="${g.forge_static('js/jquery-1.4.2.min.js')}"/>
     <script type="text/javascript" src="${g.forge_static('js/jquery-ui-1.8rc3.custom.min.js')}"></script>
