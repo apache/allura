@@ -23,6 +23,7 @@ from pyforge.lib import helpers as h
 from pyforge.controllers.error import ErrorController
 from pyforge.lib.security import require, has_project_access, has_neighborhood_access, has_artifact_access
 from pyforge.lib.widgets import form_fields as ffw
+from pyforge.lib.widgets import forms as forms
 from pyforge.lib.widgets import project_list as plw
 from pyforge.lib import plugin
 from pyforge.lib import exceptions as forge_exc
@@ -35,7 +36,7 @@ from pyforge.model.session import main_orm_session
 class W:
     markdown_editor = ffw.MarkdownEdit()
     project_summary = plw.ProjectSummary()
-    add_project = ffw.NeighborhoodAddProjectForm()
+    add_project = forms.NeighborhoodAddProjectForm()
 
 class NeighborhoodController(object):
     '''Manages a neighborhood of projects.
@@ -105,28 +106,38 @@ class NeighborhoodController(object):
                     sort=sort)
 
     @expose('pyforge.templates.neighborhood_add_project')
-    def add_project(self, **kw):
+    def add_project(self, project_unixname=None, project_description=None, project_name=None):
+        require(has_neighborhood_access('create', self.neighborhood), 'Create access required')
         c.add_project = W.add_project
-        return dict(neighborhood=self.neighborhood, add_project=kw)
+        form_data = dict(project_unixname=project_unixname,
+                         project_description=project_description,
+                         project_name=project_name)
+        return dict(neighborhood=self.neighborhood, form_data=form_data)
 
     @h.vardec
     @expose()
     @validate(W.add_project, error_handler=add_project)
-    def register(self, add_project=None):
+    def register(self, project_unixname=None, project_description=None, project_name=None):
         require(has_neighborhood_access('create', self.neighborhood), 'Create access required')
         try:
-            p = self.neighborhood.register_project(add_project['pid'].lower())
+            p = self.neighborhood.register_project(project_unixname.lower())
         except forge_exc.ProjectConflict:
             flash(
                 'A project already exists with that name, please choose another.', 'error')
             ming.orm.ormsession.ThreadLocalORMSession.close_all()
-            redirect('add_project?add_project.pid=%s' % add_project['pid'])
+            redirect('add_project?project_unixname=%s&project_description=%s&project_name=%s' %
+                     (project_unixname,project_description,project_name))
         except Exception, ex:
             c.project = None
             ming.orm.ormsession.ThreadLocalORMSession.close_all()
             flash('%s: %s' % (ex.__class__, str(ex)), 'error')
-            redirect('add_project?add_project.pid=%s' % add_project['pid'])
-        redirect(p.script_name + 'admin/')
+            redirect('add_project?project_unixname=%s&project_description=%s&project_name=%s' %
+                     (project_unixname,project_description,project_name))
+        if project_name:
+            p.name = project_name
+        if project_description:
+            p.short_description = project_description
+        redirect(p.script_name + 'admin/overview')
 
     @expose()
     def icon(self):

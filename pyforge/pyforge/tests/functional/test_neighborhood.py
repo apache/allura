@@ -119,20 +119,20 @@ class TestNeighborhood(TestController):
 
     def test_register(self):
         r = self.app.post('/adobe/register',
-                          params=dict(pid='mymoz'),
+                          params=dict(project_unixname='mymoz', project_name='', project_description=''),
                           extra_environ=dict(username='*anonymous'),
                           status=302)
         r = self.app.post('/adobe/register',
-                          params=dict(pid='mymoz'),
+                          params=dict(project_unixname='foo.mymoz', project_name='', project_description=''),
                           extra_environ=dict(username='root'))
-        r = self.app.post('/adobe/register',
-                          params=dict(pid='foo.mymoz'),
-                          extra_environ=dict(username='root'))
-        assert 'error' in r.cookies_set['webflash']
+        assert r.html.find('div',{'class':'error'}).string == 'Please use only letters, numbers, and dash characters.'
         r = self.app.post('/p/register',
-                          params=dict(pid='test'),
+                          params=dict(project_unixname='test', project_name='', project_description=''),
                           extra_environ=dict(username='root'))
         assert 'error' in r.cookies_set['webflash']
+        r = self.app.post('/adobe/register',
+                          params=dict(project_unixname='mymoz', project_name='', project_description=''),
+                          extra_environ=dict(username='root'))
 
     def test_neighborhood_project(self):
         r = self.app.get('/adobe/test/home/', status=302)
