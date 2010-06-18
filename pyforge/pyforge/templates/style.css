@@ -517,6 +517,15 @@ button, input[type=submit], input[type=reset], input[type=button] {padding: .35e
 	right: -5px;
 	}
 
+#save-message {
+    position:fixed;
+    top:5px;
+    left:40%;
+    opacity:0.8;
+    -moz-border-radius:0.7em;
+    -webit-border-radius:0.7em;
+}
+
 
 
 /* UI */
