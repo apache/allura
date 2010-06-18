@@ -100,6 +100,7 @@ class GitRepository(M.Repository):
         return git.Repo(self.full_fs_path)
 
     def __getattr__(self, name):
+        assert type(self) != type(self._impl), 'Problem looking up %s' % name
         return getattr(self._impl, name)
 
     def repo_tags(self):
