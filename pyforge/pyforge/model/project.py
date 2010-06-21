@@ -13,6 +13,7 @@ from ming.orm.property import FieldProperty, RelationProperty, ForeignIdProperty
 
 from pyforge.lib import helpers as h
 from pyforge.lib import plugin
+from pyforge.lib.security import has_artifact_access
 from .session import main_orm_session
 from .session import project_doc_session, project_orm_session
 from .neighborhood import Neighborhood
@@ -203,8 +204,9 @@ class Project(MappedClass):
         for ac in self.app_configs:
             App = ac.load()
             app = App(self, ac)
-            app_sitemap = [ sm.bind_app(app) for sm in app.sitemap ]
-            sitemap.extend(app_sitemap)
+            if has_artifact_access('read', app=app)() or ac.tool_name=='home':
+                app_sitemap = [ sm.bind_app(app) for sm in app.sitemap ]
+                sitemap.extend(app_sitemap)
         return sitemap.children
 
     def parent_iter(self):
