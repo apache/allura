@@ -144,6 +144,14 @@ class SFXProjectRegistrationProvider(plugin.ProjectRegistrationProvider):
         return super(SFXProjectRegistrationProvider, self).register_subproject(
             project, name, user, install_apps)
 
+    def delete_project(self, project, user):
+        r = self.api.delete(user, project)
+        super(SFXProjectRegistrationProvider, self).delete_project(project, user)
+        return r
+
+    def undelete_project(self, project, user):
+        raise NotImplementedError, 'SFX undelete_project'
+
     def best_download_url(self, project):
         shortname = project.shortname[len(project.neighborhood.shortname_prefix):]
         short_split = shortname.split('/')

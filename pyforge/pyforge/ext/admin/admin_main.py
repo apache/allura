@@ -21,6 +21,7 @@ from pyforge import model as M
 from pyforge.lib.security import require, has_project_access
 from pyforge.lib.widgets import form_fields as ffw
 from pyforge.lib import exceptions as forge_exc
+from pyforge.lib import plugin
 
 log = logging.getLogger(__name__)
 
@@ -198,15 +199,11 @@ class ProjectAdminController(object):
             redirect('.')
         elif 'delete' in kw:
             h.log_action(log, 'delete project').info('')
-            c.project.deleted = True
-            for sp in c.project.subprojects:
-                sp.deleted = True
+            plugin.ProjectRegistrationProvider.get().delete_project(c.project, c.user)
             redirect('.')
         elif 'undelete' in kw:
             h.log_action(log, 'undelete project').info('')
-            c.project.deleted = False
-            for sp in c.project.subprojects:
-                sp.deleted = False
+            plugin.ProjectRegistrationProvider.get().undelete_project(c.project, c.user)
             redirect('.')
         if name != c.project.name:
             h.log_action(log, 'change project name').info('')
@@ -307,7 +304,8 @@ class ProjectAdminController(object):
                 h.log_action(log, 'delete subproject').info(
                     'delete subproject %s', sp['shortname'],
                     meta=dict(name=sp['shortname']))
-                M.Project.query.get(shortname=sp['shortname']).delete()
+                p = M.Project.query.get(shortname=sp['shortname'])
+                plugin.ProjectRegistrationProvider.get().delete_project(p, c.user)
         for p in tool:
             if p.get('delete'):
                 require(has_project_access('tool'), 'Delete access required')

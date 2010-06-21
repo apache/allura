@@ -137,9 +137,11 @@ class SFXProjectApi(object):
             response = conn.getresponse()
             return read_response(response)
 
-    def delete(self, p):
+    def delete(self, user, p):
         with self._connect() as conn:
             ug_name = self._unix_group_name(p.neighborhood, p.shortname)
-            conn.request('DELETE', self.project_path + '/' + ug_name)
+            args = dict(
+                user_id=user.sfx_userid)
+            conn.request('DELETE', self.project_path + '/' + ug_name, json.dumps(args))
             response = conn.getresponse()
             return read_response(response, 200,404,410)

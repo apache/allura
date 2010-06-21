@@ -324,11 +324,20 @@ class ProjectRegistrationProvider(object):
             g.publish('react', 'forge.project_created')
         return sp
 
+    def delete_project(self, project, user):
+        for sp in project.subprojects:
+            self.delete_project(sp, user)
+        project.deleted = True
+
+    def undelete_project(self, project, user):
+        project.deleted = False
+        for sp in project.subprojects:
+            self.undelete_project(sp, user)
+
     def best_download_url(self, project):
         '''This is the url needed to render a download button.
            It should be overridden for your specific envirnoment'''
         return None
-
 
 class LocalProjectRegistrationProvider(ProjectRegistrationProvider):
     pass

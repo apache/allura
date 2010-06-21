@@ -198,6 +198,7 @@ class Project(MappedClass):
         from pyforge.app import SitemapEntry
         sitemap = SitemapEntry('root')
         for sub in self.direct_subprojects:
+            if sub.deleted: continue
             sitemap.children.append(SitemapEntry(sub.name, sub.url()))
         for ac in self.app_configs:
             App = ac.load()
