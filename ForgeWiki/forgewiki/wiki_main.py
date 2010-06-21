@@ -494,14 +494,12 @@ class PageController(object):
         if tags: tags = tags.split(',')
         else: tags = []
         name_conflict = None
-        ws = re.compile('\s+')
-        new_title = ''.join(ws.split(title))
-        if self.page.title != new_title:
-            name_conflict = model.Page.query.find(dict(app_config_id=c.app.config._id, title=new_title)).first()
+        if self.page.title != title:
+            name_conflict = model.Page.query.find(dict(app_config_id=c.app.config._id, title=title)).first()
             if name_conflict:
-                flash('There is already a page named "%s".' % new_title, 'error')
+                flash('There is already a page named "%s".' % title, 'error')
             else:
-                self.page.title = new_title
+                self.page.title = title
         self.page.text = text
         if labels:
             self.page.labels = labels.split(',')
