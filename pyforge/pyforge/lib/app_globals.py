@@ -69,10 +69,7 @@ class Globals(object):
             extensions=['codehilite', ForgeExtension(), 'tables'],
             output_format='html4',
             safe_mode='escape')
-        self.markdown_wiki = markdown.Markdown(
-            extensions=['codehilite', ForgeExtension(wiki=True), 'tables'],
-            output_format='html4',
-            safe_mode='escape')
+        self.markdown_wiki = self.markdown # [#616]
         # self.markdown.stripTopLevelTags = self.markdown_wiki.stripTopLevelTags=False
 
         # Setup OEmbed
