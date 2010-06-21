@@ -19,6 +19,8 @@ def main():
     print '---BEGIN---'
     print text
     print '---END---'
+    raw_input("Verify that there are no new dependencies, or RPM's are build for all deps...")
+    raw_input("Verify that a new sandbox builds starts without engr help...")
     raw_input('When this is done, create a JIRA ticket with the same contents...')
     raw_input('Now link the two tickets...')
     newforge_num = raw_input('What is the newforge ticket number? ')
