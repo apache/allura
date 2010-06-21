@@ -45,6 +45,11 @@
                 </li>
                 <hr class="clear clearfix" />
                 <li>
+                    <label>Show Downloads:</label>
+                    $c.project.show_download_button
+                </li>
+                <hr class="clear clearfix" />
+                <li>
                     <label>Summary:</label>
                     <pre>$c.project.short_description</pre>
                 </li>
@@ -113,6 +118,20 @@
                               <input type="submit" name="delete_icon" value="Delete Icon"
                                      class="ui-state-default ui-button ui-button-text clear clearfix"/>
                           </div>
+                    </div>
+                  </div>
+                </li>
+                <hr class="clear clearfix" />
+                <li>
+                  <div class="row dual">
+                    <div class="column" style="margin-right:0">
+                      <label for="show_download_button">Show Downloads:</label>
+                    </div>
+                    <div class="column grid_10" style="margin-left:0">
+                      <div class="editable viewing">
+                          <div class="viewer">$c.project.show_download_button</div>
+                          <div class="editor"><input name="show_download_button" type="checkbox" checked="${c.project.show_download_button or None}"/></div>
+                      </div>
                     </div>
                   </div>
                 </li>
