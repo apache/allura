@@ -117,7 +117,9 @@ class ForgeTrackerApp(Application):
         ticket = request.path_info.split(self.url)[-1].split('/')[0]
         for bin in model.Bin.query.find().sort('summary'):
             label = bin.shorthand_id()
-            search_bins.append(SitemapEntry(label, bin.url(), className='nav_child', small=c.app.globals.bin_counts.get(bin.shorthand_id())))
+            search_bins.append(SitemapEntry(
+                    label, bin.url(), className='nav_child',
+                    small=c.app.globals.bin_counts.get(bin.shorthand_id())))
         if ticket.isdigit():
             ticket = model.Ticket.query.find(dict(app_config_id=self.config._id,ticket_num=int(ticket))).first()
         else:
@@ -186,6 +188,7 @@ class ForgeTrackerApp(Application):
         model.Attachment.query.remove({'metadata.app_config_id':c.app.config._id})
         app_config_id = {'app_config_id':c.app.config._id}
         model.Ticket.query.remove(app_config_id)
+        model.Bin.query.remove(app_config_id)
         # model.Comment.query.remove(app_config_id)
         model.Globals.query.remove(app_config_id)
         super(ForgeTrackerApp, self).uninstall(project)

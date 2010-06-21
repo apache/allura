@@ -48,7 +48,7 @@ class Globals(MappedClass):
             for b in Bin.query.find(dict(
                     app_config_id=self.app_config_id)):
                 r = search_artifact(Ticket, b.terms, rows=0)
-                self._bin_counts[b.summary] = r and r.hits or 0
+                self._bin_counts[b.summary] = r is not None and r.hits or 0
             self._bin_counts_expire = datetime.utcnow() + timedelta(minutes=60)
         return self._bin_counts
 
