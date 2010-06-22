@@ -112,6 +112,10 @@ class Application(object):
         '''Whether the user has access to send email to the given topic'''
         return False
 
+    def is_visible_to(self, user):
+        '''Whether the user can view the app.'''
+        return has_artifact_access('read', app=self)(user=user)
+
     @classmethod
     def default_options(cls):
         return dict(

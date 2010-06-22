@@ -75,6 +75,10 @@ class AdminApp(Application):
         self.templates = pkg_resources.resource_filename('pyforge.ext.admin', 'templates')
         self.sitemap = [ SitemapEntry('Admin','.')]
 
+    def is_visible_to(self, user):
+        '''Whether the user can view the app.'''
+        return has_project_access('create')(user=user)
+
     @h.exceptionless([], log)
     def sidebar_menu(self):
         links = []

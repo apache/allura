@@ -37,6 +37,10 @@ class ProjectHomeApp(Application):
         self.templates = pkg_resources.resource_filename(
             'pyforge.ext.project_home', 'templates')
 
+    def is_visible_to(self, user):
+        '''Whether the user can view the app.'''
+        return True
+
     @property
     @h.exceptionless([], log)
     def sitemap(self):
