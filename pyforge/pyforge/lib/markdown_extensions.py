@@ -62,7 +62,10 @@ class RelativeLinkRewriter(markdown.postprocessors.Postprocessor):
 class HTMLSanitizer(markdown.postprocessors.Postprocessor):
 
     def run(self, text):
-        p = feedparser._HTMLSanitizer('utf-8')
+        try:
+            p = feedparser._HTMLSanitizer('utf-8')
+        except TypeError: # $@%## pre-released versions from SOG
+            p = feedparser._HTMLSanitizer('utf-8', '')
         p.feed(text.encode('utf-8'))
         return unicode(p.output(), 'utf-8')
 
