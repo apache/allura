@@ -8,6 +8,7 @@ import tg
 import pylons
 import pkg_resources
 from paste import fileapp
+from paste.deploy.converters import asbool
 from pylons.util import call_wsgi_application
 from tg.controllers import DecoratedController
 from webob import exc, Request
@@ -177,6 +178,7 @@ class StatsMiddleware(object):
         self.active = False
         try:
             self.sample_rate = config.get('stats.sample_rate', 0.25)
+            self.debug = asbool(config.get('debug', 'false'))
             self.instrument_pymongo()
             self.instrument_template()
             self.active = True
@@ -205,7 +207,7 @@ class StatsMiddleware(object):
         req = Request(environ)
         req.environ['sf.stats'] = s = StatsRecord(req, random() < self.sample_rate)
         with s.timing('total'):
-            resp = req.get_response(self.app)
+            resp = req.get_response(self.app, catch_exc_info=self.debug)
             result = resp(environ, start_response)
         if s.active:
             self.log.info('Stats: %r', s)
