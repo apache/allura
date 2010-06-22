@@ -50,7 +50,7 @@
       <div class="row reply">
       	<div class="column grid_1 tcenter">
       		<p class="gravatar">
-      			${gravatar(c.user.preferences.email_address)}<br/><br/>
+                ${gravatar(c.user.preferences.email_address, title=c.user.display_name)}<br/><br/>
       			<a href="${c.user.url()}">$c.user.display_name</a>
       		</p>
       	</div>

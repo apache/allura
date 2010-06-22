@@ -18,7 +18,7 @@
   </head>
 
   <body>
-    <h1><py:if test="user.preferences.email_address">${gravatar(user.preferences.email_address)} </py:if>${user.display_name} (${user.username})</h1>
+    <h1><py:if test="user.preferences.email_address">${gravatar(user.preferences.email_address, title=user.display_name)} </py:if>${user.display_name} (${user.username})</h1>
     ${Markup(c.project.description_html)}
     <div class="project-list">
       <span class="title">Projects</span>

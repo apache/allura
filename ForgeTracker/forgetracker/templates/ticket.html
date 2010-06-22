@@ -61,7 +61,7 @@
             <div id="sidebar-right" class="column grid_4 fright">
               <div class="listed">
                 <b>Created by:</b>
-                  ${gravatar(ticket.reported_by.preferences.email_address, size=16)}
+                  ${gravatar(ticket.reported_by.preferences.email_address, size=16, title=ticket.reported_by.display_name)}
                   <a href="${ticket.reported_by.url()}">${ticket.reported_by.display_name}</a>
                   <hr/>
                   <b>Created Time:</b> ${h.ago(ticket.created_date)}

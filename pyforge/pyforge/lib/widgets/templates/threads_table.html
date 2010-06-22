@@ -34,7 +34,7 @@
         <td py:if="not thread.last_post">&nbsp;</td>
         <td py:if="thread.last_post" py:with="author=thread.last_post.author()">
           <p class="gravatar sm">
-          By ${gravatar(author.preferences.email_address, size=16)}<a href="${author.url()}">$author.display_name</a><br />on ${thread.last_post.timestamp.strftime('%a %b %d, %Y %I:%M %p')}
+          By ${gravatar(author.preferences.email_address, size=16, title=author.display_name)}<a href="${author.url()}">$author.display_name</a><br />on ${thread.last_post.timestamp.strftime('%a %b %d, %Y %I:%M %p')}
           </p>
 
         </td> 
