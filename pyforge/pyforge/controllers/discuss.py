@@ -1,5 +1,6 @@
 from mimetypes import guess_type
 from urllib import unquote
+from datetime import datetime
 
 from tg import expose, redirect, validate, request, response, flash
 from tg.decorators import before_validate, with_trailing_slash, without_trailing_slash
@@ -141,6 +142,7 @@ class ThreadController(object):
         require(has_artifact_access('post', self.thread))
         kw = self.W.edit_post.validate(kw, None)
         p = self.thread.add_post(**kw)
+        self.thread.artifact.mod_date = datetime.now()
         flash('Message posted')
         redirect(request.referer)
 

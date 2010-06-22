@@ -42,11 +42,6 @@ class TestWhenLoadingFrontPage(WithUserAndBugsApp):
         tickets = self.response['tickets']
         assert tickets[0].summary == 'colors are wrong'
 
-    def test_that_changes_are_shown(self):
-        change = self.response['changes'][0]
-        assert change['change_type'] == 'ticket'
-        assert change['change_text'] == 'colors are wrong'
-
 
 def search_returning_colors_are_wrong_ticket():
     ticket = create_colors_are_wrong_ticket()

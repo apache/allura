@@ -31,53 +31,17 @@
             </form>
           </p>
           <div style="clear:both"/>
-          <p py:if="solr_error">${solr_error}</p>
-          <p py:if="count==0 and q">No results.</p>
-          <p py:if="count==1 and q">$count result.</p>
-          <p py:if="count > 1 and q">$count results.</p>
-          <table py:if="count != 0 and q">
-            <thead>
-              <tr>
-                <th data-sort="ticket_num_i">Ticket</th>
-                <th data-sort="status_s">Status</th>
-                <th>Description</th>
-                <th data-sort="assigned_to_s">Assigned To</th>
-                <th data-sort="mod_date_dt">Updated</th>
-                <th py:for="field in sortable_custom_fields" data-sort="${field.sortable_name}">${field.label}</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr py:for="t in tickets">
-                <td><a href="${t.url()}">[#${t.ticket_num}] $t.summary</a></td>
-                <td class="${t.status}">${t.status}</td>
-                <td>${Markup(g.markdown.convert(h.text.truncate(t.description,70)))}</td>
-                <td py:if="t.assigned_to_id">${t.assigned_to.display_name}</td>
-                <td py:if="not t.assigned_to_id"></td>
-                <td>${h.ago(t.mod_date)}</td>
-                <td py:for="field in sortable_custom_fields">${t.custom_fields.get(field.name)}</td>
-              </tr>
-            </tbody>
-          </table>
-          <p>Showing ${limit} result<py:if test="limit!=1">s</py:if> per page. </p>
-          <ul class="per_page">
-            <li py:for="per_page in [25, 50, 100, 250]">
-            <a href="${tg.url(request.path_info, dict(q=q, limit=per_page))}" py:strip="limit == per_page">${per_page}</a>
-            </li>
-          </ul>
-          <div>
-              <span id="first-page" class="nav-button disabled">&lt;&lt;</span>
-              <span id="prev-page" class="nav-button disabled">&lt;</span>
-              <span id="next-page" class="nav-button disabled">&gt;</span>
-              <span id="last-page" class="nav-button disabled">&gt;&gt;</span>
-          </div>
+          ${c.ticket_search_results.display(solr_error=solr_error,
+            count=count,
+            limit=limit,
+            query=q,
+            tickets=tickets,
+            sortable_custom_fields=sortable_custom_fields,
+            page=page,
+            sort=sort)}
           <a href="${tg.url('../edit/', dict(q=q, limit=limit, sort=sort))}" py:if="allow_edit and count != 0">Edit All</a>
         </div>
       </div>
     </div>
   </body>
-  <script type="text/javascript">
-var q="${Markup(q)}", count=$count, limit=$limit, page=$page, sort="${Markup(sort)}";
-  </script>
-  <script type="text/javascript" src="${g.app_static('js/ticket-list.js')}"/>
-
 </html>

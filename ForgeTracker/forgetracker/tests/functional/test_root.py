@@ -60,10 +60,8 @@ class TestFunctionalController(TestController):
         ticket_view.mustcontain(summary, 'Discussion', 'No posts found')
     
     def test_render_index(self):
-        summary = 'test render index'
-        self.new_ticket(summary=summary)
         index_view = self.app.get('/bugs/')
-        assert_true(summary in index_view)
+        assert 'Showing 250 results per page.' in index_view
     
     def test_render_help(self):
         summary = 'test render help'

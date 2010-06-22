@@ -106,10 +106,14 @@ class Bin(Artifact):
     _id = FieldProperty(schema.ObjectId)
     summary = FieldProperty(str, required=True)
     terms = FieldProperty(str, if_missing='')
+    sort = FieldProperty(str, if_missing='')
 
     def url(self):
         base = self.app_config.url() + 'search/?'
-        return base + urllib.urlencode(dict(q=(self.terms or '')))
+        params = dict(q=(self.terms or ''))
+        if self.sort:
+            params['sort'] = self.sort
+        return base + urllib.urlencode(params)
 
     def shorthand_id(self):
         return self.summary

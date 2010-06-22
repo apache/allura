@@ -39,6 +39,7 @@ from forgetracker import version
 
 from forgetracker.widgets.ticket_form import TicketForm, EditTicketForm
 from forgetracker.widgets.bin_form import BinForm
+from forgetracker.widgets.ticket_search import TicketSearchResults, MassEdit
 
 log = logging.getLogger(__name__)
 
@@ -50,6 +51,8 @@ class W:
     user_tag_edit = ffw.UserTagEdit()
     label_edit = ffw.LabelEdit()
     attachment_list = ffw.AttachmentList()
+    ticket_search_results = TicketSearchResults()
+    mass_edit = MassEdit()
     bin_form = BinForm()
     ticket_form = TicketForm()
     edit_ticket_form = EditTicketForm()
@@ -115,7 +118,7 @@ class ForgeTrackerApp(Application):
         search_bins = []
         related_urls = []
         ticket = request.path_info.split(self.url)[-1].split('/')[0]
-        for bin in model.Bin.query.find().sort('summary'):
+        for bin in model.Bin.query.find(dict(app_config_id=self.config._id)).sort('summary'):
             label = bin.shorthand_id()
             search_bins.append(SitemapEntry(
                     label, bin.url(), className='nav_child',
@@ -182,6 +185,14 @@ class ForgeTrackerApp(Application):
             status_names='open unread accepted pending closed',
             milestone_names='',
             custom_fields=[])
+        c.app.globals.invalidate_bin_counts()
+        bin = model.Bin(summary='Open Tickets', terms='status:open')
+        bin.app_config_id = self.config._id
+        bin.custom_fields = dict()
+        bin = model.Bin(summary='Recent Changes', terms='status:open', sort='mod_date_dt desc')
+        bin.app_config_id = self.config._id
+        bin.custom_fields = dict()
+
 
     def uninstall(self, project):
         "Remove all the tool's artifacts from the database"
@@ -263,29 +274,14 @@ class RootController(object):
                     count=count, q=q, limit=limit, page=page, sort=sort,
                     solr_error=solr_error, **kw)
 
-    def ordered_history(self, limit=None):
-        q = []
-        tickets = model.Ticket.query.find(dict(app_config_id=c.app.config._id)).sort('ticket_num')
-        for ticket in tickets:
-            q.append(dict(change_type='ticket',change_date=ticket.mod_date,
-                          ticket_num=ticket.ticket_num,change_text=ticket.summary))
-            for comment in ticket.discussion_thread().find_posts(limit=limit, style='linear'):
-                # for comment in ticket.ordered_comments(limit):
-                q.append(dict(change_type='comment',
-                              change_date=comment.timestamp,
-                              ticket_num=ticket.ticket_num,
-                              change_text=comment.text))
-        q.sort(reverse=True, key=lambda d:d['change_date'])
-        return q[:limit]
-
     @with_trailing_slash
     @expose('forgetracker.templates.index')
-    def index(self):
+    def index(self, limit=250, **kw):
         require(has_artifact_access('read'))
-        result = self.paged_query('!status:closed', sort='ticket_num_i desc', limit=500)
-        result['changes'] = self.ordered_history(5)
+        result = self.paged_query('status:open', sort='ticket_num_i desc', limit=int(limit))
         c.subscribe_form = W.subscribe_form
         result['subscribed'] = Subscriptions.upsert().subscribed()
+        c.ticket_search_results = W.ticket_search_results
         return result
 
     @with_trailing_slash
@@ -303,6 +299,7 @@ class RootController(object):
             redirect(c.project.url() + 'search?' + urlencode(dict(q=q, history=kw.get('history'))))
         result = self.paged_query(q, **kw)
         result['allow_edit'] = has_artifact_access('write')()
+        c.ticket_search_results = W.ticket_search_results
         return result
 
     @expose()
@@ -396,6 +393,7 @@ class RootController(object):
             c.app.globals.milestone_names = ''
         result['globals'] = c.app.globals
         c.user_select = ffw.ProjectUserSelect()
+        c.mass_edit = W.mass_edit
         return result
 
     @expose()
@@ -558,6 +556,7 @@ class BinController(object):
         c.app.globals.invalidate_bin_counts()
         if request.method != 'POST':
             raise Exception('save_bin must be a POST request')
+        print bin_form
         bin = model.Bin(summary=bin_form['summary'], terms=bin_form['terms'])
         bin.app_config_id = c.app.config._id
         bin.custom_fields = dict()

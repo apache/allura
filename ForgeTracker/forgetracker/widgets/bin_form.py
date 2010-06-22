@@ -14,5 +14,6 @@ class BinForm(ew.SimpleForm):
     def fields(self):
         fields = [
             ew.TextField(name='summary', label='Bin Name', validator=fev.UnicodeString(not_empty=True)),
-            ew.TextField(name='terms', label='Search Terms', validator=fev.UnicodeString(not_empty=True))]
+            ew.TextField(name='terms', label='Search Terms', validator=fev.UnicodeString(not_empty=True)),
+            ew.HiddenField(name='sort', label='Sort Order', validator=fev.UnicodeString())]
         return fields

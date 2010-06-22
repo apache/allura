@@ -29,5 +29,8 @@ setup(name='ForgeTracker',
 
       [flyway.migrations]
       ForgeTracker=forgetracker.model.migrations
+
+      [easy_widgets.resources]
+      ew_resources=forgetracker.config.resources:register_ew_resources
       """,
       )
