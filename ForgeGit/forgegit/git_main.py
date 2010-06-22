@@ -167,8 +167,8 @@ class RootController(object):
         ThreadLocalORMSession.flush_all()
         ThreadLocalORMSession.close_all()
         to_project = Project.query.get(shortname=to_project_name)
-        require(has_project_access('tool', to_project))
         with h.push_config(c, project=to_project):
+            require(has_project_access('tool', to_project))
             if request.method!='POST' or to_name is None:
                 prefix_len = len(to_project_name+'/')
                 in_use = [sp.shortname[prefix_len:] for sp in to_project.direct_subprojects]
