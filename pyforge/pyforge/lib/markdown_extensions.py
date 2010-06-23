@@ -126,6 +126,7 @@ class ArtifactLinkPattern(markdown.inlinepatterns.LinkPattern):
     def handleMatch(self, mo):
         from pyforge import model as M
         old_link = mo.group(2)
+        if old_link.startswith('[['): return old_link
         new_link = M.ArtifactLink.lookup(old_link)
         if new_link:
             result = markdown.etree.Element('a')
