@@ -28,11 +28,12 @@ class ForgeExtension(markdown.Extension):
         macro_engine = Macro(md)
         md.preprocessors.add('macro', macro_engine.preprocessor, '<html_block')
         md.treeprocessors['br'] = LineOrientedTreeProcessor(md)
-        if self._use_wiki:
-            md.treeprocessors['wiki'] = ClassifyWikiLinks(md)
         md.inlinePatterns['oembed'] = OEmbedPattern(r'\[embed#(.*?)\]')
         md.inlinePatterns['autolink_1'] = AutolinkPattern(r'(http(?:s?)://[a-zA-Z0-9./\-_0]+)')
-        md.inlinePatterns['artifact'] = ArtifactLinkPattern(self.core_artifact_link)
+        md.inlinePatterns['artifact'] = ArtifactLinkPattern(
+            self.core_artifact_link, md, self._use_wiki)
+        if self._use_wiki:
+            md.treeprocessors['wiki'] = ClassifyWikiLinks(md)
         md.postprocessors['macro'] = macro_engine.postprocessor
         md.postprocessors['rewrite_relative_links'] = RelativeLinkRewriter()
         md.postprocessors['sanitize_html'] = HTMLSanitizer()
@@ -118,14 +119,23 @@ class ClassifyWikiLinks(markdown.treeprocessors.Treeprocessor):
 
 class ArtifactLinkPattern(markdown.inlinepatterns.LinkPattern):
 
+    def __init__(self, pattern, markdown_instance=None, use_wiki=False):
+        markdown.inlinepatterns.LinkPattern.__init__(self, pattern, markdown_instance)
+        self._use_wiki = use_wiki
+
     def handleMatch(self, mo):
         from pyforge import model as M
         old_link = mo.group(2)
         new_link = M.ArtifactLink.lookup(old_link)
         if new_link:
             result = markdown.etree.Element('a')
-            result.text = mo.group(2)
+            result.text = old_link
             result.set('href', new_link.url)
+            return result
+        elif self._use_wiki:
+            result = markdown.etree.Element('a')
+            result.text = old_link
+            result.set('href', old_link[1:-1])
             return result
         else:
             return old_link

@@ -269,6 +269,8 @@ class TestRootController(TestController):
             'text':'''
 * Here is a link to [this page](TEST)
 * Here is a link to [another page](Some page which does not exist)
+* Here is a link to [TEST]
+* Here is a link to [Some page which does not exist]
 ''',
             'tags':'',
             'tags_old':'',
@@ -285,4 +287,10 @@ class TestRootController(TestController):
             if link.contents == ['another page']:
                 assert 'notfound' in link.get('class', '')
                 found_links +=1
-        assert found_links == 2, 'Wrong number of links found'
+            if link.contents == ['[TEST]']:
+                assert 'notfound' not in link.get('class', '')
+                found_links +=1
+            if link.contents == ['[Some page which does not exist]']:
+                assert 'notfound' in link.get('class', '')
+                found_links +=1
+        assert found_links == 4, 'Wrong number of links found'
