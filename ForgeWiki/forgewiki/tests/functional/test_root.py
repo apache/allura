@@ -261,3 +261,28 @@ class TestRootController(TestController):
         assert not options_admin2.form['show_right_bar'].checked
         wiki_page2 = self.app.get('/wiki/TEST/')
         assert not wiki_page2.html.find('div',{'id':'sidebar-right'})
+
+    def test_page_links_are_colored(self):
+        self.app.get('/wiki/TEST/')
+        params = {
+            'title':'TEST',
+            'text':'''
+* Here is a link to [this page](TEST)
+* Here is a link to [another page](Some page which does not exist)
+''',
+            'tags':'',
+            'tags_old':'',
+            'labels':'',
+            'labels_old':'',
+            'viewable_by-0.id':'all'}
+        self.app.post('/wiki/TEST/update', params=params)
+        r = self.app.get('/wiki/TEST/')
+        found_links = 0
+        for link in r.html.findAll('a'):
+            if link.contents == ['this page']:
+                assert 'notfound' not in link.get('class', '')
+                found_links +=1
+            if link.contents == ['another page']:
+                assert 'notfound' in link.get('class', '')
+                found_links +=1
+        assert found_links == 2, 'Wrong number of links found'

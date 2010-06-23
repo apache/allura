@@ -28,11 +28,11 @@ class ForgeExtension(markdown.Extension):
         macro_engine = Macro(md)
         md.preprocessors.add('macro', macro_engine.preprocessor, '<html_block')
         md.treeprocessors['br'] = LineOrientedTreeProcessor(md)
+        if self._use_wiki:
+            md.treeprocessors['wiki'] = ClassifyWikiLinks(md)
         md.inlinePatterns['oembed'] = OEmbedPattern(r'\[embed#(.*?)\]')
         md.inlinePatterns['autolink_1'] = AutolinkPattern(r'(http(?:s?)://[a-zA-Z0-9./\-_0]+)')
         md.inlinePatterns['artifact'] = ArtifactLinkPattern(self.core_artifact_link)
-        if self._use_wiki:
-            md.inlinePatterns['wiki'] = WikiLinkPattern(r'\b([A-Z][a-z]\w*[A-Z][a-z]\w*)')
         md.postprocessors['macro'] = macro_engine.postprocessor
         md.postprocessors['rewrite_relative_links'] = RelativeLinkRewriter()
         md.postprocessors['sanitize_html'] = HTMLSanitizer()
@@ -96,6 +96,24 @@ class LineOrientedTreeProcessor(markdown.treeprocessors.Treeprocessor):
             except SyntaxError:
                 log.exception('Error adding <br> tags: new text is %s', new_text)
                 pass
+        return root
+
+class ClassifyWikiLinks(markdown.treeprocessors.Treeprocessor):
+    '''This adds a class to intra-wiki links that point to non-existent pages'''
+
+    def __init__(self, md):
+        self._markdown = md
+
+    def run(self, root):
+        from pyforge import model as M
+        for node in root.getiterator('a'):
+            href = node.get('href')
+            if not href: continue
+            if '/' in href: continue
+            al = M.ArtifactLink.lookup('[' + href + ']')
+            if not al:
+                classes = node.get('class', '').split() + ['notfound']
+                node.attrib['class'] = ' '.join(classes)
         return root
 
 class ArtifactLinkPattern(markdown.inlinepatterns.LinkPattern):

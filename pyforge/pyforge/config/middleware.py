@@ -59,7 +59,8 @@ def _make_core_app(root, global_conf, full_stack=True, **app_conf):
     # Wrap your base TurboGears 2 application with custom middleware here
     # app = MingMiddleware(app)
     if app_conf.get('stats.sample_rate', '0.25') != '0':
-        app = StatsMiddleware(app, app_conf)
+        stats_config = dict(global_conf, **app_conf)
+        app = StatsMiddleware(app, stats_config)
 
     if asbool(app_conf.get('auth.method', 'local')=='sfx'):
         app = SSLMiddleware(app)
