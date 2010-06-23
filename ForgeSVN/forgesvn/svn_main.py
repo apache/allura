@@ -30,6 +30,10 @@ class ForgeSVNApp(Application):
     '''This is the SVN app for PyForge'''
     __version__ = version.__version__
     permissions = [ 'read', 'write', 'create', 'admin', 'configure' ]
+    tool_label='SVN'
+    default_mount_label='SVN'
+    default_mount_point='svn'
+    ordinal=4
 
     def __init__(self, project, config):
         Application.__init__(self, project, config)
@@ -39,7 +43,7 @@ class ForgeSVNApp(Application):
     @property
     @h.exceptionless([], log)
     def sitemap(self):
-        menu_id = self.config.options.mount_point.title()
+        menu_id = self.config.options.mount_label.title()
         with h.push_config(c, app=self):
             return [
                 SitemapEntry(menu_id, '.')[self.sidebar_menu()] ]

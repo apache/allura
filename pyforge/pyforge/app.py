@@ -87,7 +87,8 @@ class Application(object):
     'base pyforge pluggable application'
     __version__ = None
     config_options = [
-        ConfigOption('mount_point', str, 'app') ]
+        ConfigOption('mount_point', str, 'app'),
+        ConfigOption('mount_label', str, 'app') ]
     templates=None # path to templates
     script_name=None
     root=None  # root controller
@@ -101,6 +102,10 @@ class Application(object):
     DiscussionClass = model.Discussion
     PostClass = model.Post
     AttachmentClass = model.Attachment
+    tool_label='Tool'
+    default_mount_label='Tool Name'
+    default_mount_point='tool'
+    ordinal=0
 
     def __init__(self, project, app_config_object):
         self.project = project

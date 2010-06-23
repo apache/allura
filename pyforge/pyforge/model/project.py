@@ -254,7 +254,7 @@ class Project(MappedClass):
         from .artifact import AwardGrant
         return AwardGrant.query.find(dict(granted_to_project_id=self._id)).all()
 
-    def install_app(self, ep_name, mount_point, **override_options):
+    def install_app(self, ep_name, mount_point, mount_label=None, **override_options):
         assert h.re_path_portion.match(mount_point), 'Invalid mount point'
         assert self.app_instance(mount_point) is None
         for ep in pkg_resources.iter_entry_points('pyforge', ep_name):
@@ -270,6 +270,7 @@ class Project(MappedClass):
                 raise exc.HTTPNotFound, ep_name
         options = App.default_options()
         options['mount_point'] = mount_point
+        options['mount_label'] = mount_label or mount_point
         options.update(override_options)
         cfg = AppConfig(
             project_id=self._id,

@@ -38,6 +38,10 @@ class ForgeDiscussionApp(Application):
     PostClass=model.ForumPost
     AttachmentClass=model.ForumAttachment
     searchable=True
+    tool_label='Discussion'
+    default_mount_label='Discussion'
+    default_mount_point='discussion'
+    ordinal=7
 
     def __init__(self, project, config):
         Application.__init__(self, project, config)
@@ -99,7 +103,7 @@ class ForgeDiscussionApp(Application):
     @property
     @h.exceptionless([], log)
     def sitemap(self):
-        menu_id = self.config.options.mount_point.title()
+        menu_id = self.config.options.mount_label.title()
         with h.push_config(c, app=self):
             return [
                 SitemapEntry(menu_id, '.')[self.sidebar_menu()] ]

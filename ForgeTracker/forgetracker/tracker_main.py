@@ -66,6 +66,10 @@ class ForgeTrackerApp(Application):
     permissions = ['configure', 'read', 'write',
                     'unmoderated_post', 'post', 'moderate', 'admin']
     searchable=True
+    tool_label='Tickets'
+    default_mount_label='Tickets'
+    default_mount_point='tickets'
+    ordinal=6
 
     def __init__(self, project, config):
         Application.__init__(self, project, config)
@@ -101,7 +105,7 @@ class ForgeTrackerApp(Application):
     @property
     @h.exceptionless([], log)
     def sitemap(self):
-        menu_id = self.config.options.mount_point.title()
+        menu_id = self.config.options.mount_label.title()
         with h.push_config(c, app=self):
             return [
                 SitemapEntry(menu_id, '.')[self.sidebar_menu()] ]

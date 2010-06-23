@@ -14,6 +14,21 @@ from forgegit import model as GitM
 from forgehg import model as HgM
 from forgesvn import model as SVNM
 
+class AddMountLabels(Migration):
+    version = 10
+
+    def up(self):
+        configs = self.ormsession.find(M.AppConfig).all()
+        for config in configs:
+            config.options['mount_label'] = config.options['mount_point']
+        self.ormsession.flush()
+
+    def down(self):
+        configs = self.ormsession.find(M.AppConfig).all()
+        for config in configs:
+            del config.options['mount_label']
+        self.ormsession.flush()
+
 class UpdateThemeToOnyx(Migration):
     version = 9
 

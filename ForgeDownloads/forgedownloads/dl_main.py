@@ -28,6 +28,10 @@ class ForgeDownloadsApp(Application):
     searchable=True
     # installable=config['auth.method'] == 'sfx'
     templates=None
+    tool_label='Downloads'
+    default_mount_label='Downloads'
+    default_mount_point='downloads'
+    ordinal=8
 
     def __init__(self, project, config):
         Application.__init__(self, project, config)
@@ -36,7 +40,7 @@ class ForgeDownloadsApp(Application):
     @property
     @h.exceptionless([], log)
     def sitemap(self):
-        menu_id = self.config.options.mount_point.title()
+        menu_id = self.config.options.mount_label.title()
         url='/downloads/' + c.project.get_tool_data('sfx', 'unix_group_name') + '/'
         return [SitemapEntry(menu_id, url)[self.sidebar_menu()] ]
 

@@ -18,6 +18,10 @@ class ForgeMailApp(Application):
     installable=False
     sitemap = []
     sidebar_menu = []
+    tool_label='Mail'
+    default_mount_label='Mail'
+    default_mount_point='mail'
+    ordinal=0
 
     def install(self, project):
         raise NotImplemented, 'install'

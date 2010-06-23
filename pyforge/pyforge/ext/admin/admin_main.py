@@ -92,7 +92,7 @@ class AdminApp(Application):
         if len(links):
             links.append(SitemapEntry('Project'))
         links = links + [SitemapEntry('Overview', admin_url+'overview', className='nav_child'),
-                         SitemapEntry('Tools/Subprojects', admin_url+'tools', className='nav_child')]
+                         SitemapEntry('Tools', admin_url+'tools', className='nav_child')]
         if len(c.project.neighborhood_invitations):
             links.append(SitemapEntry('Invitation(s)', admin_url+'invitations', className='nav_child'))
         if has_project_access('security')():
@@ -148,16 +148,17 @@ class ProjectAdminController(object):
         tools = [
             (ep.name, ep.load())
             for ep in pkg_resources.iter_entry_points('pyforge') ]
-        installable_tool_names = [
-            name for (name, app) in tools
+        installable_tools = [
+            dict(name=name, app=app) for (name, app) in tools
             if app.installable ]
+        installable_tools = sorted(installable_tools, key=lambda tool: tool['app'].ordinal)
         c.markdown_editor = W.markdown_editor
         c.label_edit = W.label_edit
         psort = [(n, M.Project.query.find(dict(is_root=True, neighborhood_id=n._id)).sort('shortname').all())
                  for n in M.Neighborhood.query.find().sort('name')]
         return dict(
             projects=psort,
-            installable_tool_names=installable_tool_names,
+            installable_tools=installable_tools,
             roles=M.ProjectRole.query.find().sort('_id').all(),
             categories=M.ProjectCategory.query.find(dict(parent_id=None)).sort('label').all(),
             users=[M.User.query.get(_id=id) for id in c.project.acl.read ])
@@ -310,6 +311,9 @@ class ProjectAdminController(object):
                     meta=dict(name=sp['shortname']))
                 p = M.Project.query.get(shortname=sp['shortname'])
                 plugin.ProjectRegistrationProvider.get().delete_project(p, c.user)
+            elif not new:
+                p = M.Project.query.get(shortname=sp['shortname'])
+                p.name = sp['name']
         for p in tool:
             if p.get('delete'):
                 require(has_project_access('tool'), 'Delete access required')
@@ -317,6 +321,8 @@ class ProjectAdminController(object):
                     'uninstall tool %s', p['mount_point'],
                     meta=dict(mount_point=p['mount_point']))
                 c.project.uninstall_app(p['mount_point'])
+            elif not new:
+                c.project.app_config(p['mount_point']).options.mount_label = p['mount_label']
         if new and new.get('install'):
             ep_name = new['ep_name']
             if not ep_name:
@@ -328,8 +334,9 @@ class ProjectAdminController(object):
                 try:
                     h.log_action(log, 'create subproject').info(
                         'create subproject %s', mount_point,
-                        meta=dict(mount_point=mount_point))
+                        meta=dict(mount_point=mount_point,name=new['mount_label']))
                     sp = c.project.new_subproject(mount_point)
+                    sp.name = new['mount_label']
                 except forge_exc.ToolError, exc:
                     flash(repr(exc), 'error')
             else:
@@ -340,8 +347,8 @@ class ProjectAdminController(object):
                     redirect(request.referer)
                 h.log_action(log, 'install tool').info(
                     'install tool %s', mount_point,
-                    meta=dict(tool_type=ep_name, mount_point=mount_point))
-                c.project.install_app(ep_name, mount_point)
+                    meta=dict(tool_type=ep_name, mount_point=mount_point, mount_label=new['mount_label']))
+                c.project.install_app(ep_name, mount_point, mount_label=new['mount_label'])
         redirect('tools')
 
     @h.vardec

@@ -28,6 +28,10 @@ class ForgeLinkApp(Application):
         ConfigOption('url', str, None)
     ]
     searchable=True
+    tool_label='External Link'
+    default_mount_label='Link name'
+    default_mount_point='link'
+    ordinal=1
 
     def __init__(self, project, config):
         Application.__init__(self, project, config)
@@ -37,7 +41,7 @@ class ForgeLinkApp(Application):
     @property
     @h.exceptionless([], log)
     def sitemap(self):
-        menu_id = self.config.options.mount_point.title()
+        menu_id = self.config.options.mount_label.title()
         return [SitemapEntry(menu_id, '.')[self.sidebar_menu()] ]
 
     def sidebar_menu(self):

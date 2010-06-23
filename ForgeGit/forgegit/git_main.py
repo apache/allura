@@ -50,6 +50,10 @@ class ForgeGitApp(Application):
     config_options = Application.config_options + [
         ConfigOption('cloned_from', ObjectId, None)
         ]
+    tool_label='Git'
+    default_mount_label='Git'
+    default_mount_point='git'
+    ordinal=2
 
     def __init__(self, project, config):
         Application.__init__(self, project, config)
@@ -59,7 +63,7 @@ class ForgeGitApp(Application):
     @property
     @h.exceptionless([], log)
     def sitemap(self):
-        menu_id = self.config.options.mount_point.title()
+        menu_id = self.config.options.mount_label.title()
         with h.push_config(c, app=self):
             return [
                 SitemapEntry(menu_id, '.')[self.sidebar_menu()] ]

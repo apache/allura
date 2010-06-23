@@ -23,7 +23,8 @@ class TestProjectAdmin(TestController):
         self.app.post('/admin/update_mounts', params={
                 'new.install':'install',
                 'new.ep_name':'',
-                'new.mount_point':'test-subproject'})
+                'new.mount_point':'test-subproject',
+                'new.mount_label':'Test Subproject'})
         self.app.post('/admin/update_mounts', params={
                 'subproject-0.delete':'on',
                 'subproject-0.shortname':'test/test-subproject',
@@ -33,7 +34,8 @@ class TestProjectAdmin(TestController):
         self.app.post('/admin/update_mounts', params={
                 'new.install':'install',
                 'new.ep_name':'hello_forge',
-                'new.mount_point':'test-tool'})
+                'new.mount_point':'test-tool',
+                'new.mount_label':'Test Tool'})
         self.app.post('/admin/update_mounts', params={
                 'tool-0.delete':'on',
                 'tool-0.mount_point':'test-tool',
@@ -87,6 +89,18 @@ class TestProjectAdmin(TestController):
                 'new.add':'on',
                 'new.name':'test_role',
                 'role-0.id':str(role1._id)})
+
+    def test_tool_list(self):
+        r = self.app.get('/admin/tools')
+        new_ep_opts = r.html.find('select',{'class':"new_ep_name"}).findAll('option')
+        assert new_ep_opts[0].string == 'New Tool'
+        assert new_ep_opts[1].string == 'External Link'
+        assert new_ep_opts[2].string == 'Git'
+        assert new_ep_opts[3].string == 'SVN'
+        assert new_ep_opts[4].string == 'Wiki'
+        assert new_ep_opts[5].string == 'Tickets'
+        assert new_ep_opts[6].string == 'Downloads'
+        assert new_ep_opts[7].string == 'Subproject'
 
     def test_project_icon(self):
         file_name = 'neo-icon-set-454545-256x350.png'

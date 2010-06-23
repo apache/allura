@@ -10,12 +10,12 @@
 
   <head>
     <meta content="text/html; charset=UTF-8" http-equiv="content-type" py:replace="''"/>
-    <title>Project Tools/Subprojects for $c.project.shortname</title>
+    <title>Select Tools for $c.project.shortname</title>
     <link rel="stylesheet" type="text/css" media="screen" href="${g.app_static('css/admin.css')}"/>
   </head>
 
   <body>
-    <h1 class="title">Project Tools/Subprojects for $c.project.shortname</h1>
+    <h1 class="title">Select Tools for $c.project.shortname</h1>
     <div class="content">
       <div class="row">
         <div class="column grid_12">
@@ -25,34 +25,61 @@
               <tr>
                 <th>Type</th>
                 <th>Mount Point</th>
+                <th>Label</th>
                 <th py:if="has_project_access('tool')()">Edit</th>
                 <th py:if="has_project_access('tool')()"></th>
               </tr>
             </thead>
             <tbody>
-              <form method="POST" action="update_mounts" id="mounts_edit">
-                <input py:for="i, sp in enumerate(c.project.direct_subprojects)"
-                       type="hidden"
-                       name="subproject-${i}.shortname"
-                       value="$sp.shortname"/>
-                <input py:for="i, config in enumerate(c.project.app_configs)"
-                       type="hidden"
-                       name="tool-${i}.mount_point"
-                       value="$config.options.mount_point"/>
                 <tr py:for="i, sp in enumerate(c.project.direct_subprojects)">
                   <td>Subproject</td>
                   <td>$sp.shortname</td>
+                  <td>
+                  <form method="POST" action="update_mounts" id="mounts_edit">
+                      <input type="hidden"
+                             name="subproject-${i}.shortname"
+                             value="$sp.shortname"/>
+                      <div class="editable viewing span-15 last">
+                        <div class="viewer">$sp.name</div>
+                        <div class="editor">
+                          <input type="text"
+                                 name="subproject-${i}.name"
+                                 value="$sp.name"/>
+                        </div>
+                      </div>
+                  </form>
+                  </td>
                   <td py:if="has_project_access('tool')()"><a href="${sp.url() + 'admin/'}" class="ico-l">
                     <b class="ui-icon ui-icon-pencil"></b> <span>Edit</span>
                   </a></td>
                   <td>
-                    <input py:if="has_project_access('tool')()"
-                           name="subproject-${i}.delete" type="submit" value="Delete"/>
+                  <form method="POST" action="update_mounts" id="mounts_edit">
+                      <input type="hidden"
+                             name="subproject-${i}.shortname"
+                             value="$sp.shortname"/>
+                      <input py:if="has_project_access('tool')()"
+                             name="subproject-${i}.delete" type="submit" value="Delete"/>
+                  </form>
                   </td>
                 </tr>
                 <tr py:for="i, config in enumerate(c.project.app_configs)" py:if="config.load().installable">
                   <td>Tool: $config.tool_name</td>
                   <td>$config.options.mount_point</td>
+                  <td>
+                    <form method="POST" action="update_mounts" id="mounts_edit">
+                      <input type="hidden"
+                             name="tool-${i}.mount_point"
+                             value="$config.options.mount_point"/>
+                      <div class="editable viewing span-15 last">
+                        <div class="viewer">$config.options.mount_label</div>
+                        <div class="editor">
+                          <input type="text"
+                                 name="tool-${i}.mount_label"
+                                 value="$config.options.mount_label"/>
+                        </div>
+                      </div>
+                      </form>
+                  </td>
                   <td>
                     <a py:if="has_project_access('tool')()"
                        href="$config.options.mount_point/"
@@ -61,11 +88,15 @@
                     </a>
                   </td>
                   <td>
-                    <input py:if="has_project_access('tool')() and config.load().installable"
-                           name="tool-${i}.delete" type="submit" value="Delete"/>
+                    <form method="POST" action="update_mounts" id="mounts_edit">
+                      <input type="hidden"
+                             name="tool-${i}.mount_point"
+                             value="$config.options.mount_point"/>
+                      <input py:if="has_project_access('tool')() and config.load().installable"
+                             name="tool-${i}.delete" type="submit" value="Delete"/>
+                    </form>
                   </td>
                 </tr>
-              </form>
               <form method="POST" action="update_mounts">
                 <input py:for="i, sp in enumerate(c.project.direct_subprojects)"
                        type="hidden"
@@ -78,14 +109,16 @@
                 <tr py:if="has_project_access('tool')()">
                   <td>
                     <select name="new.ep_name" class="new_ep_name">
-                      <option value="">New Subproject</option>
-                      <optgroup label="New Tool">
-                        <option py:for="name in installable_tool_names" value="$name">$name</option>
-                      </optgroup>
+                        <option value="" disabled="disabled">New Tool</option>
+                        <option py:for="tool in installable_tools" value="$tool.name">$tool.app.tool_label</option>
+                        <option value="">Subproject</option>
                     </select>
                   </td>
                   <td>
                     <input name="new.mount_point" class="new_mount_point"/>
+                  </td>
+                  <td>
+                    <input name="new.mount_label" class="new_mount_label"/>
                   </td>
                   <td colspan="2">
                     <input type="submit" value="Install" name="new.install"/>
@@ -99,10 +132,15 @@
     </div>
   </body>
   <script type="text/javascript">
-    /*<![CDATA[*/
+    var defaults = {
+      <py:for each="tool in installable_tools">
+        '$tool.name':{'default_label':'$tool.app.default_mount_label','default_mount':'$tool.app.default_mount_point'},
+      </py:for>
+    };
     $('select.new_ep_name').change(function() {
-      $(this).closest('tr').find('input.new_mount_point').val($(this).val().toLowerCase());
+      var tool = defaults[$(this).val()];
+      $(this).closest('tr').find('input.new_mount_point').val(tool.default_mount);
+      $(this).closest('tr').find('input.new_mount_label').val(tool.default_label);
     });
-    /*]]>*/
   </script>
 </html>

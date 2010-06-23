@@ -58,6 +58,10 @@ class ForgeWikiApp(Application):
     permissions = [ 'configure', 'read', 'create', 'edit', 'delete', 'edit_page_permissions',
                     'unmoderated_post', 'post', 'moderate', 'admin']
     searchable=True
+    tool_label='Wiki'
+    default_mount_label='Wiki'
+    default_mount_point='wiki'
+    ordinal=5
 
     def __init__(self, project, config):
         Application.__init__(self, project, config)
@@ -133,7 +137,7 @@ class ForgeWikiApp(Application):
     @property
     @h.exceptionless([], log)
     def sitemap(self):
-        menu_id = self.config.options.mount_point.title()
+        menu_id = self.config.options.mount_label.title()
         with h.push_config(c, app=self):
             pages = [
                 SitemapEntry(p.title, p.url())

@@ -31,6 +31,11 @@ class HelloForgeApp(Application):
         ConfigOption('message', str, 'Custom message goes here') ]
     permissions = [ 'configure', 'read', 'create', 'edit', 'delete', 'comment' ]
     installable=False
+    tool_label='Hello Forge'
+    default_mount_label='Hello'
+    default_mount_point='hello'
+    ordinal=0
+
     def __init__(self, project, config):
         Application.__init__(self, project, config)
         self.root = RootController()
