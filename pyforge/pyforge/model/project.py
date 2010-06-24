@@ -129,6 +129,7 @@ class Project(MappedClass):
     deleted = FieldProperty(bool, if_missing=False)
     labels = FieldProperty([str])
     last_updated = FieldProperty(datetime, if_missing=None)
+    tool_data = FieldProperty({str:{str:None}}) # entry point: prefs dict
 
     @h.exceptionless([], log)
     def sidebar_menu(self):
@@ -145,6 +146,13 @@ class Project(MappedClass):
                 SitemapEntry(p.name or p.script_name, p.script_name)
                 for p in sps ]
         return result
+
+    def get_tool_data(self, tool, key, default=None):
+        return self.tool_data.get(tool, {}).get(key, None)
+
+    def set_tool_data(self, tool, **kw):
+        d = self.tool_data.setdefault(tool, {})
+        d.update(kw)
 
     def admin_menu(self):
         return []

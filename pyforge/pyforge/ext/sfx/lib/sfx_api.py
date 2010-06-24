@@ -111,27 +111,37 @@ class SFXProjectApi(object):
                 short_description=short_description)
             conn.request('POST', self.project_path, json.dumps(args))
             response = conn.getresponse()
-            return read_response(response, 201)
+            r = read_response(response, 201)
+            return dict(
+                unix_group_name=ug_name,
+                group_id=r['Project']['id'])
 
     def read(self, p):
         with self._connect() as conn:
-            ug_name = self._unix_group_name(p.neighborhood, p.shortname)
+            ug_name = p.get_tool_data('sfx', 'unix_group_name')
+            if ug_name is None:
+                ug_name = self._unix_group_name(p.neighborhood, p.shortname)
+                p.set_tool_data('sfx', unix_group_name=ug_name)
             conn.request('GET', self.project_path + '/name/' + ug_name + '/json')
             response = conn.getresponse()
-            return read_response(response)
+            r = read_response(response)
+            p.set_tool_data('sfx', group_id=r['Project']['id'])
+            return r
 
     def update(self, user, p):
         with self._connect() as conn:
-            ug_name = self._unix_group_name(p.neighborhood, p.shortname)
+            ug_name = p.get_tool_data('sfx', 'unix_group_name')
+            if ug_name is None:
+                ug_name = self._unix_group_name(p.neighborhood, p.shortname)
+                p.set_tool_data('sfx', unix_group_name=ug_name)
             args = dict(
                 user_id=user.tool_data.sfx.userid,
-                group_name=p.name,
+                group_name=p.shortname,
                 short_description=p.short_description,
                 developers = [
-                    pr.user.tool_data.sfx.userid
+                    pr.user.get_tool_data('sfx', 'userid')
                     for pr in roles_with_project_access('update', p)
-                    if (pr.user is not None
-                        and pr.user.tool_data.get('sfx', {}).get('userid', None) is not None)])
+                    if pr.user is not None and pr.user.get_tool_data.get('sfx', 'userid') is not None ])
             args['admins'] = args['developers']
             conn.request('PUT', self.project_path + '/' + ug_name, json.dumps(args))
             response = conn.getresponse()
@@ -139,7 +149,10 @@ class SFXProjectApi(object):
 
     def delete(self, user, p):
         with self._connect() as conn:
-            ug_name = self._unix_group_name(p.neighborhood, p.shortname)
+            ug_name = p.get_tool_data('sfx', 'unix_group_name')
+            if ug_name is None:
+                ug_name = self._unix_group_name(p.neighborhood, p.shortname)
+                p.set_tool_data('sfx', unix_group_name=ug_name)
             args = dict(
                 user_id=user.get_tool_data('sfx', 'userid'))
             conn.request('DELETE', self.project_path + '/' + ug_name, json.dumps(args))

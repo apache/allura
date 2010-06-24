@@ -124,8 +124,8 @@ class SFXProjectRegistrationProvider(plugin.ProjectRegistrationProvider):
     def register_project(self, neighborhood, shortname, user, user_project):
         # Reserve project name with SFX
         try:
-            r = self.api.create(user, neighborhood, shortname)
-            log.info('SFX Project creation returned: %s', r)
+            ug_name = self.api.create(user, neighborhood, shortname)
+            log.info('SFX Project creation returned: %s', ug_name)
         except sfx_exc.SFXAPIError, exc:
             if user_project: 
                 log.exception('SFX project creation error: %r', exc)
@@ -133,16 +133,19 @@ class SFXProjectRegistrationProvider(plugin.ProjectRegistrationProvider):
                 raise
         p = super(SFXProjectRegistrationProvider, self).register_project(
             neighborhood, shortname, user, user_project)
+        p.set_tool_data('sfx', unix_group_name=ug_name)
         return p
 
     def register_subproject(self, project, name, user, install_apps):
         if not project.is_root:
             raise sfx_exc.SFXIllegalProject, (
                 'Subprojects more than one level deep not supported')
-        r = self.api.create(user, project.neighborhood, project.shortname + '/' + name)
-        log.info('SFX Subproject creation returned: %s', r)
-        return super(SFXProjectRegistrationProvider, self).register_subproject(
+        ug_name = self.api.create(user, project.neighborhood, project.shortname + '/' + name)
+        log.info('SFX Subproject creation returned: %s', ug_name)
+        p = super(SFXProjectRegistrationProvider, self).register_subproject(
             project, name, user, install_apps)
+        p.set_tool_data('sfx', unix_group_name=ug_name)
+        return p
 
     def delete_project(self, project, user):
         r = self.api.delete(user, project)
