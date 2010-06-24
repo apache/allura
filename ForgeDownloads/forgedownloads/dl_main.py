@@ -68,9 +68,11 @@ class RootController(object):
     def nav(self):
         if c.app.sitemap:
             my_entry = c.app.sitemap[0]
+        else:
+            my_entry = None
         def _entry(s):
             d = dict(name=s.label, url=s.url, icon=s.ui_icon)
-            if s.url == my_entry.url:
+            if my_entry and s.url == my_entry.url:
                 d['selected'] = True
             return d
         return dict(menu=[ _entry(s) for s in c.project.sitemap() ] )
