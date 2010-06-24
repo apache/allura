@@ -184,7 +184,7 @@ class User(MappedClass):
         unique_indexes = [ 'username' ]
 
     _id=FieldProperty(S.ObjectId)
-    sfx_userid=FieldProperty(int)
+    sfx_userid=FieldProperty(S.Deprecated)
     username=FieldProperty(str)
     display_name=FieldProperty(str)
     open_ids=FieldProperty([str])
@@ -196,7 +196,8 @@ class User(MappedClass):
             email_address=str,
             email_format=str))
     tool_preferences=FieldProperty({str:{str:None}}) # full mount point: prefs dict
-
+    tool_data = FieldProperty({str:{str:None}}) # entry point: prefs dict
+    
     def url(self):
         return '/u/' + self.username.replace('_', '-') + '/'
 
@@ -209,6 +210,13 @@ class User(MappedClass):
     @classmethod
     def by_username(cls, name):
         return plugin.AuthenticationProvider.get(request).by_username(name)
+
+    def get_tool_data(self, tool, key, default=None):
+        return self.tool_data.get(tool, {}).get(key, None)
+
+    def set_tool_data(self, tool, **kw):
+        d = self.tool_data.setdefault(tool, {})
+        d.update(kw)
 
     def address_object(self, addr):
         return EmailAddress.query.get(_id=addr, claimed_by_user_id=self._id)
