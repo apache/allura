@@ -160,7 +160,7 @@ class Application(object):
         links = []
         # if self.permissions and has_artifact_access('configure', app=self)():
         #     links.append(SitemapEntry('Permissions', admin_url + 'permissions', className='nav_child'))
-        if len(self.config_options) > 1:
+        if len(self.config_options) > 2:
             links.append(SitemapEntry('Options', admin_url + 'options', className='nav_child'))
         return links
 
