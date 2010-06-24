@@ -37,8 +37,7 @@ class ForgeDownloadsApp(Application):
     @h.exceptionless([], log)
     def sitemap(self):
         menu_id = self.config.options.mount_point.title()
-        api = SFXProjectApi()
-        url='/downloads/' + api._unix_group_name(c.project.neighborhood, c.project.shortname) + '/'
+        url='/downloads/' + c.project.get_tool_data('sfx', 'unix_group_name') + '/'
         return [SitemapEntry(menu_id, url)[self.sidebar_menu()] ]
 
     def sidebar_menu(self):
@@ -47,6 +46,19 @@ class ForgeDownloadsApp(Application):
     def admin_menu(self):
         return super(ForgeDownloadsApp, self).admin_menu()
 
+    def install(self, project):
+        'Set up any default permissions and roles here'
+        super(ForgeDownloadsApp, self).install(project)
+        # Setup permissions
+        role_anon = ProjectRole.query.get(name='*anonymous')._id
+        self.config.acl.update(
+            configure=c.project.acl['tool'],
+            read=[role_anon])
+
+    def uninstall(self, project):
+        "Remove all the tool's artifacts from the database"
+        super(ForgeDownloadsApp, self).uninstall(project)
+
 class RootController(object):
 
     def __init__(self):
@@ -54,7 +66,8 @@ class RootController(object):
 
     @expose('json:')
     def nav(self):
-        my_entry = c.app.sitemap[0]
+        if c.app.sitemap:
+            my_entry = c.app.sitemap[0]
         def _entry(s):
             d = dict(name=s.label, url=s.url, icon=s.ui_icon)
             if s.url == my_entry.url:
