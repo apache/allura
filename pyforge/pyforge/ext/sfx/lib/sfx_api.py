@@ -23,7 +23,7 @@ def read_response(response, *expected):
         except ValueError:
             return text
     cls = sfx_exc.SFXAPIError.status_map.get(response.status, sfx_exc.SFXAPIError)
-    raise cls('Error status %s' % response.status, text)
+    raise cls('Error status %s' % response.status)
 
 class SFXUserApi(object):
     
@@ -74,7 +74,10 @@ class SFXUserApi(object):
                 display_name=user_data['name'])
             u.set_tool_data('sfx', userid=user_data['id'])
             n = M.Neighborhood.query.get(name='Users')
-            n.register_project('u/' + u.username.replace('_', '-'), u, user_project=True)
+            try:
+                n.register_project('u/' + u.username.replace('_', '-'), u, user_project=True)
+            except sfx_exc.exceptions.ProjectConflict:
+                log.error('Conflict (user project already created): u/%s', u.username.replace('_', '-'))
         if user_data is None: return u
         if u.display_name != user_data['name']:
             u.display_name = user_data['name']
@@ -104,17 +107,16 @@ class SFXProjectApi(object):
     def create(self, user, neighborhood, shortname, short_description='No description'):
         with self._connect() as conn:
             ug_name = self._unix_group_name(neighborhood, shortname)
+            log.info('Creating project %s', ug_name)
             args = dict(
-                user_id=user.tool_data.sfx.userid,
+                user_id=user.get_tool_data('sfx', 'userid'),
                 unix_group_name=ug_name,
                 group_name=shortname,
                 short_description=short_description)
             conn.request('POST', self.project_path, json.dumps(args))
             response = conn.getresponse()
             r = read_response(response, 201)
-            return dict(
-                unix_group_name=ug_name,
-                group_id=r['Project']['id'])
+            return ug_name
 
     def read(self, p):
         with self._connect() as conn:

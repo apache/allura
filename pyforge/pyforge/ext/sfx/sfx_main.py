@@ -78,12 +78,13 @@ class SFXAuthenticationProvider(plugin.AuthenticationProvider):
         cookie_name = self.sfx_session_manager.cookie_name
         mgr = self.sfx_session_manager
         if 'userid' in self.session:
-            if cookie_name not in self.request.cookies:
-                self.logout()
-                return M.User.anonymous()
-            elif self.request.cookies[cookie_name] == self.session.get('sfx-sessid'):
-                # already logged in
-                return super(SFXAuthenticationProvider, self).authenticate_request()
+            user = super(SFXAuthenticationProvider, self).authenticate_request()
+            if user != M.User.anonymous():
+                if cookie_name not in self.request.cookies:
+                    self.logout()
+                    return M.User.anonymous()
+                elif self.request.cookies[cookie_name] == self.session.get('sfx-sessid'):
+                    return user
         sfx_user_id = mgr.userid_from_session_cookie(self.request.cookies)
         if sfx_user_id:
             server_name = self.request.environ['HTTP_HOST']
@@ -134,6 +135,7 @@ class SFXProjectRegistrationProvider(plugin.ProjectRegistrationProvider):
         p = super(SFXProjectRegistrationProvider, self).register_project(
             neighborhood, shortname, user, user_project)
         p.set_tool_data('sfx', unix_group_name=ug_name)
+        self.api.read(p)
         return p
 
     def register_subproject(self, project, name, user, install_apps):
@@ -145,6 +147,7 @@ class SFXProjectRegistrationProvider(plugin.ProjectRegistrationProvider):
         p = super(SFXProjectRegistrationProvider, self).register_subproject(
             project, name, user, install_apps)
         p.set_tool_data('sfx', unix_group_name=ug_name)
+        self.api.read(p)
         return p
 
     def delete_project(self, project, user):

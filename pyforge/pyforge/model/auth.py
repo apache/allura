@@ -217,6 +217,7 @@ class User(MappedClass):
     def set_tool_data(self, tool, **kw):
         d = self.tool_data.setdefault(tool, {})
         d.update(kw)
+        state(self).soil()
 
     def address_object(self, addr):
         return EmailAddress.query.get(_id=addr, claimed_by_user_id=self._id)

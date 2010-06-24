@@ -7,7 +7,7 @@ from webob import exc
 from pymongo import bson
 
 from ming import schema as S
-from ming.orm.base import mapper, session
+from ming.orm.base import mapper, session, state
 from ming.orm.mapped_class import MappedClass
 from ming.orm.property import FieldProperty, RelationProperty, ForeignIdProperty
 
@@ -153,6 +153,7 @@ class Project(MappedClass):
     def set_tool_data(self, tool, **kw):
         d = self.tool_data.setdefault(tool, {})
         d.update(kw)
+        state(self).soil()
 
     def admin_menu(self):
         return []

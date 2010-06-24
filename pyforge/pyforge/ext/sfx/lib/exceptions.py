@@ -6,7 +6,6 @@ class SFXAPIError(SFXError): pass
 class SFXBadRequest(SFXAPIError): pass
 class SFXUnauthorized(SFXAPIError): pass
 class SFXForbidden(SFXAPIError): pass
-class SFXConflict(SFXAPIError): pass
 class SFXNotFound(SFXAPIError): pass
 class SFXGone(SFXAPIError): pass
 
