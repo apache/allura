@@ -376,6 +376,7 @@ class Post(Message, VersionedArtifact):
             return None
 
     def reply_subject(self):
+        self.subject = self.subject or ''
         if self.subject.lower().startswith('re:'):
             return self.subject
         else:

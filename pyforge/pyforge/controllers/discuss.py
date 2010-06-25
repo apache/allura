@@ -142,7 +142,8 @@ class ThreadController(object):
         require(has_artifact_access('post', self.thread))
         kw = self.W.edit_post.validate(kw, None)
         p = self.thread.add_post(**kw)
-        self.thread.artifact.mod_date = datetime.now()
+        if self.thread.artifact:
+            self.thread.artifact.mod_date = datetime.now()
         flash('Message posted')
         redirect(request.referer)
 

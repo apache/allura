@@ -17,7 +17,10 @@
     		</p>
     	</div>
     	<div class="column grid_8">
-    		<div class="display_post">${Markup(g.markdown.convert(value.text))}</div>
+		<div class="display_post">
+                  <b py:if="show_subject">$value.subject<br/></b>
+                  ${Markup(g.markdown.convert(value.text))}
+                </div>
       	<div class="edit_post_form" style="display:none" py:if="has_artifact_access('post', value.thread)()">
       	  ${widgets.edit_post.display(value=value, submit_text='Edit Post', action=value.url())}
       	</div>

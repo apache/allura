@@ -93,9 +93,9 @@ class EditPost(ew.SimpleForm):
         def _():
             if getattr(c, 'widget', '') != '':
                 if c.widget.response.get('show_subject', self.show_subject):
-                    yield ew.TextField(name='subject')
+                    yield ew.TextField(name='subject', if_missing='')
             else:
-                yield ew.TextField(name='subject', if_missing=None)
+                yield ew.TextField(name='subject', if_missing='')
             yield ffw.MarkdownEdit(name='text')
         return _()
 
