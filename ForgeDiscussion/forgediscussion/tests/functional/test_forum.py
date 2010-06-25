@@ -255,8 +255,8 @@ class TestForum(TestController):
                 text='bbb'))
         thread = self.app.get(url)
         # beautiful soup is getting some unicode error here - test without it
-        assert '<div class="display_post"><p>aaa</p></div>' in thread.response.body
-        assert '<div class="display_post"><p>bbb</p></div>' in thread.response.body
+        assert thread.html.findAll('div',{'class':'display_post'})[0].find('p').string == 'aaa'
+        assert thread.html.findAll('div',{'class':'display_post'})[1].find('p').string == 'bbb'
         assert thread.response.body.count('<div class="promote_to_thread_form') == 1
         assert thread.response.body.count('<div class="row reply_post_form') == 2
         assert thread.response.body.count('<div class="edit_post_form') == 2
