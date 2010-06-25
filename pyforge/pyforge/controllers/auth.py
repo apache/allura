@@ -232,6 +232,7 @@ class AuthController(object):
 
 class PreferencesController(object):
 
+    @with_trailing_slash
     @expose('pyforge.templates.user_preferences')
     def index(self):
         require_authenticated()
