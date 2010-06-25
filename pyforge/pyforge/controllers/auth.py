@@ -265,20 +265,20 @@ class PreferencesController(object):
                **kw):
         require_authenticated()
         c.user.display_name = display_name
-        for i, (old_a, data) in enumerate(zip(c.user.email_addresses, addr or [])):
-            obj = c.user.address_object(old_a)
-            if data.get('delete') or not obj:
-                del c.user.email_addresses[i]
-                if obj: obj.delete()
-        c.user.preferences.email_address = primary_addr
-        if new_addr.get('claim'):
-            if M.EmailAddress.query.get(_id=new_addr['addr'], confirmed=True):
-                flash('Email address already claimed', 'error')
-            else:
-                c.user.email_addresses.append(new_addr['addr'])
-                em = M.EmailAddress.upsert(new_addr['addr'])
-                em.claimed_by_user_id=c.user._id
-                em.send_verification_link()
+        # for i, (old_a, data) in enumerate(zip(c.user.email_addresses, addr or [])):
+        #     obj = c.user.address_object(old_a)
+        #     if data.get('delete') or not obj:
+        #         del c.user.email_addresses[i]
+        #         if obj: obj.delete()
+        # c.user.preferences.email_address = primary_addr
+        # if new_addr.get('claim'):
+        #     if M.EmailAddress.query.get(_id=new_addr['addr'], confirmed=True):
+        #         flash('Email address already claimed', 'error')
+        #     else:
+        #         c.user.email_addresses.append(new_addr['addr'])
+        #         em = M.EmailAddress.upsert(new_addr['addr'])
+        #         em.claimed_by_user_id=c.user._id
+        #         em.send_verification_link()
         for i, (old_oid, data) in enumerate(zip(c.user.open_ids, oid or [])):
             obj = c.user.openid_object(old_oid)
             if data.get('delete') or not obj:

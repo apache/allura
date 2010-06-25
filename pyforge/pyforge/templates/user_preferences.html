@@ -4,7 +4,7 @@
       xmlns:py="http://genshi.edgewall.org/"
       xmlns:xi="http://www.w3.org/2001/XInclude">
   
-  <xi:include href="master.html" />
+  <xi:include href="master_one_col.html" />
   
   <head>
     <meta content="text/html; charset=UTF-8" http-equiv="content-type" py:replace="''"/>
@@ -36,14 +36,25 @@
             <input type="submit" value="(Re)generate API Token"
                     />
           </form>
+          <div style="clear:both"/>
           <h2>Subscriptions</h2>
           ${c.form.display(action='update_subscriptions', value=dict(subscriptions=subscriptions))}
           <form action="update" method="post">
-            ${text_field('display_name', 'Display Name', c.user.display_name)}
-            ${select_field('preferences.email_format', 'Email Format',
-                           [('Plain Text', 'plain'), ('HTML', 'html'), ('Combined', 'both')],
-                           c.user.preferences.email_format)}
-            <input py:for="i,a in enumerate(c.user.email_addresses)"
+            <ol>
+              <li>
+                <label>Display Name</label>
+                <input type="text" value="$c.user.display_name" name="display_name"/>
+              </li>
+              <li>
+                <label>Email Format</label>
+                <select name="preferences.email_format">
+                  <option value="plain" selected="${c.user.preferences.email_format == 'plain' or None}">Plain Text</option>
+                  <option value="html" selected="${c.user.preferences.email_format == 'html' or None}">HTML</option>
+                  <option value="both" selected="${c.user.preferences.email_format == 'both' or None}">Combined</option>
+                </select>
+              </li>
+            </ol>
+            <!-- <input py:for="i,a in enumerate(c.user.email_addresses)"
                    name="addr-${i}.ord" value="$i" type="hidden"/>
             <fieldset>
               <legend>Email Addresses</legend>
@@ -70,7 +81,7 @@
               </table>
               ${text_field('new_addr.addr', 'New Address')}
               ${submit_button('Claim Address', name='new_addr.claim')}
-            </fieldset>
+            </fieldset> -->
             <fieldset>
               <legend>OpenIDs Claimed</legend>
               <table>

@@ -26,38 +26,38 @@ class TestAuth(TestController):
                 username='test-usera', password='foo'),
                          status=302)
 
-    def test_prefs(self):
-        r = self.app.get('/auth/prefs/')
-        assert 'test@example.com' not in r
-        r = self.app.post('/auth/prefs/update', params={
-                'display_name':'Test Admin',
-                'new_addr.addr':'test@example.com',
-                'new_addr.claim':'Claim Address',
-                'primary_addr':'Beta@wiki.test.projects.sourceforge.net',
-                'preferences.email_format':'plain'})
-        r = self.app.get('/auth/prefs/')
-        assert 'test@example.com' in r
-        r = self.app.post('/auth/prefs/update', params={
-                'display_name':'Test Admin',
-                'addr-1.ord':'1',
-                'addr-2.ord':'1',
-                'addr-2.delete':'on',
-                'new_addr.addr':'',
-                'primary_addr':'Beta@wiki.test.projects.sourceforge.net',
-                'preferences.email_format':'plain'})
-        r = self.app.get('/auth/prefs/')
-        assert 'test@example.com' not in r
-        ea = M.EmailAddress.query.get(_id='Beta@wiki.test.projects.sourceforge.net')
-        ea.confirmed = True
-        ThreadLocalORMSession.flush_all()
-        r = self.app.post('/auth/prefs/update', params={
-                'display_name':'Test Admin',
-                'new_addr.addr':'Beta@wiki.test.projects.sourceforge.net',
-                'new_addr.claim':'Claim Address',
-                'primary_addr':'Beta@wiki.test.projects.sourceforge.net',
-                'preferences.email_format':'plain'})
-        r = self.app.get('/auth/prefs/')
-        assert 'class="error"' in r
+    # def test_prefs(self):
+    #     r = self.app.get('/auth/prefs/')
+    #     assert 'test@example.com' not in r
+    #     r = self.app.post('/auth/prefs/update', params={
+    #             'display_name':'Test Admin',
+    #             'new_addr.addr':'test@example.com',
+    #             'new_addr.claim':'Claim Address',
+    #             'primary_addr':'Beta@wiki.test.projects.sourceforge.net',
+    #             'preferences.email_format':'plain'})
+    #     r = self.app.get('/auth/prefs/')
+    #     assert 'test@example.com' in r
+    #     r = self.app.post('/auth/prefs/update', params={
+    #             'display_name':'Test Admin',
+    #             'addr-1.ord':'1',
+    #             'addr-2.ord':'1',
+    #             'addr-2.delete':'on',
+    #             'new_addr.addr':'',
+    #             'primary_addr':'Beta@wiki.test.projects.sourceforge.net',
+    #             'preferences.email_format':'plain'})
+    #     r = self.app.get('/auth/prefs/')
+    #     assert 'test@example.com' not in r
+    #     ea = M.EmailAddress.query.get(_id='Beta@wiki.test.projects.sourceforge.net')
+    #     ea.confirmed = True
+    #     ThreadLocalORMSession.flush_all()
+    #     r = self.app.post('/auth/prefs/update', params={
+    #             'display_name':'Test Admin',
+    #             'new_addr.addr':'Beta@wiki.test.projects.sourceforge.net',
+    #             'new_addr.claim':'Claim Address',
+    #             'primary_addr':'Beta@wiki.test.projects.sourceforge.net',
+    #             'preferences.email_format':'plain'})
+    #     r = self.app.get('/auth/prefs/')
+    #     assert 'class="error"' in r
 
 
     def test_openid(self):
