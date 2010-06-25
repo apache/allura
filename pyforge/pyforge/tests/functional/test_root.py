@@ -71,8 +71,8 @@ class TestRootController(TestController):
         assert len(response.html.findAll('img',{'alt':'adobe-2 Logo'})) == 1
 
     def test_markdown_to_html(self):
-        r = self.app.get('/nf/markdown_to_html?markdown=*aaa*bb[WikiHome]&project=test&app=bugs')
-        assert '<p><em>aaa</em>bb<a href="/p/test/wiki/WikiHome/">[WikiHome]</a></p>' in r
+        r = self.app.get('/nf/markdown_to_html?markdown=*aaa*bb[Home]&project=test&app=bugs')
+        assert '<p><em>aaa</em>bb<a href="/p/test/wiki/Home/">[Home]</a></p>' in r
 
     def test_site_css(self):
         r = self.app.get('/nf/site_style.css')

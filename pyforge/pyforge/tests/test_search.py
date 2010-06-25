@@ -30,15 +30,15 @@ def test_index_artifact():
     g.solr.add([search.solarize(a)])
     r = search.search('WikiPage')
     assert r.hits == 1
-    r = search.search_artifact(WM.Page, 'title:"WikiPage WikiHome"')
+    r = search.search_artifact(WM.Page, 'title:"WikiPage Home"')
     assert r.hits == 1
-    r = search.search_artifact(WM.Page, 'title:"WikiHome"')
+    r = search.search_artifact(WM.Page, 'title:"Home"')
     assert r.hits == 0
 
 def test_searchapp():
     h.set_context('test', 'wiki')
     a = WM.Page.query.find().first()
-    a.text = '\n[WikiHome]\n'
+    a.text = '\n[Home]\n'
     ThreadLocalORMSession.flush_all()
     ThreadLocalORMSession.close_all()
     g.mock_amq.setup_handlers()

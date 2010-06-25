@@ -62,6 +62,7 @@ class ForgeWikiApp(Application):
     default_mount_label='Wiki'
     default_mount_point='wiki'
     ordinal=5
+    default_root_page_name = 'Home'
 
     def __init__(self, project, config):
         Application.__init__(self, project, config)
@@ -99,10 +100,6 @@ class ForgeWikiApp(Application):
         data['destinations'] = 'devnull@localhost'
         g.publish('audit', 'forgemail.send_email',
             data, serializer='yaml')
-
-    @property
-    def default_root_page_name(self):
-        return self.config.options.mount_point.title() + 'Home'
 
     @property
     def root_page_name(self):

@@ -61,7 +61,7 @@ class TestPostNotifications(unittest.TestCase):
         flash_msgs = list(h.pop_user_notifications(u))
         assert len(flash_msgs) == 1, flash_msgs
         msg = flash_msgs[0]
-        assert msg['text'].startswith('WikiPage WikiHome modified by Test Admin')
+        assert msg['text'].startswith('WikiPage Home modified by Test Admin')
         assert msg['subject'].startswith('[test:wiki]')
         flash_msgs = list(h.pop_user_notifications(u))
         assert not flash_msgs, flash_msgs
@@ -82,7 +82,7 @@ class TestPostNotifications(unittest.TestCase):
         M.Mailbox.fire_ready()
         assert len(g.mock_amq.exchanges['audit']) == 1
         msg = g.mock_amq.exchanges['audit'][0]['message']
-        assert msg['text'].startswith('WikiPage WikiHome modified by Test Admin')
+        assert msg['text'].startswith('WikiPage Home modified by Test Admin')
         assert 'you indicated interest in ' in msg['text']
 
     def _subscribe(self):
@@ -143,7 +143,7 @@ class TestSubscriptionTypes(unittest.TestCase):
         M.Mailbox.fire_ready()
         assert len(g.mock_amq.exchanges['audit']) == 1
         msg = g.mock_amq.exchanges['audit'][0]['message']
-        assert 'WikiHome@wiki.test.p' in msg['reply_to']
+        assert 'Home@wiki.test.p' in msg['reply_to']
         assert 'Test Admin' in msg['from']
 
     def _clear_subscriptions(self):

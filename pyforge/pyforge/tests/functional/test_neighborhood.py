@@ -11,7 +11,7 @@ class TestNeighborhood(TestController):
 
     def test_home_project(self):
         r = self.app.get('/adobe/home/')
-        assert r.location.endswith('/adobe/home/HomeHome/')
+        assert r.location.endswith('/adobe/home/Home/')
         r = r.follow()
         assert 'Welcome' in str(r), str(r)
         r = self.app.get('/adobe/admin/')
@@ -21,10 +21,10 @@ class TestNeighborhood(TestController):
 
     def test_redirect(self):
         r = self.app.post('/adobe/_admin/update',
-                          params=dict(redirect='home/HomeHome/'),
+                          params=dict(redirect='home/Home/'),
                           extra_environ=dict(username='root'))
         r = self.app.get('/adobe/')
-        assert r.location.endswith('/adobe/home/HomeHome/')
+        assert r.location.endswith('/adobe/home/Home/')
 
     def test_admin(self):
         r = self.app.get('/adobe/_admin/', extra_environ=dict(username='root'))

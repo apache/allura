@@ -21,7 +21,7 @@ from pyforge.tests import TestController
 def setUp():
     controller = TestController()
     controller.setUp()
-    controller.app.get('/wiki/WikiHome/')
+    controller.app.get('/wiki/Home/')
     g._push_object(Globals())
     c._push_object(mock.Mock())
     request._push_object(Request.blank('/'))
