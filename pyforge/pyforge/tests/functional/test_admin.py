@@ -23,6 +23,7 @@ class TestProjectAdmin(TestController):
         self.app.post('/admin/update_mounts', params={
                 'new.install':'install',
                 'new.ep_name':'',
+                'new.ordinal':1,
                 'new.mount_point':'test-subproject',
                 'new.mount_label':'Test Subproject'})
         self.app.post('/admin/update_mounts', params={
@@ -40,6 +41,7 @@ class TestProjectAdmin(TestController):
         r = self.app.post('/admin/update_mounts', params={
                 'new.install':'install',
                 'new.ep_name':'hello_forge',
+                'new.ordinal':1,
                 'new.mount_point':'test-tool',
                 'new.mount_label':'Test Tool'})
         assert 'error' in r.cookies_set.get('webflash', ''), r.showbrowser()

@@ -22,7 +22,7 @@
           <py:if test="len(app.config_options) > 1">
             <form method="post" action="configure">
               <ol>
-                <py:for each="o in app.config_options" py:if="o.name != 'mount_point'">
+                <py:for each="o in app.config_options" py:if="o.name not in ['mount_point', 'mount_label', 'ordinal']">
                   <li><label for="$o.name" class="span-3">$o.name</label>
                   <div py:if="not allow_config">
                        ${app.config.options.get(o.name, o.default)}
@@ -37,10 +37,8 @@
                 </py:for>
                 <li>
                   <label>&nbsp;</label>
-                  <input type="submit" value="Update config" py:if="allow_config"
-                        />
-                  <input py:if="app.installable and allow_config" type="submit" name="delete" value="Delete Tool"
-                        />
+                  <input type="submit" value="Update config" py:if="allow_config" />
+                  <input py:if="app.installable and allow_config" type="submit" name="delete" value="Delete Tool" />
                 </li>
               </ol>
             </form>

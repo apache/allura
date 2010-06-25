@@ -20,6 +20,7 @@
       <div class="row">
         <div class="column grid_12">
           <div py:if="c.project.deleted" class="notice">This project has been deleted and is not visible to non-admin users</div>
+          <p py:if="has_project_access('tool')()">Drag and drop tools to reorder.</p>
           <table>
             <thead>
               <tr>
@@ -30,59 +31,30 @@
                 <th py:if="has_project_access('tool')()"></th>
               </tr>
             </thead>
-            <tbody>
-                <tr py:for="i, sp in enumerate(c.project.direct_subprojects)">
-                  <td>Subproject</td>
-                  <td>$sp.shortname</td>
-                  <td>
-                  <form method="POST" action="update_mounts" id="mounts_edit">
-                      <input type="hidden"
-                             name="subproject-${i}.shortname"
-                             value="$sp.shortname"/>
-                      <div class="editable viewing span-15 last">
-                        <div class="viewer">$sp.name</div>
-                        <div class="editor">
-                          <input type="text"
-                                 name="subproject-${i}.name"
-                                 value="$sp.name"/>
-                        </div>
-                      </div>
-                  </form>
-                  </td>
-                  <td py:if="has_project_access('tool')()"><a href="${sp.url() + 'admin/'}" class="ico-l">
-                    <b class="ui-icon ui-icon-pencil"></b> <span>Edit</span>
-                  </a></td>
-                  <td>
-                  <form method="POST" action="update_mounts" id="mounts_edit">
-                      <input type="hidden"
-                             name="subproject-${i}.shortname"
-                             value="$sp.shortname"/>
-                      <input py:if="has_project_access('tool')()"
-                             name="subproject-${i}.delete" type="submit" value="Delete"/>
-                  </form>
-                  </td>
-                </tr>
-                <tr py:for="i, config in enumerate(c.project.app_configs)" py:if="config.load().installable">
-                  <td>Tool: $config.tool_name</td>
-                  <td>$config.options.mount_point</td>
+            <tbody id="tool_admin">
+              <tr class="sortables" py:for="i, item in enumerate(mounts)">
+                <py:if test="'ac' in item">
+                  <td>Tool: ${item['ac'].tool_name}</td>
+                  <td>${item['ac'].options.mount_point}</td>
                   <td>
                     <form method="POST" action="update_mounts" id="mounts_edit">
                       <input type="hidden"
                              name="tool-${i}.mount_point"
-                             value="$config.options.mount_point"/>
+                             class="mount_point"
+                             value="${item['ac'].options.mount_point}"/>
                       <div class="editable viewing span-15 last">
-                        <div class="viewer">$config.options.mount_label</div>
+                        <div class="viewer">${item['ac'].options.mount_label}</div>
                         <div class="editor">
                           <input type="text"
                                  name="tool-${i}.mount_label"
-                                 value="$config.options.mount_label"/>
+                                 value="${item['ac'].options.mount_label}"/>
                         </div>
                       </div>
                       </form>
                   </td>
                   <td>
                     <a py:if="has_project_access('tool')()"
-                       href="$config.options.mount_point/"
+                       href="${item['ac'].options.mount_point}/"
                        class="ico-l">
                        <b class="ui-icon ui-icon-pencil"></b> <span>Edit</span>
                     </a>
@@ -91,21 +63,47 @@
                     <form method="POST" action="update_mounts" id="mounts_edit">
                       <input type="hidden"
                              name="tool-${i}.mount_point"
-                             value="$config.options.mount_point"/>
-                      <input py:if="has_project_access('tool')() and config.load().installable"
+                             value="${item['ac'].options.mount_point}"/>
+                      <input py:if="has_project_access('tool')() and item['ac'].load().installable"
                              name="tool-${i}.delete" type="submit" value="Delete"/>
                     </form>
                   </td>
-                </tr>
+                </py:if>
+                <py:if test="'sub' in item">
+                  <td>Subproject</td>
+                  <td>${item['sub'].shortname}</td>
+                  <td>
+                  <form method="POST" action="update_mounts" id="mounts_edit">
+                      <input type="hidden"
+                             name="subproject-${i}.shortname"
+                             class="shortname"
+                             value="${item['sub'].shortname}"/>
+                      <div class="editable viewing span-15 last">
+                        <div class="viewer">${item['sub'].name}</div>
+                        <div class="editor">
+                          <input type="text"
+                                 name="subproject-${i}.name"
+                                 value="${item['sub'].name}"/>
+                        </div>
+                      </div>
+                  </form>
+                  </td>
+                  <td py:if="has_project_access('tool')()"><a href="${item['sub'].url() + 'admin/'}" class="ico-l">
+                    <b class="ui-icon ui-icon-pencil"></b> <span>Edit</span>
+                  </a></td>
+                  <td>
+                  <form method="POST" action="update_mounts" id="mounts_edit">
+                      <input type="hidden"
+                             name="subproject-${i}.shortname"
+                             value="${item['sub'].shortname}"/>
+                      <input py:if="has_project_access('tool')()"
+                             name="subproject-${i}.delete" type="submit" value="Delete"/>
+                  </form>
+                  </td>
+                </py:if>
+              </tr>
               <form method="POST" action="update_mounts">
-                <input py:for="i, sp in enumerate(c.project.direct_subprojects)"
-                       type="hidden"
-                       name="subproject-${i}.shortname"
-                       value="$sp.shortname"/>
-                <input py:for="i, config in enumerate(c.project.app_configs)"
-                       type="hidden"
-                       name="tool-${i}.mount_point"
-                       value="$config.options.mount_point"/>
+                <input type="hidden" name="new.ordinal" value="${len(installable_tools)+len(c.project.direct_subprojects)}"/>
                 <tr py:if="has_project_access('tool')()">
                   <td>
                     <select name="new.ep_name" class="new_ep_name">
@@ -127,6 +125,8 @@
               </form>
             </tbody>
           </table>
+          <input type="button" id="save_order" value="Save Tool Order" style="display:none"
+                 py:if="has_project_access('tool')()"/>
         </div>
       </div>
     </div>
@@ -139,8 +139,45 @@
     };
     $('select.new_ep_name').change(function() {
       var tool = defaults[$(this).val()];
-      $(this).closest('tr').find('input.new_mount_point').val(tool.default_mount);
-      $(this).closest('tr').find('input.new_mount_label').val(tool.default_label);
+      var row = $(this).closest('tr')
+      row.find('input.new_mount_point').val(tool.default_mount);
+      row.find('input.new_mount_label').val(tool.default_label);
     });
+    
+    <py:if test="has_project_access('tool')()">
+    /*<![CDATA[*/
+      $('#tool_admin').sortable({
+        items: 'tr.sortables',
+        axis: 'y',
+        update: function(e){
+          $('#save_order').show();
+        }
+      });
+      $('#save_order').click(function(e){
+        var sortables = $('#tool_admin .sortables');
+        var tools = 0
+        var subs = 0
+        var params = {}
+        for(var i=0,len=sortables.length; i<len; i++){
+          var item = $(sortables[i])
+          var mount_point = item.find('input.mount_point');
+          var shortname = item.find('input.shortname');
+          if(mount_point.length){
+            params['tools-'+tools+'.mount_point']=mount_point.val();
+            params['tools-'+tools+'.ordinal']=i;
+            tools++;
+          }
+          if(shortname.length){
+            params['subs-'+subs+'.shortname']=shortname.val();
+            params['subs-'+subs+'.ordinal']=i;
+            subs++;
+          }
+        }
+        $.post('update_mount_order', params, function(){
+            location.reload();
+        });
+      });
+    /*]]>*/
+    </py:if>
   </script>
 </html>

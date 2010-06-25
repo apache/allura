@@ -88,7 +88,8 @@ class Application(object):
     __version__ = None
     config_options = [
         ConfigOption('mount_point', str, 'app'),
-        ConfigOption('mount_label', str, 'app') ]
+        ConfigOption('mount_label', str, 'app'),
+        ConfigOption('ordinal', int, '0') ]
     templates=None # path to templates
     script_name=None
     root=None  # root controller
@@ -160,7 +161,7 @@ class Application(object):
         links = []
         # if self.permissions and has_artifact_access('configure', app=self)():
         #     links.append(SitemapEntry('Permissions', admin_url + 'permissions', className='nav_child'))
-        if len(self.config_options) > 2:
+        if len(self.config_options) > 3:
             links.append(SitemapEntry('Options', admin_url + 'options', className='nav_child'))
         return links
 

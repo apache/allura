@@ -132,6 +132,7 @@ class Project(MappedClass):
     labels = FieldProperty([str])
     last_updated = FieldProperty(datetime, if_missing=None)
     tool_data = FieldProperty({str:{str:None}}) # entry point: prefs dict
+    ordinal = FieldProperty(int, if_missing=0)
 
     @h.exceptionless([], log)
     def sidebar_menu(self):
@@ -208,19 +209,22 @@ class Project(MappedClass):
     def sitemap(self):
         from pyforge.app import SitemapEntry
         sitemap = SitemapEntry('root')
+        entries = []
         for sub in self.direct_subprojects:
             if sub.deleted: continue
-            sitemap.children.append(SitemapEntry(sub.name, sub.url()))
+            entries.append({'ordinal':sub.ordinal,'entry':SitemapEntry(sub.name, sub.url())})
         for ac in self.app_configs:
             App = ac.load()
             app = App(self, ac)
-            app_sitemap = []
             if app.is_visible_to(c.user):
                 for sm in app.sitemap:
                     entry = sm.bind_app(app)
                     entry.ui_icon='tool-%s' % ac.tool_name
-                    app_sitemap.append(entry)
-                sitemap.extend(app_sitemap)
+                    ordinal = 'ordinal' in ac.options and ac.options['ordinal'] or 0
+                    entries.append({'ordinal':ordinal,'entry':entry})
+        entries = sorted(entries, key=lambda e: e['ordinal'])
+        for e in entries:
+            sitemap.children.append(e['entry'])
         return sitemap.children
 
     def parent_iter(self):
@@ -256,7 +260,7 @@ class Project(MappedClass):
         from .artifact import AwardGrant
         return AwardGrant.query.find(dict(granted_to_project_id=self._id)).all()
 
-    def install_app(self, ep_name, mount_point, mount_label=None, **override_options):
+    def install_app(self, ep_name, mount_point, mount_label=None, ordinal=0, **override_options):
         if not h.re_path_portion.match(mount_point):
             raise exceptions.ToolError, 'Mount point "%s" is invalid' % mount_point
         if self.app_instance(mount_point) is not None:
@@ -277,6 +281,7 @@ class Project(MappedClass):
         options = App.default_options()
         options['mount_point'] = mount_point
         options['mount_label'] = mount_label or mount_point
+        options['ordinal'] = ordinal
         options.update(override_options)
         cfg = AppConfig(
             project_id=self._id,

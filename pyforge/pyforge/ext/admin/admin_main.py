@@ -104,7 +104,7 @@ class AdminApp(Application):
 
         for ac in c.project.app_configs:
             app = c.project.app_instance(ac.options.mount_point)
-            if len(app.config_options) > 2 or (app.permissions and has_artifact_access('configure', app=app)()) and len(app.admin_menu()):
+            if len(app.config_options) > 3 or (app.permissions and has_artifact_access('configure', app=app)()) and len(app.admin_menu()):
                 links.append(SitemapEntry(ac.options.mount_point).bind_app(self))
                 links = links + app.admin_menu()
         return links
@@ -154,10 +154,16 @@ class ProjectAdminController(object):
         installable_tools = sorted(installable_tools, key=lambda tool: tool['app'].ordinal)
         c.markdown_editor = W.markdown_editor
         c.label_edit = W.label_edit
-        psort = [(n, M.Project.query.find(dict(is_root=True, neighborhood_id=n._id)).sort('shortname').all())
-                 for n in M.Neighborhood.query.find().sort('name')]
+        mounts = []
+        for sub in c.project.direct_subprojects:
+            mounts.append({'ordinal':sub.ordinal,'sub':sub})
+        for ac in c.project.app_configs:
+            if ac.load().installable:
+                ordinal = 'ordinal' in ac.options and ac.options['ordinal'] or 0
+                mounts.append({'ordinal':ordinal,'ac':ac})
+        mounts = sorted(mounts, key=lambda e: e['ordinal'])
         return dict(
-            projects=psort,
+            mounts=mounts,
             installable_tools=installable_tools,
             roles=M.ProjectRole.query.find().sort('_id').all(),
             categories=M.ProjectCategory.query.find(dict(parent_id=None)).sort('label').all(),
@@ -300,6 +306,18 @@ class ProjectAdminController(object):
 
     @h.vardec
     @expose()
+    def update_mount_order(self, subs=None, tools=None, **kw):
+        if subs:
+            for sp in subs:
+                p = M.Project.query.get(shortname=sp['shortname'])
+                p.ordinal = int(sp['ordinal'])
+        if tools:
+            for p in tools:    
+                c.project.app_config(p['mount_point']).options.ordinal = int(p['ordinal'])
+        redirect('tools')
+
+    @h.vardec
+    @expose()
     def update_mounts(self, subproject=None, tool=None, new=None, **kw):
         if subproject is None: subproject = []
         if tool is None: tool = []
@@ -314,6 +332,7 @@ class ProjectAdminController(object):
             elif not new:
                 p = M.Project.query.get(shortname=sp['shortname'])
                 p.name = sp['name']
+                p.ordinal = sp['ordinal']
         for p in tool:
             if p.get('delete'):
                 require(has_project_access('tool'), 'Delete access required')
@@ -322,7 +341,9 @@ class ProjectAdminController(object):
                     meta=dict(mount_point=p['mount_point']))
                 c.project.uninstall_app(p['mount_point'])
             elif not new:
-                c.project.app_config(p['mount_point']).options.mount_label = p['mount_label']
+                options = c.project.app_config(p['mount_point']).options
+                options.mount_label = p['mount_label']
+                options.ordinal = p['ordinal']
         try:
             if new and new.get('install'):
                 ep_name = new['ep_name']
@@ -334,13 +355,14 @@ class ProjectAdminController(object):
                         meta=dict(mount_point=mount_point,name=new['mount_label']))
                     sp = c.project.new_subproject(mount_point)
                     sp.name = new['mount_label']
+                    sp.ordinal = new['ordinal']
                 else:
                     require(has_project_access('tool'))
                     mount_point = new['mount_point'].lower() or ep_name.lower()
                     h.log_action(log, 'install tool').info(
                         'install tool %s', mount_point,
                         meta=dict(tool_type=ep_name, mount_point=mount_point, mount_label=new['mount_label']))
-                    c.project.install_app(ep_name, mount_point, mount_label=new['mount_label'])
+                    c.project.install_app(ep_name, mount_point, mount_label=new['mount_label'], ordinal=new['ordinal'])
         except forge_exc.ToolError, exc:
             flash('%s: %s' % (exc.__class__.__name__, exc.args[0]),
                   'error')
