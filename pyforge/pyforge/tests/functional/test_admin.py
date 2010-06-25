@@ -31,11 +31,18 @@ class TestProjectAdmin(TestController):
                 'new.ep_name':'',
                 })
         # Add/Remove a tool
-        self.app.post('/admin/update_mounts', params={
+        r = self.app.post('/admin/update_mounts', params={
                 'new.install':'install',
                 'new.ep_name':'hello_forge',
                 'new.mount_point':'test-tool',
                 'new.mount_label':'Test Tool'})
+        assert 'error' not in r.cookies_set.get('webflash', ''), r.showbrowser()
+        r = self.app.post('/admin/update_mounts', params={
+                'new.install':'install',
+                'new.ep_name':'hello_forge',
+                'new.mount_point':'test-tool',
+                'new.mount_label':'Test Tool'})
+        assert 'error' in r.cookies_set.get('webflash', ''), r.showbrowser()
         self.app.post('/admin/update_mounts', params={
                 'tool-0.delete':'on',
                 'tool-0.mount_point':'test-tool',

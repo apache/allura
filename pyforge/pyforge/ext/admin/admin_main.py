@@ -323,32 +323,27 @@ class ProjectAdminController(object):
                 c.project.uninstall_app(p['mount_point'])
             elif not new:
                 c.project.app_config(p['mount_point']).options.mount_label = p['mount_label']
-        if new and new.get('install'):
-            ep_name = new['ep_name']
-            if not ep_name:
-                require(has_project_access('create'))
-                mount_point = new['mount_point'].lower() or h.nonce()
-                if not h.re_path_portion.match(mount_point):
-                    flash('Invalid mount point', 'error')
-                    redirect(request.referer)
-                try:
+        try:
+            if new and new.get('install'):
+                ep_name = new['ep_name']
+                if not ep_name:
+                    require(has_project_access('create'))
+                    mount_point = new['mount_point'].lower() or h.nonce()
                     h.log_action(log, 'create subproject').info(
                         'create subproject %s', mount_point,
                         meta=dict(mount_point=mount_point,name=new['mount_label']))
                     sp = c.project.new_subproject(mount_point)
                     sp.name = new['mount_label']
-                except forge_exc.ToolError, exc:
-                    flash(repr(exc), 'error')
-            else:
-                require(has_project_access('tool'))
-                mount_point = new['mount_point'].lower() or ep_name.lower()
-                if not h.re_path_portion.match(mount_point):
-                    flash('Invalid mount point for %s' % ep_name, 'error')
-                    redirect(request.referer)
-                h.log_action(log, 'install tool').info(
-                    'install tool %s', mount_point,
-                    meta=dict(tool_type=ep_name, mount_point=mount_point, mount_label=new['mount_label']))
-                c.project.install_app(ep_name, mount_point, mount_label=new['mount_label'])
+                else:
+                    require(has_project_access('tool'))
+                    mount_point = new['mount_point'].lower() or ep_name.lower()
+                    h.log_action(log, 'install tool').info(
+                        'install tool %s', mount_point,
+                        meta=dict(tool_type=ep_name, mount_point=mount_point, mount_label=new['mount_label']))
+                    c.project.install_app(ep_name, mount_point, mount_label=new['mount_label'])
+        except forge_exc.ToolError, exc:
+            flash('%s: %s' % (exc.__class__.__name__, exc.args[0]),
+                  'error')
         redirect('tools')
 
     @h.vardec

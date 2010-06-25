@@ -13,6 +13,8 @@ from ming.orm.property import FieldProperty, RelationProperty, ForeignIdProperty
 
 from pyforge.lib import helpers as h
 from pyforge.lib import plugin
+from pyforge.lib import exceptions
+
 from .session import main_orm_session
 from .session import project_doc_session, project_orm_session
 from .neighborhood import Neighborhood
@@ -255,7 +257,11 @@ class Project(MappedClass):
         return AwardGrant.query.find(dict(granted_to_project_id=self._id)).all()
 
     def install_app(self, ep_name, mount_point, mount_label=None, **override_options):
-        assert h.re_path_portion.match(mount_point), 'Invalid mount point'
+        if not h.re_path_portion.match(mount_point):
+            raise exceptions.ToolError, 'Mount point "%s" is invalid' % mount_point
+        if self.app_instance(mount_point) is not None:
+            raise exceptions.ToolError, (
+                'Mount point "%s" is already in use' % mount_point)
         assert self.app_instance(mount_point) is None
         for ep in pkg_resources.iter_entry_points('pyforge', ep_name):
             App = ep.load()
@@ -308,6 +314,8 @@ class Project(MappedClass):
                 'options.mount_point':mount_point}).first()
 
     def new_subproject(self, name, install_apps=True, user=None):
+        if not h.re_path_portion.match(name):
+            raise exceptions.ToolError, 'Mount point "%s" is invalid' % name
         provider = plugin.ProjectRegistrationProvider.get()
         return provider.register_subproject(self, name, user or c.user, install_apps)
 
