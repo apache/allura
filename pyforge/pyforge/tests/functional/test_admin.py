@@ -35,6 +35,7 @@ class TestProjectAdmin(TestController):
         r = self.app.post('/admin/update_mounts', params={
                 'new.install':'install',
                 'new.ep_name':'hello_forge',
+                'new.ordinal':1,
                 'new.mount_point':'test-tool',
                 'new.mount_label':'Test Tool'})
         assert 'error' not in r.cookies_set.get('webflash', ''), r.showbrowser()

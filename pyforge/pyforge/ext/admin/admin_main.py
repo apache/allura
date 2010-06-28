@@ -355,7 +355,7 @@ class ProjectAdminController(object):
                         meta=dict(mount_point=mount_point,name=new['mount_label']))
                     sp = c.project.new_subproject(mount_point)
                     sp.name = new['mount_label']
-                    sp.ordinal = new['ordinal']
+                    sp.ordinal = int(new['ordinal'])
                 else:
                     require(has_project_access('tool'))
                     mount_point = new['mount_point'].lower() or ep_name.lower()
