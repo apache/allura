@@ -1,6 +1,7 @@
 from pprint import pprint
 from datetime import datetime, timedelta
 from formencode import variabledecode
+import json
 
 from ming.orm import session
 
@@ -26,7 +27,7 @@ class TestRestApiBase(TestController):
     def api_post(self, path, api_key=None, api_timestamp=None, api_signature=None,
                  wrap_args='ticket_form', **ticket_form):
         if wrap_args:
-            params = { wrap_args: ticket_form }
+            params = { wrap_args: json.dumps(ticket_form) }
         else:
             params = dict(ticket_form)
         params = variabledecode.variable_encode(params, add_repetitions=False)
@@ -108,9 +109,9 @@ class TestRestUpdateTicket(TestRestApiBase):
 
     def test_update_ticket(self):
         args = dict(self.ticket_args, summary='test update ticket', labels='',
-                    assigned_to=self.ticket_args['assigned_to_id'] or '',
-                    reported_by=self.ticket_args['reported_by_id'] or '',
-                    super_id=self.ticket_args['super_id'] or '')
+                    assigned_to=self.ticket_args['assigned_to_id'] or '')
+        for bad_key in ('assigned_to_id', 'created_date', 'reported_by', 'reported_by_id', 'super_id', 'sub_ids', '_id'):
+            del args[bad_key]
         ticket_view = self.api_post('1/save', **h.encode_keys(args))
         assert ticket_view.status_int == 200, ticket_view.showbrowser()
         json = ticket_view.json['ticket']
