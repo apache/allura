@@ -272,7 +272,7 @@ class RootController(object):
                 ticket_for_num[t.ticket_num] = t
             # and pull them out in the order given by ticket_numbers
             tickets = [ticket_for_num[tn] for tn in ticket_numbers
-                       if has_artifact_access('read', ticket_for_num[tn])()]
+                       if tn in ticket_for_num and has_artifact_access('read', ticket_for_num[tn])()]
         return dict(tickets=tickets,
                     sortable_custom_fields=c.app.globals.sortable_custom_fields_shown_in_search(),
                     count=count, q=q, limit=limit, page=page, sort=sort,
