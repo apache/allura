@@ -7,15 +7,17 @@
     <div class="clear span-3" py:if="not (allow_create_thread and has_artifact_access('post', value)())">
       &nbsp;
     </div>
-    <div class="clear span-3" py:if="allow_create_thread and has_artifact_access('post', value)()">
-      <a href="" class="ui-button new_topic"><span class="ui-icon ui-icon-plus"></span>New Topic</a>
-    </div>
-    <div class="span-16 last tright">
-      <a href="${value.email_link(subject=None)}" class="ui-button" 
-         py:if="show_discussion_email"><span class="ui-icon ui-icon-mail-closed"></span>Email</a>
-      <a href="${value.url()}moderate/" class="ui-button"
-         py:if="has_artifact_access('moderate', value)()"><span class="ui-icon ui-icon-check"></span>Moderate</a>
-      <a href="" class="ui-button follow"><span class="ui-icon ui-icon-signal-diag"></span>Follow</a>
+    <div class="row">
+      <div class="column grid_6" py:if="allow_create_thread and has_artifact_access('post', value)()">
+        <a href="" class="ico-l new_topic"><b class="ui-icon ui-icon-plus"></b> <span>New Topic</span></a>
+      </div>
+      <div class="column grid_6" style="text-align:right">
+        <a href="${value.email_link(subject=None)}" class="ico-l" 
+           py:if="show_discussion_email"><b class="ui-icon ui-icon-mail-closed"></b> <span>Email</span></a>
+        <a href="${value.url()}moderate/" class="ico-l"
+           py:if="has_artifact_access('moderate', value)()"><b class="ui-icon ui-icon-check"></b> <span>Moderate</span></a>
+        <a href="" class="ico-l follow"><b class="ui-icon ui-icon-signal-diag"></b> <span>Follow</span></a>
+      </div>
     </div>
 	</div>
   <div class="clear new_topic_form" style="display: none" py:if="allow_create_thread and has_artifact_access('post', value)()">
@@ -27,6 +29,6 @@
   </div>
   <div class="clear"/>
   <form method="$method" action="$action" enctype="$enctype" class="follow_form">
-    ${fields['threads'].display(**c.widget.context_for('threads'))}
+    ${fields['threads'].display(value=threads)}
   </form>
 </div>

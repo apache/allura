@@ -61,9 +61,11 @@ class DiscussionController(object):
             self.AttachmentController = AttachmentController
 
     @expose('pyforge.templates.discussion.index')
-    def index(self, **kw):
+    def index(self, threads=None, limit=None, page=0, count=0, **kw):
         c.discussion = self.W.discussion
-        return dict(discussion=self.discussion)
+        if threads is None:
+            threads = self.discussion.threads
+        return dict(discussion=self.discussion, limit=limit, page=page, count=count, threads=threads)
 
     @h.vardec
     @expose()

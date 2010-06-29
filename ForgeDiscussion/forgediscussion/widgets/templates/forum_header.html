@@ -21,6 +21,7 @@
 
         <py:if test="value.subforums">
           ${widgets.forum_subscription_form.display(
+              threads=value.threads,
               value=dict(forums=value.subforums),
               action=value.url() + 'subscribe_subforum')}
         </py:if>

@@ -1,4 +1,5 @@
 import logging
+import pymongo
 from urllib import urlencode, unquote
 
 from tg import expose, validate, redirect
@@ -38,9 +39,16 @@ class RootController(object):
         c.announcements_table = self.W.announcements_table
         announcements=model.ForumThread.query.find(dict(
                 flags='Announcement')).all()
-        return dict(forums=model.Forum.query.find(dict(
-                app_config_id=c.app.config._id,
-                parent_id=None)).all(),
+        forums = model.Forum.query.find(dict(
+                        app_config_id=c.app.config._id,
+                        parent_id=None)).all()
+        threads = dict()
+        for forum in forums:
+            threads[forum._id] = model.ForumThread.query.find(dict(
+                            discussion_id=forum._id)).sort('mod_date', pymongo.DESCENDING).limit(3).all()
+        print threads
+        return dict(forums=forums,
+                    threads=threads,
                     announcements=announcements)
                   
     @with_trailing_slash

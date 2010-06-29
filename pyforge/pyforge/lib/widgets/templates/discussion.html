@@ -1,9 +1,36 @@
 <div xmlns="http://www.w3.org/1999/xhtml"
       xmlns:py="http://genshi.edgewall.org/">
   ${widgets.discussion_header.display(value=value)}
-  ${widgets.subscription_form.display(value=value, 
-                                      action=value.url() + 'subscribe', 
-                                      allow_create_thread=allow_create_thread,
-                                      show_discussion_email=show_discussion_email,
-                                      show_subject=show_subject)}
+  <div class="content">
+    <div class="row">
+      <div class="column grid_12">
+        ${widgets.subscription_form.display(value=value,
+                                            threads=threads,
+                                            action=value.url() + 'subscribe', 
+                                            allow_create_thread=allow_create_thread,
+                                            show_discussion_email=show_discussion_email,
+                                            show_subject=show_subject)}
+        <py:if test="limit">
+          <py:if test="int(limit) &lt; count">
+            <p>Viewing page ${page+1}</p>
+      			<div class="btn-bar">
+      				<div class="btn-set">
+      					<a py:for="i in range(0, int(count/int(limit)))" class="btn${page==i and ' active' or None}"
+      					   href="${tg.url(request.path_info, dict(limit=limit, page=i))}"> <span>${i+1}</span></a>
+      				</div>  
+      				<hr/>
+      			</div>
+      		</py:if>
+          <p>Showing ${limit} result<py:if test="limit!=1">s</py:if> per page. </p>
+    			<div class="btn-bar">
+    				<div class="btn-set">
+    					<a py:for="per_page in [25, 50, 100, 250]" class="btn${per_page==int(limit) and ' active' or None}"
+    					   href="${tg.url(request.path_info, dict(limit=per_page))}"> <span>$per_page</span></a>
+    				</div>  
+    				<hr/>
+    			</div>
+    		</py:if>
+      </div>
+    </div>
+  </div>
 </div>

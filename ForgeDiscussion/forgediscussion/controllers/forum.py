@@ -1,10 +1,12 @@
 import shlex
 import logging
+import pymongo
 from mimetypes import guess_type
 from urllib import unquote
 
 from tg import expose, validate, redirect, flash
 from tg import request, response
+import tg
 from pylons import g, c
 from ming.base import Object
 from webob import exc
@@ -13,6 +15,7 @@ from pyforge.lib import helpers as h
 from pyforge.lib.security import require, has_artifact_access
 from pyforge.controllers import DiscussionController, ThreadController, PostController
 from pyforge.lib.widgets import discuss as DW
+from pyforge import model as pm
 
 from forgediscussion import model
 from forgediscussion import widgets as FW
@@ -66,10 +69,24 @@ class ForumController(DiscussionController):
         return ForumController(self.discussion.shortname + '/' + id), remainder
 
     @expose('pyforge.templates.discussion.index')
-    def index(self, **kw):
+    def index(self, threads=None, limit=None, page=0, count=0, **kw):
         if self.discussion.deleted and not has_artifact_access('configure', app=c.app)():
             redirect(self.discussion.url()+'deleted')
-        return super(ForumController, self).index(**kw)
+        if limit:
+            if c.user in (None, pm.User.anonymous()):
+                tg.session['results_per_page'] = limit
+                tg.session.save()
+            else:
+                c.user.preferences.results_per_page = limit
+        else:
+            if c.user in (None, pm.User.anonymous()):
+                limit = 'results_per_page' in tg.session and tg.session['results_per_page'] or 50
+            else:
+                limit = c.user.preferences.results_per_page or 50
+        page = max(int(page), 0)
+        start = page * int(limit)
+        threads = model.ForumThread.query.find(dict(discussion_id=self.discussion._id)).sort('mod_date', pymongo.DESCENDING)
+        return super(ForumController, self).index(threads=threads.skip(start).limit(int(limit)).all(), limit=limit, page=page, count=threads.count(), **kw)
 
     @h.vardec
     @expose()

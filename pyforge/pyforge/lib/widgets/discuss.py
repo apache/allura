@@ -103,6 +103,9 @@ class EditPost(ew.SimpleForm):
         for r in ew.TextField(name='subject').resources(): yield r
         for r in ffw.MarkdownEdit(name='text').resources(): yield r
 
+class NewTopicPost(EditPost):
+    template='pyforge.lib.widgets.templates.new_topic_post'
+
 class _ThreadsTable(ew.SimpleForm):
     template='pyforge.lib.widgets.templates.threads_table'
     class hidden_fields(ew.WidgetsList):
@@ -119,14 +122,15 @@ class _ThreadsTable(ew.SimpleForm):
 class SubscriptionForm(ew.SimpleForm):
     template='pyforge.lib.widgets.templates.subscription_form'
     value=None
+    threads=None
     show_discussion_email=False
     show_subject=False
     allow_create_thread=False
-    params=['value',
+    params=['value', 'threads',
             'show_discussion_email', 'show_subject', 'allow_create_thread']
     class fields(ew.WidgetsList):
         threads=_ThreadsTable()
-        new_topic = EditPost(submit_text='New Topic', if_missing=None)
+        new_topic = NewTopicPost(submit_text='New Topic', if_missing=None)
     submit_text='Update Subscriptions'
     def resources(self):
         for r in super(SubscriptionForm, self).resources(): yield r
@@ -139,6 +143,7 @@ class SubscriptionForm(ew.SimpleForm):
                 if($('.new_topic', discussion)){
                     $('.new_topic', discussion).click(function(ele){
                         $('.new_topic_form', discussion).show();
+                        $('.row', discussion).hide();
                         return false;
                     });
                 }
@@ -326,9 +331,10 @@ class Thread(HierWidget):
 
 class Discussion(HierWidget):
     template='genshi:pyforge.lib.widgets.templates.discussion'
-    params=['value',
+    params=['value', 'threads',
             'show_discussion_email', 'show_subject', 'allow_create_thread']
     value=None
+    threads=None
     show_discussion_email=False
     show_subject=False
     allow_create_thread=False
