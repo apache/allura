@@ -71,10 +71,10 @@ zope.interface==3.5.3
 repoze.who.plugins.sa==1.0rc2
 MySQL-python==1.2.3c1
 phpserialize==1.2
+feedparser==4.1-r295
 
--e hg+http://bitbucket.org/rick446/easywidgets@6cf1b362918b747c873f1903064860726e9360ef#egg=EasyWidgets-0.2dev-py2.6-dev
--e hg+http://bitbucket.org/turbogears/tg-dev@03b8ab0a2eba20ae8f7279e661ef6784f21882a8#egg=TurboGears2-2.1b2
--e hg+http://bitbucket.org/turbogears/tgdevtools-2_0@bcc41f5aba03f42aeb1b9e9e7abb5934dfec0a21#egg=tg.devtools-tip
--e git://merciless.git.sourceforge.net/gitroot/merciless/merciless@2359e9f749f3ba4ffc8dd177ef5f54206269f94e#egg=Ming-sf
--e git+ssh://engr.geek.net/sf.phpsession@aeac053abcab995f2e95da074639aaec2fe52c4f#egg=sf.phpsession-0.1-py2.6-dev
-
+EasyWidgets==0.2dev-20100628
+Ming==0.2dev-20100628
+TurboGears2==2.1b2dev-20100628
+sf.phpsession==0.1
+tg.devtools==2.0.2dev-20100628
