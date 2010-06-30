@@ -48,7 +48,8 @@ class ForgeGitApp(Application):
     __version__ = version.__version__
     permissions = [ 'read', 'write', 'create', 'admin', 'configure' ]
     config_options = Application.config_options + [
-        ConfigOption('cloned_from', ObjectId, None)
+        ConfigOption('cloned_from_project_id', ObjectId, None),
+        ConfigOption('cloned_from_repo_id', ObjectId, None)
         ]
     tool_label='Git'
     default_mount_label='Git'
@@ -71,6 +72,7 @@ class ForgeGitApp(Application):
     def admin_menu(self):
         return super(ForgeGitApp, self).admin_menu()
 
+    @h.exceptionless([], log)
     def sidebar_menu(self):
         links = [ SitemapEntry('Home',c.app.url, ui_icon='home') ]
         if has_artifact_access('admin', app=c.app)():
@@ -119,9 +121,11 @@ class ForgeGitApp(Application):
             tool='git',
             status='initing')
         ThreadLocalORMSession.flush_all()
-        cloned_from_id = self.config.options.get('cloned_from')
-        if cloned_from_id is not None:
-            cloned_from = model.GitRepository.query.get(_id=cloned_from_id)
+        cloned_from_project_id = self.config.options.get('cloned_from_project_id')
+        cloned_from_repo_id = self.config.options.get('cloned_from_repo_id')
+        if cloned_from_project_id is not None:
+            with h.push_config(c, project=Project.query.get(_id=cloned_from_project_id)):
+                cloned_from = model.GitRepository.query.get(_id=cloned_from_repo_id)
             g.publish('audit', 'scm.git.clone',
                       dict(repo_name=repo.name, repo_path=repo.fs_path, cloned_from=cloned_from.full_fs_path))
         else:
@@ -170,6 +174,7 @@ class RootController(object):
         to_project_name = 'u/' + c.user.username
         ThreadLocalORMSession.flush_all()
         ThreadLocalORMSession.close_all()
+        from_project = c.project
         to_project = Project.query.get(shortname=to_project_name)
         with h.push_config(c, project=to_project):
             require(has_project_access('tool', to_project))
@@ -182,7 +187,10 @@ class RootController(object):
                             in_use=in_use,
                             to_name=to_name or '')
             else:
-                to_project.install_app('Git', to_name, cloned_from=from_repo._id)
+                to_project.install_app(
+                    'Git', to_name,
+                    cloned_from_project_id=from_project._id,
+                    cloned_from_repo_id=from_repo._id)
                 redirect('/'+to_project_name+'/'+to_name+'/')
 
 class Refs(object):

@@ -84,10 +84,13 @@ class HgRepository(M.Repository):
 
     def _log(self, ci, **kwargs):
         def _iter(root):
+            seen = set()
             frontier = [root]
             while frontier:
                 ci = frontier.pop(0)
+                if ci in seen: continue
                 yield ci
+                seen.add(ci)
                 frontier += ci.parents()
                 frontier.sort(key=lambda ci: sum(ci.date()))
         commits = _iter(ci)

@@ -11,6 +11,7 @@ from itertools import islice
 from datetime import datetime
 from cStringIO import StringIO
 
+import tg
 import git
 import pylons
 import pymongo.bson
@@ -88,6 +89,7 @@ class GitRepository(M.Repository):
 
     def _log(self, **kwargs):
         kwargs.setdefault('topo_order', True)
+        if self._impl is None: return []
         commits = self._impl.iter_commits(**kwargs)
         return [ self.CommitClass.from_repo_object(entry, self)
                  for entry in commits ]
@@ -97,7 +99,12 @@ class GitRepository(M.Repository):
 
     @LazyProperty
     def _impl(self):
-        return git.Repo(self.full_fs_path)
+        try:
+            return git.Repo(self.full_fs_path)
+        except (git.errors.NoSuchPathError, git.errors.InvalidGitRepositoryError), err:
+            tg.flash('%s: %s' % (type(err), err), 'error')
+            return None
+
 
     def __getattr__(self, name):
         assert type(self) != type(self._impl), 'Problem looking up %s' % name
