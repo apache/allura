@@ -18,7 +18,7 @@
       <div class="row">
         <div class="column grid_12">
           <h2>Project: $c.project.shortname</h2>
-          <a href="LATEST/tree/">Files</a>
+          <a py:if="c.app.repo.latest" href="LATEST/tree/">Files</a>
           <py:if test="c.app.repo">
             <dl>
               <dt>read access</dt>
@@ -30,10 +30,15 @@
             </dl>
           </py:if>
           <h2>Commit History</h2>
-          <py:for each="commit in log">
-            ${c.revision_widget.display(**commit)}
-          </py:for>
-          <a py:if="next_link" href="$next_link">More</a>
+          <py:if test="log">
+            <py:for each="commit in log">
+              ${c.revision_widget.display(**commit)}
+            </py:for>
+            <a py:if="next_link" href="$next_link">More</a>
+          </py:if>
+          <py:if test="not log">
+            <b>No (more) commits</b>
+          </py:if>
         </div>
       </div>
     </div>

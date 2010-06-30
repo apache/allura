@@ -13,20 +13,22 @@
   </head>
 
   <body>
-    <a py:if="prev" href="$prev">Prev</a>
-    <a py:if="next" href="$next">Next</a>
-    <p py:if="commit is None">Unknown revision</p>
+    <h1 py:if="commit is None">Commit not found</h1>
     <py:if test="commit is not None">
-      ${c.revision_widget.display(value=commit)}
-      <a href="./tree/">Tree</a>
-      <table>
-        <tbody>
-          <tr py:for="kind, path in commit.diff_summarize()">
-            <td>$kind</td>
-            <td><a href="./tree/$path">$path</a></td>
-          </tr>
-        </tbody>
-      </table>
+      <a py:if="prev" href="$prev">Prev</a>
+      <a py:if="next" href="$next">Next</a>
+      <p py:if="commit is None">Unknown revision</p>
+      <py:if test="commit is not None">
+        ${c.revision_widget.display(value=commit)}
+        <table>
+          <tbody>
+            <tr py:for="kind, path in commit.diff_summarize()">
+              <td>$kind</td>
+              <td><a href="./tree/$path">$path</a></td>
+            </tr>
+          </tbody>
+        </table>
+      </py:if>
     </py:if>
   </body>
 </html>

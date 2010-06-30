@@ -49,13 +49,18 @@ class CommitBrowser(repository.CommitBrowser):
 
     def __init__(self, rev):
         if rev == 'LATEST':
-            rev = c.app.repo.latest.revision.number
+            if c.app.repo.latest:
+                rev = c.app.repo.latest.revision.number
+            else:
+                rev = 0
         super(CommitBrowser, self).__init__(int(rev))
 
     @expose('forgesvn.templates.commit')
     @with_trailing_slash
     def index(self):
         result = super(CommitBrowser, self).index()
+        if not self._commit:
+            return result
         if self._revision > 1:
             result['prev'] = '../%s/' % (self._revision - 1)
         else:

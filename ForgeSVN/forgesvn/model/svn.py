@@ -74,6 +74,7 @@ class SVNRepository(M.Repository):
             if offset != 0:
                 latest = self._impl.log(url, limit=1)
                 if not latest: return []
+                latest = latest[0]
                 revno = latest.revision.number-offset
                 if offset + limit > revno:
                     limit = revno - offset
@@ -84,6 +85,9 @@ class SVNRepository(M.Repository):
                         revno)
             commits = self._impl.log(url, **kwargs)
             return [ self.CommitClass.from_repo_object(entry, self) for entry in commits ]
+        except pysvn.ClientError: # pragma no cover
+            # probably an empty repo
+            return []
         except:  # pragma no cover
             log.exception('Error performing SVN log:')
             return []
@@ -93,18 +97,24 @@ class SVNRepository(M.Repository):
 
     @LazyProperty
     def latest(self):
-        l = self._impl.log(self.local_url, limit=1)
+        try:
+            l = self._impl.log(self.local_url, limit=1)
+        except pysvn.ClientError:
+            return None
         if l:
             return self.CommitClass.from_repo_object(l[0], self)
         else:
             return None
 
     def commit(self, revision):
-        r = self._impl.log(
-            self.local_url,
-            revision_start=pysvn.Revision(
-                pysvn.opt_revision_kind.number, revision),
-            limit=1)
+        try:
+            r = self._impl.log(
+                self.local_url,
+                revision_start=pysvn.Revision(
+                    pysvn.opt_revision_kind.number, revision),
+                limit=1)
+        except pysvn.ClientError:
+            return None
         if r: return self.CommitClass.from_repo_object(r[0], self)
         else: return None
 

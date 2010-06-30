@@ -52,7 +52,8 @@ class CommitBrowser(object):
     def index(self):
         c.revision_widget = self.revision_widget
         result = dict(commit=self._commit)
-        result.update(self._commit.context())
+        if self._commit:
+            result.update(self._commit.context())
         return result
 
 class TreeBrowser(object):
@@ -65,8 +66,10 @@ class TreeBrowser(object):
         self._name = name
         if parent:
             self._tree = parent.get_tree(name)
-        else:
+        elif self._commit:
             self._tree = self._commit.tree()
+        else:
+            self._tree = None
 
     @expose('pyforge.templates.repo.tree')
     def index(self):
