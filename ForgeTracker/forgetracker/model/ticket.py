@@ -359,8 +359,8 @@ class Ticket(VersionedArtifact):
         return dict(
             _id=str(self._id),
             created_date=self.created_date,
-            super_id=self.super_id,
-            sub_ids=self.sub_ids,
+            super_id=str(self.super_id),
+            sub_ids=[str(id) for id in self.sub_ids],
             ticket_num=self.ticket_num,
             summary=self.summary,
             description=self.description,
