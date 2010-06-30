@@ -187,8 +187,8 @@ class HgCommit(M.Commit):
                 else:
                     yield 'add', filename
         elif len(self.parents) == 0:
-            for blob in self.tree:
-                yield 'add', blob.path
+            for filename in self._impl.files():
+                yield 'add', filename
 
     def context(self):
         return dict(
