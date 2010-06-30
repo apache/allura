@@ -79,6 +79,8 @@ class SFXUserApi(object):
             except sfx_exc.exceptions.ProjectConflict:
                 log.error('Conflict (user project already created): u/%s', u.username.replace('_', '-'))
         if user_data is None: return u
+        if u.get_tool_data('sfx', 'userid') != user_data['id']:
+            u.set_tool_data('sfx', userid=user_data['id'])
         if u.display_name != user_data['name']:
             u.display_name = user_data['name']
         u.set_tool_data('sfx', userid=user_data['id'])
