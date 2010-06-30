@@ -176,8 +176,8 @@ class GitCommit(M.Commit):
                 else:
                     yield 'change', d.a_blob.path
         else:
-            for blob in self.tree:
-                yield 'add', blob.path
+            for x in self.tree().ls():
+                yield 'add', x['href']
 
     def context(self):
         prev = self.parents
