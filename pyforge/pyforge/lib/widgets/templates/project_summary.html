@@ -16,7 +16,6 @@
 		<a href="${value.url()}">$value.name</a>
 	</h2>
 	<p class="desc">${h.text.truncate(value.short_description, 50)}</p>
-	<?python g.set_project(value.shortname)?>
 	<div class="quik">
 		<a py:for="i, config in enumerate(value.app_configs)"
 		   py:if="config.load().installable"

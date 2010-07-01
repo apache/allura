@@ -5,6 +5,7 @@
       xmlns:xi="http://www.w3.org/2001/XInclude">
 
   <xi:include href="master.html" />
+  <?python from pyforge.lib.security import has_project_access ?>
 
 <head>
   <meta content="text/html; charset=UTF-8" http-equiv="content-type" py:replace="''"/>
@@ -31,7 +32,10 @@
             <div style="clear:both;"><a href="${n.url()}"><font size="+2">${n.name}</font></a></div>
             <div class="list" style="clear:both">
               <py:for each="p in subprojects">
-                ${c.project_summary.display(value=p)}
+            	  <?python g.set_project(p.shortname)?>
+            	  <py:if test="has_project_access('read', p)()">
+                  ${c.project_summary.display(value=p)}
+                </py:if>
               </py:for>
             </div>
           </py:def>
@@ -47,11 +51,15 @@
             <py:if test="len(projects) and not isinstance(projects[0], tuple)">
               <div class="list">
                 <py:for each="project in projects">
-                  ${c.project_summary.display(value=project)}
+              	  <?python g.set_project(project.shortname)?>
+              	  <py:if test="has_project_access('read', project)()">
+                    ${c.project_summary.display(value=project)}
+                  </py:if>
                 </py:for>
               </div>
             </py:if>
           </div>
+          <?python g.set_project('')?>
         </div>
       </div>
     </div>

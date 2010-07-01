@@ -7,6 +7,7 @@
   <xi:include href="master.html" py:if="neighborhood.allow_browse" />
   <xi:include href="master_one_col.html" py:if="not neighborhood.allow_browse" />
   <xi:include href="neighborhood_lib.html"/>
+  <?python from pyforge.lib.security import has_project_access ?>
 
   <head>
     <meta content="text/html; charset=UTF-8" http-equiv="content-type" py:replace="''"/>
@@ -33,7 +34,10 @@
       <p py:if="not len(projects)">No projects found</p>
       <div py:if="len(projects)" class="list">
         <py:for each="project in projects">
-          ${c.project_summary.display(value=project)}
+      	  <?python g.set_project(project.shortname)?>
+      	  <py:if test="has_project_access('read', project)()">
+            ${c.project_summary.display(value=project)}
+          </py:if>
         </py:for>
 			</div>
     </py:if>
