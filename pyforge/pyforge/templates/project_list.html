@@ -28,6 +28,7 @@
     <div class="content">
       <div class="row">
         <div class="column grid_12">
+      	  <?python old_project = c.project ?>
           <py:def function="project(n, subprojects)">
             <div style="clear:both;"><a href="${n.url()}"><font size="+2">${n.name}</font></a></div>
             <div class="list" style="clear:both">
@@ -59,7 +60,7 @@
               </div>
             </py:if>
           </div>
-          <?python g.set_project('')?>
+          <?python g.set_project(old_project and old_project.shortname or '')?>
         </div>
       </div>
     </div>
