@@ -63,7 +63,7 @@ class TestIndexWithAPostInTheDiscussion(WithDatabase):
         assert self.template_variables['posts'].all() == [self.post]
 
     def test_that_it_sets_paging_metadata(self):
-        assert self.template_variables['offset'] == 0
+        assert self.template_variables['page'] == 0
         assert self.template_variables['limit'] == 50
         assert self.template_variables['pgnum'] == 1
         assert self.template_variables['pages'] == 1

@@ -74,10 +74,10 @@ class ForumController(DiscussionController):
             redirect(self.discussion.url()+'deleted')
         if limit:
             if c.user in (None, pm.User.anonymous()):
-                tg.session['results_per_page'] = limit
+                tg.session['results_per_page'] = int(limit)
                 tg.session.save()
             else:
-                c.user.preferences.results_per_page = limit
+                c.user.preferences.results_per_page = int(limit)
         else:
             if c.user in (None, pm.User.anonymous()):
                 limit = 'results_per_page' in tg.session and tg.session['results_per_page'] or 50
@@ -124,10 +124,10 @@ class ForumController(DiscussionController):
 class ForumThreadController(ThreadController):
 
     @expose('pyforge.templates.discussion.thread')
-    def index(self, **kw):
+    def index(self, limit=None, page=0, count=0, **kw):
         if self.thread.discussion.deleted and not has_artifact_access('configure', app=c.app)():
             redirect(self.thread.discussion.url()+'deleted')
-        return super(ForumThreadController, self).index(**kw)
+        return super(ForumThreadController, self).index(limit=limit, page=page, count=count, **kw)
 
     @h.vardec
     @expose()

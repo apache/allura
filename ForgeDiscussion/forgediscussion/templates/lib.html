@@ -115,13 +115,13 @@
     </span>
   </py:def>
 
-  <py:def function="page_nav(offset,total,pagesize)"
-          py:with="cur_page=offset / pagesize; num_pages=total/pagesize">
+  <py:def function="page_nav(page,count,limit)"
+          py:with="cur_page=page / limit; num_pages=count/limit">
     <p>Page ${1 + cur_page} of ${1 + num_pages}</p>
     <a href=".">&lt;&lt;</a> 
-    <a href="?offset=${offset - pagesize}">&lt;</a>
-    <a href="?offset=${offset + pagesize}">&gt;</a>
-    <a href="?offset=${total - pagesize}">&gt;&gt;</a>
+    <a href="?page=${page - limit}">&lt;</a>
+    <a href="?page=${page + limit}">&gt;</a>
+    <a href="?page=${count - limit}">&gt;&gt;</a>
   </py:def>
 
   <py:def function="display_post(post)">

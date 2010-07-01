@@ -45,7 +45,7 @@ log = logging.getLogger(__name__)
 
 class W:
     thread=w.Thread(
-        offset=None, limit=None, page_size=None, total=None,
+        page=None, limit=None, page_size=None, count=None,
         style='linear')
     markdown_editor = ffw.MarkdownEdit()
     user_tag_edit = ffw.UserTagEdit()

@@ -271,9 +271,9 @@ class ProjectController(object):
     @validate(dict(
             since=h.DateTimeConverter(if_empty=None),
             until=h.DateTimeConverter(if_empty=None),
-            offset=validators.Int(if_empty=None),
+            page=validators.Int(if_empty=None),
             limit=validators.Int(if_empty=None)))
-    def feed(self, since=None, until=None, offset=None, limit=None):
+    def feed(self, since=None, until=None, page=None, limit=None):
         if request.environ['PATH_INFO'].endswith('.atom'):
             feed_type = 'atom'
         else:
@@ -285,7 +285,7 @@ class ProjectController(object):
             title,
             c.project.url(),
             title,
-            since, until, offset, limit)
+            since, until, page, limit)
         response.headers['Content-Type'] = ''
         response.content_type = 'application/xml'
         return feed.writeString('utf-8')

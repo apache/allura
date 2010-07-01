@@ -5,6 +5,7 @@ import ew
 
 from pyforge.lib import validators as V
 from pyforge.lib.widgets import discuss as DW
+from pyforge.lib.widgets import form_fields as ffw
 
 from forgediscussion import model as M
 
@@ -30,6 +31,8 @@ class _ForumsTable(ew.TableField):
 class ForumSubscriptionForm(ew.SimpleForm):
     class fields(ew.WidgetsList):
         forums=_ForumsTable()
+        page_list=ffw.PageList()
+        page_size=ffw.PageSize()
     submit_text='Update Subscriptions'
 
 class _ThreadsTable(DW._ThreadsTable):
@@ -46,6 +49,8 @@ class _ThreadsTable(DW._ThreadsTable):
 class ThreadSubscriptionForm(DW.SubscriptionForm):
     class fields(ew.WidgetsList):
         threads=_ThreadsTable()
+        page_list=ffw.PageList()
+        page_size=ffw.PageSize()
         new_topic = DW.EditPost(submit_text='New Topic')
 
 class AnnouncementsTable(DW._ThreadsTable):

@@ -206,7 +206,7 @@ class Thread(Artifact):
                 result.append(pi)
         return result
 
-    def find_posts(self, offset=None, limit=None, timestamp=None, style='threaded'):
+    def query_posts(self, page=None, limit=None, timestamp=None, style='threaded'):
         if timestamp:
             terms = dict(discussion_id=self.discussion_id, thread_id=self._id,
                     status='ok', timestamp=timestamp)
@@ -218,12 +218,14 @@ class Thread(Artifact):
             q = q.sort('full_slug')
         else:
             q = q.sort('timestamp')
-        if offset is not None:
-            q = q.skip(offset)
+        if page is not None:
+            q = q.skip(page*limit)
         if limit is not None:
             q = q.limit(limit)
-        q = q.all()
         return q
+
+    def find_posts(self, page=None, limit=None, timestamp=None, style='threaded'):
+        return self.query_posts(page=page, limit=limit, timestamp=timestamp, style=style).all()
 
     def top_level_posts(self):
         return self.post_class().query.find(dict(

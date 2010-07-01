@@ -71,8 +71,8 @@ def test_thread_methods():
     assert d.last_post is not None
     assert t.last_post is not None
     t.create_post_threads(t.posts)
-    posts0 = t.find_posts(offset=0, limit=10, style='threaded')
-    posts1 = t.find_posts(offset=0, limit=10, style='timestamp')
+    posts0 = t.find_posts(page=0, limit=10, style='threaded')
+    posts1 = t.find_posts(page=0, limit=10, style='timestamp')
     assert posts0 != posts1
     assert 'wiki/_discuss/' in t.url()
     assert t.index()['views_i'] == 0

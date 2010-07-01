@@ -2,6 +2,7 @@ from mimetypes import guess_type
 from urllib import unquote
 from datetime import datetime
 
+import tg
 from tg import expose, redirect, validate, request, response, flash
 from tg.decorators import before_validate, with_trailing_slash, without_trailing_slash
 from pylons import c
@@ -124,18 +125,29 @@ class ThreadController(object):
         return self.PostController(self._discussion_controller, self.thread, id), remainder
 
     @expose('pyforge.templates.discussion.thread')
-    def index(self, offset=None, **kw):
+    def index(self, limit=None, page=0, count=0, **kw):
         c.thread = self.W.thread
         c.thread_header = self.W.thread_header
-        pagesize = 15
-        if offset is None: offset = 0
-        offset = int(offset)
+        if limit:
+            if c.user in (None, model.User.anonymous()):
+                tg.session['results_per_page'] = limit
+                tg.session.save()
+            else:
+                c.user.preferences.results_per_page = int(limit)
+        else:
+            if c.user in (None, model.User.anonymous()):
+                limit = 'results_per_page' in tg.session and tg.session['results_per_page'] or 50
+            else:
+                limit = c.user.preferences.results_per_page or 50
+        page = max(int(page), 0)
+        start = page * int(limit)
         self.thread.num_views += 1
+        count = self.thread.query_posts(page=page, limit=int(limit)).count()
         return dict(discussion=self.thread.discussion,
                     thread=self.thread,
-                    offset=offset,
-                    total=self.thread.num_replies,
-                    pagesize=pagesize)
+                    page=page,
+                    count=count,
+                    limit=limit)
 
     @h.vardec
     @expose()
@@ -167,9 +179,9 @@ class ThreadController(object):
     @validate(dict(
             since=DateTimeConverter(if_empty=None),
             until=DateTimeConverter(if_empty=None),
-            offset=validators.Int(if_empty=None),
+            page=validators.Int(if_empty=None),
             limit=validators.Int(if_empty=None)))
-    def feed(self, since=None, until=None, offset=None, limit=None):
+    def feed(self, since=None, until=None, page=None, limit=None):
         if request.environ['PATH_INFO'].endswith('.atom'):
             feed_type = 'atom'
         else:
@@ -181,7 +193,7 @@ class ThreadController(object):
             title,
             self.thread.url(),
             title,
-            since, until, offset, limit)
+            since, until, page, limit)
         response.headers['Content-Type'] = ''
         response.content_type = 'application/xml'
         return feed.writeString('utf-8')
@@ -377,7 +389,7 @@ class ModerationController(object):
     @validate(pass_validator)
     def index(self, **kw):
         kw = WidgetConfig.post_filter.validate(kw, None)
-        offset = kw.pop('offset', 0)
+        page = kw.pop('page', 0)
         limit = kw.pop('limit', 50)
         status = kw.pop('status', '-')
         flag = kw.pop('flag', None)
@@ -391,14 +403,14 @@ class ModerationController(object):
             query['flags'] = {'$gte': int(flag) }
         q = model.Post.query.find(query)
         count = q.count()
-        offset = int(offset)
+        page = int(page)
         limit = int(limit)
-        q = q.skip(offset)
+        q = q.skip(page)
         q = q.limit(limit)
-        pgnum = (offset // limit) + 1
+        pgnum = (page // limit) + 1
         pages = (count // limit) + 1
         return dict(discussion=self.discussion,
-                    posts=q, offset=offset, limit=limit,
+                    posts=q, page=page, limit=limit,
                     status=status, flag=flag,
                     pgnum=pgnum, pages=pages)
 

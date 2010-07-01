@@ -26,7 +26,6 @@
                py:if="not forum.deleted or has_artifact_access('configure', app=c.app)()">
             <h2>$forum.name</h2>
             <div py:if="forum.deleted" class="notice">This forum has been deleted and is not visible to non-admin users</div>
-            ${Markup(g.markdown.convert(forum.description))}
             ${c.subscription_form.display(value=forum, threads=threads[forum._id], action=forum.url() + 'subscribe')}
             &nbsp;
             <div class="clear"/>

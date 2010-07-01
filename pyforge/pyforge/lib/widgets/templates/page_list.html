@@ -1,0 +1,16 @@
+<div xmlns="http://www.w3.org/1999/xhtml"
+  xmlns:py="http://genshi.edgewall.org/"
+  py:strip="True">
+  <div py:if="limit and count and int(limit) &lt; int(count)" style="float: right;" py:with="pages=int(count)/int(limit)">
+    <a py:if="page != 0" class="btn"
+       href="${tg.url(request.path_info, dict(page=0))}">First</a>
+    <a py:if="page &gt; 0" class="btn"
+       href="${tg.url(request.path_info, dict(page=page-1))}">Previous</a>
+    <a py:for="i in range(0, pages)" class="btn${page==i and ' active' or None}"
+       href="${tg.url(request.path_info, dict(limit=limit, page=i))}"> <span>${i+1}</span></a>
+    <a py:if="page &lt; pages-1" class="btn"
+       href="${tg.url(request.path_info, dict(page=page+1))}">Next</a>
+    <a py:if="page != pages-1" class="btn"
+       href="${tg.url(request.path_info, dict(page=pages-1))}">Last</a>
+  </div>
+</div>

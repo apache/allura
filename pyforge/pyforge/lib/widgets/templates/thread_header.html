@@ -6,12 +6,12 @@
 	<div class="content">
 		<div class="row">
 			<div class="column grid_12">
-        <div  py:if="pagesize"
-              py:with="cur_page=offset / pagesize; num_pages=total/pagesize">
+        <div  py:if="limit"
+              py:with="cur_page=page / limit; num_pages=count/limit">
           <div class="span-3">Page ${1 + cur_page} of ${1 + num_pages}</div>
           <div class="span-16 tright last" id="discuss">
-            <a py:if="num_pages and cur_page > 0" href="?offset=${offset - pagesize}">&larr; Prev</a>
-            <a py:if="num_pages and cur_page &lt; num_pages" href="?offset=${offset + pagesize}">Next &rarr;</a>
+            <a py:if="num_pages and cur_page > 0" href="?page=${page - limit}">&larr; Prev</a>
+            <a py:if="num_pages and cur_page &lt; num_pages" href="?page=${page + limit}">Next &rarr;</a>
           </div>
         </div>
         <hr class="clear clearfix space"/>

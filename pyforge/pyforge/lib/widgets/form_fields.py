@@ -150,3 +150,26 @@ class AutoResizeTextarea(ew.TextArea):
             extraSpace : 0
         });
         ''')
+
+class PageList(ew.Widget):
+    template='genshi:pyforge.lib.widgets.templates.page_list'
+    params=['limit','count','page']
+    show_label=False
+    name=None
+    limit=None
+    count=0
+    page=0
+
+class PageSize(ew.Widget):
+    template='genshi:pyforge.lib.widgets.templates.page_size'
+    params=['limit']
+    show_label=False
+    name=None
+    limit=None
+
+    def resources(self):
+        yield ew.JSScript('''
+        $('select.results_per_page').change(function(){
+            location.href=location.pathname+'?limit='+this.value;
+        });
+        ''')

@@ -487,17 +487,17 @@ button, input[type=submit], input[type=reset], input[type=button] {padding: .35e
 
 /* Messages */
 
-.error, .notice, .success {padding:.8em;margin-bottom:1em;border:2px solid #ddd;}
+.error, .notice, .success, .ok {padding:.8em;margin-bottom:1em;border:2px solid #ddd;}
 .error p, .notice p, .success p {margin: 0;}
 .error {background:#FBE3E4;color:#8a1f11;border-color:#FBC2C4;}
 .notice {background:#FFF6BF;color:#514721;border-color:#FFD324;}
-.success {background:#E6EFC2;color:#264409;border-color:#C6D880;}
+.success, .ok {background:#E6EFC2;color:#264409;border-color:#C6D880;}
 .error a {color:#8a1f11; text-decoration: underline;}
 .notice a {color:#514721; text-decoration: underline;}
-.success a {color:#264409; text-decoration: underline;}
+.success a, .ok a {color:#264409; text-decoration: underline;}
 .forums .error {background:#8a1f11 !important; border-color: #500;}
 .forums .notice {background:#e5be20;}
-.forums .success {background:#264409;}
+.forums .success, .forums .ok {background:#264409;}
 
 /* Modal */
 #modal {

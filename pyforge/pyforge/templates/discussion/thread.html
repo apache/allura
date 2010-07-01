@@ -13,7 +13,7 @@
   </head>
 
   <body>
-    ${c.thread_header.display(value=thread, offset=offset, pagesize=pagesize, total=total)}
-    ${c.thread.display(value=thread, offset=offset, pagesize=pagesize, total=total)}
+    ${c.thread_header.display(value=thread, page=page, limit=limit, count=count)}
+    ${c.thread.display(value=thread, page=page, limit=limit, count=count)}
   </body>
 </html>

@@ -124,14 +124,20 @@ class SubscriptionForm(ew.SimpleForm):
     value=None
     threads=None
     show_discussion_email=False
+    show_actions=False
     show_subject=False
     allow_create_thread=False
-    params=['value', 'threads',
+    limit=None
+    page=0
+    count=0
+    submit_text='Update Subscriptions'
+    params=['value', 'threads', 'show_actions', 'limit', 'page', 'count',
             'show_discussion_email', 'show_subject', 'allow_create_thread']
     class fields(ew.WidgetsList):
+        page_list=ffw.PageList()
+        page_size=ffw.PageSize()
         threads=_ThreadsTable()
         new_topic = NewTopicPost(submit_text='New Topic', if_missing=None)
-    submit_text='Update Subscriptions'
     def resources(self):
         for r in super(SubscriptionForm, self).resources(): yield r
         yield ew.JSScript('''
@@ -183,13 +189,15 @@ class DiscussionHeader(HierWidget):
 
 class ThreadHeader(HierWidget):
     template='genshi:pyforge.lib.widgets.templates.thread_header'
-    params=['value', 'offset', 'pagesize', 'total', 'show_moderate']
+    params=['value', 'page', 'limit', 'count', 'show_moderate']
     value=None
-    offset=None
-    pagesize=None
-    total=None
+    page=None
+    limit=None
+    count=None
     show_moderate=False
     widgets=dict(
+        page_list=ffw.PageList(),
+        page_size=ffw.PageSize(),
         moderate_thread=ModerateThread())
 
 class PostHeader(ew.Widget):
@@ -263,14 +271,16 @@ class Post(HierWidget):
 class Thread(HierWidget):
     template='genshi:pyforge.lib.widgets.templates.thread'
     name='thread'
-    params=['value', 'offset', 'pagesize', 'total', 'show_subject','new_post_text']
+    params=['value', 'page', 'limit', 'count', 'show_subject','new_post_text']
     value=None
-    offset=None
-    pagesize=None
-    total=None
+    page=None
+    limit=None
+    count=None
     show_subject=False
     new_post_text="+ New Comment"
     widgets=dict(
+        page_list=ffw.PageList(),
+        page_size=ffw.PageSize(),
         thread_header=ThreadHeader(),
         post_thread=PostThread(),
         post=Post(),
@@ -290,11 +300,15 @@ class Thread(HierWidget):
             var new_post_create = $('#new_post_create');
             var tag_thread_holder = $('#tag_thread_holder');
             var allow_moderate = $('#allow_moderate');
-            if(new_post_create){
-                new_post_create.click(function(e){
-                    new_post_create.hide();
-                    new_post_holder.show();
-                });
+            var mod_thread_link = $('#mod_thread_link');
+            var mod_thread_form = $('#mod_thread_form');
+            if(mod_thread_link.length){
+                if(mod_thread_form.length){
+                    mod_thread_link.click(function(e){
+                        mod_thread_form.show();
+                        return false;
+                    });
+                }
             }
             if(thread_reply.length){
                 if(new_post_holder.length){
