@@ -25,4 +25,3 @@ class TestGravatar(TestController):
         query = parse_qs(url.query)
         assert 'r' not in query
         assert query['rating'] == ['x']
-        assert query['d'] == ['wavatar']

@@ -36,8 +36,7 @@ def url(email=None, gravatar_id=None, **kw):
     Gravatar's default is 80x80
 
     'd' or 'default'    -- URL for a default image, or a keyword naming
-    a Gravatar supplied default e.g., 'wavatar', 'identicon'.  We
-    default to 'wavatar'
+    a Gravatar supplied default e.g., 'wavatar', 'identicon'.
 
     'r' or 'rating'     -- 'g', 'pg', 'r', or 'x' to refuse any "harder"
     rated image.  We default to 'pg'.
@@ -58,7 +57,6 @@ def url(email=None, gravatar_id=None, **kw):
     if gravatar_id is None:
         gravatar_id = id(email)
     if 'r' not in kw and 'rating' not in kw: kw['r'] = 'pg'
-    if 'd' not in kw and 'default' not in kw: kw['d'] = 'wavatar'
     return ('http://gravatar.com/avatar/'
             + gravatar_id
             + '?' + urllib.urlencode(kw))
