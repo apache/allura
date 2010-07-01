@@ -1,143 +1,177 @@
 #!/usr/bin/python
+import sys
+import getpass
+from urlparse import urljoin
 
-from sys import stdout
-import hmac, hashlib
-from datetime import datetime
-import urllib
-from urlparse import urlparse, urljoin
-import urllib2
-import json
-from formencode import variabledecode
+from pyforge.lib import rest_api
 
-def smart_str(s, encoding='utf-8', strings_only=False, errors='strict'):
-    """
-    Returns a bytestring version of 's', encoded as specified in 'encoding'.
+SRC_CRED=dict(
+        api_key='b15b105ee580a8652616',
+        secret_key='d2a3315517ba81491ed7b7498636495023b8fb2d72e461457a20aa4b9e7ad032e9a8d07187f36661',
+        http_username=raw_input('LDAP username: '),
+        http_password=getpass.getpass('LDAP password: '))
+SRC_SERVER='https://newforge.sf.geek.net/'
+SRC_TOOL='/rest/p/forge/tickets/'
 
-    If strings_only is True, don't convert (some) non-string-like objects.
+# Credentials for sf-overlords
+DST_CRED=dict(
+    api_key='a4a88c67179137053d70',
+    secret_key='fcc48a0c31459e99a88cc42cdd7f908fad78b283ca30a86caac1ab65036ff71fc195a18e56534dc5')
+DST_SERVER='http://sourceforge.net/'
+DST_TOOL='/rest/p/forge/tickets/'
 
-    This function was borrowed from Django
-    """
-    if strings_only and isinstance(s, (types.NoneType, int)):
-        return s
-    elif not isinstance(s, basestring):
-        try:
-            return str(s)
-        except UnicodeEncodeError:
-            if isinstance(s, Exception):
-                # An Exception subclass containing non-ASCII data that doesn't
-                # know how to print itself properly. We shouldn't raise a
-                # further exception.
-                return ' '.join([smart_str(arg, encoding, strings_only,
-                        errors) for arg in s])
-            return unicode(s).encode(encoding, errors)
-    elif isinstance(s, unicode):
-        r = s.encode(encoding, errors)
-        return r
-    elif s and encoding != 'utf-8':
-        return s.decode('utf-8', errors).encode(encoding, errors)
-    else:
-        return s
+FAKE_TICKET={
+    u'created_date': u'2010-03-08 17:29:42.802000',
+    u'assigned_to_id': u'',
+    u'assigned_to': u'',
+    u'custom_fields': {'_component':'', '_size':0, '_priority':'', '_type':''},
+    u'description': u'Ticket was not present in source',
+    u'milestone': u'',
+    u'reported_by': u'',
+    u'reported_by_id': u'',
+    u'status': u'closed',
+    u'sub_ids': [],
+    u'summary': u'Placeholder ticket',
+    u'super_id': u'None'}
 
-def generate_smart_str(params):
-    for (key, value) in params:
-        yield smart_str(key), smart_str(value)
+def main():
+    src_cli = rest_api.RestClient(
+        base_uri=SRC_SERVER,
+        **SRC_CRED)
+    dst_cli = rest_api.RestClient(
+        base_uri=DST_SERVER,
+        **DST_CRED)
+    src = TicketAPI(src_cli, SRC_TOOL)
+    dst = TicketAPI(dst_cli, DST_TOOL)
+    for ticket in src.iter_tickets(check=True):
+        print 'Migrating ticket %s:\n%s' % (ticket['ticket_num'], ticket)
+        print 'Create ticket on %s' % DST_SERVER
+        dst.create_ticket(ticket)
+        print 'Create discussion on %s' % DST_SERVER
+        src_thread = src.load_thread(ticket)
+        if not src_thread or not src_thread['posts']:
+            print '... no posts'
+            continue
+        dst_thread = dst.load_thread(ticket)
+        slug_map = {}
+        for post in src.iter_posts(src_thread):
+            print '... migrate post %s:\n%r' % (post['slug'], post['text'])
+            dst.create_post(dst_thread, post, slug_map)
 
-def urlencode(params):
-    """
-    A version of Python's urllib.urlencode() function that can operate on
-    unicode strings. The parameters are first case to UTF-8 encoded strings and
-    then encoded as per normal.
-    """
-    return urllib.urlencode([i for i in generate_smart_str(params)])
+class TicketAPI(object):
 
+    def __init__(self, client, path):
+        self.client = client
+        self.path = path
 
-class Signer(object):
+    def iter_tickets(self, min_ticket=1, max_ticket=None, check=False):
+        if check:
+            tickets = self.client.request('GET', self.path)['tickets']
+            valid_tickets = set(t['ticket_num'] for t in tickets)
+            max_valid_ticket = max(valid_tickets)
+        cur_ticket = min_ticket
+        while True:
+            if check and cur_ticket not in valid_tickets:
+                if cur_ticket > max_valid_ticket: break
+                yield dict(FAKE_TICKET, ticket_num=cur_ticket)
+                cur_ticket += 1
+                continue
+            ticket = self.client.request('GET', self.ticket_path(cur_ticket))['ticket']
+            if ticket is None: break
+            yield ticket
+            cur_ticket += 1
+            if max_ticket and cur_ticket > max_ticket: break
 
-    def __init__(self, secret_key, api_key):
-        self.secret_key = secret_key
-        self.api_key = api_key
+    def load_thread(self, ticket):
+        discussion = self.client.request('GET', self.discussion_path())['discussion']
+        for thd in discussion['threads']:
+            if thd['subject'].startswith('#%d ' % ticket['ticket_num']):
+                break
+        else:
+            return None
+        thread = self.client.request(
+            'GET',self.thread_path(thd['_id']))['thread']
+        return thread
 
-    def __call__(self, path, params):
-        params.append(('api_key', self.api_key))
-        params.append(('api_timestamp', datetime.utcnow().isoformat()))
-        message = path + '?' + urlencode(sorted(params))
-        digest = hmac.new(self.secret_key, message, hashlib.sha256).hexdigest()
-        params.append(('api_signature', digest))
-        return params
+    def iter_posts(self, thread):
+        for p in sorted(thread['posts'], key=lambda p:p['slug']):
+            post = self.client.request(
+                'GET', self.post_path(thread['_id'], p['slug']))['post']
+            yield post
 
-
-class TicketIterator(object):
-
-    def __init__(self, secret_key, api_key, url, max_ticket, min_ticket=1):
-        self.sign = Signer(secret_key, api_key)
-        self.cur_ticket_num = min_ticket
-        self.max_ticket_num = max_ticket
-        self.url = url
-
-    def __iter__(self):
-        return self
-
-    def next(self):
-        if self.cur_ticket_num > self.max_ticket_num:
-            raise StopIteration
-        url = urljoin(self.url, str(self.cur_ticket_num))+'/'
-        self.cur_ticket_num += 1
-        params = self.sign(urlparse(url).path, [])
-        try:
-            f = urllib2.urlopen(url+'?'+urlencode(params))
-        except urllib2.HTTPError, e:
-            if e.code == 404:
-                raise StopIteration
-            else:
-                raise
-        ticket = json.loads(f.read())['ticket'] or {}
+    def create_ticket(self, ticket):
+        ticket = dict(ticket, labels='')
+        ticket['description'] = 'Created by: %s\nCreated date: %s\nAssigned to:%s\n\n%s' % (
+            ticket['reported_by'], ticket['created_date'], ticket['assigned_to'], ticket['description'])
         for bad_key in ('assigned_to_id', 'created_date', 'reported_by', 'reported_by_id', 'super_id', 'sub_ids', '_id'):
             if bad_key in ticket:
                 del ticket[bad_key]
-        ticket['labels'] = ''
-        return ticket
+        ticket.setdefault('labels', '')
+        ticket['custom_fields'].setdefault('_size', 0)
+        ticket['custom_fields'].setdefault('_priority', 'low')
+        ticket['custom_fields'].setdefault('_type', 'Bug')
+        ticket['custom_fields'].setdefault('_type', 'Component')
+        if ticket['custom_fields']['_size'] is None:
+            ticket['custom_fields']['_size'] = 0
+        if ticket['milestone'] not in ('backlog', 'public2',  'GA', 'post-GA'):
+            ticket['milestone'] = ''
+        if ticket['status'] not in 'open in-progress code-review validation closed'.split():
+            ticket['status'] = 'open'
+        r = self.client.request('POST', self.new_ticket_path(), ticket_form=ticket)
+        self.client.request(
+            'POST', self.ticket_path(r['ticket']['ticket_num'], 'save'),
+            ticket_form=ticket)
 
+    def create_post(self, thread, post, slug_map):
+        text = 'Post by %s:\n%s' % (
+            post['author'], post['text'])
+        if '/' in post['slug']:
+            parent_post = slug_map[post['slug'].rsplit('/', 1)[0]]
+            new_post = self.client.request(
+                'POST', self.post_path(thread['_id'], parent_post, 'reply'),
+                text=text)['post']
+        else:
+            new_post = self.client.request(
+                'POST', self.thread_path(thread['_id'], 'new'),
+                text=text)['post']
+        slug_map[post['slug']] = new_post['slug']
+        return new_post
 
-class TicketPoster(object):
+    def new_ticket_path(self):
+        return urljoin(self.path, 'new')
 
-    def __init__(self, secret_key, api_key, url):
-        self.sign = Signer(secret_key, api_key)
-        self.url = urljoin(url, 'new')
+    def ticket_path(self, ticket_num, suffix=''):
+        return urljoin(self.path, str(ticket_num)) + '/' + suffix
 
-    def __call__(self, ticket):
-        ticket = variabledecode.variable_encode(ticket, add_repetitions=False)
-        params = [('ticket_form', json.dumps(ticket))]
-        params = self.sign(urlparse(self.url).path, params)
-        try:
-            f = urllib2.urlopen(self.url, urlencode(params))
-        except urllib2.HTTPError, e:
-            stdout.write(e.read())
+    def discussion_path(self):
+        return '%s_discuss/' % (self.path)
 
+    def thread_path(self, thread_id, suffix=''):
+        return '%s_discuss/thread/%s/%s' % (self.path, thread_id, suffix)
 
-def main():
-    pw_mgr = urllib2.HTTPPasswordMgrWithDefaultRealm()
-    pw_mgr.add_password(None, 'https://newforge.sf.geek.net/', '<REALM USER>', '<REALM PASSWORD>')
-    auth_handler = urllib2.HTTPBasicAuthHandler(pw_mgr)
-    opener = urllib2.build_opener(auth_handler)
-    urllib2.install_opener(opener)
+    def post_path(self, thread_id, post_slug, suffix=''):
+        return '%s_discuss/thread/%s/%s/%s' % (self.path, thread_id, post_slug, suffix)
 
-    newforge = TicketIterator(
-        secret_key='<YOUR NEWFORGE SECRET KEY>',
-        api_key='<YOUR NEWFORGE API KEY>',
-        url='https://newforge.sf.geek.net/rest/p/forge/tickets/',
-#        max_ticket=672,
-        max_ticket=5,
-        min_ticket=1)
+def pm(etype, value, tb): # pragma no cover
+    import pdb, traceback
+    try:
+        from IPython.ipapi import make_session; make_session()
+        from IPython.Debugger import Pdb
+        sys.stderr.write('Entering post-mortem IPDB shell\n')
+        p = Pdb(color_scheme='Linux')
+        p.reset()
+        p.setup(None, tb)
+        p.print_stack_trace()
+        sys.stderr.write('%s: %s\n' % ( etype, value))
+        p.cmdloop()
+        p.forget()
+        # p.interaction(None, tb)
+    except ImportError:
+        sys.stderr.write('Entering post-mortem PDB shell\n')
+        traceback.print_exception(etype, value, tb)
+        pdb.post_mortem(tb)
 
-    # testing with a demo project, update this URL to a new tracker in the forge project
-    post_to_production = TicketPoster(
-        secret_key='<YOUR SOURCEFORGE SECRET KEY>',
-        api_key='<YOUR SOURCEFORGE API KEY>',
-        url='https://sourceforge.net/rest/p/wolftest/newtix/')
-
-    for ticket in newforge:
-        post_to_production(ticket)
-
+sys.excepthook = pm
 
 if __name__ == '__main__':
     main()

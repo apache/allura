@@ -39,6 +39,7 @@ class NeighborhoodRestController(object):
     def _lookup(self, name, *remainder):
         if not h.re_path_portion.match(name):
             raise exc.HTTPNotFound, name
+        name = self._neighborhood.shortname_prefix + name
         project = M.Project.query.get(shortname=name, neighborhood_id=self._neighborhood._id, deleted=False)
         if not project: raise exc.HTTPNotFound, name
         c.project = project

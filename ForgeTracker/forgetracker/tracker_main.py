@@ -951,9 +951,9 @@ class RootRestController(object):
 
     @expose()
     @h.vardec
+    @validate(W.ticket_form, error_handler=h.json_validation_error)
     def new(self, ticket_form=None, **post_data):
         require(has_artifact_access('write'))
-        ticket_form = json.loads(ticket_form)
         c.app.globals.invalidate_bin_counts()
         if request.method != 'POST':
             raise Exception('save_ticket must be a POST request')
@@ -986,9 +986,9 @@ class TicketRestController(object):
 
     @expose()
     @h.vardec
+    @validate(W.ticket_form, error_handler=h.json_validation_error)
     def save(self, ticket_form=None, **post_data):
         require(has_artifact_access('write', self.ticket))
-        ticket_form = json.loads(ticket_form)
         c.app.globals.invalidate_bin_counts()
         if request.method != 'POST':
             raise Exception('save_ticket must be a POST request')

@@ -27,7 +27,7 @@ class TestRestApiBase(TestController):
     def api_post(self, path, api_key=None, api_timestamp=None, api_signature=None,
                  wrap_args='ticket_form', **ticket_form):
         if wrap_args:
-            params = { wrap_args: json.dumps(ticket_form) }
+            params = { wrap_args: ticket_form }
         else:
             params = dict(ticket_form)
         params = variabledecode.variable_encode(params, add_repetitions=False)

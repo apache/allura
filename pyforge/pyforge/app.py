@@ -144,6 +144,10 @@ class Application(object):
         # De-index all the artifacts belonging to this tool in one fell swoop
         g.solr.delete('project_id_s:%s AND mount_point_s:%s' % (
                 project_id, self.config.options['mount_point']))
+        for d in model.Discussion.query.find({
+                'project_id':project_id,
+                'app_config_id':self.config._id}):
+            d.delete()
         # Remove all tags referring to this tool
         q_aref ={
             'artifact_ref.project_id':project_id,
