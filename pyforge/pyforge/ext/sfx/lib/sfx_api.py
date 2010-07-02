@@ -109,7 +109,7 @@ class SFXProjectApi(object):
     def create(self, user, neighborhood, shortname, short_description='No description'):
         with self._connect() as conn:
             ug_name = self._unix_group_name(neighborhood, shortname)
-            log.info('Creating project %s', ug_name)
+            log.info('%s creating project %s', user.username, ug_name)
             args = dict(
                 user_id=user.get_tool_data('sfx', 'userid'),
                 unix_group_name=ug_name,
@@ -135,6 +135,7 @@ class SFXProjectApi(object):
     def update(self, user, p):
         with self._connect() as conn:
             ug_name = p.get_tool_data('sfx', 'unix_group_name')
+            log.info('%s updating project %s', user.username, ug_name)
             if ug_name is None:
                 ug_name = self._unix_group_name(p.neighborhood, p.shortname)
                 p.set_tool_data('sfx', unix_group_name=ug_name)
@@ -145,7 +146,7 @@ class SFXProjectApi(object):
                 developers = [
                     pr.user.get_tool_data('sfx', 'userid')
                     for pr in roles_with_project_access('update', p)
-                    if pr.user is not None and pr.user.get_tool_data.get('sfx', 'userid') is not None ])
+                    if pr.user is not None and pr.user.get_tool_data('sfx', 'userid') is not None ])
             args['admins'] = args['developers']
             conn.request('PUT', self.project_path + '/' + ug_name, json.dumps(args))
             response = conn.getresponse()
@@ -154,6 +155,7 @@ class SFXProjectApi(object):
     def delete(self, user, p):
         with self._connect() as conn:
             ug_name = p.get_tool_data('sfx', 'unix_group_name')
+            log.info('%s deleting project %s', user.username, ug_name)
             if ug_name is None:
                 ug_name = self._unix_group_name(p.neighborhood, p.shortname)
                 p.set_tool_data('sfx', unix_group_name=ug_name)
