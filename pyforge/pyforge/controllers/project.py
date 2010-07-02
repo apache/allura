@@ -307,6 +307,13 @@ class ProjectController(object):
             return fp.read()
         return icon.filename
 
+    @expose()
+    def user_icon(self):
+        try:
+            return self.icon()
+        except exc.HTTPNotFound:
+            redirect(g.forge_static('images/user.png'))
+
     @expose('json:')
     def user_search(self,term=''):
         name_regex = re.compile('(?i)%s' % term)
