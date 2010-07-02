@@ -158,7 +158,7 @@ class ProjectAdminController(object):
         for sub in c.project.direct_subprojects:
             mounts.append({'ordinal':sub.ordinal,'sub':sub})
         for ac in c.project.app_configs:
-            if ac.load().installable:
+            if ac.tool_name != 'search':
                 ordinal = 'ordinal' in ac.options and ac.options['ordinal'] or 0
                 mounts.append({'ordinal':ordinal,'ac':ac})
         mounts = sorted(mounts, key=lambda e: e['ordinal'])

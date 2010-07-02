@@ -42,7 +42,8 @@
                              name="tool-${i}.mount_point"
                              class="mount_point"
                              value="${item['ac'].options.mount_point}"/>
-                      <div class="editable viewing span-15 last">
+                      <div py:if="has_project_access('tool')() and item['ac'].load().installable"
+                           class="editable viewing span-15 last">
                         <div class="viewer">${item['ac'].options.mount_label}</div>
                         <div class="editor">
                           <input type="text"
@@ -50,10 +51,13 @@
                                  value="${item['ac'].options.mount_label}"/>
                         </div>
                       </div>
-                      </form>
+                      <div py:if="not has_project_access('tool')() or not item['ac'].load().installable">
+                        ${item['ac'].options.mount_label}
+                      </div>
+                    </form>
                   </td>
                   <td>
-                    <a py:if="has_project_access('tool')()"
+                    <a py:if="has_project_access('tool')() and item['ac'].load().installable"
                        href="${item['ac'].options.mount_point}/"
                        class="ico-l">
                        <b class="ui-icon ui-icon-pencil"></b> <span>Edit</span>
