@@ -351,7 +351,7 @@ class AttachmentController(object):
         self.post = self.attachment.post
 
     @expose()
-    def index(self, delete=False, embed=False):
+    def index(self, delete=False, embed=True):
         if request.method == 'POST':
             require(has_artifact_access('moderate', self.post))
             if delete: self.attachment.delete()

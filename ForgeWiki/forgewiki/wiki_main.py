@@ -605,7 +605,7 @@ class AttachmentController(object):
         self.page = self.attachment.page
 
     @expose()
-    def index(self, delete=False, embed=False):
+    def index(self, delete=False, embed=True):
         if request.method == 'POST':
             require(has_artifact_access('edit', self.page))
             if delete:
@@ -623,7 +623,7 @@ class AttachmentController(object):
         return self.filename
 
     @expose()
-    def thumb(self, embed=False):
+    def thumb(self, embed=True):
         with self.thumbnail.open() as fp:
             filename = fp.metadata['filename'].encode('utf-8')
             response.headers['Content-Type'] = ''

@@ -152,8 +152,6 @@ class NeighborhoodController(object):
             filename = fp.metadata['filename'].encode('utf-8')
             response.headers['Content-Type'] = ''
             response.content_type = fp.content_type.encode('utf-8')
-            response.headers.add('Content-Disposition',
-                                     'attachment;filename=%s' % filename)
             return fp.read()
         return icon.filename
 
@@ -302,8 +300,6 @@ class ProjectController(object):
             filename = fp.metadata['filename'].encode('utf-8')
             response.headers['Content-Type'] = ''
             response.content_type = fp.content_type.encode('utf-8')
-            response.headers.add('Content-Disposition',
-                                     'attachment;filename=%s' % filename)
             return fp.read()
         return icon.filename
 
@@ -337,7 +333,7 @@ class ScreenshotController(object):
         self.filename = filename
 
     @expose()
-    def index(self, embed=False):
+    def index(self, embed=True):
         screenshot = M.ProjectFile.query.find({'metadata.project_id':c.project._id, 'metadata.category':'screenshot', 'filename':self.filename}).first()
         with screenshot.open() as fp:
             filename = fp.metadata['filename'].encode('utf-8')
@@ -350,7 +346,7 @@ class ScreenshotController(object):
         return self.filename
 
     @expose()
-    def thumb(self, embed=False):
+    def thumb(self, embed=True):
         thumb = M.ProjectFile.query.find({'metadata.project_id':c.project._id, 'metadata.category':'screenshot_thumb', 'metadata.filename':self.filename}).first()
         with thumb.open() as fp:
             filename = fp.metadata['filename'].encode('utf-8')
@@ -635,8 +631,6 @@ class AwardController(object):
             filename = fp.metadata['filename'].encode('utf-8')
             response.headers['Content-Type'] = ''
             response.content_type = fp.content_type.encode('utf-8')
-            response.headers.add('Content-Disposition',
-                                     'attachment;filename=%s' % filename)
             return fp.read()
         return icon.filename
 
@@ -694,8 +688,6 @@ class GrantController(object):
             filename = fp.metadata['filename'].encode('utf-8')
             response.headers['Content-Type'] = ''
             response.content_type = fp.content_type.encode('utf-8')
-            response.headers.add('Content-Disposition',
-                                     'attachment;filename=%s' % filename)
             return fp.read()
         return icon.filename
 

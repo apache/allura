@@ -111,8 +111,6 @@ class ForumController(DiscussionController):
             filename = fp.metadata['filename'].encode('utf-8')
             response.headers['Content-Type'] = ''
             response.content_type = fp.content_type.encode('utf-8')
-            response.headers.add('Content-Disposition',
-                                     'attachment;filename=%s' % filename)
             return fp.read()
         return self.discussion.icon.filename
 

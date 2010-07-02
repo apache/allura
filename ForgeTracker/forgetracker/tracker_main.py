@@ -865,7 +865,7 @@ class AttachmentController(object):
         self.ticket = self.attachment.ticket
 
     @expose()
-    def index(self, delete=False, embed=False):
+    def index(self, delete=False, embed=True):
         if request.method == 'POST':
             require(has_artifact_access('write', self.ticket))
             if delete:
@@ -875,7 +875,7 @@ class AttachmentController(object):
             redirect(request.referer)
         with self.attachment.open() as fp:
             filename = fp.metadata['filename'].encode('utf-8')
-            response.headers['Content-Type'] = ''
+            response.headers['Content-Type'] = fp.content_type.encode('utf-8')
             response.content_type = fp.content_type.encode('utf-8')
             if not embed:
                 response.headers.add('Content-Disposition',
@@ -884,7 +884,7 @@ class AttachmentController(object):
         return self.filename
 
     @expose()
-    def thumb(self, embed=False):
+    def thumb(self, embed=True):
         with self.thumbnail.open() as fp:
             filename = fp.metadata['filename'].encode('utf-8')
             response.headers['Content-Type'] = ''
