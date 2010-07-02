@@ -48,7 +48,7 @@
           <div class="listed last gravatar sm">
             <b>Developers:</b>
             <a href="${u.url()}" py:for="u in c.project.users()">
-              ${gravatar(u.preferences.email_address, size=24, title=u.display_name)}
+              ${gravatar(u, size=24)}
             </a>
           </div>
         </div>

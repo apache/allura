@@ -169,7 +169,30 @@
     <input type="submit" name="$name" value="$value"/><br/>
   </py:def>
 
-  <py:def function="gravatar(email, title=None, **kw)">
+  <py:def function="gravatar(user, **kw)">
+    <img py:if="user.preferences.email_address and 'size' in kw"
+         src="${g.gravatar(user.preferences.email_address, default=g.url('/u/'+user.username.replace('_', '-')+'/user_icon'), **kw)}"
+         alt="${user.display_name}"
+         title="${user.display_name}"
+         height="${kw['size']}"
+         width="${kw['size']}"/>
+    <img py:if="user.preferences.email_address and 'size' not in kw"
+         src="${g.gravatar(user.preferences.email_address, default=g.url('/u/'+user.username.replace('_', '-')+'/user_icon'), **kw)}"
+         alt="${user.display_name}"
+         title="${user.display_name}"/>
+    <img py:if="not user.preferences.email_address and 'size' in kw"
+         src="${'/u/'+user.username.replace('_', '-')+'/user_icon'}"
+         alt="${user.display_name}"
+         title="${user.display_name}"
+         height="${kw['size']}"
+         width="${kw['size']}"/>
+    <img py:if="not user.preferences.email_address and 'size' not in kw"
+         src="${'/u/'+user.username.replace('_', '-')+'/user_icon'}"
+         alt="${user.display_name}"
+         title="${user.display_name}"/>
+  </py:def>
+
+  <py:def function="email_gravatar(email, title=None, **kw)">
     <img py:if="email" src="${g.gravatar(email, **kw)}" alt="${title or email}" title="${title or email}"/>
     <img py:if="not email and 'size' not in kw" src="${g.forge_static('images/user.png')}" alt="${title}" title="${title}"/>
     <img py:if="not email and 'size' in kw" src="${g.forge_static('images/user.png')}" alt="${title}" title="${title}" width="${kw['size']}" height="${kw['size']}"/>

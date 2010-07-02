@@ -12,7 +12,7 @@
     <div class="row">
     	<div class="column grid_1 tcenter">
     		<p class="gravatar">
-                <a href="${value.author().url()}">${gravatar(value.author().preferences.email_address, title=value.author().display_name)}</a><br/>
+                <a href="${value.author().url()}">${gravatar(value.author())}</a><br/>
     			<a href="${value.author().url()}">${value.author().display_name}</a><br />${h.ago(value.timestamp)}
     		</p>
     	</div>
@@ -46,7 +46,7 @@
       <div class="reply">
       	<div class="column grid_1 tcenter">
       		<p class="gravatar">
-                ${gravatar(c.user.preferences.email_address, title=c.user.display_name)}<br/><br/>
+                ${gravatar(c.user)}<br/><br/>
       			<a href="${c.user.url()}">$c.user.display_name</a>
       		</p>
       	</div>

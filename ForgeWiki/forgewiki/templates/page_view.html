@@ -48,7 +48,7 @@
           <div class="gravatar sm">
             Authors:
             <a href="${author.url()}" py:for="author in page.authors()">
-              ${gravatar(author.preferences.email_address, size=16, title=author.display_name)}
+              ${gravatar(author, size=16)}
             </a>
           </div>
           <div py:if="page.attachments">

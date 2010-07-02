@@ -18,11 +18,11 @@
   ${Markup(g.markdown.convert(value.description()))}
   <p class="gravatar">
     <py:if test="value.user_url is not None">
-      <a href="${value.user_url}">${gravatar(value.user.email, title=value.user.name)}</a><br/>
+      <a href="${value.user_url}">${email_gravatar(value.user.email, title=value.user.name)}</a><br/>
       <a href="${value.user_url}">$value.user.name</a> (user)<br/>
     </py:if>
     <py:if test="value.user_url is None">
-      ${gravatar(value.user.email, title=value.user.name)}<br/>
+      ${email_gravatar(value.user.email, title=value.user.name)}<br/>
       $value.user.name<br/>
     </py:if>
   </p> 

@@ -11,11 +11,11 @@
   ${Markup(g.markdown.convert(value.message))}
   <p class="gravatar">
     <py:if test="value.author">
-      <a href="${value.author.url()}">${gravatar(value.author.preferences.email_address, title=value.author.display_name)}</a><br />
+      <a href="${value.author.url()}">${gravatar(value.author)}</a><br />
       <a href="${value.author.url()}">${value.author.display_name}</a><br />
     </py:if>
     <py:if test="not value.author">
-      ${gravatar(value.author_username)}<br/>
+      ${email_gravatar(value.author_username)}<br/>
       $value.author_username<br/>
     </py:if>
   </p>

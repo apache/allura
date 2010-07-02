@@ -19,22 +19,22 @@
   ${Markup(g.markdown.convert(value.message))}
   <p class="gravatar">
     <py:if test="value.author_url is not None">
-      <a href="${value.author_url}">${gravatar(value.author.email, title=value.author.name)}</a><br/>
+      <a href="${value.author_url}">${email_gravatar(value.author.email, title=value.author.name)}</a><br/>
       <a href="${value.author_url}">$value.author.name</a> (author)<br/>
     </py:if>
     <py:if test="value.author_url is None">
-      ${gravatar(value.author.email, title=value.author.name)}<br/>
+      ${email_gravatar(value.author.email, title=value.author.name)}<br/>
       $value.author.name (author)<br/>
     </py:if>
     ${h.ago(value.authored_datetime)}      
   </p> 
   <p py:if="value.committer != value.author" class="gravatar">
     <py:if test="value.committer_url is not None">
-      <a href="${value.committer_url}">${gravatar(value.committer.email, title=value.committer.name)}</a><br/>
+      <a href="${value.committer_url}">${email_gravatar(value.committer.email, title=value.committer.name)}</a><br/>
       <a href="${value.committer_url}">$value.committer.name</a> (committer)<br/>
     </py:if>
     <py:if test="value.committer_url is None">
-      ${gravatar(value.committer.email, title=value.committer.name)}<br/>
+      ${email_gravatar(value.committer.email, title=value.committer.name)}<br/>
       $value.committer.name (committer)<br/>
     </py:if>
     ${h.ago(value.committed_datetime)}      

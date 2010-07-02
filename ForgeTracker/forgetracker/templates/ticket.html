@@ -61,7 +61,7 @@
             <div id="sidebar-right" class="column grid_4 fright">
               <div class="listed">
                 <b>Created by:</b>
-                  ${gravatar(ticket.reported_by.preferences.email_address, size=16, title=ticket.reported_by.display_name)}
+                  ${gravatar(ticket.reported_by, size=16)}
                   <a href="${ticket.reported_by.url()}">${ticket.reported_by.display_name}</a>
                   <hr/>
                   <b>Created Time:</b> ${h.ago(ticket.created_date)}
@@ -72,7 +72,7 @@
                   <span class="viewer">
                     <b>Assigned to:</b>
                     <span class="ticket-assigned-to" py:if="ticket.assigned_to_id">
-                      ${gravatar(ticket.assigned_to.preferences.email_address, size=16)} <a href="${ticket.assigned_to.url()}">${ticket.assigned_to_name()}</a>
+                      ${gravatar(ticket.assigned_to, size=16)} <a href="${ticket.assigned_to.url()}">${ticket.assigned_to_name()}</a>
                     </span>
                     <span py:if="not ticket.assigned_to_id" class="ticket-assigned-to">
                       ${ticket.assigned_to_name()}
