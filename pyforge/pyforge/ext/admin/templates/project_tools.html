@@ -64,8 +64,9 @@
                       <input type="hidden"
                              name="tool-${i}.mount_point"
                              value="${item['ac'].options.mount_point}"/>
+                      <input name="tool-${i}.delete" type="hidden" value="Delete"/>
                       <input py:if="has_project_access('tool')() and item['ac'].load().installable"
-                             name="tool-${i}.delete" type="submit" value="Delete"/>
+                             class="mount_delete" type="button" value="Delete"/>
                     </form>
                   </td>
                 </py:if>
@@ -96,8 +97,8 @@
                       <input type="hidden"
                              name="subproject-${i}.shortname"
                              value="${item['sub'].shortname}"/>
-                      <input py:if="has_project_access('tool')()"
-                             name="subproject-${i}.delete" type="submit" value="Delete"/>
+                      <input name="subproject-${i}.delete" type="hidden" value="Delete"/>
+                      <input py:if="has_project_access('tool')()" class="mount_delete" type="button" value="Delete"/>
                   </form>
                   </td>
                 </py:if>
@@ -127,11 +128,13 @@
           </table>
           <input type="button" id="save_order" value="Save Tool Order" style="display:none"
                  py:if="has_project_access('tool')()"/>
+          <div id="delete-confirm">Warning: This will destroy all data in this tool and is non reversable!</div>
         </div>
       </div>
     </div>
   </body>
   <script type="text/javascript">
+    var form_to_delete = null;
     var defaults = {
       <py:for each="tool in installable_tools">
         '$tool.name':{'default_label':'$tool.app.default_mount_label','default_mount':'$tool.app.default_mount_point'},
@@ -176,6 +179,29 @@
         $.post('update_mount_order', params, function(){
             location.reload();
         });
+      });
+      $("#delete-confirm").dialog({
+        resizable: false,
+        height:200,
+        modal: true,
+        autoOpen: false,
+        buttons: {
+          'Delete': function() {
+            form_to_delete.submit();
+            $(this).dialog('close');
+            form_to_delete = null;
+          },
+          Cancel: function() {
+            $(this).dialog('close');
+            form_to_delete = null;
+          }
+        }
+      });
+      $('input.mount_delete').click(function() {
+        form_to_delete = this.parentNode;
+        $('#delete-confirm').dialog('open');
+        $('div.ui-dialog-buttonpane > button:last').focus();
+        return false;
       });
     /*]]>*/
     </py:if>
