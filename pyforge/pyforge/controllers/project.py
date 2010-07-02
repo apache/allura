@@ -145,14 +145,17 @@ class NeighborhoodController(object):
 
     @expose()
     def icon(self):
-        with self.neighborhood.icon.open() as fp:
+        icon = self.neighborhood.icon
+        if not icon:
+            raise exc.HTTPNotFound
+        with icon.open() as fp:
             filename = fp.metadata['filename'].encode('utf-8')
             response.headers['Content-Type'] = ''
             response.content_type = fp.content_type.encode('utf-8')
             response.headers.add('Content-Disposition',
                                      'attachment;filename=%s' % filename)
             return fp.read()
-        return self.neighborhood.icon.filename
+        return icon.filename
 
     @expose()
     @without_trailing_slash
@@ -292,14 +295,17 @@ class ProjectController(object):
 
     @expose()
     def icon(self):
-        with c.project.icon.open() as fp:
+        icon = c.project.icon
+        if not icon:
+            raise exc.HTTPNotFound
+        with icon.open() as fp:
             filename = fp.metadata['filename'].encode('utf-8')
             response.headers['Content-Type'] = ''
             response.content_type = fp.content_type.encode('utf-8')
             response.headers.add('Content-Disposition',
                                      'attachment;filename=%s' % filename)
             return fp.read()
-        return c.project.icon.filename
+        return icon.filename
 
     @expose('json:')
     def user_search(self,term=''):
@@ -615,14 +621,17 @@ class AwardController(object):
 
     @expose()
     def icon(self):
-        with self.award.icon.open() as fp:
+        icon = self.award.icon
+        if not icon:
+            raise exc.HTTPNotFound
+        with icon.open() as fp:
             filename = fp.metadata['filename'].encode('utf-8')
             response.headers['Content-Type'] = ''
             response.content_type = fp.content_type.encode('utf-8')
             response.headers.add('Content-Disposition',
                                      'attachment;filename=%s' % filename)
             return fp.read()
-        return self.award.icon.filename
+        return icon.filename
 
     @expose()
     def grant(self, recipient=None):
@@ -671,14 +680,17 @@ class GrantController(object):
 
     @expose()
     def icon(self):
-        with self.award.icon.open() as fp:
+        icon = self.award.icon
+        if not icon:
+            raise exc.HTTPNotFound
+        with icon.open() as fp:
             filename = fp.metadata['filename'].encode('utf-8')
             response.headers['Content-Type'] = ''
             response.content_type = fp.content_type.encode('utf-8')
             response.headers.add('Content-Disposition',
                                      'attachment;filename=%s' % filename)
             return fp.read()
-        return self.award.icon.filename
+        return icon.filename
 
     @expose()
     def revoke(self):
