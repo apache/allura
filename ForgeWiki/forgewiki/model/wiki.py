@@ -77,6 +77,7 @@ class Page(VersionedArtifact):
     title=FieldProperty(str)
     text=FieldProperty(schema.String, if_missing='')
     viewable_by=FieldProperty([str])
+    deleted=FieldProperty(bool, if_missing=False)
 
     def commit(self):
         self.subscribe()

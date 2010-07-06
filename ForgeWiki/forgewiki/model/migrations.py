@@ -9,12 +9,10 @@ from flyway import Migration
 from pyforge.model import Thread, AppConfig, ArtifactReference
 from forgewiki.model import Page
 
-class V0(Migration):
-    '''Migrate Thread.artifact_id to Thread.artifact_reference'''
-    version = 0
+class WikiMigration(Migration):
 
     def __init__(self, *args, **kwargs):
-        super(V0, self).__init__(*args, **kwargs)
+        super(WikiMigration, self).__init__(*args, **kwargs)
         try:
             c.project
         except TypeError:
@@ -26,6 +24,11 @@ class V0(Migration):
             c.app.config = EmptyClass()
             c.app.config.options = EmptyClass()
             c.app.config.options.mount_point = None
+
+
+class V0(WikiMigration):
+    '''Migrate Thread.artifact_id to Thread.artifact_reference'''
+    version = 0
 
     def up(self):
         for pg in self.ormsession.find(Page):
@@ -53,5 +56,17 @@ class V0(Migration):
             mount_point=app_config.options.mount_point,
             artifact_type=pymongo.bson.Binary(pickle.dumps(art.__class__)),
             artifact_id=art._id))
-        
 
+
+class AddDeletedAttribute(WikiMigration):
+    version = 1
+
+    def up(self):
+        for pg in self.ormsession.find(Page):
+            pg.deleted = False
+        self.ormsession.flush()
+
+    def down(self):
+        for pg in self.ormsession.find(Page):
+            del pg.deleted
+        self.ormsession.flush()
