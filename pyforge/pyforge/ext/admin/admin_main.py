@@ -235,10 +235,6 @@ class ProjectAdminController(object):
             if labels != c.project.labels:
                 h.log_action(log, 'update project labels').info('')
                 c.project.labels = labels
-        show_download_button = kw.pop('show_download_button', '')
-        if bool(show_download_button) != c.project.show_download_button:
-            h.log_action(log, 'update project download button').info('')
-            c.project.show_download_button = bool(show_download_button)
 
         if icon is not None and icon != '':
             if h.supported_by_PIL(icon.type):
