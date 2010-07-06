@@ -33,6 +33,7 @@ class RootController(object):
     def _check_security(self):
         require(has_artifact_access('read'))
 
+    @with_trailing_slash
     @expose('forgediscussion.templates.index')
     def index(self):
         c.subscription_form = self.W.subscription_form

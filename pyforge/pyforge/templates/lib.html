@@ -67,7 +67,7 @@
 		<div id="nav_menu" class="row project" py:if="c.project">
 			<div class="column grid_9">
 				<ul class="ui-tab">
-					<li py:for="s in c.project.sitemap()" class="$s.className ${s.url[:-1] in request.url and 'active' or ''}">
+					<li py:for="s in c.project.sitemap()" class="$s.className ${s.url in request.url and 'active' or ''}">
 						<a py:if="s.url" href="$s.url" class="ico-l"><b class="ui-icon ui-icon-${s.ui_icon or 'admin'}"></b> <span>$s.label</span></a>
             <span py:if="not s.url">$s.label</span>
 					</li>

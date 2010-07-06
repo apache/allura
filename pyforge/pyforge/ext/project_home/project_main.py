@@ -5,6 +5,7 @@ from pprint import pformat
 import pkg_resources
 from pylons import c, request
 from tg import expose, redirect, flash
+from tg.decorators import with_trailing_slash
 from webob import exc
 from pymongo.bson import ObjectId
 
@@ -74,6 +75,7 @@ class ProjectHomeController(object):
         require(has_project_access('read'),
                 'Read access required')
 
+    @with_trailing_slash
     @expose('pyforge.ext.project_home.templates.project_index')
     def index(self):
         config = M.PortalConfig.current()
