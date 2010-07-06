@@ -277,17 +277,23 @@ class RootController(object):
 
     @with_trailing_slash
     @expose('forgewiki.templates.browse')
-    @validate(dict(sort=validators.UnicodeString(if_empty='alpha')))
-    def browse_pages(self, sort='alpha'):
+    @validate(dict(sort=validators.UnicodeString(if_empty='alpha'),
+                   show_deleted=validators.StringBool(if_empty=False)))
+    def browse_pages(self, sort='alpha', show_deleted=False):
         'list of all pages in the wiki'
         pages = []
         uv_pages = []
-        q = model.Page.query.find(dict(app_config_id=c.app.config._id, deleted=False))
+        criteria = dict(app_config_id=c.app.config._id)
+        can_delete = has_artifact_access('delete')()
+        show_deleted = show_deleted and can_delete
+        if not can_delete:
+            criteria['deleted'] = False
+        q = model.Page.query.find(criteria)
         if sort == 'alpha':
             q = q.sort('title')
         for page in q:
             recent_edit = page.history().first()
-            p = dict(title=page.title)
+            p = dict(title=page.title, deleted=page.deleted)
             if recent_edit:
                 p['updated'] = recent_edit.timestamp
                 p['user_label'] = recent_edit.author.display_name
@@ -301,7 +307,7 @@ class RootController(object):
         if sort == 'recent':
             pages.sort(reverse=True, key=lambda x:(x['updated']))
             pages = pages + uv_pages
-        return dict(pages=pages)
+        return dict(pages=pages, can_delete=can_delete, show_deleted=show_deleted)
 
     @with_trailing_slash
     @expose('forgewiki.templates.browse_tags')

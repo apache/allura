@@ -9,13 +9,16 @@
   <head>
     <meta content="text/html; charset=UTF-8" http-equiv="content-type" py:replace="''"/>
     <title>Browse Pages</title>
+    <style type="text/css">
+        tr.deleted a { color:red; }
+    </style>
   </head>
   <body>
     <h1 class="title">Browse Pages</h1>
     <div class="content">
       <div class="row">
         <div class="column grid_12">
-          View: <a href="?sort=recent">Recently Updated</a> | <a href="?sort=alpha">Alphabetical</a>
+          View: <a id="sort_recent" href="?sort=recent">Recently Updated</a> | <a id="sort_alpha" href="?sort=alpha">Alphabetical</a>
           <table id="forge_wiki_browse">
             <thead>
               <tr>
@@ -25,8 +28,8 @@
               </tr>
             </thead>
             <tbody>
-              <tr py:for="i, page in enumerate(pages)" class="${i%2 and 'even' or ''}">
-                <td><a href="../${page['title']}">${page['title']}</a></td>
+              <tr py:for="page in pages" class="${'deleted' if page.deleted else ''}">
+                <td><a href="../${page['title']+'/'+('?deleted=True' if page.deleted else '')}">${page['title']}</a></td>
                 <td py:if="'user_label' in page">${page['user_label']}</td>
                 <td py:if="'user_label' not in page"></td>
                 <td py:if="'updated' in page">${h.ago(page['updated'])}</td>
@@ -34,9 +37,14 @@
               </tr>
             </tbody>
           </table>
+          <a py:if="can_delete" id="toggle_deleted" href="#" style="display:none"><span/> deleted pages</a>
         </div>
       </div>
     </div>
   </body>
-
+  <script type="text/javascript">
+    var show_deleted = ${'true' if show_deleted else 'false'},
+        can_delete = ${'true' if can_delete else 'false'};
+  </script>
+  <script type="text/javascript" src="${g.app_static('js/browse.js')}"/>
 </html>
