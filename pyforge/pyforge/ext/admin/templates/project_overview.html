@@ -66,11 +66,19 @@
         <form py:if="has_project_access('update')()" method="POST" action="update" enctype="multipart/form-data">
             <ol>
                 <li>
-                    <label for="name">Name:</label>
-                    <div class="editable viewing">
-                        <div class="viewer">$c.project.name</div>
-                        <div class="editor"><input type="text" name="name" value="$c.project.name"/></div>
+                  <div class="row dual">
+                    <div class="column" style="margin-right:0">
+                      <label for="name"
+                             title="This is the publicly viewable name of the project, and will appear on project listings.
+                                   It should be what you want to see as the project title in search listing.">Name:</label>
                     </div>
+                    <div class="column grid_10" style="margin-left:0">
+                      <div class="editable viewing">
+                          <div class="viewer">$c.project.name</div>
+                          <div class="editor"><input type="text" name="name" value="$c.project.name"/></div>
+                      </div>
+                    </div>
+                  </div>
                 </li>
                 <hr class="clear clearfix" />
                 <li>
@@ -79,29 +87,37 @@
                 </li>
                 <hr class="clear clearfix" />
                 <li>
-                    <label for="category">Category:</label>
-                    <div class="editable viewing">
-                        <div class="viewer">${c.project.category and c.project.category.label or 'Uncategorized'}</div>
-                        <div class="editor">
-                            <select name="category">
-                              <option value="">Uncategorized</option>
-                              <py:for each="cat in categories">
-                                  <option value="$cat._id" py:if="c.project.category and c.project.category._id == cat._id" selected="selected">$cat.label</option>
-                                  <option value="$cat._id" py:if="not c.project.category or (c.project.category and c.project.category._id != cat._id)">$cat.label</option>
-                                  <py:for each="subcat in cat.subcategories">
-                                      <option value="$subcat._id" py:if="c.project.category and c.project.category._id == subcat._id" selected="selected">-- $subcat.label</option>
-                                      <option value="$subcat._id" py:if="not c.project.category or (c.project.category and c.project.category._id != subcat._id)">-- $subcat.label</option>
-                                  </py:for>
-                              </py:for>
-                            </select>
-                        </div>
+                  <div class="row dual">
+                    <div class="column" style="margin-right:0">
+                      <label for="category" title="This will determine which pages you appear under in the SourceForge Directory.">Category:</label>
                     </div>
+                    <div class="column grid_10" style="margin-left:0">
+                      <div class="editable viewing">
+                          <div class="viewer">${c.project.category and c.project.category.label or 'Uncategorized'}</div>
+                          <div class="editor">
+                              <select name="category">
+                                <option value="">Uncategorized</option>
+                                <py:for each="cat in categories">
+                                    <option value="$cat._id" py:if="c.project.category and c.project.category._id == cat._id" selected="selected">$cat.label</option>
+                                    <option value="$cat._id" py:if="not c.project.category or (c.project.category and c.project.category._id != cat._id)">$cat.label</option>
+                                    <py:for each="subcat in cat.subcategories">
+                                        <option value="$subcat._id" py:if="c.project.category and c.project.category._id == subcat._id" selected="selected">-- $subcat.label</option>
+                                        <option value="$subcat._id" py:if="not c.project.category or (c.project.category and c.project.category._id != subcat._id)">-- $subcat.label</option>
+                                    </py:for>
+                                </py:for>
+                              </select>
+                            </div>
+                        </div>
+                      </div>
+                  </div>
                 </li>
                 <hr class="clear clearfix" />
                 <li>
                   <div class="row dual">
                     <div class="column" style="margin-right:0">
-                      <label for="icon">Icon:</label>
+                      <label for="icon"
+                             title="This is the icon that will appear on your project header and search results.
+                                   For best appearance, use a square image with a transparent background.">Icon:</label>
                     </div>
                     <div class="column grid_10" style="margin-left:0">
                       <div class="editable viewing">
@@ -118,17 +134,27 @@
                 </li>
                 <hr class="clear clearfix" />
                 <li>
-                    <label for="short_description">Summary:</label>
-                    <div class="editable viewing">
-                        <div class="viewer"><pre data-prompt="Write a brief summary of your project">$c.project.short_description</pre></div>
-                        <div class="editor multiline"><textarea name="short_description">$c.project.short_description</textarea></div>
+                  <div class="row dual">
+                    <div class="column" style="margin-right:0">
+                      <label for="short_description"
+                             title="This is a text only project summary which will be included on search results and project listings.
+                                   Typically this is one or two sentences describing the project, and is plain text.">Summary:</label>
                     </div>
+                    <div class="column grid_10" style="margin-left:0">
+                      <div class="editable viewing">
+                          <div class="viewer"><pre data-prompt="Write a brief summary of your project">$c.project.short_description</pre></div>
+                          <div class="editor multiline"><textarea name="short_description">$c.project.short_description</textarea></div>
+                      </div>
+                    </div>
+                  </div>
                 </li>
                 <hr class="clear clearfix" />
                 <li>
                   <div class="row dual">
                     <div class="column" style="margin-right:0">
-                      <label for="description">Home Page:</label>
+                      <label for="description"
+                             title='This is the contents of the front page, and uses the markdown/HTML syntax similar to the wiki.
+                                   This can be as long as you need it to be.'>Home Page:</label>
                     </div>
                     <div class="column grid_10" style="margin-left:0">
                       ${c.markdown_editor.display(name='description',value=c.project.description)}
@@ -137,11 +163,19 @@
                 </li>
                 <hr class="clear clearfix" />
                 <li>
-                    <label for="labels">Tags:</label>
-                    <div class="editable viewing">
-                        <div class="viewer">${len(c.project.labels) and ', '.join(c.project.labels) or "No Tags"}</div>
-                        <div class="editor">${c.label_edit.display(name='labels',value=c.project.labels)}</div>
+                  <div class="row dual">
+                    <div class="column" style="margin-right:0">
+                      <label for="labels"
+                             title="Free-form tags to describe your project.
+                                   These can be used to search for similar projects.">Tags:</label>
                     </div>
+                    <div class="column grid_10" style="margin-left:0">
+                      <div class="editable viewing">
+                          <div class="viewer">${len(c.project.labels) and ', '.join(c.project.labels) or "No Tags"}</div>
+                          <div class="editor">${c.label_edit.display(name='labels',value=c.project.labels)}</div>
+                      </div>
+                    </div>
+                  </div>
                 </li>
                 <hr class="clear clearfix" />
                 <!-- <li>

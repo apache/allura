@@ -1,4 +1,10 @@
 (function($) {
+    // Setup label help text
+    $('label[title]').each(function(){
+        var $this = $(this);
+        $this.append('<a href="#" class="help_icon ico"><b class="ui-icon ui-icon-help"></b></a>');
+        $this.tooltip({showURL: false});
+    });
     // Setup title-pane widgets
     $('.title-pane .title').click(function(e) {
         e.preventDefault();

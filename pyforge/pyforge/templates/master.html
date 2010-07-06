@@ -18,6 +18,7 @@
     <py:for each="blob in g.resource_manager.emit('head_js')">$blob</py:for>
     <?python neighborhood = 'neighborhood' in locals() and neighborhood or None ?>
     <link rel="stylesheet" type="text/css" href="${g.forge_static('css/forge/jquery-ui-1.8rc3.custom.css')}" />
+    <link rel="stylesheet" type="text/css" href="${g.forge_static('css/forge/jquery.tooltip.css')}" />
     <link py:if="not c.project and not neighborhood" rel="stylesheet" type="text/css" media="screen" href="${tg.url('/nf/site_style.css')}" />
     <link py:if="c.project" rel="stylesheet" type="text/css" media="screen" href="${c.project.neighborhood.url()+'site_style.css'}" />
     <link py:if="neighborhood" rel="stylesheet" type="text/css" media="screen" href="${neighborhood.url()+'site_style.css'}" />
@@ -62,6 +63,7 @@
     <script type="text/javascript" src="${g.forge_static('js/jquery-1.4.2.min.js')}"/>
     <script type="text/javascript" src="${g.forge_static('js/jquery-ui-1.8rc3.custom.min.js')}"></script>
     <script type="text/javascript" src="${g.forge_static('js/jquery.cookie.js')}"></script>
+    <script type="text/javascript" src="${g.forge_static('js/jquery.tooltip.js')}"></script>
     <script type="text/javascript" src="${g.forge_static('js/pyforge-base.js')}"/>
     <py:for each="blob in g.resource_manager.emit('body_js')">$blob</py:for>
   </body>

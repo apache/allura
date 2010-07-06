@@ -1,0 +1,45 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+                    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:py="http://genshi.edgewall.org/"
+      xmlns:xi="http://www.w3.org/2001/XInclude">
+  <xi:include href="master.html" />
+  <head>
+    <meta content="text/html; charset=UTF-8" http-equiv="content-type" py:replace="''"/>
+    <title>$app.config.options.mount_point Admin Options</title>
+  </head>
+
+  <body>
+    <h1 class="title">$app.config.options.mount_point Admin Options</h1>
+    <div class="content">
+      <div class="row">
+        <div class="column grid_12">
+          <form method="POST" action="update_options">
+            <ol>
+              <li>
+                <div class="row dual">
+                  <div class="column" style="margin-right:0">
+                    <label for="show_download_button"
+                           title="Select this if you want a download button on the project's home page to give users an easy path to download the latest release.
+                                 The download button will appear in the upper left corner of your projects home page.">Show Download:</label>
+                  </div>
+                  <div class="column grid_10" style="margin-left:0">
+                    <div class="editable viewing">
+                        <div class="viewer">$c.project.show_download_button</div>
+                        <div class="editor"><input name="show_download_button" type="checkbox" checked="${c.project.show_download_button or None}"/></div>
+                    </div>
+                  </div>
+                </div>
+              </li>
+              <hr class="clear clearfix" />
+              <li>
+                  <label>&nbsp;</label>
+                  <input type="submit" value="Save"/>
+              </li>
+            </ol>
+        </form>
+      </div>
+    </div>
+  </div>
+  </body>
+</html>
