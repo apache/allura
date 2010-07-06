@@ -108,8 +108,7 @@ class TestAttachment(TestController):
                 alink = str(alink['href'])
                 break
         r = self.app.get(alink)
-        assert 'Content-Disposition' in r.headers
-        assert r.headers['Content-Disposition'] == 'attachment;filename=test.txt'
+        assert 'Content-Disposition' not in r.headers
         r = self.app.post(self.post_link + 'attach',
                           upload_files=[('file_info', 'test.o12', 'HiThere!')])
         r = self.app.post(alink, params=dict(delete='on'))
