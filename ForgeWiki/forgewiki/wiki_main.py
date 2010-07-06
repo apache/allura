@@ -139,7 +139,8 @@ class ForgeWikiApp(Application):
             pages = [
                 SitemapEntry(p.title, p.url())
                 for p in model.Page.query.find(dict(
-                        app_config_id=self.config._id)) ]
+                        app_config_id=self.config._id,
+                        deleted=False)) ]
             return [
                 SitemapEntry(menu_id, '.')[SitemapEntry('Pages')[pages]] ]
 
@@ -153,7 +154,7 @@ class ForgeWikiApp(Application):
         related_pages = []
         related_urls = []
         page = request.path_info.split(self.url)[-1].split('/')[-2]
-        page = model.Page.query.find(dict(app_config_id=self.config._id,title=page)).first()
+        page = model.Page.query.find(dict(app_config_id=self.config._id, title=page, deleted=False)).first()
         links = [SitemapEntry('Create New Page', c.app.url, ui_icon='plus', className='add_wiki_page'),
 	             SitemapEntry('')]
         if page:
@@ -204,7 +205,7 @@ class ForgeWikiApp(Application):
         self.upsert_root(root_page_name)
 
     def upsert_root(self, new_root):
-        p = model.Page.query.get(app_config_id=self.config._id, title=new_root)
+        p = model.Page.query.get(app_config_id=self.config._id, title=new_root, deleted=False)
         if p is None:
             with h.push_config(c, app=self):
                 p = model.Page.upsert(new_root)
@@ -281,7 +282,7 @@ class RootController(object):
         'list of all pages in the wiki'
         pages = []
         uv_pages = []
-        q = model.Page.query.find(dict(app_config_id=c.app.config._id))
+        q = model.Page.query.find(dict(app_config_id=c.app.config._id, deleted=False))
         if sort == 'alpha':
             q = q.sort('title')
         for page in q:
@@ -316,7 +317,7 @@ class RootController(object):
         #         if tag.tag not in page_tags:
         #             page_tags[tag.tag] = []
         #         page_tags[tag.tag].append(artifact)
-        q = model.Page.query.find(dict(app_config_id=c.app.config._id))
+        q = model.Page.query.find(dict(app_config_id=c.app.config._id, deleted=False))
         for page in q:
             if page.labels:
                 for label in page.labels:
@@ -364,8 +365,8 @@ class RootController(object):
 
 class PageController(object):
 
-    def __init__(self, title):
-        exists = model.Page.query.get(app_config_id=c.app.config._id, title=title)
+    def __init__(self, title, deleted=False):
+        exists = model.Page.query.get(app_config_id=c.app.config._id, title=title, deleted=deleted)
         self.title = title
         self.page = model.Page.upsert(title)
         self.attachment = AttachmentsController(self.page)
@@ -496,7 +497,7 @@ class PageController(object):
         else: tags = []
         name_conflict = None
         if self.page.title != title:
-            name_conflict = model.Page.query.find(dict(app_config_id=c.app.config._id, title=title)).first()
+            name_conflict = model.Page.query.find(dict(app_config_id=c.app.config._id, title=title, deleted=False)).first()
             if name_conflict:
                 flash('There is already a page named "%s".' % title, 'error')
             else:
@@ -650,7 +651,7 @@ class RootRestController(RestController):
     @expose('json:')
     def get_all(self, **kw):
         page_titles = []
-        pages = model.Page.query.find(dict(app_config_id=c.app.config._id))
+        pages = model.Page.query.find(dict(app_config_id=c.app.config._id, deleted=False))
         for page in pages:
             if has_artifact_access('read', page)():
                 page_titles.append(page.title)
@@ -658,7 +659,7 @@ class RootRestController(RestController):
 
     @expose('json:')
     def get_one(self, title, **kw):
-        page = model.Page.query.get(app_config_id=c.app.config._id, title=title)
+        page = model.Page.query.get(app_config_id=c.app.config._id, title=title, deleted=False)
         if page is None:
             raise exc.HTTPNotFound, title
         require(has_artifact_access('read', page))
@@ -667,7 +668,7 @@ class RootRestController(RestController):
     @h.vardec
     @expose()
     def post(self, title, **post_data):
-        exists = model.Page.query.find(dict(app_config_id=c.app.config._id, title=title)).first()
+        exists = model.Page.query.find(dict(app_config_id=c.app.config._id, title=title, deleted=False)).first()
         if not exists:
             require(has_artifact_access('create'))
         page = model.Page.upsert(title)
