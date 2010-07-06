@@ -35,8 +35,8 @@ class ForgeExtension(markdown.Extension):
         if self._use_wiki:
             md.treeprocessors['wiki'] = ClassifyWikiLinks(md)
         md.postprocessors['macro'] = macro_engine.postprocessor
-        md.postprocessors['rewrite_relative_links'] = RelativeLinkRewriter()
         md.postprocessors['sanitize_html'] = HTMLSanitizer()
+        md.postprocessors['rewrite_relative_links'] = RelativeLinkRewriter()
 
 class RelativeLinkRewriter(markdown.postprocessors.Postprocessor):
 
