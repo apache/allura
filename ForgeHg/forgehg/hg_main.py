@@ -209,11 +209,16 @@ class RootController(object):
                             in_use=in_use,
                             to_name=to_name or '')
             else:
-                to_project.install_app(
-                    'Hg', to_name,
-                    cloned_from_project_id=from_project._id,
-                    cloned_from_repo_id=from_repo._id)
-                redirect('/'+to_project_name+'/'+to_name+'/')
+                try:
+                    to_project.install_app(
+                        'Hg', to_name,
+                        cloned_from_project_id=from_project._id,
+                        cloned_from_repo_id=from_repo._id)
+                    redirect('/'+to_project_name+'/'+to_name+'/')
+                except Exception, ex:
+                    flash(str(ex), 'error')
+                    redirect(request.referer)
+
 
 class Refs(object):
 
