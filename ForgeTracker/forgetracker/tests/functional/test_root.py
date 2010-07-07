@@ -273,6 +273,40 @@ class TestFunctionalController(TestController):
         ticket_view = self.new_ticket(summary='test custom fields', **kw)
         assert 'Priority:' in ticket_view
         assert 'normal' in ticket_view
+    
+    def test_custom_field_update_comments(self):
+        spec = """[{"label":"Number","type":"number","options":""}]"""
+        spec = urllib.quote_plus(spec)
+        r = self.app.post('/admin/bugs/set_custom_fields', { 'custom_fields': spec, 'status_names': 'aa bb cc', 'milestone_names':'' })
+        kw = {'custom_fields._number':''}
+        ticket_view = self.new_ticket(summary='test custom fields', **kw)
+        assert '<strong>custom_field__number</strong>:  --&gt;' not in ticket_view
+        ticket_view = self.app.post('/bugs/1/update_ticket',{
+            'summary':'zzz',
+            'description':'bbb',
+            'status':'ccc',
+            'milestone':'aaa',
+            'assigned_to':'',
+            'tags':'',
+            'tags_old':'',
+            'labels':'',
+            'labels_old':'',
+            'custom_fields._number':''
+        }).follow()
+        assert '<strong>custom_field__number</strong>:  --&gt;' not in ticket_view
+        ticket_view = self.app.post('/bugs/1/update_ticket',{
+            'summary':'zzz',
+            'description':'bbb',
+            'status':'ccc',
+            'milestone':'aaa',
+            'assigned_to':'',
+            'tags':'',
+            'tags_old':'',
+            'labels':'',
+            'labels_old':'',
+            'custom_fields._number':4
+        }).follow()
+        assert '<strong>custom_field__number</strong>:  --&gt;' in ticket_view
 
     def test_milestone_names(self):
         self.app.post('/admin/bugs/set_custom_fields', {

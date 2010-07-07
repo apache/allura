@@ -767,9 +767,12 @@ class TicketController(object):
                 value = False
             else:
                 value = ''
-            changes['custom_field_%s'%cf.name] =self.ticket.custom_fields.get(cf.name)
-            self.ticket.custom_fields[cf.name] = value
-            changes['custom_field_%s'%cf.name] =self.ticket.custom_fields.get(cf.name)
+            if cf.type == 'number' and value == '':
+                value = None
+            if value is not None:
+                changes['custom_field_%s'%cf.name] =self.ticket.custom_fields.get(cf.name)
+                self.ticket.custom_fields[cf.name] = value
+                changes['custom_field_%s'%cf.name] =self.ticket.custom_fields.get(cf.name)
         thread = self.ticket.discussion_thread()
         latest_post = thread.posts and thread.posts[-1] or None
         post = None
