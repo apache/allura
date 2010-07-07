@@ -18,7 +18,7 @@ DST_CRED=dict(
     api_key='a4a88c67179137053d70',
     secret_key='fcc48a0c31459e99a88cc42cdd7f908fad78b283ca30a86caac1ab65036ff71fc195a18e56534dc5')
 DST_SERVER='http://sourceforge.net/'
-DST_TOOL='/rest/p/forge/tickets/'
+DST_TOOL='/rest/p/allura/tickets/'
 
 FAKE_TICKET={
     u'created_date': u'2010-03-08 17:29:42.802000',
@@ -43,7 +43,7 @@ def main():
         **DST_CRED)
     src = TicketAPI(src_cli, SRC_TOOL)
     dst = TicketAPI(dst_cli, DST_TOOL)
-    for ticket in src.iter_tickets(check=True):
+    for ticket in src.iter_tickets(min_ticket=3, check=True):
         print 'Migrating ticket %s:\n%s' % (ticket['ticket_num'], ticket)
         print 'Create ticket on %s' % DST_SERVER
         dst.create_ticket(ticket)

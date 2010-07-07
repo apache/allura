@@ -3,7 +3,7 @@ import json
 import hashlib
 import urllib
 import urllib2
-from urlparse import urljoin
+from urlparse import urljoin, urlparse
 from datetime import datetime
 
 from tg.controllers.util import smart_str
@@ -16,13 +16,16 @@ class RestClient(object):
         self._api_key = api_key
         self._secret_key = secret_key
         self.base_uri = base_uri
+        self.Request = self._request_class()
+        self.RedirectHandler = self._redirect_handler_class()
+        redirect_handler = self.RedirectHandler()
         if http_username:
             pw_mgr = urllib2.HTTPPasswordMgrWithDefaultRealm()
             pw_mgr.add_password(None, base_uri, http_username, http_password)
             auth_handler = urllib2.HTTPBasicAuthHandler(pw_mgr)
-            self._opener = urllib2.build_opener(auth_handler)
+            self._opener = urllib2.build_opener(redirect_handler, auth_handler)
         else:
-            self._opener = urllib2.build_opener()
+            self._opener = urllib2.build_opener(redirect_handler)
 
     def sign_request(self, path, params):
         if hasattr(params, 'items'): params = params.items()
@@ -41,23 +44,50 @@ class RestClient(object):
         return params
 
     def request(self, method, path, **params):
-        req = Request(self, method, path, **params)
+        req = self.Request(method, path, params)
         fp = self._opener.open(req)
         return json.loads(fp.read())
 
-class Request(urllib2.Request):
+    def _redirect_handler_class(self):
+        client = self
+        class RedirectHandler(urllib2.HTTPRedirectHandler):
+            def redirect_request(self, req, fp, code, msg, headers, newurl):
+                m = req.get_method()
+                if (code in (301, 302, 303, 307) and m in ("GET", "HEAD")
+                    or code in (301, 302, 303) and m == "POST"):
+                        newurl = newurl.replace(' ', '%20')
+                        newheaders = dict((k,v) for k,v in req.headers.items()
+                                          if k.lower() not in ("content-length", "content-type")
+                                         )
+                        result = urlparse(newurl)
+                        print 'Redirect to %s' % result.path
+                        return client.Request(
+                            'GET', result.path,
+                            headers=newheaders,
+                            origin_req_host=req.get_origin_req_host(),
+                            unverifiable=True)
+                else:
+                        raise urllib2.HTTPError(req.get_full_url(), code, msg, headers, fp)
+        return RedirectHandler
 
-    def __init__(self, client, method, path, **params):
-        params = variabledecode.variable_encode(params, add_repetitions=False)
-        params = client.sign_request(path, params)
-        self._method = method.upper()
-        urllib2.Request.__init__(
-            self, 
-            urljoin(client.base_uri, path),
-            data=urlencode(params))
-
-    def get_method(self):
-        return self._method
+    def _request_class(self):
+        client = self
+        class Request(urllib2.Request):
+            def __init__(self, method, path, params=None, **kwargs):
+                if params is None: params = {}
+                params = variabledecode.variable_encode(params, add_repetitions=False)
+                params = client.sign_request(path, params)
+                self._method = method.upper()
+                if self._method == 'GET':
+                    url = urljoin(client.base_uri, path) + '?' + urlencode(params)
+                    data=None
+                else:
+                    url = urljoin(client.base_uri, path)
+                    data=urlencode(params)
+                urllib2.Request.__init__(self, url, data=data, **kwargs)
+            def get_method(self):
+                return self._method
+        return Request
 
 def generate_smart_str(params):
     if isinstance(params, dict): iterparams = params.iteritems()
