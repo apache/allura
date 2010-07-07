@@ -43,9 +43,9 @@
         .end()
         .find('.editor')
         .find('input, select, textarea').each(function(i){
-            // we only want one submit button for each editor even if there are multiple inputs
-            // make sure the visually important one is first!
-            var editor = $(this).closest('.editor');
+            var $this = $(this);
+            var editor = $this.closest('.editor');
+            $this.attr('original_val', this.value);
             if(!$('a.cancel_btn', editor).length){
                 var save_btns = $('<div class="save_holder"><input type="submit" value="Save"/><a href="#" class="cancel_btn">Cancel</a></div>');
                 if(editor.hasClass('multiline')){
@@ -59,7 +59,7 @@
                 }
                 else{
                     editor.append($('<table class="holder_table"><tr/></table>')
-                                .append($('<td/>').append($(this)))
+                                .append($('<td/>').append($this))
                                 .append($('<td class="save_controls"/>').append($(save_btns)))
                     );
                 }
@@ -68,8 +68,11 @@
         .end()
         .find('.cancel_btn').click(function(e){
             $(this).closest('.editable')
-                      .addClass('viewing')
-                      .removeClass('editing');
+                        .addClass('viewing')
+                        .removeClass('editing')
+                        .find('input, select, textarea').each(function(){
+                            $(this).val($(this).attr('original_val'));
+                        });
             return false;
         });
 })(jQuery);
