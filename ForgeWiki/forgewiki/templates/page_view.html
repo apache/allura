@@ -24,9 +24,9 @@
   </head>
   
   <body class="wiki-${(page.title).replace(' ','_')}">
-    <h1 class="title">$page.title</h1>
+    <h1 class="title">$page.title <span py:if="page.deleted">(deleted)</span></h1>
 		<div class="actions">
-		  <py:if test="c.user and c.user != c.user.anonymous()">
+		  <py:if test="c.user and c.user != c.user.anonymous() and not page.deleted">
 			<a href="edit" class="btn ico-l"><b class="ui-icon ui-icon-pencil"></b> <span>Edit</span></a>
       </py:if>
 			<a href="history" class="btn ico-l"><b class="ui-icon ui-icon-search"></b> <span>History</span></a>

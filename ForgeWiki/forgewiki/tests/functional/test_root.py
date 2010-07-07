@@ -301,3 +301,14 @@ class TestRootController(TestController):
         req.forms[1]['title'].value = 'new_title'
         req.forms[1].submit()
         assert 'The resource was found at http://localhost/p/test/wiki/new_title/;' in self.app.get('/p/test/wiki/')
+
+    def test_page_delete(self):
+        self.app.get('/wiki/aaa/update?title=aaa&text=&tags=&tags_old=&labels=&labels_old=&viewable_by-0.id=all')
+        self.app.get('/wiki/bbb/update?title=bbb&text=&tags=&tags_old=&labels=&labels_old=&viewable_by-0.id=all')
+        response = self.app.get('/wiki/browse_pages/')
+        assert 'aaa' in response
+        assert 'bbb' in response
+        self.app.get('/wiki/bbb/delete')
+        response = self.app.get('/wiki/browse_pages/')
+        assert 'aaa' in response
+        assert '?deleted=True">bbb' in response

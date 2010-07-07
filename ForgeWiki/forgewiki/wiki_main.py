@@ -5,6 +5,7 @@ import re
 from pprint import pformat
 from mimetypes import guess_type
 from urllib import urlencode, unquote
+from datetime import datetime
 
 # Non-stdlib imports
 import Image
@@ -26,7 +27,7 @@ from pyforge.lib import helpers as h
 from pyforge.lib.search import search
 from pyforge.lib.decorators import audit, react
 from pyforge.lib.security import require, has_artifact_access
-from pyforge.model import ProjectRole, User, TagEvent, UserTags, ArtifactReference, Tag, Feed
+from pyforge.model import ProjectRole, User, TagEvent, UserTags, ArtifactReference, Tag, Feed, ArtifactLink
 from pyforge.model import Discussion, Thread, Post, Attachment, Subscriptions
 from pyforge.controllers import AppDiscussionController
 from pyforge.lib import widgets as w
@@ -422,18 +423,30 @@ class PageController(object):
     @without_trailing_slash
     @expose('forgewiki.templates.page_edit')
     def edit(self):
-        if self.page.version == 1:
-            require(has_artifact_access('create', self.page))
-        else:
+        page_exists = self.page
+        if page_exists:
             require(has_artifact_access('edit', self.page))
             if 'all' not in self.page.viewable_by and c.user.username not in self.page.viewable_by:
                 raise exc.HTTPForbidden(detail="You may not view this page.")
+        else:
+            require(has_artifact_access('create'))
+            self.page = self.fake_page()
         c.markdown_editor = W.markdown_editor
         c.user_select = ffw.ProjectUserSelect()
         c.attachment_add = W.attachment_add
         c.attachment_list = W.attachment_list
         c.label_edit = W.label_edit
-        return dict(page=self.page)
+        return dict(page=self.page, page_exists=page_exists)
+
+    @without_trailing_slash
+    @expose()
+    def delete(self):
+        require(has_artifact_access('delete', self.page))
+        ArtifactLink.remove(self.page)
+        self.page.deleted = True
+        suffix = " {dt.hour}:{dt.minute}:{dt.second} {dt.day}-{dt.month}-{dt.year}".format(dt=datetime.utcnow())
+        self.page.title += suffix
+        redirect('../'+self.page.title+'/?deleted=True')
 
     @without_trailing_slash
     @expose('forgewiki.templates.page_history')

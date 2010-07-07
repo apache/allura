@@ -24,6 +24,7 @@
     <h1 class="title">Edit $page.title</h1>
 		<div class="actions">
 			<a href="." class="btn ico-l"><b class="ui-icon ui-icon-search"></b> <span>View Page</span></a>
+			<a py:if="page_exists and has_artifact_access('delete', page)()" href="./delete" class="btn ico-l"><b class="ui-icon ui-icon-trash"></b> <span>Delete</span></a>
 		</div>
     <div class="content">
       <div class="row">
@@ -49,7 +50,7 @@
 				</div>
 			</div>
 				</li>
-            <py:if test="has_artifact_access('edit_page_permissions', page)()">
+            <py:if test="not page_exists or has_artifact_access('edit_page_permissions', page)()">
 				<li>
 					<label>Viewable by:</label>
 					<span py:for="j, u in enumerate(page.viewable_by)" class="removable">
@@ -70,8 +71,8 @@
 			</ol>
           </form>
           <hr class="clear clearfix" />
-          ${c.attachment_list.display(attachments=list(page.attachments), edit_mode=has_artifact_access('edit', page)())}
-          <py:if test="has_artifact_access('edit', page)()">
+          ${c.attachment_list.display(attachments=list(page.attachments), edit_mode=page_exists and has_artifact_access('edit', page)())}
+          <py:if test="page_exists and has_artifact_access('edit', page)()">
             ${c.attachment_add.display(action=page.url() + 'attach', name='file_info')}
           </py:if>
         </div>
