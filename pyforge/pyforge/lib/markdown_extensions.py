@@ -29,7 +29,7 @@ class ForgeExtension(markdown.Extension):
         md.preprocessors.add('macro', macro_engine.preprocessor, '<html_block')
         md.treeprocessors['br'] = LineOrientedTreeProcessor(md)
         md.inlinePatterns['oembed'] = OEmbedPattern(r'\[embed#(.*?)\]')
-        md.inlinePatterns['autolink_1'] = AutolinkPattern(r'(http(?:s?)://[a-zA-Z0-9./\-_0]+)')
+        md.inlinePatterns['autolink_1'] = AutolinkPattern(r'(http(?:s?)://[a-zA-Z0-9./\-_0%?&=+]+)')
         md.inlinePatterns['artifact'] = ArtifactLinkPattern(
             self.core_artifact_link, md, self._use_wiki)
         if self._use_wiki:

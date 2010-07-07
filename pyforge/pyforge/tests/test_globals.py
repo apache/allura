@@ -30,6 +30,10 @@ def test_markdown():
     assert '<a href=' in g.markdown.convert('# Foo!\n[Root]')
     assert '<a href=' not in g.markdown.convert('# Foo!\n[Rooted]')
     assert '<a href=' in g.markdown.convert('This is http://sf.net')
+    tgt = 'http://everything2.com/?node=nate+oostendorp'
+    s = g.markdown.convert('This is %s' % tgt)
+    assert s == '<p>This is <a href="%s">%s</a></p>' % (tgt, tgt), s
+    assert '<a href=' in g.markdown.convert('This is http://sf.net')    
     # assert '<a href=' in g.markdown_wiki.convert('This is a WikiPage')
     # assert '<a href=' not in g.markdown_wiki.convert('This is a WIKIPAGE')
     assert '<br' in g.markdown.convert('Multi\nLine'), g.markdown.convert('Multi\nLine')
