@@ -500,6 +500,8 @@ class PageController(object):
             if name_conflict:
                 flash('There is already a page named "%s".' % title, 'error')
             else:
+                if self.page.title == c.app.root_page_name:
+                    model.Globals.query.get(app_config_id=c.app.config._id).root = title
                 self.page.title = title
         self.page.text = text
         if labels:

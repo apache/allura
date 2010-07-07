@@ -294,3 +294,10 @@ class TestRootController(TestController):
                 assert 'notfound' in link.get('class', '')
                 found_links +=1
         assert found_links == 4, 'Wrong number of links found'
+
+    def test_home_rename(self):
+        assert 'The resource was found at http://localhost/p/test/wiki/Home/;' in self.app.get('/p/test/wiki/')
+        req = self.app.get('/p/test/wiki/Home/edit')
+        req.forms[1]['title'].value = 'new_title'
+        req.forms[1].submit()
+        assert 'The resource was found at http://localhost/p/test/wiki/new_title/;' in self.app.get('/p/test/wiki/')
