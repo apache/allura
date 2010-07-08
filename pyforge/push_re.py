@@ -24,7 +24,7 @@ def main():
     raw_input('When this is done, create a JIRA ticket with the same contents...')
     raw_input('Now link the two tickets...')
     newforge_num = raw_input('What is the newforge ticket number? ')
-    command('git', 'tag', '-a', tag, '-m', '[#%s] - Push to RE' % newforge_num)
+    command('git', 'tag', '-a', '-m', '[#%s] - Push to RE' % newforge_num, tag, 'master')
     command('git', 'push', 'origin', 'master')
     command('git', 'push', 'live', 'master')
     command('git', 'push', '--tags', 'origin')
