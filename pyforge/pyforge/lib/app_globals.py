@@ -64,14 +64,6 @@ class Globals(object):
             self.mock_amq = MockAMQ()
             self._publish = self.mock_amq.publish
 
-        # Setup markdown
-        self.markdown = markdown.Markdown(
-            extensions=['codehilite', ForgeExtension(), 'tables'],
-            output_format='html4')
-        self.markdown_wiki = markdown.Markdown(
-            extensions=['codehilite', ForgeExtension(wiki=True), 'tables'],
-            output_format='html4')
-
         # Setup OEmbed
         cp = RawConfigParser()
         cp.read(config['oembed.config'])
@@ -111,6 +103,30 @@ class Globals(object):
         else:
             lexer = pygments.lexers.get_lexer_by_name(lexer)
         return pygments.highlight(text, lexer, self.pygments_formatter)
+
+    @property
+    def markdown(self):
+        from .custom_middleware import environ
+        md = environ.get('allura.markdown')
+        if md is None:
+            environ['allura.markdown'] = md = markdown.Markdown(
+                extensions=['codehilite', ForgeExtension(), 'tables'],
+                output_format='html4')
+        else:
+            md.reset()
+        return md
+
+    @property
+    def markdown_wiki(self):
+        from .custom_middleware import environ
+        md = environ.get('allura.markdown')
+        if md is None:
+            environ['allura.markdown'] = md = markdown.Markdown(
+                extensions=['codehilite', ForgeExtension(wiki=True), 'tables'],
+                output_format='html4')
+        else:
+            md.reset()
+        return md
 
     @property
     def resource_manager(self):

@@ -4,6 +4,7 @@ from logging import getLogger
 from pprint import pformat
 from itertools import islice, chain
 
+import markdown
 from pylons import c,g
 import pysolr
 
@@ -12,7 +13,7 @@ from .markdown_extensions import ForgeExtension
 
 # from pyforge.tasks.search import AddArtifacts, DelArtifacts
 
-re_SHORTLINK = re.compile(ForgeExtension.core_artifact_link)
+# re_SHORTLINK = re.compile(ForgeExtension.core_artifact_link)
 re_SOLR_ERROR = re.compile(r'<pre>(org.apache.lucene[^:]+: )?(?P<text>[^<]+)</pre>')
 
 log = getLogger(__name__)
@@ -109,9 +110,10 @@ def search_artifact(atype, q, history=False, rows=10, **kw):
         raise ValueError(text)
 
 def find_shortlinks(text):
-    from pyforge import model as M
-    for mo in re_SHORTLINK.finditer(text):
-        obj = M.ArtifactLink.lookup(mo.group(1))
-        if obj is None: continue
-        yield obj
+    md = markdown.Markdown(
+        extensions=['codehilite', ForgeExtension(), 'tables'],
+        output_format='html4')
+    md.convert(text)
+    link_index = md.inlinePatterns['forge.alink'].parent.alinks
+    return [ link for link in link_index.itervalues() if link is not None]
 

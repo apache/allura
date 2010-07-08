@@ -74,6 +74,91 @@ class ArtifactLink(MappedClass):
         mapper(cls).remove(dict(_id=artifact.index_id()))
 
     @classmethod
+    def _parse_link(cls, s):
+        s = s.strip()
+        if s.startswith('['):
+            s = s[1:]
+        if s.endswith(']'):
+            s = s[:-1]
+        parts = s.split(':')
+        if len(parts) == 3:
+            return dict(
+                project=parts[0],
+                app=parts[1],
+                artifact=parts[2])
+        elif len(parts) == 2:
+            return dict(
+                project=None,
+                app=parts[0],
+                artifact=parts[1])
+        elif len(parts) == 1:
+            return dict(
+                project=None,
+                app=None,
+                artifact=parts[0])
+        else:
+            return None
+
+
+    @classmethod
+    def lookup_links(cls, links):
+        from .project import Project
+        # Parse all the links
+        parsed_links = dict(
+            (link, cls._parse_link(link))
+            for link in links)
+        # Categorize links by the artifact (shortlink)
+        links_by_artifact=  defaultdict(list)
+        for link, parsed in parsed_links.iteritems():
+            links_by_artifact[parsed['artifact']].append(link)
+        # Classify potential matches by the artifact (shortlink)
+        potential_matches_by_artifact = defaultdict(list)
+        for al in cls.query.find(dict(
+                link={'$in':links_by_artifact.keys()})):
+            potential_matches_by_artifact[al.link].append(al)
+        # Lookup all projects in this hierarchy
+        projects_by_shortname = dict(
+            (p.shortname, p) for p in Project.query.find(dict(deleted=False)))
+        result = dict((link, None) for link in links)
+        for link, pl in parsed_links.iteritems():
+            potential_matches = potential_matches_by_artifact[pl['artifact']]
+            if not potential_matches: continue
+            # Determine projects to search for this shortlink
+            if pl['project'] is None:
+                if c.project:
+                    project_ids = [p._id for p in c.project.parent_iter()]
+                else:
+                    continue
+            else:
+                if pl['project'].startswith('/'):
+                    shortname = pl['project'][1:]
+                elif c.project:
+                    shortname = os.path.join(c.project.shortname, pl['project'])
+                    shortname = os.path.normpath(shortname)
+                else:
+                    shortname = pl['project']
+                p = projects_by_shortname.get(shortname)
+                if p is None: continue
+                project_ids = [p._id]
+            # Determine if there are any matches
+            for pid in project_ids:
+                potential_pid_matches = [
+                    m for m in potential_matches if m.project_id == pid ]
+                match = None
+                for m in potential_pid_matches:
+                    if pl['app'] in (None, m.mount_point):
+                        match = m
+                        break
+                if match:
+                    result[link] = match
+                    break
+                for m in potential_pid_matches:
+                    if pl['app'] == m.tool_name:
+                        result[link] = match
+                        break
+        return result
+
+    @classmethod
     def lookup(cls, link):
         from .project import Project
         #

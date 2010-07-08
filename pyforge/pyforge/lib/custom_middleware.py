@@ -29,9 +29,8 @@ class ForgeMiddleware(object):
     within the TGController.__call__ method because it depends on pylons.c and pylons.g'''
 
     def __init__(self, app):
-        from pyforge.lib.app_globals import Globals
         self.app = app
-        self.g = Globals()
+        self.g = pylons.g._current_obj()
 
     def __call__(self, environ, start_response):
         _environ.set_environment(environ)

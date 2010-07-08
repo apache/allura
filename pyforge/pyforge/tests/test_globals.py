@@ -39,7 +39,7 @@ def test_markdown():
     assert '<br' in g.markdown.convert('Multi\nLine'), g.markdown.convert('Multi\nLine')
     assert '<br' not in g.markdown.convert('Multi\n\nLine')
     r = g.markdown.convert('[[projects]]')
-    assert '<div class="border card">' in r
+    assert '<div class="border card">' in r, r
     r = g.markdown.convert('[[include ref=Root id=foo]]')
     assert '<div id="foo">' in r, r
     assert 'href="../foo"' in g.markdown.convert('[My foo](foo)')
@@ -78,8 +78,9 @@ def test_oembed():
     for url in urls:
         result = g.markdown.convert('[embed#(100%%,400)%s]' % url)
         assert ('cannot be embedded' not in result or 'HTTP Error' in result)
-    assert 'cannot be embedded' in g.markdown.convert(
+    s = g.markdown.convert(
         '[embed#http://www.amazon.com/Essential-SQLAlchemy-Rick-Copeland/dp/0596516142/]')
+    assert 'cannot be embedded' in s, s
     assert 'cannot be embedded' in g.markdown.convert(
         '[embed#http://www.clearspring.com/widgets/480fbb38b51cb736]')
 
