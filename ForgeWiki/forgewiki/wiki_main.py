@@ -460,6 +460,17 @@ class PageController(object):
         redirect('../'+self.page.title+'/?deleted=True')
 
     @without_trailing_slash
+    @expose()
+    def undelete(self):
+        self.page = model.Page.query.get(app_config_id=c.app.config._id, title=self.title, deleted=True)
+        if not self.page:
+            raise exc.HTTPNotFound
+        require(has_artifact_access('delete', self.page))
+        self.page.deleted = False
+        ArtifactLink.add(self.page)
+        redirect('./edit')
+
+    @without_trailing_slash
     @expose('forgewiki.templates.page_history')
     def history(self):
         if not self.page:
