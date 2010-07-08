@@ -397,7 +397,7 @@ class TestFunctionalController(TestController):
         error_form = form.submit()
         error_message = error_form.html.find('div', {'class':'error'})
         assert error_message
-        assert (error_message.string == 'Please enter a value' or \
+        assert (error_message.string == 'You must provide a Name' or \
                 error_message.string == 'Missing value')
         assert error_message.findPreviousSibling('textarea').get('name') == 'ticket_form.summary'
         # set a summary, submit, and check for success
@@ -420,7 +420,7 @@ class TestFunctionalController(TestController):
         error_form = form.submit()
         error_message = error_form.html.find('div', {'class':'error'})
         assert error_message
-        assert error_message.string == 'Please enter a value'
+        assert error_message.string == 'You must provide a Name'
         assert error_message.findPreviousSibling('textarea').get('name') == 'edit_ticket_form.summary'
         # set a summary, submit, and check for success
         error_form.forms[2]['edit_ticket_form.summary'] = new_summary

@@ -52,7 +52,7 @@ class GenericTicketForm(ew.SimpleForm):
         fields = [
             ffw.AutoResizeTextarea(name='summary', label='Name',
                 attrs={'style':'height:1em; width: 425px'},
-                validator=fev.UnicodeString(not_empty=True)),
+                validator=fev.UnicodeString(not_empty=True, messages={'empty':"You must provide a Name"})),
             ffw.MarkdownEdit(label='Description',name='description'),
             ew.SingleSelectField(name='status', label='Status',
                 options=lambda: model.Globals.for_current_tracker().status_names.split()),
