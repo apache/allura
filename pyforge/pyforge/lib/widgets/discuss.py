@@ -5,6 +5,7 @@ import ew
 from pyforge.lib import validators as V
 from pyforge.lib import helpers as h
 from pyforge.lib.widgets import form_fields as ffw
+from pyforge.lib.widgets import forms as ff
 from pyforge import model as M
 
 # Discussion forms
@@ -21,11 +22,16 @@ class FlagPost(ew.SimpleForm):
     template='genshi:pyforge.lib.widgets.templates.flag_post'
     submit_text=None
 
-class AttachPost(ew.SimpleForm):
+class AttachPost(ff.ForgeForm):
     submit_text='Attach File'
     enctype='multipart/form-data'
-    class fields(ew.WidgetsList):
-        file_info=ew.InputField(field_type='file')
+
+    @property
+    def fields(self):
+        fields = [
+            ew.InputField(name='file_info', field_type='file', label='New Attachment')
+        ]
+        return fields
 
 class ModeratePosts(ew.SimpleForm):
     template='genshi:pyforge.lib.widgets.templates.moderate_posts'

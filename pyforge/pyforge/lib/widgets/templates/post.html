@@ -12,20 +12,26 @@
     <div class="row">
     	<div class="column grid_1 tcenter">
     		<p class="gravatar">
-                <a href="${value.author().url()}">${gravatar(value.author())}</a><br/>
-    			<a href="${value.author().url()}">${value.author().display_name}</a><br />${h.ago(value.timestamp)}
+          <a href="${value.author().url()}">${gravatar(value.author())}</a><br/>
+          <a href="${value.author().url()}">${value.author().display_name}</a><br />${h.ago(value.timestamp)}
     		</p>
     	</div>
     	<div class="column grid_8">
-		<div class="display_post">
-                  <b py:if="show_subject">$value.subject<br/></b>
-                  ${Markup(g.markdown.convert(value.text))}
-                </div>
+        <div class="display_post">
+          <b py:if="show_subject">$value.subject<br/></b>
+          ${Markup(g.markdown.convert(value.text))}
+        </div>
       	<div class="edit_post_form" style="display:none" py:if="has_artifact_access('post', value.thread)()">
       	  ${widgets.edit_post.display(value=value, submit_text='Edit Post', action=value.url())}
       	</div>
-        <div py:for="att in value.attachments">
-          ${widgets.attachment.display(post=value, value=att)}
+        <div class="add_attachment_form" style="display:none; clear: both; overflow: auto;" py:if="has_artifact_access('post', value.thread)()">
+            ${widgets.attach_post.display(value=value, action=value.url() + 'attach')}
+        </div>
+        <div py:if="value.attachments">
+          <strong>Attachments</strong>
+          <div py:for="att in value.attachments">
+            ${widgets.attachment.display(post=value, value=att)}
+          </div>
         </div>
     	</div>
     	<div class="options">
@@ -38,30 +44,31 @@
       	<div py:if="has_artifact_access('moderate', value)()" py:strip="True">
       	  ${widgets.moderate_post.display(value=value, action=value.url()+'moderate')}
       	</div>
+    		<a href="#" class="ico-l add_attachment" py:if="has_artifact_access('post', value.thread)()"><b class="ui-icon ui-icon-document"></b> <span>Attach</span></a><br/>
     	</div>
     </div>
     <ul>
       <li>
-    <div class="row reply_post_form" style="display:none" py:if="has_artifact_access('post', value.thread)()">
-      <div class="reply">
-      	<div class="column grid_1 tcenter">
-      		<p class="gravatar">
+        <div class="row reply_post_form" style="display:none" py:if="has_artifact_access('post', value.thread)()">
+          <div class="reply">
+            <div class="column grid_1 tcenter">
+              <p class="gravatar">
                 ${gravatar(c.user)}<br/><br/>
-      			<a href="${c.user.url()}">$c.user.display_name</a>
-      		</p>
-      	</div>
-      	<div class="column grid_8">
-          ${widgets.edit_post.display(
+                <a href="${c.user.url()}">$c.user.display_name</a>
+              </p>
+            </div>
+            <div class="column grid_8">
+              ${widgets.edit_post.display(
                 submit_text='Post Reply',
                 action=value.url()+'reply',
                 value=dict(
-                    text='',
-                    subject=value.reply_subject()),
-                )}
+                text='',
+                subject=value.reply_subject()),
+              )}
+            </div>
+          </div>
         </div>
-      </div>
-    </div>
-    </li>
+      </li>
     </ul>
   </div>
   
@@ -75,9 +82,6 @@
   </div>
   </div>-->
 
-  <div class="add_attachment_form push-${3+indent}  span-${16-indent} last clear" style="display:none" py:if="has_artifact_access('post', value.thread)()">
-      ${widgets.attach_post.display(value=value, action=value.url() + 'attach')}
-  </div>
   <div class="promote_to_thread_form push-${3+indent} span-${16-indent} last clear" style="display:none"
        py:if="has_artifact_access('moderate', value.thread)() and 'promote_to_thread' in widgets and not supress_promote">
     ${widgets.promote_to_thread.display(value=value, action=value.url()+'moderate')}

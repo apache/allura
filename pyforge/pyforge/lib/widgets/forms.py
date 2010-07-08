@@ -5,8 +5,9 @@ import ew
 
 class ForgeForm(ew.SimpleForm):
     template='genshi:pyforge.lib.widgets.templates.forge_form'
-    params=['submit_text']
+    params=['submit_text','enctype']
     submit_text = 'Save'
+    enctype=None
 
     def display_field_by_idx(self, idx, ignore_errors=False):
         field = self.fields[idx]

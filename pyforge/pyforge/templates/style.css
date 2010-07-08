@@ -852,7 +852,7 @@ ul.ui-tab li a {
 #comment ul ul ul li {margin-right: 0 !important;}
 #comment ul .reply {border-top-width: 0; margin-top: 0 !important; background-color: #fff;overflow:auto;padding-bottom:30px;}
 
-#comment ul .row {margin: 0;}
+#comment ul .row {margin: 0; min-height: 130px;}
 #comment ul ul .row {
 	border: 3px solid ${color6};
 	border-radius: 0;
