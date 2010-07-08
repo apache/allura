@@ -28,13 +28,9 @@ class ForgeExtension(markdown.Extension):
     def extendMarkdown(self, md, md_globals):
         md.registerExtension(self)
         self.forge_processor = ForgeProcessor(self._use_wiki, md)
-        # Replace bare newlines in <p>s with <br/>s
-        md.treeprocessors['br'] = LineOrientedTreeProcessor(md)
-        # The forge_processor handles artifact links, macros, and [embed#*] links
-        for k,v in self.forge_processor.inline_patterns.iteritems():
-            md.inlinePatterns[k] = v
+        self.forge_processor.install()
         md.inlinePatterns['autolink_1'] = AutolinkPattern(r'(http(?:s?)://[a-zA-Z0-9./\-_0%?&=+]+)')
-        md.postprocessors['forge'] = self.forge_processor.postprocessor
+        md.treeprocessors['br'] = LineOrientedTreeProcessor(md)
         # Sanitize HTML
         md.postprocessors['sanitize_html'] = HTMLSanitizer()
         # Rewrite all relative links that don't start with . to have a '../' prefix
@@ -50,18 +46,25 @@ class ForgeProcessor(object):
     placeholder = '%s:%%s:%%.4d\x03' % placeholder_prefix
     placeholder_re = re.compile('%s:(\\w+):(\\d+)\x03' % placeholder_prefix)
 
-    def __init__(self, pattern, use_wiki = False, markdown=None):
-        self.pattern = pattern
+    def __init__(self, use_wiki = False, markdown=None):
         self.markdown = markdown
         self._use_wiki = use_wiki
         self.inline_patterns = {
             'forge.alink' : ForgeInlinePattern(self, self.alink_pattern),
             'forge.macro' : ForgeInlinePattern(self, self.macro_pattern)}
         self.postprocessor = ForgePostprocessor(self)
+        self.tree_processor = ForgeTreeProcessor(self)
         self.reset()
         self.artifact_re = re.compile(r'((.*?):)?((.*?):)?(.+)')
         self.macro_re = re.compile(self.alink_pattern)
         self.oembed_re = re.compile('embed#(.*)')
+
+    def install(self):
+        for k,v in self.inline_patterns.iteritems():
+            self.markdown.inlinePatterns[k] = v
+        if self._use_wiki:
+            self.markdown.treeprocessors['forge'] = self.tree_processor
+        self.markdown.postprocessors['forge'] = self.postprocessor
 
     def store(self, raw):
         if self.macro_re.match(raw):
@@ -70,10 +73,11 @@ class ForgeProcessor(object):
         elif self.oembed_re.match(raw): stash = 'oembed'
         elif self.artifact_re.match(raw): stash = 'artifact'
         else: return raw
-        if raw.startswith('oembed'):
-            import pdb; pdb.set_trace()
-        placeholder = self.placeholder % (stash, len(self.stash[stash]))
-        self.stash[stash].append(raw)
+        return self._store(stash, raw)
+
+    def _store(self, stash_name, value):
+        placeholder = self.placeholder % (stash_name, len(self.stash[stash_name]))
+        self.stash[stash_name].append(value)
         return placeholder
 
     def lookup(self, stash, id):
@@ -84,7 +88,9 @@ class ForgeProcessor(object):
     def compile(self):
         from pyforge import model as M
         self.alinks = M.ArtifactLink.lookup_links(self.stash['artifact'])
+        self.alinks.update(M.ArtifactLink.lookup_links(self.stash['link']))
         self.stash['artifact'] = map(self._expand_alink, self.stash['artifact'])
+        self.stash['link'] = map(self._expand_link, self.stash['link'])
         self.stash['macro'] = map(macro.parse, self.stash['macro'])
         self.stash['oembed'] = map(self._expand_oembed, self.stash['oembed'])
 
@@ -92,7 +98,8 @@ class ForgeProcessor(object):
         self.stash = dict(
             artifact=[],
             macro=[],
-            oembed=[])
+            oembed=[],
+            link=[])
         self.compiled = False
 
     def _expand_alink(self, link):
@@ -105,6 +112,13 @@ class ForgeProcessor(object):
                 link, link)
         else:
             return link
+
+    def _expand_link(self, link):
+        reference = self.alinks[link]
+        if not reference:
+            return 'notfound'
+        else:
+            return ''
 
     def _expand_oembed(self, link):
         href = link.split('#', 1)[-1]
@@ -159,6 +173,20 @@ class ForgePostprocessor(markdown.postprocessors.Postprocessor):
             return self.parent.lookup(mo.group(1), int(mo.group(2)))
         return self.parent.placeholder_re.sub(repl, text)
 
+class ForgeTreeProcessor(markdown.treeprocessors.Treeprocessor):
+    '''This flags intra-wiki links that point to non-existent pages'''
+
+    def __init__(self, parent):
+        self.parent = parent
+
+    def run(self, root):
+        for node in root.getiterator('a'):
+            href = node.get('href')
+            if not href: continue
+            if '/' in href: continue
+            classes = node.get('class', '').split() + [ self.parent._store('link', href) ]
+            node.attrib['class'] = ' '.join(classes)
+        return root
 
 class RelativeLinkRewriter(markdown.postprocessors.Postprocessor):
 
