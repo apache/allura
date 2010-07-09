@@ -82,7 +82,7 @@ class TestRootController(TestController):
         assert not response.html.find('a',{'href':'./revert?version=2'})
 
     def test_page_diff(self):
-        self.app.get('/wiki/TEST/')
+        self.app.get('/wiki/TEST/update?title=TEST&text=sometext&tags=&tags_old=&labels=&labels_old=&viewable_by-0.id=all')
         self.app.get('/wiki/TEST/revert?version=1')
         response = self.app.get('/wiki/TEST/')
         assert 'Unsubscribe' in response
@@ -90,12 +90,12 @@ class TestRootController(TestController):
         assert 'TEST' in response
 
     def test_page_raw(self):
-        self.app.get('/wiki/TEST/')
+        self.app.get('/wiki/TEST/update?title=TEST&text=sometext&tags=&tags_old=&labels=&labels_old=&viewable_by-0.id=all')
         response = self.app.get('/wiki/TEST/raw')
         assert 'TEST' in response
 
     def test_page_revert_no_text(self):
-        self.app.get('/wiki/TEST/')
+        self.app.get('/wiki/TEST/update?title=TEST&text=&tags=&tags_old=&labels=&labels_old=&viewable_by-0.id=all')
         response = self.app.get('/wiki/TEST/revert?version=1')
         assert 'TEST' in response
 
@@ -125,13 +125,13 @@ class TestRootController(TestController):
         assert 'TEST' in response
 
     def test_new_attachment(self):
-        self.app.get('/wiki/TEST/')
+        self.app.get('/wiki/TEST/update?title=TEST&text=sometext&tags=&tags_old=&labels=&labels_old=&viewable_by-0.id=all')
         content = file(__file__).read()
         response = self.app.post('/wiki/TEST/attach', upload_files=[('file_info', 'test_root.py', content)]).follow()
         assert 'test_root.py' in response
 
     def test_new_text_attachment_content(self):
-        self.app.get('/wiki/TEST/')
+        self.app.get('/wiki/TEST/update?title=TEST&text=sometext&tags=&tags_old=&labels=&labels_old=&viewable_by-0.id=all')
         file_name = 'test_root.py'
         file_data = file(__file__).read()
         upload = ('file_info', file_name, file_data)
@@ -140,7 +140,7 @@ class TestRootController(TestController):
         assert_true(download.body == file_data)
 
     def test_new_image_attachment_content(self):
-        self.app.get('/wiki/TEST/')
+        self.app.get('/wiki/TEST/update?title=TEST&text=sometext&tags=&tags_old=&labels=&labels_old=&viewable_by-0.id=all')
         file_name = 'neo-icon-set-454545-256x350.png'
         file_path = os.path.join(pyforge.__path__[0],'public','nf','images',file_name)
         file_data = file(file_path).read()
@@ -181,8 +181,9 @@ class TestRootController(TestController):
         response = self.app.get('/wiki/TEST/').follow()
         assert 'Edit TEST' in response
         assert 'Related Pages' not in response
-        self.app.get('/wiki/aaa/')
-        self.app.get('/wiki/bbb/')
+        self.app.get('/wiki/TEST/update?title=TEST&text=sometext&tags=&tags_old=&labels=&labels_old=&viewable_by-0.id=all')
+        self.app.get('/wiki/aaa/update?title=aaa&text=&tags=&tags_old=&labels=&labels_old=&viewable_by-0.id=all')
+        self.app.get('/wiki/bbb/update?title=bbb&text=&tags=&tags_old=&labels=&labels_old=&viewable_by-0.id=all')
         
         # Fake out updating the pages since reactor doesn't work with tests
         app = search_main.SearchApp
@@ -225,7 +226,7 @@ class TestRootController(TestController):
         self.app.get('/wiki/TEST/', status=403)
 
     def test_show_discussion(self):
-        self.app.get('/wiki/TEST/')
+        self.app.get('/wiki/TEST/update?title=TEST&text=sometext&tags=&tags_old=&labels=&labels_old=&viewable_by-0.id=all')
         wiki_page = self.app.get('/wiki/TEST/')
         assert wiki_page.html.find('div',{'id':'new_post_holder'})
         options_admin = self.app.get('/admin/wiki/options')
@@ -237,7 +238,7 @@ class TestRootController(TestController):
         assert not wiki_page2.html.find('div',{'id':'new_post_holder'})
 
     def test_show_left_bar(self):
-        self.app.get('/wiki/TEST/')
+        self.app.get('/wiki/TEST/update?title=TEST&text=sometext&tags=&tags_old=&labels=&labels_old=&viewable_by-0.id=all')
         wiki_page = self.app.get('/wiki/TEST/')
         assert wiki_page.html.find('ul',{'class':'sidebarmenu'})
         options_admin = self.app.get('/admin/wiki/options')
@@ -251,7 +252,7 @@ class TestRootController(TestController):
         assert wiki_page3.html.find('ul',{'class':'sidebarmenu'})
 
     def test_show_right_bar(self):
-        self.app.get('/wiki/TEST/')
+        self.app.get('/wiki/TEST/update?title=TEST&text=sometext&tags=&tags_old=&labels=&labels_old=&viewable_by-0.id=all')
         wiki_page = self.app.get('/wiki/TEST/')
         assert wiki_page.html.find('div',{'id':'sidebar-right'})
         options_admin = self.app.get('/admin/wiki/options')

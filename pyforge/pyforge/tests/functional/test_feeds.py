@@ -35,6 +35,7 @@ class TestFeeds(TestController):
         self.app.get('/wiki/feed.atom')
 
     def test_wiki_page_feed(self):
+        self.app.get('/wiki/Root/update?title=Root&text=&tags=&tags_old=&labels=&labels_old=&viewable_by-0.id=all')
         self.app.get('/wiki/Root/feed.rss')
         self.app.get('/wiki/Root/feed.atom')
 

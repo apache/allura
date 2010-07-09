@@ -372,18 +372,21 @@ class RootController(object):
 
 class PageController(object):
 
-    def __init__(self, title, deleted=False):
-        exists = model.Page.query.get(app_config_id=c.app.config._id, title=title, deleted=deleted)
+    def __init__(self, title):
         self.title = title
-        self.page = model.Page.upsert(title)
-        self.attachment = AttachmentsController(self.page)
+        self.page = model.Page.query.get(app_config_id=c.app.config._id, title=title, deleted=False)
+        if self.page:
+            self.attachment = AttachmentsController(self.page)
         setattr(self, 'feed.atom', self.feed)
         setattr(self, 'feed.rss', self.feed)
-        if not exists:
-            self.page.viewable_by = ['all']
-            for u in ProjectRole.query.find({'name':'Admin'}).first().users_with_role():
-                self.page.subscribe(user=u)
-            redirect(c.app.url+title+'/edit')
+
+    def fake_page(self):
+        return dict(
+            title=self.title,
+            text='',
+            labels=[],
+            viewable_by=['all'],
+            attachments=[])
 
     def get_version(self, version):
         if not version: return self.page
@@ -399,8 +402,16 @@ class PageController(object):
 
     @with_trailing_slash
     @expose('forgewiki.templates.page_view')
-    @validate(dict(version=validators.Int(if_empty=None)))
-    def index(self, version=None):
+    @validate(dict(version=validators.Int(if_empty=None),
+                   deleted=validators.StringBool(if_empty=False)))
+    def index(self, version=None, deleted=False):
+        if deleted:
+            self.page = model.Page.query.get(app_config_id=c.app.config._id, title=self.title, deleted=True)
+            if not self.page:
+                raise exc.HTTPNotFound
+            require(has_artifact_access('delete', self.page)) # deleted pages can only be viewed by those with 'delete' permission
+        elif not self.page:
+            redirect(c.app.url+self.title+'/edit')
         require(has_artifact_access('read', self.page))
         c.thread = W.thread
         c.attachment_list = W.attachment_list
@@ -451,6 +462,8 @@ class PageController(object):
     @without_trailing_slash
     @expose('forgewiki.templates.page_history')
     def history(self):
+        if not self.page:
+            raise exc.HTTPNotFound
         require(has_artifact_access('read', self.page))
         pages = self.page.history()
         return dict(title=self.title, pages=pages)
@@ -458,6 +471,8 @@ class PageController(object):
     @without_trailing_slash
     @expose('forgewiki.templates.page_diff')
     def diff(self, v1, v2):
+        if not self.page:
+            raise exc.HTTPNotFound
         require(has_artifact_access('read', self.page))
         p1 = self.get_version(int(v1))
         p2 = self.get_version(int(v2))
@@ -467,6 +482,8 @@ class PageController(object):
     @without_trailing_slash
     @expose(content_type='text/plain')
     def raw(self):
+        if not self.page:
+            raise exc.HTTPNotFound
         require(has_artifact_access('read', self.page))
         return pformat(self.page)
 
@@ -478,6 +495,8 @@ class PageController(object):
             offset=validators.Int(if_empty=None),
             limit=validators.Int(if_empty=None)))
     def feed(self, since=None, until=None, offset=None, limit=None):
+        if not self.page:
+            raise exc.HTTPNotFound
         if request.environ['PATH_INFO'].endswith('.atom'):
             feed_type = 'atom'
         else:
@@ -496,6 +515,8 @@ class PageController(object):
     @without_trailing_slash
     @expose()
     def revert(self, version):
+        if not self.page:
+            raise exc.HTTPNotFound
         require(has_artifact_access('edit', self.page))
         orig = self.get_version(version)
         if orig:
@@ -511,6 +532,13 @@ class PageController(object):
                labels=None, labels_old=None,
                viewable_by=None,
                new_viewable_by=None,**kw):
+        if not self.page:
+            # the page doesn't exist yet, so create it
+            require(has_artifact_access('create'))
+            self.page = model.Page.upsert(self.title)
+            self.page.viewable_by = ['all']
+            for u in ProjectRole.query.find({'name':'Admin'}).first().users_with_role():
+                self.page.subscribe(user=u)
         require(has_artifact_access('edit', self.page))
         if tags: tags = tags.split(',')
         else: tags = []
@@ -551,6 +579,8 @@ class PageController(object):
     @without_trailing_slash
     @expose()
     def attach(self, file_info=None):
+        if not self.page:
+            raise exc.HTTPNotFound
         require(has_artifact_access('edit', self.page))
         filename = file_info.filename
         content_type = guess_type(filename)
@@ -592,6 +622,8 @@ class PageController(object):
     @expose()
     @validate(W.subscribe_form)
     def subscribe(self, subscribe=None, unsubscribe=None):
+        if not self.page:
+            raise exc.HTTPNotFound
         require(has_artifact_access('read'))
         if subscribe:
             Subscriptions.upsert().subscribe('direct', artifact=self.page)
