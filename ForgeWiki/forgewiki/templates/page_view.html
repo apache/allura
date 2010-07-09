@@ -30,7 +30,7 @@
 			<a href="edit" class="btn ico-l"><b class="ui-icon ui-icon-pencil"></b> <span>Edit</span></a>
           </py:if>
           <py:if test="page.deleted and has_artifact_access('delete', page)()">
-			<a href="undelete" class="btn ico-l"><b class="ui-icon ui-icon-trash"></b> <span>Undelete</span></a>
+			<a href="undelete" class="btn ico-l"><b class="ui-icon ui-icon-plusthick"></b> <span>Undelete</span></a>
           </py:if>
 			<a py:if="not page.deleted" href="history" class="btn ico-l"><b class="ui-icon ui-icon-search"></b> <span>History</span></a>
 		  <py:if test="c.user and c.user != c.user.anonymous()">
