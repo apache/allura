@@ -82,7 +82,7 @@ class ForgeProcessor(object):
 
     def lookup(self, stash, id):
         stash = self.stash.get(stash, [])
-        if id > len(stash): return ''
+        if id >= len(stash): return ''
         return stash[id]
 
     def compile(self):

@@ -80,6 +80,7 @@ class NeighborhoodController(object):
         return ProjectController(), remainder
 
     @expose('pyforge.templates.neighborhood_project_list')
+    @with_trailing_slash
     def index(self,sort='alpha'):
         if self.neighborhood.redirect:
             redirect(self.neighborhood.redirect)

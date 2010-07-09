@@ -65,6 +65,7 @@ def include(ref=None, **kw):
     from pyforge.lib.widgets.macros import Include
     if ref is None: return '[-include-]'
     link = M.ArtifactLink.lookup('[' + ref + ']')
+    if not link: return '[[include %s]]' % ref
     aref = M.ArtifactReference(link.artifact_reference)
     artifact = aref.to_artifact()
     included = request.environ.setdefault('allura.macro.included', set())

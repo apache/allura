@@ -212,6 +212,7 @@ class Feed(MappedClass):
     class __mongometa__:
         session = project_orm_session
         name = 'artifact_feed'
+        indexes = [ 'pubdate' ]
 
     _id = FieldProperty(S.ObjectId)
     artifact_reference = FieldProperty(ArtifactReferenceType)

@@ -267,7 +267,7 @@ class RootController(object):
             query = model.Ticket.query.find(dict(app_config_id=c.app.config._id, ticket_num={'$in':ticket_numbers}))
             # so stick all the results in a dictionary...
             ticket_for_num = {}
-            for t in query.all():
+            for t in query:
                 ticket_for_num[t.ticket_num] = t
             # and pull them out in the order given by ticket_numbers
             tickets = [ticket_for_num[tn] for tn in ticket_numbers

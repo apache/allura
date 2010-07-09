@@ -7,6 +7,7 @@ from random import random
 import tg
 import pylons
 import pkg_resources
+import markdown
 from paste import fileapp
 from paste.deploy.converters import asbool
 from pylons.util import call_wsgi_application
@@ -189,6 +190,9 @@ class StatsMiddleware(object):
         import ming.orm
         timing('mongo').decorate(pymongo.collection.Collection,
                                  'count find find_one')
+        timing('mongo').decorate(pymongo.cursor.Cursor,
+                                 'count distinct explain hint limit next rewind'
+                                 ' skip sort where')
         timing('ming').decorate(ming.orm.ormsession.ORMSession,
                                 'flush find get')
         timing('ming').decorate(ming.orm.ormsession.ORMCursor,
@@ -200,6 +204,8 @@ class StatsMiddleware(object):
                                     '_prepare _parse generate')
         timing('render').decorate(genshi.Stream,
                                   'render')
+        timing('markdown').decorate(markdown.Markdown,
+                                    'convert')
 
 
     def __call__(self, environ, start_response):

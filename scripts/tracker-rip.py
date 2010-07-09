@@ -6,19 +6,24 @@ from urlparse import urljoin
 from pyforge.lib import rest_api
 
 SRC_CRED=dict(
-        api_key='b15b105ee580a8652616',
-        secret_key='d2a3315517ba81491ed7b7498636495023b8fb2d72e461457a20aa4b9e7ad032e9a8d07187f36661',
+        api_key='c03efc6cca1cf78be9e9',
+        secret_key='575eda2f25f6490d8cfe5d02f2506c010112894d0ea10660e43157a87a7e620c61ac06397b028af1',
         http_username=raw_input('LDAP username: '),
         http_password=getpass.getpass('LDAP password: '))
 SRC_SERVER='https://newforge.sf.geek.net/'
 SRC_TOOL='/rest/p/forge/tickets/'
 
 # Credentials for sf-overlords
+# DST_CRED=dict(
+#     api_key='a4a88c67179137053d70',
+#     secret_key='fcc48a0c31459e99a88cc42cdd7f908fad78b283ca30a86caac1ab65036ff71fc195a18e56534dc5')
+# DST_SERVER='http://sourceforge.net/'
+# DST_TOOL='/rest/p/allura/tickets/'
 DST_CRED=dict(
-    api_key='a4a88c67179137053d70',
-    secret_key='fcc48a0c31459e99a88cc42cdd7f908fad78b283ca30a86caac1ab65036ff71fc195a18e56534dc5')
-DST_SERVER='http://sourceforge.net/'
-DST_TOOL='/rest/p/allura/tickets/'
+    api_key='aa7244645424513d9636',
+    secret_key='cd1d97be98497f7b615b297aa2061177ddf6d42b95a8484193f84690486694234dbf817efc3b2d6e')
+DST_SERVER='http://localhost:8080/'
+DST_TOOL='/rest/p/test/bugs/'
 
 FAKE_TICKET={
     u'created_date': u'2010-03-08 17:29:42.802000',

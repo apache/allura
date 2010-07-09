@@ -130,6 +130,9 @@ class Ticket(VersionedArtifact):
     class __mongometa__:
         name = 'ticket'
         history_class = TicketHistory
+        indexes = [
+            'ticket_num',
+            'app_config_id' ]
 
     type_s = 'Ticket'
     _id = FieldProperty(schema.ObjectId)
