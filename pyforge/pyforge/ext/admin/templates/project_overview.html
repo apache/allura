@@ -142,8 +142,8 @@
                     </div>
                     <div class="column grid_10" style="margin-left:0">
                       <div class="editable viewing">
-                          <div class="viewer"><pre data-prompt="Write a brief summary of your project">$c.project.short_description</pre></div>
-                          <div class="editor multiline"><textarea name="short_description">$c.project.short_description</textarea></div>
+                          <div class="viewer"><div data-prompt="Write a brief summary of your project">$c.project.short_description</div></div>
+                          <div class="editor multiline"><textarea name="short_description" id="short_description_textarea">$c.project.short_description</textarea></div>
                       </div>
                     </div>
                   </div>
@@ -207,5 +207,11 @@
     </div>
 
   </body>
+  <script type="text/javascript" src="${g.forge_static('js/jquery.maxlength-min.js')}"/>
+  <script type="text/javascript">
+    $(document).ready(function(){
+      $('#short_description_textarea').maxlength({maxCharacters: 50});
+    });
+  </script>
 
 </html>
