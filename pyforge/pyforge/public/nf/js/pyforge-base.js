@@ -22,7 +22,8 @@
     // Setup editable widgets
     $('div.editable, span.editable, h1.editable')
         .find('.viewer')
-        .append('<button class="edit_btn ui-button ui-widget ui-state-default ui-button-icon-only" title="Edit"><span class="ui-button-icon-primary ui-icon ui-icon-pencil"></span><span class="ui-button-text">Edit</span></button>')
+        .append('<a class="edit_btn btn ico"><b class="ui-icon ui-icon-pencil"></b><span>Edit</span></a>')
+        .end()
         .click(function(e){
             var editable = $(this).closest('.editable');
             var editor = editable.find('.editor');
@@ -34,7 +35,7 @@
                     .removeClass('viewing');
             // autoresize textareas will be the wrong size the first time due to being hidden, so nudge them
             editor.find('textarea').change();
-            return false;
+            e.stopPropagation();
         })
         .find('a').click(function(event){
           event.stopPropagation();

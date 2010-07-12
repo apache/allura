@@ -82,6 +82,7 @@ class ProjectUserSelect(ew.InputField):
 
     def resources(self):
         for r in super(ProjectUserSelect, self).resources(): yield r
+        yield ew.resource.CSSLink('css/autocomplete.css')
         yield ew.JSScript('''
         $(window).load(function(){
           $('input.project_user_select').autocomplete({
@@ -135,21 +136,22 @@ class AutoResizeTextarea(ew.TextArea):
     def resources(self):
         yield ew.resource.JSLink('js/jquery.autoresize.min.js')
         yield ew.JSScript('''
-        $('textarea.auto_resize').autoResize({
-            // On resize:
-            onResize : function() {
-                $(this).css({opacity:0.8});
-            },
-            // After resize:
-            animateCallback : function() {
-                $(this).css({opacity:1});
-            },
-            // Quite slow animation:
-            animateDuration : 300,
-            // More extra space:
-            extraSpace : 0
-        });
-        ''')
+        $(window).load(function(){
+            $('textarea.auto_resize').autoResize({
+                // On resize:
+                onResize : function() {
+                    $(this).css({opacity:0.8});
+                },
+                // After resize:
+                animateCallback : function() {
+                    $(this).css({opacity:1});
+                },
+                // Quite slow animation:
+                animateDuration : 300,
+                // More extra space:
+                extraSpace : 0
+            });
+        });''')
 
 class PageList(ew.Widget):
     template='genshi:pyforge.lib.widgets.templates.page_list'

@@ -25,7 +25,7 @@
   <py:def function="main_menu()">
     <div class="nav">
       <div id="mainmenu" class="row">
-        <div class="column grid_2"><a href="/" class="sf_logo"><img src="${g.forge_static('images/sf10.png')}" alt="SourceForge"/></a></div>
+        <div class="column grid_2"><a href="/" class="sf_logo"><img src="${g.forge_static('images/sf10.png')}" alt="SourceForge" width="110" height="14"/></a></div>
         <div class="column grid_10 tright">
           <a href="/account/" py:if="c.user and c.user._id">Account</a>
           <a href="/users/${c.user.username}" py:if="c.user and c.user._id">$c.user.display_name</a>

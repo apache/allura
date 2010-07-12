@@ -1,0 +1,86 @@
+/*
+* jQuery UI CSS Framework
+* Copyright (c) 2010 AUTHORS.txt (http://jqueryui.com/about)
+* Dual licensed under the MIT (MIT-LICENSE.txt) and GPL (GPL-LICENSE.txt) licenses.
+* To view and modify this theme, visit http://jqueryui.com/themeroller/?ffDefault=Helvetica,%20sans-serif&fwDefault=bold&fsDefault=1.1em&cornerRadius=0px&bgColorHeader=ffffff&bgTextureHeader=01_flat.png&bgImgOpacityHeader=100&borderColorHeader=aed0ea&fcHeader=2c343b&iconColorHeader=576785&bgColorContent=ffffff&bgTextureContent=04_highlight_hard.png&bgImgOpacityContent=100&borderColorContent=ffffff&fcContent=2c343b&iconColorContent=576875&bgColorDefault=edf3fb&bgTextureDefault=04_highlight_hard.png&bgImgOpacityDefault=80&borderColorDefault=aed0ea&fcDefault=2c343b&iconColorDefault=576785&bgColorHover=edf3fb&bgTextureHover=02_glass.png&bgImgOpacityHover=100&borderColorHover=c3dcf0&fcHover=2c343b&iconColorHover=2c343b&bgColorActive=aed0ea&bgTextureActive=04_highlight_hard.png&bgImgOpacityActive=50&borderColorActive=aed0ea&fcActive=2c343b&iconColorActive=576785&bgColorHighlight=ffef8f&bgTextureHighlight=03_highlight_soft.png&bgImgOpacityHighlight=25&borderColorHighlight=f9dd34&fcHighlight=363636&iconColorHighlight=2e83ff&bgColorError=cd0a0a&bgTextureError=01_flat.png&bgImgOpacityError=15&borderColorError=cd0a0a&fcError=ffffff&iconColorError=ffffff&bgColorOverlay=111517&bgTextureOverlay=01_flat.png&bgImgOpacityOverlay=20&opacityOverlay=60&bgColorShadow=111517&bgTextureShadow=01_flat.png&bgImgOpacityShadow=90&opacityShadow=30&thicknessShadow=7px&offsetTopShadow=-7px&offsetLeftShadow=-7px&cornerRadiusShadow=0px
+*/
+
+
+/* Component containers
+----------------------------------*/
+.ui-widget { font-family: Helvetica, sans-serif; }
+.ui-widget .ui-widget { font-size: 1em; }
+.ui-widget input, .ui-widget select, .ui-widget textarea, .ui-widget button { font-family: Helvetica, sans-serif; font-size: 1em; }
+.ui-widget-content { border: none; background: rgb(255,255,255); color: rgb(69,69,69);  }
+.ui-widget-content a { color: rgb(69,69,69);  }
+.ui-widget-header { border-bottom: 1px solid rgb(215,215,215); background: rgb(255,255,255) ; color: rgb(69,69,69);  font-weight: bold; }
+.ui-widget-header a { color: rgb(69,69,69);  }
+
+/* Interaction states
+----------------------------------*/
+.ui-state-default, .ui-widget-content .ui-state-default { border: 1px solid rgb(215,215,215); background: rgb(235,235,235); font-weight: bold; color: rgb(69,69,69); }
+.ui-state-default a, .ui-state-default a:link, .ui-state-default a:visited { color: rgb(69,69,69);  text-decoration: none; }
+.ui-state-hover, .ui-widget-content .ui-state-hover, .ui-state-focus, .ui-widget-content .ui-state-focus { border: 1px solid #c3dcf0; background: rgb(235,235,235); font-weight: bold; color: rgb(69,69,69);  }
+.ui-state-hover a, .ui-state-hover a:hover { color: rgb(69,69,69);  text-decoration: none; }
+.ui-state-active, .ui-widget-content .ui-state-active { border: 1px solid rgb(215,215,215); background: rgb(235,235,235); font-weight: bold; color: rgb(69,69,69);  }
+.ui-state-active a, .ui-state-active a:link, .ui-state-active a:visited { color: rgb(69,69,69);  text-decoration: none; }
+.ui-widget :active { outline: none; }
+
+/* Interaction Cues
+----------------------------------*/
+.ui-state-highlight, .ui-widget-content .ui-state-highlight {border: 1px solid #f9dd34; background: #ffef8f 50% top repeat-x; color: #363636; }
+.ui-state-highlight a, .ui-widget-content .ui-state-highlight a { color: rgb(69,69,69); }
+.ui-state-error, .ui-widget-content .ui-state-error {border: 1px solid #cd0a0a; background: #cd0a0a; color: rgb(255,255,255); }
+.ui-state-error a, .ui-widget-content .ui-state-error a { color: rgb(255,255,255) ; }
+.ui-state-error-text, .ui-widget-content .ui-state-error-text { color: rgb(255,255,255) ; }
+.ui-priority-primary, .ui-widget-content .ui-priority-primary { font-weight: bold; }
+.ui-priority-secondary, .ui-widget-content .ui-priority-secondary { opacity: .7; filter:Alpha(Opacity=70); font-weight: normal; }
+.ui-state-disabled, .ui-widget-content .ui-state-disabled { opacity: .35; filter:Alpha(Opacity=35); background-image: none; }
+
+
+
+/* Misc visuals
+----------------------------------*/
+
+
+/* Overlays */
+.ui-widget-overlay { background: #111517 50% 50% repeat-x; opacity: .60;filter:Alpha(Opacity=60); }
+.ui-widget-shadow { margin: -7px 0 0 -7px; padding: 7px; background: #111517 50% 50% repeat-x; opacity: .30;filter:Alpha(Opacity=30); -moz-border-radius: 0px; -webkit-border-radius: 0px; border-radius: 0px; }/* Resizable
+
+----------------------------------*/
+/* Autocomplete
+----------------------------------*/
+.ui-autocomplete { position: absolute; cursor: default; }
+.ui-autocomplete-loading { background: white url('images/ui-anim_basic_16x16.gif') right center no-repeat; }
+
+/* workarounds */
+* html .ui-autocomplete { width:1px; } /* without this, the menu expands to 100% in IE6 */
+
+
+
+/* Menu
+----------------------------------*/
+.ui-menu {
+	list-style:none;
+	padding: 3px;
+	margin: 0;
+	display:block;
+}
+.ui-menu .ui-menu {
+	margin-top: -3px;
+}
+.ui-menu .ui-menu-item {
+	margin:0;
+	padding: 0;
+	width: 100%;
+}
+.ui-menu .ui-menu-item a {
+	text-decoration:none;
+	display:block;
+	padding:.2em .4em;
+	line-height:1.5;
+}
+.ui-menu .ui-menu-item a.ui-state-hover,
+.ui-menu .ui-menu-item a.ui-state-active {
+	margin: -1px;
+}

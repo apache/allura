@@ -11,6 +11,7 @@
     <meta py:replace="select('*')"/>
     <py:for each="blob in g.resource_manager.emit('head_css')">$blob</py:for>
     <py:for each="blob in g.resource_manager.emit('head_js')">$blob</py:for>
+    <link rel="stylesheet" type="text/css" href="${g.app_static('css/wiki.css')}" />
   </head>
 
   <body py:match="body" py:attrs="select('@*')">

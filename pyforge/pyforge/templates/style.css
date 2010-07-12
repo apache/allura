@@ -657,8 +657,6 @@ ul.ui-tab li a {
 }
 .editable .viewer .edit_btn{
     display: none;
-    height:25px;
-    width:25px;
     position: absolute;
     top: 2px;
     right: 0;
@@ -1188,17 +1186,7 @@ ul.ui-tab li a {
     padding: 4px 4px;
     border: 1px solid #ccc;
 }
-.editable .viewer .edit_btn{
-    display: none;
-    height:25px;
-    width:25px;
-    position: absolute;
-    top: 2px;
-    right: 0;
-}
-.editable .viewer:hover .edit_btn{
-    display: inline;
-}
+
 
 .editable + .editable
 {
@@ -1243,3 +1231,12 @@ ul.ui-tab li a {
     width: 32px;
     height: 32px;
 }
+#tooltip {
+	position: absolute;
+	z-index: 3000;
+	border: 1px solid #111;
+	background-color: #eee;
+	padding: 5px;
+	opacity: 0.85;
+}
+#tooltip h3, #tooltip div { margin: 0; }
