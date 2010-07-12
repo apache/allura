@@ -189,7 +189,7 @@ class TestFunctionalController(TestController):
         response = self.app.get('/p/test/bugs/1/')
         assert 'Create New Ticket' in response
         assert 'Related Artifacts' not in response
-        self.app.get('/wiki/aaa/')
+        self.app.get('/wiki/aaa/update?title=aaa&text=&tags=&tags_old=&labels=&labels_old=&viewable_by-0.id=all')
         self.new_ticket(summary='bbb')
         
         # Fake out updating the pages since reactor doesn't work with tests
