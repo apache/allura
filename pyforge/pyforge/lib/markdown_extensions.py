@@ -87,8 +87,12 @@ class ForgeProcessor(object):
 
     def compile(self):
         from pyforge import model as M
-        self.alinks = M.ArtifactLink.lookup_links(self.stash['artifact'])
-        self.alinks.update(M.ArtifactLink.lookup_links(self.stash['link']))
+        if self.stash['artifact'] or self.stash['link']:
+            try:
+                self.alinks = M.ArtifactLink.lookup_links(self.stash['artifact'])
+                self.alinks.update(M.ArtifactLink.lookup_links(self.stash['link']))
+            except:
+                self.alinks = {}
         self.stash['artifact'] = map(self._expand_alink, self.stash['artifact'])
         self.stash['link'] = map(self._expand_link, self.stash['link'])
         self.stash['macro'] = map(macro.parse, self.stash['macro'])
