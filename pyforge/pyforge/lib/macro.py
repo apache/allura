@@ -17,22 +17,25 @@ def macro(func):
     return func
 
 def parse(s):
-    if s.startswith('quote '):
-        return '[[' + s[len('quote '):] + ']]'
     try:
-        parts = [ unicode(x, 'utf-8') for x in shlex.split(s.encode('utf-8')) ]
-        if not parts: return None
-        macro = _macros.get(parts[0], None)
-        if not macro: return None
-        for t in parts[1:]:
-            if '=' not in t:
-                return '[-%s: missing =-]' % ' '.join(parts)
-        args = dict(t.split('=', 1) for t in parts[1:])
-        response = macro(**h.encode_keys(args))
-        return response
-    except (ValueError, TypeError), ex:
-        msg = cgi.escape(u'[[%s]] (%s)' % (s, repr(ex)))
-        return '\n<div class="error"><pre><code>%s</code></pre></div>' % msg
+        if s.startswith('quote '):
+            return '[[' + s[len('quote '):] + ']]'
+        try:
+            parts = [ unicode(x, 'utf-8') for x in shlex.split(s.encode('utf-8')) ]
+            if not parts: return None
+            macro = _macros.get(parts[0], None)
+            if not macro: return None
+            for t in parts[1:]:
+                if '=' not in t:
+                    return '[-%s: missing =-]' % ' '.join(parts)
+            args = dict(t.split('=', 1) for t in parts[1:])
+            response = macro(**h.encode_keys(args))
+            return response
+        except (ValueError, TypeError), ex:
+            msg = cgi.escape(u'[[%s]] (%s)' % (s, repr(ex)))
+            return '\n<div class="error"><pre><code>%s</code></pre></div>' % msg
+    except Exception, ex:
+        return '[[Error parsing %s: %s]]' % (s, ex)
 
 @macro
 def projects(category=None, display_mode='grid', sort='last_updated'):
