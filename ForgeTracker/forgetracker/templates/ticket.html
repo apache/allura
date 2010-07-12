@@ -22,8 +22,8 @@
           <py:if test="not allow_edit"><h1 class="title">#$ticket.ticket_num $ticket.summary</h1></py:if>
           <py:if test="allow_edit">
             <h1 class="title">
-              <span class="viewer" style="padding: 0; width:600px">#$ticket.ticket_num $ticket.summary</span>
-              <span class="editor" style="padding: 0; font-size: 11px; text-shadow: 0 0; width:600px">
+              <span class="viewer" style="width:600px">#$ticket.ticket_num $ticket.summary</span>
+              <span class="editor" style="font-size: 11px; text-shadow: 0 0; width:600px">
                 ${c.auto_resize_textarea.display(value=ticket.summary,name='summary',attrs={'style':'height:1em; width: 425px'})}
               </span>
             </h1>
@@ -96,53 +96,77 @@
                       <py:if test="not len(ticket.labels)">None</py:if>
                   </span>
                   <span class="multiline editor" py:if="allow_edit">
-                    <b>Assigned to:</b>
-                    <py:if test="ticket.assigned_to_id">
-                      ${c.user_select.display(name='assigned_to',value=ticket.assigned_to.username,className='wide')}
-                    </py:if>
-                    <py:if test="not ticket.assigned_to_id">
-                      ${c.user_select.display(name='assigned_to',value=ticket.assigned_to_id,className='wide')}
-                    </py:if>
+                    <div class="row dual">
+                      <div class="column" style="margin-right:0">
+                        <b>Assigned to:</b>
+                      </div>
+                      <div class="column" style="margin-left:0;width:48%; overflow:auto;">
+                        <py:if test="ticket.assigned_to_id">
+                          ${c.user_select.display(name='assigned_to',value=ticket.assigned_to.username,className='wide')}
+                        </py:if>
+                        <py:if test="not ticket.assigned_to_id">
+                          ${c.user_select.display(name='assigned_to',value=ticket.assigned_to_id,className='wide')}
+                        </py:if>
+                      </div>
+                    </div>
                     <hr/>
 
-                    <b>Status:</b>
-                    <select name="status">
-                      <option py:for="option in globals.status_names.split()" value="$option"
-                              selected="${'selected' if ticket.status==option else None}">$option</option>
-                    </select>
+                    <div class="row dual">
+                      <div class="column" style="margin-right:0">
+                        <b>Status:</b>
+                      </div>
+                      <div class="column" style="margin-left:0;width:48%; overflow:auto;">
+                        <select name="status">
+                          <option py:for="option in globals.status_names.split()" value="$option"
+                                  selected="${'selected' if ticket.status==option else None}">$option</option>
+                        </select>
+                      </div>
+                    </div>
                     <hr/>
 
-                    <b>Milestone:</b>
-                    <select name="milestone">
-                      <option value="">None</option>
-                      <option py:for="option in globals.milestone_names.split()" value="$option"
-                              selected="${'selected' if ticket.milestone==option else None}">$option</option>
-                    </select>
+                    <div class="row dual">
+                      <div class="column" style="margin-right:0">
+                        <b>Milestone:</b>
+                      </div>
+                      <div class="column" style="margin-left:0;width:48%; overflow:auto;">
+                        <select name="milestone">
+                          <option value="">None</option>
+                          <option py:for="option in globals.milestone_names.split()" value="$option"
+                                  selected="${'selected' if ticket.milestone==option else None}">$option</option>
+                        </select>
+                      </div>
+                    </div>
                     <hr/>
 
                     <py:for each="field in globals.custom_fields or []">
-                      <b>${field.label}:</b>
-                      <input py:if="field.type != 'select' and field.type != 'boolean'" name="custom_fields.${field.name}" type="text"
-                             value="${ticket.custom_fields.get(field.name, '')}"/>
-                      <input py:if="field.type == 'boolean' and ticket.custom_fields.get(field.name, '') == 'True'"
-                             name="custom_fields.${field.name}" type="checkbox" value="True" checked="checked"/>
-                      <input py:if="field.type == 'boolean' and ticket.custom_fields.get(field.name, '') != 'True'"
-                             name="custom_fields.${field.name}" type="checkbox" value="True"/>
-                      <select py:if="field.type == 'select'" name="custom_fields.${field.name}">
-                        <py:for each="option in field.options.split()">
-                          <option py:if="not option.startswith('*')" value="${option}"
-                                  selected="${'selected' if ticket.custom_fields.get(field.name, '')==option else None}">${option}</option>
-                          <option py:if="option.startswith('*')" value="${option[1:]}"
-                                  selected="${'selected' if ticket.custom_fields.get(field.name, '')==option[1:] or ticket.custom_fields.get(field.name, '')==None else None}">${option[1:]}</option>
-                        </py:for>
-                      </select>
+                      <div class="row dual">
+                        <div class="column" style="margin-right:0">
+                          <b>${field.label}:</b>
+                      </div>
+                      <div class="column" style="margin-left:0;width:48%; overflow:auto;">
+                          <input py:if="field.type != 'select' and field.type != 'boolean'" name="custom_fields.${field.name}" type="text"
+                                 value="${ticket.custom_fields.get(field.name, '')}"/>
+                          <input py:if="field.type == 'boolean' and ticket.custom_fields.get(field.name, '') == 'True'"
+                                 name="custom_fields.${field.name}" type="checkbox" value="True" checked="checked"/>
+                          <input py:if="field.type == 'boolean' and ticket.custom_fields.get(field.name, '') != 'True'"
+                                 name="custom_fields.${field.name}" type="checkbox" value="True"/>
+                          <select py:if="field.type == 'select'" name="custom_fields.${field.name}">
+                            <py:for each="option in field.options.split()">
+                              <option py:if="not option.startswith('*')" value="${option}"
+                                      selected="${'selected' if ticket.custom_fields.get(field.name, '')==option else None}">${option}</option>
+                              <option py:if="option.startswith('*')" value="${option[1:]}"
+                                      selected="${'selected' if ticket.custom_fields.get(field.name, '')==option[1:] or ticket.custom_fields.get(field.name, '')==None else None}">${option[1:]}</option>
+                            </py:for>
+                          </select>
+                        </div>
+                      </div>
                       <hr/>
                     </py:for>
                     <div class="row dual">
                       <div class="column" style="margin-right:0">
                         <b>Tags:</b>
                       </div>
-                      <div class="column" style="margin-left:0;width:140px; overflow:auto;">
+                      <div class="column" style="margin-left:0;width:48%; overflow:auto;">
                         ${c.label_edit.display(name='labels', value=ticket.labels)}
                       </div>
                     </div>
@@ -150,7 +174,7 @@
                       <div class="column" style="margin-right:0">
                         <b>&nbsp;</b>
                       </div>
-                      <div class="column save_holder"/>
+                      <div class="column save_holder" style="margin-left:0;width:48%; overflow:auto;"/>
                     </div>
                   </span>
                 </div>

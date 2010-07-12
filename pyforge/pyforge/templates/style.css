@@ -640,31 +640,6 @@ ul.ui-tab li a {
     display: inline;
 }
 
-.editable.editing .viewer
-{
-    display: none;
-}
-.editable .viewer {
-    padding: 4px 0;
-    display: block;
-    position: relative;
-    min-height: 21px;
-}
-.editable .viewer:hover {
-    margin: -1px -5px;
-    padding: 4px 4px;
-    border: 1px solid #ccc;
-}
-.editable .viewer .edit_btn{
-    display: none;
-    position: absolute;
-    top: 2px;
-    right: 0;
-}
-.editable .viewer:hover .edit_btn {
-    display: inline;
-}
-
 
 .clip {
 	border: 1px solid ${color5};
@@ -1177,17 +1152,22 @@ ul.ui-tab li a {
     display: none;
 }
 .editable .viewer {
-    padding: 4px 0;
+    padding: 1px 5px;
     display: block;
     position: relative;
     min-height: 21px;
 }
 .editable .viewer:hover {
-    padding: 4px 4px;
+    padding: 0px 4px;
     border: 1px solid #ccc;
+    cursor: pointer;
 }
-
-
+h1.title .viewer {
+    padding: 1px 1px 1px 1px;
+}
+h1.title .viewer:hover {
+    padding: 0 0 0 0;
+}
 .editable + .editable
 {
     margin-top: 1em;
@@ -1223,9 +1203,18 @@ ul.ui-tab li a {
 .editable .editor .save_holder input{
     float: left;
 }
+.editable .viewer .edit_btn{
+    display: none;
+    position: absolute;
+    top: 2px;
+    right: 0;
+}
+.editable .viewer:hover .edit_btn {
+    display: inline;
+}
 
 #sidebar-right input[type="text"]{
-    width: 120px;
+    width: 88%;
 }
 #header .project_icon{
     width: 32px;
