@@ -10,6 +10,7 @@
   <head>
     <meta content="text/html; charset=UTF-8" http-equiv="content-type" py:replace="''"/>
     <title>Project Permissions for $c.project.shortname</title>
+    <link rel="stylesheet" type="text/css" media="screen" href="${g.forge_static('css/forge/accordion.css')}" />
 
     <py:def function="role_select(name)">
       <select name="$name">
@@ -55,7 +56,7 @@
                           </select>
                         </td>
                         <td>
-                          <input name="new.username" class="title"/>
+                          <input name="new.username"/>
                         </td>
                         <td>
                           <input type="submit" name="new.add" value="Add Permission"/>
