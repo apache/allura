@@ -13,7 +13,7 @@ def main():
     CP.read(os.path.join(os.environ['HOME'], '.forgepushrc'))
     engineer = option('re', 'engineer', 'Name of engineer pushing: ')
     text, tag = make_ticket_text(engineer)
-    print '*** Create a ticket on NewForge with the following contents:'
+    print '*** Create a ticket on SourceForge (https://sourceforge.net/p/allura/tickets/new/) with the following contents:'
     print '*** Summary: Production Push (R:%s, D:%s)' % (
         tag, date.today().strftime('%Y%m%d'))
     print '---BEGIN---'
@@ -21,7 +21,7 @@ def main():
     print '---END---'
     raw_input("Verify that there are no new dependencies, or RPM's are build for all deps...")
     raw_input("Verify that a new sandbox builds starts without engr help...")
-    raw_input('When this is done, create a JIRA ticket with the same contents...')
+    raw_input('When this is done, create a JIRA ticket (https://engr.geek.net/jira/secure/CreateIssue!default.jspa) with the same contents...')
     raw_input('Now link the two tickets...')
     newforge_num = raw_input('What is the newforge ticket number? ')
     command('git', 'tag', '-a', '-m', '[#%s] - Push to RE' % newforge_num, tag, 'master')
@@ -55,11 +55,11 @@ def make_ticket_text(engineer):
     needs_flyway = raw_input('Does this release require a migration? [y]')
     if needs_reactor_setup[:1].lower() in ('y', '1'):
         postlaunch.append('* service reactor stop')
-        postlaunch.append('* paster reactor_setup /var/local/config/production.ini')
+        postlaunch.append('* allurapaste reactor_setup /var/local/config/production.ini')
         postlaunch.append('* service reactor start')
     if needs_flyway[:1].lower() in ('', 'y', '1'):
         prelaunch.append('* dump the database in case we need to roll back')
-        postlaunch.append('* paster flyway --url mongo://sfn-mongo-1:27017/')
+        postlaunch.append('* allurapaste flyway --url mongo://sfn-mongo-1:27017/')
     if postlaunch:
         postlaunch = [ 'From sfu-scmprocess-1 do the following:\n' ] + postlaunch
         postlaunch = '\n'.join(postlaunch)
