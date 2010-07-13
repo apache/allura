@@ -135,8 +135,19 @@ img {border: none;}
 .base .card h2 {margin: 10px 0 0;}
 .card h2 {line-height: 1.4em; margin-top: 15px !important;}
 .card .desc {margin: 5px 0 0;}
-.card .quik {position: absolute; bottom: 10px; left: 0px;}
-.card .quik a {margin: 0; padding: 4px 0 0 22.5px !important; color: rgb(0,0,0); font-size: .8em; text-shadow: rgb(255,255,255) 0 1px;}
+.card .quik {
+    position: absolute;
+    bottom: 10px;
+    left: 10px;
+}
+.card .quik a {
+    margin: 0;
+    color: rgb(0,0,0);
+    font-size: .8em;
+    text-shadow: rgb(255,255,255) 0 1px;
+    background: none;
+    border: none;
+}
 .card .quik a b {top: 0;}
 .card .feature {
 	position: absolute;

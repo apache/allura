@@ -17,9 +17,7 @@
 	</h2>
 	<p class="desc">${h.text.truncate(value.short_description, 50)}</p>
 	<div class="quik">
-		<a py:for="i, config in enumerate(value.app_configs)"
-		   py:if="config.load().installable"
-		   href="${config.url()}" class="ico-l"><b class="ui-icon ui-icon-gear"></b> <span>$config.options.mount_point</span></a>
+		<a py:for="s in value.sitemap()" py:if="s.url" href="$s.url" class="btn ico" title="$s.label"><b class="ui-icon ui-icon-${s.ui_icon or 'admin'}"></b> <span>$s.label</span></a>
 	</div>
   </div>
 
