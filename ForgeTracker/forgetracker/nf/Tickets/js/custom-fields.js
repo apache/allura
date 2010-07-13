@@ -44,7 +44,7 @@ function save_fields(){
         }
     });
     if(foundBlank){
-        alert('Every custom field must have a label.')
+        flash('Every custom field must have a label.', 'error')
     }
     else{
         var json = '[' + $('#custom-field-list>div.custom-field').

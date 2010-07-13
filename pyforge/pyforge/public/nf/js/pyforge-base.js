@@ -124,7 +124,11 @@ function attach_form_retry( form ){
 
 $(function(){
     // Setup notifications.
-    $('#flash > div').prependTo('#notifications');
+    $('#flash > div').
+        prependTo('#notifications').
+        each(function(){
+            this.className || (this.className = 'notice');
+        });
     $('#notifications > div').live('click', function(){
         $(this).hide();
     });
