@@ -241,15 +241,16 @@ class PreferencesController(object):
         for subs in M.Subscriptions.query.find(dict(user_id=c.user._id)):
             for s in subs.subscriptions:
                 with h.push_context(subs.project_id):
-                    subscriptions.append(dict(
-                            _id=subs._id,
-                            project_name=subs.project.name,
-                            mount_point=subs.app_config.options.mount_point,
-                            artifact_index_id=s.artifact_index_id,
-                            topic=s.topic,
-                            type=s.type,
-                            frequency=s.frequency.unit,
-                            artifact=s.artifact_index_id))
+                    if subs.app_config:
+                        subscriptions.append(dict(
+                                _id=subs._id,
+                                project_name=subs.project.name,
+                                mount_point=subs.app_config.options.mount_point,
+                                artifact_index_id=s.artifact_index_id,
+                                topic=s.topic,
+                                type=s.type,
+                                frequency=s.frequency.unit,
+                                artifact=s.artifact_index_id))
         api_token = M.ApiToken.query.get(user_id=c.user._id)
         return dict(subscriptions=subscriptions, api_token=api_token)
 
