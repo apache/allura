@@ -30,7 +30,7 @@
       <br/>
 
       <py:if test="not blob.has_html_view">
-        $blob.name cannot be displayed in your browser.
+        $blob.filename cannot be displayed in your browser.
         You may, however, <a href="?format=raw">download this file</a> instead.
       </py:if>
       <py:if test="blob.has_html_view">
