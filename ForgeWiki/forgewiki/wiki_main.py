@@ -417,11 +417,11 @@ class PageController(object):
         c.attachment_list = W.attachment_list
         c.subscribe_form = W.page_subscribe_form
         page = self.get_version(version)
-        if 'all' not in page.viewable_by and c.user.username not in page.viewable_by:
-            raise exc.HTTPForbidden(detail="You may not view this page.")
         if page is None:
             if version: redirect('.?version=%d' % (version-1))
             else: redirect('.')
+        elif 'all' not in page.viewable_by and c.user.username not in page.viewable_by:
+            raise exc.HTTPForbidden(detail="You may not view this page.")
         cur = page.version
         if cur > 1: prev = cur-1
         else: prev = None
