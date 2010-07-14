@@ -187,7 +187,7 @@ class RootController(object):
                     revisions=revisions,
                     next_link=next_link,
                     offset=offset,
-                    allow_fork=True)
+                    allow_fork=False)
 
     @with_trailing_slash
     @expose('forgehg.templates.fork')
