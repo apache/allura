@@ -143,7 +143,7 @@ To unsubscribe from further messages, please visit <%s/auth/prefs/>
         text = [ 'Digest of %s' % subject ]
         for n in notifications:
             text.append('From: %s' % n.from_address)
-            text.append('Subject: %s' % n.subject)
+            text.append('Subject: %s' % (n.subject or '(no subject)'))
             text.append('Message-ID: %s' % n._id)
             text.append('')
             text.append(n.text or '-no text-')
@@ -163,7 +163,7 @@ To unsubscribe from further messages, please visit <%s/auth/prefs/>
         text = [ 'Digest of %s' % subject ]
         for n in notifications:
             text.append('From: %s' % n.from_address)
-            text.append('Subject: %s' % n.subject)
+            text.append('Subject: %s' % (n.subject or '(no subject)'))
             text.append('Message-ID: %s' % n._id)
             text.append('')
             text.append(h.text.truncate(n.text or '-no text-', 128))

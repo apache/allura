@@ -109,7 +109,7 @@ class Thread(Artifact):
     discussion_id = ForeignIdProperty(Discussion)
     artifact_id = FieldProperty(None)
     artifact_reference = FieldProperty(ArtifactReferenceType)
-    subject = FieldProperty(str)
+    subject = FieldProperty(str, if_missing='(no subject)')
     num_replies = FieldProperty(int, if_missing=0)
     num_views = FieldProperty(int, if_missing=0)
     subscriptions = FieldProperty({str:bool})
@@ -245,7 +245,7 @@ class Thread(Artifact):
     def index(self):
         result = Artifact.index(self)
         result.update(
-           title_s='Thread: %s' % self.subject, 
+           title_s='Thread: %s' % (self.subject or '(no subject)'),
            name_s=self.subject,
            views_i=self.num_views,
            text=self.subject)
@@ -382,7 +382,7 @@ class Post(Message, VersionedArtifact):
         if self.subject.lower().startswith('re:'):
             return self.subject
         else:
-            return 'Re: ' + self.subject
+            return 'Re: ' +(self.subject or '(no subject)')
 
     def delete(self):
         for att in self.attachment_class().by_metadata(post_id=self._id):

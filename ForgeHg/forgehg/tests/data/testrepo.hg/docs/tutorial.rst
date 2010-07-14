@@ -494,7 +494,7 @@ Now the template for the `Post` is where things start to get interesting::
 
     <div xmlns="http://www.w3.org/1999/xhtml"
          xmlns:py="http://genshi.edgewall.org/">
-        <h3><strong>$value.subject</strong> by
+        <h3><strong>${value.subject or '(no subject)'}</strong> by
           <a href="${value.author().url()}">${value.author().display_name}</a>
           ${h.ago(value.timestamp)}
         </h3>

@@ -5,7 +5,7 @@
   <xi:include href="${g.pyforge_templates}/master.html"/>
   <?python from pyforge.lib.security import has_artifact_access?>
 
-  <h1 class="title">$value.subject</h1>
+  <h1 class="title">${'subject' in value and value.subject or '(no subject)'}</h1>
   <div class="actions">
 		<a href="#" class="btn ico-l" id="mod_thread_link"
        py:if="show_moderate and has_artifact_access('moderate', value)()"><b class="ui-icon ui-icon-pencil"></b> <span>Moderate</span></a>

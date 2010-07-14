@@ -186,7 +186,7 @@ class ThreadController(object):
             feed_type = 'atom'
         else:
             feed_type = 'rss'
-        title = 'Recent posts to %s' % self.thread.subject
+        title = 'Recent posts to %s' % (self.thread.subject or '(no subject)')
         feed = model.Feed.feed(
             {'artifact_reference':self.thread.dump_ref()},
             feed_type,

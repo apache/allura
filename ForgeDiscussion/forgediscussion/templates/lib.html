@@ -100,7 +100,7 @@
 
   <py:def function="thread_row(i, thread)">
     <tr>
-      <td><a href="${thread.url()}">$thread.subject</a></td>
+      <td><a href="${thread.url()}">${thread.subject or '(no subject)'}</a></td>
       <td>$thread.num_replies</td>
       <td>$thread.num_views</td>
       <td>${post_summary(thread.last_post)}</td>
@@ -127,7 +127,7 @@
   <py:def function="display_post(post)">
     <div id="post-${post.slug}" class="title-pane">
       <div class="title">
-        <strong>$post.subject</strong>
+        <strong>${post.subject or '(no subject)'}</strong>
         by <a href="${post.author().url()}">${post.author().display_name}</a>
         ${h.ago(post.timestamp)}
       </div>        

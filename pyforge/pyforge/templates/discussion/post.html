@@ -8,11 +8,11 @@
 
   <head>
     <meta content="text/html; charset=UTF-8" http-equiv="content-type" py:replace="''"/>
-    <title>$post.thread.subject</title>
+    <title>${post.thread.subject or '(no subject)'}</title>
   </head>
 
   <body>
-    <h1 class="title">$post.thread.subject</h1>
+    <h1 class="title">${post.thread.subject or '(no subject)'}</h1>
     <div class="content">
       <div class="row">
         <div class="column grid_12">

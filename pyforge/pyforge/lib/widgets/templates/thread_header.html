@@ -2,7 +2,7 @@
      xmlns:py="http://genshi.edgewall.org/"
      py:strip="True">
   <?python from pyforge.lib.security import has_artifact_access?>
-  <h1 class="title">$value.subject</h1>
+  <h1 class="title">${'subject' in value and value.subject or '(no subject)'}</h1>
 	<div class="content">
 		<div class="row">
 			<div class="column grid_12">

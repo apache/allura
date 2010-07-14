@@ -5,7 +5,7 @@
   <ol>
     <li py:if="show_subject">
       <label for="subject">Topic:</label>
-      <input name="subject" style="width: 500px;" value="${value and value.subject}"/>
+      <input name="subject" style="width: 500px;" value="${value and (value.subject or '(no subject)')}"/>
     </li>
     <li>
       <label for="text">Post:</label>

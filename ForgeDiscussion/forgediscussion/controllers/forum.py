@@ -92,6 +92,9 @@ class ForumController(DiscussionController):
     @expose()
     @validate(W.edit_post)
     def post(self, subject=None, text=None, **kw):
+        if not subject:
+            flash('You must have a subject for this post.')
+            redirect(request.referrer)
         if self.discussion.deleted and not has_artifact_access('configure', app=c.app)():
             redirect(self.deleted)
         if 'new_topic' in kw:

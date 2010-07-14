@@ -119,6 +119,9 @@ class ForumThread(M.Thread):
         return self
 
     def post(self, subject, text, message_id=None, parent_id=None, **kw):
+        if not subject:
+            tg.flash('You must have a subject for this post.')
+            tg.redirect(tg.request.referrer)
         post = super(ForumThread, self).post(text, message_id=message_id, parent_id=parent_id)
         post.subject = subject
         return post

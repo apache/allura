@@ -71,7 +71,7 @@
                     <td>$post.status</td>
                     <td>$post.flags</td>
                     <td py:with="author=post.author()">$author.display_name ($author.username)</td>
-                    <td>$post.subject</td>
+                    <td>${post.subject or '(no subject)'}</td>
                     <td>${h.text.truncate(post.text)}</td>
                     <td>${len(post.attachments)}</td>
                   </tr>
