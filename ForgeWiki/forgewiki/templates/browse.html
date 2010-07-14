@@ -28,8 +28,8 @@
               </tr>
             </thead>
             <tbody>
-              <tr py:for="page in pages" class="${'deleted' if getattr(page, 'deleted', False) else ''}">
-                <td><a href="../${page['title']+'/'+('?deleted=True' if getattr(page, 'deleted', False) else '')}">${page['title']}</a></td>
+              <tr py:for="page in pages" class="${'deleted' if page.deleted else ''}">
+                <td><a href="../${page['title']+'/'+('?deleted=True' if page.deleted else '')}">${page['title']}</a></td>
                 <td py:if="'user_label' in page">${page['user_label']}</td>
                 <td py:if="'user_label' not in page"></td>
                 <td py:if="'updated' in page">${h.ago(page['updated'])}</td>
