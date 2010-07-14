@@ -8,6 +8,8 @@ from . import graph
 
 log = logging.getLogger(__name__)
 
+MIGRATION_GRAPH = None
+
 def run_migration(datastore, target_versions, dry_run):
     '''Attempt to migrate the database to a specific set of required
     modules  & versions.'''
@@ -60,10 +62,14 @@ def set_status(datastore, target_versions):
 def plan_migration(session, ormsession, info, target):
     '''Return the optimal list of graph.MigrationSteps to run in order to
     satisfy the target requirements'''
-    migrations = dict((k, v(session, ormsession))
-                      for k,v in Migration.migrations_registry.iteritems())
-    g = graph.MigrationGraph(migrations)
-    return g.shortest_path(info.versions, target)
+    global MIGRATION_GRAPH
+    if MIGRATION_GRAPH is None:
+        migrations = dict((k, v(session, ormsession))
+                          for k,v in Migration.migrations_registry.iteritems())
+        MIGRATION_GRAPH = graph.MigrationGraph(migrations)
+    else:
+        MIGRATION_GRAPH.reset()
+    return MIGRATION_GRAPH.shortest_path(info.versions, target)
 
 def reset_migration(datastore, dry_run):
     '''Reset the state of the database to non-version-controlled WITHOUT migrating

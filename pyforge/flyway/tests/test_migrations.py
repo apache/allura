@@ -15,6 +15,10 @@ class MigrateTest(unittest.TestCase):
             ]
         self.cmd.run(self.args + ['--reset'])
 
+    def tearDown(self):
+        from flyway import runner
+        runner.MIGRATION_GRAPH = None
+
     def test_simple(self):
         self.cmd.run(self.args)
         expected_migrations = [

@@ -6,6 +6,9 @@ class MigrationGraph(object):
     def __init__(self, migrations):
         self._build_graph(migrations)
 
+    def reset(self):
+        for n in self._nodes: n.reset()
+
     def _build_graph(self, migrations):
         '''Build a graph where the nodes are possible migration states and the
         edges are transitions between states allowed by migrations.
@@ -121,10 +124,13 @@ class Node(object):
 
     def __init__(self, state):
         self.state = state
-        self.visited = False
-        self.distance = 1e9 # effectively inf
-        self.pred = None # (state, migrationstep)
         self.succs = [] # list of (state, migrationstep)
+        self.reset()
+
+    def reset(self):
+        self.visited = False
+        self.pred = None # (state, migrationstep)
+        self.distance = 1e9 # effectively inf
 
     def visit(self, nodes):
         '''The 'visit' step of Dijkstra's shortest-path algorithm'''
