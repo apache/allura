@@ -16,7 +16,7 @@ from pyforge.app import Application, WidgetController, ConfigOption, SitemapEntr
 from pyforge.lib import helpers as h
 from pyforge.ext.project_home import model as M
 from pyforge.lib.security import require, has_project_access, has_artifact_access
-from pyforge.model import User, Subscriptions, ArtifactLink
+from pyforge.model import User, ArtifactLink
 
 log = logging.getLogger(__name__)
 

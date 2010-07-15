@@ -3,6 +3,7 @@ from contextlib import contextmanager
 from datetime import datetime, timedelta
 
 import pylons
+from tg import config
 from tg.decorators import with_trailing_slash
 from formencode import validators as V
 
@@ -30,18 +31,21 @@ class SFXApp(Application):
     @classmethod
     @react('forge.project_created')
     def project_created(cls, routing_key, doc):
+        if config['registration.method'] != 'sfx': return
         api = SFXProjectApi()
         api.update(pylons.c.user, pylons.c.project)
 
     @classmethod
     @react('forge.project_updated')
     def project_updated(cls, routing_key, doc):
+        if config['registration.method'] != 'sfx': return
         api = SFXProjectApi()
         api.update(pylons.c.user, pylons.c.project)
 
     @classmethod
     @react('forge.project_deleted')
     def project_deleted(cls, routing_key, doc):
+        if config['registration.method'] != 'sfx': return
         api = SFXProjectApi()
         api.delete(pylons.c.user, pylons.c.project)
 

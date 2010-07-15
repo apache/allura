@@ -104,6 +104,7 @@ class ForgeProcessor(object):
             macro=[],
             oembed=[],
             link=[])
+        self.alinks = {}
         self.compiled = False
 
     def _expand_alink(self, link):

@@ -19,6 +19,7 @@ from ming.orm.ormsession import ThreadLocalORMSession
 import pyforge
 from pyforge.lib import plugin
 from pyforge import model as M
+from pyforge.command import EnsureIndexCommand
 
 log = logging.getLogger(__name__)
 
@@ -58,7 +59,7 @@ def bootstrap(command, conf, vars):
     c.user = c.project = c.app = None
     database=conf.get('db_prefix', '') + 'project:test'
     g._push_object(pyforge.lib.app_globals.Globals())
-    wipe_database()
+    wipe_database(command.args[0])
     try:
         g.solr.delete(q='*:*')
     except: # pragma no cover
@@ -188,14 +189,15 @@ def bootstrap(command, conf, vars):
         ThreadLocalORMSession.close_all()
 
 
-def wipe_database():
+def wipe_database(ini_filename):
     conn = M.main_doc_session.bind.conn
-    cmd = MigrateCommand('flyway')
+    flyway = MigrateCommand('flyway')
+    index = EnsureIndexCommand('ensure_index')
     if isinstance(conn, mim.Connection):
         clear_all_database_tables()
         for db in conn.database_names():
             db = conn[db]
-            cmd.run(['-u', 'mim:///'+db.name])
+            flyway.run(['-u', 'mim:///'+db.name])
     else:
         for database in conn.database_names():
             log.info('Wiping database %s', database)
@@ -208,7 +210,8 @@ def wipe_database():
                 except:
                     pass
         # Run flyway
-        cmd.run(['-u', 'ming://%s:%s/' % (conn.host, conn.port)])
+        flyway.run(['-u', 'ming://%s:%s/' % (conn.host, conn.port)])
+    index.run([ini_filename])
 
 
 def clear_all_database_tables():

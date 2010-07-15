@@ -1,6 +1,6 @@
 import unittest
 
-from pylons import g
+from pylons import g, c
 
 from ming.orm import ThreadLocalORMSession
 
@@ -19,21 +19,24 @@ class TestNotification(unittest.TestCase):
         ThreadLocalORMSession.close_all()
 
     def test_subscribe_unsubscribe(self):
-        s = M.Subscriptions.upsert()
-        s.subscribe('direct')
+        M.Mailbox.subscribe(type='direct')
         ThreadLocalORMSession.flush_all()
         ThreadLocalORMSession.close_all()
-        s = M.Subscriptions.upsert()
-        assert len(s.subscriptions) == 1
-        assert s.subscriptions[0].type=='direct'
+        subscriptions = M.Mailbox.query.find(dict(
+            project_id=c.project._id,
+            app_config_id=c.app.config._id,
+            user_id=c.user._id)).all()
+        assert len(subscriptions) == 1
+        assert subscriptions[0].type=='direct'
         assert M.Mailbox.query.find().count() == 1
-        mbox = M.Mailbox.query.get()
-        assert mbox._id == s.subscriptions[0].mailbox_id
-        s.unsubscribe()
+        M.Mailbox.unsubscribe()
         ThreadLocalORMSession.flush_all()
         ThreadLocalORMSession.close_all()
-        s = M.Subscriptions.upsert()
-        assert len(s.subscriptions) == 0
+        subscriptions = M.Mailbox.query.find(dict(
+            project_id=c.project._id,
+            app_config_id=c.app.config._id,
+            user_id=c.user._id)).all()
+        assert len(subscriptions) == 0
         assert M.Mailbox.query.find().count() == 0
 
 class TestPostNotifications(unittest.TestCase):
@@ -86,8 +89,7 @@ class TestPostNotifications(unittest.TestCase):
         assert 'you indicated interest in ' in msg['text']
 
     def _subscribe(self):
-        s = M.Subscriptions.upsert()
-        s.subscribe('direct', artifact=self.pg)
+        self.pg.subscribe(type='direct')
         ThreadLocalORMSession.flush_all()
         ThreadLocalORMSession.close_all()
 
@@ -141,22 +143,20 @@ class TestSubscriptionTypes(unittest.TestCase):
         p = thd.post('This is a very cool message')
         g.mock_amq.handle_all()
         M.Mailbox.fire_ready()
+        ThreadLocalORMSession.flush_all()
+        ThreadLocalORMSession.close_all()
         assert len(g.mock_amq.exchanges['audit']) == 1
         msg = g.mock_amq.exchanges['audit'][0]['message']
         assert 'Home@wiki.test.p' in msg['reply_to']
         assert 'Test Admin' in msg['from']
 
     def _clear_subscriptions(self):
-        subs = M.Subscriptions.upsert()
-        for s in subs.subscriptions:
-            M.Mailbox.query.remove(dict(_id=s.mailbox_id))
-        subs.subscriptions = []
+        M.Mailbox.query.remove({})
         ThreadLocalORMSession.flush_all()
         ThreadLocalORMSession.close_all()
 
     def _subscribe(self, type='direct', topic=None):
-        s = M.Subscriptions.upsert()
-        s.subscribe(type=type, topic=topic, artifact=self.pg)
+        self.pg.subscribe(type=type, topic=topic)
         ThreadLocalORMSession.flush_all()
         ThreadLocalORMSession.close_all()
 
@@ -164,10 +164,6 @@ class TestSubscriptionTypes(unittest.TestCase):
         return M.Notification.post(self.pg, 'metadata', text=text)
 
 def _clear_subscriptions():
-        subs = M.Subscriptions.upsert()
-        for s in subs.subscriptions:
-            M.Mailbox.query.remove(dict(_id=s.mailbox_id))
-        subs.subscriptions = []
         M.Mailbox.query.remove({})
 
 

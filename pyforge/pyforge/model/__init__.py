@@ -10,7 +10,7 @@ from .auth import User, ProjectRole, OpenId, EmailAddress, ApiToken
 from .openid_model import OpenIdStore, OpenIdAssociation, OpenIdNonce
 from .filesystem import File
 from .tag import TagEvent, Tag, UserTags
-from .notification import Notification, Subscriptions, Mailbox
+from .notification import Notification, Mailbox
 from .repository import Repository, Commit, Tree, Blob
 
 from .types import ArtifactReference, ArtifactReferenceType

@@ -290,16 +290,24 @@ class Artifact(MappedClass):
     backreferences = FieldProperty({str:ArtifactReferenceType})
     app_config = RelationProperty('AppConfig')
 
-    def subscribe(self, topic=None, type='direct', n=1, unit='day', user=None):
-        from pyforge.model import Subscriptions
+    def subscribe(self, user=None, topic=None, type='direct', n=1, unit='day'):
+        from pyforge.model import Mailbox
         if user is None: user = c.user
-        s = Subscriptions.upsert(user=user)
-        s.subscribe(type, n, unit, self, topic)
+        Mailbox.subscribe(
+            user_id=user._id,
+            project_id=self.app_config.project_id,
+            app_config_id=self.app_config._id,
+            artifact=self, topic=topic,
+            type=type, n=n, unit=unit)
 
-    def unsubscribe(self, topic=None):
-        from pyforge.model import Subscriptions
-        s = Subscriptions.upsert()
-        s.unsubscribe(self, topic)
+    def unsubscribe(self, user=None):
+        from pyforge.model import Mailbox
+        if user is None: user = c.user
+        Mailbox.unsubscribe(
+            user_id=user._id,
+            project_id=self.app_config.project_id,
+            app_config_id=self.app_config._id,
+            artifact_index_id=self.index_id())
 
     def primary(self, primary_class):
         '''If an artifact is a "secondary" artifact (discussion of a ticket, for

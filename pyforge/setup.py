@@ -97,6 +97,7 @@ setup(
     sendmsg = pyforge.command:SendMessageCommand
     models = pyforge.command:ShowModelsCommand
     reindex = pyforge.command:ReindexCommand
+    ensure_index = pyforge.command:EnsureIndexCommand
     script = pyforge.command:ScriptCommand
     flyway = flyway.command:MigrateCommand
     

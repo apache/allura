@@ -27,7 +27,7 @@ from pyforge.lib.search import search_artifact
 from pyforge.lib.decorators import audit, react
 from pyforge.lib.security import require, has_artifact_access
 from pyforge.model import ProjectRole, TagEvent, UserTags, ArtifactReference, Feed, User
-from pyforge.model import Subscriptions
+from pyforge.model import Mailbox
 from pyforge.lib import widgets as w
 from pyforge.lib.widgets import form_fields as ffw
 from pyforge.lib.widgets.subscriptions import SubscribeForm
@@ -283,7 +283,7 @@ class RootController(object):
         require(has_artifact_access('read'))
         result = self.paged_query('status:open', sort='ticket_num_i desc', limit=int(limit))
         c.subscribe_form = W.subscribe_form
-        result['subscribed'] = Subscriptions.upsert().subscribed()
+        result['subscribed'] = Mailbox.subscribed()
         c.ticket_search_results = W.ticket_search_results
         return result
 
@@ -512,9 +512,9 @@ class RootController(object):
     def subscribe(self, subscribe=None, unsubscribe=None):
         require(has_artifact_access('read'))
         if subscribe:
-            Subscriptions.upsert().subscribe('direct')
+            Mailbox.subscribe(type='direct')
         elif unsubscribe:
-            Subscriptions.upsert().unsubscribe()
+            Mailbox.unsubscribe()
         redirect(request.referer)
 
 class BinController(object):
@@ -654,7 +654,7 @@ class TicketController(object):
                 c.app.globals.milestone_names = ''
             return dict(ticket=self.ticket, globals=c.app.globals,
                         allow_edit=has_artifact_access('write', self.ticket)(),
-                        subscribed=Subscriptions.upsert().subscribed(artifact=self.ticket))
+                        subscribed=Mailbox.subscribed(artifact=self.ticket))
         else:
             redirect('not_found')
 
@@ -669,7 +669,7 @@ class TicketController(object):
         if c.app.globals.milestone_names is None:
             c.app.globals.milestone_names = ''
         return dict(ticket=self.ticket, globals=c.app.globals,
-                    subscribed=Subscriptions.upsert().subscribed(artifact=self.ticket))
+                    subscribed=Mailbox.subscribed(artifact=self.ticket))
 
     @without_trailing_slash
     @expose()
@@ -843,9 +843,9 @@ class TicketController(object):
     def subscribe(self, subscribe=None, unsubscribe=None):
         require(has_artifact_access('read', self.ticket))
         if subscribe:
-            Subscriptions.upsert().subscribe('direct', artifact=self.ticket)
+            self.ticket.subscribe(type='direct')
         elif unsubscribe:
-            Subscriptions.upsert().unsubscribe(artifact=self.ticket)
+            self.ticket.unsubscribe()
         redirect(request.referer)
 
 class AttachmentsController(object):

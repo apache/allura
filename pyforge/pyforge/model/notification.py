@@ -20,9 +20,10 @@ from datetime import datetime, timedelta
 
 from pylons import c, g
 from tg import config
+import pymongo
 
 from ming import schema as S
-from ming.orm import MappedClass, FieldProperty, ForeignIdProperty, RelationProperty
+from ming.orm import MappedClass, FieldProperty, ForeignIdProperty, RelationProperty, session
 
 from pyforge.lib import helpers as h
 
@@ -178,102 +179,20 @@ To unsubscribe from further messages, please visit <%s/auth/prefs/>
                 'text':text},
                   serializer='pickle')
 
-class Subscriptions(MappedClass):
-    '''User-maintained subscriptions
-    '''
-    class __mongometa__:
-        session = main_orm_session
-        name = 'subscriptions'
-
-    _id = FieldProperty(S.ObjectId)
-    user_id = ForeignIdProperty('User', if_missing=lambda:c.user._id)
-    project_id = ForeignIdProperty('Project', if_missing=lambda:c.project._id)
-    app_config_id = ForeignIdProperty('AppConfig', if_missing=lambda:c.app.config._id)
-    subscriptions = FieldProperty(
-        [ {'_id':S.ObjectId,
-           'artifact_index_id':str,
-           'topic':str,
-           'type':S.OneOf('direct', 'digest', 'summary'),
-           'frequency':{'n':int, 'unit':S.OneOf('day', 'week', 'month')},
-           'next_scheduled':datetime,
-           'mailbox_id':S.ObjectId,
-           }])
-    project = RelationProperty('Project')
-    app_config = RelationProperty('AppConfig')
-
-
-    @classmethod
-    def upsert(cls, user=None, project=None, app=None):
-        if user is None: user = c.user
-        if project is None: project = c.project
-        if app is None: app = c.app
-        d = dict(
-            user_id=user._id,
-            project_id=project._id,
-            app_config_id=app.config._id)
-        result = cls.query.get(**d)
-        if result is None: result = cls(**d)
-        return result
-
-    def subscribed(self, artifact=None, topic=None):
-        if artifact:
-            artifact_index_id = artifact.index_id()
-        else:
-            artifact_index_id = None
-        new_subs = []
-        for s in self.subscriptions:
-            if (s['artifact_index_id'] == artifact_index_id
-                and s['topic'] == topic):
-                return True
-        return False
-
-    def subscribe(self, type, n=1, unit='day', artifact=None, topic=None):
-        '''Subscribe to notifications on the current project/app, optionally
-        filtered by artifact and topic.  This method creates the associated
-        mailbox as well.
-        '''
-        if self.subscribed(artifact, topic): return
-        if artifact:
-            artifact_index_id = artifact.index_id()
-        else:
-            artifact_index_id = None
-        d = dict(
-            artifact_index_id=artifact_index_id,
-            topic=topic,
-            type=type,
-            frequency=dict(n=n, unit=unit),
-            next_scheduled=datetime.utcnow())
-        mbox = Mailbox(**d)
-        self.subscriptions.append(
-            dict(d, mailbox_id=mbox._id))
-
-    def unsubscribe(self, artifact=None, artifact_index_id=None, topic=None):
-        '''Unsubscribe to notifications on the current project/app, optionally
-        filtered by artifact and topic.  This method removes the associated
-        mailbox as well.
-        '''
-        if artifact_index_id is None and artifact is not None:
-            artifact_index_id = artifact.index_id()
-        new_subs = []
-        for s in self.subscriptions:
-            if (s.artifact_index_id == artifact_index_id
-                and s.topic == topic):
-                Mailbox.query.remove(dict(_id=s.mailbox_id))
-            else:
-                new_subs.append(s)
-        self.subscriptions = new_subs
-
 class Mailbox(MappedClass):
     class __mongometa__:
         session = main_orm_session
         name = 'mailbox'
-
+        unique_indexes = [
+            ('user_id', 'project_id', 'app_config_id', 'artifact_index_id', 'topic'),
+            ]
     _id = FieldProperty(S.ObjectId)
     user_id = ForeignIdProperty('User', if_missing=lambda:c.user._id)
     project_id = ForeignIdProperty('Project', if_missing=lambda:c.project._id)
     app_config_id = ForeignIdProperty('AppConfig', if_missing=lambda:c.app.config._id)
 
     # Subscription filters
+    artifact_title = FieldProperty(str)
     artifact_index_id = FieldProperty(str)
     topic = FieldProperty(str)
 
@@ -281,10 +200,79 @@ class Mailbox(MappedClass):
     type = FieldProperty(S.OneOf, 'direct', 'digest', 'summary', 'flash')
     frequency = FieldProperty(dict(
             n=int,unit=S.OneOf('day', 'week', 'month')))
-    next_scheduled = FieldProperty(datetime)
+    next_scheduled = FieldProperty(datetime, if_missing=datetime.utcnow)
 
     # Actual notification IDs
     queue = FieldProperty([str])
+
+    project = RelationProperty('Project')
+    app_config = RelationProperty('AppConfig')
+
+    @classmethod
+    def subscribe(
+        cls,
+        user_id=None, project_id=None, app_config_id=None,
+        artifact=None, topic=None,
+        type='direct', n=1, unit='day'):
+        if user_id is None: user_id = c.user._id
+        if project_id is None: project_id = c.project._id
+        if app_config_id is None: app_config_id = c.app.config._id
+        if artifact is None:
+            artifact_title = 'All artifacts'
+            artifact_index_id = None
+        else:
+            i = artifact.index()
+            artifact_title = i['title_s']
+            artifact_index_id = i['id']
+        d = dict(user_id=user_id, project_id=project_id, app_config_id=app_config_id,
+                 artifact_index_id=artifact_index_id, topic=topic)
+        sess = session(cls)
+        try:
+            mbox = cls(
+                type=type, frequency=dict(n=n, unit=unit),
+                artifact_title=artifact_title,
+                **d)
+            sess.flush(mbox)
+        except pymongo.errors.DuplicateKeyError:
+            sess.expunge(mbox)
+            mbox = cls.query.get(**d)
+            mbox.artifact_title = artifact_title
+            mbox.type = type
+            mbox.frequency.n = n
+            mbox.frequency.unit = unit
+
+    @classmethod
+    def unsubscribe(
+        cls,
+        user_id=None, project_id=None, app_config_id=None,
+        artifact_index_id=None, topic=None):
+        if user_id is None: user_id = c.user._id
+        if project_id is None: project_id = c.project._id
+        if app_config_id is None: app_config_id = c.app.config._id
+        cls.query.remove(dict(
+                user_id=user_id,
+                project_id=project_id,
+                app_config_id=app_config_id,
+                artifact_index_id=artifact_index_id,
+                topic=topic))
+
+    @classmethod
+    def subscribed(
+        cls, user_id=None, project_id=None, app_config_id=None,
+        artifact=None, topic=None):
+        if user_id is None: user_id = c.user._id
+        if project_id is None: project_id = c.project._id
+        if app_config_id is None: app_config_id = c.app.config._id
+        if artifact is None:
+            artifact_index_id = None
+        else:
+            i = artifact.index()
+            artifact_index_id = i['id']
+        return cls.query.find(dict(
+                user_id=user_id,
+                project_id=project_id,
+                app_config_id=app_config_id,
+                artifact_index_id=artifact_index_id)).count() != 0
 
     @classmethod
     def deliver(cls, nid, artifact_index_id, topic):
@@ -292,16 +280,18 @@ class Mailbox(MappedClass):
         to the appropriate  mailboxes.  Atomically appends the nids
         to the appropriate mailboxes.
         '''
-        q = cls.query.find({
-                'project_id':c.project._id,
-                'app_config_id':c.app.config._id,
-                'artifact_index_id':{'$in':[None, artifact_index_id]},
-                'topic':{'$in':[None, topic]}
-                })
-        for mbox in q:
+        d = {
+            'project_id':c.project._id,
+            'app_config_id':c.app.config._id,
+            'artifact_index_id':{'$in':[None, artifact_index_id]},
+            'topic':{'$in':[None, topic]}
+            }
+        for mbox in cls.query.find(d):
             mbox.query.update(
                 dict(_id=mbox._id),
                 {'$push':dict(queue=nid)})
+            # Make sure the mbox doesn't stick around to be flush()ed
+            session(mbox).expunge(mbox)
 
     @classmethod
     def fire_ready(cls):

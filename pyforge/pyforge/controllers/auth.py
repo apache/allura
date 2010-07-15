@@ -238,19 +238,18 @@ class PreferencesController(object):
         require_authenticated()
         c.form = F.subscription_form
         subscriptions = []
-        for subs in M.Subscriptions.query.find(dict(user_id=c.user._id)):
-            for s in subs.subscriptions:
-                with h.push_context(subs.project_id):
-                    if subs.app_config:
-                        subscriptions.append(dict(
-                                _id=subs._id,
-                                project_name=subs.project.name,
-                                mount_point=subs.app_config.options.mount_point,
-                                artifact_index_id=s.artifact_index_id,
-                                topic=s.topic,
-                                type=s.type,
-                                frequency=s.frequency.unit,
-                                artifact=s.artifact_index_id))
+        for mb in M.Mailbox.query.find(dict(user_id=c.user._id)):
+            with h.push_context(mb.project_id):
+                if mb.app_config:
+                    subscriptions.append(dict(
+                            _id=mb._id,
+                            project_name=mb.project.name,
+                            mount_point=mb.app_config.options.mount_point,
+                            artifact_title=mb.artifact_title,
+                            topic=mb.topic,
+                            type=mb.type,
+                            frequency=mb.frequency.unit,
+                            artifact=mb.artifact_index_id))
         api_token = M.ApiToken.query.get(user_id=c.user._id)
         return dict(subscriptions=subscriptions, api_token=api_token)
 
@@ -297,9 +296,7 @@ class PreferencesController(object):
     def update_subscriptions(self, subscriptions=None, **kw):
         for s in subscriptions:
             if s['unsubscribe']:
-                s['_id'].unsubscribe(
-                    artifact_index_id=s['artifact_index_id'] or None,
-                    topic=s['topic'] or None)
+                s['_id'].delete()
         redirect(request.referer)
 
     @expose()

@@ -42,6 +42,26 @@ class ReindexCommand(base.Command):
                 session(acls).flush()
                 session(acls).clear()
 
+class EnsureIndexCommand(base.Command):
+    min_args=1
+    max_args=1
+    usage = 'NAME <ini file>'
+    summary = 'Run ensure_index on all mongo objects'
+    parser = base.Command.standard_parser(verbose=True)
+
+    def command(self):
+        from pyforge import model as M
+        self.basic_setup()
+        projects = M.Project.query.find().all()
+        for name, cls in MappedClass._registry.iteritems():
+            if cls.__mongometa__.session == M.main_orm_session:
+                M.main_orm_session.ensure_indexes(cls)
+            else:
+                for p in projects:
+                    c.project = p
+                    if session(cls) is None: continue
+                    session(cls).ensure_indexes(cls)
+
 def build_model_inheritance_graph():
     graph = dict((c, ([], [])) for c in MappedClass._registry.itervalues())
     for cls, (parents, children)  in graph.iteritems():

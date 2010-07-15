@@ -28,7 +28,7 @@ from pyforge.lib.search import search
 from pyforge.lib.decorators import audit, react
 from pyforge.lib.security import require, has_artifact_access
 from pyforge.model import ProjectRole, User, TagEvent, UserTags, ArtifactReference, Tag, Feed, ArtifactLink
-from pyforge.model import Discussion, Thread, Post, Attachment, Subscriptions
+from pyforge.model import Discussion, Thread, Post, Attachment, Mailbox
 from pyforge.controllers import AppDiscussionController
 from pyforge.lib import widgets as w
 from pyforge.lib.widgets import form_fields as ffw
@@ -429,7 +429,7 @@ class PageController(object):
         return dict(
             page=page,
             cur=cur, prev=prev, next=next,
-            subscribed=Subscriptions.upsert().subscribed(artifact=self.page))
+            subscribed=Mailbox.subscribed(artifact=self.page))
 
     @without_trailing_slash
     @expose('forgewiki.templates.page_edit')
@@ -637,9 +637,9 @@ class PageController(object):
             raise exc.HTTPNotFound
         require(has_artifact_access('read'))
         if subscribe:
-            Subscriptions.upsert().subscribe('direct', artifact=self.page)
+            self.page.subscribe(type='direct')
         elif unsubscribe:
-            Subscriptions.upsert().unsubscribe(artifact=self.page)
+            self.page.unsubscribe()
         redirect(request.referer)
 
 class AttachmentsController(object):
