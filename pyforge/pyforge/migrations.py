@@ -14,6 +14,17 @@ from forgegit import model as GitM
 from forgehg import model as HgM
 from forgesvn import model as SVNM
 
+class ClearMailboxes(Migration):
+    version = 11
+
+    def up(self):
+        if self.session.db.name == 'pyforge':
+            self.ormsession.remove(M.Mailbox, {})
+            self.ormsession.ensure_indexes(M.Mailbox)
+
+    def down(self):
+        raise NotImplementedError, 'ClearMailboxes.down'
+
 class AddMountLabels(Migration):
     version = 10
 
