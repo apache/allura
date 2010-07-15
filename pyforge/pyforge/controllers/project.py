@@ -318,7 +318,9 @@ class ProjectController(object):
                     '_id':{'$in':[role.user_id for role in c.project.roles]},
                     'display_name':name_regex},
                     ['display_name','username'])
-        users = [dict(label=u.display_name, value=u.username, id=u.username) for u in users.sort('username').all()]
+        users = [dict(label='%s (%s)' % (u.display_name, u.username),
+                      value=u.username,
+                      id=u.username) for u in users.sort('username').all()]
         return dict(users=users)
 
 class ScreenshotsController(object):

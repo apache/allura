@@ -8,9 +8,7 @@
 
 /* Component containers
 ----------------------------------*/
-.ui-widget { font-family: Helvetica, sans-serif; }
-.ui-widget .ui-widget { font-size: 1em; }
-.ui-widget input, .ui-widget select, .ui-widget textarea, .ui-widget button { font-family: Helvetica, sans-serif; font-size: 1em; }
+.ui-widget { font-size: .8em; }
 .ui-widget-content { border: none; background: rgb(255,255,255); color: rgb(69,69,69);  }
 .ui-widget-content a { color: rgb(69,69,69);  }
 .ui-widget-header { border-bottom: 1px solid rgb(215,215,215); background: rgb(255,255,255) ; color: rgb(69,69,69);  font-weight: bold; }
@@ -20,9 +18,9 @@
 ----------------------------------*/
 .ui-state-default, .ui-widget-content .ui-state-default { border: 1px solid rgb(215,215,215); background: rgb(235,235,235); font-weight: bold; color: rgb(69,69,69); }
 .ui-state-default a, .ui-state-default a:link, .ui-state-default a:visited { color: rgb(69,69,69);  text-decoration: none; }
-.ui-state-hover, .ui-widget-content .ui-state-hover, .ui-state-focus, .ui-widget-content .ui-state-focus { border: 1px solid #c3dcf0; background: rgb(235,235,235); font-weight: bold; color: rgb(69,69,69);  }
+.ui-state-hover, .ui-widget-content .ui-state-hover, .ui-state-focus, .ui-widget-content .ui-state-focus { border: 1px solid #c3dcf0; background: rgb(235,235,235); color: rgb(69,69,69);  }
 .ui-state-hover a, .ui-state-hover a:hover { color: rgb(69,69,69);  text-decoration: none; }
-.ui-state-active, .ui-widget-content .ui-state-active { border: 1px solid rgb(215,215,215); background: rgb(235,235,235); font-weight: bold; color: rgb(69,69,69);  }
+.ui-state-active, .ui-widget-content .ui-state-active { border: 1px solid rgb(215,215,215); background: rgb(235,235,235); color: rgb(69,69,69);  }
 .ui-state-active a, .ui-state-active a:link, .ui-state-active a:visited { color: rgb(69,69,69);  text-decoration: none; }
 .ui-widget :active { outline: none; }
 
@@ -65,6 +63,7 @@
 	padding: 3px;
 	margin: 0;
 	display:block;
+	border: 1px solid #ccc;
 }
 .ui-menu .ui-menu {
 	margin-top: -3px;
