@@ -17,7 +17,7 @@
   </head>
 
   <body>
-    <h1 class="title">ForgeTracker for $c.project.shortname</h1>
+    <h1 class="title">$c.app.config.options.mount_label</h1>
 		<div class="actions">
 		  <py:if test="c.user and c.user != c.user.anonymous()">
       ${c.subscribe_form.display(value=subscribed, action='subscribe', style='icon')}

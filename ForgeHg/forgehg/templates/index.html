@@ -7,13 +7,13 @@
   <xi:include href="${g.pyforge_templates}/master.html"/>
 
   <head>
-    <meta content="text/html; charset=UTF-8" http-equiv="content-type" py:replace="''"/>n
+    <meta content="text/html; charset=UTF-8" http-equiv="content-type" py:replace="''"/>
     <title py:if="not repo">Mercurial Repository</title>
     <title py:if="repo">Mercurial Repository: ${repo.name}</title>
   </head>
 
   <body>
-    <h1 class="title">Welcome to ForgeHg</h1>
+    <h1 class="title">$c.app.config.options.mount_label</h1>
     <div class="content">
       <div class="row">
         <div class="column grid_12">
