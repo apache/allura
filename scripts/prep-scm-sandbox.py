@@ -48,6 +48,11 @@ def main():
     assert 0 == os.system('/usr/local/sbin/ldaptool modify -v -f %s' % LDIF_FILE)
 
 SSH_TMPL=string.Template('''
+Host hg*-$veid hg*-${veid}.sb.sf.net
+  Hostname 10.58.${sb_host}.${sb}
+  Port 17
+  IdentityFile ~/.ssh/allura_rsa
+
 Host svn*-$veid svn*-${veid}.sb.sf.net
   Hostname 10.58.${sb_host}.${sb}
   Port 16

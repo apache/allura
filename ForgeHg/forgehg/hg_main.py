@@ -49,7 +49,7 @@ class W(object):
 class ForgeHgApp(Application):
     '''This is the Hg app for PyForge'''
     __version__ = version.__version__
-    installable=False
+    # installable=False
     permissions = [ 'read', 'write', 'create', 'admin', 'configure' ]
     config_options = Application.config_options + [
         ConfigOption('cloned_from_project_id', ObjectId, None),
