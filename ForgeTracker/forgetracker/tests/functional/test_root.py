@@ -27,12 +27,15 @@ class TestFunctionalController(TestController):
             assert 0, "form error?"
         return resp.follow()
     
+    def test_invalid_ticket(self):
+        r = self.app.get('/bugs/2/', status=404)
+
     def test_new_ticket(self):
         summary = 'test new ticket'
         ticket_view = self.new_ticket(summary=summary)
         assert_true(summary in ticket_view)
         assert 'class="artifact_unsubscribe' in ticket_view
-    
+
     def test_new_with_milestone(self):
         tm.Globals.milestone_names = 'sprint-9 sprint-10 sprint-11'
         ticket_view = self.new_ticket(summary='test new with milestone', milestone='sprint-10')

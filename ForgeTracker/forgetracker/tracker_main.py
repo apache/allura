@@ -4,6 +4,7 @@ from mimetypes import guess_type
 import json, urllib, re
 from datetime import datetime, timedelta
 from urllib import urlencode, unquote
+from webob import exc
 
 # Non-stdlib imports
 import pkg_resources
@@ -316,10 +317,6 @@ class RootController(object):
         c.ticket_form = W.ticket_form
         return dict(action=c.app.config.url()+'save_ticket',
                     super_id=super_id)
-
-    @expose('forgetracker.templates.not_found')
-    def not_found(self, **kw):
-        return dict()
 
     @expose('forgetracker.templates.markdown_syntax')
     def markdown_syntax(self):
@@ -640,23 +637,23 @@ class TicketController(object):
     @with_trailing_slash
     @expose('forgetracker.templates.ticket')
     def index(self, **kw):
-        require(has_artifact_access('read', self.ticket))
-        c.thread = W.thread
-        c.markdown_editor = W.markdown_editor
-        c.attachment_list = W.attachment_list
-        c.label_edit = W.label_edit
-        c.user_select = ffw.ProjectUserSelect()
-        c.attachment_list = W.attachment_list
-        c.subscribe_form = W.ticket_subscribe_form
-        c.auto_resize_textarea = W.auto_resize_textarea
         if self.ticket is not None:
+            require(has_artifact_access('read', self.ticket))
+            c.thread = W.thread
+            c.markdown_editor = W.markdown_editor
+            c.attachment_list = W.attachment_list
+            c.label_edit = W.label_edit
+            c.user_select = ffw.ProjectUserSelect()
+            c.attachment_list = W.attachment_list
+            c.subscribe_form = W.ticket_subscribe_form
+            c.auto_resize_textarea = W.auto_resize_textarea
             if c.app.globals.milestone_names is None:
                 c.app.globals.milestone_names = ''
             return dict(ticket=self.ticket, globals=c.app.globals,
                         allow_edit=has_artifact_access('write', self.ticket)(),
                         subscribed=Mailbox.subscribed(artifact=self.ticket))
         else:
-            redirect('not_found')
+            raise exc.HTTPNotFound, 'Ticket #%s does not exist.' % self.ticket_num
 
     @with_trailing_slash
     @expose('forgetracker.templates.edit_ticket')
