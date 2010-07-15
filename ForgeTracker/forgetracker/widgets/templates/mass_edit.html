@@ -4,7 +4,10 @@
   <table py:if="len(tickets)">
     <thead>
       <tr>
-        <th></th>
+        <th>
+          <a id="select_all" href="#" class="btn"><span>All</span></a>
+          <a id="select_none" href="#" class="btn"><span>None</span></a>
+        </th>
         <th data-sort="ticket_num_i">Ticket</th>
         <th data-sort="status_s">Status</th>
         <th>Description</th>
@@ -43,7 +46,7 @@
       <li>
         <label for="milestone">Milestone:</label>
         <select name="milestone">
-          <option value="" selected="selected">None</option>
+          <option value="" selected="selected"></option>
           <option py:for="option in globals.milestone_names.split()" value="${option}">$option</option>
         </select>
       </li>

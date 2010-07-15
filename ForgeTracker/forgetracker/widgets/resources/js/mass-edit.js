@@ -20,4 +20,12 @@ function update_tickets(){
 
 $(function(){
     $('#assigned_to').val('');
+    $('#select_all').click(function(){
+        $('tbody.ticket-list input[type=checkbox]').attr('checked', 'checked');
+        return false;
+    });
+    $('#select_none').click(function(){
+        $('tbody.ticket-list input[type=checkbox]').removeAttr('checked');
+        return false;
+    });
 });
