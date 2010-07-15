@@ -39,14 +39,14 @@
       <li>
         <label for="status">Status:</label>
         <select name="status">
-          <option value="" selected="selected"></option>
+          <option value="" selected="selected">no change</option>
           <option py:for="option in globals.status_names.split()" value="${option}">$option</option>
         </select>
       </li>
       <li>
         <label for="milestone">Milestone:</label>
         <select name="milestone">
-          <option value="" selected="selected"></option>
+          <option value="" selected="selected">no change</option>
           <option py:for="option in globals.milestone_names.split()" value="${option}">$option</option>
         </select>
       </li>
@@ -55,7 +55,7 @@
         <input py:if="field.type != 'select' and field.type != 'boolean'" name="${field.name}" type="text" value=""/>
         <input py:if="field.type == 'boolean'" name="${field.name}" type="checkbox" value="True"/>
         <select py:if="field.type == 'select'" name="${field.name}">
-          <option value="" selected="selected"></option>
+          <option value="" selected="selected">no change</option>
           <py:for each="option in field.options.split()">
             <option py:if="not option.startswith('*')" value="${option}">${option}</option>
             <option py:if="option.startswith('*')" value="${option[1:]}" selected="selected">${option[1:]}</option>
