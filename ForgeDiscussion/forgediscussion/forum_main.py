@@ -200,7 +200,7 @@ class ForumAdminController(DefaultAdminController):
 
     @with_trailing_slash
     def index(self):
-        redirect('permissions')
+        redirect('forums')
 
     @expose('forgediscussion.templates.admin_forums')
     def forums(self):
