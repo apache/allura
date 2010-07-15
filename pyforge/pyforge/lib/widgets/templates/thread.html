@@ -15,7 +15,8 @@
             <li>
               ${widgets.post.display(value=post, show_subject=show_subject, indent=indent, supress_promote=supress_promote)}
               <ul>
-              <py:for each="child in post.descendants()" py:if="child.parent_id == post._id">
+              <py:for each="child in post.descendants()"
+                      py:if="child.status == 'ok' and child.parent_id == post._id">
                 <li>${show_post(child, indent+1)}</li>
               </py:for>
               </ul>
