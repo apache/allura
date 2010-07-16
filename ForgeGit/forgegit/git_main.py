@@ -193,6 +193,8 @@ class RootController(object):
                         cloned_from_project_id=from_project._id,
                         cloned_from_repo_id=from_repo._id)
                     redirect('/'+to_project_name+'/'+to_name+'/')
+                except exc.HTTPRedirection:
+                    raise
                 except Exception, ex:
                     flash(str(ex), 'error')
                     redirect(request.referer)

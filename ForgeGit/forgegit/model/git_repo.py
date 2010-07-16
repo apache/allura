@@ -65,6 +65,9 @@ class GitRepository(M.Repository):
         fullname = self._setup_paths()
         log.info('git init %s', fullname)
         result = subprocess.call(['git', 'init', '--quiet', '--bare', '--shared=all'],
+                                 stdin=subprocess.PIPE,
+                                 stdout=subprocess.PIPE,
+                                 stderr=subprocess.PIPE,
                                  cwd=fullname)
         self._setup_special_files()
         self.status = 'ready'
@@ -78,6 +81,9 @@ class GitRepository(M.Repository):
         log.info('git clone %s %s' % (source_path, fullname))
         # We may eventually require --template=...
         result = subprocess.call(['git', 'clone', '--bare', source_path, self.name],
+                                 stdin=subprocess.PIPE,
+                                 stdout=subprocess.PIPE,
+                                 stderr=subprocess.PIPE,
                                  cwd=self.fs_path)
         # we don't want merge requests from the originating repo,
         # but local clones by default copy everything under the refs directory

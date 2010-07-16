@@ -60,6 +60,9 @@ class SVNRepository(M.Repository):
         # We may eventually require --template=...
         log.info('svnadmin create %s%s', self.fs_path, self.name)
         result = subprocess.call(['svnadmin', 'create', self.name],
+                                 stdin=subprocess.PIPE,
+                                 stdout=subprocess.PIPE,
+                                 stderr=subprocess.PIPE,
                                  cwd=self.fs_path)
         magic_file = os.path.join(self.fs_path, self.name, self.MAGIC_FILENAME)
         with open(magic_file, 'w') as f:

@@ -13,7 +13,7 @@ def setUp():
 
 class TrackerTestWithModel(object):
     def setUp(self):
-        bootstrap.wipe_database('test.ini')
+        bootstrap.wipe_database()
         c.user = bootstrap.create_user('Test User')
         neighborhood = M.Neighborhood(name='Projects',
                                  url_prefix='/p/',

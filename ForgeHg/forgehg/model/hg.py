@@ -59,6 +59,9 @@ class HgRepository(M.Repository):
         # We may eventually require --template=...
         log.info('hg init %s', self.full_fs_path)
         result = subprocess.call(['hg', 'init', self.name],
+                                 stdin=subprocess.PIPE,
+                                 stdout=subprocess.PIPE,
+                                 stderr=subprocess.PIPE,
                                  cwd=self.fs_path)
         self._setup_special_files()
         self.status = 'ready'
@@ -67,6 +70,9 @@ class HgRepository(M.Repository):
         self._setup_paths()
         log.info('hg clone %s %s%s' % (source_path, self.fs_path, self.name))
         result = subprocess.call(['hg', 'clone', '--noupdate', source_path, self.name],
+                                 stdin=subprocess.PIPE,
+                                 stdout=subprocess.PIPE,
+                                 stderr=subprocess.PIPE,
                                  cwd=self.fs_path)
         # How do we want to handle merge-requests?  Will it be in repo?
         self._setup_special_files()
