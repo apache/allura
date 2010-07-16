@@ -18,35 +18,42 @@
   </head>
 
   <body>
-    <h1><py:if test="user.preferences.email_address">${gravatar(user)} </py:if>${user.display_name} (${user.username})</h1>
-    ${Markup(c.project.description_html)}
-    <div class="project-list">
-      <span class="title">Projects</span>
-      <ul>
-        <li py:for="project in h.make_projects(user.projects)" py:if="not project.shortname.startswith('u/')">
-            <a class="project-name" href="${project.url()}">${project.name}</a>
-        </li>
-      </ul>
+    <h1 class="title">${user.display_name} (${user.username})</h1>
+    <div class="content">
+      <div class="row">
+        <div class="column grid_12">
+          <py:if test="user.preferences.email_address">${gravatar(user)} </py:if>
+          ${Markup(c.project.description_html)}
+          <div class="project-list">
+            <b>Projects</b>
+            <ul>
+              <li py:for="p in user.my_projects()">
+                  <a class="project-name" href="${p.url()}">${p.name}</a>
+              </li>
+            </ul>
+          </div>
+          <py:if test="c.user.username == user.username">
+              <div class="address-list">
+                <b>Email Addresses</b>
+                <ul>
+                  <li py:for="email in user.email_addresses">
+                      ${email_gravatar(email, size=24)}
+                      <span py:if="email == user.preferences.email_address" class="prime email-address">${email}</span>
+                      <span py:if="email != user.preferences.email_address" class="email-address">${email}</span>
+                  </li>
+                </ul>
+              </div>
+              <div class="openid-list">
+                <b>OpenIDs</b>
+                <ul>
+                  <li py:for="openid in user.open_ids">
+                      <span class="openid">${openid}</span>
+                  </li>
+                </ul>
+              </div>
+          </py:if>
+        </div>
+      </div>
     </div>
-    <py:if test="c.user.username == user.username">
-        <div class="address-list">
-          <span class="title">Email Addresses</span>
-          <ul>
-            <li py:for="email in user.email_addresses">
-                ${email_gravatar(email, size=24)}
-                <span py:if="email == user.preferences.email_address" class="prime email-address">${email}</span>
-                <span py:if="email != user.preferences.email_address" class="email-address">${email}</span>
-            </li>
-          </ul>
-        </div>
-        <div class="openid-list">
-          <span class="title">OpenIDs</span>
-          <ul>
-            <li py:for="openid in user.open_ids">
-                <span class="openid">${openid}</span>
-            </li>
-          </ul>
-        </div>
-    </py:if>
   </body>
 </html>

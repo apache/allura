@@ -258,7 +258,9 @@ class User(MappedClass):
     def my_projects(self):
         from .project import Project
         for p in self.projects:
-            yield Project.query.get(_id=p, deleted=False)
+            project = Project.query.get(_id=p, deleted=False)
+            if self._id in [role.user_id for role in project.roles] and not project.shortname.startswith('u/'):
+                yield project
 
     def role_iter(self):
         yield ProjectRole.query.get(name='*anonymous')
