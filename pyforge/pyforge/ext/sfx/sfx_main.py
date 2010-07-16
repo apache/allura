@@ -138,6 +138,8 @@ class SFXProjectRegistrationProvider(plugin.ProjectRegistrationProvider):
         except sfx_exc.SFXAPIError, exc:
             if user_project: 
                 log.exception('SFX project creation error: %r', exc)
+                ug_name = None
+                return None
             else:
                 raise
         p = super(SFXProjectRegistrationProvider, self).register_project(

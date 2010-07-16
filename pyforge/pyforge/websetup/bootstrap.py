@@ -53,13 +53,15 @@ def bootstrap(command, conf, vars):
     """Place any commands to setup pyforge here"""
     # Our bootstrap doesn't play nicely with SFX project and user APIs
     tg.config['auth.method'] = tg.config['registration.method'] = 'local'
+    assert tg.config['auth.method'] == 'local'
+    conf['auth.method'] = conf['registration.method'] = 'local'
     # Clean up all old stuff
     ThreadLocalORMSession.close_all()
     c.queued_messages = []
     c.user = c.project = c.app = None
     database=conf.get('db_prefix', '') + 'project:test'
     g._push_object(pyforge.lib.app_globals.Globals())
-    wipe_database(command.args[0])
+    wipe_database()
     try:
         g.solr.delete(q='*:*')
     except: # pragma no cover
@@ -91,6 +93,7 @@ def bootstrap(command, conf, vars):
                              url_prefix='/adobe/',
                              acl=dict(read=[None], create=[],
                                       moderate=[root._id], admin=[root._id]))
+    assert tg.config['auth.method'] == 'local'
     project_reg = plugin.ProjectRegistrationProvider.get()
     p_projects = project_reg.register_neighborhood_project(n_projects, [root])
     p_users = project_reg.register_neighborhood_project(n_users, [root])
@@ -189,7 +192,7 @@ def bootstrap(command, conf, vars):
         ThreadLocalORMSession.close_all()
 
 
-def wipe_database(ini_filename):
+def wipe_database():
     conn = M.main_doc_session.bind.conn
     flyway = MigrateCommand('flyway')
     index = EnsureIndexCommand('ensure_index')
@@ -211,7 +214,7 @@ def wipe_database(ini_filename):
                     pass
         # Run flyway
         flyway.run(['-u', 'ming://%s:%s/' % (conn.host, conn.port)])
-    index.run([ini_filename])
+    index.run([])
 
 
 def clear_all_database_tables():

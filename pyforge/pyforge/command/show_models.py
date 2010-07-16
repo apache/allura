@@ -43,9 +43,9 @@ class ReindexCommand(base.Command):
                 session(acls).clear()
 
 class EnsureIndexCommand(base.Command):
-    min_args=1
+    min_args=0
     max_args=1
-    usage = 'NAME <ini file>'
+    usage = 'NAME [<ini file>]'
     summary = 'Run ensure_index on all mongo objects'
     parser = base.Command.standard_parser(verbose=True)
 
