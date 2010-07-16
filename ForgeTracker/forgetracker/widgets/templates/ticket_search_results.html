@@ -1,5 +1,6 @@
 <div xmlns="http://www.w3.org/1999/xhtml"
   xmlns:py="http://genshi.edgewall.org/">
+  <?python import re?>
   <p py:if="solr_error">${solr_error}</p>
   <p py:if="count==0 and query">No results.</p>
   <p py:if="count==1 and query">$count result.</p>
@@ -19,7 +20,7 @@
       <tr py:for="t in tickets">
         <td><a href="${t.url()}">[#${t.ticket_num}] $t.summary</a></td>
         <td class="${t.status}">${t.status}</td>
-        <td>${Markup(g.markdown.convert(h.text.truncate(t.description,70)))}</td>
+        <td>${h.text.truncate(re.sub(r'&lt;[^>]*?>', '', t.description),70)}</td>
         <td py:if="t.assigned_to_id">${t.assigned_to.display_name}</td>
         <td py:if="not t.assigned_to_id"></td>
         <td>${h.ago(t.mod_date)}</td>
