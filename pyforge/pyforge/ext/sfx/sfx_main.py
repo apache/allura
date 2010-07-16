@@ -65,7 +65,11 @@ class SFXAuthenticationProvider(plugin.AuthenticationProvider):
 
     def __init__(self, request):
         super(SFXAuthenticationProvider, self).__init__(request)
-        self.sfx_session_manager = request.environ['allura.sfx_session_manager']
+        try:
+            self.sfx_session_manager = request.environ['allura.sfx_session_manager']
+        except TypeError:
+            from sf.phpsession import SFXSessionMgr
+            self.sfx_session_manager = SFXSessionMgr()
         self.local_ap = plugin.LocalAuthenticationProvider(request)
 
     def register_user(self, user_doc):

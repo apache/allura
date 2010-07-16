@@ -23,7 +23,7 @@ class BranchBrowser(repository.BranchBrowser):
     def index(self, offset=0, limit=10, **kw):
         c.revision_widget=revision_widget
         return dict(super(BranchBrowser, self).index(offset, limit),
-                    allow_fork=False)
+                    allow_fork=True)
 
     @expose()
     def _lookup(self, rev, *remainder):

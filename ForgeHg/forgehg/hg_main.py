@@ -12,7 +12,7 @@ from urllib import urlencode, quote, unquote
 
 # Non-stdlib imports
 import pkg_resources
-from tg import expose, validate, redirect, response
+from tg import expose, validate, redirect, response, flash
 from tg.decorators import with_trailing_slash, without_trailing_slash
 import pylons
 from pylons import g, c, request
@@ -187,7 +187,7 @@ class RootController(object):
                     revisions=revisions,
                     next_link=next_link,
                     offset=offset,
-                    allow_fork=False)
+                    allow_fork=True)
 
     @with_trailing_slash
     @expose('forgehg.templates.fork')
