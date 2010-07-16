@@ -705,6 +705,10 @@ ul.ui-tab li a {
 	font-size: .85em;
 	position: relative;
 }
+.menu ul li a span {
+    width: 105px;
+    display: inline-block;
+}
 .menu small {
 	position: absolute;
 	top: 8px;

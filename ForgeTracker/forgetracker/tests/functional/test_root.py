@@ -469,8 +469,20 @@ class TestFunctionalController(TestController):
         assert 'Showing 100 results per page' in req
         assert 'Showing 25 results per page' not in req
 
+    def test_saved_search_labels_truncated(self):
+        r = self.app.post('/bugs/bins/save_bin',{
+            'bin_form.summary': 'This is not too long.',
+            'bin_form.terms': 'aaa',
+            'bin_form.sort': ''}).follow()
+        sidebar_contains(r, 'This is not too long.')
+        r = self.app.post('/bugs/bins/save_bin',{
+            'bin_form.summary': 'This will be truncated because it is too long to show in the sidebar without being ridiculous.',
+            'bin_form.terms': 'aaa',
+            'bin_form.sort': ''}).follow()
+        sidebar_contains(r, 'This will be truncated because it is too long to show in the sidebar ...')
+
 
 def sidebar_contains(response, text):
-    sidebar_menu = response.html.find('ul', attrs={'id': 'sidebarmenu'})
+    sidebar_menu = response.html.find('div', attrs={'id': 'sidebar'})
     return text in str(sidebar_menu)
 

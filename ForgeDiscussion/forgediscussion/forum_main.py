@@ -144,7 +144,7 @@ class ForgeDiscussionApp(Application):
                 l.append(SitemapEntry('Search', c.app.url+'search', ui_icon='search'))
             if has_artifact_access('admin', app=c.app)():
                 l.append(SitemapEntry('Admin', c.project.url()+'admin/'+self.config.options.mount_point, ui_icon='wrench'))
-            recent_topics = [ SitemapEntry(thread.subject, thread.url(), className='nav_child',
+            recent_topics = [ SitemapEntry(h.text.truncate(thread.subject, 72), thread.url(), className='nav_child',
                                 small=thread.num_replies)
                    for thread in model.ForumThread.query.find().sort('mod_date', pymongo.DESCENDING).limit(3)
                    if (not thread.discussion.deleted or has_artifact_access('configure', app=c.app)()) ]

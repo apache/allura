@@ -283,6 +283,18 @@ class TestForum(TestController):
         assert '<a href="feed.rss" class=" ico-l"><b class="ui-icon ui-icon-signal-diag"></b> <span>Follow This</span></a>' in thread_sidebarmenu
         assert '<a href="flag_as_spam" class="sidebar_thread_spam ico-l"><b class="ui-icon ui-icon-flag"></b> <span>Mark as Spam</span></a>' in thread_sidebarmenu
 
+    def test_recent_topics_truncated(self):
+        r = self.app.post('/discussion/TestForum/post', params=dict(
+                subject='This is not too long',
+                text='text')).follow()
+        sidebarmenu = str(r.html.find('div',{'id':'sidebar'}))
+        assert 'This is not too long' in sidebarmenu
+        r = self.app.post('/discussion/TestForum/post', params=dict(
+            subject='This will be truncated because it is too long to show in the sidebar without being ridiculous.',
+            text='text')).follow()
+        sidebarmenu = str(r.html.find('div',{'id':'sidebar'}))
+        assert 'This will be truncated because it is too long to show in the sidebar ...' in sidebarmenu
+
 class TestForumAdmin(TestController):
 
     def setUp(self):

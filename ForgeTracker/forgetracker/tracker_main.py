@@ -125,7 +125,7 @@ class ForgeTrackerApp(Application):
         for bin in model.Bin.query.find(dict(app_config_id=self.config._id)).sort('summary'):
             label = bin.shorthand_id()
             search_bins.append(SitemapEntry(
-                    label, bin.url(), className='nav_child',
+                    h.text.truncate(label, 72), bin.url(), className='nav_child',
                     small=c.app.globals.bin_counts.get(bin.shorthand_id())))
         if ticket.isdigit():
             ticket = model.Ticket.query.find(dict(app_config_id=self.config._id,ticket_num=int(ticket))).first()
@@ -556,7 +556,6 @@ class BinController(object):
         c.app.globals.invalidate_bin_counts()
         if request.method != 'POST':
             raise Exception('save_bin must be a POST request')
-        print bin_form
         bin = model.Bin(summary=bin_form['summary'], terms=bin_form['terms'])
         bin.app_config_id = c.app.config._id
         bin.custom_fields = dict()
