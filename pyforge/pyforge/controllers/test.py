@@ -84,7 +84,7 @@ class TestController(BaseController, ProjectController):
         return app.root, remainder
     # 
     # @expose('pyforge.templates.project_index')
-    # def index(self):
+    # def index(self, **kw):
     #     require(has_project_access('read'))
     #     return dict()
 
@@ -110,7 +110,7 @@ class NamedController(object):
         self.name = name
 
     @expose()
-    def index(self):
+    def index(self, **kw):
         return 'index ' + self.name
 
     @expose()

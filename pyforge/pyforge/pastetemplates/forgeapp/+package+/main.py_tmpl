@@ -89,7 +89,7 @@ class {{egg}}App(Application):
 class RootController(object):
 
     @expose('{{package}}.templates.index')
-    def index(self):
+    def index(self, **kw):
         return dict()
                   
     @expose('{{package}}.templates.search')
@@ -121,7 +121,7 @@ class ArtifactController(object):
 
     @expose('{{package}}.templates.artifact')
     @validate(dict(version=validators.Int()))
-    def index(self, version=None):
+    def index(self, version=None, **kw):
         require(has_artifact_access('read', self.artifact))
         artifact = self.get_version(version)
         if artifact is None:

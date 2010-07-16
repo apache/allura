@@ -149,7 +149,7 @@ class ForgeGitApp(Application):
 class GitAdminController(DefaultAdminController):
 
     @with_trailing_slash
-    def index(self):
+    def index(self, **kw):
         redirect('permissions')
 
 
@@ -163,7 +163,7 @@ class RootController(object):
         self.ci = Commits()
 
     @expose('forgegit.templates.index')
-    def index(self, offset=0, branch='master'):
+    def index(self, offset=0, branch='master', **kw):
         # Add the colon so we know where the branch part ends
         redirect(url(quote('ref/%s:/' % branch), dict(offset=offset)))
 

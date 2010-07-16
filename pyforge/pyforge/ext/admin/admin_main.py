@@ -126,7 +126,7 @@ class ProjectAdminController(object):
 
     @with_trailing_slash
     @expose()
-    def index(self):
+    def index(self, **kw):
         redirect('overview')
 
     @without_trailing_slash

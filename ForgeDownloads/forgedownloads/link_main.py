@@ -74,7 +74,7 @@ class RootController(object):
         require(has_artifact_access('read'))
 
     @expose('forgelink.templates.index')
-    def index(self):
+    def index(self, **kw):
         url = c.app.config.options.get('url')
         if url:
             redirect(url)
@@ -83,5 +83,5 @@ class RootController(object):
 class LinkAdminController(DefaultAdminController):
 
     @expose()
-    def index(self):
+    def index(self, **kw):
         redirect('options')

@@ -21,7 +21,7 @@ class OEmbedController(BaseController):
     '''Controller that serves up oembedded resources'''
 
     @expose('pyforge.templates.oembed.generic')
-    def index(self, href):
+    def index(self, href, **kw):
         try:
             response = g.oembed_consumer.embed(href)
         except (oembed.OEmbedNoEndpoint, HTTPError), ex:

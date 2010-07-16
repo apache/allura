@@ -240,7 +240,7 @@ class RootController(object):
 
     @with_trailing_slash
     @expose()
-    def index(self):
+    def index(self, **kw):
         redirect(c.app.root_page_name+'/')
 
     #Instantiate a Page object, and continue dispatch there
@@ -404,7 +404,7 @@ class PageController(object):
     @expose('forgewiki.templates.page_view')
     @validate(dict(version=validators.Int(if_empty=None),
                    deleted=validators.StringBool(if_empty=False)))
-    def index(self, version=None, deleted=False):
+    def index(self, version=None, deleted=False, **kw):
         if deleted:
             self.page = model.Page.query.get(app_config_id=c.app.config._id, title=self.title, deleted=True)
             if not self.page:
@@ -670,7 +670,7 @@ class AttachmentController(object):
         self.page = self.attachment.page
 
     @expose()
-    def index(self, delete=False, embed=True):
+    def index(self, delete=False, embed=True, **kw):
         if request.method == 'POST':
             require(has_artifact_access('edit', self.page))
             if delete:
@@ -752,7 +752,7 @@ class WikiAdminController(DefaultAdminController):
         self.app = app
 
     @with_trailing_slash
-    def index(self):
+    def index(self, **kw):
         redirect('home')
 
     @without_trailing_slash

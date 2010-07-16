@@ -77,7 +77,7 @@ class ProjectHomeController(object):
 
     @with_trailing_slash
     @expose('pyforge.ext.project_home.templates.project_index')
-    def index(self):
+    def index(self, **kw):
         config = M.PortalConfig.current()
         return dict(
             layout_class=config.layout_class,

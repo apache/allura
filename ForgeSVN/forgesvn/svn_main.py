@@ -99,7 +99,7 @@ class ForgeSVNApp(Application):
 class SVNAdminController(DefaultAdminController):
 
     @with_trailing_slash
-    def index(self):
+    def index(self, **kw):
         redirect('permissions')
 
 h.mixin_reactors(ForgeSVNApp, reactors)

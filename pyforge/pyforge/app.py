@@ -210,7 +210,7 @@ class DefaultAdminController(object):
         self.app = app
 
     @expose()
-    def index(self):
+    def index(self, **kw):
         return redirect('permissions')
 
     @expose('pyforge.templates.app_admin_permissions')

@@ -119,7 +119,7 @@ class HelloForgeApp(Application):
 class RootController(object):
 
     @expose('helloforge.templates.index')
-    def index(self):
+    def index(self, **kw):
         return dict(message=c.app.config.options['message'])
     
     #Instantiate a Page object, and continue dispatch there
@@ -168,7 +168,7 @@ class PageController(object):
 
     @expose('helloforge.templates.page_view')
     @validate(dict(version=V.Int(if_empty=None)))
-    def index(self, version=None):
+    def index(self, version=None, **kw):
         require(has_artifact_access('read', self.page))
         page = self.get_version(version)
         if page is None:

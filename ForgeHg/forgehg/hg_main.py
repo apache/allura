@@ -151,7 +151,7 @@ class ForgeHgApp(Application):
 class HgAdminController(DefaultAdminController):
 
     @with_trailing_slash
-    def index(self):
+    def index(self, **kw):
         redirect('permissions')
 
 
@@ -165,7 +165,7 @@ class RootController(object):
         self.ci = Commits()
 
     @expose('forgehg.templates.index')
-    def index(self, offset=0, limit=10, branch=None, tag=None):
+    def index(self, offset=0, limit=10, branch=None, tag=None, **kw):
         offset=int(offset)
         repo = c.app.repo
         if repo and repo.status == 'ready':

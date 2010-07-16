@@ -867,7 +867,7 @@ class AttachmentController(object):
         self.ticket = self.attachment.ticket
 
     @expose()
-    def index(self, delete=False, embed=True):
+    def index(self, delete=False, embed=True, **kw):
         if request.method == 'POST':
             require(has_artifact_access('write', self.ticket))
             if delete:
@@ -907,7 +907,7 @@ class TrackerAdminController(DefaultAdminController):
             self.app.globals.milestone_names = ''
 
     @with_trailing_slash
-    def index(self):
+    def index(self, **kw):
         redirect('permissions')
 
     @without_trailing_slash

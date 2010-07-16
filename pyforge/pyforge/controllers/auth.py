@@ -234,7 +234,7 @@ class PreferencesController(object):
 
     @with_trailing_slash
     @expose('pyforge.templates.user_preferences')
-    def index(self):
+    def index(self, **kw):
         require_authenticated()
         c.form = F.subscription_form
         subscriptions = []

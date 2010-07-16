@@ -24,7 +24,7 @@ class BranchBrowser(repository.BranchBrowser):
 
     @expose('forgesvn.templates.index')
     @with_trailing_slash
-    def index(self, offset=0, limit=10):
+    def index(self, offset=0, limit=10, **kw):
         c.revision_widget=revision_widget
         return super(BranchBrowser, self).index(offset, limit)
         offset=int(offset)
@@ -57,7 +57,7 @@ class CommitBrowser(repository.CommitBrowser):
 
     @expose('forgesvn.templates.commit')
     @with_trailing_slash
-    def index(self):
+    def index(self, **kw):
         result = super(CommitBrowser, self).index()
         if not self._commit:
             return result
@@ -76,7 +76,7 @@ class TreeBrowser(repository.TreeBrowser):
 
     @expose('forgesvn.templates.tree')
     @with_trailing_slash
-    def index(self):
+    def index(self, **kw):
         return super(TreeBrowser, self).index()
 
 class FileBrowser(repository.FileBrowser):

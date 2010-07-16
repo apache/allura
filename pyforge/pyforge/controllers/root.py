@@ -69,7 +69,7 @@ class RootController(BaseController):
 
     @expose('pyforge.templates.project_list')
     @with_trailing_slash
-    def index(self):
+    def index(self, **kw):
         """Handle the front-page."""
         c.project_summary = W.project_summary
         projects = M.Project.query.find(

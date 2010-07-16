@@ -106,7 +106,7 @@ class SearchController(object):
     @validate(dict(q=V.UnicodeString(),
                    history=V.StringBool(if_empty=False)))
     @with_trailing_slash
-    def index(self, q=None, history=None):
+    def index(self, q=None, history=None, **kw):
         results = []
         count=0
         if not q:

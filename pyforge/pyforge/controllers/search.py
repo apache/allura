@@ -19,7 +19,7 @@ class SearchController(object):
     @validate(dict(q=V.UnicodeString(),
                    history=V.StringBool(if_empty=False)))
     @with_trailing_slash
-    def index(self, q=None, history=False):
+    def index(self, q=None, history=False, **kw):
         results = []
         count=0
         if not q:
@@ -93,7 +93,7 @@ class ProjectBrowseController(object):
 
     @expose('pyforge.templates.project_list')
     @without_trailing_slash
-    def index(self):
+    def index(self, **kw):
         c.project_summary = W.project_summary
         projects = self._find_projects()
         title=self._build_title()

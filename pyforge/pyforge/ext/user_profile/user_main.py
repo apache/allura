@@ -68,7 +68,7 @@ class UserProfileController(object):
                 'Read access required')
 
     @expose('pyforge.ext.user_profile.templates.user_index')
-    def index(self):
+    def index(self, **kw):
         username = c.project.shortname.split('/')[1]
         user = User.by_username(username)
         return dict(user=user)

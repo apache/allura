@@ -35,7 +35,7 @@ class RootController(object):
 
     @with_trailing_slash
     @expose('forgediscussion.templates.index')
-    def index(self):
+    def index(self, **kw):
         c.subscription_form = self.W.subscription_form
         c.announcements_table = self.W.announcements_table
         announcements=model.ForumThread.query.find(dict(

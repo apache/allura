@@ -34,7 +34,7 @@ class CommitBrowser(repository.CommitBrowser):
 
     @expose('forgegit.templates.commit')
     @with_trailing_slash
-    def index(self):
+    def index(self, **kw):
         return super(CommitBrowser, self).index()
 
 on_import()

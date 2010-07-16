@@ -34,7 +34,7 @@ class CommitBrowser(repository.CommitBrowser):
 
     @expose('forgehg.templates.commit')
     @with_trailing_slash
-    def index(self):
+    def index(self, **kw):
         result = super(CommitBrowser, self).index()
         c.revision_widget = revision_widget
         result.update(self._commit.context())

@@ -81,7 +81,7 @@ class NeighborhoodController(object):
 
     @expose('pyforge.templates.neighborhood_project_list')
     @with_trailing_slash
-    def index(self,sort='alpha'):
+    def index(self, sort='alpha', **kw):
         if self.neighborhood.redirect:
             redirect(self.neighborhood.redirect)
         c.project_summary = W.project_summary
@@ -196,7 +196,7 @@ class NeighborhoodProjectBrowseController(ProjectBrowseController):
 
     @expose('pyforge.templates.neighborhood_project_list')
     @without_trailing_slash
-    def index(self,sort='alpha'):
+    def index(self, sort='alpha', **kw):
         c.project_summary = W.project_summary
         projects = self._find_projects(sort=sort)
         title=self._build_title()
@@ -253,7 +253,7 @@ class ProjectController(object):
 
     @expose()
     @with_trailing_slash
-    def index(self):
+    def index(self, **kw):
         if c.project.app_instance('home'):
             redirect('home/')
         elif c.project.app_instance('profile'):
@@ -336,7 +336,7 @@ class ScreenshotController(object):
         self.filename = filename
 
     @expose()
-    def index(self, embed=True):
+    def index(self, embed=True, **kw):
         screenshot = M.ProjectFile.query.find({'metadata.project_id':c.project._id, 'metadata.category':'screenshot', 'filename':self.filename}).first()
         with screenshot.open() as fp:
             filename = fp.metadata['filename'].encode('utf-8')
@@ -385,7 +385,7 @@ class NeighborhoodAdminController(object):
 
     @with_trailing_slash
     @expose()
-    def index(self):
+    def index(self, **kw):
         redirect('overview')
 
     @without_trailing_slash
@@ -488,7 +488,7 @@ class NeighborhoodModerateController(object):
                 'Moderator access required')
 
     @expose('pyforge.templates.neighborhood_moderate')
-    def index(self):
+    def index(self, **kw):
         return dict(neighborhood=self.neighborhood)
 
     @expose()

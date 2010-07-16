@@ -213,7 +213,7 @@ class ResourceController(object):
             ew.dojo.TextField(name='a')])
 
     @expose('ew.tests.templates.resource_index')
-    def index(self):
+    def index(self, **kwargs):
         c.form = self.form
         return dict()
 

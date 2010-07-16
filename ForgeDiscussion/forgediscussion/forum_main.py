@@ -199,7 +199,7 @@ class ForumAdminController(DefaultAdminController):
         require(has_artifact_access('admin', app=self.app), 'Admin access required')
 
     @with_trailing_slash
-    def index(self):
+    def index(self, **kw):
         redirect('forums')
 
     @expose('forgediscussion.templates.admin_forums')
