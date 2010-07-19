@@ -5,6 +5,7 @@ import urllib
 import tg
 from pymongo import bson
 from pylons import c
+from pylons import request
 
 from ming import schema
 from ming.utils import LazyProperty
@@ -395,5 +396,8 @@ class Attachment(File):
 
     def url(self):
         return self.ticket.url() + 'attachment/' + self.filename
+
+    def is_embedded(self):
+        return self.metadata.filename in request.environ.get('allura.macro.att_embedded', [])
 
 MappedClass.compile_all()

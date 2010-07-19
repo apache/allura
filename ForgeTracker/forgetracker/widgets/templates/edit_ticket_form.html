@@ -25,14 +25,32 @@
             <b>Created Time:</b>
             ${h.ago(ticket.created_date)}
             <hr/>
-            <b>Assigned to:</b>
-            ${Markup(c.widget.widget_type.display_field_by_idx(3))}
+            <div class="row dual">
+              <div class="column" style="margin-right:0">
+                <b>Assigned to:</b>
+              </div>
+              <div class="column" style="margin-left:0;width:48%; overflow:auto;">
+                ${Markup(c.widget.widget_type.display_field_by_idx(3))}
+              </div>
+            </div>
             <hr/>
-            <b>Status:</b>
-            ${Markup(c.widget.widget_type.display_field_by_idx(2))}
+            <div class="row dual">
+              <div class="column" style="margin-right:0">
+                <b>Status:</b>
+              </div>
+              <div class="column" style="margin-left:0;width:48%; overflow:auto;">
+                ${Markup(c.widget.widget_type.display_field_by_idx(2))}
+              </div>
+            </div>
             <hr/>
-            <b>Milestone:</b>
-            ${Markup(c.widget.widget_type.display_field_by_idx(4))}
+            <div class="row dual">
+              <div class="column" style="margin-right:0">
+                <b>Milestone:</b>
+              </div>
+              <div class="column" style="margin-left:0;width:48%; overflow:auto;">
+                ${Markup(c.widget.widget_type.display_field_by_idx(4))}
+              </div>
+            </div>
             <hr/>
             <py:if test="len(fields) &gt; 9">
             ${Markup(c.widget.widget_type.display_field_by_idx(9, ignore_errors=True))}
@@ -41,7 +59,7 @@
               <div class="column" style="margin-right:0">
                 <b>Tags:</b>
               </div>
-              <div class="column" style="margin-left:0;width:132px; overflow:auto;">
+              <div class="column" style="margin-left:0;width:48%; overflow:auto;">
                 ${Markup(c.widget.widget_type.display_field_by_idx(5))}
               </div>
             </div>

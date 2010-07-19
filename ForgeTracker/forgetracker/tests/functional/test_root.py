@@ -179,7 +179,7 @@ class TestFunctionalController(TestController):
         r = self.app.get('/bugs/1/attachment/'+filename+'/thumb')
     
         thumbnail = Image.open(StringIO.StringIO(r.body))
-        assert thumbnail.size == (150,150)
+        assert thumbnail.size == (255,255)
     
     def test_sidebar_static_page(self):
         response = self.app.get('/bugs/search/')

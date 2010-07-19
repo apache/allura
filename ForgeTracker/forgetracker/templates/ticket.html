@@ -49,17 +49,10 @@
                   ${c.markdown_editor.display(name='description',value=ticket.description)}
                 </span>
               </div>
-
-              <!-- <div py:if="not allow_edit" py:content="Markup(g.markdown.convert(ticket.description))"/>
-              <py:if test="allow_edit">
-                ${c.markdown_editor.display(name='description',value=ticket.description)}
-                <input type="submit" value="Save Changes" />
-              </py:if> -->
-              ${c.attachment_list.display(attachments=list(ticket.attachments), edit_mode=False)}
             </div>
 
             <div id="sidebar-right" class="column grid_4 fright">
-              <div class="listed">
+              <div class="listed" style="overflow: hidden">
                 <b>Created by:</b>
                   ${gravatar(ticket.reported_by, size=16)}
                   <a href="${ticket.reported_by.url()}">${ticket.reported_by.display_name}</a>
@@ -178,6 +171,25 @@
                     </div>
                   </span>
                 </div>
+
+                <div py:if="ticket.attachments">
+                  <hr/>
+                  <strong>Attachments</strong>
+                </div>
+                <py:for each="att in ticket.attachments">
+                  <hr/>
+                  <div py:if="h.supported_by_PIL(att.contentType) and not att.is_embedded()" class="attachment_thumb">
+                    <a href="${att.url()}">
+                      <img src="${att.url()}/thumb"/>
+                    </a><br/>
+                    <a href="${att.url()}">${att.metadata.filename}</a>
+                    ($att.length bytes)
+                  </div>
+                  <div py:if="not h.supported_by_PIL(att.contentType) or att.is_embedded()">
+                    <a href="${att.url()}">${att.metadata.filename}</a>
+                    ($att.length bytes)
+                  </div>
+                </py:for>
 
               </div>
             </div>

@@ -813,7 +813,7 @@ class TicketController(object):
                 fp_name = fp.name
                 image.save(fp, format)
             image = h.square_image(image)
-            image.thumbnail((150, 150), Image.ANTIALIAS)
+            image.thumbnail((255, 255), Image.ANTIALIAS)
             with model.Attachment.create(
                 content_type=content_type,
                 filename=fp_name,

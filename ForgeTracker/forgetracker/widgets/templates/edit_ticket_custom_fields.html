@@ -5,9 +5,9 @@
   <py:for each="i, field in enumerate(c.widget.widget_type.fields)" py:with="ctx=c.widget.context_for(field.name)">
     <div class="row dual">
       <div class="column" style="margin-right:0">
-        <label for="${field.name}">${field.label}:</label>
+        <b>${field.label}:</b>
       </div>
-      <div class="column" style="margin-left:0">
+      <div class="column" style="margin-left:0;width:48%; overflow:auto;">
         ${field.display(**ctx)}
         <py:if test="ctx.errors and field.show_errors"><div class="error">$ctx.errors</div></py:if>
       </div>
