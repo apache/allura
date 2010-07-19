@@ -104,6 +104,8 @@ class Project(MappedClass):
     class __mongometa__:
         session = main_orm_session
         name='project'
+        indexes = [
+            'shortname' ]
 
     # Project schema
     _id=FieldProperty(S.ObjectId)
