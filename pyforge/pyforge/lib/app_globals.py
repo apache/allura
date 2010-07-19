@@ -97,11 +97,11 @@ class Globals(object):
     def highlight(self, text, lexer=None, filename=None):
         if lexer is None:
             try:
-                lexer = pygments.lexers.get_lexer_for_filename(filename)
+                lexer = pygments.lexers.get_lexer_for_filename(filename, encoding='chardet')
             except pygments.util.ClassNotFound:
                 return '<pre>' + text + '</pre>'
         else:
-            lexer = pygments.lexers.get_lexer_by_name(lexer)
+            lexer = pygments.lexers.get_lexer_by_name(lexer, encoding='chardet')
         return pygments.highlight(text, lexer, self.pygments_formatter)
 
     @property
