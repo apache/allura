@@ -175,3 +175,37 @@ class PageSize(ew.Widget):
             location.href=location.pathname+'?limit='+this.value;
         });
         ''')
+
+class FileChooser(ew.InputField):
+    template='genshi:pyforge.lib.widgets.templates.file_chooser'
+    params=['name']
+    name=None
+    validator=fev.FieldStorageUploadConverter()
+
+    def resources(self):
+        for r in super(FileChooser, self).resources(): yield r
+        yield ew.resource.JSLink('js/jquery.file_chooser.js')
+        yield ew.JSScript('''
+        $(document).ready(function(){
+            var num_files = 0;
+            var chooser = $('input.file_chooser').file();
+            chooser.choose(function(e, input) {
+                var holder = document.createElement('div');
+                holder.style.clear = 'both';
+                e.target.parentNode.appendChild(holder);
+                $(holder).append(input.val());
+                $(holder).append(input);
+                input.attr('name', e.target.id + '-' + num_files);
+                input.hide();
+                ++num_files;
+                var delete_link = document.createElement('a');
+                delete_link.className = 'btn ico';
+                var icon = document.createElement('b');
+                icon.className = 'ui-icon ui-icon-close';
+                delete_link.appendChild(icon);
+                $(delete_link).click(function(){
+                    this.parentNode.parentNode.removeChild(this.parentNode);
+                });
+                $(holder).append(delete_link);
+            });
+        });''')

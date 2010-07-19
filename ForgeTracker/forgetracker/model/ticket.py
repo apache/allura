@@ -1,7 +1,9 @@
 from time import sleep
+from mimetypes import guess_type
 from datetime import datetime, timedelta
 
 import urllib
+import Image
 import tg
 from pymongo import bson
 from pylons import c
@@ -16,6 +18,7 @@ from pyforge.model import Artifact, VersionedArtifact, Snapshot, Message, projec
 from pyforge.model import File, User, Feed, Thread, Post, Notification
 from pyforge.lib import helpers as h
 from pyforge.lib.search import search_artifact
+from pyforge.lib.security import require, has_artifact_access
 
 common_suffix = tg.config.get('forgemail.domain', '.sourceforge.net')
 
@@ -332,6 +335,11 @@ class Ticket(VersionedArtifact):
             (custom_sums if cf.type=='sum' else other_custom_fields).add(cf.name)
             if cf.type == 'boolean' and 'custom_fields.'+cf.name not in ticket_form:
                 self.custom_fields[cf.name] = 'False'
+        if 'attachment' in ticket_form:
+            attachments = ticket_form.pop('attachment')
+            if attachments:
+                for attachment in attachments:
+                    self.attach(file_info=attachment)
         for k, v in ticket_form.iteritems():
             if 'custom_fields.' in k:
                 k = k.split('custom_fields.')[1]
@@ -358,6 +366,44 @@ class Ticket(VersionedArtifact):
         super_id = ticket_form.get('super_id')
         if super_id:
             self.set_as_subticket_of(bson.ObjectId(super_id))
+
+    def attach(self, file_info=None):
+        require(has_artifact_access('write', self))
+        filename = file_info.filename
+        content_type = guess_type(filename)
+        if content_type: content_type = content_type[0]
+        else: content_type = 'application/octet-stream'
+        if h.supported_by_PIL(file_info.type):
+            image = Image.open(file_info.file)
+            format = image.format
+            with Attachment.create(
+                content_type=content_type,
+                filename=filename,
+                ticket_id=self._id,
+                type="attachment",
+                app_config_id=c.app.config._id) as fp:
+                fp_name = fp.name
+                image.save(fp, format)
+            image = h.square_image(image)
+            image.thumbnail((255, 255), Image.ANTIALIAS)
+            with Attachment.create(
+                content_type=content_type,
+                filename=fp_name,
+                ticket_id=self._id,
+                type="thumbnail",
+                app_config_id=c.app.config._id) as fp:
+                image.save(fp, format)
+        else:
+            with Attachment.create(
+                content_type=content_type,
+                filename=filename,
+                ticket_id=self._id,
+                type="attachment",
+                app_config_id=c.app.config._id) as fp:
+                while True:
+                    s = file_info.file.read()
+                    if not s: break
+                    fp.write(s)
 
     def __json__(self):
         return dict(

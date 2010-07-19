@@ -134,17 +134,21 @@ class TestFunctionalController(TestController):
     def test_new_attachment(self):
         file_name = 'test_root.py'
         file_data = file(__file__).read()
-        upload = ('file_info', file_name, file_data)
+        upload = ('attachment-0', file_name, file_data)
         self.new_ticket(summary='test new attachment')
-        ticket_editor = self.app.post('/bugs/1/attach', upload_files=[upload]).follow()
+        ticket_editor = self.app.post('/bugs/1/update_ticket',{
+            'summary':'zzz'
+        }, upload_files=[upload]).follow()
         assert_true(file_name in ticket_editor)
     
     def test_delete_attachment(self):
         file_name = 'test_root.py'
         file_data = file(__file__).read()
-        upload = ('file_info', file_name, file_data)
+        upload = ('attachment-0', file_name, file_data)
         self.new_ticket(summary='test new attachment')
-        ticket_editor = self.app.post('/bugs/1/attach', upload_files=[upload]).follow()
+        ticket_editor = self.app.post('/bugs/1/update_ticket',{
+            'summary':'zzz'
+        }, upload_files=[upload]).follow()
         assert_true(file_name in ticket_editor)
         req = self.app.get('/bugs/1/edit/')
         assert req.html.findAll('form')[3].find('a').string == file_name
@@ -155,9 +159,11 @@ class TestFunctionalController(TestController):
     def test_new_text_attachment_content(self):
         file_name = 'test_root.py'
         file_data = file(__file__).read()
-        upload = ('file_info', file_name, file_data)
+        upload = ('attachment-0', file_name, file_data)
         self.new_ticket(summary='test new attachment')
-        ticket_editor = self.app.post('/bugs/1/attach', upload_files=[upload]).follow()
+        ticket_editor = self.app.post('/bugs/1/update_ticket',{
+            'summary':'zzz'
+        }, upload_files=[upload]).follow()
         download = ticket_editor.click(description=file_name)
         assert_true(download.body == file_data)
     
@@ -166,9 +172,11 @@ class TestFunctionalController(TestController):
         file_name = 'neo-icon-set-454545-256x350.png'
         file_path = os.path.join(pyforge.__path__[0],'public','nf','images',file_name)
         file_data = file(file_path).read()
-        upload = ('file_info', file_name, file_data)
+        upload = ('attachment-0', file_name, file_data)
         self.new_ticket(summary='test new attachment')
-        self.app.post('/bugs/1/attach', upload_files=[upload])
+        ticket_editor = self.app.post('/bugs/1/update_ticket',{
+            'summary':'zzz'
+        }, upload_files=[upload]).follow()
         ticket = tm.Ticket.query.find({'ticket_num':1}).first()
         filename = ticket.attachments.first().filename
     

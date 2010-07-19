@@ -3,7 +3,8 @@
       xmlns:xi="http://www.w3.org/2001/XInclude"
       method="POST"
       action="$action"
-      py:attrs="attrs">
+      py:attrs="attrs"
+      enctype="multipart/form-data">
       <ol>
         <li>
           <label for="summary">Name:</label>
@@ -32,8 +33,8 @@
           ${Markup(c.widget.widget_type.display_field_by_idx(4))}
         </li>
 
-        <py:if test="len(fields) &gt; 9">
-        ${Markup(c.widget.widget_type.display_field_by_idx(9, ignore_errors=True))}
+        <py:if test="len(fields) &gt; 10">
+        ${Markup(c.widget.widget_type.display_field_by_idx(10, ignore_errors=True))}
         </py:if>
 
         <li>
@@ -46,11 +47,22 @@
             </div>
           </div>
         </li>
+
+        <li>
+          <div class="row dual">
+            <div class="column" style="margin-right:0">
+              <label for="attachment">Add Attachment:</label>
+            </div>
+            <div class="column" style="margin-left:0">
+              ${Markup(c.widget.widget_type.display_field_by_idx(6))}
+            </div>
+          </div>
+        </li>
         <li>
           <label>&nbsp;</label>
-          ${Markup(c.widget.widget_type.display_field_by_idx(6))}
+          ${Markup(c.widget.widget_type.display_field_by_idx(7))}
         </li>
-        ${Markup(c.widget.widget_type.display_field_by_idx(7))}
         ${Markup(c.widget.widget_type.display_field_by_idx(8))}
+        ${Markup(c.widget.widget_type.display_field_by_idx(9))}
       </ol>
 </form>

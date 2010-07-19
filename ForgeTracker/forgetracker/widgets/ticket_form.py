@@ -61,6 +61,7 @@ class GenericTicketForm(ew.SimpleForm):
                 options=lambda: [ew.Option(label='None',html_value='',py_value='')] +
                                 model.Globals.for_current_tracker().milestone_names.split()),
             ffw.LabelEdit(label='Tags',name='labels', className='ticket_form_tags'),
+            ffw.FileChooser(name='attachment', label='Attachment', field_type='file', validator=fev.FieldStorageUploadConverter(if_missing=None)),
             ew.SubmitButton(label=self.submit_text,name='submit',
                 attrs={'class':"ui-button ui-widget ui-state-default ui-button-text-only"}),
             ew.HiddenField(name='ticket_num', validator=fev.Int(if_missing=None)),

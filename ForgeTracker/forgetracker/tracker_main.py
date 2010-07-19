@@ -1,6 +1,5 @@
 #-*- python -*-
 import logging
-from mimetypes import guess_type
 import json, urllib, re
 from datetime import datetime, timedelta
 from urllib import urlencode, unquote
@@ -8,7 +7,6 @@ from webob import exc
 
 # Non-stdlib imports
 import pkg_resources
-import Image
 import tg
 from tg import tmpl_context
 from tg import expose, validate, redirect, flash
@@ -59,6 +57,7 @@ class W:
     edit_ticket_form = EditTicketForm()
     subscribe_form = SubscribeForm()
     auto_resize_textarea = ffw.AutoResizeTextarea()
+    file_chooser = ffw.FileChooser()
     ticket_subscribe_form = SubscribeForm(thing='ticket')
 
 class ForgeTrackerApp(Application):
@@ -646,6 +645,7 @@ class TicketController(object):
             c.attachment_list = W.attachment_list
             c.subscribe_form = W.ticket_subscribe_form
             c.auto_resize_textarea = W.auto_resize_textarea
+            c.file_chooser = W.file_chooser
             if c.app.globals.milestone_names is None:
                 c.app.globals.milestone_names = ''
             return dict(ticket=self.ticket, globals=c.app.globals,
@@ -694,6 +694,7 @@ class TicketController(object):
         return feed.writeString('utf-8')
 
     @expose()
+    @h.vardec
     def update_ticket(self, **post_data):
         if not post_data.get('summary'):
             flash('You must provide a Name')
@@ -751,6 +752,9 @@ class TicketController(object):
 
         if c.app.globals.milestone_names is None:
             c.app.globals.milestone_names = ''
+        if 'attachment' in post_data and post_data['attachment']:
+            for attachment in post_data['attachment']:
+                self.ticket.attach(file_info=attachment)
         any_sums = False
         for cf in c.app.globals.custom_fields or []:
             if 'custom_fields.'+cf.name in post_data:
@@ -792,46 +796,6 @@ class TicketController(object):
         self.ticket.commit()
         if any_sums:
             self.ticket.dirty_sums()
-        redirect('.')
-
-    @expose()
-    def attach(self, file_info=None):
-        require(has_artifact_access('write', self.ticket))
-        filename = file_info.filename
-        content_type = guess_type(filename)
-        if content_type: content_type = content_type[0]
-        else: content_type = 'application/octet-stream'
-        if h.supported_by_PIL(file_info.type):
-            image = Image.open(file_info.file)
-            format = image.format
-            with model.Attachment.create(
-                content_type=content_type,
-                filename=filename,
-                ticket_id=self.ticket._id,
-                type="attachment",
-                app_config_id=c.app.config._id) as fp:
-                fp_name = fp.name
-                image.save(fp, format)
-            image = h.square_image(image)
-            image.thumbnail((255, 255), Image.ANTIALIAS)
-            with model.Attachment.create(
-                content_type=content_type,
-                filename=fp_name,
-                ticket_id=self.ticket._id,
-                type="thumbnail",
-                app_config_id=c.app.config._id) as fp:
-                image.save(fp, format)
-        else:
-            with model.Attachment.create(
-                content_type=content_type,
-                filename=filename,
-                ticket_id=self.ticket._id,
-                type="attachment",
-                app_config_id=c.app.config._id) as fp:
-                while True:
-                    s = file_info.file.read()
-                    if not s: break
-                    fp.write(s)
         redirect('.')
 
     @expose()

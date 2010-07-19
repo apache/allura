@@ -17,7 +17,7 @@
   </head>
 
   <body>
-    <form method="POST" class="can-retry" action="${ticket.url()}update_ticket">
+    <form method="POST" class="can-retry" action="${ticket.url()}update_ticket" enctype="multipart/form-data">
         <div class="editable viewing" style="padding: 0">
           <py:if test="not allow_edit"><h1 class="title">#$ticket.ticket_num $ticket.summary</h1></py:if>
           <py:if test="allow_edit">
@@ -162,6 +162,11 @@
                       <div class="column" style="margin-left:0;width:48%; overflow:auto;">
                         ${c.label_edit.display(name='labels', value=ticket.labels)}
                       </div>
+                    </div>
+                    <hr/>
+                    <div style="overflow: auto">
+                        <label><b>Add Attachment:</b></label>
+                        ${c.file_chooser.display(name='attachment')}
                     </div>
                     <div class="row dual">
                       <div class="column" style="margin-right:0">

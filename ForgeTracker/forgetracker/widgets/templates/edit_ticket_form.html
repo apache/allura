@@ -3,7 +3,8 @@
       xmlns:xi="http://www.w3.org/2001/XInclude"
       method="POST"
       action="$action"
-      py:attrs="attrs">
+      py:attrs="attrs"
+      enctype="multipart/form-data">
     <div class="content">
 			<div class="row dual">
 				<div class="column grid_8">
@@ -11,9 +12,9 @@
           <div>
               ${Markup(c.widget.widget_type.display_field_by_idx(1))}
           </div>
-          ${Markup(c.widget.widget_type.display_field_by_idx(6))}
           ${Markup(c.widget.widget_type.display_field_by_idx(7))}
           ${Markup(c.widget.widget_type.display_field_by_idx(8))}
+          ${Markup(c.widget.widget_type.display_field_by_idx(9))}
           <!-- ${c.attachment_list.display(attachments=list(value.attachments), edit_mode=False)} -->
         </div>
 
@@ -52,8 +53,8 @@
               </div>
             </div>
             <hr/>
-            <py:if test="len(fields) &gt; 9">
-            ${Markup(c.widget.widget_type.display_field_by_idx(9, ignore_errors=True))}
+            <py:if test="len(fields) &gt; 10">
+            ${Markup(c.widget.widget_type.display_field_by_idx(10, ignore_errors=True))}
             </py:if>
             <div class="row dual">
               <div class="column" style="margin-right:0">
@@ -62,6 +63,11 @@
               <div class="column" style="margin-left:0;width:48%; overflow:auto;">
                 ${Markup(c.widget.widget_type.display_field_by_idx(5))}
               </div>
+            </div>
+            <hr/>
+            <div style="overflow: auto">
+                <label><b>Add Attachment:</b></label>
+                ${Markup(c.widget.widget_type.display_field_by_idx(6))}
             </div>
           </div>
         </div>
