@@ -22,7 +22,7 @@
       <a href="${b.url()}">${b.path()}</a>
 
       <py:if test="not a.has_html_view or not b.has_html_view">
-        $a.name cannot be displayed in your browser.
+        $a.filename cannot be displayed in your browser.
         You may, however, <a href="?format=raw">download this file</a> instead.
       </py:if>
       <py:if test="a.has_html_view and b.has_html_view">
