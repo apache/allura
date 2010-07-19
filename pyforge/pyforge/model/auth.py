@@ -259,7 +259,7 @@ class User(MappedClass):
         from .project import Project
         for p in self.projects:
             project = Project.query.get(_id=p, deleted=False)
-            if self._id in [role.user_id for role in project.roles] and not project.shortname.startswith('u/'):
+            if project and self._id in [role.user_id for role in project.roles] and not project.shortname.startswith('u/'):
                 yield project
 
     def role_iter(self):
