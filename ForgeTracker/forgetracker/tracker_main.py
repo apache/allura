@@ -695,7 +695,7 @@ class TicketController(object):
 
     @expose()
     def update_ticket(self, **post_data):
-        if post_data['summary'] == '':
+        if not post_data.get('summary'):
             flash('You must provide a Name')
             redirect('.')
         c.app.globals.invalidate_bin_counts()
