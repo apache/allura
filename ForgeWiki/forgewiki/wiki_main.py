@@ -30,6 +30,7 @@ from pyforge.lib.security import require, has_artifact_access
 from pyforge.model import ProjectRole, User, TagEvent, UserTags, ArtifactReference, Tag, Feed, ArtifactLink
 from pyforge.model import Discussion, Thread, Post, Attachment, Mailbox
 from pyforge.controllers import AppDiscussionController
+from pyforge.controllers import attachments as ac
 from pyforge.lib import widgets as w
 from pyforge.lib.widgets import form_fields as ffw
 from pyforge.lib.widgets.subscriptions import SubscribeForm
@@ -593,41 +594,7 @@ class PageController(object):
         if not self.page:
             raise exc.HTTPNotFound
         require(has_artifact_access('edit', self.page))
-        filename = file_info.filename
-        content_type = guess_type(filename)
-        if content_type: content_type = content_type[0]
-        else: content_type = 'application/octet-stream'
-        if h.supported_by_PIL(file_info.type):
-            image = Image.open(file_info.file)
-            format = image.format
-            with model.Attachment.create(
-                content_type=content_type,
-                filename=filename,
-                page_id=self.page._id,
-                type="attachment",
-                app_config_id=c.app.config._id) as fp:
-                fp_name = fp.name
-                image.save(fp, format)
-            image = h.square_image(image)
-            image.thumbnail((255, 255), Image.ANTIALIAS)
-            with model.Attachment.create(
-                content_type=content_type,
-                filename=fp_name,
-                page_id=self.page._id,
-                type="thumbnail",
-                app_config_id=c.app.config._id) as fp:
-                image.save(fp, format)
-        else:
-            with model.Attachment.create(
-                content_type=content_type,
-                filename=filename,
-                page_id=self.page._id,
-                type="attachment",
-                app_config_id=c.app.config._id) as fp:
-                while True:
-                    s = file_info.file.read()
-                    if not s: break
-                    fp.write(s)
+        Attachment.create_with_thumbnail(file_info, self.page._id, 'page_id')
         redirect('.')
 
     @expose()
@@ -642,62 +609,12 @@ class PageController(object):
             self.page.unsubscribe()
         redirect(request.referer)
 
-class AttachmentsController(object):
+class AttachmentController(ac.AttachmentController):
+    AttachmentClass = model.Attachment
+    edit_perm = 'edit'
 
-    def __init__(self, page):
-        self.page = page
-
-    @expose()
-    def _lookup(self, filename, *args):
-        if not args:
-            filename = request.path.rsplit('/', 1)[-1]
-        filename=unquote(filename)
-        return AttachmentController(filename), args
-
-class AttachmentController(object):
-
-    def _check_security(self):
-        require(has_artifact_access('read', self.page))
-
-    def __init__(self, filename):
-        self.filename = filename
-        self.attachment = model.Attachment.query.get(filename=filename)
-        if self.attachment is None:
-            self.attachment = model.Attachment.by_metadata(filename=filename).first()
-        if self.attachment is None:
-            raise exc.HTTPNotFound()
-        self.thumbnail = model.Attachment.by_metadata(filename=filename).first()
-        self.page = self.attachment.page
-
-    @expose()
-    def index(self, delete=False, embed=True, **kw):
-        if request.method == 'POST':
-            require(has_artifact_access('edit', self.page))
-            if delete:
-                self.attachment.delete()
-                self.thumbnail.delete()
-            redirect(request.referer)
-        with self.attachment.open() as fp:
-            filename = fp.metadata['filename'].encode('utf-8')
-            response.headers['Content-Type'] = ''
-            response.content_type = fp.content_type.encode('utf-8')
-            if not embed:
-                response.headers.add('Content-Disposition',
-                                     'attachment;filename=%s' % filename)
-            return fp.read()
-        return self.filename
-
-    @expose()
-    def thumb(self, embed=True):
-        with self.thumbnail.open() as fp:
-            filename = fp.metadata['filename'].encode('utf-8')
-            response.headers['Content-Type'] = ''
-            response.content_type = fp.content_type.encode('utf-8')
-            if not embed:
-                response.headers.add('Content-Disposition',
-                                     'attachment;filename=%s' % filename)
-            return fp.read()
-        return self.filename
+class AttachmentsController(ac.AttachmentsController):
+    AttachmentControllerClass = AttachmentController
 
 MARKDOWN_EXAMPLE='''
 # First-level heading

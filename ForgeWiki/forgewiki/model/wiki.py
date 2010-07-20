@@ -13,7 +13,7 @@ from ming.orm.base import state, session
 from ming.orm.mapped_class import MappedClass
 from ming.orm.property import FieldProperty, ForeignIdProperty, RelationProperty
 
-from pyforge.model import VersionedArtifact, Snapshot, Message, File, Feed, Thread, Post, User
+from pyforge.model import VersionedArtifact, Snapshot, Message, Feed, Thread, Post, User, BaseAttachment
 from pyforge.model import Notification, project_orm_session
 from pyforge.lib import helpers as h
 
@@ -174,29 +174,14 @@ class Page(VersionedArtifact):
         user_ids = uniq([r.author for r in self.history().all()])
         return User.query.find({'_id':{'$in':user_ids}}).all()
 
-class Attachment(File):
-    class __mongometa__:
-        name = 'attachment.files'
-        indexes = [
-            'metadata.filename',
-            'metadata.page_id' ]
-
-    # Override the metadata schema here
+class Attachment(BaseAttachment):
     metadata=FieldProperty(dict(
             page_id=schema.ObjectId,
             app_config_id=schema.ObjectId,
             type=str,
             filename=str))
-
     @property
-    def page(self):
+    def artifact(self):
         return Page.query.get(_id=self.metadata.page_id)
-
-    def url(self):
-        return self.page.url() + 'attachment/' + self.filename
-
-    def is_embedded(self):
-        return self.metadata.filename in request.environ.get('allura.macro.att_embedded', [])
-
 
 MappedClass.compile_all()

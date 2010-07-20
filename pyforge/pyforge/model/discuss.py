@@ -14,8 +14,7 @@ from ming.orm.property import FieldProperty, RelationProperty, ForeignIdProperty
 from pyforge.lib import helpers as h
 from pyforge.lib.security import require, has_artifact_access
 from .auth import ProjectRole
-from .artifact import Artifact, VersionedArtifact, Snapshot, Message, Feed
-from .filesystem import File
+from .artifact import Artifact, VersionedArtifact, Snapshot, Message, Feed, BaseAttachment
 from .types import ArtifactReference, ArtifactReferenceType
 
 log = logging.getLogger(__name__)
@@ -414,7 +413,7 @@ class Post(Message, VersionedArtifact):
         g.publish('react', 'spam', dict(artifact_reference=self.dump_ref()),
                   serializer='pickle')
 
-class Attachment(File):
+class Attachment(BaseAttachment):
     DiscussionClass=Discussion
     ThreadClass=Thread
     PostClass=Post

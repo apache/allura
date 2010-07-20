@@ -5,7 +5,7 @@ from .session import ProjectSession
 from .neighborhood import Neighborhood, NeighborhoodFile, Theme
 from .project import Project, ProjectCategory, ProjectFile, AppConfig, SearchConfig, ScheduledMessage
 from .discuss import Discussion, Thread, PostHistory, Post, Attachment
-from .artifact import Artifact, Message, VersionedArtifact, Snapshot, ArtifactLink, Feed, AwardFile, Award, AwardGrant
+from .artifact import Artifact, Message, VersionedArtifact, Snapshot, ArtifactLink, Feed, AwardFile, Award, AwardGrant, BaseAttachment
 from .auth import User, ProjectRole, OpenId, EmailAddress, ApiToken
 from .openid_model import OpenIdStore, OpenIdAssociation, OpenIdNonce
 from .filesystem import File

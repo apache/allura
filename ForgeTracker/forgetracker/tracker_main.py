@@ -31,6 +31,7 @@ from pyforge.lib import widgets as w
 from pyforge.lib.widgets import form_fields as ffw
 from pyforge.lib.widgets.subscriptions import SubscribeForm
 from pyforge.controllers import AppDiscussionController, AppDiscussionRestController
+from pyforge.controllers import attachments as ac
 
 # Local imports
 from forgetracker import model
@@ -808,57 +809,12 @@ class TicketController(object):
             self.ticket.unsubscribe()
         redirect(request.referer)
 
-class AttachmentsController(object):
+class AttachmentController(ac.AttachmentController):
+    AttachmentClass = model.Attachment
+    edit_perm = 'write'
 
-    def __init__(self, ticket):
-        self.ticket = ticket
-
-    @expose()
-    def _lookup(self, filename, *args):
-        filename = unquote(filename)
-        return AttachmentController(filename), args
-
-class AttachmentController(object):
-
-    def _check_security(self):
-        require(has_artifact_access('read', self.ticket))
-
-    def __init__(self, filename):
-        self.filename = filename
-        self.attachment = model.Attachment.query.get(filename=filename)
-        self.thumbnail = model.Attachment.by_metadata(filename=filename).first()
-        self.ticket = self.attachment.ticket
-
-    @expose()
-    def index(self, delete=False, embed=True, **kw):
-        if request.method == 'POST':
-            require(has_artifact_access('write', self.ticket))
-            if delete:
-                self.attachment.delete()
-                if self.thumbnail:
-                    self.thumbnail.delete()
-            redirect(request.referer)
-        with self.attachment.open() as fp:
-            filename = fp.metadata['filename'].encode('utf-8')
-            response.headers['Content-Type'] = fp.content_type.encode('utf-8')
-            response.content_type = fp.content_type.encode('utf-8')
-            if not embed:
-                response.headers.add('Content-Disposition',
-                                     'attachment;filename=%s' % filename)
-            return fp.read()
-        return self.filename
-
-    @expose()
-    def thumb(self, embed=True):
-        with self.thumbnail.open() as fp:
-            filename = fp.metadata['filename'].encode('utf-8')
-            response.headers['Content-Type'] = ''
-            response.content_type = fp.content_type.encode('utf-8')
-            if not embed:
-                response.headers.add('Content-Disposition',
-                                     'attachment;filename=%s' % filename)
-            return fp.read()
-        return self.filename
+class AttachmentsController(ac.AttachmentsController):
+    AttachmentControllerClass = AttachmentController
 
 NONALNUM_RE = re.compile(r'\W+')
 

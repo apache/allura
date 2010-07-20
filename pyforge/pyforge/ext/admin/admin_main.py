@@ -237,49 +237,14 @@ class ProjectAdminController(object):
                 c.project.labels = labels
 
         if icon is not None and icon != '':
-            if h.supported_by_PIL(icon.type):
-                h.log_action(log, 'update icon').info('')
-                filename = icon.filename
-                if icon.type: content_type = icon.type
-                else: content_type = 'application/octet-stream'
-                image = Image.open(icon.file)
-                format = image.format
-                image = h.square_image(image)
-                image.thumbnail((48, 48), Image.ANTIALIAS)
-                if c.project.icon:
-                    M.ProjectFile.query.remove({'metadata.project_id':c.project._id, 'metadata.category':'icon'})
-                with M.ProjectFile.create(
-                    content_type=content_type,
-                    filename=filename,
-                    category='icon',
-                    project_id=c.project._id) as fp:
-                    image.save(fp, format)
-            else:
-                flash('The icon must be jpg, png, or gif format.')
+            if c.project.icon:
+                M.ProjectFile.query.remove({'metadata.project_id':c.project._id, 'metadata.category':'icon'})
+            h.save_image(icon, M.ProjectFile, square=True, thumbnail_size=(48, 48),
+                         meta=dict(project_id=c.project._id,category='icon'))
         if screenshot is not None and screenshot != '':
-            if h.supported_by_PIL(screenshot.type):
-                filename = screenshot.filename
-                if screenshot.type: content_type = screenshot.type
-                else: content_type = 'application/octet-stream'
-                image = Image.open(screenshot.file)
-                format = image.format
-                with M.ProjectFile.create(
-                    content_type=content_type,
-                    filename=filename,
-                    category='screenshot',
-                    project_id=c.project._id) as fp:
-                    fp_name = fp.name
-                    image.save(fp, format)
-                image = h.square_image(image)
-                image.thumbnail((150, 150), Image.ANTIALIAS)
-                with M.ProjectFile.create(
-                    content_type=content_type,
-                    filename=fp_name,
-                    category='screenshot_thumb',
-                    project_id=c.project._id) as fp:
-                    image.save(fp, format)
-            else:
-                flash('Screenshots must be jpg, png, or gif format.')
+            h.save_image(screenshot, M.ProjectFile, square=True, thumbnail_size=(150, 150), save_original=True,
+                         meta=dict(project_id=c.project._id,category='screenshot_thumb'),
+                         original_meta=dict(project_id=c.project._id,category='screenshot'))
         g.publish('react', 'forge.project_updated')
         redirect('overview')
 

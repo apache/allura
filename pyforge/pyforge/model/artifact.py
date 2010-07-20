@@ -6,6 +6,8 @@ import cPickle as pickle
 from collections import defaultdict
 from time import sleep
 from datetime import datetime
+import Image
+from mimetypes import guess_type
 
 import pymongo
 from pylons import c, g
@@ -709,3 +711,49 @@ class AwardGrant(Artifact):
         else:
             return None
 
+class BaseAttachment(File):
+    thumbnail_size = (255, 255)
+
+    class __mongometa__:
+        name = 'attachment.files'
+        session = project_orm_session
+        indexes = ['metadata.filename']
+
+    # Override the metadata schema here
+    metadata=FieldProperty(dict(
+            artifact_id=S.ObjectId,
+            app_config_id=S.ObjectId,
+            type=str,
+            filename=str))
+
+    def url(self):
+        return self.artifact.url() + 'attachment/' + self.filename
+
+    def is_embedded(self):
+        from pylons import request
+        return self.metadata.filename in request.environ.get('allura.macro.att_embedded', [])
+
+    @classmethod
+    def create_with_thumbnail(cls, file_info, artifact_id, artifact_id_name):
+        if h.supported_by_PIL(file_info.type):
+            meta = dict(type="thumbnail", app_config_id=c.app.config._id)
+            meta[artifact_id_name] = artifact_id
+            original_meta = dict(type="attachment", app_config_id=c.app.config._id)
+            original_meta[artifact_id_name] = artifact_id
+            h.save_image(file_info, cls, square=True, thumbnail_size=cls.thumbnail_size, save_original=True,
+                         meta=meta, original_meta=original_meta)
+        else:
+            filename = file_info.filename
+            content_type = guess_type(filename)
+            if content_type: content_type = content_type[0]
+            else: content_type = 'application/octet-stream'
+            args = dict(content_type=content_type,
+                        filename=filename,
+                        type="attachment",
+                        app_config_id=c.app.config._id)
+            args[artifact_id_name] = artifact_id
+            with cls.create(**args) as fp:
+                while True:
+                    s = file_info.file.read()
+                    if not s: break
+                    fp.write(s)

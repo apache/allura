@@ -229,6 +229,38 @@ def square_image(image):
 def supported_by_PIL(file_type):
     return str(file_type).lower() in ['image/jpg','image/png','image/jpeg','image/gif']
 
+def save_image(icon, file_class, square=False, thumbnail_size=None, meta=None,
+               save_original=False, original_meta=None):
+    if icon is not None and icon != '':
+        if supported_by_PIL(icon.type):
+            if not meta:
+                meta = dict()
+            filename = icon.filename
+            if icon.type: content_type = icon.type
+            else: content_type = 'application/octet-stream'
+            image = Image.open(icon.file)
+            format = image.format
+            if save_original:
+                if not original_meta:
+                    original_meta = dict()
+                with file_class.create(
+                    content_type=content_type,
+                    filename=filename,
+                    **original_meta) as fp:
+                    filename = fp.name
+                    image.save(fp, format)
+            if square_image:
+                image = square_image(image)
+            if thumbnail_size:
+                image.thumbnail(thumbnail_size, Image.ANTIALIAS)
+            with file_class.create(
+                content_type=content_type,
+                filename=filename,
+                **meta) as fp:
+                image.save(fp, format)
+        else:
+            flash('The icon must be jpg, png, or gif format.')
+
 class DateTimeConverter(FancyValidator):
 
     def _to_python(self, value, state):

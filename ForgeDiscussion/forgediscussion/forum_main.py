@@ -207,24 +207,10 @@ class ForumAdminController(DefaultAdminController):
         return dict(app=self.app,
                     allow_config=has_artifact_access('configure', app=self.app)())
 
-    def save_forum_icon(self, forum, icon):                
-        if h.supported_by_PIL(icon.type):
-            filename = icon.filename
-            if icon.type: content_type = icon.type
-            else: content_type = 'application/octet-stream'
-            image = Image.open(icon.file)
-            format = image.format
-            image = h.square_image(image)
-            image.thumbnail((48, 48), Image.ANTIALIAS)
-            if forum.icon:
-                model.ForumFile.query.remove({'metadata.forum_id':forum._id})
-            with model.ForumFile.create(
-                content_type=content_type,
-                filename=filename,
-                forum_id=forum._id) as fp:
-                image.save(fp, format)
-        else:
-            flash('The icon must be jpg, png, or gif format.')
+    def save_forum_icon(self, forum, icon):
+        if forum.icon:
+            file_class.query.remove({'metadata.forum_id':forum._id})
+        h.save_image(icon, model.ForumFile, square=True, thumbnail_size=(48, 48), meta=dict(forum_id=forum._id))
 
     def create_forum(self, new_forum):    
         if '.' in new_forum['shortname'] or '/' in new_forum['shortname']:

@@ -444,23 +444,9 @@ class NeighborhoodAdminController(object):
             theme.color5 = color5
             theme.color6 = color6
         if icon is not None and icon != '':
-            if h.supported_by_PIL(icon.type):
-                filename = icon.filename
-                if icon.type: content_type = icon.type
-                else: content_type = 'application/octet-stream'
-                image = Image.open(icon.file)
-                format = image.format
-                image = h.square_image(image)
-                image.thumbnail((48, 48), Image.ANTIALIAS)
-                if self.neighborhood.icon:
-                    M.NeighborhoodFile.query.remove({'metadata.neighborhood_id':self.neighborhood._id})
-                with M.NeighborhoodFile.create(
-                    content_type=content_type,
-                    filename=filename,
-                    neighborhood_id=self.neighborhood._id) as fp:
-                    image.save(fp, format)
-            else:
-                flash('The icon must be jpg, png, or gif format.')
+            if self.neighborhood.icon:
+                M.NeighborhoodFile.query.remove({'metadata.neighborhood_id':self.neighborhood._id})
+            h.save_image(icon, M.NeighborhoodFile, square=True, thumbnail_size=(48, 48), meta=dict(neighborhood_id=self.neighborhood._id))
         redirect('overview')
 
     @h.vardec
@@ -571,20 +557,7 @@ class NeighborhoodAwardsController(object):
             award.short = short
             award.full = full
             award.created_by_neighborhood_id = self.neighborhood._id
-            if icon is not None and icon != '':
-                if h.supported_by_PIL(icon.type):
-                    filename = icon.filename
-                    if icon.type: content_type = icon.type
-                    else: content_type = 'application/octet-stream'
-                    image = Image.open(icon.file)
-                    format = image.format
-                    image = h.square_image(image)
-                    image.thumbnail((48, 48), Image.ANTIALIAS)
-                    with M.AwardFile.create(
-                        content_type=content_type,
-                        filename=filename,
-                        award_id=award._id) as fp:
-                        image.save(fp, format)
+            h.save_image(icon, M.AwardFile, square=True, thumbnail_size=(48, 48), meta=dict(award_id=award._id))
         redirect(request.referer)
 
     @expose()
