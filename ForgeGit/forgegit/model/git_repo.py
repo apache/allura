@@ -158,11 +158,11 @@ class GitCommit(M.Commit):
 
     @LazyProperty
     def authored_datetime(self):
-        return datetime.fromtimestamp(self.authored_date+self.author_tz_offset)
+        return datetime.fromtimestamp(self.authored_date-self.author_tz_offset)
 
     @LazyProperty
     def committed_datetime(self):
-        return datetime.fromtimestamp(self.authored_date+self.author_tz_offset)
+        return datetime.fromtimestamp(self.authored_date-self.author_tz_offset)
 
     @LazyProperty
     def author_url(self):
