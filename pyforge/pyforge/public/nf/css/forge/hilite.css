@@ -10,11 +10,11 @@
 .codehilite .cp { color: #BC7A00 } /* Comment.Preproc */
 .codehilite .c1 { color: #408080; font-style: italic } /* Comment.Single */
 .codehilite .cs { color: #408080; font-style: italic } /* Comment.Special */
-.codehilite .gd { color: #A00000 } /* Generic.Deleted */
+.codehilite .gd { color: #000; background-color: #fdd; display:inline-block; } /* Generic.Deleted */
 .codehilite .ge { font-style: italic } /* Generic.Emph */
 .codehilite .gr { color: #FF0000 } /* Generic.Error */
 .codehilite .gh { color: #000080; font-weight: bold } /* Generic.Heading */
-.codehilite .gi { color: #00A000 } /* Generic.Inserted */
+.codehilite .gi { color: #000; background-color: #dfd; display:inline-block; } /* Generic.Inserted */
 .codehilite .go { color: #808080 } /* Generic.Output */
 .codehilite .gp { color: #000080; font-weight: bold } /* Generic.Prompt */
 .codehilite .gs { font-weight: bold } /* Generic.Strong */

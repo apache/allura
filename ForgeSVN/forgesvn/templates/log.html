@@ -13,20 +13,12 @@
   </head>
 
   <body>
-    <h1 class="title">$c.app.config.options.mount_label</h1>
+    <h1 class="title">$c.app.config.options.mount_label Log</h1>
     <div class="content">
       <div class="row">
         <div class="column grid_12">
-          <p py:if="c.app.repo">
-            Read access: <code>svn checkout svn://$c.app.repo.scm_url_path</code><br/>
-            Read/write access: <code>svn checkout svn+ssh://${username or 'USERNAME'}@$c.app.repo.scm_url_path</code><br/>
-            Status: ${c.app.repo.status}
-          </p>
           <py:if test="log">
-            <h2>Recent Commits</h2>
-            ${c.log_widget.display(value=log, show_paging=False,
-                                   limit=limit, page=page, count=count)}
-            <a py:if="int(count) &gt; int(limit)" href="${c.app.url}log?page=1">More</a>
+            ${c.log_widget.display(value=log, limit=limit, page=page, count=count)}
           </py:if>
           <py:if test="not log">
             <b>No (more) commits</b>

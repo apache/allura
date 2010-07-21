@@ -13,30 +13,35 @@
   </head>
 
   <body>
-    <div style="background-color:#ddd;-moz-border-radius:5px;padding:1em;">
-      <py:if test="prev">
-        <a href="${prev.url()}">@r${prev._commit._id}</a>
-        <a href="?diff=$prev._commit._id">&mdash; diff &mdash;</a>
-      </py:if>
+    <h1 class="title"><a href="${blob._commit.url()}">@r${blob._commit._id}</a>:
+    ${path_links(blob.path().split('/')[1:-1])} $blob.filename</h1>
+    <div class="content">
+      <div class="row">
+        <div class="column grid_12">
+          <div style="position: relative; height:2.5em">
+            <div py:if="prev" style="position:absolute; top:0; left:0">
+              <a href="${prev.url()}" class="btn">&larr; Previous @r${prev._commit._id}</a>
+              <a href="?diff=$prev._commit._id" class="btn">Diff with @r${prev._commit._id}</a>
+            </div>
+            <div py:if="next" style="position:absolute; top:0; right:0">
+              <a href="?diff=$next._commit._id" class="btn">Diff with @r${next._commit._id}</a>
+               <a href="${next.url()}" class="btn">Next @r${next._commit._id} &rarr;</a>
+            </div>
+          </div>
 
-      <a href="${blob._commit.url()}">@r${blob._commit._id}</a>:
-      ${path_links(blob.path().split('/')[1:-1])} $blob.filename
-
-      <py:if test="next">
-        <a href="${next.url()}?diff=$blob._commit._id">&mdash; diff &mdash;</a>
-        <a href="${next.url()}">@r${next._commit._id}</a>
-      </py:if>
-
-      <br/>
-
-      <py:if test="not blob.has_html_view">
-        $blob.filename cannot be displayed in your browser.
-        You may, however, <a href="?format=raw">download this file</a> instead.
-      </py:if>
-      <py:if test="blob.has_html_view">
-        <a href="?format=raw">Download this file</a>
-        ${Markup(g.highlight(blob.text, filename=blob.filename))}
-      </py:if>
+          <py:if test="not blob.has_html_view">
+            $blob.filename cannot be displayed in your browser.
+            You may, however, <a href="?format=raw">download this file</a> instead.
+          </py:if>
+          <py:if test="blob.has_html_view">
+            <a href="?format=raw">Download this file</a>
+            <div class="clip">
+              <h3><span class="ico"><b class="ui-icon ui-icon-document"></b></span> $blob.filename</h3>
+              ${Markup(g.highlight(blob.text, filename=blob.filename))}
+            </div>
+          </py:if>
+        </div>
+      </div>
     </div>
   </body>
 </html>

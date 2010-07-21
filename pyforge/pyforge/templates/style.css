@@ -794,7 +794,7 @@ ul.ui-tab li a {
 		-webkit-box-shadow:  rgba(0,0,0, 0.6) 0 2px 5px;
 	position: relative;
 }
-.base .pad .title, .title, .actions a {color: rgb(255,255,255) !important;}
+.base .pad .title, .title, .base .pad .title a, .title a, .actions a {color: rgb(255,255,255) !important;}
 .base .pad .title, .title {
 	background: rgb(0,0,0) url('${g.forge_static("images/al.png")}') repeat-x 0 100%;
 	border-top-left-radius: 5px;

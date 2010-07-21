@@ -79,8 +79,7 @@ class SVNRepository(M.Repository):
                 if not latest: return []
                 latest = latest[0]
                 revno = latest.revision.number-offset
-                if offset + limit > revno:
-                    limit = revno - offset
+                limit = min(limit, revno)
                 if limit <= 0: return []
                 revno = max(revno, 0)
                 kwargs['revision_start'] = pysvn.Revision(
@@ -97,6 +96,11 @@ class SVNRepository(M.Repository):
 
     def log(self, branch=None, offset=0, limit=10):
         return self._log(self.local_url, offset=offset, limit=limit)
+
+    def count(self, branch=None):
+        latest = self._impl.log(self.local_url, limit=1)
+        if not latest: return 0
+        return latest[0].revision.number
 
     @LazyProperty
     def latest(self):

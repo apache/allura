@@ -1,7 +1,7 @@
 <div xmlns="http://www.w3.org/1999/xhtml"
   xmlns:py="http://genshi.edgewall.org/"
   py:strip="True">
-  <div py:if="limit and count and int(limit) &lt; int(count)" style="float: right;" py:with="pages=int(count)/int(limit)">
+  <div py:if="limit and count and int(limit) &lt; int(count)" style="float: right;" py:with="pages=int(count)/int(limit)+(int(count)%int(limit) and 1 or 0)">
     <a py:if="page != 0" class="btn"
        href="${tg.url(request.path_info, dict(page=0))}">First</a>
     <a py:if="page &gt; 0" class="btn"

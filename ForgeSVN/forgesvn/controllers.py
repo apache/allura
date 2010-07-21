@@ -5,9 +5,10 @@ from pylons import c
 from pyforge.controllers import repository
 from pyforge.lib.security import require, has_artifact_access
 
-from .widgets import SVNRevisionWidget
+from .widgets import SVNRevisionWidget, SVNLog
 
 revision_widget = SVNRevisionWidget()
+log_widget = SVNLog()
 
 def on_import():
     BranchBrowser.CommitBrowserClass = CommitBrowser
@@ -24,21 +25,15 @@ class BranchBrowser(repository.BranchBrowser):
 
     @expose('forgesvn.templates.index')
     @with_trailing_slash
-    def index(self, offset=0, limit=10, **kw):
-        c.revision_widget=revision_widget
-        return super(BranchBrowser, self).index(offset, limit)
-        offset=int(offset)
-        repo = c.app.repo
-        if repo and repo.status=='ready':
-            revisions = repo.log(offset=offset, limit=10)
-        else:
-            revisions = []
-        c.revision_widget=revision_widget
-        next_link = url(dict(offset=offset+10))
-        return dict(
-            repo=c.app.repo,
-            revisions=revisions,
-            next_link=next_link)
+    def index(self, limit=None, page=0, count=0, **kw):
+        c.log_widget=log_widget
+        return super(BranchBrowser, self).index(limit, page, count)
+
+    @expose('forgesvn.templates.log')
+    @with_trailing_slash
+    def log(self, limit=None, page=0, count=0, **kw):
+        c.log_widget=log_widget
+        return super(BranchBrowser, self).index(limit, page, count)
 
     @expose()
     def _lookup(self, rev, *remainder):

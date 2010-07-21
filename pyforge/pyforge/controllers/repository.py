@@ -6,6 +6,7 @@ from tg import redirect, expose, url, override_template
 
 from pyforge.lib import patience
 from pyforge.lib.widgets.file_browser import TreeWidget
+from pyforge import model
 
 def on_import():
     BranchBrowser.CommitBrowserClass = CommitBrowser
@@ -18,13 +19,24 @@ class BranchBrowser(object):
     def __init__(self, branch):
         self._branch = branch
 
-    def index(self, offset=0, limit=10):
-        offset=int(offset)
-        limit=int(limit)
-        next_link = url('.', dict(offset=offset+10))
+    def index(self, limit=None, page=0, count=0, **kw):
+        if limit:
+            if c.user in (None, model.User.anonymous()):
+                tg.session['results_per_page'] = int(limit)
+                tg.session.save()
+            else:
+                c.user.preferences.results_per_page = int(limit)
+        else:
+            if c.user in (None, model.User.anonymous()):
+                limit = 'results_per_page' in tg.session and tg.session['results_per_page'] or 50
+            else:
+                limit = c.user.preferences.results_per_page or 50
+        page = max(int(page), 0)
+        start = page * int(limit)
+        count = c.app.repo.count(branch=self._branch)
         revisions = c.app.repo.log(
                 branch=self._branch,
-                offset=offset,
+                offset=start,
                 limit=limit)
         revisions = [ dict(value=r) for r in revisions ]
         for r in revisions:
@@ -32,8 +44,10 @@ class BranchBrowser(object):
         return dict(
             username=c.user._id and c.user.username,
             branch=self._branch,
-            next_link=next_link,
-            log=revisions)
+            log=revisions,
+            page=page,
+            limit=limit,
+            count=count)
 
     @expose()
     def _lookup(self, commit, *rest):

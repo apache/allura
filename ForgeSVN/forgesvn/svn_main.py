@@ -53,8 +53,11 @@ class ForgeSVNApp(Application):
 
     def sidebar_menu(self):
         links = [ SitemapEntry('Home',c.app.url, ui_icon='home') ]
+        if c.app.repo.latest:
+            links.append(SitemapEntry('Browse',c.app.url+"LATEST/tree/", ui_icon='folder-collapsed'))
+            links.append(SitemapEntry('Log',c.app.url+"log/", ui_icon='document-b'))
         if has_artifact_access('admin', app=c.app)():
-            links.append(SitemapEntry('Admin', c.project.url()+'admin/'+self.config.options.mount_point, ui_icon='wrench'))
+            links.append(SitemapEntry('Admin', c.project.url()+'admin/'+self.config.options.mount_point, ui_icon='tool-admin'))
         return links
 
     @property

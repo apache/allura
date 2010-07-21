@@ -1,22 +1,14 @@
 <div xmlns="http://www.w3.org/1999/xhtml"
      xmlns:py="http://genshi.edgewall.org/"
-     xmlns:xi="http://www.w3.org/2001/XInclude"
-     style="background-color:#eee;border-top:1px solid #333;">
+     xmlns:xi="http://www.w3.org/2001/XInclude">
   <xi:include href="${g.pyforge_templates}/lib.html"/>
-  <a href="${value.url()}">Revision $value.revision.number</a>:
+  <py:if test="value.author">
+    <a href="${value.author.url()}">${gravatar(value.author, size=16)}</a>
+    <a href="${value.author.url()}">${value.author.display_name}</a>
+  </py:if>
+  <py:if test="not value.author">
+    ${email_gravatar(value.author_username, size=16)} $value.author_username
+  </py:if>
   ${h.ago(value.datetime)}<br/>
-  <a href="${value.tree().url()}">Tree</a><br/>
-  <py:if test="prev">Previous: <a href="${prev.url()}">$prev._id</a><br/></py:if>
-  <py:if test="next">Next: <a href="${next.url()}">$next._id</a><br/></py:if>
   ${Markup(g.markdown.convert(value.message))}
-  <p class="gravatar">
-    <py:if test="value.author">
-      <a href="${value.author.url()}">${gravatar(value.author)}</a><br />
-      <a href="${value.author.url()}">${value.author.display_name}</a><br />
-    </py:if>
-    <py:if test="not value.author">
-      ${email_gravatar(value.author_username)}<br/>
-      $value.author_username<br/>
-    </py:if>
-  </p>
 </div>
