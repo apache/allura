@@ -1,0 +1,60 @@
+<div xmlns="http://www.w3.org/1999/xhtml"
+     xmlns:py="http://genshi.edgewall.org/"
+     xmlns:xi="http://www.w3.org/2001/XInclude">
+  <xi:include href="${g.pyforge_templates}/lib.html"/>
+  <div py:if="show_paging" style="clear:both">
+    ${fields['page_list'].display(limit=limit, page=page, count=count)}
+  </div>
+  <table>
+    <thead>
+      <tr>
+        <th style="text-align:left">Commit</th>
+        <th style="text-align:left">Date</th>
+        <th>&nbsp;</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr py:for="commit in value" py:with="cv = commit.value">
+        <td>
+          <b>${h.text.truncate(commit.value.message, 75)}</b><br/>
+          <py:if test="cv.committer != cv.author">
+            <py:if test="hasattr(cv,'committer_url') and cv.committer_url is not None">
+              <a href="${cv.committer_url}">${email_gravatar(cv.committer.email, title=cv.committer.name, size=16)}
+              ${cv.committer.name}</a>
+              pushed
+            </py:if>
+            <py:if test="not hasattr(cv,'committer_url') or cv.committer_url is None">
+              ${email_gravatar(cv.committer.email, title=cv.committer.name, size=16)} $cv.committer.name
+              pushed
+            </py:if>
+          </py:if>
+          <a href="${cv.url()}">${h.text.truncate(cv.sha, 10)}</a>
+          <py:if test="cv.author_url is not None">
+            by
+            <a href="${cv.author_url}">${email_gravatar(cv.author.email, title=cv.author.name, size=16)}
+            ${cv.author.name}</a>
+          </py:if>
+          <py:if test="cv.author_url is None">
+            by
+            ${email_gravatar(cv.author.email, title=cv.author.name, size=16)} $cv.author.name
+          </py:if>
+        </td>
+        <td>
+          <py:if test="hasattr(cv,'committed_datetime')">${h.ago(cv.committed_datetime)}</py:if>
+        </td>
+        <td style="text-align: right">
+          <py:if test="commit.prev">
+            Parent(s):
+            <py:for each="ci in commit.prev"><a href="${ci.url()}">${h.text.truncate(ci._id, 10)}</a></py:for>
+            <br/>
+          </py:if>
+          <a href="${cv.tree().url()}">Tree</a>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+  <div py:if="show_paging" style="clear:both">
+    ${fields['page_list'].display(limit=limit, page=page, count=count)}
+    ${fields['page_size'].display(limit=limit)}
+  </div>
+</div>

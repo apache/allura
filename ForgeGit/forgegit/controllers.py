@@ -6,9 +6,10 @@ from pyforge.controllers import repository
 from pyforge.lib.security import require, has_artifact_access
 from pyforge.lib import patience
 
-from .widgets import GitRevisionWidget
+from .widgets import GitRevisionWidget, GitLog
 
 revision_widget = GitRevisionWidget()
+log_widget = GitLog()
 
 def on_import():
     BranchBrowser.CommitBrowserClass = CommitBrowser
@@ -20,10 +21,16 @@ class BranchBrowser(repository.BranchBrowser):
 
     @expose('forgegit.templates.index')
     @with_trailing_slash
-    def index(self, offset=0, limit=10, **kw):
-        c.revision_widget=revision_widget
-        return dict(super(BranchBrowser, self).index(offset, limit),
+    def index(self, limit=None, page=0, count=0, **kw):
+        c.log_widget=log_widget
+        return super(BranchBrowser, self).index(limit, page, count,
                     allow_fork=True)
+
+    @expose('forgegit.templates.log')
+    @with_trailing_slash
+    def log(self, limit=None, page=0, count=0, **kw):
+        c.log_widget=log_widget
+        return super(BranchBrowser, self).index(limit, page, count)
 
     @expose()
     def _lookup(self, rev, *remainder):

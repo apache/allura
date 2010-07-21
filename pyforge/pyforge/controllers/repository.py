@@ -47,7 +47,8 @@ class BranchBrowser(object):
             log=revisions,
             page=page,
             limit=limit,
-            count=count)
+            count=count,
+            **kw)
 
     @expose()
     def _lookup(self, commit, *rest):

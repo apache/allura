@@ -1,10 +1,32 @@
 <div xmlns="http://www.w3.org/1999/xhtml"
      xmlns:py="http://genshi.edgewall.org/"
-     xmlns:xi="http://www.w3.org/2001/XInclude"
-     style="background-color:#eee;border-top:1px solid #333;">
+     xmlns:xi="http://www.w3.org/2001/XInclude">
   <xi:include href="${g.pyforge_templates}/lib.html"/>
-  Commit <a href="${value.url()}">${h.text.truncate(value.sha, 10)}</a>: 
-  ${h.ago(value.committed_datetime)}<br/>
+
+  <py:if test="value.author_url is not None">
+    Authored by
+    <a href="${value.author_url}">${email_gravatar(value.author.email, title=value.author.name, size=16)}</a>
+    <a href="${value.author_url}">${value.author.name}</a>
+  </py:if>
+  <py:if test="value.author_url is None">
+    Authored by
+    ${email_gravatar(value.author.email, title=value.author.name, size=16)} $value.author.name
+  </py:if>  
+  <py:if test="hasattr(value,'authored_datetime')">${h.ago(value.authored_datetime)}</py:if>
+  <py:if test="value.committer != value.author">
+    <py:if test="hasattr(value,'committer_url') and value.committer_url is not None">
+      Committed by
+      <a href="${value.committer_url}">${email_gravatar(value.committer.email, title=value.committer.name, size=16)}</a>
+      <a href="${value.committer_url}">${value.committer.name}</a>
+    </py:if>
+    <py:if test="not hasattr(value,'committer_url') or value.committer_url is None">
+      Committed by
+      ${email_gravatar(value.committer.email, title=value.committer.name, size=16)} $value.committer.name
+    </py:if>
+    <py:if test="hasattr(value,'committed_datetime')">${h.ago(value.committed_datetime)}</py:if>
+  </py:if>
+
+  <br/>
   <a href="${value.tree().url()}">Tree</a><br/>
   <py:if test="prev">
     Parent(s):
@@ -17,26 +39,4 @@
     <br/>
   </py:if>
   ${Markup(g.markdown.convert(value.message))}
-  <p class="gravatar">
-    <py:if test="value.author_url is not None">
-      <a href="${value.author_url}">${email_gravatar(value.author.email, title=value.author.name)}</a><br/>
-      <a href="${value.author_url}">$value.author.name</a> (author)<br/>
-    </py:if>
-    <py:if test="value.author_url is None">
-      ${email_gravatar(value.author.email, title=value.author.name)}<br/>
-      $value.author.name (author)<br/>
-    </py:if>
-    ${h.ago(value.authored_datetime)}      
-  </p> 
-  <p py:if="value.committer != value.author" class="gravatar">
-    <py:if test="value.committer_url is not None">
-      <a href="${value.committer_url}">${email_gravatar(value.committer.email, title=value.committer.name)}</a><br/>
-      <a href="${value.committer_url}">$value.committer.name</a> (committer)<br/>
-    </py:if>
-    <py:if test="value.committer_url is None">
-      ${email_gravatar(value.committer.email, title=value.committer.name)}<br/>
-      $value.committer.name (committer)<br/>
-    </py:if>
-    ${h.ago(value.committed_datetime)}      
-  </p> 
 </div>

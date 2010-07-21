@@ -103,6 +103,9 @@ class GitRepository(M.Repository):
     def log(self, branch='master', offset=0, limit=10):
         return self._log(rev=branch, skip=offset, max_count=limit)
 
+    def count(self, branch='master'):
+        return self._impl.iter_commits(rev=branch).next().count()
+
     @LazyProperty
     def _impl(self):
         try:

@@ -76,9 +76,9 @@ class ForgeGitApp(Application):
     def sidebar_menu(self):
         links = [ SitemapEntry('Home',c.app.url, ui_icon='home') ]
         if has_artifact_access('admin', app=c.app)():
-            links.append(SitemapEntry('Admin', c.project.url()+'admin/'+self.config.options.mount_point, ui_icon='wrench'))
+            links.append(SitemapEntry('Admin', c.project.url()+'admin/'+self.config.options.mount_point, ui_icon='tool-admin'))
         repo = c.app.repo
-        if repo and repo.status == 'ready':
+        if repo:
             branches= [ b.name for b in repo.branches ]
             tags = [ t.name for t in repo.repo_tags() ]
             if branches:
@@ -165,7 +165,7 @@ class RootController(object):
     @expose('forgegit.templates.index')
     def index(self, offset=0, branch='master', **kw):
         # Add the colon so we know where the branch part ends
-        redirect(url(quote('ref/%s:/' % branch), dict(offset=offset)))
+        redirect(url(quote('ref/%s:/' % branch)))
 
     @with_trailing_slash
     @expose('forgegit.templates.fork')

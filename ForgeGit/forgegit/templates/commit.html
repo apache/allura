@@ -10,21 +10,24 @@
     <meta content="text/html; charset=UTF-8" http-equiv="content-type" py:replace="''"/>
     <link rel="stylesheet" type="text/css" href="/css/hilite.css"/>
     <title>Git Commit</title>
-    <style type="text/css">
-      ins { text-decoration: none; background-color: #dfd; }
-      del { text-decoration: none; background-color: #fdd; }
-    </style>
   </head>
 
   <body>
-    ${c.revision_widget.display(value=commit, prev=prev, next=next)}
-    <table>
-      <tbody>
-        <tr py:for="kind, path in commit.diff_summarize()">
-          <td>$kind</td>
-          <td><a href="./tree/$path">$path</a></td>
-        </tr>
-      </tbody>
-    </table>
+    <h1 class="title">Commit <a href="${commit.url()}">${h.text.truncate(commit.sha, 10)}</a></h1>
+    <div class="content">
+      <div class="row">
+        <div class="column grid_12">
+          ${c.revision_widget.display(value=commit, prev=prev, next=next)}
+          <table>
+            <tbody>
+              <tr py:for="kind, path in commit.diff_summarize()">
+                <td>$kind</td>
+                <td><a href="./tree/$path">$path</a></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
   </body>
 </html>

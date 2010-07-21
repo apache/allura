@@ -13,13 +13,18 @@
   </head>
 
   <body>
-    <div py:if="tree" style="background-color:#ddd;-moz-border-radius:5px;padding:1em;">
-      <h1 py:if="tree is None">No files</h1>
+    <div py:if="tree">
+      <h1 class="title" py:if="tree is None">No files</h1>
       <py:if test="tree is not None">
-        <a href="${tree._commit.url()}">@${h.text.truncate(tree._commit._id, 10)}</a>:
-        ${path_links(tree.path().split('/')[1:-1])}
-        <br/>
-        ${c.tree_widget.display(tree=tree)}
+        <h1 class="title"><a href="${tree._commit.url()}">@${h.text.truncate(tree._commit._id, 10)}</a>:
+        ${path_links(tree.path().split('/')[1:-1])}</h1>
+        <div class="content">
+          <div class="row">
+            <div class="column grid_12">
+              ${c.tree_widget.display(tree=tree)}
+            </div>
+          </div>
+        </div>
       </py:if>
     </div>
   </body>
