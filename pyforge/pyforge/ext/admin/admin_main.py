@@ -136,7 +136,7 @@ class ProjectAdminController(object):
 
     @without_trailing_slash
     @expose('pyforge.ext.admin.templates.project_overview')
-    def overview(self):
+    def overview(self, **kw):
         c.markdown_editor = W.markdown_editor
         c.label_edit = W.label_edit
         categories = M.ProjectCategory.query.find(dict(parent_id=None)).sort('label').all()
@@ -144,7 +144,7 @@ class ProjectAdminController(object):
 
     @without_trailing_slash
     @expose('pyforge.ext.admin.templates.project_tools')
-    def tools(self):
+    def tools(self, **kw):
         tools = [
             (ep.name, ep.load())
             for ep in pkg_resources.iter_entry_points('pyforge') ]
@@ -171,7 +171,7 @@ class ProjectAdminController(object):
 
     @without_trailing_slash
     @expose('pyforge.ext.admin.templates.project_perms')
-    def perms(self):
+    def perms(self, **kw):
         """Simplfied permission management screen for the project"""
         c.user_select = ffw.ProjectUserSelect()
         return dict()
