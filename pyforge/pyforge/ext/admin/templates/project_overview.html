@@ -7,7 +7,8 @@
   <xi:include href="master.html" />
   <xi:include href="lib.html" />
 
-  <?python from pyforge.lib.security import has_project_access ?>
+  <?python from pyforge.lib.security import has_project_access
+           from tg.configuration import config?>
 
   <head>
     <meta content="text/html; charset=UTF-8" http-equiv="content-type" py:replace="''"/>
@@ -194,11 +195,9 @@
                     <input type="submit" value="Save"
                           />
                     <input type="submit" value="Delete Project" name="delete"
-                          
                            py:if="not c.project.deleted"/>
                     <input type="submit" value="Undelete Project" name="undelete"
-                          
-                           py:if="c.project.deleted"/>
+                           py:if="c.project.deleted and config.get('auth.method', 'local') != 'sfx'"/>
                 </li>
             </ol>
         </form>
