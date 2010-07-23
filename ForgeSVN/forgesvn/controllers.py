@@ -1,6 +1,7 @@
 from tg import expose, url, override_template
 from tg.decorators import with_trailing_slash, without_trailing_slash
 from pylons import c
+from webob import exc
 
 from pyforge.controllers import repository
 from pyforge.lib.security import require, has_artifact_access
@@ -48,7 +49,11 @@ class CommitBrowser(repository.CommitBrowser):
                 rev = c.app.repo.latest.revision.number
             else:
                 rev = 0
-        super(CommitBrowser, self).__init__(int(rev))
+        try:
+            rev = int(rev)
+        except ValueError:
+            raise exc.HTTPNotFound()
+        super(CommitBrowser, self).__init__(rev)
 
     @expose('forgesvn.templates.commit')
     @with_trailing_slash
