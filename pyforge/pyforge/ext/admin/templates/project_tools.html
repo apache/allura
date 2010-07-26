@@ -131,7 +131,7 @@
           </table>
           <input type="button" id="save_order" value="Save Tool Order" style="display:none"
                  py:if="has_project_access('tool')()"/>
-          <div id="delete-confirm">Warning: This will destroy all data in this tool and is non reversable!</div>
+          <div py:if="has_project_access('tool')()" id="delete-confirm">Warning: This will destroy all data in this tool and is non reversable!</div>
         </div>
       </div>
     </div>
