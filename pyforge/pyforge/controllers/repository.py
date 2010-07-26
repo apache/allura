@@ -128,11 +128,13 @@ class FileBrowser(object):
             override_template(self.index, 'genshi:pyforge.templates.repo.diff')
             return self.diff(kw['diff'])
         else:
+            force_display = 'force' in kw
             context = self._blob.context()
             return dict(
                 blob=self._blob,
                 prev=context.get('prev', None),
-                next=context.get('next', None)
+                next=context.get('next', None),
+                force_display=force_display
                 )
 
     @expose()

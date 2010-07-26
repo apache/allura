@@ -29,11 +29,12 @@
             </div>
           </div>
 
-          <py:if test="not blob.has_html_view">
-            $blob.filename cannot be displayed in your browser.
-            You may, however, <a href="?format=raw">download this file</a> instead.
+          <py:if test="not blob.has_html_view and not force_display">
+            $blob.filename is not known to be viewable in your browser.
+            Try to <a href="?force=True">display it</a> anyway or
+            <a href="?format=raw">download it</a> instead.
           </py:if>
-          <py:if test="blob.has_html_view">
+          <py:if test="blob.has_html_view or force_display">
             <a href="?format=raw">Download this file</a>
             <div class="clip">
               <h3><span class="ico"><b class="ui-icon ui-icon-document"></b></span> $blob.filename</h3>
