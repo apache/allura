@@ -30,6 +30,7 @@ class Repository(Artifact):
     url_path=FieldProperty(str)
     status=FieldProperty(str)
     email_address=''
+    additional_viewable_extensions=FieldProperty(str)
 
     def __init__(self, **kw):
         if 'name' in kw and 'tool' in kw:
@@ -166,9 +167,16 @@ class Blob(object):
         self._commit = commit
         self._tree = tree
         self.filename = filename
+        ext_list = getattr(repo, 'additional_viewable_extensions', '')
+        if ext_list:
+            ext_list = ext_list.split(',')
+        else:
+            ext_list = []
+        additional_viewable_extensions = [ext.strip() for ext in ext_list if ext]
+        additional_viewable_extensions.extend([ '.ini', '.gitignore', '.svnignore'])
         content_type, encoding = mimetypes.guess_type(filename)
         fn, ext = os.path.splitext(filename)
-        if ext in [ '.ini', '.gitignore', '.svnignore']:
+        if ext in additional_viewable_extensions:
             content_type, encoding = 'text/plain', None
         if content_type is None:
             self.content_type = 'application/octet-stream'
