@@ -73,16 +73,13 @@ setup(
     admin = pyforge.ext.admin:AdminApp
     search = pyforge.ext.search:SearchApp
     home = pyforge.ext.project_home:ProjectHomeApp
-    sfx = pyforge.ext.sfx:SFXApp
 
     [pyforge.auth]
     local = pyforge.lib.plugin:LocalAuthenticationProvider
     ldap = pyforge.lib.plugin:LdapAuthenticationProvider
-    sfx = pyforge.ext.sfx:SFXAuthenticationProvider
 
     [pyforge.project_registration]
     local = pyforge.lib.plugin:LocalProjectRegistrationProvider
-    sfx = pyforge.ext.sfx:SFXProjectRegistrationProvider
 
     [flyway.migrations]
     pyforge = pyforge.migrations

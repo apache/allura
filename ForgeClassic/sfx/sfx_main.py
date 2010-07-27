@@ -136,7 +136,7 @@ class SFXProjectRegistrationProvider(plugin.ProjectRegistrationProvider):
             ug_name = self.api.create(user, neighborhood, shortname)
             log.info('SFX Project creation returned: %s', ug_name)
         except sfx_exc.SFXAPIError, exc:
-            if user_project: 
+            if user_project:
                 log.exception('SFX project creation error: %r', exc)
                 ug_name = None
                 return None
@@ -191,4 +191,3 @@ def fake_pylons_context(request):
         pylons.c._pop_object()
         pylons.g._pop_object()
         pylons.request._pop_object()
-

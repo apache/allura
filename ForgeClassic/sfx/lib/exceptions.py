@@ -17,5 +17,3 @@ SFXAPIError.status_map = {
         404:SFXNotFound,
         409:exceptions.ProjectConflict,
         410:SFXGone }
-    
-

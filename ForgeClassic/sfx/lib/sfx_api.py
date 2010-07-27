@@ -26,7 +26,7 @@ def read_response(response, *expected):
     raise cls('Error status %s' % response.status)
 
 class SFXUserApi(object):
-    
+
     def __init__(self):
         self.project_host = config.get('sfx.api.host', None)
         self.project_path = config.get('sfx.api.project_path', '/api/user')
