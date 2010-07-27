@@ -104,7 +104,10 @@ class GitRepository(M.Repository):
         return self._log(rev=branch, skip=offset, max_count=limit)
 
     def count(self, branch='master'):
-        return self._impl.iter_commits(rev=branch).next().count()
+        try:
+            return self._impl.iter_commits(rev=branch).next().count()
+        except StopIteration:
+            return 0
 
     @LazyProperty
     def _impl(self):
