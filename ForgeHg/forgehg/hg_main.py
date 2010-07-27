@@ -73,7 +73,11 @@ class ForgeHgApp(Application):
                 SitemapEntry(menu_id, '.')[self.sidebar_menu()] ]
 
     def admin_menu(self):
-        return super(ForgeHgApp, self).admin_menu()
+        admin_url = c.project.url()+'admin/'+self.config.options.mount_point+'/'
+        links = [SitemapEntry('Viewable Files', admin_url + 'extensions', className='nav_child')]
+        # if self.permissions and has_artifact_access('configure', app=self)():
+        #     links.append(SitemapEntry('Permissions', admin_url + 'permissions', className='nav_child'))
+        return links
 
     def sidebar_menu(self):
         links = [ SitemapEntry('Home',c.app.url, ui_icon='home') ]
@@ -150,9 +154,25 @@ class ForgeHgApp(Application):
 
 class HgAdminController(DefaultAdminController):
 
+    def __init__(self, app):
+        self.app = app
+        self.repo = app.repo
+
     @with_trailing_slash
     def index(self, **kw):
         redirect('permissions')
+
+    @without_trailing_slash
+    @expose('forgehg.templates.admin_extensions')
+    def extensions(self, **kw):
+        return dict(app=self.app,
+                    allow_config=has_artifact_access('configure', app=self.app)(),
+                    additional_viewable_extensions=getattr(self.repo, 'additional_viewable_extensions', ''))
+
+    @without_trailing_slash
+    @expose()
+    def set_extensions(self, **post_data):
+        self.repo.additional_viewable_extensions = post_data['additional_viewable_extensions']
 
 
 class RootController(object):
