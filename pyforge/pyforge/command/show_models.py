@@ -20,18 +20,24 @@ class ShowModelsCommand(base.Command):
                 print line
 
 class ReindexCommand(base.Command):
-    min_args=1
+    min_args=0
     max_args=1
     usage = 'NAME <ini file>'
     summary = 'Reindex and re-shortlink all artifacts'
     parser = base.Command.standard_parser(verbose=True)
+    parser.add_option('-p', '--project', dest='project',  default=None,
+                      help='project to reindex')
 
     def command(self):
         from pyforge import model as M
         self.basic_setup()
         graph = build_model_inheritance_graph()
         # Clear shortlinks
-        for p in M.Project.query.find():
+        if self.options.project is None:
+            projects = M.Project.query.find()
+        else:
+            projects = [ M.Project.query.get(shortname=self.options.project) ]
+        for p in projects:
             base.log.info('Reindex project %s', p.shortname)
             c.project = p
             M.ArtifactLink.query.remove({})
