@@ -8,7 +8,10 @@
 
   <head>
     <meta content="text/html; charset=UTF-8" http-equiv="content-type" py:replace="''"/>
-    <title>SVN File</title>
+    <title>
+      $c.project.name / $c.app.config.options.mount_label / @r${blob._commit._id}:
+      ${path_links(blob.path().split('/')[1:-1])} $blob.filename
+    </title>
     <link rel="stylesheet" type="text/css" media="screen, projection" href="${g.forge_static('css/forge/hilite.css')}" />
   </head>
 

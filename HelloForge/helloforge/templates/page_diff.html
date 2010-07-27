@@ -8,7 +8,7 @@
   <xi:include href="${c.app.templates}/lib.html" />
   <head>
     <meta content="text/html; charset=UTF-8" http-equiv="content-type" py:replace="''"/>
-    <title>$p1.title</title>
+    <title>$c.project.name / $c.app.config.options.mount_label / $p1.title</title>
     <style type="text/css">
       .diff_add { text-decoration: underline; background-color: #0f0; }
       .diff_sub { text-decoration: line-through; background-color: #f00; }
