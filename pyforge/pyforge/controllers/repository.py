@@ -2,6 +2,7 @@ import os
 from urllib import unquote
 
 from pylons import c, request, response
+import tg
 from tg import redirect, expose, url, override_template
 
 from pyforge.lib import patience
