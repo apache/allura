@@ -19,8 +19,6 @@ from pyforge.controllers import BaseController
 # Local imports
 from forgedownloads import version
 
-from pyforge.ext.sfx.lib.sfx_api import SFXProjectApi
-
 log = logging.getLogger(__name__)
 
 

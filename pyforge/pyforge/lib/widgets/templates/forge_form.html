@@ -7,11 +7,11 @@
   <?python from ew import HiddenField?>
   <ol>
     <py:for each="i, field in enumerate(fields)">
-      <li py:if="not isinstance(fields[i],HiddenField)">
+      <li py:if="not isinstance(field,HiddenField)">
         <label for="$field.name">$field.label:</label>
         ${Markup(c.widget.widget_type.display_field_by_idx(i))}
       </li>
-      <py:if test="isinstance(fields[i],HiddenField)">
+      <py:if test="isinstance(field,HiddenField)">
         ${Markup(c.widget.widget_type.display_field_by_idx(i))}
       </py:if>
     </py:for>

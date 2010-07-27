@@ -26,11 +26,12 @@ setup(
     # -*- Entry points: -*-
     [pyforge]
     sfx = sfx:SFXApp
+    mailman = sfx:MailmanApp
 
     [pyforge.auth]
-    sfx = pyforge.ext.sfx:SFXAuthenticationProvider
+    sfx = sfx:SFXAuthenticationProvider
 
     [pyforge.project_registration]
-    sfx = pyforge.ext.sfx:SFXProjectRegistrationProvider
+    sfx = sfx:SFXProjectRegistrationProvider
     """,
       )
