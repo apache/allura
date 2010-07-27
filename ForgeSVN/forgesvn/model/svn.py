@@ -98,7 +98,10 @@ class SVNRepository(M.Repository):
         return self._log(self.local_url, offset=offset, limit=limit)
 
     def count(self, branch=None):
-        latest = self._impl.log(self.local_url, limit=1)
+        try:
+            latest = self._impl.log(self.local_url, limit=1)
+        except pysvn.ClientError:
+            return 0
         if not latest: return 0
         return latest[0].revision.number
 
