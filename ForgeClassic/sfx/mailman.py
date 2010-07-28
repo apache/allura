@@ -77,17 +77,13 @@ class MailmanAdminController(DefaultAdminController):
     def index(self, **kw):
         c.list = W.admin_list
         c.new = W.new_list
-        return dict(lists=SM.List.query.find().all())
+        return dict(lists=list(SM.List.find()))
 
     @expose()
     @validate(form=W.new_list)
-    def create(self, public='yes', **kw):
-        if public == 'yes':
-            d = dict(kw, visibility='public')
-        else:
-            d = dict(kw, visibility='private')
-        d['name'] = c.project.shortname + '-' + d['name']
-        SM.List(**d)
+    def create(self, name=None, **kw):
+        lst = SM.List(c.project.shortname + '-' + name)
+        lst.create(**kw)
         redirect('.')
 
     @expose()
@@ -96,9 +92,10 @@ class MailmanAdminController(DefaultAdminController):
     def save(self, lists=None, **kw):
         if lists is None: lists = []
         for args in lists:
-            l = args['_id']
-            if args['visibility'] == 'delete':
-                l.delete()
-            l.description = args['description']
-            l.visibility = args['visibility']
+            lst = SM.List(args['name'])
+            lst.update(
+                description = args['description'],
+                is_public = args['is_public'])
+            if args['is_public'] == SM.List.DELETE:
+                lst.delete()
         redirect('.')

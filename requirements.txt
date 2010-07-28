@@ -73,7 +73,7 @@ MySQL-python==1.2.3c1
 phpserialize==1.2
 feedparser==4.1-r295
 psycopg2==0.2.2
-mysql-python==1.2.2
+mysql-python==1.2.3c1
 
 EasyWidgets==0.2dev-20100706
 Ming==0.2dev-20100714

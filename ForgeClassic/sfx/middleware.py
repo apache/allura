@@ -1,4 +1,4 @@
-import sqlalchemy
+from sqlalchemy import Table, create_engine
 from webob import exc, Request
 from paste.deploy.converters import asint
 
@@ -23,12 +23,9 @@ class SfxMiddleware(object):
         M.site_meta.bind = self.environ_values['allura.sfx.site_db']
         M.mail_meta.bind = self.environ_values['allura.sfx.mail_db']
         M.epic_meta.bind =self.environ_values['allura.sfx.epic_db']
-        M.site_meta.reflect()
-        M.mail_meta.reflect()
-        M.epic_meta.reflect()
-        M.mail_group_list = M.site_meta.tables['mail_group_list']
-        M.backend_queue = M.epic_meta.tables['backend_queue']
-        M.lists = M.mail_db.tables['lists']
+        M.tables.mail_group_list = Table('mail_group_list', M.site_meta, autoload=True)
+        M.tables.backend_queue = Table('backend_queue', M.epic_meta, autoload=True)
+        M.tables.lists = Table('lists', M.mail_meta, autoload=True)
 
     def __call__(self, environ, start_response):
         request = Request(environ)
@@ -51,8 +48,7 @@ def engine_from_config(config):
     db_recycle = asint(config['pool_recycle'])
     db_size = asint(config['pool_size'])
     db_overflow = asint(config['pool_max_overflow'])
-
-    return sqlalchemy.create_engine(
+    return create_engine(
         '%s://%s:%s@%s/%s' % (sa_scheme, sa_user,sa_password,sa_host,db),
         pool_recycle=db_recycle,
         pool_size=db_size,

@@ -11,11 +11,17 @@ from sfx import model as M
 class _MailingListRow(ew.RowField):
     template='genshi:sfx.templates.list_admin_row'
     class hidden_fields(ew.WidgetsList):
-        _id = ew.HiddenField(validator=V.Ming(M.List))
+        name = ew.HiddenField()
     class fields(ew.WidgetsList):
         name = ew.HTMLField(label='List Name', show_label=True)
         description = ew.TextField(label='Description', show_label=True)
-        visibility = ew.SingleSelectField(label='Visibility', options=['public', 'private', 'hidden', 'delete'])
+        is_public = ew.SingleSelectField(
+            label='Visibility',
+            validator=fev.Int(),
+            options=[ew.Option(label='Public', py_value=M.List.PUBLIC),
+                     ew.Option(label='Private', py_value=M.List.PRIVATE),
+                     ew.Option(label='Hidden', py_value=M.List.HIDDEN),
+                     ew.Option(label='Delete', py_value=M.List.DELETE)])
 
 class ListAdmin(ew.SimpleForm):
     submit_text = 'Save'
@@ -32,4 +38,7 @@ class NewList(ForgeForm):
     class fields(ew.WidgetsList):
         name = ew.TextField()
         description = ew.TextField()
-        public = ew.SingleSelectField(options=['yes', 'no'])
+        is_public = ew.SingleSelectField(
+            validator=fev.Int(),
+            options=[ew.Option(label='Yes', py_value=M.List.PUBLIC),
+                     ew.Option(label='No', py_value=M.List.PRIVATE)])
