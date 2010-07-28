@@ -426,6 +426,33 @@ def config_with_prefix(d, prefix):
     return dict((k[plen:], v) for k,v in d.iteritems()
                 if k.startswith(prefix))
 
+@contextmanager
+def twophase_transaction(*engines):
+    connections = [
+        e.contextual_connect()
+        for e in engines ]
+    txns = []
+    to_rollback = []
+    xid = None
+    try:
+        for c in connections:
+            txn = c.begin_twophase(xid)
+            xid = txn.xid
+            txns.append(txn)
+            to_rollback.append(txn)
+        yield
+        to_rollback = []
+        for txn in txns:
+            txn.prepare()
+            to_rollback.append(txn)
+    except:
+        for txn in to_rollback:
+            txn.rollback()
+        raise
+    finally:
+        for txn in txns:
+            txn.commit()
+
 class exceptionless(object):
     '''Decorator making the decorated function return 'error_result' on any
     exceptions rather than propagating exceptions up the stack

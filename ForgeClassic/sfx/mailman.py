@@ -82,20 +82,21 @@ class MailmanAdminController(DefaultAdminController):
     @expose()
     @validate(form=W.new_list)
     def create(self, name=None, **kw):
-        lst = SM.List(c.project.shortname + '-' + name)
-        lst.create(**kw)
+        SM.List.create(name=c.project.shortname + '-' + name,
+                       **kw)
         redirect('.')
 
     @expose()
     @h.vardec
     @validate(form=W.admin_list)
     def save(self, lists=None, **kw):
-        if lists is None: lists = []
-        for args in lists:
-            lst = SM.List(args['name'])
-            lst.update(
-                description = args['description'],
-                is_public = args['is_public'])
-            if args['is_public'] == SM.List.DELETE:
-                lst.delete()
+        if lists is None: redirect('.')
+        with h.twophase_transaction(SM.site_meta.bind, SM.epic_meta.bind, SM.mail_meta.bind):
+            for args in lists:
+                lst = SM.List(args['name'])
+                lst.update(
+                    description = args['description'],
+                    is_public = args['is_public'])
+                if args['is_public'] == SM.List.DELETE:
+                    lst.delete()
         redirect('.')

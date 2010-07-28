@@ -75,24 +75,56 @@ class List(object):
                      group_id=self.group_id,
                      group_list_id=self.group_list_id)
 
-    def create(self, is_public, description):
+    @classmethod
+    def create(cls, name, is_public, description):
+        name = name.lower().replace('/', '')
+        # Copy checks from www/mail/admin/index.php
+        short_names = ('svn', 'cvs', 'hg', 'bzr', 'git')
+        if len(name) < 4 and name not in short_names:
+            tg.flash('List name must contain at least 4 characters'
+                     ' unless named one of %s' % ','.join(short_names),
+                     'error')
+            return None
+        if not h.re_path_portion.match(name):
+            tg.flash('List name must contain be alphanumeric (dashes permitted)'
+                     ' and start with a letter',
+                     'unless named one of %s' % ','.join(short_names),
+                     'error')
+            return None
+        if name.endswith('admin'):
+            tg.flash('List name cannot end in "admin".', 'error')
+            return None
+
+        # Omit PHP NameChecker code and validate_email code on the presumption
+        # that our re_path_portion match above is sufficient
+
+        # Omit select for existing mailing list; this should be handled by a
+        # unique constraint on list_name in mail_group_list.  The check in the
+        # php has a race condition anyway.
+
         password = h.nonce(6)
         stmt = T.mail_group_list.insert()
         stmt = stmt.values(
             group_id=context.project.get_tool_data('sfx', 'group_id'),
-            list_name=self.name,
+            list_name=name,
             is_public=is_public,
             password=password,
             list_admin=context.user.get_tool_data('sfx', 'userid'),
             status=0,
             description=description)
-        stmt.execute()
+        try:
+            stmt.execute()
+        except Exception, ex:
+            tg.flash('Error creating list: %s, %s', ex.__class__.__name__, ex)
+            return None
         tg.flash('Your new mailing list has been queued for creation.'
                  'Your list password is %s' % password)
+        return cls(name=name)
 
     def update(self, is_public, description):
         if self.is_public == is_public and self.description == description:
             return
+
         stmt = T.mail_group_list.update(
             where=and_(
                 T.mail_group_list.c.group_id==self.group_id,

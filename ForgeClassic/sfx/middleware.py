@@ -48,8 +48,10 @@ def engine_from_config(config):
     db_recycle = asint(config['pool_recycle'])
     db_size = asint(config['pool_size'])
     db_overflow = asint(config['pool_max_overflow'])
+    sa_port = config.get('port', '')
+    if sa_port: sa_port = ':' + sa_port
     return create_engine(
-        '%s://%s:%s@%s/%s' % (sa_scheme, sa_user,sa_password,sa_host,db),
+        '%s://%s:%s@%s%s/%s' % (sa_scheme, sa_user,sa_password,sa_host,sa_port,db),
         pool_recycle=db_recycle,
         pool_size=db_size,
         max_overflow=db_overflow,
