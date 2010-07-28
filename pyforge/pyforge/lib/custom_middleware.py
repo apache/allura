@@ -122,27 +122,6 @@ class LoginRedirectMiddleware(object):
         return app_iter
 
 
-class SfxLoginMiddleware(object):
-
-    def __init__(self, app, config):
-        from sf.phpsession import SFXSessionMgr
-        self.app = app
-        self.config = config
-        self.sfx_session_mgr = SFXSessionMgr()
-        self.sfx_session_mgr.setup_sessiondb_connection_pool(config)
-
-    def __call__(self, environ, start_response):
-        request = Request(environ)
-        try:
-            self.handle(request)
-        except exc.HTTPException, resp:
-            return resp(environ, start_response)
-        resp = request.get_response(self.app)
-        return resp(environ, start_response)
-
-    def handle(self, request):
-        request.environ['allura.sfx_session_manager'] = self.sfx_session_mgr
-
 class SSLMiddleware(object):
     'Verify the https/http schema is correct'
 

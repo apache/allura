@@ -21,6 +21,9 @@ setup(
     install_requires=[
         # -*- Extra requirements: -*-
         'pyforge',
+        'sqlalchemy==0.6beta3',
+        'psycopg2==2.2.2',
+        'mysql-python==1.2.2',
         ],
     entry_points="""
     # -*- Entry points: -*-

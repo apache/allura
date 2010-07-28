@@ -18,6 +18,7 @@ from pylons.middleware import StatusCodeRedirect
 from paste.deploy.converters import asbool
 from routes import Mapper
 
+import sfx.middleware
 import pyforge
 import pyforge.lib.helpers as h
 from pyforge import model
@@ -47,7 +48,9 @@ class ForgeConfig(AppConfig):
 
     def add_core_middleware(self, app):
         if asbool(config.get('auth.method', 'local')=='sfx'):
-            app = custom_middleware.SfxLoginMiddleware(app, h.config_with_prefix(config, 'auth.'))
+            d = h.config_with_prefix(config, 'auth.')
+            d.update(h.config_with_prefix(config, 'sfx.'))
+            app = sfx.middleware.SfxMiddleware(app, d)
         return super(ForgeConfig, self).add_core_middleware(app)
 
     def setup_routes(self):
