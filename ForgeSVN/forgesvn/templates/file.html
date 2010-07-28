@@ -9,8 +9,7 @@
   <head>
     <meta content="text/html; charset=UTF-8" http-equiv="content-type" py:replace="''"/>
     <title>
-      $c.project.name / $c.app.config.options.mount_label / @r${blob._commit._id}:
-      ${path_links(blob.path().split('/')[1:-1])} $blob.filename
+      $c.project.name / $c.app.config.options.mount_label / @r${blob._commit._id}:${blob.path()}
     </title>
     <link rel="stylesheet" type="text/css" media="screen, projection" href="${g.forge_static('css/forge/hilite.css')}" />
   </head>
@@ -40,7 +39,7 @@
           <py:if test="blob.has_html_view or force_display">
             <a href="?format=raw">Download this file</a>
             <div class="clip">
-              <h3><span class="ico"><b class="ui-icon ui-icon-document"></b></span> $blob.filename</h3>
+              <h3><span class="ico-l"><b class="ui-icon ui-icon-document"></b> $blob.filename</span></h3>
               ${Markup(g.highlight(blob.text, filename=blob.filename))}
             </div>
           </py:if>
