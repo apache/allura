@@ -1,7 +1,7 @@
 import os
 from urllib import unquote
 
-from pylons import c, request, response
+from pylons import c, g, request, response
 import tg
 from tg import redirect, expose, url, override_template
 
@@ -21,19 +21,7 @@ class BranchBrowser(object):
         self._branch = branch
 
     def index(self, limit=None, page=0, count=0, **kw):
-        if limit:
-            if c.user in (None, model.User.anonymous()):
-                tg.session['results_per_page'] = int(limit)
-                tg.session.save()
-            else:
-                c.user.preferences.results_per_page = int(limit)
-        else:
-            if c.user in (None, model.User.anonymous()):
-                limit = 'results_per_page' in tg.session and tg.session['results_per_page'] or 50
-            else:
-                limit = c.user.preferences.results_per_page or 50
-        page = max(int(page), 0)
-        start = page * int(limit)
+        limit, page, start = g.handle_paging(limit, page)
         count = c.app.repo.count(branch=self._branch)
         revisions = c.app.repo.log(
                 branch=self._branch,

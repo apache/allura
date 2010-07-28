@@ -71,7 +71,7 @@ class ProjectBrowseController(BaseController):
                         className='nav_child2'))
         return nav
 
-    def _find_projects(self,sort='alpha'):
+    def _find_projects(self,sort='alpha', limit=None, start=0):
         if self.category:
             ids = [self.category._id]
             # warning! this is written with the assumption that categories
@@ -85,8 +85,12 @@ class ProjectBrowseController(BaseController):
             pq.sort('name')
         else:
             pq.sort('last_updated', pymongo.DESCENDING)
-        projects = pq.all()
-        return projects
+        count = pq.count()
+        if limit:
+            projects = pq.skip(start).limit(int(limit)).all()
+        else:
+            projects = pq.all()
+        return (projects, count)
 
     @expose()
     def _lookup(self, category_name, *remainder):
@@ -96,7 +100,7 @@ class ProjectBrowseController(BaseController):
     @without_trailing_slash
     def index(self, **kw):
         c.project_summary = W.project_summary
-        projects = self._find_projects()
+        projects, count = self._find_projects()
         title=self._build_title()
         c.custom_sidebar_menu = self._build_nav()
         return dict(projects=projects,title=title,text=None)

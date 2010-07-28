@@ -33,12 +33,17 @@
     <py:if test="neighborhood.allow_browse">
       <p py:if="not len(projects)">No projects found</p>
       <div py:if="len(projects)" class="list">
+        ${c.page_list.display(limit=limit, page=page, count=count)}
+        <div style="clear:both"></div>
         <py:for each="project in projects">
       	  <?python g.set_project(project.shortname)?>
       	  <py:if test="has_project_access('read', project)()">
             ${c.project_summary.display(value=project)}
           </py:if>
         </py:for>
+        <div style="clear:both"></div>
+        ${c.page_list.display(limit=limit, page=page, count=count)}
+        ${c.page_size.display(limit=limit)}
 			</div>
     </py:if>
     

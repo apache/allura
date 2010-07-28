@@ -37,6 +37,8 @@ class W:
     markdown_editor = ffw.MarkdownEdit()
     project_summary = plw.ProjectSummary()
     add_project = forms.NeighborhoodAddProjectForm()
+    page_list = ffw.PageList()
+    page_size = ffw.PageSize()
 
 class NeighborhoodController(object):
     '''Manages a neighborhood of projects.
@@ -81,10 +83,13 @@ class NeighborhoodController(object):
 
     @expose('pyforge.templates.neighborhood_project_list')
     @with_trailing_slash
-    def index(self, sort='alpha', **kw):
+    def index(self, sort='alpha', limit=None, page=0, **kw):
         if self.neighborhood.redirect:
             redirect(self.neighborhood.redirect)
         c.project_summary = W.project_summary
+        c.page_list = W.page_list
+        c.page_size = W.page_size
+        limit, page, start = g.handle_paging(limit, page)
         pq = M.Project.query.find(dict(
                 neighborhood_id=self.neighborhood._id,
                 deleted=False,
@@ -94,7 +99,8 @@ class NeighborhoodController(object):
             pq.sort('name')
         else:
             pq.sort('last_updated', pymongo.DESCENDING)
-        projects = pq.all()
+        count = pq.count()
+        projects = pq.skip(start).limit(int(limit)).all()
         categories = M.ProjectCategory.query.find({'parent_id':None}).sort('name').all()
         c.custom_sidebar_menu = [SitemapEntry('+ Add a Project', self.neighborhood.url()+'add_project'), SitemapEntry('')]
         c.custom_sidebar_menu = c.custom_sidebar_menu + [
@@ -104,7 +110,8 @@ class NeighborhoodController(object):
                     title="Welcome to "+self.neighborhood.name,
                     text=g.markdown.convert(self.neighborhood.homepage),
                     projects=projects,
-                    sort=sort)
+                    sort=sort,
+                    limit=limit, page=page, count=count)
 
     @expose('pyforge.templates.neighborhood_add_project')
     def add_project(self, project_unixname=None, project_description=None, project_name=None):
@@ -196,16 +203,20 @@ class NeighborhoodProjectBrowseController(ProjectBrowseController):
 
     @expose('pyforge.templates.neighborhood_project_list')
     @without_trailing_slash
-    def index(self, sort='alpha', **kw):
+    def index(self, sort='alpha', limit=None, page=0, **kw):
         c.project_summary = W.project_summary
-        projects = self._find_projects(sort=sort)
+        c.page_list = W.page_list
+        c.page_size = W.page_size
+        limit, page, start = g.handle_paging(limit, page)
+        projects, count = self._find_projects(sort=sort, limit=limit, start=start)
         title=self._build_title()
         c.custom_sidebar_menu = self._build_nav()
         return dict(projects=projects,
                     title=title,
                     text=None,
                     neighborhood=self.neighborhood,
-                    sort=sort)
+                    sort=sort,
+                    limit=limit, page=page, count=count)
 
 class HostNeighborhoodController(BaseController, NeighborhoodController):
     '''Neighborhood controller with support for use as a root controller, for

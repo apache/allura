@@ -5,7 +5,7 @@ from datetime import datetime
 import tg
 from tg import expose, redirect, validate, request, response, flash
 from tg.decorators import before_validate, with_trailing_slash, without_trailing_slash
-from pylons import c
+from pylons import g, c
 from formencode import validators
 from webob import exc
 
@@ -129,19 +129,7 @@ class ThreadController(BaseController):
     def index(self, limit=None, page=0, count=0, **kw):
         c.thread = self.W.thread
         c.thread_header = self.W.thread_header
-        if limit:
-            if c.user in (None, model.User.anonymous()):
-                tg.session['results_per_page'] = limit
-                tg.session.save()
-            else:
-                c.user.preferences.results_per_page = int(limit)
-        else:
-            if c.user in (None, model.User.anonymous()):
-                limit = 'results_per_page' in tg.session and tg.session['results_per_page'] or 50
-            else:
-                limit = c.user.preferences.results_per_page or 50
-        page = max(int(page), 0)
-        start = page * int(limit)
+        limit, page, start = g.handle_paging(limit, page)
         self.thread.num_views += 1
         count = self.thread.query_posts(page=page, limit=int(limit)).count()
         return dict(discussion=self.thread.discussion,

@@ -82,6 +82,22 @@ class Globals(object):
             cssclass='codehilite',
             linenos='inline')
 
+    def handle_paging(self, limit, page, default=50):
+        if limit:
+            if c.user in (None, M.User.anonymous()):
+                tg.session['results_per_page'] = int(limit)
+                tg.session.save()
+            else:
+                c.user.preferences.results_per_page = int(limit)
+        else:
+            if c.user in (None, M.User.anonymous()):
+                limit = 'results_per_page' in tg.session and tg.session['results_per_page'] or default
+            else:
+                limit = c.user.preferences.results_per_page or default
+        page = max(int(page), 0)
+        start = page * int(limit)
+        return (limit, page, start)
+
     def document_class(self, neighborhood):
         classes = ''
         if neighborhood:
