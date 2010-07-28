@@ -253,7 +253,7 @@ class Project(MappedClass):
     def roles(self):
         from . import auth
         with h.push_config(c, project=self):
-            roles = auth.ProjectRole.query.find({'name':{'$in':['Admin','Developer']}}).all()
+            roles = auth.ProjectRole.query.find({'name':{'$in':['Admin','Developer','*anonymous','*authenticated']}}).all()
             roles = roles + auth.ProjectRole.query.find({'name':None,'roles':{'$in':[r._id for r in roles]}}).all()
             return sorted(roles, key=lambda r:r.display())
 
