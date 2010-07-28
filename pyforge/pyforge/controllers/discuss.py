@@ -13,6 +13,7 @@ from ming.base import Object
 from ming.utils import LazyProperty
 
 from pyforge import model as model
+from base import BaseController
 from pyforge.lib import helpers as h
 from pyforge.lib.security import require, has_artifact_access
 from pyforge.lib.helpers import DateTimeConverter
@@ -46,7 +47,7 @@ class WidgetConfig(object):
     thread_header = DW.ThreadHeader()
 
 # Controllers
-class DiscussionController(object):
+class DiscussionController(BaseController):
     M=ModelConfig
     W=WidgetConfig
 
@@ -87,7 +88,7 @@ class AppDiscussionController(DiscussionController):
     def discussion(self):
         return self.M.Discussion.query.get(shortname=c.app.config.options.mount_point)
 
-class ThreadsController(object):
+class ThreadsController(BaseController):
     __metaclass__=h.ProxiedAttrMeta
     M=h.attrproxy('_discussion_controller', 'M')
     W=h.attrproxy('_discussion_controller', 'W')
@@ -103,7 +104,7 @@ class ThreadsController(object):
         id=unquote(id)
         return self.ThreadController(self._discussion_controller, id), remainder
 
-class ThreadController(object):
+class ThreadController(BaseController):
     __metaclass__=h.ProxiedAttrMeta
     M=h.attrproxy('_discussion_controller', 'M')
     W=h.attrproxy('_discussion_controller', 'W')
@@ -198,7 +199,7 @@ class ThreadController(object):
         response.content_type = 'application/xml'
         return feed.writeString('utf-8')
 
-class PostController(object):
+class PostController(BaseController):
     __metaclass__=h.ProxiedAttrMeta
     M=h.attrproxy('_discussion_controller', 'M')
     W=h.attrproxy('_discussion_controller', 'W')
@@ -316,7 +317,7 @@ class PostController(object):
             self._discussion_controller,
             self.thread, self._post_slug + '/' + id), remainder
 
-class AttachmentsController(object):
+class AttachmentsController(BaseController):
     __metaclass__=h.ProxiedAttrMeta
     M=h.attrproxy('_discussion_controller', 'M')
     W=h.attrproxy('_discussion_controller', 'W')
@@ -333,7 +334,7 @@ class AttachmentsController(object):
         filename=unquote(filename)
         return self.AttachmentController(self._discussion_controller, filename), args
 
-class AttachmentController(object):
+class AttachmentController(BaseController):
     __metaclass__=h.ProxiedAttrMeta
     M=h.attrproxy('_discussion_controller', 'M')
     W=h.attrproxy('_discussion_controller', 'W')
@@ -366,7 +367,7 @@ class AttachmentController(object):
             return fp.read()
 
 
-class ModerationController(object):
+class ModerationController(BaseController):
     __metaclass__=h.ProxiedAttrMeta
     M=h.attrproxy('_discussion_controller', 'M')
     W=h.attrproxy('_discussion_controller', 'W')

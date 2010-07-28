@@ -13,6 +13,7 @@ from pyforge.lib.security import require_authenticated, has_artifact_access
 from pyforge.lib import helpers as h
 from pyforge.lib import plugin
 from pyforge.lib.widgets import SubscriptionForm
+from pyforge.controllers import BaseController
 
 log = logging.getLogger(__name__)
 
@@ -33,7 +34,7 @@ OID_PROVIDERS=[
 class F(object):
     subscription_form=SubscriptionForm()
 
-class AuthController(object):
+class AuthController(BaseController):
 
     def __init__(self):
         self.prefs = PreferencesController()
@@ -230,7 +231,7 @@ class AuthController(object):
                     allow_write=has_artifact_access('write')(user=user),
                     allow_create=has_artifact_access('create')(user=user))
 
-class PreferencesController(object):
+class PreferencesController(BaseController):
 
     @with_trailing_slash
     @expose('pyforge.templates.user_preferences')

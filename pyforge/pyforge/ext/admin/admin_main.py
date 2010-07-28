@@ -22,6 +22,7 @@ from pyforge.lib.security import require, has_project_access
 from pyforge.lib.widgets import form_fields as ffw
 from pyforge.lib import exceptions as forge_exc
 from pyforge.lib import plugin
+from pyforge.controllers import BaseController
 
 log = logging.getLogger(__name__)
 
@@ -118,7 +119,7 @@ class AdminApp(Application):
     def uninstall(self, project):
         raise NotImplementedError, "uninstall"
 
-class ProjectAdminController(object):
+class ProjectAdminController(BaseController):
 
     def _check_security(self):
         require(has_project_access('read'),

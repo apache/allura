@@ -13,6 +13,7 @@ from pymongo.bson import ObjectId
 from pyforge import version
 from pyforge.app import Application, WidgetController, ConfigOption, SitemapEntry
 from pyforge.lib import helpers as h
+from pyforge.controllers import BaseController
 from pyforge.ext.project_home import model as M
 from pyforge import model
 from pyforge.lib.security import require, has_project_access
@@ -69,7 +70,7 @@ class ProjectHomeApp(Application):
     def uninstall(self, project): # pragma no cover
         raise NotImplementedError, "uninstall"
 
-class ProjectHomeController(object):
+class ProjectHomeController(BaseController):
 
     def _check_security(self):
         require(has_project_access('read'),

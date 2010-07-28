@@ -3,8 +3,9 @@ from webob import exc
 
 from tg import expose, request, response, redirect
 from pyforge.lib.security import require, has_artifact_access
+from pyforge.controllers import BaseController
 
-class AttachmentsController(object):
+class AttachmentsController(BaseController):
     AttachmentControllerClass = None
 
     def __init__(self, artifact):
@@ -17,7 +18,7 @@ class AttachmentsController(object):
         filename=unquote(filename)
         return self.AttachmentControllerClass(filename), args
 
-class AttachmentController(object):
+class AttachmentController(BaseController):
     AttachmentClass = None
     edit_perm = 'edit'
 

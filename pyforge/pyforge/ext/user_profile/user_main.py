@@ -17,6 +17,7 @@ from pyforge.lib import helpers as h
 from pyforge.ext.project_home import model as M
 from pyforge.lib.security import require, has_project_access, has_artifact_access
 from pyforge.model import User, ArtifactLink
+from pyforge.controllers import BaseController
 
 log = logging.getLogger(__name__)
 
@@ -61,7 +62,7 @@ class UserProfileApp(Application):
     def uninstall(self, project): # pragma no cover
         raise NotImplementedError, "uninstall"
 
-class UserProfileController(object):
+class UserProfileController(BaseController):
 
     def _check_security(self):
         require(has_project_access('read'),

@@ -11,6 +11,7 @@ from ming.orm import session
 from pyforge.lib.helpers import push_config
 from pyforge.lib.security import require, has_artifact_access
 from pyforge import model
+from pyforge.controllers import BaseController
 
 log = logging.getLogger(__name__)
 
@@ -75,7 +76,7 @@ class SitemapEntry(object):
                 self.children.append(e)
                 child_index[lbl] = e
 
-class WidgetController(object):
+class WidgetController(BaseController):
     widgets=[]
 
     def __init__(self, app): pass
@@ -204,7 +205,7 @@ class Application(object):
             **kw)
 
 
-class DefaultAdminController(object):
+class DefaultAdminController(BaseController):
 
     def __init__(self, app):
         self.app = app

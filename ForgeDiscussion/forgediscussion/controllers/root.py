@@ -15,6 +15,7 @@ from pyforge.lib.security import require, has_artifact_access, has_project_acces
 from pyforge.model import ProjectRole
 from pyforge.lib.search import search
 from pyforge.lib import helpers as h
+from pyforge.controllers import BaseController
 
 from .forum import ForumController
 from forgediscussion import model
@@ -23,7 +24,7 @@ from pyforge.lib.widgets import discuss as DW
 
 log = logging.getLogger(__name__)
 
-class RootController(object):
+class RootController(BaseController):
 
     class W(object):
         forum_subscription_form=FW.ForumSubscriptionForm()

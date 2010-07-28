@@ -32,6 +32,7 @@ from pyforge.lib.search import search
 from pyforge.lib.decorators import audit, react
 from pyforge.lib.security import require, has_artifact_access, has_project_access
 from pyforge.model import Project, ProjectRole, User, ArtifactReference, Feed
+from pyforge.controllers import BaseController
 
 # Local imports
 from forgehg import model
@@ -175,7 +176,7 @@ class HgAdminController(DefaultAdminController):
         self.repo.additional_viewable_extensions = post_data['additional_viewable_extensions']
 
 
-class RootController(object):
+class RootController(BaseController):
 
     def _check_security(self):
         require(has_artifact_access('read'))

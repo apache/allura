@@ -13,6 +13,7 @@ from pyforge.app import Application, ConfigOption, SitemapEntry, DefaultAdminCon
 from pyforge.lib import helpers as h
 from pyforge.lib.security import require, has_artifact_access
 from pyforge.model import ProjectRole
+from pyforge.controllers import BaseController
 
 # Local imports
 from forgelink import version
@@ -68,7 +69,7 @@ class ForgeLinkApp(Application):
         "Remove all the tool's artifacts from the database"
         super(ForgeLinkApp, self).uninstall(project)
 
-class RootController(object):
+class RootController(BaseController):
 
     def _check_security(self):
         require(has_artifact_access('read'))

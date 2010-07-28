@@ -29,7 +29,7 @@ from pyforge.lib.decorators import audit, react
 from pyforge.lib.security import require, has_artifact_access
 from pyforge.model import ProjectRole, User, TagEvent, UserTags, ArtifactReference, Tag, Feed, ArtifactLink
 from pyforge.model import Discussion, Thread, Post, Attachment, Mailbox
-from pyforge.controllers import AppDiscussionController
+from pyforge.controllers import AppDiscussionController, BaseController
 from pyforge.controllers import attachments as ac
 from pyforge.lib import widgets as w
 from pyforge.lib.widgets import form_fields as ffw
@@ -229,7 +229,7 @@ The wiki uses [Markdown](%s) syntax.
         model.Globals.query.remove(dict(app_config_id=c.app.config._id))
         super(ForgeWikiApp, self).uninstall(project)
 
-class RootController(object):
+class RootController(BaseController):
 
     def __init__(self):
         setattr(self, 'feed.atom', self.feed)
@@ -371,7 +371,7 @@ class RootController(object):
         response.content_type = 'application/xml'
         return feed.writeString('utf-8')
 
-class PageController(object):
+class PageController(BaseController):
 
     def __init__(self, title):
         self.title = title

@@ -17,6 +17,7 @@ from pyforge.lib.decorators import audit, react
 from pyforge.lib import search
 from pyforge.lib import helpers as h
 from pyforge import model as M
+from pyforge.controllers import BaseController
 
 log = logging.getLogger(__name__)
 
@@ -100,7 +101,7 @@ class SearchApp(Application):
     def uninstall(self, project):
         pass # pragma no cover
 
-class SearchController(object):
+class SearchController(BaseController):
 
     @expose('pyforge.templates.search_index')
     @validate(dict(q=V.UnicodeString(),

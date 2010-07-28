@@ -15,6 +15,7 @@ from pyforge.lib.helpers import push_config
 from pyforge.lib.security import require, has_artifact_access
 from pyforge.lib import search
 from pyforge.lib.decorators import audit, react
+from pyforge.controllers import BaseController
 
 from helloforge import model as M
 from helloforge import version
@@ -116,7 +117,7 @@ class HelloForgeApp(Application):
         mapper(M.Comment).remove(dict(project_id=c.project._id))
         super(HelloForgeApp, self).uninstall(project)
 
-class RootController(object):
+class RootController(BaseController):
 
     @expose('helloforge.templates.index')
     def index(self, **kw):
@@ -152,7 +153,7 @@ class RootController(object):
             if results: count=results.hits
         return dict(q=q, history=history, results=results or [], count=count)
 
-class PageController(object):
+class PageController(BaseController):
 
     def __init__(self, title):
         self.title = title
@@ -234,7 +235,7 @@ class PageController(object):
         self.page.commit()
         redirect('.')
 
-class CommentController(object):
+class CommentController(BaseController):
 
     def __init__(self, page, comment_id=None):
         self.page = page

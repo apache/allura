@@ -14,6 +14,7 @@ from pyforge.app import Application, ConfigOption, SitemapEntry, DefaultAdminCon
 from pyforge.lib import helpers as h
 from pyforge.lib.security import require, has_artifact_access
 from pyforge.model import ProjectRole
+from pyforge.controllers import BaseController
 
 # Local imports
 from forgedownloads import version
@@ -71,7 +72,7 @@ class ForgeDownloadsApp(Application):
         c.project.show_download_button = False
         super(ForgeDownloadsApp, self).uninstall(project)
 
-class RootController(object):
+class RootController(BaseController):
 
     def __init__(self):
         setattr(self, 'nav.json', self.nav)

@@ -32,6 +32,7 @@ from pyforge.lib.widgets import form_fields as ffw
 from pyforge.lib.widgets.subscriptions import SubscribeForm
 from pyforge.controllers import AppDiscussionController, AppDiscussionRestController
 from pyforge.controllers import attachments as ac
+from pyforge.controllers import BaseController
 
 # Local imports
 from forgetracker import model
@@ -208,7 +209,7 @@ class ForgeTrackerApp(Application):
         model.Globals.query.remove(app_config_id)
         super(ForgeTrackerApp, self).uninstall(project)
 
-class RootController(object):
+class RootController(BaseController):
 
     def __init__(self):
         setattr(self, 'feed.atom', self.feed)
@@ -514,7 +515,7 @@ class RootController(object):
             Mailbox.unsubscribe()
         redirect(request.referer)
 
-class BinController(object):
+class BinController(BaseController):
 
     def __init__(self, summary=None):
         if summary is not None:
@@ -621,7 +622,7 @@ class changelog(object):
         return t
 
 
-class TicketController(object):
+class TicketController(BaseController):
 
     def __init__(self, ticket_num=None):
         if ticket_num is not None:
@@ -858,7 +859,7 @@ class TrackerAdminController(DefaultAdminController):
         self.app.globals.custom_fields=custom_fields
         flash('Fields updated')
 
-class RootRestController(object):
+class RootRestController(BaseController):
 
     def __init__(self):
         self._discuss = AppDiscussionRestController()
@@ -892,7 +893,7 @@ class RootRestController(object):
     def _lookup(self, ticket_num, *remainder):
         return TicketRestController(ticket_num), remainder
 
-class TicketRestController(object):
+class TicketRestController(BaseController):
 
     def __init__(self, ticket_num):
         if ticket_num is not None:

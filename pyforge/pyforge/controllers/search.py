@@ -9,11 +9,12 @@ from pyforge.lib import search
 from pyforge.app import SitemapEntry
 from pyforge import model as M
 from pyforge.lib.widgets import project_list as plw
+from pyforge.controllers import BaseController
 
 class W:
     project_summary = plw.ProjectSummary()
 
-class SearchController(object):
+class SearchController(BaseController):
 
     @expose('pyforge.templates.search_index')
     @validate(dict(q=V.UnicodeString(),
@@ -32,7 +33,7 @@ class SearchController(object):
         return dict(q=q, history=history, results=results or [], count=count)
 
 
-class ProjectBrowseController(object):
+class ProjectBrowseController(BaseController):
     def __init__(self, category_name=None, parent_category=None):
         self.parent_category = parent_category
         self.nav_stub = '/browse/'
