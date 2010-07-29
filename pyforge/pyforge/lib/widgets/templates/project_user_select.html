@@ -1,5 +1,5 @@
 <div xmlns="http://www.w3.org/1999/xhtml"
      xmlns:py="http://genshi.edgewall.org/" py:strip="True">
-  <input type="text" id="$name" name="$name" class="ui-autocomplete-input project_user_select${className and ' %s' % className or ''}" value="$value"/>
+  <input type="text" id="$name" name="$name" class="ui-autocomplete-input project_user_select${className and ' %s' % className or ''}" value="${value and value.username or ''}"/>
 
 </div>

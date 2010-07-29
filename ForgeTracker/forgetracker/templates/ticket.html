@@ -95,7 +95,7 @@
                       </div>
                       <div class="column" style="margin-left:0;width:48%; overflow:auto;">
                         <py:if test="ticket.assigned_to_id">
-                          ${c.user_select.display(name='assigned_to',value=ticket.assigned_to.username,className='wide')}
+                          ${c.user_select.display(name='assigned_to',value=ticket.assigned_to,className='wide')}
                         </py:if>
                         <py:if test="not ticket.assigned_to_id">
                           ${c.user_select.display(name='assigned_to',value=ticket.assigned_to_id,className='wide')}
