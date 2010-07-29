@@ -259,7 +259,7 @@ def save_image(icon, file_class, square=False, thumbnail_size=None, meta=None,
                 **meta) as fp:
                 image.save(fp, format)
         else:
-            flash('The icon must be jpg, png, or gif format.')
+            tg.flash('The icon must be jpg, png, or gif format.')
 
 class DateTimeConverter(FancyValidator):
 
