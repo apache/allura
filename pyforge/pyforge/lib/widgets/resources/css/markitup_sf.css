@@ -6,7 +6,11 @@
     border-width: 0;
     width: 100%;
 }
-.markItUpEditor{
+.sf_markdown_edit{
+    height: 200px;
+    width: 95%;
+}
+.sf_markdown_edit.markItUpEditor{
     border-width: 1px;
     background-image: none;
     padding: 0;
