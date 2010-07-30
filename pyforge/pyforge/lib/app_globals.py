@@ -85,13 +85,13 @@ class Globals(object):
     def handle_paging(self, limit, page, default=50):
         if limit:
             if c.user in (None, M.User.anonymous()):
-                tg.session['results_per_page'] = int(limit)
-                tg.session.save()
+                session['results_per_page'] = int(limit)
+                session.save()
             else:
                 c.user.preferences.results_per_page = int(limit)
         else:
             if c.user in (None, M.User.anonymous()):
-                limit = 'results_per_page' in tg.session and tg.session['results_per_page'] or default
+                limit = 'results_per_page' in session and session['results_per_page'] or default
             else:
                 limit = c.user.preferences.results_per_page or default
         page = max(int(page), 0)
