@@ -308,7 +308,7 @@ class ProjectAdminController(BaseController):
                 options.ordinal = int(p['ordinal'])
         try:
             if new and new.get('install'):
-                ep_name = new['ep_name']
+                ep_name = new.get('ep_name', None)
                 if not ep_name:
                     require(has_project_access('create'))
                     mount_point = new['mount_point'].lower() or h.nonce()
