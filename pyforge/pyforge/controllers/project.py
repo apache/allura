@@ -324,7 +324,7 @@ class ProjectController(object):
 
     @expose('json:')
     def user_search(self,term=''):
-        name_regex = re.compile('(?i)%s' % term)
+        name_regex = re.compile('(?i)%s' % re.escape(term))
         users = M.User.query.find({
                     '_id':{'$in':[role.user_id for role in c.project.roles]},
                     'display_name':name_regex},
