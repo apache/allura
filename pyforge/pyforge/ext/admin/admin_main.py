@@ -294,7 +294,7 @@ class ProjectAdminController(BaseController):
             elif not new:
                 p = M.Project.query.get(shortname=sp['shortname'])
                 p.name = sp['name']
-                p.ordinal = sp['ordinal']
+                p.ordinal = int(sp['ordinal'])
         for p in tool:
             if p.get('delete'):
                 require(has_project_access('tool'), 'Delete access required')
@@ -305,7 +305,7 @@ class ProjectAdminController(BaseController):
             elif not new:
                 options = c.project.app_config(p['mount_point']).options
                 options.mount_label = p['mount_label']
-                options.ordinal = p['ordinal']
+                options.ordinal = int(p['ordinal'])
         try:
             if new and new.get('install'):
                 ep_name = new['ep_name']

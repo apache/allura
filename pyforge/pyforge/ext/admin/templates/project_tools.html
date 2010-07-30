@@ -41,6 +41,9 @@
                              name="tool-${i}.mount_point"
                              class="mount_point"
                              value="${item['ac'].options.mount_point}"/>
+                      <input type="hidden"
+                             name="tool-${i}.ordinal"
+                             value="${item['ac'].options.ordinal}"/>
                       <div py:if="has_project_access('tool')() and item['ac'].load().installable"
                            class="editable viewing span-15 last">
                         <div class="viewer">${item['ac'].options.mount_label}</div>
@@ -82,6 +85,9 @@
                              name="subproject-${i}.shortname"
                              class="shortname"
                              value="${item['sub'].shortname}"/>
+                      <input type="hidden"
+                             name="subproject-${i}.ordinal"
+                             value="${item['sub'].ordinal}"/>
                       <div class="editable viewing span-15 last">
                         <div class="viewer">${item['sub'].name}</div>
                         <div class="editor">
