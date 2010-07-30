@@ -108,7 +108,7 @@ class ForgeProcessor(object):
         self.compiled = False
 
     def _expand_alink(self, link):
-        new_link = self.alinks[link]
+        new_link = self.alinks.get(link, None)
         if new_link:
             return '<a href="%s">[%s]</a>' % (
                 new_link.url, link)
