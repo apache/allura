@@ -38,7 +38,9 @@
             e.stopPropagation();
         })
         .find('a').click(function(event){
-          event.stopPropagation();
+            if(!$(this).hasClass('edit_btn')){
+                event.stopPropagation();
+            }
         })
         .end()
         .end()
