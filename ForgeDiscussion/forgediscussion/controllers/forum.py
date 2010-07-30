@@ -65,7 +65,10 @@ class ForumController(DiscussionController):
 
     @expose()
     def _lookup(self, id, *remainder):
-        return ForumController(self.discussion.shortname + '/' + id), remainder
+        if self.discussion:
+            return ForumController(self.discussion.shortname + '/' + id), remainder
+        else:
+            raise exc.HTTPNotFound()
 
     @expose('pyforge.templates.discussion.index')
     def index(self, threads=None, limit=None, page=0, count=0, **kw):
