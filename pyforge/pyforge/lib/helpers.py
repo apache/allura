@@ -433,11 +433,9 @@ def twophase_transaction(*engines):
         for e in engines ]
     txns = []
     to_rollback = []
-    xid = None
     try:
         for c in connections:
-            txn = c.begin_twophase(xid)
-            xid = txn.xid
+            txn = c.begin_twophase()
             txns.append(txn)
             to_rollback.append(txn)
         yield
@@ -445,13 +443,12 @@ def twophase_transaction(*engines):
         for txn in txns:
             txn.prepare()
             to_rollback.append(txn)
+        for txn in txns:
+            txn.commit()
     except:
         for txn in to_rollback:
             txn.rollback()
         raise
-    finally:
-        for txn in txns:
-            txn.commit()
 
 class exceptionless(object):
     '''Decorator making the decorated function return 'error_result' on any

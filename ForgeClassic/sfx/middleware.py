@@ -17,15 +17,21 @@ class SfxMiddleware(object):
             'allura.sfx_session_manager': SFXSessionMgr(),
             'allura.sfx.site_db':engine_from_config(h.config_with_prefix(config, 'site_db.')),
             'allura.sfx.mail_db':engine_from_config(h.config_with_prefix(config, 'mail_db.')),
+            'allura.sfx.task_db':engine_from_config(h.config_with_prefix(config, 'task_db.')),
             'allura.sfx.epic_db':engine_from_config(h.config_with_prefix(config, 'epic_db.'))
             }
-        self.environ_values['allura.sfx_session_manager'].setup_sessiondb_connection_pool(config)
+        self.environ_values['allura.sfx_session_manager'].setup_sessiondb_connection_pool(
+            config)
         M.site_meta.bind = self.environ_values['allura.sfx.site_db']
         M.mail_meta.bind = self.environ_values['allura.sfx.mail_db']
+        M.task_meta.bind = self.environ_values['allura.sfx.task_db']
         M.epic_meta.bind =self.environ_values['allura.sfx.epic_db']
         M.tables.mail_group_list = Table('mail_group_list', M.site_meta, autoload=True)
+        M.tables.mllist_subscriber = Table('mllist_subscriber', M.site_meta, autoload=True)
         M.tables.backend_queue = Table('backend_queue', M.epic_meta, autoload=True)
         M.tables.lists = Table('lists', M.mail_meta, autoload=True)
+        M.tables.ml_password_change = Table(
+            'ml_password_change', M.task_meta, autoload=True)
 
     def __call__(self, environ, start_response):
         request = Request(environ)

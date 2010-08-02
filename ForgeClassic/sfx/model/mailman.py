@@ -3,7 +3,7 @@ from time import time
 from datetime import datetime
 
 import tg
-from sqlalchemy import and_
+import sqlalchemy as sa
 from pylons import c as context
 from pylons import g
 
@@ -12,13 +12,11 @@ from ming.utils import LazyProperty
 from pyforge.lib import helpers as h
 from .sfx_model import tables as T
 
-common_suffix = tg.config.get('forgemail.domain', '.sourceforge.net')
-
 class List(object):
-    PUBLIC=1
     PRIVATE=0
-    HIDDEN=9
+    PUBLIC=1
     DELETE=2
+    HIDDEN=9
 
     def __init__(self, name):
         self.name = name
@@ -26,7 +24,8 @@ class List(object):
     @classmethod
     def find(cls):
         q = T.mail_group_list.select()
-        q = q.where(T.mail_group_list.c.group_id==context.project.get_tool_data('sfx', 'group_id'))
+        q = q.where(
+            T.mail_group_list.c.group_id==context.project.get_tool_data('sfx', 'group_id'))
         for row in q.execute():
             lst = List(row['list_name'])
             lst._sitedb_row = row
@@ -35,45 +34,19 @@ class List(object):
     @LazyProperty
     def _sitedb_row(self):
         q = T.mail_group_list.select(T.mail_group_list.c.list_name==self.name)
-        q = q.where(T.mail_group_list.c.group_id==context.project.get_tool_data('sfx', 'group_id'))
+        q = q.where(
+            T.mail_group_list.c.group_id==context.project.get_tool_data('sfx', 'group_id'))
         return q.execute().first()
 
-    @LazyProperty
-    def _maildb_row(self):
-        q = T.lists.select(T.lists.c.list_name==self.name)
-        return q.execute().first()
-
-    @property
-    def group_id(self):
-        return self._sitedb_row['group_id']
-
-    @property
-    def group_list_id(self):
-        return self._sitedb_row['group_list_id']
-
-    @property
-    def description(self):
-        return self._sitedb_row['description']
-
-    @property
-    def is_public(self):
-        return self._sitedb_row['is_public']
+    def __getattr__(self, name):
+        try:
+            return self._sitedb_row[name]
+        except KeyError:
+            raise AttributeError, name
 
     @property
     def admin_url(self):
         return 'https://lists.sourceforge.net/mailman/admin/%s' % self.name
-
-    @property
-    def subscribers_url(self):
-        return g.url('/mail/admin/list_subscribers.php',
-                     group_id=self.group_id,
-                     group_list_id=self.group_list_id)
-
-    @property
-    def password_url(self):
-        return g.url('/mail/admin/list_adminpass.php',
-                     group_id=self.group_id,
-                     group_list_id=self.group_list_id)
 
     @classmethod
     def create(cls, name, is_public, description):
@@ -126,7 +99,7 @@ class List(object):
             return
 
         stmt = T.mail_group_list.update(
-            where=and_(
+            where=sa.and_(
                 T.mail_group_list.c.group_id==self.group_id,
                 T.mail_group_list.c.group_list_id==self.group_list_id))
         stmt.execute(is_public=is_public, description=description)
@@ -154,3 +127,31 @@ class List(object):
             operation_detail=operation_detail,
             operation_status_type='pending',
             operation_status_detail='Purge remove ml pending')
+
+    def change_password(self, new_password):
+        stmt = T.ml_password_change.insert()
+        stmt.execute(
+            ml_name=self.name,
+            password=new_password)
+
+    def subscribers(self, search_criteria=None, sort_by='user name', ):
+        q = T.mllist_subscriber.select()
+        q = q.where(T.mllist_subscriber.c.ml_list_name==self.name)
+        if search_criteria is not None:
+            q = q.where(T.mllist_subscriber.c.subscribed_email.ilike(search_criteria))
+        if sort_by != 'user name':
+            q = q.order_by(
+                sa.text("substring(subscribed_email from '@.*') ASC"))
+        q = q.order_by(T.mllist_subscriber.c.subscribed_email)
+        return (Subscriber(row) for row in q.execute())
+
+class Subscriber(object):
+
+    def __init__(self, row):
+        self._row = row
+
+    def __getattr__(self, name):
+        try:
+            return self._row[name]
+        except KeyError:
+            raise AttributeError, name

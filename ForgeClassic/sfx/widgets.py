@@ -1,5 +1,6 @@
 from pylons import c
 from formencode import validators as fev
+from formencode import schema as fes
 
 import ew
 
@@ -42,3 +43,37 @@ class NewList(ForgeForm):
             validator=fev.Int(),
             options=[ew.Option(label='Yes', py_value=M.List.PUBLIC),
                      ew.Option(label='No', py_value=M.List.PRIVATE)])
+
+class SubscriberSearch(ForgeForm):
+    submit_text = 'Search'
+
+    class fields(ew.WidgetsList):
+        search_criteria = ew.TextField()
+        sort_by = ew.SingleSelectField(
+            options=[ ew.Option(label='User name', py_value='user name'),
+                      ew.Option(label='Host name/Domain name',
+                                py_value='host name/domain name'),
+                      ])
+
+class PasswordChange(ForgeForm):
+    submit_text = 'Save'
+
+    class fields(ew.WidgetsList):
+        new_password=ew.TextField(field_type='password')
+        confirm_password=ew.TextField(field_type='password')
+
+    def validate(self, value, state):
+        msg = None
+        pwd = value['new_password']
+        if pwd != value['confirm_password']:
+            msg = 'The same password must be entered twice verbatim'
+        elif len(pwd) < 4 or len(pwd) > 16:
+            msg = 'The password must 4-16 chars.'
+        elif not pwd.isalnum():
+            msg = 'The password must contain letters and numbers only.'
+        if msg is None:
+            return value
+        exc = fev.Invalid(msg, value, state, error_dict=dict(
+            new_password=fev.Invalid(msg, value, state),
+            confirm_password=fev.Invalid(msg, value, state)))
+        raise exc

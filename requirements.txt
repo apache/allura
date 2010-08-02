@@ -75,7 +75,7 @@ feedparser==4.1-r295
 psycopg2==0.2.2
 mysql-python==1.2.3c1
 
-EasyWidgets==0.2dev-20100706
+EasyWidgets==0.2dev-20100802
 Ming==0.2dev-20100714
 TurboGears2==2.1b2dev-20100628
 sf.phpsession==0.1
