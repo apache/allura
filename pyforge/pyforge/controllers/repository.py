@@ -145,14 +145,16 @@ class FileBrowser(object):
             a_ci = c.app.repo.commit(commit)
             a_tree = a_ci.tree()
             a = a_tree.get_blob(filename, path[1:].split('/'))
+            apath = a.path()
         except:
             a = []
+            apath = ''
         b = self._blob
         la = list(a)
         lb = list(b)
         diff = ''.join(patience.unified_diff(
                 la, lb,
-                'a' + a.path(), 'b' + b.path()))
+                'a' + apath, 'b' + b.path()))
         return dict(
             a=a, b=b,
             diff=diff)
