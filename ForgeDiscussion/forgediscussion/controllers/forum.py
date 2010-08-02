@@ -149,7 +149,7 @@ class ForumPostController(PostController):
         return super(ForumPostController, self).index(**kw)
 
     @expose()
-    @validate(pass_validator, error_handler=PostController.index)
+    @validate(pass_validator, error_handler=index)
     def moderate(self, **kw):
         require(has_artifact_access('moderate', self.post.thread))
         if self.thread.discussion.deleted and not has_artifact_access('configure', app=c.app)():
