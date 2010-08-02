@@ -21,19 +21,22 @@ def main():
         log.error('Usage: %s <shortname>', sys.argv[0])
         return
     pname = sys.argv[1]
-    log.info('Purging %s', pname)
+    log.info('Backing up %s', pname)
     project = M.Project.query.get(shortname=pname)
     if project is None:
         log.fatal('Project %s not found', pname)
         return
-    purge_project(project)
+    dump_project(project)
 
-def purge_project(project):
+def dump_project(project):
+    pname = project.shortname
     gid = project.tool_data.get('sfx', {}).get('group_id', project._id)
-    project.shortname = 'deleted-%s' % gid
-    project.deleted = True
-    g.solr.delete(q='project_id_s:%s' % project._id)
-    session(project).flush()
+    dirname = '%s-%s.purge' % (pname, gid)
+    log.info('Backup %s to %s', pname, dirname)
+    os.system('%s --db %s -o %s' % (
+            MONGO_DUMP, project.database, dirname))
+    with open(os.path.join(dirname, 'project.json'), 'w') as fp:
+        json.dump(state(project).document, fp, default=default)
 
 if __name__ == '__main__':
     main()
