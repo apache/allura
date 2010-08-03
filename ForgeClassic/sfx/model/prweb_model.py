@@ -72,7 +72,7 @@ class MySQL(object):
 
     @classmethod
     def create(cls, passwd_rouser, passwd_rwuser, passwd_adminuser):
-        stmt = T.mysql_auth.insert()
+        stmt = T._mysql_auth.insert()
         stmt.execute(
             passwd_rouser=passwd_rouser,
             passwd_rwuser=passwd_rwuser,
@@ -84,8 +84,8 @@ class MySQL(object):
     @classmethod
     def update(cls, passwd_rouser, passwd_rwuser, passwd_adminuser):
         group_id=context.project.get_tool_data('sfx', 'group_id')
-        stmt = T.mysql_auth.update(
-            where=T.mysql_auth.c.group_id==group_id)
+        stmt = T._mysql_auth.update(
+            where=T._mysql_auth.c.group_id==group_id)
         stmt.execute(
             passwd_rouser=passwd_rouser,
             passwd_rwuser=passwd_rwuser,
