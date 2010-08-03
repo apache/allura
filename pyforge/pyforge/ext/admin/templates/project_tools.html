@@ -76,7 +76,7 @@
                     </form>
                   </td>
                 </py:if>
-                <py:if test="'sub' in item">
+                <py:if test="'sub' in item and not item['sub'].deleted">
                   <td>Subproject</td>
                   <td>${item['sub'].shortname}</td>
                   <td>
