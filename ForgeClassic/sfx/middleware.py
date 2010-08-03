@@ -1,4 +1,4 @@
-from sqlalchemy import Table, create_engine
+from sqlalchemy import Table, create_engine, select, func
 from webob import exc, Request
 from paste.deploy.converters import asint
 
@@ -27,9 +27,17 @@ class SfxMiddleware(object):
         M.task_meta.bind = self.environ_values['allura.sfx.task_db']
         M.epic_meta.bind =self.environ_values['allura.sfx.epic_db']
         M.tables.mail_group_list = Table('mail_group_list', M.site_meta, autoload=True)
+        M.tables.groups = Table(
+            'groups', M.site_meta, autoload=True,
+            include_columns=['group_id', 'group_name', 'status']),
         M.tables.mllist_subscriber = Table('mllist_subscriber', M.site_meta, autoload=True)
         M.tables.prweb_vhost = Table('prweb_vhost', M.site_meta, autoload=True)
-        M.tables.mysql_auth = Table('mysql_auth', M.site_meta, autoload=True)
+        M.tables._mysql_auth = t = Table(
+            'mysql_auth', M.site_meta, autoload=True,
+            )
+        M.tables.mysql_auth = select([
+            t,
+            func.which_user(t.c.modified_by_uid).label('modified_user')]).alias('msql_auth_user')
         M.tables.backend_queue = Table('backend_queue', M.epic_meta, autoload=True)
         M.tables.lists = Table('lists', M.mail_meta, autoload=True)
         M.tables.ml_password_change = Table(

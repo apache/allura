@@ -30,13 +30,13 @@
         DROP, ALTER, INDEX, LOCK TABLES))<br/>
         web-access URL: <a href="$value.url"
                            >$value.url</a><br/>
-        <p py:if="hasattr(value, 'passwd_rouser')">
+        <p py:if="value.passwd_rouser is not None">
           Please note that your MySQL passwords are displayed here as plaintext
           for your convenience. These passwords are readily available on the
           project shell and web servers. Their display here allows for easy lookup
           by project administrators.
         </p>
-        <p py:if="not hasattr(value, 'passwd_rouser')">
+        <p py:if="value.passwd_rouser is None">
           MySQL service will be available when you have set passwords on the provided
           accounts.
         </p>
@@ -44,9 +44,10 @@
       <div>
         <h2>Passwords</h2>
         ${c.form.display(value=value, action='save')}
+	<br/>
       </div>
-      <p py:if="hasattr(value, 'passwd_modified_user')">
-        Password data last set ${h.ago(value.row_modtime)} ago
+      <p py:if="value.modified_user is not None">
+        Password data last set ${h.ago_ts(value.row_modtime)} ago
         by $value.modified_user
       </p>
     </div>

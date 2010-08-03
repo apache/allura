@@ -83,7 +83,7 @@ class NewVHost(ForgeForm):
     enctype=None
 
     class fields(ew.WidgetsList):
-        vhostid=ew.TextField(label='New virtual host', attrs=dict(title='(e.g. vhost.org)'))
+        name=ew.TextField(label='New virtual host', attrs=dict(title='(e.g. vhost.org)'))
 
 class MySQLPassword(ForgeForm):
     submit_text = 'Set passwords'

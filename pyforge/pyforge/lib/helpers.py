@@ -188,6 +188,9 @@ def ago(start_time):
             break
     return ago + ' ago'
 
+def ago_ts(timestamp):
+    return ago(datetime.fromtimestamp(timestamp))
+
 def tag_artifact(artifact, user, tags):
     from pyforge import model as M
     aref = artifact.dump_ref()

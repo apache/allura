@@ -16,7 +16,7 @@ class VHost(object):
         q = q.where(
             T.prweb_vhost.c.group_id==context.project.get_tool_data('sfx', 'group_id'))
         for row in q.execute():
-            obj = cls(row['vhostid'])
+            obj = cls(row['vhost_name'])
             obj._row = row
             yield obj
 
@@ -85,7 +85,7 @@ class MySQL(object):
     def update(cls, passwd_rouser, passwd_rwuser, passwd_adminuser):
         group_id=context.project.get_tool_data('sfx', 'group_id')
         stmt = T.mysql_auth.update(
-            where=T.mysql_auth.group_id==group_id)
+            where=T.mysql_auth.c.group_id==group_id)
         stmt.execute(
             passwd_rouser=passwd_rouser,
             passwd_rwuser=passwd_rwuser,
@@ -117,6 +117,8 @@ class MySQL(object):
     def __getattr__(self, name):
         if name == '_row':
             raise AttributeError, name
+        elif self._row is None:
+            return None
         try:
             return self._row[name]
         except KeyError:

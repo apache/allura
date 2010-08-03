@@ -33,8 +33,8 @@ class VHostApp(SFXBaseApp):
             return dict(vhosts=list(SM.VHost.find()))
 
         @expose()
-        def create(self, vhostid=None):
-            SM.VHost.create(vhostid)
+        def create(self, name=None):
+            SM.VHost.create(name)
             flash('Virtual host scheduled for creation.')
             redirect('.')
 
@@ -44,7 +44,7 @@ class VHostApp(SFXBaseApp):
             if vhost is None:
                 flash('Virtual host %s not found' % vhostid, 'error')
             vhost.delete()
-            flash('Virtual host %s deleted' % vhostid)
+            flash('Virtual host %s deleted' % vhost.vhost_name)
             redirect('.')
 
 class MySQLApp(SFXBaseApp):
@@ -67,8 +67,10 @@ class MySQLApp(SFXBaseApp):
         @expose()
         def save(self, **kw):
             db = SM.MySQL()
-            if hasattr(db, 'passwd_rouser'):
-                db.update(**kw)
-            else:
+            if db.passwd_rouser is None:
                 SM.MySQL.create(**kw)
+                flash('Passwords set')
+            else:
+                db.update(**kw)
+                flash('Passwords updated')
             redirect('.')
