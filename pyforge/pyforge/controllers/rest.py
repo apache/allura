@@ -10,6 +10,7 @@ from pyforge import model as M
 from pyforge.lib import helpers as h
 
 log = logging.getLogger(__name__)
+action_logger = h.log_action(log, 'API:')
 
 class RestController(object):
 
@@ -62,6 +63,8 @@ class ProjectRestController(object):
         c.app = app
         if app.api_root is None:
             raise exc.HTTPNotFound, name
+        action_logger.info('', extra=dict(
+                api_key=request.params.get('api_key')))
         return app.api_root, remainder
 
 
