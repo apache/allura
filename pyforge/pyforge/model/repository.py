@@ -199,6 +199,10 @@ class Blob(object):
     def has_html_view(self):
         return self.content_type.startswith('text/')
 
+    @property
+    def has_image_view(self):
+        return self.content_type.startswith('image/')
+
     def context(self):
         '''Returns {'prev':Blob, 'next':Blob}'''
         raise NotImplementedError, 'context'

@@ -39,12 +39,13 @@
             <br/>
           </py:if>
 
-          <py:if test="not blob.has_html_view and not force_display">
+          <img py:if="blob.has_image_view" src="?format=raw"/>
+          <py:if test="not blob.has_html_view and not blob.has_image_view and not force_display">
             $blob.filename is not known to be viewable in your browser.
             Try to <a href="?force=True">display it</a> anyway or
             <a href="?format=raw">download it</a> instead.
           </py:if>
-          <py:if test="blob.has_html_view or force_display">
+          <py:if test="blob.has_html_view and not blob.has_image_view or force_display">
             <a href="?format=raw">Download this file</a>
             <div class="clip">
               <h3><span class="ico-l"><b class="ui-icon ui-icon-document"></b> $blob.filename</span></h3>

@@ -23,13 +23,21 @@
           <a href="${b._commit.url()}">${h.text.truncate(b._commit._id, 10)}:</a>
           <a href="${b.url()}">${b.path()}</a>
 
-          <py:if test="not a.has_html_view or not b.has_html_view">
+          <py:if test="(not a.has_html_view and not a.has_image_view) or (not b.has_html_view and not b.has_image_view)">
             $a.name cannot be displayed in your browser.
             You may, however, <a href="?format=raw">download this file</a> instead.
           </py:if>
           <div class="clip" py:if="a.has_html_view and b.has_html_view">
             <h3><span class="ico-l"><b class="ui-icon ui-icon-document"></b> $a.filename</span></h3>
             ${Markup(g.highlight(diff, lexer='diff'))}
+          </div>
+          <div py:if="a.has_image_view and b.has_image_view">
+            <img src="${a.url()}?format=raw"
+                 alt="${h.text.truncate(a._commit._id, 10)}"
+                 title="${h.text.truncate(a._commit._id, 10)}"/>
+            <img src="${b.url()}?format=raw"
+                 alt="${h.text.truncate(b._commit._id, 10)}"
+                 title="${h.text.truncate(b._commit._id, 10)}"/>
           </div>
         </div>
       </div>
