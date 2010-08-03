@@ -120,17 +120,18 @@ class Globals(object):
             lexer = pygments.lexers.get_lexer_by_name(lexer, encoding='chardet')
         return pygments.highlight(text, lexer, self.pygments_formatter)
 
-    @property
-    def markdown(self):
+    def forge_markdown(self, **kwargs):
         return markdown.Markdown(
-                extensions=['codehilite', ForgeExtension(), 'tables'],
+                extensions=['codehilite', ForgeExtension(**kwargs), 'tables'],
                 output_format='html4')
 
     @property
+    def markdown(self):
+        return self.forge_markdown()
+
+    @property
     def markdown_wiki(self):
-        return markdown.Markdown(
-                extensions=['codehilite', ForgeExtension(wiki=True), 'tables'],
-                output_format='html4')
+        return self.forge_markdown(wiki=True)
 
     @property
     def resource_manager(self):

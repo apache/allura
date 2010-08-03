@@ -4,6 +4,7 @@ import logging
 import string
 from collections import defaultdict
 from urllib import quote
+from urlparse import urljoin
 from ConfigParser import RawConfigParser
 from pprint import pformat
 
@@ -21,9 +22,10 @@ log = logging.getLogger(__name__)
 
 class ForgeExtension(markdown.Extension):
 
-    def __init__(self, wiki=False):
+    def __init__(self, wiki=False, email=False):
         markdown.Extension.__init__(self)
         self._use_wiki = wiki
+        self._is_email = email
 
     def extendMarkdown(self, md, md_globals):
         md.registerExtension(self)
@@ -34,7 +36,8 @@ class ForgeExtension(markdown.Extension):
         # Sanitize HTML
         md.postprocessors['sanitize_html'] = HTMLSanitizer()
         # Rewrite all relative links that don't start with . to have a '../' prefix
-        md.postprocessors['rewrite_relative_links'] = RelativeLinkRewriter()
+        md.postprocessors['rewrite_relative_links'] = RelativeLinkRewriter(
+            make_absolute=self._is_email)
 
     def reset(self):
         self.forge_processor.reset()
@@ -195,6 +198,9 @@ class ForgeTreeProcessor(markdown.treeprocessors.Treeprocessor):
 
 class RelativeLinkRewriter(markdown.postprocessors.Postprocessor):
 
+    def __init__(self, make_absolute=False):
+        self._make_absolute = make_absolute
+
     def run(self, text):
         try:
             if not request.path_info.endswith('/'): return text
@@ -202,18 +208,29 @@ class RelativeLinkRewriter(markdown.postprocessors.Postprocessor):
             # Must be being called outside the request context
             pass
         soup = BeautifulSoup(text)
-        def rewrite(tag, attr):
-            val = tag.get(attr)
-            if val is None: return
-            if '://' in val: return
-            if val.startswith('/'): return
-            if val.startswith('.'): return
-            tag[attr] = '../' + val
+        if self._make_absolute:
+            rewrite = self._rewrite_abs
+        else:
+            rewrite = self._rewrite
         for link in soup.findAll('a'):
             rewrite(link, 'href')
         for link in soup.findAll('img'):
             rewrite(link, 'src')
         return unicode(soup)
+
+    def _rewrite(self, tag, attr):
+        val = tag.get(attr)
+        if val is None: return
+        if '://' in val: return
+        if val.startswith('/'): return
+        if val.startswith('.'): return
+        tag[attr] = '../' + val
+
+    def _rewrite_abs(self, tag, attr):
+        self._rewrite(tag, attr)
+        val = tag.get(attr)
+        val = urljoin(config.get('base_url', 'http://sourceforge.net/'),val)
+        tag[attr] = val
 
 class HTMLSanitizer(markdown.postprocessors.Postprocessor):
 

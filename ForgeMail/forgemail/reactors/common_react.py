@@ -104,7 +104,7 @@ def send_email(routing_key, data):
             else:
                 addrs_multi.append(addr)
     plain_msg = util.encode_email_part(data['text'], 'plain')
-    html_text = g.markdown.convert(data['text'])
+    html_text = g.forge_markdown(email=True).convert(data['text'])
     html_msg = util.encode_email_part(html_text, 'html')
     multi_msg = util.make_multipart_message(plain_msg, html_msg)
     smtp_client.sendmail(

@@ -53,6 +53,7 @@ Some text in a regular paragraph
     for i in range(10):
         print i
 ''')
+    assert 'http://localhost/' in  g.forge_markdown(email=True).convert('[Root]')
 
 def test_oembed():
     g.set_project('test')
