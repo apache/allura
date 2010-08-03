@@ -72,7 +72,7 @@ repoze.who.plugins.sa==1.0rc2
 MySQL-python==1.2.3c1
 phpserialize==1.2
 feedparser==4.1-r295
-psycopg2==0.2.2
+psycopg2==2.2.2
 
 EasyWidgets==0.2dev-20100802
 Ming==0.2dev-20100714
