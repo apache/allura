@@ -50,7 +50,7 @@ def make_ticket_text(engineer):
             'git', 'log', "--format=* %h %s", last_release.strip() + '..')
     changes = ''.join(changes)
     prelaunch = []
-    postlaunch = ['* allurapaste ensure_index']
+    postlaunch = ['* allurapaste ensure_index /var/local/config/production.ini']
     needs_reactor_setup = raw_input('Does this release require a reactor_setup? [n]')
     needs_flyway = raw_input('Does this release require a migration? [y]')
     if needs_reactor_setup[:1].lower() in ('y', '1'):
