@@ -30,6 +30,9 @@ setup(
     [pyforge]
     sfx = sfx:SFXApp
     mailman = sfx:MailmanApp
+    vhost = sfx:VHostApp
+    mysql = sfx:MySQLApp
+
 
     [pyforge.auth]
     sfx = sfx:SFXAuthenticationProvider

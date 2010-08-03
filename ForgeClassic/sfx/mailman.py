@@ -29,9 +29,6 @@ class MailmanApp(SFXBaseApp):
 
     class AdminController(DefaultAdminController):
 
-        def __init__(self, app):
-            self.app = app
-
         @with_trailing_slash
         @expose('sfx.templates.mailman_admin')
         def index(self, **kw):

@@ -1,0 +1,54 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+                      "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:py="http://genshi.edgewall.org/"
+      xmlns:xi="http://www.w3.org/2001/XInclude">
+  <?python from pyforge.lib import helpers as h?>
+  <?python from pyforge.lib.security import has_artifact_access?>
+  <xi:include href="master.html"/>
+
+  <head>
+    <meta content="text/html; charset=UTF-8" http-equiv="content-type" py:replace="''"/>
+    <title>${c.project.name} project: Admin: Editing Database Info</title>
+  </head>
+
+  <body>
+    <h1 class="title">MySQL Service</h1>
+    <div class="content">
+      <p>Service details:</p>
+      <div>
+        <a href="${g.url('/apps/admin/%s/' % c.project.shortname)}"
+           >Access this project's databases over the internet</a><br/>
+        <a href="http://p.sf.net/sourceforge/mysql"
+           >Documentation: Guide to MySQL Database Services</a><br/>
+        Hostname: $value.hostname (exactly as shown, with no domain suffix)<br/>
+        Database name prefix: ${value.prefix}_ &mdash; i.e. "CREATE DATABASE
+        ${value.prefix}_myapp" as your ADMIN user.<br/>
+        RO User: ${value.prefix}ro (SELECT)<br/>
+        RW User: ${value.prefix}rw (SELECT, INSERT , DELETE, UPDATE)<br/>
+        ADMIN User: ${value.prefix}admin (has RW account privileges, and CREATE,
+        DROP, ALTER, INDEX, LOCK TABLES))<br/>
+        web-access URL: <a href="$value.url"
+                           >$value.url</a><br/>
+        <p py:if="hasattr(value, 'passwd_rouser')">
+          Please note that your MySQL passwords are displayed here as plaintext
+          for your convenience. These passwords are readily available on the
+          project shell and web servers. Their display here allows for easy lookup
+          by project administrators.
+        </p>
+        <p py:if="not hasattr(value, 'passwd_rouser')">
+          MySQL service will be available when you have set passwords on the provided
+          accounts.
+        </p>
+      </div>
+      <div>
+        <h2>Passwords</h2>
+        ${c.form.display(value=value, action='save')}
+      </div>
+      <p py:if="hasattr(value, 'passwd_modified_user')">
+        Password data last set ${h.ago(value.row_modtime)} ago
+        by $value.modified_user
+      </p>
+    </div>
+  </body>
+</html>

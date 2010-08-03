@@ -44,7 +44,7 @@ class SFXBaseApp(Application):
 
     def admin_menu(self):
         admin_url = c.project.url()+'admin/'+self.config.options.mount_point+'/'
-        links = [SitemapEntry('Admin Lists', admin_url, className='nav_child') ]
+        links = [SitemapEntry('Admin %s' % self.tool_label, admin_url, className='nav_child') ]
         return links
 
     def sidebar_menu(self):

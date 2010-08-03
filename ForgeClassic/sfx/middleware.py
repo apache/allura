@@ -28,6 +28,8 @@ class SfxMiddleware(object):
         M.epic_meta.bind =self.environ_values['allura.sfx.epic_db']
         M.tables.mail_group_list = Table('mail_group_list', M.site_meta, autoload=True)
         M.tables.mllist_subscriber = Table('mllist_subscriber', M.site_meta, autoload=True)
+        M.tables.prweb_vhost = Table('prweb_vhost', M.site_meta, autoload=True)
+        M.tables.mysql_auth = Table('mysql_auth', M.site_meta, autoload=True)
         M.tables.backend_queue = Table('backend_queue', M.epic_meta, autoload=True)
         M.tables.lists = Table('lists', M.mail_meta, autoload=True)
         M.tables.ml_password_change = Table(

@@ -89,6 +89,11 @@ def push_config(obj, **kw):
         for k in new_attrs:
             delattr(obj, k)
 
+def sharded_path(name, num_parts=2):
+    parts = [
+        name[:i+1]
+        for i in range(num_parts) ]
+    return '/'.join(parts)
 
 def mixin_reactors(cls, module, prefix=None):
     'attach the reactor-decorated functions in module to the given class'

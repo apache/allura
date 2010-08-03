@@ -77,3 +77,23 @@ class PasswordChange(ForgeForm):
             new_password=fev.Invalid(msg, value, state),
             confirm_password=fev.Invalid(msg, value, state)))
         raise exc
+
+class NewVHost(ForgeForm):
+    submit_text = 'Create'
+    enctype=None
+
+    class fields(ew.WidgetsList):
+        vhostid=ew.TextField(label='New virtual host', attrs=dict(title='(e.g. vhost.org)'))
+
+class MySQLPassword(ForgeForm):
+    submit_text = 'Set passwords'
+
+    @property
+    def fields(self):
+        gid = c.project.get_tool_data('sfx', 'group_id')
+        name = c.project.get_tool_data('sfx', 'unix_group_name')
+        prefix=str(name)[0] + str(gid)
+        return [
+            ew.TextField(label=prefix+'ro', name='passwd_rouser'),
+            ew.TextField(label=prefix+'rw', name='passwd_rwuser'),
+            ew.TextField(label=prefix+'admin', name='passwd_adminuser')]
