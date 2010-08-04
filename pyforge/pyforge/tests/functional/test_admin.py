@@ -132,7 +132,7 @@ class TestProjectAdmin(TestController):
         assert new_ep_opts[5].string == 'Tickets'
         assert new_ep_opts[6].string == 'Discussion'
         assert new_ep_opts[7].string == 'Downloads'
-        assert new_ep_opts[8].string == 'Subproject'
+        assert new_ep_opts[-1].string == 'Subproject'
 
     def test_project_icon(self):
         file_name = 'neo-icon-set-454545-256x350.png'

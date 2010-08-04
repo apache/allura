@@ -29,7 +29,7 @@ class SFXBaseApp(Application):
     tool_label=''
     default_mount_label=''
     default_mount_point='sfx-app'
-    ordinal=7
+    ordinal=8
     sitemap = []
     api_root=None
     root=None
