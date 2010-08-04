@@ -383,7 +383,7 @@ class ProjectAdminController(BaseController):
         if role is None: role = []
         for r in role:
             if r.get('new', {}).get('add'):
-                username = str(r['new']['id'])
+                username = unicode(r['new']['id'])
                 try:
                     user = M.User.by_username(username)
                 except AssertionError:
