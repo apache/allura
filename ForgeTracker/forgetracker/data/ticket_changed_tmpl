@@ -1,22 +1,22 @@
-{% for key, values in changelist %}
-{% choose %}
-{% when key == 'description' %}
+{% for key, values in changelist %}\
+{% choose %}\
+{% when key == 'description' %}\
   description has changed
-{% end %}
-{% otherwise %}
-{% with oldv, newv = values %}
-{% choose %}
-{% when key == 'assigned_to' %}
+{% end %}\
+{% otherwise %}\
+{% with oldv, newv = values %}\
+{% choose %}\
+{% when key == 'assigned_to' %}\
 - **${key}**: {% if oldv %}${oldv.display_name} --> {% end %}{% choose %}{% when newv %}${newv.display_name}{% end %}{% otherwise %} nobody {% end %}{% end %}
-{% end %}
-{% when key == 'labels' %}
-- **${key}**: ${', '.join(oldv)} --> ${', '.join(newv)}
-{% end %}
-{% otherwise %}
+{% end %}\
+{% when key == 'labels' %}\
+- **${key}**: ${', '.join(oldv)} --> ${', '.join(newv)}\
+{% end %}\
+{% otherwise %}\
 - **${key}**: ${oldv} --> ${newv}
-{% end %}
-{% end %}
-{% end %}
-{% end %}
-{% end %}
-{% end %}
+{% end %}\
+{% end %}\
+{% end %}\
+{% end %}\
+{% end %}\
+{% end %}\

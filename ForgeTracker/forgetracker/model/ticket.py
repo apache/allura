@@ -222,7 +222,8 @@ class Ticket(VersionedArtifact):
                 changes.append('Description updated:')
                 changes.append(h.diff_text(old.description, self.description))
             description = '<br>'.join(changes)
-            subject = 'Ticket %s modified: %s' % (self.ticket_num, self.summary)
+            subject = 'Ticket #%s modified by %s: %s' % (
+                self.ticket_num, c.user.username, self.summary)
         else:
             self.subscribe()
             if self.assigned_to_id:

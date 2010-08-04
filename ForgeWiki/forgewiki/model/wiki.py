@@ -16,6 +16,7 @@ from ming.orm.property import FieldProperty, ForeignIdProperty, RelationProperty
 from pyforge.model import VersionedArtifact, Snapshot, Message, Feed, Thread, Post, User, BaseAttachment
 from pyforge.model import Notification, project_orm_session
 from pyforge.lib import helpers as h
+from pyforge.lib import patience
 
 common_suffix = tg.config.get('forgemail.domain', '.sourceforge.net')
 
@@ -85,16 +86,26 @@ class Page(VersionedArtifact):
         if self.version > 1:
             v1 = self.get_version(self.version-1)
             v2 = self
-            description = h.diff_text(v1.text, v2.text)
+            la = [ line + '\n'  for line in v1.text.splitlines() ]
+            lb = [ line + '\n'  for line in v2.text.splitlines() ]
+            diff = ''.join(patience.unified_diff(
+                    la, lb,
+                    'v%d' % v1.version,
+                    'v%d' % v2.version))
+            description = diff
             if v1.title != v2.title:
-                subject = 'Page %s renamed from %s' % (v2.title, v1.title)
+                subject = '%s renamed page %s to %s' % (
+                    context.user.username, v2.title, v1.title)
             else:
-                subject = 'Page %s modified' % self.title
+                subject = '%s modified page %s' % (
+                    context.user.username, self.title)
         else:
             description = self.text
-            subject = 'Page %s created' % self.title
+            subject = '%s created page %s' % (
+                context.user.username, self.title)
         Feed.post(self, description)
-        Notification.post(artifact=self, topic='metadata', text=description, subject=subject)
+        Notification.post(
+            artifact=self, topic='metadata', text=description, subject=subject)
 
     @property
     def email_address(self):
