@@ -1,4 +1,5 @@
 import os
+import re
 import logging
 from contextlib import contextmanager
 from threading import local
@@ -121,15 +122,20 @@ class LoginRedirectMiddleware(object):
         start_response(status, headers, exc_info)
         return app_iter
 
-
 class SSLMiddleware(object):
     'Verify the https/http schema is correct'
 
-    def __init__(self, app):
+    def __init__(self, app, no_redirect_pattern=None):
         self.app = app
+        if no_redirect_pattern:
+            self._no_redirect_re = re.compile(no_redirect_pattern)
+        else:
+            self._no_redirect_re = re.compile('$$$')
 
     def __call__(self, environ, start_response):
         req = Request(environ)
+        if self._no_redirect_re.match(environ['PATH_INFO']):
+            return req.get_response(self.app)(environ, start_response)
         resp = None
         try:
             request_uri = req.url

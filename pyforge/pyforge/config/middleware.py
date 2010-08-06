@@ -11,7 +11,9 @@ import ming
 from pyforge.config.app_cfg import base_config
 from pyforge.config.environment import load_environment
 from pyforge.config.app_cfg import ForgeConfig
-from pyforge.lib.custom_middleware import StatsMiddleware, SSLMiddleware, StaticFilesMiddleware
+from pyforge.lib.custom_middleware import StatsMiddleware
+from pyforge.lib.custom_middleware import SSLMiddleware
+from pyforge.lib.custom_middleware import StaticFilesMiddleware
 
 __all__ = ['make_app']
 
@@ -63,7 +65,7 @@ def _make_core_app(root, global_conf, full_stack=True, **app_conf):
         app = StatsMiddleware(app, stats_config)
 
     if asbool(app_conf.get('auth.method', 'local')=='sfx'):
-        app = SSLMiddleware(app)
+        app = SSLMiddleware(app, app_conf.get('no_redirect.pattern'))
 
     app = ew.ResourceMiddleware(
         app,
