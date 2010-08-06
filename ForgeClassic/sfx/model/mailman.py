@@ -88,7 +88,7 @@ class List(object):
         try:
             stmt.execute()
         except Exception, ex:
-            tg.flash('Error creating list: %s, %s', ex.__class__.__name__, ex)
+            tg.flash('Error creating list: %s, %s' % (ex.__class__.__name__, ex))
             return None
         tg.flash('Your new mailing list has been queued for creation.'
                  'Your list password is %s' % password)

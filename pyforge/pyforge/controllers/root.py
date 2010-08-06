@@ -84,4 +84,3 @@ class RootController(BaseController):
             SitemapEntry(cat.label, '/browse/'+cat.name, className='nav_child') for cat in categories
         ]
         return dict(projects=psort,title="All Projects",text=None)
-
