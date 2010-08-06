@@ -91,7 +91,7 @@ class RootController(BaseController):
 class DownloadAdminController(DefaultAdminController):
 
     def _check_security(self):
-        require(has_artifact_access('admin', app=self.app), 'Admin access required')
+        require(has_artifact_access('configure', app=self.app), 'Requires permission to "configure"')
 
     @with_trailing_slash
     def index(self, **kw):
