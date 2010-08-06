@@ -62,6 +62,9 @@ def _make_core_app(root, global_conf, full_stack=True, **app_conf):
         stats_config = dict(global_conf, **app_conf)
         app = StatsMiddleware(app, stats_config)
 
+    if asbool(app_conf.get('auth.method', 'local')=='sfx'):
+        app = SSLMiddleware(app)
+
     app = ew.ResourceMiddleware(
         app,
         compress=not asbool(global_conf['debug']),
@@ -69,9 +72,6 @@ def _make_core_app(root, global_conf, full_stack=True, **app_conf):
         url_base=app_conf.get('ew.url_base', '/_ew_resources/'))
 
     app = StaticFilesMiddleware(app, app_conf.get('static.script_name'))
-
-    if asbool(app_conf.get('auth.method', 'local')=='sfx'):
-        app = SSLMiddleware(app)
 
     return app
     
