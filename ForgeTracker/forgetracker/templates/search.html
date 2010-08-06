@@ -19,17 +19,18 @@
       <div class="row">
         <div class="column grid_12">
           <form method="GET" action=".">
-            <input type="text" name="q" value="$q" class="defaultText" title="Search App"/><br/>
-            Search history? <input type="checkbox" name="history" checked="${history or None}"/><br/>
-            <input type="submit" value="Search App"/>
-            <input type="submit" name="project" value="Search Entire Project"/><br/>
+            ${c.auto_resize_textarea.display(name='q', value=q,
+              attrs={'style':'height:1em; width: 425px'})}<br/>
+            <input type="submit" value="Search"/>
           </form>
-          <p py:if="q">
-            <form method="GET" action="../bins/newbin">
-              <input type="submit" value="Save Search"/>
-              <input type="hidden" name="q" value="$q"/>
-            </form>
-          </p>
+          <form py:if="q" method="GET" action="../bins/newbin">
+            <input type="submit" value="Save Search"/>
+            <input type="hidden" name="q" value="$q"/>
+          </form>
+          <div style="clear:both">&nbsp;</div>
+          <a href="${tg.url('../edit/', dict(q=q, limit=limit, sort=sort))}"
+             class="btn"
+             py:if="allow_edit and count != 0">Edit All</a>
           <div style="clear:both"/>
           ${c.ticket_search_results.display(solr_error=solr_error,
             count=count,
@@ -39,7 +40,9 @@
             sortable_custom_fields=sortable_custom_fields,
             page=page,
             sort=sort)}
-          <a href="${tg.url('../edit/', dict(q=q, limit=limit, sort=sort))}" py:if="allow_edit and count != 0">Edit All</a>
+          <a href="${tg.url('../edit/', dict(q=q, limit=limit, sort=sort))}"
+             class="btn"
+             py:if="allow_edit and count != 0">Edit All</a>
         </div>
       </div>
     </div>

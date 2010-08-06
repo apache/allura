@@ -1,6 +1,9 @@
 from pylons import c
-from formencode import validators as fev
+from tg import request
+from urllib import urlencode
+import json
 
+from formencode import validators as fev
 import ew
 
 class MarkdownEdit(ew.InputField):
@@ -155,26 +158,41 @@ class AutoResizeTextarea(ew.TextArea):
 
 class PageList(ew.Widget):
     template='genshi:pyforge.lib.widgets.templates.page_list'
-    params=['limit','count','page']
+    params=['limit','count','page', 'url_params']
     show_label=False
     name=None
     limit=None
     count=0
     page=0
+    
+    @property
+    def url_params(self, **kw):
+        url_params = dict()
+        for k,v in request.params.iteritems():
+            if k not in ['limit','count','page']:
+                url_params[k] = v
+        return url_params
 
 class PageSize(ew.Widget):
     template='genshi:pyforge.lib.widgets.templates.page_size'
-    params=['limit']
+    params=['limit','url_params']
     show_label=False
     name=None
     limit=None
+    
+    @property
+    def url_params(self, **kw):
+        url_params = dict()
+        for k,v in request.params.iteritems():
+            if k not in ['limit','count','page']:
+                url_params[k] = v
+        return url_params
 
     def resources(self):
         yield ew.JSScript('''
         $('select.results_per_page').change(function(){
-            location.href=location.pathname+'?limit='+this.value;
-        });
-        ''')
+            this.form.submit();
+        })''')
 
 class FileChooser(ew.InputField):
     template='genshi:pyforge.lib.widgets.templates.file_chooser'

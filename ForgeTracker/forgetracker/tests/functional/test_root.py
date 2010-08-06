@@ -64,7 +64,7 @@ class TestFunctionalController(TestController):
     
     def test_render_index(self):
         index_view = self.app.get('/bugs/')
-        assert 'Showing 250 results per page.' in index_view
+        assert req.html.find('select',{'name':'limit'}).find('option',{'selected':'selected'}).string == '250'
     
     def test_render_help(self):
         summary = 'test render help'
@@ -468,14 +468,11 @@ class TestFunctionalController(TestController):
 
     def test_paging_prefs_saved(self):
         req = self.app.get('/bugs/search/')
-        assert 'Showing 100 results per page' not in req
-        assert 'Showing 25 results per page' in req
+        assert req.html.find('select',{'name':'limit'}).find('option',{'selected':'selected'}).string == '25'
         req = self.app.get('/bugs/search/?limit=100')
-        assert 'Showing 100 results per page' in req
-        assert 'Showing 25 results per page' not in req
+        assert req.html.find('select',{'name':'limit'}).find('option',{'selected':'selected'}).string == '100'
         req = self.app.get('/bugs/search/')
-        assert 'Showing 100 results per page' in req
-        assert 'Showing 25 results per page' not in req
+        assert req.html.find('select',{'name':'limit'}).find('option',{'selected':'selected'}).string == '100'
 
     def test_saved_search_labels_truncated(self):
         r = self.app.post('/bugs/bins/save_bin',{

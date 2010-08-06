@@ -2,6 +2,7 @@
   xmlns:py="http://genshi.edgewall.org/">
   <?python import re?>
   <p py:if="solr_error">${solr_error}</p>
+  ${fields['page_list'].display(limit=limit, page=page, count=count)}
   <p py:if="count==0 and query">No results.</p>
   <p py:if="count==1 and query">$count result.</p>
   <p py:if="count > 1 and query">$count results.</p>
@@ -28,18 +29,8 @@
       </tr>
     </tbody>
   </table>
-  <p>Showing ${limit} result<py:if test="limit!=1">s</py:if> per page. </p>
-  <ul class="per_page">
-    <li py:for="per_page in [25, 50, 100, 250]">
-    <a href="${tg.url(request.path_info, dict(q=query, limit=per_page))}" py:strip="limit == per_page">${per_page}</a>
-    </li>
-  </ul>
-  <div>
-      <span id="first-page" class="nav-button disabled">&lt;&lt;</span>
-      <span id="prev-page" class="nav-button disabled">&lt;</span>
-      <span id="next-page" class="nav-button disabled">&gt;</span>
-      <span id="last-page" class="nav-button disabled">&gt;&gt;</span>
-  </div>
+  ${fields['page_list'].display(limit=limit, page=page, count=count)}
+  ${fields['page_size'].display(limit=limit)}
   <script type="text/javascript">
     var q="${Markup(query)}", count=$count, limit=$limit, page=$page, sort="${Markup(sort)}";
   </script>

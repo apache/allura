@@ -3,14 +3,14 @@
   py:strip="True">
   <div py:if="limit and count and int(limit) &lt; int(count)" style="float: right;" py:with="pages=int(count)/int(limit)+(int(count)%int(limit) and 1 or 0)">
     <a py:if="page != 0" class="btn"
-       href="${tg.url(request.path_info, dict(page=0))}">First</a>
+       href="${tg.url(request.path_info, dict(page=0, **url_params))}">First</a>
     <a py:if="page &gt; 0" class="btn"
-       href="${tg.url(request.path_info, dict(page=page-1))}">Previous</a>
+       href="${tg.url(request.path_info, dict(page=page-1, **url_params))}">Previous</a>
     <a py:for="i in range(0, pages)" class="btn${page==i and ' active' or None}"
-       href="${tg.url(request.path_info, dict(limit=limit, page=i))}"> <span>${i+1}</span></a>
+       href="${tg.url(request.path_info, dict(limit=limit, page=i, **url_params))}"> <span>${i+1}</span></a>
     <a py:if="page &lt; pages-1" class="btn"
-       href="${tg.url(request.path_info, dict(page=page+1))}">Next</a>
+       href="${tg.url(request.path_info, dict(page=page+1, **url_params))}">Next</a>
     <a py:if="page != pages-1" class="btn"
-       href="${tg.url(request.path_info, dict(page=pages-1))}">Last</a>
+       href="${tg.url(request.path_info, dict(page=pages-1, **url_params))}">Last</a>
   </div>
 </div>

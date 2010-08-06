@@ -1,6 +1,7 @@
 import ew
+from pyforge.lib.widgets import form_fields as ffw
 
-class TicketSearchResults(ew.Widget):
+class TicketSearchResults(ew.SimpleForm):
     template='genshi:forgetracker.widgets.templates.ticket_search_results'
     params=['solr_error','count','limit','query','tickets','sortable_custom_fields','sort','page']
     solr_error=None
@@ -12,8 +13,14 @@ class TicketSearchResults(ew.Widget):
     page=1
     sort=None
 
+    class fields(ew.WidgetsList):
+        page_list=ffw.PageList()
+        page_size=ffw.PageSize()
+
     def resources(self):
         yield ew.resource.JSLink('tracker_js/ticket-list.js')
+        for r in ffw.PageList().resources(): yield r
+        for r in ffw.PageSize().resources(): yield r
 
 class MassEdit(ew.Widget):
     template='genshi:forgetracker.widgets.templates.mass_edit'
