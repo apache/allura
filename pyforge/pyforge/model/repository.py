@@ -139,6 +139,22 @@ class Tree(object):
         self._parent = parent
         self._name = name
 
+    def readme(self):
+        try:
+            readme = self.get_blob('readme.txt').text
+        except KeyError:
+            try:
+                readme = self.get_blob('README.txt').text
+            except KeyError:
+                try:
+                    readme = self.get_blob('README.TXT').text
+                except KeyError:
+                    try:
+                        readme = self.get_blob('README').text
+                    except KeyError:
+                        readme = ''
+        return readme
+
     def url(self):
         return self._commit.url() + 'tree' + self.path()
 

@@ -109,6 +109,9 @@ class GitRepository(M.Repository):
         except StopIteration:
             return 0
 
+    def latest(self, branch='master'):
+        return self.CommitClass.from_repo_object(self._impl.commit(rev=branch), self)
+
     @LazyProperty
     def _impl(self):
         try:

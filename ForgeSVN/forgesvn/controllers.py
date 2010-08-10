@@ -1,4 +1,4 @@
-from tg import expose, url, override_template
+from tg import expose, url, override_template, redirect
 from tg.decorators import with_trailing_slash, without_trailing_slash
 from pylons import c
 from webob import exc
@@ -24,11 +24,10 @@ class BranchBrowser(repository.BranchBrowser):
     def __init__(self):
         super(BranchBrowser, self).__init__(None)
 
-    @expose('forgesvn.templates.index')
+    @expose()
     @with_trailing_slash
-    def index(self, limit=None, page=0, count=0, **kw):
-        c.log_widget=log_widget
-        return super(BranchBrowser, self).index(limit, page, count)
+    def index(self):
+        redirect(c.app.url+"LATEST/tree/")
 
     @expose('forgesvn.templates.log')
     @with_trailing_slash

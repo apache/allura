@@ -24,6 +24,18 @@
         <div class="content">
           <div class="row">
             <div class="column grid_12">
+              <p py:if="c.app.repo">
+                Read access: <code>git clone git://$c.app.repo.scm_url_path</code><br/>
+                Read/write access: <code>git clone ssh://${c.user == c.user.anonymous() and 'USERNAME' or c.user.username}@$c.app.repo.scm_url_path</code><br/>
+                <form action="${c.app.repo.url()}fork" method="GET">
+                  <input type="submit" value="Fork"/>
+                </form>
+              </p>
+              <div style="clear:both;"></div>
+              <div class="clip" py:if="tree.readme()">
+                <h3><span class="ico-l"><b class="ui-icon ui-icon-document"></b> Read Me</span></h3>
+                ${Markup(g.markdown.convert(tree.readme()))}
+              </div>
               ${c.tree_widget.display(tree=tree)}
             </div>
           </div>

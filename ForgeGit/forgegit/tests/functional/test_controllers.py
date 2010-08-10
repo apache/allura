@@ -21,15 +21,15 @@ class TestRootController(TestController):
         ThreadLocalORMSession.close_all()
 
     def test_index(self):
-        resp = self.app.get('/src-git/').follow()
+        resp = self.app.get('/src-git/').follow().follow()
         assert 'git://' in resp
-        assert 'ready' in resp
 
     def _get_ci(self):
-        resp = self.app.get('/src-git/ref/master:/')
+        resp = self.app.get('/src-git/ref/master:/').follow()
         for tag in resp.html.findAll('a'):
-            if tag['href'].startswith('/p/test/src-git/ci/'): break
-        return tag['href']
+            if tag['href'].startswith('/p/test/src-git/ci/'):
+                return tag['href']
+        return None
 
     def test_commit(self):
         ci = self._get_ci()

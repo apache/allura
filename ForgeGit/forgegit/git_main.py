@@ -79,7 +79,8 @@ class ForgeGitApp(Application):
 
     @h.exceptionless([], log)
     def sidebar_menu(self):
-        links = [ SitemapEntry('Home',c.app.url, ui_icon='home') ]
+        links = [ SitemapEntry('Browse',c.app.url + url(quote('ref/master:/')), ui_icon='folder-collapsed'),
+                  SitemapEntry('History', c.app.url + url(quote('ref/master:/')) + 'log', ui_icon='document-b', small=c.app.repo.count())]
         if has_artifact_access('admin', app=c.app)():
             links.append(SitemapEntry('Admin', c.project.url()+'admin/'+self.config.options.mount_point, ui_icon='tool-admin'))
         repo = c.app.repo
@@ -91,7 +92,8 @@ class ForgeGitApp(Application):
                 for b in branches:
                     links.append(SitemapEntry(
                             b, url(c.app.url, dict(branch=b)),
-                            className='nav_child'))
+                            className='nav_child',
+                            small=c.app.repo.count(branch=b)))
             if tags:
                 links.append(SitemapEntry('Tags'))
                 for b in tags:

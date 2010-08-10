@@ -1,4 +1,4 @@
-from tg import expose, url, override_template
+from tg import expose, url, override_template, redirect
 from tg.decorators import with_trailing_slash, without_trailing_slash
 from pylons import c
 
@@ -22,9 +22,7 @@ class BranchBrowser(repository.BranchBrowser):
     @expose('forgegit.templates.index')
     @with_trailing_slash
     def index(self, limit=None, page=0, count=0, **kw):
-        c.log_widget=log_widget
-        return super(BranchBrowser, self).index(limit, page, count,
-                    allow_fork=True)
+        redirect(c.app.repo.latest(branch=self._branch).tree().url())
 
     @expose('forgegit.templates.log')
     @with_trailing_slash

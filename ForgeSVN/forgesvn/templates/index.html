@@ -19,8 +19,7 @@
         <div class="column grid_12">
           <p py:if="c.app.repo">
             Read access: <code>svn checkout svn://$c.app.repo.scm_url_path</code><br/>
-            Read/write access: <code>svn checkout svn+ssh://${username or 'USERNAME'}@$c.app.repo.scm_url_path</code><br/>
-            Status: ${c.app.repo.status}
+            Read/write access: <code>svn checkout svn+ssh://${c.user == c.user.anonymous() and 'USERNAME' or c.user.username}@$c.app.repo.scm_url_path</code><br/>
           </p>
           <py:if test="log">
             <h2>Recent Commits</h2>

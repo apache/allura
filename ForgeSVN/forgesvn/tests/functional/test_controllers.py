@@ -21,10 +21,9 @@ class TestRootController(TestController):
         ThreadLocalORMSession.close_all()
 
     def test_index(self):
-        resp = self.app.get('/src/')
+        resp = self.app.get('/src/').follow()
         assert 'svn checkout' in resp
-        assert 'ready' in resp
-        assert 'Revision 1' in resp
+        assert 'Revision 3' in resp
 
     def test_commit(self):
         resp = self.app.get('/src/3/')

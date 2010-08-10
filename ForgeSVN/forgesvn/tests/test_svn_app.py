@@ -24,7 +24,8 @@ class TestSVNApp(unittest.TestCase):
         assert c.app.templates.endswith('forgesvn/templates')
 
     def test_admin_menu(self):
-        assert c.app.admin_menu() == []
+        assert len(c.app.admin_menu()) == 1
+        assert c.app.admin_menu()[0].label == 'Viewable Files'
 
     def test_uninstall(self):
         c.app.uninstall(c.project)
