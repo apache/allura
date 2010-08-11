@@ -25,7 +25,7 @@ class SFXBaseApp(Application):
     __version__ = version.__version__
     permissions = [ 'configure', 'admin']
     searchable=True
-    installable = False
+    installable = True
     tool_label=''
     default_mount_label=''
     default_mount_point='sfx-app'
@@ -37,7 +37,7 @@ class SFXBaseApp(Application):
 
     def __init__(self, project, config):
         Application.__init__(self, project, config)
-        # self.admin = self.AdminController(self)
+        self.admin = self.AdminController(self)
 
     def has_access(self, user, topic):
         return False

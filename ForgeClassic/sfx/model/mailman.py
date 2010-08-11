@@ -1,4 +1,5 @@
 import json
+import logging
 from time import time
 from datetime import datetime
 
@@ -11,6 +12,9 @@ from ming.utils import LazyProperty
 
 from pyforge.lib import helpers as h
 from .sfx_model import tables as T
+
+log = logging.getLogger(__name__)
+action_logger = h.log_action(log, 'SFX:')
 
 class List(object):
     PRIVATE=0
@@ -50,6 +54,7 @@ class List(object):
 
     @classmethod
     def create(cls, name, is_public, description):
+        action_logger.info('CreateML')
         name = name.lower().replace('/', '')
         # Copy checks from www/mail/admin/index.php
         short_names = ('svn', 'cvs', 'hg', 'bzr', 'git')
@@ -95,19 +100,21 @@ class List(object):
         return cls(name=name)
 
     def update(self, is_public, description):
+        action_logger.info('UpdateML')
         if self.is_public == is_public and self.description == description:
             return
 
         stmt = T.mail_group_list.update(
-            where=sa.and_(
+            whereclause=sa.and_(
                 T.mail_group_list.c.group_id==self.group_id,
                 T.mail_group_list.c.group_list_id==self.group_list_id))
         stmt.execute(is_public=is_public, description=description)
-        stmt = T.lists.update(where=T.lists.c.name==self.name)
+        stmt = T.lists.update(whereclause=T.lists.c.name==self.name)
         stmt.execute(is_public=is_public)
         tg.flash('The mailing list was successfully updated')
 
     def delete(self):
+        action_logger.info('DelML')
         operation_detail=json.dumps(dict(
                 priority=50,
                 force_service_type='ml',
@@ -129,6 +136,7 @@ class List(object):
             operation_status_detail='Purge remove ml pending')
 
     def change_password(self, new_password):
+        action_logger.info('ChpassML')
         stmt = T.ml_password_change.insert()
         stmt.execute(
             ml_name=self.name,

@@ -1,9 +1,13 @@
+import logging
 from pylons import c as context
 
 from ming.utils import LazyProperty
 
 from pyforge.lib import helpers as h
 from .sfx_model import tables as T
+
+log = logging.getLogger(__name__)
+action_logger = h.log_action(log, 'SFX:')
 
 class VHost(object):
 
@@ -34,6 +38,7 @@ class VHost(object):
 
     @classmethod
     def create(cls, name):
+        action_logger.info('CreateVHOST')
         stmt = T.prweb_vhost.insert()
         homedir = '/home/groups/%s/' % (
             h.sharded_path(context.project.get_tool_data('sfx', 'unix_group_name')))
@@ -48,6 +53,7 @@ class VHost(object):
         return cls(name)
 
     def delete(self):
+        action_logger.info('DelVHOST')
         stmt = T.prweb_vhost.delete()
         stmt = stmt.where(
             T.prweb_vhost.c.group_id==context.project.get_tool_data('sfx', 'group_id'))
@@ -72,6 +78,7 @@ class MySQL(object):
 
     @classmethod
     def create(cls, passwd_rouser, passwd_rwuser, passwd_adminuser):
+        action_logger.info('CreateMySQL')
         stmt = T._mysql_auth.insert()
         stmt.execute(
             passwd_rouser=passwd_rouser,
@@ -83,9 +90,10 @@ class MySQL(object):
 
     @classmethod
     def update(cls, passwd_rouser, passwd_rwuser, passwd_adminuser):
+        action_logger.info('UpdateMySQL')
         group_id=context.project.get_tool_data('sfx', 'group_id')
         stmt = T._mysql_auth.update(
-            where=T._mysql_auth.c.group_id==group_id)
+            whereclause=T._mysql_auth.c.group_id==group_id)
         stmt.execute(
             passwd_rouser=passwd_rouser,
             passwd_rwuser=passwd_rwuser,
