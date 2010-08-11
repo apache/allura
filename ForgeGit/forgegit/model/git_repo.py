@@ -279,7 +279,7 @@ class GitBlob(M.Blob):
             elif found_ci:
                 prev=ent
                 break
-            else:
+            elif not len(ent.context()['next']) or ent.context()['next'][0]._id != self._commit._id:
                 next=ent
         if prev:
             tree = prev.tree()

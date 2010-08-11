@@ -111,6 +111,8 @@ class Globals(object):
         return classes
 
     def highlight(self, text, lexer=None, filename=None):
+        if not text:
+            return '<em>Empty file</em>'
         if lexer is None:
             try:
                 lexer = pygments.lexers.get_lexer_for_filename(filename, encoding='chardet')
