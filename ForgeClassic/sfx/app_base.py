@@ -24,7 +24,7 @@ class SFXBaseApp(Application):
     '''Base class for admin-only SFX resources'''
     __version__ = version.__version__
     permissions = [ 'configure', 'admin']
-    searchable=True
+    searchable=False
     installable = True
     tool_label=''
     default_mount_label=''
@@ -59,6 +59,7 @@ class SFXBaseApp(Application):
         super(SFXBaseApp, self).install(project)
         # Setup permissions
         self.config.acl.update(
+            read=c.project.acl['read'],
             configure=c.project.acl['tool'],
             admin=c.project.acl['tool'])
 

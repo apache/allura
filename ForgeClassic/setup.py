@@ -32,12 +32,13 @@ setup(
     mailman = sfx:MailmanApp
     vhost = sfx:VHostApp
     mysql = sfx:MySQLApp
-
+    hosted_apps = sfx:HostedAppsApp
 
     [pyforge.auth]
     sfx = sfx:SFXAuthenticationProvider
 
     [pyforge.project_registration]
     sfx = sfx:SFXProjectRegistrationProvider
+
     """,
       )

@@ -1,9 +1,9 @@
-import sqlalchemy
+import sqlalchemy as sa
 
-site_meta = sqlalchemy.MetaData()
-mail_meta = sqlalchemy.MetaData()
-task_meta = sqlalchemy.MetaData()
-epic_meta = sqlalchemy.MetaData()
+site_meta = sa.MetaData()
+mail_meta = sa.MetaData()
+task_meta = sa.MetaData()
+epic_meta = sa.MetaData()
 
 class Empty(object):pass
 tables = Empty()

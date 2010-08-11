@@ -54,6 +54,13 @@ class SitemapEntry(object):
             self.children.append(x)
         return self
 
+    def __repr__(self):
+        l = ['<SitemapEntry ']
+        l.append('    label=%r' % self.label)
+        l.append('    children=%s' % repr(self.children).replace('\n', '\n    '))
+        l.append('>')
+        return '\n'.join(l)
+
     def bind_app(self, app):
         lbl = self.label
         url = self.url
