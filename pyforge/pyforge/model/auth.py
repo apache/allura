@@ -263,9 +263,12 @@ class User(MappedClass):
                 yield project
 
     def role_iter(self):
-        yield ProjectRole.query.get(name='*anonymous')
-        if self._id:
-            yield ProjectRole.query.get(name='*authenticated')
+        anon_role = ProjectRole.query.get(name='*anonymous')
+        auth_role = ProjectRole.query.get(name='*authenticated')
+        if anon_role:
+            yield anon_role
+        if self._id and auth_role:
+            yield auth_role
         if self._id:
             pr = self.project_role()
             for role in pr.role_iter():
