@@ -33,7 +33,7 @@
     </script>
   </head>
 
-  <body py:match="body" py:attrs="select('@*')">
+  <body py:match="body" py:attrs="select('@*')" xml:space="preserve">
     <py:for each="blob in g.resource_manager.emit('body_top_js')">$blob</py:for>
     ${main_menu()}
     <div class="container${g.document_class(neighborhood)}">
