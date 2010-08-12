@@ -9,8 +9,11 @@
   <head>
     <meta content="text/html; charset=UTF-8" http-equiv="content-type" py:replace="''"/>
     <title>
-      $c.project.name / $c.app.config.options.mount_label / Revision ${tree._commit._id}:
-      ${path_links(tree.path().split('/')[1:-1])}
+      $c.project.name / $c.app.config.options.mount_label
+      <py:if test="tree">
+        / Revision ${tree._commit._id}:
+        ${path_links(tree.path().split('/')[1:-1])}
+      </py:if>
     </title>
     <link rel="stylesheet" type="text/css" media="screen, projection" href="${g.forge_static('css/forge/hilite.css')}" />
   </head>
