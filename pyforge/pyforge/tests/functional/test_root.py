@@ -15,6 +15,7 @@ from nose.tools import assert_true
 from pyforge.tests import TestController
 from pyforge import model as M
 from ming.orm import session
+from urllib import quote
 
 class TestRootController(TestController):
     def test_index(self):
@@ -96,6 +97,8 @@ class TestRootController(TestController):
 	color: #bbb !important;""" in r)
         assert(
 """#header h1 a {color: #ccc; text-shadow: #fff 0 1px;}""" in r)
-        
-        
 
+    def test_redirect_external(self):
+        r = self.app.get('/redirect/?path=%s' % quote('http://google.com'))
+        assert r.status_int == 302
+        assert r.location == 'http://google.com'

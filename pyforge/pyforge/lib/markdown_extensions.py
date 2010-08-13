@@ -221,7 +221,10 @@ class RelativeLinkRewriter(markdown.postprocessors.Postprocessor):
     def _rewrite(self, tag, attr):
         val = tag.get(attr)
         if val is None: return
-        if '://' in val: return
+        if '://' in val:
+            tag[attr] = '/redirect/?path=%s' % quote(val)
+            tag['rel']='nofollow'
+            return
         if val.startswith('/'): return
         if val.startswith('.'): return
         tag[attr] = '../' + val

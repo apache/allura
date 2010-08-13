@@ -84,3 +84,9 @@ class RootController(BaseController):
             SitemapEntry(cat.label, '/browse/'+cat.name, className='nav_child') for cat in categories
         ]
         return dict(projects=psort,title="All Projects",text=None)
+
+    @expose()
+    @with_trailing_slash
+    def redirect(self, path, **kw):
+        """Redirect to external sites."""
+        redirect(path)
