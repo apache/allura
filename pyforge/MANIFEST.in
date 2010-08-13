@@ -1,4 +1,0 @@
-recursive-include pyforge/public *
-include pyforge/public/favicon.ico
-recursive-include pyforge/i18n *
-recursive-include pyforge/templates *

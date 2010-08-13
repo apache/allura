@@ -7,15 +7,15 @@ import tg
 import pylons
 from paste.script import command
 
-import pyforge.command
-from pyforge.lib.helpers import find_project
-from pyforge.command import base
+import allura.command
+from allura.lib.helpers import find_project
+from allura.command import base
 
 from paste.deploy.converters import asint
 
 M = None
 
-class SMTPServerCommand(pyforge.command.Command):
+class SMTPServerCommand(allura.command.Command):
     min_args=1
     max_args=1
     usage = 'NAME <ini file>'
@@ -28,7 +28,7 @@ class SMTPServerCommand(pyforge.command.Command):
     def command(self):
         global M
         self.basic_setup()
-        from pyforge import model
+        from allura import model
         M = model
         server = MailServer((tg.config.get('forgemail.host', '0.0.0.0'),
                              asint(tg.config.get('forgemail.port', 8825))),

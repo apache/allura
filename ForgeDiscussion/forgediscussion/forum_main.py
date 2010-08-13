@@ -13,11 +13,11 @@ from ming.orm.base import session
 from ming import schema
 
 # Pyforge-specific imports
-from pyforge.app import Application, ConfigOption, SitemapEntry, DefaultAdminController
-from pyforge.lib import helpers as h
-from pyforge.lib.decorators import audit, react
-from pyforge.lib.security import require, has_artifact_access
-from pyforge.model import ProjectRole
+from allura.app import Application, ConfigOption, SitemapEntry, DefaultAdminController
+from allura.lib import helpers as h
+from allura.lib.decorators import audit, react
+from allura.lib.security import require, has_artifact_access
+from allura.model import ProjectRole
 
 # Local imports
 from forgediscussion import model

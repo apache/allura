@@ -1,0 +1,184 @@
+#-*- python -*-
+import logging
+
+# Non-stdlib imports
+import pkg_resources
+from tg import expose, validate, redirect
+from pylons import g, c, request
+from formencode import validators
+from pymongo.bson import ObjectId
+
+# Pyforge-specific imports
+from allura.app import Application, ConfigOption, SitemapEntry
+from allura.lib import helpers as h
+from allura.lib.search import search
+from allura.lib.decorators import audit, react
+from allura.lib.security import require, has_artifact_access
+from allura.model import ProjectRole
+from allura.controllers import BaseController
+
+# Local imports
+from {{package}} import model
+from {{package}} import version
+
+log = logging.getLogger(__name__)
+
+class {{egg}}App(Application):
+    __version__ = version.__version__
+    permissions = ['configure', 'read', 'write', 'comment']
+    config_options = Application.config_options + [
+        ConfigOption('some_str_config_option', str, 'some_str_config_option'),
+        ConfigOption('some_int_config_option', int, 42),
+        ]
+
+    def __init__(self, project, config):
+        Application.__init__(self, project, config)
+        self.root = RootController()
+
+    @audit('{{tool_name}}.#')
+    def auditor(self, routing_key, data):
+        log.info('Auditing data from %s (%s)',
+                 routing_key, self.config.options.mount_point)
+
+    @react('{{tool_name}}.#')
+    def reactor(self, routing_key, data):
+        log.info('Reacting to data from %s (%s)',
+                 routing_key, self.config.options.mount_point)
+
+    @property
+    @h.exceptionless([], log)
+    def sitemap(self):
+        menu_id = self.config.options.mount_label.title()
+        with h.push_config(c, app=self):
+            return [
+                SitemapEntry(menu_id, '.')[self.sidebar_menu()] ]
+
+    @h.exceptionless([], log)
+    def sidebar_menu(self):
+        return [
+            SitemapEntry('Home', '.'),      
+            SitemapEntry('Search', 'search'),      
+            ]
+
+    def admin_menu(self):
+        return []
+
+    @property
+    def templates(self):
+         return pkg_resources.resource_filename('{{package}}', 'templates')
+
+    def install(self, project):
+        'Set up any default permissions and roles here'
+        super({{egg}}App, self).install(project)
+
+        # Give the installing user all the permissions
+        pr = c.user.project_role()
+        for perm in self.permissions:
+              self.config.acl[perm] = [ pr._id ]
+        self.config.acl['read'].append(
+            ProjectRole.query.get(name='*anonymous')._id)      
+        self.config.acl['comment'].append(
+            ProjectRole.query.get(name='*authenticated')._id)
+        art = model.MyArtifact(
+            text='This is a sample artifact')
+
+    def uninstall(self, project):
+        "Remove all the tool's artifacts from the database"
+        pass
+        super({{egg}}App, self).uninstall(project)
+
+class RootController(BaseController):
+
+    @expose('{{package}}.templates.index')
+    def index(self, **kw):
+        return dict()
+                  
+    @expose('{{package}}.templates.search')
+    @validate(dict(q=validators.UnicodeString(if_empty=None),
+                   history=validators.StringBool(if_empty=False)))
+    def search(self, q=None, history=None):
+        'local tool search'
+        results = []
+        count=0
+        if not q:
+            q = ''
+        else:
+            search_query = '''%s
+            AND is_history_b:%s
+            AND mount_point_s:%s''' % (
+                q, history, c.app.config.options.mount_point)
+            results = search(search_query)
+            if results: count=results.hits
+        return dict(q=q, history=history, results=results or [], count=count)
+
+    def _lookup(self, id, *remainder):
+        return ArtifactController(id), remainder
+
+class ArtifactController(BaseController):
+
+    def __init__(self, id):
+        self.artifact = model.MyArtifact.query.get(_id=ObjectId(id))
+        self.comments = CommentController(self.artifact)
+
+    @expose('{{package}}.templates.artifact')
+    @validate(dict(version=validators.Int()))
+    def index(self, version=None, **kw):
+        require(has_artifact_access('read', self.artifact))
+        artifact = self.get_version(version)
+        if artifact is None:
+            if version:
+                redirect('.?version=%d' % (version-1))
+            elif version <= 0:
+                redirect('.')
+            else:
+                redirect('..')
+        cur = artifact.version
+        if cur > 0: prev = cur-1
+        else: prev = None
+        next = cur+1
+        return dict(artifact=artifact,
+                    cur=cur, prev=prev, next=next)
+
+    def get_version(self, version):
+        if not version: return self.artifact
+        ss = model.MyArtifactHistory.query.get(artifact_id=self.artifact._id,
+                                               version=version)
+        if ss is None: return None
+        result = deepcopy(self.artifact)
+        return result.update(ss.data)
+    
+class CommentController(BaseController):
+
+    def __init__(self, artifact, comment_id=None):
+        self.artifact = artifact
+        self.comment_id = comment_id
+        self.comment = model.MyArtifactComment.query.get(_id=self.comment_id)
+
+    @expose()
+    def reply(self, text):
+        require(has_artifact_access('comment', self.artifact))
+        if self.comment_id:
+            c = self.comment.reply()
+            c.text = text
+        else:
+            c = self.artifact.reply()
+            c.text = text
+        redirect(request.referer)
+
+    @expose()
+    def delete(self):
+        require(lambda:c.user._id == self.comment.author()._id)
+        self.comment.text = '[Text deleted by commenter]'
+        redirect(request.referer)
+
+    def _lookup(self, next, *remainder):
+        if self.comment_id:
+            return CommentController(
+                self.artifact,
+                self.comment_id + '/' + next), remainder
+        else:
+            return CommentController(
+                self.artifact, next), remainder
+
+    
+    

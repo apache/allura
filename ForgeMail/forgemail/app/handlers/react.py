@@ -12,11 +12,11 @@ import pylons
 from pylons import c
 from paste.deploy import appconfig
 
-from pyforge.config.environment import load_environment
+from allura.config.environment import load_environment
 
-from pyforge import model as M
-from pyforge.model import Project
-from pyforge.lib.app_globals import Globals
+from allura import model as M
+from allura.model import Project
+from allura.lib.app_globals import Globals
 
 
 class EmptyClass(object): pass
@@ -24,7 +24,7 @@ class EmptyClass(object): pass
 @route("(appmount)\\.(apploc)@(proj)\\.(host)", appmount=".*", apploc=".*", proj=".*")
 @stateless
 def REACTING(message, post_name=None, appmount=None, apploc=None, proj=None, host=None):
-    conf = appconfig('config:%s' % '../pyforge/development.ini',relative_to=os.getcwd())
+    conf = appconfig('config:%s' % '../Allura/development.ini',relative_to=os.getcwd())
     load_environment(conf.global_conf, conf.local_conf)
     pylons.c._push_object(EmptyClass())
     pylons.g._push_object(Globals())

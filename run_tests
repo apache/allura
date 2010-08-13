@@ -2,7 +2,7 @@
 
 if [ "$TEST_MODULES"  == "" ]; then
     TEST_MODULES="\
-    pyforge \
+    Allura \
     ForgeDiscussion \
     ForgeGit \
     ForgeHg \

@@ -7,8 +7,8 @@ from pylons import c, g
 
 from ming.orm import ThreadLocalORMSession
 
-from pyforge.tests import helpers
-from pyforge.lib import helpers as h
+from allura.tests import helpers
+from allura.lib import helpers as h
 from forgesvn import model as SM
 
 class TestSVNApp(unittest.TestCase):

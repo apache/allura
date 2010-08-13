@@ -2,9 +2,9 @@ import errno, logging, os, stat, subprocess
 
 from pylons import c
 
-from pyforge.lib.decorators import audit, react
+from allura.lib.decorators import audit, react
 
-from pyforge import model as M
+from allura import model as M
 
 log = logging.getLogger(__name__)
 

@@ -9,11 +9,11 @@ from pylons import g, c, request
 from pymongo.bson import ObjectId
 
 # Pyforge-specific imports
-from pyforge.app import Application, ConfigOption, SitemapEntry, DefaultAdminController
-from pyforge.lib import helpers as h
-from pyforge.lib.security import require, has_artifact_access
-from pyforge.model import ProjectRole
-from pyforge.controllers import BaseController
+from allura.app import Application, ConfigOption, SitemapEntry, DefaultAdminController
+from allura.lib import helpers as h
+from allura.lib.security import require, has_artifact_access
+from allura.model import ProjectRole
+from allura.controllers import BaseController
 
 # Local imports
 from forgelink import version

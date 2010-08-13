@@ -20,24 +20,24 @@ setup(
     zip_safe=False,
     install_requires=[
         # -*- Extra requirements: -*-
-        'pyforge',
+        'allura',
         'sqlalchemy==0.6beta3',
         'psycopg2==2.2.2',
         'mysql-python==1.2.3c1',
         ],
     entry_points="""
     # -*- Entry points: -*-
-    [pyforge]
+    [allura]
     sfx = sfx:SFXApp
     mailman = sfx:MailmanApp
     vhost = sfx:VHostApp
     mysql = sfx:MySQLApp
     hosted_apps = sfx:HostedAppsApp
 
-    [pyforge.auth]
+    [allura.auth]
     sfx = sfx:SFXAuthenticationProvider
 
-    [pyforge.project_registration]
+    [allura.project_registration]
     sfx = sfx:SFXProjectRegistrationProvider
 
     """,

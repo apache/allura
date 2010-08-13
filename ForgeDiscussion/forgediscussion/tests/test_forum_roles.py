@@ -1,7 +1,7 @@
 from pylons import c, g
 
-from pyforge.tests import helpers
-from pyforge import model as M
+from allura.tests import helpers
+from allura import model as M
 
 def setUp():
     helpers.setup_basic_test()

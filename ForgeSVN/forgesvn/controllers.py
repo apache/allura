@@ -3,8 +3,8 @@ from tg.decorators import with_trailing_slash, without_trailing_slash
 from pylons import c
 from webob import exc
 
-from pyforge.controllers import repository
-from pyforge.lib.security import require, has_artifact_access
+from allura.controllers import repository
+from allura.lib.security import require, has_artifact_access
 
 from .widgets import SVNRevisionWidget, SVNLog
 

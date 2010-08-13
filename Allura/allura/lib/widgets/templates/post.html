@@ -1,0 +1,85 @@
+<div xmlns="http://www.w3.org/1999/xhtml"
+     xmlns:py="http://genshi.edgewall.org/"
+     xmlns:xi="http://www.w3.org/2001/XInclude"
+     py:strip="True">
+     <xi:include href="${g.allura_templates}/lib.html" />
+  <?python from allura.lib.security import has_artifact_access?>
+  <div class="discussion-post">
+    <div class="row">
+    	<div class="column grid_1 tcenter">
+    		<p class="gravatar">
+          <a href="${value.author().url()}">${gravatar(value.author())}</a><br/>
+          <a href="${value.author().url()}">${value.author().display_name}</a><br />${h.ago(value.timestamp)}
+    		</p>
+    	</div>
+    	<div class="column grid_8">
+        <div class="display_post">
+          <b py:if="show_subject">${value.subject or '(no subject)'}<br/></b>
+          ${Markup(g.markdown.convert(value.text))}
+        </div>
+      	<div class="edit_post_form" style="display:none" py:if="has_artifact_access('post', value.thread)()">
+      	  ${widgets.edit_post.display(value=value, submit_text='Edit Post', action=value.url())}
+      	</div>
+        <div class="add_attachment_form" style="display:none; clear: both; overflow: auto;" py:if="has_artifact_access('post', value.thread)()">
+            ${widgets.attach_post.display(value=value, action=value.url() + 'attach')}
+        </div>
+        <div py:if="value.attachments">
+          <strong>Attachments</strong>
+          <div py:for="att in value.attachments">
+            ${widgets.attachment.display(post=value, value=att)}
+          </div>
+        </div>
+    	</div>
+    	<div class="options">
+    		<a href="" class="reply_post btn ico-l"><b class="ui-icon ui-icon-arrowreturnthick-1-w"></b> <span>Reply</span></a><br/>
+    		<a href="${value.url()}" class="ico-l"><b class="ui-icon ui-icon-link"></b> <span>Link</span></a><br/>
+        <div py:if="has_artifact_access('moderate', value)()">
+          ${widgets.flag_post.display(value=value, action=value.url()+'flag')}
+        </div>
+    		<a href="" class="edit_post ico-l"><b class="ui-icon ui-icon-pencil"></b> <span>Edit</span></a><br/>
+      	<div py:if="has_artifact_access('moderate', value)()" py:strip="True">
+      	  ${widgets.moderate_post.display(value=value, action=value.url()+'moderate')}
+      	</div>
+    		<a href="#" class="ico-l add_attachment" py:if="has_artifact_access('post', value.thread)()"><b class="ui-icon ui-icon-document"></b> <span>Attach</span></a><br/>
+    	</div>
+    </div>
+    <ul>
+      <li>
+        <div class="row reply_post_form" style="display:none" py:if="has_artifact_access('post', value.thread)()">
+          <div class="reply">
+            <div class="column grid_1 tcenter">
+              <p class="gravatar">
+                ${gravatar(c.user)}<br/><br/>
+                <a href="${c.user.url()}">$c.user.display_name</a>
+              </p>
+            </div>
+            <div class="column grid_8">
+              ${widgets.edit_post.display(
+                submit_text='Post Reply',
+                action=value.url()+'reply',
+                value=dict(
+                text='',
+                subject=value.reply_subject()),
+              )}
+            </div>
+          </div>
+        </div>
+      </li>
+    </ul>
+  </div>
+  
+  
+<!--   
+  <div class="span-2" py:if="has_artifact_access('post', value.thread)()">
+    <a href="" class="add_attachment"><span class="ui-icon ui-icon-document"></span>Attach</a>
+  </div>
+  <div class="span-2" py:if="has_artifact_access('moderate', value.thread)() and 'promote_to_thread' in widgets and not supress_promote">
+    <a href="" class="promote_to_thread"><span class="ui-icon ui-icon-arrowthick-1-n"></span>Promote</a>
+  </div>
+  </div>-->
+
+  <div class="promote_to_thread_form push-${3+indent} span-${16-indent} last clear" style="display:none"
+       py:if="has_artifact_access('moderate', value.thread)() and 'promote_to_thread' in widgets and not supress_promote">
+    ${widgets.promote_to_thread.display(value=value, action=value.url()+'moderate')}
+  </div>
+</div>

@@ -5,8 +5,8 @@ from tg import expose, redirect, flash
 from tg.decorators import with_trailing_slash
 from pylons import c
 
-from pyforge.app import DefaultAdminController, SitemapEntry
-from pyforge.lib import helpers as h
+from allura.app import DefaultAdminController, SitemapEntry
+from allura.lib import helpers as h
 
 from . import model as SM
 from .app_base import SFXBaseApp

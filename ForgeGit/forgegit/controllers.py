@@ -2,9 +2,9 @@ from tg import expose, url, override_template, redirect
 from tg.decorators import with_trailing_slash, without_trailing_slash
 from pylons import c
 
-from pyforge.controllers import repository
-from pyforge.lib.security import require, has_artifact_access
-from pyforge.lib import patience
+from allura.controllers import repository
+from allura.lib.security import require, has_artifact_access
+from allura.lib import patience
 
 from .widgets import GitRevisionWidget, GitLog
 

@@ -3,9 +3,9 @@ from formencode import validators as fev
 
 import ew
 
-from pyforge.lib import validators as V
-from pyforge.lib.widgets import discuss as DW
-from pyforge.lib.widgets import form_fields as ffw
+from allura.lib import validators as V
+from allura.lib.widgets import discuss as DW
+from allura.lib.widgets import form_fields as ffw
 
 from forgediscussion import model as M
 

@@ -3,12 +3,12 @@
 <html xmlns="http://www.w3.org/1999/xhtml"
       xmlns:py="http://genshi.edgewall.org/"
       xmlns:xi="http://www.w3.org/2001/XInclude">
-  <xi:include href="${g.pyforge_templates}/master.html"/>
+  <xi:include href="${g.allura_templates}/master.html"/>
 
   <?python
     from pprint import pformat
-    from pyforge.lib.security import has_artifact_access
-    from pyforge import model as M
+    from allura.lib.security import has_artifact_access
+    from allura import model as M
     ?>
 
   <head>

@@ -1,5 +1,5 @@
-echo '# setup pyforge...'
-pushd pyforge
+echo '# setup allura...'
+pushd allura
 python setup.py develop
 popd
 echo '# setup ForgeDiscussion...'

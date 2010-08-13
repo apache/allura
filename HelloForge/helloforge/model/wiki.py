@@ -12,7 +12,7 @@ from ming.orm.base import state, session
 from ming.orm.mapped_class import MappedClass
 from ming.orm.property import FieldProperty
 
-from pyforge.model import VersionedArtifact, Snapshot, Message
+from allura.model import VersionedArtifact, Snapshot, Message
 
 wikiwords = [
     (r'\b([A-Z]\w+[A-Z]+\w+)', r'<a href="../\1/">\1</a>'),

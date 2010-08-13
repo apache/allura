@@ -1,6 +1,6 @@
 import tw.forms as twf
 import ew
-from pyforge.lib.widgets import form_fields as ffw
+from allura.lib.widgets import form_fields as ffw
 
 from pylons import c
 from forgetracker import model

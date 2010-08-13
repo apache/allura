@@ -1,0 +1,218 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+                      "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:py="http://genshi.edgewall.org/"
+      xmlns:xi="http://www.w3.org/2001/XInclude">
+
+  <xi:include href="master.html" />
+
+  <?python from allura.lib.security import has_project_access ?>
+
+  <head>
+    <meta content="text/html; charset=UTF-8" http-equiv="content-type" py:replace="''"/>
+    <title>$c.project.name / Tools</title>
+  </head>
+
+  <body>
+    <h1 class="title">Select Tools for $c.project.shortname</h1>
+    <div class="content">
+      <div class="row">
+        <div class="column grid_12">
+          <div py:if="c.project.deleted" class="notice">This project has been deleted and is not visible to non-admin users</div>
+          <p py:if="has_project_access('tool')()">Drag and drop tools to reorder.</p>
+          <table>
+            <thead>
+              <tr>
+                <th>Type</th>
+                <th>Mount Point</th>
+                <th>Label</th>
+                <th py:if="has_project_access('tool')()">Edit</th>
+                <th py:if="has_project_access('tool')()"></th>
+              </tr>
+            </thead>
+            <tbody id="tool_admin">
+              <tr class="sortables" py:for="i, item in enumerate(mounts)">
+                <py:if test="'ac' in item">
+                  <td>Tool: ${item['ac'].tool_name}</td>
+                  <td>${item['ac'].options.mount_point}</td>
+                  <td>
+                    <form method="POST" action="update_mounts" id="mounts_edit">
+                      <input type="hidden"
+                             name="tool-${i}.mount_point"
+                             class="mount_point"
+                             value="${item['ac'].options.mount_point}"/>
+                      <input type="hidden"
+                             name="tool-${i}.ordinal"
+                             value="${item['ac'].options.ordinal}"/>
+                      <div py:if="has_project_access('tool')() and item['ac'].load().installable"
+                           class="editable viewing span-15 last">
+                        <div class="viewer">${item['ac'].options.mount_label}</div>
+                        <div class="editor">
+                          <input type="text"
+                                 name="tool-${i}.mount_label"
+                                 value="${item['ac'].options.mount_label}"/>
+                        </div>
+                      </div>
+                      <div py:if="not has_project_access('tool')() or not item['ac'].load().installable">
+                        ${item['ac'].options.mount_label}
+                      </div>
+                    </form>
+                  </td>
+                  <td>
+                    <a py:if="has_project_access('tool')() and item['ac'].load().installable"
+                       href="${item['ac'].options.mount_point}/"
+                       class="ico-l">
+                       <b class="ui-icon ui-icon-pencil"></b> <span>Edit</span>
+                    </a>
+                  </td>
+                  <td>
+                    <form method="POST" action="update_mounts" id="mounts_edit">
+                      <input type="hidden"
+                             name="tool-${i}.mount_point"
+                             value="${item['ac'].options.mount_point}"/>
+                      <input name="tool-${i}.delete" type="hidden" value="Delete"/>
+                      <input py:if="has_project_access('tool')() and item['ac'].load().installable"
+                             class="mount_delete" type="button" value="Delete"/>
+                    </form>
+                  </td>
+                </py:if>
+                <py:if test="'sub' in item and not item['sub'].deleted">
+                  <td>Subproject</td>
+                  <td>${item['sub'].shortname}</td>
+                  <td>
+                  <form method="POST" action="update_mounts" id="mounts_edit">
+                      <input type="hidden"
+                             name="subproject-${i}.shortname"
+                             class="shortname"
+                             value="${item['sub'].shortname}"/>
+                      <input type="hidden"
+                             name="subproject-${i}.ordinal"
+                             value="${item['sub'].ordinal}"/>
+                      <div class="editable viewing span-15 last">
+                        <div class="viewer">${item['sub'].name}</div>
+                        <div class="editor">
+                          <input type="text"
+                                 name="subproject-${i}.name"
+                                 value="${item['sub'].name}"/>
+                        </div>
+                      </div>
+                  </form>
+                  </td>
+                  <td py:if="has_project_access('tool')()"><a href="${item['sub'].url() + 'admin/'}" class="ico-l">
+                    <b class="ui-icon ui-icon-pencil"></b> <span>Edit</span>
+                  </a></td>
+                  <td>
+                  <form method="POST" action="update_mounts" id="mounts_edit">
+                      <input type="hidden"
+                             name="subproject-${i}.shortname"
+                             value="${item['sub'].shortname}"/>
+                      <input name="subproject-${i}.delete" type="hidden" value="Delete"/>
+                      <input py:if="has_project_access('tool')()" class="mount_delete" type="button" value="Delete"/>
+                  </form>
+                  </td>
+                </py:if>
+              </tr>
+              <form method="POST" action="update_mounts">
+                <input type="hidden" name="new.ordinal" value="${len(installable_tools)+len(c.project.direct_subprojects)}"/>
+                <tr py:if="has_project_access('tool')()">
+                  <td>
+                    <select name="new.ep_name" class="new_ep_name">
+                        <option value="" disabled="disabled">New Tool</option>
+                        <option py:for="tool in installable_tools" value="$tool.name">$tool.app.tool_label</option>
+                        <option value="">Subproject</option>
+                    </select>
+                  </td>
+                  <td>
+                    <input name="new.mount_point" class="new_mount_point"/>
+                  </td>
+                  <td>
+                    <input name="new.mount_label" class="new_mount_label"/>
+                  </td>
+                  <td colspan="2">
+                    <input type="submit" value="Install" name="new.install"/>
+                  </td>
+                </tr>
+              </form>
+            </tbody>
+          </table>
+          <input type="button" id="save_order" value="Save Tool Order" style="display:none"
+                 py:if="has_project_access('tool')()"/>
+          <div py:if="has_project_access('tool')()" id="delete-confirm">Warning: This will destroy all data in this tool and is non reversable!</div>
+        </div>
+      </div>
+    </div>
+  </body>
+  <script type="text/javascript">
+    var form_to_delete = null;
+    var defaults = {
+      <py:for each="tool in installable_tools">
+        '$tool.name':{'default_label':'$tool.app.default_mount_label','default_mount':'$tool.app.default_mount_point'},
+      </py:for>
+    };
+    $('select.new_ep_name').change(function() {
+      var tool = defaults[$(this).val()];
+      var row = $(this).closest('tr')
+      row.find('input.new_mount_point').val(tool.default_mount);
+      row.find('input.new_mount_label').val(tool.default_label);
+    });
+    
+    <py:if test="has_project_access('tool')()">
+    /*<![CDATA[*/
+      $('#tool_admin').sortable({
+        items: 'tr.sortables',
+        axis: 'y',
+        update: function(e){
+          $('#save_order').show();
+        }
+      });
+      $('#save_order').click(function(e){
+        var sortables = $('#tool_admin .sortables');
+        var tools = 0
+        var subs = 0
+        var params = {}
+        for(var i=0,len=sortables.length; i<len; i++){
+          var item = $(sortables[i])
+          var mount_point = item.find('input.mount_point');
+          var shortname = item.find('input.shortname');
+          if(mount_point.length){
+            params['tools-'+tools+'.mount_point']=mount_point.val();
+            params['tools-'+tools+'.ordinal']=i;
+            tools++;
+          }
+          if(shortname.length){
+            params['subs-'+subs+'.shortname']=shortname.val();
+            params['subs-'+subs+'.ordinal']=i;
+            subs++;
+          }
+        }
+        $.post('update_mount_order', params, function(){
+            location.reload();
+        });
+      });
+      $("#delete-confirm").dialog({
+        resizable: false,
+        height:200,
+        modal: true,
+        autoOpen: false,
+        buttons: {
+          'Delete': function() {
+            form_to_delete.submit();
+            $(this).dialog('close');
+            form_to_delete = null;
+          },
+          Cancel: function() {
+            $(this).dialog('close');
+            form_to_delete = null;
+          }
+        }
+      });
+      $('input.mount_delete').click(function() {
+        form_to_delete = this.parentNode;
+        $('#delete-confirm').dialog('open');
+        $('div.ui-dialog-buttonpane > button:last').focus();
+        return false;
+      });
+    /*]]>*/
+    </py:if>
+  </script>
+</html>

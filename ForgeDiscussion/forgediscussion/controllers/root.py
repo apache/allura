@@ -10,17 +10,17 @@ from pymongo.bson import ObjectId
 
 from ming.orm.base import session
 
-from pyforge.app import Application, ConfigOption, SitemapEntry, DefaultAdminController
-from pyforge.lib.security import require, has_artifact_access, has_project_access, require_authenticated
-from pyforge.model import ProjectRole
-from pyforge.lib.search import search
-from pyforge.lib import helpers as h
-from pyforge.controllers import BaseController
+from allura.app import Application, ConfigOption, SitemapEntry, DefaultAdminController
+from allura.lib.security import require, has_artifact_access, has_project_access, require_authenticated
+from allura.model import ProjectRole
+from allura.lib.search import search
+from allura.lib import helpers as h
+from allura.controllers import BaseController
 
 from .forum import ForumController
 from forgediscussion import model
 from forgediscussion import widgets as FW
-from pyforge.lib.widgets import discuss as DW
+from allura.lib.widgets import discuss as DW
 
 log = logging.getLogger(__name__)
 

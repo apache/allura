@@ -1,0 +1,21 @@
+# -*- coding: utf-8 -*-
+"""Sample controller module"""
+
+# turbogears imports
+from tg import expose
+#from tg import redirect, validate, flash
+
+# third party imports
+#from pylons.i18n import ugettext as _
+#from repoze.what import predicates
+
+# project specific imports
+from allura.lib.base import BaseController
+#from allura.model import DBSession, metadata
+
+
+class SampleController(BaseController):
+    
+    @expose('allura.templates.index')
+    def index(self):
+        return dict(page='index')

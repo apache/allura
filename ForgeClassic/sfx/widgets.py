@@ -4,8 +4,8 @@ from formencode import schema as fes
 
 import ew
 
-from pyforge.lib.widgets.forms import ForgeForm
-from pyforge.lib import validators as V
+from allura.lib.widgets.forms import ForgeForm
+from allura.lib import validators as V
 
 from sfx import model as M
 

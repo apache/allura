@@ -4,9 +4,9 @@ import tg
 from pylons import c, g
 from pymongo.bson import ObjectId
 
-from pyforge.lib.decorators import audit, react
-from pyforge.lib.helpers import push_config
-from pyforge import model as M
+from allura.lib.decorators import audit, react
+from allura.lib.helpers import push_config
+from allura import model as M
 
 from forgemail.lib import util, exc
 

@@ -5,8 +5,8 @@ import pkg_resources
 
 from ming.orm import ThreadLocalORMSession
 
-from pyforge.tests import helpers
-from pyforge.lib import helpers as h
+from allura.tests import helpers
+from allura.lib import helpers as h
 from forgegit import model as GM
 
 class TestGitRepo(unittest.TestCase):

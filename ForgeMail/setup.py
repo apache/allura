@@ -19,11 +19,11 @@ setup(name='ForgeMail',
       zip_safe=False,
       install_requires=[
           # -*- Extra requirements: -*-
-          'pyforge',
+          'allura',
       ],
       entry_points="""
       # -*- Entry points: -*-
-      [pyforge]
+      [allura]
       Mail=forgemail.mail_main:ForgeMailApp
 
       [paste.paster_command]

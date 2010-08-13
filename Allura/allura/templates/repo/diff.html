@@ -1,0 +1,46 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+                      "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:py="http://genshi.edgewall.org/"
+      xmlns:xi="http://www.w3.org/2001/XInclude">
+
+  <xi:include href="${g.allura_templates}/master.html"/>
+
+  <head>
+    <meta content="text/html; charset=UTF-8" http-equiv="content-type" py:replace="''"/>
+    <title>$c.project.name / $c.app.config.options.mount_label / Diff of $a.filename</title>
+    <link rel="stylesheet" type="text/css" media="screen, projection" href="${g.forge_static('css/forge/hilite.css')}" />
+  </head>
+
+  <body>
+    <h1 class="title">Diff of $a.filename</h1>
+    <div class="content">
+      <div class="row">
+        <div class="column grid_12">
+          <a href="${a._commit.url()}">${h.text.truncate(a._commit._id, 10)}:</a>
+          <a href="${a.url()}">${a.path()}</a><br/>
+          vs.<br/>
+          <a href="${b._commit.url()}">${h.text.truncate(b._commit._id, 10)}:</a>
+          <a href="${b.url()}">${b.path()}</a>
+
+          <py:if test="(not a.has_html_view and not a.has_image_view) or (not b.has_html_view and not b.has_image_view)">
+            $a.name cannot be displayed in your browser.
+            You may, however, <a href="?format=raw">download this file</a> instead.
+          </py:if>
+          <div class="clip" py:if="a.has_html_view and b.has_html_view">
+            <h3><span class="ico-l"><b class="ui-icon ui-icon-document"></b> $a.filename</span></h3>
+            ${Markup(g.highlight(diff, lexer='diff'))}
+          </div>
+          <div py:if="a.has_image_view and b.has_image_view">
+            <img src="${a.url()}?format=raw"
+                 alt="${h.text.truncate(a._commit._id, 10)}"
+                 title="${h.text.truncate(a._commit._id, 10)}"/>
+            <img src="${b.url()}?format=raw"
+                 alt="${h.text.truncate(b._commit._id, 10)}"
+                 title="${h.text.truncate(b._commit._id, 10)}"/>
+          </div>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

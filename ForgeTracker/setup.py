@@ -19,12 +19,12 @@ setup(name='ForgeTracker',
       zip_safe=False,
       install_requires=[
           # -*- Extra requirements: -*-
-          'pyforge',
+          'allura',
           'tw.forms',
       ],
       entry_points="""
       # -*- Entry points: -*-
-      [pyforge]
+      [allura]
       Tickets=forgetracker.tracker_main:ForgeTrackerApp
 
       [flyway.migrations]

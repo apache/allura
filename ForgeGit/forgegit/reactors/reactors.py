@@ -2,10 +2,10 @@ import logging
 
 import pylons
 
-from pyforge.lib.decorators import audit, react
-from pyforge import model as M
-from pyforge.lib import helpers as h
-from pyforge.lib import search
+from allura.lib.decorators import audit, react
+from allura import model as M
+from allura.lib import helpers as h
+from allura.lib import search
 
 log = logging.getLogger(__name__)
 

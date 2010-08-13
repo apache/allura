@@ -24,13 +24,13 @@ from ming.orm.base import mapper
 from pymongo.bson import ObjectId
 
 # Pyforge-specific imports
-from pyforge.app import Application, ConfigOption, SitemapEntry, DefaultAdminController
-from pyforge.lib import helpers as h
-from pyforge.lib.search import search
-from pyforge.lib.decorators import audit, react
-from pyforge.lib.security import require, has_artifact_access, has_project_access
-from pyforge.model import Project, ProjectRole, User, ArtifactReference, Feed
-from pyforge.controllers import BaseController
+from allura.app import Application, ConfigOption, SitemapEntry, DefaultAdminController
+from allura.lib import helpers as h
+from allura.lib.search import search
+from allura.lib.decorators import audit, react
+from allura.lib.security import require, has_artifact_access, has_project_access
+from allura.model import Project, ProjectRole, User, ArtifactReference, Feed
+from allura.controllers import BaseController
 
 # Local imports
 from forgegit import model

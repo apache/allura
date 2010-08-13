@@ -6,9 +6,9 @@ from tg import expose, redirect, validate
 from tg.decorators import with_trailing_slash, without_trailing_slash
 from pylons import c, g
 
-from pyforge.app import Application, SitemapEntry, DefaultAdminController
-from pyforge import model as M
-from pyforge.lib import helpers as h
+from allura.app import Application, SitemapEntry, DefaultAdminController
+from allura import model as M
+from allura.lib import helpers as h
 
 from . import version
 from . import widgets

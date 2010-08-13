@@ -1,7 +1,7 @@
 <div xmlns="http://www.w3.org/1999/xhtml"
      xmlns:py="http://genshi.edgewall.org/"
      xmlns:xi="http://www.w3.org/2001/XInclude">
-  <xi:include href="${g.pyforge_templates}/lib.html"/>
+  <xi:include href="${g.allura_templates}/lib.html"/>
   <py:if test="value.author">
     <a href="${value.author.url()}">${gravatar(value.author, size=16)}</a>
     <a href="${value.author.url()}">${value.author.display_name}</a>

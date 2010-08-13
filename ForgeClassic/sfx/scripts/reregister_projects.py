@@ -6,10 +6,10 @@ import logging
 from tg import config
 from pylons import c
 
-from pyforge import model as M
-from pyforge.lib import helpers as h
-from pyforge.lib.security import roles_with_project_access
-from pyforge.ext.sfx.lib.sfx_api import SFXProjectApi
+from allura import model as M
+from allura.lib import helpers as h
+from allura.lib.security import roles_with_project_access
+from allura.ext.sfx.lib.sfx_api import SFXProjectApi
 
 log = logging.getLogger(__name__)
 

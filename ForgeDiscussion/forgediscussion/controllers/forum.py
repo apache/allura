@@ -11,10 +11,10 @@ from pylons import g, c
 from ming.base import Object
 from webob import exc
 
-from pyforge.lib import helpers as h
-from pyforge.lib.security import require, has_artifact_access
-from pyforge.controllers import DiscussionController, ThreadController, PostController
-from pyforge.lib.widgets import discuss as DW
+from allura.lib import helpers as h
+from allura.lib.security import require, has_artifact_access
+from allura.controllers import DiscussionController, ThreadController, PostController
+from allura.lib.widgets import discuss as DW
 
 from forgediscussion import model
 from forgediscussion import widgets as FW
@@ -70,7 +70,7 @@ class ForumController(DiscussionController):
         else:
             raise exc.HTTPNotFound()
 
-    @expose('pyforge.templates.discussion.index')
+    @expose('allura.templates.discussion.index')
     def index(self, threads=None, limit=None, page=0, count=0, **kw):
         if self.discussion.deleted and not has_artifact_access('configure', app=c.app)():
             redirect(self.discussion.url()+'deleted')
@@ -114,7 +114,7 @@ class ForumController(DiscussionController):
 
 class ForumThreadController(ThreadController):
 
-    @expose('pyforge.templates.discussion.thread')
+    @expose('allura.templates.discussion.thread')
     def index(self, limit=None, page=0, count=0, **kw):
         if self.thread.discussion.deleted and not has_artifact_access('configure', app=c.app)():
             redirect(self.thread.discussion.url()+'deleted')
@@ -142,7 +142,7 @@ class ForumThreadController(ThreadController):
 
 class ForumPostController(PostController):
 
-    @expose('pyforge.templates.discussion.post')
+    @expose('allura.templates.discussion.post')
     def index(self, **kw):
         if self.thread.discussion.deleted and not has_artifact_access('configure', app=c.app)():
             redirect(self.thread.discussion.url()+'deleted')

@@ -5,7 +5,7 @@ from tg import expose, redirect, validate, flash
 from tg.decorators import with_trailing_slash, without_trailing_slash
 from pylons import c
 
-from pyforge.app import DefaultAdminController
+from allura.app import DefaultAdminController
 
 from . import widgets
 from . import model as SM

@@ -3,8 +3,8 @@
 <html xmlns="http://www.w3.org/1999/xhtml"
       xmlns:py="http://genshi.edgewall.org/"
       xmlns:xi="http://www.w3.org/2001/XInclude">
-  <?python from pyforge.lib import helpers as h?>
-  <?python from pyforge.lib.security import has_artifact_access?>
+  <?python from allura.lib import helpers as h?>
+  <?python from allura.lib.security import has_artifact_access?>
   <xi:include href="wiki_master.html" py:if="c.app.show_left_bar or has_artifact_access('edit', app=c.app)()"/>
   <xi:include href="master_one_col.html" py:if="not c.app.show_left_bar and not has_artifact_access('edit', app=c.app)()" />
 

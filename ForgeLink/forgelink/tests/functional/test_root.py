@@ -1,9 +1,9 @@
-import pyforge
+import allura
 
 from forgelink.tests import TestController
 
-from pyforge.lib import helpers as h
-from pyforge.ext.search import search_main
+from allura.lib import helpers as h
+from allura.ext.search import search_main
 from ming.orm.ormsession import ThreadLocalORMSession
 
 class TestRootController(TestController):

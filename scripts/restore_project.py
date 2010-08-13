@@ -7,8 +7,8 @@ from ming.orm import state, session
 from ming.orm.base import instrument, DocumentTracker
 
 from pymongo.json_util import default, object_hook
-from pyforge import model as M
-from pyforge.command import ReindexCommand
+from allura import model as M
+from allura.command import ReindexCommand
 
 log = logging.getLogger(__name__)
 

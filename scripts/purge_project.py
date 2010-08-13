@@ -8,7 +8,7 @@ from pylons import g
 from ming.orm import state, session
 
 from pymongo.json_util import default
-from pyforge import model as M
+from allura import model as M
 
 log = logging.getLogger(__name__)
 

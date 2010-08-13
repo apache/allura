@@ -19,12 +19,12 @@ setup(name='ForgeGit',
       zip_safe=False,
       install_requires=[
           # -*- Extra requirements: -*-
-          'pyforge',
+          'allura',
           'GitPython>=0.2.0_beta1, < 0.3.0',
       ],
       entry_points="""
       # -*- Entry points: -*-
-      [pyforge]
+      [allura]
       Git=forgegit.git_main:ForgeGitApp
       """,
       )

@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""Unit and functional test suite for pyforge."""
+"""Unit and functional test suite for allura."""
 
 from os import path, environ
 import sys
@@ -11,8 +11,8 @@ from routes import url_for
 from webtest import TestApp
 from nose.tools import eq_
 
-from pyforge import model
-from pyforge.tests import helpers
+from allura import model
+from allura.tests import helpers
 
 __all__ = ['setup_db', 'teardown_db', 'TestController', 'url_for']
 
@@ -28,12 +28,12 @@ class TestController(object):
     """
     Base functional test case for the controllers.
 
-    The pyforge application instance (``self.app``) set up in this test
+    The allura application instance (``self.app``) set up in this test
     case (and descendants) has authentication disabled, so that developers can
     test the protected areas independently of the :mod:`repoze.who` plugins
     used initially. This way, authentication can be tested once and separately.
 
-    Check pyforge.tests.functional.test_authentication for the repoze.who
+    Check allura.tests.functional.test_authentication for the repoze.who
     integration tests.
 
     This is the officially supported way to test protected areas with

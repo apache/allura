@@ -9,13 +9,13 @@ from formencode import validators as V
 
 from ming.orm.base import mapper
 
-from pyforge.app import Application, ConfigOption, SitemapEntry
-from pyforge.model import ProjectRole
-from pyforge.lib.helpers import push_config
-from pyforge.lib.security import require, has_artifact_access
-from pyforge.lib import search
-from pyforge.lib.decorators import audit, react
-from pyforge.controllers import BaseController
+from allura.app import Application, ConfigOption, SitemapEntry
+from allura.model import ProjectRole
+from allura.lib.helpers import push_config
+from allura.lib.security import require, has_artifact_access
+from allura.lib import search
+from allura.lib.decorators import audit, react
+from allura.controllers import BaseController
 
 from helloforge import model as M
 from helloforge import version

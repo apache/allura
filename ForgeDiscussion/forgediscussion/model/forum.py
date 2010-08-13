@@ -9,7 +9,7 @@ from ming.utils import LazyProperty
 from ming.orm.mapped_class import MappedClass
 from ming.orm.property import FieldProperty, RelationProperty, ForeignIdProperty
 
-from pyforge import model as M
+from allura import model as M
 
 common_suffix = tg.config.get('forgemail.domain', '.sourceforge.net')
 

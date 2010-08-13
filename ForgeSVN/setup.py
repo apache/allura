@@ -19,11 +19,11 @@ setup(name='ForgeSVN',
       zip_safe=False,
       install_requires=[
           # -*- Extra requirements: -*-
-          'pyforge'
+          'allura'
       ],
       entry_points="""
       # -*- Entry points: -*-
-      [pyforge]
+      [allura]
       SVN=forgesvn.svn_main:ForgeSVNApp
       """,
       )

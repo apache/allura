@@ -80,7 +80,7 @@ pushd NoWarnings
 python setup.py develop
 popd
 
-for APP in pyforge *Forge*
+for APP in allura *Forge*
 do
 	echo "# installing $APP dependencies"
 	pushd $APP

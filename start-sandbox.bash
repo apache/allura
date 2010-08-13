@@ -26,7 +26,7 @@ mongod --port 27018 --dbpath /data/db-test &
 
 # Start the forge
 . sandbox-env/bin/activate
-cd pyforge
+cd allura
 paster reactor_setup sandbox.ini
 paster reactor sandbox.ini &
 paster smtp_server sandbox.ini &

@@ -1,6 +1,6 @@
 import os, urllib
 import Image, StringIO
-import pyforge
+import allura
 
 from nose.tools import assert_true, assert_false, eq_
 from forgetracker.tests import TestController
@@ -9,9 +9,9 @@ from forgetracker import model as tm
 
 # These are needed for faking reactor actions
 import mock
-from pyforge.lib import helpers as h
-from pyforge.command import reactor
-from pyforge.ext.search import search_main
+from allura.lib import helpers as h
+from allura.command import reactor
+from allura.ext.search import search_main
 from ming.orm.ormsession import ThreadLocalORMSession
 
 class TestFunctionalController(TestController):
@@ -170,7 +170,7 @@ class TestFunctionalController(TestController):
     def test_new_image_attachment_content(self):
         h.set_context('test', 'bugs')
         file_name = 'neo-icon-set-454545-256x350.png'
-        file_path = os.path.join(pyforge.__path__[0],'public','nf','images',file_name)
+        file_path = os.path.join(allura.__path__[0],'public','nf','images',file_name)
         file_data = file(file_path).read()
         upload = ('attachment-0', file_name, file_data)
         self.new_ticket(summary='test new attachment')
@@ -271,8 +271,8 @@ class TestFunctionalController(TestController):
         })
         response = self.app.get('/p/test/bugs/1/')
         assert 'nobody' in str(response.html.find('span', {'class': 'ticket-assigned-to'}))
-        assert '<li><strong>summary</strong>: test assign ticket --&gt; zzz</li>' in response
-        assert '<li><strong>status</strong>: open --&gt; ccc</li>' in response
+        assert '<li><strong>summary</strong>: test assign ticket --&gt; zzz' in response
+        assert '<li><strong>status</strong>: open --&gt; ccc' in response
     
     def test_custom_fields(self):
         spec = """[{"label":"Priority","type":"select","options":"normal urgent critical"},
@@ -340,8 +340,8 @@ class TestFunctionalController(TestController):
         ticket_view = self.app.get('/p/test/bugs/1/')
         assert 'Milestone' in ticket_view
         assert 'aaa' in ticket_view
-        assert '<li><strong>summary</strong>: test milestone names --&gt; zzz</li>' in ticket_view
-        assert '<p><strong>status</strong>: aa --&gt; ccc</p>' in ticket_view
+        assert '<li><strong>summary</strong>: test milestone names --&gt; zzz' in ticket_view
+        assert '<p><strong>status</strong>: aa --&gt; ccc' in ticket_view
 
     def test_subtickets(self):
         # create two tickets

@@ -19,11 +19,11 @@ setup(name='ForgeDownloads',
       zip_safe=False,
       install_requires=[
           # -*- Extra requirements: -*-
-          'pyforge',
+          'allura',
       ],
       entry_points="""
       # -*- Entry points: -*-
-      [pyforge]
+      [allura]
       Downloads=forgedownloads.dl_main:ForgeDownloadsApp
       """,
       )

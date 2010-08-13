@@ -13,10 +13,10 @@ from ming.orm.base import state, session
 from ming.orm.mapped_class import MappedClass
 from ming.orm.property import FieldProperty, ForeignIdProperty, RelationProperty
 
-from pyforge.model import VersionedArtifact, Snapshot, Message, Feed, Thread, Post, User, BaseAttachment
-from pyforge.model import Notification, project_orm_session
-from pyforge.lib import helpers as h
-from pyforge.lib import patience
+from allura.model import VersionedArtifact, Snapshot, Message, Feed, Thread, Post, User, BaseAttachment
+from allura.model import Notification, project_orm_session
+from allura.lib import helpers as h
+from allura.lib import patience
 
 common_suffix = tg.config.get('forgemail.domain', '.sourceforge.net')
 

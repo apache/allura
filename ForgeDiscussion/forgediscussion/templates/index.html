@@ -4,9 +4,9 @@
       xmlns:py="http://genshi.edgewall.org/"
       xmlns:xi="http://www.w3.org/2001/XInclude">
 
-  <xi:include href="${g.pyforge_templates}/master.html"/>
+  <xi:include href="${g.allura_templates}/master.html"/>
   <xi:include href="${c.app.templates}/lib.html" />
-  <?python from pyforge.lib.security import has_artifact_access?>
+  <?python from allura.lib.security import has_artifact_access?>
 
   <head>
     <meta content="text/html; charset=UTF-8" http-equiv="content-type" py:replace="''"/>

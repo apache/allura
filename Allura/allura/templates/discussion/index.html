@@ -1,0 +1,18 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+                      "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:py="http://genshi.edgewall.org/"
+      xmlns:xi="http://www.w3.org/2001/XInclude">
+
+  <xi:include href="${g.allura_templates}/master.html"/>
+  <?python from allura.lib.security import has_artifact_access ?>
+
+  <head>
+    <meta content="text/html; charset=UTF-8" http-equiv="content-type" py:replace="''"/>
+    <title>$c.project.name / $c.app.config.options.mount_label / Discussion</title>
+  </head>
+
+  <body>
+    ${c.discussion.display(value=discussion, threads=threads, limit=limit, page=page, count=count)}
+  </body>
+</html>

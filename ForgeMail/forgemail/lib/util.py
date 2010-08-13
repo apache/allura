@@ -9,8 +9,8 @@ import tg
 from paste.deploy.converters import asbool, asint, aslist
 from pylons import c
 
-from pyforge.lib.helpers import push_config, find_project
-from pyforge import model as M
+from allura.lib.helpers import push_config, find_project
+from allura import model as M
 
 from . import exc
 

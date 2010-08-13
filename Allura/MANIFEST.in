@@ -1,0 +1,4 @@
+recursive-include allura/public *
+include allura/public/favicon.ico
+recursive-include allura/i18n *
+recursive-include allura/templates *

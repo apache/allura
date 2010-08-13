@@ -4,14 +4,14 @@
       xmlns:py="http://genshi.edgewall.org/"
       xmlns:xi="http://www.w3.org/2001/XInclude">
 
-  <xi:include href="${g.pyforge_templates}/master.html"/>
+  <xi:include href="${g.allura_templates}/master.html"/>
   <xi:include href="${c.app.templates}/lib.html" />
 
   <head>
     <meta content="text/html; charset=UTF-8" http-equiv="content-type" py:replace="''"/>
     <title>$c.project.name / $c.app.config.options.mount_label / $forum.name Moderation</title>
   <?python
-     from pyforge.lib.security import has_artifact_access
+     from allura.lib.security import has_artifact_access
      ?>
   </head>
 

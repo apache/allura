@@ -88,9 +88,9 @@ class PackageSmokeTest:
     def report(self):
         print
         print 'Running import smoke test...'
-        packages_to_import = ['pyforge.model',
-                              'pyforge.app',
-                              'pyforge.controllers.root',
+        packages_to_import = ['allura.model',
+                              'allura.app',
+                              'allura.controllers.root',
                               'forgediscussion.model',
                               'forgegit.model',
                               'forgehg.model',

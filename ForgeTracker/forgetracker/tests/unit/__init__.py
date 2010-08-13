@@ -1,10 +1,10 @@
 from pylons import c
 from ming.orm.ormsession import ThreadLocalORMSession
 
-from pyforge.websetup import bootstrap
-from pyforge.lib import helpers as h
-from pyforge import model as M
-from pyforge.tests.helpers import run_app_setup
+from allura.websetup import bootstrap
+from allura.lib import helpers as h
+from allura import model as M
+from allura.tests.helpers import run_app_setup
 
 
 def setUp():

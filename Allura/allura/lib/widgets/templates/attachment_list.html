@@ -1,0 +1,31 @@
+<div xmlns="http://www.w3.org/1999/xhtml"
+  xmlns:py="http://genshi.edgewall.org/">
+  <?python from allura.lib import helpers as h?>
+  <div py:if="len(attachments)" py:strip="True">
+    <strong>Attachments</strong>
+    <div class="attachment_images">
+      <div py:for="att in attachments" py:strip="True">
+        <div py:if="h.supported_by_PIL(att.contentType)" class="attachment_thumb">
+          <a href="${att.url()}">
+            <img src="${att.url()}/thumb"/>
+          </a><br/>
+          $att.metadata.filename
+          <form py:if="edit_mode" method="post" action="${att.url()}">
+            <input type="hidden" name="delete" value="True"/>
+            <input type="submit" value="Delete File"/>
+          </form>
+        </div>
+      </div>
+    </div>
+    <div py:for="att in attachments">
+      <form py:if="not h.supported_by_PIL(att.contentType)" method="post" action="${att.url()}">
+        <a href="${att.url()}">${att.metadata.filename}</a>
+        ($att.length bytes)
+        <input type="hidden" name="delete" value="True"/>
+        <span py:if="edit_mode" py:strip="True">
+          <input type="submit" value="Delete File"/>
+        </span>
+      </form>
+    </div>
+  </div>
+</div>

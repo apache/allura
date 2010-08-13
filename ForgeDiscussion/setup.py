@@ -19,13 +19,13 @@ setup(name='ForgeDiscussion',
       zip_safe=False,
       install_requires=[
           # -*- Extra requirements: -*-
-          'pyforge',
+          'allura',
       ],
       test_suite='nose.collector',
       tests_require=['WebTest', 'BeautifulSoup'],
       entry_points="""
       # -*- Entry points: -*-
-      [pyforge]
+      [allura]
       Discussion=forgediscussion.forum_main:ForgeDiscussionApp
       """,
       )

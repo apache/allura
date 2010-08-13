@@ -7,13 +7,13 @@ from tg import config
 from tg.decorators import with_trailing_slash
 from formencode import validators as V
 
-from pyforge import version
-from pyforge.app import Application
-from pyforge.lib.decorators import react
-from pyforge.lib import search
-from pyforge.lib import helpers as h
-from pyforge.lib import plugin
-from pyforge import model as M
+from allura import version
+from allura.app import Application
+from allura.lib.decorators import react
+from allura.lib import search
+from allura.lib import helpers as h
+from allura.lib import plugin
+from allura import model as M
 
 from .lib.sfx_api import SFXProjectApi, SFXUserApi
 from .lib import exceptions as sfx_exc
@@ -179,8 +179,8 @@ class SFXProjectRegistrationProvider(plugin.ProjectRegistrationProvider):
 
 @contextmanager
 def fake_pylons_context(request):
-    from pyforge.lib.app_globals import Globals
-    from pyforge.lib.custom_middleware import MagicalC, environ
+    from allura.lib.app_globals import Globals
+    from allura.lib.custom_middleware import MagicalC, environ
     class EmptyClass(object): pass
     pylons.c._push_object(MagicalC(EmptyClass(), environ))
     pylons.g._push_object(Globals())

@@ -10,7 +10,7 @@ from pylons import g
 
 from ming.utils import LazyProperty
 
-from pyforge.lib import helpers as h
+from allura.lib import helpers as h
 from .sfx_model import tables as T
 
 log = logging.getLogger(__name__)

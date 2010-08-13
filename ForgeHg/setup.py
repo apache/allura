@@ -19,12 +19,12 @@ setup(name='ForgeHg',
       zip_safe=False,
       install_requires=[
           # -*- Extra requirements: -*-
-          'pyforge',
+          'allura',
           'mercurial >= 1.4.1, <= 1.4.3',
       ],
       entry_points="""
       # -*- Entry points: -*-
-      [pyforge]
+      [allura]
       Hg=forgehg.hg_main:ForgeHgApp
       """,
       )

@@ -11,11 +11,11 @@ from ming.utils import LazyProperty
 from ming.orm import MappedClass, session
 from ming.orm import FieldProperty, ForeignIdProperty, RelationProperty
 
-from pyforge.model import Artifact, VersionedArtifact, Snapshot, Message, project_orm_session, Project, BaseAttachment
-from pyforge.model import User, Feed, Thread, Post, Notification
-from pyforge.lib import helpers as h
-from pyforge.lib.search import search_artifact
-from pyforge.lib.security import require, has_artifact_access
+from allura.model import Artifact, VersionedArtifact, Snapshot, Message, project_orm_session, Project, BaseAttachment
+from allura.model import User, Feed, Thread, Post, Notification
+from allura.lib import helpers as h
+from allura.lib.search import search_artifact
+from allura.lib.security import require, has_artifact_access
 
 common_suffix = tg.config.get('forgemail.domain', '.sourceforge.net')
 

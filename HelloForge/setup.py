@@ -19,12 +19,12 @@ setup(name='HelloForge',
       zip_safe=False,
       install_requires=[
           # -*- Extra requirements: -*-
-        'pyforge',
+        'allura',
         'docutils',
       ],
       entry_points="""
       # -*- Entry points: -*-
-      [pyforge]
+      [allura]
       hello_forge=helloforge.main:HelloForgeApp
       """,
       )

@@ -1,5 +1,5 @@
 import ew
-from pyforge.lib.widgets import form_fields as ffw
+from allura.lib.widgets import form_fields as ffw
 
 class TicketSearchResults(ew.SimpleForm):
     template='genshi:forgetracker.widgets.templates.ticket_search_results'

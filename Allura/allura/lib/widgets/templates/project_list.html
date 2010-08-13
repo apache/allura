@@ -1,0 +1,16 @@
+<div xmlns:py="http://genshi.edgewall.org/"
+   class="list">
+  <?python from allura.lib.security import has_project_access ?>
+  <p py:if="not len(projects)">No projects found</p>
+  <div py:if="len(projects)" class="list">
+	  <?python old_project = c.project ?>
+    <py:for each="project in projects">
+  	  <?python g.set_project(project.shortname)?>
+  	  <py:if test="has_project_access('read', project)()">
+        ${project_summary.display(value=project)}
+      </py:if>
+    </py:for>
+    <?python g.set_project(old_project and old_project.shortname or '')?>
+	</div>
+</div>
+

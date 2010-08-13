@@ -2,7 +2,7 @@
      xmlns:py="http://genshi.edgewall.org/"
      xmlns:xi="http://www.w3.org/2001/XInclude"
      style="background-color:#eee;border-top:1px solid #333;">
-  <xi:include href="${g.pyforge_templates}/lib.html"/>
+  <xi:include href="${g.allura_templates}/lib.html"/>
   Changeset <a href="${value.url()}">${h.text.truncate(value.hex(), 10)}</a>:
   ${h.ago(value.datetime)}<br/>
   <a href="${value.tree().url()}">Tree</a><br/>

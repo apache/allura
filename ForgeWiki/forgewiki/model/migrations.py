@@ -6,7 +6,7 @@ from ming.orm import state
 from pylons import c
 
 from flyway import Migration
-from pyforge.model import Thread, AppConfig, ArtifactReference
+from allura.model import Thread, AppConfig, ArtifactReference
 from forgewiki.model import Page
 
 class WikiMigration(Migration):

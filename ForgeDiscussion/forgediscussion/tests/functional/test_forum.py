@@ -1,6 +1,6 @@
 import os
 import random
-import pyforge
+import allura
 import Image
 from StringIO import StringIO
 
@@ -11,9 +11,9 @@ from pylons import g, c
 from ming.orm.ormsession import ThreadLocalORMSession
 
 from forgediscussion.tests import TestController
-from pyforge import model as M
-from pyforge.command import reactor
-from pyforge.lib import helpers as h
+from allura import model as M
+from allura.command import reactor
+from allura.lib import helpers as h
 
 from forgediscussion import model as FM
 
@@ -374,7 +374,7 @@ class TestForumAdmin(TestController):
 
     def test_forum_icon(self):
         file_name = 'neo-icon-set-454545-256x350.png'
-        file_path = os.path.join(pyforge.__path__[0],'public','nf','images',file_name)
+        file_path = os.path.join(allura.__path__[0],'public','nf','images',file_name)
         file_data = file(file_path).read()
         upload = ('new_forum.icon', file_name, file_data)
 

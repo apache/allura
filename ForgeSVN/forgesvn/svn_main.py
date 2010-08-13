@@ -12,11 +12,11 @@ from tg import redirect, expose
 from tg.decorators import with_trailing_slash, without_trailing_slash
 
 # Pyforge-specific imports
-from pyforge import model as M
-from pyforge.app import Application, SitemapEntry, DefaultAdminController
-from pyforge.lib import helpers as h
-from pyforge.lib.decorators import audit
-from pyforge.lib.security import has_artifact_access
+from allura import model as M
+from allura.app import Application, SitemapEntry, DefaultAdminController
+from allura.lib import helpers as h
+from allura.lib.decorators import audit
+from allura.lib.security import has_artifact_access
 
 # Local imports
 from forgesvn import model

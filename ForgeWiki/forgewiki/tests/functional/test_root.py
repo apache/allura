@@ -1,6 +1,6 @@
 import os
 import Image, StringIO
-import pyforge
+import allura
 
 from nose.tools import assert_true
 
@@ -9,9 +9,9 @@ from forgewiki import model
 
 # These are needed for faking reactor actions
 import mock
-from pyforge.lib import helpers as h
-from pyforge.command import reactor
-from pyforge.ext.search import search_main
+from allura.lib import helpers as h
+from allura.command import reactor
+from allura.ext.search import search_main
 from ming.orm.ormsession import ThreadLocalORMSession
 
 #---------x---------x---------x---------x---------x---------x---------x
@@ -142,7 +142,7 @@ class TestRootController(TestController):
     def test_new_image_attachment_content(self):
         self.app.get('/wiki/TEST/update?title=TEST&text=sometext&tags=&tags_old=&labels=&labels_old=&viewable_by-0.id=all')
         file_name = 'neo-icon-set-454545-256x350.png'
-        file_path = os.path.join(pyforge.__path__[0],'public','nf','images',file_name)
+        file_path = os.path.join(allura.__path__[0],'public','nf','images',file_name)
         file_data = file(file_path).read()
         upload = ('file_info', file_name, file_data)
         self.app.post('/wiki/TEST/attach', upload_files=[upload])

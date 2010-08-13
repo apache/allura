@@ -5,9 +5,9 @@ import json
 
 from ming.orm import session
 
-from pyforge import model as M
-from pyforge.lib import helpers as h
-from pyforge.tests import helpers
+from allura import model as M
+from allura.lib import helpers as h
+from allura.tests import helpers
 
 from forgetracker.tests import TestController
 from forgetracker import model as TM

@@ -15,7 +15,7 @@ from ming.orm.mapped_class import MappedClass
 from ming.orm.property import FieldProperty
 from ming.utils import LazyProperty
 
-from pyforge import model as M
+from allura import model as M
 
 log = logging.getLogger(__name__)
 

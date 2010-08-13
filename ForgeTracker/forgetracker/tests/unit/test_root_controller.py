@@ -1,8 +1,8 @@
 from mock import Mock, patch
 from ming.orm.ormsession import session
 
-from pyforge.lib import helpers as h
-from pyforge.model import User
+from allura.lib import helpers as h
+from allura.model import User
 from pylons import c
 from forgetracker.tests.unit import TrackerTestWithModel
 from forgetracker.model import Ticket, Globals

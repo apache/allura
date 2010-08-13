@@ -3,7 +3,7 @@ import sys
 import getpass
 from urlparse import urljoin
 
-from pyforge.lib import rest_api
+from allura.lib import rest_api
 
 SRC_CRED=dict(
         api_key='c03efc6cca1cf78be9e9',

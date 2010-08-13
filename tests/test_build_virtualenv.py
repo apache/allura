@@ -97,7 +97,7 @@ class TestPackageSmokeTest:
                                                     check_call,
                                                     stdout):
         PackageSmokeTest().report()
-        check_call.assert_called_with(". env/bin/activate && python -c 'import pyforge.model, pyforge.app, pyforge.controllers.root, forgediscussion.model, forgegit.model, forgehg.model, forgesvn.model, forgetracker.model, forgewiki.model'",
+        check_call.assert_called_with(". env/bin/activate && python -c 'import allura.model, allura.app, allura.controllers.root, forgediscussion.model, forgegit.model, forgehg.model, forgesvn.model, forgetracker.model, forgewiki.model'",
                                       shell=True)
 
     @patch('sys.stdout')

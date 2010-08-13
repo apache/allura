@@ -9,14 +9,14 @@ tags
 *~
 *.swp
 .dbshell
-pyforge/docs/_build/*
+Allura/docs/_build/*
 mail/logs/*
 sandbox-env/*
 download/*
 install/*
 */.test-data/*
 */.coverage
-pyforge/pyforge/templates/home/
+allura/allura/templates/home/
 solr_config/core0/data/
 solr_config/core1/data/
 var/

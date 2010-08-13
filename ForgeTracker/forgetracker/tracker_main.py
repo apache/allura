@@ -20,19 +20,19 @@ from ming.orm.base import session
 from ming.orm.ormsession import ThreadLocalORMSession
 
 # Pyforge-specific imports
-from pyforge.app import Application, ConfigOption, SitemapEntry, DefaultAdminController
-from pyforge.lib import helpers as h
-from pyforge.lib.search import search_artifact
-from pyforge.lib.decorators import audit, react
-from pyforge.lib.security import require, has_artifact_access
-from pyforge.model import ProjectRole, TagEvent, UserTags, ArtifactReference, Feed, User
-from pyforge.model import Mailbox
-from pyforge.lib import widgets as w
-from pyforge.lib.widgets import form_fields as ffw
-from pyforge.lib.widgets.subscriptions import SubscribeForm
-from pyforge.controllers import AppDiscussionController, AppDiscussionRestController
-from pyforge.controllers import attachments as ac
-from pyforge.controllers import BaseController
+from allura.app import Application, ConfigOption, SitemapEntry, DefaultAdminController
+from allura.lib import helpers as h
+from allura.lib.search import search_artifact
+from allura.lib.decorators import audit, react
+from allura.lib.security import require, has_artifact_access
+from allura.model import ProjectRole, TagEvent, UserTags, ArtifactReference, Feed, User
+from allura.model import Mailbox
+from allura.lib import widgets as w
+from allura.lib.widgets import form_fields as ffw
+from allura.lib.widgets.subscriptions import SubscribeForm
+from allura.controllers import AppDiscussionController, AppDiscussionRestController
+from allura.controllers import attachments as ac
+from allura.controllers import BaseController
 
 # Local imports
 from forgetracker import model

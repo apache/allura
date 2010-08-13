@@ -4,7 +4,7 @@ import pkg_resources
 from pylons import c
 from ming.orm import ThreadLocalORMSession
 
-from pyforge.lib import helpers as h
+from allura.lib import helpers as h
 from forgesvn.tests import TestController
 
 class TestRootController(TestController):

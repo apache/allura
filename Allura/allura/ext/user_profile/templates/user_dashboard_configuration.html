@@ -1,0 +1,22 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+                      "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:py="http://genshi.edgewall.org/"
+      xmlns:xi="http://www.w3.org/2001/XInclude">
+
+  <xi:include href="master.html" />
+  <xi:include href="lib.html" />
+
+  <?python from allura.lib.security import has_project_access ?>
+
+  <head>
+    <meta content="text/html; charset=UTF-8" http-equiv="content-type" py:replace="''"/>
+    <title>${user.display_name} / Configure Dashboard</title>
+    <link rel="stylesheet" type="text/css"
+          href="${g.app_static('css/user_profile.css')}"/>
+  </head>
+
+  <body>
+    <h1 class="title">Configure Dashboard for ${user.display_name}</h1>
+  </body>
+</html>

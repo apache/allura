@@ -2,8 +2,8 @@
 import logging
 
 # Pyforge-specific imports
-from pyforge.app import Application
-from pyforge.lib.helpers import mixin_reactors
+from allura.app import Application
+from allura.lib.helpers import mixin_reactors
 
 # Local imports
 from . import version

@@ -1,5 +1,5 @@
 import ew
-from pyforge.lib.widgets import form_fields as ffw
+from allura.lib.widgets import form_fields as ffw
 
 class SVNLog(ew.SimpleForm):
     template='genshi:forgesvn.widgets.templates.log'

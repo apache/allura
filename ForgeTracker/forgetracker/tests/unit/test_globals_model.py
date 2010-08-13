@@ -1,7 +1,7 @@
 from forgetracker.model import Globals
 from forgetracker.tests.unit import TrackerTestWithModel
 from pylons import c
-from pyforge.lib import helpers as h
+from allura.lib import helpers as h
 
 from ming.orm.ormsession import ThreadLocalORMSession
 

@@ -1,4 +1,4 @@
-from pyforge.lib import exceptions
+from allura.lib import exceptions
 
 class SFXError(exceptions.ToolError): pass
 class SFXIllegalProject(SFXError): pass

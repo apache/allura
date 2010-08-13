@@ -4,7 +4,7 @@ from paste.deploy.converters import asint
 
 from sf.phpsession import SFXSessionMgr
 
-from pyforge.lib import helpers as h
+from allura.lib import helpers as h
 
 from . import model as M
 

@@ -22,18 +22,18 @@ from ming.orm.base import mapper
 from pymongo.bson import ObjectId
 
 # Pyforge-specific imports
-from pyforge.app import Application, ConfigOption, SitemapEntry, DefaultAdminController
-from pyforge.lib import helpers as h
-from pyforge.lib.search import search
-from pyforge.lib.decorators import audit, react
-from pyforge.lib.security import require, has_artifact_access
-from pyforge.model import ProjectRole, User, TagEvent, UserTags, ArtifactReference, Tag, Feed, ArtifactLink
-from pyforge.model import Discussion, Thread, Post, Attachment, Mailbox
-from pyforge.controllers import AppDiscussionController, BaseController
-from pyforge.controllers import attachments as ac
-from pyforge.lib import widgets as w
-from pyforge.lib.widgets import form_fields as ffw
-from pyforge.lib.widgets.subscriptions import SubscribeForm
+from allura.app import Application, ConfigOption, SitemapEntry, DefaultAdminController
+from allura.lib import helpers as h
+from allura.lib.search import search
+from allura.lib.decorators import audit, react
+from allura.lib.security import require, has_artifact_access
+from allura.model import ProjectRole, User, TagEvent, UserTags, ArtifactReference, Tag, Feed, ArtifactLink
+from allura.model import Discussion, Thread, Post, Attachment, Mailbox
+from allura.controllers import AppDiscussionController, BaseController
+from allura.controllers import attachments as ac
+from allura.lib import widgets as w
+from allura.lib.widgets import form_fields as ffw
+from allura.lib.widgets.subscriptions import SubscribeForm
 
 # Local imports
 from forgewiki import model
