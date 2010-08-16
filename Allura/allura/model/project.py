@@ -265,6 +265,7 @@ class Project(MappedClass):
         return AwardGrant.query.find(dict(granted_to_project_id=self._id)).all()
 
     def install_app(self, ep_name, mount_point, mount_label=None, ordinal=0, **override_options):
+        from allura import model as M
         if not h.re_path_portion.match(mount_point):
             raise exceptions.ToolError, 'Mount point "%s" is invalid' % mount_point
         if self.app_instance(mount_point) is not None:
@@ -296,6 +297,15 @@ class Project(MappedClass):
         with h.push_config(c, project=self, app=app):
             session(cfg).flush()
             app.install(self)
+            admin_role = M.ProjectRole.query.find({'name':'Admin'}).first()
+            if admin_role:
+                for u in admin_role.users_with_role():
+                    M.Mailbox.subscribe(
+                        user_id=c.user._id,
+                        project_id=self.app_config.project_id,
+                        app_config_id=self.app_config._id,
+                        artifact=None, topic=None,
+                        type='direct', n=1, unit='day')
         return app
 
     def uninstall_app(self, mount_point):
