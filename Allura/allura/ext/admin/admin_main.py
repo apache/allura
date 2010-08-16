@@ -371,7 +371,7 @@ class ProjectAdminController(BaseController):
                 if sr.get('delete'):
                     role = M.ProjectRole.query.get(_id=ObjectId(str(r['id'])))
                     role.roles.remove(ObjectId(str(sr['id'])))
-        if new.get('add'):
+        if r.get('new', {}).get('add'):
             M.ProjectRole(name=new['name'])
         g.publish('react', 'forge.project_updated')
         redirect('roles')
@@ -400,7 +400,9 @@ class ProjectAdminController(BaseController):
             for u in r.get('users', []):
                 if u.get('delete'):
                     ur = M.ProjectRole.query.get(user_id=ObjectId(str(u['id'])))
-                    ur.roles.remove(ObjectId(str(r['id'])))
+                    objid = ObjectId(str(r['id']))
+                    if objid in ur.roles:
+                        ur.roles.remove(objid)
                     h.log_action(log, 'remove_user_from_role').info(
                         '%s from %s', u['id'], r['id'],
                         meta=dict(user_role=u['id'], role=r['id']))
