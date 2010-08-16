@@ -19,7 +19,7 @@ setup(name='HelloForge',
       zip_safe=False,
       install_requires=[
           # -*- Extra requirements: -*-
-        'allura',
+        'Allura',
         'docutils',
       ],
       entry_points="""

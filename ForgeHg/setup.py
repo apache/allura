@@ -19,7 +19,7 @@ setup(name='ForgeHg',
       zip_safe=False,
       install_requires=[
           # -*- Extra requirements: -*-
-          'allura',
+          'Allura',
           'mercurial >= 1.4.1, <= 1.4.3',
       ],
       entry_points="""

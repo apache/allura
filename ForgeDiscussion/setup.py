@@ -19,7 +19,7 @@ setup(name='ForgeDiscussion',
       zip_safe=False,
       install_requires=[
           # -*- Extra requirements: -*-
-          'allura',
+          'Allura',
       ],
       test_suite='nose.collector',
       tests_require=['WebTest', 'BeautifulSoup'],

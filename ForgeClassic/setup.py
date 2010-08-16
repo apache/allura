@@ -20,7 +20,7 @@ setup(
     zip_safe=False,
     install_requires=[
         # -*- Extra requirements: -*-
-        'allura',
+        'Allura',
         'sqlalchemy==0.6beta3',
         'psycopg2==2.2.2',
         'mysql-python==1.2.3c1',
