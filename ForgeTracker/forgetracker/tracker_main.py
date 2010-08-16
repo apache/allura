@@ -321,8 +321,8 @@ class RootController(BaseController):
     @without_trailing_slash
     @expose()
     @validate(dict(
-            since=h.DateTimeConverter(if_empty=None),
-            until=h.DateTimeConverter(if_empty=None),
+            since=h.DateTimeConverter(if_empty=None, if_invalid=None),
+            until=h.DateTimeConverter(if_empty=None, if_invalid=None),
             offset=validators.Int(if_empty=None),
             limit=validators.Int(if_empty=None)))
     def feed(self, since=None, until=None, offset=None, limit=None):
@@ -661,8 +661,8 @@ class TicketController(BaseController):
     @without_trailing_slash
     @expose()
     @validate(dict(
-            since=h.DateTimeConverter(if_empty=None),
-            until=h.DateTimeConverter(if_empty=None),
+            since=h.DateTimeConverter(if_empty=None, if_invalid=None),
+            until=h.DateTimeConverter(if_empty=None, if_invalid=None),
             offset=validators.Int(if_empty=None),
             limit=validators.Int(if_empty=None)))
     def feed(self, since=None, until=None, offset=None, limit=None):

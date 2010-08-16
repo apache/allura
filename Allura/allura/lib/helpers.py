@@ -20,6 +20,7 @@ from contextlib import contextmanager
 from pylons import c, response, request
 from tg.decorators import before_validate
 from formencode.variabledecode import variable_decode
+import formencode
 
 from webhelpers import date, feedgenerator, html, number, misc, text
 
@@ -272,7 +273,14 @@ def save_image(icon, file_class, square=False, thumbnail_size=None, meta=None,
 class DateTimeConverter(FancyValidator):
 
     def _to_python(self, value, state):
-        return parse(value)
+        try:
+            return parse(value)
+        except ValueError:
+            if self.if_invalid!=formencode.api.NoDefault:
+                return self.if_invalid
+            else:
+                raise
+
 
     def _from_python(self, value, state):
         return value.isoformat()

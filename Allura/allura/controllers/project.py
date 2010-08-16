@@ -292,8 +292,8 @@ class ProjectController(object):
     @without_trailing_slash
     @expose()
     @validate(dict(
-            since=h.DateTimeConverter(if_empty=None),
-            until=h.DateTimeConverter(if_empty=None),
+            since=h.DateTimeConverter(if_empty=None, if_invalid=None),
+            until=h.DateTimeConverter(if_empty=None, if_invalid=None),
             page=validators.Int(if_empty=None),
             limit=validators.Int(if_empty=None)))
     def feed(self, since=None, until=None, page=None, limit=None):
