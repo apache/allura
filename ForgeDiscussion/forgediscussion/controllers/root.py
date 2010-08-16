@@ -7,6 +7,7 @@ from tg.decorators import with_trailing_slash
 from pylons import g, c, request
 from formencode import validators
 from pymongo.bson import ObjectId
+from webob import exc
 
 from ming.orm.base import session
 
@@ -86,9 +87,12 @@ class RootController(BaseController):
         return dict()
 
     @expose()
-    def _lookup(self, id, *remainder):
-        id = unquote(id)
-        return ForumController(id), remainder
+    def _lookup(self, id=None, *remainder):
+        if id:
+            id = unquote(id)
+            return ForumController(id), remainder
+        else:
+            raise exc.HTTPNotFound()
 
     @h.vardec
     @expose()

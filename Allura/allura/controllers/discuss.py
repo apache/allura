@@ -100,9 +100,12 @@ class ThreadsController(BaseController):
         self._discussion_controller = discussion_controller
 
     @expose()
-    def _lookup(self, id, *remainder):
-        id=unquote(id)
-        return self.ThreadController(self._discussion_controller, id), remainder
+    def _lookup(self, id=None, *remainder):
+        if id:
+            id=unquote(id)
+            return self.ThreadController(self._discussion_controller, id), remainder
+        else:
+            raise exc.HTTPNotFound()
 
 class ThreadController(BaseController):
     __metaclass__=h.ProxiedAttrMeta

@@ -64,8 +64,8 @@ class ForumController(DiscussionController):
         super(ForumController, self).__init__()
 
     @expose()
-    def _lookup(self, id, *remainder):
-        if self.discussion:
+    def _lookup(self, id=None, *remainder):
+        if id and self.discussion:
             return ForumController(self.discussion.shortname + '/' + id), remainder
         else:
             raise exc.HTTPNotFound()
