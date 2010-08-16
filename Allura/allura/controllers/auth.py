@@ -85,7 +85,7 @@ class AuthController(BaseController):
 
     @expose()
     def save_new(self,display_name=None,open_ids=None,email_addresses=None,
-                 username=None,password=None):
+                 username=None,password=None, **kw):
         username = username.lower()
         if M.User.by_username(username):
             flash('That username is already taken. Please choose another.',
