@@ -64,7 +64,7 @@ class TestFunctionalController(TestController):
     
     def test_render_index(self):
         index_view = self.app.get('/bugs/')
-        assert req.html.find('select',{'name':'limit'}).find('option',{'selected':'selected'}).string == '250'
+        assert index_view.html.find('select',{'name':'limit'}).find('option',{'selected':'selected'}).string == '250'
     
     def test_render_help(self):
         summary = 'test render help'
@@ -341,7 +341,7 @@ class TestFunctionalController(TestController):
         assert 'Milestone' in ticket_view
         assert 'aaa' in ticket_view
         assert '<li><strong>summary</strong>: test milestone names --&gt; zzz' in ticket_view
-        assert '<p><strong>status</strong>: aa --&gt; ccc' in ticket_view
+        assert '<li><strong>status</strong>: aa --&gt; ccc' in ticket_view
 
     def test_subtickets(self):
         # create two tickets
