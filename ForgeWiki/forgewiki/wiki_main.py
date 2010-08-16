@@ -594,7 +594,8 @@ class PageController(BaseController):
         if not self.page:
             raise exc.HTTPNotFound
         require(has_artifact_access('edit', self.page))
-        Attachment.create_with_thumbnail(file_info, self.page._id, 'page_id')
+        if file_info:
+            Attachment.create_with_thumbnail(file_info, self.page._id, 'page_id')
         redirect('.')
 
     @expose()

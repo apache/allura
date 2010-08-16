@@ -286,20 +286,23 @@ class PostController(BaseController):
     @expose()
     def attach(self, file_info=None):
         require(has_artifact_access('moderate', self.post))
-        filename = file_info.filename
-        content_type = guess_type(filename)
-        if content_type[0]: content_type = content_type[0]
-        else: content_type = 'application/octet-stream'
-        with self.M.Attachment.create(
-            content_type=content_type,
-            filename=filename,
-            discussion_id=self.post.discussion._id,
-            post_id=self.post._id) as fp:
-            while True:
-                s = file_info.file.read()
-                if not s: break
-                fp.write(s)
-        redirect(request.referer)
+        if file_info:
+            filename = file_info.filename
+            content_type = guess_type(filename)
+            if content_type[0]: content_type = content_type[0]
+            else: content_type = 'application/octet-stream'
+            with self.M.Attachment.create(
+                content_type=content_type,
+                filename=filename,
+                discussion_id=self.post.discussion._id,
+                post_id=self.post._id) as fp:
+                while True:
+                    s = file_info.file.read()
+                    if not s: break
+                    fp.write(s)
+            redirect(request.referer)
+        else:
+            redirect('../')
 
     @expose()
     def _lookup(self, id, *remainder):
