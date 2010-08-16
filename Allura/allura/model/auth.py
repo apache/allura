@@ -319,6 +319,16 @@ class ProjectRole(MappedClass):
             return '*user-%s' % uname
         return '**unknown name role: %s' % self._id # pragma no cover
 
+    @classmethod
+    def upsert(cls, **kw):
+        try:
+            obj = cls(**kw)
+            session(obj).insert_now(obj, state(obj))
+        except pymongo.errors.DuplicateKeyError:
+            session(obj).expunge(obj)
+            obj = cls.query.get(**kw)
+        return obj
+
     @property
     def special(self):
         if self.name:

@@ -19,6 +19,8 @@ class TestUserProfile(TestController):
     def test_seclusion(self):
         response = self.app.get('/u/test-admin/profile/')
         assert 'Email Addresses' in response
+        self.app.get('/u/test-user', extra_environ=dict(
+                username='test-user'))
         response = self.app.get('/u/test-user/profile/')
         assert 'Email Addresses' not in response
 

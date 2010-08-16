@@ -378,8 +378,6 @@ class Project(MappedClass):
                         ('admin', 'admin'),
                         ('search', 'search')]
         with h.push_config(c, project=self, user=users[0]):
-            assert M.ProjectRole.query.find().count() == 0, \
-                'Project roles already exist'
             # Configure flyway migration info
             mi = project_doc_session.get(MigrationInfo)
             if mi is None:
@@ -391,11 +389,11 @@ class Project(MappedClass):
                 if mc.__mongometa__.session == project_orm_session:
                     project_orm_session.ensure_indexes(mc)
             # Install default named roles (#78)
-            role_owner = M.ProjectRole(name='Admin')
-            role_developer = M.ProjectRole(name='Developer')
-            role_member = M.ProjectRole(name='Member')
-            role_auth = M.ProjectRole(name='*authenticated')
-            role_anon = M.ProjectRole(name='*anonymous')
+            role_owner = M.ProjectRole.upsert(name='Admin')
+            role_developer = M.ProjectRole.upsert(name='Developer')
+            role_member = M.ProjectRole.upsert(name='Member')
+            role_auth = M.ProjectRole.upsert(name='*authenticated')
+            role_anon = M.ProjectRole.upsert(name='*anonymous')
             # Setup subroles
             role_owner.roles = [ role_developer._id ]
             role_developer.roles = [ role_member._id ]

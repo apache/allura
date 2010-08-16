@@ -1,10 +1,12 @@
 import unittest
 import test_globals
+from flyway import runner
 from flyway.command import MigrateCommand
 
 class MigrateTest(unittest.TestCase):
 
     def setUp(self):
+        runner.MIGRATION_GRAPH = None
         test_globals.migrations_run = []
         # Migration.migrations_registry = {}
         self.cmd = MigrateCommand('flyway')

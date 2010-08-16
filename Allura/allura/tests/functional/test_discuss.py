@@ -40,7 +40,7 @@ class TestDiscuss(TestController):
                  if 'thread' in a['href'] ][0]['href']
         thread = self.app.get(thread_link)
         for f in thread.html.findAll('form'):
-            if f['action'].endswith('/post'):
+            if f.get('action', '').endswith('/post'):
                 break
         params = dict(text=text)
         r = self.app.post(f['action'].encode('utf-8'), params=params,
@@ -88,7 +88,7 @@ class TestAttachment(TestController):
                              if 'thread' in a['href'] ][0]
         thread = self.app.get(self.thread_link)
         for f in thread.html.findAll('form'):
-            if f['action'].endswith('/post'):
+            if f.get('action', '').endswith('/post'):
                 break
         self.post_form_link = f['action'].encode('utf-8')
         r = self.app.post(f['action'].encode('utf-8'), params=dict(text='Test Post'),
