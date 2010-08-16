@@ -1,10 +1,11 @@
+import os, re
+import logging
 from urllib import unquote
 from mimetypes import guess_type
-import Image
-import os, re
 
 import pkg_resources
 import genshi.template
+import Image
 from tg import expose, flash, redirect, validate, request, response
 from tg.decorators import with_trailing_slash, without_trailing_slash
 from pylons import c, g
@@ -32,6 +33,8 @@ from .search import SearchController, ProjectBrowseController
 from .static import NewForgeController
 
 from allura.model.session import main_orm_session
+
+log = logging.getLogger(__name__)
 
 class W:
     markdown_editor = ffw.MarkdownEdit()
@@ -74,6 +77,13 @@ class NeighborhoodController(object):
             if project:
                 c.project = project
                 return ProjectController()._lookup(pname, *remainder)
+        if project.database_configured == False:
+            if c.user.username == pname:
+                log.info('Configuring %s database for access to %r',
+                         pname, remainder)
+                project.configure_project_database(is_user_project=True)
+            else:
+                raise exc.HTTPNotFound, pname
         c.project = project
         if project is None or (project.deleted and not has_project_access('update')()):
             raise exc.HTTPNotFound, pname

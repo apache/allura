@@ -7,6 +7,7 @@ from webob import exc
 from pymongo import bson
 
 from ming import schema as S
+from ming.orm import ThreadLocalORMSession
 from ming.orm.base import mapper, session, state
 from ming.orm.mapped_class import MappedClass
 from ming.orm.property import FieldProperty, RelationProperty, ForeignIdProperty
@@ -135,6 +136,7 @@ class Project(MappedClass):
     last_updated = FieldProperty(datetime, if_missing=None)
     tool_data = FieldProperty({str:{str:None}}) # entry point: prefs dict
     ordinal = FieldProperty(int, if_missing=0)
+    database_configured = FieldProperty(bool, if_missing=True)
 
     @h.exceptionless([], log)
     def sidebar_menu(self):
@@ -360,11 +362,25 @@ class Project(MappedClass):
         from .auth import User
         return User.query.find({'_id':{'$in':[role.user_id for role in c.project.roles]},'username':username}).first()
 
-    def configure_project_database(self):
-        # Configure flyway migration info
+    def configure_project_database(self,
+                                   users=None, apps=None, is_user_project=False):
+        from allura import model as M
         from flyway.model import MigrationInfo
         from flyway.migrate import Migration
-        with h.push_config(c, project=self):
+        if users is None: users = [ c.user ]
+        if apps is None:
+            if is_user_project:
+                apps = [('profile', 'profile'),
+                        ('admin', 'admin'),
+                        ('search', 'search')]
+            else:
+                apps = [('home', 'home'),
+                        ('admin', 'admin'),
+                        ('search', 'search')]
+        with h.push_config(c, project=self, user=users[0]):
+            assert M.ProjectRole.query.find().count() == 0, \
+                'Project roles already exist'
+            # Configure flyway migration info
             mi = project_doc_session.get(MigrationInfo)
             if mi is None:
                 mi = MigrationInfo.make({})
@@ -374,6 +390,30 @@ class Project(MappedClass):
             for mc in MappedClass._registry.itervalues():
                 if mc.__mongometa__.session == project_orm_session:
                     project_orm_session.ensure_indexes(mc)
+            # Install default named roles (#78)
+            role_owner = M.ProjectRole(name='Admin')
+            role_developer = M.ProjectRole(name='Developer')
+            role_member = M.ProjectRole(name='Member')
+            role_auth = M.ProjectRole(name='*authenticated')
+            role_anon = M.ProjectRole(name='*anonymous')
+            # Setup subroles
+            role_owner.roles = [ role_developer._id ]
+            role_developer.roles = [ role_member._id ]
+            self.acl['create'] = [ role_owner._id ]
+            self.acl['read'] = [ role_owner._id, role_developer._id, role_member._id,
+                              role_anon._id ]
+            self.acl['update'] = [ role_owner._id ]
+            self.acl['delete'] = [ role_owner._id ]
+            self.acl['tool'] = [ role_owner._id ]
+            self.acl['security'] = [ role_owner._id ]
+            for user in users:
+                pr = user.project_role()
+                pr.roles = [ role_owner._id, role_developer._id, role_member._id ]
+            # Setup apps
+            for ep_name, mount_point in apps:
+                self.install_app(ep_name, mount_point)
+            self.database_configured = True
+            ThreadLocalORMSession.flush_all()
 
 class AppConfig(MappedClass):
     class __mongometa__:

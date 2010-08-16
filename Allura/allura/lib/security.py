@@ -20,6 +20,7 @@ def has_project_access(access_type, project=None, user=None):
     def result(project=project, user=user):
         if project is None: project = c.project
         if user is None: user = c.user
+        if not project.database_configured: return False
         assert user, 'c.user should always be at least M.User.anonymous()'
         user_roles = set(r._id for r in user.role_iter())
         for proj in project.parent_iter():

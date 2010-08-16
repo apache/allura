@@ -200,7 +200,6 @@ class RootController(BaseController):
         from_project = c.project
         to_project = Project.query.get(shortname=to_project_name)
         with h.push_config(c, project=to_project):
-            require(has_project_access('tool', to_project))
             if request.method!='POST' or to_name is None:
                 prefix_len = len(to_project_name+'/')
                 in_use = [sp.shortname[prefix_len:] for sp in to_project.direct_subprojects]
@@ -210,6 +209,9 @@ class RootController(BaseController):
                             in_use=in_use,
                             to_name=to_name or '')
             else:
+                if not to_project.database_configured:
+                    to_project.configure_project_database(is_user_project=True)
+                require(has_project_access('tool', to_project))
                 try:
                     to_project.install_app(
                         'Git', to_name,

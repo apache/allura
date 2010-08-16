@@ -22,7 +22,10 @@ class BranchBrowser(repository.BranchBrowser):
     @expose('forgegit.templates.index')
     @with_trailing_slash
     def index(self, limit=None, page=0, count=0, **kw):
-        redirect(c.app.repo.latest(branch=self._branch).tree().url())
+        latest = c.app.repo.latest(branch=self._branch)
+        if not latest:
+            return dict(allow_fork=True, log=[])
+        redirect(latest.tree().url())
 
     @expose('forgegit.templates.log')
     @with_trailing_slash

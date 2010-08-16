@@ -110,7 +110,11 @@ class GitRepository(M.Repository):
             return 0
 
     def latest(self, branch='master'):
-        return self.CommitClass.from_repo_object(self._impl.commit(rev=branch), self)
+        if self._impl is None: return None
+        try:
+            return self.CommitClass.from_repo_object(self._impl.commit(rev=branch), self)
+        except ValueError:
+            return None
 
     @LazyProperty
     def _impl(self):

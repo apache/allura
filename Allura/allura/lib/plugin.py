@@ -198,35 +198,12 @@ class ProjectRegistrationProvider(object):
                     last_updated = datetime.utcnow(),
                     is_root=True)
         try:
-            p.configure_project_database()
-            with h.push_config(c, project=p):
-                assert M.ProjectRole.query.find().count() == 0, \
-                    'Project roles already exist'
-                # Install default named roles (#78)
-                role_owner = M.ProjectRole(name='Admin')
-                role_developer = M.ProjectRole(name='Developer')
-                role_member = M.ProjectRole(name='Member')
-                role_auth = M.ProjectRole(name='*authenticated')
-                role_anon = M.ProjectRole(name='*anonymous')
-                # Setup subroles
-                role_owner.roles = [ role_developer._id ]
-                role_developer.roles = [ role_member._id ]
-                p.acl['create'] = [ role_owner._id ]
-                p.acl['read'] = [ role_owner._id, role_developer._id, role_member._id,
-                                  role_anon._id ]
-                p.acl['update'] = [ role_owner._id ]
-                p.acl['delete'] = [ role_owner._id ]
-                p.acl['tool'] = [ role_owner._id ]
-                p.acl['security'] = [ role_owner._id ]
-                for user in users:
-                    with h.push_config(c, user=user):
-                        pr = user.project_role()
-                        pr.roles = [ role_owner._id, role_developer._id, role_member._id ]
-                        # Setup builtin tool applications
-                with h.push_config(c, user=users[0]):
-                    p.install_app('wiki', 'home')
-                    p.install_app('admin', 'admin')
-                ThreadLocalORMSession.flush_all()
+            p.configure_project_database(
+                users=users,
+                is_user_project=False,
+                apps=[
+                    ('wiki', 'home'),
+                    ('admin', 'admin')])
         except:
             ThreadLocalORMSession.close_all()
             log.exception('Error registering project, attempting to drop %s',
@@ -259,37 +236,12 @@ class ProjectRegistrationProvider(object):
                     database=database,
                     last_updated = datetime.utcnow(),
                     is_root=True)
+        if user_project:
+            p.database_configured = False
+            return
         try:
-            p.configure_project_database()
-            with h.push_config(c, project=p, user=user):
-                assert M.ProjectRole.query.find().count() == 0, \
-                    'Project roles already exist'
-                # Install default named roles (#78)
-                role_owner = M.ProjectRole(name='Admin')
-                role_developer = M.ProjectRole(name='Developer')
-                role_member = M.ProjectRole(name='Member')
-                role_auth = M.ProjectRole(name='*authenticated')
-                role_anon = M.ProjectRole(name='*anonymous')
-                # Setup subroles
-                role_owner.roles = [ role_developer._id ]
-                role_developer.roles = [ role_member._id ]
-                p.acl['create'] = [ role_owner._id ]
-                p.acl['read'] = [ role_owner._id, role_developer._id, role_member._id,
-                                  role_anon._id ]
-                p.acl['update'] = [ role_owner._id ]
-                p.acl['delete'] = [ role_owner._id ]
-                p.acl['tool'] = [ role_owner._id ]
-                p.acl['security'] = [ role_owner._id ]
-                pr = user.project_role()
-                pr.roles = [ role_owner._id, role_developer._id, role_member._id ]
-                # Setup builtin tool applications
-                if user_project:
-                    p.install_app('profile', 'profile')
-                else:
-                    p.install_app('home', 'home')
-                p.install_app('admin', 'admin')
-                p.install_app('search', 'search')
-                ThreadLocalORMSession.flush_all()
+            p.configure_project_database(
+                users=[user])
         except:
             ThreadLocalORMSession.close_all()
             log.exception('Error registering project, attempting to drop %s',
