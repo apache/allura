@@ -164,8 +164,6 @@ class Thread(Artifact):
         if self.artifact_reference.artifact_id is not None:
             if self.artifact:
                 self.artifact.subscribe()
-                for u in ProjectRole.query.find({'name':'Admin'}).first().users_with_role():
-                    self.artifact.subscribe(user=u)
         if message_id is None: message_id = h.gen_message_id()
         parent = parent_id and self.post_class().query.get(_id=parent_id)
         slug, full_slug = self.post_class().make_slugs(parent)
