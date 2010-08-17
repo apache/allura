@@ -19,7 +19,7 @@ class DeleteFlashMailboxes(Migration):
 
     def up(self):
         if self.session.db.name == 'allura':
-            self.ormsession.delete(
+            self.ormsession.remove(
                 M.Mailbox,
                 {'type':'flash'})
 
