@@ -238,7 +238,7 @@ class ProjectRegistrationProvider(object):
                     is_root=True)
         if user_project:
             p.database_configured = False
-            return
+            return p
         try:
             p.configure_project_database(
                 users=[user])
