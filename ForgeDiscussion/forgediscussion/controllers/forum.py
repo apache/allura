@@ -61,6 +61,8 @@ class ForumController(DiscussionController):
         self.discussion = model.Forum.query.get(
             app_config_id=c.app.config._id,
             shortname=forum_id)
+        if not self.discussion:
+            raise exc.HTTPNotFound()
         super(ForumController, self).__init__()
 
     @expose()
