@@ -544,6 +544,9 @@ class PageController(BaseController):
                labels=None, labels_old=None,
                viewable_by=None,
                new_viewable_by=None,**kw):
+        if not title:
+            flash('You must provide a title for the page.')
+            redirect('edit')
         if not self.page:
             # the page doesn't exist yet, so create it
             require(has_artifact_access('create'))
