@@ -107,6 +107,8 @@ class TestAttachment(TestController):
             if 'attachment' in alink['href']:
                 alink = str(alink['href'])
                 break
+        else:
+            assert False, 'attachment link not found'
         r = self.app.get(alink)
         assert 'Content-Disposition' not in r.headers
         r = self.app.post(self.post_link + 'attach',

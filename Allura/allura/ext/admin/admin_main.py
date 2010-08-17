@@ -371,7 +371,7 @@ class ProjectAdminController(BaseController):
                 if sr.get('delete'):
                     role = M.ProjectRole.query.get(_id=ObjectId(str(r['id'])))
                     role.roles.remove(ObjectId(str(sr['id'])))
-        if r.get('new', {}).get('add'):
+        if new and new.get('add'):
             M.ProjectRole(name=new['name'])
         g.publish('react', 'forge.project_updated')
         redirect('roles')

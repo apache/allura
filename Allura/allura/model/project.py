@@ -302,8 +302,8 @@ class Project(MappedClass):
                 for u in admin_role.users_with_role():
                     M.Mailbox.subscribe(
                         user_id=c.user._id,
-                        project_id=self.app_config.project_id,
-                        app_config_id=self.app_config._id,
+                        project_id=self._id,
+                        app_config_id=cfg._id,
                         artifact=None, topic=None,
                         type='direct', n=1, unit='day')
         return app
