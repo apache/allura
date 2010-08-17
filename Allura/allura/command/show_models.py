@@ -61,12 +61,12 @@ class EnsureIndexCommand(base.Command):
         projects = M.Project.query.find().all()
         for name, cls in MappedClass._registry.iteritems():
             if cls.__mongometa__.session == M.main_orm_session:
-                M.main_orm_session.ensure_indexes(cls)
+                M.main_orm_session.update_indexes(cls)
             else:
                 for p in projects:
                     c.project = p
                     if session(cls) is None: continue
-                    session(cls).ensure_indexes(cls)
+                    session(cls).update_indexes(cls)
 
 def build_model_inheritance_graph():
     graph = dict((c, ([], [])) for c in MappedClass._registry.itervalues())

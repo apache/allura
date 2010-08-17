@@ -24,9 +24,12 @@ class BranchBrowser(repository.BranchBrowser):
     def __init__(self):
         super(BranchBrowser, self).__init__(None)
 
-    @expose()
+    @expose('forgesvn.templates.index')
     @with_trailing_slash
     def index(self):
+        latest = c.app.repo.latest
+        if not latest:
+            return dict(log=[])
         redirect(c.app.url+"LATEST/tree/")
 
     @expose('forgesvn.templates.log')

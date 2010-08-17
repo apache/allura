@@ -14,6 +14,19 @@ from forgegit import model as GitM
 from forgehg import model as HgM
 from forgesvn import model as SVNM
 
+class FixFlashMailboxes(Migration):
+    version = 12
+
+    def up(self):
+        if self.session.db.name == 'allura':
+            self.ormsession.update(
+                M.Mailbox,
+                {'type':'flash'},
+                {'$set':{'is_flash':True}})
+
+    def down(self):
+        raise NotImplementedError, 'ClearMailboxes.down'
+
 class ClearMailboxes(Migration):
     version = 11
 

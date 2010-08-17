@@ -71,10 +71,14 @@ class Notification(MappedClass):
 
     @classmethod
     def post_user(cls, user, artifact, topic, **kw):
-        '''Create a notification and deliver directly to a user's flash mailbox'''
-        mbox = Mailbox.query.get(user_id=user._id, type='flash')
-        if mbox is None:
-            mbox = Mailbox(user_id=user._id, type='flash')
+        '''Create a notification and deliver directly to a user's flash
+    mailbox'''
+        try:
+            mbox = Mailbox(user_id=user._id, is_flash=True)
+            session(mbox).flush(mbox)
+        except pymongo.errors.DuplicateKeyError:
+            session(mbox).expunge(mbox)
+            mbox = Mailbox.query.get(user_id=user._id, is_flash=True)
         n = cls._make_notification(artifact, topic, **kw)
         mbox.queue.append(n._id)
         return n
@@ -184,7 +188,8 @@ class Mailbox(MappedClass):
         session = main_orm_session
         name = 'mailbox'
         unique_indexes = [
-            ('user_id', 'project_id', 'app_config_id', 'artifact_index_id', 'topic'),
+            ('user_id', 'project_id', 'app_config_id',
+             'artifact_index_id', 'topic', 'is_flash'),
             ]
     _id = FieldProperty(S.ObjectId)
     user_id = ForeignIdProperty('User', if_missing=lambda:c.user._id)
@@ -197,6 +202,7 @@ class Mailbox(MappedClass):
     topic = FieldProperty(str)
 
     # Subscription type
+    is_flash = FieldProperty(bool, if_missing=False)
     type = FieldProperty(S.OneOf, 'direct', 'digest', 'summary', 'flash')
     frequency = FieldProperty(dict(
             n=int,unit=S.OneOf('day', 'week', 'month')))

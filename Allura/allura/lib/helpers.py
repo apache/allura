@@ -428,7 +428,7 @@ def json_validation_error(controller, **kwargs):
 def pop_user_notifications(user=None):
     from allura import model as M
     if user is None: user = c.user
-    mbox = M.Mailbox.query.get(user_id=user._id, type='flash')
+    mbox = M.Mailbox.query.get(user_id=user._id, is_flash=True)
     if mbox:
         notifications = M.Notification.query.find(dict(_id={'$in':mbox.queue}))
         mbox.queue = []
