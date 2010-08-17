@@ -1,6 +1,6 @@
 import os, re
 import logging
-from urllib import unquote
+from urllib import unquote, quote
 from mimetypes import guess_type
 
 import pkg_resources
@@ -144,7 +144,7 @@ class NeighborhoodController(object):
                 'A project already exists with that name, please choose another.', 'error')
             ming.orm.ormsession.ThreadLocalORMSession.close_all()
             redirect('add_project?project_unixname=%s&project_description=%s&project_name=%s' %
-                     (project_unixname,project_description,project_name))
+                     (quote(project_unixname),quote(project_description),quote(project_name)))
         except Exception, ex:
             c.project = None
             ming.orm.ormsession.ThreadLocalORMSession.close_all()
