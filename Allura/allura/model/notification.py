@@ -74,7 +74,9 @@ class Notification(MappedClass):
         '''Create a notification and deliver directly to a user's flash
     mailbox'''
         try:
-            mbox = Mailbox(user_id=user._id, is_flash=True)
+            mbox = Mailbox(user_id=user._id, is_flash=True,
+                           project_id=None,
+                           app_config_id=None)
             session(mbox).flush(mbox)
         except pymongo.errors.DuplicateKeyError:
             session(mbox).expunge(mbox)
