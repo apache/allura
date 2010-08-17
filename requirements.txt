@@ -75,7 +75,7 @@ feedparser==4.1-r295
 psycopg2==2.2.2
 
 EasyWidgets==0.2dev-20100802
-Ming==0.2dev-20100714
+Ming==0.2dev-20100817
 TurboGears2==2.1b2dev-20100628
 sf.phpsession==0.1
 tg.devtools==2.0.2dev-20100628
