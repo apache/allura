@@ -286,7 +286,7 @@ class PostController(BaseController):
     @expose()
     def attach(self, file_info=None):
         require(has_artifact_access('moderate', self.post))
-        if file_info:
+        if file_info is not None:
             filename = file_info.filename
             content_type = guess_type(filename)
             if content_type[0]: content_type = content_type[0]
