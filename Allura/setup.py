@@ -82,7 +82,7 @@ setup(
     local = allura.lib.plugin:LocalProjectRegistrationProvider
 
     [flyway.migrations]
-    allura = allura.migrations
+    pyforge = allura.migrations
 
     [flyway.test_migrations]
     a = flyway.tests.migrations_a
