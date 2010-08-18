@@ -140,19 +140,12 @@ class Tree(object):
         self._name = name
 
     def readme(self):
-        try:
-            readme = self.get_blob('readme.txt').text
-        except KeyError:
+        for fn in ['readme.txt','README.txt','README.TXT','README']:
             try:
-                readme = self.get_blob('README.txt').text
-            except KeyError:
-                try:
-                    readme = self.get_blob('README.TXT').text
-                except KeyError:
-                    try:
-                        readme = self.get_blob('README').text
-                    except KeyError:
-                        readme = ''
+                readme = self.get_blob(fn).text
+                break
+            except AttributeError:
+                readme = ''
         return readme
 
     def url(self):
