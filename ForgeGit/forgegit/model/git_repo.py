@@ -258,9 +258,14 @@ class GitBlob(M.Blob):
     def __init__(self, repo, commit, tree, filename):
         super(GitBlob, self).__init__(
             repo, commit, tree, filename)
-        self._blob = tree._tree[filename]
-        self.content_type, self.content_encoding = (
-            self._blob.mime_type, None)
+        try:
+            self._blob = tree._tree[filename]
+            self.content_type, self.content_encoding = (
+                self._blob.mime_type, None)
+        except KeyError:
+            self._blob = None
+            self.content_type = None
+            self.content_encoding = None
 
     def __iter__(self):
         fp = StringIO(self.text)
@@ -287,10 +292,14 @@ class GitBlob(M.Blob):
                 next=ent
         if prev:
             tree = prev.tree()
-            result['prev'] = [ tree.get_blob(self.filename, path) ]
+            blob = tree.get_blob(self.filename, path)
+            if blob._blob:
+                result['prev'] = [ blob ]
         if next:
             tree = next.tree()
-            result['next'] = [ tree.get_blob(self.filename, path) ]
+            blob = tree.get_blob(self.filename, path)
+            if blob._blob:
+                result['next'] = [ blob ]
         return result
 
     def __getattr__(self, name):
