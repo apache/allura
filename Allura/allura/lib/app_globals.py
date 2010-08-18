@@ -6,6 +6,7 @@ __all__ = ['Globals']
 import logging
 import socket
 import re
+import cgi
 from urllib import urlencode
 from ConfigParser import RawConfigParser
 from collections import defaultdict
@@ -32,6 +33,7 @@ from allura import model as M
 from allura.lib.markdown_extensions import ForgeExtension
 
 from allura.lib import gravatar
+from allura.lib import helpers as h
 
 log = logging.getLogger(__name__)
 
@@ -117,7 +119,10 @@ class Globals(object):
             try:
                 lexer = pygments.lexers.get_lexer_for_filename(filename, encoding='chardet')
             except pygments.util.ClassNotFound:
-                return '<pre>' + text + '</pre>'
+                # no highlighting, but we should escape, encode, and wrap it in a <pre>
+                text = h.really_unicode(text)
+                text = cgi.escape(text)
+                return u'<pre>' + text + u'</pre>'
         else:
             lexer = pygments.lexers.get_lexer_by_name(lexer, encoding='chardet')
         return pygments.highlight(text, lexer, self.pygments_formatter)

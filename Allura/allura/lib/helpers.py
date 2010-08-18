@@ -12,6 +12,7 @@ from datetime import datetime
 
 import tg
 import genshi.template
+import chardet
 from formencode.validators import FancyValidator
 from dateutil.parser import parse
 from pymongo.bson import ObjectId
@@ -27,6 +28,23 @@ from webhelpers import date, feedgenerator, html, number, misc, text
 from pymongo import bson
 
 re_path_portion = re.compile(r'^[a-z][-a-z0-9]{2,}$')
+
+def really_unicode(s):
+    try:
+        return unicode(s)
+    except UnicodeDecodeError:
+        pass
+    encoding = chardet.detect(s[:1024])['encoding']
+    try:
+        return unicode(s, encoding)
+    except UnicodeDecodeError:
+        pass
+    encoding = chardet.detect(s)['encoding']
+    try:
+        return unicode(s, encoding)
+    except UnicodeDecodeError:
+        pass
+    return unicode(repr(str(s)))[1:-1]
 
 def find_project(url_path):
     from allura import model as M

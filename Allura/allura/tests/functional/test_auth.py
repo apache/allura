@@ -90,7 +90,8 @@ class TestAuth(TestController):
     def test_create_account(self):
         r = self.app.get('/auth/create_account')
         assert 'Create an Account' in r
-        r = self.app.post('/auth/save_new', params=dict(username='aaa',password='123')).follow()
+        r = self.app.post('/auth/save_new', params=dict(username='aaa',password='123'))
+        r = r.follow()
         assert 'Password must be at least 8 characters.' in r
         r = self.app.post('/auth/save_new', params=dict(username='aaa',
                                                         password='12345678',

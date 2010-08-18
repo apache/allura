@@ -15,6 +15,12 @@ def setUp(self):
     """Method called by nose before running each test"""
     helpers.setup_basic_test()
 
+def test_really_unicode():
+    s = h.really_unicode('\xef\xbb\xbf<?xml version="1.0" encoding="utf-8" ?>')
+    assert s.startswith(u'\ufeff')
+    s = h.really_unicode(open('allura/tests/unicode_test.txt').read())
+    assert isinstance(s, unicode)
+
 def test_render_genshi_plaintext():
     here_dir = path.dirname(__file__)
     tpl = path.join(here_dir, 'genshi_hello_tmpl')

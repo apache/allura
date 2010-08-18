@@ -121,7 +121,6 @@ class GitRepository(M.Repository):
         try:
             return git.Repo(self.full_fs_path)
         except (git.errors.NoSuchPathError, git.errors.InvalidGitRepositoryError), err:
-            tg.flash('%s: %s' % (type(err), err), 'error')
             return None
 
 
