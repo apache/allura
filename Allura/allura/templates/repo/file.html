@@ -10,50 +10,50 @@
     <meta content="text/html; charset=UTF-8" http-equiv="content-type" py:replace="''"/>
     <title>
       $c.project.name / $c.app.config.options.mount_label /
-      ${blob.filename} @${h.text.truncate(blob._commit._id, 10)}
+        ${h.really_unicode(blob.filename)} @${h.text.truncate(blob._commit._id, 10)}
     </title>
     <link rel="stylesheet" type="text/css" media="screen, projection" href="${g.forge_static('css/forge/hilite.css')}" />
   </head>
 
   <body>
-    <h1 class="title"><a href="${blob._commit.url()}">@${h.text.truncate(blob._commit._id, 10)}</a>:
-    ${path_links(blob.path().split('/')[1:-1])} $blob.filename</h1>
-    <div class="content">
-      <div class="row">
-        <div class="column grid_12">
-          <py:if test="prev">
-            Parent(s):
-            <py:for each="b in prev">
-              <a href="${b.url()}">${h.text.truncate(b._commit._id, 10)}</a>
-              <a href="?diff=${b._commit._id}">(diff)</a>
-            </py:for>
-            <br/>
-          </py:if>
+      <h1 class="title"><a href="${blob._commit.url()}">@${h.text.truncate(blob._commit._id, 10)}</a>:
+      ${path_links(blob.path().split('/')[1:-1])} ${h.really_unicode(blob.filename)}</h1>
+      <div class="content">
+        <div class="row">
+          <div class="column grid_12">
+            <py:if test="prev">
+              Parent(s):
+              <py:for each="b in prev">
+                <a href="${b.url()}">${h.text.truncate(b._commit._id, 10)}</a>
+                <a href="?diff=${b._commit._id}">(diff)</a>
+              </py:for>
+              <br/>
+            </py:if>
 
-          <py:if test="next">
-            Child(ren):
-            <py:for each="b in next">
-              <a href="${b.url()}">${h.text.truncate(b._commit._id, 10)}</a>
-              <a href="${b.url()}?diff=${blob._commit._id}">(diff)</a>
-            </py:for>
-            <br/>
-          </py:if>
+            <py:if test="next">
+              Child(ren):
+              <py:for each="b in next">
+                <a href="${b.url()}">${h.text.truncate(b._commit._id, 10)}</a>
+                <a href="${b.url()}?diff=${blob._commit._id}">(diff)</a>
+              </py:for>
+              <br/>
+            </py:if>
 
-          <img py:if="blob.has_image_view" src="?format=raw"/>
-          <py:if test="not blob.has_html_view and not blob.has_image_view and not force_display">
-            $blob.filename is not known to be viewable in your browser.
-            Try to <a href="?force=True">display it</a> anyway or
-            <a href="?format=raw">download it</a> instead.
-          </py:if>
-          <py:if test="blob.has_html_view and not blob.has_image_view or force_display">
-            <a href="?format=raw">Download this file</a>
-            <div class="clip">
-              <h3><span class="ico-l"><b class="ui-icon ui-icon-document"></b> $blob.filename</span></h3>
-              ${Markup(g.highlight(blob.text, filename=blob.filename))}
-            </div>
-          </py:if>
+            <img py:if="blob.has_image_view" src="?format=raw"/>
+            <py:if test="not blob.has_html_view and not blob.has_image_view and not force_display">
+              ${h.really_unicode(blob.filename)} is not known to be viewable in your browser.
+              Try to <a href="?force=True">display it</a> anyway or
+              <a href="?format=raw">download it</a> instead.
+            </py:if>
+            <py:if test="blob.has_html_view and not blob.has_image_view or force_display">
+              <a href="?format=raw">Download this file</a>
+              <div class="clip">
+                <h3><span class="ico-l"><b class="ui-icon ui-icon-document"></b> ${h.really_unicode(blob.filename)}</span></h3>
+                ${Markup(g.highlight(blob.text, filename=blob.filename))}
+              </div>
+            </py:if>
+          </div>
         </div>
       </div>
-    </div>
   </body>
 </html>

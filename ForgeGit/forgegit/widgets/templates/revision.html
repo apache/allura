@@ -38,5 +38,5 @@
     <py:for each="ci in next"><a href="${ci.url()}">${h.text.truncate(ci._id, 10)}</a></py:for>
     <br/>
   </py:if>
-  ${Markup(g.markdown.convert(value.message.decode('utf8')))}
+  ${Markup(g.markdown.convert(h.really_unicode(value.message)))}
 </div>

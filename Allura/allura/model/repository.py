@@ -10,6 +10,7 @@ from ming.orm.mapped_class import MappedClass
 from ming.orm.property import FieldProperty
 
 from allura.lib.patience import SequenceMatcher
+from allura.lib import helpers as h
 
 from .artifact import Artifact
 from .types import ArtifactReference
@@ -195,14 +196,14 @@ class Blob(object):
             self.content_encoding = encoding
 
     def url(self):
-        return self._tree.url() + self.filename
+        return self._tree.url() + h.really_unicode(self.filename)
 
     def __repr__(self):
         return '<%s %s of %r>' % (
             self.__class__.__name__, self.path(), self._commit)
 
     def path(self):
-        return self._tree.path() + self.filename
+        return self._tree.path() + h.really_unicode(self.filename)
 
     @property
     def has_html_view(self):

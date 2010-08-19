@@ -16,7 +16,7 @@
     <tbody>
       <tr py:for="commit in value" py:with="cv = commit.value">
         <td>
-          <b>${h.text.truncate(commit.value.message, 75).decode('utf8')}</b><br/>
+          <b>${h.really_unicode(h.text.truncate(commit.value.message, 75))}</b><br/>
           <py:if test="cv.committer != cv.author">
             <py:if test="hasattr(cv,'committer_url') and cv.committer_url is not None">
               <a href="${cv.committer_url}">${email_gravatar(cv.committer.email, title=cv.committer.name, size=16)}

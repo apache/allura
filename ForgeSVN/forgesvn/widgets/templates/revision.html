@@ -10,5 +10,5 @@
     ${email_gravatar(value.author_username, size=16)} $value.author_username
   </py:if>
   ${h.ago(value.datetime)}<br/>
-  ${Markup(g.markdown.convert(value.message.decode('utf8')))}
+  ${Markup(g.markdown.convert(h.really_unicode(value.message)))}
 </div>
