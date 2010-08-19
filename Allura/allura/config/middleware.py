@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 """WSGI middleware initialization for the allura application."""
+import mimetypes
 
+import pkg_resources
 from webob import exc
 from tg import redirect
 from paste.deploy.converters import asbool
@@ -49,6 +51,10 @@ def _make_core_app(root, global_conf, full_stack=True, **app_conf):
     
    
     """
+    mimetypes.init(
+        [pkg_resources.resource_filename('allura', 'etc/mime.types')]
+        + mimetypes.knownfiles)
+    
     # Create base app
     base_config = ForgeConfig(root)
     load_environment = base_config.make_load_environment()
