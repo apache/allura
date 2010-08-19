@@ -32,7 +32,7 @@ def test_markdown():
     assert '<a href=' not in g.markdown.convert('# Foo!\n[Rooted]')
     assert '<a href=' in g.markdown.convert('This is http://sf.net')
     tgt = 'http://everything2.com/?node=nate+oostendorp'
-    url = '/redirect/?path=%s' % quote(tgt)
+    url = '/nf/redirect/?path=%s' % quote(tgt)
     s = g.markdown.convert('This is %s' % tgt)
     assert s == '<p>This is <a href="%s" rel="nofollow">%s</a></p>' % (url, tgt), s
     assert '<a href=' in g.markdown.convert('This is http://sf.net')    

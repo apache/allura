@@ -107,6 +107,6 @@ class TestRootController(TestController):
 """#header h1 a {color: #ccc; text-shadow: #fff 0 1px;}""" in r)
 
     def test_redirect_external(self):
-        r = self.app.get('/redirect/?path=%s' % quote('http://google.com'))
+        r = self.app.get('/nf/redirect/?path=%s' % quote('http://google.com'))
         assert r.status_int == 302
         assert r.location == 'http://google.com'

@@ -40,4 +40,9 @@ class NewForgeController(object):
                 g.set_app(app)
         html = g.markdown.convert(markdown)
         return html
-        
+
+    @expose()
+    @with_trailing_slash
+    def redirect(self, path, **kw):
+        """Redirect to external sites."""
+        redirect(path)
