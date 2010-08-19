@@ -112,7 +112,12 @@ class NeighborhoodController(object):
         count = pq.count()
         projects = pq.skip(start).limit(int(limit)).all()
         categories = M.ProjectCategory.query.find({'parent_id':None}).sort('name').all()
-        c.custom_sidebar_menu = [SitemapEntry('+ Add a Project', self.neighborhood.url()+'add_project'), SitemapEntry('')]
+        c.custom_sidebar_menu = []
+        if self.neighborhood.name == 'Projects':
+            c.custom_sidebar_menu += [
+                SitemapEntry('+ Add a Project', self.neighborhood.url()+'add_project'),
+                SitemapEntry('')
+            ]
         c.custom_sidebar_menu = c.custom_sidebar_menu + [
             SitemapEntry(cat.label, self.neighborhood.url()+'browse/'+cat.name, className='nav_child') for cat in categories
         ]

@@ -195,4 +195,10 @@ class TestNeighborhood(TestController):
         r = self.app.get('/adobe/site_style.css')
         assert("body {background-color: #f00;}" in r)
 
-
+    def test_add_a_project_link(self):
+        r = self.app.get('/p/')
+        assert 'Add a Project' in r
+        r = self.app.get('/u/')
+        assert 'Add a Project' not in r
+        r = self.app.get('/adobe/')
+        assert 'Add a Project' not in r
