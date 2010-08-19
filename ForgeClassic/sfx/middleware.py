@@ -18,39 +18,7 @@ class SfxMiddleware(object):
             }
         self.environ_values['allura.sfx_session_manager'].setup_sessiondb_connection_pool(
             config)
-        self.configure_databases(config)
-
-    def configure_databases(self, config):
-        M.site_meta.bind = engine_from_config(h.config_with_prefix(config, 'site_db.'))
-        M.mail_meta.bind = engine_from_config(h.config_with_prefix(config, 'mail_db.'))
-        M.task_meta.bind = engine_from_config(h.config_with_prefix(config, 'task_db.'))
-        M.epic_meta.bind = engine_from_config(h.config_with_prefix(config, 'epic_db.'))
-        # Configure SFX Database Tables
-        T = M.tables
-        # Alexandria Tables
-        T.mail_group_list = Table('mail_group_list', M.site_meta, autoload=True)
-        T.groups = Table(
-            'groups', M.site_meta, autoload=True,
-            include_columns=['group_id', 'group_name', 'status'])
-        T.mllist_subscriber = Table('mllist_subscriber', M.site_meta, autoload=True)
-        T.prweb_vhost = Table('prweb_vhost', M.site_meta, autoload=True)
-        T._mysql_auth = t = Table(
-            'mysql_auth', M.site_meta, autoload=True,
-            )
-        T.mysql_auth = select([
-            t,
-            func.which_user(t.c.modified_by_uid).label('modified_user')]).alias('msql_auth_user')
-        # MailDB tables
-        T.lists = Table('lists', M.mail_meta, autoload=True)
-        # TaskDB Tables
-        T.ml_password_change = Table(
-            'ml_password_change', M.task_meta, autoload=True)
-        # EpicDB Tables
-        T.backend_queue = Table('backend_queue', M.epic_meta, autoload=True)
-        T.object_metadata = Table('object_metadata', M.epic_meta, autoload=True)
-        T.feature_optin = Table('feature_optin', M.epic_meta, autoload=True)
-        T.feature_grouping = Table('feature_grouping', M.epic_meta, autoload=True)
-        T.sys_type_description = Table('sys_type_description', M.epic_meta, autoload=True)
+        configure_databases(config)
 
     def __call__(self, environ, start_response):
         request = Request(environ)
@@ -63,6 +31,39 @@ class SfxMiddleware(object):
 
     def handle(self, request):
         request.environ.update(self.environ_values)
+
+def configure_databases(config):
+    M.site_meta.bind = engine_from_config(h.config_with_prefix(config, 'site_db.'))
+    M.mail_meta.bind = engine_from_config(h.config_with_prefix(config, 'mail_db.'))
+    M.task_meta.bind = engine_from_config(h.config_with_prefix(config, 'task_db.'))
+    M.epic_meta.bind = engine_from_config(h.config_with_prefix(config, 'epic_db.'))
+    # Configure SFX Database Tables
+    T = M.tables
+    # Alexandria Tables
+    T.mail_group_list = Table('mail_group_list', M.site_meta, autoload=True)
+    T.groups = Table(
+        'groups', M.site_meta, autoload=True,
+        include_columns=['group_id', 'group_name', 'status'])
+    T.mllist_subscriber = Table('mllist_subscriber', M.site_meta, autoload=True)
+    T.prweb_vhost = Table('prweb_vhost', M.site_meta, autoload=True)
+    T._mysql_auth = t = Table(
+        'mysql_auth', M.site_meta, autoload=True,
+        )
+    T.mysql_auth = select([
+        t,
+        func.which_user(t.c.modified_by_uid).label('modified_user')]).alias('msql_auth_user')
+    T.trove_cat = Table('trove_cat', M.site_meta, autoload=True)
+    # MailDB tables
+    T.lists = Table('lists', M.mail_meta, autoload=True)
+    # TaskDB Tables
+    T.ml_password_change = Table(
+        'ml_password_change', M.task_meta, autoload=True)
+    # EpicDB Tables
+    T.backend_queue = Table('backend_queue', M.epic_meta, autoload=True)
+    T.object_metadata = Table('object_metadata', M.epic_meta, autoload=True)
+    T.feature_optin = Table('feature_optin', M.epic_meta, autoload=True)
+    T.feature_grouping = Table('feature_grouping', M.epic_meta, autoload=True)
+    T.sys_type_description = Table('sys_type_description', M.epic_meta, autoload=True)
 
 def engine_from_config(config):
     sa_scheme = config['scheme']
