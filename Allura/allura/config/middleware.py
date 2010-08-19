@@ -16,6 +16,7 @@ from allura.config.app_cfg import ForgeConfig
 from allura.lib.custom_middleware import StatsMiddleware
 from allura.lib.custom_middleware import SSLMiddleware
 from allura.lib.custom_middleware import StaticFilesMiddleware
+from allura.lib import patches
 
 __all__ = ['make_app']
 
@@ -54,6 +55,7 @@ def _make_core_app(root, global_conf, full_stack=True, **app_conf):
     mimetypes.init(
         [pkg_resources.resource_filename('allura', 'etc/mime.types')]
         + mimetypes.knownfiles)
+    patches.apply()
     
     # Create base app
     base_config = ForgeConfig(root)

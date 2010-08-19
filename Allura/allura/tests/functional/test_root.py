@@ -31,6 +31,14 @@ class TestRootController(TestController):
         assert cat_links[0].find('a').get('class') == 'nav_child'
         assert cat_links[0].find('a').find('span').string == 'Clustering'
 
+    def test_strange_accept_headers(self):
+        hdrs = [
+            'text/plain;text/html;text/*',
+            'text/html,application/xhtml+xml,application/xml;q=0.9;text/plain;q=0.8,image/png,*/*;q=0.5' ]
+        for hdr in hdrs:
+            # malformed headers used to return 500, just make sure they don't now
+            self.app.get('/', headers=dict(Accept=hdr))
+
     def test_project_browse(self):
         com_cat = M.ProjectCategory.query.find(dict(label='Communications')).first()
         fax_cat = M.ProjectCategory.query.find(dict(label='Fax')).first()

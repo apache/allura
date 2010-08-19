@@ -29,6 +29,11 @@ from pymongo import bson
 
 re_path_portion = re.compile(r'^[a-z][-a-z0-9]{2,}$')
 
+def monkeypatch(obj):
+    def patchit(func):
+        setattr(obj, func.__name__, func)
+    return patchit
+
 def really_unicode(s):
     try:
         return unicode(s)
