@@ -244,6 +244,10 @@ class MockAMQ(object):
         self.exchanges = defaultdict(list)
         self.queue_bindings = defaultdict(list)
 
+    def clear(self):
+        for k in self.exchanges.keys():
+            self.exchanges[k][:] = []
+
     def publish(self, xn, message, routing_key, **kw):
         self.exchanges[xn].append(
             dict(routing_key=routing_key, message=message, kw=kw))
@@ -254,6 +258,7 @@ class MockAMQ(object):
     def setup_handlers(self):
         from allura.command.reactor import tool_consumers, ReactorCommand
         from allura.command import base
+        self.queue_bindings = defaultdict(list)
         base.log = logging.getLogger('allura.command')
         base.M = M
         self.tools = [

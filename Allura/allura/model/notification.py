@@ -17,6 +17,7 @@ Notifications are also available for use in feeds
 '''
 
 from datetime import datetime, timedelta
+from collections import defaultdict
 
 from pylons import c, g
 from tg import config
@@ -29,6 +30,8 @@ from allura.lib import helpers as h
 
 from .session import main_orm_session, project_orm_session
 from .types import ArtifactReferenceType
+
+MAILBOX_QUIESCENT=timedelta(minutes=10)
 
 class Notification(MappedClass):
     class __mongometa__:
@@ -146,7 +149,10 @@ To unsubscribe from further messages, please visit <%s/auth/prefs/>
                   serializer='pickle')
 
     @classmethod
-    def send_digest(self, user_id, from_address, subject, notifications):
+    def send_digest(self, user_id, from_address, subject, notifications,
+                    reply_to_address=None):
+        if reply_to_address is None:
+            reply_to_address = from_address
         text = [ 'Digest of %s' % subject ]
         for n in notifications:
             text.append('From: %s' % n.from_address)
@@ -211,6 +217,7 @@ class Mailbox(MappedClass):
     next_scheduled = FieldProperty(datetime, if_missing=datetime.utcnow)
 
     # Actual notification IDs
+    last_modified = FieldProperty(datetime, if_missing=datetime(2000,1,1))
     queue = FieldProperty([str])
 
     project = RelationProperty('Project')
@@ -297,7 +304,8 @@ class Mailbox(MappedClass):
         for mbox in cls.query.find(d):
             mbox.query.update(
                 dict(_id=mbox._id),
-                {'$push':dict(queue=nid)})
+                {'$push':dict(queue=nid),
+                 '$set':dict(last_modified=datetime.utcnow())})
             # Make sure the mbox doesn't stick around to be flush()ed
             session(mbox).expunge(mbox)
 
@@ -311,6 +319,8 @@ class Mailbox(MappedClass):
         q_direct = dict(
             type='direct',
             queue={'$ne':[]})
+        if MAILBOX_QUIESCENT:
+            q_direct['last_modified']={'$lt':now - MAILBOX_QUIESCENT}
         q_digest = dict(
             type={'$in': ['digest', 'summary']},
             next_scheduled={'$lt':now})
@@ -338,8 +348,22 @@ class Mailbox(MappedClass):
     def fire(self, now):
         notifications = Notification.query.find(dict(_id={'$in':self.queue}))
         if self.type == 'direct':
+            ngroups = defaultdict(list)
             for n in notifications:
-                n.send_direct(self.user_id)
+                if n.topic == 'message':
+                    n.send_direct(self.user_id)
+                    # Messages must be sent individually so they can be replied
+                    # to individually
+                else:
+                    key = (n.subject, n.from_address, n.reply_to_address, n.author_id)
+                    ngroups[key].append(n)
+            # Accumulate messages from same address with same subject
+            for (subject, from_address, reply_to_address, author_id), ns in ngroups.iteritems():
+                if len(ns) == 1:
+                    n.send_direct(self.user_id)
+                else:
+                    Notification.send_digest(
+                        self.user_id, from_address, subject, ns, reply_to_address)
         elif self.type == 'digest':
             Notification.send_digest(
                 self.user_id, 'noreply@in.sf.net', 'Digest Email',
