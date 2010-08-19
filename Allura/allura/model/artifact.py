@@ -270,6 +270,7 @@ class Artifact(MappedClass):
     class __mongometa__:
         session = artifact_orm_session
         name='artifact'
+        indexes = [ 'app_config_id' ]
         def before_save(data):
             data['mod_date'] = datetime.utcnow()
             if c.project:
@@ -547,7 +548,7 @@ class Message(Artifact):
     class __mongometa__:
         session = artifact_orm_session
         name='message'
-        indexes = [ 'slug', 'parent_id' ]
+        indexes = Artifact.__mongometa__.indexes + [ 'slug', 'parent_id', 'timestamp' ]
     type_s='Generic Message'
 
     _id=FieldProperty(str, if_missing=h.gen_message_id)

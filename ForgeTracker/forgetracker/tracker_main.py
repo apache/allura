@@ -26,7 +26,7 @@ from allura.lib.search import search_artifact
 from allura.lib.decorators import audit, react
 from allura.lib.security import require, has_artifact_access
 from allura.model import ProjectRole, TagEvent, UserTags, ArtifactReference, Feed, User
-from allura.model import Mailbox
+from allura.model import Mailbox, Post
 from allura.lib import widgets as w
 from allura.lib.widgets import form_fields as ffw
 from allura.lib.widgets.subscriptions import SubscribeForm
@@ -440,19 +440,11 @@ class RootController(BaseController):
         return count
 
     def ticket_comments_since(self, when=None):
-        count = 0
-        q = []
-        tickets = model.Ticket.query.find(dict(app_config_id=c.app.config._id))
-        if when:
-            for ticket in tickets:
-                posts = ticket.discussion_thread().find_posts(limit=None,
-                        style='linear', timestamp={'$gte':when})
-                count = count + len(posts)
-        else:
-            for ticket in tickets:
-                posts = ticket.discussion_thread().find_posts(limit=None, style='linear')
-                count = count + len(posts)
-        return count
+        q = dict(
+            discussion_id=c.app.config.discussion_id)
+        if when is not None:
+            q['timestamp'] = {'$gte':when}
+        return Post.query.find(q).count()
 
     @with_trailing_slash
     @expose('forgetracker.templates.stats')
