@@ -93,12 +93,11 @@ class NeighborhoodController(object):
 
     @expose('allura.templates.neighborhood_project_list')
     @with_trailing_slash
-    def index(self, sort='alpha', limit=None, page=0, **kw):
+    def index(self, sort='alpha', limit=25, page=0, **kw):
         if self.neighborhood.redirect:
             redirect(self.neighborhood.redirect)
         c.project_summary = W.project_summary
         c.page_list = W.page_list
-        c.page_size = W.page_size
         limit, page, start = g.handle_paging(limit, page)
         pq = M.Project.query.find(dict(
                 neighborhood_id=self.neighborhood._id,
@@ -218,10 +217,9 @@ class NeighborhoodProjectBrowseController(ProjectBrowseController):
 
     @expose('allura.templates.neighborhood_project_list')
     @without_trailing_slash
-    def index(self, sort='alpha', limit=None, page=0, **kw):
+    def index(self, sort='alpha', limit=25, page=0, **kw):
         c.project_summary = W.project_summary
         c.page_list = W.page_list
-        c.page_size = W.page_size
         limit, page, start = g.handle_paging(limit, page)
         projects, count = self._find_projects(sort=sort, limit=limit, start=start)
         title=self._build_title()
