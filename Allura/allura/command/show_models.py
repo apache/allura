@@ -60,13 +60,15 @@ class EnsureIndexCommand(base.Command):
         self.basic_setup()
         projects = M.Project.query.find().all()
         for name, cls in MappedClass._registry.iteritems():
+            base.log.info('Building indexes on %s', cls)
             if cls.__mongometa__.session == M.main_orm_session:
-                M.main_orm_session.update_indexes(cls)
+                M.main_orm_session.update_indexes(cls, background=True)
             else:
                 for p in projects:
+                    base.log.info('...for project %s', p.shortname)
                     c.project = p
                     if session(cls) is None: continue
-                    session(cls).update_indexes(cls)
+                    session(cls).update_indexes(cls, background=True)
 
 def build_model_inheritance_graph():
     graph = dict((c, ([], [])) for c in MappedClass._registry.itervalues())
@@ -90,7 +92,6 @@ def dump_cls(depth, cls):
 def dump(root, graph):
     for depth, cls in dfs(MappedClass, graph):
         indent = ' '*4*depth
-
 
 def dfs(root, graph, depth=0):
     yield depth, root
