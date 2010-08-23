@@ -243,11 +243,14 @@ class PreferencesController(BaseController):
             try:
                 with h.push_context(mb.project_id):
                     if mb.app_config:
+                        title = mb.artifact_title
+                        if mb.artifact_url:
+                            title = '<a href="%s">%s</a>' % (mb.artifact_url,title)
                         subscriptions.append(dict(
                                 _id=mb._id,
                                 project_name=mb.project.name,
                                 mount_point=mb.app_config.options.mount_point,
-                                artifact_title=mb.artifact_title,
+                                artifact_title=title,
                                 topic=mb.topic,
                                 type=mb.type,
                                 frequency=mb.frequency.unit,

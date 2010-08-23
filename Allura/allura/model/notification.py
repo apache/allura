@@ -206,6 +206,7 @@ class Mailbox(MappedClass):
 
     # Subscription filters
     artifact_title = FieldProperty(str)
+    artifact_url = FieldProperty(str)
     artifact_index_id = FieldProperty(str)
     topic = FieldProperty(str)
 
@@ -234,10 +235,12 @@ class Mailbox(MappedClass):
         if app_config_id is None: app_config_id = c.app.config._id
         if artifact is None:
             artifact_title = 'All artifacts'
+            artifact_url = None
             artifact_index_id = None
         else:
             i = artifact.index()
             artifact_title = i['title_s']
+            artifact_url = artifact.url()
             artifact_index_id = i['id']
         d = dict(user_id=user_id, project_id=project_id, app_config_id=app_config_id,
                  artifact_index_id=artifact_index_id, topic=topic)
@@ -246,12 +249,14 @@ class Mailbox(MappedClass):
             mbox = cls(
                 type=type, frequency=dict(n=n, unit=unit),
                 artifact_title=artifact_title,
+                artifact_url=artifact_url,
                 **d)
             sess.flush(mbox)
         except pymongo.errors.DuplicateKeyError:
             sess.expunge(mbox)
             mbox = cls.query.get(**d)
             mbox.artifact_title = artifact_title
+            mbox.artifact_url = artifact_url
             mbox.type = type
             mbox.frequency.n = n
             mbox.frequency.unit = unit
