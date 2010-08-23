@@ -27,7 +27,7 @@ from webhelpers import date, feedgenerator, html, number, misc, text
 
 from pymongo import bson
 
-from allura.lib import exception as exc
+from allura.lib import exceptions as exc
 
 re_path_portion = re.compile(r'^[a-z][-a-z0-9]{2,}$')
 
