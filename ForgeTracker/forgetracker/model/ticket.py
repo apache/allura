@@ -181,7 +181,8 @@ class Ticket(VersionedArtifact):
             summary_t=self.summary,
             milestone_s=self.milestone,
             status_s=self.status,
-            text=self.description)
+            text=self.description,
+            snippet_s=self.summary)
         for k,v in self.custom_fields.iteritems():
             result[k + '_s'] = unicode(v)
         if self.reported_by:
