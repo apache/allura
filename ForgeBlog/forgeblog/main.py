@@ -136,9 +136,12 @@ class RootController(BaseController):
     @with_trailing_slash
     def index(self, **kw):
         if has_artifact_access('write', None):
-            posts = BM.BlogPost.query.find().sort('-timestamp')
+            posts = BM.BlogPost.query.find(dict(
+                    app_config_id=c.app.config._id)).sort('-timestamp')
         else:
-            posts = BM.BlogPost.query.find(dict(state='published')).sort('-timestamp')
+            posts = BM.BlogPost.query.find(dict(
+                        state='published',
+                        app_config_id=c.app.config._id)).sort('-timestamp')
         c.form = W.preview_post_form
         return dict(posts=posts)
 
@@ -160,14 +163,6 @@ class RootController(BaseController):
                     'mount_point_s:%s'% c.app.config.options.mount_point ])
             if results: count=results.hits
         return dict(q=q, history=history, results=results or [], count=count)
-
-    @expose('forgeblog.templates.edit_posts')
-    @without_trailing_slash
-    def edit(self, **kw):
-        require(has_artifact_access('write', None))
-        posts = BM.BlogPost.query.find().sort('-timestamp')
-        c.form = W.preview_post_form
-        return dict(posts=posts)
 
     @expose('forgeblog.templates.edit_post')
     @without_trailing_slash
