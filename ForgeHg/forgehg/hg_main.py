@@ -30,7 +30,7 @@ from allura.app import Application, ConfigOption, SitemapEntry, DefaultAdminCont
 from allura.lib import helpers as h
 from allura.lib.search import search
 from allura.lib.decorators import audit, react
-from allura.lib.security import require, has_artifact_access, has_project_access
+from allura.lib.security import require, has_artifact_access, has_project_access, require_authenticated
 from allura.model import Project, ProjectRole, User, ArtifactReference, Feed
 from allura.controllers import BaseController
 
@@ -213,6 +213,7 @@ class RootController(BaseController):
     @with_trailing_slash
     @expose('forgehg.templates.fork')
     def fork(self, to_name=None):
+        require_authenticated()
         from_repo = c.app.repo
         to_project_name = 'u/' + c.user.username
         ThreadLocalORMSession.flush_all()

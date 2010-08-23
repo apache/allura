@@ -29,7 +29,7 @@
               Read access: <code>git clone git://$c.app.repo.scm_url_path</code><br/>
               Read/write access: <code>git clone ssh://${c.user == c.user.anonymous() and 'USERNAME' or c.user.username}@$c.app.repo.scm_url_path</code><br/>
               <form action="${c.app.repo.url()}fork" method="GET">
-                <input type="submit" value="Fork"/>
+                <input type="submit" value="Fork" py:if="c.user != c.user.anonymous()"/>
               </form>
             </p>
             <div style="clear:both;"></div>

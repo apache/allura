@@ -28,7 +28,7 @@
               <dd>${repo.status}</dd>
             </dl>
             <form py:if="allow_fork" action="${c.app.repo.url()}fork" method="GET">
-              <input type="submit" value="Fork"/>
+              <input type="submit" value="Fork" py:if="c.user != c.user.anonymous()"/>
             </form>
           </py:if>
           <h2>Recent Commits</h2>
