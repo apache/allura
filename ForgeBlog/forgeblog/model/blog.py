@@ -92,7 +92,7 @@ class BlogPost(M.VersionedArtifact):
         slugsafe = ''.join(
             ch.lower()
             for ch in self.title.replace(' ', '-')
-            if ch.isalnum())
+            if ch.isalnum() or ch == '-')
         base = '%s/%s' % (
             self.timestamp.strftime('%Y/%m'),
             slugsafe)

@@ -191,12 +191,12 @@ class RootController(BaseController):
         post = BM.BlogPost()
         for k,v in kw.iteritems():
             setattr(post, k, v)
-        slug = post.make_slug()
+        post.make_slug()
         post.commit()
         M.Thread(discussion_id=post.app_config.discussion_id,
                artifact_reference=post.dump_ref(),
                subject='%s discussion' % post.title)
-        redirect(slug)
+        redirect(post.url())
 
 
     @without_trailing_slash
@@ -291,8 +291,8 @@ class PostController(BaseController):
     @without_trailing_slash
     @expose()
     def revert(self, version):
-        require(has_artifact_access('edit', self.post))
-        orig = self.get_version(version)
+        require(has_artifact_access('write', self.post))
+        orig = self._get_version(version)
         if orig:
             self.post.text = orig.text
         self.post.commit()
