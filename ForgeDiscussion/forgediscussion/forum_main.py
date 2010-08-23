@@ -24,8 +24,13 @@ from forgediscussion import model
 from forgediscussion import version
 from .controllers import RootController
 
+from widgets.admin import OptionsAdmin
+
 
 log = logging.getLogger(__name__)
+
+class W:
+    options_admin = OptionsAdmin()
 
 class ForgeDiscussionApp(Application):
     __version__ = version.__version__
@@ -201,6 +206,14 @@ class ForumAdminController(DefaultAdminController):
     @with_trailing_slash
     def index(self, **kw):
         redirect('forums')
+
+    @expose('forgediscussion.templates.admin_options')
+    def options(self):
+        c.options_admin = W.options_admin
+        return dict(app=self.app,
+                    form_value=dict(
+                        PostingPolicy=self.app.config.options.get('PostingPolicy')
+                    ))
 
     @expose('forgediscussion.templates.admin_forums')
     def forums(self):
