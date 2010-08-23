@@ -135,7 +135,7 @@ class RootController(BaseController):
     @expose('forgeblog.templates.index')
     @with_trailing_slash
     def index(self, **kw):
-        if has_artifact_access('write', None):
+        if has_artifact_access('write', None)():
             posts = BM.BlogPost.query.find(dict(
                     app_config_id=c.app.config._id)).sort('-timestamp')
         else:
