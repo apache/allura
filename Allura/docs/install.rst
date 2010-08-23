@@ -86,9 +86,9 @@ Once this is done, we'll check out & set up out forge codebase::
 
     (anvil)~/src/Ming$ cd ..
     (anvil)~/src$ git clone ssh://engr.geek.net/forge
-    (anvil)~/src$ cd forge/allura
-    (anvil)~/src/forge/allura$ python setup.py develop
-    (anvil)~/src/forge/allura$ cd ../ForgeDiscussion
+    (anvil)~/src$ cd forge/Allura
+    (anvil)~/src/forge/Allura$ python setup.py develop
+    (anvil)~/src/forge/Allura$ cd ../ForgeDiscussion
     (anvil)~/src/forge/ForgeDiscussion$ python setup.py develop
     (anvil)~/src/forge/ForgeDiscussion$ cd ../ForgeMail
     (anvil)~/src/forge/ForgeMail$ python setup.py develop
@@ -137,14 +137,14 @@ Forge "reactor" server
   This is the server that will respond to RabbitMQ messages.  To set it up to
   receive messages, you'll need to run the following commands::
 
-      (anvil)~/src$ cd forge/allura
-      (anvil)~/src/forge/allura$ paster reactor_setup development.ini
-      (anvil)~/src/forge/allura$ paster reactor development.ini
+      (anvil)~/src$ cd forge/Allura
+      (anvil)~/src/forge/Allura$ paster reactor_setup development.ini
+      (anvil)~/src/forge/Allura$ paster reactor development.ini
 
 Forge SMTP server
   This server routes messages from email addresses to tools in the forge::
     
-      (anvil)~/src/forge/allura$ paster smtp_server development.ini
+      (anvil)~/src/forge/Allura$ paster smtp_server development.ini
 
 SOLR server
   This is our search and indexing server.  We have a custom config in
@@ -158,13 +158,13 @@ TurboGears application server
 
 In order to initialize the forge database, you'll need to run the following::
 
-    (anvil)~/src/forge/allura$ paster setup-app development.ini
+    (anvil)~/src/forge/Allura$ paster setup-app development.ini
 
 This shouldn't take too long, but it will start the reactor server doing tons of
 stuff in the background.  It should complete in 5-6 minutes.  Once this is done,
 you can start the application server::
 
-      (anvil)~/src/forge/allura$ paster serve --reload development.ini
+      (anvil)~/src/forge/Allura$ paster serve --reload development.ini
 
 And now you should be able to visit the server running on your 
 `local machine <http://localhost:8080/>`_.
@@ -196,8 +196,8 @@ RabbitMQ
 
       (anvil)~/src$ sudo rabbitmqctl add_vhost vhost_testing
       (anvil)~/src$ sudo rabbitmqctl set_permissions -p vhost_testing testuser ""  ".*" ".*"
-      (anvil)~/src$ cd forge/allura
-      (anvil)~/src/forge/allura$ paster reactor_setup test.ini#main_with_amqp
+      (anvil)~/src$ cd forge/Allura
+      (anvil)~/src/forge/Allura$ paster reactor_setup test.ini#main_with_amqp
 
 SOLR server
   We are using the multicore version of SOLR already, so all the changes to use
@@ -205,9 +205,9 @@ SOLR server
   test.ini.
 
 To actually run the tests, just go to the tool directory you wish to test (or
-to the allura directory) and type::
+to the Allura directory) and type::
 
-    (anvil)~/src/forge/allura$ nosetests
+    (anvil)~/src/forge/Allura$ nosetests
 
 Some options you might find useful for nosetests:
 
