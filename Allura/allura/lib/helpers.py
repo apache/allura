@@ -27,6 +27,8 @@ from webhelpers import date, feedgenerator, html, number, misc, text
 
 from pymongo import bson
 
+from allura.lib import exception as exc
+
 re_path_portion = re.compile(r'^[a-z][-a-z0-9]{2,}$')
 
 def monkeypatch(obj):
@@ -129,10 +131,6 @@ def mixin_reactors(cls, module, prefix=None):
             setattr(cls, prefix + name, staticmethod(value))
 
 
-class NoSuchProjectError(Exception):
-    pass
-
-
 def set_context(project_shortname, mount_point=None, app_config_id=None):
     from allura import model
     p = model.Project.query.get(shortname=project_shortname)
@@ -143,7 +141,7 @@ def set_context(project_shortname, mount_point=None, app_config_id=None):
             pass
 
     if p is None:
-        raise NoSuchProjectError("Couldn't find project %s" %
+        raise exc.NoSuchProjectError("Couldn't find project %s" %
                                  repr(project_shortname))
     c.project = p
 

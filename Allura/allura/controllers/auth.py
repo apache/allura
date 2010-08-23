@@ -240,17 +240,20 @@ class PreferencesController(BaseController):
         c.form = F.subscription_form
         subscriptions = []
         for mb in M.Mailbox.query.find(dict(user_id=c.user._id)):
-            with h.push_context(mb.project_id):
-                if mb.app_config:
-                    subscriptions.append(dict(
-                            _id=mb._id,
-                            project_name=mb.project.name,
-                            mount_point=mb.app_config.options.mount_point,
-                            artifact_title=mb.artifact_title,
-                            topic=mb.topic,
-                            type=mb.type,
-                            frequency=mb.frequency.unit,
-                            artifact=mb.artifact_index_id))
+            try:
+                with h.push_context(mb.project_id):
+                    if mb.app_config:
+                        subscriptions.append(dict(
+                                _id=mb._id,
+                                project_name=mb.project.name,
+                                mount_point=mb.app_config.options.mount_point,
+                                artifact_title=mb.artifact_title,
+                                topic=mb.topic,
+                                type=mb.type,
+                                frequency=mb.frequency.unit,
+                                artifact=mb.artifact_index_id))
+            except exc.NoSuchProjectError:
+                mb.delete() # project went away
         api_token = M.ApiToken.query.get(user_id=c.user._id)
         return dict(subscriptions=subscriptions, api_token=api_token)
 
