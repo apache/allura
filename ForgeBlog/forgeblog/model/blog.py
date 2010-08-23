@@ -115,6 +115,7 @@ class BlogPost(M.VersionedArtifact):
         result.update(
             title_s=self.slug,
             type_s=self.type_s,
+            state_s=self.state,
             snippet_s='%s: %s' % (self.title, h.text.truncate(self.text, 200)),
             text=self.text)
         return result

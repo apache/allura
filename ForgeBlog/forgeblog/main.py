@@ -158,6 +158,7 @@ class RootController(BaseController):
             results = search(
                 q,
                 fq=[
+                    'state_s:published',
                     'is_history_b:%s' % history,
                     'project_id_s:%s' % c.project._id,
                     'mount_point_s:%s'% c.app.config.options.mount_point ])
