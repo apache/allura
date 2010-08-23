@@ -8,7 +8,7 @@
   <ol>
     <py:for each="i, field in enumerate(fields)">
       <li py:if="not isinstance(field,HiddenField)">
-        <label for="$field.name">$field.label:</label>
+        <label py:if="field.show_label" for="$field.name">$field.label:</label>
         ${Markup(c.widget.widget_type.display_field_by_idx(i))}
       </li>
       <py:if test="isinstance(field,HiddenField)">
@@ -17,7 +17,9 @@
     </py:for>
     <li>
       <label>&nbsp;</label>
-      <input type="submit" id="submit" value="$submit_text"/>
+      <py:for each="b in buttons">
+        ${b.display()}
+      </py:for>
     </li>
   </ol>
 </form>

@@ -31,9 +31,11 @@ class SubscriptionForm(ew.SimpleForm):
 
 class SubscribeForm(ew.SimpleForm):
     template='allura.lib.widgets.templates.subscribe'
-    params=['thing','style']
+    params=['thing','style', 'value']
     thing='tool'
     style='text'
+    value=None
+    perform_validation=False
     class fields(ew.WidgetsList):
         subscribe=SubmitButton()
         unsubscribe=SubmitButton()

@@ -53,9 +53,20 @@ class UserTagEdit(ew.InputField):
           });
         ''');
 
+class LabelList(fev.UnicodeString):
+
+    def _to_python(self, value, state):
+        value = super(LabelList, self)._to_python(value, state)
+        return value.split(',')
+
+    def _from_python(self, value, state):
+        value = ','.join(value)
+        value = super(LabelList, self)._from_python(value, state)
+        return value
+
 class LabelEdit(ew.InputField):
     template='genshi:allura.lib.widgets.templates.label_edit'
-    validator = fev.UnicodeString()
+    validator = LabelList()
     params=['name', 'className', 'show_label', 'value']
     show_label=True
     name=None

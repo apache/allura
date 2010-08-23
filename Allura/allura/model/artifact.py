@@ -427,8 +427,8 @@ class Artifact(MappedClass):
             is_history_b=False,
             url_s=self.url(),
             type_s=self.type_s,
-            tags_t=','.join(t['tag'] for t in self.tags),
-            labels_t=','.join(l for l in self.labels),
+            tags_t=' '.join(t['tag'] for t in self.tags),
+            labels_t=' '.join(l for l in self.labels),
             snippet_s='')
 
     def url(self):

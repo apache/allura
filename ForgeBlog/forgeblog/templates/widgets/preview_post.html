@@ -1,0 +1,18 @@
+<div xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:py="http://genshi.edgewall.org/"
+      xmlns:xi="http://www.w3.org/2001/XInclude">
+  <?python
+    from allura.lib.security import has_artifact_access
+    ?>
+  <p>
+    <strong><a href="${value.url()}">$value.title</a></strong>
+    <em>Posted ${h.ago(value.timestamp)}</em>
+    <em py:if="value.state != 'published'">($value.state)</em>
+    <py:if test="has_artifact_access('write', value)()">
+      <a href="${value.url()}edit">Edit</a>
+    </py:if>
+  </p>
+  <strong>Labels:</strong>
+  <a py:for="l in value.labels" href="${c.app.url}search?q=labels_t:$l">$l</a>
+  ${Markup(value.html_text_preview)}
+</div>

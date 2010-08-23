@@ -25,7 +25,11 @@ log = logging.getLogger(__name__)
 
 class {{egg}}App(Application):
     __version__ = version.__version__
+    tool_label='{{egg}}'
+    default_mount_label='{{egg}}'
+    default_mount_point='{{tool_name}}'
     permissions = ['configure', 'read', 'write', 'comment']
+    ordinal=0
     config_options = Application.config_options + [
         ConfigOption('some_str_config_option', str, 'some_str_config_option'),
         ConfigOption('some_int_config_option', int, 42),
@@ -103,11 +107,12 @@ class RootController(BaseController):
         if not q:
             q = ''
         else:
-            search_query = '''%s
-            AND is_history_b:%s
-            AND mount_point_s:%s''' % (
-                q, history, c.app.config.options.mount_point)
-            results = search(search_query)
+            results = search(
+                q,
+                fq=[
+                    'is_history_b:%s' % history,
+                    'project_id_s:%s' % c.project._id,
+                    'mount_point_s:%s'% c.app.config.options.mount_point ])
             if results: count=results.hits
         return dict(q=q, history=history, results=results or [], count=count)
 

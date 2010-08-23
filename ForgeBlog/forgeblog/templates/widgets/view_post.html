@@ -1,0 +1,23 @@
+<div xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:py="http://genshi.edgewall.org/"
+      xmlns:xi="http://www.w3.org/2001/XInclude">
+  <?python
+    from allura.lib.security import has_artifact_access
+    ?>
+  <h2 class="title">$value.title</h2>
+  <div class="actions">
+    <py:if test="has_artifact_access('write', value)()">
+      <a href="edit" class="btn ico-l"><b class="ui-icon ui-icon-pencil"></b> <span>Edit</span></a>
+    </py:if>
+    <a href="history" class="btn ico-l"><b class="ui-icon ui-icon-search"></b> <span>History</span></a>
+    ${c.subscribe_form.display(value=subscribed, action='subscribe', style='icon')}
+    <a href="feed" class="btn ico"><b class="ui-icon ui-icon-signal-diag"></b> <span>RSS</span></a>
+  </div>
+  <em>Posted ${h.ago(value.timestamp)}</em>
+  <em py:if="value.state != 'published'">State: $value.state</em><br/>
+  <strong>Labels:</strong>
+  <a py:for="l in value.labels" href="${c.app.url}search?q=labels_t:$l">$l</a>
+  <div class="content">
+    ${Markup(value.html_text)}
+  </div>
+</div>
