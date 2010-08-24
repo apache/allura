@@ -112,7 +112,7 @@ class EditPost(ew.SimpleForm):
 class NewTopicPost(EditPost):
     template='allura.lib.widgets.templates.new_topic_post'
 
-class _ThreadsTable(ew.SimpleForm):
+class _ThreadsTable(ew.TableField):
     template='allura.lib.widgets.templates.threads_table'
     class hidden_fields(ew.WidgetsList):
         _id=ew.HiddenField(validator=V.Ming(M.Thread))

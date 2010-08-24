@@ -1,7 +1,8 @@
 from nose.tools import assert_raises
 from pylons import c
 
-from allura.lib.helpers import set_context, NoSuchProjectError
+from allura.lib.helpers import set_context
+from allura.lib.exceptions import NoSuchProjectError
 from allura.tests.unit import WithDatabase
 from allura.tests.unit import patches
 from allura.tests.unit.factories import (create_project,

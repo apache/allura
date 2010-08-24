@@ -60,9 +60,9 @@ class TestRootController(TestController):
         assert projects[0].find('img').get('alt') == 'adobe-1 Logo'
         cat_links = response.html.find('div',{'id':'sidebar'}).findAll('li')
         assert len(cat_links) == 3
-        assert cat_links[1].find('a').get('href') == '/adobe/browse/clustering'
-        assert cat_links[1].find('a').get('class') == 'nav_child'
-        assert cat_links[1].find('a').find('span').string == 'Clustering'
+        assert cat_links[0].find('a').get('href') == '/adobe/browse/clustering'
+        assert cat_links[0].find('a').get('class') == 'nav_child'
+        assert cat_links[0].find('a').find('span').string == 'Clustering'
 
     def test_neighborhood_project_browse(self):
         com_cat = M.ProjectCategory.query.find(dict(label='Communications')).first()

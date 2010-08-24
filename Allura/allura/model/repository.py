@@ -145,7 +145,7 @@ class Tree(object):
             try:
                 readme = self.get_blob(fn).text
                 break
-            except AttributeError:
+            except (AttributeError, KeyError), _:
                 readme = ''
         return readme
 
