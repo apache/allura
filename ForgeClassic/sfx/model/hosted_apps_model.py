@@ -1,6 +1,7 @@
 import json
 from itertools import groupby
 
+import tg
 from pylons import c
 import sqlalchemy as sa
 
@@ -82,6 +83,7 @@ class HostedApp(object):
         value = getattr(self, colname)
         value = value.replace('APPTYPE', 'apps')
         value = value.replace('INSTANCE', c.project.get_tool_data('sfx', 'unix_group_name'))
+        value = value.replace('172.29.29.21', tg.config.get('sfx.api.host', 'sourceforge.net'))
         return value
 
     def enable(self, user=None, project=None):
