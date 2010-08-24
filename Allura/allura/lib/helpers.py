@@ -127,9 +127,11 @@ def mixin_reactors(cls, module, prefix=None):
     if prefix is None: prefix = module.__name__ + '.'
     for name in dir(module):
         value = getattr(module, name)
-        if ConsumerDecoration.get_decoration(value, False):
-            setattr(cls, prefix + name, staticmethod(value))
-
+        try:
+            if ConsumerDecoration.get_decoration(value, False):
+                setattr(cls, prefix + name, staticmethod(value))
+        except TypeError:
+            pass
 
 def set_context(project_shortname, mount_point=None, app_config_id=None):
     from allura import model

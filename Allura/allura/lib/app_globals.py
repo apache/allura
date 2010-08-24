@@ -144,6 +144,26 @@ class Globals(object):
     def resource_manager(self):
         return request.environ.get('ew.resource_manager', ew.ResourceManager())
 
+    def register_forge_css(self, href, **kw):
+        self.resource_manager.register(ew.CSSLink('allura/' + href, **kw))
+
+    def register_forge_js(self, href, **kw):
+        self.resource_manager.register(ew.JSLink('allura/' + href, **kw))
+        
+    def register_app_css(self, href, **kw):
+        app = kw.pop('app', c.app)
+        self.resource_manager.register(
+            ew.CSSLink('tool/%s/%s' % (app.config.tool_name, href), **kw))
+
+    def register_app_js(self, href, **kw):
+        app = kw.pop('app', c.app)
+        self.resource_manager.register(
+            ew.JSLink('tool/%s/%s' % (app.config.tool_name, href), **kw))
+
+    def register_js_snippet(self, text, **kw):
+        self.resource_manager.register(
+            ew.JSScript(text))
+
     @property
     def publisher(self):
         from .custom_middleware import environ

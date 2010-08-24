@@ -1,3 +1,5 @@
+import os
+
 import pkg_resources
 
 def register_ew_resources(manager):
@@ -5,3 +7,11 @@ def register_ew_resources(manager):
         'js', pkg_resources.resource_filename('allura', 'lib/widgets/resources/js'))
     manager.register_directory(
         'css', pkg_resources.resource_filename('allura', 'lib/widgets/resources/css'))
+    manager.register_directory(
+        'allura', pkg_resources.resource_filename('allura', 'public'))
+    for ep in pkg_resources.iter_entry_points('allura'):
+        manager.register_directory(
+            'tool/%s' % ep.name,
+            pkg_resources.resource_filename(
+                ep.module_name,
+                os.path.join('nf', ep.name)))
