@@ -21,23 +21,24 @@ class MigrateTest(unittest.TestCase):
         from flyway import runner
         runner.MIGRATION_GRAPH = None
 
+    def _expect_migrations(self, expected):
+        assert set(expected) == set(test_globals.migrations_run), \
+            '%s\n is not \n%s' % (expected, test_globals.migrations_run)
+
     def test_simple(self):
         self.cmd.run(self.args)
-        expected_migrations = [
-            (ab, ver, 'up') for ver in range(10) for ab in 'ab']
-        assert expected_migrations == test_globals.migrations_run
+        self._expect_migrations([
+            (ab, ver, 'up') for ver in range(10) for ab in 'ab'])
 
     def test_only_a(self):
         self.cmd.run(self.args + ['a'])
-        expected_migrations = [
-            ('a', ver, 'up') for ver in range(10) ]
-        assert expected_migrations == test_globals.migrations_run
+        self._expect_migrations([
+                ('a', ver, 'up') for ver in range(10) ])
 
     def test_b_requires_a(self):
         self.cmd.run(self.args + ['b'])
-        expected_migrations = [
-            (ab, ver, 'up') for ver in range(10) for ab in 'ab']
-        assert expected_migrations == test_globals.migrations_run
+        self._expect_migrations([
+                (ab, ver, 'up') for ver in range(10) for ab in 'ab'])
 
     def test_downgrade(self):
         self.cmd.run(self.args)
@@ -48,7 +49,7 @@ class MigrateTest(unittest.TestCase):
         # Migrate a down
         expected_migrations += [
             ('a', 9, 'down'), ('a', 8, 'down'), ('a', 7, 'down'), ('a', 6, 'down') ]
-        assert expected_migrations == test_globals.migrations_run
+        self._expect_migrations(expected_migrations)
 
     def test_downup_migration(self):
         self.cmd.run(self.args + ['a']) # a=9, b=-1 now
@@ -58,5 +59,5 @@ class MigrateTest(unittest.TestCase):
         expected.append(('b', 0, 'up'))
         expected += [
             (ab, ver, 'up') for ver in range(1, 10) for ab in 'ab']
-        assert expected == test_globals.migrations_run
+        self._expect_migrations(expected)
 
