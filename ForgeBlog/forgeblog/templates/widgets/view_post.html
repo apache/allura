@@ -13,11 +13,15 @@
     ${c.subscribe_form.display(value=subscribed, action='subscribe', style='icon')}
     <a href="feed" class="btn ico"><b class="ui-icon ui-icon-signal-diag"></b> <span>RSS</span></a>
   </div>
-  <em>Posted ${h.ago(value.timestamp)}</em>
-  <em py:if="value.state != 'published'">State: $value.state</em><br/>
-  <strong>Labels:</strong>
-  <a py:for="l in value.labels" href="${c.app.url}search?q=labels_t:$l">$l</a>
   <div class="content">
-    ${Markup(value.html_text)}
+    <div class="row">
+      <div class="column grid_12">
+        <em>Posted ${h.ago(value.timestamp)}</em>
+        <em py:if="value.state != 'published'">State: $value.state</em><br/>
+        <strong>Labels:</strong>
+        <span py:for="l in value.labels"><a href="${c.app.url}search?q=labels_t:$l">$l</a> </span>
+        ${Markup(value.html_text)}
+      </div>
+    </div>
   </div>
 </div>

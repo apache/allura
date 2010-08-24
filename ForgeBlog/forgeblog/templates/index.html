@@ -18,10 +18,14 @@
       Recent posts
     </h1>
     <div class="content">
-      <py:for each="i, post in enumerate(posts)">
-        <hr py:if="i != 0"/>
-        ${c.form.display(value=post)}
-      </py:for>
+      <div class="row">
+        <div class="column grid_12">
+          <py:for each="i, post in enumerate(posts)">
+            <hr py:if="i != 0"/>
+            ${c.form.display(value=post)}
+          </py:for>
+        </div>
+      </div>
     </div>
   </body>
 </html>

@@ -4,15 +4,14 @@
   <?python
     from allura.lib.security import has_artifact_access
     ?>
-  <p>
-    <strong><a href="${value.url()}">$value.title</a></strong>
-    <em>Posted ${h.ago(value.timestamp)}</em>
-    <em py:if="value.state != 'published'">($value.state)</em>
-    <py:if test="has_artifact_access('write', value)()">
-      <a href="${value.url()}edit">Edit</a>
-    </py:if>
-  </p>
+  <h3><a href="${value.url()}">$value.title</a></h3>
+  <em>Posted ${h.ago(value.timestamp)}</em>
+  <em py:if="value.state != 'published'">($value.state)</em>
+  <py:if test="has_artifact_access('write', value)()">
+    <a href="${value.url()}edit">Edit</a>
+  </py:if>
+  <br/>
   <strong>Labels:</strong>
-  <a py:for="l in value.labels" href="${c.app.url}search?q=labels_t:$l">$l</a>
+  <span py:for="l in value.labels"><a href="${c.app.url}search?q=labels_t:$l">$l</a> </span>
   ${Markup(value.html_text_preview)}
 </div>
