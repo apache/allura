@@ -13,10 +13,16 @@
 
   <body>
     <h1>$c.project.name / $c.app.config.options.mount_label</h1>
-    <ul>
-      <li py:for="msg in messages">
-        ${msg.timestamp.isoformat(' ')}: ${msg.sender.split('!')[0]}: $msg.text
-      </li>
-    </ul>
+    <div class="content">
+      <div class="row">
+        <div class="column grid_12">
+          <ul>
+            <li py:for="msg in messages">
+              ${msg.timestamp.isoformat(' ')}: ${msg.sender.split('!')[0]}: $msg.text
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
   </body>
 </html>

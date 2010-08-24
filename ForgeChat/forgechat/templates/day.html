@@ -14,14 +14,18 @@
   <body>
     <h1 class="title">$c.project.name / $c.app.config.options.mount_label</h1>
     <div class="content">
-      <h2>Log for ${day.strftime('%Y-%m-%d')}</h2>
-      <a href="$prev">Earlier</a>...
-      <a href="$next">Later</a><br/>
-      <ul>
-        <li py:for="msg in messages" id="$msg._id">
-          ${Markup(msg.html_text)}
-        </li>
-      </ul>
+      <div class="row">
+        <div class="column grid_12">
+          <h2>Log for ${day.strftime('%Y-%m-%d')}</h2>
+          <a href="$prev">Earlier</a>...
+          <a href="$next">Later</a><br/>
+          <ul>
+            <li py:for="msg in messages" id="$msg._id">
+              ${Markup(msg.html_text)}
+            </li>
+          </ul>
+        </div>
+      </div>
     </div>
   </body>
 </html>
