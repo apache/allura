@@ -85,8 +85,9 @@ class MigrateCommand(command.Command):
 
     def _load_migrations(self):
         from .migrate import Migration
+        Migration.migrations_registry.clear()
         for ep in pkg_resources.iter_entry_points(self.entry_point_section):
             self.log.debug('Loading migration module %s', ep.name)
             Migration._current_migrations_module = ep.name
-            ep.load()
+            reload(ep.load())
             Migration._current_migrations_module = None
