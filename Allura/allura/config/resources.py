@@ -8,7 +8,7 @@ def register_ew_resources(manager):
     manager.register_directory(
         'css', pkg_resources.resource_filename('allura', 'lib/widgets/resources/css'))
     manager.register_directory(
-        'allura', pkg_resources.resource_filename('allura', 'public'))
+        'allura', pkg_resources.resource_filename('allura', 'public/nf'))
     for ep in pkg_resources.iter_entry_points('allura'):
         manager.register_directory(
             'tool/%s' % ep.name,

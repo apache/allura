@@ -7,6 +7,7 @@ import logging
 import socket
 import re
 import cgi
+import json
 from urllib import urlencode
 from ConfigParser import RawConfigParser
 from collections import defaultdict
@@ -141,6 +142,10 @@ class Globals(object):
         return self.forge_markdown(wiki=True)
 
     @property
+    def production_mode(self):
+        return asbool(config.get('debug')) == False
+
+    @property
     def resource_manager(self):
         return request.environ.get('ew.resource_manager', ew.ResourceManager())
 
@@ -162,7 +167,7 @@ class Globals(object):
 
     def register_js_snippet(self, text, **kw):
         self.resource_manager.register(
-            ew.JSScript(text))
+            ew.JSScript(text, **kw))
 
     @property
     def publisher(self):
@@ -257,6 +262,11 @@ data       : %r
             return '%s://%s%s?%s' % (request.scheme, request.host, base, params)
         else:
             return '%s://%s%s' % (request.scheme, request.host, base)
+
+    def postload_contents(self):
+        text = '''
+'''
+        return json.dumps(dict(text=text))
 
 class MockAMQ(object):
 

@@ -6,8 +6,10 @@
 
   <xi:include href="master.html" />
 
-  <?python from allura.lib.security import has_artifact_access ?>
-
+  <?python 
+from allura.lib.security import has_artifact_access 
+if allow_config: g.register_app_js('js/custom-fields.js', app=app)
+?>
   <head>
     <meta content="text/html; charset=UTF-8" http-equiv="content-type" py:replace="''"/>
     <title>$c.project.name / $app.config.options.mount_label /  Admin Fields</title>
@@ -78,6 +80,4 @@
       padding:2px;
     }
   </style>
-  <script type="text/javascript" src="${g.app_static('js/custom-fields.js', app=app)}"
-          py:if="allow_config"/>
 </html>

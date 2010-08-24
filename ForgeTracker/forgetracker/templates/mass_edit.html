@@ -6,12 +6,16 @@
 
   <xi:include href="${g.allura_templates}/master.html"/>
 
+  <?python
+g.register_app_css('css/hilite.css')
+g.register_app_css('css/tracker.css')
+?>
+
   <head>
     <meta content="text/html; charset=UTF-8" http-equiv="content-type" py:replace="''"/>
     <title>$c.project.name / $c.app.config.options.mount_label</title>
     <link rel="alternate" type="application/rss+xml" title="RSS" href="feed.rss"/>
     <link rel="alternate" type="application/atom+xml" title="Atom" href="feed.atom"/>
-    <link rel="stylesheet" type="text/css" href="${g.app_static('css/tracker.css')}"/>
     <style type="text/css">
         div.ticket { font-size:160% }
     </style>

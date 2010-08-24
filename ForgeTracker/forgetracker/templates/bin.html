@@ -5,12 +5,14 @@
       xmlns:xi="http://www.w3.org/2001/XInclude">
   <xi:include href="${g.allura_templates}/master.html"/>
 
-  <?python from pprint import pformat ?>
-
+  <?python 
+from pprint import pformat 
+g.register_app_css('css/hilite.css')
+g.register_app_css('css/tracker.css')
+?>
   <head>
     <meta content="text/html; charset=UTF-8" http-equiv="content-type" py:replace="''"/>
     <title>$c.project.name / $c.app.config.options.mount_label / Saved Search Bins</title>
-    <link rel="stylesheet" type="text/css" href="${g.app_static('css/hilite.css')}"/>
     <link rel="alternate" type="application/rss+xml" title="RSS" href="feed.rss"/>
     <link rel="alternate" type="application/atom+xml" title="Atom" href="feed.atom"/>
   </head>

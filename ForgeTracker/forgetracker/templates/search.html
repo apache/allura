@@ -3,15 +3,17 @@
 <html xmlns="http://www.w3.org/1999/xhtml"
       xmlns:py="http://genshi.edgewall.org/"
       xmlns:xi="http://www.w3.org/2001/XInclude">
-  <?python from allura.lib.security import has_artifact_access?>
-
+  <?python 
+from pprint import pformat
+from allura.lib.security import has_artifact_access
+g.register_app_css('css/tracker.css')
+?>
   <xi:include href="master.html" />
   <xi:include href="lib.html" />
 
   <head>
     <meta content="text/html; charset=UTF-8" http-equiv="content-type" py:replace="''"/>
     <title>$c.project.name / $c.app.config.options.mount_label / Search</title>
-    <link rel="stylesheet" type="text/css" href="${g.app_static('css/tracker.css')}"/>
   </head>
   <body>
     <h1 class="title">Search $c.app.config.options.mount_point: $q</h1>

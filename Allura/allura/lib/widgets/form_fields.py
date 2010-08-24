@@ -6,6 +6,9 @@ import json
 from formencode import validators as fev
 import ew
 
+def onready(text):
+    return ew.JSScript('$(document).ready(function(){%s});' % text);
+
 class MarkdownEdit(ew.InputField):
     template='genshi:allura.lib.widgets.templates.markdown_edit'
     validator = fev.UnicodeString()
@@ -15,17 +18,15 @@ class MarkdownEdit(ew.InputField):
     value=None
 
     def resources(self):
-        yield ew.resource.JSLink('js/jquery.markitup.pack.js', compress=False)
+        yield ew.resource.JSLink('js/jquery.markitup.pack.js')
         yield ew.resource.JSLink('js/jquery.markitup.markdown.js')
         yield ew.resource.JSLink('js/sf_markitup.js')
         yield ew.resource.CSSLink('css/markitup.css', compress=False)
         yield ew.resource.CSSLink('css/markitup_markdown.css', compress=False)
         yield ew.resource.CSSLink('css/markitup_sf.css')
-        yield ew.JSScript('''
-          $(window).load(function() {
+        yield onready('''
               markdownSettings.previewParserPath = "/nf/markdown_to_html?project=%s"+
                 "&app=%s";
-          });
         ''' % (c.project and c.project.shortname or '', (c.project and c.app) and c.app.config.options['mount_point'] or ''))
 
 class UserTagEdit(ew.InputField):
@@ -39,15 +40,13 @@ class UserTagEdit(ew.InputField):
 
     def resources(self):
         yield ew.resource.JSLink('js/jquery.tag.editor.js')
-        yield ew.JSScript('''
-        $(window).load(function(){
+        yield onready('''
           $('input.user_tag_edit').tagEditor({
             confirmRemoval: false,
             completeOnSeparator: true,
             completeOnBlur: true
           });
-        });
-        ''')
+        ''');
 
 class LabelEdit(ew.InputField):
     template='genshi:allura.lib.widgets.templates.label_edit'
@@ -60,14 +59,12 @@ class LabelEdit(ew.InputField):
 
     def resources(self):
         yield ew.resource.JSLink('js/jquery.tag.editor.js')
-        yield ew.JSScript('''
-        $(window).load(function(){
+        yield onready('''
           $('input.label_edit').tagEditor({
             confirmRemoval: false,
             completeOnSeparator: true,
             completeOnBlur: true
           });
-        });
         ''')
 
 class ProjectUserSelect(ew.InputField):
@@ -86,8 +83,7 @@ class ProjectUserSelect(ew.InputField):
     def resources(self):
         for r in super(ProjectUserSelect, self).resources(): yield r
         yield ew.resource.CSSLink('css/autocomplete.css')
-        yield ew.JSScript('''
-        $(window).load(function(){
+        yield onready('''
           $('input.project_user_select').autocomplete({
             source: function(request, response) {
               $.ajax({
@@ -102,8 +98,7 @@ class ProjectUserSelect(ew.InputField):
               });
             },
             minLength: 2
-          });
-        });''' % c.project.url())
+          });''' % c.project.url())
 
 class AttachmentList(ew.Widget):
     template='genshi:allura.lib.widgets.templates.attachment_list'
@@ -119,13 +114,12 @@ class AttachmentAdd(ew.Widget):
 
     def resources(self):
         for r in super(AttachmentAdd, self).resources(): yield r
-        yield ew.JSScript('''
-        $(window).load(function(){
+        yield onready('''
             $("input.attachment_form_add_button").click(function(){
                 $(this).hide();
                 $(".attachment_form_fields", this.parentNode).show();
             });
-        });''')
+         ''')
 
 class SubmitButton(ew.SubmitButton):
     attrs={'class':'ui-state-default ui-button ui-button-text'}
@@ -138,8 +132,7 @@ class AutoResizeTextarea(ew.TextArea):
 
     def resources(self):
         yield ew.resource.JSLink('js/jquery.autoresize.min.js')
-        yield ew.JSScript('''
-        $(window).load(function(){
+        yield onready('''
             $('textarea.auto_resize').autoResize({
                 // On resize:
                 onResize : function() {
@@ -154,7 +147,7 @@ class AutoResizeTextarea(ew.TextArea):
                 // More extra space:
                 extraSpace : 0
             });
-        });''')
+        ''')
 
 class PageList(ew.Widget):
     template='genshi:allura.lib.widgets.templates.page_list'
@@ -189,10 +182,9 @@ class PageSize(ew.Widget):
         return url_params
 
     def resources(self):
-        yield ew.JSScript('''
-        $('select.results_per_page').change(function(){
-            this.form.submit();
-        })''')
+        yield onready('''
+            $('select.results_per_page').change(function(){
+                this.form.submit();})''')
 
 class FileChooser(ew.InputField):
     template='genshi:allura.lib.widgets.templates.file_chooser'
@@ -203,8 +195,7 @@ class FileChooser(ew.InputField):
     def resources(self):
         for r in super(FileChooser, self).resources(): yield r
         yield ew.resource.JSLink('js/jquery.file_chooser.js')
-        yield ew.JSScript('''
-        $(document).ready(function(){
+        yield onready('''
             var num_files = 0;
             var chooser = $('input.file_chooser').file();
             chooser.choose(function(e, input) {
@@ -225,5 +216,4 @@ class FileChooser(ew.InputField):
                     this.parentNode.parentNode.removeChild(this.parentNode);
                 });
                 $(holder).append(delete_link);
-            });
-        });''')
+            });''')
