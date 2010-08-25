@@ -3,7 +3,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml"
       xmlns:py="http://genshi.edgewall.org/"
       xmlns:xi="http://www.w3.org/2001/XInclude">
-  <?python from pprint import pformat?>
+  <?python from allura.lib.security import has_artifact_access?>
 
   <xi:include href="master.html" />
   <xi:include href="lib.html" />
@@ -20,17 +20,13 @@
         <div class="column grid_12">
           <form method="GET" action=".">
             ${c.auto_resize_textarea.display(name='q', value=q,
-              attrs={'style':'height:1em; width: 425px'})}<br/>
+              attrs={'style':'height:1em; width: 425px; float: left; margin-right: .5em'})}
             <input type="submit" value="Search"/>
           </form>
-          <form py:if="q" method="GET" action="../bins/newbin">
+          <form py:if="q and has_artifact_access('save_searches')()" method="GET" action="../bins/newbin">
             <input type="submit" value="Save Search"/>
             <input type="hidden" name="q" value="$q"/>
           </form>
-          <div style="clear:both">&nbsp;</div>
-          <a href="${tg.url('../edit/', dict(q=q, limit=limit, sort=sort))}"
-             class="btn"
-             py:if="allow_edit and count != 0">Edit All</a>
           <div style="clear:both"/>
           ${c.ticket_search_results.display(solr_error=solr_error,
             count=count,

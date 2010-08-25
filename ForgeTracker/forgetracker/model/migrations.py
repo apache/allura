@@ -6,7 +6,7 @@ from ming.orm import state
 from pylons import c
 
 from flyway import Migration
-from allura.model import Thread, AppConfig, ArtifactReference
+from allura.model import Thread, AppConfig, ArtifactReference, ProjectRole
 from forgetracker.model import Ticket, Globals
 
 
@@ -75,4 +75,28 @@ class AddShowInSearchAttributeToAllCustomFields(TrackerMigration):
         for tracker_globals in self.ormsession.find(Globals):
             for custom_field in tracker_globals.custom_fields:
                 yield custom_field
+
+
+class AddSaveSearchesPermission(TrackerMigration):
+    version = 2
+
+    def up(self):
+        first_ticket = self.ormsession.find(Ticket).first()
+        if first_ticket:
+            app_config = self.ormsession.get(AppConfig, first_ticket.app_config_id)
+            app_config.acl.save_searches = []
+            developer = self.ormsession.find(ProjectRole, dict(name='Developer')).first()
+            admin = self.ormsession.find(ProjectRole, dict(name='Admin')).first()
+            if developer:
+                app_config.acl.save_searches.append(developer._id)
+            if admin:
+                app_config.acl.save_searches.append(admin._id)
+            self.ormsession.flush()
+
+    def down(self):
+        first_ticket = self.ormsession.find(Ticket).first()
+        if first_ticket:
+            app_config = self.ormsession.get(AppConfig, first_ticket.app_config_id)
+            del app_config.acl.save_searches
+            self.ormsession.flush()
 

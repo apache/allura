@@ -1,27 +1,23 @@
 <div xmlns="http://www.w3.org/1999/xhtml"
   xmlns:py="http://genshi.edgewall.org/">
-  <?python import re?>
   <p py:if="solr_error">${solr_error}</p>
   ${fields['page_list'].display(limit=limit, page=page, count=count)}
-  <p py:if="count==0 and query">No results.</p>
-  <p py:if="count==1 and query">$count result.</p>
-  <p py:if="count > 1 and query">$count results.</p>
   <table py:if="count != 0 and query">
     <thead>
       <tr>
-        <th data-sort="ticket_num_i">Ticket</th>
+        <th data-sort="ticket_num_i">ID</th>
         <th data-sort="status_s">Status</th>
-        <th>Description</th>
-        <th data-sort="assigned_to_s">Assigned To</th>
+        <th>Summary</th>
+        <th data-sort="assigned_to_s">Assigned</th>
         <th data-sort="mod_date_dt">Updated</th>
         <th py:for="field in sortable_custom_fields" data-sort="${field.sortable_name}">${field.label}</th>
       </tr>
     </thead>
     <tbody>
-      <tr py:for="t in tickets">
-        <td><a href="${t.url()}">[#${t.ticket_num}] $t.summary</a></td>
+      <tr py:for="i, t in enumerate(tickets)" class="${i%2 and 'even' or ''}">
+        <td><a href="${t.url()}">[#${t.ticket_num}]</a></td>
         <td class="${t.status}">${t.status}</td>
-        <td>${h.text.truncate(re.sub(r'&lt;[^>]*?>', '', t.description),70)}</td>
+        <td>$t.summary</td>
         <td py:if="t.assigned_to_id">${t.assigned_to.display_name}</td>
         <td py:if="not t.assigned_to_id"></td>
         <td>${h.ago(t.mod_date)}</td>
@@ -29,6 +25,9 @@
       </tr>
     </tbody>
   </table>
+  <p py:if="count==0 and query">No results.</p>
+  <p py:if="count==1 and query">$count result.</p>
+  <p py:if="count > 1 and query">$count results.</p>
   ${fields['page_list'].display(limit=limit, page=page, count=count)}
   ${fields['page_size'].display(limit=limit)}
   <script type="text/javascript">

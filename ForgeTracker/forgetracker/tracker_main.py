@@ -64,7 +64,7 @@ class W:
 
 class ForgeTrackerApp(Application):
     __version__ = version.__version__
-    permissions = ['configure', 'read', 'write',
+    permissions = ['configure', 'read', 'write', 'save_searches',
                     'unmoderated_post', 'post', 'moderate', 'admin']
     searchable=True
     tool_label='Tickets'
@@ -184,6 +184,7 @@ class ForgeTrackerApp(Application):
             unmoderated_post=[role_auth],
             post=[role_anon],
             moderate=[role_developer],
+            save_searches=[role_developer],
             admin=c.project.acl['tool'])
         self.globals = model.Globals(app_config_id=c.app.config._id,
             last_ticket_num=0,
