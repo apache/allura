@@ -113,7 +113,8 @@ class ForgeTrackerApp(Application):
 
     def admin_menu(self):
         admin_url = c.project.url()+'admin/'+self.config.options.mount_point+'/'
-        links = [SitemapEntry('Field Management', admin_url + 'fields', className='nav_child')]
+        links = [SitemapEntry('Field Management', admin_url + 'fields', className='nav_child'),
+                 SitemapEntry('Edit Searches', admin_url + 'bins/', className='nav_child')]
         # if self.permissions and has_artifact_access('configure', app=self)():
         #     links.append(SitemapEntry('Permissions', admin_url + 'permissions', className='nav_child'))
         return links
@@ -153,7 +154,8 @@ class ForgeTrackerApp(Application):
             #links.append(SitemapEntry('Create New Subtask', '{0}new/?super_id={1}'.format(self.config.url(), ticket._id), className='nav_child'))
         if len(search_bins):
             links.append(SitemapEntry('Saved Searches'))
-            links.append(SitemapEntry('All Searches', self.config.url() + 'bins', className='nav_child'))
+            if has_artifact_access('save_searches')():
+                links.append(SitemapEntry('Edit Searches', self.config.url() + 'bins', className='nav_child'))
             links = links + search_bins
         if len(related_artifacts):
             links.append(SitemapEntry('Related Artifacts'))
@@ -216,7 +218,6 @@ class RootController(BaseController):
         setattr(self, 'feed.atom', self.feed)
         setattr(self, 'feed.rss', self.feed)
         self._discuss = AppDiscussionController()
-        self.bins = BinController()
 
     def paged_query(self, q, limit=None, page=0, sort=None, **kw):
         """Query tickets, sorting and paginating the result.
@@ -499,14 +500,16 @@ class RootController(BaseController):
 
 class BinController(BaseController):
 
-    def __init__(self, summary=None):
+    def __init__(self, summary=None, app=None):
         if summary is not None:
             self.summary = summary
+        if app is not None:
+            self.app = app
 
     @with_trailing_slash
     @expose('forgetracker.templates.bin')
     def index(self, **kw):
-        require(has_artifact_access('read'))
+        require(has_artifact_access('save_searches', app=self.app))
         bins = model.Bin.query.find()
         count=0
         count = len(bins)
@@ -515,7 +518,7 @@ class BinController(BaseController):
     @with_trailing_slash
     @expose('forgetracker.templates.bin')
     def bins(self):
-        require(has_artifact_access('read'))
+        require(has_artifact_access('save_searches', app=self.app))
         bins = model.Bin.query.find()
         count=0
         count = len(bins)
@@ -525,9 +528,9 @@ class BinController(BaseController):
     @with_trailing_slash
     @expose('forgetracker.templates.new_bin')
     def newbin(self, q=None, **kw):
-        require(has_artifact_access('write'))
+        require(has_artifact_access('save_searches', app=self.app))
         c.bin_form = W.bin_form
-        return dict(q=q or '', bin=bin or '', modelname='Bin', page='New Bin', globals=c.app.globals)
+        return dict(q=q or '', bin=bin or '', modelname='Bin', page='New Bin', globals=self.app.globals)
         redirect(request.referer)
 
     @with_trailing_slash
@@ -535,20 +538,20 @@ class BinController(BaseController):
     @expose()
     @validate(W.bin_form, error_handler=newbin)
     def save_bin(self, bin_form=None, **post_data):
-        require(has_artifact_access('write'))
-        c.app.globals.invalidate_bin_counts()
+        require(has_artifact_access('save_searches', app=self.app))
+        self.app.globals.invalidate_bin_counts()
         if request.method != 'POST':
             raise Exception('save_bin must be a POST request')
         bin = model.Bin(summary=bin_form['summary'], terms=bin_form['terms'])
-        bin.app_config_id = c.app.config._id
+        bin.app_config_id = self.app.config._id
         bin.custom_fields = dict()
-        redirect('%ssearch/?q=%s' % (c.app.url, bin_form['terms']))
+        redirect('.')
 
     @with_trailing_slash
     @expose()
     def delbin(self, summary=None):
         bin = model.Bin.query.find(dict(summary=summary,)).first()
-        require(has_artifact_access('write', bin))
+        require(has_artifact_access('save_searches', app=self.app))
         c.app.globals.invalidate_bin_counts()
         bin.delete()
         redirect(request.referer)
@@ -805,6 +808,7 @@ class TrackerAdminController(DefaultAdminController):
 
     def __init__(self, app):
         self.app = app
+        self.bins = BinController(app=app)
         if self.app.globals and self.app.globals.milestone_names is None:
             self.app.globals.milestone_names = ''
 

@@ -25,7 +25,7 @@ g.register_app_css('css/tracker.css')
               attrs={'style':'height:1em; width: 425px; float: left; margin-right: .5em'})}
             <input type="submit" value="Search"/>
           </form>
-          <form py:if="q and has_artifact_access('save_searches')()" method="GET" action="../bins/newbin">
+          <form py:if="q and has_artifact_access('save_searches')()" method="GET" action="${c.project.url()+'admin/'+c.app.config.options.mount_point+'/bins/newbin'}">
             <input type="submit" value="Save Search"/>
             <input type="hidden" name="q" value="$q"/>
           </form>
