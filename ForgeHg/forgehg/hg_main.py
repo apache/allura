@@ -57,7 +57,7 @@ class ForgeHgApp(Application):
         ]
     tool_label='Hg'
     default_mount_label='Hg'
-    default_mount_point='hg'
+    default_mount_point='hg1'
     ordinal=3
 
     def __init__(self, project, config):
