@@ -1,0 +1,35 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+                      "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:py="http://genshi.edgewall.org/"
+      xmlns:xi="http://www.w3.org/2001/XInclude">
+
+  <xi:include href="master_one_col.html" />
+
+  <?python from allura.lib.security import has_project_access ?>
+
+  <head>
+    <meta content="text/html; charset=UTF-8" http-equiv="content-type" py:replace="''"/>
+    <title>$c.project.name / Initial Tools</title>
+  </head>
+
+  <body>
+    <h1 class="title">Select Initial Tools for $c.project.shortname</h1>
+    <div class="content">
+      <div class="row">
+        <div class="column grid_12">
+          <p>Please select some initial tools for your project.
+             More may be added later through the "Tools" page.</p>
+          <form method="POST" action="starter_mounts">
+            <input type="checkbox" name="Tickets" checked="checked"/> Tickets<br/>
+            <input type="checkbox" name="Wiki" checked="checked"/> Wiki<br/>
+            <input type="checkbox" name="Discussion" checked="checked"/> Forums<br/>
+            <input type="checkbox" name="Git" checked="checked"/> Git<br/>
+            <input type="checkbox" name="SVN"/> SVN<br/>
+            <input type="submit" value="Save"/>
+          </form>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

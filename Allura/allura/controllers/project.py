@@ -160,10 +160,10 @@ class NeighborhoodController(object):
         if project_description:
             p.short_description = project_description
         flash('Welcome to the SourceForge Beta System!'
-              'To get started, please fill out some information about your '
-              'project. Next, you may want to check out the "Tools" screen '
-              'and install some tools for your project.')
-        redirect(p.script_name + 'admin/overview')
+              'To get started, please select some tools for your project.'
+              'Next, you may want to check out the "Overview" screen '
+              'and fill out some information about your project.')
+        redirect(p.script_name + 'admin/tools_starter')
 
     @expose()
     def icon(self):

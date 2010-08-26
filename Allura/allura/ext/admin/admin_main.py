@@ -147,6 +147,11 @@ class ProjectAdminController(BaseController):
         return dict(categories=categories)
 
     @without_trailing_slash
+    @expose('allura.ext.admin.templates.project_tools_starter')
+    def tools_starter(self, **kw):
+        return dict()
+
+    @without_trailing_slash
     @expose('allura.ext.admin.templates.project_tools')
     def tools(self, **kw):
         tools = [
@@ -332,6 +337,17 @@ class ProjectAdminController(BaseController):
             flash('%s: %s' % (exc.__class__.__name__, exc.args[0]),
                   'error')
         redirect('tools')
+
+    @h.vardec
+    @expose()
+    def starter_mounts(self, **kw):
+        require(has_project_access('tool'))
+        for i, tool in enumerate(kw):
+            h.log_action(log, 'install tool').info(
+                'install tool %s', tool,
+                meta=dict(tool_type=tool, mount_point=(tool.lower() or h.nonce()), mount_label=tool))
+            c.project.install_app(tool, (tool.lower() or h.nonce()), mount_label=tool, ordinal=i)
+        redirect('overview')
 
     @h.vardec
     @expose()
