@@ -55,9 +55,9 @@ class ForgeHgApp(Application):
         ConfigOption('cloned_from_project_id', ObjectId, None),
         ConfigOption('cloned_from_repo_id', ObjectId, None)
         ]
-    tool_label='Hg'
-    default_mount_label='Hg'
-    default_mount_point='hg1'
+    tool_label='Mercurial'
+    default_mount_label='Mercurial'
+    default_mount_point='mercurial'
     ordinal=3
 
     def __init__(self, project, config):
@@ -230,15 +230,17 @@ class RootController(BaseController):
                             in_use=in_use,
                             to_name=to_name or '')
             else:
+                if not to_project.database_configured:
+                    to_project.configure_project_database(is_user_project=True)
+                require(has_project_access('tool', to_project))
                 try:
-                    if not to_project.database_configured:
-                        to_project.configure_project_database(is_user_project=True)
-                    require(has_project_access('tool', to_project))
                     to_project.install_app(
                         'Hg', to_name,
                         cloned_from_project_id=from_project._id,
                         cloned_from_repo_id=from_repo._id)
                     redirect('/'+to_project_name+'/'+to_name+'/')
+                except exc.HTTPRedirection:
+                    raise
                 except Exception, ex:
                     flash(str(ex), 'error')
                     redirect(request.referer)
