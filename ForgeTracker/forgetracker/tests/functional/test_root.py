@@ -60,7 +60,7 @@ class TestFunctionalController(TestController):
     def test_render_ticket(self):
         summary = 'test render ticket'
         ticket_view = self.new_ticket(summary=summary)
-        ticket_view.mustcontain(summary, 'Discussion', 'No posts found')
+        ticket_view.mustcontain(summary, 'Discussion')
     
     def test_render_index(self):
         index_view = self.app.get('/bugs/')

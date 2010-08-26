@@ -6,7 +6,7 @@
  	<div class="content">
  		<div class="row">
  			<div class="column grid_12">
-        <a href="" class="btn ico-l sidebar_thread_reply" py:if="has_artifact_access('post', value)()"><b class="ui-icon ui-icon-arrowreturnthick-1-w"></b> <span>Reply</span></a>
+        <a href="" class="btn ico-l sidebar_thread_reply" py:if="value.find_posts(page=page, limit=limit) and has_artifact_access('post', value)()"><b class="ui-icon ui-icon-arrowreturnthick-1-w"></b> <span>Reply</span></a>
         <py:if test="limit">
           ${widgets.page_list.display(limit=limit, page=page, count=count)}
         </py:if>
@@ -23,7 +23,6 @@
             </li>
           </py:def>
           <py:with vars="posts=value.find_posts(page=page, limit=limit)">
-            <div py:if="not posts" style="clear:both">No posts found</div>
             <py:if test="posts">
               <ul py:for="t in value.create_post_threads(posts)">
                 ${show_post(t['post'], 0, supress_promote=True)}
