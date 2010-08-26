@@ -80,6 +80,9 @@ class ProjectUserSelect(ew.InputField):
           self.value=[self.value]
       super(ProjectUserSelect, self).__init__(**kw)
 
+    def from_python(self, value, state=None):
+        return value
+
     def resources(self):
         for r in super(ProjectUserSelect, self).resources(): yield r
         yield ew.resource.CSSLink('css/autocomplete.css')
