@@ -59,16 +59,22 @@ class EnsureIndexCommand(base.Command):
         from allura import model as M
         self.basic_setup()
         projects = M.Project.query.find().all()
+        base.log.info('Building global indexes')
         for name, cls in MappedClass._registry.iteritems():
-            base.log.info('Building indexes on %s', cls)
             if cls.__mongometa__.session == M.main_orm_session:
+                base.log.info('... for class %s', cls)
                 M.main_orm_session.update_indexes(cls, background=True)
             else:
-                for p in projects:
-                    base.log.info('...for project %s', p.shortname)
-                    c.project = p
-                    if session(cls) is None: continue
-                    session(cls).update_indexes(cls, background=True)
+                continue
+        for p in projects:
+            base.log.info('Building project indexes for %s', p.shortname)
+            for name, cls in MappedClass._registry.iteritems():
+                if cls.__mongometa__.session == M.main_orm_session:
+                    continue
+                base.log.info('... for class %s', cls)
+                c.project = p
+                if session(cls) is None: continue
+                session(cls).update_indexes(cls, background=True)
 
 def build_model_inheritance_graph():
     graph = dict((c, ([], [])) for c in MappedClass._registry.itervalues())
