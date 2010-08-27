@@ -42,13 +42,13 @@ def test_make_users():
 
 def test_make_roles():
     g.set_project('test')
-    g.set_app('hello')
+    g.set_app('wiki')
     u = M.User.anonymous()
     pr = u.project_role()
     assert h.make_roles([pr._id]).next() == pr
 
 def test_context_setters():
-    h.set_context('test', 'hello')
+    h.set_context('test', 'wiki')
     assert c.project is not None
     assert c.app is not None
     cfg_id = c.app.config._id
@@ -59,7 +59,7 @@ def test_context_setters():
     assert c.project is not None
     assert c.app is not None
     c.project = c.app = None
-    with h.push_context('test', 'hello'):
+    with h.push_context('test', 'wiki'):
         assert c.project is not None
         assert c.app is not None
     assert c.project == c.app == None

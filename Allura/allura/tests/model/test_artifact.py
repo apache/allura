@@ -19,7 +19,7 @@ from allura import model as M
 from allura.lib import helpers as h
 from allura.lib.custom_middleware import MagicalC, environ as ENV
 from allura.lib.app_globals import Globals
-from helloforge import model as HM
+from forgewiki import model as WM
 
 class Checkmessage(M.Message):
     class __mongometa__:
@@ -37,10 +37,10 @@ def setUp():
     c._push_object(MagicalC(mock.Mock(), ENV))
     ThreadLocalORMSession.close_all()
     g.set_project('test')
-    g.set_app('hello')
+    g.set_app('wiki')
     Checkmessage.query.remove({})
-    HM.Page.query.remove({})
-    HM.PageHistory.query.remove({})
+    WM.Page.query.remove({})
+    WM.PageHistory.query.remove({})
     M.ArtifactLink.query.remove({})
     c.user = M.User.query.get(username='test-admin')
     Checkmessage.project = c.project
@@ -50,7 +50,7 @@ def tearDown():
     ThreadLocalORMSession.close_all()
 
 def test_artifact():
-    pg = HM.Page(title='TestPage1')
+    pg = WM.Page(title='TestPage1')
     assert pg.project == c.project
     assert pg.project_id == c.project._id
     assert pg.app.config == c.app.config
@@ -73,29 +73,29 @@ def test_artifact():
     assert 'TestPage' in pg.shorthand_id()
 
 def test_artifactlink():
-    pg = HM.Page(title='TestPage2')
+    pg = WM.Page(title='TestPage2')
     q = M.ArtifactLink.query.find(dict(
             project_id=c.project._id,
-            mount_point='hello',
+            mount_point='wiki',
             link=pg.shorthand_id()))
     assert q.count() == 0
     ThreadLocalORMSession.flush_all()
     assert q.count() == 1
     assert M.ArtifactLink.lookup('[TestPage2]')
-    assert M.ArtifactLink.lookup('[hello:TestPage2]')
-    assert M.ArtifactLink.lookup('[hello_forge:TestPage2]')
-    assert M.ArtifactLink.lookup('[/test:hello:TestPage2]')
-    assert M.ArtifactLink.lookup('[../test:hello:TestPage2]')
+    assert M.ArtifactLink.lookup('[wiki:TestPage2]')
+    assert M.ArtifactLink.lookup('[Wiki:TestPage2]')
+    assert M.ArtifactLink.lookup('[/test:wiki:TestPage2]')
+    assert M.ArtifactLink.lookup('[../test:wiki:TestPage2]')
     assert not M.ArtifactLink.lookup('[TestPage2_no_such_page]')
     pg.delete()
     ThreadLocalORMSession.flush_all()
     assert q.count() == 0
 
 def test_gen_messageid():
-    assert re.match(r'[0-9a-zA-Z]*.hello@test.p.sourceforge.net', h.gen_message_id())
+    assert re.match(r'[0-9a-zA-Z]*.wiki@test.p.sourceforge.net', h.gen_message_id())
 
 def test_versioning():
-    pg = HM.Page(title='TestPage3')
+    pg = WM.Page(title='TestPage3')
     pg.commit()
     ThreadLocalORMSession.flush_all()
     pg.text = 'Here is some text'
@@ -111,7 +111,7 @@ def test_versioning():
     assert ss.shorthand_id() == pg.shorthand_id() + '#2'
     assert ss.title == pg.title
     assert ss.text == pg.text
-    assert_raises(IndexError, pg.get_version, 42)
+    assert_raises(ValueError, pg.get_version, 42)
     pg.revert(1)
     pg.commit()
     ThreadLocalORMSession.flush_all()

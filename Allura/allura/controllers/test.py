@@ -129,9 +129,9 @@ class SecurityTests(object):
 class SecurityTest(object):
 
     def __init__(self):
-        from helloforge import model as HM
-        self.page = HM.Page.query.get(title='Root')
-        c.app = c.project.app_instance('hello')
+        from forgewiki import model as WM
+        self.page = WM.Page.query.get(title='Home')
+        c.app = c.project.app_instance('wiki')
 
     @expose()
     def forbidden(self):

@@ -50,7 +50,7 @@ def test_project():
         ThreadLocalORMSession.flush_all()
     except:
         pass
-    c.project.install_app('hello_forge', 'hello-test-mount-point')
+    c.project.install_app('Wiki', 'hello-test-mount-point')
     ThreadLocalORMSession.flush_all()
     c.project.uninstall_app('hello-test-mount-point')
     ThreadLocalORMSession.flush_all()

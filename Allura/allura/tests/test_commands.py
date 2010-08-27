@@ -40,19 +40,19 @@ def test_reactor_callbacks():
     malformed_id = 'foo'
     def test_callback(callback, msg):
         msg.data = dict(project_id=malformed_id,
-                mount_point='hello',
+                mount_point='Wiki',
                 user_id='badf00d')
         callback(msg.data, msg)
         msg.data = dict(project_id=bad_id,
-                mount_point='hello',
+                mount_point='Wiki',
                 user_id='badf00d')
         callback(msg.data, msg)
         msg.data = dict(project_id=ok_id,
-                mount_point='hello',
+                mount_point='Wiki',
                 user_id=M.User.anonymous()._id)
         callback(msg.data, msg)
         msg.data = dict(project_id=ok_id,
-                mount_point='hello')
+                mount_point='Wiki')
         callback(msg.data, msg)
         msg.data = dict(project_id=ok_id)
         callback(msg.data, msg)
@@ -65,25 +65,25 @@ def test_reactor_callbacks():
     cmd.options.proc = 1
     configs = cmd.command()
     g.set_project('test')
-    g.set_app('hello')
-    a_callback = cmd.route_audit('hello_forge', c.app.__class__.auditor)
-    ac_callback = cmd.route_audit('hello_forge', c.app.__class__.class_auditor)
-    r_callback = cmd.route_react('hello_forge', c.app.__class__.reactor1)
-    rc_callback = cmd.route_react('hello_forge', c.app.__class__.reactor3)
+    g.set_app('wiki')
+    # a_callback = cmd.route_audit('Wiki', c.app.__class__.auditor)
+    # ac_callback = cmd.route_audit('Wiki', c.app.__class__.class_auditor)
+    r_callback = cmd.route_react('Wiki', c.app.__class__.reactor)
+    # rc_callback = cmd.route_react('Wiki', c.app.__class__.reactor3)
     msg = mock.Mock()
     msg.ack = lambda:None
     msg.delivery_info = dict(
-        routing_key='hello_forge.test')
-    test_callback(a_callback, msg)
-    test_callback(ac_callback, msg)
+        routing_key='Wiki.test')
+    # test_callback(a_callback, msg)
+    # test_callback(ac_callback, msg)
     test_callback(r_callback, msg)
-    test_callback(rc_callback, msg)
+    # test_callback(rc_callback, msg)
 
 def test_send_message():
     cmd = reactor.SendMessageCommand('send_message')
     cmd.args = [ test_config, 'audit', 'nobody.listening', '{}' ]
     cmd.options = mock.Mock()
-    cmd.options.context = '/p/test/hello/'
+    cmd.options.context = '/p/test/Wiki/'
     cmd.command()
     cmd.options.context = '/p/test/'
     cmd.command()

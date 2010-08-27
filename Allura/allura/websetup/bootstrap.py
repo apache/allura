@@ -163,7 +163,6 @@ def bootstrap(command, conf, vars):
         log.info('Loading test data')
         u_proj = M.Project.query.get(shortname='u/test-admin')
         u_proj.new_subproject('sub1')
-        app = p0.install_app('hello_forge', 'hello')
         app = p0.install_app('SVN', 'src')
         app = p0.install_app('Git', 'src-git')
         app.config.options['type'] = 'git'

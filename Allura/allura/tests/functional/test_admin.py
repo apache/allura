@@ -34,35 +34,35 @@ class TestProjectAdmin(TestController):
         # Add/Remove a tool
         r = self.app.post('/admin/update_mounts', params={
                 'new.install':'install',
-                'new.ep_name':'hello_forge',
+                'new.ep_name':'Wiki',
                 'new.ordinal':1,
                 'new.mount_point':'test-tool',
                 'new.mount_label':'Test Tool'})
         assert 'error' not in r.cookies_set.get('webflash', ''), r.showbrowser()
         # check the nav
-        r = self.app.get('/p/test/test-tool/')
+        r = self.app.get('/p/test/test-tool/').follow()
         active_link = r.html.findAll('li',{'class':' active'})
         assert len(active_link) == 1
         assert active_link[0].find('a')['href'] == '/p/test/test-tool/'
         r = self.app.post('/admin/update_mounts', params={
                 'new.install':'install',
-                'new.ep_name':'hello_forge',
+                'new.ep_name':'Wiki',
                 'new.ordinal':1,
                 'new.mount_point':'test-tool2',
                 'new.mount_label':'Test Tool2'})
         assert 'error' not in r.cookies_set.get('webflash', ''), r.showbrowser()
         # check the nav - the similarly named tool should NOT be active
-        r = self.app.get('/p/test/test-tool/')
+        r = self.app.get('/p/test/test-tool/Home/')
         active_link = r.html.findAll('li',{'class':' active'})
         assert len(active_link) == 1
         assert active_link[0].find('a')['href'] == '/p/test/test-tool/'
-        r = self.app.get('/p/test/test-tool2/')
+        r = self.app.get('/p/test/test-tool2/Home/')
         active_link = r.html.findAll('li',{'class':' active'})
         assert len(active_link) == 1
         assert active_link[0].find('a')['href'] == '/p/test/test-tool2/'
         r = self.app.post('/admin/update_mounts', params={
                 'new.install':'install',
-                'new.ep_name':'hello_forge',
+                'new.ep_name':'Wiki',
                 'new.ordinal':1,
                 'new.mount_point':'test-tool',
                 'new.mount_label':'Test Tool'})
@@ -73,7 +73,7 @@ class TestProjectAdmin(TestController):
                 'new.ep_name':'',
                 })
         # Update ACL
-        h.set_context('test', 'hello')
+        h.set_context('test', 'wiki')
         role = M.User.anonymous().project_role()
         self.app.post('/admin/update_acl', params={
                 'permission':'tool',

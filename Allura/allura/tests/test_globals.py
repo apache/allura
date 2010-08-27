@@ -18,8 +18,8 @@ def test_app_globals():
     g.oid_session()
     g.oid_session()
     g.set_project('test')
-    g.set_app('hello')
-    assert g.app_static('css/style.css') == '/nf/_static_/hello_forge/css/style.css', g.app_static('css/style.css')
+    g.set_app('wiki')
+    assert g.app_static('css/wiki.css') == '/nf/_static_/Wiki/css/wiki.css', g.app_static('css/wiki.css')
     assert g.url('/foo', a='foo bar') == 'http://localhost:80/foo?a=foo+bar', g.url('/foo', a='foo bar')
     assert g.url('/foo') == 'http://localhost:80/foo', g.url('/foo')
 
@@ -27,8 +27,8 @@ def test_app_globals():
 def test_markdown():
     'Just a test to get coverage in our markdown extension'
     g.set_project('test')
-    g.set_app('hello')
-    assert '<a href=' in g.markdown.convert('# Foo!\n[Root]')
+    g.set_app('wiki')
+    assert '<a href=' in g.markdown.convert('# Foo!\n[Home]')
     assert '<a href=' not in g.markdown.convert('# Foo!\n[Rooted]')
     assert '<a href=' in g.markdown.convert('This is http://sf.net')
     tgt = 'http://everything2.com/?node=nate+oostendorp'
@@ -42,7 +42,7 @@ def test_markdown():
     assert '<br' not in g.markdown.convert('Multi\n\nLine')
     r = g.markdown.convert('[[projects]]')
     assert '<div class="border card">' in r, r
-    r = g.markdown.convert('[[include ref=Root id=foo]]')
+    r = g.markdown.convert('[[include ref=Home id=foo]]')
     assert '<div id="foo">' in r, r
     assert 'href="../foo"' in g.markdown.convert('[My foo](foo)')
     assert 'href="..' not in g.markdown.convert('[My foo](./foo)')
@@ -55,11 +55,11 @@ Some text in a regular paragraph
     for i in range(10):
         print i
 ''')
-    assert 'http://localhost/' in  g.forge_markdown(email=True).convert('[Root]')
+    assert 'http://localhost/' in  g.forge_markdown(email=True).convert('[Home]')
 
 def disabled_test_oembed():
     g.set_project('test')
-    g.set_app('hello')
+    g.set_app('wiki')
     urls = [
         'http://www.youtube.com/watch?v=LGRycUpBLS4',
         'http://www.flickr.com/photos/wizardbt/2584979382/',
