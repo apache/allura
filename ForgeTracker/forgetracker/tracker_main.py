@@ -155,7 +155,7 @@ class ForgeTrackerApp(Application):
         if len(search_bins):
             links.append(SitemapEntry('Saved Searches'))
             if has_artifact_access('save_searches')():
-                links.append(SitemapEntry('Edit Searches', self.config.url() + 'bins', className='nav_child'))
+                links.append(SitemapEntry('Edit Searches', c.project.url()+'admin/'+self.config.options.mount_point+'/' + 'bins', className='nav_child'))
             links = links + search_bins
         if len(related_artifacts):
             links.append(SitemapEntry('Related Artifacts'))
