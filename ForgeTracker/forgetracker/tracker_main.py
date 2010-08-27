@@ -316,7 +316,7 @@ class RootController(BaseController):
         'Static page explaining markdown.'
         return dict()
 
-    @expose('forgetracker.templates.help')
+    @expose('jinja:help.html')
     def help(self):
         'Static help page.'
         return dict()

@@ -17,6 +17,7 @@ from tg.configuration import AppConfig, config
 from pylons.middleware import StatusCodeRedirect
 from paste.deploy.converters import asbool
 from routes import Mapper
+import pkg_resources
 
 import sfx.middleware
 import allura
@@ -30,7 +31,7 @@ class ForgeConfig(AppConfig):
         AppConfig.__init__(self)
         self.root_controller = root_controller
         self.package = allura
-        self.renderers = [ 'json', 'genshi', 'mako' ]
+        self.renderers = [ 'json', 'genshi', 'mako', 'jinja' ]
         self.default_renderer = 'genshi'
         self.use_sqlalchemy = False
         self.use_toscawidgets = True
@@ -60,5 +61,21 @@ class ForgeConfig(AppConfig):
         map.connect('*url', controller=self.root_controller,
                     action='routes_placeholder')
         config['routes.map'] = map
+
+    def setup_jinja_renderer(self):
+        self.paths['templates'].append(pkg_resources.resource_filename('forgetracker', 'templates'))
+
+        from jinja2 import ChoiceLoader, Environment, FileSystemLoader
+        from tg.render import render_jinja
+
+        config['pylons.app_globals'].jinja2_env = Environment(loader=ChoiceLoader(
+                 [FileSystemLoader(path) for path in self.paths['templates']]),
+                 auto_reload=self.auto_reload_templates,
+                 extensions=['jinja2.ext.do'])
+        # Jinja's unable to request c's attributes without strict_c
+        config['pylons.strict_c'] = True
+
+        self.render_functions.jinja = render_jinja
+
 
 base_config = ForgeConfig()

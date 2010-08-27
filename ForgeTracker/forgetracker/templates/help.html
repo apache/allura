@@ -1,25 +1,9 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-                      "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:py="http://genshi.edgewall.org/"
-      xmlns:xi="http://www.w3.org/2001/XInclude">
+{% extends 'jinja_master/master.html' %}
 
-  <xi:include href="${g.allura_templates}/master.html"/>
-  <xi:include href="lib.html"/>
+{% block title %}{{c.project.name}} / {{c.app.config.options.mount_label}} / Help{% endblock %}
 
-  <head>
-    <meta content="text/html; charset=UTF-8" http-equiv="content-type" py:replace="''"/>
-    <title>$c.project.name / $c.app.config.options.mount_label / Help</title>
-  </head>
+{% block header %}Tracker Help{% endblock %}
 
-  <body>
-    <h1 class="title">Tracker Help</h1>
-    <div class="content">
-      <div class="row">
-        <div class="column grid_12">
-          <p>Help is coming soon.</p>
-        </div>
-      </div>
-    </div>
-  </body>
-</html>
+{% block content %}
+<p>Help is coming soon.</p>
+{% endblock %}

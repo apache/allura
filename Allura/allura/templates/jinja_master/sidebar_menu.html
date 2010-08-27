@@ -1,0 +1,40 @@
+{% macro sidebar_item(s) -%}
+  {% if s.url %}
+    <li class="{{request.url.find(s.url,-s.url.__len__()) != -1 and 'active' or None}}">
+      <a href="{{s.url}}" class="{{s.className}}{{s.ui_icon and ' ico-l' or ''}}">{% if s.ui_icon %}<b class="ui-icon ui-icon-{{s.ui_icon}}"></b> {% endif %}<span>{{s.label}}</span>{% if s.small != None %}<small>{{s.small}}</small>{% endif %}</a>
+    </li>
+  {% else %}
+    </ul>
+      {% if s.label %}
+        <span class="{{s.className}} nav_head">{% if s.ui_icon %}<span class="ui-icon ui-icon-{{s.ui_icon}}"></span>{% endif %}{{s.label}}</span>
+      {% endif %}
+    <ul class="sidebarmenu">
+  {% endif %}
+{%- endmacro %}
+
+
+<div id="sidebar" class="column grid_2 menu">
+  {% if c.app and c.app.searchable %}
+	<form id="search" method="GET" action="{{c.app.url + 'search/'}}">
+		<input name="q" class="border defaultText" type="text" title="Search {{c.app.config.options.mount_point.title()}}"/>
+	</form>
+  {% else %}
+    <div>&nbsp;</div>
+  {% endif %}
+	<ul class="sidebarmenu">
+    {% if c.custom_sidebar_menu %}
+	    {% for s in c.custom_sidebar_menu %}
+	      {{sidebar_item(s)}}
+      {% endfor %}
+    {% endif %}
+    {% if c.app %}
+	    {% for s in c.app.sidebar_menu() %}
+	      {{sidebar_item(s)}}
+      {% endfor %}
+    {% elif c.project %}
+	    {% for s in c.project.sidebar_menu() %}
+	      {{sidebar_item(s)}}
+      {% endfor %}
+    {% endif %}
+	</ul>
+</div>

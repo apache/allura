@@ -1,0 +1,92 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+          "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+{% do g.register_forge_js('js/jquery-base.js') %}
+{% do g.register_forge_js('js/allura-base.js') %}
+{% if g.production_mode %}
+  {% do g.register_forge_js('js/analytics.js') %}
+{% endif %}
+{% do g.resource_manager.register_widgets(c) %}
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <title>{% block title %}Your title goes here{% endblock %}</title>
+    <meta content="text/html; charset=UTF-8" http-equiv="content-type" py:replace="''"/>
+    {% for blob in g.resource_manager.emit('head_css') %}
+      {{ blob }}
+    {% endfor %}
+    {% for blob in g.resource_manager.emit('head_js') %}
+      {{ blob }}
+    {% endfor %}
+    {% if c.project %}
+      <link rel="stylesheet" type="text/css" media="screen" href="{{c.project.neighborhood.url()+'site_style.css'}}" />
+    {% elif neighborhood %}
+      <link rel="stylesheet" type="text/css" media="screen" href="{{neighborhood.url()+'site_style.css'}}" />
+    {% else %}
+      <link rel="stylesheet" type="text/css" media="screen" href="{{tg.url('/nf/site_style.css')}}" />
+    {% endif %}
+
+    {% block head %}
+    {% endblock %}
+<!--[if lt IE 9]>
+		<link rel="stylesheet" href="/nf/css/forge/ie.css" type="text/css" charset="utf-8">
+<![endif]-->
+<!--[if IE]>
+		<style type="text/css">
+			.sfdl p.hide, .sfdls p.hide {display: none !important;}
+		</style>
+<![endif]-->
+  </head>
+
+  <body>
+    {% for blob in g.resource_manager.emit('body_top_js') %}
+      {{ blob }}
+    {% endfor %}
+    <!-- ${main_menu()} -->
+    <div class="container{{g.document_class(neighborhood)}}">
+			<div id="header">
+	      <div class="row">
+          {% include 'jinja_master/nav_menu.html' %}
+				</div>
+			</div>
+      <div id="section">
+        {% include 'jinja_master/top_nav.html' %}
+				<div class="row base">
+          {% include 'jinja_master/sidebar_menu.html' %}
+          <div class="column grid_10 pad">
+            {% set flash = tg.flash_obj.render('flash', use_js=False) %}
+            {% if flash %}
+              <div>{{flash}}</div>
+            {% endif %}
+            <h1 class="title">{% block header %}{% endblock %}</h1>
+            <div class="content">
+              <div class="row">
+                <div class="column grid_12">
+                  {% block content %}{% endblock %}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      {% include 'jinja_master/footer.html' %}
+    </div>
+    <div id="notifications">
+      {% for n in h.pop_user_notifications() %}
+        <div class="notice">{{ n.text }}</div>
+      {% endfor %}
+    </div>
+    {% for blob in g.resource_manager.emit('body_js') %}
+      {{ blob }}
+    {% endfor %}
+    {% for blob in g.resource_manager.emit('body_js_tail') %}
+      {{ blob }}
+    {% endfor %}
+    <!--! Analytics holder and noscript tag -->
+    <div id="analytics"/>
+    <noscript py:if="g.production_mode">
+      <img src="//secure.quantserve.com/pixel/p-93nPV3-Eb4x22.gif"
+           style="display: none;" border="0" height="1" width="1" alt="Quantcast"/>
+      <img src="http://b.scorecardresearch.com/p?c1=2&amp;c2=6035546&amp;c3=&amp;c4=&amp;c5=&amp;c6=&amp;c15=&amp;cj=1" alt="comScore2" />
+    </noscript>
+    <!--! End analytics -->
+  </body>
+</html>

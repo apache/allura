@@ -1,0 +1,35 @@
+{% if not c.project %}
+  <div id="nav_menu_missing"/>
+{% else %}
+  <div class="column grid_1">
+    {% if c.project.icon %}
+      <img src="{{c.project.url()}}/icon" class="project_icon"/>
+    {% else %}
+      <img src="{{g.forge_static('images/project_default.png')}}" class="project_icon"/>
+    {% endif %}
+  </div>
+  <div class="column grid_9">
+	<h1>
+    {% if c.project.shortname.endswith('--init--') %}
+      <a href="{{c.project.url()}}">{{c.project.neighborhood.name}}</a>
+    {% else %}
+      <a href="{{c.project.url()}}">{{c.project.name}}</a>
+    {% endif %}
+	</h1>
+  </div>
+  <div class="column grid_2">
+    {% if c.project.neighborhood.name not in ['Projects', 'Users'] %}
+	<p class="neighborhood tright">
+		<a href="{{c.project.neighborhood.url()}}">
+			<small>Project by</small><br/>
+			{{c.project.neighborhood.name}}
+          {% if c.project.neighborhood.icon %}
+            <img src="{{c.project.neighborhood.url()}}/icon" alt="{{c.project.neighborhood.name}} Project"/>
+          {% else %}
+            <img src="{{g.forge_static('images/project_default.png')}}" alt="{{c.project.neighborhood.name}} Project"/>
+          {% endif %}
+		</a>
+	</p>
+    {% endif %}
+  </div>
+{% endif %}
