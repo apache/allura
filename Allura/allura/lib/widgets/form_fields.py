@@ -38,6 +38,9 @@ class UserTagEdit(ew.InputField):
     user_tags=None
     className=''
 
+    def from_python(self, value, state=None):
+        return value
+
     def resources(self):
         yield ew.resource.JSLink('js/jquery.tag.editor.js')
         yield onready('''
@@ -56,6 +59,9 @@ class LabelEdit(ew.InputField):
     name=None
     value=None
     className=''
+
+    def from_python(self, value, state=None):
+        return value
 
     def resources(self):
         yield ew.resource.JSLink('js/jquery.tag.editor.js')
