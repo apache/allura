@@ -5,7 +5,6 @@ from pprint import pformat
 from tg import expose, session, flash, redirect, validate, config
 from tg.decorators import with_trailing_slash, without_trailing_slash
 from pylons import c, g, request, response
-from webob import exc
 
 from allura import model as M
 from allura.lib.oid_helper import verify_oid, process_oid
@@ -13,6 +12,7 @@ from allura.lib.security import require_authenticated, has_artifact_access
 from allura.lib import helpers as h
 from allura.lib import plugin
 from allura.lib.widgets import SubscriptionForm
+from allura.lib import exceptions as exc
 from allura.controllers import BaseController
 
 log = logging.getLogger(__name__)
