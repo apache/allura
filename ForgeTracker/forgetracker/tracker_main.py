@@ -553,7 +553,7 @@ class BinController(BaseController):
     def delbin(self, summary=None):
         bin = model.Bin.query.find(dict(summary=summary,)).first()
         require(has_artifact_access('save_searches', app=self.app))
-        c.app.globals.invalidate_bin_counts()
+        self.app.globals.invalidate_bin_counts()
         bin.delete()
         redirect(request.referer)
 
