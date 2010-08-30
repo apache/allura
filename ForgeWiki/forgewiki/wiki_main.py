@@ -215,7 +215,7 @@ class ForgeWikiApp(Application):
                 url = c.app.url + 'markdown_syntax' + '/'
                 p.text = """Welcome to your wiki!
 
-This is the default page, edit it as you see fit. To add a page simply reference it with camel case, e.g.: SamplePage.
+This is the default page, edit it as you see fit. To add a page simply reference it within brackets, e.g.: [SamplePage].
 
 The wiki uses [Markdown](%s) syntax.
 """ % url
