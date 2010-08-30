@@ -122,7 +122,7 @@ class ForgeProcessor(object):
             return link
 
     def _expand_link(self, link):
-        reference = self.alinks[link]
+        reference = self.alinks.get(link)
         if not reference:
             return 'notfound'
         else:
