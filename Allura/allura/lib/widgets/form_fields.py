@@ -27,9 +27,8 @@ class MarkdownEdit(ew.InputField):
         yield ew.resource.CSSLink('css/markitup.css', compress=False)
         yield ew.resource.CSSLink('css/markitup_markdown.css', compress=False)
         yield ew.resource.CSSLink('css/markitup_sf.css')
-        yield onready('''
-              markdownSettings.previewParserPath = "/nf/markdown_to_html?project=%s"+
-                "&app=%s";
+        yield onready('''markdownSettings.previewParserPath = "/nf/markdown_to_html?"+
+                $.param({project:'%s', app:'%s'});
         ''' % (c.project and c.project.shortname or '', (c.project and c.app) and c.app.config.options['mount_point'] or ''))
 
 class UserTagEdit(ew.InputField):
