@@ -278,7 +278,7 @@ class TestFunctionalController(TestController):
         spec = """[{"label":"Priority","type":"select","options":"normal urgent critical"},
                    {"label":"Category","type":"string","options":""}]"""
         spec = urllib.quote_plus(spec)
-        r = self.app.post('/admin/bugs/set_custom_fields', { 'custom_fields': spec, 'status_names': 'aa bb cc', 'milestone_names':'' })
+        r = self.app.post('/admin/bugs/set_custom_fields', { 'custom_fields': spec, 'open_status_names': 'aa bb', 'closed_status_names': 'cc', 'milestone_names':'' })
         kw = {'custom_fields._priority':'normal',
               'custom_fields._category':'helloworld'}
         ticket_view = self.new_ticket(summary='test custom fields', **kw)
@@ -288,7 +288,7 @@ class TestFunctionalController(TestController):
     def test_custom_field_update_comments(self):
         spec = """[{"label":"Number","type":"number","options":""}]"""
         spec = urllib.quote_plus(spec)
-        r = self.app.post('/admin/bugs/set_custom_fields', { 'custom_fields': spec, 'status_names': 'aa bb cc', 'milestone_names':'' })
+        r = self.app.post('/admin/bugs/set_custom_fields', { 'custom_fields': spec, 'open_status_names': 'aa bb', 'closed_status_names': 'cc', 'milestone_names':'' })
         kw = {'custom_fields._number':''}
         ticket_view = self.new_ticket(summary='test custom fields', **kw)
         assert '<strong>custom_field__number</strong>:  --&gt;' not in ticket_view
@@ -322,7 +322,8 @@ class TestFunctionalController(TestController):
     def test_milestone_names(self):
         self.app.post('/admin/bugs/set_custom_fields', {
             'milestone_names': 'aaa bbb ccc',
-            'status_names': 'aa bb cc',
+            'open_status_names': 'aa bb',
+            'closed_status_names': 'cc',
             'custom_fields': {}
         })
         self.new_ticket(summary='test milestone names')
@@ -369,7 +370,7 @@ class TestFunctionalController(TestController):
         # setup a custom sum field
         spec = """[{"label":"Days","type":"sum","options":""}]"""
         spec = urllib.quote_plus(spec)
-        self.app.post('/admin/bugs/set_custom_fields', { 'custom_fields': spec, 'status_names': 'aa bb cc', 'milestone_names':'' })
+        self.app.post('/admin/bugs/set_custom_fields', { 'custom_fields': spec, 'open_status_names': 'aa bb', 'closed_status_names': 'cc', 'milestone_names':'' })
     
         # create three tickets
         kw = {'custom_fields._days':0}

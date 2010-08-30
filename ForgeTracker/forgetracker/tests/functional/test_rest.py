@@ -64,7 +64,7 @@ class TestRestNewTicket(TestRestApiBase):
         ticket_view = self.api_post(
             'new',
             summary=summary,
-            status=self.tracker_globals.status_names.split()[0],
+            status=self.tracker_globals.open_status_names.split()[0],
             labels='',
             description='',
             milestone='',
@@ -82,7 +82,7 @@ class TestRestUpdateTicket(TestRestApiBase):
         ticket_view = self.api_post(
             'new',
             summary=summary,
-            status=self.tracker_globals.status_names.split()[0],
+            status=self.tracker_globals.open_status_names.split()[0],
             labels='',
             description='',
             milestone='',
@@ -125,7 +125,7 @@ class TestRestDiscussion(TestRestApiBase):
         ticket_view = self.api_post(
             'new',
             summary=summary,
-            status=self.tracker_globals.status_names.split()[0],
+            status=self.tracker_globals.open_status_names.split()[0],
             labels='',
             description='',
             milestone='',

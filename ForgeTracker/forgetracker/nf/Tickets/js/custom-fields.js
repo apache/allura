@@ -62,7 +62,8 @@ function save_fields(){
                     join(',') + ']';
         $.post('set_custom_fields', {
             custom_fields: json,
-            status_names: $('#status_names').val(),
+            open_status_names: $('#open_status_names').val(),
+            closed_status_names: $('#closed_status_names').val(),
             milestone_names: $('#milestone_names').val()
         }, function(){
             location.reload();

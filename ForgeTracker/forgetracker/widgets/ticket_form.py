@@ -55,7 +55,7 @@ class GenericTicketForm(ew.SimpleForm):
                 validator=fev.UnicodeString(not_empty=True, messages={'empty':"You must provide a Name"})),
             ffw.MarkdownEdit(label='Description',name='description'),
             ew.SingleSelectField(name='status', label='Status',
-                options=lambda: model.Globals.for_current_tracker().status_names.split()),
+                options=lambda: model.Globals.for_current_tracker().all_status_names.split()),
             ffw.ProjectUserSelect(name='assigned_to', label='Assigned To'),
             ew.SingleSelectField(name='milestone', label='Milestone',
                 options=lambda: [ew.Option(label='None',html_value='',py_value='')] +

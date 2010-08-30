@@ -190,14 +190,15 @@ class ForgeTrackerApp(Application):
             admin=c.project.acl['tool'])
         self.globals = model.Globals(app_config_id=c.app.config._id,
             last_ticket_num=0,
-            status_names='open unread accepted pending closed',
+            open_status_names='open unread accepted pending',
+            closed_status_names='closed wont-fix',
             milestone_names='',
             custom_fields=[])
         c.app.globals.invalidate_bin_counts()
-        bin = model.Bin(summary='Open Tickets', terms='status:open')
+        bin = model.Bin(summary='Open Tickets', terms=self.globals.not_closed_query)
         bin.app_config_id = self.config._id
         bin.custom_fields = dict()
-        bin = model.Bin(summary='Recent Changes', terms='status:open', sort='mod_date_dt desc')
+        bin = model.Bin(summary='Recent Changes', terms=self.globals.not_closed_query, sort='mod_date_dt desc')
         bin.app_config_id = self.config._id
         bin.custom_fields = dict()
 
@@ -273,7 +274,7 @@ class RootController(BaseController):
     @expose('forgetracker.templates.index')
     def index(self, limit=250, **kw):
         require(has_artifact_access('read'))
-        result = self.paged_query('status:open', sort='ticket_num_i desc', limit=int(limit))
+        result = self.paged_query(c.app.globals.not_closed_query, sort='ticket_num_i desc', limit=int(limit))
         c.subscribe_form = W.subscribe_form
         result['subscribed'] = Mailbox.subscribed()
         c.ticket_search_results = W.ticket_search_results
@@ -452,9 +453,10 @@ class RootController(BaseController):
     @expose('forgetracker.templates.stats')
     def stats(self):
         require(has_artifact_access('read'))
+        globals = c.app.globals
         total = model.Ticket.query.find(dict(app_config_id=c.app.config._id)).count()
-        open = model.Ticket.query.find(dict(app_config_id=c.app.config._id,status='open')).count()
-        closed = model.Ticket.query.find(dict(app_config_id=c.app.config._id,status='closed')).count()
+        open = model.Ticket.query.find(dict(app_config_id=c.app.config._id,status={'$in': list(globals.set_of_open_status_names)})).count()
+        closed = model.Ticket.query.find(dict(app_config_id=c.app.config._id,status={'$in': list(globals.set_of_closed_status_names)})).count()
         now = datetime.utcnow()
         week = timedelta(weeks=1)
         fortnight = timedelta(weeks=2)
@@ -469,7 +471,6 @@ class RootController(BaseController):
         week_comments=self.ticket_comments_since(week_ago)
         fortnight_comments=self.ticket_comments_since(fortnight_ago)
         month_comments=self.ticket_comments_since(month_ago)
-        globals = c.app.globals
         c.user_select = ffw.ProjectUserSelect()
         return dict(
                 now=str(now),
@@ -835,7 +836,8 @@ class TrackerAdminController(DefaultAdminController):
     @expose()
     def set_custom_fields(self, **post_data):
         require(has_artifact_access('configure', app=self.app))
-        self.app.globals.status_names=post_data['status_names']
+        self.app.globals.open_status_names=post_data['open_status_names']
+        self.app.globals.closed_status_names=post_data['closed_status_names']
         self.app.globals.milestone_names=post_data['milestone_names']
         data = urllib.unquote_plus(post_data['custom_fields'])
         custom_fields = json.loads(data)

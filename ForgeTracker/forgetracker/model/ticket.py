@@ -30,6 +30,8 @@ class Globals(MappedClass):
     app_config_id = ForeignIdProperty('AppConfig', if_missing=lambda:c.app.config._id)
     last_ticket_num = FieldProperty(int)
     status_names = FieldProperty(str)
+    open_status_names = FieldProperty(str)
+    closed_status_names = FieldProperty(str)
     milestone_names = FieldProperty(str, if_missing='')
     custom_fields = FieldProperty([{str:None}])
     _bin_counts = FieldProperty({str:int})
@@ -42,6 +44,26 @@ class Globals(MappedClass):
             update={'$inc': { 'last_ticket_num': 1}},
             new=True)
         return g.last_ticket_num+1
+
+    @property
+    def all_status_names(self):
+        return ' '.join([self.open_status_names, self.closed_status_names])
+
+    @property
+    def set_of_all_status_names(self):
+        return set([name for name in self.all_status_names.split(' ') if name])
+
+    @property
+    def set_of_open_status_names(self):
+        return set([name for name in self.open_status_names.split(' ') if name])
+
+    @property
+    def set_of_closed_status_names(self):
+        return set([name for name in self.closed_status_names.split(' ') if name])
+
+    @property
+    def not_closed_query(self):
+        return ' && '.join(['!status:'+name for name in self.set_of_closed_status_names])
 
     @property
     def bin_counts(self):
@@ -196,6 +218,10 @@ class Ticket(VersionedArtifact):
     @LazyProperty
     def globals(self):
         return Globals.query.get(app_config_id=self.app_config_id)
+
+    @property
+    def open_or_closed(self):
+        return 'closed' if self.status in c.app.globals.set_of_closed_status_names else 'open'
 
     def commit(self):
         VersionedArtifact.commit(self)

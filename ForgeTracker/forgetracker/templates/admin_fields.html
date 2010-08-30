@@ -30,10 +30,16 @@ if allow_config: g.register_app_js('js/custom-fields.js', app=app)
               </li>
               <hr/>
               <li>
-       				  <label>Status Names:</label>
-       				  <input type="text" name="status_names" id="status_names" value="${globals.status_names}"
+                      <label>Open Statuses:</label>
+                      <input type="text" name="open_status_names" id="open_status_names" value="${globals.open_status_names}"
                        py:if="allow_config"/>
-                <span py:if="not allow_config">${globals.status_names}</span>
+                <span py:if="not allow_config">${globals.open_status_names}</span>
+              </li>
+              <li>
+                      <label>Closed Statuses:</label>
+                      <input type="text" name="closed_status_names" id="closed_status_names" value="${globals.closed_status_names}"
+                       py:if="allow_config"/>
+                <span py:if="not allow_config">${globals.closed_status_names}</span>
               </li>
               <hr/>
               <li>

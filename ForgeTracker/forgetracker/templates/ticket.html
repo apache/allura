@@ -73,7 +73,7 @@ g.register_app_css('css/tracker.css')
                     </span>
                     <hr/>
 
-                    <b>Status:</b> <span class="${ticket.status}">${ticket.status}</span>
+                    <b>Status:</b> <span class="${ticket.open_or_closed}">${ticket.status}</span>
                     <hr/>
                     <b>Milestone:</b> ${ticket.milestone or 'None'}
                     <hr/>
@@ -111,7 +111,7 @@ g.register_app_css('css/tracker.css')
                       </div>
                       <div class="column" style="margin-left:0;width:48%; overflow:auto;">
                         <select name="status">
-                          <option py:for="option in globals.status_names.split()" value="$option"
+                          <option py:for="option in globals.all_status_names.split()" value="$option"
                                   selected="${'selected' if ticket.status==option else None}">$option</option>
                         </select>
                       </div>

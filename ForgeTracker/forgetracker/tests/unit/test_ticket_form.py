@@ -8,7 +8,9 @@ from forgetracker.model import Globals
 
 class TestTicketForm(TrackerTestWithModel):
     def test_it_creates_status_field(self):
-        Globals.for_current_tracker().status_names = 'open closed'
+        g = Globals.for_current_tracker()
+        g.open_status_names = 'open'
+        g.closed_status_names = 'closed'
         ThreadLocalORMSession.flush_all()
         assert self.options_for_field('status') == ['open', 'closed']
 

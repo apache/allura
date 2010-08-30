@@ -40,7 +40,7 @@
         <label for="status">Status:</label>
         <select name="status">
           <option value="" selected="selected">no change</option>
-          <option py:for="option in globals.status_names.split()" value="${option}">$option</option>
+          <option py:for="option in globals.all_status_names.split()" value="${option}">$option</option>
         </select>
       </li>
       <li>
