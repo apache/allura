@@ -21,7 +21,9 @@ def main():
     print '---END---'
     raw_input("Verify that there are no new dependencies, or RPM's are build for all deps...")
     raw_input("Verify that a new sandbox builds starts without engr help...")
-    raw_input('When this is done, create a JIRA ticket (https://engr.geek.net/jira/secure/CreateIssue!default.jspa) with the same contents...')
+    raw_input('When this is done, create a SOG Trac ticket'
+              ' (https://control.sog.geek.net/sog/trac/newticket?keywords=LIAISON) with the'
+              ' same contents...')
     raw_input('Now link the two tickets...')
     newforge_num = raw_input('What is the newforge ticket number? ')
     command('git', 'tag', '-a', '-m', '[#%s] - Push to RE' % newforge_num, tag, 'master')
@@ -48,9 +50,10 @@ def make_ticket_text(engineer):
     else: last_release = ''
     changes = command(
             'git', 'log', "--format=* %h %s", last_release.strip() + '..')
+    assert changes, 'There were no commits found; maybe you forgot to merge dev->master?'
     changes = ''.join(changes)
     prelaunch = []
-    postlaunch = ['* allurapaste ensure_index /var/local/config/production.ini']
+    postlaunch = []
     needs_reactor_setup = raw_input('Does this release require a reactor_setup? [n]')
     needs_flyway = raw_input('Does this release require a migration? [y]')
     if needs_reactor_setup[:1].lower() in ('y', '1'):
@@ -59,17 +62,18 @@ def make_ticket_text(engineer):
         postlaunch.append('* service reactor start')
     if needs_flyway[:1].lower() in ('', 'y', '1'):
         prelaunch.append('* dump the database in case we need to roll back')
-        postlaunch.append('* allurapaste flyway --url mongo://sfn-mongo-1:27017/')
+        postlaunch.append('* allurapaste flyway --url mongo://sfn-mongo:27017/')
     if postlaunch:
         postlaunch = [ 'From sfu-scmprocess-1 do the following:\n' ] + postlaunch
         postlaunch = '\n'.join(postlaunch)
     else:
         postlaunch = '-none-'
     if prelaunch:
-        prelaunch = [ 'From sfn-mongo-1 do the following:\n' ] + prelaunch
+        prelaunch = [ 'From sfn-mongo do the following:\n' ] + prelaunch
         prelaunch = '\n'.join(prelaunch)
     else:
         prelaunch = '-none-'
+    postlaunch.append('* allurapaste ensure_index /var/local/config/production.ini')
     return TICKET_TEMPLATE.substitute(locals()), tag
     
 
@@ -98,7 +102,9 @@ def option(section, key, prompt=None):
         CP.set(section, key, value)
     return value
 
-TICKET_TEMPLATE=string.Template('''
+TICKET_TEMPLATE=string.Template('''{{{
+#!push
+
 (engr) Name of Engineer pushing: $engineer
 (engr) Which code tree(s): allura
 (engr) Is configtree to be pushed?: no
@@ -116,10 +122,8 @@ Post-launch dependencies:
 $postlaunch
 
 (engr) Approved for release (Dean/Dave/John): None
-(sog) Approval for sync provided by (Jacob/Jay/David/Wayne): None
 (sog) Outcome of sync:
+}}}''')
 
-''')
-        
 if __name__ == '__main__':
     main()
