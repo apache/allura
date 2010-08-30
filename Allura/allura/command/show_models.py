@@ -1,9 +1,13 @@
 import sys
+import time
 
-from . import base
+import tg
 from pylons import c
+from paste.deploy.converters import asint
 
 from ming.orm import MappedClass, mapper, ThreadLocalORMSession, session, state
+
+from . import base
 
 class ShowModelsCommand(base.Command):
     min_args=1
@@ -68,6 +72,7 @@ class EnsureIndexCommand(base.Command):
                 continue
         for p in projects:
             if not p.database_configured: continue
+            time.sleep(asint(tg.config.get('ensure_index.sleep', 2)))
             base.log.info('Building project indexes for %s', p.shortname)
             for name, cls in MappedClass._registry.iteritems():
                 if cls.__mongometa__.session == M.main_orm_session:
