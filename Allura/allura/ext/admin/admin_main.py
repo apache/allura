@@ -7,10 +7,11 @@ import Image
 
 import pkg_resources
 from pylons import c, g, request
-from tg import expose, redirect, flash
+from tg import expose, redirect, flash, validate
 from tg.decorators import with_trailing_slash, without_trailing_slash
 from webob import exc
 from pymongo.bson import ObjectId
+from formencode.validators import UnicodeString
 
 
 from allura.app import Application, WidgetController, DefaultAdminController, SitemapEntry
@@ -204,6 +205,10 @@ class ProjectAdminController(BaseController):
         return app.admin, remainder
 
     @expose()
+    @validate(validators=dict(
+            name=UnicodeString(),
+            short_description=UnicodeString(),
+            description=UnicodeString()))
     def update(self, name=None,
                short_description=None,
                description=None,

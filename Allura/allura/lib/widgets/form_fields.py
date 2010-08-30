@@ -17,6 +17,9 @@ class MarkdownEdit(ew.InputField):
     name=None
     value=None
 
+    def from_python(self, value, state=None):
+        return value
+
     def resources(self):
         yield ew.resource.JSLink('js/jquery.markitup.pack.js')
         yield ew.resource.JSLink('js/jquery.markitup.markdown.js')
