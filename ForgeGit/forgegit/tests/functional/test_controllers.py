@@ -24,6 +24,9 @@ class TestRootController(TestController):
         resp = self.app.get('/src-git/').follow().follow()
         assert 'git://' in resp
 
+    def test_log(self):
+        resp = self.app.get('/src-git/ref/master:/log/')
+
     def _get_ci(self):
         resp = self.app.get('/src-git/ref/master:/').follow()
         for tag in resp.html.findAll('a'):
