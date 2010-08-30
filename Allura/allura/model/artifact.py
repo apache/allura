@@ -378,10 +378,13 @@ class Artifact(MappedClass):
     def project_id(self):
         return self.app_config.project_id
 
-    @property
+    @LazyProperty
     def app(self):
-        ac = self.app_config
-        return self.app_config.load()(self.project, self.app_config)
+        if getattr(c, 'app', None) and c.app.config._id == self.app_config._id:
+            return c.app
+        else:
+            ac = self.app_config
+            return self.app_config.load()(self.project, self.app_config)
 
     def give_access(self, *access_types, **kw):
         user = kw.pop('user', c.user)
