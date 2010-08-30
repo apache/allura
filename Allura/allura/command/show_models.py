@@ -67,6 +67,7 @@ class EnsureIndexCommand(base.Command):
             else:
                 continue
         for p in projects:
+            if not p.database_configured: continue
             base.log.info('Building project indexes for %s', p.shortname)
             for name, cls in MappedClass._registry.iteritems():
                 if cls.__mongometa__.session == M.main_orm_session:
