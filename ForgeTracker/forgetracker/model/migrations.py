@@ -110,9 +110,13 @@ class SplitStatusNamesIntoOpenAndClosed(TrackerMigration):
             tracker_globals.open_status_names = ' '.join([name for name in old_names.split(' ') if name and name != 'closed'])
             tracker_globals.closed_status_names = 'closed'
             tracker_globals.status_names = ''
+        self.ormsession.flush()
+        self.ormsession.clear()
 
     def down(self):
         for tracker_globals in self.ormsession.find(Globals):
             tracker_globals.status_names = ' '.join([tracker_globals.open_status_names, tracker_globals.closed_status_names])
             tracker_globals.open_status_names = ''
             tracker_globals.closed_status_names = ''
+        self.ormsession.flush()
+        self.ormsession.clear()
