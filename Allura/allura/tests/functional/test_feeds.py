@@ -60,5 +60,5 @@ class TestFeeds(TestController):
                 description='This is another description'))
         r = self.app.get('/bugs/1/feed.atom')
         assert '=&gt;' in r
-        assert '\n+' in r
+        assert '\n+ ' in r
 

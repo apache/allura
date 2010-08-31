@@ -37,7 +37,6 @@ class MigrateCommand(command.Command):
             connection = Connection(
                 parsed_connection_url['host'],
                 parsed_connection_url['port'])
-            databases = connection.database_names()
             datastores = [ DataStore(self.options.connection_url + db)
                            for db in connection.database_names()
                            if db not in ('admin', 'local')]
@@ -56,6 +55,11 @@ class MigrateCommand(command.Command):
                 reset_migration(ds, dry_run=self.options.dry_run)
             else:
                 run_migration(ds, self._target_versions(), dry_run=self.options.dry_run)
+            try:
+                ds.conn.disconnect()
+                ds._conn = None
+            except: # MIM doesn't do this
+                pass
 
     def _setup_logging(self):
         if self.options.logging_config_file: # pragma no cover
