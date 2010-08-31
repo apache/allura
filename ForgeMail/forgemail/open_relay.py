@@ -1,30 +1,25 @@
 #!/usr/bin/env python
+import os
 import smtpd
 import smtplib
 import asyncore
-from getpass import getpass
-from optparse import OptionParser
+from ConfigParser import ConfigParser
 
 def main():
-    parser = OptionParser()
-    parser.add_option('--host', dest='host')
-    parser.add_option('-p', '--port', dest='port', default=25)
-    parser.add_option('-s', '--ssl', dest='ssl', action='store_true', default=False)
-    parser.add_option('-t', '--tls', dest='tls', action='store_true', default=False)
-    parser.add_option('-l', '--login', dest='login', action='store_true', default=False)
-    (options, args) = parser.parse_args()
-    if options.login:
-        username = raw_input('Username:')
-        password = getpass('Password:')
-    else:
-        username = password = None
-    smtp_client = MailClient(options.host,
-                             int(options.port),
-                             options.ssl,
-                             options.tls,
+    cp = ConfigParser()
+    print cp.read([os.path.join(os.environ['HOME'], '.open_relay.ini')])
+    host = cp.get('open_relay', 'host')
+    port = cp.getint('open_relay', 'port')
+    ssl = cp.getboolean('open_relay', 'ssl')
+    tls = cp.getboolean('open_relay', 'tls')
+    username=cp.get('open_relay', 'username')
+    password = cp.get('open_relay', 'password')
+    smtp_client = MailClient(host,
+                             port,
+                             ssl, tls, 
                              username, password)
-    server = MailServer(('0.0.0.0', 8826), None,
-                        smtp_client=smtp_client)
+    MailServer(('0.0.0.0', 8826), None,
+               smtp_client=smtp_client)
     asyncore.loop()
 
 class MailClient(object):
@@ -36,7 +31,9 @@ class MailClient(object):
         self._connect()
 
     def sendmail(self, mailfrom, rcpttos, data):
+        if str(mailfrom) == 'None': mailfrom = rcpttos[0]
         print 'Sending mail to %s' % rcpttos
+        print 'Sending mail from %s' % mailfrom
         try:
             self._client.sendmail(mailfrom, rcpttos, data)
         except:

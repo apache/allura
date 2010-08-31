@@ -137,7 +137,7 @@ class EmailAddress(MappedClass):
 
     def send_verification_link(self):
         self.nonce = sha256(os.urandom(10)).hexdigest()
-        log.info('Would send verification link to %s', self._id)
+        log.info('Sending verification link to %s', self._id)
         text = '''
 To verify the email address %s belongs to the user %s,
 please visit the following URL:
@@ -145,6 +145,13 @@ please visit the following URL:
     %s
 ''' % (self._id, self.claimed_by_user().username, g.url('/auth/verify_addr', a=self.nonce))
         log.info('Verification email:\n%s', text)
+        g.publish('audit', 'forgemail.send_email', {
+                'destinations':[self._id],
+                'from':self._id,
+                'reply_to':'',
+                'message_id':'',
+                'subject':'Email address verification',
+                'text':text})
     
 class OpenId(MappedClass):
     class __mongometa__:

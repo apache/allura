@@ -14,6 +14,7 @@ from ming.orm import FieldProperty, ForeignIdProperty, RelationProperty
 from allura.model import Artifact, VersionedArtifact, Snapshot, Message, project_orm_session, Project, BaseAttachment
 from allura.model import User, Feed, Thread, Post, Notification
 from allura.lib import helpers as h
+from allura.lib import patience
 from allura.lib.search import search_artifact
 from allura.lib.security import require, has_artifact_access
 
@@ -228,7 +229,9 @@ class Ticket(VersionedArtifact):
         if self.version > 1:
             hist = TicketHistory.query.get(artifact_id=self._id, version=self.version-1)
             old = hist.data
-            changes = ['Ticket %s has been modified: %s' % (self.ticket_num, self.summary)]
+            changes = ['Ticket %s has been modified: %s' % (
+                    self.ticket_num, self.summary),
+                       'Edited By: %s (%s)' % (c.user.display_name, c.user.username)]
             fields = [
                 ('Summary', old.summary, self.summary),
                 ('Status', old.status, self.status) ]
@@ -246,17 +249,25 @@ class Ticket(VersionedArtifact):
                 self.subscribe(user=n)
             if old.description != self.description:
                 changes.append('Description updated:')
-                changes.append(h.diff_text(old.description, self.description))
-            description = '<br>'.join(changes)
-            subject = 'Ticket #%s modified by %s: %s' % (
-                self.ticket_num, c.user.username, self.summary)
+                changes.append('\n'.join(
+                        patience.unified_diff(
+                            a=old.description.split('\n'),
+                            b=self.description.split('\n'),
+                            fromfile='description-old',
+                            tofile='description-new')))
+            description = '\n'.join(changes)
+            subject = 'Ticket #%s modified by %s (%s): %s' % (
+                self.ticket_num, c.user.display_name, c.user.username, self.summary)
         else:
             self.subscribe()
             if self.assigned_to_id:
                 self.subscribe(user=User.query.get(_id=self.assigned_to_id))
-            description = 'Ticket %s created: %s' % (
-                self.ticket_num, self.summary)
-            subject = 'Ticket %s created' % self.ticket_num
+            changes = ['Ticket %s has been created: %s' % (
+                    self.ticket_num, self.summary),
+                       'Created By: %s (%s)' % (c.user.display_name, c.user.username)]
+            description = '\n'.join(changes)
+            subject = 'Ticket #%s created by %s (%s): %s' % (
+                self.ticket_num, c.user.display_name, c.user.username, self.summary)
             Thread(discussion_id=self.app_config.discussion_id,
                    artifact_reference=self.dump_ref(),
                    subject='#%s discussion' % self.ticket_num)

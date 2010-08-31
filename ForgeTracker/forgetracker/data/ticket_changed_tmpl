@@ -10,7 +10,7 @@
 - **${key}**: {% if oldv %}${oldv.display_name} --> {% end %}{% choose %}{% when newv %}${newv.display_name}{% end %}{% otherwise %} nobody {% end %}{% end %}
 {% end %}\
 {% when key == 'labels' %}\
-- **${key}**: ${', '.join(oldv)} --> ${', '.join(newv)}\
+- **${key}**: ${', '.join(oldv)} --> ${', '.join(newv)}
 {% end %}\
 {% otherwise %}\
 - **${key}**: ${oldv} --> ${newv}

@@ -55,49 +55,51 @@
                 </select>
               </li>
             </ol>
-            <!-- <input py:for="i,a in enumerate(c.user.email_addresses)"
-                   name="addr-${i}.ord" value="$i" type="hidden"/>
-            <fieldset>
-              <legend>Email Addresses</legend>
-              <table>
-                <tr>
-                  <th>Primary?</th>
-                  <th>Address</th>
-                  <th>Confirmed</th>
-                  <th></th>
-                </tr>
-                <tr py:for="i, a in enumerate(c.user.email_addresses)"
-                    py:with="obj=c.user.address_object(a)">
-                  <td>${radio_button('primary_addr', None, a, c.user.preferences.email_address)}</td>
-                  <td>$a</td>
-                  <td py:if="obj">
-                    <py:if test="obj.confirmed">yes</py:if>
-                    <py:if test="not obj.confirmed">no 
-                      (<a href="${g.url('/auth/send_verification_link', a=a)}">verify</a>)
-                    </py:if>
-                  </td>
-                  <td py:if="not obj">Unknown addr obj $a</td>
-                  <td>${submit_button('Delete', 'addr-%s.delete' % i)}</td>
-                </tr>
-              </table>
-              ${text_field('new_addr.addr', 'New Address')}
-              ${submit_button('Claim Address', name='new_addr.claim')}
-            </fieldset> -->
-            <fieldset>
-              <legend>OpenIDs Claimed</legend>
-              <table>
-                <tr>
-                  <th>OpenID</th>
-                  <th></th>
-                </tr>
-                <tr py:for="i, oid in enumerate(c.user.open_ids)"
-                    py:with="obj=c.user.openid_object(oid)">
-                  <td>$oid</td>
-                  <td>${submit_button('Delete', 'oid-%s.delete' % i)}</td>
-                </tr>
-              </table>
-              <a href="/auth/claim_oid">Claim New OpenID</a>
-            </fieldset>
+            <py:if test="tg.config.get('auth.method', 'local') == 'local'">
+              <input py:for="i,a in enumerate(c.user.email_addresses)"
+                     name="addr-${i}.ord" value="$i" type="hidden"/>
+              <fieldset>
+                <legend>Email Addresses</legend>
+                <table>
+                  <tr>
+                    <th>Primary?</th>
+                    <th>Address</th>
+                    <th>Confirmed</th>
+                    <th></th>
+                  </tr>
+                  <tr py:for="i, a in enumerate(c.user.email_addresses)"
+                      py:with="obj=c.user.address_object(a)">
+                    <td>${radio_button('primary_addr', None, a, c.user.preferences.email_address)}</td>
+                    <td>$a</td>
+                    <td py:if="obj">
+                      <py:if test="obj.confirmed">yes</py:if>
+                      <py:if test="not obj.confirmed">no 
+                        (<a href="${g.url('/auth/send_verification_link', a=a)}">verify</a>)
+                      </py:if>
+                    </td>
+                    <td py:if="not obj">Unknown addr obj $a</td>
+                    <td>${submit_button('Delete', 'addr-%s.delete' % i)}</td>
+                  </tr>
+                </table>
+                ${text_field('new_addr.addr', 'New Address')}
+                ${submit_button('Claim Address', name='new_addr.claim')}
+              </fieldset>
+              <fieldset>
+                <legend>OpenIDs Claimed</legend>
+                <table>
+                  <tr>
+                    <th>OpenID</th>
+                    <th></th>
+                  </tr>
+                  <tr py:for="i, oid in enumerate(c.user.open_ids)"
+                      py:with="obj=c.user.openid_object(oid)">
+                    <td>$oid</td>
+                    <td>${submit_button('Delete', 'oid-%s.delete' % i)}</td>
+                  </tr>
+                </table>
+                <a href="/auth/claim_oid">Claim New OpenID</a>
+              </fieldset>
+            </py:if>
             ${submit_button('Save Changes')}
           </form>
         </div>
