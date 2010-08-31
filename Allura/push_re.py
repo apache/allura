@@ -63,6 +63,7 @@ def make_ticket_text(engineer):
     if needs_flyway[:1].lower() in ('', 'y', '1'):
         prelaunch.append('* dump the database in case we need to roll back')
         postlaunch.append('* allurapaste flyway --url mongo://sfn-mongo:27017/')
+    postlaunch.append('* allurapaste ensure_index /var/local/config/production.ini')
     if postlaunch:
         postlaunch = [ 'From sfu-scmprocess-1 do the following:\n' ] + postlaunch
         postlaunch = '\n'.join(postlaunch)
@@ -73,7 +74,6 @@ def make_ticket_text(engineer):
         prelaunch = '\n'.join(prelaunch)
     else:
         prelaunch = '-none-'
-    postlaunch.append('* allurapaste ensure_index /var/local/config/production.ini')
     return TICKET_TEMPLATE.substitute(locals()), tag
     
 
