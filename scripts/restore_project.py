@@ -17,14 +17,15 @@ MONGO_DUMP=os.path.join(MONGO_HOME, 'bin/mongodump')
 MONGO_RESTORE=os.path.join(MONGO_HOME, 'bin/mongorestore')
 
 def main():
-    if len(sys.argv) != 3:
-        log.error('Usage: %s <dirname> <new_shortname>', sys.argv[0])
-        return
+    if len(sys.argv) != 4:
+        log.error('Usage: %s <dirname> <new_shortname> <new_unix_group_name>', sys.argv[0])
+        return 2
     dirname = sys.argv[1]
     new_pname = sys.argv[2]
-    restore_project(dirname, new_pname)
+    new_ug_name = sys.argv[3]
+    return restore_project(dirname, new_pname, new_ug_name)
 
-def restore_project(dirname, new_shortname=None):
+def restore_project(dirname, new_shortname, new_unix_group_name):
     log.info('Reloading %s into %s', dirname, new_shortname)
     with open(os.path.join(dirname, 'project.json')) as fp:
         project_doc = json.load(fp, object_hook=object_hook)
@@ -33,13 +34,14 @@ def restore_project(dirname, new_shortname=None):
     st.document = instrument(project_doc, DocumentTracker(st))
     if project is None:
         log.fatal('Project not found')
-        return
+        return 2
     dump_path = os.path.join(dirname, project.database)
     with open(os.path.join(dirname, 'project.json')) as fp:
         project_doc = json.load(fp, object_hook=object_hook)
     st = state(project)
     st.document = instrument(project_doc, DocumentTracker(st))
     project.shortname = new_shortname
+    project.set_tool_data('sfx', 'unix_group_name', new_unix_group_name)
     project.database = 'project:' + new_shortname.replace('/', ':').replace('-', '_')
     project.deleted = False
     conn = M.main_doc_session.bind.conn
@@ -53,6 +55,7 @@ def restore_project(dirname, new_shortname=None):
     session(project).flush()
     reindex= ReindexCommand('reindex')
     reindex.run(['--project', new_shortname])
+    return 0
 
 if __name__ == '__main__':
-    main()
+    sys.exit(main())

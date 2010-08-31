@@ -19,13 +19,13 @@ MONGO_RESTORE=os.path.join(MONGO_HOME, 'bin/mongorestore')
 def main():
     if len(sys.argv) not in (2,3):
         log.error('Usage: %s <shortname> [<backup_dir>]', sys.argv[0])
-        return
+        return 1
     pname = sys.argv[1]
     project = M.Project.query.get(shortname=pname)
     if project is None:
         log.fatal('Project %s not found', pname)
         print 'Project %s not found' % pname
-        return
+        return 2
     if len(sys.argv) == 3:
         backup_dir = sys.argv[2]
     else:
@@ -36,6 +36,7 @@ def main():
             os.getcwd(), dirname)
     log.info('Backing up %s to %s', pname, backup_dir)
     dump_project(project, backup_dir)
+    return 0
 
 def dump_project(project, dirname):
     os.system('%s --db %s -o %s' % (
@@ -44,4 +45,4 @@ def dump_project(project, dirname):
         json.dump(state(project).document, fp, default=default)
 
 if __name__ == '__main__':
-    main()
+    sys.exit(main())

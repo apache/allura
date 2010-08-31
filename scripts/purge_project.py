@@ -19,13 +19,13 @@ MONGO_RESTORE=os.path.join(MONGO_HOME, 'bin/mongorestore')
 def main():
     if len(sys.argv) != 2:
         log.error('Usage: %s <shortname>', sys.argv[0])
-        return
+        return 1
     pname = sys.argv[1]
     log.info('Purging %s', pname)
     project = M.Project.query.get(shortname=pname)
     if project is None:
         log.fatal('Project %s not found', pname)
-        return
+        return 2
     purge_project(project)
 
 def purge_project(project):
@@ -36,4 +36,4 @@ def purge_project(project):
     session(project).flush()
 
 if __name__ == '__main__':
-    main()
+    sys.exit(main())
