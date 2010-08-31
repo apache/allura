@@ -14,7 +14,7 @@ def main():
     engineer = option('re', 'engineer', 'Name of engineer pushing: ')
     text, tag = make_ticket_text(engineer)
     print '*** Create a ticket on SourceForge (https://sourceforge.net/p/allura/tickets/new/) with the following contents:'
-    print '*** Summary: Production Push (R:%s, D:%s)' % (
+    print '*** Summary: Production Push (R:%s, D:%s) - allura' % (
         tag, date.today().strftime('%Y%m%d'))
     print '---BEGIN---'
     print text
