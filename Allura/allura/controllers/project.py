@@ -79,9 +79,12 @@ class NeighborhoodController(object):
                 return ProjectController()._lookup(pname, *remainder)
         if project.database_configured == False:
             if c.user.username == pname:
-                log.info('Configuring %s database for access to %r',
-                         pname, remainder)
-                project.configure_project_database(is_user_project=True)
+                if remainder == ('user_icon',):
+                    redirect(g.forge_static('images/user.png'))
+                else:
+                    log.info('Configuring %s database for access to %r',
+                             pname, remainder)
+                    project.configure_project_database(is_user_project=True)
             else:
                 raise exc.HTTPNotFound, pname
         c.project = project
