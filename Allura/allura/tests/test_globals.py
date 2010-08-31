@@ -57,7 +57,7 @@ Some text in a regular paragraph
 ''')
     assert 'http://localhost/' in  g.forge_markdown(email=True).convert('[Home]')
 
-def disabled_test_oembed():
+def _disabled_test_oembed():
     g.set_project('test')
     g.set_app('wiki')
     urls = [
