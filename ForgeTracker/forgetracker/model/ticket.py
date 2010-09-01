@@ -82,10 +82,6 @@ class Globals(MappedClass):
         '''
         self._bin_counts_expire = datetime.utcnow() + timedelta(seconds=5)
 
-    @classmethod
-    def for_current_tracker(cls):
-        return cls.query.get(app_config_id=c.app.config._id)
-
     def sortable_custom_fields_shown_in_search(self):
         return [dict(sortable_name='%s_s' % field.name,
                      name=field.name,

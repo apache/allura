@@ -64,9 +64,8 @@ def create_colors_are_wrong_ticket():
 
 
 def set_tracker_custom_fields(custom_fields):
-    tracker_globals = Globals.for_current_tracker()
-    tracker_globals.custom_fields = custom_fields
-    session(tracker_globals).flush()
+    c.app.globals.custom_fields = custom_fields
+    session(c.app.globals).flush()
 
 
 def create_ticket(summary, custom_fields):

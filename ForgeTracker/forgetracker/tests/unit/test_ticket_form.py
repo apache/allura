@@ -1,6 +1,8 @@
 from mock import patch
 from ming.orm.ormsession import ThreadLocalORMSession
 
+from pylons import c
+
 from forgetracker.tests.unit import TrackerTestWithModel
 from forgetracker.widgets import ticket_form
 from forgetracker.model import Globals
@@ -8,7 +10,7 @@ from forgetracker.model import Globals
 
 class TestTicketForm(TrackerTestWithModel):
     def test_it_creates_status_field(self):
-        g = Globals.for_current_tracker()
+        g = c.app.globals
         g.open_status_names = 'open'
         g.closed_status_names = 'closed'
         ThreadLocalORMSession.flush_all()
@@ -16,7 +18,7 @@ class TestTicketForm(TrackerTestWithModel):
 
     @patch('ew.Option')
     def test_it_creates_milestone_field(self, option_class):
-        Globals.for_current_tracker().milestone_names = 'release1 release2'
+        c.app.globals.milestone_names = 'release1 release2'
         ThreadLocalORMSession.flush_all()
         none_option = option_class()
         assert self.options_for_field('milestone') == [none_option, 'release1', 'release2']

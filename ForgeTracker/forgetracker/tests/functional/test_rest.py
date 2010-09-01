@@ -3,6 +3,8 @@ from datetime import datetime, timedelta
 from formencode import variabledecode
 import json
 
+from pylons import c
+
 from ming.orm import session
 
 from allura import model as M
@@ -20,7 +22,7 @@ class TestRestApiBase(TestController):
         h.set_context('test', 'bugs')
         user = M.User.query.get(username='test-admin')
         self.token = M.ApiToken(user_id=user._id)
-        self.tracker_globals = TM.Globals.for_current_tracker()
+        self.tracker_globals = c.app.globals
         session(self.token).flush()
         self.mount_point = '/rest/p/test/bugs/'
 

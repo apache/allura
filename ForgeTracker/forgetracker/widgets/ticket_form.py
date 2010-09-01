@@ -11,7 +11,7 @@ class TicketCustomFields(ew.CompoundField):
     @property
     def fields(self):
         fields = []
-        for field in model.Globals.for_current_tracker().custom_fields:
+        for field in c.app.globals.custom_fields:
             if field.type == 'select':
                 options = []
                 for opt in field.options.split():
@@ -55,11 +55,11 @@ class GenericTicketForm(ew.SimpleForm):
                 validator=fev.UnicodeString(not_empty=True, messages={'empty':"You must provide a Name"})),
             ffw.MarkdownEdit(label='Description',name='description'),
             ew.SingleSelectField(name='status', label='Status',
-                options=lambda: model.Globals.for_current_tracker().all_status_names.split()),
+                options=lambda: c.app.globals.all_status_names.split()),
             ffw.ProjectUserSelect(name='assigned_to', label='Assigned To'),
             ew.SingleSelectField(name='milestone', label='Milestone',
                 options=lambda: [ew.Option(label='None',html_value='',py_value='')] +
-                                model.Globals.for_current_tracker().milestone_names.split()),
+                                c.app.globals.milestone_names.split()),
             ffw.LabelEdit(label='Tags',name='labels', className='ticket_form_tags'),
             ffw.FileChooser(name='attachment', label='Attachment', field_type='file', validator=fev.FieldStorageUploadConverter(if_missing=None)),
             ew.SubmitButton(label=self.submit_text,name='submit',
@@ -73,7 +73,7 @@ class TicketForm(GenericTicketForm):
     @property
     def fields(self):
         fields = super(TicketForm, self).fields
-        if model.Globals.for_current_tracker().custom_fields:
+        if c.app.globals.custom_fields:
             fields.append(TicketCustomFields(name="custom_fields"))
         return fields
 
@@ -83,7 +83,7 @@ class EditTicketForm(GenericTicketForm):
     @property
     def fields(self):
         fields = super(EditTicketForm, self).fields
-        if model.Globals.for_current_tracker().custom_fields:
+        if c.app.globals.custom_fields:
             fields.append(EditTicketCustomFields(name="custom_fields"))
         return fields
     def resources(self):

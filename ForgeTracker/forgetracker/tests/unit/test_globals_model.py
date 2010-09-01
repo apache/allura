@@ -14,9 +14,9 @@ class TestGlobalsModel(TrackerTestWithModel):
 
     def test_it_has_current_tracker_globals(self):
         bugs_globals = Globals.query.get(app_config_id=c.app.config._id)
-        assert Globals.for_current_tracker() == bugs_globals
+        assert c.app.globals == bugs_globals
         h.set_context('test', 'doc-bugs')
-        assert Globals.for_current_tracker() != bugs_globals
+        assert c.app.globals != bugs_globals
 
     def test_next_ticket_number_increments(self):
         assert Globals.next_ticket_num() == 1
@@ -44,9 +44,7 @@ class TestCustomFields(TrackerTestWithModel):
 
 
 def globals_with_custom_fields(custom_fields):
-    tracker_globals = Globals.for_current_tracker()
-    tracker_globals.custom_fields = custom_fields
+    c.app.globals.custom_fields = custom_fields
     ThreadLocalORMSession.flush_all()
-    tracker_globals = Globals.for_current_tracker()
-    return tracker_globals
+    return c.app.globals
 
