@@ -7,7 +7,7 @@ from formencode import validators as fev
 import ew
 
 def onready(text):
-    return ew.JSScript('$(document).ready(function(){%s});' % text);
+    return ew.JSScript('$(function(){%s});' % text);
 
 class MarkdownEdit(ew.InputField):
     template='genshi:allura.lib.widgets.templates.markdown_edit'

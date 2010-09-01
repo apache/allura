@@ -1,5 +1,5 @@
 var _gaq = _gaq || [];
-$(document).ready(function() {
+$(function() {
     var holder = $('#analytics');
     // Google
     _gaq.push(['_setAccount', 'UA-32013-6'], ['_trackPageview']);
