@@ -1,9 +1,9 @@
 import ew
 from allura.lib.widgets import form_fields as ffw
 
-class SVNLog(ew.SimpleForm):
+class SVNLog(ew.Widget):
     template='genshi:forgesvn.widgets.templates.log'
-    params=['value', 'limit', 'page', 'count', 'show_paging']
+    params=['value', 'limit', 'page', 'count', 'show_paging', 'fields']
     value=None
     limit=None
     page=0
