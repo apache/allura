@@ -21,7 +21,7 @@ def main():
         q = TM.Globals.query.find()
         if not q.count(): continue
         for g in q:
-            old_names = g.status_names.split()
+            old_names = g.status_names.split() or ['open', 'closed']
             if g.open_status_names is None:
                 g.open_status_names = ' '.join(
                     name for name in old_names if name != 'closed')
