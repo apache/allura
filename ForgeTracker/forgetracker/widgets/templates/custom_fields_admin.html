@@ -1,0 +1,15 @@
+<div xmlns="http://www.w3.org/1999/xhtml"
+     xmlns:py="http://genshi.edgewall.org/">
+  <div>
+    <p id="has_fields_message">Drag and drop the fields to re-order.</p>
+    <p id="no_fields_message">No custom fields have been created.</p>
+  </div>
+  <div id="custom-field-list">
+    <py:for each="i,v in enumerate(value)"
+            py:with="ctx=c.widget.context_for(i)">
+      ${field.display(attrs={'class':'custom-field'}, **ctx)}
+    </py:for>
+    ${field.display(name=name+'#', attrs={'class':'custom-field-stub ui-helper-hidden'})}
+    <hr/>
+  </div>
+</div>

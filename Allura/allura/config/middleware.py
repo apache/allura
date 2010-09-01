@@ -77,8 +77,8 @@ def _make_core_app(root, global_conf, full_stack=True, **app_conf):
 
     app = ew.ResourceMiddleware(
         app,
-        # compress=not asbool(global_conf['debug']),
-        compress=True,
+        compress=not asbool(global_conf['debug']),
+        # compress=True,
         script_name=app_conf.get('ew.script_name', '/_ew_resources/'),
         url_base=app_conf.get('ew.url_base', '/_ew_resources/'))
 

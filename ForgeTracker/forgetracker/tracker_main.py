@@ -36,6 +36,7 @@ from forgetracker import version
 from forgetracker.widgets.ticket_form import TicketForm, EditTicketForm
 from forgetracker.widgets.bin_form import BinForm
 from forgetracker.widgets.ticket_search import TicketSearchResults, MassEdit
+from forgetracker.widgets.admin_custom_fields import TrackerFieldAdmin, TrackerFieldDisplay
 
 log = logging.getLogger(__name__)
 
@@ -55,6 +56,8 @@ class W:
     auto_resize_textarea = ffw.AutoResizeTextarea()
     file_chooser = ffw.FileChooser()
     ticket_subscribe_form = SubscribeForm(thing='ticket')
+    field_admin = TrackerFieldAdmin()
+    field_display = TrackerFieldDisplay()
 
 class ForgeTrackerApp(Application):
     __version__ = version.__version__
@@ -834,8 +837,13 @@ class TrackerAdminController(DefaultAdminController):
     @without_trailing_slash
     @expose('forgetracker.templates.admin_fields')
     def fields(self):
-        return dict(app=self.app, globals=self.app.globals,
-                    allow_config=has_artifact_access('configure', app=self.app)())
+        allow_config=has_artifact_access('configure', app=self.app)()
+        if allow_config:
+            c.form = W.field_admin
+        else:
+            c.form = W.field_display
+        return dict(app=self.app, globals=self.app.globals)
+
 
     @without_trailing_slash
     @expose('forgetracker.templates.admin_permissions')
@@ -848,18 +856,19 @@ class TrackerAdminController(DefaultAdminController):
         pass
 
     @expose()
+    @h.vardec
     def set_custom_fields(self, **post_data):
         require(has_artifact_access('configure', app=self.app))
         self.app.globals.open_status_names=post_data['open_status_names']
         self.app.globals.closed_status_names=post_data['closed_status_names']
         self.app.globals.milestone_names=post_data['milestone_names']
-        data = urllib.unquote_plus(post_data['custom_fields'])
-        custom_fields = json.loads(data)
+        custom_fields = post_data['custom_fields']
         for field in custom_fields:
             field['name'] = '_' + '_'.join([w for w in NONALNUM_RE.split(field['label'].lower()) if w])
             field['label'] = field['label'].title()
         self.app.globals.custom_fields=custom_fields
         flash('Fields updated')
+        redirect(request.referer)
 
 class RootRestController(BaseController):
 

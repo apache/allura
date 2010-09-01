@@ -82,7 +82,7 @@ def find_executable(exe_name):
     for dirname in os.environ['PATH'].split(os.pathsep):
         path = os.path.join(dirname, exe_name)
         if os.access(path, os.X_OK): return path
-    
+
 def make_neighborhoods(uids):
     from allura import model as M
     result = (M.Neighborhood.query.get(_id=uid) for uid in uids)
