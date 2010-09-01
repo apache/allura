@@ -35,7 +35,7 @@ def restore_labels(obj, test=True):
     if not obj.labels: return
     labels = obj.labels
     while True:
-        if labels[0] != '[': return
+        if not labels or labels[0] != '[': return
         lbllen = map(len, labels)
         if max(lbllen) != 1: return
         if min(lbllen) != 1: return
