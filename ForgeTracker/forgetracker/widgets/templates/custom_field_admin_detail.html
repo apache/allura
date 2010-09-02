@@ -1,0 +1,14 @@
+<div xmlns="http://www.w3.org/1999/xhtml"
+     xmlns:py="http://genshi.edgewall.org/"
+     xmlns:xi="http://www.w3.org/2001/XInclude"
+     class="$container_cls">
+  <py:with vars="ctx=c.widget.context_for(selector.name)">
+    ${selector.display(css_class=selector_cls, **ctx)}
+  </py:with>
+  <div py:for="name, field in states.iteritems()"
+       py:with="ctx=c.widget.context_for(field.name)"
+       class="$field_cls"
+       data-name="$name">
+    ${field.display(**ctx)}
+  </div>
+</div>

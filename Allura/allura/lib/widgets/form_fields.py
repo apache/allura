@@ -239,3 +239,100 @@ class FileChooser(ew.InputField):
                 });
                 $(holder).append(delete_link);
             });''')
+
+class JQueryMixin(object):
+    js_widget_name = None
+    js_plugin_file = None
+    js_params = [
+        'container_cls'
+        ]
+    container_cls = 'container'
+
+    def resources(self):
+        for r in super(JQueryMixin, self).resources():
+            yield r
+        if self.js_plugin_file is not None: yield self.js_plugin_file
+        opts = dict(
+            (k, getattr(self, k))
+            for k in self.js_params )
+        yield onready('''
+$(document).bind('clone', function () {
+    $('.%s').%s(%s) });
+$(document).trigger('clone');
+            ''' % (self.container_cls, self.js_widget_name, json.dumps(opts)));
+
+class SortableRepeatedMixin(JQueryMixin):
+    js_widget_name = 'SortableRepeatedField'
+    js_plugin_file = ew.JSLink('js/sortable_repeated_field.js')
+    js_params = JQueryMixin.js_params + [
+        'field_cls',
+        'flist_cls',
+        'stub_cls',
+        'msg_cls',
+        ]
+    params = js_params + [
+        'button',
+        'empty_msg',
+        'nonempty_msg'
+        ]
+    container_cls='sortable-repeated-field'
+    field_cls='sortable-field'
+    flist_cls='sortable-field-list'
+    stub_cls='sortable-field-stub'
+    msg_cls='sortable-field-message'
+    button =  ew.InputField(
+        css_class='add', field_type='button', value='New Field')
+    empty_msg='No fields have been defined'
+    nonempty_msg='Drag and drop the fields to reorder'
+    repetitions=0
+
+class SortableRepeatedField(SortableRepeatedMixin, ew.RepeatedField):
+    template='genshi:allura.lib.widgets.templates.sortable_repeated_field'
+
+class SortableTable(SortableRepeatedMixin, ew.TableField):
+    template='genshi:allura.lib.widgets.templates.sortable_table'
+
+class StateField(JQueryMixin, ew.CompoundField):
+    template='genshi:allura.lib.widgets.templates.state_field'
+    js_widget_name = 'StateField'
+    js_plugin_file = ew.JSLink('js/state_field.js')
+    js_params = JQueryMixin.js_params + [
+        'selector_cls',
+        'field_cls',
+        ]
+    params = js_params + [ 'selector', 'states' ]
+    container_cls='state-field-container'
+    selector_cls='state-field-selector'
+    field_cls='state-field'
+    show_label=False
+    selector = None
+    states = {}
+
+    @property
+    def fields(self):
+        return [self.selector] + self.states.values()
+
+class DateField(JQueryMixin, ew.InputField):
+    js_widget_name = 'datepicker'
+    js_params = JQueryMixin.js_params
+    params = js_params
+    container_cls = 'ui-date-field'
+    css_class = 'ui-date-field'
+
+class FieldCluster(ew.CompoundField):
+    template='genshi:allura.lib.widgets.templates.field_cluster'
+
+class AdminField(ew.InputField):
+    '''Field with the correct layout/etc for an admin page'''
+    template='genshi:allura.lib.widgets.templates.admin_field'
+    params=['field']
+    field=None
+
+    def __init__(self, **kw):
+        super(AdminField, self).__init__(**kw)
+        for p in self.field.params:
+            setattr(self, p, getattr(self.field, p))
+
+    def resources(self):
+        for r in self.field.resources():
+            yield r
