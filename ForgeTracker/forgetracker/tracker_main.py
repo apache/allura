@@ -4,6 +4,7 @@ import json, urllib, re
 from datetime import datetime, timedelta
 from urllib import urlencode
 from webob import exc
+from pprint import pprint
 
 # Non-stdlib imports
 import pkg_resources
@@ -836,7 +837,7 @@ class TrackerAdminController(DefaultAdminController):
 
     @without_trailing_slash
     @expose('forgetracker.templates.admin_fields')
-    def fields(self):
+    def fields(self, **kw):
         allow_config=has_artifact_access('configure', app=self.app)()
         if allow_config:
             c.form = W.field_admin
@@ -856,6 +857,7 @@ class TrackerAdminController(DefaultAdminController):
         pass
 
     @expose()
+    @validate(W.field_admin, error_handler=fields)
     @h.vardec
     def set_custom_fields(self, **post_data):
         require(has_artifact_access('configure', app=self.app))
@@ -863,6 +865,7 @@ class TrackerAdminController(DefaultAdminController):
         self.app.globals.closed_status_names=post_data['closed_status_names']
         self.app.globals.milestone_names=post_data['milestone_names']
         custom_fields = post_data['custom_fields']
+        import pdb; pdb.set_trace()
         for field in custom_fields:
             field['name'] = '_' + '_'.join([w for w in NONALNUM_RE.split(field['label'].lower()) if w])
             field['label'] = field['label'].title()

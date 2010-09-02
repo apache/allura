@@ -13,7 +13,6 @@
             var $this = $(this);
             var name = $this.attr('name');
             $this.attr('name', name.replace('#', '-' + (num_flds+1)));
-            console.log('new name is', $this.attr('name'));
         });
         manage_messages();
     }
@@ -25,7 +24,6 @@
 
     function show_hide_options(){
         var $this=$(this), show=$this.val()==='select';
-        console.log('trying to hide', show);
         $this.closest('div.custom-field').find('div[data-name=options]').toggle(show)
     }
 
@@ -50,9 +48,20 @@
         return true;
     }
 
+    function renumberFields() {
+        $('div.custom-field').each(function(index) {
+            $(this).find('[name^=custom_fields]').each(function() {
+                var $this = $(this);
+                var name = $this.attr('name');
+                $this.attr('name', name.replace(/-\d+/, '-' + (index+1)));
+            });
+        });
+    }
+
     $(function(){
         $('#custom-field-list')
-            .sortable()
+            .sortable(
+                {stop : renumberFields })
             .closest('form')
             .submit(validate)
             .find('input.add')
