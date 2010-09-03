@@ -44,30 +44,21 @@
               </div>
             </div>
             <hr/>
-            <div class="row dual">
-              <div class="column" style="margin-right:0">
-                <b>Milestone:</b>
-              </div>
-              <div class="column" style="margin-left:0;width:48%; overflow:auto;">
-                ${Markup(c.widget.widget_type.display_field_by_idx(4))}
-              </div>
-            </div>
-            <hr/>
-            <py:if test="len(fields) &gt; 10">
-            ${Markup(c.widget.widget_type.display_field_by_idx(10, ignore_errors=True))}
+            <py:if test="len(fields) &gt; 9">
+            ${Markup(c.widget.widget_type.display_field_by_idx(9, ignore_errors=True))}
             </py:if>
             <div class="row dual">
               <div class="column" style="margin-right:0">
                 <b>Labels:</b>
               </div>
               <div class="column" style="margin-left:0;width:48%; overflow:auto;">
-                ${Markup(c.widget.widget_type.display_field_by_idx(5))}
+                ${Markup(c.widget.widget_type.display_field_by_idx(4))}
               </div>
             </div>
             <hr/>
             <div style="overflow: auto">
                 <label><b>Add Attachment:</b></label>
-                ${Markup(c.widget.widget_type.display_field_by_idx(6))}
+                ${Markup(c.widget.widget_type.display_field_by_idx(5))}
             </div>
           </div>
         </div>

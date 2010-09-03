@@ -37,6 +37,8 @@ class Globals(MappedClass):
     custom_fields = FieldProperty([{str:None}])
     _bin_counts = FieldProperty({str:int})
     _bin_counts_expire = FieldProperty(datetime)
+    _milestone_counts = FieldProperty({str:int})
+    _milestone_counts_expire = FieldProperty(datetime)
 
     @classmethod
     def next_ticket_num(cls):
@@ -67,20 +69,41 @@ class Globals(MappedClass):
         return ' && '.join(['!status:'+name for name in self.set_of_closed_status_names])
 
     @property
+    def milestone_fields(self):
+        return [ fld for fld in self.custom_fields if fld.type == 'milestone' ]
+
+    def _refresh_counts(self):
+        # Refresh bin counts
+        for b in Bin.query.find(dict(
+                app_config_id=self.app_config_id)):
+            r = search_artifact(Ticket, b.terms, rows=0)
+            self._bin_counts[b.summary] = r is not None and r.hits or 0
+        # Refresh milestone field counts
+        for fld in self.milestone_fields:
+            for m in fld.milestones:
+                k = '%s:%s' % (fld.name, m.name)
+                r = search_artifact(Ticket, k[1:], rows=0)
+                self._milestone_counts[k] = r is not None and r.hits or 0
+        self._bin_counts_expire = datetime.utcnow() + timedelta(minutes=60)
+
+    @property
     def bin_counts(self):
         if self._bin_counts_expire is None or datetime.utcnow() > self._bin_counts_expire:
-            for b in Bin.query.find(dict(
-                    app_config_id=self.app_config_id)):
-                r = search_artifact(Ticket, b.terms, rows=0)
-                self._bin_counts[b.summary] = r is not None and r.hits or 0
-            self._bin_counts_expire = datetime.utcnow() + timedelta(minutes=60)
+            self._refresh_counts()
         return self._bin_counts
+
+    @property
+    def milestone_counts(self):
+        if self._bin_counts_expire is None or datetime.utcnow() > self._bin_counts_expire:
+            self._refresh_counts()
+        return self._milestone_counts
 
     def invalidate_bin_counts(self):
         '''Expire it just a bit in the future to allow data to propagate through
         the search reactors
         '''
         self._bin_counts_expire = datetime.utcnow() + timedelta(seconds=5)
+        self._milestone_counts_expire = datetime.utcnow() + timedelta(seconds=5)
 
     def sortable_custom_fields_shown_in_search(self):
         return [dict(sortable_name='%s_s' % field['name'],

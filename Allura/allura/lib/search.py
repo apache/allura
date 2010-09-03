@@ -90,6 +90,8 @@ def search_artifact(atype, q, history=False, rows=10, **kw):
     for f in fields:
         if f[-2] == '_':
             base = f[:-2]
+            if base[0] == '_': # handle tracker custom fields
+                base = base[1:]
             actual = f
             q = q.replace(base+':', actual+':')
     fq = [

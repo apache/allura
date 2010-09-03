@@ -7,35 +7,10 @@ from formencode import validators as fev
 
 class TicketCustomFields(ew.CompoundField):
     template='genshi:forgetracker.widgets.templates.ticket_custom_fields'
+
     @property
     def fields(self):
-        fields = []
-        for field in c.app.globals.custom_fields:
-            if field['type'] == 'select':
-                options = []
-                for opt in field['options'].split():
-                    selected = False
-                    if opt.startswith('*'):
-                        opt = opt[1:]
-                        selected = True
-                    options.append(ew.Option(label=opt,html_value=opt,py_value=opt,selected=selected))
-                fields.append(ew.SingleSelectField(label=field['label'], name=str(field['name']),
-                    options=options))
-            elif field['type'] == 'milestone':
-                options = [ ew.Option(label='None',html_value='',py_value='')] +[
-                    ew.Option(
-                        label='%s (due %s)' % (m.name, m.due_date),
-                        py_value=m.name)
-                    for m in field['milestones'] if not m.complete ]
-                fields.append(ew.SingleSelectField(label=field['label'], name=str(field['name']),
-                    options=options))
-            elif field['type'] == 'boolean':
-                fields.append(ew.Checkbox(label=field['label'], name=str(field['name']), suppress_label=True))
-            elif field['type'] == 'sum' or field['type'] == 'number':
-                fields.append(ew.NumberField(label=field['label'], name=str(field['name'])))
-            else:
-                fields.append(ew.TextField(label=field['label'], name=str(field['name'])))
-        return fields
+        return map(TicketCustomField.make, c.app.globals.custom_fields)
 
 class EditTicketCustomFields(TicketCustomFields):
     template='genshi:forgetracker.widgets.templates.edit_ticket_custom_fields'
@@ -64,9 +39,6 @@ class GenericTicketForm(ew.SimpleForm):
             ew.SingleSelectField(name='status', label='Status',
                 options=lambda: c.app.globals.all_status_names.split()),
             ffw.ProjectUserSelect(name='assigned_to', label='Assigned To'),
-            ew.SingleSelectField(name='milestone', label='Milestone',
-                options=lambda: [ew.Option(label='None',html_value='',py_value='')] +
-                                c.app.globals.milestone_names.split()),
             ffw.LabelEdit(label='Labels',name='labels', className='ticket_form_tags'),
             ffw.FileChooser(name='attachment', label='Attachment', field_type='file', validator=fev.FieldStorageUploadConverter(if_missing=None)),
             ew.SubmitButton(label=self.submit_text,name='submit',
@@ -102,3 +74,45 @@ class EditTicketForm(GenericTicketForm):
                 top: 0;
             }
         ''')
+
+class TicketCustomField(object):
+
+    def _select(field):
+        options = []
+        for opt in field.options.split():
+            selected = False
+            if opt.startswith('*'):
+                opt = opt[1:]
+                selected = True
+                options.append(ew.Option(label=opt,html_value=opt,py_value=opt,selected=selected))
+        return ew.SingleSelectField(label=field.label, name=str(field.name), options=options)
+
+    def _milestone(field):
+        options = [ ew.Option(label='None',html_value='',py_value='')] +[
+            ew.Option(
+                label=m.name,
+                py_value=m.name)
+            for m in field.milestones if not m.complete ]
+        return ew.SingleSelectField(label=field.label, name=str(field.name),
+                                    options=options)
+
+    def _boolean(field):
+        return ew.Checkbox(label=field.label, name=str(field.name), suppress_label=True)
+
+    def _number(field):
+        return ew.NumberField(label=field.label, name=str(field.name))
+
+    def _default(field):
+        return ew.TextField(label=field.label, name=str(field.name))
+
+    SELECTOR = dict(
+        select=_select,
+        milestone=_milestone,
+        boolean=_boolean,
+        sum=_number,
+        number=_number)
+
+    @classmethod
+    def make(cls, field):
+        factory = cls.SELECTOR.get(field.type, cls._default)
+        return factory(field)
