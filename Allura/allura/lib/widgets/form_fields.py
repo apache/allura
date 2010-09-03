@@ -168,7 +168,7 @@ class AutoResizeTextarea(ew.TextArea):
                 animateDuration : 300,
                 // More extra space:
                 extraSpace : 0
-            });
+            }).change();
         ''')
 
 class PageList(ew.Widget):

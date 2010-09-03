@@ -19,27 +19,27 @@ g.register_app_css('css/tracker.css')
 
   <body>
     <form method="POST" class="can-retry" action="${ticket.url()}update_ticket" enctype="multipart/form-data">
-        <div class="editable viewing" style="padding: 0">
-          <py:if test="not allow_edit"><h1 class="title">#$ticket.ticket_num $ticket.summary</h1></py:if>
-          <py:if test="allow_edit">
-            <h1 class="title">
+      <div class="editable viewing" style="padding: 0">
+        <py:if test="not allow_edit"><h1 class="title">#$ticket.ticket_num $ticket.summary</h1></py:if>
+        <py:if test="allow_edit">
+          <h1 class="title">
               <span class="viewer" style="width:600px">#$ticket.ticket_num $ticket.summary</span>
               <span class="editor" style="font-size: 11px; text-shadow: 0 0; width:600px">
                 ${c.auto_resize_textarea.display(value=ticket.summary,name='summary',attrs={'style':'height:1em; width: 425px'})}
               </span>
-            </h1>
-          </py:if>
-        </div>
-        <div class="actions" style="width:120px;">
+          </h1>
+        </py:if>
+      </div>
+      <div class="actions" style="width:120px;">
 		  <py:if test="c.user and c.user != c.user.anonymous()">
-			<a href="edit" class="btn ico-l"><b class="ui-icon ui-icon-pencil"></b> <span>Edit</span></a>
-          ${c.subscribe_form.display(value=subscribed, action='subscribe', style='icon')}
-          </py:if>
-			<a href="${ticket.url()}feed.rss" class="btn ico"><b class="ui-icon ui-icon-signal-diag"></b> <span>Follow this Ticket</span></a>
+		    <a href="edit" class="btn ico-l"><b class="ui-icon ui-icon-pencil"></b> <span>Edit</span></a>
+                    ${c.subscribe_form.display(value=subscribed, action='subscribe', style='icon')}
+                  </py:if>
+		  <a href="${ticket.url()}feed.rss" class="btn ico"><b class="ui-icon ui-icon-signal-diag"></b> <span>Follow this Ticket</span></a>
         </div>
-        <div class="content">
-			<div class="row dual" style="font-size: 1.1em;">
-    				<div class="column grid_8">
+      <div class="content">
+	<div class="row dual" style="font-size: 1.1em;">
+	  <div class="column grid_8">
 
 
               <div class="${allow_edit and ' editable viewing' or ''}">
@@ -74,8 +74,6 @@ g.register_app_css('css/tracker.css')
                     <hr/>
 
                     <b>Status:</b> <span class="${ticket.open_or_closed}">${ticket.status}</span>
-                    <hr/>
-                    <b>Milestone:</b> ${ticket.milestone or 'None'}
                     <hr/>
 
                     <py:for each="field in globals.custom_fields or []">
@@ -118,40 +116,13 @@ g.register_app_css('css/tracker.css')
                     </div>
                     <hr/>
 
-                    <div class="row dual">
-                      <div class="column" style="margin-right:0">
-                        <b>Milestone:</b>
-                      </div>
-                      <div class="column" style="margin-left:0;width:48%; overflow:auto;">
-                        <select name="milestone">
-                          <option value="">None</option>
-                          <option py:for="option in globals.milestone_names.split()" value="$option"
-                                  selected="${'selected' if ticket.milestone==option else None}">$option</option>
-                        </select>
-                      </div>
-                    </div>
-                    <hr/>
-
                     <py:for each="field in globals.custom_fields or []">
                       <div class="row dual">
                         <div class="column" style="margin-right:0">
                           <b>${field.label}:</b>
                       </div>
                       <div class="column" style="margin-left:0;width:48%; overflow:auto;">
-                          <input py:if="field.type != 'select' and field.type != 'boolean'" name="custom_fields.${field.name}" type="text"
-                                 value="${ticket.custom_fields.get(field.name, '')}"/>
-                          <input py:if="field.type == 'boolean' and ticket.custom_fields.get(field.name, '') == 'True'"
-                                 name="custom_fields.${field.name}" type="checkbox" value="True" checked="checked"/>
-                          <input py:if="field.type == 'boolean' and ticket.custom_fields.get(field.name, '') != 'True'"
-                                 name="custom_fields.${field.name}" type="checkbox" value="True"/>
-                          <select py:if="field.type == 'select'" name="custom_fields.${field.name}">
-                            <py:for each="option in field.options.split()">
-                              <option py:if="not option.startswith('*')" value="${option}"
-                                      selected="${'selected' if ticket.custom_fields.get(field.name, '')==option else None}">${option}</option>
-                              <option py:if="option.startswith('*')" value="${option[1:]}"
-                                      selected="${'selected' if ticket.custom_fields.get(field.name, '')==option[1:] or ticket.custom_fields.get(field.name, '')==None else None}">${option[1:]}</option>
-                            </py:for>
-                          </select>
+                        ${c.ticket_custom_field.make(field).display(name='custom_fields.' + field.name, value=ticket.custom_fields.get(field.name, ''))}
                         </div>
                       </div>
                       <hr/>

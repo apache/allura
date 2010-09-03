@@ -125,12 +125,13 @@ class MoveMilestonesToCustom(TrackerMigration):
     version = 4
 
     def _custom_field(self, tracker_globals):
+        names = tracker_globals.milestone_names or ''
         return dict(
             type='milestone',
             label='Milestone',
             milestones=[
                 dict(name=name, complete=False, due_date=None)
-                for name in tracker_globals.milestone_names.split() ])
+                for name in names.split() ])
 
     def up(self):
         for tracker_globals in self.ormsession.find(Globals):

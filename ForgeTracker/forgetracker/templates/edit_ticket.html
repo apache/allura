@@ -24,17 +24,17 @@ g.register_app_css('css/tracker.css')
   <body>
     <h1 class="title">Edit ticket #$ticket.ticket_num</h1>
     <div class="actions">
-		  <py:if test="c.user and c.user != c.user.anonymous()">
-			<a href="${ticket.url()}" class="btn ico-l"><b class="ui-icon ui-icon-search"></b> <span>View</span></a>
+      <py:if test="c.user and c.user != c.user.anonymous()">
+	<a href="${ticket.url()}" class="btn ico-l"><b class="ui-icon ui-icon-search"></b> <span>View</span></a>
         ${c.subscribe_form.display(value=subscribed, action='subscribe', style='icon')}
       </py:if>
-			<a href="${ticket.url()}feed.rss" class="btn ico"><b class="ui-icon ui-icon-signal-diag"></b> <span>Follow this Ticket</span></a>
+      <a href="${ticket.url()}feed.rss" class="btn ico"><b class="ui-icon ui-icon-signal-diag"></b> <span>Follow this Ticket</span></a>
     </div>
     ${c.ticket_form.display(action=ticket.url()+'update_ticket_from_widget', value=ticket, ticket=ticket)}
     <div class="content">
-			<div class="row dual">
-				<div class="column grid_8">
-				  &nbsp;
+      <div class="row dual">
+	<div class="column grid_8">
+	  &nbsp;
         </div>
 
         <div id="sidebar-right" class="column grid_4 fright">

@@ -17,10 +17,14 @@ class MilestonesAdmin(ffw.SortableTable):
         ew.Checkbox(name='complete', show_label=True, suppress_label=True),
         ew.TextField(name='name'),
         ffw.DateField(name='due_date'),
+        ffw.AutoResizeTextarea(
+            name='description',
+            attrs={'style':'height:2em; width: 300px'}),
         ew.InputField(
             label='Delete',
             field_type='button',
-            attrs={'class':'delete', 'value':'Delete Milestone'}) ]
+            attrs={'class':'delete', 'value':'Delete Milestone'}),
+        ]
 
 class CustomFieldAdminDetail(ffw.StateField):
     template='genshi:forgetracker.widgets.templates.custom_field_admin_detail'

@@ -33,7 +33,7 @@ from allura.controllers import BaseController
 from forgetracker import model as TM
 from forgetracker import version
 
-from forgetracker.widgets.ticket_form import TicketForm, EditTicketForm
+from forgetracker.widgets.ticket_form import TicketForm, EditTicketForm, TicketCustomField
 from forgetracker.widgets.bin_form import BinForm
 from forgetracker.widgets.ticket_search import TicketSearchResults, MassEdit
 from forgetracker.widgets.admin_custom_fields import TrackerFieldAdmin, TrackerFieldDisplay
@@ -59,6 +59,7 @@ class W:
     ticket_subscribe_form = SubscribeForm(thing='ticket')
     field_admin = TrackerFieldAdmin()
     field_display = TrackerFieldDisplay()
+    ticket_custom_field = TicketCustomField
 
 class ForgeTrackerApp(Application):
     __version__ = version.__version__
@@ -121,12 +122,23 @@ class ForgeTrackerApp(Application):
         related_artifacts = []
         search_bins = []
         related_urls = []
+        milestones = []
         ticket = request.path_info.split(self.url)[-1].split('/')[0]
         for bin in TM.Bin.query.find(dict(app_config_id=self.config._id)).sort('summary'):
             label = bin.shorthand_id()
             search_bins.append(SitemapEntry(
                     h.text.truncate(label, 72), bin.url(), className='nav_child',
                     small=c.app.globals.bin_counts.get(bin.shorthand_id())))
+        for fld in c.app.globals.milestone_fields:
+            milestones.append(SitemapEntry(h.text.truncate(fld.label, 72)))
+            for m in fld.milestones:
+                if m.complete: continue
+                milestones.append(
+                    SitemapEntry(
+                        h.text.truncate(m.name, 72),
+                        self.url + fld.name[1:] + '/' + m.name + '/',
+                        className='nav_child',
+                        small=c.app.globals.milestone_counts.get('%s:%s' % (fld.name, m.name))))
         if ticket.isdigit():
             ticket = TM.Ticket.query.find(dict(app_config_id=self.config._id,ticket_num=int(ticket))).first()
         else:
@@ -153,6 +165,9 @@ class ForgeTrackerApp(Application):
                 sub = TM.Ticket.query.get(_id=sub_id, app_config_id=c.app.config._id)
                 links.append(SitemapEntry('[#{0}]'.format(sub.ticket_num), sub.url(), className='nav_child'))
             #links.append(SitemapEntry('Create New Subtask', '{0}new/?super_id={1}'.format(self.config.url(), ticket._id), className='nav_child'))
+
+        links += milestones
+
         if len(search_bins):
             links.append(SitemapEntry('Searches'))
             links = links + search_bins
@@ -189,7 +204,7 @@ class ForgeTrackerApp(Application):
             last_ticket_num=0,
             open_status_names='open unread accepted pending',
             closed_status_names='closed wont-fix',
-            milestone_names='',
+            # milestone_names='',
             custom_fields=[dict(
                     type='milestone',
                     name='milestone',
@@ -310,7 +325,7 @@ class RootController(BaseController):
         if ticket_num.isdigit():
             return TicketController(ticket_num), remainder
         else:
-            raise exc.HTTPNotFound, 'Ticket #%s does not exist.' % ticket_num
+            return MilestoneController(self, ticket_num, remainder[0]), remainder[1:]
 
     @with_trailing_slash
     @expose('forgetracker.templates.new_ticket')
@@ -363,8 +378,8 @@ class RootController(BaseController):
         require(has_artifact_access('write'))
         if request.method != 'POST':
             raise Exception('save_ticket must be a POST request')
-        if c.app.globals.milestone_names is None:
-            c.app.globals.milestone_names = ''
+        # if c.app.globals.milestone_names is None:
+        #     c.app.globals.milestone_names = ''
         ticket_num = ticket_form.pop('ticket_num', None)
         if ticket_num:
             ticket = TM.Ticket.query.get(
@@ -391,8 +406,8 @@ class RootController(BaseController):
     def edit(self, q=None, sort=None, **kw):
         require(has_artifact_access('write'))
         result = self.paged_query(q, sort=sort, **kw)
-        if c.app.globals.milestone_names is None:
-            c.app.globals.milestone_names = ''
+        # if c.app.globals.milestone_names is None:
+        #     c.app.globals.milestone_names = ''
         result['globals'] = c.app.globals
         c.user_select = ffw.ProjectUserSelect()
         c.mass_edit = W.mass_edit
@@ -407,7 +422,7 @@ class RootController(BaseController):
         for ticket in tickets:
             require(has_artifact_access('write', ticket))
 
-        fields = set(['milestone', 'status'])
+        fields = set(['status'])
         values = {}
         for k in fields:
             v = post_data.get(k)
@@ -649,10 +664,9 @@ class TicketController(BaseController):
             c.subscribe_form = W.ticket_subscribe_form
             c.auto_resize_textarea = W.auto_resize_textarea
             c.file_chooser = W.file_chooser
-            if c.app.globals.milestone_names is None:
-                c.app.globals.milestone_names = ''
             thread = self.ticket.discussion_thread
             post_count = M.Post.query.find(dict(discussion_id=thread.discussion_id, thread_id=thread._id)).count()
+            c.ticket_custom_field = W.ticket_custom_field
             return dict(ticket=self.ticket, globals=c.app.globals,
                         allow_edit=has_artifact_access('write', self.ticket)(),
                         subscribed=M.Mailbox.subscribed(artifact=self.ticket),
@@ -668,8 +682,8 @@ class TicketController(BaseController):
         c.thread = W.thread
         c.attachment_list = W.attachment_list
         c.subscribe_form = W.ticket_subscribe_form
-        if c.app.globals.milestone_names is None:
-            c.app.globals.milestone_names = ''
+        # if c.app.globals.milestone_names is None:
+        #     c.app.globals.milestone_names = ''
         return dict(ticket=self.ticket, globals=c.app.globals,
                     subscribed=M.Mailbox.subscribed(artifact=self.ticket))
 
@@ -737,7 +751,7 @@ class TicketController(BaseController):
             del post_data['labels']
         else:
             self.ticket.labels = []
-        for k in ['summary', 'description', 'status', 'milestone']:
+        for k in ['summary', 'description', 'status']:
             changes[k] = getattr(self.ticket, k)
             if k in post_data:
                 setattr(self.ticket, k, post_data[k])
@@ -756,8 +770,8 @@ class TicketController(BaseController):
             changes['assigned_to'] = self.ticket.assigned_to
         h.tag_artifact(self.ticket, c.user, tags)
 
-        if c.app.globals.milestone_names is None:
-            c.app.globals.milestone_names = ''
+        # if c.app.globals.milestone_names is None:
+        #     c.app.globals.milestone_names = ''
         if 'attachment' in post_data and post_data['attachment']:
             for attachment in post_data['attachment']:
                 if not hasattr(attachment, 'file'): continue
@@ -831,8 +845,8 @@ class TrackerAdminController(DefaultAdminController):
     def __init__(self, app):
         self.app = app
         self.bins = BinController(app=app)
-        if self.app.globals and self.app.globals.milestone_names is None:
-            self.app.globals.milestone_names = ''
+        # if self.app.globals and self.app.globals.milestone_names is None:
+        #     self.app.globals.milestone_names = ''
 
     @with_trailing_slash
     def index(self, **kw):
@@ -929,8 +943,41 @@ class TicketRestController(BaseController):
         c.app.globals.invalidate_bin_counts()
         if request.method != 'POST':
             raise Exception('save_ticket must be a POST request')
-        if c.app.globals.milestone_names is None:
-            c.app.globals.milestone_names = ''
+        # if c.app.globals.milestone_names is None:
+        #     c.app.globals.milestone_names = ''
         self.ticket.update(ticket_form)
         redirect('.')
 
+class MilestoneController(BaseController):
+
+    def __init__(self, root, field, milestone):
+        field = '_' + field
+        for fld in c.app.globals.milestone_fields:
+            if fld.name == field: break
+        else:
+            raise exc.HTTPNotFound()
+        for m in fld.milestones:
+            if m.name == milestone: break
+        else:
+            raise exc.HTTPNotFound()
+        self.root = root
+        self.field = fld
+        self.milestone = m
+        self.query = '%s:%s' % (fld.name[1:], m.name)
+
+    @with_trailing_slash
+    @expose('forgetracker.templates.milestone')
+    @validate(validators=dict(
+            limit=validators.Int(if_invalid=None),
+            page=validators.Int(if_empty=0),
+            sort=validators.UnicodeString(if_empty=None)))
+    def index(self, q=None, project=None, **kw):
+        require(has_artifact_access('read'))
+        result = self.root.paged_query(self.query, **kw)
+        result['allow_edit'] = has_artifact_access('write')()
+        result.update(
+            field=self.field,
+            milestone=self.milestone)
+        c.ticket_search_results = W.ticket_search_results
+        c.auto_resize_textarea = W.auto_resize_textarea
+        return result
