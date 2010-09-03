@@ -42,13 +42,13 @@
             .find(':button.delete').each(__collect('$delete_buttons')).end();
 
         // Create objects
-        var $fields = $this.map(function() {
-            var data = $(this).data('SortableRepeatedField');
-            console.log('SRF:', this, data.$stub, data.$msg,data.$add_buttons, data.$delete_buttons);
-            return new SortableRepeatedField(this, opts) });
-        // Activate objects
-        $fields.each(function() {
-            this.activate() });
+        $this
+            .map(function() {
+                var data = $(this).data('SortableRepeatedField');
+                return new SortableRepeatedField(this, opts)
+            })
+            .each(function() {
+                this.activate() });
         return $this;
     }
     $.fn.SortableRepeatedField.defaults = defaults;
