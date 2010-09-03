@@ -21,6 +21,14 @@ class TicketCustomFields(ew.CompoundField):
                     options.append(ew.Option(label=opt,html_value=opt,py_value=opt,selected=selected))
                 fields.append(ew.SingleSelectField(label=field['label'], name=str(field['name']),
                     options=options))
+            elif field['type'] == 'milestone':
+                options = [ ew.Option(label='None',html_value='',py_value='')] +[
+                    ew.Option(
+                        label='%s (due %s)' % (m.name, m.due_date),
+                        py_value=m.name)
+                    for m in field['milestones'] if not m.complete ]
+                fields.append(ew.SingleSelectField(label=field['label'], name=str(field['name']),
+                    options=options))
             elif field['type'] == 'boolean':
                 fields.append(ew.Checkbox(label=field['label'], name=str(field['name']), suppress_label=True))
             elif field['type'] == 'sum' or field['type'] == 'number':

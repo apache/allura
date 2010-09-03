@@ -15,6 +15,7 @@
     <tbody class="$flist_cls">
       <py:for each="i in xrange(repetitions)"
               py:with="ctx=c.widget.context_for(i)">
+        <?python ctx['css_class'] = field_cls ?>
         ${c.widget.subwidget(i, ctx).display()}
       </py:for>
       ${field.display(name=name+'#', css_class=stub_cls)}

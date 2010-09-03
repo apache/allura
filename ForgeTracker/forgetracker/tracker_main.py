@@ -4,7 +4,6 @@ import json, urllib, re
 from datetime import datetime, timedelta
 from urllib import urlencode
 from webob import exc
-from pprint import pprint
 
 # Non-stdlib imports
 import pkg_resources
@@ -191,7 +190,10 @@ class ForgeTrackerApp(Application):
             open_status_names='open unread accepted pending',
             closed_status_names='closed wont-fix',
             milestone_names='',
-            custom_fields=[])
+            custom_fields=[dict(
+                    type='milestone',
+                    name='milestone',
+                    milestones=[]) ])
         c.app.globals.invalidate_bin_counts()
         bin = TM.Bin(summary='Open Tickets', terms=self.globals.not_closed_query)
         bin.app_config_id = self.config._id
@@ -864,9 +866,7 @@ class TrackerAdminController(DefaultAdminController):
         require(has_artifact_access('configure', app=self.app))
         self.app.globals.open_status_names=post_data['open_status_names']
         self.app.globals.closed_status_names=post_data['closed_status_names']
-        self.app.globals.milestone_names=post_data['milestone_names']
         custom_fields = post_data['custom_fields']
-        import pdb; pdb.set_trace()
         for field in custom_fields:
             field['name'] = '_' + '_'.join([w for w in NONALNUM_RE.split(field['label'].lower()) if w])
             field['label'] = field['label'].title()

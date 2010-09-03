@@ -64,7 +64,6 @@ class CustomFieldAdmin(ew.CompoundField):
 class TrackerFieldAdmin(f.ForgeForm):
     submit_text='Save'
     class fields(ew.WidgetsList):
-        milestone_names = ew.TextField()
         open_status_names = ew.TextField(label='Open Statuses')
         closed_status_names = ew.TextField(label='Open Statuses')
         custom_fields = ffw.SortableRepeatedField(field=CustomFieldAdmin())
