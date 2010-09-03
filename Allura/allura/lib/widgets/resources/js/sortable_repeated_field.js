@@ -24,7 +24,6 @@
                 $msg:$(),
                 $add_buttons:$(),
                 $delete_buttons:$()})
-            $(this).data('AlluraObject', null);
         });
 
         // Collect flists, stubs, msgflds, and buttons into each container's data
@@ -44,6 +43,8 @@
 
         // Create objects
         var $fields = $this.map(function() {
+            var data = $(this).data('SortableRepeatedField');
+            console.log('SRF:', this, data.$stub, data.$msg,data.$add_buttons, data.$delete_buttons);
             return new SortableRepeatedField(this, opts) });
         // Activate objects
         $fields.each(function() {
@@ -92,7 +93,8 @@
             $(document).trigger('clone');
         }
         function _deleteField() {
-            $(this).closest('.'+self.opts.field_cls).remove();
+            var fld = $(this).closest('.'+self.opts.field_cls);
+            fld.remove();
             _manageMessages();
         }
         function _manageMessages() {
@@ -100,7 +102,6 @@
                     ? 'data-nonempty-message'
                     : 'data-empty-message';
             var new_text = self.data.$msg.attr(attr_name);
-            console.log('manage messages', self.data.$msg, attr_name, new_text);
             self.data.$msg.html(new_text);
         }
         function _renumberFields() {
