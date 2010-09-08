@@ -1,5 +1,6 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
           "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+{% from 'jinja_master/lib.html' import gravatar %}
 {% do g.register_forge_js('js/jquery-base.js') %}
 {% do g.register_forge_js('js/allura-base.js') %}
 {% if g.production_mode %}
@@ -23,6 +24,7 @@
     {% else %}
       <link rel="stylesheet" type="text/css" media="screen" href="{{tg.url('/nf/site_style.css')}}" />
     {% endif %}
+    {% block extra_css %}{% endblock %}
 
     {% block head %}
     {% endblock %}
@@ -36,7 +38,7 @@
 <![endif]-->
   </head>
 
-  <body>
+  <body{% block body_attrs %}{% endblock %}>
     {% for blob in g.resource_manager.emit('body_top_js') %}
       {{ blob }}
     {% endfor %}
@@ -50,19 +52,36 @@
       <div id="section">
         {% include 'jinja_master/top_nav.html' %}
 				<div class="row base">
-          {% include 'jinja_master/sidebar_menu.html' %}
-          <div class="column grid_10 pad">
+				  {% if not hide_left_bar %}
+            {% include 'jinja_master/sidebar_menu.html' %}
+            {% set outer_width = 10 %}
+				  {% else %}
+            {% set outer_width = 12 %}
+          {% endif %}
+				  {% if show_right_bar %}
+            {% set inner_width = outer_width - 2 %}
+				  {% else %}
+            {% set inner_width = outer_width + 2 %}
+          {% endif %}
+          <div class="column grid_{{outer_width}} pad">
             {% set flash = tg.flash_obj.render('flash', use_js=False) %}
             {% if flash %}
               <div>{{flash}}</div>
             {% endif %}
             <h1 class="title">{% block header %}{% endblock %}</h1>
+        		<div class="actions">{% block actions %}{% endblock %}</div>
             <div class="content">
-              <div class="row">
-                <div class="column grid_12">
+              <div class="row{% if show_right_bar %} dual{% endif %}">
+                <div class="column grid_{{inner_width}}">
                   {% block content %}{% endblock %}
                 </div>
+          			{% if show_right_bar %}
+                <div id="sidebar-right" class="column grid_4 fright">
+                  {% block right_content %}{% endblock %}
+                </div>
+                {% endif %}
               </div>
+              {% block after_content %}{% endblock %}
             </div>
           </div>
         </div>
@@ -80,6 +99,7 @@
     {% for blob in g.resource_manager.emit('body_js_tail') %}
       {{ blob }}
     {% endfor %}
+    {% block extra_js %}{% endblock %}
     <!--! Analytics holder and noscript tag -->
     <div id="analytics"/>
     <noscript py:if="g.production_mode">

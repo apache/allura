@@ -64,6 +64,7 @@ class ForgeConfig(AppConfig):
 
     def setup_jinja_renderer(self):
         self.paths['templates'].append(pkg_resources.resource_filename('forgetracker', 'templates'))
+        self.paths['templates'].append(pkg_resources.resource_filename('forgewiki', 'templates'))
 
         from jinja2 import ChoiceLoader, Environment, FileSystemLoader
         from tg.render import render_jinja

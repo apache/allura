@@ -1,52 +1,43 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-                    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:py="http://genshi.edgewall.org/"
-      xmlns:xi="http://www.w3.org/2001/XInclude">
+{% extends 'jinja_master/master.html' %}
 
-  <xi:include href="master.html" />
+{% block title %}{{c.project.name}} / {{c.app.config.options.mount_label}} / Admin Options{% endblock %}
 
-  <head>
-    <meta content="text/html; charset=UTF-8" http-equiv="content-type" py:replace="''"/>
-    <title>$c.project.name / $app.config.options.mount_label / Admin Options</title>
-  </head>
+{% block header %}{{app.config.options.mount_point}} Admin Options{% endblock %}
 
-  <body>
-    <h1 class="title">$app.config.options.mount_point Admin Options</h1>
-    <div class="content">
-      <div class="row">
-        <div class="column grid_12">
-          <form method="POST" action="set_options">
-            <ol>
-              <li>
-                <label for="title">Show discussion:</label>
-                <input type="checkbox" name="show_discussion" id="show_discussion" checked="${app.show_discussion or None}"
-                       py:if="allow_config"/>
-                <span py:if="not allow_config">${app.show_discussion}</span>
-              </li>
-              <hr/>
-              <li>
-                <label for="title">Show left bar:</label>
-                <input type="checkbox" name="show_left_bar" id="show_left_bar" checked="${app.show_left_bar or None}"
-                       py:if="allow_config"/>
-                <span py:if="not allow_config">${app.show_left_bar}</span>
-              </li>
-              <hr/>
-              <li>
-                <label for="title">Show right bar:</label>
-                <input type="checkbox" name="show_right_bar" id="show_right_bar" checked="${app.show_right_bar or None}"
-                       py:if="allow_config"/>
-                <span py:if="not allow_config">${app.show_right_bar}</span>
-              </li>
-              <hr/>
-              <li>
-                <label>&nbsp;</label>
-                <input type="submit" py:if="allow_config" value="Save"/>
-              </li>
-            </ol>
-          </form>
-        </div>
-      </div>
-    </div>
-  </body>
-</html>
+{% block content %}
+<form method="POST" action="set_options">
+  <ol>
+    <li>
+      <label for="title">Show discussion:</label>
+      {% if allow_config %}
+        <input type="checkbox" name="show_discussion" id="show_discussion"{% if app.show_discussion %} checked="checked"{% endif %}/>
+      {% else %}
+        <span>{{app.show_discussion}}</span>
+      {% endif %}
+    </li>
+    <hr/>
+    <li>
+      <label for="title">Show left bar:</label>
+      {% if allow_config %}
+        <input type="checkbox" name="show_left_bar" id="show_left_bar"{% if app.show_left_bar %} checked="checked"{% endif %}/>
+      {% else %}
+        <span>{{app.show_left_bar}}</span>
+      {% endif %}
+    </li>
+    <hr/>
+    <li>
+      <label for="title">Show right bar:</label>
+      {% if allow_config %}
+        <input type="checkbox" name="show_right_bar" id="show_right_bar"{% if app.show_right_bar %} checked="checked"{% endif %}/>
+      {% else %}
+        <span>{{app.show_right_bar}}</span>
+      {% endif %}
+    </li>
+    <hr/>
+    <li>
+      <label>&nbsp;</label>
+      {% if allow_config %}<input type="submit" value="Save"/>{% endif %}
+    </li>
+  </ol>
+</form>
+{% endblock %}

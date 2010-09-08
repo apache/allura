@@ -1,93 +1,87 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" 
-                      "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:py="http://genshi.edgewall.org/"
-      xmlns:xi="http://www.w3.org/2001/XInclude">
+{% extends 'jinja_wiki_master.html' %}
 
-  <xi:include href="wiki_master.html"/>
+{% block title %}{{c.project.name}} / {{c.app.config.options.mount_label}} / {{page.title}}{% endblock %}
 
-  <?python
-    from allura.lib.security import has_artifact_access
-    ?>
+{% block header %}Edit {{page.title}}{% endblock %}
 
-  <head>
-    <meta content="text/html; charset=UTF-8" http-equiv="content-type" py:replace="''"/>
-    <title>$c.project.name / $c.app.config.options.mount_label / $page.title</title>
-    <style type="text/css">
-      textarea[name=text]{
-        height: 600px;
-      }
-    </style>
-  </head>
-  
-  <body>
-    <h1 class="title">Edit $page.title</h1>
-		<div class="actions">
-			<a href="." class="btn ico-l"><b class="ui-icon ui-icon-search"></b> <span>View Page</span></a>
-			<a py:if="page_exists and has_artifact_access('delete', page)()" href="./delete" class="btn ico-l"><b class="ui-icon ui-icon-minusthick"></b> <span>Delete</span></a>
+{% block wiki_extra_css %}
+<style type="text/css">
+  textarea[name=text]{
+    height: 600px;
+  }
+</style>
+{% endblock %}
+
+{% block actions %}
+  <a href="." class="btn ico-l"><b class="ui-icon ui-icon-search"></b> <span>View Page</span></a>
+  {% if page_exists and has_artifact_access('delete', page)() %}
+    <a href="./delete" class="btn ico-l"><b class="ui-icon ui-icon-minusthick"></b> <span>Delete</span></a>
+  {% endif %}
+{% endblock %}
+
+{% block wiki_content %}
+<form method="POST" class="can-retry" action="update" id="page_edit_form">
+	<ol>
+		<li>
+			<label for="title">Name:</label>
+			<input type="text" name="title" id="title" value="{{page.title}}" placeholder="Page name" required="required" autofocus="autofocus"/>
+		</li>
+		<li>
+			<label for="text">Content:</label>
+			<div style="clear:both"/>
+			{{c.markdown_editor.display(name='text',value=page.text)}}
+		</li>
+		<li>
+		  <div class="row dual">
+			<div class="column" style="margin-right:0">
+			<label for="labels">Tags:</label>
 		</div>
-    <div class="content">
-      <div class="row">
-        <div class="column grid_12">
-          <form method="POST" class="can-retry" action="update" id="page_edit_form">
-			<ol>
-				<li>
-					<label for="title">Name:</label>
-					<input type="text" name="title" id="title" value="${page.title}" placeholder="Page name" required="required" autofocus="autofocus"/>
-				</li>
-				<li>
-					<label for="text">Content:</label>
-					<div style="clear:both"/>
-					${c.markdown_editor.display(name='text',value=page.text)}
-				</li>
-				<li>
-				  <div class="row dual">
-					<div class="column" style="margin-right:0">
-					<label for="labels">Tags:</label>
-				</div>
-				<div class="column" style="margin-left:0">
-					${c.label_edit.display(name='labels', value=page.labels)}
-				</div>
-			</div>
-				</li>
-            <py:if test="not page_exists or has_artifact_access('edit_page_permissions', page)()">
-				<li>
-					<label>Viewable by:</label>
-					<span py:for="j, u in enumerate(page.viewable_by)" class="removable">
-                  ${u}
-                  <input type="hidden" name="viewable_by-${j}.id" value="$u"/>
-                </span>
-				</li>
-				<li>
-					<label for="new_viewable_by">Add Viewer:</label>
-					${c.user_select.display(name='new_viewable_by', value='')}
-				</li>
-            </py:if>
-				<li>
-					<label>&nbsp;</label>
-                <input type="submit" value="Save"/>
-                <input type="reset" value="Cancel"/>
-				</li>
-			</ol>
-          </form>
-          <hr class="clear clearfix" />
-          ${c.attachment_list.display(attachments=list(page.attachments), edit_mode=page_exists and has_artifact_access('edit', page)())}
-          <py:if test="page_exists and has_artifact_access('edit', page)()">
-            ${c.attachment_add.display(action=page.url() + 'attach', name='file_info')}
-          </py:if>
-        </div>
-      </div>
-    </div>
-  </body>
-  <script type="text/javascript">
-    /*<![CDATA[*/
-    $('span.removable').click(function(e){
-      var vals = $('#page_edit_form').serialize();
-      var del_name = $('input', this)[0].name.replace('.id','.delete');
-      $.post($('#page_edit_form')[0].action, vals+'&'+del_name+'=Del', function(){
-        e.target.parentNode.removeChild(e.target);
-      });
+		<div class="column" style="margin-left:0">
+			{{c.label_edit.display(name='labels', value=page.labels)}}
+		</div>
+	</div>
+		</li>
+    {% if not page_exists or has_artifact_access('edit_page_permissions', page)() %}
+    <li>
+      <label>Viewable by:</label>
+      {% set j = 0 %}
+      {% for u in page.viewable_by %}
+        <span class="removable">
+          {{u}}
+          <input type="hidden" name="viewable_by-{{j}}.id" value="{{u}}"/>
+        </span>
+        {% set j = j + 1 %}
+      {% endfor %}
+    </li>
+    <li>
+      <label for="new_viewable_by">Add Viewer:</label>
+      {{c.user_select.display(name='new_viewable_by', value='')}}
+    </li>
+    {% endif %}
+		<li>
+      <label>&nbsp;</label>
+      <input type="submit" value="Save"/>
+      <input type="reset" value="Cancel"/>
+		</li>
+	</ol>
+</form>
+<hr class="clear clearfix" />
+{{c.attachment_list.display(attachments=page.attachments, edit_mode=page_exists and has_artifact_access('edit', page)())}}
+{% if page_exists and has_artifact_access('edit', page)() %}
+  {{c.attachment_add.display(action=page.url() + 'attach', name='file_info')}}
+{% endif %}
+{% endblock %}
+
+{% block wiki_extra_js %}
+<script type="text/javascript">
+  /*<![CDATA[*/
+  $('span.removable').click(function(e){
+    var vals = $('#page_edit_form').serialize();
+    var del_name = $('input', this)[0].name.replace('.id','.delete');
+    $.post($('#page_edit_form')[0].action, vals+'&'+del_name+'=Del', function(){
+      e.target.parentNode.removeChild(e.target);
     });
-    /*]]>*/
-  </script>
-</html>
+  });
+  /*]]>*/
+</script>
+{% endblock %}

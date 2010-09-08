@@ -1,0 +1,27 @@
+{% macro gravatar(user, size) -%}
+  {% if user.preferences.email_address %}
+    {% if size %}
+      <img src="{{g.gravatar(user.preferences.email_address, default=g.url('/u/'+user.username.replace('_', '-')+'/user_icon'))}}"
+           alt="{{user.display_name}}"
+           title="{{user.display_name}}"
+           height="{{size}}"
+           width="{{size}}"/>
+    {% else %}
+      <img src="{{g.gravatar(user.preferences.email_address, default=g.url('/u/'+user.username.replace('_', '-')+'/user_icon'))}}"
+           alt="{{user.display_name}}"
+           title="{{user.display_name}}"/>
+    {% endif %}
+  {% else %}
+    {% if size %}
+      <img src="{{'/u/'+user.username.replace('_', '-')+'/user_icon'}}"
+           alt="{{user.display_name}}"
+           title="{{user.display_name}}"
+           height="{{size}}"
+           width="{{size}}"/>
+    {% else %}
+      <img src="{{'/u/'+user.username.replace('_', '-')+'/user_icon'}}"
+           alt="{{user.display_name}}"
+           title="{{user.display_name}}"/>
+    {% endif %}
+  {% endif %}
+{%- endmacro %}

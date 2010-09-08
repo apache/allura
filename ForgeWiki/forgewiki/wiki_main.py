@@ -255,7 +255,7 @@ class RootController(BaseController):
         redirect(title + '/')
 
     @with_trailing_slash
-    @expose('forgewiki.templates.search')
+    @expose('jinja:wiki_search.html')
     @validate(dict(q=validators.UnicodeString(if_empty=None),
                    history=validators.StringBool(if_empty=False),
                    project=validators.StringBool(if_empty=False)))
@@ -278,7 +278,7 @@ class RootController(BaseController):
         return dict(q=q, history=history, results=results or [], count=count)
 
     @with_trailing_slash
-    @expose('forgewiki.templates.browse')
+    @expose('jinja:browse.html')
     @validate(dict(sort=validators.UnicodeString(if_empty='alpha'),
                    show_deleted=validators.StringBool(if_empty=False)))
     def browse_pages(self, sort='alpha', show_deleted=False):
@@ -312,7 +312,7 @@ class RootController(BaseController):
         return dict(pages=pages, can_delete=can_delete, show_deleted=show_deleted)
 
     @with_trailing_slash
-    @expose('forgewiki.templates.browse_tags')
+    @expose('jinja:browse_tags.html')
     @validate(dict(sort=validators.UnicodeString(if_empty='alpha')))
     def browse_tags(self, sort='alpha'):
         'list of all labels in the wiki'
@@ -335,13 +335,13 @@ class RootController(BaseController):
         return dict(labels=page_tags)
 
     @with_trailing_slash
-    @expose('forgewiki.templates.markdown_syntax')
+    @expose('jinja:wiki_markdown_syntax.html')
     def markdown_syntax(self):
         'Display a page about how to use markdown.'
         return dict(example=MARKDOWN_EXAMPLE)
 
     @with_trailing_slash
-    @expose('forgewiki.templates.wiki_help')
+    @expose('jinja:wiki_help.html')
     def wiki_help(self):
         'Display a help page about using the wiki.'
         return dict()
@@ -402,7 +402,7 @@ class PageController(BaseController):
         redirect(url)
 
     @with_trailing_slash
-    @expose('forgewiki.templates.page_view')
+    @expose('jinja:page_view.html')
     @validate(dict(version=validators.Int(if_empty=None),
                    deleted=validators.StringBool(if_empty=False)))
     def index(self, version=None, deleted=False, **kw):
@@ -427,13 +427,16 @@ class PageController(BaseController):
         if cur > 1: prev = cur-1
         else: prev = None
         next = cur+1
+        hide_left_bar = not (c.app.show_left_bar or has_artifact_access('edit', app=c.app)())
         return dict(
             page=page,
             cur=cur, prev=prev, next=next,
-            subscribed=Mailbox.subscribed(artifact=self.page))
+            subscribed=Mailbox.subscribed(artifact=self.page),
+            has_artifact_access=has_artifact_access, h=h,
+            hide_left_bar=hide_left_bar, show_right_bar=c.app.show_right_bar)
 
     @without_trailing_slash
-    @expose('forgewiki.templates.page_edit')
+    @expose('jinja:page_edit.html')
     def edit(self):
         page_exists = self.page
         if page_exists:
@@ -448,7 +451,7 @@ class PageController(BaseController):
         c.attachment_add = W.attachment_add
         c.attachment_list = W.attachment_list
         c.label_edit = W.label_edit
-        return dict(page=self.page, page_exists=page_exists)
+        return dict(page=self.page, page_exists=page_exists, has_artifact_access=has_artifact_access)
 
     @without_trailing_slash
     @expose()
@@ -472,16 +475,16 @@ class PageController(BaseController):
         redirect('./edit')
 
     @without_trailing_slash
-    @expose('forgewiki.templates.page_history')
+    @expose('jinja:page_history.html')
     def history(self):
         if not self.page:
             raise exc.HTTPNotFound
         require(has_artifact_access('read', self.page))
         pages = self.page.history()
-        return dict(title=self.title, pages=pages)
+        return dict(title=self.title, pages=pages, has_artifact_access=has_artifact_access)
 
     @without_trailing_slash
-    @expose('forgewiki.templates.page_diff')
+    @expose('jinja:page_diff.html')
     def diff(self, v1, v2):
         if not self.page:
             raise exc.HTTPNotFound
@@ -677,14 +680,14 @@ class WikiAdminController(DefaultAdminController):
         redirect('home')
 
     @without_trailing_slash
-    @expose('forgewiki.templates.admin_home')
+    @expose('jinja:admin_home.html')
     def home(self):
         return dict(app=self.app,
                     home=self.app.root_page_name,
                     allow_config=has_artifact_access('configure', app=self.app)())
 
     @without_trailing_slash
-    @expose('forgewiki.templates.admin_options')
+    @expose('jinja:admin_options.html')
     def options(self):
         return dict(app=self.app,
                     allow_config=has_artifact_access('configure', app=self.app)())

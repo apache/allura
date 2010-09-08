@@ -1,83 +1,94 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" 
-                      "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:py="http://genshi.edgewall.org/"
-      xmlns:xi="http://www.w3.org/2001/XInclude">
-  <?python from allura.lib import helpers as h?>
-  <?python from allura.lib.security import has_artifact_access?>
-  <xi:include href="wiki_master.html" py:if="c.app.show_left_bar or has_artifact_access('edit', app=c.app)()"/>
-  <xi:include href="master_one_col.html" py:if="not c.app.show_left_bar and not has_artifact_access('edit', app=c.app)()" />
+{% extends 'jinja_wiki_master.html' %}
 
-  <head>
-    <meta content="text/html; charset=UTF-8" http-equiv="content-type" py:replace="''"/>
-    <title>$c.project.name / $c.app.config.options.mount_label / $page.title</title>
-    <link rel="stylesheet" type="text/css" 
-          href="${g.app_static('css/hilite.css')}"/>
-    <link rel="alternate" type="application/rss+xml" title="Page RSS" href="feed.rss"/>
-    <link rel="alternate" type="application/atom+xml" title="Page Atom" href="feed.atom"/>
-    <link rel="alternate" type="application/rss+xml" title="Wiki RSS" href="../feed.rss"/>
-    <link rel="alternate" type="application/atom+xml" title="Wiki Atom" href="../feed.atom"/>
-    <style>
-      .hidden { display: None }
-      a.notfound { color: #f00; }
-    </style>
-  </head>
-  
-  <body class="wiki-${(page.title).replace(' ','_')}">
-    <h1 class="title ${'deleted' if getattr(page, 'deleted', False) else ''}">$page.title<span py:if="getattr(page, 'deleted', False)"> (deleted)</span></h1>
-		<div class="actions">
-		  <py:if test="c.user and c.user != c.user.anonymous() and not getattr(page, 'deleted', False)">
-			<a href="edit" class="btn ico-l"><b class="ui-icon ui-icon-pencil"></b> <span>Edit</span></a>
-          </py:if>
-          <py:if test="getattr(page, 'deleted', False) and has_artifact_access('delete', page)()">
-			<a href="undelete" class="btn ico-l"><b class="ui-icon ui-icon-plusthick"></b> <span>Undelete</span></a>
-          </py:if>
-			<a py:if="not getattr(page, 'deleted', False)" href="history" class="btn ico-l"><b class="ui-icon ui-icon-search"></b> <span>History</span></a>
-		  <py:if test="c.user and c.user != c.user.anonymous()">
-      ${c.subscribe_form.display(value=subscribed, action='subscribe', style='icon')}
-      </py:if>
-			<a href="feed" class="btn ico"><b class="ui-icon ui-icon-signal-diag"></b> <span>RSS</span></a>
-		</div>
-    <div class="content">
-			<div class="row dual">
-				<div class="column grid_${((c.app.show_left_bar or has_artifact_access('edit', app=c.app)()) and 8 or 12) + (not c.app.show_right_bar and 2 or 0)}">
-          ${Markup(page.html_text)}
-	</div>
-		<div py:if="c.app.show_right_bar" id="sidebar-right" class="column grid_4 fright">
-          <div py:if="len(page.labels)">
-            Tags: <span py:for="label in page.labels" py:if="label != ''"><a href="${c.app.url}search/?q=labels_t:$label">$label (${page.artifacts_labeled_with(label).count()})</a></span>
-            <hr/>
-          </div>
-          <div class="gravatar sm">
-            Authors:
-            <a href="${author.url()}" py:for="author in page.authors()">
-              ${gravatar(author, size=16)}
-            </a>
-          </div>
-          <div py:if="page.attachments">
-            <hr/>
-            <strong>Attachments</strong>
-          </div>
-          <py:for each="att in page.attachments">
-            <hr/>
-            <div py:if="h.supported_by_PIL(att.contentType) and not att.is_embedded()" class="attachment_thumb">
-              <a href="${att.url()}">
-                <img src="${att.url()}/thumb"/>
-              </a><br/>
-              <a href="${att.url()}">${att.metadata.filename}</a>
-              ($att.length bytes)
-            </div>
-            <div py:if="not h.supported_by_PIL(att.contentType) or att.is_embedded()">
-              <a href="${att.url()}">${att.metadata.filename}</a>
-              ($att.length bytes)
-            </div>
-          </py:for>
-        </div>
-      </div>
-      <div style="clear:both;"/>
-      <div py:if="page.discussion_thread() and c.app.show_discussion" py:with="thread=page.discussion_thread()">
-        ${c.thread.display(value=thread)}
-      </div>
+{% block title %}{{c.project.name}} / {{c.app.config.options.mount_label}} / {{page.title}}{% endblock %}
+
+{% block header %}{{page.title}}{% if page['deleted'] %}<span> (deleted)</span>{% endif %}{% endblock %}
+
+{% block wiki_extra_css %}
+<link rel="stylesheet" type="text/css" 
+      href="${g.app_static('css/hilite.css')}"/>
+<style>
+  .hidden { display: None }
+  a.notfound { color: #f00; }
+</style>
+{% endblock %}
+
+{% block head %}
+<link rel="alternate" type="application/rss+xml" title="Page RSS" href="feed.rss"/>
+<link rel="alternate" type="application/atom+xml" title="Page Atom" href="feed.atom"/>
+<link rel="alternate" type="application/rss+xml" title="Wiki RSS" href="../feed.rss"/>
+<link rel="alternate" type="application/atom+xml" title="Wiki Atom" href="../feed.atom"/>
+{% endblock %}
+{% block body_attrs %} class="wiki-{{(page.title).replace(' ','_')}}"{% endblock %}
+
+{% block actions %}
+  {% if not page['deleted'] %}
+    {% if c.user and c.user != c.user.anonymous() %}
+      <a href="edit" class="btn ico-l"><b class="ui-icon ui-icon-pencil"></b> <span>Edit</span></a>
+    {% endif %}
+    <a href="history" class="btn ico-l"><b class="ui-icon ui-icon-search"></b> <span>History</span></a>
+  {% elif has_artifact_access('delete', page)() %}
+    <a href="undelete" class="btn ico-l"><b class="ui-icon ui-icon-plusthick"></b> <span>Undelete</span></a>
+  {% endif %}
+  {% if c.user and c.user != c.user.anonymous() %}
+    {{c.subscribe_form.display(value=subscribed, action='subscribe', style='icon')}}
+  {% endif %}
+	<a href="feed" class="btn ico"><b class="ui-icon ui-icon-signal-diag"></b> <span>RSS</span></a>
+{% endblock %}
+
+{% block wiki_content %}
+{{page.html_text}}
+{% endblock %}
+
+{% block right_content %}
+  {% if page.labels %}
+  <div>
+    Tags:
+    {% for label in page.labels %}
+      {% if label != '' %}
+        <span><a href="{{c.app.url}}search/?q=labels_t:{{label}}">{{label}} ({{page.artifacts_labeled_with(label).count()}})</a></span>
+      {% endif %}
+    {% endfor %}
+    <hr/>
+  </div>
+  {% endif %}
+  <div class="gravatar sm">
+    Authors:
+    {% for author in page.authors() %}
+      <a href="{{author.url()}}">
+        {{gravatar(author, size=16)}}
+      </a>  
+    {% endfor %}
+  </div>
+  {% if page.attachments %}
+  <div>
+    <hr/>
+    <strong>Attachments</strong>
+  </div>
+  {% endif %}
+  {% for att in page.attachments %}
+    <hr/>
+    {% if h.supported_by_PIL(att.contentType) and not att.is_embedded() %}
+    <div class="attachment_thumb">
+      <a href="{{att.url()}}">
+        <img src="{{att.url()}}/thumb"/>
+      </a><br/>
+      <a href="{{att.url()}}">{{att.metadata.filename}}</a>
+      ({{att.length}} bytes)
     </div>
-  </body>
-</html>
+    {% elif not h.supported_by_PIL(att.contentType) or att.is_embedded() %}
+    <div>
+      <a href="{{att.url()}}">{{att.metadata.filename}}</a>
+      ({{att.length}} bytes)
+    </div>
+    {% endif %}
+  {% endfor %}
+{% endblock %}
+
+{% block after_content %}
+  <div style="clear:both;"/>
+  {% if page.discussion_thread() and c.app.show_discussion %}
+    {% set thread = page.discussion_thread() %}
+    <div>{{c.thread.display(value=thread)}}</div>
+  {% endif %}
+{% endblock %}

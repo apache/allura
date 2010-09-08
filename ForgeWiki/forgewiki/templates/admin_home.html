@@ -1,38 +1,25 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-                    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:py="http://genshi.edgewall.org/"
-      xmlns:xi="http://www.w3.org/2001/XInclude">
+{% extends 'jinja_master/master.html' %}
 
-  <xi:include href="master.html" />
+{% block title %}{{c.project.name}} / {{c.app.config.options.mount_label}} / Admin Home{% endblock %}
 
-  <head>
-    <meta content="text/html; charset=UTF-8" http-equiv="content-type" py:replace="''"/>
-    <title>$c.project.name / $app.config.options.mount_label / Admin Home</title>
-  </head>
+{% block header %}{{app.config.options.mount_point}} Admin Home{% endblock %}
 
-  <body>
-    <h1 class="title">$app.config.options.mount_point Admin Home</h1>
-    <div class="content">
-      <div class="row">
-        <div class="column grid_12">
-          <form method="POST" action="set_home">
-            <ol>
-              <li>
-                <label for="title">Wiki Home Page:</label>
-                <input type="text" name="new_home" id="new_home" value="${home}"
-                       py:if="allow_config"/>
-                <span py:if="not allow_config">${home}</span>
-              </li>
-              <hr/>
-              <li>
-                <label>&nbsp;</label>
-                <input type="submit" py:if="allow_config" value="Save"/>
-              </li>
-            </ol>
-          </form>
-        </div>
-      </div>
-    </div>
-  </body>
-</html>
+{% block content %}
+<form method="POST" action="set_home">
+  <ol>
+    <li>
+      <label for="title">Wiki Home Page:</label>
+      {% if allow_config %}
+       <input type="text" name="new_home" id="new_home" value="{{home}}"/>
+      {% else %}
+        <span>{{home}}</span>
+      {% endif %}
+    </li>
+    <hr/>
+    <li>
+      <label>&nbsp;</label>
+      {% if allow_config %}<input type="submit" value="Save"/>{% endif %}
+    </li>
+  </ol>
+</form>
+{% endblock %}

@@ -1,50 +1,52 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-                      "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:py="http://genshi.edgewall.org/"
-      xmlns:xi="http://www.w3.org/2001/XInclude">
+{% extends 'jinja_wiki_master.html' %}
 
-  <xi:include href="wiki_master.html" />
+{% block title %}{{c.project.name}} / {{c.app.config.options.mount_label}} / Browse Pages{% endblock %}
 
-  <head>
-    <meta content="text/html; charset=UTF-8" http-equiv="content-type" py:replace="''"/>
-    <title>$c.project.name / $c.app.config.options.mount_label / Browse Pages</title>
-    <style type="text/css">
-        tr.deleted a { color:red; }
-    </style>
-  </head>
-  <body>
-    <h1 class="title">Browse Pages</h1>
-    <div class="content">
-      <div class="row">
-        <div class="column grid_12">
-          View: <a id="sort_recent" href="?sort=recent">Recently Updated</a> | <a id="sort_alpha" href="?sort=alpha">Alphabetical</a>
-          <table id="forge_wiki_browse">
-            <thead>
-              <tr>
-                <th>Title</th>
-                <th>Last Update By</th>
-                <th>Last Updated</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr py:for="page in pages" class="${'deleted' if page.deleted else ''}">
-                <td><a href="../${page['title']+'/'+('?deleted=True' if page.deleted else '')}">${page['title']}</a></td>
-                <td py:if="'user_label' in page">${page['user_label']}</td>
-                <td py:if="'user_label' not in page"></td>
-                <td py:if="'updated' in page">${h.ago(page['updated'])}</td>
-                <td py:if="'updated' not in page"></td>
-              </tr>
-            </tbody>
-          </table>
-          <a py:if="can_delete" id="toggle_deleted" href="#" style="display:none"><span/> deleted pages</a>
-        </div>
-      </div>
-    </div>
-  </body>
-  <script type="text/javascript">
-    var show_deleted = ${'true' if show_deleted else 'false'},
-        can_delete = ${'true' if can_delete else 'false'};
-  </script>
-  <script type="text/javascript" src="${g.app_static('js/browse.js')}"/>
-</html>
+{% block header %}Browse Pages{% endblock %}
+
+{% block wiki_content %}
+View: <a id="sort_recent" href="?sort=recent">Recently Updated</a> | <a id="sort_alpha" href="?sort=alpha">Alphabetical</a>
+<table id="forge_wiki_browse">
+  <thead>
+    <tr>
+      <th>Title</th>
+      <th>Last Update By</th>
+      <th>Last Updated</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for page in pages %}
+      <tr class="{{'deleted' if page.deleted else ''}}">
+        <td><a href="../{{page['title']+'/'+('?deleted=True' if page.deleted else '')}}">{{page['title']}}</a></td>
+      
+        {% if 'user_label' in page %}
+          <td>{{page['user_label']}}</td>
+        {% else %}
+          <td></td>
+        {% endif %}
+        {% if 'updated' in page %}
+          <td>{{h.ago(page['updated'])}}</td>
+        {% else %}
+          <td></td>
+        {% endif %}
+      </tr>
+    {% endfor %}
+  </tbody>
+</table>  
+{% if can_delete %}
+  <a id="toggle_deleted" href="#" style="display:none"><span/> deleted pages</a>
+{% endif %}
+{% endblock %}
+
+{% block wiki_extra_css %}
+<style type="text/css">
+    tr.deleted a { color:red; }
+</style>
+{% endblock %}
+{% block wiki_extra_js %}
+<script type="text/javascript">
+  var show_deleted = {{'true' if show_deleted else 'false'}},
+      can_delete = {{'true' if can_delete else 'false'}};
+</script>
+<script type="text/javascript" src="{{g.app_static('js/browse.js')}}"/>
+{% endblock %}
