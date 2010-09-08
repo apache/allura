@@ -28,7 +28,7 @@
               pushed
             </py:if>
           </py:if>
-          <a href="${cv.url()}">${h.text.truncate(cv.sha, 10)}</a>
+          <a href="${cv.url()}">${h.text.truncate(cv.hexsha, 10)}</a>
           <py:if test="cv.author_url is not None">
             by
             <a href="${cv.author_url}">${email_gravatar(cv.author.email, title=cv.author.name, size=16)}

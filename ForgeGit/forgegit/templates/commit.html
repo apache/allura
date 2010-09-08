@@ -9,11 +9,11 @@
   <head>
     <meta content="text/html; charset=UTF-8" http-equiv="content-type" py:replace="''"/>
     <link rel="stylesheet" type="text/css" href="/css/hilite.css"/>
-    <title>$c.project.name / $c.app.config.options.mount_label / Commit ${h.text.truncate(commit.sha, 10)}</title>
+    <title>$c.project.name / $c.app.config.options.mount_label / Commit ${h.text.truncate(commit.hexsha, 10)}</title>
   </head>
 
   <body>
-    <h1 class="title">Commit <a href="${commit.url()}">${h.text.truncate(commit.sha, 10)}</a></h1>
+    <h1 class="title">Commit <a href="${commit.url()}">${h.text.truncate(commit.hexsha, 10)}</a></h1>
     <div class="content">
       <div class="row">
         <div class="column grid_12">

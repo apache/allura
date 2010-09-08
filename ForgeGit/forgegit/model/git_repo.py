@@ -151,7 +151,7 @@ class GitCommit(M.Commit):
 
     @classmethod
     def from_repo_object(cls, ci, repo):
-        result = cls(id=ci.sha, repo=repo)
+        result = cls(id=ci.hexsha, repo=repo)
         result.__dict__['_impl'] = ci
         return result
 
@@ -193,7 +193,7 @@ class GitCommit(M.Commit):
 
     def diff_summarize(self):
         if self.parents:
-            for d in self.parents[0].diff(self.sha):
+            for d in self.parents[0].diff(self.hexsha):
                 if d.deleted_file:
                     yield 'remove', d.a_blob.path
                 elif d.new_file:
@@ -272,7 +272,7 @@ class GitBlob(M.Blob):
 
     @LazyProperty
     def text(self):
-        return self._blob.data
+        return self._blob.data_stream.read()
 
     def context(self):
         path = self._tree.path().split('/')[1:-1]
@@ -282,7 +282,7 @@ class GitBlob(M.Blob):
         prev=next=None
         found_ci = False
         for ent in entries:
-            if ent.sha == self._commit.sha:
+            if ent.hexsha == self._commit.hexsha:
                 found_ci = True
             elif found_ci:
                 prev=ent
