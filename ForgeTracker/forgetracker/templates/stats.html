@@ -1,55 +1,40 @@
+{% extends 'jinja_master/master.html' %}
 
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-                      "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:py="http://genshi.edgewall.org/"
-      xmlns:xi="http://www.w3.org/2001/XInclude">
-  <xi:include href="${g.allura_templates}/master.html"/>
+{% do g.register_app_css('css/hilite.css') %}
+{% do g.register_app_css('css/tracker.css') %}
 
-  <?python from pprint import pformat
-g.register_app_css('css/hilite.css')
-g.register_app_css('css/tracker.css')
- ?>
+{% block title %}{{c.project.name}} / {{c.app.config.options.mount_label}} / Basic Statistics{% endblock %}
 
-  <head>
-    <meta content="text/html; charset=UTF-8" http-equiv="content-type" py:replace="''"/>
-    <title>$c.project.name / $c.app.config.options.mount_label / Basic Statistics</title>
-    <link rel="alternate" type="application/rss+xml" title="RSS" href="feed.rss"/>
-    <link rel="alternate" type="application/atom+xml" title="Atom" href="feed.atom"/>
-  </head>
+{% block header %}Basic Statistics{% endblock %}
 
-  <body>
-    <h1 class="title">Basic Statistics</h1>
-    <div class="content">
-      <div class="row">
-        <div class="column grid_12">
-          <p># tickets: $total</p>
-          <p># open tickets: $open</p>
-          <p># closed tickets: $closed</p>
-          <p># new tickets in the last...</p>
-          <ul>
-          <li>7 days: $week_tickets</li>
-          <li>14 days: $fortnight_tickets</li>
-          <li>30 days: $month_tickets</li>
-          </ul>
-          <p># of comments on tickets: $comments</p>
-          <p># of new comments on tickets in last...</p>
-          <ul>
-          <li>7 days: $week_comments</li>
-          <li>14 days: $fortnight_comments</li>
-          <li>30 days: $month_comments</li>
-          </ul>
-          <!--
-          <p># of ticket changes in the last...</p>
-          <ul>
-          <li>7 days:</li>
-          <li>14 days:</li>
-          <li>30 days:</li>
-          </ul>
-          -->
-        </div>
-      </div>
-    </div>
+{% block content %}
+<p># tickets: {{total}}</p>
+<p># open tickets: {{open}}</p>
+<p># closed tickets: {{closed}}</p>
+<p># new tickets in the last...</p>
+<ul>
+<li>7 days: {{week_tickets}}</li>
+<li>14 days: {{fortnight_tickets}}</li>
+<li>30 days: {{month_tickets}}</li>
+</ul>
+<p># of comments on tickets: {{comments}}</p>
+<p># of new comments on tickets in last...</p>
+<ul>
+<li>7 days: {{week_comments}}</li>
+<li>14 days: {{fortnight_comments}}</li>
+<li>30 days: {{month_comments}}</li>
+</ul>
+<!--
+<p># of ticket changes in the last...</p>
+<ul>
+<li>7 days:</li>
+<li>14 days:</li>
+<li>30 days:</li>
+</ul>
+-->
+{% endblock %}
 
-  </body>
-</html>
+
+
+
+

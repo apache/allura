@@ -311,7 +311,7 @@ class RootController(BaseController):
         return dict(action=c.app.config.url()+'save_ticket',
                     super_id=super_id)
 
-    @expose('forgetracker.templates.markdown_syntax')
+    @expose('jinja:markdown_syntax.html')
     def markdown_syntax(self):
         'Static page explaining markdown.'
         return dict()
@@ -450,7 +450,7 @@ class RootController(BaseController):
         return Post.query.find(q).count()
 
     @with_trailing_slash
-    @expose('forgetracker.templates.stats')
+    @expose('jinja:stats.html')
     def stats(self):
         require(has_artifact_access('read'))
         globals = c.app.globals
@@ -527,7 +527,7 @@ class BinController(BaseController):
         redirect('bins/')
 
     @with_trailing_slash
-    @expose('forgetracker.templates.new_bin')
+    @expose('jinja:new_bin.html')
     def newbin(self, q=None, **kw):
         require(has_artifact_access('save_searches', app=self.app))
         c.bin_form = W.bin_form

@@ -1,0 +1,6 @@
+div.custom-field {
+  cursor: move;
+  border:1px solid #ccc;
+  margin:2px;
+  padding:2px;
+}
