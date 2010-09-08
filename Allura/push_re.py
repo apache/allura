@@ -1,17 +1,30 @@
 import os
+import re
 import shlex
 import string
 import subprocess
+from collections import defaultdict
 from ConfigParser import ConfigParser
 from datetime import date
+from urlparse import urljoin
+
+from allura.config import middleware
+from allura.lib import rest_api
 
 DEBUG=1
 CP = ConfigParser()
 
+re_ticket_ref = re.compile(r'\[#\d+\]')
+
+CRED={}
 
 def main():
     CP.read(os.path.join(os.environ['HOME'], '.forgepushrc'))
     engineer = option('re', 'engineer', 'Name of engineer pushing: ')
+    api_key = option('re', 'api_key', 'Forge API Key:')
+    secret_key = option('re', 'secret_key', 'Forge Secret Key:')
+    CRED['api_key'] = api_key
+    CRED['secret_key'] = secret_key
     text, tag = make_ticket_text(engineer)
     print '*** Create a ticket on SourceForge (https://sourceforge.net/p/allura/tickets/new/) with the following contents:'
     print '*** Summary: Production Push (R:%s, D:%s) - allura' % (
@@ -51,7 +64,10 @@ def make_ticket_text(engineer):
     changes = command(
             'git', 'log', "--format=* %h %s", last_release.strip() + '..')
     assert changes, 'There were no commits found; maybe you forgot to merge dev->master?'
-    changes = ''.join(changes)
+    changelog = ''.join(changes)
+    changes = ''.join(format_changes(changes))
+    print 'Changelog:\n%s' % changelog
+    print 'Tickets:\n%s' % changes
     prelaunch = []
     postlaunch = []
     needs_reactor_setup = raw_input('Does this release require a reactor_setup? [n]')
@@ -75,7 +91,23 @@ def make_ticket_text(engineer):
     else:
         prelaunch = '-none-'
     return TICKET_TEMPLATE.substitute(locals()), tag
-    
+
+def format_changes(changes):
+    ticket_groups = defaultdict(list)
+    for change in changes:
+        for m in re_ticket_ref.finditer(change):
+            ticket_groups[m.group(0)].append(change)
+    cli = rest_api.RestClient(
+        base_uri='http://sourceforge.net', **CRED)
+    for ref, commits in sorted(ticket_groups.iteritems()):
+        ticket_num = ref[2:-1]
+        ticket = cli.request(
+            'GET',
+            urljoin('/rest/p/allura/tickets/', str(ticket_num)) + '/')['ticket']
+        verb = {
+            'validation': 'Fix',
+            'closed': 'Fix' }.get(ticket['status'], 'Address')
+        yield ' * %s %s: %s\n' % (verb, ref, ticket['summary'])
 
 def command(*args):
     if len(args) == 1 and isinstance(args[0], basestring):
