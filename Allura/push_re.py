@@ -97,17 +97,22 @@ def format_changes(changes):
     for change in changes:
         for m in re_ticket_ref.finditer(change):
             ticket_groups[m.group(0)].append(change)
-    cli = rest_api.RestClient(
-        base_uri='http://sourceforge.net', **CRED)
-    for ref, commits in sorted(ticket_groups.iteritems()):
-        ticket_num = ref[2:-1]
-        ticket = cli.request(
-            'GET',
-            urljoin('/rest/p/allura/tickets/', str(ticket_num)) + '/')['ticket']
-        verb = {
-            'validation': 'Fix',
-            'closed': 'Fix' }.get(ticket['status'], 'Address')
-        yield ' * %s %s: %s\n' % (verb, ref, ticket['summary'])
+    try:
+        cli = rest_api.RestClient(
+            base_uri='http://sourceforge.net', **CRED)
+        for ref, commits in sorted(ticket_groups.iteritems()):
+            ticket_num = ref[2:-1]
+            ticket = cli.request(
+                'GET',
+                urljoin('/rest/p/allura/tickets/', str(ticket_num)) + '/')['ticket']
+            verb = {
+                'validation': 'Fix',
+                'closed': 'Fix' }.get(ticket['status'], 'Address')
+            yield ' * %s %s: %s\n' % (verb, ref, ticket['summary'])
+    except:
+        print '*** ERROR CONTACTING FORGE FOR TICKET SUMMARIES ***'
+        for ci in changes:
+            yield ci
 
 def command(*args):
     if len(args) == 1 and isinstance(args[0], basestring):
