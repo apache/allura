@@ -48,6 +48,8 @@ class AttachmentController(BaseController):
                     self.thumbnail.delete()
             redirect(request.referer)
         with self.attachment.open() as fp:
+            if fp is None:
+                raise exc.HTTPNotFound()
             filename = fp.metadata['filename'].encode('utf-8')
             response.headers['Content-Type'] = fp.content_type.encode('utf-8')
             response.content_type = fp.content_type.encode('utf-8')
