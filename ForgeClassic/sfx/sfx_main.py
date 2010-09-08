@@ -1,9 +1,10 @@
 import logging
+import urllib2
 from contextlib import contextmanager
 from datetime import datetime, timedelta
 
 import pylons
-from tg import config
+from tg import config, flash
 from tg.decorators import with_trailing_slash
 from formencode import validators as V
 
@@ -121,6 +122,11 @@ class SFXAuthenticationProvider(plugin.AuthenticationProvider):
         api = SFXUserApi()
         try:
             return api.upsert_user(username, extra)
+        except urllib2.HTTPError, exc:
+            log.error('Received error from SFX API: %r', exc)
+            flash('Error looking up user with username "%s"',
+                  username)
+            return None
         except:
             with fake_pylons_context(self.request):
                 return api.upsert_user(username, extra)
