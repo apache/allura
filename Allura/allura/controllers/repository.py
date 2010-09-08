@@ -8,13 +8,14 @@ from tg import redirect, expose, url, override_template
 from allura.lib import patience
 from allura.lib.widgets.file_browser import TreeWidget
 from allura import model
+from .base import BaseController
 
 def on_import():
     BranchBrowser.CommitBrowserClass = CommitBrowser
     CommitBrowser.TreeBrowserClass = TreeBrowser
     TreeBrowser.FileBrowserClass = FileBrowser
 
-class BranchBrowser(object):
+class BranchBrowser(BaseController):
     CommitBrowserClass=None
 
     def __init__(self, branch):
@@ -44,7 +45,7 @@ class BranchBrowser(object):
         commit=unquote(commit)
         return self.CommitBrowserClass(commit), rest
 
-class CommitBrowser(object):
+class CommitBrowser(BaseController):
     TreeBrowserClass=None
     revision_widget = None
 
@@ -60,7 +61,7 @@ class CommitBrowser(object):
             result.update(self._commit.context())
         return result
 
-class TreeBrowser(object):
+class TreeBrowser(BaseController):
     FileBrowserClass=None
     tree_widget=TreeWidget()
 
@@ -99,7 +100,7 @@ class TreeBrowser(object):
             self._tree,
             next), rest
 
-class FileBrowser(object):
+class FileBrowser(BaseController):
 
     def __init__(self, commit, tree, filename):
         self._commit = commit
