@@ -1,6 +1,7 @@
 import re
 import json
 import httplib
+import urllib
 import urllib2
 import logging
 from contextlib import closing
@@ -33,12 +34,12 @@ class SFXUserApi(object):
 
     def _username_api_url(self, username):
         return 'http://%s/api/user/username/%s/json' % (
-            self.project_host or request.host,
+            urllib.quote(self.project_host or request.host),
             username)
 
     def _userid_api_url(self, id):
         return 'http://%s/api/user/id/%s/json' % (
-            self.project_host or request.host,
+            urllib.quote(self.project_host or request.host),
             id)
 
     def user_data(self, username, timeout=2):
