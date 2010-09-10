@@ -1,51 +1,43 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-                    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:py="http://genshi.edgewall.org/"
-      xmlns:xi="http://www.w3.org/2001/XInclude">
+{% extends 'jinja_master/master.html' %}
 
-  <xi:include href="master.html" />
+{% block title %}{{c.project.name}} / {{c.app.config.options.mount_label}} / Admin Viewable Files{% endblock %}
 
-  <?python from allura.lib.security import has_artifact_access ?>
+{% block header %}{{app.config.options.mount_point}} Admin Viewable Files{% endblock %}
 
-  <head>
-    <meta content="text/html; charset=UTF-8" http-equiv="content-type" py:replace="''"/>
-    <title>$app.config.options.mount_point Admin Viewable Files</title>
-  </head>
+{% block content %}
+<form>
+  <ol>
+    <li>
+      <label>Extensions:</label>
+      {% if allow_config %}
+        <input type="text" name="additional_viewable_extensions" id="additional_viewable_extensions"
+               value="{{additional_viewable_extensions}}" title="e.g., .svnignore,.gitignore,.ini"/>
+      {% else %}
+        <span>{{additional_viewable_extensions}}</span>
+      {% endif %}
+    </li>
+    <hr/>
+    <li>
+      <label>&nbsp;</label>
+      {% if allow_config %}
+        <input type="button" onclick="save_extensions()" value="Save"/>
+      {% endif %}
+    </li>
+  </ol>
+</form>
+{% endblock %}
 
-  <body>
-    <h1 class="title">$app.config.options.mount_point Admin Viewable Files</h1>
-    <div class="content">
-      <div class="row">
-        <div class="column grid_12">
-          <form>
-            <ol>
-              <li>
-				  <label>Extensions:</label>
-				  <input type="text" name="additional_viewable_extensions" id="additional_viewable_extensions" value="${additional_viewable_extensions}"
-                       py:if="allow_config" title="e.g., .svnignore,.gitignore,.ini"/>
-                <span py:if="not allow_config">${additional_viewable_extensions}</span>
-              </li>
-              <hr/>
-              <li>
-				  <label>&nbsp;</label>
-                <input type="button" onclick="save_extensions()"
-                        py:if="allow_config" value="Save"/>
-              </li>
-            </ol>
-          </form>
-        </div>
-      </div>
-    </div>
-  </body>
-  <script type="text/javascript" py:if="allow_config">
-function save_extensions(){
-    $.post('set_extensions', {
-        additional_viewable_extensions: $('#additional_viewable_extensions').val()
-    },
-    function(){
-        location.reload();
-    });
-}
-  </script>
-</html>
+{% block extra_js %}
+  {% if allow_config %}
+    <script type="text/javascript">
+      function save_extensions(){
+          $.post('set_extensions', {
+              additional_viewable_extensions: $('#additional_viewable_extensions').val()
+          },
+          function(){
+              location.reload();
+          });
+      }
+    </script>
+  {% endif %}
+{% endblock %}

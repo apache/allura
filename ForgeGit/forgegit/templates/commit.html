@@ -1,33 +1,21 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-                      "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:py="http://genshi.edgewall.org/"
-      xmlns:xi="http://www.w3.org/2001/XInclude">
+{% extends 'jinja_master/master.html' %}
 
-  <xi:include href="${g.allura_templates}/master.html"/>
+{% block title %}
+  {{c.project.name}} / {{c.app.config.options.mount_label}} / Commit {{h.text.truncate(commit.hexsha, 10)}}
+{% endblock %}
 
-  <head>
-    <meta content="text/html; charset=UTF-8" http-equiv="content-type" py:replace="''"/>
-    <link rel="stylesheet" type="text/css" href="/css/hilite.css"/>
-    <title>$c.project.name / $c.app.config.options.mount_label / Commit ${h.text.truncate(commit.hexsha, 10)}</title>
-  </head>
+{% block header %}Commit <a href="{{commit.url()}}">{{h.text.truncate(commit.hexsha, 10)}}</a>{% endblock %}
 
-  <body>
-    <h1 class="title">Commit <a href="${commit.url()}">${h.text.truncate(commit.hexsha, 10)}</a></h1>
-    <div class="content">
-      <div class="row">
-        <div class="column grid_12">
-          ${c.revision_widget.display(value=commit, prev=prev, next=next)}
-          <table>
-            <tbody>
-              <tr py:for="kind, path in commit.diff_summarize()">
-                <td>$kind</td>
-                <td><a href="./tree/${h.really_unicode(path)}">${h.really_unicode(path)}</a></td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </div>
-  </body>
-</html>
+{% block content %}
+{{c.revision_widget.display(value=commit, prev=prev, next=next)}}
+<table>
+  <tbody>
+    {% for kind, path in commit.diff_summarize() %}
+      <tr>
+        <td>{{kind}}</td>
+        <td><a href="./tree/{{h.really_unicode(path)}}">{{h.really_unicode(path)}}</a></td>
+      </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endblock %}

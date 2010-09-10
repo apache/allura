@@ -2,7 +2,7 @@ import ew
 from allura.lib.widgets import form_fields as ffw
 
 class GitLog(ew.Widget):
-    template='genshi:forgegit.widgets.templates.log'
+    template='jinja:git_log_widget.html'
     params=['value', 'limit', 'page', 'count', 'show_paging', 'fields']
     value=None
     limit=None

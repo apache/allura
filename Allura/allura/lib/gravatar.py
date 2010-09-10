@@ -57,9 +57,7 @@ def url(email=None, gravatar_id=None, **kw):
     if gravatar_id is None:
         gravatar_id = id(email)
     if 'r' not in kw and 'rating' not in kw: kw['r'] = 'pg'
-    return ('http://gravatar.com/avatar/'
-            + gravatar_id
-            + '?' + urllib.urlencode(kw))
+    return ('http://gravatar.com/avatar/%s?%s' % (gravatar_id, urllib.urlencode(kw)))
 
 def for_user(user):
     return url(user.preferences['email_address'])

@@ -1,7 +1,7 @@
 import ew
 
 class GitRevisionWidget(ew.Widget):
-    template='genshi:forgegit.widgets.templates.revision'
+    template='jinja:git_revision_widget.html'
     params=['value', 'prev', 'next']
     value=None
     prev=()

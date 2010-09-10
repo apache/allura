@@ -1,6 +1,6 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
           "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-{% from 'jinja_master/lib.html' import gravatar %}
+{% from 'jinja_master/lib.html' import gravatar with context %}
 {% do g.register_forge_js('js/jquery-base.js') %}
 {% do g.register_forge_js('js/allura-base.js') %}
 {% if g.production_mode %}
@@ -42,7 +42,7 @@
     {% for blob in g.resource_manager.emit('body_top_js') %}
       {{ blob }}
     {% endfor %}
-    <!-- ${main_menu()} -->
+    {% include 'jinja_master/main_menu.html' %}
     <div class="container{{g.document_class(neighborhood)}}">
 			<div id="header">
 	      <div class="row">

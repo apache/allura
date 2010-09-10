@@ -25,3 +25,11 @@
     {% endif %}
   {% endif %}
 {%- endmacro %}
+
+{% macro email_gravatar(email, title=None, size=None) -%}
+  {% if email %}
+    <img src="{{g.gravatar(email, size=size)}}" alt="{{title or email}}" title="{{title or email}}"{% if size %} width="{{size}}" height="{{size}}"{% endif %}/>
+  {% else %}
+    <img src="{{g.forge_static('images/user.png')}}" alt="{{title}}" title="{{title}}"{% if size %} width="{{size}}" height="{{size}}"{% endif %}/>
+  {% endif %}
+{%- endmacro %}
