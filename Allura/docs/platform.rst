@@ -4,13 +4,13 @@ Platform Architecture overview
 I'm told that the reason you build a platform is to "reduce the marginal cost 
 of developing applications."  Sounds good.   Well, actually it sounds a bit 
 dry.  But it's about right, we want to make creating new online development 
-tools faster, easier, and more fun, which i guess is the "reduce the marginal 
+tools faster, easier, and more fun, which I guess is the "reduce the marginal 
 cost" thing.
 
 Platform building blocks
 ---------------------------------------------------------------------
 
-Before we get into the details of how to extend the allura platform, perhaps 
+Before we get into the details of how to extend the Allura platform, perhaps 
 it would be smart to explain some of the big pieces and why there are there. 
 
 We wanted PyForge tools to be fast, we needed them to scale, and we had some
@@ -34,13 +34,13 @@ because we wanted app tools to be able to:
 * create and version their own document types, 
 * extend existing document structures, 
 * and to mange document revisions, access control lists, and other 
-platform level data.  
+  platform level data.  
 
 In spite of the power and flexibility of the Roundup HyperTable 
 implementation, we had some concerns about performance and scalability.
 
 Fortunately several of the PyForge authors (including me) used MongoDB 
-in rewriting the download flow of SourceForge.net, and new that it could 
+in rewriting the download flow of SourceForge.net, and knew that it could 
 handle huge loads (we saturated a 2gb network connection on the server 
 with 6% cpu utilization).
 
@@ -54,9 +54,9 @@ and he whipped up Ming, which backed on MongoDB and gave us exactly
 what we needed. 
 
 As I mentioned before we also needed a fast, flexible message bus and queuing 
-system. RabbitMQ was(lightning) fast, (shockingly) flexible, but not supper 
-easy to use.   Fortunately we didn't have to roll our own wrapper here, as 
-the python community already whipped up Carrot, and Celery, which made 
+system. RabbitMQ was (lightning) fast, (shockingly) flexible, but not supper 
+easy to use. Fortunately we didn't have to roll our own wrapper here, as 
+the Python community already whipped up Carrot, and Celery, which made 
 working with the RabbitMQ based AMQP bus a LOT easer. 
 
 
@@ -72,13 +72,15 @@ from them:
 they can modify the message before it is persisted to the document 
 store (via MongoDB).   
 
-Once the message is saved to the document store, it is then queued up for another set of hooks -- **reactors** -- that are not allowed to change the
+Once the message is saved to the document store, it is then queued up for another 
+set of hooks -- **reactors** -- that are not allowed to change the
 message, but can do things like send e-mail or push a new kind of event 
 onto another queue. 
  
-Nearly everything in roundup is implemented as either an auditor or a reactor, and PyForge definitely steals that idea and runs with it. 
+Nearly everything in Roundup is implemented as either an auditor or a reactor,
+and PyForge definitely steals that idea and runs with it. 
 
-TODO: Finish reactor overview (after reactor code is written)
+TODO: Finish reactor overview (after reactor code is written).
 
 
 Application Tools

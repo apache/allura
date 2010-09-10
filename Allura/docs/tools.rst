@@ -8,6 +8,7 @@ because we've simplified it down to two kinds of event listeners:
    :alt: App Tools
 
 Basically you either get:
+
 * Immediate, best effort messages
 * Queue based messages will be processed (eventually)
 
