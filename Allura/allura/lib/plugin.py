@@ -31,10 +31,17 @@ class AuthenticationProvider(object):
 
     @classmethod
     def get(cls, request):
-        method = config.get('auth.method', 'local')
-        for ep in pkg_resources.iter_entry_points('allura.auth', method):
-            return ep.load()(request)
-        return None
+        try:
+            result = cls._loaded_ep
+        except AttributeError:
+            method = config.get('auth.method', 'local')
+            for ep in pkg_resources.iter_entry_points(
+                'allura.auth', method):
+                break
+            else:
+                return None
+            result = cls._loaded_ep = ep.load()
+        return result(request)
 
     @LazyProperty
     def session(self):

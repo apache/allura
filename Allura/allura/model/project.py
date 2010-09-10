@@ -442,10 +442,16 @@ class AppConfig(MappedClass):
     acl = FieldProperty({str:[S.ObjectId]}) 
 
     def load(self):
-        for ep in pkg_resources.iter_entry_points(
-            'allura', self.tool_name):
-            return ep.load()
-        return None
+        try:
+            result = self._loaded_ep
+        except AttributeError:
+            for ep in pkg_resources.iter_entry_points(
+                'allura', self.tool_name):
+                break
+            else:
+                return None
+            result = self._loaded_ep = ep.load()
+        return result
 
     def script_name(self):
         return self.project.script_name + self.options.mount_point + '/'
