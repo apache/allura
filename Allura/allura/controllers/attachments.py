@@ -51,6 +51,8 @@ class AttachmentController(BaseController):
             if fp is None:
                 raise exc.HTTPNotFound()
             filename = fp.metadata['filename'].encode('utf-8')
+            if fp.content_type is None:
+                fp.content_type = 'application/octet-stream'
             response.headers['Content-Type'] = fp.content_type.encode('utf-8')
             response.content_type = fp.content_type.encode('utf-8')
             if not embed:
