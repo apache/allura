@@ -27,7 +27,7 @@ Sure we sacrifice the flexibility of Roundup's
 backend, but our main goal is to make usable, high performance system, 
 not to maximize the number of backend storages systems supported.
 
-Why create all the apps as tools?
+Why create all the apps as plugins?
 ---------------------------------------------------------------------
 
 We know that some projects are going to want more locked down
@@ -36,8 +36,9 @@ processes.  These things are inevitable, and we really do want
 to support them, but at the same time they are going to conflict
 with the way many other projects want to work.   
 
-Building a tool system, and standard integration points
-makes it possible to serve everybody in one way or another. 
+Building a plugin (tool in Allura terms) system, and standard 
+integration points makes it possible to serve everybody in one 
+way or another. 
 
 Why not just allow web-based extensions? 
 ---------------------------------------------------------------------
