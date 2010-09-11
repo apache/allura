@@ -87,6 +87,6 @@ level of user moderation into the system, based on what's done at slashdot
 already.   
 
 Spam prevention technology is a rabbit hole down which the PyForge could go 
-forever, without finding a prefect solution.   The goal for launch is not 
+forever, without finding a perfect solution.   The goal for launch is not 
 perfection, but a solid foundation on which future anti-spam measures 
 can be taken.

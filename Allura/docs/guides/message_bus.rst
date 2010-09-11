@@ -138,9 +138,9 @@ notifications of wiki comments, you might write:
        # do some stuff
 
 When a message is received on the `react` exchange with the `wiki.comment`
-routing key, the worker process will inspect the message for the _project_id_ 
+routing key, the worker process will inspect the message for the `project_id` 
 field and use this to populate the pylons context object with the current 
-project.  It will then cycle through _all_instances_ of the tool for the
+project.  It will then cycle through **all instances** of the tool for the
 given project, setting the `c.app` context and invoking the reactor 
 method with that instance, the routing key, and the payload from the 
 message.  This allows each instance to decide what action to take in 
