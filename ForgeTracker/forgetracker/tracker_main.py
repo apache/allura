@@ -624,7 +624,10 @@ class TicketController(BaseController):
 
     @with_trailing_slash
     @expose('forgetracker.templates.ticket')
-    def index(self, **kw):
+    @validate(dict(
+            page=validators.Int(if_empty=0),
+            limit=validators.Int(if_empty=10)))
+    def index(self, page=0, limit=10, **kw):
         if self.ticket is not None:
             require(has_artifact_access('read', self.ticket))
             c.thread = W.thread
@@ -638,9 +641,12 @@ class TicketController(BaseController):
             c.file_chooser = W.file_chooser
             if c.app.globals.milestone_names is None:
                 c.app.globals.milestone_names = ''
+            thread = self.ticket.discussion_thread
+            post_count = Post.query.find(dict(discussion_id=thread.discussion_id, thread_id=thread._id)).count()
             return dict(ticket=self.ticket, globals=c.app.globals,
                         allow_edit=has_artifact_access('write', self.ticket)(),
-                        subscribed=Mailbox.subscribed(artifact=self.ticket))
+                        subscribed=Mailbox.subscribed(artifact=self.ticket),
+                        page=page, limit=limit, count=post_count)
         else:
             raise exc.HTTPNotFound, 'Ticket #%s does not exist.' % self.ticket_num
 
