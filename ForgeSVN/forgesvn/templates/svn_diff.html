@@ -1,0 +1,40 @@
+{% extends 'jinja_master/master.html' %}
+
+{% block extra_css %}
+  <link rel="stylesheet" type="text/css" media="screen, projection" href="{{g.forge_static('css/forge/hilite.css')}}" />
+{% endblock %}
+
+{% block title %}
+  {{c.project.name}} / {{c.app.config.options.mount_label}} / Diff of {{a.filename}}
+{% endblock %}
+
+{% block header %}Diff of {{a.filename}}{% endblock %}
+
+{% block content %}
+  <a href="{{a._commit.url()}}">Revision {{a._commit._id}}:</a>
+  <a href="{{a.url()}}">{{a.path()}}</a><br/>
+  vs.<br/>
+  <a href="{{b._commit.url()}}">Revision {{b._commit._id}}:</a>
+  <a href="{{b.url()}}">{{b.path()}}</a>
+
+  {% if (not a.has_html_view and not a.has_image_view) or (not b.has_html_view and not b.has_image_view) %}
+    {{a.filename}} cannot be displayed in your browser.
+    You may, however, <a href="?format=raw">download this file</a> instead.
+  {% endif %}
+  {% if a.has_html_view and b.has_html_view %}
+  <div class="clip">
+    <h3><span class="ico-l"><b class="ui-icon ui-icon-document"></b> {{a.filename}}</span></h3>
+    {{g.highlight(diff, lexer='diff')}}
+  </div>
+  {% endif %}
+  {% if a.has_image_view and b.has_image_view %}
+  <div>
+    <img src="{{a.url()}}?format=raw"
+         alt="{{h.text.truncate(a._commit._id, 10)}}"
+         title="{{h.text.truncate(a._commit._id, 10)}}"/>
+    <img src="{{b.url()}}?format=raw"
+         alt="{{h.text.truncate(b._commit._id, 10)}}"
+         title="{{h.text.truncate(b._commit._id, 10)}}"/>
+  </div>
+  {% endif %}
+{% endblock %}

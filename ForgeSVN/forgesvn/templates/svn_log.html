@@ -1,0 +1,19 @@
+{% extends 'jinja_master/master.html' %}
+
+{% block title %}
+  {% if c.app.repo %}
+    SVN Repository: {{c.app.repo.name}}
+  {% else %}
+    SVN Repository
+  {% endif %}
+{% endblock %}
+
+{% block header %}{{c.app.config.options.mount_label}} Log{% endblock %}
+
+{% block content %}
+  {% if log %}
+    {{c.log_widget.display(value=log, limit=limit, page=page, count=count)}}
+  {% else %}
+    <b>No (more) commits</b>
+  {% endif %}
+{% endblock %}

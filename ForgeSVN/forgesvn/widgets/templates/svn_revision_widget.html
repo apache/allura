@@ -1,0 +1,10 @@
+{% import 'jinja_master/lib.html' as lib with context %}
+{% if value.author %}
+  <a href="{{value.author.url()}}">{{lib.gravatar(value.author, size=16)}}</a>
+  <a href="{{value.author.url()}}">{{value.author.display_name}}</a>
+{% else %}
+  {{lib.email_gravatar(value.author_username, size=16)}} {{value.author_username}}
+{% endif %}
+{% if value.datetime %}{{h.ago(value.datetime)}}{% endif %}
+<br/>
+{{g.markdown.convert(h.really_unicode(value.message))}}

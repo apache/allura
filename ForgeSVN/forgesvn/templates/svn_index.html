@@ -1,0 +1,30 @@
+{% extends 'jinja_master/master.html' %}
+
+{% block title %}
+  {% if c.app.repo %}
+    SVN Repository: {{c.app.repo.name}}
+  {% else %}
+    SVN Repository
+  {% endif %}
+{% endblock %}
+
+{% block header %}{{c.app.config.options.mount_label}}{% endblock %}
+
+{% block content %}
+  {% if c.app.repo %}
+    <p>
+      Read access: <code>svn checkout svn://{{c.app.repo.scm_url_path}}</code><br/>
+      Read/write access: <code>svn checkout svn+ssh://{{c.user == c.user.anonymous() and 'USERNAME' or c.user.username}}@{{c.app.repo.scm_url_path}}</code><br/>
+    </p>
+  {% endif %}
+  {% if log %}
+    <h2>Recent Commits</h2>
+    {{c.log_widget.display(value=log, show_paging=False,
+                           limit=limit, page=page, count=count)}}
+    {% if count > limit %}
+      <a href="{{c.app.url}}log?page=1">More</a>
+    {% endif %}
+  {% else %}
+    <b>No (more) commits</b>
+  {% endif %}
+{% endblock %}

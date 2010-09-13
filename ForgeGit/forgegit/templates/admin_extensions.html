@@ -10,8 +10,9 @@
     <li>
       <label>Extensions:</label>
       {% if allow_config %}
-        <input type="text" name="additional_viewable_extensions" id="additional_viewable_extensions"
-               value="{{additional_viewable_extensions}}" title="e.g., .svnignore,.gitignore,.ini"/>
+        <input type="text" name="additional_viewable_extensions"
+               id="additional_viewable_extensions" title="e.g., .svnignore,.gitignore,.ini"
+               {% if additional_viewable_extensions %} value="{{additional_viewable_extensions}}"{% endif %}/>
       {% else %}
         <span>{{additional_viewable_extensions}}</span>
       {% endif %}
