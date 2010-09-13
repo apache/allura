@@ -87,8 +87,8 @@
 
 {% block after_content %}
   <div style="clear:both;"/>
-  {% if page.discussion_thread() and c.app.show_discussion %}
-    {% set thread = page.discussion_thread() %}
+  {% if page.discussion_thread and c.app.show_discussion %}
+    {% set thread = page.discussion_thread %}
     <div>{{c.thread.display(value=thread)}}</div>
   {% endif %}
 {% endblock %}

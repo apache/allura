@@ -17,6 +17,7 @@ from ming import orm
 from ming.orm import mapper, state, session
 from ming.orm.mapped_class import MappedClass, MappedClassMeta
 from ming.orm.property import FieldProperty, ForeignIdProperty, RelationProperty
+from ming.utils import LazyProperty
 from pymongo.errors import OperationFailure
 from webhelpers import feedgenerator as FG
 
@@ -439,11 +440,15 @@ class Artifact(MappedClass):
         '''
         return str(self._id) # pragma no cover
 
-    def discussion_thread(self, message_data=None):
+    def get_discussion_thread(self, data=None):
         '''Return the discussion thread for this artifact (possibly made more
         specific by the message_data)'''
         from .discuss import Thread
         return Thread.query.get(artifact_reference=self.dump_ref())
+
+    @LazyProperty
+    def discussion_thread(self):
+        return self.get_discussion_thread()
 
 class Snapshot(Artifact):
     class __mongometa__:

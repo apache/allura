@@ -75,7 +75,7 @@ class Forum(M.Discussion):
             sf.delete()
         super(Forum, self).delete()
 
-    def discussion_thread(self, data=None):
+    def get_discussion_thread(self, data=None):
         # If the data is a reply, use the parent's thread
         subject = '[no subject]'
         parent_id = None

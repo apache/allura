@@ -184,7 +184,7 @@ class Application(object):
             parent_id = in_reply_to[0]
         else:
             parent_id = None
-        thd = artifact.discussion_thread(data)
+        thd = artifact.get_discussion_thread(data)
         # Handle attachments
         message_id = data['message_id'][0]
         if data.get('filename'):

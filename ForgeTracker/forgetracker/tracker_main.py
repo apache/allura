@@ -766,7 +766,7 @@ class TicketController(BaseController):
                 changes['custom_field_%s'%cf.name] =self.ticket.custom_fields.get(cf.name)
                 self.ticket.custom_fields[cf.name] = value
                 changes['custom_field_%s'%cf.name] =self.ticket.custom_fields.get(cf.name)
-        thread = self.ticket.discussion_thread()
+        thread = self.ticket.discussion_thread
         latest_post = thread.posts and thread.posts[-1] or None
         post = None
         if latest_post and latest_post.author() == c.user:

@@ -202,8 +202,8 @@ g.register_app_css('css/tracker.css')
           </div>
             <div style="clear:both">&nbsp;</div>
 
-            <div py:with="thread=ticket.discussion_thread()">
               ${c.thread.display(value=thread,new_post_text="New Comment")}
+            <div py:with="thread=ticket.discussion_thread">
             </div>
         </div>
     </form>

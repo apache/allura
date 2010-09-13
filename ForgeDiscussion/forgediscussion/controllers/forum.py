@@ -93,7 +93,7 @@ class ForumController(DiscussionController):
             subject = kw['new_topic']['subject']
             text = kw['new_topic']['text']
         require(has_artifact_access('post', self.discussion))
-        thd = self.discussion.discussion_thread(dict(
+        thd = self.discussion.get_discussion_thread(dict(
                 headers=dict(Subject=subject)))
         post = thd.post(subject, text)
         thd.first_post_id = post._id
