@@ -34,4 +34,6 @@ def refresh_commit(routing_key, data):
     for cobj in repo.iter_commits(rev=hash):
         aref = cobj.dump_ref()
         for ref in search.find_shortlinks(cobj.message):
-            M.ArtifactReference(ref.artifact_reference).to_artifact().backreferences['git_%s' % hash] = aref
+            a = M.ArtifactReference(ref.artifact_reference).artifact
+            if a is None: continue
+            a.backreferences['git_%s' % hash] = aref

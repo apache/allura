@@ -137,7 +137,9 @@ class ForgeTrackerApp(Application):
             SitemapEntry('Create New Ticket', self.config.url() + 'new/', ui_icon='plus')]
         if ticket:
             for aref in ticket.references+ticket.backreferences.values():
-                artifact = ArtifactReference(aref).to_artifact().primary(model.Ticket)
+                artifact = ArtifactReference(aref).artifact
+                if artifact is None: continue
+                artifact = artifact.primary(model.Ticket)
                 if artifact.url() not in related_urls:
                     related_urls.append(artifact.url())
                     title = '%s: %s' % (artifact.type_s, artifact.shorthand_id())

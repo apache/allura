@@ -40,7 +40,7 @@ class SearchApp(Application):
         log.info('Adding %d artifacts', len(doc['artifacts']))
         obj = SearchConfig.query.find().first()
         obj.pending_commit += len(doc['artifacts'])
-        artifacts = [ ref.to_artifact() for ref in doc['artifacts'] ]
+        artifacts = [ ref.artifact for ref in doc['artifacts'] if ref.artifact ]
         artifacts = ((a, search.solarize(a)) for a in artifacts)
         artifacts = [ (a, s) for a,s in artifacts if s is not None ]
 
@@ -54,7 +54,9 @@ class SearchApp(Application):
             references = list(search.find_shortlinks(s['text']))
             a.references = [ r.artifact_reference for r in references ]
             for r in references:
-                M.ArtifactReference(r.artifact_reference).to_artifact().backreferences[s['id']] =aref
+                a = M.ArtifactReference(r.artifact_reference).artifact
+                if a is None: continue
+                a.backreferences[s['id']] =aref
         M.session.artifact_orm_session._get().disable_artifact_index = True
 
     @classmethod
@@ -63,7 +65,7 @@ class SearchApp(Application):
         log.info('Removing %d artifacts', len(doc['artifacts']))
         obj = SearchConfig.query.find().first()
         obj.pending_commit += len(doc['artifacts'])
-        artifacts = ( ref.to_artifact() for ref in doc['artifacts'] if ref is not None)
+        artifacts = ( ref.artifact for ref in doc['artifacts'] if ref is not None and ref.artifact is not None )
         artifacts = ((a, search.solarize(a)) for a in artifacts)
         artifacts = [ (a, s) for a,s in artifacts if s is not None ]
         # Add to solr
@@ -72,7 +74,9 @@ class SearchApp(Application):
         for a, s in artifacts:
             c.app = c.project.app_instance(a.app_config)
             for r in search.find_shortlinks(s['text']):
-                del M.ArtifactReference(r.artifact_reference).to_artifact().backreferences[s['id']]
+                a = M.ArtifactReference(r.artifact_reference).artifact
+                if a is None: continue
+                del a.backreferences[s['id']]
         M.session.artifact_orm_session._get().disable_artifact_index = True
 
     @classmethod

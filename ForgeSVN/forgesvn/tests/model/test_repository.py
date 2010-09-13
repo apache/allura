@@ -79,7 +79,7 @@ class TestSVNRev(unittest.TestCase):
 
     def test_ref(self):
         ref = self.rev.dump_ref()
-        art = ref.to_artifact()
+        art = ref.artifact
         assert self.rev._id == art._id
 
     def test_url(self):

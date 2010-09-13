@@ -35,6 +35,7 @@ def parse(s):
             msg = cgi.escape(u'[[%s]] (%s)' % (s, repr(ex)))
             return '\n<div class="error"><pre><code>%s</code></pre></div>' % msg
     except Exception, ex:
+        raise
         return '[[Error parsing %s: %s]]' % (s, ex)
 
 @macro
@@ -67,7 +68,8 @@ def include(ref=None, **kw):
     link = M.ArtifactLink.lookup('[' + ref + ']')
     if not link: return '[[include %s]]' % ref
     aref = M.ArtifactReference(link.artifact_reference)
-    artifact = aref.to_artifact()
+    artifact = aref.artifact
+    if artifact is None: return '[[include %s]]' % ref
     included = request.environ.setdefault('allura.macro.included', set())
     if artifact in included:
         return '[-...-]'

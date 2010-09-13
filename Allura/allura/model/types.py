@@ -1,23 +1,37 @@
+import logging
 import pickle
 from pylons import c
 
 from ming.base import Object
 from ming import schema as S
+from ming.utils import  LazyProperty
 
 from allura.lib import helpers as h
 
+log = logging.getLogger(__name__)
+
 class ArtifactReference(Object):
 
-    def to_artifact(self):
-        if self.artifact_type is None: return None
-        with h.push_context(self.project_id, self.mount_point):
-            cls = pickle.loads(str(self.artifact_type))
-            obj = cls.query.get(_id=self.artifact_id)
-            return obj
+    @LazyProperty
+    def cls(self):
+        try:
+            return pickle.loads(str(self.artifact_type))
+        except:
+            log.exception('Error unpickling artifact reference class')
+            return None
 
-    def exists(self):
-        if self.artifact_type is None: return False
+    @LazyProperty
+    def artifact(self):
+        if self.artifact_type is None: return None
+        if self.cls is None: return None
         with h.push_context(self.project_id, self.mount_point):
+            return self.cls.query.get(_id=self.artifact_id)
+
+    def _exists(self):
+        if self.artifact_type is None: return False
+        if self.cls is None: return False
+        with h.push_context(self.project_id, self.mount_point):
+            return self.cls.query.get(_id=self.artifact_id)
             cls = pickle.loads(str(self.artifact_type))
             count = cls.query.find(dict(_id=self.artifact_id)).count()
             return count > 0

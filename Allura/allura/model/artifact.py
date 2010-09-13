@@ -202,7 +202,7 @@ class ArtifactLink(MappedClass):
             for p in projects:
                 links = [
                     l for l in cls.query.find(dict(project_id=p._id, link=artifact_id))
-                    if ArtifactReference(l.artifact_reference).exists() ]
+                    if ArtifactReference(l.artifact_reference).artifact ]
                 for l in links:
                     if app_id is None: return l
                     if app_id == l.mount_point: return l

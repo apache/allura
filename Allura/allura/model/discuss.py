@@ -142,7 +142,7 @@ class Thread(Artifact):
     def artifact(self):
         aref = ArtifactReference(self.artifact_reference)
         if aref is None: return self.discussion
-        return aref.to_artifact()
+        return aref.artifact
 
     def primary(self, primary_class=None):
         result = primary_class.query.get(_id=self.artifact_reference.artifact_id)

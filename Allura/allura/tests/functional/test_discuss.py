@@ -10,7 +10,7 @@ class TestDiscuss(TestController):
         home = self.app.get('/wiki/_discuss/')
         subscribed = [ i for i in home.html.findAll('input')
                        if i.get('type') == 'checkbox'][0]
-        assert not subscribed.get('checked')
+        assert 'checked' not in subscribed.attrMap
         link = [ a for a in home.html.findAll('a')
                  if 'thread' in a['href'] ][0]
         params = {
@@ -22,7 +22,7 @@ class TestDiscuss(TestController):
         r = r.follow()
         subscribed = [ i for i in r.html.findAll('input')
                        if i.get('type') == 'checkbox'][0]
-        assert subscribed.get('checked')
+        assert 'checked' in subscribed.attrMap
         params = {
             'threads-0._id':link['href'][len('/p/test/wiki/_discuss/thread/'):-1]
             }
@@ -32,7 +32,7 @@ class TestDiscuss(TestController):
         r = r.follow()
         subscribed = [ i for i in r.html.findAll('input')
                        if i.get('type') == 'checkbox'][0]
-        assert not subscribed.get('checked')
+        assert 'checked' not in subscribed.attrMap
 
     def _make_post(self, text):
         home = self.app.get('/wiki/_discuss/')

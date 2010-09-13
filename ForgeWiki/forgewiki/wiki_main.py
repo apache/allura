@@ -161,7 +161,8 @@ class ForgeWikiApp(Application):
 	             SitemapEntry('')]
         if page:
             for aref in page.references+page.backreferences.values():
-                artifact = ArtifactReference(aref).to_artifact()
+                artifact = ArtifactReference(aref).artifact
+                if artifact is None: continue
                 if isinstance(artifact, model.Page) and artifact.url() not in related_urls:
                     related_urls.append(artifact.url())
                     related_pages.append(SitemapEntry(artifact.title, artifact.url(), className='nav_child'))
@@ -320,7 +321,7 @@ class RootController(BaseController):
         # tags = Tag.query.find({'artifact_ref.mount_point':c.app.config.options.mount_point,
         #                        'artifact_ref.project_id':c.app.config.project_id}).all()
         # for tag in tags:
-        #     artifact = ArtifactReference(tag.artifact_ref).to_artifact()
+        #     artifact = ArtifactReference(tag.artifact_ref).artifact
         #     if isinstance(artifact, model.Page):
         #         if tag.tag not in page_tags:
         #             page_tags[tag.tag] = []
