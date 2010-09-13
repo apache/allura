@@ -157,13 +157,6 @@ class Page(VersionedArtifact):
             ss = HC.query.find({'artifact_id':pg._id, 'version':int(version)}).one()
             return ss
 
-    def get_version(self, version):
-        version = int(version)
-        if version < 0:
-            version = self.version + 1 + version
-        HC = Page.__mongometa__.history_class
-        return HC.query.find({'artifact_id':self._id, 'version':version}).one()
-
     def reply(self, text):
         Feed.post(self, text)
         # Get thread

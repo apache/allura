@@ -14,7 +14,7 @@ from pylons import c, g
 from ming import Document, Session, Field
 from ming import schema as S
 from ming import orm
-from ming.orm import mapper, state
+from ming.orm import mapper, state, session
 from ming.orm.mapped_class import MappedClass, MappedClassMeta
 from ming.orm.property import FieldProperty, ForeignIdProperty, RelationProperty
 from pymongo.errors import OperationFailure
@@ -450,6 +450,7 @@ class Snapshot(Artifact):
     class __mongometa__:
         session = artifact_orm_session
         name='artifact_snapshot'
+        unique_indexes = [ ('artifact_class', 'artifact_id', 'version') ]
 
     _id = FieldProperty(S.ObjectId)
     artifact_id = FieldProperty(S.ObjectId)
@@ -507,6 +508,7 @@ class VersionedArtifact(Artifact):
             timestamp=datetime.utcnow(),
             data=state(self).document.deinstrumented_clone())
         ss = self.__mongometa__.history_class(**data)
+        session(ss).insert_now(ss, state(ss))
         log.info('Snapshot version %s of %s',
                  self.version, self.__class__)
         return ss
