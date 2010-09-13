@@ -111,7 +111,7 @@ def test_versioning():
     assert ss.shorthand_id() == pg.shorthand_id() + '#2'
     assert ss.title == pg.title
     assert ss.text == pg.text
-    assert_raises(ValueError, pg.get_version, 42)
+    assert_raises(IndexError, pg.get_version, 42)
     pg.revert(1)
     pg.commit()
     ThreadLocalORMSession.flush_all()

@@ -486,12 +486,15 @@ class PageController(BaseController):
 
     @without_trailing_slash
     @expose('jinja:page_diff.html')
+    @validate(dict(
+            v1=validators.Int(),
+            v2=validators.Int()))
     def diff(self, v1, v2):
         if not self.page:
             raise exc.HTTPNotFound
         require(has_artifact_access('read', self.page))
-        p1 = self.get_version(int(v1))
-        p2 = self.get_version(int(v2))
+        p1 = self.get_version(v1)
+        p2 = self.get_version(v2)
         result = h.diff_text(p1.text, p2.text)
         return dict(p1=p1, p2=p2, edits=result)
 
@@ -530,6 +533,7 @@ class PageController(BaseController):
 
     @without_trailing_slash
     @expose()
+    @validate(dict(version=validators.Int(if_empty=1)))
     def revert(self, version):
         if not self.page:
             raise exc.HTTPNotFound
