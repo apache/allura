@@ -140,7 +140,7 @@ class ProjectAdminController(BaseController):
         return dict()
 
     @without_trailing_slash
-    @expose('allura.ext.admin.templates.project_overview')
+    @expose('jinja:project_overview.html')
     def overview(self, **kw):
         c.markdown_editor = W.markdown_editor
         c.label_edit = W.label_edit
@@ -182,7 +182,7 @@ class ProjectAdminController(BaseController):
     @without_trailing_slash
     @expose('allura.ext.admin.templates.project_perms')
     def perms(self, **kw):
-        """Simplfied permission management screen for the project"""
+        """Simplified permission management screen for the project"""
         c.user_select = ffw.ProjectUserSelect()
         return dict()
 

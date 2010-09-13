@@ -28,6 +28,8 @@ from webhelpers import date, feedgenerator, html, number, misc, text
 from pymongo import bson
 
 from allura.lib import exceptions as exc
+# Reimport to make available to templates
+from .security import has_neighborhood_access, has_project_access, has_artifact_access
 
 re_path_portion = re.compile(r'^[a-z][-a-z0-9]{2,}$')
 

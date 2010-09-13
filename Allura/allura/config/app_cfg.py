@@ -67,6 +67,7 @@ class ForgeConfig(AppConfig):
         self.paths['templates'].append(pkg_resources.resource_filename('forgewiki', 'templates'))
         self.paths['templates'].append(pkg_resources.resource_filename('forgegit', 'templates'))
         self.paths['templates'].append(pkg_resources.resource_filename('forgegit', 'widgets/templates'))
+        self.paths['templates'].append(pkg_resources.resource_filename('allura', 'ext/admin/templates'))
 
         from jinja2 import ChoiceLoader, Environment, FileSystemLoader
         from tg.render import render_jinja

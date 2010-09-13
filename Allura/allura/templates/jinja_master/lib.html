@@ -33,3 +33,10 @@
     <img src="{{g.forge_static('images/user.png')}}" alt="{{title}}" title="{{title}}"{% if size %} width="{{size}}" height="{{size}}"{% endif %}/>
   {% endif %}
 {%- endmacro %}
+
+{% macro file_field(name, label) %}
+  {% if label %}
+  <label for="{{name}}" py:if="label">{{label}}</label>
+  {% endif %}
+  <input type="file" id="{{name}}" name="{{name}}" class="text" /><br/>
+{% endmacro %}

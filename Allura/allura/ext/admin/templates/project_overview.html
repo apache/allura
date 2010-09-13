@@ -1,68 +1,62 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-                      "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:py="http://genshi.edgewall.org/"
-      xmlns:xi="http://www.w3.org/2001/XInclude">
+{% extends 'jinja_master/master.html' %}
 
-  <xi:include href="master.html" />
-  <xi:include href="lib.html" />
+{% block title %}{{c.project.name}} / Overview{% endblock %}
 
-  <?python from allura.lib.security import has_project_access
-           from tg.configuration import config?>
+{% block header %}Project Admin{% endblock %}
 
-  <head>
-    <meta content="text/html; charset=UTF-8" http-equiv="content-type" py:replace="''"/>
-    <title>$c.project.name / Overview</title>
-  </head>
-
-  <body>
-
-    <h2 class="title">Project Admin</h2>
-    <div class="content">
-        <div py:if="c.project.deleted" class="notice">This project has been deleted and is not visible to non-admin users</div>
-        <form py:if="not has_project_access('update')()">
+{% block content %}
+        {% if c.project.deleted %}
+          <div class="notice">This project has been deleted and is not visible to non-admin users</div>
+        {% endif %}
+        {% if not h.has_project_access('update')() %}
+          <form>
             <ol>
                 <li>
                     <label>Name:</label>
-                    $c.project.name
+                    {{c.project.name}}
                 </li>
                 <hr class="clear clearfix" />
                 <li>
                     <label>Shortname:</label>
-                    $c.project.shortname
+                    {{c.project.shortname}}
                 </li>
                 <hr class="clear clearfix" />
                 <li>
                     <label>Category:</label>
-                    ${c.project.category and c.project.category.label or 'Uncategorized'}
+                    {{c.project.category and c.project.category.label or 'Uncategorized'}}
                 </li>
                 <hr class="clear clearfix" />
                 <li>
                     <label>Icon:</label>
-                    <img py:if="c.project.icon" src="${c.project.url()}/icon"/>
-                    <span py:if="not c.project.icon">&nbsp;</span>
+                    {% if c.project.icon %}
+                      <img src="{{c.project.url()}}icon"/>
+                    {% else %}
+                      <span>&nbsp;</span>
+                    {% endif %}
                 </li>
                 <hr class="clear clearfix" />
                 <li>
                     <label>Summary:</label>
-                    <pre>$c.project.short_description</pre>
+                    <pre>{{c.project.short_description}}</pre>
                 </li>
                 <hr class="clear clearfix" />
                 <li>
                     <label>Description:</label>
-                    ${Markup(c.project.description_html)}
+                    {{c.project.description_html}}
                 </li>
                 <hr class="clear clearfix" />
                 <li>
                     <label>Screenshots:</label>
-                    <py:if test="len(c.project.get_screenshots())">
-                        <a py:for="ss in c.project.get_screenshots()" href="${c.project.url()}screenshot/$ss.filename"><img src="${c.project.url()}screenshot/$ss.filename/thumb" style="margin-right: 1em"/></a>
-                    </py:if>
-                    <py:if test="not len(c.project.get_screenshots())">No screenshots have been created.</py:if>
+                    {% for ss in c.project.get_screenshots() %}
+                      <a href="{{c.project.url()}}screenshot/{{ss.filename}}"><img src="{{c.project.url()}}screenshot/{{ss.filename}}/thumb" style="margin-right: 1em"/></a>
+                    {% else %}
+                      No screenshots have been created.
+                    {% endfor %}
                 </li>
             </ol>
-        </form>
-        <form py:if="has_project_access('update')()" method="POST" action="update" enctype="multipart/form-data">
+          </form>
+        {% else %} {# has_project_access('update') #}
+          <form method="POST" action="update" enctype="multipart/form-data">
             <ol>
                 <li>
                   <div class="row dual">
@@ -73,8 +67,8 @@
                     </div>
                     <div class="column grid_10" style="margin-left:0">
                       <div class="editable viewing">
-                          <div class="viewer">$c.project.name</div>
-                          <div class="editor"><input type="text" name="name" value="$c.project.name"/></div>
+                          <div class="viewer">{{c.project.name}}</div>
+                          <div class="editor"><input type="text" name="name" value="{{c.project.name}}"/></div>
                       </div>
                     </div>
                   </div>
@@ -82,7 +76,7 @@
                 <hr class="clear clearfix" />
                 <li>
                     <label>Shortname:</label>
-                    $c.project.shortname
+                    {{c.project.shortname}}
                 </li>
                 <hr class="clear clearfix" />
                 <li>
@@ -92,18 +86,16 @@
                     </div>
                     <div class="column grid_10" style="margin-left:0">
                       <div class="editable viewing">
-                          <div class="viewer">${c.project.category and c.project.category.label or 'Uncategorized'}</div>
+                          <div class="viewer">{{c.project.category and c.project.category.label or 'Uncategorized'}}</div>
                           <div class="editor">
                               <select name="category">
                                 <option value="">Uncategorized</option>
-                                <py:for each="cat in categories">
-                                    <option value="$cat._id" py:if="c.project.category and c.project.category._id == cat._id" selected="selected">$cat.label</option>
-                                    <option value="$cat._id" py:if="not c.project.category or (c.project.category and c.project.category._id != cat._id)">$cat.label</option>
-                                    <py:for each="subcat in cat.subcategories">
-                                        <option value="$subcat._id" py:if="c.project.category and c.project.category._id == subcat._id" selected="selected">-- $subcat.label</option>
-                                        <option value="$subcat._id" py:if="not c.project.category or (c.project.category and c.project.category._id != subcat._id)">-- $subcat.label</option>
-                                    </py:for>
-                                </py:for>
+                                {% for cat in categories %}
+                                  <option value="{{cat._id}}" {% if c.project.category and c.project.category._id == cat._id %}selected="selected"{% endif%}>{{cat.label}}</option>
+                                  {% for subcat in cat.subcategories %}
+                                    <option value="{{subcat._id}}" {% if c.project.category and c.project.category._id == subcat._id %}selected="selected"{% endif %}>-- {{subcat.label}}</option>
+                                  {% endfor %}
+                                {% endfor %}
                               </select>
                             </div>
                         </div>
@@ -120,14 +112,19 @@
                     </div>
                     <div class="column grid_10" style="margin-left:0">
                       <div class="editable viewing">
-                          <div class="viewer" py:if="c.project.icon"><img src="${c.project.url()}/icon"/></div>
-                          <div class="viewer" py:if="not c.project.icon">No icon has been created.</div>
-                          <div class="editor">${file_field('icon', '')}</div>
+                          {% if c.project.icon %}
+                            <div class="viewer"><img src="{{c.project.url()}}/icon"/></div>
+                          {% else %}
+                            <div class="viewer">No icon has been created.</div>
+                          {% endif %}
+                          <div class="editor">{{lib.file_field('icon', '')}}</div>
                       </div>    
-                          <div py:if="c.project.icon">
+                      {% if c.project.icon %}
+                          <div>
                               <input type="submit" name="delete_icon" value="Delete Icon"
                                      class="ui-state-default ui-button ui-button-text clear clearfix"/>
                           </div>
+                      {% endif %}
                     </div>
                   </div>
                 </li>
@@ -141,8 +138,8 @@
                     </div>
                     <div class="column grid_10" style="margin-left:0">
                       <div class="editable viewing">
-                          <div class="viewer"><div data-prompt="Write a brief summary of your project">$c.project.short_description</div></div>
-                          <div class="editor multiline"><textarea name="short_description" id="short_description_textarea" style="width: 95%; height: 100px;">$c.project.short_description</textarea></div>
+                          <div class="viewer"><div data-prompt="Write a brief summary of your project">{{c.project.short_description}}</div></div>
+                          <div class="editor multiline"><textarea name="short_description" id="short_description_textarea" style="width: 95%; height: 100px;">{{c.project.short_description}}</textarea></div>
                       </div>
                     </div>
                   </div>
@@ -156,7 +153,7 @@
                                    This can be as long as you need it to be.'>Home Page:</label>
                     </div>
                     <div class="column grid_10" style="margin-left:0">
-                      ${c.markdown_editor.display(name='description',value=c.project.description)}
+                      {{c.markdown_editor.display(name='description', value=c.project.description)}}
                     </div>
                   </div>
                 </li>
@@ -170,8 +167,8 @@
                     </div>
                     <div class="column grid_10" style="margin-left:0">
                       <div class="editable viewing">
-                          <div class="viewer">${len(c.project.labels) and ', '.join(c.project.labels) or "No Tags"}</div>
-                          <div class="editor">${c.label_edit.display(name='labels',value=c.project.labels)}</div>
+                          <div class="viewer">{{c.project.labels and ', '.join(c.project.labels) or "No Tags"}}</div>
+                          <div class="editor">{{c.label_edit.display(name='labels', value=c.project.labels)}}</div>
                       </div>
                     </div>
                   </div>
@@ -181,12 +178,13 @@
                     <label for="screenshot">Screenshots:</label>
                     <div class="editable viewing">
                         <div class="viewer">
-                            <py:if test="len(c.project.get_screenshots())">
-                                <a py:for="ss in c.project.get_screenshots()" href="${c.project.url()}screenshot/$ss.filename"><img src="${c.project.url()}screenshot/$ss.filename/thumb" style="margin-right: 1em"/></a>
-                            </py:if>
-                            <py:if test="not len(c.project.get_screenshots())">No screenshots have been created.</py:if>
+                          {% for ss in c.project.get_screenshots() %}
+                            <a href="{{c.project.url()}}screenshot/{{ss.filename}}"><img src="{{c.project.url()}}screenshot/{{ss.filename}}/thumb" style="margin-right: 1em"/></a>
+                          {% else %}
+                            No screenshots have been created.
+                          {% endfor %}
                         </div>
-                        <div class="editor multiline">${file_field('screenshot', 'File')}</div>
+                        <div class="editor multiline">{{lib.file_field('screenshot', 'File')}}</div>
                     </div>
                 </li>
                 <hr class="clear clearfix" /> -->
@@ -194,21 +192,23 @@
                     <label>&nbsp;</label>
                     <input type="submit" value="Save"
                           />
-                    <input type="submit" value="Delete Project" name="delete"
-                           py:if="not c.project.deleted"/>
-                    <input type="submit" value="Undelete Project" name="undelete"
-                           py:if="c.project.deleted and config.get('auth.method', 'local') != 'sfx'"/>
+                    {% if not c.project.deleted %}
+                      <input type="submit" value="Delete Project" name="delete" />
+                    {% elif config.get('auth.method', 'local') != 'sfx' %}
+                      <input type="submit" value="Undelete Project" name="undelete" />
+                    {% endif %}
                 </li>
             </ol>
-        </form>
-    </div>
+          </form>
+        {% endif %}
+{% endblock %}
 
-  </body>
-  <script type="text/javascript" src="${g.forge_static('js/jquery.maxlength-min.js')}"/>
+{% block extra_js %}
+  <script type="text/javascript" src="{{g.forge_static('js/jquery.maxlength-min.js')}}"/>
   <script type="text/javascript">
     $(document).ready(function(){
       $('#short_description_textarea').maxlength({maxCharacters: 250});
     });
   </script>
+{% endblock %}
 
-</html>
