@@ -89,6 +89,10 @@ class Forum(M.Discussion):
         return self.thread_class()(discussion_id=self._id,subject=subject)
 
     @property
+    def discussion_thread(self):
+        return None
+
+    @property
     def icon(self):
         return ForumFile.query.find({'metadata.forum_id':self._id}).first()
 
