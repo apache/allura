@@ -24,7 +24,7 @@ class BranchBrowser(repository.BranchBrowser):
     def __init__(self):
         super(BranchBrowser, self).__init__(None)
 
-    @expose('jinja:svn_index.html')
+    @expose('jinja:svn/index.html')
     @with_trailing_slash
     def index(self):
         latest = c.app.repo.latest
@@ -32,7 +32,7 @@ class BranchBrowser(repository.BranchBrowser):
             return dict(log=[])
         redirect(c.app.url+"LATEST/tree/")
 
-    @expose('jinja:svn_log.html')
+    @expose('jinja:svn/log.html')
     @with_trailing_slash
     def log(self, limit=None, page=0, count=0, **kw):
         c.log_widget=log_widget
@@ -57,7 +57,7 @@ class CommitBrowser(repository.CommitBrowser):
             raise exc.HTTPNotFound()
         super(CommitBrowser, self).__init__(rev)
 
-    @expose('jinja:svn_commit.html')
+    @expose('jinja:svn/commit.html')
     @with_trailing_slash
     def index(self, **kw):
         result = super(CommitBrowser, self).index()
@@ -76,18 +76,18 @@ class CommitBrowser(repository.CommitBrowser):
 
 class TreeBrowser(repository.TreeBrowser):
 
-    @expose('jinja:svn_tree.html')
+    @expose('jinja:svn/tree.html')
     @with_trailing_slash
     def index(self, **kw):
         return super(TreeBrowser, self).index()
 
 class FileBrowser(repository.FileBrowser):
 
-    @expose('jinja:svn_file.html')
+    @expose('jinja:svn/file.html')
     @without_trailing_slash
     def index(self, **kw):
         if 'diff' in kw:
-            override_template(self.index, 'jinja:svn_diff.html')
+            override_template(self.index, 'jinja:svn/diff.html')
             return self.diff(int(kw['diff']))
         result = super(FileBrowser, self).index(**kw)
         return result

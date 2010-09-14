@@ -114,7 +114,7 @@ class SVNAdminController(DefaultAdminController):
         redirect('permissions')
 
     @without_trailing_slash
-    @expose('jinja:svn_admin_extensions.html')
+    @expose('jinja:svn/admin_extensions.html')
     def extensions(self, **kw):
         return dict(app=self.app,
                     allow_config=has_artifact_access('configure', app=self.app)(),

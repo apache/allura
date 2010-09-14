@@ -313,12 +313,12 @@ class RootController(BaseController):
         return dict(action=c.app.config.url()+'save_ticket',
                     super_id=super_id)
 
-    @expose('jinja:markdown_syntax.html')
+    @expose('jinja:tracker/markdown_syntax.html')
     def markdown_syntax(self):
         'Static page explaining markdown.'
         return dict()
 
-    @expose('jinja:help.html')
+    @expose('jinja:tracker/help.html')
     def help(self):
         'Static help page.'
         return dict()
@@ -452,7 +452,7 @@ class RootController(BaseController):
         return Post.query.find(q).count()
 
     @with_trailing_slash
-    @expose('jinja:stats.html')
+    @expose('jinja:tracker/stats.html')
     def stats(self):
         require(has_artifact_access('read'))
         globals = c.app.globals
@@ -529,7 +529,7 @@ class BinController(BaseController):
         redirect('bins/')
 
     @with_trailing_slash
-    @expose('jinja:new_bin.html')
+    @expose('jinja:tracker/new_bin.html')
     def newbin(self, q=None, **kw):
         require(has_artifact_access('save_searches', app=self.app))
         c.bin_form = W.bin_form

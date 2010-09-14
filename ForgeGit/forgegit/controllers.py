@@ -19,7 +19,7 @@ class BranchBrowser(repository.BranchBrowser):
     def _check_security(self):
         require(has_artifact_access('read', c.app.repo))
 
-    @expose('jinja:git_index.html')
+    @expose('jinja:git/index.html')
     @with_trailing_slash
     def index(self, limit=None, page=0, count=0, **kw):
         latest = c.app.repo.latest(branch=self._branch)
@@ -27,7 +27,7 @@ class BranchBrowser(repository.BranchBrowser):
             return dict(allow_fork=True, log=[])
         redirect(latest.tree().url())
 
-    @expose('jinja:log.html')
+    @expose('jinja:git/log.html')
     @with_trailing_slash
     def log(self, limit=None, page=0, count=0, **kw):
         c.log_widget=log_widget
@@ -40,7 +40,7 @@ class BranchBrowser(repository.BranchBrowser):
 class CommitBrowser(repository.CommitBrowser):
     revision_widget = GitRevisionWidget()
 
-    @expose('jinja:commit.html')
+    @expose('jinja:git/commit.html')
     @with_trailing_slash
     def index(self, **kw):
         return super(CommitBrowser, self).index()

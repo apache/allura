@@ -167,7 +167,7 @@ class HgAdminController(DefaultAdminController):
         redirect('permissions')
 
     @without_trailing_slash
-    @expose('jinja:hg_admin_extensions.html')
+    @expose('jinja:hg/admin_extensions.html')
     def extensions(self, **kw):
         return dict(app=self.app,
                     allow_config=has_artifact_access('configure', app=self.app)(),
@@ -188,13 +188,13 @@ class RootController(BaseController):
         self.ref = Refs()
         self.ci = Commits()
 
-    @expose('jinja:hg_index.html')
+    @expose('jinja:hg/index.html')
     def index(self, offset=0, branch='default', **kw):
         # Add the colon so we know where the branch part ends
         redirect(url(quote('ref/%s:/' % branch)))
 
     @with_trailing_slash
-    @expose('jinja:hg_fork.html')
+    @expose('jinja:hg/fork.html')
     def fork(self, to_name=None):
         require_authenticated()
         from_repo = c.app.repo

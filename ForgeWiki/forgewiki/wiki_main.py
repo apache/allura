@@ -256,7 +256,7 @@ class RootController(BaseController):
         redirect(title + '/')
 
     @with_trailing_slash
-    @expose('jinja:wiki_search.html')
+    @expose('jinja:wiki/search.html')
     @validate(dict(q=validators.UnicodeString(if_empty=None),
                    history=validators.StringBool(if_empty=False),
                    project=validators.StringBool(if_empty=False)))
@@ -279,7 +279,7 @@ class RootController(BaseController):
         return dict(q=q, history=history, results=results or [], count=count)
 
     @with_trailing_slash
-    @expose('jinja:browse.html')
+    @expose('jinja:wiki/browse.html')
     @validate(dict(sort=validators.UnicodeString(if_empty='alpha'),
                    show_deleted=validators.StringBool(if_empty=False)))
     def browse_pages(self, sort='alpha', show_deleted=False):
@@ -313,7 +313,7 @@ class RootController(BaseController):
         return dict(pages=pages, can_delete=can_delete, show_deleted=show_deleted)
 
     @with_trailing_slash
-    @expose('jinja:browse_tags.html')
+    @expose('jinja:wiki/browse_tags.html')
     @validate(dict(sort=validators.UnicodeString(if_empty='alpha')))
     def browse_tags(self, sort='alpha'):
         'list of all labels in the wiki'
@@ -336,13 +336,13 @@ class RootController(BaseController):
         return dict(labels=page_tags)
 
     @with_trailing_slash
-    @expose('jinja:wiki_markdown_syntax.html')
+    @expose('jinja:wiki/markdown_syntax.html')
     def markdown_syntax(self):
         'Display a page about how to use markdown.'
         return dict(example=MARKDOWN_EXAMPLE)
 
     @with_trailing_slash
-    @expose('jinja:wiki_help.html')
+    @expose('jinja:wiki/help.html')
     def wiki_help(self):
         'Display a help page about using the wiki.'
         return dict()
@@ -403,7 +403,7 @@ class PageController(BaseController):
         redirect(url)
 
     @with_trailing_slash
-    @expose('jinja:page_view.html')
+    @expose('jinja:wiki/page_view.html')
     @validate(dict(version=validators.Int(if_empty=None),
                    deleted=validators.StringBool(if_empty=False)))
     def index(self, version=None, deleted=False, **kw):
@@ -437,7 +437,7 @@ class PageController(BaseController):
             hide_left_bar=hide_left_bar, show_right_bar=c.app.show_right_bar)
 
     @without_trailing_slash
-    @expose('jinja:page_edit.html')
+    @expose('jinja:wiki/page_edit.html')
     def edit(self):
         page_exists = self.page
         if page_exists:
@@ -476,7 +476,7 @@ class PageController(BaseController):
         redirect('./edit')
 
     @without_trailing_slash
-    @expose('jinja:page_history.html')
+    @expose('jinja:wiki/page_history.html')
     def history(self):
         if not self.page:
             raise exc.HTTPNotFound
@@ -485,7 +485,7 @@ class PageController(BaseController):
         return dict(title=self.title, pages=pages, has_artifact_access=has_artifact_access)
 
     @without_trailing_slash
-    @expose('jinja:page_diff.html')
+    @expose('jinja:wiki/page_diff.html')
     @validate(dict(
             v1=validators.Int(),
             v2=validators.Int()))
@@ -685,14 +685,14 @@ class WikiAdminController(DefaultAdminController):
         redirect('home')
 
     @without_trailing_slash
-    @expose('jinja:admin_home.html')
+    @expose('jinja:wiki/admin_home.html')
     def home(self):
         return dict(app=self.app,
                     home=self.app.root_page_name,
                     allow_config=has_artifact_access('configure', app=self.app)())
 
     @without_trailing_slash
-    @expose('jinja:admin_options.html')
+    @expose('jinja:wiki/admin_options.html')
     def options(self):
         return dict(app=self.app,
                     allow_config=has_artifact_access('configure', app=self.app)())

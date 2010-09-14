@@ -164,7 +164,7 @@ class GitAdminController(DefaultAdminController):
         redirect('permissions')
 
     @without_trailing_slash
-    @expose('jinja:admin_extensions.html')
+    @expose('jinja:git/admin_extensions.html')
     def extensions(self, **kw):
         return dict(app=self.app,
                     allow_config=has_artifact_access('configure', app=self.app)(),
@@ -185,13 +185,13 @@ class RootController(BaseController):
         self.ref = Refs()
         self.ci = Commits()
 
-    @expose('jinja:git_index.html')
+    @expose('jinja:git/index.html')
     def index(self, offset=0, branch='master', **kw):
         # Add the colon so we know where the branch part ends
         redirect(url(quote('ref/%s:/' % branch)))
 
     @with_trailing_slash
-    @expose('jinja:fork.html')
+    @expose('jinja:git/fork.html')
     def fork(self, to_name=None):
         require_authenticated()
         from_repo = c.app.repo

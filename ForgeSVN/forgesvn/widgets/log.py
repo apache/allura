@@ -2,7 +2,7 @@ import ew
 from allura.lib.widgets import form_fields as ffw
 
 class SVNLog(ew.Widget):
-    template='jinja:svn_log_widget.html'
+    template='jinja:svn_widgets/log.html'
     params=['value', 'limit', 'page', 'count', 'show_paging', 'fields']
     value=None
     limit=None
