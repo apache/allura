@@ -1,12 +1,11 @@
 {% extends 'jinja_wiki_master.html' %}
+{% do g.register_forge_css('css/hilite.css') %}
 
 {% block title %}{{c.project.name}} / {{c.app.config.options.mount_label}} / {{page.title}}{% endblock %}
 
 {% block header %}{{page.title}}{% if page['deleted'] %}<span> (deleted)</span>{% endif %}{% endblock %}
 
 {% block wiki_extra_css %}
-<link rel="stylesheet" type="text/css" 
-      href="${g.app_static('css/hilite.css')}"/>
 <style>
   .hidden { display: None }
   a.notfound { color: #f00; }
