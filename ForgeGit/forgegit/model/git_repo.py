@@ -120,7 +120,7 @@ class GitRepository(M.Repository):
     def _impl(self):
         try:
             return git.Repo(self.full_fs_path)
-        except (git.errors.NoSuchPathError, git.errors.InvalidGitRepositoryError), err:
+        except (git.exc.NoSuchPathError, git.exc.InvalidGitRepositoryError), err:
             return None
 
 
