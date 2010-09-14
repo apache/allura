@@ -1,4 +1,5 @@
 {% extends 'jinja_master/master.html' %}
+{% do g.register_app_css('css/wiki.css', compress=False) %}
 
 {% block content %}
   {% block wiki_content %}content here{% endblock %}
@@ -14,10 +15,6 @@
   </div>
 {% endblock %}
 
-{% block extra_css %}
-  <link rel="stylesheet" type="text/css" href="{{g.app_static('css/wiki.css')}}" />
-  {% block wiki_extra_css %}{% endblock %}
-{% endblock %}
 {% block extra_js %}
   <script type="text/javascript" src="{{g.app_static('js/wiki.js')}}"></script>
   {% block wiki_extra_js %}{% endblock %}
