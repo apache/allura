@@ -113,7 +113,7 @@ class GitRepository(M.Repository):
         if self._impl is None: return None
         try:
             return self.CommitClass.from_repo_object(self._impl.commit(rev=branch), self)
-        except ValueError:
+        except:
             return None
 
     @LazyProperty
