@@ -108,13 +108,13 @@ class FileBrowser(BaseController):
         self._filename = filename
         self._blob = self._tree.get_blob(filename)
 
-    @expose('allura.templates.repo.file')
+    @expose('jinja:repo/file.html')
     def index(self, **kw):
         self._blob.context()
         if kw.pop('format', 'html') == 'raw':
             return self.raw()
         elif 'diff' in kw:
-            override_template(self.index, 'genshi:allura.templates.repo.diff')
+            override_template(self.index, 'jinja:repo/diff.html')
             return self.diff(kw['diff'])
         else:
             force_display = 'force' in kw

@@ -110,14 +110,36 @@ class HgRepository(M.Repository):
                  for entry in commits ]
 
     def log(self, branch=None, tag='tip', offset=0, limit=10):
-        if branch is not None:
-            ci = self._impl.branchmap()[branch][0]
-        elif tag is not None:
-            ci = self._impl.tags()[tag]
-        else:
-            ci = self._impl.changelog.tip()
-        ci = self._impl[ci]
-        return self._log(ci, offset=offset, limit=limit)
+        try:
+            if branch is not None:
+                ci = self._impl.branchmap()[branch][0]
+            elif tag is not None:
+                ci = self._impl.tags()[tag]
+            else:
+                ci = self._impl.changelog.tip()
+            ci = self._impl[ci]
+            return self._log(ci, offset=offset, limit=limit)
+        except:
+            return []
+
+    def count(self, branch='default', tag='tip'):
+        try:
+           return self.latest(branch=branch, tag=tag).rev() + 1
+        except:
+            return 0
+
+    def latest(self, branch=None, tag='tip'):
+        if self._impl is None: return None
+        try:
+            if branch is not None:
+                ci = self._impl.branchmap()[branch][0]
+            elif tag is not None:
+                ci = self._impl.tags()[tag]
+            else:
+                ci = self._impl.changelog.tip()
+            return self.CommitClass.from_repo_object(self._impl[ci], self)
+        except:
+            return None
 
     def __getattr__(self, name):
         assert type(self._impl) != type(self)

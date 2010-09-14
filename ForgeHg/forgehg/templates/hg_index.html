@@ -1,0 +1,37 @@
+{% extends 'jinja_master/master.html' %}
+
+{% block title %}
+  {% if c.app.repo %}
+    Mercurial Repository: {{c.app.repo.name}}
+  {% else %}
+    Mercurial Repository
+  {% endif %}
+{% endblock %}
+
+{% block header %}{{c.app.config.options.mount_label}}{% endblock %}
+
+{% block content %}
+<h2>Project: {{c.project.shortname}}</h2>
+  {% if c.app.repo %}
+    <p>
+      Read access: <code>hg clone http://{{c.app.repo.scm_url_path}}</code><br/>
+      Read/write access: <code>hg clone ssh://{{c.user == c.user.anonymous() and 'USERNAME' or c.user.username}}@{{c.app.repo.scm_url_path}}</code><br/>
+      {% if allow_fork and c.user != c.user.anonymous() %}
+        <form action="{{c.app.repo.url()}}fork" method="GET">
+          <input type="submit" value="Fork"/>
+        </form>
+      {% endif %}
+    </p>
+  {% endif %}
+  <div style="clear:both">&nbsp;</div>
+  {% if log %}
+    <h2>Recent Commits{% if branch %} on {{branch}}{% endif %}</h2>
+    {{c.log_widget.display(value=log, show_paging=False,
+                           limit=limit, page=page, count=count)}}
+    {% if int(count) > int(limit) %}
+      <a href="log?page=1">More</a>
+    {% endif %}
+  {% else %}
+    <b>No (more) commits</b>
+  {% endif %}
+{% endblock %}

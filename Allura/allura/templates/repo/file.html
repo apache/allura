@@ -1,59 +1,46 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-                      "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:py="http://genshi.edgewall.org/"
-      xmlns:xi="http://www.w3.org/2001/XInclude">
+{% extends 'jinja_master/master.html' %}
+{% do g.register_forge_css('css/forge/hilite.css') %}
 
-  <xi:include href="${g.allura_templates}/master.html"/>
+{% block title %}
+  {{c.project.name}} / {{c.app.config.options.mount_label}} /
+  {{h.really_unicode(blob.filename)}} @{{h.text.truncate(blob._commit._id, 10)}}
+{% endblock %}
 
-  <head>
-    <meta content="text/html; charset=UTF-8" http-equiv="content-type" py:replace="''"/>
-    <title>
-      $c.project.name / $c.app.config.options.mount_label /
-        ${h.really_unicode(blob.filename)} @${h.text.truncate(blob._commit._id, 10)}
-    </title>
-    <link rel="stylesheet" type="text/css" media="screen, projection" href="${g.forge_static('css/forge/hilite.css')}" />
-  </head>
+{% block header %}
+<a href="{{blob._commit.url()}}">@{{h.text.truncate(blob._commit._id, 10)}}</a>:
+{{lib.path_links(blob.path().split('/')[1:-1])}} {{h.really_unicode(blob.filename)}}
+{% endblock %}
 
-  <body>
-      <h1 class="title"><a href="${blob._commit.url()}">@${h.text.truncate(blob._commit._id, 10)}</a>:
-      ${path_links(blob.path().split('/')[1:-1])} ${h.really_unicode(blob.filename)}</h1>
-      <div class="content">
-        <div class="row">
-          <div class="column grid_12">
-            <py:if test="prev">
-              Parent(s):
-              <py:for each="b in prev">
-                <a href="${b.url()}">${h.text.truncate(b._commit._id, 10)}</a>
-                <a href="?diff=${b._commit._id}">(diff)</a>
-              </py:for>
-              <br/>
-            </py:if>
+{% block content %}
+  {% if prev %}
+    Parent(s):
+    {% for b in prev %}
+      <a href="{{b.url()}}">{{h.text.truncate(b._commit._id, 10)}}</a>
+      <a href="?diff={{b._commit._id}}">(diff)</a>
+    {% endfor %}
+    <br/>
+  {% endif %}
 
-            <py:if test="next">
-              Child(ren):
-              <py:for each="b in next">
-                <a href="${b.url()}">${h.text.truncate(b._commit._id, 10)}</a>
-                <a href="${b.url()}?diff=${blob._commit._id}">(diff)</a>
-              </py:for>
-              <br/>
-            </py:if>
+  {% if next %}
+    Child(ren):
+    {% for b in next %}
+      <a href="{{b.url()}}">{{h.text.truncate(b._commit._id, 10)}}</a>
+      <a href="{{b.url()}}?diff={{blob._commit._id}}">(diff)</a>
+    {% endfor %}
+    <br/>
+  {% endif %}
 
-            <img py:if="blob.has_image_view" src="?format=raw"/>
-            <py:if test="not blob.has_html_view and not blob.has_image_view and not force_display">
-              ${h.really_unicode(blob.filename)} is not known to be viewable in your browser.
-              Try to <a href="?force=True">display it</a> anyway or
-              <a href="?format=raw">download it</a> instead.
-            </py:if>
-            <py:if test="blob.has_html_view and not blob.has_image_view or force_display">
-              <a href="?format=raw">Download this file</a>
-              <div class="clip">
-                <h3><span class="ico-l"><b class="ui-icon ui-icon-document"></b> ${h.really_unicode(blob.filename)}</span></h3>
-                ${Markup(g.highlight(blob.text, filename=blob.filename))}
-              </div>
-            </py:if>
-          </div>
-        </div>
-      </div>
-  </body>
-</html>
+  {% if blob.has_image_view %}<img src="?format=raw"/>{% endif %}
+  {% if not blob.has_html_view and not blob.has_image_view and not force_display %}
+    {{h.really_unicode(blob.filename)}} is not known to be viewable in your browser.
+    Try to <a href="?force=True">display it</a> anyway or
+    <a href="?format=raw">download it</a> instead.
+  {% endif %}
+  {% if blob.has_html_view and not blob.has_image_view or force_display %}
+    <a href="?format=raw">Download this file</a>
+    <div class="clip">
+      <h3><span class="ico-l"><b class="ui-icon ui-icon-document"></b> {{h.really_unicode(blob.filename)}}</span></h3>
+      {{g.highlight(blob.text, filename=blob.filename)}}
+    </div>
+  {% endif %}
+{% endblock %}

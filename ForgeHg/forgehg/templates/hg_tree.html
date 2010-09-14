@@ -1,0 +1,43 @@
+{% extends 'jinja_master/master.html' %}
+
+{% block title %}
+  {{c.project.name}} / {{c.app.config.options.mount_label}}
+  {% if tree %}
+    / @{{h.text.truncate(tree._commit._id, 10)}}: {{lib.path_links(tree.path().split('/')[1:-1])}}
+  {% endif %}
+{% endblock %}
+
+{% block header %}
+  {% if tree %}
+    <a href="{{tree._commit.url()}}">@{{h.text.truncate(tree._commit._id, 10)}}</a>:
+    {{lib.path_links(tree.path().split('/')[1:-1])}}
+  {% else %}
+    No files
+  {% endif %}
+{% endblock %}
+
+{% block content %}
+  {% if tree %}
+    {% if c.app.repo %}
+      <p>
+        Read access: <code>hg clone http://{{c.app.repo.scm_url_path}}</code><br/>
+        Read/write access: <code>hg clone ssh://{{c.user == c.user.anonymous() and 'USERNAME' or c.user.username}}@{{c.app.repo.scm_url_path}}</code><br/>
+        {% if c.user != c.user.anonymous() %}
+          <form action="{{c.app.repo.url()}}fork" method="GET">
+            <input type="submit" value="Fork"/>
+          </form>
+        {% endif %}
+      </p>
+    {% endif %}
+    <div style="clear:both;"></div>
+    {% if tree.readme() %}
+      <div class="clip">
+        <h3><span class="ico-l"><b class="ui-icon ui-icon-document"></b> Read Me</span></h3>
+        {{g.markdown.convert(tree.readme())}}
+      </div>
+    {% endif %}
+    {{c.tree_widget.display(tree=tree)}}
+  {% else %}
+    No files
+  {% endif %}
+{% endblock %}

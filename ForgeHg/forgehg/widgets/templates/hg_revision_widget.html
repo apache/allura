@@ -1,0 +1,24 @@
+{% from 'jinja_master/lib.html' import email_gravatar with context %}
+{% if value.user_url %}
+  Authored by
+  <a href="{{value.user_url}}">{{email_gravatar(value.user.email, title=value.user.name, size=16)}}</a>
+  <a href="{{value.user_url}}">{{value.user.name}}</a>
+{% else %}
+  Authored by
+  {{email_gravatar(value.user.email, title=value.user.name, size=16)}} {{value.user.name}}
+{% endif %}
+{% if value.datetime %}{{h.ago(value.datetime)}}{% endif %}
+
+<br/>
+<a href="{{value.tree().url()}}">Tree</a><br/>
+{% if prev %}
+  Parent(s):
+  {% for ci in prev %}<a href="{{ci.url()}}">{{h.text.truncate(ci._id, 10)}}</a>{% endfor %}
+  <br/>
+{% endif %}
+{% if next %}
+  Child(ren):
+  {% for ci in next %}<a href="{{ci.url()}}">{{h.text.truncate(ci._id, 10)}}</a>{% endfor %}
+  <br/>
+{% endif %}
+{{g.markdown.convert(h.really_unicode(value.description()))}}

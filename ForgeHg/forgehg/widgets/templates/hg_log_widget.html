@@ -1,0 +1,53 @@
+{% from 'jinja_master/lib.html' import email_gravatar with context %}
+<div>
+  {% if show_paging %}
+    <div style="clear:both">
+      {{fields['page_list'].display(limit=limit, page=page, count=count)}}
+    </div>
+  {% endif %}
+  <table>
+    <thead>
+      <tr>
+        <th style="text-align:left">Commit</th>
+        <th style="text-align:left">Date</th>
+        <th>&nbsp;</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for commit in value %}
+        {% set cv = commit.value %}
+        <tr>
+          <td>
+            <b>{{h.really_unicode(h.text.truncate(cv.description(), 75))}}</b><br/>
+            <a href="{{cv.url()}}">{{h.text.truncate(cv.hex(), 10)}}</a>
+            {% if cv.user_url %}
+              by
+              <a href="{{cv.user_url}}">{{email_gravatar(cv.user.email, title=cv.user.name, size=16)}}
+              {{cv.user.name}}</a>
+            {% else %}
+              by
+              {{email_gravatar(cv.user.email, title=cv.user.name, size=16)}} {{cv.user.name}}
+            {% endif %}
+          </td>
+          <td>
+            {% if cv.datetime %}{{h.ago(cv.datetime)}}{% endif %}
+          </td>
+          <td style="text-align: right">
+            {% if commit.prev %}
+              Parent(s):
+              {% for ci in commit.prev %}<a href="{{ci.url()}}">{{h.text.truncate(ci._id, 10)}}</a>{% endfor %}
+              <br/>
+            {% endif %}
+            <a href="{{cv.tree().url()}}">Tree</a>
+          </td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% if show_paging %}
+    <div style="clear:both">
+      {{fields['page_list'].display(limit=limit, page=page, count=count)}}
+      {{fields['page_size'].display(limit=limit)}}
+    </div>
+  {% endif %}
+</div>

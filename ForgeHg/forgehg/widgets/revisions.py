@@ -1,7 +1,7 @@
 import ew
 
 class HgRevisionWidget(ew.Widget):
-    template='genshi:forgehg.widgets.templates.revision'
+    template='jinja:hg_revision_widget.html'
     params=['value', 'prev', 'next']
     value=None
     prev=()

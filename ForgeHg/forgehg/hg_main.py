@@ -12,7 +12,7 @@ from urllib import urlencode, quote, unquote
 
 # Non-stdlib imports
 import pkg_resources
-from tg import expose, validate, redirect, response, flash
+from tg import expose, validate, redirect, response, flash, url
 from tg.decorators import with_trailing_slash, without_trailing_slash
 import pylons
 from pylons import g, c, request
@@ -80,8 +80,10 @@ class ForgeHgApp(Application):
         #     links.append(SitemapEntry('Permissions', admin_url + 'permissions', className='nav_child'))
         return links
 
+    @h.exceptionless([], log)
     def sidebar_menu(self):
-        links = [ SitemapEntry('Home',c.app.url, ui_icon='home') ]
+        links = [ SitemapEntry('Browse',c.app.url + url(quote('ref/default:/')), ui_icon='folder-collapsed'),
+                  SitemapEntry('History', c.app.url + url(quote('ref/default:/')) + 'log', ui_icon='document-b', small=c.app.repo.count())]
         if has_artifact_access('admin', app=c.app)():
             links.append(SitemapEntry('Admin', c.project.url()+'admin/'+self.config.options.mount_point, ui_icon='wrench'))
         repo = c.app.repo
@@ -93,7 +95,8 @@ class ForgeHgApp(Application):
                 for b in branches:
                     links.append(SitemapEntry(
                             b, c.app.url + '?' + urlencode(dict(branch=b)),
-                            className='nav_child'))
+                            className='nav_child',
+                            small=c.app.repo.count(branch=b)))
             if tags:
                 links.append(SitemapEntry('Tags'))
                 for b in tags:
@@ -164,7 +167,7 @@ class HgAdminController(DefaultAdminController):
         redirect('permissions')
 
     @without_trailing_slash
-    @expose('forgehg.templates.admin_extensions')
+    @expose('jinja:hg_admin_extensions.html')
     def extensions(self, **kw):
         return dict(app=self.app,
                     allow_config=has_artifact_access('configure', app=self.app)(),
@@ -185,33 +188,13 @@ class RootController(BaseController):
         self.ref = Refs()
         self.ci = Commits()
 
-    @expose('forgehg.templates.index')
-    def index(self, offset=0, limit=10, branch=None, tag=None, **kw):
-        offset=int(offset)
-        repo = c.app.repo
-        if repo and repo.status == 'ready':
-            revisions = repo.log(branch=branch, tag=tag, offset=offset, limit=limit)
-            args = dict(offset=offset+10)
-            if branch: args['branch'] = branch
-            if tag: args['tag'] = tag
-            next_link = '?' + urlencode(args)
-        else:
-            revisions = []
-            next_link=None
-        c.revision_widget=W.revision_widget
-        revisions = [ dict(value=r) for r in revisions ]
-        for r in revisions:
-            r.update(r['value'].context())
-        return dict(repo=c.app.repo,
-                    branch=branch,
-                    tag=tag,
-                    revisions=revisions,
-                    next_link=next_link,
-                    offset=offset,
-                    allow_fork=True)
+    @expose('jinja:hg_index.html')
+    def index(self, offset=0, branch='default', **kw):
+        # Add the colon so we know where the branch part ends
+        redirect(url(quote('ref/%s:/' % branch)))
 
     @with_trailing_slash
-    @expose('forgehg.templates.fork')
+    @expose('jinja:hg_fork.html')
     def fork(self, to_name=None):
         require_authenticated()
         from_repo = c.app.repo

@@ -21,15 +21,15 @@ class TestRootController(TestController):
         ThreadLocalORMSession.close_all()
 
     def test_index(self):
-        resp = self.app.get('/src-hg/')
+        resp = self.app.get('/src-hg/').follow().follow()
         assert 'hg clone http://' in resp, resp
-        assert 'ready' in resp
 
     def _get_ci(self):
-        resp = self.app.get('/src-hg/')
+        resp = self.app.get('/src-hg/').follow().follow()
         for tag in resp.html.findAll('a'):
-            if tag['href'].startswith('/p/test/src-hg/ci/'): break
-        return tag['href']
+            if tag['href'].startswith('/p/test/src-hg/ci/'):
+                return tag['href']
+        return None
 
     def test_commit(self):
         ci = self._get_ci()
