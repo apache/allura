@@ -1,5 +1,5 @@
 {% extends 'jinja_wiki_master.html' %}
-{% do g.register_forge_css('css/hilite.css') %}
+{% do g.register_forge_css('css/forge/hilite.css', compress=False) %}
 
 {% block title %}{{c.project.name}} / {{c.app.config.options.mount_label}} / {{page.title}}{% endblock %}
 
