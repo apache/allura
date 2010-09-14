@@ -3,7 +3,7 @@ $(document).ready(function() {
     var holder = $('#analytics');
     // Google
     _gaq.push(['_setAccount', 'UA-32013-6'], ['_trackPageview']);
-    if(document.location.protocol=='https') {
+    if(document.location.protocol=='https:') {
         $('<script type="text/javascript" src="https://ssl.google-analytics.com/ga.js"></script>')
             .appendTo(holder);
     } else {
@@ -18,7 +18,7 @@ $(document).ready(function() {
     $('<script type="text/javascript" src="http://secure.quantserve.com/quant.js"></script>')
         .appendTo(holder);
     // comScore
-    if(document.location.protocol=='https') {
+    if(document.location.protocol=='https:') {
         $('<script type="text/javascript" src="https://sb.scorecardresearch.com/beacon.js"></script>')
             .appendTo(holder);
     } else {
