@@ -104,7 +104,6 @@ class ArtifactLink(MappedClass):
 
     @classmethod
     def lookup_links(cls, links):
-        from .project import Project
         # Parse all the links
         parsed_links = dict(
             (link, cls._parse_link(link))
@@ -120,7 +119,7 @@ class ArtifactLink(MappedClass):
             potential_matches_by_artifact[al.link].append(al)
         # Lookup all projects in this hierarchy
         projects_by_shortname = dict(
-            (p.shortname, p) for p in Project.query.find(dict(deleted=False)))
+            (p.shortname, p) for p in c.project.project_hierarchy)
         result = dict((link, None) for link in links)
         for link, pl in parsed_links.iteritems():
             potential_matches = potential_matches_by_artifact[pl['artifact']]

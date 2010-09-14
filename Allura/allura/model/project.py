@@ -7,6 +7,7 @@ from webob import exc
 from pymongo import bson
 
 from ming import schema as S
+from ming.utils import LazyProperty
 from ming.orm import ThreadLocalORMSession
 from ming.orm.base import mapper, session, state
 from ming.orm.mapped_class import MappedClass
@@ -205,6 +206,24 @@ class Project(MappedClass):
     def parent_project(self):
         if self.is_root: return None
         return self.query.get(_id=self.parent_id)
+
+    @LazyProperty
+    def root_project(self):
+        if self.is_root: return self
+        return self.parent_project.root_project
+
+    @LazyProperty
+    def project_hierarchy(self):
+        if not self.is_root:
+            return self.root_project.project_hierarchy
+        projects = set([self])
+        while True:
+            new_projects = set(
+                self.query.find(dict(parent_id={'$in':[p._id for p in projects]})))
+            new_projects.update(projects)
+            if new_projects == projects: break
+            projects = new_projects
+        return projects
 
     @property
     def category(self):
