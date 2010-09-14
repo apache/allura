@@ -41,7 +41,7 @@ def restore_project(dirname, new_shortname, new_unix_group_name):
     st = state(project)
     st.document = instrument(project_doc, DocumentTracker(st))
     project.shortname = new_shortname
-    project.set_tool_data('sfx', 'unix_group_name', new_unix_group_name)
+    project.set_tool_data('sfx', unix_group_name=new_unix_group_name)
     project.database = 'project:' + new_shortname.replace('/', ':').replace('-', '_')
     project.deleted = False
     conn = M.main_doc_session.bind.conn
