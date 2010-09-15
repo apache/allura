@@ -295,7 +295,7 @@ table {
 
 table.card {overflow: visible;}
 caption {font: 1em/1.5em Helvetica; padding: .5em 0 10px; text-align: left;}
-tr td, tr th {font: .9em/1.5em Helvetica; padding: .5em 10px .1em; text-align: left;}
+tr td, tr th {padding: .5em 10px .1em; text-align: left;}
 tbody tr td, tbody tr th {border-top: 1px solid ${color5};}
 thead tr {
 	border: 1px solid ${color5};
@@ -316,7 +316,7 @@ tfoot tr td {
 	border-top: 4px solid ${color5};
 }
 
-tbody tr.even td, tbody tr.even th {background: rgb(245,245,245);}
+tbody tr.even td, tbody tr.even th {background: #f0f0f0;}
 
 /* Form */
 form {font: .9em/1.5em helvetica;}
