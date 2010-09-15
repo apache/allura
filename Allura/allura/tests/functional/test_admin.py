@@ -125,7 +125,7 @@ class TestProjectAdmin(TestController):
     def test_tool_list(self):
         r = self.app.get('/admin/tools')
         new_ep_opts = r.html.find('select',{'class':"new_ep_name"}).findAll('option')
-        strings = [ opt.string for opt in new_ep_opts ]
+        strings = [ opt.string.strip() for opt in new_ep_opts ]
         assert strings == [
             'New Tool',
             'External Link',
@@ -140,7 +140,7 @@ class TestProjectAdmin(TestController):
             'VHOST',
             'Classic Hosted Apps',
             'MySQL Databases',
-            'Subproject' ]
+            'Subproject' ], strings
 
     def test_project_icon(self):
         file_name = 'neo-icon-set-454545-256x350.png'
