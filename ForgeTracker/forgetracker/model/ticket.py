@@ -83,11 +83,11 @@ class Globals(MappedClass):
         self._bin_counts_expire = datetime.utcnow() + timedelta(seconds=5)
 
     def sortable_custom_fields_shown_in_search(self):
-        return [dict(sortable_name='%s_s' % field.name,
-                     name=field.name,
-                     label=field.label)
+        return [dict(sortable_name='%s_s' % field['name'],
+                     name=field['name'],
+                     label=field['label'])
                 for field in self.custom_fields
-                if field.show_in_search]
+                if field.get('show_in_search')]
 
 
 class TicketHistory(Snapshot):

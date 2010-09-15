@@ -12,22 +12,22 @@ class TicketCustomFields(ew.CompoundField):
     def fields(self):
         fields = []
         for field in c.app.globals.custom_fields:
-            if field.type == 'select':
+            if field['type'] == 'select':
                 options = []
-                for opt in field.options.split():
+                for opt in field['options'].split():
                     selected = False
                     if opt.startswith('*'):
                         opt = opt[1:]
                         selected = True
                     options.append(ew.Option(label=opt,html_value=opt,py_value=opt,selected=selected))
-                fields.append(ew.SingleSelectField(label=field.label, name=str(field.name),
+                fields.append(ew.SingleSelectField(label=field['label'], name=str(field['name']),
                     options=options))
-            elif field.type == 'boolean':
-                fields.append(ew.Checkbox(label=field.label, name=str(field.name), suppress_label=True))
-            elif field.type == 'sum' or field.type == 'number':
-                fields.append(ew.NumberField(label=field.label, name=str(field.name)))
+            elif field['type'] == 'boolean':
+                fields.append(ew.Checkbox(label=field['label'], name=str(field['name']), suppress_label=True))
+            elif field['type'] == 'sum' or field['type'] == 'number':
+                fields.append(ew.NumberField(label=field['label'], name=str(field['name'])))
             else:
-                fields.append(ew.TextField(label=field.label, name=str(field.name)))
+                fields.append(ew.TextField(label=field['label'], name=str(field['name'])))
         return fields
 
 class EditTicketCustomFields(TicketCustomFields):
