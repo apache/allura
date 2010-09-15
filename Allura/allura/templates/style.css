@@ -1346,3 +1346,7 @@ h1.title .viewer:hover {
 	opacity: 0.85;
 }
 #tooltip h3, #tooltip div { margin: 0; }
+
+#starter_mounts br{
+    clear:both;
+}
