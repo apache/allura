@@ -143,7 +143,7 @@ class Tree(object):
     def readme(self):
         for fn in ['readme.txt','README.txt','README.TXT','README']:
             try:
-                readme = self.get_blob(fn).text
+                readme = h.really_unicode(self.get_blob(fn).text)
                 break
             except (AttributeError, KeyError), _:
                 readme = ''
