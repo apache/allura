@@ -118,7 +118,9 @@
                   <td>
                     <select name="new.ep_name" class="new_ep_name">
                         <option value="" disabled="disabled">New Tool</option>
-                        <option py:for="tool in installable_tools" value="$tool.name">$tool.app.tool_label</option>
+                        <option py:for="tool in installable_tools" value="$tool.name">$tool.app.tool_label
+                          ${'(%s)' % tool.app.status if tool.app.status != 'production' else ''}
+                        </option>
                         <option value="">Subproject</option>
                     </select>
                   </td>

@@ -98,6 +98,8 @@ class Application(object):
         ConfigOption('mount_point', str, 'app'),
         ConfigOption('mount_label', str, 'app'),
         ConfigOption('ordinal', int, '0') ]
+    status_map = [ 'production', 'beta', 'alpha' ]
+    status='production'
     templates=None # path to templates
     script_name=None
     root=None  # root controller
@@ -121,6 +123,10 @@ class Application(object):
         self.config = app_config_object # pragma: no cover
         self.admin = DefaultAdminController(self)
         self.url = self.config.url()
+
+    @classmethod
+    def status_int(self):
+        return self.status_map.index(self.status)
 
     def has_access(self, user, topic):
         '''Whether the user has access to send email to the given topic'''

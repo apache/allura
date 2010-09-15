@@ -96,6 +96,7 @@ setup(
     reindex = allura.command:ReindexCommand
     ensure_index = allura.command:EnsureIndexCommand
     script = allura.command:ScriptCommand
+    set-tool-access = allura.command:SetToolAccessCommand
     flyway = flyway.command:MigrateCommand
     
     [easy_widgets.resources]

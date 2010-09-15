@@ -69,6 +69,7 @@ class AdminApp(Application):
     __version__ = version.__version__
     widget=AdminWidgets
     installable=False
+    _installable_tools = None
 
     def __init__(self, project, config):
         Application.__init__(self, project, config)
@@ -80,6 +81,18 @@ class AdminApp(Application):
     def is_visible_to(self, user):
         '''Whether the user can view the app.'''
         return has_project_access('create')(user=user)
+
+    @staticmethod
+    def installable_tools_for(project):
+        cls = AdminApp
+        if cls._installable_tools is None:
+            tools = sorted(
+                [ dict(name=ep.name, app=ep.load())
+                  for ep in pkg_resources.iter_entry_points('allura') ],
+                key=lambda t:(t['app'].status_int(), t['app'].ordinal))
+            cls._installable_tools = [ t for t in tools if t['app'].installable ]
+        return [ t for t in cls._installable_tools
+            if t['app'].status in project.allowed_tool_status ]
 
     @h.exceptionless([], log)
     def sidebar_menu(self):
@@ -155,13 +168,6 @@ class ProjectAdminController(BaseController):
     @without_trailing_slash
     @expose('allura.ext.admin.templates.project_tools')
     def tools(self, **kw):
-        tools = [
-            (ep.name, ep.load())
-            for ep in pkg_resources.iter_entry_points('allura') ]
-        installable_tools = [
-            dict(name=name, app=app) for (name, app) in tools
-            if app.installable ]
-        installable_tools = sorted(installable_tools, key=lambda tool: tool['app'].ordinal)
         c.markdown_editor = W.markdown_editor
         c.label_edit = W.label_edit
         mounts = []
@@ -174,7 +180,7 @@ class ProjectAdminController(BaseController):
         mounts = sorted(mounts, key=lambda e: e['ordinal'])
         return dict(
             mounts=mounts,
-            installable_tools=installable_tools,
+            installable_tools=AdminApp.installable_tools_for(c.project),
             roles=M.ProjectRole.query.find().sort('_id').all(),
             categories=M.ProjectCategory.query.find(dict(parent_id=None)).sort('label').all(),
             users=[M.User.query.get(_id=id) for id in c.project.acl.read ])

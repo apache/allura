@@ -138,6 +138,11 @@ class Project(MappedClass):
     tool_data = FieldProperty({str:{str:None}}) # entry point: prefs dict
     ordinal = FieldProperty(int, if_missing=0)
     database_configured = FieldProperty(bool, if_missing=True)
+    _extra_tool_status = FieldProperty([str])
+
+    @LazyProperty
+    def allowed_tool_status(self):
+        return ['production'] + self._extra_tool_status
 
     @h.exceptionless([], log)
     def sidebar_menu(self):
