@@ -179,7 +179,7 @@ class NeighborhoodController(object):
             return fp.read()
         return icon.filename
 
-    @expose()
+    @expose('jinja:jinja_master/site_style.css', content_type='text/css')
     @without_trailing_slash
     def site_style(self):
         """Display the css for the default theme."""
@@ -187,23 +187,18 @@ class NeighborhoodController(object):
         if theme == None:
             theme = M.Theme.query.find(dict(name='forge_default')).first()
 
-        colors = dict(color1=theme.color1,
-                      color2=theme.color2,
-                      color3=theme.color3,
-                      color4=theme.color4,
-                      color5=theme.color5,
-                      color6=theme.color6,
-                      g=g)
-        tpl_fn = pkg_resources.resource_filename(
-            'allura', 'templates/style.css')
-        css = h.render_genshi_plaintext(tpl_fn,**colors)
-        if self.neighborhood.css:
-            tt = genshi.template.NewTextTemplate(self.neighborhood.css)
-            stream = tt.generate(**colors)
-            css = css + stream.render(encoding='utf-8').decode('utf-8')
         response.headers['Content-Type'] = ''
         response.content_type = 'text/css'
-        return css
+
+        return dict(
+            color1=theme.color1,
+            color2=theme.color2,
+            color3=theme.color3,
+            color4=theme.color4,
+            color5=theme.color5,
+            color6=theme.color6,
+            g=g,
+            extra_css=self.neighborhood.css or '')
 
 class NeighborhoodProjectBrowseController(ProjectBrowseController):
     def __init__(self, neighborhood=None, category_name=None, parent_category=None):
