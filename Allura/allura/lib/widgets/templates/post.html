@@ -18,7 +18,7 @@
           ${Markup(g.markdown.convert(value.text))}
         </div>
       	<div class="edit_post_form" style="display:none" py:if="has_artifact_access('post', value.thread)()">
-      	  ${widgets.edit_post.display(value=value, submit_text='Edit Post', action=value.url())}
+            ${widgets.edit_post.display(value=value, submit_text='Save', action=value.url())}
       	</div>
         <div class="add_attachment_form" style="display:none; clear: both; overflow: auto;" py:if="has_artifact_access('post', value.thread)()">
             ${widgets.attach_post.display(value=value, action=value.url() + 'attach')}

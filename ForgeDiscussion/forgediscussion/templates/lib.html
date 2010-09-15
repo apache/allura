@@ -155,7 +155,7 @@
         ${Markup(g.markdown.convert(post.text))}
         <div py:if="has_artifact_access('moderate', post)()"
              class="title-pane closed">
-          <span class="title">Edit Post</span>
+          <span class="title">Save</span>
           <div class="content">
             <form method="POST" action="${post.url()}">
                 ${text_field('subject', 'Subject', post.subject)}
