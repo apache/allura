@@ -659,6 +659,10 @@ ul.row {margin: 0; padding: 0;}
 	position: relative;
 	z-index: 1;
 }
+.project ul.ui-tab li a, .project ul.ui-tab li.active a {
+    font-size:0.85em;
+    font-weight:bold;
+}
 #header {margin-top: 20px; display: block;}
 #header .row {position: relative; padding-bottom: 12px;}
 #header h1 {font-size: 1.6em !important; position: absolute; left: 60px; top: -4px;}
@@ -701,8 +705,8 @@ ul.ui-tab li {
 	padding-bottom: 7px;
 }
 ul.ui-tab li.active a {
-	background: {{color5}};
-	border: 1px solid rgb(205,205,205);
+	background: #BEBFC3;
+	border: 1px solid #9A9B9F;
 	border-bottom: none;
 	border-top-left-radius: 5px;
 	border-top-right-radius: 5px;
@@ -710,9 +714,9 @@ ul.ui-tab li.active a {
 		-webkit-border-top-right-radius: 5px;
 		-moz-border-radius-topleft: 5px;
 		-moz-border-radius-topright: 5px;
-	box-shadow: rgba(0,0,0, 0.2) 0 -1px;
-		-moz-box-shadow: rgba(0,0,0, 0.2) 0 -1px;
-		-webkit-box-shadow: rgba(0,0,0, 0.2) 0 -1px;
+	box-shadow: 0 -1px transparent;
+		-moz-box-shadow: 0 -1px transparent;
+		-webkit-box-shadow: 0 -1px transparent;
 	text-shadow: none;
 }
 ul.ui-tab li a {
@@ -779,18 +783,17 @@ ul.ui-tab li a {
 }
 
 
-
 /* Side box */
 .menu {padding-top: 10px;}
 .menu ul {
-	background: rgb(245,245,245);
-	border: 1px solid rgb(205,205,205);
+	background: #E6E6E6;
+	border: 1px solid #9A9B9F;
 	border-radius: 5px;
 		-moz-border-radius: 5px;
 		-webkit-border-radius: 5px;
-	box-shadow: rgba(255,255,255, 0.8) 0 1px, rgba(0,0,0, 0.2) 0 -1px;
-		-moz-box-shadow:  rgba(255,255,255, 0.8) 0 1px, rgba(0,0,0, 0.2) 0 -1px;
-		-webkit-box-shadow:  rgba(255,255,255, 0.8) 0 1px, rgba(0,0,0, 0.2) 0 -1px;
+	box-shadow: 0 1px rgba(255, 255, 255, 0.5), 0 -1px transparent;
+		-moz-box-shadow: 0 1px rgba(255, 255, 255, 0.5), 0 -1px transparent;
+		-webkit-box-shadow: 0 1px rgba(255, 255, 255, 0.5), 0 -1px transparent;
 	margin: 0 0 20px;
 	padding: 0;
 }
@@ -851,6 +854,7 @@ ul.ui-tab li a {
 
 .sidebarmenu li a {
 	font-weight: bold;
+	border-bottom-color: #BEBFC3 !important;
 }
 .nav_head {
 	font-size: 75%;
@@ -863,14 +867,17 @@ ul.ui-tab li a {
 
 /* Content */
 .base {
-	background: {{color5}};
-	border: 1px solid rgb(205,205,205);
+    -moz-box-shadow:0 1px rgba(255, 255, 255, 0.5), 0 -1px transparent;
+    
+    
+	background: #BEBFC3;
+	border: 1px solid #9A9B9F;
 	border-radius: 5px;
 		-moz-border-radius: 5px;
 		-webkit-border-radius: 5px;
-	box-shadow: rgba(255,255,255, 0.9) 0 1px, rgba(0,0,0, 0.2) 0 -1px;
-		-moz-box-shadow:  rgba(255,255,255, 0.9) 0 1px, rgba(0,0,0, 0.2) 0 -1px;
-		-webkit-box-shadow:  rgba(255,255,255, 0.9) 0 1px, rgba(0,0,0, 0.2) 0 -1px;
+	box-shadow: 0 1px rgba(255, 255, 255, 0.5), 0 -1px transparent;
+		-moz-box-shadow: 0 1px rgba(255, 255, 255, 0.5), 0 -1px transparent;
+		-webkit-box-shadow: 0 1px rgba(255, 255, 255, 0.5), 0 -1px transparent;
 	position: relative;
 	z-index: 0;
 	margin-top: 20px !important;
@@ -897,7 +904,7 @@ ul.ui-tab li a {
 }
 .base .pad .title, .title, .base .pad .title a, .title a, .actions a {color: rgb(255,255,255) !important;}
 .base .pad .title, .title {
-	background: rgb(0,0,0) url('{{g.forge_static("images/al.png")}}') repeat-x 0 100%;
+    background:-moz-linear-gradient(100% 100% 90deg, #222327, #36373B 100%) repeat scroll 0 0 #36373B;
 	border-top-left-radius: 5px;
 	border-top-right-radius: 5px;
 		-webkit-border-top-left-radius: 5px;

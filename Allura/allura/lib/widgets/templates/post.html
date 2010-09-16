@@ -32,7 +32,7 @@
     	</div>
     	<div class="options">
     		<a href="" class="reply_post btn ico-l"><b class="ui-icon ui-icon-arrowreturnthick-1-w"></b> <span>Reply</span></a><br/>
-    		<a href="${url.current()}?page=$page&amp;limit=$limit#$value.slug" class="ico-l little_link"><b class="ui-icon ui-icon-link"></b> <span>Link</span></a><br/>
+    		<a href="${tg.url(url.current(),dict(page=page,limit=limit))}#$value.slug" class="ico-l little_link"><b class="ui-icon ui-icon-link"></b> <span>Link</span></a><br/>
     		<a href="" class="edit_post ico-l little_link"><b class="ui-icon ui-icon-pencil"></b> <span>Edit</span></a><br/>
       	<div py:if="has_artifact_access('moderate', value)()" py:strip="True">
       	  ${widgets.moderate_post.display(value=value, action=value.url()+'moderate')}
