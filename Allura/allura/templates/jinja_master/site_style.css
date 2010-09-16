@@ -319,7 +319,6 @@ tfoot tr td {
 tbody tr.even td, tbody tr.even th {background: rgb(245,245,245);}
 
 /* Form */
-form {font: .9em/1.5em helvetica;}
 form fieldset.card {overflow: visible; display: block; 	margin-bottom: 2em; border: none;}
 form fieldset {
 	margin: 0 0 1em;
@@ -935,14 +934,15 @@ ul.ui-tab li a {
 .row.reply .grid_1.tcenter, #comment .row .grid_1.tcenter {font-size: .75em; min-width: 80px; padding: 5px 0 0 0;}
 #comment .row .options {position: absolute; top: 10px; right: 10px; padding: 0; font-size: .85em;}
 #comment .row .options a:first-child {font-weight: bold;}
-#comment .row .options a {color: {{color3}};}
+#comment .row .options a.little_link {line-height: 2em; color: {{color3}}; position: relative; width: 50px; height: 20px;}
+#comment .row .options a.little_link span {position: absolute; top: 0px; left: 25px;}
 #comment ul {list-style: none; margin: 5px 0 0 0; padding: 0; float: right; clear: right; width:98%;}
-#comment ul ul li {margin-right: 20px;}
+#comment ul ul li {margin-right: 10px;}
 #comment ul ul {margin: 0 !important;}
 #comment ul ul ul li {margin-right: 0 !important;}
 #comment ul .reply {border-top-width: 0; margin-top: 0 !important; background-color: #fff;overflow:auto;padding-bottom:30px;}
 
-#comment ul .row {margin: 0; min-height: 130px;}
+#comment ul .row {margin: 0; min-height: 140px;}
 #comment ul ul .row {
 	border: 3px solid {{color6}};
 	border-radius: 0;

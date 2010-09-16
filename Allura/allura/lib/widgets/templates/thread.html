@@ -6,7 +6,6 @@
  	<div class="content">
  		<div class="row">
  			<div class="column grid_12">
-        <a href="" class="btn ico-l sidebar_thread_reply" py:if="value.find_posts(page=page, limit=limit) and has_artifact_access('post', value)()"><b class="ui-icon ui-icon-arrowreturnthick-1-w"></b> <span>Reply</span></a>
         <py:if test="limit">
           ${widgets.page_list.display(limit=limit, page=page, count=count)}
         </py:if>

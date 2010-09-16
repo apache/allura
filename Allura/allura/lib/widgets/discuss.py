@@ -226,7 +226,6 @@ class Post(HierWidget):
     show_subject=False
     supress_promote=False
     widgets=dict(
-        flag_post=FlagPost(),
         moderate_post=ModeratePost(),
         edit_post=EditPost(submit_text='Edit Post'),
         attach_post=AttachPost(submit_text='Attach'),
