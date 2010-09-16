@@ -38,7 +38,12 @@
           </form>
           <div style="clear:both"/>
           <h2>Subscriptions</h2>
-          ${c.form.display(action='update_subscriptions', value=dict(subscriptions=subscriptions))}
+          <py:if test="subscriptions">
+            ${c.form.display(action='update_subscriptions', value=dict(subscriptions=subscriptions))}
+          </py:if>
+          <py:if test="not subscriptions">
+            No subscriptions.
+          </py:if>
           <br/>
           <form action="update" method="post">
             <ol>
