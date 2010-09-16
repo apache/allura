@@ -166,7 +166,7 @@ class ProjectAdminController(BaseController):
         return dict()
 
     @without_trailing_slash
-    @expose('allura.ext.admin.templates.project_tools')
+    @expose('jinja:project_tools.html')
     def tools(self, **kw):
         c.markdown_editor = W.markdown_editor
         c.label_edit = W.label_edit

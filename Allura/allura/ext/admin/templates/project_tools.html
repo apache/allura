@@ -1,126 +1,133 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-                      "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:py="http://genshi.edgewall.org/"
-      xmlns:xi="http://www.w3.org/2001/XInclude">
+{% extends 'jinja_master/master.html' %}
 
-  <xi:include href="master.html" />
+{% block title %}{{c.project.name}} / Tools{% endblock %}
 
-  <?python from allura.lib.security import has_project_access ?>
+{% block header %}Select Tools for {{c.project.shortname}}{% endblock %}
 
-  <head>
-    <meta content="text/html; charset=UTF-8" http-equiv="content-type" py:replace="''"/>
-    <title>$c.project.name / Tools</title>
-  </head>
-
-  <body>
-    <h1 class="title">Select Tools for $c.project.shortname</h1>
-    <div class="content">
-      <div class="row">
-        <div class="column grid_12">
-          <div py:if="c.project.deleted" class="notice">This project has been deleted and is not visible to non-admin users</div>
-          <p py:if="has_project_access('tool')()">Drag and drop tools to reorder.</p>
+{% block content %}
+          {% if c.project.deleted %}
+            <div class="notice">This project has been deleted and is not visible to non-admin users</div>
+          {% endif %}
+          {% if h.has_project_access('tool')() %}
+            <p>Drag and drop tools to reorder.</p>
+          {% endif %}
           <table>
             <thead>
               <tr>
                 <th>Type</th>
                 <th>Mount Point</th>
                 <th>Label</th>
-                <th py:if="has_project_access('tool')()">Edit</th>
-                <th py:if="has_project_access('tool')()"></th>
+                {% if h.has_project_access('tool')() %}
+                  <th>Edit</th>
+                  <th></th>
+                {% endif %}
               </tr>
             </thead>
             <tbody id="tool_admin">
-              <tr class="sortables" py:for="i, item in enumerate(mounts)">
-                <py:if test="'ac' in item">
-                  <td>Tool: ${item['ac'].tool_name}</td>
-                  <td>${item['ac'].options.mount_point}</td>
+              {% for item in mounts %}
+              {% set i = loop.index0 %}
+              <tr class="sortables">
+                {% if 'ac' in item %}
+                  <td>Tool: {{item['ac'].tool_name}}</td>
+                  <td>{{item['ac'].options.mount_point}}</td>
                   <td>
                     <form method="POST" action="update_mounts" id="mounts_edit">
                       <input type="hidden"
-                             name="tool-${i}.mount_point"
+                             name="tool-{{i}}.mount_point"
                              class="mount_point"
-                             value="${item['ac'].options.mount_point}"/>
+                             value="{{item['ac'].options.mount_point}}"/>
                       <input type="hidden"
-                             name="tool-${i}.ordinal"
-                             value="${'ordinal' in item['ac'].options and item['ac'].options.ordinal or 0}"/>
-                      <div py:if="has_project_access('tool')() and item['ac'].load().installable"
-                           class="editable viewing span-15 last">
-                        <div class="viewer">${item['ac'].options.mount_label}</div>
+                             name="tool-{{i}}.ordinal"
+                             value="{{'ordinal' in item['ac'].options and item['ac'].options.ordinal or 0}}"/>
+                      {% if h.has_project_access('tool')() and item['ac'].load().installable %}
+                      <div class="editable viewing span-15 last">
+                        <div class="viewer">{{item['ac'].options.mount_label}}</div>
                         <div class="editor">
                           <input type="text"
-                                 name="tool-${i}.mount_label"
-                                 value="${item['ac'].options.mount_label}"/>
+                                 name="tool-{{i}}.mount_label"
+                                 value="{{item['ac'].options.mount_label}}"/>
                         </div>
                       </div>
-                      <div py:if="not has_project_access('tool')() or not item['ac'].load().installable">
-                        ${item['ac'].options.mount_label}
+                      {% else %}
+                      <div>
+                        {{item['ac'].options.mount_label}}
                       </div>
+                      {% endif %}
                     </form>
                   </td>
                   <td>
-                    <a py:if="has_project_access('tool')() and item['ac'].load().installable"
-                       href="${item['ac'].options.mount_point}/"
+                    {% if h.has_project_access('tool')() and item['ac'].load().installable %}
+                    <a href="{{item['ac'].options.mount_point}}/"
                        class="ico-l">
                        <b class="ui-icon ui-icon-pencil"></b> <span>Edit</span>
                     </a>
+                    {% endif %}
                   </td>
                   <td>
                     <form method="POST" action="update_mounts" id="mounts_edit">
                       <input type="hidden"
-                             name="tool-${i}.mount_point"
-                             value="${item['ac'].options.mount_point}"/>
-                      <input name="tool-${i}.delete" type="hidden" value="Delete"/>
-                      <input py:if="has_project_access('tool')() and item['ac'].load().installable"
-                             class="mount_delete" type="button" value="Delete"/>
+                             name="tool-{{i}}.mount_point"
+                             value="{{item['ac'].options.mount_point}}"/>
+                      <input name="tool-{{i}}.delete" type="hidden" value="Delete"/>
+                      {% if h.has_project_access('tool')() and item['ac'].load().installable %}
+                        <input class="mount_delete" type="button" value="Delete"/>
+                      {% endif %}
                     </form>
                   </td>
-                </py:if>
-                <py:if test="'sub' in item and not item['sub'].deleted">
+                {% endif %}
+                {% if 'sub' in item and not item['sub'].deleted %}
                   <td>Subproject</td>
-                  <td>${item['sub'].shortname}</td>
+                  <td>{{item['sub'].shortname}}</td>
                   <td>
                   <form method="POST" action="update_mounts" id="mounts_edit">
                       <input type="hidden"
-                             name="subproject-${i}.shortname"
+                             name="subproject-{{i}}.shortname"
                              class="shortname"
-                             value="${item['sub'].shortname}"/>
+                             value="{{item['sub'].shortname}}"/>
                       <input type="hidden"
-                             name="subproject-${i}.ordinal"
-                             value="${'ordinal' in item['sub'] and item['sub'].ordinal or 0}"/>
+                             name="subproject-{{i}}.ordinal"
+                             value="{{'ordinal' in item['sub'] and item['sub'].ordinal or 0}}"/>
                       <div class="editable viewing span-15 last">
-                        <div class="viewer">${item['sub'].name}</div>
+                        <div class="viewer">{{item['sub'].name}}</div>
                         <div class="editor">
                           <input type="text"
-                                 name="subproject-${i}.name"
-                                 value="${item['sub'].name}"/>
+                                 name="subproject-{{i}}.name"
+                                 value="{{item['sub'].name}}"/>
                         </div>
                       </div>
                   </form>
                   </td>
-                  <td py:if="has_project_access('tool')()"><a href="${item['sub'].url() + 'admin/'}" class="ico-l">
+                  {% if h.has_project_access('tool')() %}
+                  <td><a href="{{item['sub'].url() + 'admin/'}}" class="ico-l">
                     <b class="ui-icon ui-icon-pencil"></b> <span>Edit</span>
                   </a></td>
+                  {% endif %}
                   <td>
                   <form method="POST" action="update_mounts" id="mounts_edit">
                       <input type="hidden"
-                             name="subproject-${i}.shortname"
-                             value="${item['sub'].shortname}"/>
-                      <input name="subproject-${i}.delete" type="hidden" value="Delete"/>
-                      <input py:if="has_project_access('tool')()" class="mount_delete" type="button" value="Delete"/>
+                             name="subproject-{{i}}.shortname"
+                             value="{{item['sub'].shortname}}"/>
+                      <input name="subproject-{{i}}.delete" type="hidden" value="Delete"/>
+                      {% if h.has_project_access('tool')() %}
+                        <input class="mount_delete" type="button" value="Delete"/>
+                      {% endif %}
                   </form>
                   </td>
-                </py:if>
+                {% endif %}
               </tr>
+              {% endfor %}
               <form method="POST" action="update_mounts">
-                <input type="hidden" name="new.ordinal" value="${len(installable_tools)+len(c.project.direct_subprojects)}"/>
-                <tr py:if="has_project_access('tool')()">
+                <input type="hidden" name="new.ordinal" value="{{installable_tools|length + c.project.direct_subprojects|length}}"/>
+                {% if h.has_project_access('tool')() %}
+                <tr>
                   <td>
                     <select name="new.ep_name" class="new_ep_name">
                         <option value="" disabled="disabled">New Tool</option>
-                        <option py:for="tool in installable_tools" value="$tool.name">$tool.app.tool_label
-                          ${'(%s)' % tool.app.status if tool.app.status != 'production' else ''}
-                        </option>
+                        {% for tool in installable_tools %}
+                          <option value="{{tool.name}}">{{tool.app.tool_label}}
+                            {{'(%s)' % tool.app.status if tool.app.status != 'production' else ''}}
+                          </option>
+                        {% endfor %}
                         <option value="">Subproject</option>
                     </select>
                   </td>
@@ -134,22 +141,23 @@
                     <input type="submit" value="Install" name="new.install"/>
                   </td>
                 </tr>
+                {% endif %}
               </form>
             </tbody>
           </table>
-          <input type="button" id="save_order" value="Save Tool Order" style="display:none"
-                 py:if="has_project_access('tool')()"/>
-          <div py:if="has_project_access('tool')()" id="delete-confirm">Warning: This will destroy all data in this tool and is non reversable!</div>
-        </div>
-      </div>
-    </div>
-  </body>
+          {% if h.has_project_access('tool')() %}
+            <input type="button" id="save_order" value="Save Tool Order" style="display:none" />
+            <div id="delete-confirm">Warning: This will destroy all data in this tool and is non reversable!</div>
+          {% endif %}
+{% endblock %}
+
+{% block extra_js %}
   <script type="text/javascript">
     var form_to_delete = null;
     var defaults = {
-      <py:for each="tool in installable_tools">
-        '$tool.name':{'default_label':'$tool.app.default_mount_label','default_mount':'$tool.app.default_mount_point'},
-      </py:for>
+      {% for tool in installable_tools %}
+        '{{tool.name}}':{'default_label':'{{tool.app.default_mount_label}}','default_mount':'{{tool.app.default_mount_point}}'},
+      {% endfor %}
     };
     $('select.new_ep_name').change(function() {
       var tool = defaults[$(this).val()];
@@ -158,7 +166,7 @@
       row.find('input.new_mount_label').val(tool.default_label);
     });
     
-    <py:if test="has_project_access('tool')()">
+    {% if h.has_project_access('tool')() %}
     /*<![CDATA[*/
       $('#tool_admin').sortable({
         items: 'tr.sortables',
@@ -215,6 +223,6 @@
         return false;
       });
     /*]]>*/
-    </py:if>
+    {% endif %}
   </script>
-</html>
+{% endblock %}
