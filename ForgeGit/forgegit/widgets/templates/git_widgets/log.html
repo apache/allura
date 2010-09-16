@@ -18,7 +18,7 @@
         {% set cv = commit.value %}
         <tr>
           <td>
-            <b>{{h.really_unicode(h.text.truncate(commit.value.message, 75))}}</b><br/>
+            <b>{{h.text.truncate(h.really_unicode(commit.value.message), 75)}}</b><br/>
             {% if cv.committer != cv.author %}
               {% if cv.committer_url %}
                 <a href="{{cv.committer_url}}">{{email_gravatar(cv.committer.email, title=cv.committer.name, size=16)}}

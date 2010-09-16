@@ -45,12 +45,14 @@ def really_unicode(s):
         pass
     encoding = chardet.detect(s[:1024])['encoding']
     try:
-        return unicode(s, encoding)
+        if encoding:
+            return unicode(s, encoding)
     except UnicodeDecodeError:
         pass
     encoding = chardet.detect(s)['encoding']
     try:
-        return unicode(s, encoding)
+        if encoding:
+            return unicode(s, encoding)
     except UnicodeDecodeError:
         pass
     return unicode(repr(str(s)))[1:-1]

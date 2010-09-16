@@ -18,7 +18,7 @@
         {% set cv = commit.value %}
         <tr>
           <td>
-            <b>{{h.really_unicode(h.text.truncate(cv.description(), 75))}}</b><br/>
+            <b>{{h.text.truncate(h.really_unicode(cv.description()), 75)}}</b><br/>
             <a href="{{cv.url()}}">{{h.text.truncate(cv.hex(), 10)}}</a>
             {% if cv.user_url %}
               by

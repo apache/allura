@@ -18,7 +18,7 @@
         {% set cv = commit.value %}
         <tr>
           <td>
-            <b>{{h.really_unicode(h.text.truncate(commit.value.message, 75))}}</b><br/>
+            <b>{{h.text.truncate(h.really_unicode(commit.value.message), 75)}}</b><br/>
             <a href="{{cv.url()}}">Revision {{cv.revision.number}}</a> by
             {% if cv.author %}
               <a href="{{cv.author.url()}}">{{cv.author.display_name}}</a>
