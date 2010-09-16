@@ -148,7 +148,7 @@ class ProjectAdminController(BaseController):
         redirect('overview')
 
     @without_trailing_slash
-    @expose('allura.ext.admin.templates.project_invitations')
+    @expose('jinja:project_invitations.html')
     def invitations(self):
         return dict()
 
