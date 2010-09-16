@@ -199,7 +199,7 @@ class ProjectAdminController(BaseController):
         return dict()
 
     @without_trailing_slash
-    @expose('allura.ext.admin.templates.project_roles')
+    @expose('jinja:project_roles.html')
     def roles(self):
         return dict(roles=M.ProjectRole.query.find().sort('_id').all())
 
