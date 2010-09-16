@@ -46,7 +46,7 @@
                           <input type="hidden" name="role-{{i}}.users-{{loop.index0}}.id" value="{{u._id}}"/>
                         </span>
                       {% endfor %}
-                    {% else %}
+                    {% elif r.name == 'Admin' and users|length == 1 %}
                       <span>
                         {{users[0].display_name}}
                       </span>
