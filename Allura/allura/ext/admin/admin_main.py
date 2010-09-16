@@ -193,7 +193,7 @@ class ProjectAdminController(BaseController):
         return dict()
 
     @without_trailing_slash
-    @expose('allura.ext.admin.templates.project_permissions')
+    @expose('jinja:project_permissions.html')
     def permissions(self):
         """Advanced permission management screen for the project. Currently not linked to anywhere."""
         return dict()
