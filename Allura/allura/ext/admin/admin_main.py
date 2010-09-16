@@ -161,7 +161,7 @@ class ProjectAdminController(BaseController):
         return dict(categories=categories)
 
     @without_trailing_slash
-    @expose('allura.ext.admin.templates.project_tools_starter')
+    @expose('jinja:project_tools_starter.html')
     def tools_starter(self, **kw):
         return dict()
 
