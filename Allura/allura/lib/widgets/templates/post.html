@@ -4,7 +4,7 @@
      py:strip="True">
      <xi:include href="${g.allura_templates}/lib.html" />
   <?python from allura.lib.security import has_artifact_access?>
-  <div class="discussion-post">
+  <div id="$value.slug" class="discussion-post">
     <div class="row">
     	<div class="column grid_1 tcenter">
     		<p class="gravatar">
@@ -32,7 +32,7 @@
     	</div>
     	<div class="options">
     		<a href="" class="reply_post btn ico-l"><b class="ui-icon ui-icon-arrowreturnthick-1-w"></b> <span>Reply</span></a><br/>
-    		<a href="${value.url()}" class="ico-l"><b class="ui-icon ui-icon-link"></b> <span>Link</span></a><br/>
+    		<a href="${url.current()}?page=$page&amp;limit=$limit#$value.slug" class="ico-l"><b class="ui-icon ui-icon-link"></b> <span>Link</span></a><br/>
         <div py:if="has_artifact_access('moderate', value)()">
           ${widgets.flag_post.display(value=value, action=value.url()+'flag')}
         </div>

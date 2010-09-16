@@ -218,9 +218,11 @@ class PostThread(ew.Widget):
 
 class Post(HierWidget):
     template='genshi:allura.lib.widgets.templates.post'
-    params=['value', 'show_subject', 'indent', 'supress_promote']
+    params=['value', 'show_subject', 'indent', 'page', 'limit', 'supress_promote']
     value=None
     indent=0
+    page=0
+    limit=25
     show_subject=False
     supress_promote=False
     widgets=dict(

@@ -13,7 +13,8 @@
         <div id="comment">
           <py:def function="show_post(post, indent, supress_promote=False)">
             <li>
-              ${widgets.post.display(value=post, show_subject=show_subject, indent=indent, supress_promote=supress_promote)}
+              ${widgets.post.display(value=post, show_subject=show_subject, indent=indent,
+                                     supress_promote=supress_promote, page=page, limit=limit)}
               <ul>
               <py:for each="child in post.descendants()"
                       py:if="child.status == 'ok' and child.parent_id == post._id">
