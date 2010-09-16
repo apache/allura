@@ -186,7 +186,7 @@ class ProjectAdminController(BaseController):
             users=[M.User.query.get(_id=id) for id in c.project.acl.read ])
 
     @without_trailing_slash
-    @expose('allura.ext.admin.templates.project_perms')
+    @expose('jinja:project_perms.html')
     def perms(self, **kw):
         """Simplified permission management screen for the project"""
         c.user_select = ffw.ProjectUserSelect()
