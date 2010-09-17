@@ -1,0 +1,19 @@
+{% extends 'jinja_master/master.html' %}
+
+{% block title %}{{c.project.name}} / {{c.app.config.options.mount_label}}{% endblock %}
+
+{% block header %}{{c.app.config.options.mount_label}}{% endblock %}
+
+{% block content %}
+  <ul>
+    {% for app in enabled_apps %}
+    <li>
+      <a href="{{app.format_column('application_url')}}"
+         title="{{app.application_desc}}">
+        {{app.description}}</a>:
+      {{app.application_function}}
+      <a href="{{app.application_docs_url}}">Documentation</a>
+    </li>
+    {% endif %}
+  </ul>
+{% endblock %}

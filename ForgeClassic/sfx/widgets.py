@@ -10,7 +10,7 @@ from allura.lib import validators as V
 from sfx import model as M
 
 class _MailingListRow(ew.RowField):
-    template='genshi:sfx.templates.list_admin_row'
+    template='jinja:sfx/list_admin_row.html'
     class hidden_fields(ew.WidgetsList):
         name = ew.HiddenField()
     class fields(ew.WidgetsList):
@@ -32,7 +32,7 @@ class ListAdmin(ew.SimpleForm):
         lists = ew.TableField(field=_MailingListRow())
 
 class NewList(ForgeForm):
-    template='genshi:sfx.templates.new_list'
+    template='jinja:sfx/new_list.html'
     submit_text = 'Create'
     enctype=None
 

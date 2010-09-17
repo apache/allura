@@ -1,0 +1,25 @@
+{% extends 'jinja_master/master.html' %}
+
+{% block title %}Mailing List Admin{% endblock %}
+
+{% block header %}Mailing List Admin{% endblock %}
+
+{% block content %}
+  {% if lists %}
+    <h2>Existing Lists</h2>
+    <div class="content">
+      {{c.list.display(action='save', value=dict(lists=lists))}}
+      <br style="clear:both"/>
+    </div>
+  {% endif %}
+  <h2>New List</h2>
+  <div class="content">
+    {{c.new.display(action='create')}}
+  </div>
+{% endblock %}
+
+{% block extra_css %}
+  <style>
+    .hidden { display: None }
+  </style>
+{% endblock %}

@@ -30,7 +30,7 @@ class MailmanApp(SFXBaseApp):
     class AdminController(DefaultAdminController):
 
         @with_trailing_slash
-        @expose('sfx.templates.mailman_admin')
+        @expose('jinja:sfx/mailman_admin.html')
         def index(self, **kw):
             c.list = W.admin_list
             c.new = W.new_list
@@ -78,13 +78,13 @@ class ListSubscribers(object):
         self._list = mailing_list
 
     @with_trailing_slash
-    @expose('sfx.templates.mailman_subscriber_query')
+    @expose('jinja:sfx/mailman_subscriber_query.html')
     def index(self, **kw):
         c.search = W.search
         return dict(ml=self._list)
 
     @without_trailing_slash
-    @expose('sfx.templates.mailman_subscriber_display')
+    @expose('jinja:sfx/mailman_subscriber_display.html')
     @validate(W.search)
     def display(self, search_criteria=None, sort_by=None):
         subscribers = list(self._list.subscribers(search_criteria, sort_by))
@@ -101,7 +101,7 @@ class AdminPassword(object):
         self._list = mailing_list
 
     @with_trailing_slash
-    @expose('sfx.templates.mailman_admin_password')
+    @expose('jinja:sfx/mailman_admin_password.html')
     def index(self, **kw):
         c.form = W.password_change
         return dict(ml=self._list)

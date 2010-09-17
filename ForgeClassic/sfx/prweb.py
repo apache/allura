@@ -27,7 +27,7 @@ class VHostApp(SFXBaseApp):
     class AdminController(DefaultAdminController):
 
         @with_trailing_slash
-        @expose('sfx.templates.vhost_admin')
+        @expose('jinja:sfx/vhost_admin.html')
         def index(self, **kw):
             c.new = W.new_vhost
             return dict(vhosts=list(SM.VHost.find()))
@@ -57,7 +57,7 @@ class MySQLApp(SFXBaseApp):
     class AdminController(DefaultAdminController):
 
         @with_trailing_slash
-        @expose('sfx.templates.mysql_admin')
+        @expose('jinja:sfx/mysql_admin.html')
         def index(self, **kw):
             c.form = W.mysql_password
             return dict(value=SM.MySQL())

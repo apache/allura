@@ -24,7 +24,7 @@ class HostedAppsApp(SFXBaseApp):
     class AdminController(DefaultAdminController):
 
         @with_trailing_slash
-        @expose('sfx.templates.hosted_admin')
+        @expose('jinja:sfx/hosted_admin.html')
         def index(self, **kw):
             all_apps = SM.HostedApp.all()
             enabled_features = set(SM.HostedApp.enabled_features())
@@ -92,7 +92,7 @@ class HostedAppsApp(SFXBaseApp):
 class HostedAppsController(object):
 
     @with_trailing_slash
-    @expose('sfx.templates.hosted_index')
+    @expose('jinja:sfx/hosted_index.html')
     def index(self, **kw):
         all_apps = SM.HostedApp.all()
         enabled_features = set(SM.HostedApp.enabled_features())

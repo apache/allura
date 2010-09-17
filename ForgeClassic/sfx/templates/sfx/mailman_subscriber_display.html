@@ -1,0 +1,28 @@
+{% extends 'jinja_master/master.html' %}
+
+{% block title %}Mailing List Subscribers{% endblock %}
+
+{% block header %}Mailing List Subscribers: {{ml.name}}{% endblock %}
+
+{% block content %}
+  <div>
+    {% if search %}
+      <p>The following subscribers match the provided search criteria:</p>
+    {% endif %}
+    <p>
+      {% for s in subscribers %}
+        {{s.subscribed_email}}<br/>
+      {% endfor %}
+    </p>
+    <p>
+      Total subscriber count: {{subscribers.__len__()}}<br/>
+      Results have been sorted by {{sort_by}}.
+    </p>
+  </div>
+  <div class="notice">
+    <b>Delayed Reports</b><br/>
+     All subscriber information is refreshed each Sunday; the subscriber
+    listing for your mailing lists may have changed since the last time this
+    data was updated.
+  </div>
+{% endblock %}
