@@ -64,7 +64,7 @@ class ForgeWikiApp(Application):
     default_mount_label='Wiki'
     default_mount_point='wiki'
     ordinal=5
-    default_root_page_name = 'Home'
+    default_root_page_name = u'Home'
 
     def __init__(self, project, config):
         Application.__init__(self, project, config)
@@ -156,6 +156,7 @@ class ForgeWikiApp(Application):
         related_pages = []
         related_urls = []
         page = request.path_info.split(self.url)[-1].split('/')[-2]
+        page = h.really_unicode(page)
         page = model.Page.query.find(dict(app_config_id=self.config._id, title=page, deleted=False)).first()
         links = [SitemapEntry('Create New Page', c.app.url, ui_icon='plus', className='add_wiki_page'),
 	             SitemapEntry('')]
@@ -375,8 +376,9 @@ class RootController(BaseController):
 class PageController(BaseController):
 
     def __init__(self, title):
-        self.title = title
-        self.page = model.Page.query.get(app_config_id=c.app.config._id, title=title, deleted=False)
+        self.title = h.really_unicode(title)
+        self.page = model.Page.query.get(
+            app_config_id=c.app.config._id, title=self.title, deleted=False)
         if self.page:
             self.attachment = AttachmentsController(self.page)
         setattr(self, 'feed.atom', self.feed)

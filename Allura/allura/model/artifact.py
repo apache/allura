@@ -258,7 +258,7 @@ class Feed(MappedClass):
         if offset is not None: query = cur.offset(limit)
         for r in cur:
             feed.add_item(title=r.title,
-                          link=h.absurl(r.link),
+                          link=h.absurl(r.link.encode('utf-8')),
                           pubdate=r.pubdate,
                           description=r.description,
                           unique_id=r.unique_id,

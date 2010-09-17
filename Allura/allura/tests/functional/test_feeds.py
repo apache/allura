@@ -12,7 +12,7 @@ class TestFeeds(TestController):
         TestController.setUp(self)
         self.app.get('/wiki/')
         self.app.get('/bugs/')
-        r = self.app.post(
+        self.app.post(
             '/bugs/save_ticket',
             params=variable_encode(dict(
                     ticket_form=dict(
@@ -25,6 +25,18 @@ class TestFeeds(TestController):
                     status='open',
                     description='This is a description'))),
             status=302)
+        title = u'Descri\xe7\xe3o e Arquitetura'.encode('utf-8')
+        self.app.post(
+            '/wiki/%s/update' % title,
+            params=dict(
+                title=title,
+                text="Nothing much",
+                tags='',
+                tags_old='',
+                labels='',
+                labels_old=''),
+            status=302)
+        self.app.get('/wiki/%s/' % title)
 
     def test_project_feed(self):
         self.app.get('/feed.rss')
