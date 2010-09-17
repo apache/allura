@@ -77,7 +77,7 @@ class TreeBrowser(BaseController):
             self._tree = None
 
     @expose('allura.templates.repo.tree')
-    def index(self):
+    def index(self, **kw):
         c.tree_widget = self.tree_widget
         return dict(
             commit=self._commit,

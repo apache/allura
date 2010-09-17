@@ -46,6 +46,11 @@ class TestRootController(TestController):
         resp = self.app.get(ci + 'tree/doc/')
         assert 'roadmap.rst' in resp, resp.showbrowser()
 
+    def test_tree_extra_params(self):
+        ci = self._get_ci()
+        resp = self.app.get(ci + 'tree/doc/?format=raw')
+        assert 'roadmap.rst' in resp, resp.showbrowser()
+
     def test_file(self):
         ci = self._get_ci()
         resp = self.app.get(ci + 'tree/doc/index.rst')
