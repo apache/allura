@@ -27,11 +27,11 @@
   {% if a.has_image_view and b.has_image_view %}
   <div>
     <img src="{{a.url()}}?format=raw"
-         alt="{{h.text.truncate(a._commit._id, 10)}}"
-         title="{{h.text.truncate(a._commit._id, 10)}}"/>
+         alt="{{a._commit._id}}"
+         title="{{a._commit._id}}"/>
     <img src="{{b.url()}}?format=raw"
-         alt="{{h.text.truncate(b._commit._id, 10)}}"
-         title="{{h.text.truncate(b._commit._id, 10)}}"/>
+         alt="{{a._commit._id}}"
+         title="{{a._commit._id}}"/>
   </div>
   {% endif %}
 {% endblock %}
