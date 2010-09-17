@@ -303,7 +303,10 @@ class RootController(BaseController):
 
     @expose()
     def _lookup(self, ticket_num, *remainder):
-        return TicketController(ticket_num), remainder
+        if ticket_num.isdigit():
+            return TicketController(ticket_num), remainder
+        else:
+            raise exc.HTTPNotFound, 'Ticket #%s does not exist.' % ticket_num
 
     @with_trailing_slash
     @expose('forgetracker.templates.new_ticket')

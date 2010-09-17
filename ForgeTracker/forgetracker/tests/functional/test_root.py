@@ -27,8 +27,11 @@ class TestFunctionalController(TestController):
             assert 0, "form error?"
         return resp.follow()
     
+    def test_bad_ticket_number(self):
+        self.app.get('/bugs/input.project_user_select', status=404)
+
     def test_invalid_ticket(self):
-        r = self.app.get('/bugs/2/', status=404)
+        self.app.get('/bugs/2/', status=404)
 
     def test_new_ticket(self):
         summary = 'test new ticket'
