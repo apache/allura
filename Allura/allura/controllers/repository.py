@@ -155,7 +155,8 @@ class FileBrowser(BaseController):
         lb = list(b)
         diff = ''.join(patience.unified_diff(
                 la, lb,
-                'a' + apath, 'b' + b.path()))
+                ('a' + apath).encode('utf-8'),
+                ('b' + b.path()).encode('utf-8')))
         return dict(
             a=a, b=b,
             diff=diff)
