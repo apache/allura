@@ -48,11 +48,15 @@
     <div class="container{{g.document_class(neighborhood)}}">
 			<div id="header">
 	      <div class="row">
+          {% block nav_menu %}
           {% include 'jinja_master/nav_menu.html' %}
+          {% endblock %}
 				</div>
 			</div>
       <div id="section">
+        {% block top_nav %}
         {% include 'jinja_master/top_nav.html' %}
+        {% endblock %}
 				<div class="row base">
 				  {% if not hide_left_bar %}
             {% include 'jinja_master/sidebar_menu.html' %}
