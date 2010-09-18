@@ -78,7 +78,7 @@
         		<div class="actions">{% block actions %}{% endblock %}</div>
             <div class="content">
               <div class="row{% if show_right_bar %} dual{% endif %}">
-                <div class="column grid_{{inner_width}}">
+                <div class="column {% block inner_grid %}grid_{{inner_width}}{% endblock %}">
                   {% block content %}{% endblock %}
                 </div>
           			{% if show_right_bar %}
