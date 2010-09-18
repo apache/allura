@@ -93,7 +93,7 @@ class NeighborhoodController(object):
             redirect(project.url())
         return ProjectController(), remainder
 
-    @expose('allura.templates.neighborhood_project_list')
+    @expose('jinja:neighborhood_project_list.html')
     @with_trailing_slash
     def index(self, sort='alpha', limit=25, page=0, **kw):
         if self.neighborhood.redirect:

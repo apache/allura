@@ -1,18 +1,11 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-                      "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:py="http://genshi.edgewall.org/"
-      xmlns:xi="http://www.w3.org/2001/XInclude">
+{% set hide_left_bar = not neighborhood.allow_browse %}
+{% extends 'jinja_master/master.html' %}
 
-  <xi:include href="master.html" py:if="neighborhood.allow_browse" />
-  <xi:include href="master_one_col.html" py:if="not neighborhood.allow_browse" />
-  <xi:include href="neighborhood_lib.html"/>
-  <?python from allura.lib.security import has_project_access ?>
+{% block title %}{{neighborhood.name}} / {{title}}{% endblock %}
 
-  <head>
-    <meta content="text/html; charset=UTF-8" http-equiv="content-type" py:replace="''"/>
-    <title>$neighborhood.name / $title</title>
-    <style type="text/css" py:if="neighborhood.allow_browse">
+{% block extra_css %}
+  {% if neighborhood.allow_browse %}
+    <style type="text/css">
     #section .base .pad{
       background-color: inherit;
       border-radius: 0;
@@ -23,27 +16,41 @@
         -webkit-box-shadow:  rgba(0,0,0, 0) 0 0 0;
     }
     </style>
-  </head>
+  {% endif %}
+{% endblock %}
 
-  <body id="neighborhood_project_list">
-    <py:if test="neighborhood.homepage">
-  	  ${Markup(neighborhood.homepage)}
-  	</py:if>
-    <py:if test="neighborhood.allow_browse">
-      <p py:if="not len(projects)">No projects found</p>
-      <div py:if="len(projects)" class="list">
-        ${c.page_list.display(limit=limit, page=page, count=count)}
+{% block body_attrs %} id="neighborhood_project_list"{% endblock %}
+
+{% block nav_menu %}
+{% include 'jinja_master/neigh_nav_menu.html' %}
+{% endblock %}
+
+{% block top_nav %}
+{% include 'jinja_master/neigh_top_nav.html' %}
+{% endblock %}
+
+{% block inner_grid %}{% endblock %}
+
+{% block content %}
+    {% if neighborhood.homepage %}
+  	  {{neighborhood.homepage|safe}}
+    {% endif %}
+    {% if neighborhood.allow_browse %}
+      {% if not projects %}
+        <p>No projects found</p>
+      {% else %}
+      <div class="list">
+        {{c.page_list.display(limit=limit, page=page, count=count)}}
         <div style="clear:both"></div>
-        <py:for each="project in projects">
-      	  <?python g.set_project(project.shortname)?>
-      	  <py:if test="has_project_access('read', project)()">
-            ${c.project_summary.display(value=project)}
-          </py:if>
-        </py:for>
+        {% for project in projects %}
+      	  {% do g.set_project(project.shortname) %}
+      	  {% if h.has_project_access('read', project)() %}
+            {{c.project_summary.display(value=project)}}
+          {% endif %}
+        {% endfor %}
         <div style="clear:both"></div>
-        ${c.page_list.display(limit=limit, page=page, count=count)}
-			</div>
-    </py:if>
-    
-  </body>
-</html>
+        {{c.page_list.display(limit=limit, page=page, count=count)}}
+      </div>
+      {% endif %}
+    {% endif %}
+{% endblock %}
