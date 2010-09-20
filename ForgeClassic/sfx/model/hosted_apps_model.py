@@ -90,11 +90,21 @@ class HostedApp(object):
         if user is None: user = c.user
         if project is None: project = c.project
         self._queue_ha_operation('hostedapp_create', user, project)
+        stmt = T.feature_optin.insert()
+        stmt.execute(
+            feature_type=self.feature_type,
+            owner_table='project',
+            owner_pk=project.get_tool_data('sfx', 'group_id'))
 
     def disable(self, user=None, project=None):
         if user is None: user = c.user
         if project is None: project = c.project
         self._queue_ha_operation('hostedapp_disable', user, project)
+        stmt = T.feature_optin.delete()
+        stmt.execute(
+            feature_type=self.feature_type,
+            owner_table='project',
+            owner_pk=project.get_tool_data('sfx', 'group_id'))
 
     def addperm(self, user=None, project=None):
         if user is None: user = c.user
@@ -107,7 +117,8 @@ class HostedApp(object):
         op_detail = json.dumps(dict(
                 kw,
                 hostedapp_name=self.feature_type))
-        stmt = T.backend_queue.insert(
+        stmt = T.backend_queue.insert()
+        stmt.execute(
             time_submitted=sa.func.UNIX_TIMESTAMP(),
             time_performed=0,
             submitter_table='user',
@@ -118,9 +129,4 @@ class HostedApp(object):
             operation_detail=op_detail,
             operation_status_type='pending',
             operation_status_detail='')
-        stmt = T.feature_optin.insert()
-        stmt.execute(
-            feature_type=self.feature_type,
-            owner_table='project',
-            owner_pk=project.get_tool_data('sfx', 'group_id'))
 
