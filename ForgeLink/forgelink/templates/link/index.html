@@ -1,0 +1,9 @@
+{% extends 'jinja_master/master.html' %}
+
+{% block title %}{{c.project.name}} / {{c.app.config.options.mount_label}} / Link is not configured{% endblock %}
+
+{% block header %}{{c.app.config.options.mount_label}}{% endblock %}
+
+{% block content %}
+<p>Please log in as the project's administrator and provide a url for this link.</p>
+{% endblock %}
