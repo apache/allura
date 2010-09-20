@@ -173,7 +173,7 @@ class ForgeWikiApp(Application):
         links = links + [
             SitemapEntry('Wiki Home',c.app.url),
             SitemapEntry('Browse Pages',c.app.url+'browse_pages/'),
-		    SitemapEntry('Browse Tags',c.app.url+'browse_tags/'),
+		    SitemapEntry('Browse Labels',c.app.url+'browse_tags/'),
 		    SitemapEntry(''),
 		    SitemapEntry('Wiki Help',c.app.url+'wiki_help/', className='nav_child'),
 		    SitemapEntry('Markdown Syntax',c.app.url+'markdown_syntax/', className='nav_child')

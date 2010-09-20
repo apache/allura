@@ -32,7 +32,7 @@
           <div id="allow_moderate" py:if="has_artifact_access('moderate', value)()"/>
           <py:if test="has_artifact_access('post', value)()">
             <div id="tag_thread_holder" style="display:none">
-              ${widgets.tag_post.display(value=value,submit_text='Tag Post', action=value.url() + 'tag')}
+              ${widgets.tag_post.display(value=value,submit_text='Save', action=value.url() + 'tag')}
             </div>
           </py:if>
         </div>

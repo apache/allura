@@ -141,7 +141,7 @@ class ForgeDiscussionApp(Application):
             if '/thread/' in request.url:
                 l += [
                     SitemapEntry('Reply to This', '#', ui_icon='comment', className='sidebar_thread_reply'),
-                    SitemapEntry('Tag This', '#', ui_icon='tag', className='sidebar_thread_tag'),
+                    SitemapEntry('Label This', '#', ui_icon='tag', className='sidebar_thread_tag'),
                     SitemapEntry('Follow This', 'feed.rss', ui_icon='signal-diag'),
                     SitemapEntry('Mark as Spam', 'flag_as_spam', ui_icon='flag', className='sidebar_thread_spam')
                 ]

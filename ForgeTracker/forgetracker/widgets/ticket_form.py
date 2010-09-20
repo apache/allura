@@ -60,7 +60,7 @@ class GenericTicketForm(ew.SimpleForm):
             ew.SingleSelectField(name='milestone', label='Milestone',
                 options=lambda: [ew.Option(label='None',html_value='',py_value='')] +
                                 c.app.globals.milestone_names.split()),
-            ffw.LabelEdit(label='Tags',name='labels', className='ticket_form_tags'),
+            ffw.LabelEdit(label='Labels',name='labels', className='ticket_form_tags'),
             ffw.FileChooser(name='attachment', label='Attachment', field_type='file', validator=fev.FieldStorageUploadConverter(if_missing=None)),
             ew.SubmitButton(label=self.submit_text,name='submit',
                 attrs={'class':"ui-button ui-widget ui-state-default ui-button-text-only"}),

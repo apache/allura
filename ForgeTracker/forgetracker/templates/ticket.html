@@ -83,7 +83,7 @@ g.register_app_css('css/tracker.css')
                       <hr/>
                     </py:for>
 
-                    <b>Tags:</b>
+                    <b>Labels:</b>
                       <span py:for="label in ticket.labels" class="ui-corner-all tag">
                         <a href="../search?q=labels:${h.urllib.quote_plus(label)}">$label (${ticket.artifacts_labeled_with(label).count()})</a>
                       </span>
@@ -158,7 +158,7 @@ g.register_app_css('css/tracker.css')
                     </py:for>
                     <div class="row dual">
                       <div class="column" style="margin-right:0">
-                        <b>Tags:</b>
+                        <b>Labels:</b>
                       </div>
                       <div class="column" style="margin-left:0;width:48%; overflow:auto;">
                         ${c.label_edit.display(name='labels', value=ticket.labels)}

@@ -162,12 +162,12 @@
                   <div class="row dual">
                     <div class="column" style="margin-right:0">
                       <label for="labels"
-                             title="Free-form tags to describe your project.
-                                   These can be used to search for similar projects.">Tags:</label>
+                             title="Free-form labels to describe your project.
+                                   These can be used to search for similar projects.">Labels:</label>
                     </div>
                     <div class="column grid_10" style="margin-left:0">
                       <div class="editable viewing">
-                          <div class="viewer">{{c.project.labels and ', '.join(c.project.labels) or "No Tags"}}</div>
+                          <div class="viewer">{{c.project.labels and ', '.join(c.project.labels) or "No Labels"}}</div>
                           <div class="editor">{{c.label_edit.display(name='labels', value=c.project.labels)}}</div>
                       </div>
                     </div>

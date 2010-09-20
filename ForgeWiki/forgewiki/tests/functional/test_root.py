@@ -37,7 +37,7 @@ class TestRootController(TestController):
 
     def test_root_browse_tags(self):
         response = self.app.get('/wiki/browse_tags/')
-        assert 'Browse Tags' in response
+        assert 'Browse Labels' in response
 
     def test_root_browse_pages(self):
         response = self.app.get('/wiki/browse_pages/')

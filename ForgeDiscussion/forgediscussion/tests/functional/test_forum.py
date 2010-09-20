@@ -271,7 +271,7 @@ class TestForum(TestController):
         assert '<a href="/p/test/discussion/help" class="nav_child"> <span>Forum Permissions</span></a>' in sidebarmenu
         assert '<a href="/p/test/discussion/markdown_syntax" class="nav_child"> <span>Markdown Syntax</span></a>' in sidebarmenu
         assert '<a href="#" class="sidebar_thread_reply ico-l"><b class="ui-icon ui-icon-comment"></b> <span>Reply to This</span></a>' not in sidebarmenu
-        assert '<a href="#" class="sidebar_thread_tag ico-l"><b class="ui-icon ui-icon-tag"></b> <span>Tag This</span></a>' not in sidebarmenu
+        assert '<a href="#" class="sidebar_thread_tag ico-l"><b class="ui-icon ui-icon-tag"></b> <span>Label This</span></a>' not in sidebarmenu
         assert '<a href="feed.rss" class=" ico-l"><b class="ui-icon ui-icon-signal-diag"></b> <span>Follow This</span></a>' not in sidebarmenu
         assert '<a href="flag_as_spam" class="sidebar_thread_spam ico-l"><b class="ui-icon ui-icon-flag"></b> <span>Mark as Spam</span></a>' not in sidebarmenu
         thread = self.app.get('/discussion/TestForum/post', params=dict(
@@ -279,7 +279,7 @@ class TestForum(TestController):
                 text='aaa')).follow()
         thread_sidebarmenu = str(thread.html.find('div',{'id':'sidebar'}))
         assert '<a href="#" class="sidebar_thread_reply ico-l"><b class="ui-icon ui-icon-comment"></b> <span>Reply to This</span></a>' in thread_sidebarmenu
-        assert '<a href="#" class="sidebar_thread_tag ico-l"><b class="ui-icon ui-icon-tag"></b> <span>Tag This</span></a>' in thread_sidebarmenu
+        assert '<a href="#" class="sidebar_thread_tag ico-l"><b class="ui-icon ui-icon-tag"></b> <span>Label This</span></a>' in thread_sidebarmenu
         assert '<a href="feed.rss" class=" ico-l"><b class="ui-icon ui-icon-signal-diag"></b> <span>Follow This</span></a>' in thread_sidebarmenu
         assert '<a href="flag_as_spam" class="sidebar_thread_spam ico-l"><b class="ui-icon ui-icon-flag"></b> <span>Mark as Spam</span></a>' in thread_sidebarmenu
 

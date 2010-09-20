@@ -83,7 +83,7 @@ class TagPost(ew.SimpleForm):
         result['buttons'] = [submit_button]
         return result
 
-    fields=[ffw.LabelEdit(label='Tags',name='labels', className='title')]
+    fields=[ffw.LabelEdit(label='Labels',name='labels', className='title')]
 
     def resources(self):
         for r in ffw.LabelEdit(name='labels').resources(): yield r
