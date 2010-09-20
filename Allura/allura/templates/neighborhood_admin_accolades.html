@@ -1,24 +1,20 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-                      "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:py="http://genshi.edgewall.org/"
-      xmlns:xi="http://www.w3.org/2001/XInclude">
+{% extends 'jinja_master/master.html' %}
 
-  <xi:include href="master.html" />
-  <xi:include href="lib.html" />
-  <xi:include href="neighborhood_lib.html" />
+{% block title %}{{neighborhood.name}} / Award Administration{% endblock %}
 
-  <head>
-    <meta content="text/html; charset=UTF-8" http-equiv="content-type" py:replace="''"/>
-    <title>$neighborhood.name / Award Administration</title>
-  </head>
+{% block header %}Award Administration for {{neighborhood.name}}{% endblock %}
 
-  <body>
-    <h1 class="title">Award Administration for $neighborhood.name</h1>
-    <div class="content">
-      <div class="row">
-        <div class="column grid_12">
-          <p py:if="awards_count > 0">
+{% block nav_menu %}
+{% include 'jinja_master/neigh_nav_menu.html' %}
+{% endblock %}
+
+{% block top_nav %}
+{% include 'jinja_master/neigh_top_nav.html' %}
+{% endblock %}
+
+{% block content %}
+          {% if awards_count > 0 %}
+          <p>
           <a href="awards/"><h3>Current Awards</h3></a>
             <div id="award_list">
               <table border="1">
@@ -31,22 +27,24 @@
                   </tr>
                 </thead>
                 <tbody>
-                  <py:for each="award in awards">
+                  {% for award in awards %}
                     <tr>
                       <td>
                         <py:if test="award.icon">
-                          <img class="award_icon" src="awards/${award.url()}/icon"/>
+                          <img class="award_icon" src="awards/{{award.url()}}/icon"/>
                         </py:if>
                       </td>
-                      <td><a href="${award.longurl()}">${award.short}</a></td>
-                      <td>$award.full</td>
-                      <td><a href="${award.longurl()}/delete">[X]</a></td>
+                      <td><a href="{{award.longurl()}}">{{award.short}}</a></td>
+                      <td>{{award.full}}</td>
+                      <td><a href="{{award.longurl()}}/delete">[X]</a></td>
                     </tr>
-                  </py:for>
+                  {% endfor %}
                 </tbody>
               </table>
             </div>
           </p>
+          {% endif %}
+
           <h3>Create an Award</h3>
           <form enctype="multipart/form-data" method="POST" action="awards/create">
             <table border="1">
@@ -76,13 +74,17 @@
               </tbody>
             </table>
           </form>
-          <py:def function="project(n, subprojects)">
-            <option value="${n.name}">${n.name}</option>
-            <py:for each="p in subprojects">
-              ${project(p, p.subprojects)}
-            </py:for>
-          </py:def>
-          <p py:if="awards_count > 0">
+
+          {% macro neighborhood_project_select(n, projects) %}
+            <optgroup label="{{n.name}}">
+            {% for p in projects %}
+              <option value="{{p.name}}">{{p.name}}</option>
+            {% endfor %}
+            </optgroup>
+          {% endmacro %}
+
+          {% if awards_count > 0 %}
+          <p>
             <h3>Grant an Award</h3>
             <form method="POST" action="awards/grant">
               <table border="1">
@@ -97,16 +99,16 @@
                   <tr>
                     <td>
                       <select name="grant">
-                        <py:for each="assign in assigns">
-                          <option value="$assign.short">$assign.short</option>
-                        </py:for>
+                        {% for assign in assigns %}
+                          <option value="{{assign.short}}">{{assign.short}}</option>
+                        {% endfor %}
                       </select>
                     </td>
                     <td>
                       <select name="recipient">
-                      <py:for each="n, subprojects in projects">
-                        ${project(n, subprojects)}
-                      </py:for>
+                      {% for n, projects in neigh_projects %}
+                        {{neighborhood_project_select(n, projects)}}
+                      {% endfor %}
                       </select>
                     </td>
                     <td>
@@ -117,7 +119,10 @@
               </table>
             </form>
           </p>
-          <p py:if="grants_count > 0">
+          {% endif %}
+          
+          {% if grants_count > 0 %}
+          <p py:if="">
             <h3>Current Grants</h3>
             <div id="grant_list">
               <table border="1">
@@ -129,19 +134,16 @@
                   </tr>
                 </thead>
                 <tbody>
-                  <py:for each="grant in grants">
+                  {% for grant in grants %}
                     <tr>
-                      <td><a href="$(grant.longurl()">${grant.award.short}</a></td>
-                      <td><a href="${grant.longurl()}">${grant.granted_to_project.shortname}</a></td>
-                      <td><a href="${grant.longurl()}/revoke">[X]</a></td>
+                      <td><a href="{{grant.longurl()}}">{{grant.award.short}}</a></td>
+                      <td><a href="{{grant.granted_to_project.url()}}">{{grant.granted_to_project.shortname}}</a></td>
+                      <td><a href="{{grant.longurl()}}/revoke">[X]</a></td>
                     </tr>
-                  </py:for>
+                  {% endfor %}
                 </tbody>
               </table>
             </div>
           </p>
-        </div>
-      </div>
-    </div>
-  </body>
-</html>
+          {% endif %}
+{% endblock %}

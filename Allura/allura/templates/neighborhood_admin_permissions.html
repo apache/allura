@@ -1,42 +1,43 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-                      "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:py="http://genshi.edgewall.org/"
-      xmlns:xi="http://www.w3.org/2001/XInclude">
+{% extends 'jinja_master/master.html' %}
 
-  <xi:include href="master.html" />
-  <xi:include href="lib.html" />
-  <xi:include href="neighborhood_lib.html" />
+{% block extra_css %}
+    <link rel="stylesheet" type="text/css" media="screen" href="{{g.forge_static('css/forge/accordion.css')}}" />
+{% endblock %}
 
-  <head>
-    <meta content="text/html; charset=UTF-8" http-equiv="content-type" py:replace="''"/>
-    <title>$neighborhood.name / Permissions</title>
-    <link rel="stylesheet" type="text/css" media="screen" href="${g.forge_static('css/forge/accordion.css')}" />
-  </head>
+{% block title %}{{neighborhood.name}} / Permissions{% endblock %}
 
-  <body>
-    <h1 class="title">Permissions for $neighborhood.name</h1>
-    <div class="content">
-      <div class="row">
-        <div class="column grid_12">
+{% block header %}Permissions for {{neighborhood.name}}{% endblock %}
+
+{% block nav_menu %}
+{% include 'jinja_master/neigh_nav_menu.html' %}
+{% endblock %}
+
+{% block top_nav %}
+{% include 'jinja_master/neigh_top_nav.html' %}
+{% endblock %}
+
+{% block content %}
           <p>The ACL determines neighborhood-level permissions.</p>
           <div id="acl-admin">
-            <py:for each="permission, users in neighborhood.acl.iteritems()">
-              <h3><a href="#" id="permission_$permission">Permission: $permission</a></h3>
+            {% for permission, users in neighborhood.acl.iteritems() %}
+              <h3><a href="#" id="permission_{{permission}}">Permission: {{permission}}</a></h3>
               <div>
                 <form method="POST" action="update_acl">
-                  <input type="hidden" name="permission" value="$permission"/>
-                  <input py:for="i,uid in enumerate(users)"
-                         type="hidden" name="user-${i}.id" value="$uid"/>
+                  <input type="hidden" name="permission" value="{{permission}}"/>
+                  {% for uid in users %}
+                    <input type="hidden" name="user-{{loop.index0}}.id" value="{{uid}}"/>
+                  {% endfor %}
                   <table>
                     <thead>
                       <tr><th>Username</th><th/></tr>
                     </thead>
                     <tbody>
-                      <tr py:for="i,u in enumerate(h.make_users(users))">
-                        <td>$u.username</td>
-                        <td><input type="submit" value="Remove" name="user-${i}.delete" /></td>
-                      </tr>
+                      {% for u in h.make_users(users) %}
+                        <tr>
+                          <td>{{u.username}}</td>
+                          <td><input type="submit" value="Remove" name="user-{{loop.index0}}.delete" /></td>
+                        </tr>
+                      {% endfor %}
                       <tr>
                         <td>
                           <input name="new.username"/>
@@ -49,12 +50,11 @@
                   </table>
                 </form>
               </div>
-            </py:for>
+            {% endfor %}
           </div>
-        </div>
-      </div>
-    </div>
-  </body>
+{% endblock %}
+
+{% block extra_js %}
   <script type="text/javascript">
     $(function() {
       $("#acl-admin").accordion({
@@ -78,4 +78,4 @@
       }
     });
 </script>
-</html>
+{% endblock %}

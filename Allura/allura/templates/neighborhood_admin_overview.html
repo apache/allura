@@ -1,45 +1,39 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-                      "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:py="http://genshi.edgewall.org/"
-      xmlns:xi="http://www.w3.org/2001/XInclude">
+{% extends 'jinja_master/master.html' %}
+    
+{% block title %}{{neighborhood.name}} / Overview{% endblock %}
 
-  <xi:include href="master.html" />
-  <xi:include href="lib.html" />
-  <xi:include href="neighborhood_lib.html" />
+{% block header %}Administration Overview for {{neighborhood.name}}{% endblock %}
 
-  <head>
-    <meta content="text/html; charset=UTF-8" http-equiv="content-type" py:replace="''"/>
-    <title>$neighborhood.name / Overview</title>
-  </head>
-
-  <py:def function="custom_color(number)">
+{% macro custom_color(number) %}
     <li>
-      <label>Custom Color $number</label>
+      <label>Custom Color {{number}}</label>
       <div class="editable viewing">
-        <div class="viewer" py:if="neighborhood.theme">${getattr(neighborhood.theme,'color%s' % number)}</div>
-        <div class="viewer" py:if="not neighborhood.theme">None</div>
+        <div class="viewer">{{neighborhood.theme and neighborhood.theme['color%s' % number] or 'None'}}</div>
         <div class="editor">
-          <input name="color$number" value="${neighborhood.theme and getattr(neighborhood.theme,'color%s' % number) or ''}"/>
+          <input name="color{{number}}" value="{{neighborhood.theme and neighborhood.theme['color%s' % number] or ''}}"/>
         </div>
       </div>
     </li>
     <hr/>
-  </py:def>
+{% endmacro %}
 
-  <body>
-    <h1 class="title">Administration Overview for $neighborhood.name</h1>
-    <div class="content">
-      <div class="row">
-        <div class="column grid_12">
+{% block nav_menu %}
+{% include 'jinja_master/neigh_nav_menu.html' %}
+{% endblock %}
+
+{% block top_nav %}
+{% include 'jinja_master/neigh_top_nav.html' %}
+{% endblock %}
+
+{% block content %}
           <form method="POST" action="update" enctype="multipart/form-data">
             <ol>
               <li>
                 <label>Name</label>
                 <div class="editable viewing span-15 last">
-                  <div class="viewer">$neighborhood.name</div>
+                  <div class="viewer">{{neighborhood.name}}</div>
                   <div class="editor">
-                    <input name="name" value="$neighborhood.name"/>
+                    <input name="name" value="{{neighborhood.name}}"/>
                   </div>
                 </div>
               </li>
@@ -47,9 +41,9 @@
               <li>
                 <label>Redirect</label>
                 <div class="editable viewing span-15 last">
-                  <div class="viewer">$neighborhood.redirect</div>
+                  <div class="viewer">{{neighborhood.redirect}}</div>
                   <div class="editor">
-                    <input name="redirect" value="$neighborhood.redirect"/>
+                    <input name="redirect" value="{{neighborhood.redirect}}"/>
                   </div>
                 </div>
               </li>
@@ -57,19 +51,21 @@
               <li>
                 <label>Home Content<br/>(HTML)</label>
                 <div class="editable viewing span-15 last">
-                  <div class="viewer" py:if="neighborhood.homepage">$neighborhood.homepage</div>
-                  <div class="viewer" py:if="not neighborhood.homepage">None</div>
-                  <div class="editor multiline">${c.markdown_editor.display(name='homepage',value=neighborhood.homepage)}</div>
+                  {% if neighborhood.homepage %}
+                    <div class="viewer">{{neighborhood.homepage}}</div>
+                  {% else %}
+                    <div class="viewer">None</div>
+                  {% endif %}
+                  <div class="editor multiline">{{c.markdown_editor.display(name='homepage', value=neighborhood.homepage)}}</div>
                 </div>
               </li>
               <hr/>
               <li>
                 <label>Allow Browsing</label>
                 <div class="editable viewing span-15 last">
-                  <div class="viewer">$neighborhood.allow_browse</div>
+                  <div class="viewer">{{neighborhood.allow_browse}}</div>
                   <div class="editor">
-                    <input type="checkbox" name="allow_browse" py:if="not neighborhood.allow_browse"/>
-                    <input type="checkbox" name="allow_browse" checked="checked" py:if="neighborhood.allow_browse"/>
+                    <input type="checkbox" name="allow_browse" {% if neighborhood.allow_browse %}checked="checked"{% endif %}/>
                   </div>
                 </div>
               </li>
@@ -82,26 +78,28 @@
               <li>
                 <label>Custom Color 1</label>
                 <div class="editable viewing span-15 last">
-                  <div class="viewer" py:if="neighborhood.theme">$neighborhood.theme.color1</div>
-                  <div class="viewer" py:if="not neighborhood.theme">None</div>
+                  <div class="viewer">{{neighborhood.theme and neighborhood.theme.color1 or 'None'}}</div>
                   <div class="editor">
-                    <input name="color1" value="${neighborhood.theme and neighborhood.theme.color1 or ''}"/>
+                    <input name="color1" value="{{neighborhood.theme and neighborhood.theme.color1 or ''}}"/>
                   </div>
                 </div>
               </li>
               <hr/>
-              ${custom_color(2)}
-              ${custom_color(3)}
-              ${custom_color(4)}
-              ${custom_color(5)}
-              ${custom_color(6)}
+              {{custom_color(2)}}
+              {{custom_color(3)}}
+              {{custom_color(4)}}
+              {{custom_color(5)}}
+              {{custom_color(6)}}
               <li>
                 <label>Custom CSS</label>
                 <div class="editable viewing span-15 last">
-                  <div class="viewer" py:if="neighborhood.css"><pre>$neighborhood.css</pre></div>
-                  <div class="viewer" py:if="not neighborhood.css">No CSS has been created</div>
+                  {% if neighborhood.css %}
+                    <div class="viewer"><pre>{{neighborhood.css}}</pre></div>
+                  {% else %}
+                    <div class="viewer">No CSS has been created</div>
+                  {% endif %}
                   <div class="editor multiline">
-                    <textarea name="css">$neighborhood.css</textarea>
+                    <textarea name="css">{{neighborhood.css}}</textarea>
                   </div>
                 </div>
               </li>
@@ -109,10 +107,13 @@
               <li>
                 <label>Icon</label>
                 <div class="editable viewing span-15 last">
-                  <div class="viewer" py:if="neighborhood.icon"><img src="${neighborhood.url()}/icon"/></div>
-                  <div class="viewer" py:if="not neighborhood.icon">No icon has been uploaded</div>
+                  {% if neighborhood.icon %}
+                    <div class="viewer"><img src="{{neighborhood.url()}}/icon"/></div>
+                  {% else %}
+                    <div class="viewer">No icon has been uploaded</div>
+                  {% endif %}
                   <div class="editor">
-                    ${file_field('icon', '')}
+                    {{lib.file_field('icon', '')}}
                   </div>
                 </div>
               </li>
@@ -123,8 +124,4 @@
               </li>
             </ol>
           </form>
-        </div>
-      </div>
-    </div>
-  </body>
-</html>
+{% endblock %}

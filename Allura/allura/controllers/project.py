@@ -410,24 +410,24 @@ class NeighborhoodAdminController(object):
         redirect('overview')
 
     @without_trailing_slash
-    @expose('allura.templates.neighborhood_admin_overview')
+    @expose('jinja:neighborhood_admin_overview.html')
     def overview(self):
         self.set_nav()
         c.markdown_editor = W.markdown_editor
         return dict(neighborhood=self.neighborhood)
 
     @without_trailing_slash
-    @expose('allura.templates.neighborhood_admin_permissions')
+    @expose('jinja:neighborhood_admin_permissions.html')
     def permissions(self):
         self.set_nav()
         return dict(neighborhood=self.neighborhood)
 
     @without_trailing_slash
-    @expose('allura.templates.neighborhood_admin_accolades')
+    @expose('jinja:neighborhood_admin_accolades.html')
     def accolades(self):
         self.set_nav()
-        psort = [(n, M.Project.query.find(dict(is_root=True, neighborhood_id=n._id, deleted=False)).sort('shortname').all())
-                 for n in M.Neighborhood.query.find().sort('name')]
+        psort = [(n, M.Project.query.find(dict(neighborhood_id=n._id, deleted=False, shortname={'$ne': '--init--'})).sort('shortname').all())
+                 for n in M.Neighborhood.query.find(dict(name={'$ne': 'Users'})).sort('name')]
         awards = M.Award.query.find(dict(created_by_neighborhood_id=self.neighborhood._id))
         awards_count = len(awards)
         assigns = M.Award.query.find(dict(created_by_neighborhood_id=self.neighborhood._id))
@@ -435,7 +435,7 @@ class NeighborhoodAdminController(object):
         grants = M.AwardGrant.query.find(dict(granted_by_neighborhood_id=self.neighborhood._id))
         grants_count = len(grants)
         return dict(
-            projects=psort,
+            neigh_projects=psort,
             awards=awards,
             awards_count=awards_count,
             assigns=assigns,
