@@ -1,0 +1,21 @@
+{% if neighborhood %}
+  <div class="row project">
+    <div class="column grid_9">
+      <ul class="ui-tab">
+          <li class="{{request.url.rfind(neighborhood.url(), - neighborhood.url()|length) != -1 and 'active' or ''}}">
+            <a href="{{neighborhood.url()}}" class="ico-l"><b class="ui-icon ui-icon-home"></b> <span>Home</span></a>
+          </li>
+          {% if h.has_neighborhood_access('admin', neighborhood)() %}
+          <li class="{{neighborhood.url()+'_admin' in request.url and 'active' or ''}}">
+              <a href="{{neighborhood.url()}}_admin/" class="ico-l"><b class="ui-icon ui-icon-gear"></b> <span>Admin</span></a>
+          </li>
+          {% endif %}
+          {% if h.has_neighborhood_access('moderate', neighborhood)() %}
+          <li class="{{neighborhood.url()+'_moderate' in request.url and 'active' or ''}}">
+              <a href="{{neighborhood.url()}}_moderate/" class="ico-l"><b class="ui-icon ui-icon-gear"></b> <span>Moderate</span></a>
+          </li>
+          {% endif %}
+      </ul>
+    </div>
+  </div>
+{% endif %}
