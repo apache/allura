@@ -212,7 +212,7 @@ class NeighborhoodProjectBrowseController(ProjectBrowseController):
         category_name=unquote(category_name)
         return NeighborhoodProjectBrowseController(neighborhood=self.neighborhood, category_name=category_name, parent_category=self.category), remainder
 
-    @expose('allura.templates.neighborhood_project_list')
+    @expose('jinja:neighborhood_project_list.html')
     @without_trailing_slash
     def index(self, sort='alpha', limit=25, page=0, **kw):
         c.project_summary = W.project_summary
