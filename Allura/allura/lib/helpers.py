@@ -39,6 +39,7 @@ def monkeypatch(obj):
     return patchit
 
 def really_unicode(s):
+    if s is None: return u''
     # try naive conversion to unicode
     try:
         return unicode(s)

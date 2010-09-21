@@ -1,32 +1,34 @@
 {% macro gravatar(user, size) -%}
+  {% set display_name = h.really_unicode(user.display_name) %}
   {% if user.preferences.email_address %}
     {% if size %}
       <img src="{{g.gravatar(user.preferences.email_address, default=g.url('/u/'+user.username.replace('_', '-')+'/user_icon'))}}"
-           alt="{{user.display_name}}"
-           title="{{user.display_name}}"
+           alt="{{display_name}}"
+           title="{{display_name}}"
            height="{{size}}"
            width="{{size}}"/>
     {% else %}
       <img src="{{g.gravatar(user.preferences.email_address, default=g.url('/u/'+user.username.replace('_', '-')+'/user_icon'))}}"
-           alt="{{user.display_name}}"
-           title="{{user.display_name}}"/>
+           alt="{{display_name}}"
+           title="{{display_name}}"/>
     {% endif %}
   {% else %}
     {% if size %}
       <img src="{{'/u/'+user.username.replace('_', '-')+'/user_icon'}}"
-           alt="{{user.display_name}}"
-           title="{{user.display_name}}"
+           alt="{{display_name}}"
+           title="{{display_name}}"
            height="{{size}}"
            width="{{size}}"/>
     {% else %}
       <img src="{{'/u/'+user.username.replace('_', '-')+'/user_icon'}}"
-           alt="{{user.display_name}}"
-           title="{{user.display_name}}"/>
+           alt="{{display_name}}"
+           title="{{display_name}}"/>
     {% endif %}
   {% endif %}
 {%- endmacro %}
 
 {% macro email_gravatar(email, title=None, size=None) -%}
+  {% set title=h.really_unicode(title) %}
   {% if email %}
     <img src="{{g.gravatar(email, size=size)}}" alt="{{title or email}}" title="{{title or email}}"{% if size %} width="{{size}}" height="{{size}}"{% endif %}/>
   {% else %}
