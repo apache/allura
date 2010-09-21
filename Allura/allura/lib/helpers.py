@@ -39,22 +39,23 @@ def monkeypatch(obj):
     return patchit
 
 def really_unicode(s):
+    # try naive conversion to unicode
     try:
         return unicode(s)
     except UnicodeDecodeError:
         pass
-    encoding = chardet.detect(s[:1024])['encoding']
-    try:
-        if encoding:
-            return unicode(s, encoding)
-    except UnicodeDecodeError:
-        pass
-    encoding = chardet.detect(s)['encoding']
-    try:
-        if encoding:
-            return unicode(s, encoding)
-    except UnicodeDecodeError:
-        pass
+    # Try to guess the encoding
+    encodings = [
+        lambda:'utf-8',
+        lambda:'latin-1',
+        lambda:chardet.detect(s[:1024])['encoding'],
+        lambda:chardet.detect(s)['encoding'] ]
+    for enc in encodings:
+        try:
+            return unicode(s, enc())
+        except UnicodeDecodeError:
+            pass
+    # Return the repr of the str -- should always be safe
     return unicode(repr(str(s)))[1:-1]
 
 def find_project(url_path):

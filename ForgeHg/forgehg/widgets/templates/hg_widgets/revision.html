@@ -1,11 +1,11 @@
 {% from 'jinja_master/lib.html' import email_gravatar with context %}
 {% if value.user_url %}
   Authored by
-  <a href="{{value.user_url}}">{{email_gravatar(value.user.email, title=value.user.name, size=16)}}</a>
-  <a href="{{value.user_url}}">{{value.user.name}}</a>
+  <a href="{{value.user_url}}">{{email_gravatar(value.user.email, title=h.really_unicode(value.user.name), size=16)}}</a>
+  <a href="{{value.user_url}}">{{h.really_unicode(value.user.name)}}</a>
 {% else %}
   Authored by
-  {{email_gravatar(value.user.email, title=value.user.name, size=16)}} {{value.user.name}}
+  {{email_gravatar(value.user.email, title=h.really_unicode(value.user.name), size=16)}} {{h.really_unicode(value.user.name)}}
 {% endif %}
 {% if value.datetime %}{{h.ago(value.datetime)}}{% endif %}
 
