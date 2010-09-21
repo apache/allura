@@ -31,13 +31,15 @@
         </div>
     	</div>
     	<div class="options">
-    		<a href="" class="reply_post btn ico-l"><b class="ui-icon ui-icon-arrowreturnthick-1-w"></b> <span>Reply</span></a><br/>
-    		<a href="${tg.url(url.current(),dict(page=page,limit=limit))}#$value.slug" class="ico-l little_link"><b class="ui-icon ui-icon-link"></b> <span>Link</span></a><br/>
-    		<a href="" class="edit_post ico-l little_link"><b class="ui-icon ui-icon-pencil"></b> <span>Edit</span></a><br/>
-      	<div py:if="has_artifact_access('moderate', value)()" py:strip="True">
-      	  ${widgets.moderate_post.display(value=value, action=value.url()+'moderate')}
-      	</div>
-    		<a href="#" class="ico-l add_attachment little_link" py:if="has_artifact_access('post', value.thread)()"><b class="ui-icon ui-icon-document"></b> <span>Attach</span></a><br/>
+		<a href="" class="reply_post btn ico-l"><b class="ui-icon ui-icon-arrowreturnthick-1-w"></b> <span>Reply</span></a>
+		<div style="clear:both">
+		<a href="${tg.url(url.current(),dict(page=page,limit=limit))}#$value.slug" class="ico-l little_link"><b class="ui-icon ui-icon-link"></b> <span>Link</span></a><br/>
+		<a href="" class="edit_post ico-l little_link"><b class="ui-icon ui-icon-pencil"></b> <span>Edit</span></a><br/>
+		<py:if test="has_artifact_access('moderate', value)()">
+		  ${widgets.moderate_post.display(value=value, action=value.url()+'moderate')}
+		</py:if>
+		<a href="#" class="ico-l add_attachment little_link" py:if="has_artifact_access('post', value.thread)()"><b class="ui-icon ui-icon-document"></b> <span>Attach</span></a>
+		</div>
     	</div>
     </div>
     <ul>

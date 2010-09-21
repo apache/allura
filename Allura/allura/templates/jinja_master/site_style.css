@@ -1,4 +1,4 @@
-body { margin: 0; font: .9em/1.5em Helvetica, sans-serif; word-spacing: -0.09em; background: rgb(245,245,245);}
+body { margin: 0; font: 12px/1.5em Helvetica, sans-serif; word-spacing: -0.09em; background: rgb(245,245,245);}
 
 #container {
 	width: 100%;
@@ -47,7 +47,6 @@ h1 {font: 1.2em/1.8em Helvetica; font-weight: bold; margin: 0; padding: 0;}
 h2 {font: 1em/1.6em Helvetica; font-weight: bold; margin: 0; padding: 0;}
 h3,h4 {font: .9em/1.5em Helvetica; margin: 0; padding: 0;}
 h4 {font-weight: bold; display: block;}
-p {font: .9em/1.5em Helvetica;}
 small {font: .75em/1.2em Helvetica;}
 
 hr {border: none; height: 0; clear: both; margin: 1em 0 .8em; display: block; border-bottom: 1px solid {{color5}};}
@@ -69,7 +68,7 @@ img {border: none;}
 /* nav */
 .nav .row {position: relative;}
 .sf_logo {margin: 7px 0 0 0; display: inline-block;}
-.nav .tright a { color: rgb(255,255,255); text-transform: uppercase; font-size: .75em; padding: 1em .5em; line-height: 2.8em;}
+.nav .tright a { color: rgb(255,255,255); text-transform: uppercase; font-size: .9em; padding: 1em .5em; line-height: 2.8em;}
 .nav {
 	margin: 0;
 	background: rgb(0,0,0);
@@ -138,7 +137,7 @@ img {border: none;}
 
 /* Component containers
 ----------------------------------*/
-.ui-widget { font-family: Helvetica, sans-serif; }
+.ui-widget { font-size: 1em; font-family: Helvetica, sans-serif; }
 .ui-widget .ui-widget { font-size: 1em; }
 .ui-widget input, .ui-widget select, .ui-widget textarea, .ui-widget button { font-family: Helvetica, sans-serif; font-size: 1em; }
 .ui-widget-content { border: none; background: rgb(255,255,255); color: rgb(69,69,69);  }
@@ -245,7 +244,6 @@ img {border: none;}
 .card .quik a {
     margin: 0;
     color: rgb(0,0,0);
-    font-size: .8em;
     text-shadow: rgb(255,255,255) 0 1px;
     background: none;
     border: none;
@@ -294,14 +292,13 @@ table {
 }
 
 table.card {overflow: visible;}
-caption {font: 1em/1.5em Helvetica; padding: .5em 0 10px; text-align: left;}
-tr td, tr th {font: .9em/1.5em Helvetica; padding: .5em 10px .1em; text-align: left;}
-tbody tr td, tbody tr th {border-top: 1px solid {{color5}};}
+caption {padding: .5em 0 10px; text-align: left;}
+td, th {padding: .5em 10px .1em; text-align: left;}
+tbody td, tbody th {border-top: 1px solid {{color5}};}
 thead tr {
 	border: 1px solid {{color5}};
 }
-thead tr th {
-	font: .75em/1.5em Helvetica;
+thead th {
 	font-weight: bold;
 	text-align: left;
 	text-shadow: rgb(255,255,255) 0 1px;
@@ -312,7 +309,7 @@ thead tr th {
 	background-image: -webkit-gradient(linear, 0% 0%, 0% 100%, from(rgb(255,255,255)), to({{color6}}));
 	background-image: -moz-linear-gradient(100% 100% 90deg, {{color6}}, rgb(255,255,255) 100%);
 }
-tfoot tr td {
+tfoot td {
 	border-top: 4px solid {{color5}};
 }
 
@@ -416,7 +413,6 @@ form input[type=checkbox] {
 
 /* Buttons - lui */
 .btn, button, input[type=submit], input[type=reset], input[type=button] {
-	font: .9em/1.3em Helvetica;
 	font-weight: bold;
 	text-shadow: rgb(255,255,255) 0 1px;
 	text-decoration: none;
@@ -457,7 +453,6 @@ button, input[type=submit], input[type=reset], input[type=button] {padding: .35e
 
 .ico-r, .ico-l, .ico
 {
-	font: .9em/1.3em Helvetica;
 	margin: .2em 5px 5px 0;
 	padding: 3px 6px;
 	overflow: hidden;
@@ -471,7 +466,6 @@ button, input[type=submit], input[type=reset], input[type=button] {padding: .35e
 .btn-set {
 	display: block;
 	float: left;
-	font: .9em/1.3em Helvetica;
 }
 .btn-set .btn {
 	border-radius: 0;
@@ -660,7 +654,6 @@ ul.row {margin: 0; padding: 0;}
 	z-index: 1;
 }
 .project ul.ui-tab li a, .project ul.ui-tab li.active a {
-    font-size:0.85em;
     font-weight:bold;
 }
 #header {margin-top: 20px; display: block;}
@@ -670,7 +663,7 @@ ul.row {margin: 0; padding: 0;}
 #header p {padding: 5px 3px 5px 5px; margin: 0;}
 #header p.neighborhood {
 	padding: 4px 40px 6px 10px;
-	font: .8em/1em Helvetica, sans-serif;
+	font: 1em/1em Helvetica, sans-serif;
 	position: absolute;
 	right: 10px;
 	top: 0px;
@@ -721,7 +714,7 @@ ul.ui-tab li.active a {
 }
 ul.ui-tab li a {
 	color: rgb(0,0,0);
-	font: .75em/1.5em Helvetica;
+	font: 1em/1.5em Helvetica;
 	text-transform: uppercase;
 	text-shadow: rgba(255,255,255, .8) 0 1px;
 	padding-top: 5px !important;
@@ -735,13 +728,11 @@ ul.ui-tab li a {
 .listed {
     margin: 0 0 .5em;
     padding: 0 0 .5em;
-    font-size: .9em;
     border-bottom: 1px solid {{color5}};
 }
 .listed.last {
     margin: 0 0 .5em;
     padding: 0 0 .5em;
-    font-size: .9em;
     border-bottom: none;
 }
 .listed img {vertical-align: middle;}
@@ -806,7 +797,6 @@ ul.ui-tab li a {
 	border-bottom: 1px solid {{color5}};
 	display: block;
 	color: {{color3}};
-	font-size: .85em;
 	position: relative;
 }
 .menu ul li a span {
@@ -857,7 +847,7 @@ ul.ui-tab li a {
 	border-bottom-color: #BEBFC3 !important;
 }
 .nav_head {
-	font-size: 75%;
+	font-size: 90%;
 	margin-left: 5px;
 	margin-bottom: 10px;
 	color: rgb(69,69,69);
@@ -918,7 +908,6 @@ ul.ui-tab li a {
 	text-shadow: rgb(0,0,0) 0 -1px;
 	font-size: 1.2em;
 }
-.pad ul li, .pad ol li {font-size: .9em;}
 .pad ul li ul li, .pad ol li ol li, #comment ul li {font-size: 100%;}
 .content {padding: 0 20px 20px;}
 .actions {position: absolute; right: 10px; top: 5px; font-size: .85em; text-transform: uppercase; width: 100%;}
@@ -939,11 +928,11 @@ ul.ui-tab li a {
 	clear: right;
 	min-width: inherit;
 }
-
-.row.reply .grid_1.tcenter, #comment .row .grid_1.tcenter {font-size: .75em; min-width: 80px; padding: 5px 0 0 0;}
-#comment .row .options {position: absolute; top: 10px; right: 10px; padding: 0; font-size: .85em;}
-#comment .row .options a:first-child {font-weight: bold;}
-#comment .row .options a.little_link {line-height: 2em; color: {{color3}}; position: relative; width: 50px; height: 20px;}
+.discussion-post {position: relative;}
+.row.reply .grid_1.tcenter, #comment .row .grid_1.tcenter {min-width: 80px; padding: 5px 0 0 0;}
+#comment .row .options {position: absolute; top: 10px; right: 10px; padding: 0; font-size: .85em; width:90px;}
+#comment ul ul .row .options {right: 0;}
+#comment .row .options a.little_link {clear:both; line-height: 2em; color: {{color3}}; position: relative; width: 50px; height: 20px;}
 #comment .row .options a.little_link span {position: absolute; top: 0px; left: 25px;}
 #comment ul {list-style: none; margin: 5px 0 0 0; padding: 0; float: right; clear: right; width:98%;}
 #comment ul ul li {margin-right: 10px;}
@@ -1015,7 +1004,6 @@ ul.ui-tab li a {
 .solo ul {list-style: none; margin: 0; padding: 0 5px;}
 .solo li {    margin: 0 0 .5em;
     padding: 0 0 .5em;
-    font-size: .9em;
     border-bottom: 1px solid rgb(215,215,215);}
 .solo li:last-child {border: none;}
 
