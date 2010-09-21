@@ -38,7 +38,7 @@ def received_email(routing_key, data):
     <tool name>.mail.<topic>
     '''
     msg = util.parse_message(data['data'])
-    user = util.identify_sender(data['peer'], data['mailfrom'], msg)
+    user = util.identify_sender(data['peer'], data['mailfrom'], data['headers'], msg)
     log.info('Received email from %s', user)
     # For each of the addrs, determine the project/app and route appropriately
     for addr in data['rcpttos']:

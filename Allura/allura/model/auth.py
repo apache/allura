@@ -1,5 +1,6 @@
-import logging
 import os
+import re
+import logging
 import urllib
 import hmac
 import hashlib
@@ -110,6 +111,7 @@ class ApiToken(MappedClass):
         return params
 
 class EmailAddress(MappedClass):
+    re_format = re.compile('^.* <(.*)>$')
     class __mongometa__:
         name='email_address'
         session = main_orm_session
@@ -132,6 +134,9 @@ class EmailAddress(MappedClass):
 
     @classmethod
     def canonical(cls, addr):
+        mo = cls.re_format.match(addr)
+        if mo:
+            addr = mo.group(1)
         user, domain = addr.split('@')
         return '%s@%s' % (user, domain.lower())
 

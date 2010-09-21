@@ -67,12 +67,14 @@ def parse_message(data):
         result['payload'] = msg.get_payload()
     return result
 
-def identify_sender(peer, email_address, msg):
+def identify_sender(peer, email_address, headers, msg):
     # Dumb ID -- just look for email address claimed by a particular user
     addr = M.EmailAddress.query.get(_id=M.EmailAddress.canonical(email_address))
     if addr and addr.claimed_by_user_id:
         return addr.claimed_by_user()
-    # TODO: look at the From: header, maybe?
+    addr = M.EmailAddress.query.get(_id=M.EmailAddress.canonical(headers.get('From')))
+    if addr and addr.claimed_by_user_id:
+        return addr.claimed_by_user()
     return M.User.anonymous()
 
 def encode_email_part(content, content_type):
