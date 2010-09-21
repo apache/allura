@@ -58,7 +58,7 @@ class TestRootController(TestController):
         projects = response.html.findAll('div',{'class':'border card'})
         assert len(projects) == 2
         assert projects[0].find('img').get('alt') == 'adobe-1 Logo'
-        cat_links = response.html.find('div',{'id':'sidebar'}).findAll('li')
+        cat_links = response.html.find('div',{'id':'sidebar'}).findAll('ul')[0].findAll('li')
         assert len(cat_links) == 3
         assert cat_links[0].find('a').get('href') == '/adobe/browse/clustering'
         assert cat_links[0].find('a').get('class') == 'nav_child'
