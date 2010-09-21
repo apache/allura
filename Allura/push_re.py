@@ -14,7 +14,7 @@ from allura.lib import rest_api
 DEBUG=1
 CP = ConfigParser()
 
-re_ticket_ref = re.compile(r'\[#\d+\]')
+re_ticket_ref = re.compile(r'\[#(\d+)\]')
 
 CRED={}
 
@@ -26,19 +26,20 @@ def main():
     CRED['api_key'] = api_key
     CRED['secret_key'] = secret_key
     text, tag = make_ticket_text(engineer)
+    raw_input("Verify that there are no new dependencies, or RPM's are built for all deps...")
+    raw_input("Verify that a new sandbox builds starts without engr help...")
     print '*** Create a ticket on SourceForge (https://sourceforge.net/p/allura/tickets/new/) with the following contents:'
     print '*** Summary: Production Push (R:%s, D:%s) - allura' % (
         tag, date.today().strftime('%Y%m%d'))
     print '---BEGIN---'
     print text
     print '---END---'
-    raw_input("Verify that there are no new dependencies, or RPM's are build for all deps...")
-    raw_input("Verify that a new sandbox builds starts without engr help...")
-    raw_input('When this is done, create a SOG Trac ticket'
-              ' (https://control.sog.geek.net/sog/trac/newticket?keywords=LIAISON) with the'
-              ' same contents...')
-    raw_input('Now link the two tickets...')
     newforge_num = raw_input('What is the newforge ticket number? ')
+    print '*** Create a SOG Trac ticket (https://control.sog.geek.net/sog/trac/newticket?keywords=LIAISON) with the same summary...'
+    print '---BEGIN---'
+    print re_ticket_ref.sub('FO:\g<1>', text)
+    print '---END---'
+    raw_input('Now link the two tickets...')
     command('git', 'tag', '-a', '-m', '[#%s] - Push to RE' % newforge_num, tag, 'master')
     command('git', 'push', 'origin', 'master')
     command('git', 'push', 'live', 'master')
