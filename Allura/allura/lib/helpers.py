@@ -47,9 +47,10 @@ def really_unicode(s):
     # Try to guess the encoding
     encodings = [
         lambda:'utf-8',
-        lambda:'latin-1',
         lambda:chardet.detect(s[:1024])['encoding'],
-        lambda:chardet.detect(s)['encoding'] ]
+        lambda:chardet.detect(s)['encoding'],
+        lambda:'latin-1',
+        ]
     for enc in encodings:
         try:
             return unicode(s, enc())
