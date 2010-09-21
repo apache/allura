@@ -38,9 +38,23 @@
 
 {% macro file_field(name, label) %}
   {% if label %}
-  <label for="{{name}}" py:if="label">{{label}}</label>
+  <label for="{{name}}">{{label}}</label>
   {% endif %}
   <input type="file" id="{{name}}" name="{{name}}" class="text" /><br/>
+{% endmacro %}
+
+{% macro text_area(name, label, value=None) %}
+  {% if label %}
+  <label for="{{name}}">{{label}}</label><br/>
+  {% endif %}
+  <textarea id="{{name}}" name="{{name}}">{{value}}</textarea><br/>
+{% endmacro %}
+
+{% macro text_field(name, label, value=None) %}
+  {% if label %}
+  <label for="{{name}}">{{label}}</label><br/>
+  {% endif %}
+  <input type="text" id="{{name}}" name="{{name}}" class="text" value="{{value}}"/><br/>
 {% endmacro %}
 
 {% macro path_links(parts) %}
@@ -48,5 +62,26 @@
   {% for part in parts %}
     <a href="{{'./' + '../' * (parts.__len__()-i-1)}}">{{part}}</a>
     {% set i=i+1 %}
+  {% endfor %}
+{% endmacro %}
+
+{% macro post_summary(post) %}
+  {% if post %}
+    <span>
+      by <a href="{{post.author().url()}}">{{post.author().display_name}}</a>
+      {{h.ago(post.timestamp)}}
+    </span>
+  {% endif %}
+{% endmacro %}
+
+{% macro crumbs(trail) %}
+  {% for (label, url) in trail %}
+    <li class="{{loop.index0 == 0 and 'first' or ''}}">
+      {% if url %}
+        <a href="{{url}}">{{label}}</a>
+      {% else %}
+        <span>{{label}}</span>
+      {% endif %}
+    </li>
   {% endfor %}
 {% endmacro %}

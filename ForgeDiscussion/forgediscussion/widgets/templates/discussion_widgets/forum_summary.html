@@ -1,0 +1,11 @@
+<a href="{{value.url()}}">{{value.name}}</a>({{value.shortname}})<br/>
+{{g.markdown.convert(value.description)|safe}}
+{% if value.subforums %}
+  <b>Subforums:</b>
+  {% for sf in value.subforums %}
+    <span>
+      {% if loop.index0 != 0 %}, {% endif %}
+      <a href="{{sf.url()}}">{{sf.name}}</a>
+    </span>
+  {% endfor %}
+{% endif %}

@@ -62,7 +62,7 @@ class DiscussionController(BaseController):
         if not hasattr(self, 'AttachmentController'):
             self.AttachmentController = AttachmentController
 
-    @expose('allura.templates.discussion.index')
+    @expose('jinja:discussion/index.html')
     def index(self, threads=None, limit=None, page=0, count=0, **kw):
         c.discussion = self.W.discussion
         if threads is None:
@@ -128,7 +128,7 @@ class ThreadController(BaseController):
         id=unquote(id)
         return self.PostController(self._discussion_controller, self.thread, id), remainder
 
-    @expose('allura.templates.discussion.thread')
+    @expose('jinja:discussion/thread.html')
     def index(self, limit=None, page=0, count=0, **kw):
         c.thread = self.W.thread
         c.thread_header = self.W.thread_header

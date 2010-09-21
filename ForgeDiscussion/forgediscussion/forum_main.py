@@ -207,7 +207,7 @@ class ForumAdminController(DefaultAdminController):
     def index(self, **kw):
         redirect('forums')
 
-    @expose('forgediscussion.templates.admin_options')
+    @expose('jinja:discussionforums/admin_options.html')
     def options(self):
         c.options_admin = W.options_admin
         return dict(app=self.app,
@@ -215,7 +215,7 @@ class ForumAdminController(DefaultAdminController):
                         PostingPolicy=self.app.config.options.get('PostingPolicy')
                     ))
 
-    @expose('forgediscussion.templates.admin_forums')
+    @expose('jinja:discussionforums/admin_forums.html')
     def forums(self):
         return dict(app=self.app,
                     allow_config=has_artifact_access('configure', app=self.app)())

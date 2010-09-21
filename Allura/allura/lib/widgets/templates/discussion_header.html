@@ -1,13 +1,1 @@
-<div xmlns="http://www.w3.org/1999/xhtml"
-     xmlns:py="http://genshi.edgewall.org/"
-     py:strip="True">
-  <h1 class="title">$value.name</h1>
-    <div class="content">
-      <div class="row">
-        <div class="column grid_12">
-        <!-- <p>Discussion Shortlink: [${value.shorthand_id()}]</p> -->
-        <div>${Markup(g.markdown.convert(value.description))}</div>
-      </div>
-    </div>
-  </div>
-</div>
+<div>{{g.markdown.convert(value.description)|safe}}</div>

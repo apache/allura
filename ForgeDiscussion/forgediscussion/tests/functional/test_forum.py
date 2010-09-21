@@ -268,8 +268,8 @@ class TestForum(TestController):
         assert '<a href="/p/test/admin/discussion" class=" ico-l"><b class="ui-icon ui-icon-wrench"></b> <span>Admin</span></a>' in sidebarmenu
         assert '<a href="/p/test/discussion/search" class=" ico-l"><b class="ui-icon ui-icon-search"></b> <span>Search</span></a>' in sidebarmenu
         assert '<span class=" nav_head">Forum Help</span>' in sidebarmenu
-        assert '<a href="/p/test/discussion/help" class="nav_child"> <span>Forum Permissions</span></a>' in sidebarmenu
-        assert '<a href="/p/test/discussion/markdown_syntax" class="nav_child"> <span>Markdown Syntax</span></a>' in sidebarmenu
+        assert '<a href="/p/test/discussion/help" class="nav_child"><span>Forum Permissions</span></a>' in sidebarmenu
+        assert '<a href="/p/test/discussion/markdown_syntax" class="nav_child"><span>Markdown Syntax</span></a>' in sidebarmenu
         assert '<a href="#" class="sidebar_thread_reply ico-l"><b class="ui-icon ui-icon-comment"></b> <span>Reply to This</span></a>' not in sidebarmenu
         assert '<a href="#" class="sidebar_thread_tag ico-l"><b class="ui-icon ui-icon-tag"></b> <span>Label This</span></a>' not in sidebarmenu
         assert '<a href="feed.rss" class=" ico-l"><b class="ui-icon ui-icon-signal-diag"></b> <span>Follow This</span></a>' not in sidebarmenu

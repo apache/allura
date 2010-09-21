@@ -1,0 +1,84 @@
+{% extends 'jinja_master/master.html' %}
+
+{% block title %}{{c.project.name}} / {{c.app.config.options.mount_label}} / Forums{% endblock %}
+
+{% block header %}{{c.app.config.options.mount_label}}{% endblock %}
+
+{% block content %}
+  {% if announcements %}
+    <h3>Announcements</h3>
+    {{c.announcements_table.display(value=announcements)}}
+  {% endif %}
+  {% for forum in forums %}
+    {% if not forum.deleted or h.has_artifact_access('configure', app=c.app)() %}
+      <div>
+        <h2><a href="{{forum.url()}}">{{forum.name}}</a></h2>
+        {% if forum.deleted %}
+          <div class="notice">This forum has been deleted and is not visible to non-admin users</div>
+        {% endif %}
+        {{c.subscription_form.display(value=forum, threads=threads[forum._id], action=forum.url() + 'subscribe')}}
+        &nbsp;
+        <div class="clear"></div>
+      </div>
+    {% endif %}
+  {% endfor %}
+  {% if h.has_artifact_access('configure', app=c.app)() %}
+    <form method="POST" enctype="multipart/form-data" id="new_forum_form"
+      action="{{c.project.url()}}admin/{{c.app.config.options.mount_point}}/update_forums">
+      <input type="button" id="add_forum" value="Add another forum"/>
+      <div id="add_forum_form" style="display:none">
+		<ol>
+			<li>
+			  <label>Name:</label>
+			  <input type="text" name="new_forum.name"/>
+			</li>
+			<li>
+			  <label>Short Name:</label>
+			  <input type="text" name="new_forum.shortname"/>
+			</li>
+			<li>
+			  <label>Parent Forum:</label>
+			  <select name="new_forum.parent">
+             <option value="">None</option>
+             {% for f in forums %}<option value="{{f._id}}">{{f.name}}</option>{% endfor %}
+           </select>
+			</li>
+			<li>
+			  <label>Description:</label>
+			  <textarea name="new_forum.description" style="height:50px;"></textarea>
+			</li>
+			<li>
+			  <label>Icon:</label>
+			  {{lib.file_field('new_forum.icon', '')}}
+			</li>
+			<li>
+			  <label>&nbsp;</label>
+			  <input type="submit" id="new_forum.create" name="new_forum.create" value="Create Forum"/>
+           <input type="button" id="add_forum_cancel" value="Cancel"/>
+			</li>
+		</ol>
+      </div>
+      <div class="clear"></div>
+    </form>
+  {% endif %}
+{% endblock %}
+
+{% block extra_js %}
+  {% if h.has_artifact_access('configure', app=c.app)() %}
+    <script type="text/javascript">
+      console.debug('aaa')
+      $(function() {
+        $("#add_forum").click(function(){
+          $("#add_forum_form").show();
+          $(this).hide();
+          return false;
+        });
+        $("#add_forum_cancel").click(function(){
+          $("#add_forum_form").hide();
+          $("#add_forum").show();
+          return false;
+        });
+      });
+    </script>
+  {% endif %}
+{% endblock %}

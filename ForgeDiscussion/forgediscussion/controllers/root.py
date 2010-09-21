@@ -36,7 +36,7 @@ class RootController(BaseController):
         require(has_artifact_access('read'))
 
     @with_trailing_slash
-    @expose('forgediscussion.templates.index')
+    @expose('jinja:discussionforums/index.html')
     def index(self, **kw):
         c.subscription_form = self.W.subscription_form
         c.announcements_table = self.W.announcements_table
@@ -54,7 +54,7 @@ class RootController(BaseController):
                     announcements=announcements)
                   
     @with_trailing_slash
-    @expose('forgediscussion.templates.search')
+    @expose('jinja:discussionforums/search.html')
     @validate(dict(q=validators.UnicodeString(if_empty=None),
                    history=validators.StringBool(if_empty=False),
                    project=validators.StringBool(if_empty=False)))
@@ -76,12 +76,12 @@ class RootController(BaseController):
             if results: count=results.hits
         return dict(q=q, history=history, results=results or [], count=count)
 
-    @expose('forgediscussion.templates.markdown_syntax')
+    @expose('jinja:discussionforums/markdown_syntax.html')
     def markdown_syntax(self):
         'Static page explaining markdown.'
         return dict()
 
-    @expose('forgediscussion.templates.help')
+    @expose('jinja:discussionforums/help.html')
     def help(self):
         'Static help page.'
         return dict()

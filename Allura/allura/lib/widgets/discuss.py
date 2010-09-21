@@ -187,7 +187,7 @@ class Attachment(ew.Widget):
     post=None
 
 class DiscussionHeader(HierWidget):
-    template='genshi:allura.lib.widgets.templates.discussion_header'
+    template='jinja:discussion_header.html'
     params=['value']
     value=None
     widgets=dict(
@@ -351,7 +351,7 @@ class Thread(HierWidget):
         ''')
 
 class Discussion(HierWidget):
-    template='genshi:allura.lib.widgets.templates.discussion'
+    template='jinja:discussion.html'
     params=['value', 'threads',
             'show_discussion_email', 'show_subject', 'allow_create_thread']
     value=None

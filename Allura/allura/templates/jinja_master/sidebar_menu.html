@@ -1,12 +1,12 @@
 {% macro sidebar_item(s) -%}
   {% if s.url %}
     <li{% if request.url.find(s.url,-s.url.__len__()) != -1 %} class="active"{% endif %}>
-      <a href="{{s.url}}"{% if s.className or s.ui_icon %} class="{{s.className}}{{s.ui_icon and ' ico-l' or ''}}"{% endif %}>{% if s.ui_icon %}<b class="ui-icon ui-icon-{{s.ui_icon}}"></b> {% endif %}<span>{{s.label}}</span>{% if s.small != None %}<small>{{s.small}}</small>{% endif %}</a>
+      <a href="{{s.url}}"{% if s.className or s.ui_icon %} class="{{s.className or ''}}{{s.ui_icon and ' ico-l' or ''}}"{% endif %}>{% if s.ui_icon %}<b class="ui-icon ui-icon-{{s.ui_icon}}"></b> {% endif %}<span>{{s.label}}</span>{% if s.small != None %}<small>{{s.small}}</small>{% endif %}</a>
     </li>
   {% else %}
     </ul>
       {% if s.label %}
-        <span class="{{s.className}} nav_head">{% if s.ui_icon %}<span class="ui-icon ui-icon-{{s.ui_icon}}"></span>{% endif %}{{s.label}}</span>
+        <span class="{{s.className or ''}} nav_head">{% if s.ui_icon %}<span class="ui-icon ui-icon-{{s.ui_icon}}"></span>{% endif %}{{s.label}}</span>
       {% endif %}
     <ul class="sidebarmenu">
   {% endif %}

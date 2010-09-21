@@ -1,22 +1,13 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-                      "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:py="http://genshi.edgewall.org/"
-      xmlns:xi="http://www.w3.org/2001/XInclude">
+{% extends 'jinja_master/master.html' %}
 
-  <xi:include href="${g.allura_templates}/master.html"/>
-  <?python from allura.lib.security import has_artifact_access ?>
+{% block title %}
+  {{c.project.name}} / {{c.app.config.options.mount_label}} / 
+  {{thread.subject and '%s:%s' % (thread.discussion.name, (thread.subject or '(no subject)')) or thread.discussion.name}}
+{% endblock %}
 
-  <head>
-    <meta content="text/html; charset=UTF-8" http-equiv="content-type" py:replace="''"/>
-    <title>
-      $c.project.name / $c.app.config.options.mount_label /
-      ${thread.subject and '%s:%s' % (thread.discussion.name, (thread.subject or '(no subject)')) or thread.discussion.name}
-    </title>
-  </head>
+{% block header %}{{'subject' in thread and thread.subject or '(no subject)'}}{% endblock %}
 
-  <body>
-    ${c.thread_header.display(value=thread, page=page, limit=limit, count=count)}
-    ${c.thread.display(value=thread, page=page, limit=limit, count=count)}
-  </body>
-</html>
+{% block content %}
+  {{c.thread_header.display(value=thread, page=page, limit=limit, count=count)}}
+  {{c.thread.display(value=thread, page=page, limit=limit, count=count)}}
+{% endblock %}

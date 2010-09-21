@@ -72,7 +72,7 @@ class ForumController(DiscussionController):
         else:
             raise exc.HTTPNotFound()
 
-    @expose('allura.templates.discussion.index')
+    @expose('jinja:discussion/index.html')
     def index(self, threads=None, limit=None, page=0, count=0, **kw):
         if self.discussion.deleted and not has_artifact_access('configure', app=c.app)():
             redirect(self.discussion.url()+'deleted')
@@ -109,14 +109,14 @@ class ForumController(DiscussionController):
             return fp.read()
         return self.discussion.icon.filename
 
-    @expose('forgediscussion.templates.deleted')
+    @expose('jinja:discussionforums/deleted.html')
     def deleted(self):
         return dict()
 
 
 class ForumThreadController(ThreadController):
 
-    @expose('allura.templates.discussion.thread')
+    @expose('jinja:discussion/thread.html')
     def index(self, limit=None, page=0, count=0, **kw):
         if self.thread.discussion.deleted and not has_artifact_access('configure', app=c.app)():
             redirect(self.thread.discussion.url()+'deleted')

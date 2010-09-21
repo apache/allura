@@ -1,0 +1,21 @@
+{% import 'jinja_master/lib.html' as lib with context %}
+
+<div class="actions">
+  {% if show_moderate and h.has_artifact_access('moderate', value)() %}
+  <a href="#" class="btn ico-l" id="mod_thread_link"><b class="ui-icon ui-icon-pencil"></b> <span>Moderate</span></a>
+  {% endif %}
+</div>
+
+<div class="breadcrumbs">{{lib.crumbs(value.discussion.breadcrumbs())}}</div>
+
+{% if value.discussion.announcements %}
+  <h3>Announcements</h3>
+  {{widgets.announcements_table.display(value=value.discussion.announcements)}}
+{% endif %}
+{% if show_moderate and h.has_artifact_access('moderate', value)() %}
+  <div id="mod_thread_form" style="display: none;">
+    <h2>Moderate Thread</h2>
+    {{widgets.moderate_thread.display(value=value, action=value.url()+'moderate')}}
+    <div style="clear: both;">&nbsp;</div>
+  </div>
+{% endif %}

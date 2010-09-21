@@ -75,6 +75,9 @@ class ForgeConfig(AppConfig):
         self.paths['templates'].append(pkg_resources.resource_filename('sfx', 'templates'))
         self.paths['templates'].append(pkg_resources.resource_filename('forgedownloads', 'templates'))
         self.paths['templates'].append(pkg_resources.resource_filename('forgelink', 'templates'))
+        self.paths['templates'].append(pkg_resources.resource_filename('forgediscussion', 'templates'))
+        self.paths['templates'].append(pkg_resources.resource_filename('forgediscussion', 'widgets/templates'))
+        self.paths['templates'].append(pkg_resources.resource_filename('allura', 'lib/widgets/templates'))
 
         from jinja2 import ChoiceLoader, Environment, FileSystemLoader
         from tg.render import render_jinja

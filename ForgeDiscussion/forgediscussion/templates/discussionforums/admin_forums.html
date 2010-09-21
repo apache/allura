@@ -1,0 +1,121 @@
+{% extends 'jinja_master/master.html' %}
+
+{% block title %}{{c.project.name}} / {{app.config.options.mount_label}} / Admin Forums{% endblock %}
+
+{% block header %}{{app.config.options.mount_label}} Admin Forums{% endblock %}
+
+{% block content %}
+<form method="POST" action="update_forums" enctype="multipart/form-data">
+  <table id="forums">
+    <thead>
+      <tr>
+        <th/>
+        <th>Forum</th><th>Topics</th><th>Posts</th><th>Last Post</th>
+        <th/>
+      </tr>
+    </thead>
+    <tbody>
+      {% for forum in app.forums %}
+      <tr class="{{loop.index0%2 and ' even' or ''}}">
+        <td>
+          <div class="editable viewing">
+            <span class="viewer">
+              {% if forum.icon %}
+                <img src="{{forum.url()}}/icon"/>
+              {% else %}
+                <img src="{{g.forge_static('images/project_default.png')}}"/>
+              {% endif %}
+            </span>
+            <span class="editor">{{lib.file_field('forum-%s.icon' % loop.index0, '')}}</span>
+          </div>
+        </td>
+        <td>
+          <div class="editable viewing">
+            <span class="viewer"><a href="{{forum.url()}}">{{forum.name}}</a>({{forum.shortname}})</span>
+            <span class="editor">
+              {{lib.text_field('forum-%s.name' % loop.index0, 'Forum Name', forum.name)}}
+            </span>
+          </div>
+          <div class="editable viewing">
+            <span class="viewer">{{g.markdown.convert(forum.description)|safe}}</span>
+            <span class="editor multiline">
+              {{lib.text_area('forum-%s.description' % loop.index0, 'Description', forum.description)}}
+            </span>
+          </div>
+          {% if forum.subforums %}
+            <b>Subforums:</b>
+            {% for sf in forum.subforums %}
+              <span>
+                {% if loop.index1 != 0 %}, {% endif %}
+                <a href="{{sf.url()}}">{{sf.name}}</a>
+              </span>
+            {% endfor %}
+          {% endif %}
+        </td>
+        <td>{{forum.num_topics}}</td>
+        <td>{{forum.num_posts}}</td>
+        <td>{{lib.post_summary(forum.last_post)}}</td>
+        <td>
+          <input name="forum-{{i}}.id" type="hidden" value="{{forum._id}}"/>
+          {% if forum.deleted %}
+            <input type="submit" name="{{'forum-%s.undelete' % loop.index0}}" value="Undelete"/><br/>
+          {% else %}
+            <input type="submit" name="{{'forum-%s.delete' % loop.index0}}" value="Delete"/><br/>
+          {% endif %}
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  <input type="button" id="add_forum" value="Add another forum"/>
+  <div id="add_forum_form" style="display:none">
+    <ol>
+      <li>
+			  <label>Name:</label>
+			  <input type="text" name="new_forum.name"/>
+      </li>
+      <li>
+			  <label>Short Name:</label>
+			  <input type="text" name="new_forum.shortname"/>
+      </li>
+      <li>
+			  <label>Parent Forum:</label>
+			  <select name="new_forum.parent">
+          <option value="">None</option>
+          {% for f in app.forums %}<option value="{{f._id}}">{{f.name}}</option>{% endfor %}
+        </select>
+      </li>
+      <li>
+			  <label>Description:</label>
+			  <textarea name="new_forum.description" style="height:50px;"></textarea>
+      </li>
+      <li>
+			  <label>Icon:</label>
+			  {{lib.file_field('new_forum.icon', '')}}
+      </li>
+      <li>
+			  <label>&nbsp;</label>
+			  <input type="submit" id="new_forum.create" name="new_forum.create" value="Create Forum"/>
+        <input type="button" id="add_forum_cancel" value="Cancel"/>
+      </li>
+    </ol>
+  </div>
+</form>
+{% endblock %}
+
+{% block extra_js %}
+  <script type="text/javascript">
+    $(function() {
+      $("#add_forum").click(function(){
+        $("#add_forum_form").show();
+        $(this).hide();
+        return false;
+      });
+      $("#add_forum_cancel").click(function(){
+        $("#add_forum_form").hide();
+        $("#add_forum").show();
+        return false;
+      });
+    });
+  </script>
+{% endblock %}
