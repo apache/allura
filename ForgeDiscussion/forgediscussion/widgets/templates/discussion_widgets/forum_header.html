@@ -1,3 +1,5 @@
+{% import 'jinja_master/lib.html' as lib with context %}
+
 {% if value.announcements %}
   <h3>Announcements</h3>
   {{widgets.announcements_table.display(value=value.announcements)}}
@@ -5,7 +7,7 @@
 
 {% if value.parent %}
 <div class="breadcrumbs" >
-  <ul>{{crumbs(value.breadcrumbs())}}</ul>
+  <ul>{{lib.crumbs(value.breadcrumbs())}}</ul>
 </div>
 {% endif %}
 
