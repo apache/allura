@@ -215,7 +215,7 @@ class TestForum(TestController):
     def test_render_help(self):
         summary = 'test render help'
         r = self.app.get('/discussion/help')
-        assert 'Forum Permissions' in r
+        assert 'Forum Help' in r
 
     def test_render_markdown_syntax(self):
         summary = 'test render markdown syntax'
@@ -264,11 +264,10 @@ class TestForum(TestController):
     def test_sidebar_menu(self):
         r = self.app.get('/discussion/')
         sidebarmenu = str(r.html.find('div',{'id':'sidebar'}))
-        assert '<a href="/p/test/discussion/" class=" ico-l"><b class="ui-icon ui-icon-home"></b> <span>Home</span></a>' in sidebarmenu
-        assert '<a href="/p/test/admin/discussion" class=" ico-l"><b class="ui-icon ui-icon-wrench"></b> <span>Admin</span></a>' in sidebarmenu
-        assert '<a href="/p/test/discussion/search" class=" ico-l"><b class="ui-icon ui-icon-search"></b> <span>Search</span></a>' in sidebarmenu
-        assert '<span class=" nav_head">Forum Help</span>' in sidebarmenu
-        assert '<a href="/p/test/discussion/help" class="nav_child"><span>Forum Permissions</span></a>' in sidebarmenu
+        assert '<a href="/p/test/discussion/create_topic" class=" ico-l"><b class="ui-icon ui-icon-plus"></b> <span>Create Topic</span></a>' in sidebarmenu
+        assert '<a href="/p/test/discussion/?new_forum=True" class=" ico-l"><b class="ui-icon ui-icon-comment"></b> <span>Add Forum</span></a>' in sidebarmenu
+        assert '<span class=" nav_head">Help</span>' in sidebarmenu
+        assert '<a href="/p/test/discussion/help" class="nav_child"><span>Forum Help</span></a>' in sidebarmenu
         assert '<a href="/p/test/discussion/markdown_syntax" class="nav_child"><span>Markdown Syntax</span></a>' in sidebarmenu
         assert '<a href="#" class="sidebar_thread_reply ico-l"><b class="ui-icon ui-icon-comment"></b> <span>Reply to This</span></a>' not in sidebarmenu
         assert '<a href="#" class="sidebar_thread_tag ico-l"><b class="ui-icon ui-icon-tag"></b> <span>Label This</span></a>' not in sidebarmenu

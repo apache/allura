@@ -12,7 +12,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <title>{% block title %}Your title goes here{% endblock %}</title>
-    <meta content="text/html; charset=UTF-8" http-equiv="content-type" py:replace="''"/>
+    <meta content="text/html; charset=UTF-8" http-equiv="content-type"/>
     {% for blob in g.resource_manager.emit('head_css') %}
       {{ blob }}
     {% endfor %}
@@ -76,6 +76,7 @@
             {% endif %}
             <h1 class="title">{% block header %}{% endblock %}</h1>
         		<div class="actions">{% block actions %}{% endblock %}</div>
+        		{% block edit_box %}{% endblock %}
             <div class="content">
               <div class="row{% if show_right_bar %} dual{% endif %}">
                 <div class="column {% block inner_grid %}grid_{{inner_width}}{% endblock %}">
@@ -108,11 +109,13 @@
     {% block extra_js %}{% endblock %}
     <!--! Analytics holder and noscript tag -->
     <div id="analytics"/>
-    <noscript py:if="g.production_mode">
+    {% if g.production_mode %}
+    <noscript>
       <img src="//secure.quantserve.com/pixel/p-93nPV3-Eb4x22.gif"
            style="display: none;" border="0" height="1" width="1" alt="Quantcast"/>
-      <img src="http://b.scorecardresearch.com/p?c1=2&amp;c2=6035546&amp;c3=&amp;c4=&amp;c5=&amp;c6=&amp;c15=&amp;cj=1" alt="comScore2" />
+      <img src="http://b.scorecardresearch.com/p?c1=2&c2=6035546&c3=&c4=&c5=&c6=&c15=&cj=1" alt="comScore2" />
     </noscript>
+    {% endif %}
     <!--! End analytics -->
   </body>
 </html>

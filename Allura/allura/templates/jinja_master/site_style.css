@@ -903,16 +903,34 @@ ul.ui-tab li a {
 		-webkit-border-top-right-radius: 5px;
 		-moz-border-radius-topleft: 5px;
 		-moz-border-radius-topright: 5px;
-	margin: 0 0 15px;
+	margin: 0;
 	padding-left: 20px; font-size: 1em; line-height: 2.2em;
 	text-shadow: rgb(0,0,0) 0 -1px;
 	font-size: 1.2em;
 }
 .pad ul li ul li, .pad ol li ol li, #comment ul li {font-size: 100%;}
-.content {padding: 0 20px 20px;}
+.content {padding: 15px 20px 20px;}
 .actions {position: absolute; right: 10px; top: 5px; font-size: .85em; text-transform: uppercase; width: 100%;}
 .actions .btn {background: none; border: none; text-shadow: none; padding-right: .8em; float: right;}
 .actions .btn.ico-l {line-height: 1.8em; padding-bottom: .1em;}
+.editbox {
+    background-color: #f2f2f2;
+    border: 1px solid #ccc;
+    border-width: 0 0 1px 0;
+    overflow: auto;
+    padding: 1.5em;
+}
+.editbox label{
+    color: #555;
+    font-weight: bold;
+}
+.editbox label.cr{
+    float: none;
+    display: block;
+    text-align: left;
+}
+.editbox .wide{width: 90%}
+.editbox .row{min-width: inherit;}
 
 /* Discussion */
 #comment {padding-bottom: 20px;}
@@ -970,17 +988,8 @@ ul.ui-tab li a {
 }
 
 .reply {
-	clear: both;
-	background: rgb(245,245,245);
-	border-top: 1px solid {{color5}};
 	margin: 20px 0 -25px -20px !important;
 	padding: 10px 20px 20px;
-	border-bottom-left-radius: 5px;
-	border-bottom-right-radius: 5px;
-		-webkit-border-bottom-left-radius: 5px;
-		-webkit-border-bottom-right-radius: 5px;
-		-moz-border-radius-bottomleft: 3px;
-		-moz-border-radius-bottomright: 3px;
 	min-width: inherit;
 }
 .reply form {position: relative;}

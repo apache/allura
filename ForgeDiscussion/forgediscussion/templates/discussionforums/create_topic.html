@@ -1,0 +1,11 @@
+{% extends 'jinja_master/master.html' %}
+
+{% block title %}{{c.project.name}} / {{c.app.config.options.mount_label}} / Create Topic{% endblock %}
+
+{% block header %}Create Topic{% endblock %}
+
+{% block edit_box %}
+<div class="editbox">
+  {{c.new_topic.display(action=c.app.url + 'save_new_topic',show_subject=True,forums=forums)}}
+</div>
+{% endblock %}

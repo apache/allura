@@ -9,8 +9,6 @@
       <a py:if="num_pages and cur_page &lt; num_pages" href="?page=${page + limit}">Next &rarr;</a>
     </div>
   </div>
-  <hr class="clear clearfix space"/>
-  <p>Thread Shortlink: [${value.shorthand_id()}]</p>
   <div class="title-pane closed" py:if="show_moderate and has_artifact_access('moderate', value)()">
     <span class="title">Moderate thread</span>
     <div class="content">

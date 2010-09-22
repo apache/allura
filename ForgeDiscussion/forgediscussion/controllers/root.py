@@ -2,7 +2,7 @@ import logging
 import pymongo
 from urllib import urlencode, unquote
 
-from tg import expose, validate, redirect
+from tg import expose, validate, redirect, flash
 from tg.decorators import with_trailing_slash
 from pylons import g, c, request
 from formencode import validators
@@ -29,7 +29,7 @@ class RootController(BaseController):
 
     class W(object):
         forum_subscription_form=FW.ForumSubscriptionForm()
-        subscription_form=DW.SubscriptionForm(show_discussion_email=True, allow_create_thread=True, show_subject=True)
+        new_topic=DW.NewTopicPost(submit_text='Save')
         announcements_table=FW.AnnouncementsTable()
 
     def _check_security(self):
@@ -37,8 +37,8 @@ class RootController(BaseController):
 
     @with_trailing_slash
     @expose('jinja:discussionforums/index.html')
-    def index(self, **kw):
-        c.subscription_form = self.W.subscription_form
+    def index(self, new_forum=False, **kw):
+        c.new_topic = self.W.new_topic
         c.announcements_table = self.W.announcements_table
         announcements=model.ForumThread.query.find(dict(
                 flags='Announcement')).all()
@@ -48,10 +48,44 @@ class RootController(BaseController):
         threads = dict()
         for forum in forums:
             threads[forum._id] = model.ForumThread.query.find(dict(
-                            discussion_id=forum._id)).sort('mod_date', pymongo.DESCENDING).limit(5).all()
+                            discussion_id=forum._id)).sort('mod_date', pymongo.DESCENDING).limit(6).all()
         return dict(forums=forums,
                     threads=threads,
-                    announcements=announcements)
+                    announcements=announcements,
+                    hide_forum=(not new_forum))
+
+    @with_trailing_slash
+    @expose('jinja:discussionforums/create_topic.html')
+    def create_topic(self, new_forum=False, **kw):
+        c.new_topic = self.W.new_topic
+        forums = model.Forum.query.find(dict(
+                        app_config_id=c.app.config._id,
+                        parent_id=None)).all()
+        return dict(forums=forums)
+
+    @h.vardec
+    @expose()
+    @validate(W.new_topic, error_handler=create_topic)
+    def save_new_topic(self, subject=None, text=None, forum=None, **kw):
+        discussion = model.Forum.query.get(
+            app_config_id=c.app.config._id,
+            shortname=forum)
+        if not subject:
+            flash('You must have a subject for this post.')
+            redirect(request.referrer)
+        if discussion.deleted and not has_artifact_access('configure', app=c.app)():
+            flash('This forum has been removed.')
+            redirect(request.referrer)
+        # if 'new_topic' in kw:
+        #     subject = kw['new_topic']['subject']
+        #     text = kw['new_topic']['text']
+        require(has_artifact_access('post', discussion))
+        thd = discussion.get_discussion_thread(dict(
+                headers=dict(Subject=subject)))
+        post = thd.post(subject, text)
+        thd.first_post_id = post._id
+        flash('Message posted')
+        redirect(thd.url())
                   
     @with_trailing_slash
     @expose('jinja:discussionforums/search.html')

@@ -1,5 +1,7 @@
 {% import 'jinja_master/lib.html' as lib with context %}
 
+{{g.markdown.convert(value.description)|safe}}
+
 {% if value.announcements %}
   <h3>Announcements</h3>
   {{widgets.announcements_table.display(value=value.announcements)}}

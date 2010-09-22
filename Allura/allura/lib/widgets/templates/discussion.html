@@ -4,8 +4,11 @@
 
 {% block header %}{{value.name}}{% endblock %}
 
+{% block edit_box %}
+  <div class="editbox">{{widgets.discussion_header.display(value=value)}}</div>
+{% endblock %}
+
 {% block content %}
-{{widgets.discussion_header.display(value=value)}}
 {{widgets.subscription_form.display(value=value,
                                     threads=threads,
                                     show_actions=True,

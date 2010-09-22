@@ -51,7 +51,6 @@ class ThreadSubscriptionForm(DW.SubscriptionForm):
         threads=_ThreadsTable()
         page_list=ffw.PageList()
         page_size=ffw.PageSize()
-        new_topic = DW.EditPost(submit_text='New Topic')
 
 class AnnouncementsTable(DW._ThreadsTable):
     class fields(ew.WidgetsList):
@@ -113,13 +112,13 @@ class ThreadHeader(DW.ThreadHeader):
                  announcements_table=AnnouncementsTable())
 
 class Post(DW.Post):
-    show_subject=True
+    show_subject=False
     widgets=dict(DW.Post.widgets,
                  promote_to_thread=PromoteToThread())
 
 class Thread(DW.Thread):
     params=['show_subject']
-    show_subject=True
+    show_subject=False
     widgets=dict(DW.Thread.widgets,
                  thread_header=ThreadHeader(),
                  post=Post())

@@ -4,81 +4,87 @@
 
 {% block header %}{{c.app.config.options.mount_label}}{% endblock %}
 
+{% if h.has_artifact_access('configure', app=c.app)() and (not hide_forum) %}
+  {% block edit_box %}
+    <div class="editbox">
+      <div id="add_forum_form"{% if hide_forum %} style="display:none"{% endif %}>
+        <form method="POST" enctype="multipart/form-data" id="new_forum_form"
+          action="{{c.project.url()}}admin/{{c.app.config.options.mount_point}}/update_forums">
+          <div class="row">
+            <div class="column grid_4">
+      			  <label class="cr">Name:</label>
+      			  <input type="text" name="new_forum.name" class="wide"/>
+      			</div>
+      			<div class="column grid_8">
+      			  <label class="cr">Summary:</label>
+      			  <input type="text" name="new_forum.description" class="wide"/>
+      			</div>
+      		</div>
+    			<div class="clear">
+    			  <input type="submit" id="new_forum.create" name="new_forum.create" value="Save"/>
+            <input type="button" id="add_forum_cancel" value="Cancel"/>
+    			</div>
+        </form>
+      </div>
+    </div>
+  {% endblock %}
+{% endif %}
+
 {% block content %}
   {% if announcements %}
     <h3>Announcements</h3>
     {{c.announcements_table.display(value=announcements)}}
   {% endif %}
+  {% set visible=0 %}
   {% for forum in forums %}
     {% if not forum.deleted or h.has_artifact_access('configure', app=c.app)() %}
-      <div>
-        <h2><a href="{{forum.url()}}">{{forum.name}}</a></h2>
+      <div class="discussion_forum">
+        <strong class="forum_name">{{forum.name}}:</strong> {{forum.description}}<br/>
         {% if forum.deleted %}
           <div class="notice">This forum has been deleted and is not visible to non-admin users</div>
         {% endif %}
-        {{c.subscription_form.display(value=forum, threads=threads[forum._id], action=forum.url() + 'subscribe')}}
-        &nbsp;
-        <div class="clear"></div>
+        {% for thread in threads[forum._id] %}
+          {% if loop.index0 == 5 %}
+            <a href="{{forum.url()}}">More</a>
+          {% else %}
+            <p>{{thread.num_replies}} posts to <a href="{{thread.url()}}">{{h.text.truncate(h.really_unicode(thread.subject or '(no subject)'),75)}}</a></p>
+          {% endif %}
+        {% endfor %}
       </div>
+      {% set visible = visible + 1 %}
+      {% if visible%2==0 %}
+        <div class="clear">&nbsp;</div>
+      {% endif %}
     {% endif %}
   {% endfor %}
-  {% if h.has_artifact_access('configure', app=c.app)() %}
-    <form method="POST" enctype="multipart/form-data" id="new_forum_form"
-      action="{{c.project.url()}}admin/{{c.app.config.options.mount_point}}/update_forums">
-      <input type="button" id="add_forum" value="Add another forum"/>
-      <div id="add_forum_form" style="display:none">
-		<ol>
-			<li>
-			  <label>Name:</label>
-			  <input type="text" name="new_forum.name"/>
-			</li>
-			<li>
-			  <label>Short Name:</label>
-			  <input type="text" name="new_forum.shortname"/>
-			</li>
-			<li>
-			  <label>Parent Forum:</label>
-			  <select name="new_forum.parent">
-             <option value="">None</option>
-             {% for f in forums %}<option value="{{f._id}}">{{f.name}}</option>{% endfor %}
-           </select>
-			</li>
-			<li>
-			  <label>Description:</label>
-			  <textarea name="new_forum.description" style="height:50px;"></textarea>
-			</li>
-			<li>
-			  <label>Icon:</label>
-			  {{lib.file_field('new_forum.icon', '')}}
-			</li>
-			<li>
-			  <label>&nbsp;</label>
-			  <input type="submit" id="new_forum.create" name="new_forum.create" value="Create Forum"/>
-           <input type="button" id="add_forum_cancel" value="Cancel"/>
-			</li>
-		</ol>
-      </div>
-      <div class="clear"></div>
-    </form>
-  {% endif %}
 {% endblock %}
 
 {% block extra_js %}
   {% if h.has_artifact_access('configure', app=c.app)() %}
     <script type="text/javascript">
-      console.debug('aaa')
       $(function() {
         $("#add_forum").click(function(){
-          $("#add_forum_form").show();
-          $(this).hide();
+          $("div.editbox").show();
           return false;
         });
         $("#add_forum_cancel").click(function(){
-          $("#add_forum_form").hide();
-          $("#add_forum").show();
+          $("div.editbox").hide();
           return false;
         });
       });
     </script>
   {% endif %}
+{% endblock %}
+
+{% block extra_css %}
+<style type="text/css">
+  .discussion_forum{
+    float: left;
+    width: 45%;
+    margin-right: 1em;
+  }
+  .forum_name{
+    font-size: 1.2em;
+  }
+</style>
 {% endblock %}

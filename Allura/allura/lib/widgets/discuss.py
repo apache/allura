@@ -103,6 +103,7 @@ class EditPost(ew.SimpleForm):
             else:
                 yield ew.TextField(name='subject', if_missing='')
             yield ffw.MarkdownEdit(name='text')
+            yield ew.HiddenField(name='forum', if_missing=None)
         return _()
 
     def resources(self):
@@ -110,7 +111,9 @@ class EditPost(ew.SimpleForm):
         for r in ffw.MarkdownEdit(name='text').resources(): yield r
 
 class NewTopicPost(EditPost):
-    template='allura.lib.widgets.templates.new_topic_post'
+    template='jinja:new_topic_post.html'
+    forums=None
+    params=['forums']
 
 class _ThreadsTable(ew.TableField):
     template='allura.lib.widgets.templates.threads_table'
@@ -143,7 +146,6 @@ class SubscriptionForm(ew.SimpleForm):
         page_list=ffw.PageList()
         page_size=ffw.PageSize()
         threads=_ThreadsTable()
-        new_topic = NewTopicPost(submit_text='New Topic', if_missing=None)
     def resources(self):
         for r in super(SubscriptionForm, self).resources(): yield r
         yield ew.JSScript('''
@@ -152,13 +154,6 @@ class SubscriptionForm(ew.SimpleForm):
             $('.discussion_subscription_form').each(function(){
                 var discussion = this;
                 $('.submit', discussion).button();
-                if($('.new_topic', discussion)){
-                    $('.new_topic', discussion).click(function(ele){
-                        $('.new_topic_form', discussion).show();
-                        $('.row', discussion).hide();
-                        return false;
-                    });
-                }
                 $('.follow', discussion).click(function(ele){
                     $('.follow_form', discussion).submit();
                     return false;

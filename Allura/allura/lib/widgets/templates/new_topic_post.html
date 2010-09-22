@@ -1,19 +1,20 @@
-<form xmlns="http://www.w3.org/1999/xhtml"
-     xmlns:py="http://genshi.edgewall.org/"
-     method="post"
-     action="$action">
-  <ol>
-    <li py:if="show_subject">
-      <label for="subject">Topic:</label>
-      <input name="subject" style="width: 500px;" value="${value and (value.subject or '(no subject)')}"/>
-    </li>
-    <li>
-      <label for="text">Post:</label>
-      <textarea name="text" style="width: 500px; height: 150px">${(value and 'text' in value) and value['text'] or ''}</textarea>
-    </li>
-    <li>
-      <label>&nbsp;</label>
-      <input type="submit" value="$submit_text"/>
-    </li>
-  </ol>
+<form method="post" action="{{action}}">
+    {% if show_subject %}
+      <label for="subject" class="cr">Subject:</label>
+      <input name="subject"{% if value %} value="{{value.subject or '(no subject)'}}"{% endif %}/>
+      <div>&nbsp;</div>
+    {% endif %}
+    {% if forums %}
+      <label for="forum" class="cr">Forum:</label>
+      <select name="forum">
+        {% for forum in forums %}
+          <option value="{{forum.shortname}}">{{forum.name}}</option>
+        {% endfor %}
+      </select>
+      <div>&nbsp;</div>
+    {% endif %}
+    <label for="text" class="cr">Description:</label>
+    <textarea name="text" rows="12" class="wide">{{(value and 'text' in value) and value['text'] or ''}}</textarea>
+    <div>&nbsp;</div>
+    <input type="submit" value="{{submit_text}}"/>
 </form>

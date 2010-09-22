@@ -7,7 +7,10 @@
 
 {% block header %}{{'subject' in thread and thread.subject or '(no subject)'}}{% endblock %}
 
+{% block edit_box %}
+  <div class="editbox">{{c.thread_header.display(value=thread, page=page, limit=limit, count=count)}}</div>
+{% endblock %}
+
 {% block content %}
-  {{c.thread_header.display(value=thread, page=page, limit=limit, count=count)}}
   {{c.thread.display(value=thread, page=page, limit=limit, count=count)}}
 {% endblock %}

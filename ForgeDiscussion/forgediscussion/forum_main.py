@@ -6,7 +6,7 @@ import pymongo
 # Non-stdlib imports
 import pkg_resources
 from pylons import g, c, request
-from tg import expose, redirect, flash
+from tg import expose, redirect, flash, url
 from tg.decorators import with_trailing_slash, without_trailing_slash
 from pymongo.bson import ObjectId
 from ming.orm.base import session
@@ -136,7 +136,8 @@ class ForgeDiscussionApp(Application):
 
     def sidebar_menu(self):
         try:
-            l = [SitemapEntry('Home', c.app.url, ui_icon='home')]
+            l = [SitemapEntry('Create Topic', c.app.url + 'create_topic', ui_icon='plus'),
+                 SitemapEntry('Add Forum', url(c.app.url,dict(new_forum=True)), ui_icon='comment')]
             # if we are in a thread, provide placeholder links to use in js
             if '/thread/' in request.url:
                 l += [
@@ -145,10 +146,6 @@ class ForgeDiscussionApp(Application):
                     SitemapEntry('Follow This', 'feed.rss', ui_icon='signal-diag'),
                     SitemapEntry('Mark as Spam', 'flag_as_spam', ui_icon='flag', className='sidebar_thread_spam')
                 ]
-            else:
-                l.append(SitemapEntry('Search', c.app.url+'search', ui_icon='search'))
-            if has_artifact_access('admin', app=c.app)():
-                l.append(SitemapEntry('Admin', c.project.url()+'admin/'+self.config.options.mount_point, ui_icon='wrench'))
             recent_topics = [ SitemapEntry(h.text.truncate(thread.subject, 72), thread.url(), className='nav_child',
                                 small=thread.num_replies)
                    for thread in model.ForumThread.query.find().sort('mod_date', pymongo.DESCENDING).limit(3)
@@ -156,8 +153,15 @@ class ForgeDiscussionApp(Application):
             if len(recent_topics):
                 l.append(SitemapEntry('Recent Topics'))
                 l += recent_topics
-            l.append(SitemapEntry('Forum Help'))
-            l.append(SitemapEntry('Forum Permissions', c.app.url + 'help', className='nav_child'))
+            forums = model.Forum.query.find(dict(
+                            app_config_id=c.app.config._id,
+                            parent_id=None)).all()
+            if forums:
+                l.append(SitemapEntry('Forums'))
+                for f in forums:
+                    l.append(SitemapEntry(f.name, f.url(), className='nav_child'))
+            l.append(SitemapEntry('Help'))
+            l.append(SitemapEntry('Forum Help', c.app.url + 'help', className='nav_child'))
             l.append(SitemapEntry('Markdown Syntax', c.app.url + 'markdown_syntax', className='nav_child'))
             return l
         except: # pragma no cover
@@ -225,22 +229,27 @@ class ForumAdminController(DefaultAdminController):
             file_class.query.remove({'metadata.forum_id':forum._id})
         h.save_image(icon, model.ForumFile, square=True, thumbnail_size=(48, 48), meta=dict(forum_id=forum._id))
 
-    def create_forum(self, new_forum):    
+    def create_forum(self, new_forum):
+        if 'shortname' not in new_forum:
+            new_forum['shortname'] = new_forum['name']
         if '.' in new_forum['shortname'] or '/' in new_forum['shortname']:
             flash('Shortname cannot contain . or /', 'error')
             redirect('.')
-        if new_forum['parent']:
+        if 'parent' in new_forum and new_forum['parent']:
             parent_id = ObjectId(str(new_forum['parent']))
             shortname = (model.Forum.query.get(_id=parent_id).shortname + '/'
                          + new_forum['shortname'])
         else:
             parent_id=None
             shortname = new_forum['shortname']
+        description = ''
+        if 'description' in new_forum:
+            description=new_forum['description']
         f = model.Forum(app_config_id=self.app.config._id,
                         parent_id=parent_id,
                         name=new_forum['name'],
                         shortname=shortname,
-                        description=new_forum['description'])
+                        description=description)
         if 'icon' in new_forum and new_forum['icon'] is not None and new_forum['icon'] != '':
             self.save_forum_icon(f, new_forum['icon'])
         return f
@@ -250,7 +259,7 @@ class ForumAdminController(DefaultAdminController):
     def update_forums(self, forum=None, new_forum=None, **kw):
         if forum is None: forum = []
         if new_forum.get('create'):
-            if '.' in new_forum['shortname'] or '/' in new_forum['shortname']:
+            if 'shortname' in new_forum and ('.' in new_forum['shortname'] or '/' in new_forum['shortname']):
                 flash('Shortname cannot contain . or /', 'error')
                 redirect('.')
             f = self.create_forum(new_forum)
