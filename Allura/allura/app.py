@@ -227,13 +227,13 @@ class DefaultAdminController(BaseController):
     def index(self, **kw):
         return redirect('permissions')
 
-    @expose('allura.templates.app_admin_permissions')
+    @expose('jinja:app_admin_permissions.html')
     @without_trailing_slash
     def permissions(self):
         return dict(app=self.app,
                     allow_config=has_artifact_access('configure', app=self.app)())
 
-    @expose('allura.templates.app_admin_options')
+    @expose('jinja:app_admin_options.html')
     def options(self):
         return dict(app=self.app,
                     allow_config=has_artifact_access('configure', app=self.app)())

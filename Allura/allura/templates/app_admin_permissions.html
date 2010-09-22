@@ -1,29 +1,20 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-                    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:py="http://genshi.edgewall.org/"
-      xmlns:xi="http://www.w3.org/2001/XInclude">
+{% extends 'jinja_master/master.html' %}
+                        
+{% block extra_css %}
+    <link rel="stylesheet" type="text/css" media="screen" href="{{g.forge_static('css/forge/accordion.css')}}" />
+{% endblock %}
+          
+{% block title %}{{c.project.name}} / {{app.config.options.mount_label}} / Permissions{% endblock %}
+
+{% block header %}{{app.config.options.mount_point}} Permissions{% endblock %}
   
-  <xi:include href="master.html" />
-  
-  <head>
-    <meta content="text/html; charset=UTF-8" http-equiv="content-type" py:replace="''"/>
-    <title>$c.project.name / $app.config.options.mount_label / Permissions</title>
-    <link rel="stylesheet" type="text/css" media="screen" href="${g.forge_static('css/forge/accordion.css')}" />
-  </head>
-  
-  <body>
-    <h1 class="title">$app.config.options.mount_point Permissions</h1>
-    <div class="content">
-      <div class="row">
-        <div class="column grid_12">
-          <py:if test="not (app.permissions and allow_config)">
-            You are not allowed to edit permissions for ${app.config.options.mount_point}.
-          </py:if>
-          <py:if test="app.permissions and allow_config">
+{% block content %}
+          {% if not (app.permissions and allow_config) %}
+            You are not allowed to edit permissions for {{app.config.options.mount_point}}.
+          {% else %}
             <div id="acl-admin">
-              <py:for each="p in app.permissions" >
-                <h3><a href="#" id="permission_$p">$p</a></h3>
+              {% for p in app.permissions %}
+                <h3><a href="#" id="permission_{{p}}">{{p}}</a></h3>
                 <div>
                   <table>
                     <thead>
@@ -33,36 +24,38 @@
                       </tr>
                     </thead>
                     <tbody>
-                      <tr py:for="role in h.make_roles(app.config.acl.get(p, []))">
-                        <td>${role.display()}</td>
+                      {% for role in h.make_roles(app.config.acl.get(p, [])) %}
+                      <tr>
+                        <td>{{role.display()}}</td>
                         <td>
                           <form method="POST" action="del_perm" style="display:inline">
-                            <input type="hidden" name="permission" value="$p"/>
-                            <input type="hidden" name="role" value="${role._id}"/>
-                          <input type="submit" value="Remove" py:if="role.display() != '*user-'+c.user.username"/>
+                            <input type="hidden" name="permission" value="{{p}}"/>
+                            <input type="hidden" name="role" value="{{role._id}}"/>
+                          {% if role.display() != '*user-'+c.user.username %}
+                            <input type="submit" value="Remove" />
+                          {% endif %}
                           </form>
                         </td>
                       </tr>
+                      {% endfor %}
                     </tbody>
                   </table>
                   <form method="POST" action="add_perm">
-                    <input type="hidden" name="permission" value="$p"/>
+                    <input type="hidden" name="permission" value="{{p}}"/>
                     <select name="role">
-                      <option py:for="role in c.project.roles"
-                              value="$role._id"
-                              >${role.display()}</option>
+                      {% for role in c.project.roles %}
+                        <option value="{{role._id}}">{{role.display()}}</option>
+                      {% endfor %}
                     </select>
                     <input type="submit" value="Add role"/>
                   </form>
                 </div>
-              </py:for>
+              {% endfor %}
             </div>
-        	</py:if>
-        </div>
-      </div>
-    </div>
-  </body>
+          {%endif%}
+{% endblock %}
 
+{% block extra_js %}
   <script type="text/javascript">
     $(function() {
       $("#acl-admin").accordion({
@@ -86,4 +79,4 @@
       }
     });
 </script>
-</html>
+{% endblock %}
