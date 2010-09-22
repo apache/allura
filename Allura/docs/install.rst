@@ -133,6 +133,12 @@ RabbitMQ
 	    $ cd <rabbitmq_server_directory> # not needed on MACOS
 	    $ sudo rabbitmq-server
 
+SOLR server
+  This is our search and indexing server.  We have a custom config in
+  ~/src/forge/solr_config::
+
+      (anvil)~/<path_to_solr>/example$ java -Dsolr.solr.home=$(cd;pwd)/src/forge/solr_config -jar start.jar
+
 Forge "reactor" server
   This is the server that will respond to RabbitMQ messages.  To set it up to
   receive messages, you'll need to run the following commands::
@@ -145,12 +151,6 @@ Forge SMTP server
   This server routes messages from email addresses to tools in the forge::
     
       (anvil)~/src/forge/Allura$ paster smtp_server development.ini
-
-SOLR server
-  This is our search and indexing server.  We have a custom config in
-  ~/src/forge/solr_config::
-
-      (anvil)~/<path_to_solr>/example$ java -Dsolr.solr.home=$(cd;pwd)/src/forge/solr_config -jar start.jar
 
 TurboGears application server
   This is the main application that will respond to web requests.  We'll get into
