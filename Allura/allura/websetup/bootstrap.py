@@ -132,10 +132,14 @@ def bootstrap(command, conf, vars):
                               display_name='Test User'))
     u2 = M.User.register(dict(username='test-user2',
                               display_name='Test User 2'))
+    u_admin1 = M.User.register(dict(username='admin1',
+                                    display_name='Admin 1'))
     n_adobe.acl['admin'].append(u_adobe._id)
     u_adobe.set_password('foo')
     u0.set_password('foo')
     u1.set_password('foo')
+    u2.set_password('foo')
+    u_admin1.set_password('foo')
     u0.claim_address('Beta@wiki.test.projects.sourceforge.net')
 
     log.info('Creating basic project categories')
@@ -154,7 +158,7 @@ def bootstrap(command, conf, vars):
     log.info('Registering initial projects')
     p_adobe1 = n_adobe.register_project('adobe-1', u_adobe)
     p_adobe2 = n_adobe.register_project('adobe-2', u_adobe)
-    n_projects.register_project('allura', u0)
+    n_projects.register_project('allura', u_admin1)
     p0 = n_projects.register_project('test', u0)
     c.project = p0
     c.user = u0
