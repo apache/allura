@@ -50,6 +50,7 @@ def site_style_link(neighborhood=None):
     if theme is None:
         theme = M.Theme.query.get(name='forge_default')
     s_state = pickle.dumps(state(theme).document.deinstrumented_clone())
+    s_state += tg.config.get('build_key', '1')
     checksum = sha1(s_state).hexdigest()
     return tg.url(tg.config.get('cdn.url_base', '')+base, dict(s=checksum))
 
