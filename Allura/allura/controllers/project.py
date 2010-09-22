@@ -8,6 +8,7 @@ import Image
 from tg import expose, flash, redirect, validate, request, response
 from tg.decorators import with_trailing_slash, without_trailing_slash
 from pylons import c, g
+from paste.httpheaders import CACHE_CONTROL
 from webob import exc
 from pymongo.bson import ObjectId
 import pymongo
@@ -20,6 +21,7 @@ from allura import model as M
 from allura.app import SitemapEntry
 from allura.lib.base import BaseController
 from allura.lib import helpers as h
+from allura.lib import utils
 from allura.controllers.error import ErrorController
 from allura.lib.security import require, has_project_access, has_neighborhood_access, has_artifact_access
 from allura.lib.widgets import form_fields as ffw
@@ -180,7 +182,7 @@ class NeighborhoodController(object):
 
     @expose('jinja:jinja_master/site_style.css', content_type='text/css')
     @without_trailing_slash
-    def site_style(self):
+    def site_style(self, **kw):
         """Display the css for the default theme."""
         theme = M.Theme.query.find(dict(neighborhood_id=self.neighborhood._id)).first()
         if theme == None:
@@ -188,6 +190,7 @@ class NeighborhoodController(object):
 
         response.headers['Content-Type'] = ''
         response.content_type = 'text/css'
+        utils.cache_forever()
 
         return dict(
             color1=theme.color1,

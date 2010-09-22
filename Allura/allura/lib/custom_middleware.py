@@ -184,10 +184,13 @@ class StatsMiddleware(object):
                                 'next')
 
     def instrument_template(self):
+        import jinja2
         import genshi.template
         timing('template').decorate(genshi.template.Template,
                                     '_prepare _parse generate')
         timing('render').decorate(genshi.Stream,
+                                  'render')
+        timing('render').decorate(jinja2.Template,
                                   'render')
         timing('markdown').decorate(markdown.Markdown,
                                     'convert')
@@ -201,6 +204,8 @@ class StatsMiddleware(object):
             result = resp(environ, start_response)
         if s.active:
             self.log.info('Stats: %r', s)
+            from allura import model as M
+            M.Stats.make(s.asdict()).m.insert()
         return result
 
 class Environ(object):

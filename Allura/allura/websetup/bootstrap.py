@@ -154,6 +154,7 @@ def bootstrap(command, conf, vars):
     log.info('Registering initial projects')
     p_adobe1 = n_adobe.register_project('adobe-1', u_adobe)
     p_adobe2 = n_adobe.register_project('adobe-2', u_adobe)
+    n_projects.register_project('allura', u0)
     p0 = n_projects.register_project('test', u0)
     c.project = p0
     c.user = u0

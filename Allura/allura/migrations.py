@@ -14,6 +14,24 @@ from forgegit import model as GitM
 from forgehg import model as HgM
 from forgesvn import model as SVNM
 
+STATS_COLLECTION_SIZE=100000
+
+class CreateStatsCollection(Migration):
+    version = 13
+
+    def up(self):
+        if self.session.db.name == 'allura':
+            self.session.db.create_collection(
+                M.Stats.__mongometa__.name,
+                capped=True,
+                size=STATS_COLLECTION_SIZE*10,
+                max=STATS_COLLECTION_SIZE)
+
+    def down(self):
+        if self.session.db.name == 'allura':
+            self.session.db.drop_collection(
+                M.Stats.__mongometa__.name)
+
 class DeleteFlashMailboxes(Migration):
     version = 12
 

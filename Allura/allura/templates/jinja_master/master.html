@@ -18,11 +18,12 @@
     {% for blob in g.resource_manager.emit('head_js') %}
       {{ blob }}
     {% endfor %}
-      <link rel="stylesheet" type="text/css" media="screen" href="{{c.project.neighborhood.url()+'site_style.css'}}" />
+    {% if c.project %}
+      <link rel="stylesheet" type="text/css" media="screen" href="{{h.site_style_link(c.project.neighborhood)}}" />
     {% elif neighborhood %}
-      <link rel="stylesheet" type="text/css" media="screen" href="{{neighborhood.url()+'site_style.css'}}" />
+      <link rel="stylesheet" type="text/css" media="screen" href="{{h.site_style_link(neighborhood)}}" />
     {% else %}
-      <link rel="stylesheet" type="text/css" media="screen" href="{{tg.url('/nf/site_style.css')}}" />
+      <link rel="stylesheet" type="text/css" media="screen" href="{{h.site_style_link()}}" />
     {% endif %}
     {% block extra_css %}{% endblock %}
 

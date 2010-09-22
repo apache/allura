@@ -7,28 +7,28 @@ from webob import exc
 
 from pylons import c, g
 from allura.lib import helpers as h
+from allura.lib import utils
 from allura import model as M
 
 class NewForgeController(object):
 
-    @expose()
+    @expose('jinja:jinja_master/site_style.css', content_type='text/css')
     @without_trailing_slash
-    def site_style(self):
+    def site_style(self, **kw):
         """Display the css for the default theme."""
         theme = M.Theme.query.find(dict(name='forge_default')).first()
-        colors = dict(color1=theme.color1,
-                      color2=theme.color2,
-                      color3=theme.color3,
-                      color4=theme.color4,
-                      color5=theme.color5,
-                      color6=theme.color6,
-                      g=g)
-        tpl_fn = pkg_resources.resource_filename(
-            'allura', 'templates/style.css')
-        css = h.render_genshi_plaintext(tpl_fn,**colors)
         response.headers['Content-Type'] = ''
         response.content_type = 'text/css'
-        return css
+        utils.cache_forever()
+        return dict(
+            color1=theme.color1,
+            color2=theme.color2,
+            color3=theme.color3,
+            color4=theme.color4,
+            color5=theme.color5,
+            color6=theme.color6,
+            g=g,
+            extra_css='')
 
     @expose()
     @without_trailing_slash

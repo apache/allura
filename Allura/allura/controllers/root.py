@@ -22,6 +22,7 @@ from allura.lib.widgets import project_list as plw
 from .auth import AuthController
 from .search import SearchController, ProjectBrowseController
 from .static import NewForgeController
+from .site_admin import SiteAdminController
 from .project import NeighborhoodController, HostNeighborhoodController
 from .oembed import OEmbedController
 from .rest import RestController
@@ -51,6 +52,7 @@ class RootController(BaseController):
     auth = AuthController()
     error = ErrorController()
     nf = NewForgeController()
+    nf.admin = SiteAdminController()
     search = SearchController()
     rest = RestController()
 

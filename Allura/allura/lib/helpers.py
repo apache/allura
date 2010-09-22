@@ -6,6 +6,7 @@ import urllib
 import re
 import json
 import logging
+import cPickle as pickle
 from hashlib import sha1
 from datetime import datetime
 
@@ -26,6 +27,8 @@ from webhelpers import date, feedgenerator, html, number, misc, text
 
 from pymongo import bson
 
+from ming.orm import state
+
 from allura.lib import exceptions as exc
 # Reimport to make available to templates
 from .security import has_neighborhood_access, has_project_access, has_artifact_access
@@ -36,6 +39,19 @@ def monkeypatch(obj):
     def patchit(func):
         setattr(obj, func.__name__, func)
     return patchit
+
+def site_style_link(neighborhood=None):
+    from allura import model as M
+    theme = None
+    base = '/nf/site_style.css'
+    if neighborhood is not None:
+        theme = M.Theme.query.get(neighborhood_id=neighborhood._id)
+        base = neighborhood.url_prefix + 'site_style.css'
+    if theme is None:
+        theme = M.Theme.query.get(name='forge_default')
+    s_state = pickle.dumps(state(theme).document.deinstrumented_clone())
+    checksum = sha1(s_state).hexdigest()
+    return tg.url(tg.config.get('cdn.url_base', '')+base, dict(s=checksum))
 
 def really_unicode(s):
     if s is None: return u''

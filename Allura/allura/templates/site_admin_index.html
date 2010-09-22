@@ -1,0 +1,13 @@
+{% set page="index" %}
+{% extends 'site_admin.html' %}
+{% block content %}
+<h2>Neighborhood Stats</h2>
+<table>
+  <thead>
+    <tr><th>Name<th>Projects<th>Configured</tr>
+  </thead>
+  {% for name, count, count_configured in neighborhoods %}
+  <tr><td>{{name}}<td>{{count}}<td>{{count_configured}}</tr>
+  {% endfor %}
+</table>
+{% endblock %}

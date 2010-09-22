@@ -1,0 +1,35 @@
+{% set page="stats" %}
+{% extends 'site_admin.html' %}
+{% block content %}
+<table>
+  <thead>
+    <tr>
+      <th>Url
+      <th>Ming
+      <th>Mongo
+      <th>Render
+      <th>Template
+      <th>Total Time
+    </tr>
+    <tr>
+      <th>Mean
+        <td>{{agg_timings.ming}}
+        <td>{{agg_timings.mongo}}
+        <td>{{agg_timings.render}}
+        <td>{{agg_timings.template}}
+        <td>{{agg_timings.total}}
+    </tr>
+  </thead>
+  {% for url,timers in stats %}
+  <tr>
+    <td>{{url}}
+    <td>{{timers.get('ming')}}
+    <td>{{timers.get('mongo')}}
+    <td>{{timers.get('render')}}
+    <td>{{timers.get('template')}}
+    <td>{{timers.get('total')}}
+  </tr>
+  {% endfor %}
+</table>
+
+{% endblock %}

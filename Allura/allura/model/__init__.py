@@ -13,6 +13,7 @@ from .filesystem import File
 from .tag import TagEvent, Tag, UserTags
 from .notification import Notification, Mailbox
 from .repository import Repository, RepositoryImplementation, Commit, Tree, Blob, CommitReference, LogCache
+from .stats import Stats
 
 from .types import ArtifactReference, ArtifactReferenceType
 
@@ -20,5 +21,5 @@ from .session import main_doc_session, main_orm_session
 from .session import project_doc_session, project_orm_session
 from .session import artifact_orm_session, repository_orm_session
 
-from ming.orm.mapped_class import MappedClass
+from ming.orm import MappedClass
 MappedClass.compile_all()

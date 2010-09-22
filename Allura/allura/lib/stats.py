@@ -20,6 +20,11 @@ class StatsRecord(object):
             for k,v in sorted(self.timers.iteritems()))
         return '%s: %s' % (self.url, stats)
 
+    def asdict(self):
+        return dict(
+            url=self.url,
+            timers=self.timers)
+
     @contextmanager
     def timing(self, name):
         if self.active and name not in self._now_timing:
