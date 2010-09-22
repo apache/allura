@@ -100,11 +100,12 @@ class HostedApp(object):
         if user is None: user = c.user
         if project is None: project = c.project
         self._queue_ha_operation('hostedapp_disable', user, project)
-        stmt = T.feature_optin.delete()
-        stmt.execute(
-            feature_type=self.feature_type,
-            owner_table='project',
-            owner_pk=project.get_tool_data('sfx', 'group_id'))
+        stmt = T.feature_optin.delete(
+            whereclause=sa.and_(
+                T.feature_optin.c.feature_type==self.feature_type,
+                T.feature_optin.c.owner_table=='project',
+                T.feature_optin.c.owner_pk==project.get_tool_data('sfx', 'group_id')))
+        stmt.execute()
 
     def addperm(self, user=None, project=None):
         if user is None: user = c.user
