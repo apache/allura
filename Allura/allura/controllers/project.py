@@ -503,7 +503,7 @@ class NeighborhoodModerateController(object):
         require(has_neighborhood_access('moderate', self.neighborhood),
                 'Moderator access required')
 
-    @expose('allura.templates.neighborhood_moderate')
+    @expose('jinja:neighborhood_moderate.html')
     def index(self, **kw):
         return dict(neighborhood=self.neighborhood)
 
