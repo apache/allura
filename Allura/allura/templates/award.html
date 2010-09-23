@@ -1,21 +1,11 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" 
-                      "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:py="http://genshi.edgewall.org/"
-      xmlns:xi="http://www.w3.org/2001/XInclude">
+{% extends 'jinja_master/master.html' %}
 
-  <xi:include href="master.html" />
+{% block title %}Award{% endblock %}
 
-<head>
-  <meta content="text/html; charset=UTF-8" http-equiv="content-type" py:replace="''"/>
-  <title>Award</title>
-</head>
+{% block header %}Award{% endblock %}
 
-  <body>
-    <h1 class="title">Award</h1>
-    <div class="content">
-      <div class="row">
-        <div class="column grid_12">
+{% block content %}
+<br /><br />
           <table border="1">
             <thead>
               <tr>
@@ -28,19 +18,15 @@
             <tbody>
               <tr>
                 <td>
-                  <py:if test="award.icon">
+                  {% if award.icon %}
                     <img class="award_icon" src="icon"/>
-                  </py:if>
+                  {% endif %}
                 </td>
-                <td><a href="${award.longurl()}">${award.short}</a></td>
-                <td>$award.full</td>
-                <td><a href="${award.longurl()}/delete">[X]</a></td>
+                <td><a href="{{award.longurl()}}">{{award.short}}</a></td>
+                <td>{{award.full}}</td>
+                <td><a href="{{award.longurl()}}/delete">[X]</a></td>
               </tr>
             </tbody>
           </table>
           <a href="..">&#060;&#060; Back</a>
-        </div>
-      </div>
-    </div>
-  </body>
-</html>
+{% endblock %}

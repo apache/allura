@@ -1,21 +1,11 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" 
-                      "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:py="http://genshi.edgewall.org/"
-      xmlns:xi="http://www.w3.org/2001/XInclude">
+{% extends 'jinja_master/master.html' %}
 
-  <xi:include href="master.html" />
+{% block title %}Award List{% endblock %}
 
-<head>
-  <meta content="text/html; charset=UTF-8" http-equiv="content-type" py:replace="''"/>
-  <title>Award List</title>
-</head>
+{% block header %}Current Awards{% endblock %}
 
-  <body>
-    <h1 class="title">Current Awards</h1>
-    <div class="content">
-      <div class="row">
-        <div class="column grid_12">
+{% block content %}
+<br /><br />
           <div id="award_list">
             <table border="1">
               <thead>
@@ -27,24 +17,20 @@
                 </tr>
               </thead>
               <tbody>
-                <py:for each="award in awards">
+                {% for award in awards %}
                   <tr>
                     <td>
-                      <py:if test="award.icon">
-                        <img class="award_icon" src="${award.url()}/icon"/>
-                      </py:if>
+                      {% if award.icon %}
+                        <img class="award_icon" src="{{award.url()}}/icon"/>
+                      {% endif %}
                     </td>
-                    <td><a href="${award.longurl()}">${award.short}</a></td>
-                    <td>$award.full</td>
-                    <td><a href="${award.longurl()}/delete">[X]</a></td>
+                    <td><a href="{{award.longurl()}}">{{award.short}}</a></td>
+                    <td>{{award.full}}</td>
+                    <td><a href="{{award.longurl()}}/delete">[X]</a></td>
                   </tr>
-                </py:for>
+                {% endfor %}
               </tbody>
             </table>
           </div>
           <a href="..">&#060;&#060; Back</a>
-        </div>
-      </div>
-    </div>
-  </body>
-</html>
+{% endblock %}

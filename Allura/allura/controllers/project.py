@@ -553,10 +553,9 @@ class NeighborhoodAwardsController(object):
         if neighborhood is not None:
             self.neighborhood = neighborhood
 
-    @expose('allura.templates.awards')
+    @expose('jinja:awards.html')
     def index(self, **kw):
         awards = M.Award.query.find(dict(created_by_neighborhood_id=self.neighborhood._id))
-        count=0
         count = len(awards)
         return dict(awards=awards or [], count=count)
 
@@ -612,7 +611,7 @@ class AwardController(object):
             self.award = M.Award.query.get(short=self.short)
 
     @with_trailing_slash
-    @expose('allura.templates.award')
+    @expose('jinja:award.html')
     def index(self, **kw):
         if self.award is not None:
             return dict(award=self.award)
