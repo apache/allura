@@ -137,7 +137,7 @@ class IRCBot(asynchat.async_chat):
         return True
 
     def handle_shortlink(self, lnk, sender, rcpt):
-        art = M.types.ArtifactReference(lnk.artifact_reference).to_artifact()
+        art = M.types.ArtifactReference(lnk.artifact_reference).artifact
         index = art.index()
         text = index['snippet_s'] or index['title_s']
         url = urljoin(tg.config.get('base_url', 'http://sourceforge.net'), index['url_s'])

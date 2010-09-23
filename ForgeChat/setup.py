@@ -20,14 +20,13 @@ setup(name='ForgeChat',
       install_requires=[
           # -*- Extra requirements: -*-
           'allura',
-          'python-irclib==0.4.6',
       ],
       entry_points="""
       # -*- Entry points: -*-
       [allura]
       Chat=forgechat.main:ForgeChatApp
 
-      [paste.paster_command]
+      [paste.global_paster_command]
       ircbot=forgechat.command:IRCBotCommand
       """,
       )
