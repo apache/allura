@@ -1335,6 +1335,13 @@ h1.title .viewer:hover {
 .editable .viewer:hover .edit_btn {
     display: inline;
 }
+#title_cancel_btn {
+    font-family: Helvetica,sans-serif;
+    font-size: 12px;
+    font-weight: 200;
+    font-style: normal;
+    color: #295D78 !important;
+}
 
 #sidebar-right input[type="text"]{
     width: 88%;
