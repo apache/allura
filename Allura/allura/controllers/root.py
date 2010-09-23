@@ -67,7 +67,7 @@ class RootController(BaseController):
         assert c.user is not None, 'c.user should always be at least User.anonymous()'
         c.queued_messages = []
 
-    @expose('allura.templates.project_list')
+    @expose('jinja:project_list.html')
     @with_trailing_slash
     def index(self, **kw):
         """Handle the front-page."""

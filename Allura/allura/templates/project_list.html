@@ -1,15 +1,10 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" 
-                      "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:py="http://genshi.edgewall.org/"
-      xmlns:xi="http://www.w3.org/2001/XInclude">
+{% extends 'jinja_master/master.html' %}
 
-  <xi:include href="master.html" />
-  <?python from allura.lib.security import has_project_access ?>
+{% block title %}{{title}}{% endblock %}
 
-<head>
-  <meta content="text/html; charset=UTF-8" http-equiv="content-type" py:replace="''"/>
-  <title>$title</title>
+{% block header %}{{title}}{% endblock %}
+
+{% block extra_css %}
   <style type="text/css">
   #section .base .pad{
     background-color: inherit;
@@ -21,48 +16,47 @@
       -webkit-box-shadow:  rgba(0,0,0, 0) 0 0 0;
   }
   </style>
-</head>
+{% endblock %}
 
-  <body>
-    <h1 class="title">$title</h1>
-    <div class="content">
-      <div class="row">
-        <div class="column grid_12">
-      	  <?python old_project = c.project ?>
-          <py:def function="project(n, subprojects)">
-            <div style="clear:both;"><a href="${n.url()}"><font size="+2">${n.name}</font></a></div>
+{% macro project(n, subprojects) %}
+            <div style="clear:both;"><a href="{{n.url()}}"><font size="+2">{{n.name}}</font></a></div>
             <div class="list" style="clear:both">
-              <py:for each="p in subprojects">
-            	  <?python g.set_project(p.shortname)?>
-            	  <py:if test="has_project_access('read', p)()">
-                  ${c.project_summary.display(value=p)}
-                </py:if>
-              </py:for>
+              {% for p in subprojects %}
+            	{% do g.set_project(p.shortname) %}
+            	{% if h.has_project_access('read', p)() %}
+                  {{c.project_summary.display(value=p)}}
+                {% endif %}
+              {% endfor %}
             </div>
-          </py:def>
-          <py:if test="text">${Markup(text)}</py:if>
-          <p py:if="not len(projects)">No projects found</p>
+{% endmacro %}
+
+{% block content %}
+      	  {% set old_project = c.project %}
           
-          <div py:if="len(projects)">
-            <py:if test="len(projects) and isinstance(projects[0], tuple)">
-              <py:for each="n, subprojects in projects">
-                ${project(n, subprojects)}
-              </py:for>
-            </py:if>
-            <py:if test="len(projects) and not isinstance(projects[0], tuple)">
+          {% if text %}
+            {{text|safe}}
+          {% endif %}
+          
+          {% if not projects %}
+            <p>No projects found</p>
+          {% else %}
+          <div>
+            {% if projects[0] is sequence %}
+              {% for n, subprojects in projects %}
+                {{project(n, subprojects)}}
+              {% endfor %}
+            {% else %}
               <div class="list">
-                <py:for each="project in projects">
-              	  <?python g.set_project(project.shortname)?>
-              	  <py:if test="has_project_access('read', project)()">
-                    ${c.project_summary.display(value=project)}
-                  </py:if>
-                </py:for>
+                {% for project in projects %}
+              	  {% do g.set_project(project.shortname) %}
+              	  {% if has_project_access('read', project)() %}
+                    {{c.project_summary.display(value=project)}}
+                  {% endif %}
+                {% endfor %}
               </div>
-            </py:if>
+            {% endif %}
           </div>
-          <?python g.set_project(old_project and old_project.shortname or '')?>
-        </div>
-      </div>
-    </div>
-  </body>
-</html>
+          {% endif %}
+          
+          {% do g.set_project(old_project and old_project.shortname or '') %}
+{% endblock %}
