@@ -416,7 +416,7 @@ form input[type=checkbox] {
 	font-weight: bold;
 	text-shadow: rgb(255,255,255) 0 1px;
 	text-decoration: none;
-	margin: .2em 5px 0 0;
+	margin: .1em 5px .2em 0;
 	display: inline;
 	float: left;
 	padding: .275em .8em .225em;
@@ -434,7 +434,7 @@ form input[type=checkbox] {
 		background-image: -webkit-gradient(linear, 0% 0%, 0% 100%, from(rgb(255,255,255)), to({{color6}}));
 		background-image: -moz-linear-gradient(100% 100% 90deg,{{color6}}, rgb(255,255,255) 100%);
 }
-button, input[type=submit], input[type=reset], input[type=button] {padding: .35em .8em .3em;}
+button, input[type=submit], input[type=reset], input[type=button] {font-size: 1em;}
 
 .btn:hover {
 	cursor: pointer;
@@ -924,10 +924,12 @@ ul.ui-tab li a {
     color: #555;
     font-weight: bold;
 }
-.editbox label.cr{
+.editbox label.simple, .editbox label.cr{
     float: none;
-    display: block;
     text-align: left;
+}
+.editbox label.cr{
+    display: block;
 }
 .editbox .wide{width: 90%}
 .editbox .row{min-width: inherit;}

@@ -64,6 +64,7 @@ class ForgeConfig(AppConfig):
 
     def setup_jinja_renderer(self):
         self.paths['templates'].append(pkg_resources.resource_filename('forgetracker', 'templates'))
+        self.paths['templates'].append(pkg_resources.resource_filename('forgetracker', 'widgets/templates'))
         self.paths['templates'].append(pkg_resources.resource_filename('forgewiki', 'templates'))
         self.paths['templates'].append(pkg_resources.resource_filename('forgegit', 'templates'))
         self.paths['templates'].append(pkg_resources.resource_filename('forgegit', 'widgets/templates'))

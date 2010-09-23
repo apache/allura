@@ -1,0 +1,21 @@
+<div class="row">
+  <form method="post" action="{{action}}">
+    <div class="grid_4 column">
+      <label class="simple">Bin Name: </span>
+      <input type="text" name="bin_form.summary" value="{{value.summary}}"/>
+    </div>
+    <div class="grid_4 column">
+      <label class="simple">Search Terms: </span>
+      <input type="text" name="bin_form.terms" value="{{value.terms}}"/>
+    </div>
+    <div class="grid_1 column">
+      &nbsp;
+    </div>
+    <div class="grid_3 column" style="text-align: right">
+      <input type="submit" value="Save"/>
+      <input type="button" value="Cancel" id="cancel_new_bin"/>
+      <input type="hidden" name="bin_form.sort" value="{{value.sort}}">
+      <input type="hidden" name="bin_form.old_summary" value="{{value.old_summary}}">
+    </div>
+  </form>
+</div>

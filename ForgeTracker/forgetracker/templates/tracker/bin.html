@@ -1,0 +1,70 @@
+{% extends 'jinja_master/master.html' %}
+{% do g.register_app_css('css/hilite.css') %}
+{% do g.register_app_css('css/tracker.css') %}
+
+{% block title %}{{c.project.name}} / {{app.config.options.mount_label}} / Saved Search Bins{% endblock %}
+
+{% block head %}
+  <link rel="alternate" type="application/rss+xml" title="RSS" href="feed.rss"/>
+  <link rel="alternate" type="application/atom+xml" title="Atom" href="feed.atom"/>
+{% endblock %}
+
+{% block header %}Saved Search Bins{% endblock %}
+
+{% block edit_box %}
+  <div class="editbox" style="display:none">
+    {{c.bin_form.display(
+      value=dict(),
+      action=c.project.url()+'admin/'+app.config.options.mount_point+'/bins/save_bin'
+    )}}
+  </div>
+{% endblock %}
+
+{% block content %}
+  {% if bins.__len__() %}
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Terms</th>
+          <th>&nbsp;</th>
+        </tr>
+      </thead>
+      <tbody class="bin-list">
+        {% for bin in bins %}
+          <tr{% if loop.index0 % 2 == 0 %} class="even"{% endif %}>
+            <td><a href="{{bin.url()}}">{{bin.summary}}</a></td>
+            <td>{{bin.terms}}</td>
+            <td>
+              <a href="delbin?summary={{bin.summary}}" class="btn">Delete</a>
+              <a href="#" class="btn bin_edit_activate">Edit</a>
+              <input type="hidden" name="summary" value="{{bin.summary}}">
+              <input type="hidden" name="terms" value="{{bin.terms}}">
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% else %}
+    No saved search bins have been created yet.
+  {% endif %}
+{% endblock %}
+
+{% block extra_js %}
+  <script type="text/javascript">
+    var form_holder = $('div.editbox');
+    $('a.bin_edit_activate').click(function(){
+      form_holder.show();
+      var editable_holder = $(this).closest('td');
+      var summary = editable_holder.find('input[name=summary]').val();
+      form_holder.find('input[name=bin_form.summary]').val(summary);
+      form_holder.find('input[name=bin_form.old_summary]').val(summary);
+      form_holder.find('input[name=bin_form.terms]').val(editable_holder.find('input[name=terms]').val());
+      return false;
+    });
+    $('#cancel_new_bin').click(function(){
+      form_holder.hide();
+      return false;
+    });
+  </script>
+{% endblock %}

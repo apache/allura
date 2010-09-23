@@ -7,6 +7,7 @@ from forgetracker import model
 from formencode import validators as fev
 
 class BinForm(ew.SimpleForm):
+    template='jinja:tracker_widgets/bin_form.html'
     name="bin_form"
     submit_text = "Save Bin"
 
@@ -15,5 +16,6 @@ class BinForm(ew.SimpleForm):
         fields = [
             ew.TextField(name='summary', label='Bin Name', validator=fev.UnicodeString(not_empty=True)),
             ew.TextField(name='terms', label='Search Terms', validator=fev.UnicodeString(not_empty=True)),
+            ew.HiddenField(name='old_summary', label='Old Name', validator=fev.UnicodeString()),
             ew.HiddenField(name='sort', label='Sort Order', validator=fev.UnicodeString())]
         return fields

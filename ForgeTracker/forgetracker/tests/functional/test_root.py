@@ -482,13 +482,31 @@ class TestFunctionalController(TestController):
         r = self.app.post('/admin/bugs/bins/save_bin',{
             'bin_form.summary': 'This is not too long.',
             'bin_form.terms': 'aaa',
+            'bin_form.old_summary': '',
             'bin_form.sort': ''}).follow()
         sidebar_contains(r, 'This is not too long.')
         r = self.app.post('/admin/bugs/bins/save_bin',{
             'bin_form.summary': 'This will be truncated because it is too long to show in the sidebar without being ridiculous.',
             'bin_form.terms': 'aaa',
+            'bin_form.old_summary': '',
             'bin_form.sort': ''}).follow()
         sidebar_contains(r, 'This will be truncated because it is too long to show in the sidebar ...')
+
+    def test_edit_saved_search(self):
+        r = self.app.post('/admin/bugs/bins/save_bin',{
+            'bin_form.summary': 'Original',
+            'bin_form.terms': 'aaa',
+            'bin_form.old_summary': '',
+            'bin_form.sort': ''}).follow()
+        sidebar_contains(r, 'Original')
+        not sidebar_contains(r, 'New')
+        r = self.app.post('/admin/bugs/bins/save_bin',{
+            'bin_form.summary': 'New',
+            'bin_form.terms': 'aaa',
+            'bin_form.old_summary': 'Original',
+            'bin_form.sort': ''}).follow()
+        sidebar_contains(r, 'New')
+        not sidebar_contains(r, 'Original')
 
 
 def sidebar_contains(response, text):

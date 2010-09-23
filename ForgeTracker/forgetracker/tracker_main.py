@@ -280,7 +280,7 @@ class RootController(BaseController):
         return result
 
     @with_trailing_slash
-    @expose('forgetracker.templates.search')
+    @expose('jinja:tracker/search.html')
     @validate(validators=dict(
             q=validators.UnicodeString(if_empty=None),
             history=validators.StringBool(if_empty=False),
@@ -290,6 +290,7 @@ class RootController(BaseController):
             sort=validators.UnicodeString(if_empty=None)))
     def search(self, q=None, project=None, **kw):
         require(has_artifact_access('read'))
+        c.bin_form = W.bin_form
         if project:
             redirect(c.project.url() + 'search?' + urlencode(dict(q=q, history=kw.get('history'))))
         result = self.paged_query(q, **kw)
@@ -510,23 +511,24 @@ class BinController(BaseController):
             self.app = app
 
     @with_trailing_slash
-    @expose('forgetracker.templates.bin')
+    @expose('jinja:tracker/bin.html')
     def index(self, **kw):
         require(has_artifact_access('save_searches', app=self.app))
+        c.bin_form = W.bin_form
         bins = model.Bin.query.find()
         count=0
         count = len(bins)
-        return dict(bins=bins or [], count=count)
+        return dict(bins=bins or [], count=count, app=self.app)
 
     @with_trailing_slash
-    @expose('forgetracker.templates.bin')
+    @expose('jinja:tracker/bin.html')
     def bins(self):
         require(has_artifact_access('save_searches', app=self.app))
+        c.bin_form = W.bin_form
         bins = model.Bin.query.find()
         count=0
         count = len(bins)
-        return dict(bins=bins or [], count=count)
-        redirect('bins/')
+        return dict(bins=bins or [], count=count, app=self.app)
 
     @with_trailing_slash
     @expose('jinja:tracker/new_bin.html')
@@ -545,6 +547,8 @@ class BinController(BaseController):
         self.app.globals.invalidate_bin_counts()
         if request.method != 'POST':
             raise Exception('save_bin must be a POST request')
+        if bin_form['old_summary']:
+            model.Bin.query.find(dict(summary=bin_form['old_summary'])).first().delete()
         bin = model.Bin(summary=bin_form['summary'], terms=bin_form['terms'])
         bin.app_config_id = self.app.config._id
         bin.custom_fields = dict()
