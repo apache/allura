@@ -237,17 +237,19 @@ class TestForum(TestController):
         r = self.app.get('/discussion/TestForum/ChildForum/')
     
     def test_posting(self):
-        r = self.app.get('/discussion/TestForum/post', params=dict(
+        r = self.app.post('/discussion/save_new_topic', params=dict(
                 subject='Test Thread',
-                text='This is a *test thread*'))
+                text='This is a *test thread*',
+                forum='TestForum'))
         r = self.app.get('/admin/discussion/forums')
         assert 'Message posted' in r
         r = self.app.get('/discussion/TestForum/moderate/')
 
     def test_thread(self):
-        thread = self.app.get('/discussion/TestForum/post', params=dict(
+        thread = self.app.post('/discussion/save_new_topic', params=dict(
                 subject='AAA',
-                text='aaa')).follow()
+                text='aaa',
+                forum='TestForum')).follow()
         url = thread.request.url
         rep_url = thread.html.find('div',{'class':'row reply_post_form'}).find('form').get('action')
         thread = self.app.post(str(rep_url), params=dict(
@@ -273,7 +275,8 @@ class TestForum(TestController):
         assert '<a href="#" class="sidebar_thread_tag ico-l"><b class="ui-icon ui-icon-tag"></b> <span>Label This</span></a>' not in sidebarmenu
         assert '<a href="feed.rss" class=" ico-l"><b class="ui-icon ui-icon-signal-diag"></b> <span>Follow This</span></a>' not in sidebarmenu
         assert '<a href="flag_as_spam" class="sidebar_thread_spam ico-l"><b class="ui-icon ui-icon-flag"></b> <span>Mark as Spam</span></a>' not in sidebarmenu
-        thread = self.app.get('/discussion/TestForum/post', params=dict(
+        thread = self.app.post('/discussion/save_new_topic', params=dict(
+                forum='TestForum',
                 subject='AAA',
                 text='aaa')).follow()
         thread_sidebarmenu = str(thread.html.find('div',{'id':'sidebar'}))
@@ -283,14 +286,16 @@ class TestForum(TestController):
         assert '<a href="flag_as_spam" class="sidebar_thread_spam ico-l"><b class="ui-icon ui-icon-flag"></b> <span>Mark as Spam</span></a>' in thread_sidebarmenu
 
     def test_recent_topics_truncated(self):
-        r = self.app.post('/discussion/TestForum/post', params=dict(
+        r = self.app.post('/discussion/save_new_topic', params=dict(
+                forum='TestForum',
                 subject='This is not too long',
                 text='text')).follow()
         sidebarmenu = str(r.html.find('div',{'id':'sidebar'}))
         assert 'This is not too long' in sidebarmenu
-        r = self.app.post('/discussion/TestForum/post', params=dict(
-            subject='This will be truncated because it is too long to show in the sidebar without being ridiculous.',
-            text='text')).follow()
+        r = self.app.post('/discussion/save_new_topic', params=dict(
+                forum='TestForum',
+                subject='This will be truncated because it is too long to show in the sidebar without being ridiculous.',
+                text='text')).follow()
         sidebarmenu = str(r.html.find('div',{'id':'sidebar'}))
         assert 'This will be truncated because it is too long to show in the sidebar ...' in sidebarmenu
 

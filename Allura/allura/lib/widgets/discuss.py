@@ -1,4 +1,5 @@
 from pylons import c
+from formencode import validators as fev
 
 import ew
 
@@ -98,10 +99,13 @@ class EditPost(ew.SimpleForm):
     def fields(self):
         def _():
             if getattr(c, 'widget', '') != '':
+                # we are being displayed
                 if c.widget.response.get('show_subject', self.show_subject):
-                    yield ew.TextField(name='subject', if_missing='')
+                    yield ew.TextField(name='subject')
             else:
-                yield ew.TextField(name='subject', if_missing='')
+                # We are being validated
+                validator = fev.UnicodeString(not_empty=True, if_missing='')
+                yield ew.TextField(name='subject', validator=validator)
             yield ffw.MarkdownEdit(name='text')
             yield ew.HiddenField(name='forum', if_missing=None)
         return _()
@@ -112,6 +116,7 @@ class EditPost(ew.SimpleForm):
 
 class NewTopicPost(EditPost):
     template='jinja:new_topic_post.html'
+    show_subject = True
     forums=None
     params=['forums']
 

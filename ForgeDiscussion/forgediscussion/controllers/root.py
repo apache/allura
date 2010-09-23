@@ -70,15 +70,9 @@ class RootController(BaseController):
         discussion = model.Forum.query.get(
             app_config_id=c.app.config._id,
             shortname=forum)
-        if not subject:
-            flash('You must have a subject for this post.')
-            redirect(request.referrer)
         if discussion.deleted and not has_artifact_access('configure', app=c.app)():
             flash('This forum has been removed.')
             redirect(request.referrer)
-        # if 'new_topic' in kw:
-        #     subject = kw['new_topic']['subject']
-        #     text = kw['new_topic']['text']
         require(has_artifact_access('post', discussion))
         thd = discussion.get_discussion_thread(dict(
                 headers=dict(Subject=subject)))

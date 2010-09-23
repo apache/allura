@@ -80,25 +80,25 @@ class ForumController(DiscussionController):
         threads = model.ForumThread.query.find(dict(discussion_id=self.discussion._id)).sort('mod_date', pymongo.DESCENDING)
         return super(ForumController, self).index(threads=threads.skip(start).limit(int(limit)).all(), limit=limit, page=page, count=threads.count(), **kw)
 
-    @h.vardec
-    @expose()
-    @validate(W.edit_post)
-    def post(self, subject=None, text=None, **kw):
-        if not subject:
-            flash('You must have a subject for this post.')
-            redirect(request.referrer)
-        if self.discussion.deleted and not has_artifact_access('configure', app=c.app)():
-            redirect(self.deleted)
-        if 'new_topic' in kw:
-            subject = kw['new_topic']['subject']
-            text = kw['new_topic']['text']
-        require(has_artifact_access('post', self.discussion))
-        thd = self.discussion.get_discussion_thread(dict(
-                headers=dict(Subject=subject)))
-        post = thd.post(subject, text)
-        thd.first_post_id = post._id
-        flash('Message posted')
-        redirect(thd.url())
+    # @h.vardec
+    # @expose()
+    # @validate(W.edit_post)
+    # def post(self, subject=None, text=None, **kw):
+    #     if not subject:
+    #         flash('You must have a subject for this post.')
+    #         redirect(request.referrer)
+    #     if self.discussion.deleted and not has_artifact_access('configure', app=c.app)():
+    #         redirect(self.deleted)
+    #     if 'new_topic' in kw:
+    #         subject = kw['new_topic']['subject']
+    #         text = kw['new_topic']['text']
+    #     require(has_artifact_access('post', self.discussion))
+    #     thd = self.discussion.get_discussion_thread(dict(
+    #             headers=dict(Subject=subject)))
+    #     post = thd.post(subject, text)
+    #     thd.first_post_id = post._id
+    #     flash('Message posted')
+    #     redirect(thd.url())
 
     @expose()
     def icon(self):
