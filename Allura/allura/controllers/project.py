@@ -161,8 +161,8 @@ class NeighborhoodController(object):
             p.name = project_name
         if project_description:
             p.short_description = project_description
-        flash('Welcome to the SourceForge Beta System!'
-              'To get started, please select some tools for your project.'
+        flash('Welcome to the SourceForge Beta System! '
+              'To get started, please select some tools for your project. '
               'Next, you may want to check out the "Overview" screen '
               'and fill out some information about your project.')
         redirect(p.script_name + 'admin/tools_starter')
