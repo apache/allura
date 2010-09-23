@@ -1,21 +1,10 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" 
-                      "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:py="http://genshi.edgewall.org/"
-      xmlns:xi="http://www.w3.org/2001/XInclude">
+{% extends 'jinja_master/master.html' %}
 
-  <xi:include href="master.html" />
+{% block title %}Grant{% endblock %}
 
-<head>
-  <meta content="text/html; charset=UTF-8" http-equiv="content-type" py:replace="''"/>
-  <title>Grant</title>
-</head>
+{% block header %}Grant{% endblock %}
 
-  <body>
-    <h1 class="title">Grant</h1>
-    <div class="content">
-      <div class="row">
-        <div class="column grid_12">
+{% block content %}
           <div id="grant">
             <table border="1">
               <thead>
@@ -29,20 +18,16 @@
               <tbody>
                 <tr>
                   <td>
-                    <py:if test="grant.award.icon">
+                    {% if grant.award.icon %}
                       <img class="award_icon" src="icon"/>
-                    </py:if>
+                    {% endif %}
                   </td>
-                  <td><a href="$(grant.longurl()">${grant.award.short}</a></td>
-                  <td><a href="${grant.longurl()}">${grant.granted_to_project.shortname}</a></td>
-                  <td><a href="${grant.longurl()}/revoke">[X]</a></td>
+                  <td><a href="{{grant.award.longurl()}}">{{grant.award.short}}</a></td>
+                  <td><a href="{{grant.granted_to_project.url()}}">{{grant.granted_to_project.shortname}}</a></td>
+                  <td><a href="{{grant.longurl()}}/revoke">[X]</a></td>
                 </tr>
               </tbody>
             </table>
           </div>
           <a href="..">&#060;&#060; Back</a>
-        </div>
-      </div>
-    </div>
-  </body>
-</html>
+{% endblock %}

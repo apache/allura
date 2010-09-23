@@ -79,7 +79,7 @@ class AuthController(BaseController):
     def setup_openid_user(self):
         return dict()
 
-    @expose('allura.templates.create_account')
+    @expose('jinja:create_account.html')
     def create_account(self):
         return dict()
 

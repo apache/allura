@@ -1,21 +1,11 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-                    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:py="http://genshi.edgewall.org/"
-      xmlns:xi="http://www.w3.org/2001/XInclude">
+{% set hide_left_bar = True %}
+{% extends 'jinja_master/master.html' %}
 
-  <xi:include href="master_one_col.html" />
+{% block title %}Create an Account{% endblock %}
 
-  <head>
-    <meta content="text/html; charset=UTF-8" http-equiv="content-type" py:replace="''"/>
-    <title>Create an Account</title>
-  </head>
+{% block header %}Create an Account{% endblock %}
 
-  <body>
-    <h1 class="title">Create an Account</h1>
-    <div class="content">
-      <div class="row">
-        <div class="column grid_12">
+{% block content %}
           <form action="/auth/save_new" method="post" id="create_account">
             <ol>
               <li>
@@ -48,10 +38,9 @@
               </li>
             </ol>
           </form>
-        </div>
-      </div>
-    </div>
-  </body>
+{% endblock %}
+
+{% block extra_js %}
   <script type="text/javascript">
     //<!--
     $('#create_account').submit(function(){
@@ -70,4 +59,4 @@
     });
     // -->
   </script>
-</html>
+{% endblock %}

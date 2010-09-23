@@ -129,7 +129,7 @@ class NeighborhoodController(object):
                     sort=sort,
                     limit=limit, page=page, count=count)
 
-    @expose('allura.templates.neighborhood_add_project')
+    @expose('jinja:neighborhood_add_project.html')
     def add_project(self, project_unixname=None, project_description=None, project_name=None):
         require(has_neighborhood_access('create', self.neighborhood), 'Create access required')
         c.add_project = W.add_project
@@ -563,7 +563,7 @@ class NeighborhoodAwardsController(object):
     def not_found(self, **kw):
         return dict()
 
-    @expose('allura.templates.grants')
+    @expose('jinja:grants.html')
     def grants(self, **kw):
         grants = M.AwardGrant.query.find(dict(granted_by_neighborhood_id=self.neighborhood._id))
         count=0
@@ -673,7 +673,7 @@ class GrantController(object):
                 granted_to_project_id=self.project._id)
 
     @with_trailing_slash
-    @expose('allura.templates.grant')
+    @expose('jinja:grant.html')
     def index(self, **kw):
         if self.grant is not None:
             return dict(grant=self.grant)
