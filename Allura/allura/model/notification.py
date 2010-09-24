@@ -238,6 +238,12 @@ class Mailbox(MappedClass):
             artifact_url = None
             artifact_index_id = None
         else:
+            if cls.query.get(
+                user_id=user_id, project_id=project_id, app_config_id=app_config_id,
+                artifact_index_id=None):
+                # don't subscribe to individual artifacts when already
+                # subscribed to tool
+                return 
             i = artifact.index()
             artifact_title = i['title_s']
             artifact_url = artifact.url()
@@ -260,6 +266,13 @@ class Mailbox(MappedClass):
             mbox.type = type
             mbox.frequency.n = n
             mbox.frequency.unit = unit
+            sess.flush(mbox)
+        if not artifact_index_id:
+            # Unsubscribe from individual artifacts when subscribing to the tool
+            for other_mbox in cls.query.find(dict(
+                user_id=user_id, project_id=project_id, app_config_id=app_config_id)):
+                if other_mbox is not mbox:
+                    other_mbox.delete()
 
     @classmethod
     def unsubscribe(
