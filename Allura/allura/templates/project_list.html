@@ -49,7 +49,7 @@
               <div class="list">
                 {% for project in projects %}
               	  {% do g.set_project(project.shortname) %}
-              	  {% if has_project_access('read', project)() %}
+              	  {% if h.has_project_access('read', project)() %}
                     {{c.project_summary.display(value=project)}}
                   {% endif %}
                 {% endfor %}
