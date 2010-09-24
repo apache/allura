@@ -96,7 +96,7 @@ class ProjectBrowseController(BaseController):
     def _lookup(self, category_name, *remainder):
         return ProjectBrowseController(category_name=category_name, parent_category=self.category), remainder
 
-    @expose('allura.templates.project_list')
+    @expose('jinja:project_list.html')
     @without_trailing_slash
     def index(self, **kw):
         c.project_summary = W.project_summary
