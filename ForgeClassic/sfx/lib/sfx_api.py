@@ -12,6 +12,7 @@ from pylons import c, request
 from allura import model as M
 from allura.lib.security import roles_with_project_access
 from . import exceptions as sfx_exc
+from sfx.model import tables as T
 
 log = logging.getLogger(__name__)
 
@@ -85,8 +86,12 @@ class SFXUserApi(object):
         if u.display_name != user_data['name']:
             u.display_name = user_data['name']
         u.set_tool_data('sfx', userid=user_data['id'])
-        if u.email_addresses != [ user_data['sf_email'] ]:
-            u.email_addresses = [ user_data['sf_email'] ]
+        u_row = (
+            T.users.select(
+                whereclause=T.users.c.user_id==user_data['id'])
+            .execute()
+            .fetchone())
+        u.claim_only_addresses(u_row.email, user_data['sf_email'])
         if u.preferences.email_address != user_data['sf_email']:
             u.preferences.email_address = user_data['sf_email']
         return u

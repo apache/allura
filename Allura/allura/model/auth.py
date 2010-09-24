@@ -250,6 +250,25 @@ class User(MappedClass):
         if addr in self.email_addresses: return
         self.email_addresses.append(addr)
 
+    def claim_only_addresses(self, *addresses):
+        '''Claims the listed addresses and no others, setting the confirmed
+        attribute to True on all.
+        '''
+        self.email_addresses = [
+            EmailAddress.canonical(a) for a in addresses ]
+        addresses = set(self.email_addresses)
+        for addr in EmailAddress.query.find(
+            dict(claimed_by_user_id=self._id)):
+            if addr._id in addresses:
+                if not addr.confirmed: addr.confirmed = True
+                addresses.remove(addr._id)
+            else:
+                addr.delete()
+        for a in addresses:
+            addr = EmailAddress.upsert(a)
+            addr.claimed_by_user_id = self._id
+            addr.confirmed = True
+
     @classmethod
     def register(cls, doc, make_project=True):
         from allura import model as M
