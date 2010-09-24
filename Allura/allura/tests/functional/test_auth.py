@@ -2,6 +2,9 @@ from allura.tests import TestController
 from allura import model as M
 from ming.orm.ormsession import ThreadLocalORMSession
 
+def unentity(s):
+    return s.replace('&quot;', '"')
+
 class TestAuth(TestController):
 
     def test_login(self):
@@ -98,7 +101,7 @@ class TestAuth(TestController):
                                                         display_name='Test Me',
                                                         open_ids='http://somewhere',
                                                         email_addresses='test@test.com')).follow()
-        assert 'User "Test Me" registered' in r
+        assert 'User "Test Me" registered' in unentity(r.body)
         r = self.app.post('/auth/save_new', params=dict(username='aaa',password='12345678')).follow()
         assert 'That username is already taken. Please choose another.' in r
 
