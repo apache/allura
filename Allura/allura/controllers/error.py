@@ -8,12 +8,15 @@ __all__ = ['ErrorController']
 
 class ErrorController(object):
 
-    @expose('allura.templates.error')
+    @expose('jinja:error.html')
     def document(self, *args, **kwargs):
         """Render the error document"""
         resp = request.environ.get('pylons.original_response')
+        code = -1
+        if resp:
+            code = resp.status_int
         default_message = ("<p>We're sorry but we weren't able to process "
                            " this request.</p>")
         message = request.environ.get('error_message', default_message)
         message += '<pre>%r</pre>' % resp
-        return dict(code=resp.status_int, message=message)
+        return dict(code=code, message=message)
