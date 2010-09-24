@@ -50,12 +50,25 @@
   <textarea id="{{name}}" name="{{name}}">{{value}}</textarea><br/>
 {% endmacro %}
 
-{% macro text_field(name, label, value=None) %}
+{% macro text_field(name, label, value='') %}
   {% if label %}
   <label for="{{name}}">{{label}}</label><br/>
   {% endif %}
   <input type="text" id="{{name}}" name="{{name}}" class="text" value="{{value}}"/><br/>
 {% endmacro %}
+
+{% macro radio_button(name, label, option, value=None) %}
+  {% if label %}
+    <label for="{{name}}">{{label}}</label><br/>
+  {% endif %}
+  <input type="radio" id="{{name}}" name="{{name}}" class="text" value="{{option}}"
+           {% if option == value %}checked="on"{% endif %}/><br/>
+{% endmacro %}
+
+{% macro submit_button(value, name=None) %}
+    <input type="submit" name="{{name}}" value="{{value}}"/><br/>
+{% endmacro %}
+
 
 {% macro path_links(parts) %}
   {% set i=0 %}

@@ -1,68 +1,61 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-                    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:py="http://genshi.edgewall.org/"
-      xmlns:xi="http://www.w3.org/2001/XInclude">
-  
-  <xi:include href="master_one_col.html" />
-  
-  <head>
-    <meta content="text/html; charset=UTF-8" http-equiv="content-type" py:replace="''"/>
-    <title>$c.user.username / Preferences</title>
-  </head>
-  
-  <body>
-    <h1 class="title">User Preferences for $c.user.username</h1>
-    <div class="content">
-      <div class="row">
-        <div class="column grid_12">
+{% set hide_left_bar = True %}
+{% extends 'jinja_master/master.html' %}
+
+{% block title %}{{c.user.username}} / Preferences{% endblock %}
+
+{% block header %}User Preferences for {{c.user.username}}{% endblock %}
+
+{% block content %}
           <h2>API Token</h2>
-          <py:if test="api_token">
+          {% if api_token %}
             <p>
               <b>API Key:</b><br/>
-              $api_token.api_key<br/>
+              {{api_token.api_key}}<br/>
               <b>Secret Key:</b><br/>
-              $api_token.secret_key<br/>
+              {{api_token.secret_key}}<br/>
             </p>
             <form method="POST" action="del_api_token">
               <input type="submit" value="Delete API Token"
                     />
             </form>
-          </py:if>
-          <py:if test="not api_token">
+          {% else %}
             No API token generated
-          </py:if>
+          {% endif %}
           <form method="POST" action="gen_api_token">
             <input type="submit" value="(Re)generate API Token"
                     />
           </form>
           <div style="clear:both"/>
+
           <h2>Subscriptions</h2>
-          <py:if test="subscriptions">
-            ${c.form.display(action='update_subscriptions', value=dict(subscriptions=subscriptions))}
-          </py:if>
-          <py:if test="not subscriptions">
+          {% if subscriptions %}
+            {{c.form.display(action='update_subscriptions', value=dict(subscriptions=subscriptions))}}
+          {% else%}
             No subscriptions.
-          </py:if>
+          {% endif %}
           <br/>
+          
           <form action="update" method="post">
             <ol>
               <li>
                 <label>Display Name</label>
-                <input type="text" value="$c.user.display_name" name="display_name"/>
+                <input type="text" value="{{c.user.display_name}}" name="display_name"/>
               </li>
               <li>
                 <label>Email Format</label>
                 <select name="preferences.email_format">
-                  <option value="plain" selected="${c.user.preferences.email_format == 'plain' or None}">Plain Text</option>
-                  <option value="html" selected="${c.user.preferences.email_format == 'html' or None}">HTML</option>
-                  <option value="both" selected="${c.user.preferences.email_format == 'both' or None}">Combined</option>
+                  <option value="plain" {{'selected' if c.user.preferences.email_format == 'plain' else ''}}>Plain Text</option>
+                  <option value="html" {{'selected' if c.user.preferences.email_format == 'html' else ''}}>HTML</option>
+                  <option value="both" {{'selected' if c.user.preferences.email_format == 'both' else ''}}>Combined</option>
                 </select>
               </li>
             </ol>
-            <py:if test="tg.config.get('auth.method', 'local') == 'local'">
-              <input py:for="i,a in enumerate(c.user.email_addresses)"
-                     name="addr-${i}.ord" value="$i" type="hidden"/>
+            
+            {% if tg.config.get('auth.method', 'local') == 'local' %}
+              {% for a in c.user.email_addresses %}
+                <input name="addr-{{loop.index0}}.ord" value="{{loop.index0}}" type="hidden"/>
+              {% endfor %}
+
               <fieldset>
                 <legend>Email Addresses</legend>
                 <table>
@@ -72,22 +65,28 @@
                     <th>Confirmed</th>
                     <th></th>
                   </tr>
-                  <tr py:for="i, a in enumerate(c.user.email_addresses)"
-                      py:with="obj=c.user.address_object(a)">
-                    <td>${radio_button('primary_addr', None, a, c.user.preferences.email_address)}</td>
-                    <td>$a</td>
-                    <td py:if="obj">
-                      <py:if test="obj.confirmed">yes</py:if>
-                      <py:if test="not obj.confirmed">no 
-                        (<a href="${g.url('/auth/send_verification_link', a=a)}">verify</a>)
-                      </py:if>
+                  {% for a in c.user.email_addresses %}
+                  <tr>
+                    {% set obj = c.user.address_object(a) %}
+                    <td>{{lib.radio_button('primary_addr', None, a, c.user.preferences.email_address)}}</td>
+                    <td>{{a}}</td>
+                    {% if obj %}
+                    <td>
+                      {% if obj.confirmed %}
+                        yes
+                      {% else %}
+                        no (<a href="{{g.url('/auth/send_verification_link', a=a)}}">verify</a>)
+                      {% endif %}
                     </td>
-                    <td py:if="not obj">Unknown addr obj $a</td>
-                    <td>${submit_button('Delete', 'addr-%s.delete' % i)}</td>
+                    {% else %}
+                      <td>Unknown addr obj {{a}}</td>
+                    {% endif %}
+                    <td>{{lib.submit_button('Delete', 'addr-%s.delete' % i)}}</td>
                   </tr>
+                  {% endfor %}
                 </table>
-                ${text_field('new_addr.addr', 'New Address')}
-                ${submit_button('Claim Address', name='new_addr.claim')}
+                {{lib.text_field('new_addr.addr', 'New Address')}}
+                {{lib.submit_button('Claim Address', name='new_addr.claim')}}
               </fieldset>
               <fieldset>
                 <legend>OpenIDs Claimed</legend>
@@ -96,19 +95,17 @@
                     <th>OpenID</th>
                     <th></th>
                   </tr>
-                  <tr py:for="i, oid in enumerate(c.user.open_ids)"
-                      py:with="obj=c.user.openid_object(oid)">
-                    <td>$oid</td>
-                    <td>${submit_button('Delete', 'oid-%s.delete' % i)}</td>
+                  {% for oid in c.user.open_ids %}
+                    {% set obj = c.user.openid_object(oid) %}
+                  <tr>
+                    <td>{{oid}}</td>
+                    <td>{{lib.submit_button('Delete', 'oid-%s.delete' % loop.index0)}}</td>
                   </tr>
+                  {% endfor %}
                 </table>
                 <a href="/auth/claim_oid">Claim New OpenID</a>
               </fieldset>
-            </py:if>
-            ${submit_button('Save Changes')}
+            {% endif %}
+            {{lib.submit_button('Save Changes')}}
           </form>
-        </div>
-      </div>
-    </div>
-  </body>
-</html>
+{% endblock %}

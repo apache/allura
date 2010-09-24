@@ -234,7 +234,7 @@ class AuthController(BaseController):
 class PreferencesController(BaseController):
 
     @with_trailing_slash
-    @expose('allura.templates.user_preferences')
+    @expose('jinja:user_preferences.html')
     def index(self, **kw):
         require_authenticated()
         c.form = F.subscription_form
