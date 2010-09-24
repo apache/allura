@@ -282,7 +282,7 @@ class ProjectController(object):
         else:
             redirect(c.project.app_configs[0].options.mount_point + '/')
 
-    @expose('allura.templates.project_sitemap')
+    @expose('jinja:project_sitemap.html')
     @without_trailing_slash
     def sitemap(self): # pragma no cover
         raise NotImplementedError, 'sitemap'
@@ -559,7 +559,7 @@ class NeighborhoodAwardsController(object):
         count = len(awards)
         return dict(awards=awards or [], count=count)
 
-    @expose('allura.templates.not_found')
+    @expose('jinja:award_not_found.html')
     def not_found(self, **kw):
         return dict()
 
@@ -618,7 +618,7 @@ class AwardController(object):
         else:
             redirect('not_found')
 
-    @expose('allura.templates.not_found')
+    @expose('jinja:award_not_found.html')
     def not_found(self, **kw):
         return dict()
 
@@ -680,7 +680,7 @@ class GrantController(object):
         else:
             redirect('not_found')
 
-    @expose('allura.templates.not_found')
+    @expose('jinja:award_not_found.html')
     def not_found(self, **kw):
         return dict()
 
