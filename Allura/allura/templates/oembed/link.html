@@ -1,9 +1,8 @@
 <html>
-  <?python from pprint import pformat?>
   <body>
     <pre>
-      href: ${href}
-      data: ${pformat(data)}
+      href: {{href}}
+      data: {{data|pprint}}
     </pre>
   </body>
 </html>
