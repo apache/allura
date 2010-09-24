@@ -1,41 +1,31 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" 
-                      "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:py="http://genshi.edgewall.org/"
-      xmlns:xi="http://www.w3.org/2001/XInclude">
-  <?python from pprint import pformat ?>
+{% extends 'jinja_master/master.html' %}
 
-  <xi:include href="master.html" />
-  <xi:include href="lib.html" />
+{% block title %}{{c.project.name}} / Search{% endblock %}
 
-  <head>
-    <meta content="text/html; charset=UTF-8" http-equiv="content-type" py:replace="''"/>
-    <title>$c.project.name / Search</title>
-  </head>
-  <body>
-    <h1 class="title">Search Project: $q</h1>
-    <div class="content">
-      <div class="row">
-        <div class="column grid_12">
+{% block header %}Search Project: {{q}}{% endblock %}
+
+{% block content %}
           <form method="GET" action=".">
-            <input type="text" name="q" value="$q" class="title"/><br/>
-            Search history? <input type="checkbox" name="history" checked="${history or None}"/><br/>
+            <input type="text" name="q" value="{{q}}" class="title"/><br/>
+            Search history? <input type="checkbox" name="history" {% if history %}checked="on"{% endif %}/><br/>
             &nbsp;<br/>
             <input type="submit" value="Search"/>
           </form>
-          <p py:if="count==0 and q">No results.</p>
-          <p py:if="count==1 and q">$count result.</p>
-          <p py:if="count > 1 and q">$count results.</p>
-          <div py:for="doc in results">
-            <a href="${doc['url_s']}">$doc.title_s</a><br/>
+          {% if count == 0 and q %}
+            <p>No results.</p>
+          {% elif count == 1 and q %}
+            <p>{{count}} result.</p>
+          {% elif count > 1 and q %}
+            <p>{{count}} results.</p>
+          {% endif %}
+          
+          {% for doc in results %}
+          <div>
+            <a href="{{doc['url_s']}}">{{doc.title_s}}</a><br/>
             <py:if test="doc.get('snippet')">
-              ${Markup(doc['snippet'])}<br/>
+              {{doc['snippet']|safe}}<br/>
             </py:if>
             <hr/>
           </div>
-        </div>
-      </div>
-    </div>
-  </body>
-  
-</html>
+          {% endfor %}
+{% endblock %}

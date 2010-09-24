@@ -107,7 +107,7 @@ class SearchApp(Application):
 
 class SearchController(BaseController):
 
-    @expose('allura.templates.search_index')
+    @expose('jinja:search_index.html')
     @validate(dict(q=V.UnicodeString(),
                    history=V.StringBool(if_empty=False)))
     @with_trailing_slash
