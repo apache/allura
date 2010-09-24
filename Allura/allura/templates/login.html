@@ -1,22 +1,14 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-                    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:py="http://genshi.edgewall.org/"
-      xmlns:xi="http://www.w3.org/2001/XInclude">
-  
-  <xi:include href="master_one_col.html" />
-  
-  <head>
-    <meta content="text/html; charset=UTF-8" http-equiv="content-type" py:replace="''"/>
-    <title>Login Form</title>
-  </head>
-  
-  <body>
-    <div id="loginform" class="content">
-      <div class="row">
-        <div class="column grid_12">
+{% set hide_left_bar = True %}
+{% extends 'jinja_master/master.html' %}
+
+{% block title %}Login Form{% endblock %}
+
+{% block header %}Login{% endblock %}
+
+{% block content %}
+        <div id="loginform" class="span-18 last">
           <form action="/auth/do_login" method="post" class="loginfields">
-            <input type="hidden" name="return_to" value="$return_to"/>
+            <input type="hidden" name="return_to" value="{{return_to}}"/>
             <h2><span>Password Login</span></h2>
             <ol>
               <li>
@@ -34,15 +26,20 @@
             </ol>
           </form>
         </div>
+
+        <br />
+        
         <div id="loginform_oid" class="span-18 last">
           <form action="/auth/login_verify_oid" method="post" class="loginfields">
-            <input type="hidden" name="return_to" value="$return_to"/>
+            <input type="hidden" name="return_to" value="{{return_to}}"/>
             <h2><span>OpenID Login</span></h2>
             <ol>
               <li>
                 <label for="provider">Provider</label>
                 <select id="provider" name="provider">
-                  <option py:for="label, url in oid_providers" value="$url">$label</option>
+                  {%- for label, url in oid_providers %}
+                    <option value="{{url}}">{{label}}</option>
+                  {%- endfor %}
                 </select>
               </li>
               <li>
@@ -56,7 +53,4 @@
             </ol>
           </form>
         </div>
-      </div>
-    </div>
-  </body>
-</html>
+{% endblock %}

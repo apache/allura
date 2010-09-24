@@ -1,26 +1,17 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-                    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:py="http://genshi.edgewall.org/"
-      xmlns:xi="http://www.w3.org/2001/XInclude">
-  
-  <xi:include href="master.html" />
-  
-  <head>
-    <meta content="text/html; charset=UTF-8" http-equiv="content-type" py:replace="''"/>
-    <title>OpenId Claim Form</title>
-  </head>
-  
-  <body>
-    <h1 class="title">OpenId Claim Form</h1>
-    <div class="content">
-      <div class="row">
-        <div class="column grid_12">
+{% extends 'jinja_master/master.html' %}
+
+{% block title %}OpenId Claim Form{% endblock %}
+
+{% block header %}OpenId Claim Form{% endblock %}
+
+{% block content %}
           <div id="loginform_oid">
             <form action="claim_verify_oid" method="post" class="loginfields">
               <label for="provider">Provider</label>
               <select id="provider" name="provider">
-                <option py:for="label, url in oid_providers" value="$url">$label</option>
+                {%- for label, url in oid_providers %}
+                  <option value="{{url}}">{{label}}</option>
+                {%- endfor %}
               </select>
               <br/>
               <label for="username">Username:</label>
@@ -28,8 +19,4 @@
               <input type="submit" id="submit" value="Claim" />
             </form>
           </div>
-        </div>
-      </div>
-    </div>
-  </body>
-</html>
+{% endblock %}

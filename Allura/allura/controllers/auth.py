@@ -39,7 +39,7 @@ class AuthController(BaseController):
     def __init__(self):
         self.prefs = PreferencesController()
 
-    @expose('allura.templates.login')
+    @expose('jinja:login.html')
     @with_trailing_slash
     def index(self, *args, **kwargs):
         orig_request = request.environ.get('pylons.original_request', None)
@@ -51,7 +51,7 @@ class AuthController(BaseController):
             return_to = request.referer
         return dict(oid_providers=OID_PROVIDERS, return_to=return_to)
 
-    @expose('allura.templates.custom_login')
+    @expose('jinja:custom_login.html')
     def login_verify_oid(self, provider, username, return_to=None):
         if provider:
             oid_url = string.Template(provider).safe_substitute(
@@ -75,7 +75,7 @@ class AuthController(BaseController):
             redirect('setup_openid_user')
         redirect(kw.pop('return_to', '/'))
 
-    @expose('allura.templates.setup_openid_user')
+    @expose('jinja:setup_openid_user.html')
     def setup_openid_user(self):
         return dict()
 
@@ -147,11 +147,11 @@ class AuthController(BaseController):
         flash('Your username has been set to %s.' % username)
         redirect('/')
 
-    @expose('allura.templates.claim_openid')
+    @expose('jinja:claim_openid.html')
     def claim_oid(self):
         return dict(oid_providers=OID_PROVIDERS)
 
-    @expose('allura.templates.custom_login')
+    @expose('jinja:custom_login.html')
     def claim_verify_oid(self, provider, username):
         if provider:
             oid_url = string.Template(provider).safe_substitute(
