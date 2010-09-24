@@ -481,8 +481,17 @@ class NeighborhoodAdminController(object):
                 else:
                     self.neighborhood.acl[permission].remove(None)
         if new.get('add'):
-            u = M.User.by_username(new['username'])
-            self.neighborhood.acl[permission].append(u._id)
+            if new['username'] == '*authenticated':
+                self.neighborhood.acl[permission] = []
+            elif new['username'] == '*anonymous':
+                self.neighborhood.acl[permission] = [ None ]
+            else:
+                u = M.User.by_username(new['username'])
+                if u is None:
+                    flash('Cannot find user "%s"' % new['username'], 'error')
+                    redirect(request.referer)
+                else:
+                    self.neighborhood.acl[permission].append(u._id)
         redirect('permissions')
 
 class NeighborhoodModerateController(object):
