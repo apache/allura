@@ -83,7 +83,7 @@ class TestController(BaseController, ProjectController):
         c.app = app
         return app.root, remainder
     # 
-    # @expose('allura.templates.project_index')
+    # @expose('jinja:project_index.html')
     # def index(self, **kw):
     #     require(has_project_access('read'))
     #     return dict()
