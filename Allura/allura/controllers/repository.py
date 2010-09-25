@@ -76,7 +76,7 @@ class TreeBrowser(BaseController):
         else:
             self._tree = None
 
-    @expose('allura.templates.repo.tree')
+    @expose('jinja:repo/tree.html')
     def index(self, **kw):
         c.tree_widget = self.tree_widget
         return dict(
