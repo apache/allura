@@ -77,7 +77,7 @@ g.register_app_css('css/tracker.css')
                     <hr/>
 
                     <py:for each="field in globals.custom_fields or []">
-                      <b>${field.label}:</b> ${ticket.custom_fields.get(field.name, '') or '&nbsp; &nbsp; &nbsp;'}
+                      <b>${field.label}:</b> ${ticket.custom_fields.get(field.label, '') or '&nbsp; &nbsp; &nbsp;'}
                       <hr/>
                     </py:for>
 
@@ -122,7 +122,7 @@ g.register_app_css('css/tracker.css')
                           <b>${field.label}:</b>
                       </div>
                       <div class="column" style="margin-left:0;width:48%; overflow:auto;">
-                        ${c.ticket_custom_field.make(field).display(name='custom_fields.' + field.name, value=ticket.custom_fields.get(field.name, ''))}
+                        ${c.ticket_custom_field.make(field).display(name='custom_fields.' + field.label, value=ticket.custom_fields.get(field.label, ''))}
                         </div>
                       </div>
                       <hr/>

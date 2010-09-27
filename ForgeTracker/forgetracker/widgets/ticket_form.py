@@ -6,14 +6,14 @@ from forgetracker import model
 from formencode import validators as fev
 
 class TicketCustomFields(ew.CompoundField):
-    template='genshi:forgetracker.widgets.templates.ticket_custom_fields'
+    template='jinja:tracker_widgets/ticket_custom_fields.html'
 
     @property
     def fields(self):
         return map(TicketCustomField.make, c.app.globals.custom_fields)
 
 class EditTicketCustomFields(TicketCustomFields):
-    template='genshi:forgetracker.widgets.templates.edit_ticket_custom_fields'
+    template='jinja:tracker_widgets/edit_ticket_custom_fields.html'
 
 class GenericTicketForm(ew.SimpleForm):
     name="ticket_form"
@@ -93,7 +93,7 @@ class TicketCustomField(object):
                 label=m.name,
                 py_value=m.name)
             for m in field.milestones if not m.complete ]
-        return ew.SingleSelectField(label=field.label, name=str(field.name),
+        return ew.SingleSelectField(label=field.label, name=str(field.label),
                                     options=options)
 
     def _boolean(field):

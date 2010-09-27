@@ -1,0 +1,91 @@
+<div>
+  {% if tickets.__len__() %}
+    <table>
+      <thead>
+        <tr>
+          <th>
+            <a id="select_all" href="#" class="btn"><span>All</span></a>
+            <a id="select_none" href="#" class="btn"><span>None</span></a>
+          </th>
+          <th data-sort="ticket_num_i">Ticket</th>
+          <th data-sort="status_s">Status</th>
+          <th>Description</th>
+          <th data-sort="assigned_to_s">Assigned To</th>
+          <th data-sort="mod_date_dt">Updated</th>
+        </tr>
+      </thead>
+      <tbody class="ticket-list">
+        {% for t in tickets %}
+        <tr>
+          <td><input type="checkbox" name="{{t._id}}" value=""/></td>
+          <td><a href="{{t.url()}}">[#{{t.ticket_num}}] {{t.summary}}</a></td>
+          <td class="{{t.status}}">{{t.status}}</td>
+          <td>{{h.text.truncate(h.really_unicode(t.description),70)}}</td>
+          <td>{% if t.assigned_to_id %}{{t.assigned_to.display_name}}{% endif %}</td>
+          <td>{{h.ago(t.mod_date)}}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+
+    <h2>Update</h2>
+    <form id="update-values">
+      <ol>
+        <li>
+          <label for="assigned_to">Assigned To:</label>
+          {{c.user_select.display(name='assigned_to', value='')}}
+        </li>
+        <li>
+          <label for="status">Status:</label>
+          <select name="status">
+            <option value="" selected="selected">no change</option>
+            {% for option in globals.all_status_names.split() %}
+              <option value="{{option}}">{{option}}</option>
+            {% endfor %}
+          </select>
+        </li>
+        <li>
+          <label for="milestone">Milestone:</label>
+          <select name="milestone">
+            <option value="" selected="selected">no change</option>
+            {% for option in globals.milestone_names.split() %}
+              <option value="{{option}}">{{option}}</option>
+            {% endfor %}
+          </select>
+        </li>
+        {% for field in globals.custom_fields %}
+          {% if field.type != 'sum' %}
+            <li>
+              <label for="{{field.name}}">{{field.label}}:</label>
+              {% if field.type == 'boolean' %}
+                <input name="{{field.name}}" type="checkbox" value="True"/>
+              {% elif field.type == 'select' %}
+                <select name="{{field.name}}">
+                  <option value="" selected="selected">no change</option>
+                  {% for option in field.options.split() %}
+                    {% if option.startswith('*') %}
+                      <option value="{{option[1:]}}" selected="selected">{{option[1:]}}</option>
+                    {% else %}
+                      <option value="{{option}}">{{option}}</option>
+                    {% endif %}
+                  {% endfor %}
+                </select>
+              {% else %}
+                <input name="{{field.name}}" type="text" value=""/>
+              {% endif %}
+            </li>
+          {% endif %}
+        {% endfor %}
+        <li>
+          <label>&nbsp;</label>
+          <input type="button" onclick="update_tickets()" value="Update Tickets"/>
+        </li>
+      </ol>
+    </form>
+    <script type="text/javascript">
+      var q="{{query}}", count={{count}}, limit={{limit}}, page={{page}}, sort="{{sort}}";
+    </script>
+  {% else %}
+    No tickets found.
+  {% endif %}
+</div>
