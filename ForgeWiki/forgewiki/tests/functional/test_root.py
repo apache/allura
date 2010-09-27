@@ -125,17 +125,37 @@ class TestRootController(TestController):
         assert 'TEST' in response
 
     def test_new_attachment(self):
-        self.app.get('/wiki/TEST/update?title=TEST&text=sometext&tags=&tags_old=&labels=&labels_old=&viewable_by-0.id=all')
+        self.app.post(
+            '/wiki/TEST/update',
+            params={
+                'title':'TEST',
+                'text':'sometext',
+                'tags':'',
+                'tags_old':'',
+                'labels':'',
+                'labels_old':'',
+                'viewable_by-0.id':'all'})
         content = file(__file__).read()
-        response = self.app.post('/wiki/TEST/attach', upload_files=[('file_info', 'test_root.py', content)]).follow()
+        self.app.post('/wiki/TEST/attach', upload_files=[('file_info', 'test_root.py', content)])
+        response = self.app.get('/wiki/TEST/')
         assert 'test_root.py' in response
 
     def test_new_text_attachment_content(self):
-        self.app.get('/wiki/TEST/update?title=TEST&text=sometext&tags=&tags_old=&labels=&labels_old=&viewable_by-0.id=all')
+        self.app.post(
+            '/wiki/TEST/update',
+            params={
+                'title':'TEST',
+                'text':'sometext',
+                'tags':'',
+                'tags_old':'',
+                'labels':'',
+                'labels_old':'',
+                'viewable_by-0.id':'all'})
         file_name = 'test_root.py'
         file_data = file(__file__).read()
         upload = ('file_info', file_name, file_data)
-        page_editor = self.app.post('/wiki/TEST/attach', upload_files=[upload]).follow()
+        self.app.post('/wiki/TEST/attach', upload_files=[upload])
+        page_editor = self.app.get('/wiki/TEST/edit')
         download = page_editor.click(description=file_name)
         assert_true(download.body == file_data)
 

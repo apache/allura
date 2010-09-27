@@ -20,14 +20,21 @@
       	<div class="edit_post_form" style="display:none" py:if="has_artifact_access('post', value.thread)()">
             ${widgets.edit_post.display(value=value, submit_text='Save', action=value.url())}
       	</div>
-        <div class="add_attachment_form" style="display:none; clear: both; overflow: auto;" py:if="has_artifact_access('post', value.thread)()">
+        <div class="add_attachment_form" style="display:none; clear: both; overflow: auto;" py:if="has_artifact_access('moderate', value)()">
             ${widgets.attach_post.display(value=value, action=value.url() + 'attach')}
         </div>
         <div py:if="value.attachments">
           <strong>Attachments</strong>
-          <div py:for="att in value.attachments">
+          <py:for each="att in value.attachments">
             ${widgets.attachment.display(post=value, value=att)}
-          </div>
+            <form 
+               py:if="c.user._id and value.author_id==c.user._id" 
+               method="POST"
+               action="${att.url()}"
+               style="display:inline">
+              <input class="submit" type="submit" name="delete" value="Delete"/>
+            </form>
+          </py:for>
         </div>
     	</div>
     	<div class="options">

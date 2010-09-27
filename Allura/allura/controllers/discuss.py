@@ -2,7 +2,6 @@ from mimetypes import guess_type
 from urllib import unquote
 from datetime import datetime
 
-import tg
 from tg import expose, redirect, validate, request, response, flash
 from tg.decorators import before_validate, with_trailing_slash, without_trailing_slash
 from pylons import g, c
@@ -12,13 +11,14 @@ from webob import exc
 from ming.base import Object
 from ming.utils import LazyProperty
 
-from allura import model as model
+from allura import model as M
 from base import BaseController
 from allura.lib import helpers as h
 from allura.lib.security import require, has_artifact_access
 from allura.lib.helpers import DateTimeConverter
 
 from allura.lib.widgets import discuss as DW
+from .attachments import AttachmentsController, AttachmentController
 
 class pass_validator(object):
     def validate(self, v, s):
@@ -26,10 +26,10 @@ class pass_validator(object):
 pass_validator=pass_validator()
 
 class ModelConfig(object):
-    Discussion=model.Discussion
-    Thread=model.Thread
-    Post=model.Post
-    Attachment=model.Attachment
+    Discussion=M.Discussion
+    Thread=M.Thread
+    Post=M.Post
+    Attachment=M.DiscussionAttachment
 
 class WidgetConfig(object):
     # Forms
@@ -52,15 +52,14 @@ class DiscussionController(BaseController):
     W=WidgetConfig
 
     def __init__(self):
-        self.thread = ThreadsController(self)
-        self.attachment = AttachmentsController(self)
-        self.moderate = ModerationController(self)
         if not hasattr(self, 'ThreadController'):
             self.ThreadController = ThreadController
         if not hasattr(self, 'PostController'):
             self.PostController = PostController
         if not hasattr(self, 'AttachmentController'):
-            self.AttachmentController = AttachmentController
+            self.AttachmentController = DiscussionAttachmentController
+        self.thread = ThreadsController(self)
+        self.moderate = ModerationController(self)
 
     @expose('jinja:discussion/index.html')
     def index(self, threads=None, limit=None, page=0, count=0, **kw):
@@ -147,7 +146,7 @@ class ThreadController(BaseController):
     def post(self, **kw):
         require(has_artifact_access('post', self.thread))
         kw = self.W.edit_post.validate(kw, None)
-        p = self.thread.add_post(**kw)
+        self.thread.add_post(**kw)
         if self.thread.artifact:
             self.thread.artifact.mod_date = datetime.now()
         flash('Message posted')
@@ -179,7 +178,7 @@ class ThreadController(BaseController):
         else:
             feed_type = 'rss'
         title = 'Recent posts to %s' % (self.thread.subject or '(no subject)')
-        feed = model.Feed.feed(
+        feed = M.Feed.feed(
             {'artifact_reference':self.thread.dump_ref()},
             feed_type,
             title,
@@ -205,6 +204,7 @@ class PostController(BaseController):
         self._discussion_controller = discussion_controller
         self.thread = thread
         self._post_slug = slug
+        self.attachment = DiscussionAttachmentsController(self.post)
 
     @LazyProperty
     def post(self):
@@ -286,23 +286,13 @@ class PostController(BaseController):
     @expose()
     def attach(self, file_info=None):
         require(has_artifact_access('moderate', self.post))
-        if file_info is not None:
-            filename = file_info.filename
-            content_type = guess_type(filename)
-            if content_type[0]: content_type = content_type[0]
-            else: content_type = 'application/octet-stream'
-            with self.M.Attachment.create(
-                content_type=content_type,
-                filename=filename,
-                discussion_id=self.post.discussion._id,
-                post_id=self.post._id) as fp:
-                while True:
-                    s = file_info.file.read()
-                    if not s: break
-                    fp.write(s)
-            redirect(request.referer)
-        else:
-            redirect('../')
+        if hasattr(file_info, 'file'):
+            self.M.Attachment.save_attachment(
+                file_info.filename, file_info.file, content_type=file_info.type,
+                post_id=self.post._id,
+                thread_id=self.post.thread_id,
+                discussion_id=self.post.discussion_id)
+        redirect(request.referer)
 
     @expose()
     def _lookup(self, id, *remainder):
@@ -311,55 +301,12 @@ class PostController(BaseController):
             self._discussion_controller,
             self.thread, self._post_slug + '/' + id), remainder
 
-class AttachmentsController(BaseController):
-    __metaclass__=h.ProxiedAttrMeta
-    M=h.attrproxy('_discussion_controller', 'M')
-    W=h.attrproxy('_discussion_controller', 'W')
-    ThreadController=h.attrproxy('_discussion_controller', 'ThreadController')
-    PostController=h.attrproxy('_discussion_controller', 'PostController')
-    AttachmentController=h.attrproxy('_discussion_controller', 'AttachmentController')
+class DiscussionAttachmentController(AttachmentController):
+    AttachmentClass=M.DiscussionAttachment
+    edit_perm='moderate'
 
-
-    def __init__(self, discussion_controller):
-        self._discussion_controller = discussion_controller
-
-    @expose()
-    def _lookup(self, filename, *args):
-        filename=unquote(filename)
-        return self.AttachmentController(self._discussion_controller, filename), args
-
-class AttachmentController(BaseController):
-    __metaclass__=h.ProxiedAttrMeta
-    M=h.attrproxy('_discussion_controller', 'M')
-    W=h.attrproxy('_discussion_controller', 'W')
-    ThreadController=h.attrproxy('_discussion_controller', 'ThreadController')
-    PostController=h.attrproxy('_discussion_controller', 'PostController')
-    AttachmentController=h.attrproxy('_discussion_controller', 'AttachmentController')
-
-    def _check_security(self):
-        require(has_artifact_access('read', self.post))
-
-    def __init__(self, discussion_controller, filename):
-        self._discussion_controller = discussion_controller
-        self.filename = filename
-        self.attachment = self.M.Attachment.query.get(filename=filename)
-        self.post = self.attachment.post
-
-    @expose()
-    def index(self, delete=False, embed=True, **kw):
-        if request.method == 'POST':
-            require(has_artifact_access('moderate', self.post))
-            if delete: self.attachment.delete()
-            redirect(request.referer)
-        with self.attachment.open() as fp:
-            filename = fp.metadata['filename'].encode('utf-8')
-            response.headers['Content-Type'] = ''
-            response.content_type = fp.content_type.encode('utf-8')
-            if not embed:
-                response.headers.add('Content-Disposition',
-                                     'attachment;filename=%s' % filename)
-            return fp.read()
-
+class DiscussionAttachmentsController(AttachmentsController):
+    AttachmentControllerClass=DiscussionAttachmentController
 
 class ModerationController(BaseController):
     __metaclass__=h.ProxiedAttrMeta
@@ -396,7 +343,7 @@ class ModerationController(BaseController):
             query['status'] = status
         if flag:
             query['flags'] = {'$gte': int(flag) }
-        q = model.Post.query.find(query)
+        q = M.Post.query.find(query)
         count = q.count()
         page = int(page)
         limit = int(limit)
@@ -418,7 +365,7 @@ class ModerationController(BaseController):
                  **kw):
         for args in post:
             if not args.get('checked', False): continue
-            post = model.Post.query.get(slug=args['slug'])
+            post = M.Post.query.get(slug=args['slug'])
             if approve:
                 if post.status != 'ok':
                     post.approve()

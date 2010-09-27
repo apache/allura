@@ -67,7 +67,7 @@
   {% endif %}
   {% for att in page.attachments %}
     <hr/>
-    {% if h.supported_by_PIL(att.contentType) and not att.is_embedded() %}
+    {% if att.is_image() and not att.is_embedded() %}
     <div class="attachment_thumb">
       <a href="{{att.url()}}">
         <img src="{{att.url()}}/thumb"/>
@@ -75,7 +75,7 @@
       <a href="{{att.url()}}">{{att.metadata.filename}}</a>
       ({{att.length}} bytes)
     </div>
-    {% elif not h.supported_by_PIL(att.contentType) or att.is_embedded() %}
+    {% else %}
     <div>
       <a href="{{att.url()}}">{{att.metadata.filename}}</a>
       ({{att.length}} bytes)

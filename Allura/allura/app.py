@@ -1,5 +1,6 @@
 import logging
 from urllib import basejoin
+from cStringIO import StringIO
 
 from tg import expose, redirect, flash
 from tg.decorators import without_trailing_slash
@@ -112,7 +113,7 @@ class Application(object):
     searchable = False
     DiscussionClass = model.Discussion
     PostClass = model.Post
-    AttachmentClass = model.Attachment
+    AttachmentClass = model.DiscussionAttachment
     tool_label='Tool'
     default_mount_label='Tool Name'
     default_mount_point='tool'
@@ -195,21 +196,25 @@ class Application(object):
         message_id = data['message_id'][0]
         if data.get('filename'):
             log.info('Saving attachment %s', data['filename'])
-            self.AttachmentClass.save(data['filename'],
-                                  data.get('content_type', 'application/octet-stream'),
-                                  data['payload'],
-                                  discussion_id=self.config.discussion_id,
-                                  post_id=message_id)
+            fp = StringIO(data['payload'])
+            self.AttachmentClass.save_attachment(
+                data['filename'], fp,
+                content_type=data.get('content_type', 'application/octet-stream'),
+                discussion_id=self.config.discussion_id,
+                thread_id=thd._id,
+                post_id=message_id)
             return
         # Handle duplicates
         original = self.PostClass.query.get(_id=message_id)
         if original:
             log.info('Saving text attachment')
-            self.AttachmentClass.save('alternate',
-                                  data.get('content_type', 'application/octet-stream'),
-                                  data['payload'],
-                                  discussion_id=self.config.discussion_id,
-                                  post_id=message_id)
+            self.AttachmentClass.save(
+                'alternate',
+                data.get('content_type', 'application/octet-stream'),
+                data['payload'],
+                discussion_id=self.config.discussion_id,
+                thread_id=thd._id,
+                post_id=message_id)
             return
         thd.post(
             text=data['payload'] or '--no text body--',

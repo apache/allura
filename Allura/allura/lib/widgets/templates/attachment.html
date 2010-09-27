@@ -1,19 +1,15 @@
 <div xmlns="http://www.w3.org/1999/xhtml"
-     xmlns:py="http://genshi.edgewall.org/"
-     py:strip="True">
-  <a href="${value.url()}">${value.metadata.filename}</a>
-  ($value.length bytes)
-  <form py:if="c.user._id and post.author_id==c.user._id"
-        method="POST" action="${value.url()}"
-        style="display:inline">
-    <input class="submit" type="submit" name="delete" value="Delete"/>
-  </form>
-  <br style="clear:both"/>
-  <div py:if="value.contentType.startswith('image/') or value.contentType.startswith('text/')">
-    <img py:if="value.contentType.startswith('image/')"
-         style="max-width:100%" src="${value.url()}"/>
-    <iframe width="100%" py:if="value.contentType.startswith('text/')"
-            src="${value.url()}?embed=True"/>
+     xmlns:py="http://genshi.edgewall.org/">
+  <hr/>
+  <div py:if="value.is_image()" class="attachment_thumb">
+    <a href="${value.url()}"><img src="${value.url()}/thumb"/></a>
+    <br/>
+    <a href="${value.url()}">$value.metadata.filename</a>
+    ($value.length) bytes)
+  </div>
+  <div py:if="not value.is_image()">
+    <a href="${value.url()}">$value.metadata.filename</a>
+    ($value.length) bytes)
   </div>
   <br style="clear:both"/>
 </div>

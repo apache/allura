@@ -284,7 +284,7 @@ class Ticket(VersionedArtifact):
 
     @property
     def attachments(self):
-        return Attachment.by_metadata(ticket_id=self._id,type='attachment')
+        return TicketAttachment.by_metadata(ticket_id=self._id,type='attachment')
 
     def set_as_subticket_of(self, new_super_id):
         # For this to be generally useful we would have to check first that
@@ -399,10 +399,6 @@ class Ticket(VersionedArtifact):
         if super_id:
             self.set_as_subticket_of(bson.ObjectId(super_id))
 
-    def attach(self, file_info=None):
-        require(has_artifact_access('write', self))
-        Attachment.create_with_thumbnail(file_info, self._id, 'ticket_id')
-
     def __json__(self):
         return dict(
             _id=str(self._id),
@@ -420,14 +416,21 @@ class Ticket(VersionedArtifact):
             status=self.status,
             custom_fields=self.custom_fields)
 
-class Attachment(BaseAttachment):
+class TicketAttachment(BaseAttachment):
     metadata=FieldProperty(dict(
             ticket_id=schema.ObjectId,
             app_config_id=schema.ObjectId,
             type=str,
             filename=str))
+
     @property
     def artifact(self):
         return Ticket.query.get(_id=self.metadata.ticket_id)
+
+    @classmethod
+    def metadata_for(cls, ticket):
+        return dict(
+            ticket_id=ticket._id,
+            app_config_id=ticket.app_config_id)
 
 MappedClass.compile_all()

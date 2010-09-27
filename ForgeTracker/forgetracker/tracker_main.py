@@ -2,31 +2,26 @@
 import logging
 import json, urllib, re
 from datetime import datetime, timedelta
-from urllib import urlencode, unquote
+from urllib import urlencode
 from webob import exc
 
 # Non-stdlib imports
 import pkg_resources
-import tg
-from tg import tmpl_context
 from tg import expose, validate, redirect, flash
-from tg import request, response
 from tg.decorators import with_trailing_slash, without_trailing_slash
-from pylons import g, c, request
+from pylons import g, c, request, response
 from formencode import validators
 from pymongo.bson import ObjectId
 
-from ming.orm.base import session
 from ming.orm.ormsession import ThreadLocalORMSession
 
 # Pyforge-specific imports
-from allura.app import Application, ConfigOption, SitemapEntry, DefaultAdminController
+from allura import model as M
 from allura.lib import helpers as h
+from allura.app import Application, SitemapEntry, DefaultAdminController
 from allura.lib.search import search_artifact
 from allura.lib.decorators import audit, react
 from allura.lib.security import require, has_artifact_access
-from allura.model import ProjectRole, TagEvent, UserTags, ArtifactReference, Feed, User
-from allura.model import Mailbox, Post
 from allura.lib import widgets as w
 from allura.lib.widgets import form_fields as ffw
 from allura.lib.widgets.subscriptions import SubscribeForm
@@ -35,7 +30,7 @@ from allura.controllers import attachments as ac
 from allura.controllers import BaseController
 
 # Local imports
-from forgetracker import model
+from forgetracker import model as TM
 from forgetracker import version
 
 from forgetracker.widgets.ticket_form import TicketForm, EditTicketForm
@@ -74,7 +69,7 @@ class ForgeTrackerApp(Application):
 
     def __init__(self, project, config):
         Application.__init__(self, project, config)
-        self.globals = model.Globals.query.get(app_config_id=config._id)
+        self.globals = TM.Globals.query.get(app_config_id=config._id)
         self.root = RootController()
         self.api_root = RootRestController()
         self.admin = TrackerAdminController(self)
@@ -89,7 +84,7 @@ class ForgeTrackerApp(Application):
         log.info('Headers are: %s', data['headers'])
         try:
             ticket_num = routing_key.split('.')[-1]
-            t = model.Ticket.query.get(ticket_num=int(ticket_num))
+            t = TM.Ticket.query.get(ticket_num=int(ticket_num))
         except:
             log.exception('Unexpected error routing tkt msg: %s', routing_key)
             return
@@ -124,13 +119,13 @@ class ForgeTrackerApp(Application):
         search_bins = []
         related_urls = []
         ticket = request.path_info.split(self.url)[-1].split('/')[0]
-        for bin in model.Bin.query.find(dict(app_config_id=self.config._id)).sort('summary'):
+        for bin in TM.Bin.query.find(dict(app_config_id=self.config._id)).sort('summary'):
             label = bin.shorthand_id()
             search_bins.append(SitemapEntry(
                     h.text.truncate(label, 72), bin.url(), className='nav_child',
                     small=c.app.globals.bin_counts.get(bin.shorthand_id())))
         if ticket.isdigit():
-            ticket = model.Ticket.query.find(dict(app_config_id=self.config._id,ticket_num=int(ticket))).first()
+            ticket = TM.Ticket.query.find(dict(app_config_id=self.config._id,ticket_num=int(ticket))).first()
         else:
             ticket = None
         links = [
@@ -138,21 +133,21 @@ class ForgeTrackerApp(Application):
             SitemapEntry('View Stats', self.config.url() + 'stats', ui_icon='folder-collapsed')]
         if ticket:
             for aref in ticket.references+ticket.backreferences.values():
-                artifact = ArtifactReference(aref).artifact
+                artifact = M.ArtifactReference(aref).artifact
                 if artifact is None: continue
-                artifact = artifact.primary(model.Ticket)
+                artifact = artifact.primary(TM.Ticket)
                 if artifact.url() not in related_urls:
                     related_urls.append(artifact.url())
                     title = '%s: %s' % (artifact.type_s, artifact.shorthand_id())
                     related_artifacts.append(SitemapEntry(title, artifact.url(), className='nav_child'))
             if ticket.super_id:
                 links.append(SitemapEntry('Supertask'))
-                super = model.Ticket.query.get(_id=ticket.super_id, app_config_id=c.app.config._id)
+                super = TM.Ticket.query.get(_id=ticket.super_id, app_config_id=c.app.config._id)
                 links.append(SitemapEntry('[#{0}]'.format(super.ticket_num), super.url(), className='nav_child'))
             if ticket.sub_ids:
                 links.append(SitemapEntry('Subtasks'))
             for sub_id in ticket.sub_ids or []:
-                sub = model.Ticket.query.get(_id=sub_id, app_config_id=c.app.config._id)
+                sub = TM.Ticket.query.get(_id=sub_id, app_config_id=c.app.config._id)
                 links.append(SitemapEntry('[#{0}]'.format(sub.ticket_num), sub.url(), className='nav_child'))
             #links.append(SitemapEntry('Create New Subtask', '{0}new/?super_id={1}'.format(self.config.url(), ticket._id), className='nav_child'))
         if len(search_bins):
@@ -175,9 +170,9 @@ class ForgeTrackerApp(Application):
 
         super(ForgeTrackerApp, self).install(project)
         # Setup permissions
-        role_developer = ProjectRole.query.get(name='Developer')._id
-        role_auth = ProjectRole.query.get(name='*authenticated')._id
-        role_anon = ProjectRole.query.get(name='*anonymous')._id
+        role_developer = M.ProjectRole.query.get(name='Developer')._id
+        role_auth = M.ProjectRole.query.get(name='*authenticated')._id
+        role_anon = M.ProjectRole.query.get(name='*anonymous')._id
         self.config.acl.update(
             configure=c.project.acl['tool'],
             read=c.project.acl['read'],
@@ -187,29 +182,29 @@ class ForgeTrackerApp(Application):
             moderate=[role_developer],
             save_searches=[role_developer],
             admin=c.project.acl['tool'])
-        self.globals = model.Globals(app_config_id=c.app.config._id,
+        self.globals = TM.Globals(app_config_id=c.app.config._id,
             last_ticket_num=0,
             open_status_names='open unread accepted pending',
             closed_status_names='closed wont-fix',
             milestone_names='',
             custom_fields=[])
         c.app.globals.invalidate_bin_counts()
-        bin = model.Bin(summary='Open Tickets', terms=self.globals.not_closed_query)
+        bin = TM.Bin(summary='Open Tickets', terms=self.globals.not_closed_query)
         bin.app_config_id = self.config._id
         bin.custom_fields = dict()
-        bin = model.Bin(summary='Recent Changes', terms=self.globals.not_closed_query, sort='mod_date_dt desc')
+        bin = TM.Bin(summary='Recent Changes', terms=self.globals.not_closed_query, sort='mod_date_dt desc')
         bin.app_config_id = self.config._id
         bin.custom_fields = dict()
 
 
     def uninstall(self, project):
         "Remove all the tool's artifacts from the database"
-        model.Attachment.query.remove({'metadata.app_config_id':c.app.config._id})
+        TM.TicketAttachment.query.remove({'metadata.app_config_id':c.app.config._id})
         app_config_id = {'app_config_id':c.app.config._id}
-        model.Ticket.query.remove(app_config_id)
-        model.Bin.query.remove(app_config_id)
+        TM.Ticket.query.remove(app_config_id)
+        TM.Bin.query.remove(app_config_id)
         # model.Comment.query.remove(app_config_id)
-        model.Globals.query.remove(app_config_id)
+        TM.Globals.query.remove(app_config_id)
         super(ForgeTrackerApp, self).uninstall(project)
 
 class RootController(BaseController):
@@ -246,7 +241,12 @@ class RootController(BaseController):
         if  'ticket_num_i' not in refined_sort:
             refined_sort += ',ticket_num_i asc'
         try:
-            matches = search_artifact(model.Ticket, q, rows=limit, sort=refined_sort, start=start, fl='ticket_num_i', **kw) if q else None
+            if q:
+                matches = search_artifact(
+                    TM.Ticket, q,
+                    rows=limit, sort=refined_sort, start=start, fl='ticket_num_i', **kw)
+            else:
+                matches = None
             solr_error = None
         except ValueError, e:
             solr_error = e.args[0]
@@ -256,7 +256,7 @@ class RootController(BaseController):
             # ticket_numbers is in sorted order
             ticket_numbers = [match['ticket_num_i'] for match in matches.docs]
             # but query, unfortunately, returns results in arbitrary order
-            query = model.Ticket.query.find(dict(app_config_id=c.app.config._id, ticket_num={'$in':ticket_numbers}))
+            query = TM.Ticket.query.find(dict(app_config_id=c.app.config._id, ticket_num={'$in':ticket_numbers}))
             # so stick all the results in a dictionary...
             ticket_for_num = {}
             for t in query:
@@ -275,7 +275,7 @@ class RootController(BaseController):
         require(has_artifact_access('read'))
         result = self.paged_query(c.app.globals.not_closed_query, sort='ticket_num_i desc', limit=int(limit))
         c.subscribe_form = W.subscribe_form
-        result['subscribed'] = Mailbox.subscribed()
+        result['subscribed'] = M.Mailbox.subscribed()
         c.ticket_search_results = W.ticket_search_results
         return result
 
@@ -338,7 +338,7 @@ class RootController(BaseController):
         else:
             feed_type = 'rss'
         title = 'Recent changes to %s' % c.app.config.options.mount_point
-        feed = Feed.feed(
+        feed = M.Feed.feed(
             {'artifact_reference.mount_point':c.app.config.options.mount_point,
              'artifact_reference.project_id':c.project._id},
             feed_type,
@@ -361,18 +361,18 @@ class RootController(BaseController):
             c.app.globals.milestone_names = ''
         ticket_num = ticket_form.pop('ticket_num', None)
         if ticket_num:
-            ticket = model.Ticket.query.get(
+            ticket = TM.Ticket.query.get(
                 app_config_id=c.app.config._id,
                 ticket_num=ticket_num)
             if not ticket:
                 raise Exception('Ticket number not found.')
         else:
-            ticket = model.Ticket(
+            ticket = TM.Ticket(
                 app_config_id=c.app.config._id,
                 custom_fields=dict(),
                 ticket_num=c.app.globals.next_ticket_num())
         ticket.update(ticket_form)
-        for u in ProjectRole.query.find({'name':'Admin'}).first().users_with_role():
+        for u in M.ProjectRole.query.find({'name':'Admin'}).first().users_with_role():
             ticket.subscribe(user=u)
         redirect(str(ticket.ticket_num)+'/')
 
@@ -395,7 +395,7 @@ class RootController(BaseController):
     @expose()
     def update_tickets(self, **post_data):
         c.app.globals.invalidate_bin_counts()
-        tickets = model.Ticket.query.find(dict(
+        tickets = TM.Ticket.query.find(dict(
                 _id={'$in':[ObjectId(id) for id in post_data['selected'].split(',')]},
                 app_config_id=c.app.config._id)).all()
         for ticket in tickets:
@@ -439,10 +439,10 @@ class RootController(BaseController):
     def tickets_since(self, when=None):
         count = 0
         if when:
-            count = model.Ticket.query.find(dict(app_config_id=c.app.config._id,
+            count = TM.Ticket.query.find(dict(app_config_id=c.app.config._id,
                 created_date={'$gte':when})).count()
         else:
-            count = model.Ticket.query.find(dict(app_config_id=c.app.config._id)).count()
+            count = TM.Ticket.query.find(dict(app_config_id=c.app.config._id)).count()
         return count
 
     def ticket_comments_since(self, when=None):
@@ -450,16 +450,16 @@ class RootController(BaseController):
             discussion_id=c.app.config.discussion_id)
         if when is not None:
             q['timestamp'] = {'$gte':when}
-        return Post.query.find(q).count()
+        return M.Post.query.find(q).count()
 
     @with_trailing_slash
     @expose('jinja:tracker/stats.html')
     def stats(self):
         require(has_artifact_access('read'))
         globals = c.app.globals
-        total = model.Ticket.query.find(dict(app_config_id=c.app.config._id)).count()
-        open = model.Ticket.query.find(dict(app_config_id=c.app.config._id,status={'$in': list(globals.set_of_open_status_names)})).count()
-        closed = model.Ticket.query.find(dict(app_config_id=c.app.config._id,status={'$in': list(globals.set_of_closed_status_names)})).count()
+        total = TM.Ticket.query.find(dict(app_config_id=c.app.config._id)).count()
+        open = TM.Ticket.query.find(dict(app_config_id=c.app.config._id,status={'$in': list(globals.set_of_open_status_names)})).count()
+        closed = TM.Ticket.query.find(dict(app_config_id=c.app.config._id,status={'$in': list(globals.set_of_closed_status_names)})).count()
         now = datetime.utcnow()
         week = timedelta(weeks=1)
         fortnight = timedelta(weeks=2)
@@ -497,9 +497,9 @@ class RootController(BaseController):
     def subscribe(self, subscribe=None, unsubscribe=None):
         require(has_artifact_access('read'))
         if subscribe:
-            Mailbox.subscribe(type='direct')
+            M.Mailbox.subscribe(type='direct')
         elif unsubscribe:
-            Mailbox.unsubscribe()
+            M.Mailbox.unsubscribe()
         redirect(request.referer)
 
 class BinController(BaseController):
@@ -515,7 +515,7 @@ class BinController(BaseController):
     def index(self, **kw):
         require(has_artifact_access('save_searches', app=self.app))
         c.bin_form = W.bin_form
-        bins = model.Bin.query.find()
+        bins = TM.Bin.query.find()
         count=0
         count = len(bins)
         return dict(bins=bins or [], count=count, app=self.app)
@@ -525,7 +525,7 @@ class BinController(BaseController):
     def bins(self):
         require(has_artifact_access('save_searches', app=self.app))
         c.bin_form = W.bin_form
-        bins = model.Bin.query.find()
+        bins = TM.Bin.query.find()
         count=0
         count = len(bins)
         return dict(bins=bins or [], count=count, app=self.app)
@@ -548,8 +548,8 @@ class BinController(BaseController):
         if request.method != 'POST':
             raise Exception('save_bin must be a POST request')
         if bin_form['old_summary']:
-            model.Bin.query.find(dict(summary=bin_form['old_summary'])).first().delete()
-        bin = model.Bin(summary=bin_form['summary'], terms=bin_form['terms'])
+            TM.Bin.query.find(dict(summary=bin_form['old_summary'])).first().delete()
+        bin = TM.Bin(summary=bin_form['summary'], terms=bin_form['terms'])
         bin.app_config_id = self.app.config._id
         bin.custom_fields = dict()
         redirect('.')
@@ -557,7 +557,7 @@ class BinController(BaseController):
     @with_trailing_slash
     @expose()
     def delbin(self, summary=None):
-        bin = model.Bin.query.find(dict(summary=summary,)).first()
+        bin = TM.Bin.query.find(dict(summary=summary,)).first()
         require(has_artifact_access('save_searches', app=self.app))
         self.app.globals.invalidate_bin_counts()
         bin.delete()
@@ -619,7 +619,7 @@ class TicketController(BaseController):
     def __init__(self, ticket_num=None):
         if ticket_num is not None:
             self.ticket_num = int(ticket_num)
-            self.ticket = model.Ticket.query.get(app_config_id=c.app.config._id,
+            self.ticket = TM.Ticket.query.get(app_config_id=c.app.config._id,
                                                     ticket_num=self.ticket_num)
             self.attachment = AttachmentsController(self.ticket)
             # self.comments = CommentController(self.ticket)
@@ -646,10 +646,10 @@ class TicketController(BaseController):
             if c.app.globals.milestone_names is None:
                 c.app.globals.milestone_names = ''
             thread = self.ticket.discussion_thread
-            post_count = Post.query.find(dict(discussion_id=thread.discussion_id, thread_id=thread._id)).count()
+            post_count = M.Post.query.find(dict(discussion_id=thread.discussion_id, thread_id=thread._id)).count()
             return dict(ticket=self.ticket, globals=c.app.globals,
                         allow_edit=has_artifact_access('write', self.ticket)(),
-                        subscribed=Mailbox.subscribed(artifact=self.ticket),
+                        subscribed=M.Mailbox.subscribed(artifact=self.ticket),
                         page=page, limit=limit, count=post_count)
         else:
             raise exc.HTTPNotFound, 'Ticket #%s does not exist.' % self.ticket_num
@@ -665,7 +665,7 @@ class TicketController(BaseController):
         if c.app.globals.milestone_names is None:
             c.app.globals.milestone_names = ''
         return dict(ticket=self.ticket, globals=c.app.globals,
-                    subscribed=Mailbox.subscribed(artifact=self.ticket))
+                    subscribed=M.Mailbox.subscribed(artifact=self.ticket))
 
     @without_trailing_slash
     @expose()
@@ -682,7 +682,7 @@ class TicketController(BaseController):
             feed_type = 'rss'
         title = 'Recent changes to %d: %s' % (
             self.ticket.ticket_num, self.ticket.summary)
-        feed = Feed.feed(
+        feed = M.Feed.feed(
             {'artifact_reference':self.ticket.dump_ref()},
             feed_type,
             title,
@@ -754,7 +754,10 @@ class TicketController(BaseController):
             c.app.globals.milestone_names = ''
         if 'attachment' in post_data and post_data['attachment']:
             for attachment in post_data['attachment']:
-                self.ticket.attach(file_info=attachment)
+                if not hasattr(attachment, 'file'): continue
+                TM.TicketAttachment.save_attachment(
+                    attachment.filename, attachment.file, content_type=attachment.type,
+                    ticket_id=self.ticket._id)
         any_sums = False
         for cf in c.app.globals.custom_fields or []:
             if 'custom_fields.'+cf.name in post_data:
@@ -809,7 +812,7 @@ class TicketController(BaseController):
         redirect(request.referer)
 
 class AttachmentController(ac.AttachmentController):
-    AttachmentClass = model.Attachment
+    AttachmentClass = TM.TicketAttachment
     edit_perm = 'write'
 
 class AttachmentsController(ac.AttachmentsController):
@@ -869,7 +872,7 @@ class RootRestController(BaseController):
         require(has_artifact_access('read'))
         return dict(tickets=[
             dict(ticket_num=t.ticket_num, summary=t.summary)
-            for t in model.Ticket.query.find(dict(app_config_id=c.app.config._id)).sort('ticket_num') ])
+            for t in TM.Ticket.query.find(dict(app_config_id=c.app.config._id)).sort('ticket_num') ])
 
     @expose()
     @h.vardec
@@ -881,7 +884,7 @@ class RootRestController(BaseController):
             raise Exception('save_ticket must be a POST request')
         if c.app.globals.milestone_names is None:
             c.app.globals.milestone_names = ''
-        ticket = model.Ticket(
+        ticket = TM.Ticket(
             app_config_id=c.app.config._id,
             custom_fields=dict(),
             ticket_num=c.app.globals.next_ticket_num())
@@ -898,7 +901,7 @@ class TicketRestController(BaseController):
     def __init__(self, ticket_num):
         if ticket_num is not None:
             self.ticket_num = int(ticket_num)
-            self.ticket = model.Ticket.query.get(app_config_id=c.app.config._id,
+            self.ticket = TM.Ticket.query.get(app_config_id=c.app.config._id,
                                                     ticket_num=self.ticket_num)
 
     @expose('json:')

@@ -40,7 +40,7 @@ def test_discussion_methods():
     d = M.Discussion(shortname='test', name='test')
     assert d.thread_class() == M.Thread
     assert d.post_class() == M.Post
-    assert d.attachment_class() == M.Attachment
+    assert d.attachment_class() == M.DiscussionAttachment
     ThreadLocalORMSession.flush_all()
     d.update_stats()
     ThreadLocalORMSession.flush_all()
@@ -59,7 +59,7 @@ def test_thread_methods():
     t = M.Thread(discussion_id=d._id, subject='Test Thread')
     assert t.discussion_class() == M.Discussion
     assert t.post_class() == M.Post
-    assert t.attachment_class() == M.Attachment
+    assert t.attachment_class() == M.DiscussionAttachment
     p0 = t.post('This is a post')
     p1 = t.post('This is another post')
     time.sleep(1)
@@ -91,7 +91,7 @@ def test_post_methods():
     p = t.post('This is a post')
     assert p.discussion_class() == M.Discussion
     assert p.thread_class() == M.Thread
-    assert p.attachment_class() == M.Attachment
+    assert p.attachment_class() == M.DiscussionAttachment
     p.commit()
     assert p.parent is None
     assert p.subject == 'Test Thread'
@@ -109,7 +109,7 @@ def test_attachment_methods():
     d = M.Discussion(shortname='test', name='test')
     t = M.Thread(discussion_id=d._id, subject='Test Thread')
     p = t.post('This is a post')
-    a = M.Attachment(**dict(metadata=dict(
+    a = M.DiscussionAttachment(**dict(metadata=dict(
                 discussion_id=d._id,
                 thread_id=t._id,
                 post_id=p._id,
@@ -129,7 +129,7 @@ def test_discussion_delete():
     d = M.Discussion(shortname='test', name='test')
     t = M.Thread(discussion_id=d._id, subject='Test Thread')
     p = t.post('This is a post')
-    a = M.Attachment(**dict(metadata=dict(
+    a = M.DiscussionAttachment(**dict(metadata=dict(
                 discussion_id=d._id,
                 thread_id=t._id,
                 post_id=p._id,
@@ -142,7 +142,7 @@ def test_thread_delete():
     d = M.Discussion(shortname='test', name='test')
     t = M.Thread(discussion_id=d._id, subject='Test Thread')
     p = t.post('This is a post')
-    a = M.Attachment(**dict(metadata=dict(
+    a = M.DiscussionAttachment(**dict(metadata=dict(
                 discussion_id=d._id,
                 thread_id=t._id,
                 post_id=p._id,
@@ -155,7 +155,7 @@ def test_post_delete():
     d = M.Discussion(shortname='test', name='test')
     t = M.Thread(discussion_id=d._id, subject='Test Thread')
     p = t.post('This is a post')
-    a = M.Attachment(**dict(metadata=dict(
+    a = M.DiscussionAttachment(**dict(metadata=dict(
                 discussion_id=d._id,
                 thread_id=t._id,
                 post_id=p._id,

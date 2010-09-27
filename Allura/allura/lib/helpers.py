@@ -4,7 +4,6 @@ import os.path
 import difflib
 import urllib
 import re
-import Image
 import json
 import logging
 from hashlib import sha1
@@ -249,56 +248,6 @@ def tag_artifact(artifact, user, tags):
     # Update the Tag index
     M.Tag.add(aref, user, added_tags)
     M.Tag.remove(aref, user, removed_tags)
-
-def square_image(image):
-    # image is wider than tall, so center horizontally
-    height = image.size[0]
-    width = image.size[1]
-    if height < width:
-        new_image = Image.new("RGB", (width, width), 'white')
-        new_image.paste(image, ((width-height)/2, 0))
-        image = new_image
-    # image is taller than wide, so center vertically
-    elif height > width:
-        new_image = Image.new("RGB", (height, height), 'white')
-        new_image.paste(image, (0, (height-width)/2))
-        image = new_image
-    return image
-
-def supported_by_PIL(file_type):
-    return str(file_type).lower() in ['image/jpg','image/png','image/jpeg','image/gif']
-
-def save_image(icon, file_class, square=False, thumbnail_size=None, meta=None,
-               save_original=False, original_meta=None):
-    if icon is not None and icon != '':
-        if supported_by_PIL(icon.type):
-            if not meta:
-                meta = dict()
-            filename = icon.filename
-            if icon.type: content_type = icon.type
-            else: content_type = 'application/octet-stream'
-            image = Image.open(icon.file)
-            format = image.format
-            if save_original:
-                if not original_meta:
-                    original_meta = dict()
-                with file_class.create(
-                    content_type=content_type,
-                    filename=filename,
-                    **original_meta) as fp:
-                    filename = fp.name
-                    image.save(fp, format)
-            if square_image:
-                image = square_image(image)
-            if thumbnail_size:
-                image.thumbnail(thumbnail_size, Image.ANTIALIAS)
-            with file_class.create(
-                content_type=content_type,
-                filename=filename,
-                **meta) as fp:
-                image.save(fp, format)
-        else:
-            tg.flash('The icon must be jpg, png, or gif format.')
 
 class DateTimeConverter(FancyValidator):
 

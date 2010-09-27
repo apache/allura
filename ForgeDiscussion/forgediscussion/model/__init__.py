@@ -1,1 +1,1 @@
-from forum import Forum, ForumFile, ForumThread, ForumPost, ForumAttachment
+from forum import Forum, ForumFile, ForumThread, ForumPost

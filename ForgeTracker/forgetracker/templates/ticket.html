@@ -184,14 +184,14 @@ g.register_app_css('css/tracker.css')
                 </div>
                 <py:for each="att in ticket.attachments">
                   <hr/>
-                  <div py:if="h.supported_by_PIL(att.contentType) and not att.is_embedded()" class="attachment_thumb">
+                  <div py:if="att.is_image() and not att.is_embedded()" class="attachment_thumb">
                     <a href="${att.url()}">
                       <img src="${att.url()}/thumb"/>
                     </a><br/>
                     <a href="${att.url()}">${att.metadata.filename}</a>
                     ($att.length bytes)
                   </div>
-                  <div py:if="not h.supported_by_PIL(att.contentType) or att.is_embedded()">
+                  <div py:if="not att.is_image() or att.is_embedded()">
                     <a href="${att.url()}">${att.metadata.filename}</a>
                     ($att.length bytes)
                   </div>

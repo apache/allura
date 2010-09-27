@@ -1,20 +1,17 @@
-import re
 import logging
 
 import tg
 import pymongo
-from pylons import c, g, request
-from pymongo.bson import ObjectId
+from pylons import c, g
 
 from ming import schema
-from ming.orm.base import mapper, session
-from ming.orm.mapped_class import MappedClass
+from ming.orm.base import session
 from ming.orm.property import FieldProperty, RelationProperty, ForeignIdProperty
 
 from allura.lib import helpers as h
 from allura.lib.security import require, has_artifact_access
-from .auth import ProjectRole
-from .artifact import Artifact, VersionedArtifact, Snapshot, Message, Feed, BaseAttachment
+from .artifact import Artifact, VersionedArtifact, Snapshot, Message, Feed
+from .attachments import BaseAttachment
 from .types import ArtifactReference, ArtifactReferenceType
 
 log = logging.getLogger(__name__)
@@ -56,7 +53,7 @@ class Discussion(Artifact):
 
     @classmethod
     def attachment_class(cls):
-        return Attachment
+        return DiscussionAttachment
 
     def update_stats(self):
         self.num_topics = self.thread_class().query.find(
@@ -136,7 +133,7 @@ class Thread(Artifact):
 
     @classmethod
     def attachment_class(cls):
-        return Attachment
+        return DiscussionAttachment
 
     @property
     def artifact(self):
@@ -344,7 +341,7 @@ class Post(Message, VersionedArtifact):
 
     @classmethod
     def attachment_class(cls):
-        return Attachment
+        return DiscussionAttachment
 
     @property
     def parent(self):
@@ -356,7 +353,8 @@ class Post(Message, VersionedArtifact):
 
     @property
     def attachments(self):
-        return self.attachment_class().by_metadata(post_id=self._id)
+        return self.attachment_class().by_metadata(
+            post_id=self._id, type='attachment')
 
     def primary(self, primary_class=None):
         return self.thread.primary(primary_class)
@@ -414,7 +412,7 @@ class Post(Message, VersionedArtifact):
         g.publish('react', 'spam', dict(artifact_reference=self.dump_ref()),
                   serializer='pickle')
 
-class Attachment(BaseAttachment):
+class DiscussionAttachment(BaseAttachment):
     DiscussionClass=Discussion
     ThreadClass=Thread
     PostClass=Post
@@ -431,7 +429,13 @@ class Attachment(BaseAttachment):
             discussion_id=schema.ObjectId,
             thread_id=str,
             post_id=str,
-            filename=str))
+            filename=str,
+            app_config_id=schema.ObjectId,
+            type=str))
+
+    @property
+    def artifact(self):
+        return self.post
 
     @property
     def discussion(self):
@@ -445,7 +449,20 @@ class Attachment(BaseAttachment):
     def post(self):
         return self.PostClass.query.get(_id=self.metadata.post_id)
 
+    @classmethod
+    def metadata_for(cls, post):
+        return dict(
+            post_id=post._id,
+            thread_id=post.thread_id,
+            discussion_id=post.discussion_id,
+            app_config_id=post.app_config_id)
+
     def url(self):
-        return self.discussion.url() + 'attachment/' + self.filename
+        if self.metadata.post_id:
+            return self.post.url() + 'attachment/' + self.filename
+        elif self.metadata.thread_id:
+            return self.thread.url() + 'attachment/' + self.filename
+        else:
+            return self.discussion.url() + 'attachment/' + self.filename
 
 

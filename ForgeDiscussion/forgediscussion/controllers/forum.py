@@ -1,22 +1,18 @@
-import shlex
 import logging
 import pymongo
-from mimetypes import guess_type
-from urllib import unquote
 
-from tg import expose, validate, redirect, flash
+from tg import expose, validate, redirect
 from tg import request, response
-import tg
 from pylons import g, c
-from ming.base import Object
 from webob import exc
 
 from allura.lib import helpers as h
+from allura import model as M
 from allura.lib.security import require, has_artifact_access
 from allura.controllers import DiscussionController, ThreadController, PostController
 from allura.lib.widgets import discuss as DW
 
-from forgediscussion import model
+from forgediscussion import model as DM
 from forgediscussion import widgets as FW
 
 log = logging.getLogger(__name__)
@@ -27,10 +23,10 @@ class pass_validator(object):
 pass_validator=pass_validator()
 
 class ModelConfig(object):
-    Discussion=model.Forum
-    Thread=model.ForumThread
-    Post=model.ForumPost
-    Attachment=model.ForumAttachment
+    Discussion=DM.Forum
+    Thread=DM.ForumThread
+    Post=DM.ForumPost
+    Attachment=M.DiscussionAttachment
 
 class WidgetConfig(object):
     # Forms
@@ -58,7 +54,7 @@ class ForumController(DiscussionController):
     def __init__(self, forum_id):
         self.ThreadController = ForumThreadController
         self.PostController = ForumPostController
-        self.discussion = model.Forum.query.get(
+        self.discussion = DM.Forum.query.get(
             app_config_id=c.app.config._id,
             shortname=forum_id)
         if not self.discussion:
@@ -77,28 +73,8 @@ class ForumController(DiscussionController):
         if self.discussion.deleted and not has_artifact_access('configure', app=c.app)():
             redirect(self.discussion.url()+'deleted')
         limit, page, start = g.handle_paging(limit, page)
-        threads = model.ForumThread.query.find(dict(discussion_id=self.discussion._id)).sort('mod_date', pymongo.DESCENDING)
+        threads = DM.ForumThread.query.find(dict(discussion_id=self.discussion._id)).sort('mod_date', pymongo.DESCENDING)
         return super(ForumController, self).index(threads=threads.skip(start).limit(int(limit)).all(), limit=limit, page=page, count=threads.count(), **kw)
-
-    # @h.vardec
-    # @expose()
-    # @validate(W.edit_post)
-    # def post(self, subject=None, text=None, **kw):
-    #     if not subject:
-    #         flash('You must have a subject for this post.')
-    #         redirect(request.referrer)
-    #     if self.discussion.deleted and not has_artifact_access('configure', app=c.app)():
-    #         redirect(self.deleted)
-    #     if 'new_topic' in kw:
-    #         subject = kw['new_topic']['subject']
-    #         text = kw['new_topic']['text']
-    #     require(has_artifact_access('post', self.discussion))
-    #     thd = self.discussion.get_discussion_thread(dict(
-    #             headers=dict(Subject=subject)))
-    #     post = thd.post(subject, text)
-    #     thd.first_post_id = post._id
-    #     flash('Message posted')
-    #     redirect(thd.url())
 
     @expose()
     def icon(self):

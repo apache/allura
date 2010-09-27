@@ -13,14 +13,14 @@ from ming.orm.base import session
 from ming import schema
 
 # Pyforge-specific imports
+from allura import model as M
 from allura.app import Application, ConfigOption, SitemapEntry, DefaultAdminController
 from allura.lib import helpers as h
 from allura.lib.decorators import audit, react
 from allura.lib.security import require, has_artifact_access
-from allura.model import ProjectRole
 
 # Local imports
-from forgediscussion import model
+from forgediscussion import model as DM
 from forgediscussion import version
 from .controllers import RootController
 
@@ -40,8 +40,8 @@ class ForgeDiscussionApp(Application):
         ConfigOption('PostingPolicy',
                      schema.OneOf('ApproveOnceModerated', 'ModerateAll'), 'ApproveOnceModerated')
         ]
-    PostClass=model.ForumPost
-    AttachmentClass=model.ForumAttachment
+    PostClass=DM.ForumPost
+    AttachmentClass=M.DiscussionAttachment
     searchable=True
     tool_label='Discussion'
     default_mount_label='Discussion'
@@ -56,7 +56,7 @@ class ForgeDiscussionApp(Application):
             subscriptions={})
 
     def has_access(self, user, topic):
-        f = model.Forum.query.get(shortname=topic.replace('.', '/'))
+        f = DM.Forum.query.get(shortname=topic.replace('.', '/'))
         return has_artifact_access('post', f, user=user)()
 
     @audit('Discussion.msg.#')
@@ -66,7 +66,7 @@ class ForgeDiscussionApp(Application):
         log.info('Headers are: %s', data['headers'])
         try:
             shortname = routing_key.split('.', 2)[-1]
-            f = model.Forum.query.get(shortname=shortname.replace('.', '/'))
+            f = DM.Forum.query.get(shortname=shortname.replace('.', '/'))
         except:
             log.exception('Error looking up forum: %s', routing_key)
             return
@@ -81,7 +81,7 @@ class ForgeDiscussionApp(Application):
     def forum_stats_auditor(self, routing_key, data):
         try:
             shortname = routing_key.split('.', 2)[-1]
-            f = model.Forum.query.get(shortname=shortname.replace('.', '/'))
+            f = DM.Forum.query.get(shortname=shortname.replace('.', '/'))
         except:
             log.exception('Error looking up forum: %s', routing_key)
             return
@@ -95,7 +95,7 @@ class ForgeDiscussionApp(Application):
     def thread_stats_auditor(self, routing_key, data):
         try:
             thread_id = routing_key.split('.', 2)[-1]
-            thread = model.ForumThread.query.find(_id=thread_id)
+            thread = DM.ForumThread.query.find(_id=thread_id)
         except:
             log.exception('Error looking up forum: %s', routing_key)
             return
@@ -115,14 +115,14 @@ class ForgeDiscussionApp(Application):
 
     @property
     def forums(self):
-        return model.Forum.query.find(dict(app_config_id=self.config._id)).all()
+        return DM.Forum.query.find(dict(app_config_id=self.config._id)).all()
 
     @property
     def top_forums(self):
         return self.subforums_of(None)
 
     def subforums_of(self, parent_id):
-        return model.Forum.query.find(dict(
+        return DM.Forum.query.find(dict(
                 app_config_id=self.config._id,
                 parent_id=parent_id,
                 )).all()
@@ -148,12 +148,12 @@ class ForgeDiscussionApp(Application):
                 ]
             recent_topics = [ SitemapEntry(h.text.truncate(thread.subject, 72), thread.url(), className='nav_child',
                                 small=thread.num_replies)
-                   for thread in model.ForumThread.query.find().sort('mod_date', pymongo.DESCENDING).limit(3)
+                   for thread in DM.ForumThread.query.find().sort('mod_date', pymongo.DESCENDING).limit(3)
                    if (not thread.discussion.deleted or has_artifact_access('configure', app=c.app)()) ]
             if len(recent_topics):
                 l.append(SitemapEntry('Recent Topics'))
                 l += recent_topics
-            forums = model.Forum.query.find(dict(
+            forums = DM.Forum.query.find(dict(
                             app_config_id=c.app.config._id,
                             parent_id=None)).all()
             if forums:
@@ -177,9 +177,9 @@ class ForgeDiscussionApp(Application):
         # Don't call super install here, as that sets up discussion for a tool
 
         # Setup permissions
-        role_developer = ProjectRole.query.get(name='Developer')._id
-        role_auth = ProjectRole.query.get(name='*authenticated')._id
-        role_anon = ProjectRole.query.get(name='*anonymous')._id
+        role_developer = M.ProjectRole.query.get(name='Developer')._id
+        role_auth = M.ProjectRole.query.get(name='*authenticated')._id
+        role_anon = M.ProjectRole.query.get(name='*anonymous')._id
         self.config.acl.update(
             configure=c.project.acl['tool'],
             read=c.project.acl['read'],
@@ -197,9 +197,9 @@ class ForgeDiscussionApp(Application):
 
     def uninstall(self, project):
         "Remove all the tool's artifacts from the database"
-        model.Forum.query.remove(dict(app_config_id=self.config._id))
-        model.ForumThread.query.remove(dict(app_config_id=self.config._id))
-        model.ForumPost.query.remove(dict(app_config_id=self.config._id))
+        DM.Forum.query.remove(dict(app_config_id=self.config._id))
+        DM.ForumThread.query.remove(dict(app_config_id=self.config._id))
+        DM.ForumPost.query.remove(dict(app_config_id=self.config._id))
         super(ForgeDiscussionApp, self).uninstall(project)
 
 class ForumAdminController(DefaultAdminController):
@@ -225,9 +225,11 @@ class ForumAdminController(DefaultAdminController):
                     allow_config=has_artifact_access('configure', app=self.app)())
 
     def save_forum_icon(self, forum, icon):
-        if forum.icon:
-            file_class.query.remove({'metadata.forum_id':forum._id})
-        h.save_image(icon, model.ForumFile, square=True, thumbnail_size=(48, 48), meta=dict(forum_id=forum._id))
+        if forum.icon: forum.icon.delete()
+        DM.ForumFile.save_image(
+            icon.filename, icon.file, content_type=icon.type,
+            square=True, thumbnail_size=(48, 48),
+            thumbnail_meta=dict(forum_id=forum._id))
 
     def create_forum(self, new_forum):
         if 'shortname' not in new_forum:
@@ -237,7 +239,7 @@ class ForumAdminController(DefaultAdminController):
             redirect('.')
         if 'parent' in new_forum and new_forum['parent']:
             parent_id = ObjectId(str(new_forum['parent']))
-            shortname = (model.Forum.query.get(_id=parent_id).shortname + '/'
+            shortname = (DM.Forum.query.get(_id=parent_id).shortname + '/'
                          + new_forum['shortname'])
         else:
             parent_id=None
@@ -245,7 +247,7 @@ class ForumAdminController(DefaultAdminController):
         description = ''
         if 'description' in new_forum:
             description=new_forum['description']
-        f = model.Forum(app_config_id=self.app.config._id,
+        f = DM.Forum(app_config_id=self.app.config._id,
                         parent_id=parent_id,
                         name=new_forum['name'],
                         shortname=shortname,
@@ -264,7 +266,7 @@ class ForumAdminController(DefaultAdminController):
                 redirect('.')
             f = self.create_forum(new_forum)
         for f in forum:
-            forum = model.Forum.query.get(_id=ObjectId(str(f['id'])))
+            forum = DM.Forum.query.get(_id=ObjectId(str(f['id'])))
             if f.get('delete'):
                 forum.deleted=True
             elif f.get('undelete'):

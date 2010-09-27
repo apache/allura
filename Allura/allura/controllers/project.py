@@ -467,7 +467,10 @@ class NeighborhoodAdminController(object):
         if icon is not None and icon != '':
             if self.neighborhood.icon:
                 M.NeighborhoodFile.query.remove({'metadata.neighborhood_id':self.neighborhood._id})
-            h.save_image(icon, M.NeighborhoodFile, square=True, thumbnail_size=(48, 48), meta=dict(neighborhood_id=self.neighborhood._id))
+            M.NeighborhoodFile.save_image(
+                icon.filename, icon.file, content_type=icon.type,
+                square=True, thumbnail_size=(48,48),
+                thumbnail_meta=dict(neighborhood_id=self.neighborhood._id))
         redirect('overview')
 
     @h.vardec
@@ -586,7 +589,10 @@ class NeighborhoodAwardsController(object):
             award.short = short
             award.full = full
             award.created_by_neighborhood_id = self.neighborhood._id
-            h.save_image(icon, M.AwardFile, square=True, thumbnail_size=(48, 48), meta=dict(award_id=award._id))
+            M.AwardFile.save_image(
+                icon.filename, icon.file, content_type=icon.type,
+                square=True, thumbnail_size=(48,48),
+                thumbnail_meta=dict(award_id=award._id))
         redirect(request.referer)
 
     @expose()

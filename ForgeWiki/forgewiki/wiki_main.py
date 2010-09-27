@@ -1,34 +1,25 @@
 #-*- python -*-
-import difflib
 import logging
-import re
 from pprint import pformat
-from mimetypes import guess_type
 from urllib import urlencode, unquote
 from datetime import datetime
 
 # Non-stdlib imports
-import Image
 import pkg_resources
 from tg import expose, validate, redirect, response, flash
 from tg.decorators import with_trailing_slash, without_trailing_slash
 from tg.controllers import RestController
 from pylons import g, c, request
 from formencode import validators
-from pymongo import bson
 from webob import exc
 
-from ming.orm.base import mapper
-from pymongo.bson import ObjectId
-
 # Pyforge-specific imports
-from allura.app import Application, ConfigOption, SitemapEntry, DefaultAdminController
+from allura import model as M
 from allura.lib import helpers as h
+from allura.app import Application, SitemapEntry, DefaultAdminController
 from allura.lib.search import search
 from allura.lib.decorators import audit, react
 from allura.lib.security import require, has_artifact_access
-from allura.model import ProjectRole, User, TagEvent, UserTags, ArtifactReference, Tag, Feed, ArtifactLink
-from allura.model import Discussion, Thread, Post, Attachment, Mailbox
 from allura.controllers import AppDiscussionController, BaseController
 from allura.controllers import attachments as ac
 from allura.lib import widgets as w
@@ -36,7 +27,7 @@ from allura.lib.widgets import form_fields as ffw
 from allura.lib.widgets.subscriptions import SubscribeForm
 
 # Local imports
-from forgewiki import model
+from forgewiki import model as WM
 from forgewiki import version
 
 log = logging.getLogger(__name__)
@@ -82,10 +73,10 @@ class ForgeWikiApp(Application):
         log.info('Headers are: %s', data['headers'])
         try:
             title = routing_key.split('.')[-1]
-            p = model.Page.upsert(title)
+            p = WM.Page.upsert(title)
         except:
             log.info('Audit applies to page Root.')
-            p = model.Page.upsert('Root')
+            p = WM.Page.upsert('Root')
         super(ForgeWikiApp, self).message_auditor(routing_key, data, p)
 
     @react('Wiki.#')
@@ -105,7 +96,7 @@ class ForgeWikiApp(Application):
 
     @property
     def root_page_name(self):
-        globals = model.Globals.query.get(app_config_id=self.config._id)
+        globals = WM.Globals.query.get(app_config_id=self.config._id)
         if globals is not None:
             page_name = globals.root
         else:
@@ -140,7 +131,7 @@ class ForgeWikiApp(Application):
         with h.push_config(c, app=self):
             pages = [
                 SitemapEntry(p.title, p.url())
-                for p in model.Page.query.find(dict(
+                for p in WM.Page.query.find(dict(
                         app_config_id=self.config._id,
                         deleted=False)) ]
             return [
@@ -155,16 +146,19 @@ class ForgeWikiApp(Application):
     def sidebar_menu(self):
         related_pages = []
         related_urls = []
-        page = request.path_info.split(self.url)[-1].split('/')[-2]
-        page = h.really_unicode(page)
-        page = model.Page.query.find(dict(app_config_id=self.config._id, title=page, deleted=False)).first()
+        try:
+            page = request.path_info.split(self.url)[-1].split('/')[-2]
+            page = h.really_unicode(page)
+            page = WM.Page.query.find(dict(app_config_id=self.config._id, title=page, deleted=False)).first()
+        except:
+            page = None
         links = [SitemapEntry('Create New Page', c.app.url, ui_icon='plus', className='add_wiki_page'),
 	             SitemapEntry('')]
         if page:
             for aref in page.references+page.backreferences.values():
-                artifact = ArtifactReference(aref).artifact
+                artifact = M.ArtifactReference(aref).artifact
                 if artifact is None: continue
-                if isinstance(artifact, model.Page) and artifact.url() not in related_urls:
+                if isinstance(artifact, WM.Page) and artifact.url() not in related_urls:
                     related_urls.append(artifact.url())
                     related_pages.append(SitemapEntry(artifact.title, artifact.url(), className='nav_child'))
         if len(related_pages):
@@ -190,9 +184,9 @@ class ForgeWikiApp(Application):
         self.config.options['show_right_bar'] = True
         super(ForgeWikiApp, self).install(project)
         # Setup permissions
-        role_developer = ProjectRole.query.get(name='Developer')._id
-        role_auth = ProjectRole.query.get(name='*authenticated')._id
-        role_anon = ProjectRole.query.get(name='*anonymous')._id
+        role_developer = M.ProjectRole.query.get(name='Developer')._id
+        role_auth = M.ProjectRole.query.get(name='*authenticated')._id
+        role_anon = M.ProjectRole.query.get(name='*anonymous')._id
         self.config.acl.update(
             configure=c.project.acl['tool'],
             read=c.project.acl['read'],
@@ -205,14 +199,14 @@ class ForgeWikiApp(Application):
             moderate=[role_developer],
             admin=c.project.acl['tool'])
         root_page_name = self.default_root_page_name
-        model.Globals(app_config_id=c.app.config._id, root=root_page_name)
+        WM.Globals(app_config_id=c.app.config._id, root=root_page_name)
         self.upsert_root(root_page_name)
 
     def upsert_root(self, new_root):
-        p = model.Page.query.get(app_config_id=self.config._id, title=new_root, deleted=False)
+        p = WM.Page.query.get(app_config_id=self.config._id, title=new_root, deleted=False)
         if p is None:
             with h.push_config(c, app=self):
-                p = model.Page.upsert(new_root)
+                p = WM.Page.upsert(new_root)
                 p.viewable_by = ['all']
                 url = c.app.url + 'markdown_syntax' + '/'
                 p.text = """Welcome to your wiki!
@@ -226,9 +220,9 @@ The wiki uses [Markdown](%s) syntax.
 
     def uninstall(self, project):
         "Remove all the tool's artifacts from the database"
-        model.Attachment.query.remove({'metadata.app_config_id':c.app.config._id})
-        model.Page.query.remove(dict(app_config_id=c.app.config._id))
-        model.Globals.query.remove(dict(app_config_id=c.app.config._id))
+        WM.WikiAttachment.query.remove({'metadata.app_config_id':c.app.config._id})
+        WM.Page.query.remove(dict(app_config_id=c.app.config._id))
+        WM.Globals.query.remove(dict(app_config_id=c.app.config._id))
         super(ForgeWikiApp, self).uninstall(project)
 
 class RootController(BaseController):
@@ -292,7 +286,7 @@ class RootController(BaseController):
         show_deleted = show_deleted and can_delete
         if not can_delete:
             criteria['deleted'] = False
-        q = model.Page.query.find(criteria)
+        q = WM.Page.query.find(criteria)
         if sort == 'alpha':
             q = q.sort('title')
         for page in q:
@@ -323,11 +317,11 @@ class RootController(BaseController):
         #                        'artifact_ref.project_id':c.app.config.project_id}).all()
         # for tag in tags:
         #     artifact = ArtifactReference(tag.artifact_ref).artifact
-        #     if isinstance(artifact, model.Page):
+        #     if isinstance(artifact, WM.Page):
         #         if tag.tag not in page_tags:
         #             page_tags[tag.tag] = []
         #         page_tags[tag.tag].append(artifact)
-        q = model.Page.query.find(dict(app_config_id=c.app.config._id, deleted=False))
+        q = WM.Page.query.find(dict(app_config_id=c.app.config._id, deleted=False))
         for page in q:
             if page.labels:
                 for label in page.labels:
@@ -361,7 +355,7 @@ class RootController(BaseController):
         else:
             feed_type = 'rss'
         title = 'Recent changes to %s' % c.app.config.options.mount_point
-        feed = Feed.feed(
+        feed = M.Feed.feed(
             {'artifact_reference.mount_point':c.app.config.options.mount_point,
              'artifact_reference.project_id':c.project._id},
             feed_type,
@@ -377,10 +371,10 @@ class PageController(BaseController):
 
     def __init__(self, title):
         self.title = h.really_unicode(title)
-        self.page = model.Page.query.get(
+        self.page = WM.Page.query.get(
             app_config_id=c.app.config._id, title=self.title, deleted=False)
         if self.page:
-            self.attachment = AttachmentsController(self.page)
+            self.attachment = WikiAttachmentsController(self.page)
         setattr(self, 'feed.atom', self.feed)
         setattr(self, 'feed.rss', self.feed)
 
@@ -410,7 +404,7 @@ class PageController(BaseController):
                    deleted=validators.StringBool(if_empty=False)))
     def index(self, version=None, deleted=False, **kw):
         if deleted:
-            self.page = model.Page.query.get(app_config_id=c.app.config._id, title=self.title, deleted=True)
+            self.page = WM.Page.query.get(app_config_id=c.app.config._id, title=self.title, deleted=True)
             if not self.page:
                 raise exc.HTTPNotFound
             require(has_artifact_access('delete', self.page)) # deleted pages can only be viewed by those with 'delete' permission
@@ -434,7 +428,7 @@ class PageController(BaseController):
         return dict(
             page=page,
             cur=cur, prev=prev, next=next,
-            subscribed=Mailbox.subscribed(artifact=self.page),
+            subscribed=M.Mailbox.subscribed(artifact=self.page),
             has_artifact_access=has_artifact_access, h=h,
             hide_left_bar=hide_left_bar, show_right_bar=c.app.show_right_bar)
 
@@ -460,7 +454,7 @@ class PageController(BaseController):
     @expose()
     def delete(self):
         require(has_artifact_access('delete', self.page))
-        ArtifactLink.remove(self.page)
+        M.ArtifactLink.remove(self.page)
         self.page.deleted = True
         suffix = " {dt.hour}:{dt.minute}:{dt.second} {dt.day}-{dt.month}-{dt.year}".format(dt=datetime.utcnow())
         self.page.title += suffix
@@ -469,12 +463,12 @@ class PageController(BaseController):
     @without_trailing_slash
     @expose()
     def undelete(self):
-        self.page = model.Page.query.get(app_config_id=c.app.config._id, title=self.title, deleted=True)
+        self.page = WM.Page.query.get(app_config_id=c.app.config._id, title=self.title, deleted=True)
         if not self.page:
             raise exc.HTTPNotFound
         require(has_artifact_access('delete', self.page))
         self.page.deleted = False
-        ArtifactLink.add(self.page)
+        M.ArtifactLink.add(self.page)
         redirect('./edit')
 
     @without_trailing_slash
@@ -522,7 +516,7 @@ class PageController(BaseController):
             feed_type = 'atom'
         else:
             feed_type = 'rss'
-        feed = Feed.feed(
+        feed = M.Feed.feed(
             {'artifact_reference':self.page.dump_ref()},
             feed_type,
             'Recent changes to %s' % self.page.title,
@@ -560,21 +554,21 @@ class PageController(BaseController):
         if not self.page:
             # the page doesn't exist yet, so create it
             require(has_artifact_access('create'))
-            self.page = model.Page.upsert(self.title)
+            self.page = WM.Page.upsert(self.title)
             self.page.viewable_by = ['all']
-            for u in ProjectRole.query.find({'name':'Admin'}).first().users_with_role():
+            for u in M.ProjectRole.query.find({'name':'Admin'}).first().users_with_role():
                 self.page.subscribe(user=u)
         require(has_artifact_access('edit', self.page))
         if tags: tags = tags.split(',')
         else: tags = []
         name_conflict = None
         if self.page.title != title:
-            name_conflict = model.Page.query.find(dict(app_config_id=c.app.config._id, title=title, deleted=False)).first()
+            name_conflict = WM.Page.query.find(dict(app_config_id=c.app.config._id, title=title, deleted=False)).first()
             if name_conflict:
                 flash('There is already a page named "%s".' % title, 'error')
             else:
                 if self.page.title == c.app.root_page_name:
-                    model.Globals.query.get(app_config_id=c.app.config._id).root = title
+                    WM.Globals.query.get(app_config_id=c.app.config._id).root = title
                 self.page.title = title
         self.page.text = text
         if labels:
@@ -596,7 +590,7 @@ class PageController(BaseController):
                     if u['id'] == 'all':
                         self.page.viewable_by.remove('all')
                     else:
-                        user = User.by_username(str(u['id']))
+                        user = M.User.by_username(str(u['id']))
                         if user:
                             self.page.viewable_by.remove(user.username)
         redirect('../' + self.page.title + ('/' if not name_conflict else '/edit'))
@@ -607,9 +601,11 @@ class PageController(BaseController):
         if not self.page:
             raise exc.HTTPNotFound
         require(has_artifact_access('edit', self.page))
-        if file_info is not None:
-            Attachment.create_with_thumbnail(file_info, self.page._id, 'page_id')
-        redirect('.')
+        if hasattr(file_info, 'file'):
+            WM.WikiAttachment.save_attachment(
+                file_info.filename, file_info.file, content_type=file_info.type,
+                page_id=self.page._id)
+        redirect(request.referer)
 
     @expose()
     @validate(W.subscribe_form)
@@ -623,12 +619,12 @@ class PageController(BaseController):
             self.page.unsubscribe()
         redirect(request.referer)
 
-class AttachmentController(ac.AttachmentController):
-    AttachmentClass = model.Attachment
+class WikiAttachmentController(ac.AttachmentController):
+    AttachmentClass = WM.WikiAttachment
     edit_perm = 'edit'
 
-class AttachmentsController(ac.AttachmentsController):
-    AttachmentControllerClass = AttachmentController
+class WikiAttachmentsController(ac.AttachmentsController):
+    AttachmentControllerClass = WikiAttachmentController
 
 MARKDOWN_EXAMPLE='''
 # First-level heading
@@ -644,7 +640,7 @@ class RootRestController(RestController):
     @expose('json:')
     def get_all(self, **kw):
         page_titles = []
-        pages = model.Page.query.find(dict(app_config_id=c.app.config._id, deleted=False))
+        pages = WM.Page.query.find(dict(app_config_id=c.app.config._id, deleted=False))
         for page in pages:
             if has_artifact_access('read', page)():
                 page_titles.append(page.title)
@@ -652,7 +648,7 @@ class RootRestController(RestController):
 
     @expose('json:')
     def get_one(self, title, **kw):
-        page = model.Page.query.get(app_config_id=c.app.config._id, title=title, deleted=False)
+        page = WM.Page.query.get(app_config_id=c.app.config._id, title=title, deleted=False)
         if page is None:
             raise exc.HTTPNotFound, title
         require(has_artifact_access('read', page))
@@ -661,10 +657,10 @@ class RootRestController(RestController):
     @h.vardec
     @expose()
     def post(self, title, **post_data):
-        exists = model.Page.query.find(dict(app_config_id=c.app.config._id, title=title, deleted=False)).first()
+        exists = WM.Page.query.find(dict(app_config_id=c.app.config._id, title=title, deleted=False)).first()
         if not exists:
             require(has_artifact_access('create'))
-        page = model.Page.upsert(title)
+        page = WM.Page.upsert(title)
         if not exists:
             page.viewable_by = ['all']
         require(has_artifact_access('edit', page))
@@ -703,11 +699,11 @@ class WikiAdminController(DefaultAdminController):
     @expose()
     def set_home(self, new_home):
         require(has_artifact_access('configure', app=self.app))
-        globals = model.Globals.query.get(app_config_id=self.app.config._id)
+        globals = WM.Globals.query.get(app_config_id=self.app.config._id)
         if globals is not None:
             globals.root = new_home
         else:
-            globals = model.Globals(app_config_id=self.app.config._id, root=new_home)
+            globals = WM.Globals(app_config_id=self.app.config._id, root=new_home)
         self.app.upsert_root(new_home)
         flash('Home updated')
         redirect(c.project.url()+self.app.config.options.mount_point+'/'+new_home+'/')

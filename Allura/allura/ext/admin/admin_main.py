@@ -259,12 +259,17 @@ class ProjectAdminController(BaseController):
         if icon is not None and icon != '':
             if c.project.icon:
                 M.ProjectFile.query.remove({'metadata.project_id':c.project._id, 'metadata.category':'icon'})
-            h.save_image(icon, M.ProjectFile, square=True, thumbnail_size=(48, 48),
-                         meta=dict(project_id=c.project._id,category='icon'))
+            M.ProjectFile.save_image(
+                icon.filename, icon.file, content_type=icon.type,
+                square=True, thumbnail_size=(48,48),
+                thumbnail_meta=dict(project_id=c.project._id,category='icon'))
         if screenshot is not None and screenshot != '':
-            h.save_image(screenshot, M.ProjectFile, square=True, thumbnail_size=(150, 150), save_original=True,
-                         meta=dict(project_id=c.project._id,category='screenshot_thumb'),
-                         original_meta=dict(project_id=c.project._id,category='screenshot'))
+            M.ProjectFile.save_image(
+                screenshot.filename, screenshot.file, content_type=screenshot.type,
+                save_original=True,
+                original_meta=dict(project_id=c.project._id,category='screenshot'),
+                square=True, thumbnail_size=(150,150),
+                thumbnail_meta=dict(project_id=c.project._id,category='screenshot_thumb'))
         g.publish('react', 'forge.project_updated')
         redirect('overview')
 

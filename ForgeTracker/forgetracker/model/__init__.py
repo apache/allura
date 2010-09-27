@@ -1,1 +1,1 @@
-from ticket import Globals, Bin, Ticket, Attachment
+from ticket import Globals, Bin, Ticket, TicketAttachment

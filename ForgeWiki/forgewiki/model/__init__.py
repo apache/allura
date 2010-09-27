@@ -1,1 +1,1 @@
-from wiki import Page, Attachment, Globals, PageHistory
+from wiki import Page, WikiAttachment, Globals, PageHistory

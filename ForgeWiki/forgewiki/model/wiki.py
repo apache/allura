@@ -129,7 +129,7 @@ class Page(VersionedArtifact):
 
     @property
     def attachments(self):
-        return Attachment.by_metadata(page_id=self._id,type='attachment')
+        return WikiAttachment.by_metadata(page_id=self._id,type='attachment')
 
     @classmethod
     def upsert(cls, title, version=None):
@@ -181,14 +181,21 @@ class Page(VersionedArtifact):
         user_ids = uniq([r.author for r in self.history().all()])
         return User.query.find({'_id':{'$in':user_ids}}).all()
 
-class Attachment(BaseAttachment):
+class WikiAttachment(BaseAttachment):
     metadata=FieldProperty(dict(
             page_id=schema.ObjectId,
             app_config_id=schema.ObjectId,
             type=str,
             filename=str))
+
     @property
     def artifact(self):
         return Page.query.get(_id=self.metadata.page_id)
+
+    @classmethod
+    def metadata_for(cls, page):
+        return dict(
+            page_id=page._id,
+            app_config_id=page.app_config_id)
 
 MappedClass.compile_all()

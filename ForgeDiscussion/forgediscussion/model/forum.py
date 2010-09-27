@@ -209,15 +209,9 @@ class ForumPost(M.Post):
                 att.discussion_id=self.discussion_id
                 att.thread_id=self.thread_id
 
-class ForumAttachment(M.Attachment):
+class ForumAttachment(M.DiscussionAttachment):
     DiscussionClass=Forum
     ThreadClass=ForumThread
     PostClass=ForumPost
-    class __mongometa__:
-        name = 'forum_attachment.files'
-        indexes = [
-            'metadata.filename',
-            'metadata.forum_id',
-            'metadata.post_id' ]
 
 MappedClass.compile_all()
