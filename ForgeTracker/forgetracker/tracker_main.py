@@ -135,9 +135,9 @@ class ForgeTrackerApp(Application):
                 milestones.append(
                     SitemapEntry(
                         h.text.truncate(m.name, 72),
-                        self.url + fld.name[1:] + '/' + m.name + '/',
+                        self.url + fld.label[1:] + '/' + m.name + '/',
                         className='nav_child',
-                        small=c.app.globals.milestone_counts.get('%s:%s' % (fld.name, m.name))))
+                        small=c.app.globals.milestone_counts.get('%s:%s' % (fld.label, m.name))))
         if ticket.isdigit():
             ticket = TM.Ticket.query.find(dict(app_config_id=self.config._id,ticket_num=int(ticket))).first()
         else:
@@ -205,9 +205,11 @@ class ForgeTrackerApp(Application):
             closed_status_names='closed wont-fix',
             # milestone_names='',
             custom_fields=[dict(
+                    label='Milestone',
                     type='milestone',
-                    name='milestone',
-                    milestones=[]) ])
+                    milestones=[
+                        dict(name='1.0', complete=False, due=None),
+                        dict(name='2.0', complete=False, due=None)]) ])
         c.app.globals.invalidate_bin_counts()
         bin = TM.Bin(summary='Open Tickets', terms=self.globals.not_closed_query)
         bin.app_config_id = self.config._id

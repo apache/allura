@@ -81,7 +81,7 @@ class Globals(MappedClass):
         # Refresh milestone field counts
         for fld in self.milestone_fields:
             for m in fld.milestones:
-                k = '%s:%s' % (fld.name, m.name)
+                k = '%s:%s' % (fld.label, m.name)
                 r = search_artifact(Ticket, k[1:], rows=0)
                 self._milestone_counts[k] = r is not None and r.hits or 0
         self._bin_counts_expire = datetime.utcnow() + timedelta(minutes=60)
