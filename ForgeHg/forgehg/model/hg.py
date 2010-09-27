@@ -239,8 +239,9 @@ class HgTree(M.Tree):
             for k,v in self._manifest.iteritems():
                 dirname, filename = os.path.split(k)
                 tree = self._tree
-                for dirpart in dirname.split('/'):
-                    tree = tree.setdefault(dirpart, {})
+                if dirname:
+                    for dirpart in dirname.split('/'):
+                        tree = tree.setdefault(dirpart, {})
                 tree[filename] = v
 
     def ls(self):
