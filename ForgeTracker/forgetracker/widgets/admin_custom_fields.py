@@ -27,7 +27,7 @@ class MilestonesAdmin(ffw.SortableTable):
         ]
 
 class CustomFieldAdminDetail(ffw.StateField):
-    template='genshi:forgetracker.widgets.templates.custom_field_admin_detail'
+    template='jinja:tracker_widgets/custom_field_admin_detail.html'
     selector=ffw.AdminField(field=ew.SingleSelectField(
             name='type',
             options=[
@@ -49,7 +49,7 @@ class CustomFieldAdminDetail(ffw.StateField):
         )
 
 class CustomFieldAdmin(ew.CompoundField):
-    template='genshi:forgetracker.widgets.templates.custom_field_admin'
+    template='jinja:tracker_widgets/custom_field_admin.html'
 
     def resources(self):
         for r in super(CustomFieldAdmin, self).resources():
@@ -82,15 +82,14 @@ class TrackerFieldAdmin(f.ForgeForm):
             yield rr
 
 class CustomFieldDisplay(ew.CompoundField):
-    template='genshi:forgetracker.widgets.templates.custom_field_display'
+    template='jinja:tracker_widgets/custom_field_display.html'
     pass
 
 class CustomFieldsDisplay(ew.RepeatedField):
-    template='genshi:forgetracker.widgets.templates.custom_fields_display'
+    template='jinja:tracker_widgets/custom_fields_display.html'
     pass
 
 class TrackerFieldDisplay(f.ForgeForm):
-    template='genshi:forgetracker.widgets.templates.tracker_field_display'
     class fields(ew.WidgetsList):
         milestone_names = ew.TextField()
         open_status_names = ew.TextField(label='Open Statuses')

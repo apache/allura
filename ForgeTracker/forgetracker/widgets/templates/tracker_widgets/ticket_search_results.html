@@ -1,0 +1,48 @@
+<div>
+  {% if solr_error %}<p>{{solr_error}}</p>{% endif %}
+  {{fields['page_list'].display(limit=limit, page=page, count=count)}}
+  {% if count != 0 and query %}
+    <table class="ticket-list">
+      <thead>
+        <tr>
+          <th data-sort="ticket_num_i">ID</th>
+          <th data-sort="status_s">Status</th>
+          <th>Summary</th>
+          <th data-sort="assigned_to_s">Assigned</th>
+          <th data-sort="mod_date_dt">Updated</th>
+          {% for field in sortable_custom_fields %}
+            <th data-sort="{{field.sortable_name}}">{{field.label}}</th>
+          {% endfor %}
+        </tr>
+      </thead>
+      <tbody>
+        {% for t in tickets %}
+          <tr class="{{loop.index0%2 and 'even' or ''}}">
+            <td><a href="{{t.url()}}">[#{{t.ticket_num}}]</a></td>
+            <td class="{{t.open_or_closed}}">{{t.status}}</td>
+            <td>{{t.summary}}</td>
+            <td>{% if t.assigned_to_id %}{{t.assigned_to.display_name}}{% endif %}</td>
+            <td>{{h.ago(t.mod_date)}}</td>
+            {% for field in sortable_custom_fields %}
+              <td>{{t.custom_fields.get(field.name)}}</td>
+            {% endfor %}
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% endif %}
+  {% if query %}
+    {% if count==0 %}
+      <p>No results.</p>
+    {% elif count==1 %}
+      <p>{{count}} result.</p>
+    {% elif count > 1 %}
+      <p>{{count}} results.</p>
+    {% endif %}
+  {% endif %}
+  {{fields['page_list'].display(limit=limit, page=page, count=count)}}
+  {{fields['page_size'].display(limit=limit)}}
+  <script type="text/javascript">
+    var q="{{query}}", count={{count}}, limit={{limit}}, page={{page}}, sort="{{sort}}";
+  </script>
+</div>

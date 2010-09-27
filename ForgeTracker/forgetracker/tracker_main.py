@@ -136,7 +136,7 @@ class ForgeTrackerApp(Application):
                 milestones.append(
                     SitemapEntry(
                         h.text.truncate(m.name, 72),
-                        self.url + fld.label[1:] + '/' + m.name + '/',
+                        self.url + fld.label + '/' + m.name + '/',
                         className='nav_child',
                         small=c.app.globals.milestone_counts.get('%s:%s' % (fld.label, m.name))))
         if ticket.isdigit():
@@ -293,7 +293,7 @@ class RootController(BaseController):
                     solr_error=solr_error, **kw)
 
     @with_trailing_slash
-    @expose('forgetracker.templates.index')
+    @expose('jinja:tracker/index.html')
     def index(self, limit=250, **kw):
         require(has_artifact_access('read'))
         result = self.paged_query(c.app.globals.not_closed_query, sort='ticket_num_i desc', limit=int(limit))
@@ -330,7 +330,7 @@ class RootController(BaseController):
             return MilestoneController(self, ticket_num, remainder[0]), remainder[1:]
 
     @with_trailing_slash
-    @expose('forgetracker.templates.new_ticket')
+    @expose('jinja:tracker/new_ticket.html')
     def new(self, super_id=None, **kw):
         require(has_artifact_access('write'))
         c.ticket_form = W.ticket_form
@@ -400,7 +400,7 @@ class RootController(BaseController):
         redirect(str(ticket.ticket_num)+'/')
 
     @with_trailing_slash
-    @expose('forgetracker.templates.mass_edit')
+    @expose('jinja:tracker/mass_edit.html')
     @validate(dict(q=validators.UnicodeString(if_empty=None),
                    limit=validators.Int(if_empty=10),
                    page=validators.Int(if_empty=0),
@@ -437,7 +437,7 @@ class RootController(BaseController):
             if user:
                 values['assigned_to_id'] = user._id
 
-        custom_fields = set([cf.name for cf in c.app.globals.custom_fields or[]])
+        custom_fields = set([cf.label for cf in c.app.globals.custom_fields or[]])
         custom_values = {}
         for k in custom_fields:
             v = post_data.get(k)
@@ -782,8 +782,8 @@ class TicketController(BaseController):
                     ticket_id=self.ticket._id)
         any_sums = False
         for cf in c.app.globals.custom_fields or []:
-            if 'custom_fields.'+cf.name in post_data:
-                value = post_data['custom_fields.'+cf.name]
+            if 'custom_fields.'+cf.label in post_data:
+                value = post_data['custom_fields.'+cf.label]
                 if cf.type == 'sum':
                     any_sums = True
                     try:
@@ -798,9 +798,9 @@ class TicketController(BaseController):
             if cf.type == 'number' and value == '':
                 value = None
             if value is not None:
-                changes['custom_field_%s'%cf.name] =self.ticket.custom_fields.get(cf.name)
-                self.ticket.custom_fields[cf.name] = value
-                changes['custom_field_%s'%cf.name] =self.ticket.custom_fields.get(cf.name)
+                changes['custom_field_%s'%cf.label] =self.ticket.custom_fields.get(cf.label)
+                self.ticket.custom_fields[cf.label] = value
+                changes['custom_field_%s'%cf.label] =self.ticket.custom_fields.get(cf.label)
         thread = self.ticket.discussion_thread
         latest_post = thread.posts and thread.posts[-1] or None
         post = None
@@ -855,7 +855,7 @@ class TrackerAdminController(DefaultAdminController):
         redirect('permissions')
 
     @without_trailing_slash
-    @expose('forgetracker.templates.admin_fields')
+    @expose('jinja:tracker/admin_fields.html')
     def fields(self, **kw):
         allow_config=has_artifact_access('configure', app=self.app)()
         if allow_config:
@@ -866,7 +866,7 @@ class TrackerAdminController(DefaultAdminController):
 
 
     @without_trailing_slash
-    @expose('forgetracker.templates.admin_permissions')
+    @expose('jinja:tracker/admin_permissions.html')
     def permissions(self):
         return dict(app=self.app, globals=self.app.globals,
                     allow_config=has_artifact_access('configure', app=self.app)())
@@ -953,9 +953,8 @@ class TicketRestController(BaseController):
 class MilestoneController(BaseController):
 
     def __init__(self, root, field, milestone):
-        field = '_' + field
         for fld in c.app.globals.milestone_fields:
-            if fld.name == field: break
+            if fld.label == field: break
         else:
             raise exc.HTTPNotFound()
         for m in fld.milestones:
@@ -965,10 +964,10 @@ class MilestoneController(BaseController):
         self.root = root
         self.field = fld
         self.milestone = m
-        self.query = '%s:%s' % (fld.name[1:], m.name)
+        self.query = '%s:%s' % (fld.label, m.name)
 
     @with_trailing_slash
-    @expose('forgetracker.templates.milestone')
+    @expose('jinja:tracker/milestone.html')
     @validate(validators=dict(
             limit=validators.Int(if_invalid=None),
             page=validators.Int(if_empty=0),

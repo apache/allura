@@ -1,0 +1,23 @@
+{% extends 'jinja_master/master.html' %}
+
+{% do g.register_app_css('css/hilite.css') %}
+{% do g.register_app_css('css/tracker.css') %}
+
+{% block head %}
+  <link rel="alternate" type="application/rss+xml" title="RSS" href="feed.rss"/>
+  <link rel="alternate" type="application/atom+xml" title="Atom" href="feed.atom"/>
+{% endblock %}
+
+{% block title %}{{c.project.name}} / {{c.app.config.options.mount_label}}{% endblock %}
+
+{% block header %}ForgeTracker for {{c.project.shortname}}{% endblock %}
+
+{% block content %}
+  {{c.mass_edit.display(count=count,
+    limit=limit,
+    query=q,
+    tickets=tickets,
+    sort=sort,
+    page=page,
+    globals=globals)}}
+{% endblock %}

@@ -2,7 +2,7 @@ import ew
 from allura.lib.widgets import form_fields as ffw
 
 class TicketSearchResults(ew.SimpleForm):
-    template='genshi:forgetracker.widgets.templates.ticket_search_results'
+    template='jinja:tracker_widgets/ticket_search_results.html'
     params=['solr_error','count','limit','query','tickets','sortable_custom_fields','sort','page']
     solr_error=None
     count=None
@@ -23,7 +23,7 @@ class TicketSearchResults(ew.SimpleForm):
         for r in ffw.PageSize().resources(): yield r
 
 class MassEdit(ew.Widget):
-    template='genshi:forgetracker.widgets.templates.mass_edit'
+    template='jinja:tracker_widgets/mass_edit.html'
     params=['count','limit','query','tickets','sort','page','globals']
     count=None
     limit=None

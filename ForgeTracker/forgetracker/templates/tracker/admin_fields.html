@@ -1,0 +1,24 @@
+{% extends 'jinja_master/master.html' %}
+
+{% if allow_config %}
+  {% do g.register_app_js('js/custom-fields.js', app=app) %}
+{% endif %}
+
+{% block title %}{{c.project.name}} / {{app.config.options.mount_label}} /  Admin Fields{% endblock %}
+
+{% block header %}{{app.config.options.mount_label}} Admin Fields{% endblock %}
+
+{% block content %}
+  {{c.form.display(value=globals, action='set_custom_fields')}}
+{% endblock %}
+
+{% block extra_css %}
+  <style type="text/css">
+    div.custom-field {
+    cursor: move;
+    border:1px solid #ccc;
+    margin:2px;
+    padding:2px;
+    }
+  </style>
+{% endblock %}

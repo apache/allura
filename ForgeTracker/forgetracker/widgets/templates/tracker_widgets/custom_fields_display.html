@@ -1,0 +1,10 @@
+<div>
+  <div>
+    <label>Custom Fields:</label><p>&nbsp;</p>
+  </div>
+  <div id="custom-field-list">
+    {% for field in value %}
+      {{field_widget.display(value=field, hidden=False)}}
+    {% endfor %}
+  </div>
+</div>

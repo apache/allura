@@ -82,7 +82,7 @@ class Globals(MappedClass):
         for fld in self.milestone_fields:
             for m in fld.milestones:
                 k = '%s:%s' % (fld.label, m.name)
-                r = search_artifact(Ticket, k[1:], rows=0)
+                r = search_artifact(Ticket, k, rows=0)
                 self._milestone_counts[k] = r is not None and r.hits or 0
         self._bin_counts_expire = datetime.utcnow() + timedelta(minutes=60)
 
@@ -336,7 +336,7 @@ class Ticket(VersionedArtifact):
         if super_sums is None:
             super_sums = {}
             globals = Globals.query.get(app_config_id=c.app.config._id)
-            for k in [cf.name for cf in globals.custom_fields or [] if cf.type=='sum']:
+            for k in [cf.label for cf in globals.custom_fields or [] if cf.type=='sum']:
                 super_sums[k] = float(0)
 
         # if there are no custom fields of type 'sum', we're done
@@ -387,9 +387,9 @@ class Ticket(VersionedArtifact):
         custom_sums = set()
         other_custom_fields = set()
         for cf in self.globals.custom_fields or []:
-            (custom_sums if cf.type=='sum' else other_custom_fields).add(cf.name)
-            if cf.type == 'boolean' and 'custom_fields.'+cf.name not in ticket_form:
-                self.custom_fields[cf.name] = 'False'
+            (custom_sums if cf.type=='sum' else other_custom_fields).add(cf.label)
+            if cf.type == 'boolean' and 'custom_fields.'+cf.label not in ticket_form:
+                self.custom_fields[cf.label] = 'False'
         if 'attachment' in ticket_form:
             attachments = ticket_form.pop('attachment')
             if attachments:
