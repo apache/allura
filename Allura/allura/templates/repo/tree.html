@@ -4,7 +4,7 @@
 {% block title %}
   {{c.project.name}} / {{c.app.config.options.mount_label}}
   {% if tree %} 
-    / @{{h.text.truncate(blob._commit._id, 10)}}: {{lib.path_links(tree.path().split('/')[1:-1])}}
+    / @{{h.text.truncate(tree._commit._id, 10)}}: {{lib.path_links(tree.path().split('/')[1:-1])}}
   {% endif %}
 {% endblock %}
 
