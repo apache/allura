@@ -120,7 +120,7 @@ class ForumThreadController(ThreadController):
 
 class ForumPostController(PostController):
 
-    @expose('allura.templates.discussion.post')
+    @expose('jinja:discussion/post.html')
     def index(self, **kw):
         if self.thread.discussion.deleted and not has_artifact_access('configure', app=c.app)():
             redirect(self.thread.discussion.url()+'deleted')

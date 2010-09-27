@@ -217,7 +217,7 @@ class PostController(BaseController):
             redirect('..')
 
     @h.vardec
-    @expose('allura.templates.discussion.post')
+    @expose('jinja:discussion/post.html')
     @validate(pass_validator)
     def index(self, version=None, **kw):
         c.post = self.W.post
@@ -327,7 +327,7 @@ class ModerationController(BaseController):
         return self._discussion_controller.discussion
 
     @h.vardec
-    @expose('allura.templates.discussion.moderate')
+    @expose('jinja:discussion/moderate.html')
     @validate(pass_validator)
     def index(self, **kw):
         kw = WidgetConfig.post_filter.validate(kw, None)
