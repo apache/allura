@@ -5,6 +5,7 @@
 {% from 'jinja_master/lib.html' import gravatar with context %}
 {% do g.register_forge_js('js/jquery-base.js') %}
 {% do g.register_forge_js('js/allura-base.js') %}
+{% do g.register_forge_css('css/forge/hilite.css') %}
 {% if g.production_mode %}
   {% do g.register_forge_js('js/analytics.js') %}
 {% endif %}
