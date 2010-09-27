@@ -39,7 +39,7 @@ class TestRootController(TestController):
     def test_tree(self):
         ci = self._get_ci()
         resp = self.app.get(ci + 'tree/')
-        assert len(resp.html.findAll('tr')) ==6, resp.showbrowser()
+        assert len(resp.html.findAll('tr')) ==7, resp.showbrowser()
         resp = self.app.get(ci + 'tree/ew/')
         assert 'resource.py' in resp, resp.showbrowser()
 
