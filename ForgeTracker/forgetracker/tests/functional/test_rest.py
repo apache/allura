@@ -69,8 +69,8 @@ class TestRestNewTicket(TestRestApiBase):
             status=self.tracker_globals.open_status_names.split()[0],
             labels='',
             description='',
-            milestone='',
-            assigned_to='')
+            assigned_to='',
+            **{'custom_fields._milestone':''})
         json = ticket_view.json['ticket']
         assert json['status'] == 'open', json
         assert json['summary'] == 'test new ticket', json
@@ -87,8 +87,8 @@ class TestRestUpdateTicket(TestRestApiBase):
             status=self.tracker_globals.open_status_names.split()[0],
             labels='',
             description='',
-            milestone='',
-            assigned_to='')
+            assigned_to='',
+            **{'custom_fields._milestone':''})
         self.ticket_args = ticket_view.json['ticket']
 
     def test_ticket_index(self):

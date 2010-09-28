@@ -132,12 +132,16 @@ class ForgeTrackerApp(Application):
             milestones.append(SitemapEntry(h.text.truncate(fld.label, 72)))
             for m in fld.milestones:
                 if m.complete: continue
+                hits = 0
+                for ms in c.app.globals.milestone_counts:
+                    if ms['name'] == '%s:%s' % (fld.label, m.name):
+                        hits = ms['hits']
                 milestones.append(
                     SitemapEntry(
                         h.text.truncate(m.name, 72),
-                        self.url + fld.label + '/' + m.name + '/',
+                        self.url + fld.label[1:] + '/' + m.name + '/',
                         className='nav_child',
-                        small=c.app.globals.milestone_counts.get('%s:%s' % (fld.label, m.name))))
+                        small=hits))
         if ticket.isdigit():
             ticket = TM.Ticket.query.find(dict(app_config_id=self.config._id,ticket_num=int(ticket))).first()
         else:
@@ -205,7 +209,7 @@ class ForgeTrackerApp(Application):
             closed_status_names='closed wont-fix',
             # milestone_names='',
             custom_fields=[dict(
-                    label='Milestone',
+                    label='_milestone',
                     type='milestone',
                     milestones=[
                         dict(name='1.0', complete=False, due=None),
@@ -875,7 +879,7 @@ class TrackerAdminController(DefaultAdminController):
         pass
 
     @expose()
-    @validate(W.field_admin, error_handler=fields)
+    # @validate(W.field_admin, error_handler=fields)
     @h.vardec
     def set_custom_fields(self, **post_data):
         require(has_artifact_access('configure', app=self.app))
@@ -963,7 +967,7 @@ class MilestoneController(BaseController):
         self.root = root
         self.field = fld
         self.milestone = m
-        self.query = '%s:%s' % (fld.label, m.name)
+        self.query = '%s:%s' % (fld.label[1:], m.name)
 
     @with_trailing_slash
     @expose('jinja:tracker/milestone.html')
