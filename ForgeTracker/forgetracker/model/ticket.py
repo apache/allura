@@ -37,7 +37,7 @@ class Globals(MappedClass):
     custom_fields = FieldProperty([{str:None}])
     _bin_counts = FieldProperty({str:int})
     _bin_counts_expire = FieldProperty(datetime)
-    _milestone_counts = FieldProperty({str:int})
+    _milestone_counts = FieldProperty([{str:str,str:str}])
     _milestone_counts_expire = FieldProperty(datetime)
 
     @classmethod
@@ -79,11 +79,13 @@ class Globals(MappedClass):
             r = search_artifact(Ticket, b.terms, rows=0)
             self._bin_counts[b.summary] = r is not None and r.hits or 0
         # Refresh milestone field counts
+        self._milestone_counts = []
         for fld in self.milestone_fields:
             for m in fld.milestones:
                 k = '%s:%s' % (fld.label, m.name)
                 r = search_artifact(Ticket, k, rows=0)
-                self._milestone_counts[k] = r is not None and r.hits or 0
+                hits = r is not None and r.hits or 0
+                self._milestone_counts.append({'name':k,'hits':str(hits)})
         self._bin_counts_expire = datetime.utcnow() + timedelta(minutes=60)
 
     @property

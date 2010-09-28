@@ -40,10 +40,9 @@ class TestFunctionalController(TestController):
         assert 'class="artifact_unsubscribe' in ticket_view
 
     def test_new_with_milestone(self):
-        tm.Globals.milestone_names = 'sprint-9 sprint-10 sprint-11'
-        ticket_view = self.new_ticket(summary='test new with milestone', milestone='sprint-10')
+        ticket_view = self.new_ticket(summary='test new with milestone', **{'custom_fields._milestone':'1.0'})
         assert 'Milestone' in ticket_view
-        assert 'sprint-10' in ticket_view
+        assert '1.0' in ticket_view
     
     def test_new_ticket_form(self):
         response = self.app.get('/bugs/new/')
@@ -86,7 +85,7 @@ class TestFunctionalController(TestController):
             'summary':'aaa',
             'description':'bbb',
             'status':'ccc',
-            'milestone':'',
+            'custom_fields._milestone':'',
             'assigned_to':'',
             'tags':'red,blue',
             'tags_old':'red,blue'
@@ -97,7 +96,7 @@ class TestFunctionalController(TestController):
             'summary':'zzz',
             'description':'bbb',
             'status':'ccc',
-            'milestone':'',
+            'custom_fields._milestone':'',
             'assigned_to':'',
             'tags':'red',
             'tags_old':'red'
@@ -112,7 +111,7 @@ class TestFunctionalController(TestController):
             'summary':'aaa',
             'description':'bbb',
             'status':'ccc',
-            'milestone':'',
+            'custom_fields._milestone':'',
             'assigned_to':'',
             'labels':'yellow,green',
             'labels_old':'yellow,green'
@@ -124,7 +123,7 @@ class TestFunctionalController(TestController):
             'summary':'zzz',
             'description':'bbb',
             'status':'ccc',
-            'milestone':'',
+            'custom_fields._milestone':'',
             'assigned_to':'',
             'labels':'yellow',
             'labels_old':'yellow'
@@ -248,7 +247,7 @@ class TestFunctionalController(TestController):
         assert response.html.find('input', {'name': 'assigned_to'})
         assert response.html.find('textarea', {'name': 'description'})
         assert response.html.find('select', {'name': 'status'})
-        assert response.html.find('select', {'name': 'milestone'})
+        assert response.html.find('select', {'name': 'custom_fields._milestone'})
         assert response.html.find('input', {'name': 'labels'})
 
     def test_assigned_to_nobody(self):
@@ -265,7 +264,7 @@ class TestFunctionalController(TestController):
             'summary':'zzz',
             'description':'bbb',
             'status':'ccc',
-            'milestone':'',
+            'custom_fields._milestone':'',
             'assigned_to':'test_admin',
             'tags':'',
             'tags_old':'',
@@ -299,7 +298,7 @@ class TestFunctionalController(TestController):
             'summary':'zzz',
             'description':'bbb',
             'status':'ccc',
-            'milestone':'aaa',
+            'custom_fields._milestone':'aaa',
             'assigned_to':'',
             'tags':'',
             'tags_old':'',
@@ -312,7 +311,7 @@ class TestFunctionalController(TestController):
             'summary':'zzz',
             'description':'bbb',
             'status':'ccc',
-            'milestone':'aaa',
+            'custom_fields._milestone':'aaa',
             'assigned_to':'',
             'tags':'',
             'tags_old':'',
@@ -334,7 +333,7 @@ class TestFunctionalController(TestController):
             'summary':'zzz',
             'description':'bbb',
             'status':'ccc',
-            'milestone':'aaa',
+            'custom_fields._milestone':'aaa',
             'assigned_to':'',
             'tags':'',
             'tags_old':'',
@@ -345,7 +344,6 @@ class TestFunctionalController(TestController):
         assert 'Milestone' in ticket_view
         assert 'aaa' in ticket_view
         assert '<li><strong>summary</strong>: test milestone names --&gt; zzz' in ticket_view
-        assert '<li><strong>status</strong>: aa --&gt; ccc' in ticket_view
 
     def test_subtickets(self):
         # create two tickets
@@ -371,10 +369,15 @@ class TestFunctionalController(TestController):
     
     def test_custom_sums(self):
         # setup a custom sum field
-        spec = """[{"label":"Days","type":"sum","options":""}]"""
-        spec = urllib.quote_plus(spec)
-        self.app.post('/admin/bugs/set_custom_fields', { 'custom_fields': spec, 'open_status_names': 'aa bb', 'closed_status_names': 'cc', 'milestone_names':'' })
-    
+        r = self.app.post('/admin/bugs/set_custom_fields', {
+            'custom_fields-0.label': 'days',
+            'custom_fields-0.type': 'sum',
+            'custom_fields-0.sum': '',
+            'custom_fields-0.milestones': '',
+            'custom_fields-0.options': '',
+            'open_status_names': 'aa bb',
+            'closed_status_names': 'cc',
+            'milestone_names':'' })
         # create three tickets
         kw = {'custom_fields._days':0}
         self.new_ticket(summary='test superticket', **kw)
