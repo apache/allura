@@ -42,7 +42,7 @@ class TestController(object):
     """
 
     application_under_test = 'main'
-    test_config = environ.get('SANDBOX') and 'sandbox-test.ini' or 'test.ini'
+    test_config = environ.get('SF_SYSTEM_FUNC') and 'sandbox-test.ini' or 'test.ini'
 
     def setUp(self):
         """Method called by nose before running each test"""

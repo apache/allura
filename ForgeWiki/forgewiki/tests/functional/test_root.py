@@ -208,7 +208,7 @@ class TestRootController(TestController):
         # Fake out updating the pages since reactor doesn't work with tests
         app = search_main.SearchApp
         cmd = reactor.ReactorCommand('reactor')
-        cmd.args = [ os.environ.get('SANDBOX') and 'sandbox-test.ini' or 'test.ini' ]
+        cmd.args = [ os.environ.get('SF_SYSTEM_FUNC') and 'sandbox-test.ini' or 'test.ini' ]
         cmd.options = mock.Mock()
         cmd.options.dry_run = True
         cmd.options.proc = 1
