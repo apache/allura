@@ -35,6 +35,7 @@ from allura.lib.markdown_extensions import ForgeExtension
 
 from allura.lib import gravatar
 from allura.lib import helpers as h
+from allura.lib.widgets import analytics
 
 log = logging.getLogger(__name__)
 
@@ -84,6 +85,9 @@ class Globals(object):
         self.pygments_formatter = pygments.formatters.HtmlFormatter(
             cssclass='codehilite',
             linenos='inline')
+
+        # Setup analytics
+        self.analytics = analytics.GoogleAnalytics(account=config.get('ga.account', 'UA-32013-6'))
 
     def handle_paging(self, limit, page, default=50):
         if limit:

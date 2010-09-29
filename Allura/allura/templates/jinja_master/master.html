@@ -6,9 +6,6 @@
 {% do g.register_forge_js('js/jquery-base.js') %}
 {% do g.register_forge_js('js/allura-base.js') %}
 {% do g.register_forge_css('css/forge/hilite.css') %}
-{% if g.production_mode %}
-  {% do g.register_forge_js('js/analytics.js') %}
-{% endif %}
 {% do g.resource_manager.register_widgets(c) %}
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
@@ -17,10 +14,10 @@
     {% for blob in g.resource_manager.emit('head_css') %}
       {{ blob }}
     {% endfor %}
+    {% if c.project %}
     {% for blob in g.resource_manager.emit('head_js') %}
       {{ blob }}
     {% endfor %}
-    {% if c.project %}
       <link rel="stylesheet" type="text/css" media="screen" href="{{c.project.neighborhood.url()+'site_style.css'}}" />
     {% elif neighborhood %}
       <link rel="stylesheet" type="text/css" media="screen" href="{{neighborhood.url()+'site_style.css'}}" />
@@ -39,6 +36,8 @@
 			.sfdl p.hide, .sfdls p.hide {display: none !important;}
 		</style>
 <![endif]-->
+
+{% if g.production_mode %}{{g.analytics.display()}}{% endif %}
   </head>
 
   <body{% block body_attrs %}{% endblock %}>
@@ -108,15 +107,5 @@
       {{ blob }}
     {% endfor %}
     {% block extra_js %}{% endblock %}
-    <!--! Analytics holder and noscript tag -->
-    <div id="analytics"/>
-    {% if g.production_mode %}
-    <noscript>
-      <img src="//secure.quantserve.com/pixel/p-93nPV3-Eb4x22.gif"
-           style="display: none;" border="0" height="1" width="1" alt="Quantcast"/>
-      <img src="http://b.scorecardresearch.com/p?c1=2&c2=6035546&c3=&c4=&c5=&c6=&c15=&cj=1" alt="comScore2" />
-    </noscript>
-    {% endif %}
-    <!--! End analytics -->
   </body>
 </html>

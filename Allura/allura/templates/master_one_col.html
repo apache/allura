@@ -8,7 +8,6 @@
 g.register_forge_js('js/jquery-base.js')
 g.register_forge_js('js/allura-base.js')
 g.register_forge_css('css/forge/hilite.css')
-if g.production_mode: g.register_forge_js('js/analytics.js')
 g.resource_manager.register_widgets(c) 
 ?>
   <xi:include href="header.html" />
@@ -26,6 +25,7 @@ g.resource_manager.register_widgets(c)
     <link py:if="not c.project and not neighborhood" rel="stylesheet" type="text/css" media="screen" href="${tg.url('/nf/site_style.css')}" />
     <link py:if="c.project" rel="stylesheet" type="text/css" media="screen" href="${c.project.neighborhood.url()+'site_style.css'}" />
     <link py:if="neighborhood" rel="stylesheet" type="text/css" media="screen" href="${neighborhood.url()+'site_style.css'}" />
+    <py:if test="g.production_mode">${g.analytics.display()}</py:if>
   </head>
 
   <body py:match="body" py:attrs="select('@*')" xml:space="preserve">
@@ -55,13 +55,5 @@ g.resource_manager.register_widgets(c)
     </div>
     <py:for each="blob in g.resource_manager.emit('body_js')">$blob</py:for>
     <py:for each="blob in g.resource_manager.emit('body_js_tail')">$blob</py:for>
-    <!--! Analytics holder and noscript tag -->
-    <div id="analytics"/>
-    <noscript py:if="g.production_mode">
-      <img src="//secure.quantserve.com/pixel/p-93nPV3-Eb4x22.gif" 
-           style="display: none;" border="0" height="1" width="1" alt="Quantcast"/>
-      <img src="http://b.scorecardresearch.com/p?c1=2&amp;c2=6035546&amp;c3=&amp;c4=&amp;c5=&amp;c6=&amp;c15=&amp;cj=1" alt="comScore2" />
-    </noscript>
-    <!--! End analytics -->
   </body>
 </html>
