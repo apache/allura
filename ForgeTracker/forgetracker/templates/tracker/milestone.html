@@ -8,7 +8,7 @@
 
 {% block content %}
   {% if milestone.due_date %}
-    <h2>Due: $milestone.due_date</h2>
+    <h2>Due: {{milestone.due_date}}</h2>
   {% endif %}
   {% if milestone.description %}
     {{g.markdown.convert(milestone.description)|safe}}

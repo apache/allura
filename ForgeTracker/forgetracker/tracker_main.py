@@ -135,12 +135,12 @@ class ForgeTrackerApp(Application):
                 if m.complete: continue
                 hits = 0
                 for ms in c.app.globals.milestone_counts:
-                    if ms['name'] == '%s:%s' % (fld.label, m.name):
+                    if ms['name'] == '%s:%s' % (fld.name[1:], m.name):
                         hits = ms['hits']
                 milestones.append(
                     SitemapEntry(
                         h.text.truncate(m.name, 72),
-                        self.url + fld.label[1:] + '/' + m.name + '/',
+                        self.url + fld.name[1:] + '/' + m.name + '/',
                         className='nav_child',
                         small=hits))
         if ticket.isdigit():
@@ -210,7 +210,8 @@ class ForgeTrackerApp(Application):
             closed_status_names='closed wont-fix',
             # milestone_names='',
             custom_fields=[dict(
-                    label='_milestone',
+                    name='_milestone',
+                    label='Milestone',
                     type='milestone',
                     milestones=[
                         dict(name='1.0', complete=False, due=None),
@@ -330,8 +331,10 @@ class RootController(BaseController):
     def _lookup(self, ticket_num, *remainder):
         if ticket_num.isdigit():
             return TicketController(ticket_num), remainder
-        else:
+        elif remainder:
             return MilestoneController(self, ticket_num, remainder[0]), remainder[1:]
+        else:
+            raise exc.HTTPNotFound
 
     @with_trailing_slash
     @expose('jinja:tracker/new_ticket.html')
@@ -441,7 +444,7 @@ class RootController(BaseController):
             if user:
                 values['assigned_to_id'] = user._id
 
-        custom_fields = set([cf.label for cf in c.app.globals.custom_fields or[]])
+        custom_fields = set([cf.name for cf in c.app.globals.custom_fields or[]])
         custom_values = {}
         for k in custom_fields:
             v = post_data.get(k)
@@ -786,8 +789,8 @@ class TicketController(BaseController):
                     ticket_id=self.ticket._id)
         any_sums = False
         for cf in c.app.globals.custom_fields or []:
-            if 'custom_fields.'+cf.label in post_data:
-                value = post_data['custom_fields.'+cf.label]
+            if 'custom_fields.'+cf.name in post_data:
+                value = post_data['custom_fields.'+cf.name]
                 if cf.type == 'sum':
                     any_sums = True
                     try:
@@ -802,9 +805,9 @@ class TicketController(BaseController):
             if cf.type == 'number' and value == '':
                 value = None
             if value is not None:
-                changes['custom_field_%s'%cf.label] =self.ticket.custom_fields.get(cf.label)
-                self.ticket.custom_fields[cf.label] = value
-                changes['custom_field_%s'%cf.label] =self.ticket.custom_fields.get(cf.label)
+                changes['custom_field_%s'%cf.name] =self.ticket.custom_fields.get(cf.name)
+                self.ticket.custom_fields[cf.name] = value
+                changes['custom_field_%s'%cf.name] =self.ticket.custom_fields.get(cf.name)
         thread = self.ticket.discussion_thread
         latest_post = thread.posts and thread.posts[-1] or None
         post = None
@@ -880,7 +883,7 @@ class TrackerAdminController(DefaultAdminController):
         pass
 
     @expose()
-    # @validate(W.field_admin, error_handler=fields)
+    @validate(W.field_admin, error_handler=fields)
     @h.vardec
     def set_custom_fields(self, **post_data):
         require(has_artifact_access('configure', app=self.app))
@@ -958,7 +961,7 @@ class MilestoneController(BaseController):
 
     def __init__(self, root, field, milestone):
         for fld in c.app.globals.milestone_fields:
-            if fld.label == field: break
+            if fld.name[1:] == field: break
         else:
             raise exc.HTTPNotFound()
         for m in fld.milestones:
@@ -968,7 +971,7 @@ class MilestoneController(BaseController):
         self.root = root
         self.field = fld
         self.milestone = m
-        self.query = '%s:%s' % (fld.label[1:], m.name)
+        self.query = '%s:%s' % (fld.name, m.name)
 
     @with_trailing_slash
     @expose('jinja:tracker/milestone.html')

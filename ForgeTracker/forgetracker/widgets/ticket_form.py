@@ -29,6 +29,14 @@ class GenericTicketForm(ew.SimpleForm):
             display = "%s<div class='error'>%s</div>" % (display, ctx['errors'])
         return display
 
+    def display_field_by_name(self, idx, ignore_errors=False):
+        field = self.fields[idx]
+        ctx = c.widget.context_for(field.name)
+        display = field.display(**ctx)
+        if ctx['errors'] and field.show_errors and not ignore_errors:
+            display = "%s<div class='error'>%s</div>" % (display, ctx['errors'])
+        return display
+
     @property
     def fields(self):
         fields = [
@@ -45,13 +53,13 @@ class GenericTicketForm(ew.SimpleForm):
                 attrs={'class':"ui-button ui-widget ui-state-default ui-button-text-only"}),
             ew.HiddenField(name='ticket_num', validator=fev.Int(if_missing=None)),
             ew.HiddenField(name='super_id', validator=fev.UnicodeString(if_missing=None)) ]
-        return fields
+        return ew.NameList(fields)
 
 class TicketForm(GenericTicketForm):
     template='genshi:forgetracker.widgets.templates.ticket_form'
     @property
     def fields(self):
-        fields = super(TicketForm, self).fields
+        fields = ew.NameList(super(TicketForm, self).fields)
         if c.app.globals.custom_fields:
             fields.append(TicketCustomFields(name="custom_fields"))
         return fields
@@ -61,7 +69,7 @@ class EditTicketForm(GenericTicketForm):
     name="edit_ticket_form"
     @property
     def fields(self):
-        fields = super(EditTicketForm, self).fields
+        fields = ew.NameList(super(EditTicketForm, self).fields)
         if c.app.globals.custom_fields:
             fields.append(EditTicketCustomFields(name="custom_fields"))
         return fields
@@ -84,17 +92,20 @@ class TicketCustomField(object):
             if opt.startswith('*'):
                 opt = opt[1:]
                 selected = True
-                options.append(ew.Option(label=opt,html_value=opt,py_value=opt,selected=selected))
+            options.append(ew.Option(label=opt,html_value=opt,py_value=opt,selected=selected))
         return ew.SingleSelectField(label=field.label, name=str(field.name), options=options)
 
     def _milestone(field):
-        options = [ ew.Option(label='None',html_value='',py_value='')] +[
-            ew.Option(
-                label=m.name,
-                py_value=m.name)
-            for m in field.milestones if not m.complete ]
-        return ew.SingleSelectField(label=field.label, name=str(field.label),
-                                    options=options)
+        options = [ ew.Option(label='None',html_value='',py_value='')]
+        for m in field.milestones:
+            if not m.complete:
+                options.append(ew.Option(
+                        label=m.name,
+                        py_value=m.name))
+        ssf = ew.SingleSelectField(
+            label=field.label, name=field.name,
+            options=options)
+        return ssf
 
     def _boolean(field):
         return ew.Checkbox(label=field.label, name=str(field.name), suppress_label=True)
@@ -102,6 +113,7 @@ class TicketCustomField(object):
     def _number(field):
         return ew.NumberField(label=field.label, name=str(field.name))
 
+    @staticmethod
     def _default(field):
         return ew.TextField(label=field.label, name=str(field.name))
 
@@ -114,5 +126,5 @@ class TicketCustomField(object):
 
     @classmethod
     def make(cls, field):
-        factory = cls.SELECTOR.get(field.type, cls._default)
+        factory = cls.SELECTOR.get(field.get('type'), cls._default)
         return factory(field)

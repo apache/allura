@@ -1,4 +1,5 @@
 from ming.orm.ormsession import ThreadLocalORMSession
+from ming.base import Object
 
 from pylons import c
 
@@ -10,7 +11,7 @@ from forgetracker.model import Globals
 class TestTicketCustomFields(TrackerTestWithModel):
     def test_it_creates_string_fields(self):
         globals_ = c.app.globals
-        globals_.custom_fields = [dict(name='_iteration_number',
+        globals_.custom_fields = [Object(name='_iteration_number',
                                        label='Iteration Number',
                                        type='string')]
         ThreadLocalORMSession.flush_all()

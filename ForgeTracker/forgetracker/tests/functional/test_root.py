@@ -3,6 +3,8 @@ import Image, StringIO
 import allura
 
 from nose.tools import assert_true, assert_false, eq_
+from formencode.variabledecode import variable_encode
+
 from forgetracker.tests import TestController
 from forgewiki import model as wm
 from forgetracker import model as tm
@@ -277,10 +279,18 @@ class TestFunctionalController(TestController):
         assert '<li><strong>status</strong>: open --&gt; ccc' in response
     
     def test_custom_fields(self):
-        spec = """[{"label":"Priority","type":"select","options":"normal urgent critical"},
-                   {"label":"Category","type":"string","options":""}]"""
-        spec = urllib.quote_plus(spec)
-        r = self.app.post('/admin/bugs/set_custom_fields', { 'custom_fields': spec, 'open_status_names': 'aa bb', 'closed_status_names': 'cc', 'milestone_names':'' })
+        params = dict(
+            custom_fields=[
+                dict(name='_priority', label='Priority', type='select',
+                     options='normal urgent critical'),
+                dict(name='_category', label='Category', type='string',
+                     options='')],
+            open_status_names='aa bb',
+            closed_status_names='cc',
+            )
+        self.app.post(
+            '/admin/bugs/set_custom_fields',
+            params=variable_encode(params))
         kw = {'custom_fields._priority':'normal',
               'custom_fields._category':'helloworld'}
         ticket_view = self.new_ticket(summary='test custom fields', **kw)
@@ -288,13 +298,18 @@ class TestFunctionalController(TestController):
         assert 'normal' in ticket_view
     
     def test_custom_field_update_comments(self):
-        spec = """[{"label":"Number","type":"number","options":""}]"""
-        spec = urllib.quote_plus(spec)
-        r = self.app.post('/admin/bugs/set_custom_fields', { 'custom_fields': spec, 'open_status_names': 'aa bb', 'closed_status_names': 'cc', 'milestone_names':'' })
+        params = dict(
+            custom_fields=[
+                dict(label='Number', type='number', options='')],
+            open_status_names='aa bb',
+            closed_status_names='cc',
+            )
+        r = self.app.post('/admin/bugs/set_custom_fields',
+                          params=variable_encode(params))
         kw = {'custom_fields._number':''}
         ticket_view = self.new_ticket(summary='test custom fields', **kw)
         assert '<strong>custom_field__number</strong>:  --&gt;' not in ticket_view
-        ticket_view = self.app.post('/bugs/1/update_ticket',{
+        ticket_view = self.app.post('/bugs/1/update_ticket',params={
             'summary':'zzz',
             'description':'bbb',
             'status':'ccc',
@@ -307,7 +322,7 @@ class TestFunctionalController(TestController):
             'custom_fields._number':''
         }).follow()
         assert '<strong>custom_field__number</strong>:  --&gt;' not in ticket_view
-        ticket_view = self.app.post('/bugs/1/update_ticket',{
+        ticket_view = self.app.post('/bugs/1/update_ticket',params={
             'summary':'zzz',
             'description':'bbb',
             'status':'ccc',
@@ -442,7 +457,9 @@ class TestFunctionalController(TestController):
         assert error_message.findPreviousSibling('textarea').get('name') == 'edit_ticket_form.summary'
         # set a summary, submit, and check for success
         error_form.forms[2]['edit_ticket_form.summary'] = new_summary
-        success = error_form.forms[2].submit().follow().html
+        r = error_form.forms[2].submit()
+        assert r.status_int == 302, r.showbrowser()
+        success = r.follow().html
         assert success.findAll('form')[1].get('action') == '/p/test/bugs/1/update_ticket'
         assert success.find('textarea', {'name':'summary'}).string == new_summary
 
