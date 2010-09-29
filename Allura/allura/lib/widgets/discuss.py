@@ -9,6 +9,12 @@ from allura.lib.widgets import form_fields as ffw
 from allura.lib.widgets import forms as ff
 from allura import model as M
 
+class NullValidator(fev.FancyValidator):
+    perform_validation=True
+
+    def _to_python(self, value, state): return value
+    def _from_python(self, value, state): return value
+
 # Discussion forms
 class ModerateThread(ew.SimpleForm):
     class buttons(ew.WidgetsList):
@@ -93,7 +99,8 @@ class EditPost(ew.SimpleForm):
     show_subject=False
     value=None
     template='allura.lib.widgets.templates.edit_post'
-    params=['value']
+    params=['value', 'att_name']
+    att_name='file_info'
 
     @property
     def fields(self):
@@ -106,6 +113,7 @@ class EditPost(ew.SimpleForm):
                 # We are being validated
                 validator = fev.UnicodeString(not_empty=True, if_missing='')
                 yield ew.TextField(name='subject', validator=validator)
+                yield NullValidator(name=self.att_name)
             yield ffw.MarkdownEdit(name='text')
             yield ew.HiddenField(name='forum', if_missing=None)
         return _()
@@ -113,6 +121,12 @@ class EditPost(ew.SimpleForm):
     def resources(self):
         for r in ew.TextField(name='subject').resources(): yield r
         for r in ffw.MarkdownEdit(name='text').resources(): yield r
+        yield ew.JSScript('''$(document).ready(function(){
+            $("input.attachment_form_add_button").click(function(){
+                $(this).hide();
+                $(".attachment_form_fields", this.parentNode).show();
+            });
+         });''')
 
 class NewTopicPost(EditPost):
     template='jinja:new_topic_post.html'

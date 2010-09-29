@@ -146,7 +146,14 @@ class ThreadController(BaseController):
     def post(self, **kw):
         require(has_artifact_access('post', self.thread))
         kw = self.W.edit_post.validate(kw, None)
-        self.thread.add_post(**kw)
+        file_info = kw.pop('file_info', None)
+        p = self.thread.add_post(**kw)
+        if hasattr(file_info, 'file'):
+            self.M.Attachment.save_attachment(
+                file_info.filename, file_info.file, content_type=file_info.type,
+                post_id=p._id,
+                thread_id=p.thread_id,
+                discussion_id=p.discussion_id)
         if self.thread.artifact:
             self.thread.artifact.mod_date = datetime.now()
         flash('Message posted')
