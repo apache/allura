@@ -10,3 +10,7 @@ th[data-sort]:hover, .nav-button:hover{ text-decoration: underline; }
 .nav-button.disabled:hover{ text-decoration: none; }
 .open{ color: green; }
 .closed{ color: red; }
+.ticket-list td>a {
+    display: block;
+    width: 100%;
+}
