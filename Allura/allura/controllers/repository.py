@@ -78,6 +78,18 @@ class TreeBrowser(BaseController):
 
     @expose('jinja:repo/tree.html')
     def index(self, **kw):
+        if not request.path.endswith('/'):
+            filename = request.environ['PATH_INFO'].rsplit('/')[-1]
+            if filename and self._tree.is_blob(filename):
+                controller = self.FileBrowserClass(
+                    self._commit,
+                    self._tree,
+                    filename)
+                if 'diff' in kw:
+                    override_template(self.index, 'jinja:repo/diff.html')
+                else:
+                    override_template(self.index, 'jinja:repo/file.html')
+                return controller.index(**kw)
         c.tree_widget = self.tree_widget
         return dict(
             commit=self._commit,
