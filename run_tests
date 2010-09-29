@@ -6,7 +6,7 @@ function check_port() {
 }
 
 if [ -z "$VIRTUAL_ENV" ]; then
-    source /var/local/env-allura/bin/activat
+    source /var/local/env-allura/bin/activate
 fi
 
 # If this is sandbox and local SOLR isn't running, start it
