@@ -37,7 +37,7 @@ class Globals(MappedClass):
     custom_fields = FieldProperty([{str:None}])
     _bin_counts = FieldProperty({str:int})
     _bin_counts_expire = FieldProperty(datetime)
-    _milestone_counts = FieldProperty([{str:str,str:str}])
+    _milestone_counts = FieldProperty([dict(name=str,hits=int)])
     _milestone_counts_expire = FieldProperty(datetime)
 
     @classmethod
@@ -82,11 +82,13 @@ class Globals(MappedClass):
         self._milestone_counts = []
         for fld in self.milestone_fields:
             for m in fld.milestones:
-                k = '%s:%s' % (fld.label, m.name)
+                k = '%s:%s' % (fld.name[1:], m.name)
                 r = search_artifact(Ticket, k, rows=0)
                 hits = r is not None and r.hits or 0
-                self._milestone_counts.append({'name':k,'hits':str(hits)})
-        self._bin_counts_expire = datetime.utcnow() + timedelta(minutes=60)
+                self._milestone_counts.append({'name':k,'hits':hits})
+        self._milestone_counts_expire = \
+            self._bin_counts_expire = \
+            datetime.utcnow() + timedelta(minutes=60)
 
     @property
     def bin_counts(self):
@@ -338,7 +340,7 @@ class Ticket(VersionedArtifact):
         if super_sums is None:
             super_sums = {}
             globals = Globals.query.get(app_config_id=c.app.config._id)
-            for k in [cf.label for cf in globals.custom_fields or [] if cf.type=='sum']:
+            for k in [cf.name for cf in globals.custom_fields or [] if cf.type=='sum']:
                 super_sums[k] = float(0)
 
         # if there are no custom fields of type 'sum', we're done

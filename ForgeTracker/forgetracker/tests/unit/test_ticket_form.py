@@ -16,13 +16,6 @@ class TestTicketForm(TrackerTestWithModel):
         ThreadLocalORMSession.flush_all()
         assert self.options_for_field('status') == ['open', 'closed']
 
-    @patch('ew.Option')
-    def test_it_creates_milestone_field(self, option_class):
-        c.app.globals.milestone_names = 'release1 release2'
-        ThreadLocalORMSession.flush_all()
-        none_option = option_class()
-        assert self.options_for_field('milestone') == [none_option, 'release1', 'release2']
-
     def options_for_field(self, field_name):
         fields = ticket_form.TicketForm().fields
         matching_fields = [field
