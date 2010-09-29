@@ -2,17 +2,19 @@
 
 function check_port() {
     PORT=$1
-    echo 'quit' |telnet localhost $PORT
+    echo 'quit' |telnet localhost $PORT >/dev/null 2>&1
 }
 
 # If this is sandbox and local SOLR isn't running, start it
-if [ -n "$SF_SYSTEM_FUNC" -a ! check_port 50065 ]; then
-    SOLRCONFIG="/var/local/allura/solr_config"
-    SOLRLOG=/usr/local/solr/logs/console.log
-    echo "Starting SOLR, log is at $SOLRLOG"
-    pushd /usr/local/solr
-    /usr/java/jdk1.5.0_15/bin/java -Dsolr.solr.home="$SOLRCONFIG" -jar start.jar >$SOLRLOG 2>&1 &
-    popd
+if [ -n "$SF_SYSTEM_FUNC" ]; then
+    if ! check_port 50065; then
+        SOLRCONFIG="/var/local/allura/solr_config"
+        SOLRLOG=/usr/local/solr/logs/console.log
+        echo "Starting SOLR, log is at $SOLRLOG"
+        pushd /usr/local/solr
+        /usr/java/jdk1.5.0_15/bin/java -Dsolr.solr.home="$SOLRCONFIG" -jar start.jar >$SOLRLOG 2>&1 &
+        popd
+    fi
 fi
 
 # main
