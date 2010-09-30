@@ -10,7 +10,7 @@ def onready(text):
     return ew.JSScript('$(document).ready(function(){%s});' % text);
 
 class MarkdownEdit(ew.InputField):
-    template='genshi:allura.lib.widgets.templates.markdown_edit'
+    template='jinja:markdown_edit.html'
     validator = fev.UnicodeString()
     params=['name','value','show_label']
     show_label=True
@@ -189,7 +189,7 @@ class PageList(ew.Widget):
         return url_params
 
 class PageSize(ew.Widget):
-    template='genshi:allura.lib.widgets.templates.page_size'
+    template='jinja:page_size.html'
     params=['limit','url_params']
     show_label=False
     name=None

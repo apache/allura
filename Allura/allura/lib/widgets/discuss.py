@@ -231,7 +231,7 @@ class PostThread(ew.Widget):
     value=None
 
 class Post(HierWidget):
-    template='genshi:allura.lib.widgets.templates.post'
+    template='jinja:post_widget.html'
     params=['value', 'show_subject', 'indent', 'page', 'limit', 'supress_promote']
     value=None
     indent=0

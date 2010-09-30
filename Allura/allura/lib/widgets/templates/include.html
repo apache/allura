@@ -1,5 +1,4 @@
-<div xmlns:py="http://genshi.edgewall.org/"
-     py:attrs="attrs">
-  ${Markup(artifact.html_text)}
+<div{{attrs|xmlattr}}>
+  {{artifact.html_text|safe}}
 </div>
 

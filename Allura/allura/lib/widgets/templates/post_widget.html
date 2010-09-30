@@ -1,0 +1,104 @@
+{% import 'jinja_master/lib.html' as lib with context %}
+
+<div>
+  <div id="{{value.slug}}" class="discussion-post">
+    <div class="row">
+    	<div class="column grid_1 tcenter">
+    		<p class="gravatar">
+          <a href="{{value.author().url()}}">{{lib.gravatar(value.author())}}</a><br/>
+          <a href="{{value.author().url()}}">{{value.author().display_name}}</a><br />{{h.ago(value.timestamp)}}
+    		</p>
+    	</div>
+
+    	<div class="column grid_8">
+        <div class="display_post">
+          {% if show_subject %}
+            <b>{{value.subject or '(no subject)'}}<br/></b>
+          {% endif %}
+          {{g.markdown.convert(value.text)|safe}}
+        </div>
+        {% if h.has_artifact_access('post', value.thread)() %}
+      	<div class="edit_post_form" style="display:none">
+            {{widgets.edit_post.display(value=value, submit_text='Save', action=value.url())}}
+      	</div>
+        {% endif %}
+        {% if h.has_artifact_access('moderate', value)() %}
+        <div class="add_attachment_form" style="display:none; clear: both; overflow: auto;">
+            {{widgets.attach_post.display(value=value, action=value.url() + 'attach')}}
+        </div>
+        {% endif %}
+        {% if value.attachments %}
+        <div>
+          <strong>Attachments</strong>
+          {% for att in value.attachments %}
+            {{widgets.attachment.display(post=value, value=att)}}
+            {% if c.user._id and value.author_id==c.user._id %}
+            <form 
+               method="POST"
+               action="{{att.url()}}"
+               style="display:inline">
+              <input class="submit" type="submit" name="delete" value="Delete"/>
+            </form>
+            {% endif %}
+          {% endfor %}
+        </div>
+        {% endif %}
+    	</div>
+        
+    	<div class="options">
+		<a href="" class="reply_post btn ico-l"><b class="ui-icon ui-icon-arrowreturnthick-1-w"></b> <span>Reply</span></a>
+		<div style="clear:both">
+		<a href="{{tg.url(url.current(),dict(page=page,limit=limit))}}#{{value.slug}}" class="ico-l little_link"><b class="ui-icon ui-icon-link"></b> <span>Link</span></a><br/>
+		<a href="" class="edit_post ico-l little_link"><b class="ui-icon ui-icon-pencil"></b> <span>Edit</span></a><br/>
+                {% if h.has_artifact_access('moderate', value)() %}
+		  {{widgets.moderate_post.display(value=value, action=value.url()+'moderate')}}
+                {% endif %}
+                {% if h.has_artifact_access('post', value.thread)() %}
+		<a href="#" class="ico-l add_attachment little_link"><b class="ui-icon ui-icon-document"></b> <span>Attach</span></a>
+                {% endif %}
+		</div>
+    	</div>
+    </div>
+    <ul>
+      <li>
+        {% if h.has_artifact_access('post', value.thread)() %}
+        <div class="row reply_post_form" style="display:none">
+          <div class="reply">
+            <div class="column grid_1 tcenter">
+              <p class="gravatar">
+                {{lib.gravatar(c.user)}}<br/><br/>
+                <a href="{{c.user.url()}}">{{c.user.display_name}}</a>
+              </p>
+            </div>
+            <div class="column grid_8">
+              {{widgets.edit_post.display(
+                submit_text='Post Reply',
+                action=value.url()+'reply',
+                value=dict(
+                text='',
+                subject=value.reply_subject()),
+              )}}
+            </div>
+          </div>
+        </div>
+        {% endif %}
+      </li>
+    </ul>
+  </div>
+  
+  
+<!--   
+  <div class="span-2" py:if="has_artifact_access('post', value.thread)()">
+    <a href="" class="add_attachment"><span class="ui-icon ui-icon-document"></span>Attach</a>
+  </div>
+  <div class="span-2" py:if="has_artifact_access('moderate', value.thread)() and 'promote_to_thread' in widgets and not supress_promote">
+    <a href="" class="promote_to_thread"><span class="ui-icon ui-icon-arrowthick-1-n"></span>Promote</a>
+  </div>
+  </div>-->
+
+  {% if h.has_artifact_access('moderate', value.thread)() and 'promote_to_thread' in widgets and not supress_promote %}
+  <div class="promote_to_thread_form push-{{3+indent}} span-{{16-indent}} last clear" style="display:none">
+    {{widgets.promote_to_thread.display(value=value, action=value.url()+'moderate')}}
+  </div>
+  {% endif %}
+</div>
