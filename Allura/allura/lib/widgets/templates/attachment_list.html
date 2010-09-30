@@ -1,36 +1,38 @@
-<div xmlns="http://www.w3.org/1999/xhtml"
-     xmlns:py="http://genshi.edgewall.org/"
-     py:with="attachments=list(attachments)">
-  <py:if test="len(attachments)">
+<div>
+  {% if attachments %}
+    {% set attachments = list(attachments) %}
     <strong>Attachments:</strong>
     <div class="attachment_images">
-      <py:for each="att in attachments">
-        <py:if test="att.is_image()">
+      {% for att in attachments if att.is_image() %}
           <div class="attachment_thumb">
-            <a href="${att.url()}">
-              <img src="${att.url()}/thumb"/>
+            <a href="{{att.url()}}">
+              <img src="{{att.url()}}/thumb"/>
             </a><br/>
-            $att.metadata.filename
-            <form py:if="edit_mode" method="post" action="${att.url()}">
+            {{att.metadata.filename}}
+            {% if edit_mode %}
+            <form method="post" action="{{att.url()}}">
               <input type="hidden" name="delete" value="True"/>
               <input type="submit" value="Delete File"/>
             </form>
+            {% endif %}
           </div>
-        </py:if>
-      </py:for>
+      {% endfor %}
     </div>
-    <py:for each="att in attachments">
-      <div py:if="not att.is_image()">
-        <form method="post" action="${att.url()}">
-          <a href="${att.url()}">${att.metadata.filename}</a>
-          ($att.length bytes)
+
+    {% for att in attachments if not att.is_image() %}
+      <div>
+        <form method="post" action="{{att.url()}}">
+          <a href="{{att.url()}}">{{att.metadata.filename}}</a>
+          ({{att.length}} bytes)
           <input type="hidden" name="delete" value="True"/>
-          <span py:if="edit_mode" py:strip="True">
+          {% if edit_mode %}
+          <span>
             <input type="submit" value="Delete File"/>
           </span>
+          {% endif %}
         </form>
       </div>
-    </py:for>
-  </py:if>
+    {% endfor %}
+  {% endif %}
   <div style="clear:both"/>
 </div>

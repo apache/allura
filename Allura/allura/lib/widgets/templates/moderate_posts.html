@@ -1,12 +1,9 @@
-<form xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:py="http://genshi.edgewall.org/"
-      xmlns:xi="http://www.w3.org/2001/XInclude"
-      name="$name"
-      id="$name"
-      method="$method"
-      action="$action"
-      enctype="$enctype"
-      py:attrs="attrs">
+<form name="{{name}}"
+      id="{{name}}"
+      method="{{method}}"
+      action="{{action}}"
+      enctype="{{enctype}}"
+      {{attrs|xmlattr}}>
   <fieldset>
     <legend>Update marked posts</legend>
     <input type="submit" name="approve" value="Approve Marked"/>
@@ -27,21 +24,22 @@
       </tr>
     </thead>
     <tbody>
-      <py:for each="i, post in enumerate(value.posts)">
+      {% for post in value.posts %}
         <tr>
           <td>
-            <input type="hidden" name="post-${i}.slug" value="$post.slug"/>
-            <input type="checkbox" name="post-${i}.checked"/>
+            <input type="hidden" name="post-{{loop.index0}}.slug" value="{{post.slug}}"/>
+            <input type="checkbox" name="post-{{loop.index0}}.checked"/>
           </td>
-          <td>$post.timestamp</td>
-          <td>$post.status</td>
-          <td>$post.flags</td>
-          <td py:with="author=post.author()">$author.display_name ($author.username)</td>
-          <td>${post.thread.subject or '(no subject)'}</td>
-          <td>${h.text.truncate(post.text)}</td>
-          <td>${len(post.attachments)}</td>
+          <td>{{post.timestamp}}</td>
+          <td>{{post.status}}</td>
+          <td>{{post.flags}}</td>
+          {% set author = post.author() %}
+          <td>{{author.display_name}} ({{author.username}})</td>
+          <td>{{post.thread.subject or '(no subject)'}}</td>
+          <td>{{h.text.truncate(post.text)}}</td>
+          <td>{{post.attachments|length}}</td>
         </tr>
-      </py:for>
+      {% endfor %}
     </tbody>
   </table>
 </form>

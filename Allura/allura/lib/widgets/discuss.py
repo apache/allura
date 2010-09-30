@@ -22,11 +22,11 @@ class ModerateThread(ew.SimpleForm):
     submit_text=None
 
 class ModeratePost(ew.SimpleForm):
-    template='genshi:allura.lib.widgets.templates.moderate_post'
+    template='jinja:moderate_post.html'
     submit_text=None
 
 class FlagPost(ew.SimpleForm):
-    template='genshi:allura.lib.widgets.templates.flag_post'
+    template='jinja:flag_post.html'
     submit_text=None
 
 class AttachPost(ff.ForgeForm):
@@ -41,7 +41,7 @@ class AttachPost(ff.ForgeForm):
         return fields
 
 class ModeratePosts(ew.SimpleForm):
-    template='genshi:allura.lib.widgets.templates.moderate_posts'
+    template='jinja:moderate_posts.html'
     submit_text=None
     def resources(self):
         for r in super(ModeratePosts, self).resources(): yield r
@@ -98,7 +98,7 @@ class TagPost(ew.SimpleForm):
 class EditPost(ew.SimpleForm):
     show_subject=False
     value=None
-    template='allura.lib.widgets.templates.edit_post'
+    template='jinja:edit_post.html'
     params=['value', 'att_name']
     att_name='file_info'
 
@@ -135,7 +135,7 @@ class NewTopicPost(EditPost):
     params=['forums']
 
 class _ThreadsTable(ew.TableField):
-    template='allura.lib.widgets.templates.threads_table'
+    template='jinja:threads_table.html'
     class hidden_fields(ew.WidgetsList):
         _id=ew.HiddenField(validator=V.Ming(M.Thread))
     class fields(ew.WidgetsList):
@@ -195,7 +195,7 @@ class HierWidget(ew.Widget):
                 yield r
 
 class Attachment(ew.Widget):
-    template='genshi:allura.lib.widgets.templates.attachment'
+    template='jinja:attachment.html'
     params=['value', 'post']
     value=None
     post=None
@@ -208,7 +208,7 @@ class DiscussionHeader(HierWidget):
         edit_post=EditPost(submit_text='New Thread'))
 
 class ThreadHeader(HierWidget):
-    template='genshi:allura.lib.widgets.templates.thread_header'
+    template='jinja:thread_header.html'
     params=['value', 'page', 'limit', 'count', 'show_moderate']
     value=None
     page=None

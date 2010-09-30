@@ -65,7 +65,7 @@ class LabelList(fev.UnicodeString):
         return value
 
 class LabelEdit(ew.InputField):
-    template='genshi:allura.lib.widgets.templates.label_edit'
+    template='jinja:label_edit.html'
     validator = LabelList()
     params=['name', 'className', 'show_label', 'value']
     show_label=True
@@ -123,13 +123,13 @@ class ProjectUserSelect(ew.InputField):
           });''' % c.project.url())
 
 class AttachmentList(ew.Widget):
-    template='genshi:allura.lib.widgets.templates.attachment_list'
+    template='jinja:attachment_list.html'
     params=['attachments','edit_mode']
     attachments=None
     edit_mode=None
 
 class AttachmentAdd(ew.Widget):
-    template='genshi:allura.lib.widgets.templates.attachment_add'
+    template='jinja:attachment_add.html'
     params=['action','name']
     action=None
     name=None
@@ -209,7 +209,7 @@ class PageSize(ew.Widget):
                 this.form.submit();})''')
 
 class FileChooser(ew.InputField):
-    template='genshi:allura.lib.widgets.templates.file_chooser'
+    template='jinja:file_chooser.html'
     params=['name']
     name=None
     validator=fev.FieldStorageUploadConverter()

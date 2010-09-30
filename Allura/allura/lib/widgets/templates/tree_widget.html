@@ -1,4 +1,4 @@
-<table xmlns:py="http://genshi.edgewall.org/">
+<table>
   <thead>
     <tr>
       <th>Kind</th>
@@ -9,23 +9,33 @@
     </tr>
   </thead>
   <tbody>
-    <tr py:if="tree._parent">
+    {% if tree._parent %}
+    <tr>
       <td></td>
       <td><a href="..">[Up one dir]</a></td>
       <td></td>
       <td></td>
       <td></td>
     </tr>
-    <tr py:for="dirent in tree.ls()">
-      <td>$dirent.kind</td>
-      <td><a href="${h.really_unicode(dirent.href)}">${h.really_unicode(dirent.name)}</a></td>
-      <td py:if="dirent.date">${h.ago(dirent.date)}</td>
-      <td py:if="not dirent.date"/>
-      <td>$dirent.last_author</td>
+    {% endif %}
+    {% for dirent in tree.ls() %}
+    <tr>
+      <td>{{dirent.kind}}</td>
+      <td><a href="{{h.really_unicode(dirent.href)}}">{{h.really_unicode(dirent.name)}}</a></td>
+      {% if dirent.date %}
+        <td>{{h.ago(dirent.date)}}</td>
+      {% else %}
+        <td></td>
+      {% endif %}
+      <td>{{dirent.last_author}}</td>
       <td>
-        <a py:if="dirent.commit" href="${dirent.commit.url()}">
-          ${h.text.truncate(str(dirent.commit._id), 10)}
-      </a></td>
+      {% if dirent.commit %}
+        <a href="{{dirent.commit.url()}}">
+          {{h.text.truncate(str(dirent.commit._id), 10)}}
+        </a>
+      {% endif %}
+      </td>
     </tr>
+    {% endfor %}
   </tbody>
 </table>

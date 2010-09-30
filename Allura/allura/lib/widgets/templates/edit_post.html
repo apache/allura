@@ -1,20 +1,20 @@
-<div xmlns="http://www.w3.org/1999/xhtml"
-     xmlns:py="http://genshi.edgewall.org/"
-     py:strip="True">
-  <form method="post" action="$action"
+<div>
+  <form method="post" action="{{action}}"
         enctype="multipart/form-data">
-    <input py:if="show_subject" name="subject" style="width:90%"
-           value="${value and (value.subject or '(no subject)')}"/>
-    <textarea name="text" style="width:90%">${(value and 'text' in value) and value['text'] or ''}</textarea>
+    {% if show_subject %}
+    <input name="subject" style="width:90%"
+           value="{{value and (value.subject or '(no subject)')}}"/>
+    {% endif %}
+    <textarea name="text" style="width:90%">{{(value and 'text' in value) and value['text'] or ''}}</textarea>
     <span class="arw"><span></span></span><br/>
     <input type="button" value="Add attachment" class="attachment_form_add_button"/>
     <ol class="attachment_form_fields" style="display:none">
       <li>
-        <label for="$att_name">File to upload</label>
-        <input type="file" class="text" name="$att_name" id="$att_name"/>
+        <label for="{{att_name}}">File to upload</label>
+        <input type="file" class="text" name="{{att_name}}" id="{{att_name}}"/>
       </li>
     </ol>
-    <div style="clear:both"/>
-    <input type="submit" value="$submit_text"/>
+    <div style="clear:both"></div>
+    <input type="submit" value="{{submit_text}}"/>
   </form>
 </div>
