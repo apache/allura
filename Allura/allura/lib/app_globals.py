@@ -8,12 +8,14 @@ import socket
 import re
 import cgi
 import json
+import shlex
 from urllib import urlencode
 from ConfigParser import RawConfigParser
 from collections import defaultdict
 
 import pkg_resources
 
+import mock
 import pysolr
 import oembed
 import markdown
@@ -53,7 +55,9 @@ class Globals(object):
 
         # Setup SOLR
         self.solr_server = config.get('solr.server')
-        if self.solr_server:
+        if asbool(config.get('solr.mock')):
+            self.solr = MockSOLR()
+        elif self.solr_server:
             self.solr =  pysolr.Solr(self.solr_server)
         else: # pragma no cover
             self.solr = None
@@ -184,6 +188,8 @@ class Globals(object):
 
     @property
     def conn(self):
+        if asbool(config.get('amqp.mock')):
+            return self.mock_amq
         from .custom_middleware import environ
         if 'allura.carrot.connection' not in environ:
             environ['allura.carrot.connection'] = BrokerConnection(
@@ -272,6 +278,48 @@ data       : %r
 '''
         return json.dumps(dict(text=text))
 
+class MockSOLR(object):
+
+    class MockHits(list):
+        @property
+        def hits(self):
+            return len(self)
+
+    def __init__(self):
+        self.db = {}
+
+    def add(self, objects):
+        for o in objects:
+            o['text'] = ''.join(o['text'])
+            self.db[o['id']] = o
+
+    def search(self, q, fq=None, **kw):
+        # Parse query
+        preds = []
+        q_parts = shlex.split(q)
+        if fq: q_parts += fq
+        for part in q_parts:
+            if ':' in part:
+                field, value = part.split(':', 1)
+                preds.append((field, value))
+            else:
+                preds.append(('text', part))
+        result = self.MockHits()
+        for obj in self.db.values():
+            for field, value in preds:
+                if field == 'text' or field.endswith('_t'):
+                    if value not in str(obj.get(field, '')):
+                        break
+                else:
+                    if value != str(obj.get(field, '')):
+                        break
+            else:
+                result.append(obj)
+        return result
+
+    def delete(self, *args, **kwargs):
+        pass
+
 class MockAMQ(object):
 
     def __init__(self):
@@ -281,6 +329,9 @@ class MockAMQ(object):
     def clear(self):
         for k in self.exchanges.keys():
             self.exchanges[k][:] = []
+
+    def create_backend(self):
+        return mock.Mock()
 
     def publish(self, xn, message, routing_key, **kw):
         self.exchanges[xn].append(
