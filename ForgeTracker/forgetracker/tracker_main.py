@@ -33,7 +33,7 @@ from allura.controllers import BaseController
 from forgetracker import model as TM
 from forgetracker import version
 
-from forgetracker.widgets.ticket_form import TicketForm, EditTicketForm, TicketCustomField
+from forgetracker.widgets.ticket_form import TicketForm, TicketCustomField
 from forgetracker.widgets.bin_form import BinForm
 from forgetracker.widgets.ticket_search import TicketSearchResults, MassEdit
 from forgetracker.widgets.admin_custom_fields import TrackerFieldAdmin, TrackerFieldDisplay
@@ -51,7 +51,6 @@ class W:
     mass_edit = MassEdit()
     bin_form = BinForm()
     ticket_form = TicketForm()
-    edit_ticket_form = EditTicketForm()
     subscribe_form = SubscribeForm()
     auto_resize_textarea = ffw.AutoResizeTextarea()
     file_chooser = ffw.FileChooser()
@@ -389,6 +388,7 @@ class RootController(BaseController):
         # if c.app.globals.milestone_names is None:
         #     c.app.globals.milestone_names = ''
         ticket_num = ticket_form.pop('ticket_num', None)
+        comment = ticket_form.pop('comment', None)
         if ticket_num:
             ticket = TM.Ticket.query.get(
                 app_config_id=c.app.config._id,
@@ -656,22 +656,17 @@ class TicketController(BaseController):
         setattr(self, 'feed.rss', self.feed)
 
     @with_trailing_slash
-    @expose('forgetracker.templates.ticket')
+    @expose('jinja:tracker/ticket.html')
     @validate(dict(
             page=validators.Int(if_empty=0),
             limit=validators.Int(if_empty=10)))
     def index(self, page=0, limit=10, **kw):
         if self.ticket is not None:
             require(has_artifact_access('read', self.ticket))
+            c.ticket_form = W.ticket_form
             c.thread = W.thread
-            c.markdown_editor = W.markdown_editor
-            c.attachment_list = W.attachment_list
-            c.label_edit = W.label_edit
-            c.user_select = ffw.ProjectUserSelect()
             c.attachment_list = W.attachment_list
             c.subscribe_form = W.ticket_subscribe_form
-            c.auto_resize_textarea = W.auto_resize_textarea
-            c.file_chooser = W.file_chooser
             thread = self.ticket.discussion_thread
             post_count = M.Post.query.find(dict(discussion_id=thread.discussion_id, thread_id=thread._id)).count()
             c.ticket_custom_field = W.ticket_custom_field
@@ -681,19 +676,6 @@ class TicketController(BaseController):
                         page=page, limit=limit, count=post_count)
         else:
             raise exc.HTTPNotFound, 'Ticket #%s does not exist.' % self.ticket_num
-
-    @with_trailing_slash
-    @expose('forgetracker.templates.edit_ticket')
-    def edit(self, **kw):
-        require(has_artifact_access('write', self.ticket))
-        c.ticket_form = W.edit_ticket_form
-        c.thread = W.thread
-        c.attachment_list = W.attachment_list
-        c.subscribe_form = W.ticket_subscribe_form
-        # if c.app.globals.milestone_names is None:
-        #     c.app.globals.milestone_names = ''
-        return dict(ticket=self.ticket, globals=c.app.globals,
-                    subscribed=M.Mailbox.subscribed(artifact=self.ticket))
 
     @without_trailing_slash
     @expose()
@@ -732,10 +714,10 @@ class TicketController(BaseController):
 
     @expose()
     @h.vardec
-    @validate(W.edit_ticket_form, error_handler=edit)
+    @validate(W.ticket_form, error_handler=index)
     def update_ticket_from_widget(self, **post_data):
         c.app.globals.invalidate_bin_counts()
-        data = post_data['edit_ticket_form']
+        data = post_data['ticket_form']
         # icky: handle custom fields like the non-widget form does
         if 'custom_fields' in data:
             for k in data['custom_fields']:
@@ -747,6 +729,10 @@ class TicketController(BaseController):
         if request.method != 'POST':
             raise Exception('update_ticket must be a POST request')
         changes = changelog()
+        comment = None
+        if 'comment' in post_data:
+            comment = post_data['comment']
+            del post_data['comment']
         if 'tags' in post_data and len(post_data['tags']):
             tags = post_data['tags']
             del post_data['tags']
@@ -796,6 +782,8 @@ class TicketController(BaseController):
                         value = float(value)
                     except (TypeError, ValueError):
                         value = 0
+            elif cf.name == '_milestone' and cf.name in post_data:
+                value = post_data[cf.name]
             # unchecked boolean won't be passed in, so make it False here
             elif cf.type == 'boolean':
                 value = False
@@ -827,6 +815,8 @@ class TicketController(BaseController):
         self.ticket.commit()
         if any_sums:
             self.ticket.dirty_sums()
+        if comment:
+            self.ticket.discussion_thread.post(text=comment)
         redirect('.')
 
     @expose()

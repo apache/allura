@@ -380,10 +380,10 @@ class Ticket(VersionedArtifact):
 
     def update(self,ticket_form):
         self.globals.invalidate_bin_counts()
-        tags = (ticket_form.pop('tags', None) or '').split(',')
+        tags = (ticket_form.pop('tags', None) or '')
         if tags == ['']:
             tags = []
-        labels = (ticket_form.pop('labels', None) or '').split(',')
+        labels = (ticket_form.pop('labels', None) or '')
         if labels == ['']:
             labels = []
         self.labels = labels
@@ -391,35 +391,43 @@ class Ticket(VersionedArtifact):
         custom_sums = set()
         other_custom_fields = set()
         for cf in self.globals.custom_fields or []:
-            (custom_sums if cf.type=='sum' else other_custom_fields).add(cf.label)
-            if cf.type == 'boolean' and 'custom_fields.'+cf.label not in ticket_form:
-                self.custom_fields[cf.label] = 'False'
+            (custom_sums if cf.type=='sum' else other_custom_fields).add(cf.name)
+            if cf.type == 'boolean' and 'custom_fields.'+cf.name not in ticket_form:
+                self.custom_fields[cf.name] = 'False'
+        # this has to happen because the milestone custom field has special layout treatment
+        if '_milestone' in ticket_form:
+            other_custom_fields.add('_milestone')
+            milestone = ticket_form.pop('_milestone', None)
+            if 'custom_fields' not in ticket_form:
+                ticket_form['custom_fields'] = dict()
+            ticket_form['custom_fields']['_milestone'] = milestone
         if 'attachment' in ticket_form:
             attachments = ticket_form.pop('attachment')
-            if attachments:
-                for attachment in attachments:
-                    self.attach(file_info=attachment)
         for k, v in ticket_form.iteritems():
-            if 'custom_fields.' in k:
-                k = k.split('custom_fields.')[1]
-            if k in custom_sums:
-                # sums must be coerced to numeric type
-                try:
-                    self.custom_fields[k] = float(v)
-                except (TypeError, ValueError):
-                    self.custom_fields[k] = 0
-            elif k in other_custom_fields:
-                # strings are good enough for any other custom fields
-                self.custom_fields[k] = v
-            elif k == 'assigned_to':
+            if k == 'assigned_to':
                 if v:
                     user = c.project.user_in_project(v)
                     if user:
                         self.assigned_to_id = user._id
             elif k != 'super_id':
-                # if it's not a custom field, set it right on the ticket (but don't overwrite super_id)
                 setattr(self, k, v)
+        if 'custom_fields' in ticket_form:
+            for k,v in ticket_form['custom_fields'].iteritems():
+                if k in custom_sums:
+                    # sums must be coerced to numeric type
+                    try:
+                        self.custom_fields[k] = float(v)
+                    except (TypeError, ValueError):
+                        self.custom_fields[k] = 0
+                elif k in other_custom_fields:
+                    # strings are good enough for any other custom fields
+                    self.custom_fields[k] = v
         self.commit()
+        if attachments:
+            for attachment in attachments:
+                TicketAttachment.save_attachment(
+                    attachment.filename, attachment.file, content_type=attachment.type,
+                    ticket_id=self._id)
         # flush so we can participate in a subticket search (if any)
         session(self).flush()
         super_id = ticket_form.get('super_id')
@@ -444,6 +452,8 @@ class Ticket(VersionedArtifact):
             custom_fields=self.custom_fields)
 
 class TicketAttachment(BaseAttachment):
+    thumbnail_size = (100, 100)
+
     metadata=FieldProperty(dict(
             ticket_id=schema.ObjectId,
             app_config_id=schema.ObjectId,
