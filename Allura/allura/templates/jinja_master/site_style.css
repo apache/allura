@@ -917,8 +917,9 @@ ul.ui-tab li a {
     background-color: #f2f2f2;
     border: 1px solid #ccc;
     border-width: 0 0 1px 0;
-    overflow: auto;
+    overflow: visible;
     padding: 1.5em;
+    color: #555;
 }
 .editbox label{
     color: #555;

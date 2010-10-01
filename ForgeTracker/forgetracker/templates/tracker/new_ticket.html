@@ -2,8 +2,26 @@
 
 {% block title %}{{c.project.name}} / {{c.app.config.options.mount_label}} / New Ticket{% endblock %}
 
-{% block header %}Create a Ticket{% endblock %}
+{% block header %}&nbsp;{% endblock %}
 
-{% block content %}
-  {{c.ticket_form.display(action=action, value=dict(super_id=super_id))}}
+{% block edit_box %}
+<div class="editbox">
+  <div class="form_holder">
+    {{c.ticket_form.display(action=action, value=dict(super_id=super_id))}}
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style type="text/css">
+  div.form_holder{
+    margin-top: -47px;
+  }
+  div.editbox .row{
+    margin-bottom: 1em;
+  }
+  .sf_markdown_edit.markItUpEditor {
+    height: 100px;
+  }
+</style>
 {% endblock %}
