@@ -79,14 +79,18 @@ class ForgeGitApp(Application):
 
     @h.exceptionless([], log)
     def sidebar_menu(self):
+        if self.repo.status != 'ready':
+            return [
+                SitemapEntry('Repository is %s' % self.repo.status) ]
         links = [ SitemapEntry('Browse',c.app.url + url(quote('ref/master:/')), ui_icon='folder-collapsed'),
-                  SitemapEntry('History', c.app.url + url(quote('ref/master:/')) + 'log', ui_icon='document-b', small=c.app.repo.count())]
+                  SitemapEntry('History', c.app.url + url(quote('ref/master:/')) + 'log',
+                               ui_icon='document-b', small=c.app.repo.count())]
         if has_artifact_access('admin', app=c.app)():
             links.append(SitemapEntry('Admin', c.project.url()+'admin/'+self.config.options.mount_point, ui_icon='tool-admin'))
         repo = c.app.repo
         if repo:
             branches= [ b.name for b in repo.branches ]
-            tags = [ t.name for t in repo.repo_tags() ]
+            tags = [ t.name for t in repo.repo_tags ]
             if branches:
                 links.append(SitemapEntry('Branches'))
                 for b in branches:
@@ -184,6 +188,11 @@ class RootController(BaseController):
     def __init__(self):
         self.ref = Refs()
         self.ci = Commits()
+
+    @expose()
+    def refresh(self):
+        g.publish('react', 'scm.git.refresh_commit')
+        return '%r refresh queued.' % c.app.repo
 
     @expose('jinja:git/index.html')
     def index(self, offset=0, branch='master', **kw):

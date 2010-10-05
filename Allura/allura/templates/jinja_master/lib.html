@@ -63,7 +63,7 @@
 {% macro path_links(parts) %}
   {% set i=0 %}
   {% for part in parts %}
-    <a href="{{'./' + '../' * (parts.__len__()-i-1)}}">{{part}}</a>
+    <a href="{{'./' + '../' * (parts.__len__()-i-1)}}">{{part}}</a> /
     {% set i=i+1 %}
   {% endfor %}
 {% endmacro %}

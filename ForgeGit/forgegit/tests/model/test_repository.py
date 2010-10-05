@@ -23,6 +23,7 @@ class TestGitRepo(unittest.TestCase):
             url_path = '/test/',
             tool = 'git',
             status = 'creating')
+        self.repo.refresh()
         ThreadLocalORMSession.flush_all()
         ThreadLocalORMSession.close_all()
 
@@ -45,16 +46,13 @@ class TestGitRepo(unittest.TestCase):
 
     def test_log(self):
         for entry in self.repo.log():
-            assert str(entry.author)
+            assert str(entry.authored)
             assert entry.message
 
     def test_commit(self):
         entry = self.repo.commit('HEAD')
-        assert str(entry.author) == 'Sebastian Thiel', entry.author
+        assert str(entry.authored.name) == 'Sebastian Thiel', entry.authored
         assert entry.message
-
-    def test_tags(self):
-        self.repo.repo_tags()
 
 class TestGitCommit(unittest.TestCase):
 
@@ -70,6 +68,7 @@ class TestGitCommit(unittest.TestCase):
             url_path = '/test/',
             tool = 'git',
             status = 'creating')
+        self.repo.refresh()
         self.rev = self.repo.commit('HEAD')
         ThreadLocalORMSession.flush_all()
         ThreadLocalORMSession.close_all()
@@ -80,7 +79,7 @@ class TestGitCommit(unittest.TestCase):
         assert self.rev._id == art._id
 
     def test_url(self):
-        assert self.rev.url().endswith('3061/')
+        assert self.rev.url(self.repo).endswith('3061/')
 
     def test_committer_url(self):
         assert self.rev.committer_url is None
@@ -92,8 +91,8 @@ class TestGitCommit(unittest.TestCase):
         assert len(self.rev.shorthand_id()) == 8
 
     def test_diff(self):
-        len(self.rev.diff())
-        for d in self.rev.diff():
+        len(self.rev.diff(self.repo))
+        for d in self.rev.diff(self.repo):
             print d
 
 

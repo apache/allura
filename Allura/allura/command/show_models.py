@@ -65,7 +65,8 @@ class EnsureIndexCommand(base.Command):
         projects = M.Project.query.find().all()
         base.log.info('Building global indexes')
         for name, cls in MappedClass._registry.iteritems():
-            if cls.__mongometa__.session == M.main_orm_session:
+            if cls.__mongometa__.session in (
+                M.main_orm_session, M.repository_orm_session):
                 base.log.info('... for class %s', cls)
                 M.main_orm_session.update_indexes(cls, background=True)
             else:

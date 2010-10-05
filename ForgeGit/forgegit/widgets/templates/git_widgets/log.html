@@ -15,40 +15,31 @@
     </thead>
     <tbody>
       {% for commit in value %}
-        {% set cv = commit.value %}
         <tr>
           <td>
-            <b>{{h.text.truncate(h.really_unicode(commit.value.message), 75)}}</b><br/>
-            {% if cv.committer != cv.author %}
-              {% if cv.committer_url %}
-                <a href="{{cv.committer_url}}">{{email_gravatar(cv.committer.email, title=cv.committer.name, size=16)}}
-                {{cv.committer.name}}</a>
+            <a href="{{commit.url()}}">
+              {{h.text.truncate(h.really_unicode(commit.message.split('\n')[0]), 75)}}
+            </a>
+            <br/>
+            {% if commit.committed.email != commit.authored.email %}
+              {% if commit.committer_url %}
+                <a href="{{commit.committer_url}}">{{email_gravatar(commit.committed.email, title=commit.committed.name, size=16)}}
+                {{commit.committed.name}}</a>
                 pushed
               {% else %}
-                {{email_gravatar(cv.committer.email, title=cv.committer.name, size=16)}} {{cv.committer.name}}
+                {{email_gravatar(commit.committed.email, title=commit.committed.name, size=16)}} {{commit.committed.name}}
                 pushed
               {% endif %}
             {% endif %}
-            <a href="{{cv.url()}}">{{h.text.truncate(cv.hexsha, 10)}}</a>
-            {% if cv.author_url %}
-              by
-              <a href="{{cv.author_url}}">{{email_gravatar(cv.author.email, title=cv.author.name, size=16)}}
-              {{cv.author.name}}</a>
-            {% else %}
-              by
-              {{email_gravatar(cv.author.email, title=cv.author.name, size=16)}} {{cv.author.name}}
-            {% endif %}
+            <a href="{{commit.url()}}">{{h.text.truncate(commit.hexsha, 10)}}</a>
+            by
+              {{email_gravatar(commit.authored.email, title=commit.authored.name, size=16)}} {{commit.authored.name}}
           </td>
           <td>
-            {% if cv.committed_datetime %}{{h.ago(cv.committed_datetime)}}{% endif %}
+            {% if commit.committed.date %}{{h.ago(commit.committed.date)}}{% endif %}
           </td>
           <td style="text-align: right">
-            {% if commit.prev %}
-              Parent(s):
-              {% for ci in commit.prev %}<a href="{{ci.url()}}">{{h.text.truncate(ci._id, 10)}}</a>{% endfor %}
-              <br/>
-            {% endif %}
-            <a href="{{cv.tree().url()}}">Tree</a>
+            <a href="{{commit.url()}}tree/">Tree</a>
           </td>
         </tr>
       {% endfor %}

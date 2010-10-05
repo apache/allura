@@ -24,8 +24,8 @@ class BranchBrowser(repository.BranchBrowser):
     def index(self, limit=None, page=0, count=0, **kw):
         latest = c.app.repo.latest(branch=self._branch)
         if not latest:
-            return dict(allow_fork=True, log=[])
-        redirect(latest.tree().url())
+            return dict(allow_fork=False, log=[])
+        redirect(latest.url() + 'tree')
 
     @expose('jinja:git/log.html')
     @with_trailing_slash

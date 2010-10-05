@@ -27,9 +27,12 @@ def clone(routing_key, data):
 
 @react('scm.git.refresh_commit')
 def refresh_commit(routing_key, data):
+    h.set_context(data['project_id'], data['mount_point'])
     repo = pylons.c.app.repo
+    repo.refresh()
+    return
     hash = data['hash']
-    log.info('Refresh commit %s', hash)
+    log.info('Refresh commits on %s', repo)
     c_from, c_to = hash.split('..')
     for cobj in repo.iter_commits(rev=hash):
         aref = cobj.dump_ref()

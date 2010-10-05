@@ -1,1 +1,1 @@
-from git_repo import GitRepository, GitCommit
+from git_repo import GitRepository, GitCommit, GitTree, GitBlob

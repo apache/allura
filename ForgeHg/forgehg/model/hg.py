@@ -24,11 +24,6 @@ from allura.lib import helpers as h
 
 log = logging.getLogger(__name__)
 
-def on_import():
-    HgRepository.CommitClass = HgCommit
-    HgCommit.TreeClass = HgTree
-    HgTree.BlobClass = HgBlob
-
 class HgRepository(M.Repository):
     class __mongometa__:
         name='hg-repository'
@@ -226,60 +221,6 @@ class HgCommit(M.Commit):
             prev=self.parents,
             next=self.children)
 
-class HgTree(M.Tree):
-
-    def __init__(self, repo, commit, parent=None, name=None):
-        super(HgTree, self).__init__(repo, commit, parent, name)
-        if self._parent:
-            self._tree = self._parent._tree[name]
-            self._manifest = self._parent._manifest
-        else:
-            self._tree = {}
-            self._manifest = commit._manifest
-            for k,v in self._manifest.iteritems():
-                dirname, filename = os.path.split(k)
-                tree = self._tree
-                if dirname:
-                    for dirpart in dirname.split('/'):
-                        tree = tree.setdefault(dirpart, {})
-                tree[filename] = v
-
-    def ls(self):
-        for name, dirent in sorted(self._tree.iteritems()):
-            name = name
-            date = None
-            href = name
-            last_author = '-'
-            commit = None
-            if isinstance(dirent, dict):
-                href = href + '/'
-                kind='dir'
-            else:
-                kind='file'
-                fc = self._repo._impl.filectx(
-                    self.path() + name,
-                    fileid=dirent)
-                date = datetime.fromtimestamp(sum(fc.date()))
-                last_author = fc.user()
-                commit = HgCommit.from_repo_object(fc.changectx(), self._repo)
-            yield dict(
-                dirent=dirent,
-                name=name,
-                date=date,
-                href=href,
-                kind=kind,
-                last_author=last_author,
-                commit=commit,
-                )
-
-    def is_blob(self, name):
-        try:
-            dirent = self._tree[name]
-            return not isinstance(dirent, dict)
-        except:
-            log.exception('Error checking blob-ness of %s', name)
-            return False
-
 class HgBlob(M.Blob):
 
     def __init__(self, repo, commit, tree, filename):
@@ -318,5 +259,4 @@ class HgBlob(M.Blob):
     def __getattr__(self, name):
         return getattr(self._blob, name)
 
-on_import()
 MappedClass.compile_all()

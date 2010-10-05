@@ -4,17 +4,35 @@
   {{c.project.name}} / {{c.app.config.options.mount_label}} / Commit {{h.text.truncate(commit.hexsha, 10)}}
 {% endblock %}
 
-{% block header %}Commit <a href="{{commit.url()}}">{{h.text.truncate(commit.hexsha, 10)}}</a>{% endblock %}
+{% macro commit_link(commit) -%}
+<a href={{commit.url()}}>{{h.text.truncate(commit.object_id, 10)}}</a>
+{%- endmacro %}
+
+{% block header %}Commit {{commit_link(commit)}}{% endblock %}
 
 {% block content %}
 {{c.revision_widget.display(value=commit, prev=prev, next=next)}}
 <table>
   <tbody>
-    {% for kind, path in commit.diff_summarize() %}
-      <tr>
-        <td>{{kind}}</td>
-        <td><a href="./tree/{{h.really_unicode(path)}}">{{h.really_unicode(path)}}</a></td>
-      </tr>
+    {% for diff in commit.diffs.added %}
+    <tr>
+      <td>add</td>
+      <td><a href="./tree{{h.really_unicode(diff.new)}}">{{h.really_unicode(diff.new)}}</a></td>
+    </tr>
+    {% endfor %}{% for diff in commit.diffs.removed %}
+    <tr>
+      <td>remove</td>
+      <td><a href="{{prev[0].url()}}tree{{h.really_unicode(diff.old)}}">{{h.really_unicode(diff.old)}}</a></td>
+    </tr>
+    {% endfor %}{% for diff in commit.diffs.changed %}
+    <tr>
+      <td>change</td>
+      <td>
+        {{ commit_link(prev[0]) }}: <a href="{{prev[0].url()}}tree/{{h.really_unicode(diff.old)}}">{{h.really_unicode(diff.old)}}</a><br/>
+        <a href="./tree/{{h.really_unicode(diff.new)}}?diff={{prev[0].commit_id}}">&mdash;diff&mdash;</a><br/>
+        {{ commit_link(commit) }}: <a href="./tree/{{h.really_unicode(diff.old)}}">{{h.really_unicode(diff.new)}}</a>
+      </td>
+    </tr>
     {% endfor %}
   </tbody>
 </table>

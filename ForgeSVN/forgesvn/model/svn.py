@@ -19,11 +19,6 @@ from allura import model as M
 
 log = logging.getLogger(__name__)
 
-def on_import():
-    SVNRepository.CommitClass = SVNCommit
-    SVNCommit.TreeClass = SVNTree
-    SVNTree.BlobClass = SVNBlob
-
 class SVNRepository(M.Repository):
     MAGIC_FILENAME='.SOURCEFORGE-REPOSITORY'
     class __mongometa__:
@@ -203,34 +198,6 @@ class SVNCommit(M.Commit):
     def author(self):
         return M.User.by_username(self.author_username)
 
-class SVNTree(M.Tree):
-
-    def ls(self):
-        try:
-            for dirent in self._repo._impl.ls(
-                self._repo.local_url + self.path(),
-                revision=self._commit.revision):
-                name = dirent.name.rsplit('/')[-1]
-                date = datetime.fromtimestamp(dirent.time)
-                href = name
-                if dirent.kind == pysvn.node_kind.dir:
-                    href = href + '/'
-                commit = self._repo.commit(dirent.created_rev.number)
-                yield dict(dirent, name=name, date=date, href=href,
-                           commit=commit)
-        except pysvn.ClientError:
-            pass
-
-    def is_blob(self, name):
-        dirent = self._repo._impl.ls(
-            self._repo.local_url + self.path()+name,
-            revision=self._commit.revision)
-        if len(dirent) != 1: return False
-        dirent = dirent[0]
-        if dirent.kind == pysvn.node_kind.file:
-            return True
-        return False
-
 class SVNBlob(M.Blob):
 
     def __iter__(self):
@@ -262,5 +229,4 @@ class SVNBlob(M.Blob):
             result['next'] = ci.tree().get_blob(self.filename, path)
         return result
 
-on_import()
 MappedClass.compile_all()

@@ -3,44 +3,40 @@
 
 {% block title %}
   {{c.project.name}} / {{c.app.config.options.mount_label}} /
-  {{h.really_unicode(blob.filename)}} @{{h.text.truncate(blob._commit._id, 10)}}
+  {{h.really_unicode(blob.name)}} @{{h.text.truncate(blob.commit.object_id, 10)}}
 {% endblock %}
 
 {% block header %}
-<a href="{{blob._commit.url()}}">@{{h.text.truncate(blob._commit._id, 10)}}</a>:
-{{lib.path_links(blob.path().split('/')[1:-1])}} {{h.really_unicode(blob.filename)}}
+<a href="{{blob.commit.url()}}">@{{h.text.truncate(blob.commit.object_id, 10)}}</a>:
+{{lib.path_links(blob.path().split('/')[1:-1])}} {{h.really_unicode(blob.name)}}
 {% endblock %}
 
 {% block content %}
   {% if prev %}
-    Parent(s):
-    {% for b in prev %}
-      <a href="{{b.url()}}">{{h.text.truncate(b._commit._id, 10)}}</a>
-      <a href="?diff={{b._commit._id}}">(diff)</a>
-    {% endfor %}
-    <br/>
+    Parent:
+      <a href="{{prev.url()}}">{{h.text.truncate(prev.commit.object_id, 10)}}</a>
+      <a href="?diff={{prev.commit.object_id}}">(diff)</a>
+      <br/>
   {% endif %}
 
   {% if next %}
-    Child(ren):
-    {% for b in next %}
-      <a href="{{b.url()}}">{{h.text.truncate(b._commit._id, 10)}}</a>
-      <a href="{{b.url()}}?diff={{blob._commit._id}}">(diff)</a>
-    {% endfor %}
+    Child:
+    <a href="{{next.url()}}">{{h.text.truncate(next.commit.object_id, 10)}}</a>
+    <a href="{{next.url()}}?diff={{blob.commit.object_id}}">(diff)</a>
     <br/>
   {% endif %}
 
   {% if blob.has_image_view %}<img src="?format=raw"/>{% endif %}
   {% if not blob.has_html_view and not blob.has_image_view and not force_display %}
-    {{h.really_unicode(blob.filename)}} is not known to be viewable in your browser.
+    {{h.really_unicode(blob.name)}} is not known to be viewable in your browser.
     Try to <a href="?force=True">display it</a> anyway or
     <a href="?format=raw">download it</a> instead.
   {% endif %}
   {% if blob.has_html_view and not blob.has_image_view or force_display %}
     <a href="?format=raw">Download this file</a>
     <div class="clip">
-      <h3><span class="ico-l"><b class="ui-icon ui-icon-document"></b> {{h.really_unicode(blob.filename)}}</span></h3>
-      {{g.highlight(blob.text, filename=blob.filename)}}
+      <h3><span class="ico-l"><b class="ui-icon ui-icon-document"></b> {{h.really_unicode(blob.name)}}</span></h3>
+      {{g.highlight(blob.text, filename=blob.name)}}
     </div>
   {% endif %}
 {% endblock %}

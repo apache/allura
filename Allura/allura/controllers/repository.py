@@ -1,14 +1,18 @@
 import os
+import logging
 from urllib import unquote
 
 from pylons import c, g, request, response
 import tg
 from tg import redirect, expose, url, override_template
+from tg.decorators import with_trailing_slash
 
 from allura.lib import patience
 from allura.lib.widgets.file_browser import TreeWidget
 from allura import model
 from .base import BaseController
+
+log = logging.getLogger(__name__)
 
 def on_import():
     BranchBrowser.CommitBrowserClass = CommitBrowser
@@ -28,9 +32,6 @@ class BranchBrowser(BaseController):
                 branch=self._branch,
                 offset=start,
                 limit=limit)
-        revisions = [ dict(value=r) for r in revisions ]
-        for r in revisions:
-            r.update(r['value'].context())
         return dict(
             username=c.user._id and c.user.username,
             branch=self._branch,
@@ -52,7 +53,7 @@ class CommitBrowser(BaseController):
     def __init__(self, revision):
         self._revision = revision
         self._commit = c.app.repo.commit(revision)
-        self.tree = self.TreeBrowserClass(self._commit)
+        self.tree = self.TreeBrowserClass(self._commit, tree=self._commit.tree)
 
     def index(self):
         c.revision_widget = self.revision_widget
@@ -65,35 +66,21 @@ class TreeBrowser(BaseController):
     FileBrowserClass=None
     tree_widget=TreeWidget()
 
-    def __init__(self, commit, parent=None, name=None):
+    def __init__(self, commit, tree, path='', parent=None):
         self._commit = commit
+        self._tree = tree
+        self._path = path + '/'
         self._parent = parent
-        self._name = name
-        if parent:
-            self._tree = parent.get_tree(name)
-        elif self._commit:
-            self._tree = self._commit.tree()
-        else:
-            self._tree = None
 
     @expose('jinja:repo/tree.html')
+    @with_trailing_slash
     def index(self, **kw):
-        if not request.path.endswith('/'):
-            filename = request.environ['PATH_INFO'].rsplit('/')[-1]
-            if filename and self._tree.is_blob(filename):
-                controller = self.FileBrowserClass(
-                    self._commit,
-                    self._tree,
-                    filename)
-                if 'diff' in kw:
-                    override_template(self.index, 'jinja:repo/diff.html')
-                else:
-                    override_template(self.index, 'jinja:repo/file.html')
-                return controller.index(**kw)
         c.tree_widget = self.tree_widget
         return dict(
+            repo=c.app.repo,
             commit=self._commit,
             tree=self._tree,
+            path=self._path,
             parent=self._parent)
 
     @expose()
@@ -107,10 +94,13 @@ class TreeBrowser(BaseController):
                     self._commit,
                     self._tree,
                     filename), rest
+        elif rest == ('index', ):
+            rest = (request.environ['PATH_INFO'].rsplit('/')[-1],)
         return self.__class__(
             self._commit,
-            self._tree,
-            next), rest
+            self._tree.get_tree(next),
+            self._path + next,
+            self), rest
 
 class FileBrowser(BaseController):
 
@@ -141,7 +131,7 @@ class FileBrowser(BaseController):
     @expose()
     def raw(self):
         content_type = self._blob.content_type.encode('utf-8')
-        filename = self._blob.filename.encode('utf-8')
+        filename = self._blob.name.encode('utf-8')
         response.headers['Content-Type'] = ''
         response.content_type = content_type
         if self._blob.content_encoding is not None:
@@ -156,7 +146,7 @@ class FileBrowser(BaseController):
         try:
             path, filename = os.path.split(self._blob.path())
             a_ci = c.app.repo.commit(commit)
-            a_tree = a_ci.tree()
+            a_tree = a_ci.tree
             a = a_tree.get_blob(filename, path[1:].split('/'))
             apath = a.path()
         except:
