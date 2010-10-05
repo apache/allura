@@ -6,6 +6,28 @@
 
 {% block header %}{{c.project.name}} / {{c.app.config.options.mount_label}} / {{field.label}} / {{milestone.name}}{% endblock %}
 
+{% block actions %}
+{% if allow_edit %}
+  <a href="{{tg.url(c.app.url+'edit/', dict(q=q, limit=limit, sort=sort))}}" class="btn ico-l"><b class="ui-icon ui-icon-pencil"></b> <span>Bulk Edit</span></a>
+{% endif %}
+{% endblock %}
+
+{% block edit_box %}
+<div class="editbox">
+  <div class="row">
+    <div class="column grid_3">
+      <label>Status:</label> {{milestone.closed and 'Closed' or 'Open'}}
+    </div>
+    <div class="column grid_3">
+      <label>Due Date:</label> {{milestone.due_date or 'N/A'}}
+    </div>
+    <div class="column grid_3">
+      <label>Progress:</label> {{closed}} / {{total}}
+    </div>
+  </div>
+</div>
+{% endblock %}
+
 {% block content %}
   {% if milestone.due_date %}
     <h2>Due: {{milestone.due_date}}</h2>
@@ -21,7 +43,4 @@
     sortable_custom_fields=sortable_custom_fields,
     page=page,
     sort=sort)}}
-  {% if allow_edit and count != 0 %}
-    <a href="{{tg.url('../edit/', dict(q=q, limit=limit, sort=sort))}}" class="btn">Edit All</a>
-  {% endif %}
 {% endblock %}

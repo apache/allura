@@ -1,0 +1,120 @@
+{% extends 'jinja_master/master.html' %}
+
+{% do g.register_app_css('css/tracker.css') %}
+
+{% block title %}{{c.project.name}} / {{c.app.config.options.mount_label}} / Milestones{% endblock %}
+
+{% block header %}Milestones{% endblock %}
+
+{% block content %}
+  <form action="update_milestones" method="post" class="update_milestones">
+  <input type="hidden" name="field_name" value="_milestone">
+  <table>
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Summary</th>
+        <th>Status</th>
+        <th>Due Date</th>
+        <th>Progress</th>
+        <th>&nbsp;</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for m in milestones %}
+      <tr>
+        <input type="hidden" name="milestones-{{loop.index0}}.old_name" value="{{m.name}}">
+        <td class="view"><a href="{{c.app.url}}milestone/{{m.name}}/">{{m.name}}</a></td>
+        <td class="view">{{m.description}}</td>
+        <td class="view">{{m.complete and 'Closed' or 'Open'}}</td>
+        <td class="view">{{m.due_date or 'N/A'}}</td>
+        <td class="edit" style="display:none">
+          <input type="text" name="milestones-{{loop.index0}}.new_name" value="{{m.name}}">
+        </td>
+        <td class="edit" style="display:none">
+          <input type="text" name="milestones-{{loop.index0}}.description" value="{{m.description}}">
+        </td>
+        <td class="edit" style="display:none">
+          <select name="milestones-{{loop.index0}}.complete">
+            <option value="Open"{% if not m.complete %} selected="selected"{% endif %}>Open</option>
+            <option value="Closed"{% if m.complete %} selected="selected"{% endif %}>Closed</option>
+          </select>
+        </td>
+        <td class="edit" style="display:none">
+          <input type="date" name="milestones-{{loop.index0}}.due_date" value="{{m.due_date}}">
+        </td>
+        <td>{{m.closed}} / {{m.total}}</td>
+        <td><a href="#" class="ico btn edit_milestone">
+           <b class="ui-icon ui-icon-pencil"></b> <span>Edit</span>
+        </a></td>
+      </tr>
+      {% else %}
+      <tr class="empty_message">
+        <td colspan="6">No milestones found.</td>
+      </tr>
+      {% endfor %}
+      <tr class="new_milestone" style="display:none">
+        <td>
+          <input type="hidden" name="milestones-{{milestones.__len__()}}.old_name">
+          <input type="text" name="milestones-{{milestones.__len__()}}.new_name">
+        </td>
+        <td>
+          <input type="text" name="milestones-{{milestones.__len__()}}.description">
+        </td>
+        <td>
+          <select name="milestones-{{milestones.__len__()}}.complete">
+            <option value="Open">Open</option>
+            <option value="Closed">Closed</option>
+          </select>
+        </td>
+        <td>
+          <input type="date" name="milestones-{{milestones.__len__()}}.due_date">
+        </td>
+        <td>0 / 0</td>
+        <td>&nbsp;</td>
+      </tr>
+    </tbody>
+  </table>
+  <a href="#" class="btn add_milestone">Add Milestone</a>
+  <div class="save_controls" style="display:none">
+    <input type="submit" value="Save">
+    <a href="#" class="btn cancel_edit">Cancel</a>
+  </div>
+  </form>
+{% endblock %}
+
+{% block extra_js %}
+<script type="text/javascript">
+  $(document).ready(function(){
+    $('form.update_milestones').each(function(){
+      var $form = $(this);
+      var $new_row = $('tr.new_milestone', $form);
+      var $add_button = $('a.add_milestone', $form);
+      var $save_controls = $('div.save_controls', $form);
+      $('a.add_milestone').click(function(){
+        $save_controls.show();
+        $add_button.hide();
+        $new_row.show();
+        return false;
+      });
+      $('a.edit_milestone').click(function(){
+        $row = $(this).closest('tr');
+        $('td.view', $row).hide();
+        $('td.edit', $row).show();
+        $save_controls.show();
+        $add_button.hide();
+        return false;
+      });
+      $('a.cancel_edit').click(function(){
+        $('td.view', $form).show();
+        $('td.edit', $form).hide();
+        $save_controls.hide();
+        $add_button.show();
+        $new_row.hide();
+        $('input', $new_row).val('');
+        return false;
+      });
+    });
+  });
+</script>
+{% endblock %}

@@ -134,7 +134,7 @@ class ForgeTrackerApp(Application):
                 if m.complete: continue
                 hits = 0
                 for ms in c.app.globals.milestone_counts:
-                    if ms['name'] == '%s:%s' % (fld.name[1:], m.name):
+                    if ms['name'] == '%s:%s' % (fld.name, m.name):
                         hits = ms['hits']
                 milestones.append(
                     SitemapEntry(
@@ -146,9 +146,11 @@ class ForgeTrackerApp(Application):
             ticket = TM.Ticket.query.find(dict(app_config_id=self.config._id,ticket_num=int(ticket))).first()
         else:
             ticket = None
-        links = [
-            SitemapEntry('Create New Ticket', self.config.url() + 'new/', ui_icon='plus'),
-            SitemapEntry('View Stats', self.config.url() + 'stats', ui_icon='folder-collapsed')]
+        links = [SitemapEntry('Create New Ticket', self.config.url() + 'new/', ui_icon='plus')]
+        if has_artifact_access('configure', app=self)():
+            links.append(SitemapEntry('Edit Milestones', self.config.url() + 'milestones', ui_icon='calendar'))
+            links.append(SitemapEntry('Edit Searches', c.project.url() + 'admin/' + c.app.config.options.mount_point + '/bins/', ui_icon='search'))
+        links.append(SitemapEntry('View Stats', self.config.url() + 'stats', ui_icon='folder-collapsed'))
         if ticket:
             for aref in ticket.references+ticket.backreferences.values():
                 artifact = M.ArtifactReference(aref).artifact
@@ -305,6 +307,65 @@ class RootController(BaseController):
         result['subscribed'] = M.Mailbox.subscribed()
         c.ticket_search_results = W.ticket_search_results
         return result
+
+    @without_trailing_slash
+    @expose('jinja:tracker/milestones.html')
+    def milestones(self, **kw):
+        require(has_artifact_access('config'))
+        milestones = []
+        for fld in c.app.globals.milestone_fields:
+            if fld.name == '_milestone':
+                for m in fld.milestones:
+                    total = 0
+                    closed = 0
+                    for ms in c.app.globals.milestone_counts:
+                        if ms['name'] == '%s:%s' % (fld.name, m.name):
+                            total = ms['hits']
+                            closed = ms['closed']
+                    milestones.append(dict(
+                        name=m.name,
+                        due_date=m.due_date,
+                        description=m.description,
+                        complete=m.complete,
+                        total=total,
+                        closed=closed))
+        return dict(milestones=milestones)
+
+    @without_trailing_slash
+    @h.vardec
+    @expose()
+    def update_milestones(self, field_name=None, milestones=None, **kw):
+        require(has_artifact_access('config'))
+        update_counts = False
+        for fld in c.app.globals.milestone_fields:
+            if fld.name == field_name:
+                for new in milestones:
+                    for m in fld.milestones:
+                        if m.name == new['old_name']:
+                            m.name = new['new_name']
+                            m.description = new['description']
+                            m.due_date = new['due_date']
+                            m.complete = new['complete'] == 'Closed'
+                            if new['old_name'] != new['new_name']:
+                                q = '%s:%s' % (fld.name, new['old_name'])
+                                r = search_artifact(TM.Ticket, q)
+                                ticket_numbers = [match['ticket_num_i'] for match in r.docs]
+                                tickets = TM.Ticket.query.find(dict(
+                                    app_config_id=c.app.config._id,
+                                    ticket_num={'$in':ticket_numbers})).all()
+                                for t in tickets:
+                                    t.custom_fields[field_name] = new['new_name']
+                                update_counts = True
+                    if new['old_name'] == '' and new['new_name'] != '':
+                        fld.milestones.append(dict(
+                            name=new['new_name'],
+                            description = new['description'],
+                            due_date = new['due_date'],
+                            complete = new['complete'] == 'Closed'))
+                        update_counts = True
+        if update_counts:
+            c.app.globals.invalidate_bin_counts()
+        redirect('milestones')
 
     @with_trailing_slash
     @expose('jinja:tracker/search.html')
@@ -973,9 +1034,17 @@ class MilestoneController(BaseController):
         require(has_artifact_access('read'))
         result = self.root.paged_query(self.query, **kw)
         result['allow_edit'] = has_artifact_access('write')()
+        total = 0
+        closed = 0
+        for ms in c.app.globals.milestone_counts:
+            if ms['name'] == '%s:%s' % (self.field.name, self.milestone.name):
+                total = ms['hits']
+                closed = ms['closed']
         result.update(
             field=self.field,
-            milestone=self.milestone)
+            milestone=self.milestone,
+            total=total,
+            closed=closed)
         c.ticket_search_results = W.ticket_search_results
         c.auto_resize_textarea = W.auto_resize_textarea
         return result

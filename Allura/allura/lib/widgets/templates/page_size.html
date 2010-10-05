@@ -5,5 +5,5 @@
   <p py:if="limit">Showing <select class="results_per_page" name="limit">
         <option py:for="per_page in [25, 50, 100, 250]" selected="${per_page==int(limit) and 'selected' or None}"
            value="$per_page">$per_page</option>
-  </select> result<py:if test="limit!=1">s</py:if> per page. </p>
+  </select> of ${count}. </p>
 </form>
