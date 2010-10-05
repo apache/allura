@@ -44,7 +44,6 @@ class W:
         page=None, limit=None, page_size=None, count=None,
         style='linear')
     markdown_editor = ffw.MarkdownEdit()
-    user_tag_edit = ffw.UserTagEdit()
     label_edit = ffw.LabelEdit()
     attachment_list = ffw.AttachmentList()
     ticket_search_results = TicketSearchResults()

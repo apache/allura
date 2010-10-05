@@ -31,34 +31,6 @@ class MarkdownEdit(ew.InputField):
                 $.param({project:'%s', app:'%s'});
         ''' % (c.project and c.project.shortname or '', (c.project and c.app) and c.app.config.options['mount_point'] or ''))
 
-class UserTagEdit(ew.InputField):
-    template='jinja:user_tag_edit.html'
-    validator = fev.UnicodeString()
-    params=['name','user_tags', 'user_tag_names', 'className', 'show_label']
-    show_label=True
-    name=None
-    user_tags=None
-    user_tag_names=None
-    className=''
-
-    def __call__(self, **kw):
-        # Precompute tag name list
-        if self.user_tag_names is None:
-            self.user_tag_names = [t.tag for t in self.user_tags.tags]
-        return super(UserTagEdit, self).__call__(**kw)
-
-    def from_python(self, value, state=None):
-        return value
-
-    def resources(self):
-        yield ew.resource.JSLink('js/jquery.tag.editor.js')
-        yield onready('''
-          $('input.user_tag_edit').tagEditor({
-            confirmRemoval: false,
-            completeOnSeparator: true,
-            completeOnBlur: true
-          });
-        ''');
 
 class LabelList(fev.UnicodeString):
 
