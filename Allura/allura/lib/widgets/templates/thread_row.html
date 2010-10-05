@@ -1,8 +1,0 @@
-<tr xmlns="http://www.w3.org/1999/xhtml"
-    xmlns:py="http://genshi.edgewall.org/">
-  <td><a href="${thread.url()}">${thread.subject or '(no subject)'}</a></td>
-  <td>$thread.num_replies</td>
-  <td>$thread.num_views</td>
-  <td>${post_summary(thread.last_post)}</td>
-  <td>${checkbox('thread-%s.subscribed' % i, None, thread.subscription())}</td>
-</tr>
