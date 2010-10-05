@@ -8,6 +8,6 @@
         <option {% if per_page == limit|int %}selected="selected"{% endif %}
            value="{{per_page}}">{{per_page}}</option>
     {% endfor %}
-  </select> result{% if limit|int != 1 %}s{% endif %} per page. </p>
+  </select> result{% if limit|int != 1 %}s{% endif %} of {count}. </p>
   {% endif %}
 </form>
