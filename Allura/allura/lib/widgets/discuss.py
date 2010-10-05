@@ -295,7 +295,7 @@ class PostThread(ew.Widget):
     supress_promote=False
 
 class Thread(HierWidget):
-    template='genshi:allura.lib.widgets.templates.thread'
+    template='jinja:thread.html'
     name='thread'
     params=['value', 'page', 'limit', 'count', 'show_subject','new_post_text']
     value=None
