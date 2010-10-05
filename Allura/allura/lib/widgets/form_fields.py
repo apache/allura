@@ -32,13 +32,20 @@ class MarkdownEdit(ew.InputField):
         ''' % (c.project and c.project.shortname or '', (c.project and c.app) and c.app.config.options['mount_point'] or ''))
 
 class UserTagEdit(ew.InputField):
-    template='genshi:allura.lib.widgets.templates.user_tag_edit'
+    template='jinja:user_tag_edit.html'
     validator = fev.UnicodeString()
-    params=['name','user_tags', 'className', 'show_label']
+    params=['name','user_tags', 'user_tag_names', 'className', 'show_label']
     show_label=True
     name=None
     user_tags=None
+    user_tag_names=None
     className=''
+
+    def __call__(self, **kw):
+        # Precompute tag name list
+        if self.user_tag_names is None:
+            self.user_tag_names = [t.tag for t in self.user_tags.tags]
+        return super(UserTagEdit, self).__call__(**kw)
 
     def from_python(self, value, state=None):
         return value
