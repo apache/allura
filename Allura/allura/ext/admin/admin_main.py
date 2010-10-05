@@ -36,7 +36,7 @@ class AdminWidgets(WidgetController):
 
     def __init__(self, app): pass
 
-    @expose('allura.ext.admin.templates.widgets.users')
+    @expose('jinja:widgets/users.html')
     def users(self):
         def uniq(users): 
             t = {}
@@ -47,7 +47,7 @@ class AdminWidgets(WidgetController):
         project_users = uniq([r.user for r in c.project.roles])
         return dict(project_users=project_users)
 
-    @expose('allura.ext.admin.templates.widgets.tool_status')
+    @expose('jinja:widgets/tool_status.html')
     def tool_status(self):
         'Display # of ArtifactLinks for each (mounted) tool'
         links = defaultdict(list)
