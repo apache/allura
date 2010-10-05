@@ -87,7 +87,7 @@ class LabelEdit(ew.InputField):
         ''')
 
 class ProjectUserSelect(ew.InputField):
-    template='genshi:allura.lib.widgets.templates.project_user_select'
+    template='jinja:project_user_select.html'
     params=['name', 'value', 'show_label', 'className']
     show_label=True
     name=None
@@ -172,7 +172,7 @@ class AutoResizeTextarea(ew.TextArea):
         ''')
 
 class PageList(ew.Widget):
-    template='genshi:allura.lib.widgets.templates.page_list'
+    template='jinja:page_list.html'
     params=['limit','count','page', 'url_params']
     show_label=False
     name=None

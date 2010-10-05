@@ -148,7 +148,7 @@ class _ThreadsTable(ew.TableField):
             href="${value['url']()}", show_label=True))
 
 class SubscriptionForm(ew.SimpleForm):
-    template='allura.lib.widgets.templates.subscription_form'
+    template='jinja:subscription_form.html'
     value=None
     threads=None
     show_discussion_email=False
@@ -226,7 +226,7 @@ class PostHeader(ew.Widget):
     value=None
 
 class PostThread(ew.Widget):
-    template='genshi:allura.lib.widgets.templates.post_thread'
+    template='jinja:post_thread.html'
     params=['value']
     value=None
 

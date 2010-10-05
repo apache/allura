@@ -1,16 +1,31 @@
-<div xmlns="http://www.w3.org/1999/xhtml"
-  xmlns:py="http://genshi.edgewall.org/"
-  py:strip="True">
-  <div py:if="limit and count and int(limit) &lt; int(count)" style="float: right;" py:with="pages=int(count)/int(limit)+(int(count)%int(limit) and 1 or 0)">
-    <a py:if="page != 0" class="btn"
-       href="${tg.url(request.path_info, dict(page=0, **url_params))}">First</a>
-    <a py:if="page &gt; 0" class="btn"
-       href="${tg.url(request.path_info, dict(page=page-1, **url_params))}">Previous</a>
-    <a py:for="i in range(0, pages)" class="btn${page==i and ' active' or None}"
-       href="${tg.url(request.path_info, dict(limit=limit, page=i, **url_params))}"> <span>${i+1}</span></a>
-    <a py:if="page &lt; pages-1" class="btn"
-       href="${tg.url(request.path_info, dict(page=page+1, **url_params))}">Next</a>
-    <a py:if="page != pages-1" class="btn"
-       href="${tg.url(request.path_info, dict(page=pages-1, **url_params))}">Last</a>
+<div>
+  {% if limit and count %}
+  {% set limit = limit|int %}
+  {% set count = count|int %}
+  {% if limit < count %}
+  {% set pages = count / limit + (count % limit and 1 or 0) %}
+  <div style="float: right;">
+    {% if page != 0 %}
+    <a class="btn"
+       href="{{tg.url(request.path_info, dict(page=0, **url_params))}}">First</a>
+    {% endif %}
+    {% if page > 0 %}
+    <a class="btn"
+       href="{{tg.url(request.path_info, dict(page=page-1, **url_params))}}">Previous</a>
+    {% endif %}
+    {% for i in range(0, pages) %}
+    <a class="btn{{page==i and ' active' or ''}}"
+       href="{{tg.url(request.path_info, dict(limit=limit, page=i, **url_params))}}"> <span>{{i+1}}</span></a>
+    {% endfor %}
+    {% if page < pages-1 %}
+    <a class="btn"
+       href="{{tg.url(request.path_info, dict(page=page+1, **url_params))}}">Next</a>
+    {% endif %}
+    {% if page != pages-1 %}
+    <a class="btn"
+       href="{{tg.url(request.path_info, dict(page=pages-1, **url_params))}}">Last</a>
+    {% endif %}
   </div>
+  {% endif %}
+  {% endif %}
 </div>

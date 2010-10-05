@@ -1,13 +1,14 @@
-<div xmlns="http://www.w3.org/1999/xhtml"
-     xmlns:py="http://genshi.edgewall.org/"
-     py:strip="True">
-  <div py:for="pi in value">
-    <a href="#post-${pi.post.slug}">${pi.post.author().display_name}</a>
-    ${h.ago(pi.post.timestamp)}
+<div>
+  {% for pi in value %}
+  <div>
+    <a href="#post-{{pi.post.slug}}">{{pi.post.author().display_name}}</a>
+    {{h.ago(pi.post.timestamp)}}
     <br/>
-    <div py:if="pi.children"
-         style="border-left:1px solid black; margin-left: 5px; padding-left: 5px">
-      ${c.widget.widget_type.display(value=pi.children)}
+    {% if pi.children %}
+    <div style="border-left:1px solid black; margin-left: 5px; padding-left: 5px">
+      {{c.widget.widget_type.display(value=pi.children)}}
     </div>
+    {% endif %}
   </div>
+  {% endif %}
 </div>

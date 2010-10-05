@@ -1,20 +1,22 @@
-<div xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:py="http://genshi.edgewall.org/"
-      xmlns:xi="http://www.w3.org/2001/XInclude"
-      py:attrs="attrs" class="discussion_subscription_form">
-  <?python from allura.lib.security import has_artifact_access?>
-  <div py:if="show_actions" class="actions">
-    <a href="${value.url()}moderate/" class="btn ico-l"
-       py:if="has_artifact_access('moderate', value)()"><b class="ui-icon ui-icon-pencil"></b> <span>Edit</span></a>
-    <a href="${value.email_link(subject=None)}" class="btn ico"
-       py:if="show_discussion_email"><b class="ui-icon ui-icon-mail-closed"></b> <span>Email</span></a>
+<div {{attrs|default({}, true)|xmlattr}} class="discussion_subscription_form">
+  {% if show_actions %}
+  <div class="actions">
+    {% if h.has_artifact_access('moderate', value)() %}
+    <a href="{{value.url()}}moderate/" class="btn ico-l">
+       <b class="ui-icon ui-icon-pencil"></b> <span>Edit</span></a>
+    {% endif %}
+    {% if show_discussion_email %}
+    <a href="{{value.email_link(subject=None)}}" class="btn ico">
+       <b class="ui-icon ui-icon-mail-closed"></b> <span>Email</span></a>
+    {% endif %}
     <a href="" class="btn ico follow"><b class="ui-icon ui-icon-signal-diag"></b> <span>Follow</span></a>
   </div>
+  {% endif %}
   <div class="clear"/>
-  ${fields['page_list'].display(limit=limit, page=page, count=count)}
-  <form method="$method" action="$action" enctype="$enctype" class="follow_form">
-    ${fields['threads'].display(value=threads)}
+  {{fields['page_list'].display(limit=limit, page=page, count=count)}}
+  <form method="{{method}}" action="{{action}}" enctype="{{enctype}}" class="follow_form">
+    {{fields['threads'].display(value=threads)}}
   </form>
-  ${fields['page_list'].display(limit=limit, page=page, count=count)}
-  ${fields['page_size'].display(limit=limit)}
+  {{fields['page_list'].display(limit=limit, page=page, count=count)}}
+  {{fields['page_size'].display(limit=limit)}}
 </div>

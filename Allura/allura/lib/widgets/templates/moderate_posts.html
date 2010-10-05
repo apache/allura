@@ -3,7 +3,7 @@
       method="{{method}}"
       action="{{action}}"
       enctype="{{enctype}}"
-      {{attrs|xmlattr}}>
+      {{attrs|default({}, true)|xmlattr}}>
   <fieldset>
     <legend>Update marked posts</legend>
     <input type="submit" name="approve" value="Approve Marked"/>
