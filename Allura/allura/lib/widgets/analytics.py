@@ -1,7 +1,7 @@
 import ew
 
 class GoogleAnalytics(ew.Widget):
-    template='genshi:allura.lib.widgets.templates.analytics'
+    template='jinja:analytics.html'
     params=['account']
     account='UA-XXXXX-X'
     
