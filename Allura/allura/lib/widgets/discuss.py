@@ -225,11 +225,6 @@ class PostHeader(ew.Widget):
     params=['value']
     value=None
 
-class PostThread(ew.Widget):
-    template='jinja:post_thread.html'
-    params=['value']
-    value=None
-
 class Post(HierWidget):
     template='jinja:post_widget.html'
     params=['value', 'show_subject', 'indent', 'page', 'limit', 'supress_promote']
@@ -288,6 +283,16 @@ class Post(HierWidget):
             });
         })();
         ''')
+
+class PostThread(ew.Widget):
+    template='jinja:post_thread.html'
+    params=['value', 'show_subject', 'indent', 'page', 'limit', 'supress_promote']
+    value=None
+    indent=0
+    page=0
+    limit=25
+    show_subject=False
+    supress_promote=False
 
 class Thread(HierWidget):
     template='genshi:allura.lib.widgets.templates.thread'
