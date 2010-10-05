@@ -220,11 +220,6 @@ class ThreadHeader(HierWidget):
         page_size=ffw.PageSize(),
         moderate_thread=ModerateThread())
 
-class PostHeader(ew.Widget):
-    template='genshi:allura.lib.widgets.templates.post_header'
-    params=['value']
-    value=None
-
 class Post(HierWidget):
     template='jinja:post_widget.html'
     params=['value', 'show_subject', 'indent', 'page', 'limit', 'supress_promote']
