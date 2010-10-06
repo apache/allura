@@ -3,44 +3,41 @@
      xmlns:py="http://genshi.edgewall.org/" py:strip="True">
      <xi:include href="${g.allura_templates}/lib.html"/>
   <?python from allura.lib.security import has_artifact_access ?>
- 	<div class="content">
- 		<div class="row">
- 			<div class="column grid_12">
-        <py:if test="limit">
-          ${widgets.page_list.display(limit=limit, page=page, count=count)}
-        </py:if>
-        <div id="comment">
-          <py:def function="show_post(post, indent, supress_promote=False)">
-            <li>
-              ${widgets.post.display(value=post, show_subject=show_subject, indent=indent,
-                                     supress_promote=supress_promote, page=page, limit=limit)}
-              <ul>
-              <py:for each="child in post.descendants()"
-                      py:if="child.status == 'ok' and child.parent_id == post._id">
-                <li>${show_post(child, indent+1)}</li>
-              </py:for>
-              </ul>
-            </li>
-          </py:def>
-          <py:with vars="posts=value.find_posts(page=page, limit=limit)">
-            <py:if test="posts">
-              <ul py:for="t in value.create_post_threads(posts)">
-                ${show_post(t['post'], 0, supress_promote=True)}
-              </ul>
-            </py:if>
-          </py:with>
-          <div id="allow_moderate" py:if="has_artifact_access('moderate', value)()"/>
-          <py:if test="has_artifact_access('post', value)()">
-            <div id="tag_thread_holder" style="display:none">
-              ${widgets.tag_post.display(value=value,submit_text='Save', action=value.url() + 'tag')}
-            </div>
+	<div class="row" py:if="count">
+		<div class="column grid_12">
+      <py:if test="limit and count>limit">
+        ${widgets.page_list.display(limit=limit, page=page, count=count)}
+      </py:if>
+      <div id="comment">
+        <py:def function="show_post(post, indent, supress_promote=False)">
+          <li>
+            ${widgets.post.display(value=post, show_subject=show_subject, indent=indent,
+                                   supress_promote=supress_promote, page=page, limit=limit)}
+            <ul>
+            <py:for each="child in post.descendants()"
+                    py:if="child.status == 'ok' and child.parent_id == post._id">
+              <li>${show_post(child, indent+1)}</li>
+            </py:for>
+            </ul>
+          </li>
+        </py:def>
+        <py:with vars="posts=value.find_posts(page=page, limit=limit)">
+          <py:if test="posts">
+            <ul py:for="t in value.create_post_threads(posts)">
+              ${show_post(t['post'], 0, supress_promote=True)}
+            </ul>
           </py:if>
-        </div>
-        <div style="clear:both"/>
-        <div py:if="limit">
-          ${widgets.page_list.display(limit=limit, page=page, count=count)}
-          ${widgets.page_size.display(limit=limit)}
-        </div>
+        </py:with>
+        <div id="allow_moderate" py:if="has_artifact_access('moderate', value)()"/>
+        <py:if test="has_artifact_access('post', value)()">
+          <div id="tag_thread_holder" style="display:none">
+            ${widgets.tag_post.display(value=value,submit_text='Save', action=value.url() + 'tag')}
+          </div>
+        </py:if>
+      </div>
+      <div style="clear:both"/>
+      <div py:if="limit and count>limit">
+        ${widgets.page_list.display(limit=limit, page=page, count=count)}
       </div>
     </div>
   </div>

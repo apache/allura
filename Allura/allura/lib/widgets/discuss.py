@@ -295,13 +295,12 @@ class Thread(HierWidget):
     params=['value', 'page', 'limit', 'count', 'show_subject','new_post_text']
     value=None
     page=None
-    limit=None
+    limit=50
     count=None
     show_subject=False
     new_post_text="+ New Comment"
     widgets=dict(
         page_list=ffw.PageList(),
-        page_size=ffw.PageSize(),
         thread_header=ThreadHeader(),
         post_thread=PostThread(),
         post=Post(),
