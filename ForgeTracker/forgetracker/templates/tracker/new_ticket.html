@@ -25,3 +25,14 @@
   }
 </style>
 {% endblock %}
+
+{% block extra_js %}
+<script type="text/javascript">
+  $(document).ready(function(){
+    $summary_input = $('input[name=ticket_form.summary]');
+    $summary_input.val('Summary');
+    $summary_input.focus();
+    $summary_input.select();
+  });
+</script>
+{% endblock %}
