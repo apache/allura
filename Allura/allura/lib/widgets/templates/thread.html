@@ -27,10 +27,9 @@
           {% endif %}
         </div>
         <div style="clear:both"></div>
-        {% if limit %}
+        {% if limit and count>limit %}
         <div>
           {{widgets.page_list.display(limit=limit, page=page, count=count)}}
-          {{widgets.page_size.display(limit=limit)}}
         </div>
         {% endif %}
       </div>
