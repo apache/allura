@@ -324,9 +324,9 @@ class RootController(BaseController):
                             closed = ms['closed']
                     milestones.append(dict(
                         name=m.name,
-                        due_date=m.due_date,
-                        description=m.description,
-                        complete=m.complete,
+                        due_date=m.get('due_date'),
+                        description=m.get('description'),
+                        complete=m.get('complete'),
                         total=total,
                         closed=closed))
         return dict(milestones=milestones)
