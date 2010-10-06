@@ -155,6 +155,10 @@
             });
             return false;
           });
+
+            // Hack for demo, to be removed
+            // must figure out why this extra row is created and fix by not creating it
+            $('div.row:not(:has(div))').remove();
         });
     </script>
   {% endif %}
