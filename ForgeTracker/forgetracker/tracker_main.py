@@ -35,7 +35,7 @@ from forgetracker import version
 
 from forgetracker.widgets.ticket_form import TicketForm, TicketCustomField
 from forgetracker.widgets.bin_form import BinForm
-from forgetracker.widgets.ticket_search import TicketSearchResults, MassEdit
+from forgetracker.widgets.ticket_search import TicketSearchResults, MassEdit, MassEditForm
 from forgetracker.widgets.admin_custom_fields import TrackerFieldAdmin, TrackerFieldDisplay
 
 log = logging.getLogger(__name__)
@@ -50,6 +50,7 @@ class W:
     attachment_list = ffw.AttachmentList()
     ticket_search_results = TicketSearchResults()
     mass_edit = MassEdit()
+    mass_edit_form = MassEditForm()
     bin_form = BinForm()
     ticket_form = TicketForm()
     subscribe_form = SubscribeForm()
@@ -481,6 +482,7 @@ class RootController(BaseController):
         result['globals'] = c.app.globals
         c.user_select = ffw.ProjectUserSelect()
         c.mass_edit = W.mass_edit
+        c.mass_edit_form = W.mass_edit_form
         return result
 
     @expose()

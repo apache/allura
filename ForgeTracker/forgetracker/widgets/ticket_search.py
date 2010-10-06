@@ -24,15 +24,22 @@ class TicketSearchResults(ew.SimpleForm):
 
 class MassEdit(ew.Widget):
     template='jinja:tracker_widgets/mass_edit.html'
-    params=['count','limit','query','tickets','sort','page','globals']
+    params=['count','limit','query','tickets','sort','page']
     count=None
     limit=None
     query=None
     tickets=None
     page=1
     sort=None
-    globals=None
 
     def resources(self):
         yield ew.resource.JSLink('tracker_js/ticket-list.js')
+
+class MassEditForm(ew.Widget):
+    template='jinja:tracker_widgets/mass_edit_form.html'
+    params=['globals','query']
+    globals=None
+    query=None
+
+    def resources(self):
         yield ew.resource.JSLink('tracker_js/mass-edit.js')

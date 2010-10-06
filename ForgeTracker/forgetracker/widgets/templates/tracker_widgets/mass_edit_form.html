@@ -1,0 +1,56 @@
+<form id="update-values">
+  <div class="row">
+    <div class="column grid_3">
+      <label for="status" class="cr">Status:</label>
+      <select name="status">
+        <option value="" selected="selected">no change</option>
+        {% for option in globals.all_status_names.split() %}
+          <option value="{{option}}">{{option}}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="column grid_3">
+      <label for="assigned_to" class="cr">Owner:</label>
+      {{c.user_select.display(name='assigned_to', value='')}}
+    </div>
+    {% set cf_count=-2 %}
+    {% for field in globals.custom_fields %}
+      {% if field.type != 'sum' %}
+        {% if cf_count%4 == 0 %}
+          </div><div class="row">
+        {% endif %}
+        <div class="column grid_3">
+          <label for="{{field.name}}" class="cr">{{field.label}}:</label>
+          {% if field.type == 'boolean' %}
+            <input name="{{field.name}}" type="checkbox" value="True"/>
+          {% elif field.type == 'select' %}
+            <select name="{{field.name}}">
+              <option value="" selected="selected">no change</option>
+              {% for option in field.options.split() %}
+                {% if option.startswith('*') %}
+                  <option value="{{option[1:]}}" selected="selected">{{option[1:]}}</option>
+                {% else %}
+                  <option value="{{option}}">{{option}}</option>
+                {% endif %}
+              {% endfor %}
+            </select>
+          {% elif field.type == 'milestone' %}
+            <select name="{{field.name}}">
+              <option value="" selected="selected">no change</option>
+              {% for m in field.milestones %}
+                <option value="{{m.name}}">{{m.name}}</option>
+              {% endfor %}
+            </select>
+          {% else %}
+            <input name="{{field.name}}" type="text" value=""/>
+          {% endif %}
+        </div>
+        {% set cf_count=cf_count+1 %}
+      {% endif %}
+    {% endfor %}
+  </div>
+  <div class="row" style="padding-left: 9px">
+    <input type="button" onclick="update_tickets()" value="Save"/>
+    <a href="{{tg.url(c.app.url+'search/', dict(q=query, limit=limit, sort=sort))}}" class="btn">Cancel</a>
+  </div>
+</form>
