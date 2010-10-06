@@ -225,6 +225,14 @@ class Ticket(VersionedArtifact):
         return result
 
     @property
+    def _milestone(self):
+        milestone = None
+        for fld in self.globals.milestone_fields:
+            if fld.name == '_milestone':
+                return self.custom_fields['_milestone']
+        return milestone
+
+    @property
     def assigned_to(self):
         if self.assigned_to_id is None: return None
         return User.query.get(_id=self.assigned_to_id)
