@@ -27,7 +27,7 @@ class ProjectSummary(ew.Widget):
         ''')
 
 class ProjectList(ew.Widget):
-    template='jinja:project_list.html'
+    template='jinja:project_list_widget.html'
     params=['projects', 'project_summary', 'display_mode']
     projects=[]
     project_summary=ProjectSummary()
