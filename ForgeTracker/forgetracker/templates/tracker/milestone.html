@@ -29,7 +29,6 @@
 {% endblock %}
 
 {% block content %}
-  {% endif %}
   {% if milestone.description %}
     {{g.markdown.convert(milestone.description)|safe}}
   {% endif %}
