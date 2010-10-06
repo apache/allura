@@ -68,7 +68,7 @@ class UserProfileController(BaseController):
         require(has_project_access('read'),
                 'Read access required')
 
-    @expose('allura.ext.user_profile.templates.user_index')
+    @expose('jinja:user_profile/templates/user_index.html')
     def index(self, **kw):
         username = c.project.shortname.split('/')[1]
         user = User.by_username(username)
@@ -85,7 +85,7 @@ class UserProfileController(BaseController):
     #             print r.docs
     #     return dict(user=user)
 
-    @expose('allura.ext.user_profile.templates.user_dashboard_configuration')
+    @expose('jinja:user_profile/templates/user_dashboard_configuration.html')
     def configuration(self):
         username = c.project.shortname.split('/')[1]
         user = User.by_username(username)
