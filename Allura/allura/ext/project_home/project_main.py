@@ -77,14 +77,14 @@ class ProjectHomeController(BaseController):
                 'Read access required')
 
     @with_trailing_slash
-    @expose('allura.ext.project_home.templates.project_index')
+    @expose('jinja:project_home/templates/project_index.html')
     def index(self, **kw):
         config = M.PortalConfig.current()
         return dict(
             layout_class=config.layout_class,
             layout=config.rendered_layout())
 
-    @expose('allura.ext.project_home.templates.project_dashboard_configuration')
+    @expose('jinja:project_home/templates/project_dashboard_configuration.html')
     def configuration(self):
         config = M.PortalConfig.current()
         mount_points = [
