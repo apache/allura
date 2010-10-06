@@ -44,6 +44,7 @@ class W:
     thread=w.Thread(
         page=None, limit=None, page_size=None, count=None,
         style='linear')
+    date_field = ffw.DateField()
     markdown_editor = ffw.MarkdownEdit()
     user_tag_edit = ffw.UserTagEdit()
     label_edit = ffw.LabelEdit()
@@ -314,6 +315,7 @@ class RootController(BaseController):
     def milestones(self, **kw):
         require(has_artifact_access('configure'))
         milestones = []
+        c.date_field = W.date_field
         for fld in c.app.globals.milestone_fields:
             if fld.name == '_milestone':
                 for m in fld.milestones:

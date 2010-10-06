@@ -41,7 +41,7 @@
           </select>
         </td>
         <td class="edit" style="display:none">
-          <input type="date" name="milestones-{{loop.index0}}.due_date" value="{{m.due_date}}">
+          {{c.date_field.display(value=m.due_date, name='milestones-%s.due_date' % loop.index0)}}
         </td>
         <td>{{m.closed}} / {{m.total}}</td>
         <td><a href="#" class="ico btn edit_milestone">
