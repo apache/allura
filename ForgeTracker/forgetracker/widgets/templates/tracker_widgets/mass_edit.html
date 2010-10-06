@@ -27,61 +27,6 @@
         {% endfor %}
       </tbody>
     </table>
-
-    <h2>Update</h2>
-    <form id="update-values">
-      <ol>
-        <li>
-          <label for="assigned_to">Assigned To:</label>
-          {{c.user_select.display(name='assigned_to', value='')}}
-        </li>
-        <li>
-          <label for="status">Status:</label>
-          <select name="status">
-            <option value="" selected="selected">no change</option>
-            {% for option in globals.all_status_names.split() %}
-              <option value="{{option}}">{{option}}</option>
-            {% endfor %}
-          </select>
-        </li>
-        <li>
-          <label for="milestone">Milestone:</label>
-          <select name="milestone">
-            <option value="" selected="selected">no change</option>
-            {% for option in globals.milestone_names.split() %}
-              <option value="{{option}}">{{option}}</option>
-            {% endfor %}
-          </select>
-        </li>
-        {% for field in globals.custom_fields %}
-          {% if field.type != 'sum' %}
-            <li>
-              <label for="{{field.name}}">{{field.label}}:</label>
-              {% if field.type == 'boolean' %}
-                <input name="{{field.name}}" type="checkbox" value="True"/>
-              {% elif field.type == 'select' %}
-                <select name="{{field.name}}">
-                  <option value="" selected="selected">no change</option>
-                  {% for option in field.options.split() %}
-                    {% if option.startswith('*') %}
-                      <option value="{{option[1:]}}" selected="selected">{{option[1:]}}</option>
-                    {% else %}
-                      <option value="{{option}}">{{option}}</option>
-                    {% endif %}
-                  {% endfor %}
-                </select>
-              {% else %}
-                <input name="{{field.name}}" type="text" value=""/>
-              {% endif %}
-            </li>
-          {% endif %}
-        {% endfor %}
-        <li>
-          <label>&nbsp;</label>
-          <input type="button" onclick="update_tickets()" value="Update Tickets"/>
-        </li>
-      </ol>
-    </form>
     <script type="text/javascript">
       var q="{{query}}", count={{count}}, limit={{limit}}, page={{page}}, sort="{{sort}}";
     </script>

@@ -12,12 +12,21 @@
 
 {% block header %}ForgeTracker for {{c.project.shortname}}{% endblock %}
 
+{% block edit_box %}
+  <div class="editbox">
+    {{c.mass_edit_form.display(
+      globals=globals,
+      query=q,
+      sort=sort,
+      limit=limit)}}
+  </div>
+{% endblock %}
+
 {% block content %}
   {{c.mass_edit.display(count=count,
     limit=limit,
     query=q,
     tickets=tickets,
     sort=sort,
-    page=page,
-    globals=globals)}}
+    page=page)}}
 {% endblock %}

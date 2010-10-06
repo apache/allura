@@ -31,15 +31,6 @@
       </tbody>
     </table>
   {% endif %}
-  {% if query %}
-    {% if count==0 %}
-      <p>No results.</p>
-    {% elif count==1 %}
-      <p>{{count}} result.</p>
-    {% elif count > 1 %}
-      <p>{{count}} results.</p>
-    {% endif %}
-  {% endif %}
   {{fields['page_list'].display(limit=limit, page=page, count=count)}}
   <script type="text/javascript">
     var q="{{query}}", count={{count}}, limit={{limit}}, page={{page}}, sort="{{sort}}";
