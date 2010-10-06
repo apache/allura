@@ -310,7 +310,7 @@ class RootController(BaseController):
     @without_trailing_slash
     @expose('jinja:tracker/milestones.html')
     def milestones(self, **kw):
-        require(has_artifact_access('config'))
+        require(has_artifact_access('configure'))
         milestones = []
         for fld in c.app.globals.milestone_fields:
             if fld.name == '_milestone':
@@ -334,7 +334,7 @@ class RootController(BaseController):
     @h.vardec
     @expose()
     def update_milestones(self, field_name=None, milestones=None, **kw):
-        require(has_artifact_access('config'))
+        require(has_artifact_access('configure'))
         update_counts = False
         for fld in c.app.globals.milestone_fields:
             if fld.name == field_name:
