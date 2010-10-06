@@ -18,9 +18,9 @@
       <tbody>
         {% for t in tickets %}
           <tr class="{{loop.index0%2 and 'even' or ''}}">
-            <td><a href="{{t.url()}}">[#{{t.ticket_num}}]</a></td>
+            <td><a href="{{t.url()}}">{{t.ticket_num}}</a></td>
             <td class="{{t.open_or_closed}}">{{t.status}}</td>
-            <td>{{t.summary}}</td>
+            <td><a href="{{t.url()}}">{{t.summary}}</a></td>
             <td>{% if t.assigned_to_id %}{{t.assigned_to.display_name}}{% endif %}</td>
             <td>{{h.ago(t.mod_date)}}</td>
             {% for field in sortable_custom_fields %}
