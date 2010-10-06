@@ -159,6 +159,11 @@
             // Hack for demo, to be removed
             // must figure out why this extra row is created and fix by not creating it
             $('div.row:not(:has(div))').remove();
+
+            // Hack for demo, to be removed
+            // cancel button and save button should be the same kind of HTML element
+            // this hack adjusts the height of the cancel link to match the save button
+            $('a.cancel_form').css('line-height', '16px');
         });
     </script>
   {% endif %}
