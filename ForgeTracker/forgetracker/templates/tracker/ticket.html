@@ -139,6 +139,7 @@
             view_holder.hide();
             ticket_content.hide();
             title_holder.text('\u00A0');
+            $('a.edit_ticket').addClass('btn_activate');
             return false;
           });
           $('a.cancel_form').click(function(){
@@ -146,6 +147,7 @@
             view_holder.show();
             ticket_content.show();
             title_holder.text(original_title);
+            $('a.edit_ticket').removeClass('btn_activate');
             return false;
           });
           // delete attachments
