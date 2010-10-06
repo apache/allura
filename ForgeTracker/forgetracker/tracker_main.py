@@ -215,8 +215,8 @@ class ForgeTrackerApp(Application):
                     label='Milestone',
                     type='milestone',
                     milestones=[
-                        dict(name='1.0', complete=False, due=None),
-                        dict(name='2.0', complete=False, due=None)]) ])
+                        dict(name='1.0', complete=False, due_date=None),
+                        dict(name='2.0', complete=False, due_date=None)]) ])
         c.app.globals.invalidate_bin_counts()
         bin = TM.Bin(summary='Open Tickets', terms=self.globals.not_closed_query)
         bin.app_config_id = self.config._id
