@@ -1,6 +1,6 @@
 <div>
   {% if attachments %}
-    {% set attachments = list(attachments) %}
+    {% set attachments = attachments|list %}
     <strong>Attachments:</strong>
     <div class="attachment_images">
       {% for att in attachments if att.is_image() %}

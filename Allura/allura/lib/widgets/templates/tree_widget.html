@@ -31,7 +31,7 @@
       <td>
       {% if dirent.commit %}
         <a href="{{dirent.commit.url()}}">
-          {{h.text.truncate(str(dirent.commit._id), 10)}}
+          {{h.text.truncate(dirent.commit._id|string, 10)}}
         </a>
       {% endif %}
       </td>
