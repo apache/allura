@@ -12,7 +12,7 @@
     <a href="" class="btn ico follow"><b class="ui-icon ui-icon-signal-diag"></b> <span>Follow</span></a>
   </div>
   {% endif %}
-  <div class="clear"/>
+  <div class="clear"></div>
   {{fields['page_list'].display(limit=limit, page=page, count=count)}}
   <form method="{{method}}" action="{{action}}" enctype="{{enctype}}" class="follow_form">
     {{fields['threads'].display(value=threads)}}
