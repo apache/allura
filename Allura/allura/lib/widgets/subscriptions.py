@@ -30,7 +30,7 @@ class SubscriptionForm(ew.SimpleForm):
     submit_text='Unsubscribe from marked artifacts'
 
 class SubscribeForm(ew.SimpleForm):
-    template='allura.lib.widgets.templates.subscribe'
+    template='jinja:subscribe.html'
     params=['thing','style', 'value']
     thing='tool'
     style='text'

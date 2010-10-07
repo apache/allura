@@ -10,7 +10,7 @@ def onready(text):
     return ew.JSScript('$(document).ready(function(){%s});' % text);
 
 class MarkdownEdit(ew.InputField):
-    template='genshi:allura.lib.widgets.templates.markdown_edit'
+    template='jinja:markdown_edit.html'
     validator = fev.UnicodeString()
     params=['name','value','show_label']
     show_label=True
@@ -31,27 +31,6 @@ class MarkdownEdit(ew.InputField):
                 $.param({project:'%s', app:'%s'});
         ''' % (c.project and c.project.shortname or '', (c.project and c.app) and c.app.config.options['mount_point'] or ''))
 
-class UserTagEdit(ew.InputField):
-    template='genshi:allura.lib.widgets.templates.user_tag_edit'
-    validator = fev.UnicodeString()
-    params=['name','user_tags', 'className', 'show_label']
-    show_label=True
-    name=None
-    user_tags=None
-    className=''
-
-    def from_python(self, value, state=None):
-        return value
-
-    def resources(self):
-        yield ew.resource.JSLink('js/jquery.tag.editor.js')
-        yield onready('''
-          $('input.user_tag_edit').tagEditor({
-            confirmRemoval: false,
-            completeOnSeparator: true,
-            completeOnBlur: true
-          });
-        ''');
 
 class LabelList(fev.UnicodeString):
 
@@ -65,7 +44,7 @@ class LabelList(fev.UnicodeString):
         return value
 
 class LabelEdit(ew.InputField):
-    template='genshi:allura.lib.widgets.templates.label_edit'
+    template='jinja:label_edit.html'
     validator = LabelList()
     params=['name', 'className', 'show_label', 'value']
     show_label=True
@@ -87,7 +66,7 @@ class LabelEdit(ew.InputField):
         ''')
 
 class ProjectUserSelect(ew.InputField):
-    template='genshi:allura.lib.widgets.templates.project_user_select'
+    template='jinja:project_user_select.html'
     params=['name', 'value', 'show_label', 'className']
     show_label=True
     name=None
@@ -123,13 +102,13 @@ class ProjectUserSelect(ew.InputField):
           });''' % c.project.url())
 
 class AttachmentList(ew.Widget):
-    template='genshi:allura.lib.widgets.templates.attachment_list'
+    template='jinja:attachment_list.html'
     params=['attachments','edit_mode']
     attachments=None
     edit_mode=None
 
 class AttachmentAdd(ew.Widget):
-    template='genshi:allura.lib.widgets.templates.attachment_add'
+    template='jinja:attachment_add.html'
     params=['action','name']
     action=None
     name=None
@@ -172,7 +151,7 @@ class AutoResizeTextarea(ew.TextArea):
         ''')
 
 class PageList(ew.Widget):
-    template='genshi:allura.lib.widgets.templates.page_list'
+    template='jinja:page_list.html'
     params=['limit','count','page', 'url_params']
     show_label=False
     name=None
@@ -189,7 +168,7 @@ class PageList(ew.Widget):
         return url_params
 
 class PageSize(ew.Widget):
-    template='genshi:allura.lib.widgets.templates.page_size'
+    template='jinja:page_size.html'
     params=['limit','url_params']
     show_label=False
     name=None
@@ -209,7 +188,7 @@ class PageSize(ew.Widget):
                 this.form.submit();})''')
 
 class FileChooser(ew.InputField):
-    template='genshi:allura.lib.widgets.templates.file_chooser'
+    template='jinja:file_chooser.html'
     params=['name']
     name=None
     validator=fev.FieldStorageUploadConverter()

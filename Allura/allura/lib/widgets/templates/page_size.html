@@ -1,9 +1,13 @@
-<form xmlns="http://www.w3.org/1999/xhtml"
-  xmlns:py="http://genshi.edgewall.org/"
-  method="get">
-  <input py:for="k,v in url_params.iteritems()" type="hidden" name="$k" value="$v"/>
-  <p py:if="limit">Showing <select class="results_per_page" name="limit">
-        <option py:for="per_page in [25, 50, 100, 250]" selected="${per_page==int(limit) and 'selected' or None}"
-           value="$per_page">$per_page</option>
-  </select> result<py:if test="limit!=1">s</py:if> per page. </p>
+<form method="get">
+  {% for k,v in url_params.iteritems() %}
+    <input type="hidden" name="{{k}}" value="{{v}}"/>
+  {% endfor %}
+  {% if limit %}
+  <p>Showing <select class="results_per_page" name="limit">
+    {% for per_page in [25, 50, 100, 250] %}
+        <option {% if per_page == limit|int %}selected="selected"{% endif %}
+           value="{{per_page}}">{{per_page}}</option>
+    {% endfor %}
+  </select> result{% if limit|int != 1 %}s{% endif %} per page. </p>
+  {% endif %}
 </form>

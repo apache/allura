@@ -1,18 +1,25 @@
-<div xmlns="http://www.w3.org/1999/xhtml"
-     xmlns:py="http://genshi.edgewall.org/"
-     py:strip="True">
-  <div  py:if="limit"
-        py:with="cur_page=page / limit; num_pages=count/limit">
-    <div class="span-3">Page ${1 + cur_page} of ${1 + num_pages}</div>
+<div>
+  {% if limit %}
+  <div>
+    {% set cur_page = page / limit %}
+    {% set num_pages = count / limit %}
+    <div class="span-3">Page {{1 + cur_page}} of {{1 + num_pages}}</div>
     <div class="span-16 tright last" id="discuss">
-      <a py:if="num_pages and cur_page > 0" href="?page=${page - limit}">&larr; Prev</a>
-      <a py:if="num_pages and cur_page &lt; num_pages" href="?page=${page + limit}">Next &rarr;</a>
+      {% if num_pages and cur_page > 0 %}
+        <a href="?page={{page - limit}}">&larr; Prev</a>
+      {% endif %}
+      {% if num_pages and cur_page < num_pages %}
+      <a href="?page={{page + limit}}">Next &rarr;</a>
+      {% endif %}
     </div>
   </div>
-  <div class="title-pane closed" py:if="show_moderate and has_artifact_access('moderate', value)()">
+  {% endif %}
+  {% if show_moderate and h.has_artifact_access('moderate', value)() %}
+  <div class="title-pane closed">
     <span class="title">Moderate thread</span>
     <div class="content">
-      ${widgets.moderate_thread.display(value=value, action=value.url()+'moderate')}
+      {{widgets.moderate_thread.display(value=value, action=value.url()+'moderate')}}
     </div>
   </div>
+  {% endif %}
 </div>

@@ -1,0 +1,17 @@
+<div class="list">
+  {% if not projects %}
+    <p>No projects found</p>
+  {% else %}
+  <div class="list">
+    {% set old_project = c.project %}
+    {% for project in projects %}
+      {% do g.set_project(project.shortname) %}
+      {% if h.has_project_access('read', project)() %}
+        {{project_summary.display(value=project)}}
+      {% endif %}
+    {% endfor %}
+    {% do g.set_project(old_project and old_project.shortname or '') %}
+  </div>
+  {% endif %}
+</div>
+
