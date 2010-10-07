@@ -42,7 +42,7 @@ class TestGitRepo(unittest.TestCase):
 
     def test_index(self):
         i = self.repo.index()
-        assert i['type_s'] == 'GitRepository', i
+        assert i['type_s'] == 'Git Repository', i
 
     def test_log(self):
         for entry in self.repo.log():
@@ -51,7 +51,7 @@ class TestGitRepo(unittest.TestCase):
 
     def test_commit(self):
         entry = self.repo.commit('HEAD')
-        assert str(entry.authored.name) == 'Sebastian Thiel', entry.authored
+        assert str(entry.authored.name) == 'Rick Copeland', entry.authored
         assert entry.message
 
 class TestGitCommit(unittest.TestCase):
@@ -73,13 +73,8 @@ class TestGitCommit(unittest.TestCase):
         ThreadLocalORMSession.flush_all()
         ThreadLocalORMSession.close_all()
 
-    def test_ref(self):
-        ref = self.rev.dump_ref()
-        art = ref.artifact
-        assert self.rev._id == art._id
-
     def test_url(self):
-        assert self.rev.url(self.repo).endswith('3061/')
+        assert self.rev.url().endswith('ca4a/')
 
     def test_committer_url(self):
         assert self.rev.committer_url is None
@@ -91,8 +86,11 @@ class TestGitCommit(unittest.TestCase):
         assert len(self.rev.shorthand_id()) == 8
 
     def test_diff(self):
-        len(self.rev.diff(self.repo))
-        for d in self.rev.diff(self.repo):
+        diffs = (self.rev.diffs.added
+                 +self.rev.diffs.removed
+                 +self.rev.diffs.changed
+                 +self.rev.diffs.copied)
+        for d in diffs:
             print d
 
 

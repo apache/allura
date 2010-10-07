@@ -22,6 +22,6 @@ class TestGitReactors(unittest.TestCase):
         R.init('scm.git.init', {})
 
     def test_refresh_commit(self):
-        h1='6e29319896bf86d52e3d73bd203524e65804a273'
-        h2='b505490e129a1b47bef98b9f52afb8bc10fff938'
-        R.refresh_commit('scm.git.init', {'hash':'%s..%s' % (h1,h2)})
+        R.refresh_commit('scm.git.init', dict(
+                project_id=str(c.project._id),
+                mount_point=c.app.config.options.mount_point))

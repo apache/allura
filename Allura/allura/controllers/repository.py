@@ -3,13 +3,12 @@ import logging
 from urllib import unquote
 
 from pylons import c, g, request, response
-import tg
+from webob import exc
 from tg import redirect, expose, url, override_template
 from tg.decorators import with_trailing_slash
 
 from allura.lib import patience
 from allura.lib.widgets.file_browser import TreeWidget
-from allura import model
 from .base import BaseController
 
 log = logging.getLogger(__name__)
@@ -96,9 +95,12 @@ class TreeBrowser(BaseController):
                     filename), rest
         elif rest == ('index', ):
             rest = (request.environ['PATH_INFO'].rsplit('/')[-1],)
+        tree = self._tree.get_tree(next)
+        if tree is None:
+            raise exc.HTTPNotFound
         return self.__class__(
             self._commit,
-            self._tree.get_tree(next),
+            tree,
             self._path + next,
             self), rest
 
@@ -146,8 +148,7 @@ class FileBrowser(BaseController):
         try:
             path, filename = os.path.split(self._blob.path())
             a_ci = c.app.repo.commit(commit)
-            a_tree = a_ci.tree
-            a = a_tree.get_blob(filename, path[1:].split('/'))
+            a = a_ci.get_path(self._blob.path())
             apath = a.path()
         except:
             a = []

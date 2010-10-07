@@ -192,7 +192,7 @@ class RootController(BaseController):
     @expose()
     def refresh(self):
         g.publish('react', 'scm.git.refresh_commit')
-        return '%r refresh queued.' % c.app.repo
+        return '%r refresh queued.\n' % c.app.repo
 
     @expose('jinja:git/index.html')
     def index(self, offset=0, branch='master', **kw):
