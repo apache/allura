@@ -719,13 +719,13 @@ class TicketController(BaseController):
             raise Exception('update_ticket must be a POST request')
         changes = changelog()
         if 'tags' in post_data and len(post_data['tags']):
-            tags = post_data['tags'].split(',')
+            tags = post_data['tags']
             del post_data['tags']
         else:
             tags = []
         if 'labels' in post_data and len(post_data['labels']):
             changes['labels'] = self.ticket.labels
-            self.ticket.labels = post_data['labels'].split(',')
+            self.ticket.labels = post_data['labels']
             changes['labels'] = self.ticket.labels
             del post_data['labels']
         else:
