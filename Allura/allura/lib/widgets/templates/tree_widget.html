@@ -27,7 +27,7 @@
       {% else %}
         <td></td>
       {% endif %}
-      <td>{{dirent.last_author}}</td>
+      <td>{{dirent.last_author|escape}}</td>
       <td>
       {% if dirent.commit %}
         <a href="{{dirent.commit.url()}}">
