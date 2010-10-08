@@ -136,8 +136,11 @@ class ForgeDiscussionApp(Application):
 
     def sidebar_menu(self):
         try:
-            l = [SitemapEntry('Create Topic', c.app.url + 'create_topic', ui_icon='plus'),
-                 SitemapEntry('Add Forum', url(c.app.url,dict(new_forum=True)), ui_icon='comment')]
+            l = []
+            if has_artifact_access('post', app=c.app)():
+                l.append(SitemapEntry('Create Topic', c.app.url + 'create_topic', ui_icon='plus'))
+            if has_artifact_access('configure', app=c.app)():
+                l.append(SitemapEntry('Add Forum', url(c.app.url,dict(new_forum=True)), ui_icon='comment'))
             # if we are in a thread, provide placeholder links to use in js
             if '/thread/' in request.url:
                 l += [
