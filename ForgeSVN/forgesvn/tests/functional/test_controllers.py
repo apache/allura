@@ -34,7 +34,7 @@ class TestRootController(TestController):
         resp = self.app.get('/src/1/tree/')
         assert len(resp.html.findAll('tr')) == 2, resp.showbrowser()
         resp = self.app.get('/src/3/tree/a/')
-        assert len(resp.html.findAll('tr')) == 3, resp.showbrowser()
+        assert len(resp.html.findAll('tr')) == 2, resp.showbrowser()
 
     def test_file(self):
         resp = self.app.get('/src/1/tree/README')

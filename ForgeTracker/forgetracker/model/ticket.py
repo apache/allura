@@ -46,6 +46,7 @@ class Globals(MappedClass):
             query=dict(app_config_id=c.app.config._id),
             update={'$inc': { 'last_ticket_num': 1}},
             new=True)
+        session(cls).expunge(g)
         return g.last_ticket_num+1
 
     @property

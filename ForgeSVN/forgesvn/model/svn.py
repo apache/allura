@@ -1,19 +1,14 @@
 import os
-import stat
-import errno
 import shutil
 import string
 import logging
 import subprocess
-import cPickle as pickle
 from hashlib import sha1
 from cStringIO import StringIO
 from datetime import datetime
-from collections import defaultdict
 
 import tg
 import pysvn
-import pymongo
 from pylons import c
 
 from ming.base import Object

@@ -3,15 +3,13 @@ import logging
 
 # Non-stdlib imports
 import pkg_resources
-from pylons import c, g
+from pylons import g
 
 from ming.utils import LazyProperty
 from ming.orm.ormsession import ThreadLocalORMSession
 
 # Pyforge-specific imports
-from allura.lib import helpers as h
-from allura import model as M
-from allura.controllers.repository import RepoRootController, RefsController, CommitsController
+from allura.controllers.repository import RepoRootController
 from allura.lib.repository import RepositoryApp
 
 # Local imports
@@ -24,7 +22,7 @@ log = logging.getLogger(__name__)
 class ForgeSVNApp(RepositoryApp):
     '''This is the SVN app for PyForge'''
     __version__ = version.__version__
-    tool_label='Subversion'
+    tool_label='SVN'
     default_mount_label='SVN'
     default_mount_point='svn'
     ordinal=4

@@ -1,0 +1,25 @@
+{% extends 'repo/repo_master.html' %}
+
+{% block title %}
+  {% if c.app.repo %}
+    Git Repository: {{c.app.repo.name}}
+  {% else %}
+    Git Repository
+  {% endif %}
+{% endblock %}
+
+{% block header %}{{c.app.config.options.mount_label}}{% endblock %}
+
+{% block content %}
+  {{ clone_info(c.app.repo) }}
+  {% if log %}
+    <h2>Recent Commits{% if branch %} on {{branch}}{% endif %}</h2>
+    {{c.log_widget.display(value=log, show_paging=False,
+                           limit=limit, page=page, count=count)}}
+    {% if int(count) > int(limit) %}
+      <a href="log?page=1">More</a>
+    {% endif %}
+  {% else %}
+    <b>No (more) commits</b>
+  {% endif %}
+{% endblock %}

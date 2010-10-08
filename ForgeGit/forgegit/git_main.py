@@ -2,7 +2,6 @@
 import logging
 
 # Non-stdlib imports
-import pkg_resources
 from pylons import c, g
 
 from ming.utils import LazyProperty

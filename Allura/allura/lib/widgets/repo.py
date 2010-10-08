@@ -22,6 +22,10 @@ class SCMRevisionWidget(ew.Widget):
     next=()
 
 class SCMTreeWidget(ew.Widget):
-    template='allura.lib.widgets.templates.tree_widget'
-    params=['repo', 'commit', 'tree', 'path']
-    repo=commit=tree=path=None
+    template='jinja:repo_widgets/tree_widget.html'
+    params=['tree', 'list']
+    tree=None
+
+    def __init__(self, **kw):
+        super(SCMTreeWidget, self).__init__(**kw)
+        self.list = list

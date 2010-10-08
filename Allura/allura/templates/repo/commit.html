@@ -28,11 +28,6 @@ Commit
     <tr>
       <td>change</td>
       <td>
-<<<<<<< HEAD:ForgeGit/forgegit/templates/git/commit.html
-        {{ commit_link(prev[0]) }}: <a href="{{prev[0].url()}}tree/{{h.really_unicode(diff.old)}}">{{h.really_unicode(diff.old)}}</a><br/>
-        <a href="./tree/{{h.really_unicode(diff.new)}}?diff={{prev[0].commit_id}}">&mdash;diff&mdash;</a><br/>
-        {{ commit_link(commit) }}: <a href="./tree/{{h.really_unicode(diff.old)}}">{{h.really_unicode(diff.new)}}</a>
-=======
         <a href="./tree{{h.really_unicode(diff)}}">{{h.really_unicode(diff)}}</a>
         <a href="./tree{{h.really_unicode(diff)}}?diff={{prev[0].object_id}}">(diff)</a>
       </td>
@@ -44,7 +39,6 @@ Commit
         <a href="{{prev[0].url()}}tree{{h.really_unicode(diff.old)}}">{{h.really_unicode(diff.old)}}</a>
         <br/>to<br/>
         <a href="./tree{{h.really_unicode(diff)}}">{{h.really_unicode(diff)}}</a>
->>>>>>> Refactoring lots of common repo functionality:Allura/allura/templates/repo/commit.html
       </td>
     </tr>
     {% endfor %}
