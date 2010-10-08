@@ -7,5 +7,6 @@
 {% block edit_box %}
 <div class="editbox">
   {{c.new_topic.display(action=c.app.url + 'save_new_topic',show_subject=True,forums=forums)}}
+  <div class="clear"></div>
 </div>
 {% endblock %}
