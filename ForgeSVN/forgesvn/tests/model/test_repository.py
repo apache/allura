@@ -18,7 +18,7 @@ class TestSVNRepo(unittest.TestCase):
         helpers.setup_global_objects()
         repo_dir = pkg_resources.resource_filename(
             'forgesvn', 'tests/data')
-        self.repo = SM.SVNRepository(
+        self.repo = SM.Repository(
             name='testsvn',
             fs_path=repo_dir,
             url_path = '/test/',
@@ -29,7 +29,7 @@ class TestSVNRepo(unittest.TestCase):
         ThreadLocalORMSession.close_all()
 
     def test_init(self):
-        repo = SM.SVNRepository(
+        repo = SM.Repository(
             name='testsvn',
             fs_path='/tmp/',
             url_path = '/test/',
@@ -63,7 +63,7 @@ class TestSVNRev(unittest.TestCase):
         h.set_context('test', 'src')
         repo_dir = pkg_resources.resource_filename(
             'forgesvn', 'tests/data')
-        self.repo = SM.SVNRepository(
+        self.repo = SM.Repository(
             name='testsvn',
             fs_path=repo_dir,
             url_path = '/test/',

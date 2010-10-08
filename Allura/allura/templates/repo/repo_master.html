@@ -1,0 +1,18 @@
+{% extends 'jinja_master/master.html' %}
+
+{% macro clone_info(repo) %}
+  {% if repo %}
+    <label for="ro" style="width:8em; float:left;">Read-only</label>
+    <input id="ro" style="width:40em; float:left;" readonly type="text"
+           class="selectText"
+           value="{{repo.readonly_clone_command()}}"/>
+    <br style="clear:both;"/>
+    {% if c.user != c.user.anonymous() %}
+    <label for="rw" style="width:8em; float:left;">Read / write</label>
+    <input id="rw" style="width:40em; float:left;" readonly type="text"
+           class="selectText"
+           value="{{repo.readwrite_clone_command()}}"/>
+    <br style="clear:both;"/>
+    {% endif %}
+  {% endif %}
+{% endmacro %}

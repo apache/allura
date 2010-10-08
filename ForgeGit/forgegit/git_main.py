@@ -41,10 +41,6 @@ class ForgeGitApp(RepositoryApp):
     def repo(self):
         return GM.Repository.query.get(app_config_id=self.config._id)
 
-    @property
-    def templates(self):
-         return pkg_resources.resource_filename('forgegit', 'templates')
-
     def install(self, project):
         '''Create repo object for this tool'''
         super(ForgeGitApp, self).install(project)
