@@ -16,6 +16,7 @@
     <thead>
       <tr>
         <th>Version</th>
+        <th>Date</th>
         <th>V1</th>
         <th>V2</th>
         <th>&nbsp;</th>
@@ -26,6 +27,7 @@
       {% for p in pages %}
         <tr>
           <td>{{p.version}} by {{p.author.display_name}}</td>
+          <td>{{h.ago(p.mod_date)}}</td>
           <td><input name="v1" type="radio" value="{{p.version}}"/></td>
           <td><input name="v2" type="radio" value="{{p.version}}"/></td>
           <td>
