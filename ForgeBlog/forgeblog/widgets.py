@@ -21,7 +21,7 @@ class EditPostForm(NewPostForm):
         delete = ew.SubmitButton()
 
 class ViewPostForm(ew.Widget):
-    template='genshi:forgeblog.templates.widgets.view_post'
+    template='jinja:widgets/view_post.html'
     params = [ 'value', 'subscribed' ]
     value=None
     subscribed=None
@@ -33,6 +33,6 @@ class ViewPostForm(ew.Widget):
         return kw
 
 class PreviewPostForm(ew.Widget):
-    template='genshi:forgeblog.templates.widgets.preview_post'
+    template='jinja:widgets/preview_post.html'
     params = [ 'value' ]
     value=None

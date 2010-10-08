@@ -1,26 +1,25 @@
-<div xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:py="http://genshi.edgewall.org/"
-      xmlns:xi="http://www.w3.org/2001/XInclude">
-  <?python
-    from allura.lib.security import has_artifact_access
-    ?>
-  <h2 class="title">$value.title</h2>
+<div>
+  <h2 class="title">{{value.title}}</h2>
   <div class="actions">
-    <py:if test="has_artifact_access('write', value)()">
+    {% if h.has_artifact_access('write', value)() %}
       <a href="edit" class="btn ico-l"><b class="ui-icon ui-icon-pencil"></b> <span>Edit</span></a>
-    </py:if>
+    {% endif %}
     <a href="history" class="btn ico-l"><b class="ui-icon ui-icon-search"></b> <span>History</span></a>
-    ${c.subscribe_form.display(value=subscribed, action='subscribe', style='icon')}
+    {{c.subscribe_form.display(value=subscribed, action='subscribe', style='icon')}}
     <a href="feed" class="btn ico"><b class="ui-icon ui-icon-signal-diag"></b> <span>RSS</span></a>
   </div>
   <div class="content">
     <div class="row">
       <div class="column grid_12">
-        <em>Posted ${h.ago(value.timestamp)}</em>
-        <em py:if="value.state != 'published'">State: $value.state</em><br/>
+        <em>Posted {{h.ago(value.timestamp)}}</em>
+        {% if value.state != 'published' %}
+          <em>State: {{value.state}}</em><br/>
+        {% endif %}
         <strong>Labels:</strong>
-        <span py:for="l in value.labels"><a href="${c.app.url}search?q=labels_t:$l">$l</a> </span>
-        ${Markup(value.html_text)}
+        {% for l in value.labels %}
+          <span><a href="{{c.app.url}}search?q=labels_t:{{l}}">{{l}}</a> </span>
+        {% endfor %}
+        {{value.html_text|safe}}
       </div>
     </div>
   </div>

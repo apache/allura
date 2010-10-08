@@ -1,0 +1,12 @@
+{% extends 'jinja_master/master.html' %}
+
+{% block title %}{{c.project.name}} / {{c.app.config.options.mount_label}}: Edit{% endblock %}
+
+{% block header %}{{c.project.name}} / {{c.app.config.options.mount_label}}:
+      Edit {{post.title}}{% endblock %}
+
+{% block content %}
+    <div class="content">
+      {{c.form.display(value=post, action='save')}}
+    </div>
+{% endblock %}

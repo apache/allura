@@ -1,0 +1,13 @@
+{% extends 'jinja_master/master.html' %}
+
+{% block title %}{{c.project.name}} / {{c.app.config.options.mount_label}}{% endblock %}
+
+{% block header %}{{c.project.name}} / {{c.app.config.options.mount_label}}: Recent posts{% endblock %}
+
+{% block content %}
+    <div class="content">
+      {% for post in posts %}
+        {{c.form.display(value=post)}}
+      {% endfor %}
+    </div>
+{% endblock %}

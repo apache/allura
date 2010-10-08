@@ -1,0 +1,28 @@
+{% extends 'jinja_master/master.html' %}
+
+{% block title %}{{c.project.name}} / {{c.app.config.options.mount_label}} / Search{% endblock %}
+
+{% block header %}ForgeBlog Search{% endblock %}
+
+{% block content %}
+          <form method="GET" action="search">
+            <input type="text" name="q" value="{{q}}"/><br/>
+            Search history? <input type="checkbox" name="history" {% if history %}checked="checked"{% endif %}/><br/>
+            <input type="submit" value="Search"/>
+          </form>
+          <div style="clear: both">&nbsp;</div>
+          {% if count==0 and q %}
+          <p>No results.</p>
+          {% elif count==1 and q %}
+          <p>{{count}} result.</p>
+          {% elif count > 1 and q %}
+          <p>{{count}} results.</p>
+          {% endif %}
+          {% for doc in results %}
+          <div>
+            <a href="{{doc['url_s']}}">{{doc.title_s}}</a><br/>
+            <p>{{doc.get('snippet_s', '...')}}</p>
+            <hr/>
+          </div>
+          {% endfor %}
+{% endblock %}

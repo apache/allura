@@ -1,17 +1,16 @@
-<div xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:py="http://genshi.edgewall.org/"
-      xmlns:xi="http://www.w3.org/2001/XInclude">
-  <?python
-    from allura.lib.security import has_artifact_access
-    ?>
-  <h3><a href="${value.url()}">$value.title</a></h3>
-  <em>Posted ${h.ago(value.timestamp)}</em>
-  <em py:if="value.state != 'published'">($value.state)</em>
-  <py:if test="has_artifact_access('write', value)()">
-    <a href="${value.url()}edit">Edit</a>
-  </py:if>
+<div>
+  <h3><a href="{{value.url()}}">{{value.title}}</a></h3>
+  <em>Posted {{h.ago(value.timestamp)}}</em>
+  {% if value.state != 'published' %}
+    <em>({{value.state}})</em>
+  {% endif %}
+  {% if h.has_artifact_access('write', value)() %}
+    <a href="{{value.url()}}edit">Edit</a>
+  {% endif %}
   <br/>
   <strong>Labels:</strong>
-  <span py:for="l in value.labels"><a href="${c.app.url}search?q=labels_t:$l">$l</a> </span>
-  ${Markup(value.html_text_preview)}
+  {% for l in value.labels %}
+    <span><a href="{{c.app.url}}search?q=labels_t:{{l}}">{{l}}</a> </span>
+  {% endfor %}
+  {{value.html_text_preview|safe}}
 </div>
