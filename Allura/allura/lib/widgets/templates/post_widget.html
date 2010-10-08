@@ -30,16 +30,23 @@
         {% if value.attachments %}
         <div>
           <strong>Attachments</strong>
+          <div class="clear"></div>
           {% for att in value.attachments %}
-            {{widgets.attachment.display(post=value, value=att)}}
-            {% if c.user._id and value.author_id==c.user._id %}
-            <form 
-               method="POST"
-               action="{{att.url()}}"
-               style="display:inline">
-              <input class="submit" type="submit" name="delete" value="Delete"/>
-            </form>
-            {% endif %}
+            <div class="attachment_thumb" style="min-height: 130px;">
+              {% if att.is_image() %}
+                <a href="{{att.url()}}"><img src="{{att.url()}}/thumb"/></a>
+                <br/>
+                <a href="{{att.url()}}">{{att.metadata.filename}}</a>
+              {% else %}
+                <a href="{{att.url()}}">{{att.metadata.filename}}</a>
+              {% endif %}
+              {% if c.user._id and value.author_id==c.user._id %}
+              <br>
+              <form method="POST" action="{{att.url()}}">
+                <input class="submit" type="submit" name="delete" value="Delete"/>
+              </form>
+              {% endif %}
+            </div>
           {% endfor %}
         </div>
         {% endif %}

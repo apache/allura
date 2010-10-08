@@ -416,6 +416,7 @@ class DiscussionAttachment(BaseAttachment):
     DiscussionClass=Discussion
     ThreadClass=Thread
     PostClass=Post
+    thumbnail_size = (100, 100)
     class __mongometa__:
         name = 'attachment.files'
         indexes = [
