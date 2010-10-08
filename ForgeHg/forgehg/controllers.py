@@ -26,7 +26,7 @@ class BranchBrowser(repository.BranchBrowser):
         latest = c.app.repo.latest(branch=self._branch)
         if not latest:
             return dict(allow_fork=True, log=[])
-        redirect(latest.tree().url())
+        redirect(latest.tree.url())
 
     @expose('jinja:hg/log.html')
     @with_trailing_slash
@@ -41,7 +41,7 @@ class BranchBrowser(repository.BranchBrowser):
 class CommitBrowser(repository.CommitBrowser):
     revision_widget = HgRevisionWidget()
 
-    @expose('jinja:hg/commit.html')
+    @expose('jinja:git/commit.html')
     @with_trailing_slash
     def index(self, **kw):
         result = super(CommitBrowser, self).index()

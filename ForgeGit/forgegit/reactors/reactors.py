@@ -31,12 +31,3 @@ def refresh_commit(routing_key, data):
     repo = pylons.c.app.repo
     repo.refresh()
     return
-    hash = data['hash']
-    log.info('Refresh commits on %s', repo)
-    c_from, c_to = hash.split('..')
-    for cobj in repo.iter_commits(rev=hash):
-        aref = cobj.dump_ref()
-        for ref in search.find_shortlinks(cobj.message):
-            a = M.ArtifactReference(ref.artifact_reference).artifact
-            if a is None: continue
-            a.backreferences['git_%s' % hash] = aref

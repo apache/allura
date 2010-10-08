@@ -1,10 +1,10 @@
 {% extends 'jinja_master/master.html' %}
 
 {% block title %}
-  {{c.project.name}} / {{c.app.config.options.mount_label}} / Changeset {{h.text.truncate(commit.hex(), 10)}}
+  {{c.project.name}} / {{c.app.config.options.mount_label}} / Changeset {{h.text.truncate(commit.object_id, 10)}}
 {% endblock %}
 
-{% block header %}Changeset <a href="{{commit.url()}}">{{h.text.truncate(commit.hex(), 10)}}</a>{% endblock %}
+{% block header %}Changeset <a href="{{commit.url()}}">{{h.text.truncate(commit.object_id, 10)}}</a>{% endblock %}
 
 {% block content %}
 {{c.revision_widget.display(value=commit, prev=prev, next=next)}}

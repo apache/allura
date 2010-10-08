@@ -2,7 +2,7 @@ import ew
 from allura.lib.widgets import form_fields as ffw
 
 class HgLog(ew.Widget):
-    template='jinja:hg_widgets/log.html'
+    template='jinja:git_widgets/log.html'
     params=['value', 'limit', 'page', 'count', 'show_paging', 'fields']
     value=None
     limit=None

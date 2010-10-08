@@ -4,6 +4,7 @@ import errno
 import string
 import mimetypes
 import logging
+from hashlib import sha1
 from datetime import datetime
 from collections import defaultdict
 
@@ -61,12 +62,12 @@ class RepositoryImplementation(object):
 
     def log(self, object_id, skip, count):
         '''Return a list of object_ids beginning at the given commit ID and continuing
-        in topological sort order.  Also return a list of 'next commit' options
+        to the parent nodes in a breadth-first traversal.  Also return a list of 'next commit' options
         (these are candidates for he next commit after 'count' commits have been
         exhausted).'''
         raise NotImplementedError, '_log'
 
-    def open_blob(self, object_id):
+    def open_blob(self, blob):
         '''Return a file-like object that contains the contents of the blob'''
         raise NotImplementedError, 'open_blob'
 
@@ -127,8 +128,8 @@ class Repository(Artifact):
         return self._impl.commit(rev)
     def commit_context(self, commit):
         return self._impl.commit_context(commit)
-    def open_blob(self, object_id):
-        return self._impl.open_blob(object_id)
+    def open_blob(self, blob):
+        return self._impl.open_blob(blob)
 
     def _log(self, rev, skip, max_count):
         ci = self.commit(rev)
@@ -227,7 +228,7 @@ class Repository(Artifact):
                 sess.flush()
                 sess.clear()
         log.info('...... flushing %d commits (%d total)',
-                 BATCH_SIZE, i)
+                 i % BATCH_SIZE, i)
         sess.flush()
         sess.clear()
         # Compute diffs on new commits
@@ -241,7 +242,7 @@ class Repository(Artifact):
                 sess.flush()
                 sess.clear()
         log.info('...... flushing %d commits (%d total)',
-                 BATCH_SIZE, i)
+                 i % BATCH_SIZE, i)
         sess.flush()
         sess.clear()
         log.info('... refreshed repository %s.  Found %d new commits',
@@ -468,6 +469,17 @@ class Tree(RepoObject):
         self.parent = None
         self.name = None
 
+    def compute_hash(self):
+        '''Compute a hash based on the contents of the tree.  Note that this
+        hash does not necessarily correspond to any actual DVCS hash.
+        '''
+        lines = [('t' + oid + name) for oid, name in self.trees.iteritems() ]
+        lines += [('b' + oid + name) for oid, name in self.trees.iteritems() ]
+        sha_obj = sha1()
+        for line in sorted(lines):
+            sha_obj.update(line)
+        return sha_obj.hexdigest()
+
     @classmethod
     def diff(cls, a, b):
         '''Recursive diff of two tree objects, yielding DiffObjects'''
@@ -639,15 +651,11 @@ class Blob(RepoObject):
 
     @LazyProperty
     def prev_commit(self):
-        if self.commit.object_id != self.last_commit.id:
-            return self.repo.commit(self.last_commit.id)
-        elif self.commit.parent_ids:
-            prev_ci = self.repo.commit(self.commit.parent_ids[0])
-            path_parts = self.path().split('/')[1:-1]
-            prev_blob = prev_ci.tree.get_blob(self.name, path_parts)
-            return self.repo.commit(prev_blob.last_commit.id)
-        else:
-            return None
+        if self.last_commit.id:
+            last_commit = self.repo.commit(self.last_commit.id)
+            if last_commit.parent_ids:
+                return self.repo.commit(last_commit.parent_ids[0])
+        return None
 
     def url(self):
         return self.tree.url() + h.really_unicode(self.name)
@@ -673,8 +681,20 @@ class Blob(RepoObject):
             prev=prev,
             next=next)
 
+    def compute_hash(self):
+        '''Compute a hash based on the contents of the blob.  Note that this
+        hash does not necessarily correspond to any actual DVCS hash.
+        '''
+        fp = self.open()
+        sha_obj = sha1()
+        while True:
+            buffer = fp.read(4096)
+            if not buffer: break
+            sha_obj.update(buffer)
+        return sha_obj.hexdigest()
+
     def open(self):
-        return self.repo.open_blob(self.object_id)
+        return self.repo.open_blob(self)
 
     def __iter__(self):
         return iter(self.open())

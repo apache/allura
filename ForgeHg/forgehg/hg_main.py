@@ -82,26 +82,30 @@ class ForgeHgApp(Application):
 
     @h.exceptionless([], log)
     def sidebar_menu(self):
+        if self.repo.status != 'ready':
+            return [
+                SitemapEntry('Repository is %s' % self.repo.status) ]
         links = [ SitemapEntry('Browse',c.app.url + url(quote('ref/default:/')), ui_icon='folder-collapsed'),
-                  SitemapEntry('History', c.app.url + url(quote('ref/default:/')) + 'log', ui_icon='document-b', small=c.app.repo.count())]
+                  SitemapEntry('History', c.app.url + url(quote('ref/default:/')) + 'log',
+                               ui_icon='document-b', small=c.app.repo.count('tip'))]
         if has_artifact_access('admin', app=c.app)():
-            links.append(SitemapEntry('Admin', c.project.url()+'admin/'+self.config.options.mount_point, ui_icon='wrench'))
+            links.append(SitemapEntry('Admin', c.project.url()+'admin/'+self.config.options.mount_point, ui_icon='tool-admin'))
         repo = c.app.repo
-        if repo and repo.status == 'ready':
-            branches= repo.branchmap().keys()
-            tags = repo.repo_tags().keys()
+        if repo:
+            branches= [ b.name for b in repo.branches ]
+            tags = [ t.name for t in repo.repo_tags ]
             if branches:
                 links.append(SitemapEntry('Branches'))
                 for b in branches:
                     links.append(SitemapEntry(
-                            b, c.app.url + '?' + urlencode(dict(branch=b)),
+                            b, url(c.app.url, dict(branch=b)),
                             className='nav_child',
                             small=c.app.repo.count(branch=b)))
             if tags:
                 links.append(SitemapEntry('Tags'))
                 for b in tags:
                     links.append(SitemapEntry(
-                            b, c.app.url + '?' + urlencode(dict(tag=b)),
+                            b, url(c.app.url, dict(branch=b)),
                             className='nav_child'))
         return links
 
@@ -187,6 +191,11 @@ class RootController(BaseController):
     def __init__(self):
         self.ref = Refs()
         self.ci = Commits()
+
+    @expose()
+    def refresh(self):
+        g.publish('react', 'scm.git.refresh_commit')
+        return '%r refresh queued.\n' % c.app.repo
 
     @expose('jinja:hg/index.html')
     def index(self, offset=0, branch='default', **kw):

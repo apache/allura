@@ -3,8 +3,6 @@ import shutil
 import string
 import logging
 from datetime import datetime
-from cStringIO import StringIO
-from heapq import heappush, heappop
 
 import tg
 import git
@@ -154,16 +152,12 @@ class GitImplementation(M.RepositoryImplementation):
             self._refresh_tree(tree, obj.tree)
 
     def log(self, object_id, skip, count):
-        def _key(obj):
-            if obj.committed_date is None: return 0
-            timestamp = obj.committed_date-obj.committer_tz_offset
-            return -timestamp
         obj = self._git.commit(object_id)
-        candidates = [ (_key(obj), obj) ]
+        candidates = [ obj ]
         result = []
         seen = set()
         while count and candidates:
-            obj = heappop(candidates)[1]
+            obj = candidates.pop(0)
             if obj.hexsha in seen: continue
             seen.add(obj.hexsha)
             if skip == 0:
@@ -171,13 +165,12 @@ class GitImplementation(M.RepositoryImplementation):
                 count -= 1
             else:
                 skip -= 1
-            for p_obj in obj.parents:
-                heappush(candidates, (_key(p_obj), p_obj))
-        return result, [ obj.hexsha for (dt,obj) in candidates ]
+            candidates += obj.parents
+        return result, [ p.hexsha for p in candidates ]
 
-    def open_blob(self, object_id):
+    def open_blob(self, blob):
         return _OpenedGitBlob(
-            self._object(object_id).data_stream)
+            self._object(blob.object_id).data_stream)
 
     def _setup_receive_hook(self):
         'Set up the git post-commit hook'
@@ -237,5 +230,8 @@ class _OpenedGitBlob(object):
             eol = buffer.find('\n')
             yield buffer[:eol+1]
             buffer = buffer[eol+1:]
+
+    def close(self):
+        pass
 
 MappedClass.compile_all()
