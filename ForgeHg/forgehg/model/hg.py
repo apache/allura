@@ -1,45 +1,48 @@
 import os
 import re
-os.environ['HGRCPATH'] = '' # disable loading .hgrc
-import stat
 import shutil
-import errno
 import string
 import logging
-import subprocess
-import email as EM
-from collections import defaultdict
 from hashlib import sha1
 from datetime import datetime
 from cStringIO import StringIO
-from itertools import islice
 
 import tg
+from pylons import c
+os.environ['HGRCPATH'] = '' # disable loading .hgrc
 from mercurial import ui, hg
 
 from ming.base import Object
-from ming.orm import MappedClass, FieldProperty, session
+from ming.orm import MappedClass, session
 from ming.utils import LazyProperty
 
 from allura import model as M
-from allura.lib import helpers as h
-from allura.model.repository import topological_sort
+from allura.model.repository import topological_sort, GitLikeTree
 
 log = logging.getLogger(__name__)
 
-class HgRepository(M.Repository):
+class Repository(M.Repository):
+    tool_name='Hg'
     repo_id='hg'
     type_s='Hg Repository'
     class __mongometa__:
         name='hg-repository'
-    branches = FieldProperty([dict(name=str,object_id=str)])
 
     def __init__(self, **kw):
-        super(HgRepository, self).__init__(**kw)
+        super(Repository, self).__init__(**kw)
         self._impl = HgImplementation(self)
 
+    def readonly_clone_command(self):
+        return 'hg clone http://%s' % self.scm_url_path
+
+    def readwrite_clone_command(self):
+        return 'hg clone ssh://%s@%s' % (c.user.username, self.scm_url_path)
+
+    def count(self, branch='default'):
+        return super(Repository, self).count(branch)
+
     def log(self, branch='default', offset=0, limit=10):
-        return super(HgRepository, self).log(branch, offset, limit)
+        return super(Repository, self).log(branch, offset, limit)
 
 class HgImplementation(M.RepositoryImplementation):
     post_receive_template = string.Template(
@@ -49,6 +52,12 @@ class HgImplementation(M.RepositoryImplementation):
 
     def __init__(self, repo):
         self._repo = repo
+
+    def readonly_clone_command(self):
+        return 'hg clone http://%s' % self.scm_url_path
+
+    def readwrite_clone_command(self):
+        return 'hg clone ssh://%s@%s' % (c.user.username, self.scm_url_path)
 
     @LazyProperty
     def _hg(self):
@@ -134,7 +143,6 @@ class HgImplementation(M.RepositoryImplementation):
         session(self._repo).flush()
 
     def refresh_commit(self, ci):
-        log.info('Refresh %r', ci)
         obj = self._hg[ci.object_id]
         # Save commit metadata
         mo = self.re_hg_user.match(obj.user())
@@ -193,34 +201,11 @@ class HgImplementation(M.RepositoryImplementation):
 
     def _tree_from_changectx(self, changectx):
         '''Build a fake git-like tree from a changectx and its manifest'''
-        class TreeNode(object):
-            def __init__(self):
-                self.blobs = {}
-                self.trees = defaultdict(TreeNode)
-                self._hex = None
-            def hex(self):
-                if self._hex is None:
-                    sha_obj = sha1(repr(self))
-                    self._hex = sha_obj.hexdigest()
-                return self._hex
-            def __repr__(self):
-                lines = [('t %s %s' % (t.hex(), name))
-                          for name, t in self.trees.iteritems() ]
-                lines += [('b %s %s' % (oid, name))
-                          for name, oid in self.blobs.iteritems() ]
-                return '\n'.join(sorted(lines))
-        def _bin2hex(binsha):
-            return ''.join('%.2x' % ord(x) for x in binsha)
-        root = TreeNode()
+        root = GitLikeTree()
         for filepath in changectx.manifest():
-            path_parts = filepath.split('/')
-            dirpath, filename = path_parts[:-1], path_parts[-1]
-            cur = root
-            for part in dirpath:
-                cur = cur.trees[part]
-            # This doesn't work
             fctx = changectx[filepath]
-            cur.blobs[filename] = sha1(fctx.data()).hexdigest()
+            oid = sha1(fctx.data()).hexdigest()
+            root.set_blob(filepath, oid)
         return root
 
     def _refresh_tree(self, tree, obj):

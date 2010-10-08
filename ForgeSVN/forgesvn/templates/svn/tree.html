@@ -3,14 +3,13 @@
 {% block title %}
   {{c.project.name}} / {{c.app.config.options.mount_label}}
   {% if tree %}
-    / Revision {{tree._commit._id}}:
-    {{lib.path_links(tree.path().split('/')[1:-1])}}
+    / {{tree.commit.shorthand_id()}}: {{lib.path_links(tree.path().split('/')[1:-1])}}
   {% endif %}
 {% endblock %}
 
 {% block header %}
   {% if tree %}
-    <a href="{{tree._commit.url()}}">Revision {{tree._commit._id}}</a>:
+    <a href="{{tree.commit.url()}}">@{{tree.commit.shorthand_id()}}</a>:
     {{lib.path_links(tree.path().split('/')[1:-1])}}
   {% else %}
     No files

@@ -71,6 +71,12 @@ class RepositoryImplementation(object):
         '''Return a file-like object that contains the contents of the blob'''
         raise NotImplementedError, 'open_blob'
 
+    def shorthand_for_commit(self, commit):
+        return '[%s]' % commit.object_id[:6]
+
+    def url_for_commit(self, commit):
+        return '%sci/%s/' % (self._repo.url(), commit.object_id)
+
     def _setup_paths(self, create_repo_dir=True):
         if not self._repo.fs_path.endswith('/'): self._repo.fs_path += '/'
         fullname = os.path.join(self._repo.fs_path, self._repo.name)
@@ -102,7 +108,9 @@ class Repository(Artifact):
     email_address=''
     additional_viewable_extensions=FieldProperty(str)
     heads = FieldProperty([dict(name=str,object_id=str)])
+    branches = FieldProperty([dict(name=str,object_id=str)])
     repo_tags = FieldProperty([dict(name=str,object_id=str)])
+    upstream_repo = FieldProperty(dict(name=str,url=str))
 
     def __init__(self, **kw):
         if 'name' in kw and 'tool' in kw:
@@ -122,19 +130,27 @@ class Repository(Artifact):
     # Proxy to _impl
     def init(self):
         return self._impl.init()
-    def init_as_clone(self, source_path):
-        return self._impl.init_as_clone(source_path)
     def commit(self, rev):
         return self._impl.commit(rev)
     def commit_context(self, commit):
         return self._impl.commit_context(commit)
     def open_blob(self, blob):
         return self._impl.open_blob(blob)
+    def shorthand_for_commit(self, commit):
+        return self._impl.shorthand_for_commit(commit)
+    def url_for_commit(self, commit):
+        return self._impl.url_for_commit(commit)
 
     def _log(self, rev, skip, max_count):
         ci = self.commit(rev)
         if ci is None: return []
         return ci.log(int(skip), int(max_count))
+
+    def init_as_clone(self, source_path, source_name, source_url):
+        self.upstream_repo.name = source_name
+        self.upstream_repo.url = source_url
+        session(self).flush(self)
+        self._impl.clone_from(source_path)
 
     def log(self, branch='master', offset=0, limit=10):
         return list(self._log(rev=branch, skip=offset, max_count=limit))
@@ -370,6 +386,12 @@ class Commit(RepoObject):
         t.set_context(self)
         return t
 
+    @LazyProperty
+    def summary(self):
+        message = h.really_unicode(self.message)
+        first_line = message.split('\n')[0]
+        return h.text.truncate(first_line, 75)
+
     def get_path(self, path):
         '''Return the blob on the given path'''
         if path.startswith('/'): path = path[1:]
@@ -377,10 +399,10 @@ class Commit(RepoObject):
         return self.tree.get_blob(path_parts[-1], path_parts[:-1])
 
     def shorthand_id(self):
-        return '[%s]' % self.object_id[:6]
+        return self.repo.shorthand_for_commit(self)
 
     def url(self):
-        return self.repo.url() + 'ci/' + self.object_id + '/'
+        return self.repo.url_for_commit(self)
 
     def dump_ref(self):
         return CommitReference(
@@ -448,6 +470,12 @@ class Commit(RepoObject):
                             old=diff.a_path, new=diff.b_path))
                 else:
                     self.diffs.changed.append(diff.a_path)
+        else:
+            # Parent-less, so the whole tree is additions
+            tree = self.tree
+            self.diffs.added = [
+                '/' + name for name in
+                tree.trees.values() + tree.blobs.values() ]
 
     def context(self):
         return self.repo.commit_context(self)
@@ -538,6 +566,7 @@ class Tree(RepoObject):
                        name=name,
                        href=name)
         for oid, name in sorted(self.blobs.iteritems(), key=lambda (o,n):n):
+            if name == '.': continue
             ci = self._get_blob(name, oid).last_commit
             yield dict(kind='FILE',
                        last_commit=ci,
@@ -736,7 +765,7 @@ class DiffObject(object):
             self.b_path = b.path()
             self.b_object_id = b.object_id
         else:
-            self.is_deleted = True
+            self.is_delete = True
 
     def __repr__(self):
         if self.is_new:
@@ -748,6 +777,56 @@ class DiffObject(object):
                 self.a_path, self.b_path)
         else:
             return '<change %s>' % (self.a_path)
+
+class GitLikeTree(object):
+    '''A tree node similar to that which is used in git'''
+
+    def __init__(self):
+        self.blobs = {}  # blobs[name] = oid
+        self.trees = defaultdict(GitLikeTree) #trees[name] = GitLikeTree()
+        self._hex = None
+
+    @classmethod
+    def from_tree(cls, tree):
+        self = GitLikeTree()
+        for oid, name in tree.blobs.iteritems():
+            self.blobs[name] = oid
+        for oid, name in tree.trees.iteritems():
+            subtree = Tree.query.get(repo_id=tree.repo_id, object_id=oid)
+            self.trees[name] = GitLikeTree.from_tree(subtree)
+        return self
+
+    def set_blob(self, path, oid):
+        if path.startswith('/'): path = path[1:]
+        path_parts = path.split('/')
+        dirpath, filename = path_parts[:-1], path_parts[-1]
+        cur = self
+        for part in dirpath:
+            cur = cur.trees[part]
+        cur.blobs[filename] = oid
+
+    def del_blob(self, path):
+        if path.startswith('/'): path = path[1:]
+        path_parts = path.split('/')
+        dirpath, filename = path_parts[:-1], path_parts[-1]
+        cur = self
+        for part in dirpath:
+            cur = cur.trees[part]
+        cur.blobs.pop(filename)
+
+    def hex(self):
+        '''Compute a recursive sha1 hash on the tree'''
+        if self._hex is None:
+            sha_obj = sha1(repr(self))
+            self._hex = sha_obj.hexdigest()
+        return self._hex
+
+    def __repr__(self):
+        lines = [('t %s %s' % (t.hex(), name))
+                  for name, t in self.trees.iteritems() ]
+        lines += [('b %s %s' % (oid, name))
+                  for name, oid in self.blobs.iteritems() ]
+        return '\n'.join(sorted(lines))
 
 def topological_sort(graph):
     '''Return the topological sort of a graph.

@@ -18,7 +18,7 @@
         <tr>
           <td>
             <a href="{{commit.url()}}">
-              {{h.text.truncate(h.really_unicode(commit.message.split('\n')[0]), 75)}}
+              {{commit.summary}}
             </a>
             <br/>
             {% if commit.committed.email != commit.authored.email %}
@@ -31,7 +31,7 @@
                 pushed
               {% endif %}
             {% endif %}
-            <a href="{{commit.url()}}">{{h.text.truncate(commit.hexsha, 10)}}</a>
+             <a href="{{commit.url()}}">{{commit.shorthand_id()}}</a>
             by
               {{email_gravatar(commit.authored.email, title=commit.authored.name, size=16)}} {{commit.authored.name}}
           </td>

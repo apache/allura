@@ -1,21 +1,19 @@
-{% extends 'jinja_master/master.html' %}
+{% extends 'repo/repo_master.html' %}
 {% do g.register_forge_css('css/forge/hilite.css') %}
 
 {% block title %}
-  {{c.project.name}} / {{c.app.config.options.mount_label}} / Diff of {{h.really_unicode(a.filename)}}
+  {{c.project.name}} / {{c.app.config.options.mount_label}} / Diff of {{h.really_unicode(a.path())}}
 {% endblock %}
 
-{% block header %}Diff of {{h.really_unicode(a.path())}}{% endblock %}
+{% block header %}Diff of
+<a href="{{b.url()}}">{{b.path()}}</a>
+<a href="{{a.url()}}">{{a.commit.shorthand_id()}}</a>
+..
+<a href="{{b.url()}}">{{b.commit.shorthand_id()}}</a>
+{% endblock %}
 
 {% block content %}
-
-  <a href="{{a.commit.url()}}">{{h.text.truncate(a.commit.object_id, 10)}}:</a>
-  <a href="{{a.url()}}">{{a.path()}}</a><br/>
-  vs.<br/>
-  <a href="{{b.commit.url()}}">{{h.text.truncate(b.commit.object_id, 10)}}:</a>
-  <a href="{{b.url()}}">{{b.path()}}</a>
-
-
+  {{ clone_info(c.app.repo) }}
   {% if (not a.has_html_view and not a.has_image_view) or (not b.has_html_view and not b.has_image_view) %}
     {{a.name}} cannot be displayed in your browser.
     You may, however, <a href="?format=raw">download this file</a> instead.

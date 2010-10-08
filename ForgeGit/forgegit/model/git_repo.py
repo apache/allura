@@ -6,9 +6,10 @@ from datetime import datetime
 
 import tg
 import git
+from pylons import c
 
 from ming.base import Object
-from ming.orm import MappedClass, FieldProperty, session
+from ming.orm import MappedClass, session
 from ming.utils import LazyProperty
 
 from allura import model as M
@@ -16,16 +17,22 @@ from allura.model.repository import topological_sort
 
 log = logging.getLogger(__name__)
 
-class GitRepository(M.Repository):
+class Repository(M.Repository):
+    tool_name='Git'
     repo_id='git'
     type_s='Git Repository'
     class __mongometa__:
         name='git-repository'
-    branches = FieldProperty([dict(name=str,object_id=str)])
 
     def __init__(self, **kw):
-        super(GitRepository, self).__init__(**kw)
+        super(Repository, self).__init__(**kw)
         self._impl = GitImplementation(self)
+
+    def readonly_clone_command(self):
+        return 'git clone git://%s' % self.scm_url_path
+
+    def readwrite_clone_command(self):
+        return 'git clone ssh://%s@%s' % (c.user.username, self.scm_url_path)
 
 class GitImplementation(M.RepositoryImplementation):
     post_receive_template = string.Template(

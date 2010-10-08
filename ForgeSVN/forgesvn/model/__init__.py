@@ -1,1 +1,1 @@
-from svn import SVNRepository
+from svn import Repository

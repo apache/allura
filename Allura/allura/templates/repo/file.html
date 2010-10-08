@@ -1,27 +1,29 @@
-{% extends 'jinja_master/master.html' %}
+{% extends 'repo/repo_master.html' %}
 {% do g.register_forge_css('css/forge/hilite.css') %}
 
 {% block title %}
   {{c.project.name}} / {{c.app.config.options.mount_label}} /
-  {{h.really_unicode(blob.name)}} @{{h.text.truncate(blob.commit.object_id, 10)}}
+  {{blob.commit.shorthand_id()}}
+  {{h.really_unicode(blob.path())}}
 {% endblock %}
 
 {% block header %}
-<a href="{{blob.commit.url()}}">@{{h.text.truncate(blob.commit.object_id, 10)}}</a>:
+<a href="{{blob.commit.url()}}">{{blob.commit.shorthand_id()}}</a>:
 {{lib.path_links(blob.path().split('/')[1:-1])}} {{h.really_unicode(blob.name)}}
 {% endblock %}
 
 {% block content %}
+  {{ clone_info(c.app.repo) }}
   {% if prev %}
     Parent:
-      <a href="{{prev.url()}}">{{h.text.truncate(prev.commit.object_id, 10)}}</a>
+      <a href="{{prev.url()}}">{{prev.commit.shorthand_id()}}</a>
       <a href="?diff={{prev.commit.object_id}}">(diff)</a>
       <br/>
   {% endif %}
 
   {% if next %}
     Child:
-    <a href="{{next.url()}}">{{h.text.truncate(next.commit.object_id, 10)}}</a>
+    <a href="{{next.url()}}">{{next.commit.shorthand_id()}}</a>
     <a href="{{next.url()}}?diff={{blob.commit.object_id}}">(diff)</a>
     <br/>
   {% endif %}

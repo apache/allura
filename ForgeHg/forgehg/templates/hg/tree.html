@@ -3,13 +3,13 @@
 {% block title %}
   {{c.project.name}} / {{c.app.config.options.mount_label}}
   {% if tree %}
-    / @{{h.text.truncate(tree.commit.object_id, 10)}}: {{lib.path_links(tree.path().split('/')[1:-1])}}
+    / {{tree.commit.shorthand_id()}}: {{lib.path_links(tree.path().split('/')[1:-1])}}
   {% endif %}
 {% endblock %}
 
 {% block header %}
   {% if tree %}
-    <a href="{{tree.commit.url()}}">@{{h.text.truncate(tree.commit.object_id, 10)}}</a>:
+    <a href="{{tree.commit.url()}}">@{{tree.commit.shorthand_id()}}</a>:
     {{lib.path_links(tree.path().split('/')[1:-1])}}
   {% else %}
     No files

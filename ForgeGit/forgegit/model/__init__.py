@@ -1,1 +1,1 @@
-from git_repo import GitRepository
+from git_repo import Repository

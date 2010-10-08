@@ -17,7 +17,7 @@ class TestHgRepo(unittest.TestCase):
         h.set_context('test', 'src-hg')
         repo_dir = pkg_resources.resource_filename(
             'forgehg', 'tests/data')
-        self.repo = HM.HgRepository(
+        self.repo = HM.Repository(
             name='testrepo.hg',
             fs_path=repo_dir,
             url_path = '/test/',
@@ -28,7 +28,7 @@ class TestHgRepo(unittest.TestCase):
         ThreadLocalORMSession.close_all()
 
     def test_init(self):
-        repo = HM.HgRepository(
+        repo = HM.Repository(
             name='testrepo.hg',
             fs_path='/tmp/',
             url_path = '/test/',
@@ -63,7 +63,7 @@ class TestHgCommit(unittest.TestCase):
         h.set_context('test', 'src-hg')
         repo_dir = pkg_resources.resource_filename(
             'forgehg', 'tests/data')
-        self.repo = HM.HgRepository(
+        self.repo = HM.Repository(
             name='testrepo.hg',
             fs_path=repo_dir,
             url_path = '/test/',

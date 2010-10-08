@@ -1,29 +1,18 @@
-{% extends 'jinja_master/master.html' %}
+{% extends 'repo/repo_master.html' %}
 {% do g.register_forge_css('css/forge/hilite.css') %}
 
 {% block title %}
   {{c.project.name}} / {{c.app.config.options.mount_label}}
-    / @{{h.text.truncate(commit.object_id, 10)}}: {{path}}
+    / {{commit.shorthand_id()}} {{path}}
 {% endblock %}
 
 {% block header %}
-<a href="{{commit.url()}}">@{{h.text.truncate(commit.object_id, 10)}}</a>:
+<a href="{{commit.url()}}">{{commit.shorthand_id()}}</a> /
 {{lib.path_links(path.split('/')[1:-1])}}
 {% endblock %}
 
 {% block content %}
-{% if c.app.repo %}
-<p>
-  Read access: <code>git clone git://{{c.app.repo.scm_url_path}}</code><br/>
-  Read/write access: <code>git clone ssh://{{c.user == c.user.anonymous() and 'USERNAME' or c.user.username}}@{{c.app.repo.scm_url_path}}</code><br/>
-  {% if c.user != c.user.anonymous() %}
-  <form action="{{repo.url()}}fork" method="GET">
-    <input type="submit" value="Fork" />
-  </form>
-  {% endif %}
-</p>
-{% endif %}
-<div style="clear:both;"></div>
+  {{ clone_info(c.app.repo) }}
 {% if tree.readme() %}
 <div class="clip">
   <h3><span class="ico-l"><b class="ui-icon ui-icon-document"></b> Read Me</span></h3>

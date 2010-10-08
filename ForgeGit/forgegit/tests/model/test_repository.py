@@ -17,7 +17,7 @@ class TestGitRepo(unittest.TestCase):
         h.set_context('test', 'src-git')
         repo_dir = pkg_resources.resource_filename(
             'forgegit', 'tests/data')
-        self.repo = GM.GitRepository(
+        self.repo = GM.Repository(
             name='testgit.git',
             fs_path=repo_dir,
             url_path = '/test/',
@@ -28,7 +28,7 @@ class TestGitRepo(unittest.TestCase):
         ThreadLocalORMSession.close_all()
 
     def test_init(self):
-        repo = GM.GitRepository(
+        repo = GM.Repository(
             name='testgit.git',
             fs_path='/tmp/',
             url_path = '/test/',
@@ -62,7 +62,7 @@ class TestGitCommit(unittest.TestCase):
         h.set_context('test', 'src')
         repo_dir = pkg_resources.resource_filename(
             'forgegit', 'tests/data')
-        self.repo = GM.GitRepository(
+        self.repo = GM.Repository(
             name='testgit.git',
             fs_path=repo_dir,
             url_path = '/test/',

@@ -1,4 +1,5 @@
 <table>
+{% set ls = list(tree.ls()) %}
   <thead>
     <tr>
       <th>Kind</th>
@@ -18,10 +19,21 @@
       <td></td>
     </tr>
     {% endif %}
+   {% if not ls %}
+      <td colspan="5">&mdash; No files &mdash;</td>
+   {% endif %}
     {% for dirent in tree.ls() %}
     <tr>
       <td>{{dirent.kind}}</td>
       <td><a href="{{h.really_unicode(dirent.href)}}">{{h.really_unicode(dirent.name)}}</a></td>
+        <td>{{h.ago(dirent.last_commit.date)}}</td>
+        <td>{{dirent.last_commit.author}}</td>
+        <td>
+          <a href="$dirent.last_commit.href">
+            {{h.text.truncate(dirent.last_commit.id, 10)}}
+          </a>
+        </td>
+
       {% if dirent.date %}
         <td>{{h.ago(dirent.date)}}</td>
       {% else %}
