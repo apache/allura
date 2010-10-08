@@ -290,7 +290,7 @@ class PostThread(ew.Widget):
     supress_promote=False
 
 class Thread(HierWidget):
-    template='jinja:thread.html'
+    template='jinja:thread_widget.html'
     name='thread'
     params=['value', 'page', 'limit', 'count', 'show_subject','new_post_text']
     value=None
