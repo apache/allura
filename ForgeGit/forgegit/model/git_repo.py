@@ -190,12 +190,8 @@ class GitImplementation(M.RepositoryImplementation):
         os.chmod(fn, 0755)
 
     def _refresh_tree(self, tree, obj):
-        tree.trees=Object(
-            (o.hexsha, o.name)
-            for o in obj.trees)
-        tree.blobs=Object(
-            (o.hexsha, o.name)
-            for o in obj.blobs)
+        tree.object_ids = Object(
+            (o.hexsha, o.name) for o in obj )
         for o in obj.trees:
             subtree, isnew = M.Tree.upsert('git', o.hexsha)
             if isnew:

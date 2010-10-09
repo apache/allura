@@ -224,10 +224,10 @@ class SVNImplementation(M.RepositoryImplementation):
         return root
 
     def _refresh_tree(self, tree, obj):
-        tree.trees=Object(
+        tree.object_ids=Object(
             (o.hex(), name)
             for name, o in obj.trees.iteritems())
-        tree.blobs=Object(
+        tree.object_ids.update(
             (oid, name)
             for name, oid in obj.blobs.iteritems())
         for name, o in obj.trees.iteritems():

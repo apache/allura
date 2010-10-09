@@ -269,11 +269,17 @@ class RepoObject(MappedClass):
     class __mongometa__:
         session = repository_orm_session
         name='repo_object'
-        indexes = [ 'repo_id', 'object_id' ]
-        unique_indexes = [ ('repo_id', 'object_id') ]
+        polymorphic_on = 'type'
+        polymorphic_identity=None
+        indexes = [
+            'type', 'repo_id', 'object_id',
+            'parent_ids' # for commit objects
+            ]
+        unique_indexes = [ ('type', 'repo_id', 'object_id') ]
 
     # ID Fields
     _id = FieldProperty(S.ObjectId)
+    type = FieldProperty(str)
     repo_id = FieldProperty(str) # either 'hg', 'git', or the repo path (for svn)
     object_id = FieldProperty(str)
     last_commit = FieldProperty(dict(
@@ -323,26 +329,27 @@ class RepoObject(MappedClass):
 class LogCache(RepoObject):
     '''Class to store nothing but lists of commit IDs in topo sort order'''
     class __mongometa__:
-        name='log_cache'
+        polymorphic_identity='log_cache'
     type_s = 'LogCache'
 
+    type = FieldProperty(str, if_missing='log_cache')
     object_ids = FieldProperty([str])
     candidates = FieldProperty([str])
 
     @classmethod
     def get(cls, repo, object_id):
-        lc, new = cls.upsert(repo.repo_id, object_id)
+        lc, new = cls.upsert(repo.repo_id, '$' + object_id)
         if not lc.object_ids:
             lc.object_ids, lc.candidates = repo._impl.log(object_id, 0, 50)
         return lc
 
 class Commit(RepoObject):
     class __mongometa__:
-        name='repo_commit'
-        indexes = RepoObject.__mongometa__.indexes + [ 'parent_ids' ]
+        polymorphic_identity='commit'
     type_s = 'Commit'
 
     # File data
+    type = FieldProperty(str, if_missing='commit')
     tree_id = FieldProperty(str)
     diffs = FieldProperty(dict(
             added=[str],
@@ -477,7 +484,7 @@ class Commit(RepoObject):
             tree = self.tree
             self.diffs.added = [
                 '/' + name for name in
-                tree.trees.values() + tree.blobs.values() ]
+                tree.object_ids.values() ]
 
     def context(self):
         return self.repo.commit_context(self)
@@ -485,11 +492,11 @@ class Commit(RepoObject):
 class Tree(RepoObject):
     README_NAMES=set(['readme.txt','README.txt','README.TXT','README'])
     class __mongometa__:
-        name='repo_tree'
+        polymorphic_identity='tree'
     type_s = 'Tree'
 
-    trees = FieldProperty({str:str}) # trees[oid] = name
-    blobs = FieldProperty({str:str}) # blobs[oid] = name
+    type = FieldProperty(str, if_missing='tree')
+    object_ids = FieldProperty({str:str}) # objects[oid] = name
 
     def __init__(self, **kw):
         super(Tree, self).__init__(**kw)
@@ -510,38 +517,53 @@ class Tree(RepoObject):
             sha_obj.update(line)
         return sha_obj.hexdigest()
 
+    @LazyProperty
+    def objects(self):
+        objects = RepoObject.query.find(dict(
+                repo_id=self.repo_id,
+                object_id={'$in':self.object_ids.keys()})).all()
+        for o in objects:
+            o.set_context(self, self.object_ids[o.object_id])
+        return objects
+
+    @LazyProperty
+    def trees(self):
+        return [ o for o in self.objects if isinstance(o, Tree) ]
+
+    @LazyProperty
+    def blobs(self):
+        return [ o for o in self.objects if isinstance(o, Blob) ]
+
+    @LazyProperty
+    def object_index(self):
+        return dict((o.name, o) for o in self.objects)
+
+    @LazyProperty
+    def object_id_index(self):
+        return dict((name, oid) for oid,name in self.object_ids.iteritems())
+
+    def get(self, name, default=None):
+        return self.object_index.get(name, default)
+
+    def __getitem__(self, name):
+        return self.object_index[name]
+
     @classmethod
     def diff(cls, a, b):
         '''Recursive diff of two tree objects, yielding DiffObjects'''
-        if a is None:
-            yield DiffObject(None, b)
-        elif b is None:
-            yield DiffObject(a, None)
+        if not isinstance(a, Tree) or not isinstance(b, Tree):
+            yield DiffObject(a, b)
         else:
-            # Yield blob differences
-            a_blob_ids = set(a.blobs)
-            b_blob_ids = set(b.blobs)
-            for a_oid in a_blob_ids - b_blob_ids:
-                a_obj = a._get_blob(a.blobs[a_oid], a_oid)
-                b_obj = b.get_blob(a_obj.name)
-                if b_obj: b_blob_ids.remove(b_obj.object_id)
-                yield DiffObject(a_obj, b_obj)
-            for b_oid in b_blob_ids - a_blob_ids:
-                b_obj = a._get_blob(b.blobs[b_oid], b_oid)
-                a_obj = a.get_blob(b_obj.name)
-                yield DiffObject(a_obj, b_obj)
-            # Yield tree differences (this is the recursive step)
-            a_tree_ids = set(a.trees)
-            b_tree_ids = set(b.trees)
-            for a_oid in a_tree_ids - b_tree_ids:
-                a_obj = a._get_tree(a.trees[a_oid], a_oid)
-                b_obj = b.get_tree(a_obj.name)
-                if b_obj: b_tree_ids.remove(b_obj.object_id)
-                for x in cls.diff(a_obj, b_obj): yield x
-            for b_oid in b_tree_ids - a_tree_ids:
-                b_obj = b._get_tree(b.trees[b_oid], b_oid)
-                a_obj = a.get_tree(b_obj.name)
-                for x in cls.diff(a_obj, b_obj): yield x
+            for a_obj in a.objects:
+                b_obj = b.get(a_obj.name)
+                if b_obj is not None:
+                    if a_obj.object_id != b_obj.object_id:
+                        for x in cls.diff(a_obj, b_obj): yield x
+                else:
+                    yield DiffObject(a_obj, None)
+            for b_obj in b.objects:
+                if b_obj.name in a.object_index: continue
+                yield DiffObject(None, b_obj)
 
     def set_context(self, commit_or_tree, name=None):
         assert commit_or_tree is not self
@@ -554,35 +576,26 @@ class Tree(RepoObject):
             self.commit = commit_or_tree
 
     def readme(self):
-        for oid, name in self.blobs.iteritems():
+        for name in self.object_ids:
             if name in self.README_NAMES:
-                blob = self._get_blob(name, oid)
+                blob = self.get_blob(name)
                 return h.really_unicode(blob.text)
         return ''
 
     def ls(self):
-        for oid, name in sorted(self.trees.iteritems(), key=lambda (o,n):n):
-            ci = self._get_tree(name, oid).last_commit
+        for obj in sorted(self.trees, key=lambda o:o.name):
+            ci = obj.last_commit
             yield dict(kind='DIR',
                        last_commit=ci,
-                       name=name,
-                       href=name)
-        for oid, name in sorted(self.blobs.iteritems(), key=lambda (o,n):n):
-            if name == '.': continue
-            ci = self._get_blob(name, oid).last_commit
+                       name=obj.name,
+                       href=obj.name + '/')
+        for obj in sorted(self.blobs, key=lambda o:o.name):
+            if obj.name == '.': continue
+            ci = obj.last_commit
             yield dict(kind='FILE',
                        last_commit=ci,
-                       name=name,
-                       href=name)
-
-    def render(self, indent=''):
-        for o in self.blobs:
-            yield indent + o.name
-        for o in self.trees:
-            t = self._get_tree(o.name, o.object_id)
-            yield indent + o.name
-            for line in t.render(indent=indent+'    '):
-                yield line
+                       name=obj.name,
+                       href=obj.name)
 
     def index_id(self):
         return repr(self)
@@ -598,26 +611,15 @@ class Tree(RepoObject):
         return self.commit.url() + 'tree' + self.path()
 
     def is_blob(self, name):
-        for oid, bname in self.blobs.iteritems():
-            if bname == name: return True
-        return False
+        obj = RepoObject.query.get(
+            repo_id=self.repo_id,
+            object_id=self.object_id_index[name])
+        return isinstance(obj, Blob)
 
     def get_tree(self, name):
-        for oid, oname in self.trees.iteritems():
-            if oname == name:
-                return self._get_tree(name, oid)
-        else:
-            return None
-
-    def _get_tree(self, name, oid):
-        t = Tree.query.get(repo_id=self.repo_id, object_id=oid)
-        t.set_context(self, name)
-        return t
-
-    def _get_blob(self, name, oid):
-        b = Blob.query.get(repo_id=self.repo_id, object_id=oid)
-        b.set_context(self, name)
-        return b
+        t = self.get(name)
+        if isinstance(t, Tree): return t
+        return None
 
     def get_blob(self, name, path_parts=None):
         if path_parts:
@@ -626,17 +628,16 @@ class Tree(RepoObject):
                 return t.get_blob(name, path_parts[1:])
             else:
                 return None
-        for oid, oname in self.blobs.iteritems():
-            if oname == name:
-                return self._get_blob(name, oid)
-        else:
-            return None
+        b = self.get(name)
+        if isinstance(b, Blob): return b
+        return None
 
 class Blob(RepoObject):
     class __mongometa__:
-        session = repository_orm_session
-        name='repo_blob'
+        polymorphic_identity='blob'
     type_s = 'Blob'
+
+    type = FieldProperty(str, if_missing='blob')
 
     def __init__(self, **kw):
         super(Blob, self).__init__(**kw)
@@ -791,11 +792,11 @@ class GitLikeTree(object):
     @classmethod
     def from_tree(cls, tree):
         self = GitLikeTree()
-        for oid, name in tree.blobs.iteritems():
-            self.blobs[name] = oid
-        for oid, name in tree.trees.iteritems():
-            subtree = Tree.query.get(repo_id=tree.repo_id, object_id=oid)
-            self.trees[name] = GitLikeTree.from_tree(subtree)
+        for o in tree.blobs:
+            self.blobs[o.name] = o.object_id
+        for o in tree.trees:
+            subtree = Tree.query.get(repo_id=tree.repo_id, object_id=o.object_id)
+            self.trees[o.name] = GitLikeTree.from_tree(subtree)
         return self
 
     def set_blob(self, path, oid):
