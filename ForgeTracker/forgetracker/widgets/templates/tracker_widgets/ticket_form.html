@@ -58,7 +58,6 @@
   </div>
   <div class="row">
     <div class="column grid_12">
-      <label class="cr">Description:</label>
       {{c.widget.widget_type.display_field_by_name('description')|safe}}
     </div>
   </div>
@@ -83,7 +82,7 @@
         {% endfor %}
         </div>
       {% endif %}
-      <label class="cr">Add Attachment:</label>
+      <label>Add Attachment:</label>
       {{c.widget.widget_type.display_field_by_name('attachment')|safe}}
     </div>
   </div>
@@ -105,7 +104,7 @@
   <div class="row">
     <div class="column grid_12">
       {{c.widget.widget_type.display_field_by_name('submit')|safe}}
-      <a href="{{c.app.url}}" class="btn cancel_form">Cancel</a>
+      <a href="{{c.app.url}}" class="btn_link cancel_form">Cancel</a>
     </div>
   </div>
 </form>
