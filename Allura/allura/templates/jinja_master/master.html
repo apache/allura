@@ -107,5 +107,10 @@
       {{ blob }}
     {% endfor %}
     {% block extra_js %}{% endblock %}
+    {% if neighborhood %}
+      {{ neighborhood.site_specific_html }}
+    {% elif c.project.neighborhood %}
+      {{ c.project.neighborhood.site_specific_html }}
+    {% endif %}
   </body>
 </html>

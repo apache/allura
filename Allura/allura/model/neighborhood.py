@@ -52,6 +52,7 @@ class Neighborhood(MappedClass):
     redirect = FieldProperty(str, if_missing='')
     projects = RelationProperty('Project')
     allow_browse = FieldProperty(bool, if_missing=True)
+    site_specific_html = FieldProperty(str, if_missing='')
 
     def url(self):
         url = self.url_prefix
