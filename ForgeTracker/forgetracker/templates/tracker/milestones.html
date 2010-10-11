@@ -12,10 +12,10 @@
   <table>
     <thead>
       <tr>
-        <th>Name</th>
-        <th>Summary</th>
-        <th>Status</th>
-        <th>Due Date</th>
+        <th>&nbsp; &nbsp;Name</th>
+        <th>&nbsp; &nbsp;Summary</th>
+        <th>&nbsp; &nbsp;Status</th>
+        <th>&nbsp; &nbsp;Due Date</th>
         <th>Progress</th>
         <th>&nbsp;</th>
       </tr>
@@ -24,10 +24,10 @@
       {% for m in milestones %}
       <tr>
         <input type="hidden" name="milestones-{{loop.index0}}.old_name" value="{{m.name}}">
-        <td class="view"><a href="{{c.app.url}}milestone/{{m.name}}/">{{m.name}}</a></td>
-        <td class="view">{{m.description}}</td>
-        <td class="view">{{m.complete and 'Closed' or 'Open'}}</td>
-        <td class="view">{{m.due_date or 'N/A'}}</td>
+        <td class="view">&nbsp; &nbsp;<a href="{{c.app.url}}milestone/{{m.name}}/">{{m.name}}</a></td>
+        <td class="view">&nbsp; &nbsp;{{m.description}}</td>
+        <td class="view">&nbsp; &nbsp;{{m.complete and 'Closed' or 'Open'}}</td>
+        <td class="view">&nbsp; &nbsp;{{m.due_date or 'N/A'}}</td>
         <td class="edit" style="display:none">
           <input type="text" name="milestones-{{loop.index0}}.new_name" value="{{m.name}}">
         </td>
@@ -53,22 +53,23 @@
         <td colspan="6">No milestones found.</td>
       </tr>
       {% endfor %}
+      {% set num_milestones = milestones.__len__() %}
       <tr class="new_milestone" style="display:none">
         <td>
-          <input type="hidden" name="milestones-{{milestones.__len__()}}.old_name">
-          <input type="text" name="milestones-{{milestones.__len__()}}.new_name">
+          <input type="hidden" name="milestones-{{num_milestones}}.old_name">
+          <input type="text" name="milestones-{{num_milestones}}.new_name">
         </td>
         <td>
-          <input type="text" name="milestones-{{milestones.__len__()}}.description">
+          <input type="text" name="milestones-{{num_milestones}}.description">
         </td>
         <td>
-          <select name="milestones-{{milestones.__len__()}}.complete">
+          <select name="milestones-{{num_milestones}}.complete">
             <option value="Open">Open</option>
             <option value="Closed">Closed</option>
           </select>
         </td>
         <td>
-          <input type="date" name="milestones-{{milestones.__len__()}}.due_date">
+          <input type="date" name="milestones-{{num_milestones}}.due_date">
         </td>
         <td>0 / 0</td>
         <td>&nbsp;</td>
@@ -98,6 +99,7 @@
         return false;
       });
       $('a.edit_milestone').click(function(){
+        $(this).addClass('btn_activate');
         $row = $(this).closest('tr');
         $('td.view', $row).hide();
         $('td.edit', $row).show();
@@ -112,6 +114,7 @@
         $add_button.show();
         $new_row.hide();
         $('input', $new_row).val('');
+        $('a.edit_milestone').removeClass('btn_activate');
         return false;
       });
     });
