@@ -14,8 +14,8 @@
 <h2>Project: {{c.project.shortname}}</h2>
   {% if c.app.repo %}
     <p>
-      Read access: <code>hg clone http://{{c.app.repo.scm_url_path}}</code><br/>
-      Read/write access: <code>hg clone ssh://{{c.user == c.user.anonymous() and 'USERNAME' or c.user.username}}@{{c.app.repo.scm_url_path}}</code><br/>
+      Read access: <code>hg clone http://{{c.app.repo.scm_url_path}} {{c.project.shortname}}</code><br/>
+      Read/write access: <code>hg clone ssh://{{c.user == c.user.anonymous() and 'USERNAME' or c.user.username}}@{{c.app.repo.scm_url_path}} {{c.project.shortname}}</code><br/>
       {% if allow_fork and c.user != c.user.anonymous() %}
         <form action="{{c.app.repo.url()}}fork" method="GET">
           <input type="submit" value="Fork"/>

@@ -1,15 +1,17 @@
-<div xmlns="http://www.w3.org/1999/xhtml"
-     xmlns:py="http://genshi.edgewall.org/">
+<div>
   <hr/>
-  <div py:if="value.is_image()" class="attachment_thumb">
-    <a href="${value.url()}"><img src="${value.url()}/thumb"/></a>
+  {% if value.is_image() %}
+  <div class="attachment_thumb">
+    <a href="{{value.url()}}"><img src="{{value.url()}}/thumb"/></a>
     <br/>
-    <a href="${value.url()}">$value.metadata.filename</a>
-    ($value.length) bytes)
+    <a href="{{value.url()}}">{{value.metadata.filename}}</a>
+    ({{value.length}} bytes)
   </div>
-  <div py:if="not value.is_image()">
-    <a href="${value.url()}">$value.metadata.filename</a>
-    ($value.length) bytes)
+  {% else %}
+  <div>
+    <a href="{{value.url()}}">{{value.metadata.filename}}</a>
+    ({{value.length}} bytes)
   </div>
+  {% endif %}
   <br style="clear:both"/>
 </div>

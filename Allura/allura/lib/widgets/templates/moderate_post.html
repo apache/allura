@@ -1,8 +1,5 @@
-<form xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:py="http://genshi.edgewall.org/"
-      xmlns:xi="http://www.w3.org/2001/XInclude"
-      method="POST"
-      action="$action">
+<form method="POST"
+      action="{{action}}">
     <input type="hidden" name="delete" value="True"/>
     <a href="" class="delete_post ico-l little_link"><b class="ui-icon ui-icon-close"></b> <span>Delete</span></a><br/>
 </form>

@@ -1,23 +1,19 @@
-<!DOCTYPE div PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-          "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<div xmlns="http://www.w3.org/1999/xhtml"
-     xmlns:py="http://genshi.edgewall.org/"
-     xmlns:xi="http://www.w3.org/2001/XInclude"
-     class="portlet">
+<div class="portlet">
   <h4>Tool Status</h4>
   <dl>
-    <py:for each="mp, alinks in links.iteritems()">
-      <dt>$mp</dt>
+    {% for mp, alinks in links.iteritems() %}
+      <dt>{{mp}}</dt>
       <dd>
-        <py:if test="len(alinks) &lt; 5">
+        {% if alinks|length < 5 %}
           <ul>
-            <li py:for="al in alinks"><a href="$al.url">[$mp:$al.link]</a></li>
+            {% for al in alinks %}
+              <li><a href="{{al.url}}">[{{mp}}:{{al.link}}]</a></li>
+            {% endfor %}
           </ul>
-        </py:if>
-        <py:if test="len(alinks) > 5">
-          ${len(alinks)} artifacts
-        </py:if>
+        {% else %}
+          {{alinks|length}} artifacts
+        {% endif %}
       </dd>
-    </py:for>
+    {% endfor %}
   </dl>
 </div>

@@ -1,61 +1,71 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" 
-                      "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:py="http://genshi.edgewall.org/"
-      xmlns:xi="http://www.w3.org/2001/XInclude">
+{% set hide_left_bar = True %}
+{% set show_right_bar = True %}
+{% extends 'jinja_master/master.html' %}
 
-  <xi:include href="master_one_col.html" />
-  <xi:include href="lib.html" />
+{% block title %}{{c.project.name}} / Dashboard{% endblock %}
 
-  <?python from allura.lib.security import has_project_access ?>
-
-  <head>
-    <meta content="text/html; charset=UTF-8" http-equiv="content-type" py:replace="''"/>
-    <title>$c.project.name / Dashboard</title>
+{% block extra_css %}
     <link rel="stylesheet" type="text/css" 
-          href="${g.app_static('css/project_home.css')}"/>
+          href="{{g.app_static('css/project_home.css')}}"/>
     <link rel="alternate" type="application/rss+xml" title="RSS" href="../feed.rss"/>
     <link rel="alternate" type="application/atom+xml" title="Atom" href="../feed.atom"/>
-  </head>
-  
-  <body>
-	<div class="content">
-		<div class="row dual">
-				<div class="column grid_8">
-          ${Markup(c.project.description_html)}
-          <div class="$layout_class">
-            <div py:for="div in layout" class="$div.name">
-              <py:for each="w in div.content">${Markup(w)}</py:for>
+{% endblock %}
+
+
+{% block content %}
+          {{c.project.description_html|safe}}
+          <div class="{{layout_class}}">
+            {% for div in layout %}
+            <div class="{{div.name}}">
+              {% for w in div.content %}{{w|safe}}{% endfor %}
             </div>
+            {% endfor %}
           </div>
-        </div>
-        <div id="sidebar-right" class="column grid_4 fright">
+{% endblock %}
+
+{% block right_content %}
 			<p>
-            <div py:if="c.project.show_download_button" id="download-button" style="margin-bottom: 1em;"></div>
+          {% if c.project.show_download_button %}
+            <div id="download-button" style="margin-bottom: 1em;"></div>
+          {% endif %}
 			</p>
-          <py:if test="c.project.accolades">
+
+          {% if c.project.accolades %}
             <div class="listed">
               <b>Awards:</b>
-              <a href="${accolade.award.longurl()}" py:for="accolade in c.project.accolades" title="$accolade.award.full">
-                <small class="badge $accolade.award.short">$accolade.award.short</small>
+              {% for accolade in c.project.accolades %}
+              <a href="{{accolade.award.longurl()}}" title="{{accolade.award.full}}">
+                <small class="badge {{accolade.award.short}}">{{accolade.award.short}}</small>
               </a>
-              <span py:if="not len(c.project.accolades)">No Awards</span>
+              {% else %}
+                <span>No Awards</span>
+              {% endfor %}
             </div>
-          </py:if>
-          <div class="listed" py:if="len(c.project.labels) and not (len(c.project.labels)==1 and c.project.labels[0]=='')">
-            <b>Labels:</b> <span py:for="label in c.project.labels" class="ui-corner-all tag">$label </span>
+          {% endif %}
+          
+          {% if c.project.labels and not (c.project.labels|length == 1 and c.project.labels[0]=='') %}
+          <div class="listed">
+            <b>Labels:</b>
+            {% for label in c.project.labels %}
+              <span class="ui-corner-all tag">{{label}} </span>
+            {% endfor %}
           </div>
+          {% endif %}
+          
           <div class="listed last gravatar sm">
             <b>Developers:</b>
-            <a href="${u.url()}" py:for="u in c.project.users()">
-              ${gravatar(u, size=24)}
+            {% for u in c.project.users() %}
+            <a href="{{u.url()}}">
+              {{lib.gravatar(u, size=24)}}
             </a>
+            {% endfor %}
           </div>
-        </div>
-      </div>
-    </div>
-  </body>
-  <script type="text/javascript" py:if="c.project.best_download_url()">
-      $("#download-button").load("${c.project.best_download_url()}");
+{% endblock %}
+
+{% block extra_js %}
+  {% if c.project.best_download_url() %}
+  <script type="text/javascript">
+      $("#download-button").load("{{c.project.best_download_url()}}");
   </script>
-</html>
+  {% endif %}
+{% endblock %}

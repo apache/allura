@@ -21,8 +21,8 @@
           {% if tree %}
             {% if c.app.repo %}
             <p>
-              Read access: <code>git clone git://{{c.app.repo.scm_url_path}}</code><br/>
-              Read/write access: <code>git clone ssh://{{c.user == c.user.anonymous() and 'USERNAME' or c.user.username}}@{{c.app.repo.scm_url_path}}</code><br/>
+              Read access: <code>git clone git://{{c.app.repo.scm_url_path}} {{c.project.shortname}}</code><br/>
+              Read/write access: <code>git clone ssh://{{c.user == c.user.anonymous() and 'USERNAME' or c.user.username}}@{{c.app.repo.scm_url_path}} {{c.project.shortname}}</code><br/>
               {% if c.user != c.user.anonymous() %}
               <form action="{{c.app.repo.url()}}fork" method="GET">
                 <input type="submit" value="Fork" />

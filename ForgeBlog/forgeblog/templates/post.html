@@ -13,7 +13,7 @@
 
   <body>
     ${c.form.display(value=post)}
-    <div style="clear:both;"/>
+    <div style="clear:both;"></div>
     <div py:if="post.discussion_thread and c.app.show_discussion"
          py:with="thread=post.discussion_thread">
       ${c.thread.display(value=thread)}

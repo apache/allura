@@ -1,12 +1,9 @@
-<!DOCTYPE div PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" 
-          "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<div xmlns="http://www.w3.org/1999/xhtml"
-     xmlns:py="http://genshi.edgewall.org/"
-     xmlns:xi="http://www.w3.org/2001/XInclude"
-     class="portlet">
+<div class="portlet">
   <h4>Project Users</h4>
   <ul>
-    <li py:for="user in project_users">
-    <a href="${user.url()}profile/">$user.display_name</a></li>
+    {% for user in project_users %}
+    <li>
+    <a href="{{user.url()}}profile/">{{user.display_name}}</a></li>
+    {% endfor %}
   </ul>
 </div>

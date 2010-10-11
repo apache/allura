@@ -95,7 +95,6 @@
 {% block content %}
 <div id="ticket_content">
   {{g.markdown.convert(ticket.description)|safe}}
-  
   {% if ticket.attachments %}
     <strong>{{ticket.attachments.__len__()}} Attachments</strong>
     <div class="clear">

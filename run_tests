@@ -1,5 +1,29 @@
 #!/bin/bash
 
+function check_port() {
+    PORT=$1
+    echo 'quit' |telnet localhost $PORT >/dev/null 2>&1
+}
+
+if [ -z "$VIRTUAL_ENV" ]; then
+    source /var/local/env-allura/bin/activate
+fi
+
+# If this is sandbox and local SOLR isn't running, start it
+if [ -n "$SF_SYSTEM_FUNC" ]; then
+    if ! check_port 50065; then
+        SOLRCONFIG="/var/local/allura/solr_config"
+        SOLRLOG=/usr/local/solr/logs/console.log
+        echo "Starting SOLR, log is at $SOLRLOG"
+        pushd /usr/local/solr
+        /usr/java/jdk1.5.0_15/bin/java -Dsolr.solr.home="$SOLRCONFIG" -jar start.jar >$SOLRLOG 2>&1 &
+        popd
+        sleep 15
+    fi
+fi
+
+# main
+
 if [ "$TEST_MODULES"  == "" ]; then
     TEST_MODULES="\
     Allura \

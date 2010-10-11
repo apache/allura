@@ -22,11 +22,11 @@ class ModerateThread(ew.SimpleForm):
     submit_text=None
 
 class ModeratePost(ew.SimpleForm):
-    template='genshi:allura.lib.widgets.templates.moderate_post'
+    template='jinja:moderate_post.html'
     submit_text=None
 
 class FlagPost(ew.SimpleForm):
-    template='genshi:allura.lib.widgets.templates.flag_post'
+    template='jinja:flag_post.html'
     submit_text=None
 
 class AttachPost(ff.ForgeForm):
@@ -41,7 +41,7 @@ class AttachPost(ff.ForgeForm):
         return fields
 
 class ModeratePosts(ew.SimpleForm):
-    template='genshi:allura.lib.widgets.templates.moderate_posts'
+    template='jinja:moderate_posts.html'
     submit_text=None
     def resources(self):
         for r in super(ModeratePosts, self).resources(): yield r
@@ -98,7 +98,7 @@ class TagPost(ew.SimpleForm):
 class EditPost(ew.SimpleForm):
     show_subject=False
     value=None
-    template='allura.lib.widgets.templates.edit_post'
+    template='jinja:edit_post.html'
     params=['value', 'att_name']
     att_name='file_info'
 
@@ -135,7 +135,7 @@ class NewTopicPost(EditPost):
     params=['forums']
 
 class _ThreadsTable(ew.TableField):
-    template='allura.lib.widgets.templates.threads_table'
+    template='jinja:threads_table.html'
     class hidden_fields(ew.WidgetsList):
         _id=ew.HiddenField(validator=V.Ming(M.Thread))
     class fields(ew.WidgetsList):
@@ -148,7 +148,7 @@ class _ThreadsTable(ew.TableField):
             href="${value['url']()}", show_label=True))
 
 class SubscriptionForm(ew.SimpleForm):
-    template='allura.lib.widgets.templates.subscription_form'
+    template='jinja:subscription_form.html'
     value=None
     threads=None
     show_discussion_email=False
@@ -195,7 +195,7 @@ class HierWidget(ew.Widget):
                 yield r
 
 class Attachment(ew.Widget):
-    template='genshi:allura.lib.widgets.templates.attachment'
+    template='jinja:attachment.html'
     params=['value', 'post']
     value=None
     post=None
@@ -208,7 +208,7 @@ class DiscussionHeader(HierWidget):
         edit_post=EditPost(submit_text='New Thread'))
 
 class ThreadHeader(HierWidget):
-    template='genshi:allura.lib.widgets.templates.thread_header'
+    template='jinja:thread_header.html'
     params=['value', 'page', 'limit', 'count', 'show_moderate']
     value=None
     page=None
@@ -220,18 +220,8 @@ class ThreadHeader(HierWidget):
         page_size=ffw.PageSize(),
         moderate_thread=ModerateThread())
 
-class PostHeader(ew.Widget):
-    template='genshi:allura.lib.widgets.templates.post_header'
-    params=['value']
-    value=None
-
-class PostThread(ew.Widget):
-    template='genshi:allura.lib.widgets.templates.post_thread'
-    params=['value']
-    value=None
-
 class Post(HierWidget):
-    template='genshi:allura.lib.widgets.templates.post'
+    template='jinja:post_widget.html'
     params=['value', 'show_subject', 'indent', 'page', 'limit', 'supress_promote']
     value=None
     indent=0
@@ -289,8 +279,18 @@ class Post(HierWidget):
         })();
         ''')
 
+class PostThread(ew.Widget):
+    template='jinja:post_thread.html'
+    params=['value', 'show_subject', 'indent', 'page', 'limit', 'supress_promote']
+    value=None
+    indent=0
+    page=0
+    limit=25
+    show_subject=False
+    supress_promote=False
+
 class Thread(HierWidget):
-    template='genshi:allura.lib.widgets.templates.thread'
+    template='jinja:thread.html'
     name='thread'
     params=['value', 'page', 'limit', 'count', 'show_subject','new_post_text']
     value=None

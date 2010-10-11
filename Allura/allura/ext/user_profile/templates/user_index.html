@@ -1,59 +1,55 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-                      "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:py="http://genshi.edgewall.org/"
-      xmlns:xi="http://www.w3.org/2001/XInclude">
+{% extends 'jinja_master/master.html' %}
 
-  <xi:include href="master.html" />
-  <xi:include href="lib.html" />
+{% block title %}{{user.display_name}} / Profile{% endblock %}
 
-  <?python from allura.lib.security import has_project_access
-           from allura.model import Project ?>
+{% block header %}{{user.display_name}} ({{user.username}}){% endblock %}
 
-  <head>
-    <meta content="text/html; charset=UTF-8" http-equiv="content-type" py:replace="''"/>
-    <title>${user.display_name} / Profile</title>
-    <link rel="stylesheet" type="text/css"
-          href="${g.app_static('css/user_profile.css')}"/>
-  </head>
+{% block extra_css %}
+    <link rel="stylesheet" type="text/css" 
+          href="{{g.app_static('css/user_profile.css')}}"/>
+{% endblock %}
 
-  <body>
-    <h1 class="title">${user.display_name} (${user.username})</h1>
-    <div class="content">
-      <div class="row">
-        <div class="column grid_12">
-          <py:if test="user.preferences.email_address">${gravatar(user)} </py:if>
-          ${Markup(c.project.description_html)}
+
+{% block content %}
+          {% if user.preferences.email_address %}
+            {{lib.gravatar(user)}}
+          {% endif %}
+          {{c.project.description_html|safe}}
           <div class="project-list">
             <b>Projects</b>
             <ul>
-              <li py:for="p in user.my_projects()">
-                  <a class="project-name" href="${p.url()}">${p.name}</a>
+              {% for p in user.my_projects() %}
+              <li>
+                  <a class="project-name" href="{{p.url()}}">{{p.name}}</a>
               </li>
+              {% endfor %}
             </ul>
           </div>
-          <py:if test="c.user.username == user.username">
+          {% if c.user.username == user.username %}
               <div class="address-list">
                 <b>Email Addresses</b>
                 <ul>
-                  <li py:for="email in user.email_addresses">
-                      ${email_gravatar(email, size=24)}
-                      <span py:if="email == user.preferences.email_address" class="prime email-address">${email}</span>
-                      <span py:if="email != user.preferences.email_address" class="email-address">${email}</span>
+                  {% for email in user.email_addresses %}
+                  <li>
+                      {{lib.email_gravatar(email, size=24)}}
+                      {% if email == user.preferences.email_address %}
+                        <span class="prime email-address">{{email}}</span>
+                      {% else %}
+                        <span class="email-address">{{email}}</span>
+                      {% endif %}
                   </li>
+                  {% endfor %}
                 </ul>
               </div>
               <div class="openid-list">
                 <b>OpenIDs</b>
                 <ul>
-                  <li py:for="openid in user.open_ids">
-                      <span class="openid">${openid}</span>
+                  {% for openid in user.open_ids %}
+                  <li>
+                      <span class="openid">{{openid}}</span>
                   </li>
+                  {% endfor %}
                 </ul>
               </div>
-          </py:if>
-        </div>
-      </div>
-    </div>
-  </body>
-</html>
+          {% endif %}
+{% endblock %}

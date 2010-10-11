@@ -15,7 +15,7 @@ from forgewiki import model as WM
 
 def setUp(self):
     """Method called by nose before running each test"""
-    test_config = environ.get('SANDBOX') and 'sandbox-test.ini' or 'test.ini'
+    test_config = environ.get('SF_SYSTEM_FUNC') and 'sandbox-test.ini' or 'test.ini'
 
     # Loading the application:
     conf_dir = config.here

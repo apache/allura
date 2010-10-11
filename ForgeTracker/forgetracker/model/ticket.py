@@ -467,7 +467,7 @@ class Ticket(VersionedArtifact):
 
 class TicketAttachment(BaseAttachment):
     thumbnail_size = (100, 100)
-    
+
     metadata=FieldProperty(dict(
             ticket_id=schema.ObjectId,
             app_config_id=schema.ObjectId,

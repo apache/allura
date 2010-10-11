@@ -1,29 +1,19 @@
 {% macro gravatar(user, size) -%}
   {% set display_name = h.really_unicode(user.display_name) %}
+  {% set icon_url = '/u/'+user.username.replace('_', '-')+'/user_icon' %}
   {% if user.preferences.email_address %}
-    {% if size %}
-      <img src="{{g.gravatar(user.preferences.email_address, default=g.url('/u/'+user.username.replace('_', '-')+'/user_icon'))}}"
-           alt="{{display_name}}"
-           title="{{display_name}}"
-           height="{{size}}"
-           width="{{size}}"/>
-    {% else %}
-      <img src="{{g.gravatar(user.preferences.email_address, default=g.url('/u/'+user.username.replace('_', '-')+'/user_icon'))}}"
-           alt="{{display_name}}"
-           title="{{display_name}}"/>
-    {% endif %}
+    {% set icon_url = g.gravatar(user.preferences.email_address, default=g.url('/u/'+user.username.replace('_', '-')+'/user_icon')) %}
+  {% elif user == user.anonymous() %}
+    {% set icon_url = g.forge_static('images/user.png') %}
+  {% endif %}
+  {% if size %}
+    <img src="{{icon_url}}"
+         alt="{{display_name}}"
+         title="{{display_name}}"
+         height="{{size}}"
+         width="{{size}}"/>
   {% else %}
-    {% if size %}
-      <img src="{{'/u/'+user.username.replace('_', '-')+'/user_icon'}}"
-           alt="{{display_name}}"
-           title="{{display_name}}"
-           height="{{size}}"
-           width="{{size}}"/>
-    {% else %}
-      <img src="{{'/u/'+user.username.replace('_', '-')+'/user_icon'}}"
-           alt="{{display_name}}"
-           title="{{display_name}}"/>
-    {% endif %}
+    <img src="{{icon_url}}" alt="{{display_name}}" title="{{display_name}}"/>
   {% endif %}
 {%- endmacro %}
 

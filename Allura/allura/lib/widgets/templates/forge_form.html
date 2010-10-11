@@ -1,25 +1,24 @@
-<form xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:py="http://genshi.edgewall.org/"
-      xmlns:xi="http://www.w3.org/2001/XInclude"
-      method="POST"
-      enctype="$enctype"
-      action="$action">
-  <?python from ew import HiddenField?>
+<form method="POST"
+      enctype="{{enctype}}"
+      action="{{action}}">
   <ol>
-    <py:for each="i, field in enumerate(fields)">
-      <li py:if="not isinstance(field,HiddenField)">
-        <label py:if="field.show_label" for="$field.name">$field.label:</label>
-        ${Markup(c.widget.widget_type.display_field_by_idx(i))}
+    {% for field in fields %}
+      {% if field.field_type != 'hidden' %}
+      <li>
+        {% if field.show_label %}
+          <label for="{{field.name}}">{{field.label}}:</label>
+        {% endif %}
+        {{c.widget.widget_type.display_field_by_idx(loop.index0)|safe}}
       </li>
-      <py:if test="isinstance(field,HiddenField)">
-        ${Markup(c.widget.widget_type.display_field_by_idx(i))}
-      </py:if>
-    </py:for>
+      {% else %}
+        {{c.widget.widget_type.display_field_by_idx(loop.index0)|safe}}
+      {% endif %}
+    {% endfor %}
     <li>
       <label>&nbsp;</label>
-      <py:for each="b in buttons">
-        ${b.display()}
-      </py:for>
+      {% for b in buttons %}
+        {{b.display()}}
+      {% endfor %}
     </li>
   </ol>
 </form>

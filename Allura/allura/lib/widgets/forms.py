@@ -4,7 +4,7 @@ from formencode import validators as fev
 import ew
 
 class ForgeForm(ew.SimpleForm):
-    template='genshi:allura.lib.widgets.templates.forge_form'
+    template='jinja:forge_form.html'
     params=['submit_text','enctype']
     submit_text = 'Save'
     enctype=None

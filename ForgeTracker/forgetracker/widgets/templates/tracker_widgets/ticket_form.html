@@ -3,7 +3,7 @@
   {{c.widget.widget_type.display_field_by_name('ticket_num')|safe}}
   {{c.widget.widget_type.display_field_by_name('super_id')|safe}}
   <div class="row">
-  	<div class="column">
+	  <div class="column">
       {{c.widget.widget_type.display_field_by_name('summary')|safe}}
     </div>
   </div>
@@ -88,14 +88,14 @@
     </div>
   </div>
   <div class="row reply"{% if not show_comment %} style="display:none"{% endif %}>
-  	<div class="column grid_1 tcenter">
-  		<p class="gravatar">
+	<div class="column grid_1 tcenter">
+		<p class="gravatar">
         {{lib.gravatar(c.user)}}<br/><br/>
         <a href="{{c.user.url()}}">{{c.user.display_name}}</a>
-  		</p>
-  	</div>
-  	<div class="column grid_8">
-  	  <div style="position: relative">
+		</p>
+	</div>
+	<div class="column grid_8">
+	  <div style="position: relative">
         {{c.widget.widget_type.display_field_by_name('comment')|safe}}
         <span class="arw"><span></span></span>
       </div>

@@ -1,14 +1,11 @@
-<form xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:py="http://genshi.edgewall.org/"
-      xmlns:xi="http://www.w3.org/2001/XInclude"
-      method="post"
-      action="$action"
+<form method="post"
+      action="{{action}}"
       enctype="multipart/form-data">
       <input type="button" value="Add attachment" class="attachment_form_add_button"/>
       <ol class="attachment_form_fields" style="display:none">
         <li>
-          <label for="$name">File to upload</label>
-          <input type="file" class="text" name="$name" id="$name"/>
+          <label for="{{name}}">File to upload</label>
+          <input type="file" class="text" name="{{name}}" id="{{name}}"/>
         </li>
         <li>
           <label>&nbsp;</label>

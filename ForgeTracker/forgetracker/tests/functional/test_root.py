@@ -117,7 +117,8 @@ class TestFunctionalController(TestController):
             'status':'ccc',
             '_milestone':'',
             'assigned_to':'',
-            'labels':'yellow,green',
+            'labels-0':'yellow',
+            'labels-1':'green',
             'labels_old':'yellow,green',
             'comment': ''
         })
@@ -130,7 +131,7 @@ class TestFunctionalController(TestController):
             'status':'ccc',
             '_milestone':'',
             'assigned_to':'',
-            'labels':'yellow',
+            'labels-0':'yellow',
             'labels_old':'yellow',
             'comment': ''
         })
@@ -202,14 +203,14 @@ class TestFunctionalController(TestController):
     
     def test_sidebar_static_page(self):
         response = self.app.get('/bugs/search/')
-        assert 'Create New Ticket' in response
+        assert 'Create Ticket' in response
         assert 'Related Artifacts' not in response
     
     def test_sidebar_ticket_page(self):
         summary = 'test sidebar logic for a ticket page'
         self.new_ticket(summary=summary)
         response = self.app.get('/p/test/bugs/1/')
-        assert 'Create New Ticket' in response
+        assert 'Create Ticket' in response
         assert 'Related Artifacts' not in response
         self.app.get('/wiki/aaa/update?title=aaa&text=&tags=&tags_old=&labels=&labels_old=&viewable_by-0.id=all')
         self.new_ticket(summary='bbb')
@@ -217,7 +218,7 @@ class TestFunctionalController(TestController):
         # Fake out updating the pages since reactor doesn't work with tests
         app = search_main.SearchApp
         cmd = reactor.ReactorCommand('reactor')
-        cmd.args = [ os.environ.get('SANDBOX') and 'sandbox-test.ini' or 'test.ini' ]
+        cmd.args = [ os.environ.get('SF_SYSTEM_FUNC') and 'sandbox-test.ini' or 'test.ini' ]
         cmd.options = mock.Mock()
         cmd.options.dry_run = True
         cmd.options.proc = 1
