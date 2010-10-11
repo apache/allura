@@ -437,6 +437,12 @@ form input[type=checkbox] {
 }
 button, input[type=submit], input[type=reset], input[type=button] {font-size: 1em;}
 
+.btn_link{
+    font-weight: bold;
+    float: left;
+    padding: 0.4em 0 0 0.8em;
+}
+
 .btn:hover {
 	cursor: pointer;
 	text-decoration: none;
@@ -448,9 +454,8 @@ button, input[type=submit], input[type=reset], input[type=button] {font-size: 1e
 		-webkit-box-shadow: inset rgba(0, 0, 0, 0.4) 0 -5px 12px, inset rgba(0, 0, 0, .8) 0 1px 3px;
 }
 .under {text-decoration: underline;}
-.ico-l {padding-left: 22px !important;}
-.ico-r {padding-right: 22px !important;}
-.btn.ico span {text-indent: -7000em; display: block;}
+.ico-l, .ico-r {padding-left: 22px !important;}
+.ico span {text-indent: -7000em; display: block;}
 
 .ico-r, .ico-l, .ico
 {

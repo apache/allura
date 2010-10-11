@@ -283,7 +283,7 @@ class StateField(JQueryMixin, ew.CompoundField):
     def fields(self):
         return [self.selector] + self.states.values()
 
-class DateField(JQueryMixin, ew.InputField):
+class DateField(JQueryMixin, ew.TextField):
     js_widget_name = 'datepicker'
     js_params = JQueryMixin.js_params
     params = js_params

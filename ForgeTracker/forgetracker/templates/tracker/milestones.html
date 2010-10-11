@@ -17,7 +17,7 @@
         <th>&nbsp; &nbsp;Status</th>
         <th>&nbsp; &nbsp;Due Date</th>
         <th>Progress</th>
-        <th>&nbsp;</th>
+        <th style="width:20px;">&nbsp;</th>
       </tr>
     </thead>
     <tbody>
@@ -44,8 +44,8 @@
           {{c.date_field.display(value=m.due_date, name='milestones-%s.due_date' % loop.index0)}}
         </td>
         <td>{{m.closed}} / {{m.total}}</td>
-        <td><a href="#" class="ico edit_milestone">
-           <b class="ui-icon ui-icon-pencil"></b>
+        <td style="width:20px;"><a href="#" class="ico edit_milestone">
+          <b class="ui-icon ui-icon-pencil"></b> <span>Edit</span>
         </a></td>
       </tr>
       {% else %}
@@ -57,10 +57,10 @@
       <tr class="new_milestone" style="display:none">
         <td>
           <input type="hidden" name="milestones-{{num_milestones}}.old_name">
-          <input type="text" name="milestones-{{num_milestones}}.new_name">
+          <input type="text" name="milestones-{{num_milestones}}.new_name" placeholder="Title">
         </td>
         <td>
-          <input type="text" name="milestones-{{num_milestones}}.description">
+          <input type="text" name="milestones-{{num_milestones}}.description" placeholder="Summary">
         </td>
         <td>
           <select name="milestones-{{num_milestones}}.complete">
@@ -69,7 +69,7 @@
           </select>
         </td>
         <td>
-          <input type="date" name="milestones-{{num_milestones}}.due_date">
+          {{c.date_field.display(name='milestones-%s.due_date' % num_milestones)}}
         </td>
         <td>0 / 0</td>
         <td>&nbsp;</td>
@@ -79,7 +79,7 @@
   <a href="#" class="btn add_milestone">Add Milestone</a>
   <div class="save_controls" style="display:none">
     <input type="submit" value="Save">
-    <a href="#" class="btn cancel_edit">Cancel</a>
+    <a href="#" class="btn_link cancel_edit">Cancel</a>
   </div>
   </form>
 {% endblock %}
@@ -104,6 +104,7 @@
         $('td.edit', $row).show();
         $save_controls.show();
         $add_button.hide();
+        $(this).css({opacity: 0.5});
         return false;
       });
       $('a.cancel_edit').click(function(){
@@ -113,9 +114,19 @@
         $add_button.show();
         $new_row.hide();
         $('input', $new_row).val('');
+        $('a.edit_milestone').css({opacity: 1});
         return false;
       });
     });
   });
 </script>
+{% endblock %}
+
+{% block extra_css %}
+<style type="text/css">
+  .update_milestones .ico {
+    padding: 0;
+    margin: 0;
+  }
+</style>
 {% endblock %}
