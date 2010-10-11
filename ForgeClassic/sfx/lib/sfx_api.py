@@ -147,7 +147,7 @@ class SFXProjectApi(object):
                 p.set_tool_data('sfx', unix_group_name=ug_name)
             args = dict(
                 user_id=user.tool_data.sfx.userid,
-                group_name=p.shortname,
+                group_name=p.name,
                 short_description=p.short_description,
                 developers = [
                     pr.user.get_tool_data('sfx', 'userid')
