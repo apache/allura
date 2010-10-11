@@ -203,14 +203,14 @@ class TestFunctionalController(TestController):
     
     def test_sidebar_static_page(self):
         response = self.app.get('/bugs/search/')
-        assert 'Create New Ticket' in response
+        assert 'Create Ticket' in response
         assert 'Related Artifacts' not in response
     
     def test_sidebar_ticket_page(self):
         summary = 'test sidebar logic for a ticket page'
         self.new_ticket(summary=summary)
         response = self.app.get('/p/test/bugs/1/')
-        assert 'Create New Ticket' in response
+        assert 'Create Ticket' in response
         assert 'Related Artifacts' not in response
         self.app.get('/wiki/aaa/update?title=aaa&text=&tags=&tags_old=&labels=&labels_old=&viewable_by-0.id=all')
         self.new_ticket(summary='bbb')

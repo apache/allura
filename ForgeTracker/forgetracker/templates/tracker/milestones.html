@@ -22,11 +22,11 @@
     </thead>
     <tbody>
       {% for m in milestones %}
-      <tr>
+      <tr class="{{loop.index0%2 and 'even' or ''}}">
         <input type="hidden" name="milestones-{{loop.index0}}.old_name" value="{{m.name}}">
-        <td class="view">&nbsp; &nbsp;<a href="{{c.app.url}}milestone/{{m.name}}/">{{m.name}}</a></td>
+        <td class="view">&nbsp; &nbsp;<strong><a href="{{c.app.url}}milestone/{{m.name}}/">{{m.name}}</a></strong></td>
         <td class="view">&nbsp; &nbsp;{{m.description}}</td>
-        <td class="view">&nbsp; &nbsp;{{m.complete and 'Closed' or 'Open'}}</td>
+        <td class="view {{m.complete and 'closed' or 'open'}}">&nbsp; &nbsp;{{m.complete and 'Closed' or 'Open'}}</td>
         <td class="view">&nbsp; &nbsp;{{m.due_date or 'N/A'}}</td>
         <td class="edit" style="display:none">
           <input type="text" name="milestones-{{loop.index0}}.new_name" value="{{m.name}}">
@@ -44,8 +44,8 @@
           {{c.date_field.display(value=m.due_date, name='milestones-%s.due_date' % loop.index0)}}
         </td>
         <td>{{m.closed}} / {{m.total}}</td>
-        <td><a href="#" class="ico btn edit_milestone">
-           <b class="ui-icon ui-icon-pencil"></b> <span>Edit</span>
+        <td><a href="#" class="ico edit_milestone">
+           <b class="ui-icon ui-icon-pencil"></b>
         </a></td>
       </tr>
       {% else %}
@@ -99,7 +99,6 @@
         return false;
       });
       $('a.edit_milestone').click(function(){
-        $(this).addClass('btn_activate');
         $row = $(this).closest('tr');
         $('td.view', $row).hide();
         $('td.edit', $row).show();
@@ -114,7 +113,6 @@
         $add_button.show();
         $new_row.hide();
         $('input', $new_row).val('');
-        $('a.edit_milestone').removeClass('btn_activate');
         return false;
       });
     });

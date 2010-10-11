@@ -295,7 +295,7 @@ table {
 table.card {overflow: visible;}
 caption {padding: .5em 0 10px; text-align: left;}
 td, th {padding: .5em 10px .1em; text-align: left;}
-tbody td, tbody th {border-top: 1px solid {{color5}};}
+tbody td, tbody th {border-bottom: 1px solid {{color5}};}
 thead tr {
 	border: 1px solid {{color5}};
 }
