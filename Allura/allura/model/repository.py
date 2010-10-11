@@ -287,7 +287,8 @@ class RepoObject(MappedClass):
         author=str,
         id=str,
         href=str,
-        shortlink=str))
+        shortlink=str,
+        summary=str))
 
     @classmethod
     def upsert(cls, repo_id, object_id):
@@ -311,6 +312,7 @@ class RepoObject(MappedClass):
         self.last_commit.id = ci.object_id
         self.last_commit.href = ci.url()
         self.last_commit.shortlink = ci.shorthand_id()
+        self.last_commit.summary = ci.summary
         assert self.last_commit.date
 
     def __repr__(self):

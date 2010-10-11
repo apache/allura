@@ -29,22 +29,11 @@
         <td>{{h.ago(dirent.last_commit.date)}}</td>
         <td>{{dirent.last_commit.author}}</td>
         <td>
-          <a href="{{dirent.last_commit.href}}">{{dirent.last_commit.shortlink}}</a>
+          <a href="{{dirent.last_commit.href}}">
+            {{dirent.last_commit.shortlink}}
+            {{dirent.last_commit.summary}}
+          </a>
         </td>
-
-      {% if dirent.date %}
-        <td>{{h.ago(dirent.date)}}</td>
-      {% else %}
-        <td></td>
-      {% endif %}
-      <td>{{dirent.last_author|escape}}</td>
-      <td>
-      {% if dirent.commit %}
-        <a href="{{dirent.commit.url()}}">
-          {{h.text.truncate(dirent.commit._id|string, 10)}}
-        </a>
-      {% endif %}
-      </td>
     </tr>
     {% endfor %}
   </tbody>
