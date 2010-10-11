@@ -218,6 +218,8 @@ class Repository(Artifact):
         '''Find any new commits in the repository and update'''
         BATCH_SIZE=100
         self._impl.refresh_heads()
+        self.status = 'analyzing'
+        session(self).flush()
         sess = session(Commit)
         log.info('Refreshing repository %s', self)
         commit_ids = self._impl.new_commits()
@@ -263,6 +265,8 @@ class Repository(Artifact):
         sess.clear()
         log.info('... refreshed repository %s.  Found %d new commits',
                  self, len(commit_ids))
+        self.status = 'ready'
+        session(self).flush()
         return len(commit_ids)
 
 class RepoObject(MappedClass):

@@ -56,7 +56,7 @@ class RepositoryApp(Application):
     def sidebar_menu(self):
         if not self.repo or self.repo.status != 'ready':
             return [
-                SitemapEntry('Repository is %s' % self.repo.status) ]
+                SitemapEntry(self.repo.status) ]
         if self.default_branch_name:
             default_branch_url = (
                 c.app.url
