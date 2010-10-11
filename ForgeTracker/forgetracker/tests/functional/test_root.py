@@ -117,7 +117,8 @@ class TestFunctionalController(TestController):
             'status':'ccc',
             '_milestone':'',
             'assigned_to':'',
-            'labels':'yellow,green',
+            'labels-0':'yellow',
+            'labels-1':'green',
             'labels_old':'yellow,green',
             'comment': ''
         })
@@ -130,7 +131,7 @@ class TestFunctionalController(TestController):
             'status':'ccc',
             '_milestone':'',
             'assigned_to':'',
-            'labels':'yellow',
+            'labels-0':'yellow',
             'labels_old':'yellow',
             'comment': ''
         })
