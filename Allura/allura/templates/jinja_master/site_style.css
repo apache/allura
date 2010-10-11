@@ -57,6 +57,7 @@ a {color: {{color1}}; text-decoration: none;}
 a:hover {text-decoration: underline;}
 a:focus {outline:0;}
 
+.light{color: #4d4d4d;}
 
 img {border: none;}
 
@@ -851,7 +852,6 @@ ul.ui-tab li a {
 	margin-left: 5px;
 	margin-bottom: 10px;
 	color: rgb(69,69,69);
-	text-transform: uppercase;
 	text-shadow: rgba(255,255,255, .5) 0 1px;
 }
 
@@ -910,9 +910,10 @@ ul.ui-tab li a {
 }
 .pad ul li ul li, .pad ol li ol li, #comment ul li {font-size: 100%;}
 .content {padding: 15px 20px 20px;}
-.actions {position: absolute; right: 10px; top: 5px; font-size: .85em; text-transform: uppercase; width: 100%;}
+.actions {position: absolute; right: 10px; top: 2px; font-size: .85em; text-transform: uppercase; width: 100%;}
 .actions .btn {background: none; border: none; text-shadow: none; padding-right: .8em; float: right;}
 .actions .btn.ico-l {line-height: 1.8em; padding-bottom: .1em;}
+.actions .btn_activate {background-color: #aaa;}
 .editbox {
     background-color: #f2f2f2;
     border: 1px solid #ccc;

@@ -11,8 +11,12 @@
 {% block header %}{{c.app.config.options.mount_label}}{% endblock %}
 
 {% block actions %}
+  <a href="{{c.app.url}}feed.rss" class="btn ico"><b class="ui-icon ui-icon-signal-diag"></b> <span>Follow</span></a>
   {% if c.user and c.user != c.user.anonymous() %}
     {{c.subscribe_form.display(value=subscribed, action='subscribe', style='icon')}}
+  {% endif %}
+  {% if allow_edit %}
+    <a href="{{tg.url(c.app.url+'edit/', dict(q=q, limit=limit, sort=sort))}}" class="btn ico-l"><b class="ui-icon ui-icon-pencil"></b> <span>Bulk Edit</span></a>
   {% endif %}
 {% endblock %}
 
