@@ -80,10 +80,11 @@
                 </a><br/>
               {% endif %}
               <a href="{{att.url()}}">{{att.metadata.filename}}</a>
-              <a href="{{att.url()}}" class="btn delete_attachment">X</a>
+              <a href="{{att.url()}}" class="btn ico delete_attachment"><b class="ui-icon ui-icon-close"></b></a>
             </div>
         {% endfor %}
         </div>
+        <div class="clear"></div>
       {% endif %}
       <label>Add Attachment:</label>
       {{c.widget.widget_type.display_field_by_name('attachment')|safe}}

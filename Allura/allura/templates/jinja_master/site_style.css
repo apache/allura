@@ -942,8 +942,6 @@ ul.ui-tab li a {
 .editbox .row{min-width: inherit;}
 
 /* Discussion */
-#comment {padding-bottom: 20px;}
-#comment h2 {margin-right: 1em;}
 #comment .row  {
 	border: 3px solid {{color5}};
 	border-radius: 5px;
@@ -957,11 +955,11 @@ ul.ui-tab li a {
 }
 .discussion-post {position: relative;}
 .row.reply .grid_1.tcenter, #comment .row .grid_1.tcenter {min-width: 80px; padding: 5px 0 0 0;}
-#comment .row .options {position: absolute; top: 10px; right: 10px; padding: 0; font-size: .85em; width:90px;}
+#comment .row .options {position: absolute; top: 10px; right: 10px; padding: 0; width:90px;}
 #comment ul ul .row .options {right: 0;}
-#comment .row .options a.little_link {clear:both; line-height: 2em; color: {{color3}}; position: relative; width: 50px; height: 20px;}
-#comment .row .options a.little_link span {position: absolute; top: 0px; left: 25px;}
-#comment ul {list-style: none; margin: 5px 0 0 0; padding: 0; float: right; clear: right; width:98%;}
+#comment .row .options a.little_link {color: {{color3}}; width: 50px; height: 20px;}
+#comment .row .options a.little_link span {position: absolute; left: 10px;}
+#comment ul {list-style: none; margin: 0 0 20px 0; padding: 0; float: right; clear: right; width:99%;}
 #comment ul ul li {margin-right: 10px;}
 #comment ul ul {margin: 0 !important;}
 #comment ul ul ul li {margin-right: 0 !important;}
@@ -1004,6 +1002,7 @@ ul.ui-tab li a {
 .reply form {position: relative;}
 .reply textarea {margin-top: 5px; padding: 10px; font: 1em/1.3em helvetica; width: 80%; height: 100px;}
 .reply textarea, .reply input {margin-left: 7px;}
+.reply input.attachment_form_add_button {margin-left: 0;}
 .reply .arw {
 	background: rgb(255,255,255);
 	transform: rotate(45deg) translate(0px, 0px) skew(0deg, 0deg);
@@ -1220,9 +1219,19 @@ ul.ui-tab li a {
 .attachment_images{
     overflow: auto;
 }
-.attachment_thumb{
+div.attachment_thumb{
     float: left;
     margin: .5em;
+    position: relative;
+    padding: 10px;
+}
+div.attachment_thumb img{
+    border: 1px solid #ccc;
+}
+div.attachment_thumb .delete_attachment{
+    position: absolute;
+    top: 0;
+    left: 100px;
 }
 
 /* WMD WYSIWIG */
