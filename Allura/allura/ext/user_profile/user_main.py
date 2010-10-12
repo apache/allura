@@ -74,7 +74,7 @@ class UserProfileController(BaseController):
         user = User.by_username(username)
         return dict(user=user)
     # This will be fully implemented in a future iteration
-    # @expose('allura.ext.user_profile.templates.user_subscriptions')
+    # @expose('jinja:user_profile/templates/user_subscriptions.html')
     # def subscriptions(self):
     #     username = c.project.shortname.split('/')[1]
     #     user = User.by_username(username)
