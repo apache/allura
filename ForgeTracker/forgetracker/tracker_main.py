@@ -699,6 +699,10 @@ class TicketController(BaseController):
             flash('You must provide a Name')
             redirect('.')
         c.app.globals.invalidate_bin_counts()
+        if 'labels' in post_data:
+            post_data['labels'] = post_data['labels'].split(',')
+        else:
+            post_data['labels'] = []
         self._update_ticket(post_data)
 
     @expose()

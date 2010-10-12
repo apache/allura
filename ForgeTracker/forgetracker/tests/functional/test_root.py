@@ -114,8 +114,7 @@ class TestFunctionalController(TestController):
             'status':'ccc',
             'milestone':'',
             'assigned_to':'',
-            'labels-0':'yellow',
-            'labels-1':'green',
+            'labels':'yellow,green',
             'labels_old':'yellow,green'
         })
         response = self.app.get('/bugs/1/')
@@ -127,7 +126,7 @@ class TestFunctionalController(TestController):
             'status':'ccc',
             'milestone':'',
             'assigned_to':'',
-            'labels-0':'yellow',
+            'labels':'yellow',
             'labels_old':'yellow'
         })
         response = self.app.get('/bugs/1/')

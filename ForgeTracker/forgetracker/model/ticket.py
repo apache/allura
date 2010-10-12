@@ -353,10 +353,10 @@ class Ticket(VersionedArtifact):
 
     def update(self,ticket_form):
         self.globals.invalidate_bin_counts()
-        tags = (ticket_form.pop('tags', None) or '').split(',')
+        tags = (ticket_form.pop('tags', None) or '')
         if tags == ['']:
             tags = []
-        labels = (ticket_form.pop('labels', None) or '').split(',')
+        labels = (ticket_form.pop('labels', None) or '')
         if labels == ['']:
             labels = []
         self.labels = labels
