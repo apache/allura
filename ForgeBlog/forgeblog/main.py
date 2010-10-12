@@ -133,7 +133,7 @@ class RootController(BaseController):
         setattr(self, 'feed.rss', self.feed)
         self._discuss = AppDiscussionController()
 
-    @expose('jinja:blog_index.html')
+    @expose('jinja:blog/index.html')
     @with_trailing_slash
     def index(self, **kw):
         if has_artifact_access('write', None)():
@@ -146,7 +146,7 @@ class RootController(BaseController):
         c.form = W.preview_post_form
         return dict(posts=posts)
 
-    @expose('jinja:blog_search.html')
+    @expose('jinja:blog/search.html')
     @validate(dict(q=validators.UnicodeString(if_empty=None),
                    history=validators.StringBool(if_empty=False)))
     def search(self, q=None, history=None):
@@ -166,7 +166,7 @@ class RootController(BaseController):
             if results: count=results.hits
         return dict(q=q, history=history, results=results or [], count=count)
 
-    @expose('jinja:blog_edit_post.html')
+    @expose('jinja:blog/edit_post.html')
     @without_trailing_slash
     def new(self, **kw):
         require(has_artifact_access('write', None))
@@ -235,7 +235,7 @@ class PostController(BaseController):
         setattr(self, 'feed.atom', self.feed)
         setattr(self, 'feed.rss', self.feed)
 
-    @expose('jinja:blog_post.html')
+    @expose('jinja:blog/post.html')
     @with_trailing_slash
     def index(self, **kw):
         c.form = W.view_post_form
@@ -245,7 +245,7 @@ class PostController(BaseController):
         post = self._get_version(version)
         return dict(post=post)
 
-    @expose('jinja:blog_edit_post.html')
+    @expose('jinja:blog/edit_post.html')
     @without_trailing_slash
     def edit(self, **kw):
         require(has_artifact_access('write', None))
@@ -256,14 +256,14 @@ class PostController(BaseController):
         return dict(post=self.post)
 
     @without_trailing_slash
-    @expose('jinja:blog_post_history.html')
+    @expose('jinja:blog/post_history.html')
     def history(self):
         require(has_artifact_access('read', self.post))
         posts = self.post.history()
         return dict(title=self.post.title, posts=posts)
 
     @without_trailing_slash
-    @expose('jinja:blog_post_diff.html')
+    @expose('jinja:blog/post_diff.html')
     def diff(self, v1, v2):
         require(has_artifact_access('read', self.post))
         p1 = self._get_version(int(v1))
