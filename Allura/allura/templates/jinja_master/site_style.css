@@ -1244,10 +1244,12 @@ ul.ui-tab li a {
 .wmd_holder span {padding: 0 10px !important;}
 
 /* Tags */
+input.label_edit{ float: left; }
 .tagEditor
 {
 	margin: 4px 0;
 	padding: 0;
+	float: left;
 }
 
 .tagEditor li, .removable

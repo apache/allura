@@ -22,14 +22,17 @@
       <label class="cr">Owner:</label>
       {{c.widget.widget_type.display_field_by_name('assigned_to')|safe}}
     </div>
-    <div class="column grid_3">
+  </div>
+  {% set min_c_fields = fields['_milestone'] and 1 or 0 %}
+  {% if c.app.globals.custom_fields and c.app.globals.custom_fields.__len__() > min_c_fields %}
+    {{c.widget.widget_type.display_field_by_name('custom_fields', ignore_errors=True)}}
+  {% endif %}
+  <div class="row">
+    <div class="column grid_12">
       <label class="cr">Labels:</label>
       {{c.widget.widget_type.display_field_by_name('labels')|safe}}
     </div>
   </div>
-  {% if c.app.globals.custom_fields %}
-    {{c.widget.widget_type.display_field_by_name('custom_fields', ignore_errors=True)}}
-  {% endif %}
   <div class="row">
     <div class="column grid_3">
       <label class="simple">Updated:</label>
