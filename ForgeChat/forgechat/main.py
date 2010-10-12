@@ -122,7 +122,7 @@ class RootController(BaseController):
         now = datetime.utcnow()
         redirect(c.app.url + now.strftime('%Y/%m/%d/'))
 
-    @expose('jinja:chat_search.html')
+    @expose('jinja:chat/search.html')
     @validate(dict(q=validators.UnicodeString(if_empty=None),
                    history=validators.StringBool(if_empty=False)))
     def search(self, q=None, history=None):
@@ -151,7 +151,7 @@ class DayController(RootController):
     def __init__(self, day):
         self.day = day
 
-    @expose('jinja:chat_day.html')
+    @expose('jinja:chat/day.html')
     def index(self, **kw):
         q = dict(
             timestamp={
