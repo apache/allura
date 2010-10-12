@@ -2,9 +2,9 @@
 
 {% do g.register_app_css('css/tracker.css') %}
 
-{% block title %}{{c.project.name}} / {{c.app.config.options.mount_label}} / {{field.label}} / {{milestone.name}}{% endblock %}
+{% block title %}{{c.project.name}} / {{c.app.config.options.mount_label}} / {{field.label}} {{milestone.name}}{% endblock %}
 
-{% block header %}{{c.project.name}} / {{c.app.config.options.mount_label}} / {{field.label}} / {{milestone.name}}{% endblock %}
+{% block header %}{{field.label}} {{milestone.name}}{% endblock %}
 
 {% block actions %}
 {% if allow_edit %}
@@ -30,7 +30,7 @@
 
 {% block content %}
   {% if milestone.description %}
-    {{g.markdown.convert(milestone.description)|safe}}
+    {{milestone.description}}
   {% endif %}
   {{c.ticket_search_results.display(solr_error=solr_error,
     count=count,
