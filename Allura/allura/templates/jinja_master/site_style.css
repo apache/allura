@@ -924,7 +924,7 @@ ul.ui-tab li a {
     border: 1px solid #ccc;
     border-width: 0 0 1px 0;
     overflow: visible;
-    padding: 1.5em;
+    padding: 5px 1.5em;
     color: #555;
 }
 .editbox label{
@@ -939,7 +939,7 @@ ul.ui-tab li a {
     display: block;
 }
 .editbox .wide{width: 90%}
-.editbox .row{min-width: inherit;}
+.editbox .row{min-width: inherit; padding-top: 10px;}
 
 /* Discussion */
 #comment .row  {

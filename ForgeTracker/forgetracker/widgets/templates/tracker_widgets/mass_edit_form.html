@@ -1,5 +1,18 @@
 <form id="update-values">
   <div class="row">
+    {% for field in globals.custom_fields %}
+      {% if field.name == '_milestone' %}
+      <div class="column grid_3">{{milestones}}
+        <label for="{{field.name}}" class="cr">{{field.label}}:</label>
+        <select name="{{field.name}}">
+          <option value="" selected="selected">no change</option>
+          {% for m in field.milestones %}
+            <option value="{{m.name}}">{{m.name}}</option>
+          {% endfor %}
+        </select>
+      </div>
+      {% endif %}
+    {% endfor %}
     <div class="column grid_3">
       <label for="status" class="cr">Status:</label>
       <select name="status">
@@ -13,9 +26,9 @@
       <label for="assigned_to" class="cr">Owner:</label>
       {{c.user_select.display(name='assigned_to', value='')}}
     </div>
-    {% set cf_count=-2 %}
+    {% set cf_count = -1 %}
     {% for field in globals.custom_fields %}
-      {% if field.type != 'sum' %}
+      {% if field.type != 'sum' and field.name != '_milestone' %}
         {% if cf_count%4 == 0 %}
           </div><div class="row">
         {% endif %}
@@ -51,6 +64,6 @@
   </div>
   <div class="row" style="padding-left: 9px">
     <input type="button" onclick="update_tickets()" value="Save"/>
-    <a href="{{tg.url(c.app.url+'search/', dict(q=query, limit=limit, sort=sort))}}" class="btn">Cancel</a>
+    <a href="{{tg.url(c.app.url+'search/', dict(q=query, limit=limit, sort=sort))}}" class="btn_link">Cancel</a>
   </div>
 </form>

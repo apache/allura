@@ -3,26 +3,25 @@
     <table>
       <thead>
         <tr>
-          <th>
-            <a id="select_all" href="#" class="btn"><span>All</span></a>
-            <a id="select_none" href="#" class="btn"><span>None</span></a>
+          <th style="width:20px">
+            <input type="checkbox" id="select_all">
           </th>
-          <th data-sort="ticket_num_i">Ticket</th>
+          <th>#</th>
+          <th data-sort="ticket_num_i">Summary</th>
+          <th>Milestone</th>
           <th data-sort="status_s">Status</th>
-          <th>Description</th>
-          <th data-sort="assigned_to_s">Assigned To</th>
-          <th data-sort="mod_date_dt">Updated</th>
+          <th data-sort="assigned_to_s">Owner</th>
         </tr>
       </thead>
       <tbody class="ticket-list">
         {% for t in tickets %}
         <tr>
           <td><input type="checkbox" name="{{t._id}}" value=""/></td>
-          <td><a href="{{t.url()}}">[#{{t.ticket_num}}] {{t.summary}}</a></td>
+          <td><a href="{{t.url()}}">{{t.ticket_num}}</a></td>
+          <td><a href="{{t.url()}}">{{t.summary}}</a></td>
+          <td>{{t._milestone}}</td>
           <td class="{{t.status}}">{{t.status}}</td>
-          <td>{{h.text.truncate(h.really_unicode(t.description),70)}}</td>
           <td>{% if t.assigned_to_id %}{{t.assigned_to.display_name}}{% endif %}</td>
-          <td>{{h.ago(t.mod_date)}}</td>
         </tr>
         {% endfor %}
       </tbody>
