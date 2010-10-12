@@ -1,0 +1,18 @@
+{% extends 'jinja_master/master.html' %}
+
+{% block title %}{{c.project.name}} / {{c.app.config.options.mount_label}}{% endblock %}
+
+{% block header %}{{c.project.name}} / {{c.app.config.options.mount_label}}{% endblock %}
+
+{% block content %}
+          <h2>Log for {{day.strftime('%Y-%m-%d')}}</h2>
+          <a href="{{prev}}">Earlier</a>...
+          <a href="{{next}}">Later</a><br/>
+          <ul>
+            {% for msg in messages %}
+            <li id="{{msg._id}}">
+              {{msg.html_text|safe}}
+            </li>
+            {% endfor %}
+          </ul>
+{% endblock %}

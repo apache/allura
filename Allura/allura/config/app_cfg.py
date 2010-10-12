@@ -80,6 +80,7 @@ class ForgeConfig(AppConfig):
         self.paths['templates'].append(pkg_resources.resource_filename('forgediscussion', 'templates'))
         self.paths['templates'].append(pkg_resources.resource_filename('forgediscussion', 'widgets/templates'))
         self.paths['templates'].append(pkg_resources.resource_filename('forgeblog', 'templates'))
+        self.paths['templates'].append(pkg_resources.resource_filename('forgechat', 'templates'))
         self.paths['templates'].append(pkg_resources.resource_filename('allura', 'lib/widgets/templates'))
 
         from jinja2 import ChoiceLoader, Environment, FileSystemLoader

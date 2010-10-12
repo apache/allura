@@ -1,0 +1,15 @@
+{% extends 'jinja_master/master.html' %}
+
+{% block title %}{{c.project.name}} / {{c.app.config.options.mount_label}}{% endblock %}
+
+{% block header %}{{c.project.name}} / {{c.app.config.options.mount_label}}{% endblock %}
+
+{% block content %}
+          <ul>
+            {% for msg in messages %}
+            <li>
+              {{msg.timestamp.isoformat(' ')}}: {{msg.sender.split('!')[0]}}: {{msg.text}}
+            </li>
+            {% endfor %}
+          </ul>
+{% endif %}
