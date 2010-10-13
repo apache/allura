@@ -1,0 +1,43 @@
+{% extends 'jinja_master/master.html' %}
+
+{% do g.register_app_css('css/tracker.css') %}
+
+{% block title %}{{c.project.name}} / {{c.app.config.options.mount_label}} / {{field.label}} {{milestone.name}}{% endblock %}
+
+{% block header %}{{field.label}} {{milestone.name}}{% endblock %}
+
+{% block actions %}
+{% if allow_edit %}
+  <a href="{{tg.url(c.app.url+'edit/', dict(q=q, limit=limit, sort=sort))}}" class="btn ico-l"><b class="ui-icon ui-icon-pencil"></b> <span>Bulk Edit</span></a>
+{% endif %}
+{% endblock %}
+
+{% block edit_box %}
+<div class="editbox">
+  <div class="row">
+    <div class="column grid_3">
+      <label>Status:</label> {{milestone.closed and 'Closed' or 'Open'}}
+    </div>
+    <div class="column grid_3">
+      <label>Due Date:</label> {{milestone.due_date or 'N/A'}}
+    </div>
+    <div class="column grid_3">
+      <label>Progress:</label> {{closed}} / {{total}}
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block content %}
+  {% if milestone.description %}
+    {{milestone.description}}
+  {% endif %}
+  {{c.ticket_search_results.display(solr_error=solr_error,
+    count=count,
+    limit=limit,
+    query=q,
+    tickets=tickets,
+    sortable_custom_fields=sortable_custom_fields,
+    page=page,
+    sort=sort)}}
+{% endblock %}

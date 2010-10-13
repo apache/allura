@@ -5,6 +5,17 @@
 
 {% block header %}Search {{c.app.config.options.mount_point}}: {{q}}{% endblock %}
 
+{% block head %}
+  <link rel="alternate" type="application/rss+xml" title="RSS" href="feed.rss"/>
+  <link rel="alternate" type="application/atom+xml" title="Atom" href="feed.atom"/>
+{% endblock %}
+
+{% block actions %}
+{% if allow_edit and count != 0 %}
+  <a href="{{tg.url(c.app.url+'edit/', dict(q=q, limit=limit, sort=sort))}}" class="btn ico-l"><b class="ui-icon ui-icon-pencil"></b> <span>Bulk Edit</span></a>
+{% endif %}
+{% endblock %}
+
 {% if q and h.has_artifact_access('save_searches')() %}
   {% block edit_box %}
     <div class="editbox" style="display:none">
@@ -34,9 +45,6 @@
   sortable_custom_fields=sortable_custom_fields,
   page=page,
   sort=sort)}}
-{% if allow_edit and count != 0 %}
-<a href="{{tg.url('../edit/', dict(q=q, limit=limit, sort=sort))}}" class="btn">Edit All</a>
-{% endif %}
 {% endblock %}
 
 {% block extra_js %}

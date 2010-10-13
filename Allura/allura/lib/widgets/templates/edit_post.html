@@ -7,14 +7,11 @@
     {% endif %}
     <textarea name="text" style="width:90%">{{(value and 'text' in value) and value['text'] or ''}}</textarea>
     <span class="arw"><span></span></span><br/>
-    <input type="button" value="Add attachment" class="attachment_form_add_button"/>
-    <ol class="attachment_form_fields" style="display:none">
-      <li>
-        <label for="{{att_name}}">File to upload</label>
-        <input type="file" class="text" name="{{att_name}}" id="{{att_name}}"/>
-      </li>
-    </ol>
+    <div class="attachment_form_fields" style="display:none; padding: 5px 0;">
+      <input type="file" class="text" name="{{att_name}}" id="{{att_name}}"/>
+    </div>
     <div style="clear:both"></div>
     <input type="submit" value="{{submit_text}}"/>
+    <input type="button" value="Add attachment" class="attachment_form_add_button"/>
   </form>
 </div>

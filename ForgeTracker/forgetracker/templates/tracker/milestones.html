@@ -1,0 +1,132 @@
+{% extends 'jinja_master/master.html' %}
+
+{% do g.register_app_css('css/tracker.css') %}
+
+{% block title %}{{c.project.name}} / {{c.app.config.options.mount_label}} / Milestones{% endblock %}
+
+{% block header %}Milestones{% endblock %}
+
+{% block content %}
+  <form action="update_milestones" method="post" class="update_milestones">
+  <input type="hidden" name="field_name" value="_milestone">
+  <table>
+    <thead>
+      <tr>
+        <th>&nbsp; &nbsp;Name</th>
+        <th>&nbsp; &nbsp;Summary</th>
+        <th>&nbsp; &nbsp;Status</th>
+        <th>&nbsp; &nbsp;Due Date</th>
+        <th>Progress</th>
+        <th style="width:20px;">&nbsp;</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for m in milestones %}
+      <tr class="{{loop.index0%2 and 'even' or ''}}">
+        <input type="hidden" name="milestones-{{loop.index0}}.old_name" value="{{m.name}}">
+        <td class="view">&nbsp; &nbsp;<strong><a href="{{c.app.url}}milestone/{{m.name}}/">{{m.name}}</a></strong></td>
+        <td class="view">&nbsp; &nbsp;{{m.description}}</td>
+        <td class="view {{m.complete and 'closed' or 'open'}}">&nbsp; &nbsp;{{m.complete and 'Closed' or 'Open'}}</td>
+        <td class="view">&nbsp; &nbsp;{{m.due_date or 'N/A'}}</td>
+        <td class="edit" style="display:none">
+          <input type="text" name="milestones-{{loop.index0}}.new_name" value="{{m.name}}">
+        </td>
+        <td class="edit" style="display:none">
+          <input type="text" name="milestones-{{loop.index0}}.description" value="{{m.description}}">
+        </td>
+        <td class="edit" style="display:none">
+          <select name="milestones-{{loop.index0}}.complete">
+            <option value="Open"{% if not m.complete %} selected="selected"{% endif %}>Open</option>
+            <option value="Closed"{% if m.complete %} selected="selected"{% endif %}>Closed</option>
+          </select>
+        </td>
+        <td class="edit" style="display:none">
+          {{c.date_field.display(value=m.due_date, name='milestones-%s.due_date' % loop.index0)}}
+        </td>
+        <td>{{m.closed}} / {{m.total}}</td>
+        <td style="width:20px;"><a href="#" class="ico edit_milestone">
+          <b class="ui-icon ui-icon-pencil"></b> <span>Edit</span>
+        </a></td>
+      </tr>
+      {% else %}
+      <tr class="empty_message">
+        <td colspan="6">No milestones found.</td>
+      </tr>
+      {% endfor %}
+      {% set num_milestones = milestones.__len__() %}
+      <tr class="new_milestone" style="display:none">
+        <td>
+          <input type="hidden" name="milestones-{{num_milestones}}.old_name">
+          <input type="text" name="milestones-{{num_milestones}}.new_name" placeholder="Title">
+        </td>
+        <td>
+          <input type="text" name="milestones-{{num_milestones}}.description" placeholder="Summary">
+        </td>
+        <td>
+          <select name="milestones-{{num_milestones}}.complete">
+            <option value="Open">Open</option>
+            <option value="Closed">Closed</option>
+          </select>
+        </td>
+        <td>
+          {{c.date_field.display(name='milestones-%s.due_date' % num_milestones)}}
+        </td>
+        <td>0 / 0</td>
+        <td>&nbsp;</td>
+      </tr>
+    </tbody>
+  </table>
+  <a href="#" class="btn add_milestone">Add Milestone</a>
+  <div class="save_controls" style="display:none">
+    <input type="submit" value="Save">
+    <a href="#" class="btn_link cancel_edit">Cancel</a>
+  </div>
+  </form>
+{% endblock %}
+
+{% block extra_js %}
+<script type="text/javascript">
+  $(document).ready(function(){
+    $('form.update_milestones').each(function(){
+      var $form = $(this);
+      var $new_row = $('tr.new_milestone', $form);
+      var $add_button = $('a.add_milestone', $form);
+      var $save_controls = $('div.save_controls', $form);
+      $('a.add_milestone').click(function(){
+        $save_controls.show();
+        $add_button.hide();
+        $new_row.show();
+        return false;
+      });
+      $('a.edit_milestone').click(function(){
+        $row = $(this).closest('tr');
+        $('td.view', $row).hide();
+        $('td.edit', $row).show();
+        $save_controls.show();
+        $add_button.hide();
+        $(this).css({opacity: 0.5});
+        return false;
+      });
+      $('a.cancel_edit').click(function(){
+        $('td.view', $form).show();
+        $('td.edit', $form).hide();
+        $save_controls.hide();
+        $add_button.show();
+        $new_row.hide();
+        $('input', $new_row).val('');
+        $('a.edit_milestone').css({opacity: 1});
+        return false;
+      });
+    });
+  });
+</script>
+{% endblock %}
+
+{% block extra_css %}
+<style type="text/css">
+  .update_milestones .ico {
+    padding: 0;
+    margin: 0;
+  }
+</style>
+{% endblock %}

@@ -1,0 +1,36 @@
+{% extends 'jinja_master/master.html' %}
+
+{% do g.register_forge_css('css/forge/hilite.css') %}
+{% do g.register_app_css('css/tracker.css') %}
+
+{% block head %}
+  <link rel="alternate" type="application/rss+xml" title="RSS" href="feed.rss"/>
+  <link rel="alternate" type="application/atom+xml" title="Atom" href="feed.atom"/>
+{% endblock %}
+
+{% block title %}{{c.project.name}} / {{c.app.config.options.mount_label}}{% endblock %}
+
+{% block header %}ForgeTracker for {{c.project.shortname}}{% endblock %}
+
+{% block actions %}
+  <a href="{{tg.url(c.app.url+'edit/', dict(q=q, limit=limit, sort=sort))}}" class="btn btn_activate ico-l"><b class="ui-icon ui-icon-pencil"></b> <span>Bulk Edit</span></a>
+{% endblock %}
+
+{% block edit_box %}
+  <div class="editbox">
+    {{c.mass_edit_form.display(
+      globals=globals,
+      query=q,
+      sort=sort,
+      limit=limit)}}
+  </div>
+{% endblock %}
+
+{% block content %}
+  {{c.mass_edit.display(count=count,
+    limit=limit,
+    query=q,
+    tickets=tickets,
+    sort=sort,
+    page=page)}}
+{% endblock %}

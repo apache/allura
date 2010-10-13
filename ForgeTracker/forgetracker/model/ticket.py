@@ -37,6 +37,8 @@ class Globals(MappedClass):
     custom_fields = FieldProperty([{str:None}])
     _bin_counts = FieldProperty({str:int})
     _bin_counts_expire = FieldProperty(datetime)
+    _milestone_counts = FieldProperty([dict(name=str,hits=int,closed=int)])
+    _milestone_counts_expire = FieldProperty(datetime)
 
     @classmethod
     def next_ticket_num(cls):
@@ -67,20 +69,51 @@ class Globals(MappedClass):
         return ' && '.join(['!status:'+name for name in self.set_of_closed_status_names])
 
     @property
+    def closed_query(self):
+        return ' or '.join(['status:'+name for name in self.set_of_closed_status_names])
+
+    @property
+    def milestone_fields(self):
+        return [ fld for fld in self.custom_fields if fld.type == 'milestone' ]
+
+    def _refresh_counts(self):
+        # Refresh bin counts
+        for b in Bin.query.find(dict(
+                app_config_id=self.app_config_id)):
+            r = search_artifact(Ticket, b.terms, rows=0)
+            self._bin_counts[b.summary] = r is not None and r.hits or 0
+        # Refresh milestone field counts
+        self._milestone_counts = []
+        for fld in self.milestone_fields:
+            for m in fld.milestones:
+                k = '%s:%s' % (fld.name, m.name)
+                r = search_artifact(Ticket, k, rows=0)
+                hits = r is not None and r.hits or 0
+                q = search_artifact(Ticket, '%s && (%s)' % (k, self.closed_query), rows=0)
+                closed = q is not None and q.hits or 0
+                self._milestone_counts.append({'name':k,'hits':hits,'closed':closed})
+        self._milestone_counts_expire = \
+            self._bin_counts_expire = \
+            datetime.utcnow() + timedelta(minutes=60)
+
+    @property
     def bin_counts(self):
         if self._bin_counts_expire is None or datetime.utcnow() > self._bin_counts_expire:
-            for b in Bin.query.find(dict(
-                    app_config_id=self.app_config_id)):
-                r = search_artifact(Ticket, b.terms, rows=0)
-                self._bin_counts[b.summary] = r is not None and r.hits or 0
-            self._bin_counts_expire = datetime.utcnow() + timedelta(minutes=60)
+            self._refresh_counts()
         return self._bin_counts
+
+    @property
+    def milestone_counts(self):
+        if self._bin_counts_expire is None or datetime.utcnow() > self._bin_counts_expire:
+            self._refresh_counts()
+        return self._milestone_counts
 
     def invalidate_bin_counts(self):
         '''Expire it just a bit in the future to allow data to propagate through
         the search reactors
         '''
         self._bin_counts_expire = datetime.utcnow() + timedelta(seconds=5)
+        self._milestone_counts_expire = datetime.utcnow() + timedelta(seconds=5)
 
     def sortable_custom_fields_shown_in_search(self):
         return [dict(sortable_name='%s_s' % field['name'],
@@ -190,6 +223,14 @@ class Ticket(VersionedArtifact):
         if self.assigned_to:
             result['assigned_to_s'] = self.assigned_to.username
         return result
+
+    @property
+    def _milestone(self):
+        milestone = None
+        for fld in self.globals.milestone_fields:
+            if fld.name == '_milestone':
+                return self.custom_fields['_milestone']
+        return milestone
 
     @property
     def assigned_to(self):
@@ -367,32 +408,39 @@ class Ticket(VersionedArtifact):
             (custom_sums if cf.type=='sum' else other_custom_fields).add(cf.name)
             if cf.type == 'boolean' and 'custom_fields.'+cf.name not in ticket_form:
                 self.custom_fields[cf.name] = 'False'
+        # this has to happen because the milestone custom field has special layout treatment
+        if '_milestone' in ticket_form:
+            other_custom_fields.add('_milestone')
+            milestone = ticket_form.pop('_milestone', None)
+            if 'custom_fields' not in ticket_form:
+                ticket_form['custom_fields'] = dict()
+            ticket_form['custom_fields']['_milestone'] = milestone
+        attachment = None
         if 'attachment' in ticket_form:
-            attachments = ticket_form.pop('attachment')
-            if attachments:
-                for attachment in attachments:
-                    self.attach(file_info=attachment)
+            attachment = ticket_form.pop('attachment')
         for k, v in ticket_form.iteritems():
-            if 'custom_fields.' in k:
-                k = k.split('custom_fields.')[1]
-            if k in custom_sums:
-                # sums must be coerced to numeric type
-                try:
-                    self.custom_fields[k] = float(v)
-                except (TypeError, ValueError):
-                    self.custom_fields[k] = 0
-            elif k in other_custom_fields:
-                # strings are good enough for any other custom fields
-                self.custom_fields[k] = v
-            elif k == 'assigned_to':
+            if k == 'assigned_to':
                 if v:
                     user = c.project.user_in_project(v)
                     if user:
                         self.assigned_to_id = user._id
             elif k != 'super_id':
-                # if it's not a custom field, set it right on the ticket (but don't overwrite super_id)
                 setattr(self, k, v)
+        if 'custom_fields' in ticket_form:
+            for k,v in ticket_form['custom_fields'].iteritems():
+                if k in custom_sums:
+                    # sums must be coerced to numeric type
+                    try:
+                        self.custom_fields[k] = float(v)
+                    except (TypeError, ValueError):
+                        self.custom_fields[k] = 0
+                elif k in other_custom_fields:
+                    # strings are good enough for any other custom fields
+                    self.custom_fields[k] = v
         self.commit()
+        if attachment is not None:
+            TicketAttachment.save_attachment(attachment.filename, attachment.file,
+                content_type=attachment.type, ticket_id=self._id)
         # flush so we can participate in a subticket search (if any)
         session(self).flush()
         super_id = ticket_form.get('super_id')
@@ -417,6 +465,8 @@ class Ticket(VersionedArtifact):
             custom_fields=self.custom_fields)
 
 class TicketAttachment(BaseAttachment):
+    thumbnail_size = (100, 100)
+
     metadata=FieldProperty(dict(
             ticket_id=schema.ObjectId,
             app_config_id=schema.ObjectId,

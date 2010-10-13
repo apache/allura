@@ -167,7 +167,7 @@ class TestNeighborhood(TestController):
     def test_site_css(self):
         r = self.app.get('/p/site_style.css')
         assert(
-"""a {color: #295d78; text-decoration: none;}""" in r)
+"""a {color: #117AB4; text-decoration: none;}""" in r)
         assert(
 """.active {
 	color: #272727 !important;""" in r)

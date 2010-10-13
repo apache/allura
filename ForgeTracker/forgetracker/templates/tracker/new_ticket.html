@@ -1,0 +1,32 @@
+{% extends 'jinja_master/master.html' %}
+
+{% block title %}{{c.project.name}} / {{c.app.config.options.mount_label}} / New Ticket{% endblock %}
+
+{% block header %}&nbsp;{% endblock %}
+
+{% block edit_box %}
+<div class="editbox">
+  <div class="form_holder">
+    {{c.ticket_form.display(action=action, value=dict(super_id=super_id))}}
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style type="text/css">
+  div.form_holder{
+    margin-top: -45px;
+  }
+  .sf_markdown_edit.markItUpEditor {
+    height: 100px;
+  }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script type="text/javascript">
+  $(document).ready(function(){
+    $('input[name=ticket_form.summary]').focus();
+  });
+</script>
+{% endblock %}

@@ -120,3 +120,30 @@ class SplitStatusNamesIntoOpenAndClosed(TrackerMigration):
             tracker_globals.closed_status_names = ''
         self.ormsession.flush()
         self.ormsession.clear()
+
+class MoveMilestonesToCustom(TrackerMigration):
+    version = 4
+
+    def _custom_field(self, tracker_globals):
+        names = tracker_globals.milestone_names or ''
+        return dict(
+            type='milestone',
+            label='Milestone',
+            milestones=[
+                dict(name=name, complete=False, due_date=None)
+                for name in names.split() ])
+
+    def up(self):
+        for tracker_globals in self.ormsession.find(Globals):
+            fld = self._custom_field(tracker_globals)
+            tracker_globals.custom_fields.append(fld)
+        self.ormsession.flush()
+        self.ormsession.clear()
+
+    def down(self):
+        for tracker_globals in self.ormsession.find(Globals):
+            fld = self._custom_field(tracker_globals)
+            if tracker_globals.custom_fields[-1] == fld:
+                tracker_globals.custom_fields.pop()
+        self.ormsession.flush()
+        self.ormsession.clear()

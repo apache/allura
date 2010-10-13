@@ -1,0 +1,35 @@
+<div>
+  {% if tickets.__len__() %}
+    <table>
+      <thead>
+        <tr>
+          <th style="width:20px">
+            <input type="checkbox" id="select_all">
+          </th>
+          <th>#</th>
+          <th data-sort="ticket_num_i">Summary</th>
+          <th>Milestone</th>
+          <th data-sort="status_s">Status</th>
+          <th data-sort="assigned_to_s">Owner</th>
+        </tr>
+      </thead>
+      <tbody class="ticket-list">
+        {% for t in tickets %}
+        <tr>
+          <td><input type="checkbox" name="{{t._id}}" value=""/></td>
+          <td><a href="{{t.url()}}">{{t.ticket_num}}</a></td>
+          <td><a href="{{t.url()}}">{{t.summary}}</a></td>
+          <td>{{t._milestone}}</td>
+          <td class="{{t.status}}">{{t.status}}</td>
+          <td>{% if t.assigned_to_id %}{{t.assigned_to.display_name}}{% endif %}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    <script type="text/javascript">
+      var q="{{query}}", count={{count}}, limit={{limit}}, page={{page}}, sort="{{sort}}";
+    </script>
+  {% else %}
+    No tickets found.
+  {% endif %}
+</div>

@@ -100,7 +100,7 @@ def bootstrap(command, conf, vars):
     p_adobe = project_reg.register_neighborhood_project(n_adobe, [root])
     M.Theme(name='forge_default',
             label='Default Forge Theme',
-            color1='#295d78',
+            color1='#117AB4',
             color2='#272727',
             color3='#454545',
             color4='#c3c3c3',

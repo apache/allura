@@ -1,56 +1,52 @@
 {% import 'jinja_master/lib.html' as lib with context %}
 
 <div>
- 	<div class="content">
- 		<div class="row">
- 			<div class="column grid_12">
-        {% if limit %}
-          {{widgets.page_list.display(limit=limit, page=page, count=count)}}
-        {% endif %}
-        <div id="comment">
-          {% set posts = value.find_posts(page=page, limit=limit) %}
-            {% if posts %}
-              {% for t in value.create_post_threads(posts) %}
-              <ul>
-                {{widgets.post_thread.display(value=t['post'], indent=0, show_subject=show_subject,
-                                               supress_promote=True, page=page, limit=limit)}}
-              </ul>
-              {% endfor %}
-            {% endif %}
-          {% if h.has_artifact_access('moderate', value)() %}
-            <div id="allow_moderate"></div>
+		<div class="row">
+			<div class="column grid_12">
+      {% if limit %}
+        {{widgets.page_list.display(limit=limit, page=page, count=count)}}
+      {% endif %}
+      <div id="comment">
+        {% set posts = value.find_posts(page=page, limit=limit) %}
+          {% if posts %}
+            {% for t in value.create_post_threads(posts) %}
+            <ul>
+              {{widgets.post_thread.display(value=t['post'], indent=0, show_subject=show_subject,
+                                             supress_promote=True, page=page, limit=limit)}}
+            </ul>
+            {% endfor %}
           {% endif %}
-          {% if h.has_artifact_access('post', value)() %}
-            <div id="tag_thread_holder" style="display:none">
-              {{widgets.tag_post.display(value=value,submit_text='Save', action=value.url() + 'tag')}}
-            </div>
-          {% endif %}
-        </div>
-        <div style="clear:both"></div>
-        {% if limit %}
-        <div>
-          {{widgets.page_list.display(limit=limit, page=page, count=count)}}
-          {{widgets.page_size.display(limit=limit)}}
-        </div>
+        {% if h.has_artifact_access('moderate', value)() %}
+          <div id="allow_moderate"></div>
         {% endif %}
+        {% if h.has_artifact_access('post', value)() %}
+          <div id="tag_thread_holder" style="display:none">
+            {{widgets.tag_post.display(value=value,submit_text='Save', action=value.url() + 'tag')}}
+          </div>
+        {% endif %}
+      </div>
+      <div style="clear:both"></div>
+      {% if limit and count>limit %}
+      <div>
+        {{widgets.page_list.display(limit=limit, page=page, count=count)}}
+      </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% if h.has_artifact_access('post', value)() %}
+  <div id="new_post_holder">
+    <a name="comment"></a>
+    <div class="row reply">
+    	<div class="column grid_1 tcenter">
+    		<p class="gravatar">
+              {{lib.gravatar(c.user)}}<br/><br/>
+    			<a href="{{c.user.url()}}">{{c.user.display_name}}</a>
+    		</p>
+    	</div>
+    	<div class="column grid_8">
+        {{widgets.edit_post.display(submit_text='Save', action=value.url() + 'post')}}
       </div>
     </div>
   </div>
-  {% if h.has_artifact_access('post', value)() %}
-    <div id="new_post_holder">
-      <a name="comment"></a>
-      <div class="row reply">
-      	<div class="column grid_1 tcenter">
-      		<p class="gravatar">
-                {{lib.gravatar(c.user)}}<br/><br/>
-      			<a href="{{c.user.url()}}">{{c.user.display_name}}</a>
-      		</p>
-      	</div>
-      	<div class="column grid_8">
-          {{widgets.edit_post.display(submit_text='Save', action=value.url() + 'post')}}
-        </div>
-      </div>
-    </div>
-  {% endif %}
-  &nbsp;
-</div>
+{% endif %}

@@ -1,0 +1,118 @@
+{% import 'jinja_master/lib.html' as lib with context %}
+<form method="POST" action="{{action}}" enctype="multipart/form-data">
+  {{c.widget.widget_type.display_field_by_name('ticket_num')|safe}}
+  {{c.widget.widget_type.display_field_by_name('super_id')|safe}}
+  <div class="row">
+	  <div class="column">
+      {{c.widget.widget_type.display_field_by_name('summary')|safe}}
+    </div>
+  </div>
+  <div class="row">
+    {% if fields['_milestone'] %}
+      <div class="column grid_3">
+        <label class="cr">Milestone:</label>
+        {{c.widget.widget_type.display_field_by_name('_milestone')|safe}}
+      </div>
+    {% endif %}
+    <div class="column grid_3">
+      <label class="cr">Status:</label>
+      {{c.widget.widget_type.display_field_by_name('status')|safe}}
+    </div>
+    <div class="column grid_3">
+      <label class="cr">Owner:</label>
+      {{c.widget.widget_type.display_field_by_name('assigned_to')|safe}}
+    </div>
+  </div>
+  {% set min_c_fields = fields['_milestone'] and 1 or 0 %}
+  {% if c.app.globals.custom_fields and c.app.globals.custom_fields.__len__() > min_c_fields %}
+    {{c.widget.widget_type.display_field_by_name('custom_fields', ignore_errors=True)}}
+  {% endif %}
+  <div class="row">
+    <div class="column grid_12">
+      <label class="cr">Labels:</label>
+      {{c.widget.widget_type.display_field_by_name('labels')|safe}}
+    </div>
+  </div>
+  <div class="row">
+    <div class="column grid_3">
+      <label class="simple">Updated:</label>
+      {% if ticket %}
+        {{h.ago(ticket.mod_date)}}
+      {% else %}
+        Now
+      {% endif %}
+    </div>
+    <div class="column grid_3">
+      <label class="simple">Created:</label>
+      {% if ticket %}
+        {{h.ago(ticket.created_date)}}
+      {% else %}
+        Now
+      {% endif %}
+    </div>
+    <div class="column grid_6">
+      <label class="simple">Creator:</label>
+      {% if ticket %}
+        <a href="{{ticket.reported_by.url()}}">{{ticket.reported_by.display_name}}</a>
+      {% else %}
+        <a href="{{c.user.url()}}">{{c.user.display_name}}</a>
+      {% endif %}
+    </div>
+  </div>
+  <div class="row">
+    <div class="column grid_12">
+      {{c.widget.widget_type.display_field_by_name('description')|safe}}
+    </div>
+  </div>
+  <div class="row">
+    <div class="column grid_12">
+      {% if ticket %}
+        <div class="clear">
+        {% for att in ticket.attachments %}
+            <div class="attachment_thumb">
+              {% if att.is_image() and not att.is_embedded() %}
+                <a href="{{att.url()}}">
+                  <img src="{{att.url()}}/thumb">
+                </a><br/>
+              {% else %}
+                <a href="{{att.url()}}">
+                  <img src="{{att.url()}}/thumb">
+                </a><br/>
+              {% endif %}
+              <a href="{{att.url()}}">{{att.metadata.filename}}</a>
+              <a href="{{att.url()}}" class="btn ico delete_attachment"><b class="ui-icon ui-icon-close"></b></a>
+            </div>
+        {% endfor %}
+        </div>
+        <div class="clear"></div>
+      {% endif %}
+      <div id="show_attach">
+        <input type="checkbox"> I would like to add an attachment
+      </div>
+      <div id="view_attach" style="display:none">
+        {{c.widget.widget_type.display_field_by_name('attachment')|safe}}
+      </div>
+    </div>
+  </div>
+  <div class="row reply"{% if not show_comment %} style="display:none"{% endif %}>
+	<div class="column grid_1 tcenter">
+		<p class="gravatar">
+        {{lib.gravatar(c.user)}}<br/><br/>
+        <a href="{{c.user.url()}}">{{c.user.display_name}}</a>
+		</p>
+	</div>
+	<div class="column grid_8">
+	  <div style="position: relative">
+        {{c.widget.widget_type.display_field_by_name('comment')|safe}}
+        <span class="arw"><span></span></span>
+      </div>
+    </div>
+  </div>
+  <div class="clear"></div>
+  <div class="row">
+    <div class="column grid_12">
+      {{c.widget.widget_type.display_field_by_name('submit')|safe}}
+      <a href="{{c.app.url}}" class="btn_link cancel_form">Cancel</a>
+    </div>
+  </div>
+</form>

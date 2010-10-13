@@ -3,6 +3,8 @@ import Image, StringIO
 import allura
 
 from nose.tools import assert_true, assert_false, eq_
+from formencode.variabledecode import variable_encode
+
 from forgetracker.tests import TestController
 from forgewiki import model as wm
 from forgetracker import model as tm
@@ -40,10 +42,9 @@ class TestFunctionalController(TestController):
         assert 'class="artifact_unsubscribe' in ticket_view
 
     def test_new_with_milestone(self):
-        tm.Globals.milestone_names = 'sprint-9 sprint-10 sprint-11'
-        ticket_view = self.new_ticket(summary='test new with milestone', milestone='sprint-10')
+        ticket_view = self.new_ticket(summary='test new with milestone', **{'_milestone':'1.0'})
         assert 'Milestone' in ticket_view
-        assert 'sprint-10' in ticket_view
+        assert '1.0' in ticket_view
     
     def test_new_ticket_form(self):
         response = self.app.get('/bugs/new/')
@@ -86,10 +87,11 @@ class TestFunctionalController(TestController):
             'summary':'aaa',
             'description':'bbb',
             'status':'ccc',
-            'milestone':'',
+            '_milestone':'',
             'assigned_to':'',
             'tags':'red,blue',
-            'tags_old':'red,blue'
+            'tags_old':'red,blue',
+            'comment': ''
         })
         response = self.app.get('/bugs/1/')
         assert_true('aaa' in response)
@@ -97,10 +99,11 @@ class TestFunctionalController(TestController):
             'summary':'zzz',
             'description':'bbb',
             'status':'ccc',
-            'milestone':'',
+            '_milestone':'',
             'assigned_to':'',
             'tags':'red',
-            'tags_old':'red'
+            'tags_old':'red',
+            'comment': ''
         })
         response = self.app.get('/bugs/1/')
         assert_true('zzz' in response)
@@ -112,10 +115,11 @@ class TestFunctionalController(TestController):
             'summary':'aaa',
             'description':'bbb',
             'status':'ccc',
-            'milestone':'',
+            '_milestone':'',
             'assigned_to':'',
             'labels':'yellow,green',
             'labels_old':'yellow,green'
+            'comment': ''
         })
         response = self.app.get('/bugs/1/')
         assert_true('yellow' in response)
@@ -124,10 +128,11 @@ class TestFunctionalController(TestController):
             'summary':'zzz',
             'description':'bbb',
             'status':'ccc',
-            'milestone':'',
+            '_milestone':'',
             'assigned_to':'',
             'labels':'yellow',
             'labels_old':'yellow'
+            'comment': ''
         })
         response = self.app.get('/bugs/1/')
         assert_true('yellow' in response)
@@ -137,7 +142,7 @@ class TestFunctionalController(TestController):
     def test_new_attachment(self):
         file_name = 'test_root.py'
         file_data = file(__file__).read()
-        upload = ('attachment-0', file_name, file_data)
+        upload = ('attachment', file_name, file_data)
         self.new_ticket(summary='test new attachment')
         ticket_editor = self.app.post('/bugs/1/update_ticket',{
             'summary':'zzz'
@@ -147,27 +152,30 @@ class TestFunctionalController(TestController):
     def test_delete_attachment(self):
         file_name = 'test_root.py'
         file_data = file(__file__).read()
-        upload = ('attachment-0', file_name, file_data)
+        upload = ('attachment', file_name, file_data)
         self.new_ticket(summary='test new attachment')
         ticket_editor = self.app.post('/bugs/1/update_ticket',{
             'summary':'zzz'
         }, upload_files=[upload]).follow()
         assert_true(file_name in ticket_editor)
-        req = self.app.get('/bugs/1/edit/')
-        assert req.html.findAll('form')[3].find('a').string == file_name
-        req.forms[3].submit()
+        req = self.app.get('/bugs/1/')
+        file_link = req.html.findAll('form')[2].findAll('a')[2]
+        assert file_link.string == file_name
+        self.app.post(str(file_link['href']),{
+            'delete':'True'
+        })
         deleted_form = self.app.get('/bugs/1/')
         assert file_name not in deleted_form
 
     def test_new_text_attachment_content(self):
         file_name = 'test_root.py'
         file_data = file(__file__).read()
-        upload = ('attachment-0', file_name, file_data)
+        upload = ('attachment', file_name, file_data)
         self.new_ticket(summary='test new attachment')
         ticket_editor = self.app.post('/bugs/1/update_ticket',{
             'summary':'zzz'
         }, upload_files=[upload]).follow()
-        download = ticket_editor.click(description=file_name)
+        download = self.app.get(str(ticket_editor.html.findAll('form')[2].findAll('a')[2]['href']))
         assert_true(download.body == file_data)
     
     def test_new_image_attachment_content(self):
@@ -175,7 +183,7 @@ class TestFunctionalController(TestController):
         file_name = 'neo-icon-set-454545-256x350.png'
         file_path = os.path.join(allura.__path__[0],'public','nf','images',file_name)
         file_data = file(file_path).read()
-        upload = ('attachment-0', file_name, file_data)
+        upload = ('attachment', file_name, file_data)
         self.new_ticket(summary='test new attachment')
         ticket_editor = self.app.post('/bugs/1/update_ticket',{
             'summary':'zzz'
@@ -190,18 +198,18 @@ class TestFunctionalController(TestController):
         r = self.app.get('/bugs/1/attachment/'+filename+'/thumb')
     
         thumbnail = Image.open(StringIO.StringIO(r.body))
-        assert thumbnail.size == (255,255)
+        assert thumbnail.size == (100,100)
     
     def test_sidebar_static_page(self):
         response = self.app.get('/bugs/search/')
-        assert 'Create New Ticket' in response
+        assert 'Create Ticket' in response
         assert 'Related Artifacts' not in response
     
     def test_sidebar_ticket_page(self):
         summary = 'test sidebar logic for a ticket page'
         self.new_ticket(summary=summary)
         response = self.app.get('/p/test/bugs/1/')
-        assert 'Create New Ticket' in response
+        assert 'Create Ticket' in response
         assert 'Related Artifacts' not in response
         self.app.get('/wiki/aaa/update?title=aaa&text=&tags=&tags_old=&labels=&labels_old=&viewable_by-0.id=all')
         self.new_ticket(summary='bbb')
@@ -244,18 +252,19 @@ class TestFunctionalController(TestController):
         summary = 'test ticket view page can be edited'
         self.new_ticket(summary=summary)
         response = self.app.get('/p/test/bugs/1/')
-        assert response.html.find('textarea', {'name': 'summary'})
-        assert response.html.find('input', {'name': 'assigned_to'})
-        assert response.html.find('textarea', {'name': 'description'})
-        assert response.html.find('select', {'name': 'status'})
-        assert response.html.find('select', {'name': 'milestone'})
-        assert response.html.find('input', {'name': 'labels'})
+        assert response.html.find('input', {'name': 'ticket_form.summary'})
+        assert response.html.find('input', {'name': 'ticket_form.assigned_to'})
+        assert response.html.find('textarea', {'name': 'ticket_form.description'})
+        assert response.html.find('select', {'name': 'ticket_form.status'})
+        assert response.html.find('select', {'name': 'ticket_form._milestone'})
+        assert response.html.find('input', {'name': 'ticket_form.labels'})
+        assert response.html.find('textarea', {'name': 'ticket_form.comment'})
 
     def test_assigned_to_nobody(self):
         summary = 'test default assignment'
         self.new_ticket(summary=summary)
         response = self.app.get('/p/test/bugs/1/')
-        assert 'nobody' in str(response.html.find('span', {'class': 'ticket-assigned-to'}))
+        assert 'nobody' in str(response.html.find('div', {'class': 'column grid_3 ticket-assigned-to'}))
     
     def test_assign_ticket(self):
         summary = 'test assign ticket'
@@ -265,23 +274,32 @@ class TestFunctionalController(TestController):
             'summary':'zzz',
             'description':'bbb',
             'status':'ccc',
-            'milestone':'',
+            '_milestone':'',
             'assigned_to':'test_admin',
             'tags':'',
             'tags_old':'',
             'labels':'',
-            'labels_old':''
+            'labels_old':'',
+            'comment': ''
         })
         response = self.app.get('/p/test/bugs/1/')
-        assert 'nobody' in str(response.html.find('span', {'class': 'ticket-assigned-to'}))
+        assert 'nobody' in str(response.html.find('div', {'class': 'column grid_3 ticket-assigned-to'}))
         assert '<li><strong>summary</strong>: test assign ticket --&gt; zzz' in response
         assert '<li><strong>status</strong>: open --&gt; ccc' in response
     
     def test_custom_fields(self):
-        spec = """[{"label":"Priority","type":"select","options":"normal urgent critical"},
-                   {"label":"Category","type":"string","options":""}]"""
-        spec = urllib.quote_plus(spec)
-        r = self.app.post('/admin/bugs/set_custom_fields', { 'custom_fields': spec, 'open_status_names': 'aa bb', 'closed_status_names': 'cc', 'milestone_names':'' })
+        params = dict(
+            custom_fields=[
+                dict(name='_priority', label='Priority', type='select',
+                     options='normal urgent critical'),
+                dict(name='_category', label='Category', type='string',
+                     options='')],
+            open_status_names='aa bb',
+            closed_status_names='cc',
+            )
+        self.app.post(
+            '/admin/bugs/set_custom_fields',
+            params=variable_encode(params))
         kw = {'custom_fields._priority':'normal',
               'custom_fields._category':'helloworld'}
         ticket_view = self.new_ticket(summary='test custom fields', **kw)
@@ -289,36 +307,43 @@ class TestFunctionalController(TestController):
         assert 'normal' in ticket_view
     
     def test_custom_field_update_comments(self):
-        spec = """[{"label":"Number","type":"number","options":""}]"""
-        spec = urllib.quote_plus(spec)
-        r = self.app.post('/admin/bugs/set_custom_fields', { 'custom_fields': spec, 'open_status_names': 'aa bb', 'closed_status_names': 'cc', 'milestone_names':'' })
+        params = dict(
+            custom_fields=[
+                dict(label='Number', type='number', options='')],
+            open_status_names='aa bb',
+            closed_status_names='cc',
+            )
+        r = self.app.post('/admin/bugs/set_custom_fields',
+                          params=variable_encode(params))
         kw = {'custom_fields._number':''}
         ticket_view = self.new_ticket(summary='test custom fields', **kw)
         assert '<strong>custom_field__number</strong>:  --&gt;' not in ticket_view
-        ticket_view = self.app.post('/bugs/1/update_ticket',{
+        ticket_view = self.app.post('/bugs/1/update_ticket',params={
             'summary':'zzz',
             'description':'bbb',
             'status':'ccc',
-            'milestone':'aaa',
+            '_milestone':'aaa',
             'assigned_to':'',
             'tags':'',
             'tags_old':'',
             'labels':'',
             'labels_old':'',
-            'custom_fields._number':''
+            'custom_fields._number':'',
+            'comment': ''
         }).follow()
         assert '<strong>custom_field__number</strong>:  --&gt;' not in ticket_view
-        ticket_view = self.app.post('/bugs/1/update_ticket',{
+        ticket_view = self.app.post('/bugs/1/update_ticket',params={
             'summary':'zzz',
             'description':'bbb',
             'status':'ccc',
-            'milestone':'aaa',
+            '_milestone':'aaa',
             'assigned_to':'',
             'tags':'',
             'tags_old':'',
             'labels':'',
             'labels_old':'',
-            'custom_fields._number':4
+            'custom_fields._number':4,
+            'comment': ''
         }).follow()
         assert '<strong>custom_field__number</strong>:  --&gt;' in ticket_view
 
@@ -334,18 +359,18 @@ class TestFunctionalController(TestController):
             'summary':'zzz',
             'description':'bbb',
             'status':'ccc',
-            'milestone':'aaa',
+            '_milestone':'aaa',
             'assigned_to':'',
             'tags':'',
             'tags_old':'',
             'labels':'',
-            'labels_old':''
+            'labels_old':'',
+            'comment': ''
         })
         ticket_view = self.app.get('/p/test/bugs/1/')
         assert 'Milestone' in ticket_view
         assert 'aaa' in ticket_view
         assert '<li><strong>summary</strong>: test milestone names --&gt; zzz' in ticket_view
-        assert '<li><strong>status</strong>: aa --&gt; ccc' in ticket_view
 
     def test_subtickets(self):
         # create two tickets
@@ -371,10 +396,15 @@ class TestFunctionalController(TestController):
     
     def test_custom_sums(self):
         # setup a custom sum field
-        spec = """[{"label":"Days","type":"sum","options":""}]"""
-        spec = urllib.quote_plus(spec)
-        self.app.post('/admin/bugs/set_custom_fields', { 'custom_fields': spec, 'open_status_names': 'aa bb', 'closed_status_names': 'cc', 'milestone_names':'' })
-    
+        r = self.app.post('/admin/bugs/set_custom_fields', {
+            'custom_fields-0.label': 'days',
+            'custom_fields-0.type': 'sum',
+            'custom_fields-0.sum': '',
+            'custom_fields-0.milestones': '',
+            'custom_fields-0.options': '',
+            'open_status_names': 'aa bb',
+            'closed_status_names': 'cc',
+            'milestone_names':'' })
         # create three tickets
         kw = {'custom_fields._days':0}
         self.new_ticket(summary='test superticket', **kw)
@@ -412,36 +442,38 @@ class TestFunctionalController(TestController):
         error_form = form.submit()
         error_message = error_form.html.find('div', {'class':'error'})
         assert error_message
-        assert (error_message.string == 'You must provide a Name' or \
+        assert (error_message.string == 'You must provide a Title' or \
                 error_message.string == 'Missing value')
-        assert error_message.findPreviousSibling('textarea').get('name') == 'ticket_form.summary'
+        assert error_message.findPreviousSibling('input').get('name') == 'ticket_form.summary'
         # set a summary, submit, and check for success
         error_form.forms[1]['ticket_form.summary'] = summary
         success = error_form.forms[1].submit().follow().html
-        assert success.findAll('form')[1].get('action') == '/p/test/bugs/1/update_ticket'
-        assert success.find('textarea', {'name':'summary'}).string == summary
+        assert success.findAll('form')[2].get('action') == '/p/test/bugs/1/update_ticket_from_widget'
+        assert success.find('input', {'name':'ticket_form.summary'})['value'] == summary
 
     def test_edit_ticket_validation(self):
         old_summary = 'edit ticket test'
         new_summary = "new summary"
         self.new_ticket(summary=old_summary)
-        response = self.app.get('/bugs/1/edit/')
+        response = self.app.get('/bugs/1/')
         # check that existing form is valid
-        assert response.html.find('textarea', {'name':'edit_ticket_form.summary'}).string == old_summary
+        assert response.html.find('input', {'name':'ticket_form.summary'})['value'] == old_summary
         assert not response.html.find('div', {'class':'error'})
         form = response.forms[2]
         # try submitting with no summary set and check for error message
-        form['edit_ticket_form.summary'] = ""
+        form['ticket_form.summary'] = ""
         error_form = form.submit()
         error_message = error_form.html.find('div', {'class':'error'})
         assert error_message
-        assert error_message.string == 'You must provide a Name'
-        assert error_message.findPreviousSibling('textarea').get('name') == 'edit_ticket_form.summary'
+        assert error_message.string == 'You must provide a Title'
+        assert error_message.findPreviousSibling('input').get('name') == 'ticket_form.summary'
         # set a summary, submit, and check for success
-        error_form.forms[2]['edit_ticket_form.summary'] = new_summary
-        success = error_form.forms[2].submit().follow().html
-        assert success.findAll('form')[1].get('action') == '/p/test/bugs/1/update_ticket'
-        assert success.find('textarea', {'name':'summary'}).string == new_summary
+        error_form.forms[2]['ticket_form.summary'] = new_summary
+        r = error_form.forms[2].submit()
+        assert r.status_int == 302, r.showbrowser()
+        success = r.follow().html
+        assert success.findAll('form')[2].get('action') == '/p/test/bugs/1/update_ticket_from_widget'
+        assert success.find('input', {'name':'ticket_form.summary'})['value'] == new_summary
 
 #   def test_home(self):
 #       self.new_ticket(summary='test first ticket')

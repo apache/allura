@@ -1,0 +1,194 @@
+{% extends 'jinja_master/master.html' %}
+
+{% do g.register_forge_css('css/forge/hilite.css') %}
+{% do g.register_app_css('css/tracker.css') %}
+
+{% block title %}{{c.project.name}} / {{c.app.config.options.mount_label}} / #{{ticket.ticket_num}} {{ticket.summary}}{% endblock %}
+
+{% block head %}
+  <link rel="alternate" type="application/rss+xml" title="RSS" href="feed.rss"/>
+  <link rel="alternate" type="application/atom+xml" title="Atom" href="feed.atom"/>
+{% endblock %}
+
+{% block header %}#{{ticket.ticket_num}} {{ticket.summary}}{% endblock %}
+
+{% block actions %}
+<a href="{{ticket.url()}}feed.rss" class="btn ico"><b class="ui-icon ui-icon-signal-diag"></b> <span>Follow this Ticket</span></a>
+{% if c.user and c.user != c.user.anonymous() %}
+  {{c.subscribe_form.display(value=subscribed, action='subscribe', style='icon')}}
+  <a href="#" class="btn ico-l edit_ticket"><b class="ui-icon ui-icon-pencil"></b> <span>Edit</span></a>
+{% endif %}
+{% endblock %}
+
+{% block edit_box %}
+<div class="editbox">
+  <div class="form_holder" style="display: none">
+    {{c.ticket_form.display(action='%supdate_ticket_from_widget' % ticket.url(),
+      value=ticket, ticket=ticket, show_comment=True)}}
+  </div>
+  <div class="view_holder">
+    <div class="row">
+      {% if '_milestone' in ticket.custom_fields %}
+        <div class="column grid_3">
+          <label class="simple">Milestone: </label>
+          {% if ticket.custom_fields['_milestone'] %}
+            <a href="{{c.app.url}}milestone/{{ticket.custom_fields['_milestone']}}">{{ticket.custom_fields['_milestone']}}</a>
+          {% else %}
+            None
+          {% endif %}
+        </div>
+      {% endif %}
+      <div class="column grid_3">
+        <label class="simple">Status: </label>
+        <span class="{{ticket.open_or_closed}}">{{ticket.status}}</span>
+      </div>
+      <div class="column grid_3 ticket-assigned-to">
+        <label class="simple">Owner: </label>
+        {% if ticket.assigned_to_id %}
+          <a href="{{ticket.assigned_to.url()}}">{{ticket.assigned_to_name()}}</a>
+        {% else %}
+          {{ticket.assigned_to_name()}}
+        {% endif %}
+      </div>
+      <div class="column grid_3">
+        <label class="simple">Labels: </label>
+        {% for label in ticket.labels %}
+          <span class="ui-corner-all tag">
+            <a href="../search?q=labels:{{h.urllib.quote_plus(label)}}">{{label}} ({{ticket.artifacts_labeled_with(label).count()}})</a>
+          </span>
+        {% else %}
+          None
+        {% endfor %}
+      </div>
+    </div>
+    {% if globals.custom_fields %}
+    <div class="row">
+      {% set cf_count=0 %}
+      {% for field in globals.custom_fields or [] %}
+        {% if field.name != '_milestone' %}
+          {% if cf_count%4 == 0 and cf_count != 0 %}
+            </div><div class="row">
+          {% endif %}
+            <div class="column grid_3">
+              <label class="simple">{{field.label}}:</label>
+              {{ticket.custom_fields[field.name]}}
+            </div>
+          {% set cf_count=cf_count+1 %}
+        {% endif %}
+      {% endfor %}
+    </div>
+    {% endif %}
+    <div class="row">
+      <div class="column grid_3">
+        <label class="simple">Updated:</label>
+        {{h.ago(ticket.mod_date)}}
+      </div>
+      <div class="column grid_3">
+        <label class="simple">Created:</label>
+        {{h.ago(ticket.created_date)}}
+      </div>
+      <div class="column grid_6">
+        <label class="simple">Creator:</label>
+        <a href="{{ticket.reported_by.url()}}">{{ticket.reported_by.display_name}}</a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<div id="ticket_content">
+  {{g.markdown.convert(ticket.description)|safe}}
+  {% if ticket.attachments %}
+    <strong>{{ticket.attachments.__len__()}} Attachments</strong>
+    <div class="clear">
+    {% for att in ticket.attachments %}
+        <div class="attachment_thumb">
+          {% if att.is_image() and not att.is_embedded() %}
+            <a href="{{att.url()}}">
+              <img src="{{att.url()}}/thumb">
+            </a><br/>
+          {% else %}
+            <a href="{{att.url()}}">
+              <img src="{{att.url()}}/thumb">
+            </a><br/>
+          {% endif %}
+          <a href="{{att.url()}}">{{att.metadata.filename}}</a>
+        </div>
+    {% endfor %}
+    </div>
+  {% endif %}
+</div>
+{% endblock %}
+
+{% block after_content %}
+  <div id="discussion_holder">
+    <h2>Discussion</h2>
+    {% set thread=ticket.discussion_thread %}
+    {{c.thread.display(value=thread,new_post_text="New Comment",page=page,limit=limit,count=count)}}
+  </div>
+{% endblock %}
+
+{% block extra_js %}
+  {% if h.has_artifact_access('write', ticket)() %}
+    <script type="text/javascript">
+        $(document).ready(function() {
+          // show/hide form
+          var form_holder = $('div.form_holder');
+          var view_holder = $('div.view_holder');
+          var discussion_holder = $('#discussion_holder')
+          var ticket_content = $('#ticket_content');
+          var title_holder = $('h1.title');
+          var original_title = title_holder.text();
+          $('a.edit_ticket, div.view_holder, #ticket_content').click(function(){
+            form_holder.show();
+            view_holder.hide();
+            discussion_holder.hide();
+            ticket_content.hide();
+            title_holder.text('\u00A0');
+            $('a.edit_ticket').addClass('btn_activate');
+            return false;
+          });
+          $('a.cancel_form').click(function(){
+            form_holder.hide();
+            view_holder.show();
+            discussion_holder.show();
+            ticket_content.show();
+            title_holder.text(original_title);
+            $('a.edit_ticket').removeClass('btn_activate');
+            return false;
+          });
+          // delete attachments
+          $('div.attachment_thumb a.delete_attachment').click(function(){
+            $.post(this.href, {'delete': 'True'}, function(){
+                location.reload();
+            });
+            return false;
+          });
+
+            // Hack for demo, to be removed
+            // must figure out why this extra row is created and fix by not creating it
+            $('div.row:not(:has(div))').remove();
+
+            // Hack for demo, to be removed
+            // cancel button and save button should be the same kind of HTML element
+            // this hack adjusts the height of the cancel link to match the save button
+            $('a.cancel_form').css('line-height', '16px');
+        });
+    </script>
+  {% endif %}
+{% endblock %}
+
+{% block extra_css %}
+<style type="text/css">
+  div.form_holder{
+    margin-top: -45px;
+  }
+  div.actions{
+    width: 150px;
+  }
+  .sf_markdown_edit.markItUpEditor {
+    height: 100px;
+  }
+</style>
+{% endblock %}

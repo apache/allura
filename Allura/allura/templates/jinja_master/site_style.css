@@ -57,6 +57,7 @@ a {color: {{color1}}; text-decoration: none;}
 a:hover {text-decoration: underline;}
 a:focus {outline:0;}
 
+.light{color: #4d4d4d;}
 
 img {border: none;}
 
@@ -294,7 +295,7 @@ table {
 table.card {overflow: visible;}
 caption {padding: .5em 0 10px; text-align: left;}
 td, th {padding: .5em 10px .1em; text-align: left;}
-tbody td, tbody th {border-top: 1px solid {{color5}};}
+tbody td, tbody th {border-bottom: 1px solid {{color5}};}
 thead tr {
 	border: 1px solid {{color5}};
 }
@@ -436,6 +437,12 @@ form input[type=checkbox] {
 }
 button, input[type=submit], input[type=reset], input[type=button] {font-size: 1em;}
 
+.btn_link{
+    font-weight: bold;
+    float: left;
+    padding: 0.4em 0 0 0.8em;
+}
+
 .btn:hover {
 	cursor: pointer;
 	text-decoration: none;
@@ -447,9 +454,8 @@ button, input[type=submit], input[type=reset], input[type=button] {font-size: 1e
 		-webkit-box-shadow: inset rgba(0, 0, 0, 0.4) 0 -5px 12px, inset rgba(0, 0, 0, .8) 0 1px 3px;
 }
 .under {text-decoration: underline;}
-.ico-l {padding-left: 22px !important;}
-.ico-r {padding-right: 22px !important;}
-.btn.ico span {text-indent: -7000em; display: block;}
+.ico-l, .ico-r {padding-left: 22px !important;}
+.ico span {text-indent: -7000em; display: block;}
 
 .ico-r, .ico-l, .ico
 {
@@ -851,7 +857,6 @@ ul.ui-tab li a {
 	margin-left: 5px;
 	margin-bottom: 10px;
 	color: rgb(69,69,69);
-	text-transform: uppercase;
 	text-shadow: rgba(255,255,255, .5) 0 1px;
 }
 
@@ -894,9 +899,6 @@ ul.ui-tab li a {
 }
 .base .pad .title, .title, .base .pad .title a, .title a, .actions a {color: rgb(255,255,255) !important;}
 .base .pad .title, .title {
-    background-color: #222327;
-    background-image: -webkit-gradient(linear, 0% 85%, 0% 100%, from(#222327), to(#36373B));
-    background: -moz-linear-gradient(100% 100% 90deg, #222327, #36373B 100%) repeat scroll 0 0 #36373B;
 	border-top-left-radius: 5px;
 	border-top-right-radius: 5px;
 		-webkit-border-top-left-radius: 5px;
@@ -907,18 +909,23 @@ ul.ui-tab li a {
 	padding-left: 20px; font-size: 1em; line-height: 2.2em;
 	text-shadow: rgb(0,0,0) 0 -1px;
 	font-size: 1.2em;
+	background: rgb(0,0,0);
+		background-image: -webkit-gradient(linear, 0% 0%, 0% 100%, to(rgb(0,0,0)), from({{color3}}));
+		background-image: -moz-linear-gradient(100% 100% 90deg, rgb(0,0,0), {{color3}} 100%);
 }
 .pad ul li ul li, .pad ol li ol li, #comment ul li {font-size: 100%;}
 .content {padding: 15px 20px 20px;}
-.actions {position: absolute; right: 10px; top: 5px; font-size: .85em; text-transform: uppercase; width: 100%;}
+.actions {position: absolute; right: 10px; top: 2px; font-size: .85em; text-transform: uppercase; width: 100%;}
 .actions .btn {background: none; border: none; text-shadow: none; padding-right: .8em; float: right;}
 .actions .btn.ico-l {line-height: 1.8em; padding-bottom: .1em;}
+.actions .btn_activate {background-color: #aaa;}
 .editbox {
     background-color: #f2f2f2;
     border: 1px solid #ccc;
     border-width: 0 0 1px 0;
-    overflow: auto;
-    padding: 1.5em;
+    overflow: visible;
+    padding: 5px 1.5em;
+    color: #555;
 }
 .editbox label{
     color: #555;
@@ -932,11 +939,9 @@ ul.ui-tab li a {
     display: block;
 }
 .editbox .wide{width: 90%}
-.editbox .row{min-width: inherit;}
+.editbox .row{min-width: inherit; padding-top: 10px;}
 
 /* Discussion */
-#comment {padding-bottom: 20px;}
-#comment h2 {margin-right: 1em;}
 #comment .row  {
 	border: 3px solid {{color5}};
 	border-radius: 5px;
@@ -950,11 +955,11 @@ ul.ui-tab li a {
 }
 .discussion-post {position: relative;}
 .row.reply .grid_1.tcenter, #comment .row .grid_1.tcenter {min-width: 80px; padding: 5px 0 0 0;}
-#comment .row .options {position: absolute; top: 10px; right: 10px; padding: 0; font-size: .85em; width:90px;}
+#comment .row .options {position: absolute; top: 10px; right: 10px; padding: 0; width:90px;}
 #comment ul ul .row .options {right: 0;}
-#comment .row .options a.little_link {clear:both; line-height: 2em; color: {{color3}}; position: relative; width: 50px; height: 20px;}
-#comment .row .options a.little_link span {position: absolute; top: 0px; left: 25px;}
-#comment ul {list-style: none; margin: 5px 0 0 0; padding: 0; float: right; clear: right; width:98%;}
+#comment .row .options a.little_link {color: {{color3}}; width: 50px; height: 20px;}
+#comment .row .options a.little_link span {position: absolute; left: 10px;}
+#comment ul {list-style: none; margin: 0 0 20px 0; padding: 0; float: right; clear: right; width:99%;}
 #comment ul ul li {margin-right: 10px;}
 #comment ul ul {margin: 0 !important;}
 #comment ul ul ul li {margin-right: 0 !important;}
@@ -990,13 +995,14 @@ ul.ui-tab li a {
 }
 
 .reply {
-	margin: 20px 0 -25px -20px !important;
+	margin: 0 0 -25px -20px !important;
 	padding: 10px 20px 20px;
 	min-width: inherit;
 }
 .reply form {position: relative;}
 .reply textarea {margin-top: 5px; padding: 10px; font: 1em/1.3em helvetica; width: 80%; height: 100px;}
 .reply textarea, .reply input {margin-left: 7px;}
+.reply input.attachment_form_add_button {margin-left: 0;}
 .reply .arw {
 	background: rgb(255,255,255);
 	transform: rotate(45deg) translate(0px, 0px) skew(0deg, 0deg);
@@ -1213,9 +1219,19 @@ ul.ui-tab li a {
 .attachment_images{
     overflow: auto;
 }
-.attachment_thumb{
+div.attachment_thumb{
     float: left;
     margin: .5em;
+    position: relative;
+    padding: 10px;
+}
+div.attachment_thumb img{
+    border: 1px solid #ccc;
+}
+div.attachment_thumb .delete_attachment{
+    position: absolute;
+    top: 0;
+    left: 100px;
 }
 
 /* WMD WYSIWIG */
@@ -1237,10 +1253,12 @@ ul.ui-tab li a {
 .wmd_holder span {padding: 0 10px !important;}
 
 /* Tags */
+input.label_edit{ float: left; }
 .tagEditor
 {
 	margin: 4px 0;
 	padding: 0;
+	float: left;
 }
 
 .tagEditor li, .removable

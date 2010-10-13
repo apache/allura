@@ -1,0 +1,24 @@
+<div xmlns="http://www.w3.org/1999/xhtml"
+     xmlns:py="http://genshi.edgewall.org/"
+     class="$container_cls"
+     py:attrs="{'data-name':name}">
+  ${button.display()}
+  <br/>
+  <table>
+    <caption
+       class="$msg_cls"
+       data-empty-message="$empty_msg"
+       data-nonempty-message="$nonempty_msg"/>
+    <thead>
+      <tr><th py:for="col in field.fields"><py:if test="col.show_label">$col.label</py:if></th></tr>
+    </thead>
+    <tbody class="$flist_cls">
+      <py:for each="i in xrange(repetitions)"
+              py:with="ctx=c.widget.context_for(i)">
+        <?python ctx['css_class'] = field_cls ?>
+        ${c.widget.subwidget(i, ctx).display()}
+      </py:for>
+      ${field.display(name=name+'#', css_class=stub_cls)}
+    </tbody>
+  </table>
+</div>
