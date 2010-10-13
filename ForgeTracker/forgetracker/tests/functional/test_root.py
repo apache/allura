@@ -118,7 +118,7 @@ class TestFunctionalController(TestController):
             '_milestone':'',
             'assigned_to':'',
             'labels':'yellow,green',
-            'labels_old':'yellow,green'
+            'labels_old':'yellow,green',
             'comment': ''
         })
         response = self.app.get('/bugs/1/')
@@ -131,7 +131,7 @@ class TestFunctionalController(TestController):
             '_milestone':'',
             'assigned_to':'',
             'labels':'yellow',
-            'labels_old':'yellow'
+            'labels_old':'yellow',
             'comment': ''
         })
         response = self.app.get('/bugs/1/')
