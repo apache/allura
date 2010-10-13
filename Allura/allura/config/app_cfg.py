@@ -12,18 +12,22 @@ convert them into boolean, for example, you should use the
     setting = asbool(global_conf.get('the_setting'))
  
 """
+import logging
+import pkg_resources
 
 from tg.configuration import AppConfig, config
 from pylons.middleware import StatusCodeRedirect
 from paste.deploy.converters import asbool
 from routes import Mapper
-import pkg_resources
 
 import sfx.middleware
 import allura
 import allura.lib.helpers as h
 from allura import model
 from allura.lib import app_globals, custom_middleware
+
+
+log = logging.getLogger(__name__)
 
 class ForgeConfig(AppConfig):
 
@@ -63,31 +67,16 @@ class ForgeConfig(AppConfig):
         config['routes.map'] = map
 
     def setup_jinja_renderer(self):
-        self.paths['templates'].append(pkg_resources.resource_filename('forgetracker', 'templates'))
-        self.paths['templates'].append(pkg_resources.resource_filename('forgetracker', 'widgets/templates'))
-        self.paths['templates'].append(pkg_resources.resource_filename('forgewiki', 'templates'))
-        self.paths['templates'].append(pkg_resources.resource_filename('forgegit', 'templates'))
-        self.paths['templates'].append(pkg_resources.resource_filename('forgegit', 'widgets/templates'))
-        self.paths['templates'].append(pkg_resources.resource_filename('forgesvn', 'templates'))
-        self.paths['templates'].append(pkg_resources.resource_filename('forgesvn', 'widgets/templates'))
-        self.paths['templates'].append(pkg_resources.resource_filename('forgehg', 'templates'))
-        self.paths['templates'].append(pkg_resources.resource_filename('forgehg', 'widgets/templates'))
-        self.paths['templates'].append(pkg_resources.resource_filename('allura', 'ext/admin/templates'))
-        self.paths['templates'].append(pkg_resources.resource_filename('allura', 'ext'))
-        self.paths['templates'].append(pkg_resources.resource_filename('sfx', 'templates'))
-        self.paths['templates'].append(pkg_resources.resource_filename('forgedownloads', 'templates'))
-        self.paths['templates'].append(pkg_resources.resource_filename('forgelink', 'templates'))
-        self.paths['templates'].append(pkg_resources.resource_filename('forgediscussion', 'templates'))
-        self.paths['templates'].append(pkg_resources.resource_filename('forgediscussion', 'widgets/templates'))
-        self.paths['templates'].append(pkg_resources.resource_filename('forgeblog', 'templates'))
-        self.paths['templates'].append(pkg_resources.resource_filename('forgechat', 'templates'))
-        self.paths['templates'].append(pkg_resources.resource_filename('allura', 'lib/widgets/templates'))
-
-        from jinja2 import ChoiceLoader, Environment, FileSystemLoader
+        from jinja2 import ChoiceLoader, Environment, PackageLoader
         from tg.render import render_jinja
 
-        config['pylons.app_globals'].jinja2_env = Environment(loader=ChoiceLoader(
-                 [FileSystemLoader(path) for path in self.paths['templates']]),
+        loaders = {'allura': PackageLoader('allura', 'templates')}
+        for ep in pkg_resources.iter_entry_points('allura'):
+            if not ep.module_name in loaders:
+                log.info('Registering templates for application %s', ep.module_name)
+                loaders[ep.module_name] = PackageLoader(ep.module_name, 'templates')
+
+        config['pylons.app_globals'].jinja2_env = Environment(loader=ChoiceLoader(loaders.values()),
                  auto_reload=self.auto_reload_templates,
                  extensions=['jinja2.ext.do'])
         # Jinja's unable to request c's attributes without strict_c

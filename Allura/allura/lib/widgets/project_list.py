@@ -1,7 +1,7 @@
 import ew
 
 class ProjectSummary(ew.Widget):
-    template='jinja:project_summary.html'
+    template='jinja:widgets/project_summary.html'
     params=['value']
     value=None
 
@@ -27,7 +27,7 @@ class ProjectSummary(ew.Widget):
         ''')
 
 class ProjectList(ew.Widget):
-    template='jinja:project_list_widget.html'
+    template='jinja:widgets/project_list_widget.html'
     params=['projects', 'project_summary', 'display_mode']
     projects=[]
     project_summary=ProjectSummary()

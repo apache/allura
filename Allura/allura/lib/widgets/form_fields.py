@@ -10,7 +10,7 @@ def onready(text):
     return ew.JSScript('$(function(){%s});' % text);
 
 class MarkdownEdit(ew.InputField):
-    template='jinja:markdown_edit.html'
+    template='jinja:widgets/markdown_edit.html'
     validator = fev.UnicodeString()
     params=['name','value','show_label']
     show_label=True
@@ -44,7 +44,7 @@ class LabelList(fev.UnicodeString):
         return value
 
 class LabelEdit(ew.InputField):
-    template='jinja:label_edit.html'
+    template='jinja:widgets/label_edit.html'
     validator = LabelList()
     params=['name', 'className', 'show_label', 'value']
     show_label=True
@@ -66,7 +66,7 @@ class LabelEdit(ew.InputField):
         ''')
 
 class ProjectUserSelect(ew.InputField):
-    template='jinja:project_user_select.html'
+    template='jinja:widgets/project_user_select.html'
     params=['name', 'value', 'show_label', 'className']
     show_label=True
     name=None
@@ -143,7 +143,7 @@ class AutoResizeTextarea(ew.TextArea):
         ''')
 
 class PageList(ew.Widget):
-    template='jinja:page_list.html'
+    template='jinja:widgets/page_list.html'
     params=['limit','count','page', 'url_params']
     show_label=False
     name=None
@@ -160,7 +160,7 @@ class PageList(ew.Widget):
         return url_params
 
 class PageSize(ew.Widget):
-    template='jinja:page_size.html'
+    template='jinja:widgets/page_size.html'
     params=['limit','url_params']
     show_label=False
     name=None
@@ -180,7 +180,7 @@ class PageSize(ew.Widget):
                 this.form.submit();})''')
 
 class FileChooser(ew.InputField):
-    template='jinja:file_chooser.html'
+    template='jinja:widgets/file_chooser.html'
     params=['name']
     name=None
     validator=fev.FieldStorageUploadConverter()

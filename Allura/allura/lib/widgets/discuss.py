@@ -98,7 +98,7 @@ class TagPost(ew.SimpleForm):
 class EditPost(ew.SimpleForm):
     show_subject=False
     value=None
-    template='jinja:edit_post.html'
+    template='jinja:widgets/edit_post.html'
     params=['value', 'att_name']
     att_name='file_info'
 
@@ -280,7 +280,7 @@ class Post(HierWidget):
         ''')
 
 class PostThread(ew.Widget):
-    template='jinja:post_thread.html'
+    template='jinja:widgets/post_thread.html'
     params=['value', 'show_subject', 'indent', 'page', 'limit', 'supress_promote']
     value=None
     indent=0
@@ -290,7 +290,7 @@ class PostThread(ew.Widget):
     supress_promote=False
 
 class Thread(HierWidget):
-    template='jinja:thread_widget.html'
+    template='jinja:widgets/thread_widget.html'
     name='thread'
     params=['value', 'page', 'limit', 'count', 'show_subject','new_post_text']
     value=None
@@ -364,7 +364,7 @@ class Thread(HierWidget):
         ''')
 
 class Discussion(HierWidget):
-    template='jinja:discussion.html'
+    template='jinja:widgets/discussion.html'
     params=['value', 'threads',
             'show_discussion_email', 'show_subject', 'allow_create_thread']
     value=None
