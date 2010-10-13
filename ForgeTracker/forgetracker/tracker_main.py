@@ -832,9 +832,9 @@ class TicketController(BaseController):
 
         # if c.app.globals.milestone_names is None:
         #     c.app.globals.milestone_names = ''
-        if 'attachment' in post_data and post_data['attachment']:
-            for attachment in post_data['attachment']:
-                if not hasattr(attachment, 'file'): continue
+        if 'attachment' in post_data:
+            attachment = post_data['attachment']
+            if hasattr(attachment, 'file'):
                 TM.TicketAttachment.save_attachment(
                     attachment.filename, attachment.file, content_type=attachment.type,
                     ticket_id=self.ticket._id)

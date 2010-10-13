@@ -415,8 +415,9 @@ class Ticket(VersionedArtifact):
             if 'custom_fields' not in ticket_form:
                 ticket_form['custom_fields'] = dict()
             ticket_form['custom_fields']['_milestone'] = milestone
+        attachment = None
         if 'attachment' in ticket_form:
-            attachments = ticket_form.pop('attachment')
+            attachment = ticket_form.pop('attachment')
         for k, v in ticket_form.iteritems():
             if k == 'assigned_to':
                 if v:
@@ -437,11 +438,9 @@ class Ticket(VersionedArtifact):
                     # strings are good enough for any other custom fields
                     self.custom_fields[k] = v
         self.commit()
-        if attachments:
-            for attachment in attachments:
-                TicketAttachment.save_attachment(
-                    attachment.filename, attachment.file, content_type=attachment.type,
-                    ticket_id=self._id)
+        if attachment is not None:
+            TicketAttachment.save_attachment(attachment.filename, attachment.file,
+                content_type=attachment.type, ticket_id=self._id)
         # flush so we can participate in a subticket search (if any)
         session(self).flush()
         super_id = ticket_form.get('super_id')

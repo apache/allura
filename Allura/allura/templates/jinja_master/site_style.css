@@ -899,9 +899,6 @@ ul.ui-tab li a {
 }
 .base .pad .title, .title, .base .pad .title a, .title a, .actions a {color: rgb(255,255,255) !important;}
 .base .pad .title, .title {
-    background-color: #222327;
-    background-image: -webkit-gradient(linear, 0% 85%, 0% 100%, from(#222327), to(#36373B));
-    background: -moz-linear-gradient(100% 100% 90deg, #222327, #36373B 100%) repeat scroll 0 0 #36373B;
 	border-top-left-radius: 5px;
 	border-top-right-radius: 5px;
 		-webkit-border-top-left-radius: 5px;
@@ -912,6 +909,9 @@ ul.ui-tab li a {
 	padding-left: 20px; font-size: 1em; line-height: 2.2em;
 	text-shadow: rgb(0,0,0) 0 -1px;
 	font-size: 1.2em;
+	background: rgb(0,0,0);
+		background-image: -webkit-gradient(linear, 0% 0%, 0% 100%, to(rgb(0,0,0)), from({{color3}}));
+		background-image: -moz-linear-gradient(100% 100% 90deg, rgb(0,0,0), {{color3}} 100%);
 }
 .pad ul li ul li, .pad ol li ol li, #comment ul li {font-size: 100%;}
 .content {padding: 15px 20px 20px;}

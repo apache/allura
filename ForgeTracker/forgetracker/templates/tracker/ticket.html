@@ -28,10 +28,14 @@
   </div>
   <div class="view_holder">
     <div class="row">
-      {% if ticket.custom_fields['_milestone'] %}
+      {% if '_milestone' in ticket.custom_fields %}
         <div class="column grid_3">
           <label class="simple">Milestone: </label>
-          <a href="{{c.app.url}}milestone/{{ticket.custom_fields['_milestone']}}">{{ticket.custom_fields['_milestone']}}</a>
+          {% if ticket.custom_fields['_milestone'] %}
+            <a href="{{c.app.url}}milestone/{{ticket.custom_fields['_milestone']}}">{{ticket.custom_fields['_milestone']}}</a>
+          {% else %}
+            None
+          {% endif %}
         </div>
       {% endif %}
       <div class="column grid_3">

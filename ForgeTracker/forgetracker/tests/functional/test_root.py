@@ -143,7 +143,7 @@ class TestFunctionalController(TestController):
     def test_new_attachment(self):
         file_name = 'test_root.py'
         file_data = file(__file__).read()
-        upload = ('attachment-0', file_name, file_data)
+        upload = ('attachment', file_name, file_data)
         self.new_ticket(summary='test new attachment')
         ticket_editor = self.app.post('/bugs/1/update_ticket',{
             'summary':'zzz'
@@ -153,7 +153,7 @@ class TestFunctionalController(TestController):
     def test_delete_attachment(self):
         file_name = 'test_root.py'
         file_data = file(__file__).read()
-        upload = ('attachment-0', file_name, file_data)
+        upload = ('attachment', file_name, file_data)
         self.new_ticket(summary='test new attachment')
         ticket_editor = self.app.post('/bugs/1/update_ticket',{
             'summary':'zzz'
@@ -171,7 +171,7 @@ class TestFunctionalController(TestController):
     def test_new_text_attachment_content(self):
         file_name = 'test_root.py'
         file_data = file(__file__).read()
-        upload = ('attachment-0', file_name, file_data)
+        upload = ('attachment', file_name, file_data)
         self.new_ticket(summary='test new attachment')
         ticket_editor = self.app.post('/bugs/1/update_ticket',{
             'summary':'zzz'
@@ -184,7 +184,7 @@ class TestFunctionalController(TestController):
         file_name = 'neo-icon-set-454545-256x350.png'
         file_path = os.path.join(allura.__path__[0],'public','nf','images',file_name)
         file_data = file(file_path).read()
-        upload = ('attachment-0', file_name, file_data)
+        upload = ('attachment', file_name, file_data)
         self.new_ticket(summary='test new attachment')
         ticket_editor = self.app.post('/bugs/1/update_ticket',{
             'summary':'zzz'

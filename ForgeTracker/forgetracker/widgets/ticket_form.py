@@ -37,7 +37,7 @@ class GenericTicketForm(ew.SimpleForm):
     def fields(self):
         fields = [
             ew.TextField(name='summary', label='Title',
-                attrs={'style':'width: 425px'},
+                attrs={'style':'width: 425px','placeholder':'Title'},
                 validator=fev.UnicodeString(not_empty=True, messages={'empty':"You must provide a Title"})),
             ffw.MarkdownEdit(label='Description',name='description',
                     attrs={'style':'width: 100%'}),
@@ -45,7 +45,7 @@ class GenericTicketForm(ew.SimpleForm):
                 options=lambda: c.app.globals.all_status_names.split()),
             ffw.ProjectUserSelect(name='assigned_to', label='Assigned To'),
             ffw.LabelEdit(label='Labels',name='labels', className='ticket_form_tags'),
-            ffw.FileChooser(name='attachment', label='Attachment', field_type='file', validator=fev.FieldStorageUploadConverter(if_missing=None)),
+            ew.InputField(name='attachment', label='Attachment', field_type='file', validator=fev.FieldStorageUploadConverter(if_missing=None)),
             ew.TextArea(name='comment', label='Comment'),
             ew.SubmitButton(label=self.submit_text,name='submit',
                 attrs={'class':"ui-button ui-widget ui-state-default ui-button-text-only"}),
@@ -68,6 +68,16 @@ class TicketForm(GenericTicketForm):
         if c.app.globals.custom_fields:
             fields.append(TicketCustomFields(name="custom_fields"))
         return fields
+
+    def resources(self):
+        for r in super(TicketForm, self).resources(): yield r
+        yield ew.JSScript('''
+        $(function(){
+            $('#show_attach input').click(function(){
+                $('#view_attach').show();
+                $('#show_attach').hide();
+            });
+        });''')
 
 class TicketCustomField(object):
 
