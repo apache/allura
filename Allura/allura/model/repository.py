@@ -38,7 +38,7 @@ class RepositoryImplementation(object):
     def commit(self, revision):
         raise NotImplementedError, 'commit'
 
-    def new_commits(self):
+    def new_commits(self, all_commits=False):
         '''Return any commit object_ids in the native repo that are not (yet) stored
         in the database in topological order (parents first)'''
         raise NotImplementedError, 'commit'
@@ -51,7 +51,7 @@ class RepositoryImplementation(object):
         '''Sets repository metadata such as heads, tags, and branches'''
         raise NotImplementedError, 'refresh_heads'
 
-    def refresh_commit(self, ci):
+    def refresh_commit(self, ci, seen_object_ids):
         '''Refresh the data in the commit object 'ci' with data from the repo'''
         raise NotImplementedError, 'refresh_heads'
 
@@ -94,6 +94,7 @@ class RepositoryImplementation(object):
         self._setup_receive_hook()
 
 class Repository(Artifact):
+    BATCH_SIZE=100
     class __mongometa__:
         name='generic-repository'
     _impl = None
@@ -107,9 +108,9 @@ class Repository(Artifact):
     status=FieldProperty(str)
     email_address=''
     additional_viewable_extensions=FieldProperty(str)
-    heads = FieldProperty([dict(name=str,object_id=str)])
-    branches = FieldProperty([dict(name=str,object_id=str)])
-    repo_tags = FieldProperty([dict(name=str,object_id=str)])
+    heads = FieldProperty([dict(name=str,object_id=str, count=int)])
+    branches = FieldProperty([dict(name=str,object_id=str, count=int)])
+    repo_tags = FieldProperty([dict(name=str,object_id=str, count=int)])
     upstream_repo = FieldProperty(dict(name=str,url=str))
 
     def __init__(self, **kw):
@@ -216,7 +217,6 @@ class Repository(Artifact):
 
     def refresh(self):
         '''Find any new commits in the repository and update'''
-        BATCH_SIZE=100
         self._impl.refresh_heads()
         self.status = 'analyzing'
         session(self).flush()
@@ -226,7 +226,11 @@ class Repository(Artifact):
         log.info('... %d new commits', len(commit_ids))
         # Refresh history
         i=0
+        seen_object_ids = set()
         for i, oid in enumerate(commit_ids):
+            if len(seen_object_ids) > 10000:
+                log.info('... flushing seen object cache')
+                seen_object_ids = set()
             ci, isnew = Commit.upsert(self.repo_id, oid)
             if self._id not in ci.repositories:
                 # update the commit's repo list
@@ -239,35 +243,47 @@ class Repository(Artifact):
                 continue
             ci.respositories = [ self._id ]
             ci.set_context(self)
-            self._impl.refresh_commit(ci)
-            if (i+1) % BATCH_SIZE == 0:
+            self._impl.refresh_commit(ci, seen_object_ids)
+            if (i+1) % self.BATCH_SIZE == 0:
                 log.info('...... flushing %d commits (%d total)',
-                         BATCH_SIZE, (i+1))
+                         self.BATCH_SIZE, (i+1))
                 sess.flush()
                 sess.clear()
         log.info('...... flushing %d commits (%d total)',
-                 i % BATCH_SIZE, i)
+                 i % self.BATCH_SIZE, i)
         sess.flush()
         sess.clear()
+        self.compute_diffs(commit_ids)
+        for head in self.heads + self.branches + self.tags:
+            ci = self.commit(head.object_id)
+            head.count = ci.count_revisions()
+        session(self).flush()
+        return len(commit_ids)
+
+    def compute_diffs(self, commit_ids=None):
+        if commit_ids is None:
+            commit_ids = self._impl.new_commits(all_commits=True)
+        sess = session(Commit)
         # Compute diffs on new commits
         log.info('... computing diffs')
+        seen_objects = {}
+        i=0
         for i, oid in enumerate(commit_ids):
             ci = self._impl.commit(oid)
-            ci.compute_diffs()
-            if (i+1) % BATCH_SIZE == 0:
+            ci.compute_diffs(seen_objects)
+            if (i+1) % self.BATCH_SIZE == 0:
+                seen_objects = {}
                 log.info('...... flushing %d commits (%d total)',
-                         BATCH_SIZE, (i+1))
+                         self.BATCH_SIZE, (i+1))
                 sess.flush()
                 sess.clear()
         log.info('...... flushing %d commits (%d total)',
-                 i % BATCH_SIZE, i)
+                 i % self.BATCH_SIZE, i)
         sess.flush()
         sess.clear()
         log.info('... refreshed repository %s.  Found %d new commits',
                  self, len(commit_ids))
         self.status = 'ready'
-        session(self).flush()
-        return len(commit_ids)
 
 class RepoObject(MappedClass):
     class __mongometa__:
@@ -275,11 +291,8 @@ class RepoObject(MappedClass):
         name='repo_object'
         polymorphic_on = 'type'
         polymorphic_identity=None
-        indexes = [
-            'type', 'repo_id', 'object_id',
-            'parent_ids' # for commit objects
-            ]
-        unique_indexes = [ ('type', 'repo_id', 'object_id') ]
+        indexes = [ 'parent_ids' ]
+        unique_indexes = [ 'object_id' ]
 
     # ID Fields
     _id = FieldProperty(S.ObjectId)
@@ -297,16 +310,22 @@ class RepoObject(MappedClass):
     @classmethod
     def upsert(cls, repo_id, object_id):
         isnew = False
-        r = cls.query.get(repo_id=repo_id, object_id=object_id)
+        r = cls.query.get(
+            type=cls.__mongometa__.polymorphic_identity,
+            repo_id=repo_id, object_id=object_id)
         if r is not None:
             return r, isnew
         try:
-            r = cls(repo_id=repo_id, object_id=object_id)
+            r = cls(
+                type=cls.__mongometa__.polymorphic_identity,
+                repo_id=repo_id, object_id=object_id)
             session(r).flush(r)
             isnew = True
         except pymongo.errors.DuplicateKeyError:
             session(r).expunge(r)
-            r = cls.query.get(repo_id=repo_id, object_id=object_id)
+            r = cls.query.get(
+                type=cls.__mongometa__.polymorphic_identity,
+                repo_id=repo_id, object_id=object_id)
         return r, isnew
 
     def set_last_commit(self, ci):
@@ -428,6 +447,7 @@ class Commit(RepoObject):
     def log(self, skip, count):
         oids = list(self.log_iter(skip, count))
         commits = self.query.find(dict(
+                type='commit',
                 repo_id=self.repo_id,
                 object_id={'$in':oids}))
         commits_by_oid = {}
@@ -463,19 +483,18 @@ class Commit(RepoObject):
             candidate = candidates.pop()
             if candidate in seen_oids: continue
             lc = LogCache.get(self.repo, candidate)
-            for oid in lc.object_ids:
-                seen_oids.add(oid)
+            seen_oids.update(lc.object_ids)
             candidates += lc.candidates
         return len(seen_oids)
 
-    def compute_diffs(self):
+    def compute_diffs(self, seen_objects):
         self.diffs.added = []
         self.diffs.removed = []
         self.diffs.changed = []
         self.diffs.copied = []
         if self.parent_ids:
             parent = self.repo.commit(self.parent_ids[0])
-            for diff in Tree.diff(parent.tree, self.tree):
+            for diff in Tree.diff(parent.tree, self.tree, seen_objects):
                 if diff.is_new:
                     self.diffs.added.append(diff.b_path)
                 elif diff.is_delete:
@@ -555,20 +574,25 @@ class Tree(RepoObject):
         return self.object_index[name]
 
     @classmethod
-    def diff(cls, a, b):
+    def diff(cls, a, b, seen_objects):
         '''Recursive diff of two tree objects, yielding DiffObjects'''
         if not isinstance(a, Tree) or not isinstance(b, Tree):
             yield DiffObject(a, b)
         else:
-            for a_obj in a.objects:
-                b_obj = b.get(a_obj.name)
-                if b_obj is not None:
-                    if a_obj.object_id != b_obj.object_id:
-                        for x in cls.diff(a_obj, b_obj): yield x
-                else:
+            for a_oid, a_name in a.object_ids.iteritems():
+                b_oid = b.object_id_index.get(a_name)
+                if a_oid == b_oid: continue
+                a_obj = seen_objects.get(a_oid)
+                b_obj = seen_objects.get(b_oid)
+                if a_obj is None: a_obj = seen_objects[a_oid] = a.get(a_name)
+                if b_obj is None: b_obj = seen_objects[b_oid] = b.get(a_name)
+                if b_obj is None:
                     yield DiffObject(a_obj, None)
-            for b_obj in b.objects:
-                if b_obj.name in a.object_index: continue
+                else:
+                    for x in cls.diff(a_obj, b_obj, seen_objects): yield x
+            for b_oid, b_name in b.object_ids.iteritems():
+                if b_name in a.object_id_index: continue
+                b_obj = seen_objects[b_oid] = b.get(b_name)
                 yield DiffObject(None, b_obj)
 
     def set_context(self, commit_or_tree, name=None):

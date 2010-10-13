@@ -114,7 +114,6 @@ class BranchBrowser(BaseController):
     @with_trailing_slash
     def log(self, limit=None, page=0, count=0, **kw):
         limit, page, start = g.handle_paging(limit, page)
-        count = c.app.repo.count(branch=self._branch)
         revisions = c.app.repo.log(
                 branch=self._branch,
                 offset=start,
@@ -126,7 +125,7 @@ class BranchBrowser(BaseController):
             log=revisions,
             page=page,
             limit=limit,
-            count=count,
+            count=self._branch.count,
             **kw)
 
 class CommitBrowser(BaseController):

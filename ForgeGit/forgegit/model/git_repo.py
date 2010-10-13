@@ -12,6 +12,7 @@ from ming.base import Object
 from ming.orm import MappedClass, session
 from ming.utils import LazyProperty
 
+from allura.lib import helpers as h
 from allura import model as M
 from allura.model.repository import topological_sort
 
@@ -95,17 +96,20 @@ class GitImplementation(M.RepositoryImplementation):
         result.set_context(self._repo)
         return result
 
-    def new_commits(self):
+    def new_commits(self, all_commits=False):
         graph = {}
-        to_visit = [ self._git.commit(rev=h.object_id) for h in self._repo.heads ]
+        to_visit = [ self._git.commit(rev=hd.object_id) for hd in self._repo.heads ]
         while to_visit:
             obj = to_visit.pop()
             if obj.hexsha in graph: continue
             graph[obj.hexsha] = set(p.hexsha for p in obj.parents)
             to_visit += obj.parents
-        return [
-            oid for oid in topological_sort(graph)
-            if M.Commit.query.find(dict(repo_id='git', object_id=oid)).count() == 0 ]
+        if all_commits:
+            return list(topological_sort(graph))
+        else:
+            return [
+                oid for oid in topological_sort(graph)
+                if M.Commit.query.find(dict(repo_id='git', object_id=oid)).count() == 0 ]
 
     def commit_context(self, commit):
         prev_ids = commit.parent_ids
@@ -135,28 +139,29 @@ class GitImplementation(M.RepositoryImplementation):
             if tag.is_valid() ]
         session(self._repo).flush()
 
-    def refresh_commit(self, ci):
+    def refresh_commit(self, ci, seen_object_ids):
         obj = self._git.commit(ci.object_id)
         ci.tree_id = obj.tree.hexsha
         # Save commit metadata
         ci.committed = Object(
-            name=obj.committer.name,
-            email=obj.committer.email,
+            name=h.really_unicode(obj.committer.name),
+            email=h.really_unicode(obj.committer.email),
             date=datetime.fromtimestamp(
                 obj.committed_date-obj.committer_tz_offset))
         ci.authored=Object(
-            name=obj.author.name,
-            email=obj.author.email,
+            name=h.really_unicode(obj.author.name),
+            email=h.really_unicode(obj.author.email),
             date=datetime.fromtimestamp(
                 obj.authored_date-obj.author_tz_offset))
-        ci.message=obj.message or ''
+        ci.message=h.really_unicode(obj.message or '')
         ci.parent_ids=[ p.hexsha for p in obj.parents ]
         # Save commit tree
         tree, isnew = M.Tree.upsert('git', obj.tree.hexsha)
+        seen_object_ids.add(obj.tree.binsha)
         if isnew:
             tree.set_context(ci)
             tree.set_last_commit(ci)
-            self._refresh_tree(tree, obj.tree)
+            self._refresh_tree(tree, obj.tree, seen_object_ids)
 
     def log(self, object_id, skip, count):
         obj = self._git.commit(object_id)
@@ -189,17 +194,21 @@ class GitImplementation(M.RepositoryImplementation):
             fp.write(text)
         os.chmod(fn, 0755)
 
-    def _refresh_tree(self, tree, obj):
+    def _refresh_tree(self, tree, obj, seen_object_ids):
         tree.object_ids = Object(
             (o.hexsha, o.name) for o in obj )
         for o in obj.trees:
+            if o.binsha in seen_object_ids: continue
             subtree, isnew = M.Tree.upsert('git', o.hexsha)
+            seen_object_ids.add(o.binsha)
             if isnew:
                 subtree.set_context(tree, o.name)
                 subtree.set_last_commit(tree.commit)
-                self._refresh_tree(subtree, o)
+                self._refresh_tree(subtree, o, seen_object_ids)
         for o in obj.blobs:
+            if o.binsha in seen_object_ids: continue
             blob, isnew = M.Blob.upsert('git', o.hexsha)
+            seen_object_ids.add(o.binsha)
             if isnew:
                 blob.set_context(tree, o.name)
                 blob.set_last_commit(tree.commit)

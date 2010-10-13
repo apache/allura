@@ -65,10 +65,12 @@ class RepositoryApp(Application):
         else:
             default_branch_url = c.app.url
         links = [
-            SitemapEntry('Browse', default_branch_url,ui_icon='folder-collapsed'),
-            SitemapEntry(
-                'History', default_branch_url+'log/',
-                ui_icon='document-b', small=c.app.repo.count()) ]
+            SitemapEntry('Browse', default_branch_url,ui_icon='folder-collapsed') ]
+        if c.app.repo.heads:
+            links.append(
+                SitemapEntry(
+                    'History', default_branch_url+'log/',
+                    ui_icon='document-b', small=c.app.repo.heads[0].count))
         if self.forkable and self.repo.status == 'ready':
             links.append(SitemapEntry('Fork', c.app.url + 'fork', ui_icon='fork'))
         if security.has_artifact_access('admin', app=c.app)():
@@ -84,22 +86,20 @@ class RepositoryApp(Application):
                              ui_icon='merge',
                              className='nav_child')
                 ]
-
-        branches= [ b.name for b in self.repo.branches ]
-        tags = [ t.name for t in self.repo.repo_tags ]
-        if branches:
+        if self.repo.branches:
             links.append(SitemapEntry('Branches'))
-            for b in branches:
+            for b in self.repo.branches:
                 links.append(SitemapEntry(
-                        b, url(c.app.url, dict(branch='ref/' + b)),
+                        b.name, url(c.app.url, dict(branch='ref/' + b.name)),
                         className='nav_child',
-                        small=c.app.repo.count(branch=b)))
-        if tags:
+                        small=b.count))
+        if self.repo.repo_tags:
             links.append(SitemapEntry('Tags'))
-            for b in tags:
+            for b in self.repo.repo_tags:
                 links.append(SitemapEntry(
-                        b, url(c.app.url, dict(branch='ref/' + b)),
-                        className='nav_child'))
+                        b.name, url(c.app.url, dict(branch='ref/' + b.name)),
+                        className='nav_child',
+                        small=b.count))
         return links
 
     def install(self, project):
@@ -122,7 +122,8 @@ class RepositoryApp(Application):
         c.app.repo.init()
         M.Notification.post_user(
             c.user, c.app.repo, 'created',
-            text='Repository %s created' % c.app.script_name)
+            text='Repository %s/%s created' % (
+                c.project.shortname, c.app.config.options.mount_point))
 
     @classmethod
     @audit('repo.clone')
@@ -135,7 +136,8 @@ class RepositoryApp(Application):
             data['cloned_from_url'])
         M.Notification.post_user(
             c.user, c.app.repo, 'created',
-            text='Repository %s created' % c.app.script_name)
+            text='Repository %s/%s created' % (
+                c.project.short_name, c.app.config.options.mount_point))
 
     @classmethod
     @audit('repo.refresh')
