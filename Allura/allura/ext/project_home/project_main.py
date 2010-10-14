@@ -57,10 +57,6 @@ class ProjectHomeApp(Application):
     def admin_menu(self):
         return []
 
-    # @property
-    # def templates(self):
-    #     return
-
     def install(self, project):
         pr = c.user.project_role()
         if pr: 

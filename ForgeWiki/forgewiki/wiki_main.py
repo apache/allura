@@ -173,10 +173,6 @@ class ForgeWikiApp(Application):
         ]
         return links
 
-    @property
-    def templates(self):
-         return pkg_resources.resource_filename('forgewiki', 'templates')
-
     def install(self, project):
         'Set up any default permissions and roles here'
         self.config.options['project_name'] = project.name

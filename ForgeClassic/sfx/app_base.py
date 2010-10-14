@@ -50,10 +50,6 @@ class SFXBaseApp(Application):
     def sidebar_menu(self):
         return []
 
-    @property
-    def templates(self):
-         return pkg_resources.resource_filename('sfx', 'templates')
-
     def install(self, project):
         'Set up any default permissions and roles here'
         super(SFXBaseApp, self).install(project)

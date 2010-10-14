@@ -106,10 +106,6 @@ class ForgeGitApp(Application):
     def repo(self):
         return model.GitRepository.query.get(app_config_id=self.config._id)
 
-    @property
-    def templates(self):
-         return pkg_resources.resource_filename('forgegit', 'templates')
-
     def install(self, project):
         'Set up any default permissions and roles here'
         self.config.options['project_name'] = project.name

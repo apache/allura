@@ -68,10 +68,6 @@ class ForgeSVNApp(Application):
     def repo(self):
         return model.SVNRepository.query.get(app_config_id=self.config._id)
 
-    @property
-    def templates(self):
-         return pkg_resources.resource_filename('forgesvn', 'templates')
-
     def install(self, project):
         'Set up any default permissions and roles here'
         self.config.options['project_name'] = project.name
