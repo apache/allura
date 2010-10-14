@@ -302,6 +302,8 @@ class RepoObject(MappedClass):
     last_commit = FieldProperty(dict(
         date=datetime,
         author=str,
+        author_email=str,
+        author_url=str,
         id=str,
         href=str,
         shortlink=str,
@@ -331,6 +333,8 @@ class RepoObject(MappedClass):
     def set_last_commit(self, ci):
         '''Update the last_commit field based on the passed in commit'''
         self.last_commit.author = ci.authored.name
+        self.last_commit.author_email = ci.authored.email
+        self.last_commit.author_url = ci.author_url
         self.last_commit.date = ci.authored.date
         self.last_commit.id = ci.object_id
         self.last_commit.href = ci.url()

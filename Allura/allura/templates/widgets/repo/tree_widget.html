@@ -1,8 +1,8 @@
+{% import 'jinja_master/lib.html' as lib with context %}
 <table>
 {% set ls = list(tree.ls()) %}
   <thead>
     <tr>
-      <th>Kind</th>
       <th>File</th>
       <th>Date</th>
       <th>Author</th>
@@ -24,16 +24,27 @@
    {% endif %}
     {% for dirent in tree.ls() %}
     <tr>
-      <td>{{dirent.kind}}</td>
-      <td><a href="{{h.really_unicode(dirent.href)}}">{{h.really_unicode(dirent.name)}}</a></td>
-        <td>{{h.ago(dirent.last_commit.date)}}</td>
-        <td>{{dirent.last_commit.author}}</td>
-        <td>
-          <a href="{{dirent.last_commit.href}}">
-            {{dirent.last_commit.shortlink}}
-            {{dirent.last_commit.summary}}
-          </a>
-        </td>
+      <td>
+        <a href="{{h.really_unicode(dirent.href)}}" class="ico-l">
+          <b class="ui-icon ui-icon-{{dirent.kind == 'DIR' and 'folder-collapsed' or 'document-b'}}"></b>
+          <span>{{h.really_unicode(dirent.name)}}</span>
+        </a>
+      </td>
+      <td>{{h.ago(dirent.last_commit.date)}}</td>
+      <td>
+        {% if dirent.last_commit.author_url %}
+          <a href="{{dirent.last_commit.author_url}}">{{lib.email_gravatar(dirent.last_commit.author_email, title=h.really_unicode(dirent.last_commit.author), size=16)}}</a>
+          <a href="{{dirent.last_commit.author_url}}">{{h.really_unicode(dirent.last_commit.author)}}</a>
+        {% else %}
+          {{lib.email_gravatar(dirent.last_commit.author_email, title=h.really_unicode(dirent.last_commit.author), size=16)}} {{h.really_unicode(dirent.last_commit.author)}}
+        {% endif %}
+      </td>
+      <td>
+        <a href="{{dirent.last_commit.href}}">
+          {{dirent.last_commit.shortlink}}
+          {{dirent.last_commit.summary}}
+        </a>
+      </td>
     </tr>
     {% endfor %}
   </tbody>
