@@ -1,17 +1,13 @@
-K 13
-google:author
-V 15
-rick446@usa.net
 K 10
 svn:author
-V 15
-rick446@usa.net
+V 7
+rick446
 K 8
 svn:date
 V 27
-2009-03-05T14:13:26.903903Z
+2010-10-08T15:32:48.272296Z
 K 7
 svn:log
-V 16
-fix for issue #1
+V 13
+Modify readme
 END

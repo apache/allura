@@ -377,6 +377,8 @@ class TestFunctionalController(TestController):
         self.new_ticket(summary='test superticket')
         self.new_ticket(summary='test subticket')
         h.set_context('test', 'bugs')
+        ThreadLocalORMSession.flush_all()
+        ThreadLocalORMSession.close_all()
         super = tm.Ticket.query.get(ticket_num=1)
         sub = tm.Ticket.query.get(ticket_num=2)
     
@@ -410,6 +412,8 @@ class TestFunctionalController(TestController):
         self.new_ticket(summary='test superticket', **kw)
         self.new_ticket(summary='test subticket-1', **kw)
         self.new_ticket(summary='test subticket-2', **kw)
+        ThreadLocalORMSession.flush_all()
+        ThreadLocalORMSession.close_all()
         h.set_context('test', 'bugs')
         super = tm.Ticket.query.get(ticket_num=1)
         sub1 = tm.Ticket.query.get(ticket_num=2)
@@ -423,6 +427,7 @@ class TestFunctionalController(TestController):
         sub1.set_as_subticket_of(super._id)
         sub2.set_as_subticket_of(super._id)
         ThreadLocalORMSession.flush_all()
+        ThreadLocalORMSession.close_all()
     
         # get a view on the first ticket, check for other ticket listed in sidebar
         ticket_view = self.app.get('/p/test/bugs/1/')

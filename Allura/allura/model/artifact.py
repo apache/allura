@@ -59,13 +59,18 @@ class ArtifactLink(MappedClass):
     def add(cls, artifact):
         aid = artifact.index_id()
         entry = cls.query.get(_id=aid)
-        kw = dict(
-            link=artifact.shorthand_id(),
-            project_id=artifact.project_id,
-            tool_name=artifact.app_config.tool_name,
-            mount_point=artifact.app_config.options.mount_point,
-            url=artifact.url(),
-            artifact_reference = artifact.dump_ref())
+        if isinstance(artifact, Artifact):
+            kw = dict(
+                link=artifact.shorthand_id(),
+                project_id=artifact.project_id,
+                tool_name=artifact.app_config.tool_name,
+                mount_point=artifact.app_config.options.mount_point,
+                url=artifact.url(),
+                artifact_reference = artifact.dump_ref())
+        else:
+            kw = dict(
+                link=artifact.shorthand_id(),
+                artifact_reference = artifact.dump_ref())
         if entry is None:
             entry = cls(_id=aid, **kw)
         for k,v in kw.iteritems():

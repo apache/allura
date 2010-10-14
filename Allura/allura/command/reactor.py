@@ -161,13 +161,14 @@ class ReactorCommand(base.Command):
                     base.log.debug('Setting app %s', pylons.c.app)
                 if getattr(method, 'im_self', ()) is None:
                     # Instancemethod - call, binding self
-                    method(pylons.c.app, msg.delivery_info['routing_key'], data)
+                    method.im_func(pylons.c.app, msg.delivery_info['routing_key'], data)
                 else:
                     # Classmethod or function - don't bind self
                     method(msg.delivery_info['routing_key'], data)
             except: # pragma no cover
-                base.log.exception('Exception audit handling %s: %s',
-                                   tool_name, method)
+                base.log.exception(
+                    'Exception audit handling %s: %s',
+                    tool_name, method)
                 if self.options.dry_run: raise
             else:
                 ming.orm.ormsession.ThreadLocalORMSession.flush_all()

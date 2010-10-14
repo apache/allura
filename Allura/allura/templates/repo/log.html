@@ -1,0 +1,20 @@
+{% extends 'repo/repo_master.html' %}
+
+{% block title %}
+  {% if c.app.repo %}
+    Repository: {{c.app.repo.name}}
+  {% else %}
+    Repository
+  {% endif %}
+{% endblock %}
+
+{% block header %}{{c.app.config.options.mount_label}} Log{% endblock %}
+
+{% block content %}
+  {{ clone_info(c.app.repo) }}
+  {% if log %}
+    {{c.log_widget.display(value=log, limit=limit, page=page, count=count)}}
+  {% else %}
+    <b>No (more) commits</b>
+  {% endif %}
+{% endblock %}

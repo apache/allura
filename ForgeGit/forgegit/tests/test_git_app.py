@@ -16,9 +16,6 @@ class TestGitApp(unittest.TestCase):
         ThreadLocalORMSession.flush_all()
         ThreadLocalORMSession.close_all()
 
-    def test_templates(self):
-        assert c.app.templates.endswith('forgegit/templates')
-
     def test_admin_menu(self):
         assert len(c.app.admin_menu()) == 1
 

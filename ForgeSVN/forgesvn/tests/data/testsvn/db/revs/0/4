@@ -1,0 +1,64 @@
+PLAIN
+END
+ENDREP
+id: 4-2.0.r4/17
+type: dir
+pred: 4-2.0.r2/255
+count: 1
+text: 4 0 4 4 2d2977d1c96f487abe4a1e202dd03b4e
+cpath: /a/b/c
+copyroot: 0 /
+
+PLAIN
+K 1
+c
+V 15
+dir 4-2.0.r4/17
+END
+ENDREP
+id: 2-2.0.r4/191
+type: dir
+pred: 2-2.0.r2/416
+count: 1
+text: 4 147 31 31 dbf7bf0aee7c0ee1c2a6c82e461043c4
+cpath: /a/b
+copyroot: 0 /
+
+PLAIN
+K 1
+b
+V 16
+dir 2-2.0.r4/191
+END
+ENDREP
+id: 0-2.0.r4/369
+type: dir
+pred: 0-2.0.r2/575
+count: 1
+text: 4 324 32 32 88381c3705b01c806dca609e7382631c
+cpath: /a
+copyroot: 0 /
+
+PLAIN
+K 6
+README
+V 16
+file 0-1.0.r3/60
+K 1
+a
+V 16
+dir 0-2.0.r4/369
+END
+ENDREP
+id: 0.0.r4/578
+type: dir
+pred: 0.0.r3/319
+count: 4
+text: 4 500 65 65 8905e3287e1b277140717c75f24746ca
+cpath: /
+copyroot: 0 /
+
+6-2.0.r2/31 delete-file false false /a/b/c/hello.txt
+
+
+578 704

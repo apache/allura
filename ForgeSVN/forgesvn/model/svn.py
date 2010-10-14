@@ -1,266 +1,251 @@
 import os
-import errno
-import stat
+import shutil
+import string
 import logging
 import subprocess
-import cPickle as pickle
+from hashlib import sha1
 from cStringIO import StringIO
 from datetime import datetime
 
+import tg
 import pysvn
-import pymongo
 from pylons import c
 
-from ming.orm.mapped_class import MappedClass
-from ming.orm.property import FieldProperty
+from ming.base import Object
+from ming.orm import MappedClass, FieldProperty, session
 from ming.utils import LazyProperty
 
 from allura import model as M
+from allura.model.repository import GitLikeTree
 
 log = logging.getLogger(__name__)
 
-def on_import():
-    SVNRepository.CommitClass = SVNCommit
-    SVNCommit.TreeClass = SVNTree
-    SVNTree.BlobClass = SVNBlob
-
-class SVNRepository(M.Repository):
-    MAGIC_FILENAME='.SOURCEFORGE-REPOSITORY'
+class Repository(M.Repository):
+    tool_name='SVN'
+    repo_id='svn'
+    type_s='SVN Repository'
     class __mongometa__:
         name='svn-repository'
+    branches = FieldProperty([dict(name=str,object_id=str)])
 
-    def index(self):
-        result = super(SVNRepository, self).index()
-        result.update(
-            type_s='SVNRepository')
-        return result
+    def __init__(self, **kw):
+        super(Repository, self).__init__(**kw)
+        self._impl = SVNImplementation(self)
+
+    def readonly_clone_command(self):
+        return 'svn checkout svn://%s' % self.scm_url_path
+
+    def readwrite_clone_command(self):
+        return 'svn checkout svn+ssh://%s@%s' % (c.user.username, self.scm_url_path)
+
+    def _log(self, rev, skip, max_count):
+        ci = self.commit(rev)
+        if ci is None: return []
+        return ci.log(int(skip), int(max_count))
+
+    def count(self, *args, **kwargs):
+        return super(Repository, self).count(None)
+
+    def log(self, branch=None, offset=0, limit=10):
+        return list(self._log(rev=branch, skip=offset, max_count=limit))
+
+    def latest(self, branch=None):
+        if self._impl is None: return None
+        if not self.heads: return None
+        return self._impl.commit(self.heads[0].object_id)
+
+class SVNImplementation(M.RepositoryImplementation):
+    post_receive_template = string.Template(
+        '#!/bin/bash\n'
+        'curl -s $url\n')
+
+    def __init__(self, repo):
+        self._repo = repo
 
     @LazyProperty
-    def _impl(self):
+    def _svn(self):
         return pysvn.Client()
 
     @LazyProperty
-    def local_url(self):
-        return 'file://%s/%s' % (self.fs_path, self.name)
+    def _url(self):
+        return 'file://%s/%s' % (self._repo.fs_path, self._repo.name)
 
-    @LazyProperty
-    def last_revision(self):
-        info = self._impl.info2(
-            self.local_url,
-            revision=pysvn.Revision(pysvn.opt_revision_kind.head),
-            recurse=False)
-        return info[0][1].rev.number
+    def shorthand_for_commit(self, commit):
+        return '[r%d]' % self._revno(commit.object_id)
+
+    def url_for_commit(self, commit):
+        return '%s%d/' % (
+            self._repo.url(), self._revno(commit.object_id))
 
     def init(self):
-        if not self.fs_path.endswith('/'): self.fs_path += '/'
-        try:
-            os.makedirs(self.fs_path)
-        except OSError, e: # pragma no cover
-            if e.errno != errno.EEXIST: raise
-        # We may eventually require --template=...
-        log.info('svnadmin create %s%s', self.fs_path, self.name)
-        result = subprocess.call(['svnadmin', 'create', self.name],
+        fullname = self._setup_paths()
+        log.info('svn init %s', fullname)
+        if os.path.exists(fullname):
+            shutil.rmtree(fullname)
+        subprocess.call(['svnadmin', 'create', self._repo.name],
                                  stdin=subprocess.PIPE,
                                  stdout=subprocess.PIPE,
                                  stderr=subprocess.PIPE,
-                                 cwd=self.fs_path)
-        magic_file = os.path.join(self.fs_path, self.name, self.MAGIC_FILENAME)
-        with open(magic_file, 'w') as f:
-            f.write('svn')
-        os.chmod(magic_file, stat.S_IRUSR|stat.S_IRGRP|stat.S_IROTH)
-        self.status = 'ready'
+                                 cwd=self._repo.fs_path)
+        self._setup_special_files()
+        self._repo.status = 'ready'
 
-    def _log(self, url, **kwargs):
-        try:
-            offset = kwargs.pop('offset', 0)
-            limit=kwargs.get('limit', 10)
-            if offset != 0:
-                latest = self._impl.log(url, limit=1)
-                if not latest: return []
-                latest = latest[0]
-                revno = latest.revision.number-offset
-                limit = min(limit, revno)
-                if limit <= 0: return []
-                revno = max(revno, 0)
-                kwargs['revision_start'] = pysvn.Revision(
-                        pysvn.opt_revision_kind.number,
-                        revno)
-            commits = self._impl.log(url, **kwargs)
-            return [ self.CommitClass.from_repo_object(entry, self) for entry in commits ]
-        except pysvn.ClientError: # pragma no cover
-            # probably an empty repo
-            return []
-        except:  # pragma no cover
-            log.exception('Error performing SVN log:')
-            return []
+    def refresh_heads(self):
+        info = self._svn.info2(
+            self._url,
+            revision=pysvn.Revision(pysvn.opt_revision_kind.head),
+            recurse=False)[0][1]
+        oid = self._oid(info.rev.number)
+        self._repo.heads = [ Object(name=None, object_id=oid) ]
+        # Branches and tags aren't really supported in subversion
+        self._repo.branches = []
+        self._repo.repo_tags = []
+        session(self._repo).flush()
 
-    def log(self, branch=None, offset=0, limit=10):
-        return self._log(self.local_url, offset=offset, limit=limit)
-
-    def count(self, branch=None):
-        try:
-            latest = self._impl.log(self.local_url, limit=1)
-        except pysvn.ClientError:
-            return 0
-        if not latest: return 0
-        return latest[0].revision.number
-
-    @LazyProperty
-    def latest(self):
-        try:
-            l = self._impl.log(self.local_url, limit=1)
-        except pysvn.ClientError:
-            return None
-        if l:
-            return self.CommitClass.from_repo_object(l[0], self)
+    def commit(self, rev):
+        if rev in ('HEAD', None):
+            if not self._repo.heads: return None
+            oid = self._repo.heads[0].object_id
+        elif isinstance(rev, int) or rev.isdigit():
+            oid = self._oid(rev)
         else:
-            return None
-
-    def commit(self, revision):
-        try:
-            r = self._impl.log(
-                self.local_url,
-                revision_start=pysvn.Revision(
-                    pysvn.opt_revision_kind.number, revision),
-                limit=1)
-        except pysvn.ClientError:
-            return None
-        if r: return self.CommitClass.from_repo_object(r[0], self)
-        else: return None
-
-    # def diff(self, r0, r1):
-    #     r0 = pysvn.Revision(pysvn.opt_revision_kind.number, r0)
-    #     r1 = pysvn.Revision(pysvn.opt_revision_kind.number, r1)
-    #     return self._impl.diff(
-    #         '/tmp', self.local_url, r0,
-    #         self.local_url, r1)
-
-    def diff_summarize(self, r0, r1):
-        r0 = pysvn.Revision(pysvn.opt_revision_kind.number, r0)
-        r1 = pysvn.Revision(pysvn.opt_revision_kind.number, r1)
-        result = self._impl.diff_summarize(
-            self.local_url, r0,
-            self.local_url, r1)
+            oid = rev
+        result = M.Commit.query.get(repo_id='svn', object_id=oid)
+        if result is None: return None
+        result.set_context(self._repo)
         return result
 
-class SVNCommit(M.Commit):
-    type_s='SvnCommit'
-
-    @classmethod
-    def from_repo_object(cls, entry, repo):
-        result = cls(id=entry.revision.number, repo=repo)
-        result.__dict__['_impl'] = entry
-        result.author_username=entry.get('author')
-        result.datetime=datetime.utcfromtimestamp(entry.date)
+    def new_commits(self):
+        head_revno = self._revno(self._repo.heads[0].object_id)
+        result = []
+        for revno in range(1, head_revno+1):
+            oid = self._oid(revno)
+            if M.Commit.query.find(dict(repo_id='svn', object_id=oid)).count() == 0:
+                result.append(oid)
         return result
 
-    @LazyProperty
-    def revision(self):
-        return pysvn.Revision(pysvn.opt_revision_kind.number, self._id)
-
-    def context(self):
-        prev = next = None
-        if self.revision.number < self._repo.latest.revision.number:
-            next = self._repo.commit(self.revision.number+1)
-        if self.revision.number > 1:
-            prev = self._repo.commit(self.revision.number-1)
+    def commit_context(self, commit):
+        revno = int(commit.object_id.split(':')[1])
+        prev,next=[],[]
+        if revno > 1:
+            prev = [ self.commit(revno - 1) ]
+        if revno < self._revno(self._repo.heads[0].object_id):
+            next = [ self.commit(revno + 1) ]
         return dict(prev=prev, next=next)
 
-    def __getattr__(self, name):
-        return getattr(self._impl, name)
+    def refresh_commit(self, ci, seen_object_ids):
+        log.info('Refresh %r', ci)
+        revno = self._revno(ci.object_id)
+        rev = pysvn.Revision(
+            pysvn.opt_revision_kind.number,
+            revno)
+        log_entry = self._svn.log(
+            self._url,
+            revision_start=rev,
+            limit=1,
+            discover_changed_paths=True)[0]
+        # Save commit metadata
+        ci.committed = Object(
+            name=log_entry.author,
+            email='',
+            date=datetime.fromtimestamp(log_entry.date))
+        ci.authored=Object(ci.committed)
+        ci.message=log_entry.message
+        if revno > 1:
+            parent_oid = self._oid(revno - 1)
+            parent_ci = self.commit(parent_oid)
+            ci.parent_ids = [ parent_oid ]
+        else:
+            parent_ci = None
+        # Save commit tree (must build a fake git-like tree from the log entry)
+        fake_tree = self._tree_from_log(parent_ci, log_entry)
+        ci.tree_id = fake_tree.hex()
+        tree, isnew = M.Tree.upsert('svn', fake_tree.hex())
+        if isnew:
+            tree.set_context(ci)
+            tree.set_last_commit(ci)
+            self._refresh_tree(tree, fake_tree)
 
-    def dump_ref(self):
-        '''Return a pickle-serializable reference to an artifact'''
-        try:
-            d = M.ArtifactReference(dict(
-                    project_id=c.project._id,
-                    mount_point=c.app.config.options.mount_point,
-                    artifact_type=pymongo.bson.Binary(pickle.dumps(self.__class__)),
-                    artifact_id=self._id))
-            return d
-        except AttributeError: # pragma no cover
-            return None
+    def log(self, object_id, skip, count):
+        revno = self._revno(object_id)
+        result = []
+        while count and revno:
+            if skip == 0:
+                result.append(self._oid(revno))
+                count -= 1
+            else:
+                skip -= 1
+            revno -= 1
+        if revno:
+            return result, [ self._oid(revno) ]
+        else:
+            return result, []
 
-    def url(self):
-        return self._repo.url() + str(self._id) + '/'
+    def open_blob(self, blob):
+        data = self._svn.cat(
+            self._url + blob.path(),
+            revision=pysvn.Revision(
+                pysvn.opt_revision_kind.number,
+                self._revno(blob.commit.object_id)))
+        return StringIO(data)
 
-    def primary(self, *args):
-        return self
+    def _setup_receive_hook(self):
+        'Set up the hg changegroup hook'
+        text = self.post_receive_template.substitute(
+            url=tg.config.get('base_url', 'localhost:8080')
+            + self._repo.url()[1:] + 'refresh')
+        fn = os.path.join(self._repo.fs_path, self._repo.name, 'hooks', 'post-commit')
+        with open(fn, 'wb') as fp:
+            fp.write(text)
+        os.chmod(fn, 0755)
 
-    def shorthand_id(self):
-        return '[r%s]' % self._id
+    def _tree_from_log(self, parent_ci, log_entry):
+        '''Build a fake git-like tree from a parent commit and a log entry'''
+        if parent_ci is None:
+            root = GitLikeTree()
+        else:
+            session(parent_ci).flush() # need to make sure the tree is in mongo first
+            root = GitLikeTree.from_tree(parent_ci.tree)
+        for path in log_entry.changed_paths:
+            if path.action == 'D':
+                root.del_blob(path.path)
+            else:
+                try:
+                    data = self._svn.cat(
+                        self._url + path.path,
+                        revision=log_entry.revision)
+                    oid = sha1(data).hexdigest()
+                    root.set_blob(path.path, oid)
+                except pysvn.ClientError:
+                    # probably a directory; create an empty file named '.'
+                    data = ''
+                    oid = sha1(data).hexdigest()
+                    root.set_blob(path.path + '/.', oid)
+        return root
 
-    def diff_summarize(self, other_rev=None):
-        if other_rev is None: other_rev = self._id-1
-        for s in self._repo.diff_summarize(other_rev, self._id):
-            yield str(s.summarize_kind), s.path
+    def _refresh_tree(self, tree, obj):
+        tree.object_ids=Object(
+            (o.hex(), name)
+            for name, o in obj.trees.iteritems())
+        tree.object_ids.update(
+            (oid, name)
+            for name, oid in obj.blobs.iteritems())
+        for name, o in obj.trees.iteritems():
+            subtree, isnew = M.Tree.upsert('svn', o.hex())
+            if isnew:
+                subtree.set_context(tree, name)
+                subtree.set_last_commit(tree.commit)
+                self._refresh_tree(subtree, o)
+        for name, oid in obj.blobs.iteritems():
+            blob, isnew = M.Blob.upsert('svn', oid)
+            if isnew:
+                blob.set_context(tree, name)
+                blob.set_last_commit(tree.commit)
 
-    # def diff(self, other_rev=None):
-    #     if other_rev is None: other_rev = self._id-1
-    #     return super(SVNCommit, self).diff(other_rev)
+    def _revno(self, oid):
+        return int(oid.split(':')[1])
 
-    @LazyProperty
-    def author(self):
-        return M.User.by_username(self.author_username)
+    def _oid(self, revno):
+        return '%s:%s' % (self._repo._id, revno)
 
-class SVNTree(M.Tree):
-
-    def ls(self):
-        try:
-            for dirent in self._repo._impl.ls(
-                self._repo.local_url + self.path(),
-                revision=self._commit.revision):
-                name = dirent.name.rsplit('/')[-1]
-                date = datetime.fromtimestamp(dirent.time)
-                href = name
-                if dirent.kind == pysvn.node_kind.dir:
-                    href = href + '/'
-                commit = self._repo.commit(dirent.created_rev.number)
-                yield dict(dirent, name=name, date=date, href=href,
-                           commit=commit)
-        except pysvn.ClientError:
-            pass
-
-    def is_blob(self, name):
-        dirent = self._repo._impl.ls(
-            self._repo.local_url + self.path()+name,
-            revision=self._commit.revision)
-        if len(dirent) != 1: return False
-        dirent = dirent[0]
-        if dirent.kind == pysvn.node_kind.file:
-            return True
-        return False
-
-class SVNBlob(M.Blob):
-
-    def __iter__(self):
-        fp = StringIO(self.text)
-        return iter(fp)
-
-    @LazyProperty
-    def text(self):
-        return self._repo._impl.cat(
-            self._repo.local_url + self.path(),
-            revision=self._commit.revision)
-
-    def context(self):
-        entries = self._repo._log(self._repo.local_url + self.path())
-        result = dict(prev=None, next=None)
-        path = self._tree.path().split('/')[1:-1]
-        prev=next=None
-        for ent in entries:
-            if ent.revision.number < self._commit.revision.number:
-                prev=ent
-                break
-            if ent.revision.number > self._commit.revision.number:
-                next=ent
-        if prev:
-            ci = SVNCommit.from_repo_object(prev, self._repo)
-            result['prev'] = ci.tree().get_blob(self.filename, path)
-        if next:
-            ci = SVNCommit.from_repo_object(next, self._repo)
-            result['next'] = ci.tree().get_blob(self.filename, path)
-        return result
-
-on_import()
 MappedClass.compile_all()

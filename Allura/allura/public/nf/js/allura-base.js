@@ -95,6 +95,7 @@ $(function(){
             }
         }).
         blur();
+    $('.selectText').focus(function(){this.select()});
 });
 
 function flash( html, kind ){

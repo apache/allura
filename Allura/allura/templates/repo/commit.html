@@ -1,0 +1,47 @@
+{% extends 'repo/repo_master.html' %}
+
+{% block title %}
+  {{c.project.name}} / {{c.app.config.options.mount_label}} / Commit {{commit.shorthand_id()}}
+{% endblock %}
+
+{% block header -%}
+Commit
+<a href={{commit.url()}}>{{commit.shorthand_id()}}</a>
+{%- endblock %}
+
+{% block content %}
+  {{ clone_info(c.app.repo) }}
+{{c.revision_widget.display(value=commit, prev=prev, next=next)}}
+<table>
+  <tbody>
+    {% for diff in commit.diffs.added %}
+    <tr>
+      <td>add</td>
+      <td><a href="./tree{{h.really_unicode(diff)}}">{{h.really_unicode(diff)}}</a></td>
+    </tr>
+    {% endfor %}{% for diff in commit.diffs.removed %}
+    <tr>
+      <td>remove</td>
+      <td><a href="{{prev[0].url()}}tree{{h.really_unicode(diff)}}">{{h.really_unicode(diff)}}</a></td>
+    </tr>
+    {% endfor %}{% for diff in commit.diffs.changed %}
+    <tr>
+      <td>change</td>
+      <td>
+        <a href="./tree{{h.really_unicode(diff)}}">{{h.really_unicode(diff)}}</a>
+        <a href="./tree{{h.really_unicode(diff)}}?diff={{prev[0].object_id}}">(diff)</a>
+      </td>
+    </tr>
+    {% endfor %}{% for diff in commit.diffs.copied %}
+    <tr>
+      <td>copy</td>
+      <td>
+        <a href="{{prev[0].url()}}tree{{h.really_unicode(diff.old)}}">{{h.really_unicode(diff.old)}}</a>
+        <br/>to<br/>
+        <a href="./tree{{h.really_unicode(diff)}}">{{h.really_unicode(diff)}}</a>
+      </td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endblock %}

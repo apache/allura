@@ -18,17 +18,18 @@ class TestSVNRepo(unittest.TestCase):
         helpers.setup_global_objects()
         repo_dir = pkg_resources.resource_filename(
             'forgesvn', 'tests/data')
-        self.repo = SM.SVNRepository(
+        self.repo = SM.Repository(
             name='testsvn',
             fs_path=repo_dir,
             url_path = '/test/',
             tool = 'svn',
             status = 'creating')
+        self.repo.refresh()
         ThreadLocalORMSession.flush_all()
         ThreadLocalORMSession.close_all()
 
     def test_init(self):
-        repo = SM.SVNRepository(
+        repo = SM.Repository(
             name='testsvn',
             fs_path='/tmp/',
             url_path = '/test/',
@@ -42,22 +43,17 @@ class TestSVNRepo(unittest.TestCase):
 
     def test_index(self):
         i = self.repo.index()
-        assert i['type_s'] == 'SVNRepository', i
+        assert i['type_s'] == 'SVN Repository', i
 
     def test_log(self):
         for entry in self.repo.log():
-            assert entry.author_username == 'rick446@usa.net'
+            assert entry.committed.name == 'rick446'
             assert entry.message
 
     def test_commit(self):
         entry = self.repo.commit(1)
-        assert entry.author_username == 'rick446@usa.net'
+        assert entry.committed.name == 'rick446'
         assert entry.message
-
-    def test_diff_summarize(self):
-        diff = self.repo.diff_summarize(1,2)
-        assert 'clutch' in diff[0].path
-
 
 class TestSVNRev(unittest.TestCase):
 
@@ -67,20 +63,16 @@ class TestSVNRev(unittest.TestCase):
         h.set_context('test', 'src')
         repo_dir = pkg_resources.resource_filename(
             'forgesvn', 'tests/data')
-        self.repo = SM.SVNRepository(
+        self.repo = SM.Repository(
             name='testsvn',
             fs_path=repo_dir,
             url_path = '/test/',
             tool = 'svn',
             status = 'creating')
+        self.repo.refresh()
         self.rev = self.repo.commit(1)
         ThreadLocalORMSession.flush_all()
         ThreadLocalORMSession.close_all()
-
-    def test_ref(self):
-        ref = self.rev.dump_ref()
-        art = ref.artifact
-        assert self.rev._id == art._id
 
     def test_url(self):
         assert self.rev.url().endswith('/1/')
@@ -92,7 +84,11 @@ class TestSVNRev(unittest.TestCase):
         assert self.rev.shorthand_id() == '[r1]'
 
     def test_diff(self):
-        diff = self.rev.diff_summarize(0)
-        assert diff.next() == ('added', 'trunk/requirements.txt')
+        diffs = (self.rev.diffs.added
+                 +self.rev.diffs.removed
+                 +self.rev.diffs.changed
+                 +self.rev.diffs.copied)
+        for d in diffs:
+            print d
 
 

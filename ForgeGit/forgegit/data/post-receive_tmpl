@@ -1,9 +1,9 @@
 #!$executable
 import sys
 import json
+import urllib2
 
 REPOSITORY='$repository'
-CONFIG='$config'
 
 def main():
     for line in sys.stdin:

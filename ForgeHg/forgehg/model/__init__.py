@@ -1,1 +1,1 @@
-from hg import HgRepository
+from hg import Repository

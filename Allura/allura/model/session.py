@@ -87,3 +87,6 @@ project_orm_session = ThreadLocalORMSession(project_doc_session)
 artifact_orm_session = ThreadLocalORMSession(
     doc_session=project_doc_session,
     extensions = [ ArtifactSessionExtension ])
+repository_orm_session = ThreadLocalORMSession(
+    doc_session=main_doc_session,
+    extensions = [  ])

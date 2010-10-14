@@ -7,7 +7,7 @@ from ming.orm import ThreadLocalORMSession
 from allura.tests import helpers
 from allura.lib import helpers as h
 
-from forgegit.reactors import reactors as R
+from allura.lib.repository import RepositoryApp as R
 
 class TestGitReactors(unittest.TestCase):
 
@@ -19,9 +19,11 @@ class TestGitReactors(unittest.TestCase):
         ThreadLocalORMSession.close_all()
 
     def test_init(self):
-        R.init('scm.git.init', {})
+        R._init('repo.init', dict(
+                project_id=str(c.project._id),
+                mount_point=c.app.config.options.mount_point))
 
     def test_refresh_commit(self):
-        h1='6e29319896bf86d52e3d73bd203524e65804a273'
-        h2='b505490e129a1b47bef98b9f52afb8bc10fff938'
-        R.refresh_commit('scm.git.init', {'hash':'%s..%s' % (h1,h2)})
+        R._refresh('repo.refresh', dict(
+                project_id=str(c.project._id),
+                mount_point=c.app.config.options.mount_point))
