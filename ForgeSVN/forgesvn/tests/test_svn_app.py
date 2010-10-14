@@ -20,9 +20,6 @@ class TestSVNApp(unittest.TestCase):
         ThreadLocalORMSession.flush_all()
         ThreadLocalORMSession.close_all()
 
-    def test_templates(self):
-        assert c.app.templates.endswith('forgesvn/templates')
-
     def test_admin_menu(self):
         assert len(c.app.admin_menu()) == 1
         assert c.app.admin_menu()[0].label == 'Viewable Files'
