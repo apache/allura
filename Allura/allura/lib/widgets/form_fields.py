@@ -258,13 +258,13 @@ class SortableRepeatedMixin(JQueryMixin):
     repetitions=0
 
 class SortableRepeatedField(SortableRepeatedMixin, ew.RepeatedField):
-    template='genshi:allura.lib.widgets.templates.sortable_repeated_field'
+    template='genshi:allura.templates.widgets.sortable_repeated_field'
 
 class SortableTable(SortableRepeatedMixin, ew.TableField):
-    template='genshi:allura.lib.widgets.templates.sortable_table'
+    template='genshi:allura.templates.widgets.sortable_table'
 
 class StateField(JQueryMixin, ew.CompoundField):
-    template='genshi:allura.lib.widgets.templates.state_field'
+    template='genshi:allura.templates.widgets.state_field'
     js_widget_name = 'StateField'
     js_plugin_file = ew.JSLink('js/state_field.js')
     js_params = JQueryMixin.js_params + [
@@ -291,11 +291,11 @@ class DateField(JQueryMixin, ew.TextField):
     css_class = 'ui-date-field'
 
 class FieldCluster(ew.CompoundField):
-    template='genshi:allura.lib.widgets.templates.field_cluster'
+    template='genshi:allura.templates.widgets.field_cluster'
 
 class AdminField(ew.InputField):
     '''Field with the correct layout/etc for an admin page'''
-    template='genshi:allura.lib.widgets.templates.admin_field'
+    template='genshi:allura.templates.widgets.admin_field'
     params=['field']
     field=None
 
