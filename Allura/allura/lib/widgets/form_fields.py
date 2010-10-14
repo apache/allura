@@ -102,13 +102,13 @@ class ProjectUserSelect(ew.InputField):
           });''' % c.project.url())
 
 class AttachmentList(ew.Widget):
-    template='jinja:attachment_list.html'
+    template='jinja:widgets/attachment_list.html'
     params=['attachments','edit_mode']
     attachments=None
     edit_mode=None
 
 class AttachmentAdd(ew.Widget):
-    template='jinja:attachment_add.html'
+    template='jinja:widgets/attachment_add.html'
     params=['action','name']
     action=None
     name=None
