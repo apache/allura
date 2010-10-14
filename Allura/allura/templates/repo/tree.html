@@ -13,11 +13,11 @@
 
 {% block content %}
   {{ clone_info(c.app.repo) }}
+{{c.tree_widget.display(repo=repo, commit=commit, tree=tree, path=path)}}
 {% if tree.readme() %}
 <div class="clip">
   <h3><span class="ico-l"><b class="ui-icon ui-icon-document"></b> Read Me</span></h3>
   {{g.markdown.convert(tree.readme())|safe}}
 </div>
 {% endif %}
-{{c.tree_widget.display(repo=repo, commit=commit, tree=tree, path=path)}}
 {% endblock %}

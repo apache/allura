@@ -607,8 +607,8 @@ class Tree(RepoObject):
 
     def readme(self):
         for name in self.object_ids:
-            if name in self.README_NAMES:
-                blob = self.get_blob(name)
+            if self.object_ids[name] in self.README_NAMES:
+                blob = self.get_blob(self.object_ids[name])
                 return h.really_unicode(blob.text)
         return ''
 

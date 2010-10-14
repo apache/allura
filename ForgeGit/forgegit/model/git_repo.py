@@ -30,10 +30,10 @@ class Repository(M.Repository):
         self._impl = GitImplementation(self)
 
     def readonly_clone_command(self):
-        return 'git clone git://%s' % self.scm_url_path
+        return 'git clone git://%s %s' % (self.scm_url_path, c.project.shortname)
 
     def readwrite_clone_command(self):
-        return 'git clone ssh://%s@%s' % (c.user.username, self.scm_url_path)
+        return 'git clone ssh://%s@%s %s' % (c.user.username, self.scm_url_path, c.project.shortname)
 
 class GitImplementation(M.RepositoryImplementation):
     post_receive_template = string.Template(

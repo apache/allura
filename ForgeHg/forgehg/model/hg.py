@@ -33,10 +33,10 @@ class Repository(M.Repository):
         self._impl = HgImplementation(self)
 
     def readonly_clone_command(self):
-        return 'hg clone http://%s' % self.scm_url_path
+        return 'hg clone http://%s %s' % (self.scm_url_path, c.project.shortname)
 
     def readwrite_clone_command(self):
-        return 'hg clone ssh://%s@%s' % (c.user.username, self.scm_url_path)
+        return 'hg clone ssh://%s@%s %s' % (c.user.username, self.scm_url_path, c.project.shortname)
 
     def count(self, branch='default'):
         return super(Repository, self).count(branch)
