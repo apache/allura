@@ -22,11 +22,11 @@ class ModerateThread(ew.SimpleForm):
     submit_text=None
 
 class ModeratePost(ew.SimpleForm):
-    template='jinja:moderate_post.html'
+    template='jinja:widgets/moderate_post.html'
     submit_text=None
 
 class FlagPost(ew.SimpleForm):
-    template='jinja:flag_post.html'
+    template='jinja:widgets/flag_post.html'
     submit_text=None
 
 class AttachPost(ff.ForgeForm):
@@ -41,7 +41,7 @@ class AttachPost(ff.ForgeForm):
         return fields
 
 class ModeratePosts(ew.SimpleForm):
-    template='jinja:moderate_posts.html'
+    template='jinja:widgets/moderate_posts.html'
     submit_text=None
     def resources(self):
         for r in super(ModeratePosts, self).resources(): yield r
@@ -129,13 +129,13 @@ class EditPost(ew.SimpleForm):
          });''')
 
 class NewTopicPost(EditPost):
-    template='jinja:new_topic_post.html'
+    template='jinja:widgets/new_topic_post.html'
     show_subject = True
     forums=None
     params=['forums']
 
 class _ThreadsTable(ew.TableField):
-    template='jinja:threads_table.html'
+    template='jinja:widgets/threads_table.html'
     class hidden_fields(ew.WidgetsList):
         _id=ew.HiddenField(validator=V.Ming(M.Thread))
     class fields(ew.WidgetsList):
@@ -148,7 +148,7 @@ class _ThreadsTable(ew.TableField):
             href="${value['url']()}", show_label=True))
 
 class SubscriptionForm(ew.SimpleForm):
-    template='jinja:subscription_form.html'
+    template='jinja:widgets/subscription_form.html'
     value=None
     threads=None
     show_discussion_email=False
@@ -195,20 +195,20 @@ class HierWidget(ew.Widget):
                 yield r
 
 class Attachment(ew.Widget):
-    template='jinja:attachment.html'
+    template='jinja:widgets/attachment.html'
     params=['value', 'post']
     value=None
     post=None
 
 class DiscussionHeader(HierWidget):
-    template='jinja:discussion_header.html'
+    template='jinja:widgets/discussion_header.html'
     params=['value']
     value=None
     widgets=dict(
         edit_post=EditPost(submit_text='New Thread'))
 
 class ThreadHeader(HierWidget):
-    template='jinja:thread_header.html'
+    template='jinja:widgets/thread_header.html'
     params=['value', 'page', 'limit', 'count', 'show_moderate']
     value=None
     page=None
@@ -221,7 +221,7 @@ class ThreadHeader(HierWidget):
         moderate_thread=ModerateThread())
 
 class Post(HierWidget):
-    template='jinja:post_widget.html'
+    template='jinja:widgets/post_widget.html'
     params=['value', 'show_subject', 'indent', 'page', 'limit', 'supress_promote']
     value=None
     indent=0
