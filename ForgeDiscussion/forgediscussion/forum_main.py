@@ -171,10 +171,6 @@ class ForgeDiscussionApp(Application):
             log.exception('sidebar_menu')
             return []
         
-    @property
-    def templates(self):
-         return pkg_resources.resource_filename('forgediscussion', 'templates')
-
     def install(self, project):
         'Set up any default permissions and roles here'
         # Don't call super install here, as that sets up discussion for a tool

@@ -41,10 +41,6 @@ class ForgeHgApp(RepositoryApp):
     def repo(self):
         return HM.Repository.query.get(app_config_id=self.config._id)
 
-    @property
-    def templates(self):
-         return pkg_resources.resource_filename('forgehg', 'templates')
-
     def install(self, project):
         '''Create repo object for this tool'''
         super(ForgeHgApp, self).install(project)

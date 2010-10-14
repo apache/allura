@@ -51,10 +51,6 @@ class ForgeLinkApp(Application):
     def admin_menu(self):
         return super(ForgeLinkApp, self).admin_menu()
 
-    @property
-    def templates(self):
-         return pkg_resources.resource_filename('forgelink', 'templates')
-
     def install(self, project):
         'Set up any default permissions and roles here'
         self.config.options['project_name'] = project.name

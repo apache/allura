@@ -185,10 +185,6 @@ class ForgeTrackerApp(Application):
         links.append(SitemapEntry('Markdown Syntax', self.config.url() + 'markdown_syntax', className='nav_child'))
         return links
 
-    @property
-    def templates(self):
-         return pkg_resources.resource_filename('forgetracker', 'templates')
-
     def install(self, project):
         'Set up any default permissions and roles here'
 
