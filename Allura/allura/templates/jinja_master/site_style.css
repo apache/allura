@@ -234,7 +234,7 @@ img {border: none;}
 	line-height: 60px;
 }
 
-.base .card h2 {margin: 10px 0 0;}
+.base .pad .card h2 {margin: 10px 0 0; font-size: 1.5em;}
 .card h2 {line-height: 1.4em; margin-top: 15px !important;}
 .card .desc {margin: 5px 0 0;}
 .card .quik {
@@ -1211,15 +1211,25 @@ ul.ui-tab li a {
 .ui-icon-gripsmall-diagonal-se { background-position: -64px -224px; }
 .ui-icon-grip-diagonal-se { background-position: -80px -224px; }
 
-.ui-icon-tool-home { background-position: 0 -112px; }
-.ui-icon-tool-Wiki { background-position: 0 -320px; }
-.ui-icon-tool-Git, .ui-icon-tool-SVN, .ui-icon-tool-Hg { background-position: -16px -320px; }
-.ui-icon-tool-Stats { background-position: -32px -320px; }
-.ui-icon-tool-admin { background-position: -48px -320px; }
-.ui-icon-tool-Discussion { background-position: -64px -320px; }
-.ui-icon-tool-Tickets { background-position: -80px -320px; }
-.ui-icon-tool-Downloads { background-position: -96px -320px; }
-.ui-icon-tool-Link { background-position: -32px -80px; }
+#nav_menu b.ui-icon, .quik b.ui-icon {
+    width: 24px;
+    height: 24px;
+    top: -2px;
+    left: -2px;
+    background-position: 0 0;
+}
+
+.ui-icon-tool-home { background-image: url('{{g.forge_static("images/home_24.png")}}'); }
+.ui-icon-tool-Wiki { background-image: url('{{g.forge_static("images/wiki_24.png")}}'); }
+.ui-icon-tool-Git, .ui-icon-tool-SVN, .ui-icon-tool-Hg { background-image: url('{{g.forge_static("images/code_24.png")}}'); }
+.ui-icon-tool-Stats { background-image: url('{{g.forge_static("images/stats_24.png")}}'); }
+.ui-icon-tool-admin, .ui-icon-admin { background-image: url('{{g.forge_static("images/admin_24.png")}}'); }
+.ui-icon-tool-Discussion { background-image: url('{{g.forge_static("images/forums_24.png")}}'); }
+.ui-icon-tool-Tickets { background-image: url('{{g.forge_static("images/tickets_24.png")}}'); }
+.ui-icon-tool-Downloads { background-image: url('{{g.forge_static("images/downloads_24.png")}}'); }
+.ui-icon-tool-Link { background-image: url('{{g.forge_static("images/ext_24.png")}}'); }
+.ui-icon-tool-Blog { background-image: url('{{g.forge_static("images/blog_24.png")}}'); }
+.ui-icon-tool-Chat { background-image: url('{{g.forge_static("images/chat_24.png")}}'); }
 
 /* Attachments */
 
