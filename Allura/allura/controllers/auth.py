@@ -294,6 +294,8 @@ class PreferencesController(BaseController):
                     del c.user.open_ids[i]
                     if obj: obj.delete()
         for k,v in preferences.iteritems():
+            if k == 'results_per_page':
+                v = int(v)
             c.user.preferences[k] = v
         redirect('.')
         

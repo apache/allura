@@ -6,106 +6,115 @@
 {% block header %}User Preferences for {{c.user.username}}{% endblock %}
 
 {% block content %}
-          <h2>API Token</h2>
-          {% if api_token %}
-            <p>
-              <b>API Key:</b><br/>
-              {{api_token.api_key}}<br/>
-              <b>Secret Key:</b><br/>
-              {{api_token.secret_key}}<br/>
-            </p>
-            <form method="POST" action="del_api_token">
-              <input type="submit" value="Delete API Token"
-                    />
-            </form>
-          {% else %}
-            No API token generated
-          {% endif %}
-          <form method="POST" action="gen_api_token">
-            <input type="submit" value="(Re)generate API Token"
-                    />
-          </form>
-          <div style="clear:both"></div>
+  <h2>API Token</h2>
+  {% if api_token %}
+    <p>
+      <b>API Key:</b><br/>
+      {{api_token.api_key}}<br/>
+      <b>Secret Key:</b><br/>
+      {{api_token.secret_key}}<br/>
+    </p>
+    <form method="POST" action="del_api_token">
+      <input type="submit" value="Delete API Token"
+            />
+    </form>
+  {% else %}
+    No API token generated
+  {% endif %}
+  <form method="POST" action="gen_api_token">
+    <input type="submit" value="(Re)generate API Token"
+            />
+  </form>
+  <div style="clear:both"></div>
 
-          <h2>Subscriptions</h2>
-          {% if subscriptions %}
-            {{c.form.display(action='update_subscriptions', value=dict(subscriptions=subscriptions))}}
-          {% else%}
-            No subscriptions.
-          {% endif %}
-          <br/>
-          
-          <form action="update" method="post">
-            <ol>
-              <li>
-                <label>Display Name</label>
-                <input type="text" value="{{c.user.display_name}}" name="display_name"/>
-              </li>
-              <li>
-                <label>Email Format</label>
-                <select name="preferences.email_format">
-                  <option value="plain" {{'selected' if c.user.preferences.email_format == 'plain' else ''}}>Plain Text</option>
-                  <option value="html" {{'selected' if c.user.preferences.email_format == 'html' else ''}}>HTML</option>
-                  <option value="both" {{'selected' if c.user.preferences.email_format == 'both' else ''}}>Combined</option>
-                </select>
-              </li>
-            </ol>
-            
-            {% if tg.config.get('auth.method', 'local') == 'local' %}
-              {% for a in c.user.email_addresses %}
-                <input name="addr-{{loop.index0}}.ord" value="{{loop.index0}}" type="hidden"/>
-              {% endfor %}
+  <h2>Subscriptions</h2>
+  {% if subscriptions %}
+    {{c.form.display(action='update_subscriptions', value=dict(subscriptions=subscriptions))}}
+  {% else%}
+    No subscriptions.
+  {% endif %}
+  <br/>
+  
+  <form action="update" method="post">
+    <ol>
+      <li>
+        <label>Display Name</label>
+        <input type="text" value="{{c.user.display_name}}" name="display_name"/>
+      </li>
+      <li>
+        <label>Email Format</label>
+        <select name="preferences.email_format">
+          <option value="plain" {{'selected' if c.user.preferences.email_format == 'plain' else ''}}>Plain Text</option>
+          <option value="html" {{'selected' if c.user.preferences.email_format == 'html' else ''}}>HTML</option>
+          <option value="both" {{'selected' if c.user.preferences.email_format == 'both' else ''}}>Combined</option>
+        </select>
+      </li>
+      <li>
+        <label>Page Size</label>
+        <select name="preferences.results_per_page">
+          {% for per_page in [25, 50, 100, 250] %}
+              <option {% if per_page == c.user.preferences.results_per_page %}selected="selected"{% endif %}
+                 value="{{per_page}}">{{per_page}}</option>
+          {% endfor %}
+        </select>
+      </li>
+    </ol>
+    
+    {% if tg.config.get('auth.method', 'local') == 'local' %}
+      {% for a in c.user.email_addresses %}
+        <input name="addr-{{loop.index0}}.ord" value="{{loop.index0}}" type="hidden"/>
+      {% endfor %}
 
-              <fieldset>
-                <legend>Email Addresses</legend>
-                <table>
-                  <tr>
-                    <th>Primary?</th>
-                    <th>Address</th>
-                    <th>Confirmed</th>
-                    <th></th>
-                  </tr>
-                  {% for a in c.user.email_addresses %}
-                  <tr>
-                    {% set obj = c.user.address_object(a) %}
-                    <td>{{lib.radio_button('primary_addr', None, a, c.user.preferences.email_address)}}</td>
-                    <td>{{a}}</td>
-                    {% if obj %}
-                    <td>
-                      {% if obj.confirmed %}
-                        yes
-                      {% else %}
-                        no (<a href="{{g.url('/auth/send_verification_link', a=a)}}">verify</a>)
-                      {% endif %}
-                    </td>
-                    {% else %}
-                      <td>Unknown addr obj {{a}}</td>
-                    {% endif %}
-                    <td>{{lib.submit_button('Delete', 'addr-%s.delete' % i)}}</td>
-                  </tr>
-                  {% endfor %}
-                </table>
-                {{lib.text_field('new_addr.addr', 'New Address')}}
-                {{lib.submit_button('Claim Address', name='new_addr.claim')}}
-              </fieldset>
-              <fieldset>
-                <legend>OpenIDs Claimed</legend>
-                <table>
-                  <tr>
-                    <th>OpenID</th>
-                    <th></th>
-                  </tr>
-                  {% for oid in c.user.open_ids %}
-                    {% set obj = c.user.openid_object(oid) %}
-                  <tr>
-                    <td>{{oid}}</td>
-                    <td>{{lib.submit_button('Delete', 'oid-%s.delete' % loop.index0)}}</td>
-                  </tr>
-                  {% endfor %}
-                </table>
-                <a href="/auth/claim_oid">Claim New OpenID</a>
-              </fieldset>
+      <fieldset>
+        <legend>Email Addresses</legend>
+        <table>
+          <tr>
+            <th>Primary?</th>
+            <th>Address</th>
+            <th>Confirmed</th>
+            <th></th>
+          </tr>
+          {% for a in c.user.email_addresses %}
+          <tr>
+            {% set obj = c.user.address_object(a) %}
+            <td>{{lib.radio_button('primary_addr', None, a, c.user.preferences.email_address)}}</td>
+            <td>{{a}}</td>
+            {% if obj %}
+            <td>
+              {% if obj.confirmed %}
+                yes
+              {% else %}
+                no (<a href="{{g.url('/auth/send_verification_link', a=a)}}">verify</a>)
+              {% endif %}
+            </td>
+            {% else %}
+              <td>Unknown addr obj {{a}}</td>
             {% endif %}
-            {{lib.submit_button('Save Changes')}}
-          </form>
+            <td>{{lib.submit_button('Delete', 'addr-%s.delete' % i)}}</td>
+          </tr>
+          {% endfor %}
+        </table>
+        {{lib.text_field('new_addr.addr', 'New Address')}}
+        {{lib.submit_button('Claim Address', name='new_addr.claim')}}
+      </fieldset>
+      <fieldset>
+        <legend>OpenIDs Claimed</legend>
+        <table>
+          <tr>
+            <th>OpenID</th>
+            <th></th>
+          </tr>
+          {% for oid in c.user.open_ids %}
+            {% set obj = c.user.openid_object(oid) %}
+          <tr>
+            <td>{{oid}}</td>
+            <td>{{lib.submit_button('Delete', 'oid-%s.delete' % loop.index0)}}</td>
+          </tr>
+          {% endfor %}
+        </table>
+        <a href="/auth/claim_oid">Claim New OpenID</a>
+      </fieldset>
+    {% endif %}
+    {{lib.submit_button('Save Changes')}}
+  </form>
 {% endblock %}

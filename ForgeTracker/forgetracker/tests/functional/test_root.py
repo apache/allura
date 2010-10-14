@@ -68,7 +68,11 @@ class TestFunctionalController(TestController):
     
     def test_render_index(self):
         index_view = self.app.get('/bugs/')
-        assert index_view.html.find('select',{'name':'limit'}).find('option',{'selected':'selected'}).string == '250'
+        assert index_view.html.find('p',{'class':'light'}).string == '''Showing
+  
+    0
+  
+  results of 0 '''
     
     def test_render_help(self):
         summary = 'test render help'
@@ -506,14 +510,6 @@ class TestFunctionalController(TestController):
         ticket = tm.Ticket.query.get(ticket_num=1)
         new_date = ticket.mod_date
         assert new_date > old_date
-
-    def test_paging_prefs_saved(self):
-        req = self.app.get('/bugs/search/')
-        assert req.html.find('select',{'name':'limit'}).find('option',{'selected':'selected'}).string == '25'
-        req = self.app.get('/bugs/search/?limit=100')
-        assert req.html.find('select',{'name':'limit'}).find('option',{'selected':'selected'}).string == '100'
-        req = self.app.get('/bugs/search/')
-        assert req.html.find('select',{'name':'limit'}).find('option',{'selected':'selected'}).string == '100'
 
     def test_saved_search_labels_truncated(self):
         r = self.app.post('/admin/bugs/bins/save_bin',{

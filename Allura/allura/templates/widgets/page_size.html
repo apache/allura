@@ -3,11 +3,17 @@
     <input type="hidden" name="{{k}}" value="{{v}}"/>
   {% endfor %}
   {% if limit %}
-  <p class="light">Showing <select class="results_per_page" name="limit">
-    {% for per_page in [25, 50, 100, 250] %}
-        <option {% if per_page == limit|int %}selected="selected"{% endif %}
-           value="{{per_page}}">{{per_page}}</option>
-    {% endfor %}
-  </select> result{% if limit|int != 1 %}s{% endif %} of {{count}} </p>
+  <p class="light">Showing
+  {% if limit and count>limit %}
+    <select class="results_per_page" name="limit">
+      {% for per_page in [25, 50, 100, 250] %}
+          <option {% if per_page == limit|int %}selected="selected"{% endif %}
+             value="{{per_page}}">{{per_page}}</option>
+      {% endfor %}
+    </select>
+  {% else %}
+    {{count}}
+  {% endif %}
+  result{% if limit|int != 1 %}s{% endif %} of {{count}} </p>
   {% endif %}
 </form>
