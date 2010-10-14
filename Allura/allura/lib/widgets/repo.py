@@ -2,7 +2,7 @@ import ew
 from allura.lib.widgets import form_fields as ffw
 
 class SCMLogWidget(ew.Widget):
-    template='jinja:repo_widgets/log.html'
+    template='jinja:widgets/repo/log.html'
     params=['value', 'limit', 'page', 'count', 'show_paging', 'fields']
     value=None
     limit=None
@@ -15,14 +15,14 @@ class SCMLogWidget(ew.Widget):
         page_size=ffw.PageSize()
 
 class SCMRevisionWidget(ew.Widget):
-    template='jinja:repo_widgets/revision.html'
+    template='jinja:widgets/repo/revision.html'
     params=['value', 'prev', 'next']
     value=None
     prev=()
     next=()
 
 class SCMTreeWidget(ew.Widget):
-    template='jinja:repo_widgets/tree_widget.html'
+    template='jinja:widgets/repo/tree_widget.html'
     params=['tree', 'list']
     tree=None
 

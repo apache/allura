@@ -1,0 +1,40 @@
+<table>
+{% set ls = list(tree.ls()) %}
+  <thead>
+    <tr>
+      <th>Kind</th>
+      <th>File</th>
+      <th>Date</th>
+      <th>Author</th>
+      <th>Commit</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% if tree._parent %}
+    <tr>
+      <td></td>
+      <td><a href="..">[Up one dir]</a></td>
+      <td></td>
+      <td></td>
+      <td></td>
+    </tr>
+    {% endif %}
+   {% if not ls %}
+      <td colspan="5">&mdash; No files &mdash;</td>
+   {% endif %}
+    {% for dirent in tree.ls() %}
+    <tr>
+      <td>{{dirent.kind}}</td>
+      <td><a href="{{h.really_unicode(dirent.href)}}">{{h.really_unicode(dirent.name)}}</a></td>
+        <td>{{h.ago(dirent.last_commit.date)}}</td>
+        <td>{{dirent.last_commit.author}}</td>
+        <td>
+          <a href="{{dirent.last_commit.href}}">
+            {{dirent.last_commit.shortlink}}
+            {{dirent.last_commit.summary}}
+          </a>
+        </td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
