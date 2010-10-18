@@ -4,7 +4,6 @@ from urllib import unquote, quote
 from mimetypes import guess_type
 
 import pkg_resources
-import genshi.template
 import Image
 from tg import expose, flash, redirect, validate, request, response
 from tg.decorators import with_trailing_slash, without_trailing_slash
