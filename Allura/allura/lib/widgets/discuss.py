@@ -95,7 +95,7 @@ class TagPost(ew.SimpleForm):
     def resources(self):
         for r in ffw.LabelEdit(name='labels').resources(): yield r
 
-class EditPost(ew.SimpleForm):
+class EditPost(ff.ForgeForm):
     show_subject=False
     value=None
     template='jinja:widgets/edit_post.html'
@@ -104,23 +104,25 @@ class EditPost(ew.SimpleForm):
 
     @property
     def fields(self):
-        def _():
-            if getattr(c, 'widget', '') != '':
-                # we are being displayed
-                if c.widget.response.get('show_subject', self.show_subject):
-                    yield ew.TextField(name='subject')
-            else:
-                # We are being validated
-                validator = fev.UnicodeString(not_empty=True, if_missing='')
-                yield ew.TextField(name='subject', validator=validator)
-                yield NullValidator(name=self.att_name)
-            yield ffw.MarkdownEdit(name='text')
-            yield ew.HiddenField(name='forum', if_missing=None)
-        return _()
+        fields = []
+        fields.append(ffw.AutoResizeTextarea(
+            name='text',
+            attrs={'style':'height:7em; width:90%'}))
+        fields.append(ew.HiddenField(name='forum', if_missing=None))
+        if getattr(c, 'widget', '') != '':
+            # we are being displayed
+            if c.widget.response.get('show_subject', self.show_subject):
+                fields.append(ew.TextField(name='subject'))
+        else:
+            # We are being validated
+            validator = fev.UnicodeString(not_empty=True, if_missing='')
+            fields.append(ew.TextField(name='subject', validator=validator))
+            fields.append(NullValidator(name=self.att_name))
+        return fields
 
     def resources(self):
         for r in ew.TextField(name='subject').resources(): yield r
-        for r in ffw.MarkdownEdit(name='text').resources(): yield r
+        for r in ffw.AutoResizeTextarea(name='text').resources(): yield r
         yield ew.JSScript('''$(document).ready(function(){
             $("input.attachment_form_add_button").click(function(){
                 $(this).hide();
@@ -252,6 +254,7 @@ class Post(HierWidget):
                     $('a.edit_post', post).click(function(ele){
                         $('.display_post', post).hide();
                         $('.edit_post_form', post).show();
+                        $('.edit_post_form textarea', post).focus();
                         return false;
                     });
                 }
