@@ -56,7 +56,7 @@
         <td>{{forum.num_posts}}</td>
         <td>{{lib.post_summary(forum.last_post)}}</td>
         <td>
-          <input name="forum-{{i}}.id" type="hidden" value="{{forum._id}}"/>
+          <input name="{{'forum-%s.id' % loop.index0}}" type="hidden" value="{{forum._id}}"/>
           {% if forum.deleted %}
             <input type="submit" name="{{'forum-%s.undelete' % loop.index0}}" value="Undelete"/><br/>
           {% else %}
