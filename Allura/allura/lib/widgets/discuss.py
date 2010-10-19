@@ -124,9 +124,15 @@ class EditPost(ff.ForgeForm):
         for r in ew.TextField(name='subject').resources(): yield r
         for r in ffw.AutoResizeTextarea(name='text').resources(): yield r
         yield ew.JSScript('''$(document).ready(function(){
-            $("input.attachment_form_add_button").click(function(){
+            $("a.attachment_form_add_button").click(function(evt){
                 $(this).hide();
                 $(".attachment_form_fields", this.parentNode).show();
+                evt.preventDefault();
+            });
+            $("a.cancel_edit_post").click(function(evt){
+                $("textarea", this.parentNode).val('');
+                $(".attachment_form_fields input", this.parentNode).val('');
+                evt.preventDefault();
             });
          });''')
 

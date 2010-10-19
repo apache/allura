@@ -5,7 +5,8 @@
     <div class="row">
     	<div class="column grid_1 tcenter">
     		<p class="gravatar">
-          <a href="{{value.author().url()}}">{{lib.gravatar(value.author())}}</a><br/>
+    		  {% set size = value.parent and 32 or 48 %}
+          <a href="{{value.author().url()}}">{{lib.gravatar(value.author(), size=size)}}</a><br/>
           <a href="{{value.author().url()}}">{{value.author().display_name}}</a><br />{{h.ago(value.timestamp)}}
     		</p>
     	</div>
@@ -73,7 +74,7 @@
           <div class="reply">
             <div class="column grid_1 tcenter">
               <p class="gravatar">
-                {{lib.gravatar(c.user)}}<br/><br/>
+                {{lib.gravatar(c.user, size=32)}}<br/><br/>
                 <a href="{{c.user.url()}}">{{c.user.display_name}}</a>
               </p>
             </div>

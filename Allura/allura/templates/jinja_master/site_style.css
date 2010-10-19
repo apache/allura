@@ -1002,7 +1002,6 @@ ul.ui-tab li a {
 .reply form {position: relative;}
 .reply textarea {margin-top: 5px; padding: 10px; font: 1em/1.3em helvetica; width: 80%; height: 100px;}
 .reply textarea, .reply input {margin-left: 7px;}
-.reply input.attachment_form_add_button {margin-left: 0;}
 .reply .arw {
 	background: rgb(255,255,255);
 	transform: rotate(45deg) translate(0px, 0px) skew(0deg, 0deg);
