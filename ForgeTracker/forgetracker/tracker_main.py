@@ -190,9 +190,9 @@ class ForgeTrackerApp(Application):
 
         super(ForgeTrackerApp, self).install(project)
         # Setup permissions
-        role_developer = M.ProjectRole.query.get(name='Developer')._id
-        role_auth = M.ProjectRole.query.get(name='*authenticated')._id
-        role_anon = M.ProjectRole.query.get(name='*anonymous')._id
+        role_developer = M.ProjectRole.by_name('Developer')._id
+        role_auth = M.ProjectRole.by_name('*authenticated')._id
+        role_anon = M.ProjectRole.by_name('*anonymous')._id
         self.config.acl.update(
             configure=c.project.roleids_with_permission('tool'),
             read=c.project.roleids_with_permission('read'),
@@ -476,7 +476,7 @@ class RootController(BaseController):
                 custom_fields=dict(),
                 ticket_num=c.app.globals.next_ticket_num())
         ticket.update(ticket_form)
-        for u in M.ProjectRole.query.find({'name':'Admin'}).first().users_with_role():
+        for u in M.ProjectRole.by_name('Admin').users_with_role():
             ticket.subscribe(user=u)
         redirect(str(ticket.ticket_num)+'/')
 

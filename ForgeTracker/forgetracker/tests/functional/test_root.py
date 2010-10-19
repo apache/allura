@@ -39,7 +39,7 @@ class TestFunctionalController(TestController):
         summary = 'test new ticket'
         ticket_view = self.new_ticket(summary=summary)
         assert_true(summary in ticket_view)
-        assert 'class="artifact_unsubscribe' in ticket_view
+        assert 'class="artifact_subscribe' in ticket_view, ticket_view.showbrowser()
 
     def test_new_with_milestone(self):
         ticket_view = self.new_ticket(summary='test new with milestone', **{'_milestone':'1.0'})

@@ -99,7 +99,7 @@ class TestProjectAdmin(TestController):
         self.app.post('/admin/update_roles', params={
                 'new.add':'on',
                 'new.name':'test_role'})
-        role1 = M.ProjectRole.query.find(dict(name='test_role')).one()
+        role1 = M.ProjectRole.by_name('test_role')
         self.app.post('/admin/update_roles', params={
                 'role-0.id':str(role1._id),
                 'role-0.new.add':'on',

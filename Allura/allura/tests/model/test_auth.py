@@ -80,21 +80,24 @@ def test_user():
 
 @with_setup(setUp)
 def test_project_role():
-    role = M.ProjectRole(name='test_role')
+    role = M.ProjectRole(project_id=c.project._id, name='test_role')
     c.user.project_role().roles.append(role._id)
     ThreadLocalORMSession.flush_all()
     for pr in c.user.role_iter():
         assert pr.display()
         pr.special
-        assert pr.user in (c.user, M.User.anonymous())
+        assert pr.user in (c.user, None)
         list(pr.role_iter())
 
 @with_setup(setUp)
 def test_default_project_roles():
-    roles = dict((pr.name, pr)
-                 for pr in M.ProjectRole.query.find().all()
-                 if pr.name)
-    assert len(roles) == M.ProjectRole.query.find().count()-1
+    roles = dict(
+        (pr.name, pr)
+        for pr in M.ProjectRole.query.find(dict(
+                project_id=c.project._id)).all()
+        if pr.name)
+    assert len(roles) == M.ProjectRole.query.find(dict(
+        project_id=c.project._id)).count()-1
     assert 'Admin' in roles.keys(), roles.keys()
     assert 'Developer' in roles.keys(), roles.keys()
     assert 'Member' in roles.keys(), roles.keys()

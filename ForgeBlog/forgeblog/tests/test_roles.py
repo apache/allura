@@ -11,9 +11,9 @@ def setUp():
     g.set_app('blog')
 
 def test_role_assignments():
-    role_developer = M.ProjectRole.query.get(name='Developer')._id
-    role_auth = M.ProjectRole.query.get(name='*authenticated')._id
-    role_anon = M.ProjectRole.query.get(name='*anonymous')._id
+    role_developer = M.ProjectRole.by_name('Developer')._id
+    role_auth = M.ProjectRole.by_name('*authenticated')._id
+    role_anon = M.ProjectRole.by_name('*anonymous')._id
     assert c.app.config.acl['configure'] == c.project.acl['tool']
     assert c.app.config.acl['read'] == c.project.acl['read']
     assert c.app.config.acl['write'] == [role_developer]

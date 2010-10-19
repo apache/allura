@@ -21,7 +21,8 @@ def create_project(shortname):
     neighborhood = create_neighborhood()
     return Project(shortname=shortname,
                    database='myproject_db',
-                   neighborhood_id=neighborhood._id)
+                   neighborhood_id=neighborhood._id,
+                   is_root=True)
 
 
 @flush_on_return

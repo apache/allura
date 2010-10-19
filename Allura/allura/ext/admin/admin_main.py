@@ -44,7 +44,7 @@ class AdminWidgets(WidgetController):
                 t[user.username] = user
             return t.values()
         # remove duplicates, ticket #195
-        project_users = uniq([r.user for r in c.project.roles])
+        project_users = uniq([r.user for r in c.project.roles if r.user])
         return dict(project_users=project_users)
 
     @expose('jinja:widgets/tool_status.html')
@@ -181,7 +181,7 @@ class ProjectAdminController(BaseController):
         return dict(
             mounts=mounts,
             installable_tools=AdminApp.installable_tools_for(c.project),
-            roles=M.ProjectRole.query.find().sort('_id').all(),
+            roles=M.ProjectRole.query.find(dict(project_id=c.project.root_project._id)).sort('_id').all(),
             categories=M.ProjectCategory.query.find(dict(parent_id=None)).sort('label').all(),
             users=[M.User.query.get(_id=id) for id in c.project.acl.read ])
 
@@ -201,7 +201,7 @@ class ProjectAdminController(BaseController):
     @without_trailing_slash
     @expose('jinja:project_roles.html')
     def roles(self):
-        return dict(roles=M.ProjectRole.query.find().sort('_id').all())
+        return dict(roles=M.ProjectRole.query.find(dict(project_id=c.project.root_project._id)).sort('_id').all())
 
     @expose()
     def _lookup(self, name, *remainder):
@@ -404,7 +404,7 @@ class ProjectAdminController(BaseController):
                     role = M.ProjectRole.query.get(_id=ObjectId(str(r['id'])))
                     role.roles.remove(ObjectId(str(sr['id'])))
         if new and new.get('add'):
-            M.ProjectRole(name=new['name'])
+            M.ProjectRole.upsert(name=new['name'], project_id=c.project.root_project._id)
         g.publish('react', 'forge.project_updated')
         redirect('roles')
 
@@ -431,10 +431,9 @@ class ProjectAdminController(BaseController):
                     flash('No user %s' % username, 'error')
             for u in r.get('users', []):
                 if u.get('delete'):
-                    ur = M.ProjectRole.query.get(user_id=ObjectId(str(u['id'])))
-                    objid = ObjectId(str(r['id']))
-                    if objid in ur.roles:
-                        ur.roles.remove(objid)
+                    user = M.User.query.get(_id=u['id'])
+                    ur = M.ProjectRole.by_user(user)
+                    ur.roles = [ rid for rid in ur.roles if str(rid) != r['id'] ]
                     h.log_action(log, 'remove_user_from_role').info(
                         '%s from %s', u['id'], r['id'],
                         meta=dict(user_role=u['id'], role=r['id']))

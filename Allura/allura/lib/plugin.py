@@ -192,8 +192,6 @@ class ProjectRegistrationProvider(object):
             neighborhood_id=neighborhood._id,
             shortname=shortname)
         if p: raise forge_exc.ProjectConflict()
-        database = 'project%s__init__' % neighborhood.url_prefix
-        database = database.replace('/', ':').replace('-', '_')
         name = 'Home Project for %s' % neighborhood.name
         p = M.Project(neighborhood_id=neighborhood._id,
                     shortname=shortname,
@@ -201,11 +199,11 @@ class ProjectRegistrationProvider(object):
                     short_description='',
                     description=('# ' + name + '\n\n'
                                  + 'You can edit this description in the admin page'),
-                    database=database,
+                    database_uri=config.get('ming.project.master'),
                     last_updated = datetime.utcnow(),
                     is_root=True)
         try:
-            p.configure_project_database(
+            p.configure_project(
                 users=users,
                 is_user_project=False,
                 apps=[
@@ -213,13 +211,7 @@ class ProjectRegistrationProvider(object):
                     ('admin', 'admin')])
         except:
             ThreadLocalORMSession.close_all()
-            log.exception('Error registering project, attempting to drop %s',
-                          database)
-            try:
-                session(p).impl.bind._conn.drop_database(database)
-            except:
-                log.exception('Error dropping database %s', database)
-                pass
+            log.exception('Error registering project %s' % p)
             raise
         return p
 
@@ -232,7 +224,6 @@ class ProjectRegistrationProvider(object):
             'Invalid project shortname'
         p = M.Project.query.get(shortname=shortname)
         if p: raise forge_exc.ProjectConflict()
-        database = 'project:' + shortname.replace('/', ':').replace('-', '_')
         p = M.Project(neighborhood_id=neighborhood._id,
                     shortname=shortname,
                     name=shortname,
@@ -240,24 +231,16 @@ class ProjectRegistrationProvider(object):
                     description=(shortname + '\n'
                                  + '=' * 80 + '\n\n'
                                  + 'You can edit this description in the admin page'),
-                    database=database,
+                    database_uri=config.get('ming.project.master'),
                     last_updated = datetime.utcnow(),
                     is_root=True)
-        if user_project:
-            p.database_configured = False
-            return p
         try:
-            p.configure_project_database(
-                users=[user])
+            p.configure_project(
+                users=[user],
+                is_user_project=user_project)
         except:
             ThreadLocalORMSession.close_all()
-            log.exception('Error registering project, attempting to drop %s',
-                          database)
-            try:
-                session(p).impl.bind._conn.drop_database(database)
-            except:
-                log.exception('Error dropping database %s', database)
-                pass
+            log.exception('Error registering project %s' % p)
             raise
         session(p).flush(p)
         c.project = p
@@ -273,7 +256,7 @@ class ProjectRegistrationProvider(object):
             neighborhood_id=project.neighborhood_id,
             shortname=shortname,
             name=name,
-            database=project.database,
+            database_uri=project.database_uri,
             last_updated = datetime.utcnow(),
             is_root=False)
         with h.push_config(c, project=sp):

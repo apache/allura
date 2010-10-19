@@ -151,6 +151,7 @@ To unsubscribe from further messages, please visit <%s/auth/prefs/>
     @classmethod
     def send_digest(self, user_id, from_address, subject, notifications,
                     reply_to_address=None):
+        if not notifications: return
         if reply_to_address is None:
             reply_to_address = from_address
         text = [ 'Digest of %s' % subject ]
@@ -173,6 +174,7 @@ To unsubscribe from further messages, please visit <%s/auth/prefs/>
 
     @classmethod
     def send_summary(self, user_id, from_address, subject, notifications):
+        if not notifications: return
         text = [ 'Digest of %s' % subject ]
         for n in notifications:
             text.append('From: %s' % n.from_address)

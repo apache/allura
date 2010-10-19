@@ -119,6 +119,7 @@ class Project(MappedClass):
     short_description=FieldProperty(str, if_missing='')
     description=FieldProperty(str, if_missing='')
     database=FieldProperty(str)
+    database_uri=FieldProperty(str)
     is_root=FieldProperty(bool)
     acl = FieldProperty({
             'create':[S.ObjectId],    # create subproject
@@ -289,8 +290,10 @@ class Project(MappedClass):
     def roles(self):
         from . import auth
         with h.push_config(c, project=self):
-            roles = auth.ProjectRole.query.find({'name':{'$in':['Admin','Developer','*anonymous','*authenticated']}}).all()
-            roles = roles + auth.ProjectRole.query.find({'name':None,'roles':{'$in':[r._id for r in roles]}}).all()
+            root_roles = auth.ProjectRole.query.find(dict(
+                    project_id=self.root_project._id,
+                    name={'$in':['Admin','Developer']})).all()
+            roles = list(auth.ProjectRole.roles_that_reach(*root_roles))
             return sorted(roles, key=lambda r:r.display())
 
     @property
@@ -331,7 +334,8 @@ class Project(MappedClass):
         with h.push_config(c, project=self, app=app):
             session(cfg).flush()
             app.install(self)
-            admin_role = M.ProjectRole.query.find({'name':'Admin'}).first()
+            admin_role = M.ProjectRole.query.get(
+                name='Admin', project_id=self._id)
             if admin_role:
                 for u in admin_role.users_with_role():
                     M.Mailbox.subscribe(
@@ -394,23 +398,16 @@ class Project(MappedClass):
             return [ (self.neighborhood.name, self.neighborhood.url())] + [ entry ]
 
     def users(self):
-        def uniq(users):
-            t = {}
-            for user in users:
-                t[user.username] = user
-            return t.values()
-        project_users = uniq([r.user for r in self.roles if not r.user.username.startswith('*')])
-        return project_users
+        return [ r.user for r in self.roles if r.user_id is not None ]
 
     def user_in_project(self, username=None):
         from .auth import User
         return User.query.find({'_id':{'$in':[role.user_id for role in c.project.roles]},'username':username}).first()
 
-    def configure_project_database(self,
-                                   users=None, apps=None, is_user_project=False):
+    def configure_project(
+        self,
+        users=None, apps=None, is_user_project=False):
         from allura import model as M
-        from flyway.model import MigrationInfo
-        from flyway.migrate import Migration
         if users is None: users = [ c.user ]
         if apps is None:
             if is_user_project:
@@ -422,40 +419,35 @@ class Project(MappedClass):
                         ('admin', 'admin'),
                         ('search', 'search')]
         with h.push_config(c, project=self, user=users[0]):
-            # Configure flyway migration info
-            mi = project_doc_session.get(MigrationInfo)
-            if mi is None:
-                mi = MigrationInfo.make({})
-            mi.versions.update(Migration.latest_versions())
-            project_doc_session.save(mi)
-            # Configure indexes
-            for mc in MappedClass._registry.itervalues():
-                if mc.__mongometa__.session == project_orm_session:
-                    project_orm_session.ensure_indexes(mc)
             # Install default named roles (#78)
-            role_owner = M.ProjectRole.upsert(name='Admin')
-            role_developer = M.ProjectRole.upsert(name='Developer')
-            role_member = M.ProjectRole.upsert(name='Member')
-            role_auth = M.ProjectRole.upsert(name='*authenticated')
-            role_anon = M.ProjectRole.upsert(name='*anonymous')
+            role_admin = M.ProjectRole.upsert(name='Admin', project_id=self._id)
+            role_developer = M.ProjectRole.upsert(name='Developer', project_id=self._id)
+            role_member = M.ProjectRole.upsert(name='Member', project_id=self._id)
+            role_auth = M.ProjectRole.upsert(name='*authenticated', project_id=self._id)
+            role_anon = M.ProjectRole.upsert(name='*anonymous', project_id=self._id)
             # Setup subroles
-            role_owner.roles = [ role_developer._id ]
+            role_admin.roles = [ role_developer._id ]
             role_developer.roles = [ role_member._id ]
-            self.acl['create'] = [ role_owner._id ]
-            self.acl['read'] = [ role_owner._id, role_developer._id, role_member._id,
+            self.acl['create'] = [ role_admin._id ]
+            self.acl['read'] = [ role_admin._id, role_developer._id, role_member._id,
                               role_anon._id ]
-            self.acl['update'] = [ role_owner._id ]
-            self.acl['delete'] = [ role_owner._id ]
-            self.acl['tool'] = [ role_owner._id ]
-            self.acl['security'] = [ role_owner._id ]
+            self.acl['update'] = [ role_admin._id ]
+            self.acl['delete'] = [ role_admin._id ]
+            self.acl['tool'] = [ role_admin._id ]
+            self.acl['security'] = [ role_admin._id ]
             for user in users:
                 pr = user.project_role()
-                pr.roles = [ role_owner._id, role_developer._id, role_member._id ]
+                pr.roles = [ role_admin._id, role_developer._id, role_member._id ]
             # Setup apps
             for ep_name, mount_point in apps:
                 self.install_app(ep_name, mount_point)
             self.database_configured = True
             ThreadLocalORMSession.flush_all()
+
+    def ensure_project_indexes(self):
+            for mc in MappedClass._registry.itervalues():
+                if mc.__mongometa__.session == project_orm_session:
+                    project_orm_session.ensure_indexes(mc)
 
 class AppConfig(MappedClass):
     class __mongometa__:

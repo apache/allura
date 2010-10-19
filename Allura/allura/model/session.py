@@ -4,6 +4,7 @@ from itertools import chain
 from pylons import c
 
 from ming import Session
+from ming.datastore import ShardedDataStore
 from ming.orm.base import state, session
 from ming.orm.ormsession import ThreadLocalORMSession, SessionExtension
 
@@ -31,6 +32,8 @@ class ProjectSession(Session):
                      # running without MagicalC, inside a request (likely EasyWidgets)
                     return None
             if p is None: return None
+            if p.database_uri:
+                return ShardedDataStore.get(p.database_uri).db
             return getattr(self.main_session.bind.conn, p.database)
         except (KeyError, AttributeError), ex:
             return None

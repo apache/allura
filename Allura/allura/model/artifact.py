@@ -423,7 +423,7 @@ class Artifact(MappedClass):
             id=self.index_id(),
             mod_date_dt=self.mod_date,
             title_s='Artifact %s' % self._id,
-            project_id_s=project._id,
+            project_id_s=str(project._id),
             project_name_t=project.name,
             project_shortname_t=project.shortname,
             tool_name_s=self.app_config.tool_name,

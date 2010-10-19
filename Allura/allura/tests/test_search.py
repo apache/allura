@@ -22,7 +22,8 @@ def setUp():
     helpers.setup_global_objects()
 
 def test_index_artifact():
-    a = WM.Page.query.find().first()
+    app = M.Project.query.get(shortname='test').app_instance('wiki')
+    a = WM.Page.query.get(app_config_id=app.config._id)
     search.add_artifacts([a])
     search.solarize(a)
     a.text = None

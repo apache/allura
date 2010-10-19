@@ -71,7 +71,7 @@ def roles_with_project_access(access_type, project=None):
     if project is None: project = c.project
     # Direct roles
     result = set(project.acl.get(access_type, []))
-    roles = M.ProjectRole.query.find().all()
+    roles = M.ProjectRole.query.find(project_id=project._id).all()
     # Compute roles who can reach the direct roles
     found = True
     while found:

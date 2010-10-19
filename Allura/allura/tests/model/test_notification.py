@@ -53,7 +53,7 @@ class TestPostNotifications(unittest.TestCase):
         _clear_notifications()
         ThreadLocalORMSession.flush_all()
         ThreadLocalORMSession.close_all()
-        self.pg = WM.Page.query.get()
+        self.pg = WM.Page.query.get(app_config_id=c.app.config._id)
         g.mock_amq.clear()
         M.notification.MAILBOX_QUIESCENT=None # disable message combining
 
@@ -81,6 +81,7 @@ class TestPostNotifications(unittest.TestCase):
         self._subscribe()
         self._post_notification()
         g.mock_amq.handle('react')# should deliver msg to mailbox
+        assert M.Mailbox.query.find().count()==1
         mbox = M.Mailbox.query.get()
         assert len(mbox.queue) == 1
 
@@ -89,6 +90,9 @@ class TestPostNotifications(unittest.TestCase):
         self._subscribe()
         self._post_notification()
         g.mock_amq.handle('react')# should deliver msg to mailbox
+        assert M.Mailbox.query.find().count()==1
+        mbox = M.Mailbox.query.get()
+        assert len(mbox.queue) == 1
         M.Mailbox.fire_ready()
         assert len(g.mock_amq.exchanges['audit']) == 1
         msg = g.mock_amq.exchanges['audit'][0]['message']
@@ -113,7 +117,7 @@ class TestSubscriptionTypes(unittest.TestCase):
         _clear_notifications()
         ThreadLocalORMSession.flush_all()
         ThreadLocalORMSession.close_all()
-        self.pg = WM.Page.query.get()
+        self.pg = WM.Page.query.get(app_config_id=c.app.config._id)
         g.mock_amq.setup_handlers()
         g.mock_amq.clear()
         M.notification.MAILBOX_QUIESCENT=None # disable message combining
@@ -125,7 +129,7 @@ class TestSubscriptionTypes(unittest.TestCase):
         g.mock_amq.handle('react')
         g.mock_amq.handle('react')
         M.Mailbox.fire_ready()
-        assert len(g.mock_amq.exchanges['audit']) == 2
+        assert len(g.mock_amq.exchanges['audit']) == 2, g.mock_amq.exchanges
 
     def test_digest_sub(self):
         self._subscribe('digest')
@@ -134,7 +138,7 @@ class TestSubscriptionTypes(unittest.TestCase):
         g.mock_amq.handle('react')
         g.mock_amq.handle('react')
         M.Mailbox.fire_ready()
-        assert len(g.mock_amq.exchanges['audit']) == 1
+        assert len(g.mock_amq.exchanges['audit']) == 1, g.mock_amq.exchanges
         assert len(g.mock_amq.exchanges['audit'][0]['message']['text']) > 1024
 
     def test_summary_sub(self):

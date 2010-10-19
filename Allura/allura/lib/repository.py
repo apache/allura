@@ -105,7 +105,7 @@ class RepositoryApp(Application):
     def install(self, project):
         self.config.options['project_name'] = project.name
         super(RepositoryApp, self).install(project)
-        role_developer = M.ProjectRole.query.get(name='Developer')._id
+        role_developer = M.ProjectRole.by_name('Developer')._id
         self.config.acl.update(
             configure=c.project.roleids_with_permission('tool'),
             read=c.project.roleids_with_permission('read'),

@@ -85,7 +85,7 @@ class TestRootController(TestController):
         self.app.get('/wiki/TEST/update?title=TEST&text=sometext&tags=&tags_old=&labels=&labels_old=&viewable_by-0.id=all')
         self.app.get('/wiki/TEST/revert?version=1')
         response = self.app.get('/wiki/TEST/')
-        assert 'Unsubscribe' in response
+        assert 'Subscribe' in response
         response = self.app.get('/wiki/TEST/diff?v1=0&v2=0')
         assert 'TEST' in response
 
