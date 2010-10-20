@@ -29,8 +29,7 @@
 
 {% block content %}
 <form method="GET" action=".">
-  {{c.auto_resize_textarea.display(name='q', value=q,
-    attrs={'style':'height:1em; width: 425px; float: left; margin-right: .5em'})}}
+  <input type="text" name="q" value="{{q}}" style="width: 525px; float: left; margin-right: .5em">
   <input type="submit" value="Search"/>
 </form>
 {% if q and h.has_artifact_access('save_searches')() %}
