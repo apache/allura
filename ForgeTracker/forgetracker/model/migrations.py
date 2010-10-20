@@ -127,6 +127,8 @@ class MoveMilestonesToCustom(TrackerMigration):
     def _custom_field(self, tracker_globals):
         names = tracker_globals.milestone_names or ''
         return dict(
+            name='_milestone',
+            show_in_search=True,
             type='milestone',
             label='Milestone',
             milestones=[
@@ -147,3 +149,20 @@ class MoveMilestonesToCustom(TrackerMigration):
                 tracker_globals.custom_fields.pop()
         self.ormsession.flush()
         self.ormsession.clear()
+
+class FixMilestonesAndTickets(TrackerMigration):
+    version = 5
+
+    def up(self):
+        for tracker_globals in self.ormsession.find(Globals):
+            for fld in tracker_globals.custom_fields:
+                if 'name' not in fld:
+                    fld.name = '_' + fld.label.lower()
+                if 'show_in_search' not in fld:
+                    fld.show_in_search = True
+        for ticket in self.ormsession.find(Ticket):
+            ticket.custom_fields['_milestone'] = ticket.milestone
+        self.ormsession.flush()
+        self.ormsession.clear()
+
+    
