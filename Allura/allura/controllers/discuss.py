@@ -59,7 +59,8 @@ class DiscussionController(BaseController):
         if not hasattr(self, 'AttachmentController'):
             self.AttachmentController = DiscussionAttachmentController
         self.thread = ThreadsController(self)
-        self.moderate = ModerationController(self)
+        if not hasattr(self, 'moderate'):
+            self.moderate = ModerationController(self)
 
     @expose('jinja:discussion/index.html')
     def index(self, threads=None, limit=None, page=0, count=0, **kw):

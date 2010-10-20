@@ -1,10 +1,6 @@
 <div {{attrs|default({}, true)|xmlattr}} class="discussion_subscription_form">
   {% if show_actions %}
   <div class="actions">
-    {% if h.has_artifact_access('moderate', value)() %}
-    <a href="{{value.url()}}moderate/" class="btn ico-l">
-       <b class="ui-icon ui-icon-pencil"></b> <span>Edit</span></a>
-    {% endif %}
     {% if show_discussion_email %}
     <a href="{{value.email_link(subject=None)}}" class="btn ico">
        <b class="ui-icon ui-icon-mail-closed"></b> <span>Email</span></a>

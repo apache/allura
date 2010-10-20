@@ -383,7 +383,6 @@ class RootController(BaseController):
         result = self.paged_query(q, **kw)
         result['allow_edit'] = has_artifact_access('write')()
         c.ticket_search_results = W.ticket_search_results
-        c.auto_resize_textarea = W.auto_resize_textarea
         return result
 
     @expose()

@@ -9,7 +9,7 @@ from webob import exc
 from allura.lib import helpers as h
 from allura import model as M
 from allura.lib.security import require, has_artifact_access
-from allura.controllers import DiscussionController, ThreadController, PostController
+from allura.controllers import DiscussionController, ThreadController, PostController, ModerationController
 from allura.lib.widgets import discuss as DW
 
 from forgediscussion import model as DM
@@ -54,6 +54,7 @@ class ForumController(DiscussionController):
     def __init__(self, forum_id):
         self.ThreadController = ForumThreadController
         self.PostController = ForumPostController
+        self.moderate = ForumModerationController(self)
         self.discussion = DM.Forum.query.get(
             app_config_id=c.app.config._id,
             shortname=forum_id)
@@ -142,3 +143,34 @@ class ForumPostController(PostController):
             redirect(request.referer)
         super(ForumPostController, self).moderate(**kw)
 
+class ForumModerationController(ModerationController):
+
+    @h.vardec
+    @expose('jinja:discussion/moderate.html')
+    @validate(pass_validator)
+    def index(self, **kw):
+        kw = WidgetConfig.post_filter.validate(kw, None)
+        page = kw.pop('page', 0)
+        limit = kw.pop('limit', 50)
+        status = kw.pop('status', '-')
+        flag = kw.pop('flag', None)
+        c.post_filter = WidgetConfig.post_filter
+        c.moderate_posts = WidgetConfig.moderate_posts
+        query = dict(
+            discussion_id=self.discussion._id)
+        if status != '-':
+            query['status'] = status
+        if flag:
+            query['flags'] = {'$gte': int(flag) }
+        q = DM.ForumPost.query.find(query)
+        count = q.count()
+        page = int(page)
+        limit = int(limit)
+        q = q.skip(page)
+        q = q.limit(limit)
+        pgnum = (page // limit) + 1
+        pages = (count // limit) + 1
+        return dict(discussion=self.discussion,
+                    posts=q, page=page, limit=limit,
+                    status=status, flag=flag,
+                    pgnum=pgnum, pages=pages)

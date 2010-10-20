@@ -137,10 +137,23 @@ class ForgeDiscussionApp(Application):
     def sidebar_menu(self):
         try:
             l = []
+            moderate_link = None
+            forum_links = []
+            forums = DM.Forum.query.find(dict(
+                            app_config_id=c.app.config._id,
+                            parent_id=None)).all()
+            if forums:
+                for f in forums:
+                    if f.url() in request.url and h.has_artifact_access('moderate', f)():
+                        moderate_link = SitemapEntry('Moderate', "%smoderate/" % f.url(), ui_icon='pencil',
+                        small = DM.ForumPost.query.find({'discussion_id':f._id, 'status':{'$ne': 'ok'}}).count())
+                    forum_links.append(SitemapEntry(f.name, f.url(), className='nav_child'))
             if has_artifact_access('post', app=c.app)():
                 l.append(SitemapEntry('Create Topic', c.app.url + 'create_topic', ui_icon='plus'))
             if has_artifact_access('configure', app=c.app)():
                 l.append(SitemapEntry('Add Forum', url(c.app.url,dict(new_forum=True)), ui_icon='comment'))
+            if moderate_link:
+                l.append(moderate_link)
             # if we are in a thread, provide placeholder links to use in js
             if '/thread/' in request.url:
                 l += [
@@ -156,13 +169,9 @@ class ForgeDiscussionApp(Application):
             if len(recent_topics):
                 l.append(SitemapEntry('Recent Topics'))
                 l += recent_topics
-            forums = DM.Forum.query.find(dict(
-                            app_config_id=c.app.config._id,
-                            parent_id=None)).all()
-            if forums:
+            if len(forum_links):
                 l.append(SitemapEntry('Forums'))
-                for f in forums:
-                    l.append(SitemapEntry(f.name, f.url(), className='nav_child'))
+                l = l + forum_links
             l.append(SitemapEntry('Help'))
             l.append(SitemapEntry('Forum Help', c.app.url + 'help', className='nav_child'))
             l.append(SitemapEntry('Markdown Syntax', c.app.url + 'markdown_syntax', className='nav_child'))
