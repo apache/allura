@@ -230,7 +230,7 @@ class Ticket(VersionedArtifact):
         milestone = None
         for fld in self.globals.milestone_fields:
             if fld.name == '_milestone':
-                return self.custom_fields['_milestone']
+                return self.custom_fields.get('_milestone', '')
         return milestone
 
     @property
