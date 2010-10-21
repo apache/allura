@@ -764,7 +764,8 @@ ul.ui-tab li a {
 .clip .listed {
 	margin: 0 5px 5px;
 }
-.clip h3 {
+.pad .clip h3 {
+    font-size: 1em;
 	padding: 5px;
 	margin-bottom: 5px;
 	border-bottom: 1px solid {{color5}};
@@ -879,11 +880,16 @@ ul.ui-tab li a {
 }
 .base h2 {color: rgb(115,115,115); margin: 10px 5px 5px; text-shadow: {{color6}} 0 1px;}
 .base .pad h2 {margin: 0; color: rgb(0,0,0);}
-.pad h3, .pad h4, .base .pad h2 {
-    font-size: 1em;
+.pad h1, .pad h3, .pad h4,.pad h5, .pad h6,  .base .pad h2 {
     font-weight: bold;
     text-shadow: none;
+    margin: 0;
 }
+.pad h1{ font-size: 2.5em; }
+.pad h2{ font-size: 2em; }
+.pad h3{ font-size: 1.5em; }
+.pad h4{ font-size: 1.2em; }
+.pad h5{ font-size: 1em; }
 
 .base .pad {
 	background: rgb(255,255,255);
