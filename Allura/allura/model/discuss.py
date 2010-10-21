@@ -162,14 +162,14 @@ class Thread(Artifact):
         Feed.post(self, title=p.subject, description=p.text)
         return p
 
-    def post(self, text, message_id=None, parent_id=None, **kw):
+    def post(self, text, message_id=None, parent_id=None, timestamp=None, **kw):
         require(has_artifact_access('post', self))
         if self.artifact_reference.artifact_id is not None:
             if self.artifact:
                 self.artifact.subscribe()
         if message_id is None: message_id = h.gen_message_id()
         parent = parent_id and self.post_class().query.get(_id=parent_id)
-        slug, full_slug = self.post_class().make_slugs(parent)
+        slug, full_slug = self.post_class().make_slugs(parent, timestamp)
         kwargs = dict(
             discussion_id=self.discussion_id,
             full_slug=full_slug,
@@ -177,6 +177,7 @@ class Thread(Artifact):
             thread_id=self._id,
             parent_id=parent_id,
             text=text,
+            timestamp=timestamp,
             status='pending')
         if message_id is not None: kwargs['_id'] = message_id
         post = self.post_class()(**kwargs)
