@@ -1,3 +1,34 @@
-<div>
-  <textarea class="sf_markdown_edit" name="{{name}}">{{value or ''}}</textarea>
+<div class="markdown_edit">
+  <a href="#" class="btn ico-l markdown_preview"><b class="ui-icon ui-icon-search"></b> <span>Preview</span></a>
+  <a href="#" class="btn ico-l markdown_edit" style="display:none"><b class="ui-icon ui-icon-pencil"></b> <span>Edit</span></a>
+  <a href="#" class="btn ico-l markdown_help"><b class="ui-icon ui-icon-help"></b> <span>Help</span></a>
+  <div class="clear"></div>
+  <textarea name="{{name}}" class="auto_resize">{{value or ''}}</textarea>
+  <div class="markdown_preview" style="display:none"></div>
+  <div class="markdown_help" style="display:none">
+    <p>You can use
+      <a href="http://daringfireball.net/projects/markdown/">MarkDown</a>
+      Syntax here</p>
+    <h4>Example Input</h4>
+    <pre style="background-color:#fff">
+# First-level heading
+
+Some *emphasized* and **strong** text
+
+#### Fourth-level heading
+
+</pre>
+    <h4>Example Rendering</h4>
+    <div style="background-color:#fff">{{g.markdown.convert('''
+# First-level heading
+
+Some *emphasized* and **strong** text
+
+#### Fourth-level heading
+
+''')|safe}}</div>
+    <a href="http://daringfireball.net/projects/markdown/syntax">More Examples</a>
+  </div>
+  <input type="hidden" class="markdown_project" value="{{c.project.shortname}}">
+  <input type="hidden" class="markdown_app" value="{{c.app.config.options.mount_point}}">
 </div>

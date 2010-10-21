@@ -1,22 +1,4 @@
-/* -------------------------------------------------------------------
-// SourceForge custom styling for markItUp
-// ------------------------------------------------------------------*/
-
-.markItUp{
-    border-width: 0;
-    width: 100%;
-}
-.sf_markdown_edit{
+.markdown_edit textarea{
     height: 200px;
     width: 95%;
-}
-.sf_markdown_edit.markItUpEditor{
-    border-width: 1px;
-    background-image: none;
-    padding: 0;
-    width: 100%;
-    height: 200px;
-}
-.markItUpPreviewFrame{
-    height: 200px;
 }

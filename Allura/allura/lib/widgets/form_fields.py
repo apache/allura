@@ -9,29 +9,6 @@ import ew
 def onready(text):
     return ew.JSScript('$(function(){%s});' % text);
 
-class MarkdownEdit(ew.InputField):
-    template='jinja:widgets/markdown_edit.html'
-    validator = fev.UnicodeString()
-    params=['name','value','show_label']
-    show_label=True
-    name=None
-    value=None
-
-    def from_python(self, value, state=None):
-        return value
-
-    def resources(self):
-        yield ew.resource.JSLink('js/jquery.markitup.pack.js')
-        yield ew.resource.JSLink('js/jquery.markitup.markdown.js')
-        yield ew.resource.JSLink('js/sf_markitup.js')
-        yield ew.resource.CSSLink('css/markitup.css', compress=False)
-        yield ew.resource.CSSLink('css/markitup_markdown.css', compress=False)
-        yield ew.resource.CSSLink('css/markitup_sf.css')
-        yield onready('''markdownSettings.previewParserPath = "/nf/markdown_to_html?"+
-                $.param({project:'%s', app:'%s'});
-        ''' % (c.project and c.project.shortname or '', (c.project and c.app) and c.app.config.options['mount_point'] or ''))
-
-
 class LabelList(fev.UnicodeString):
 
     def _to_python(self, value, state):
@@ -141,6 +118,22 @@ class AutoResizeTextarea(ew.TextArea):
                 extraSpace : 0
             }).change();
         ''')
+
+class MarkdownEdit(AutoResizeTextarea):
+    template='jinja:widgets/markdown_edit.html'
+    validator = fev.UnicodeString()
+    params=['name','value','show_label']
+    show_label=True
+    name=None
+    value=None
+
+    def from_python(self, value, state=None):
+        return value
+
+    def resources(self):
+        for r in super(MarkdownEdit, self).resources(): yield r
+        yield ew.resource.JSLink('js/sf_markitup.js')
+        yield ew.resource.CSSLink('css/markitup_sf.css')
 
 class PageList(ew.Widget):
     template='jinja:widgets/page_list.html'
