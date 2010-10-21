@@ -166,6 +166,11 @@
             return false;
           });
 
+          // Allow the ticket metadata links to function without turning on edit mode
+          $('.editbox a').click(function(event){
+            event.stopPropagation();
+          });
+
             // Hack for demo, to be removed
             // must figure out why this extra row is created and fix by not creating it
             $('div.row:not(:has(div))').remove();
