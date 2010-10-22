@@ -1,20 +1,13 @@
-import os
 import sys
-import json
 import logging
 
 from pylons import g
 
-from ming.orm import state, session
+from ming.orm import session
 
-from pymongo.json_util import default
 from allura import model as M
 
 log = logging.getLogger(__name__)
-
-MONGO_HOME=os.environ.get('MONGO_HOME', '/usr')
-MONGO_DUMP=os.path.join(MONGO_HOME, 'bin/mongodump')
-MONGO_RESTORE=os.path.join(MONGO_HOME, 'bin/mongorestore')
 
 def main():
     if len(sys.argv) != 2:

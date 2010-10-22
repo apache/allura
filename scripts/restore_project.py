@@ -1,20 +1,17 @@
 import os
 import sys
-import json
+import struct
 import logging
 
-from ming.orm import state, session
+from ming.orm import state, session, mapper, MappedClass
 from ming.orm.base import instrument, DocumentTracker
 
-from pymongo.json_util import default, object_hook
+from pylons import c
+from pymongo.bson import BSON
 from allura import model as M
 from allura.command import ReindexCommand
 
 log = logging.getLogger(__name__)
-
-MONGO_HOME=os.environ.get('MONGO_HOME', '/usr')
-MONGO_DUMP=os.path.join(MONGO_HOME, 'bin/mongodump')
-MONGO_RESTORE=os.path.join(MONGO_HOME, 'bin/mongorestore')
 
 def main():
     if len(sys.argv) != 4:
@@ -27,35 +24,45 @@ def main():
 
 def restore_project(dirname, new_shortname, new_unix_group_name):
     log.info('Reloading %s into %s', dirname, new_shortname)
-    with open(os.path.join(dirname, 'project.json')) as fp:
-        project_doc = json.load(fp, object_hook=object_hook)
+    with open(os.path.join(dirname, 'project.bson')) as fp:
+        project_doc = _read_bson(fp)
     project = M.Project.query.get(_id=project_doc['_id'])
     st = state(project)
     st.document = instrument(project_doc, DocumentTracker(st))
     if project is None:
         log.fatal('Project not found')
         return 2
-    dump_path = os.path.join(dirname, project.database)
-    with open(os.path.join(dirname, 'project.json')) as fp:
-        project_doc = json.load(fp, object_hook=object_hook)
-    st = state(project)
-    st.document = instrument(project_doc, DocumentTracker(st))
     project.shortname = new_shortname
     project.set_tool_data('sfx', unix_group_name=new_unix_group_name)
-    project.database = 'project:' + new_shortname.replace('/', ':').replace('-', '_')
     project.deleted = False
-    conn = M.main_doc_session.bind.conn
-    if project.database in conn.database_names():
-        raw_input('''Warning: database %s is already populated.  If you do NOT want
-    to drop the database and create a new one, press Crtl-C NOW!  Otherwise,
-    press enter to continue.''' % project.database)
-        conn.drop_database(project.database)
-    os.system('%s --db %s %s' % (
-            MONGO_RESTORE, project.database, dump_path))
+    c.project = project
+    for name, cls in MappedClass._registry.iteritems():
+        if session(cls) is None: continue
+        m = mapper(cls)
+        sess = session(cls).impl
+        fname = os.path.join(dirname, '%s.bson' % (cls.__mongometa__.name))
+        if not os.path.exists(fname): continue
+        if ('project_id' not in m.property_index
+            and 'app_config_id' not in m.property_index): continue
+        with open(fname, 'rb') as fp:
+            num_objects = 0
+            while True:
+                doc = _read_bson(fp)
+                if doc is None: break
+                num_objects += 1
+                sess.insert(m.doc_cls(doc))
+        log.info('%s: loaded %s objects from %s',
+                 name, num_objects, fname)
     session(project).flush()
     reindex= ReindexCommand('reindex')
     reindex.run(['--project', new_shortname])
     return 0
+
+def _read_bson(fp):
+    slen = fp.read(4)
+    if not slen: return None
+    bson = BSON(fp.read(struct.unpack('!l', slen)[0]))
+    return bson.to_dict()
 
 if __name__ == '__main__':
     sys.exit(main())

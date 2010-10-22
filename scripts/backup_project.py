@@ -1,20 +1,16 @@
 import os
 import sys
-import json
+import struct
 import logging
 
-from pylons import g
+from pylons import c
+from pymongo.bson import BSON
 
-from ming.orm import state, session
+from ming.orm import MappedClass, state, mapper
 
-from pymongo.json_util import default
 from allura import model as M
 
 log = logging.getLogger(__name__)
-
-MONGO_HOME=os.environ.get('MONGO_HOME', '/usr')
-MONGO_DUMP=os.path.join(MONGO_HOME, 'bin/mongodump')
-MONGO_RESTORE=os.path.join(MONGO_HOME, 'bin/mongorestore')
 
 def main():
     if len(sys.argv) not in (2,3):
@@ -38,11 +34,38 @@ def main():
     dump_project(project, backup_dir)
     return 0
 
+def _write_bson(fp, doc):
+    bson = BSON.from_dict(doc)
+    fp.write(struct.pack('!l', len(bson)))
+    fp.write(bson)
+
 def dump_project(project, dirname):
-    os.system('%s --db %s -o %s' % (
-            MONGO_DUMP, project.database, dirname))
-    with open(os.path.join(dirname, 'project.json'), 'w') as fp:
-        json.dump(state(project).document, fp, default=default)
+    if not os.path.exists(dirname):
+        os.mkdir(dirname)
+    with open(os.path.join(dirname, 'project.bson'), 'w') as fp:
+        _write_bson(fp, state(project).document)
+    c.project = project
+    app_config_ids = [
+        ac._id for ac in M.AppConfig.query.find(dict(project_id=c.project._id)) ]
+    for name, cls in MappedClass._registry.iteritems():
+        if 'project_id' in mapper(cls).property_index:
+            # Dump the things directly related to the project
+            oq = cls.query.find(dict(project_id=project._id))
+        elif 'app_config_id' in mapper(cls).property_index:
+            # ... and the things related to its apps
+            oq = cls.query.find(dict(app_config_id={'$in':app_config_ids}))
+        else:
+            # Don't dump other things
+            continue
+        num_objs = oq.count()
+        if num_objs == 0: continue
+        fname = os.path.join(
+            dirname,
+            '%s.bson' % (cls.__mongometa__.name))
+        log.info('%s: dumping %s objects to %s',
+                 name, num_objs, fname)
+        with open(os.path.join(dirname, fname), 'w') as fp:
+            for obj in oq.ming_cursor: _write_bson(fp, obj)
 
 if __name__ == '__main__':
     sys.exit(main())
