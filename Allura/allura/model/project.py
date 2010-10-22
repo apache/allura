@@ -240,7 +240,8 @@ class Project(MappedClass):
             for roleid in p.acl[name]:
                 roles.append(roleid)
         for roleid in self.acl[name]:
-            roles.append(roleid)
+            if roleid not in roles:
+                roles.append(roleid)
         return roles
 
     def sitemap(self):
