@@ -189,12 +189,12 @@ class ForgeDiscussionApp(Application):
         role_auth = M.ProjectRole.query.get(name='*authenticated')._id
         role_anon = M.ProjectRole.query.get(name='*anonymous')._id
         self.config.acl.update(
-            configure=c.project.acl['tool'],
-            read=c.project.acl['read'],
+            configure=c.project.roleids_with_permission('tool'),
+            read=c.project.roleids_with_permission('read'),
             unmoderated_post=[role_auth],
             post=[role_anon],
             moderate=[role_developer],
-            admin=c.project.acl['tool'])
+            admin=c.project.roleids_with_permission('tool'))
         
         self.admin.create_forum(new_forum=dict(
             shortname='general',

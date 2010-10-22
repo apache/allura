@@ -107,11 +107,11 @@ class RepositoryApp(Application):
         super(RepositoryApp, self).install(project)
         role_developer = M.ProjectRole.query.get(name='Developer')._id
         self.config.acl.update(
-            configure=c.project.acl['tool'],
-            read=c.project.acl['read'],
+            configure=c.project.roleids_with_permission('tool'),
+            read=c.project.roleids_with_permission('read'),
             create=[role_developer],
             write=[role_developer],
-            admin=c.project.acl['tool'])
+            admin=c.project.roleids_with_permission('tool'))
 
     def uninstall(self, project):
         g.publish('audit', 'repo.uninstall', dict(project_id=project._id))

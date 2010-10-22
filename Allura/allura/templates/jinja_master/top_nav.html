@@ -4,10 +4,10 @@
 			<ul class="ui-tab">
         {% for s in c.project.sitemap() %}
 				<li class="{% if s.className %}{{s.className}} {% endif %}{{s.url in request.url and 'active' or ''}}">
-				  {% if s.url %}
-					<a href="{{s.url}}" class="ico-l"><b class="ui-icon ui-icon-{{s.ui_icon or 'admin'}}"></b> <span>{{s.label}}</span></a>
-				{% else %}
-              <span>{{s.label}}</span>
+          {% if s.url %}
+            <a href="{{s.url}}" class="ico-l"><b class="ui-icon ui-icon-{{s.ui_icon or 'admin'}}"></b> <span>{{s.label}}</span></a>
+          {% else %}
+          <span>{{s.label}}</span>
             {% endif %}
 				</li>
 				{% endfor %}

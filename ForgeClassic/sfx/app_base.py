@@ -55,9 +55,9 @@ class SFXBaseApp(Application):
         super(SFXBaseApp, self).install(project)
         # Setup permissions
         self.config.acl.update(
-            read=c.project.acl['read'],
-            configure=c.project.acl['tool'],
-            admin=c.project.acl['tool'])
+            read=c.project.roleids_with_permission('read'),
+            configure=c.project.roleids_with_permission('tool'),
+            admin=c.project.roleids_with_permission('tool'))
 
     def uninstall(self, project):
         "Remove all the tool's artifacts from the database"

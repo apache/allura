@@ -183,16 +183,16 @@ class ForgeWikiApp(Application):
         role_auth = M.ProjectRole.query.get(name='*authenticated')._id
         role_anon = M.ProjectRole.query.get(name='*anonymous')._id
         self.config.acl.update(
-            configure=c.project.acl['tool'],
-            read=c.project.acl['read'],
+            configure=c.project.roleids_with_permission('tool'),
+            read=c.project.roleids_with_permission('read'),
             create=[role_auth],
             edit=[role_auth],
             delete=[role_developer],
-            edit_page_permissions=c.project.acl['tool'],
+            edit_page_permissions=c.project.roleids_with_permission('tool'),
             unmoderated_post=[role_auth],
             post=[role_anon],
             moderate=[role_developer],
-            admin=c.project.acl['tool'])
+            admin=c.project.roleids_with_permission('tool'))
         root_page_name = self.default_root_page_name
         WM.Globals(app_config_id=c.app.config._id, root=root_page_name)
         self.upsert_root(root_page_name)

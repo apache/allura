@@ -194,14 +194,14 @@ class ForgeTrackerApp(Application):
         role_auth = M.ProjectRole.query.get(name='*authenticated')._id
         role_anon = M.ProjectRole.query.get(name='*anonymous')._id
         self.config.acl.update(
-            configure=c.project.acl['tool'],
-            read=c.project.acl['read'],
+            configure=c.project.roleids_with_permission('tool'),
+            read=c.project.roleids_with_permission('read'),
             write=[role_auth],
             unmoderated_post=[role_auth],
             post=[role_anon],
             moderate=[role_developer],
             save_searches=[role_developer],
-            admin=c.project.acl['tool'])
+            admin=c.project.roleids_with_permission('tool'))
         self.globals = TM.Globals(app_config_id=c.app.config._id,
             last_ticket_num=0,
             open_status_names='open unread accepted pending',

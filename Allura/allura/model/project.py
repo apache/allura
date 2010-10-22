@@ -233,6 +233,15 @@ class Project(MappedClass):
     @property
     def category(self):
         return ProjectCategory.query.find(dict(_id=self.category_id)).first()
+    
+    def roleids_with_permission(self, name):
+        roles = []
+        for p in self.parent_iter():
+            for roleid in p.acl[name]:
+                roles.append(roleid)
+        for roleid in self.acl[name]:
+            roles.append(roleid)
+        return roles
 
     def sitemap(self):
         from allura.app import SitemapEntry
