@@ -15,7 +15,7 @@ class TracExport(object):
 
     TICKET_URL = '/ticket/%d'
     QUERY_MAX_ID_URL  = '/query?col=id&order=id&desc=1&max=2'
-    QUERY_BY_PAGE_URL = '/query?col=id&order=id&max=100&page=%d'
+    QUERY_BY_PAGE_URL = '/query?col=id&col=time&col=changetime&order=id&max=100&page=%d'
 
     FIELD_MAP = {
         'reporter': 'submitter',
@@ -24,6 +24,10 @@ class TracExport(object):
 
     def __init__(self, base_url):
         self.base_url = base_url
+        # Contains additional info for a ticket which cannot
+        # be get with single-ticket export (create/mod times is
+        # and example).
+        self.ticket_map = {}
 
     def remap_fields(self, dict):
         "Remap fields to adhere to standard taxonomy."
@@ -75,6 +79,8 @@ class TracExport(object):
     def get_ticket(self, id):
         t = self.parse_ticket_body(id)
         t['comments'] = self.parse_ticket_comments(id)
+        if id in self.ticket_map:
+            t.update(self.ticket_map[id])
         return t
 
     def get_ticket_ids_csv(self):
@@ -110,13 +116,19 @@ class TracExport(object):
         print fields
         return int(fields['id'])
         
-    def enumerate_ticket_ids(self, page=1):
+    @staticmethod
+    def trac2z_date(s):
+        assert len(s) == 25
+        assert s.endswith('+00:00')
+        return s[0:10] + 'T' + s[11:19] + 'Z'
+
+    def enumerate_ticket_ids(self, page=1, limit=-1):
         'Go thru ticket list and collect available ticket ids.'
         # We could just do CSV export, which by default dumps entire list
         # Alas, for many busy servers with long ticket list, it will just 
         # time out. So, let's paginate it instead.
         res = []
-        while True:
+        while limit != 0:
             url = self.full_url(self.QUERY_BY_PAGE_URL % page, 'csv')
             try:
                 f = self.csvopen(url)
@@ -128,9 +140,14 @@ class TracExport(object):
                 raise
             reader = csv.reader(f)
             cols = reader.next()
-            ids = [int(r[0]) for r in reader if r and r[0][0].isdigit()]
-            res += ids
+            for r in reader:
+                if r and r[0].isdigit():
+                    id = int(r[0])
+                    self.ticket_map[id] = {'date': self.trac2z_date(r[1]), 'date_updated': self.trac2z_date(r[2])}
+                    res.append(id)
             page += 1
+            if limit > 0:
+                limit -= 1
 
         return res
         
@@ -151,7 +168,10 @@ if __name__ == '__main__':
 #    pprint(d)
 #    d = ex.get_max_ticket_id()
 #    d = ex.get_ticket_ids()
+    d = ex.enumerate_ticket_ids(limit=1)
     ids = [3]
     doc = [ex.get_ticket(i) for i in ids]
     print json.dumps(doc, cls=DateJSONEncoder, indent=2)
+#    print d
+#    print ex.ticket_map
 
