@@ -177,8 +177,8 @@ class Thread(Artifact):
             thread_id=self._id,
             parent_id=parent_id,
             text=text,
-            timestamp=timestamp,
             status='pending')
+        if timestamp is not None: kwargs['timestamp'] = timestamp
         if message_id is not None: kwargs['_id'] = message_id
         post = self.post_class()(**kwargs)
         if has_artifact_access('unmoderated_post')():
