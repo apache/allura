@@ -256,7 +256,8 @@ class Repository(Artifact):
         self.compute_diffs(commit_ids)
         for head in self.heads + self.branches + self.tags:
             ci = self.commit(head.object_id)
-            head.count = ci.count_revisions()
+            if ci is not None:
+                head.count = ci.count_revisions()
         session(self).flush()
         return len(commit_ids)
 

@@ -18,8 +18,14 @@ def main():
         for cls in (GM.Repository, HM.Repository, SM.Repository):
             for repo in cls.query.find():
                 c.app = repo.app
-                repo.refresh()
-                repo._impl._setup_receive_hook()
+                try:
+                    repo.refresh()
+                except:
+                    log.exception('Error refreshing %r', repo)
+                try:
+                    repo._impl._setup_receive_hook()
+                except:
+                    log.exception('Error setting up receive hook for %r', repo)
 
 if __name__ == '__main__':
     main()
