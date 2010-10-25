@@ -61,7 +61,8 @@
         {% endfor %}
       </div>
     </div>
-    {% if globals.custom_fields %}
+    {% set min_c_fields = '_milestone' in ticket.custom_fields and 1 or 0 %}
+    {% if globals.custom_fields and globals.custom_fields.__len__() > min_c_fields %}
     <div class="row">
       {% set cf_count=0 %}
       {% for field in globals.custom_fields or [] %}
@@ -147,6 +148,7 @@
             ticket_content.hide();
             title_holder.text('\u00A0');
             $('a.edit_ticket').addClass('btn_activate');
+            $('textarea.ticket_form.description').focus()
             return false;
           });
           $('a.cancel_form').click(function(){
@@ -170,15 +172,6 @@
           $('.editbox a').click(function(event){
             event.stopPropagation();
           });
-
-            // Hack for demo, to be removed
-            // must figure out why this extra row is created and fix by not creating it
-            $('div.row:not(:has(div))').remove();
-
-            // Hack for demo, to be removed
-            // cancel button and save button should be the same kind of HTML element
-            // this hack adjusts the height of the cancel link to match the save button
-            $('a.cancel_form').css('line-height', '16px');
         });
     </script>
   {% endif %}
