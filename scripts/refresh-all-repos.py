@@ -17,7 +17,10 @@ def main():
         c.project = p
         for cls in (GM.Repository, HM.Repository, SM.Repository):
             for repo in cls.query.find():
-                c.app = repo.app
+                try:
+                    c.app = repo.app
+                except:
+                    log.exception('Error looking up app for %r', repo)
                 try:
                     repo.refresh()
                 except:
