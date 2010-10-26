@@ -148,7 +148,7 @@
             ticket_content.hide();
             title_holder.text('\u00A0');
             $('a.edit_ticket').addClass('btn_activate');
-            $('textarea.ticket_form.description').focus()
+            $('textarea[name="ticket_form.description"]').focus()
             return false;
           });
           $('a.cancel_form').click(function(){
