@@ -22,7 +22,7 @@ class TestRootController(TestController):
         response = self.app.get('/')
         assert response.html.find('h1',{'class':'title'}).string == 'All Projects'
         projects = response.html.findAll('div',{'class':'border card'})
-        assert len(projects) == 3, len(projects)
+        assert len(projects) == 4, len(projects)
         assert projects[0].find('a').get('href') == '/adobe/adobe-1/'
         assert projects[0].find('img').get('alt') == 'adobe-1 Logo'
         cat_links = response.html.find('div',{'id':'sidebar'}).findAll('li')
