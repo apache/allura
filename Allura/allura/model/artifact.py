@@ -279,7 +279,7 @@ class Artifact(MappedClass):
             if not getattr(artifact_orm_session._get(), 'skip_mod_date', False):
                 data['mod_date'] = datetime.utcnow()
             else:
-                log.info('Not updating mod_date')
+                log.debug('Not updating mod_date')
             if c.project:
                 c.project.last_updated = datetime.utcnow()
     type_s = 'Generic Artifact'
