@@ -5,6 +5,7 @@
 {% block header %}Browse Labels{% endblock %}
 
 {% block wiki_content %}
+{{c.page_size.display(limit=limit,count=count,page=page)}}
 <table id="forge_wiki_browse_tags">
   <thead>
     <tr>
@@ -24,4 +25,5 @@
     {% endfor %}
   </tbody>
 </table>
+{{c.page_list.display(limit=limit, page=page, count=count)}}
 {% endblock %}

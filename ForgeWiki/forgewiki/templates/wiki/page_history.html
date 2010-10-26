@@ -9,6 +9,7 @@
 {% endblock %}
 
 {% block wiki_content %}
+{{c.page_size.display(limit=limit,count=count,page=page)}}
 <form method="get" action="diff">
   <input type="submit" value="Compare revisions"/>
   <br/> <br/>
@@ -42,4 +43,5 @@
     </tbody>
   </table>
 </form>
+{{c.page_list.display(limit=limit, page=page, count=count)}}
 {% endblock %}

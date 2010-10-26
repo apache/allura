@@ -42,6 +42,8 @@ class W:
     attachment_list = ffw.AttachmentList()
     subscribe_form = SubscribeForm()
     page_subscribe_form = SubscribeForm(thing='page')
+    page_list = ffw.PageList()
+    page_size = ffw.PageSize()
 
 
 class ForgeWikiApp(Application):
@@ -271,9 +273,15 @@ class RootController(BaseController):
     @with_trailing_slash
     @expose('jinja:wiki/browse.html')
     @validate(dict(sort=validators.UnicodeString(if_empty='alpha'),
-                   show_deleted=validators.StringBool(if_empty=False)))
-    def browse_pages(self, sort='alpha', show_deleted=False):
+                   show_deleted=validators.StringBool(if_empty=False),
+                   page=validators.Int(if_empty=0),
+                   limit=validators.Int(if_empty=None)))
+    def browse_pages(self, sort='alpha', show_deleted=False, page=0, limit=None):
         'list of all pages in the wiki'
+        c.page_list = W.page_list
+        c.page_size = W.page_size
+        limit, pagenum, start = g.handle_paging(limit, page, default=25)
+        count = 0
         pages = []
         uv_pages = []
         criteria = dict(app_config_id=c.app.config._id)
@@ -284,6 +292,8 @@ class RootController(BaseController):
         q = WM.Page.query.find(criteria)
         if sort == 'alpha':
             q = q.sort('title')
+        count = q.count()
+        q = q.skip(start).limit(int(limit))
         for page in q:
             recent_edit = page.history().first()
             p = dict(title=page.title, deleted=page.deleted)
@@ -300,30 +310,31 @@ class RootController(BaseController):
         if sort == 'recent':
             pages.sort(reverse=True, key=lambda x:(x['updated']))
             pages = pages + uv_pages
-        return dict(pages=pages, can_delete=can_delete, show_deleted=show_deleted)
+        return dict(pages=pages, can_delete=can_delete, show_deleted=show_deleted,
+                    limit=limit, count=count, page=pagenum)
 
     @with_trailing_slash
     @expose('jinja:wiki/browse_tags.html')
-    @validate(dict(sort=validators.UnicodeString(if_empty='alpha')))
-    def browse_tags(self, sort='alpha'):
+    @validate(dict(sort=validators.UnicodeString(if_empty='alpha'),
+                   page=validators.Int(if_empty=0),
+                   limit=validators.Int(if_empty=None)))
+    def browse_tags(self, sort='alpha', page=0, limit=None):
         'list of all labels in the wiki'
+        c.page_list = W.page_list
+        c.page_size = W.page_size
+        limit, pagenum, start = g.handle_paging(limit, page, default=25)
+        count = 0
         page_tags = {}
-        # tags = Tag.query.find({'artifact_ref.mount_point':c.app.config.options.mount_point,
-        #                        'artifact_ref.project_id':c.app.config.project_id}).all()
-        # for tag in tags:
-        #     artifact = ArtifactReference(tag.artifact_ref).artifact
-        #     if isinstance(artifact, WM.Page):
-        #         if tag.tag not in page_tags:
-        #             page_tags[tag.tag] = []
-        #         page_tags[tag.tag].append(artifact)
         q = WM.Page.query.find(dict(app_config_id=c.app.config._id, deleted=False))
+        count = q.count()
+        q = q.skip(start).limit(int(limit))
         for page in q:
             if page.labels:
                 for label in page.labels:
                     if label not in page_tags:
                         page_tags[label] = []
                     page_tags[label].append(page)
-        return dict(labels=page_tags)
+        return dict(labels=page_tags, limit=limit, count=count, page=pagenum)
 
     @with_trailing_slash
     @expose('jinja:wiki/markdown_syntax.html')
@@ -468,12 +479,21 @@ class PageController(BaseController):
 
     @without_trailing_slash
     @expose('jinja:wiki/page_history.html')
-    def history(self):
+    @validate(dict(page=validators.Int(if_empty=0),
+                   limit=validators.Int(if_empty=None)))
+    def history(self, page=0, limit=None):
         if not self.page:
             raise exc.HTTPNotFound
         require(has_artifact_access('read', self.page))
+        c.page_list = W.page_list
+        c.page_size = W.page_size
+        limit, pagenum, start = g.handle_paging(limit, page, default=25)
+        count = 0
         pages = self.page.history()
-        return dict(title=self.title, pages=pages, has_artifact_access=has_artifact_access)
+        count = pages.count()
+        pages = pages.skip(start).limit(int(limit))
+        return dict(title=self.title, pages=pages, has_artifact_access=has_artifact_access,
+                    limit=limit, count=count, page=pagenum)
 
     @without_trailing_slash
     @expose('jinja:wiki/page_diff.html')

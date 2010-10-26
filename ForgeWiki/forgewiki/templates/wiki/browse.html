@@ -5,6 +5,7 @@
 {% block header %}Browse Pages{% endblock %}
 
 {% block wiki_content %}
+{{c.page_size.display(limit=limit,count=count,page=page)}}
 View: <a id="sort_recent" href="?sort=recent">Recently Updated</a> | <a id="sort_alpha" href="?sort=alpha">Alphabetical</a>
 <table id="forge_wiki_browse">
   <thead>
@@ -36,6 +37,7 @@ View: <a id="sort_recent" href="?sort=recent">Recently Updated</a> | <a id="sort
 {% if can_delete %}
   <a id="toggle_deleted" href="#" style="display:none"><span/> deleted pages</a>
 {% endif %}
+{{c.page_list.display(limit=limit, page=page, count=count)}}
 {% endblock %}
 
 {% block wiki_extra_css %}
