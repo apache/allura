@@ -20,7 +20,7 @@ from ming.orm import MappedClass, FieldProperty, session, mapper
 from allura.lib.patience import SequenceMatcher
 from allura.lib import helpers as h
 
-from .artifact import Artifact
+from .artifact import Artifact, VersionedArtifact
 from .auth import User
 from .session import repository_orm_session, project_orm_session
 
@@ -197,6 +197,12 @@ class Repository(Artifact):
         return self.scm_host() + self.url_path + self.name
 
     @LazyProperty
+    def merge_requests(self):
+        return MergeRequest.query.find(dict(
+                app_config_id=self.app.config._id)).sort(
+            'request_number').all()
+
+    @LazyProperty
     def _additional_viewable_extensions(self):
         ext_list = self.additional_viewable_extensions or ''
         ext_list = [ext.strip() for ext in ext_list.split(',') if ext]
@@ -286,6 +292,71 @@ class Repository(Artifact):
         log.info('... refreshed repository %s.  Found %d new commits',
                  self, len(commit_ids))
         self.status = 'ready'
+
+    def push_upstream_context(self):
+        project, rest=h.find_project(self.upstream_repo.url)
+        with h.push_context(project._id):
+            app = project.app_instance(rest[0])
+        return h.push_context(project._id, app_config_id=app.config._id)
+
+    def pending_upstream_merges(self):
+        q = {
+            'downstream.project_id':self.project_id,
+            'downstream.mount_point':self.app.config.options.mount_point}
+        with self.push_upstream_context():
+            return MergeRequest.query.find(q).count()
+
+class MergeRequest(VersionedArtifact):
+    class __mongometa__:
+        name='merge-request'
+        indexes=['commit_id']
+        unique_indexes=[('app_config_id', 'request_number')]
+    type_s='Repository'
+
+    request_number=FieldProperty(int)
+    status=FieldProperty(str, if_missing='new')
+    downstream=FieldProperty(dict(
+            project_id=S.ObjectId,
+            mount_point=str,
+            commit_id=str))
+    creator_id=FieldProperty(S.ObjectId, if_missing=lambda:pylons.c.user._id)
+    created=FieldProperty(datetime, if_missing=datetime.utcnow)
+    summary=FieldProperty(str)
+    description=FieldProperty(str)
+
+    @LazyProperty
+    def creator(self):
+        from allura import model as M
+        return M.User.query.get(_id=self.creator_id)
+
+    @LazyProperty
+    def creator_name(self):
+        return self.creator.display_name or self.creator.username
+
+    @LazyProperty
+    def creator_url(self):
+        return self.creator.url()
+
+    @LazyProperty
+    def downstream_url(self):
+        with h.push_context(self.downstream.project_id, self.downstream.mount_point):
+            return pylons.c.app.url
+
+    @classmethod
+    def upsert(cls, **kw):
+        num = cls.query.find(dict(
+                app_config_id=pylons.c.app.config._id)).count()+1
+        while True:
+            try:
+                r = cls(request_number=num, **kw)
+                session(r).flush(r)
+                return r
+            except pymongo.errors.DuplicateKeyError:
+                session(r).expunge(r)
+                num += 1
+
+    def url(self):
+        return self.app.url + 'merge-requests/%s/' % self.request_number
 
 class LastCommitFor(MappedClass):
     class __mongometa__:

@@ -1,0 +1,18 @@
+{% extends 'repo/repo_master.html' %}
+
+{% block title %}
+  {% if c.app.repo %}
+    Repository: {{c.app.repo.name}}
+  {% else %}
+    Repository
+  {% endif %}
+{% endblock %}
+
+{% block header %}Request merge of {{c.app.config.options.mount_label}} {% endblock %}
+
+{% block content %}
+  {{ clone_info(c.app.repo) }}
+
+  {{ c.form.display(action='do_request_merge', value=dict(branch=branch))}}
+
+{% endblock %}

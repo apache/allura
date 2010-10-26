@@ -11,6 +11,7 @@ from ming.orm.ormsession import ThreadLocalORMSession
 from allura.lib import helpers as h
 from allura import model as M
 from allura.controllers.repository import RepoRootController, RefsController, CommitsController
+from allura.controllers.repository import MergeRequestsController
 from allura.lib.repository import RepositoryApp
 
 # Local imports
@@ -35,6 +36,7 @@ class ForgeGitApp(RepositoryApp):
         self.root = RepoRootController()
         self.root.ref = RefsController(BranchBrowser)
         self.root.ci = CommitsController()
+        setattr(self.root, 'merge-requests', MergeRequestsController())
 
     @LazyProperty
     def repo(self):

@@ -4,15 +4,17 @@ from urllib import quote, unquote
 
 from pylons import c, g, request, response
 from webob import exc
-from tg import redirect, expose, override_template, flash, url
-from tg.decorators import with_trailing_slash
+from tg import redirect, expose, override_template, flash, url, validate
+from tg.decorators import with_trailing_slash, without_trailing_slash
 
 from ming.orm import ThreadLocalORMSession
 
 from allura.lib import patience
 from allura.lib import security
 from allura.lib import helpers as h
+from allura.lib import widgets as w
 from allura.lib.widgets.repo import SCMLogWidget, SCMRevisionWidget, SCMTreeWidget
+from allura.lib.widgets.repo import SCMMergeRequestWidget
 from allura import model as M
 
 from .base import BaseController
@@ -25,6 +27,7 @@ def on_import():
     TreeBrowser.FileBrowserClass = FileBrowser
 
 class RepoRootController(BaseController):
+    mr_widget=SCMMergeRequestWidget()
 
     def _check_security(self):
         security.require(security.has_artifact_access('read'))
@@ -79,6 +82,54 @@ class RepoRootController(BaseController):
                 except Exception, ex:
                     flash(str(ex), 'error')
                     redirect(request.referer)
+
+    @without_trailing_slash
+    @expose('jinja:repo/request_merge.html')
+    def request_merge(self, branch=None):
+        c.form = self.mr_widget
+        if branch is None:
+            branch=c.app.repo.branches[0].name
+        return dict(branch=branch)
+
+    @expose()
+    @validate(form=mr_widget)
+    def do_request_merge(self, **kw):
+        downstream=dict(
+            project_id=c.project._id,
+            mount_point=c.app.config.options.mount_point,
+            commit_id=c.app.repo.commit(kw['branch']).object_id)
+        with c.app.repo.push_upstream_context():
+            mr = M.MergeRequest.upsert(
+                downstream=downstream,
+                summary=kw['summary'],
+                description=kw['description'])
+            redirect(mr.url())
+
+class MergeRequestsController(object):
+
+    @expose('jinja:repo/merge_requests.html')
+    def index(self):
+        requests = c.app.repo.merge_requests
+        return dict(requests=requests)
+
+    @expose()
+    def _lookup(self, num, *remainder):
+        return MergeRequestController(num), remainder
+
+class MergeRequestController(object):
+    thread_widget=w.Thread(
+        page=None, limit=None, page_size=None, count=None,
+        style='linear')
+
+    def __init__(self, num):
+        self.req = M.MergeRequest.query.get(
+            request_number=int(num))
+        if self.req is None: raise exc.HTTPNotFound
+
+    @expose('jinja:repo/merge_request.html')
+    def index(self):
+        c.thread = self.thread_widget
+        return dict(req=self.req)
 
 class RefsController(object):
 

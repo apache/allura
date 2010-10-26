@@ -1,4 +1,7 @@
+import pylons
+
 import ew
+from allura.lib.widgets import forms as ff
 from allura.lib.widgets import form_fields as ffw
 
 class SCMLogWidget(ew.Widget):
@@ -34,3 +37,13 @@ class SCMTreeWidget(ew.Widget):
     def __init__(self, **kw):
         super(SCMTreeWidget, self).__init__(**kw)
         self.list = list
+
+class SCMMergeRequestWidget(ff.ForgeForm):
+    class fields(ew.WidgetsList):
+        summary=ew.TextField()
+        branch=ew.SingleSelectField(
+            label='Branch or Tag',
+            options=lambda:[
+                b.name
+                for b in pylons.c.app.repo.branches + pylons.c.app.repo.tags])
+        description=ffw.AutoResizeTextarea()

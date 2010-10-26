@@ -1,0 +1,38 @@
+{% extends 'repo/repo_master.html' %}
+
+{% block title %}
+  {% if c.app.repo %}
+    Repository: {{c.app.repo.name}}
+  {% else %}
+    Repository
+  {% endif %}
+{% endblock %}
+
+{% block header %}{{c.app.config.options.mount_label}} Merge Requests{% endblock %}
+
+{% block content %}
+  {{ clone_info(c.app.repo) }}
+
+  <table>
+    <thead>
+      <tr>
+        <th>#</th>
+        <th>Status</th>
+        <th>Summary</th>
+        <th>Repository</th>
+        <th>Creator</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for req in requests %}
+      <tr>
+        <td><a href="{{req.request_number}}/">{{req.request_number}}</a></td>
+        <td><a href="{{req.request_number}}/">{{req.status}}</a></td>
+        <td><a href="{{req.request_number}}/">{{req.summary}}</a></td>
+        <td><a href="{{req.downstream_url}}">{{req.downstream_url}}</a></td>
+        <td><a href="{{req.creator_url}}">{{req.creator_name}}</a></td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+{% endblock %}

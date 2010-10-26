@@ -77,15 +77,28 @@ class RepositoryApp(Application):
             links.append(SitemapEntry('Admin',
                                       c.project.url()+'admin/'+self.config.options.mount_point,
                                       ui_icon='tool-admin'))
+        if self.repo.merge_requests:
+            links += [
+                SitemapEntry(
+                    'Merge Requests', c.app.url + 'merge-requests/',
+                    className='nav_child',
+                    small=len(self.repo.merge_requests)) ]
         if self.repo.upstream_repo.name:
             links += [
                 SitemapEntry('Clone of'),
                 SitemapEntry(self.repo.upstream_repo.name, self.repo.upstream_repo.url,
                              className='nav_child'),
-                SitemapEntry('Request Merge', c.app.url + 'merge_request',
+                SitemapEntry('Request Merge', c.app.url + 'request_merge',
                              ui_icon='merge',
                              className='nav_child')
                 ]
+            pending_upstream_merges = self.repo.pending_upstream_merges()
+            if pending_upstream_merges:
+                links.append(SitemapEntry(
+                        'Pending Merges',
+                        self.repo.upstream_repo.url + 'merge-requests/',
+                        className='nav_child',
+                        small=pending_upstream_merges))
         if self.repo.branches:
             links.append(SitemapEntry('Branches'))
             for b in self.repo.branches:
