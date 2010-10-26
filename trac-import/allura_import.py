@@ -1,9 +1,12 @@
 import sys
+import urllib
 import urllib2
+import urlparse
+import hmac
+import hashlib
 from optparse import OptionParser
 from pprint import pprint
-
-from allura.lib import rest_api
+from datetime import datetime
 
 
 def parse_options():
@@ -22,13 +25,30 @@ Import project data dump in JSON format into Allura project.''')
     return options, args
 
 
-class RestClient(rest_api.RestClient):
+class AlluraRestClient(object):
 
-    def call(self, method, url, **params):
+    def __init__(self, base_url, api_key, secret_key):
+        self.base_url = base_url
+        self.api_key = api_key
+        self.secret_key = secret_key
+        
+    def sign(self, path, params):
+        params.append(('api_key', self.api_key))
+        params.append(('api_timestamp', datetime.utcnow().isoformat()))
+        message = path + '?' + urllib.urlencode(sorted(params))
+        digest = hmac.new(self.secret_key, message, hashlib.sha256).hexdigest()
+        params.append(('api_signature', digest))
+        return params
+
+    def call(self, url, **params):
+        url = urlparse.urljoin(options.base_url, url)
+        params = self.sign(urlparse.urlparse(url).path, params.items())
+
         try:
-            return self.request(method, url, **params)
+            result = urllib2.urlopen(url, urllib.urlencode(params))
+            return result.read()
         except urllib2.HTTPError, e:
-            error_content = e.fp.read()
+            error_content = e.read()
             e.msg += '. Error response:\n' + error_content
             raise e
 
@@ -40,5 +60,5 @@ if __name__ == '__main__':
     else:
         url = '/rest/p/test/bugs/perform_import'
 
-    cli = RestClient(base_uri=options.base_url, api_key=options.api_key, secret_key=options.secret_key)
-    print cli.call('POST', url, doc=open(args[0]).read())
+    cli = AlluraRestClient(options.base_url, options.api_key, options.secret_key)
+    print cli.call(url, doc=open(args[0]).read())
