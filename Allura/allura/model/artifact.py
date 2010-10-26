@@ -276,7 +276,10 @@ class Artifact(MappedClass):
         name='artifact'
         indexes = [ 'app_config_id' ]
         def before_save(data):
-            data['mod_date'] = datetime.utcnow()
+            if not getattr(artifact_orm_session._get(), 'skip_mod_date', False):
+                data['mod_date'] = datetime.utcnow()
+            else:
+                log.info('Not updating mod_date')
             if c.project:
                 c.project.last_updated = datetime.utcnow()
     type_s = 'Generic Artifact'

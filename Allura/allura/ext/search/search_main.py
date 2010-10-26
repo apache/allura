@@ -57,6 +57,8 @@ class SearchApp(Application):
                 a = M.ArtifactReference(r.artifact_reference).artifact
                 if a is None: continue
                 a.backreferences[s['id']] =aref
+        # TODO: maybe move to the top of function?
+        M.session.artifact_orm_session._get().skip_mod_date = True
         M.session.artifact_orm_session._get().disable_artifact_index = True
 
     @classmethod
