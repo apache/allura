@@ -15,7 +15,7 @@ import pymongo.bson
 from ming import schema as S
 from ming.base import Object
 from ming.utils import LazyProperty
-from ming.orm import MappedClass, FieldProperty, session
+from ming.orm import MappedClass, FieldProperty, session, mapper
 
 from allura.lib.patience import SequenceMatcher
 from allura.lib import helpers as h
@@ -566,6 +566,22 @@ class Commit(RepoObject):
 
     def context(self):
         return self.repo.commit_context(self)
+
+    @classmethod
+    def unknown_commit_ids_in(cls, commit_ids):
+        commit_ids = list(commit_ids)
+        m = mapper(cls)
+        q = session(cls).impl.find(
+            m.doc_cls,
+            dict(
+                type='commit',
+                object_id={'$in':commit_ids},
+                ),
+            ['object_id'])
+        known_commits = set(obj.object_id for obj in q)
+        return [ cid for cid in commit_ids if cid not in known_commits ]
+
+
 
 class Tree(RepoObject):
     README_NAMES=set(['readme.txt','README.txt','README.TXT','README'])

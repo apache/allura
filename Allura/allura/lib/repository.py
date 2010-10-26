@@ -137,7 +137,7 @@ class RepositoryApp(Application):
         M.Notification.post_user(
             c.user, c.app.repo, 'created',
             text='Repository %s/%s created' % (
-                c.project.short_name, c.app.config.options.mount_point))
+                c.project.shortname, c.app.config.options.mount_point))
 
     @classmethod
     @audit('repo.refresh')

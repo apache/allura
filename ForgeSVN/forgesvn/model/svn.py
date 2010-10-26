@@ -118,12 +118,11 @@ class SVNImplementation(M.RepositoryImplementation):
 
     def new_commits(self, all_commits=False):
         head_revno = self._revno(self._repo.heads[0].object_id)
-        result = []
-        for revno in range(1, head_revno+1):
-            oid = self._oid(revno)
-            if all_commits or M.Commit.query.find(dict(object_id=oid)).count() == 0:
-                result.append(oid)
-        return result
+        oids = [ self._oid(revno) for revno in range(1, head_revno+1) ]
+        if all_commits:
+            return oids
+        else:
+            return M.Commit.unknown_commit_ids_in(oids)
 
     def commit_context(self, commit):
         revno = int(commit.object_id.split(':')[1])
