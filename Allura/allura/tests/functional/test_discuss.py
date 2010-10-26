@@ -103,7 +103,6 @@ class TestAttachment(TestController):
         else:
             assert False, 'attachment link not found'
         r = self.app.get(alink)
-        assert 'Content-Disposition' not in r.headers
         r = self.app.post(self.post_link + 'attach',
                           upload_files=[('file_info', 'test.o12', 'HiThere!')])
         r = self.app.post(alink, params=dict(delete='on'))

@@ -76,7 +76,10 @@ class AttachmentController(BaseController):
             response.content_type = fp.content_type.encode('utf-8')
             if not embed:
                 response.headers.add('Content-Disposition',
-                                     'attachment;filename=%s' % filename)
+                                     'attachment;filename="%s"' % filename)
+            else:
+                response.headers.add('Content-Disposition',
+                                     'filename="%s"' % filename)
             return fp.read()
         return self.filename
 
