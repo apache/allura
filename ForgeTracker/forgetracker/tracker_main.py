@@ -37,6 +37,7 @@ from forgetracker.widgets.ticket_form import TicketForm, TicketCustomField
 from forgetracker.widgets.bin_form import BinForm
 from forgetracker.widgets.ticket_search import TicketSearchResults, MassEdit, MassEditForm
 from forgetracker.widgets.admin_custom_fields import TrackerFieldAdmin, TrackerFieldDisplay
+from forgetracker.import_support import ImportSupport
 
 log = logging.getLogger(__name__)
 
@@ -987,6 +988,26 @@ class RootRestController(BaseController):
         ticket_form.pop('ticket_num', None)
         ticket.update(ticket_form)
         redirect(str(ticket.ticket_num)+'/')
+
+    @expose('json:')
+    def validate_import(self, doc=None, **post_data):
+        migrator = ImportSupport()
+        try:
+            errors, warnings = migrator.validate_import(doc)
+            if errors or warnings:
+                return dict(status=False, message='See details in errors/warnings', errors=errors, warnings=warnings)
+            return dict(status=True)
+        except Exception, e:
+            return dict(status=False, message=str(e))
+
+    @expose('json:')
+    def perform_import(self, doc=None, **post_data):
+        migrator = ImportSupport()
+        try:
+            status = migrator.perform_import(doc)
+            return dict(status=status)
+        except Exception, e:
+            return dict(status=False, message=str(e))
 
     @expose()
     def _lookup(self, ticket_num, *remainder):
