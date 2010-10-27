@@ -1,0 +1,93 @@
+#nav_menu { display: none; }
+div.content {
+    font-family: Helvetica;
+}
+div.content div.row > div.column {
+    width: 100%
+}
+div.welcome { margin: 2em 0; }
+div.welcome span, div.welcome input {
+    position: relative;
+    left: 4em;
+}
+div.welcome input {
+    left: 4em;
+    width: 65%;
+    line-height: 20px;
+    font-size: 18px;
+    -webkit-border-radius: 5px;
+    -moz-border-radius: 5px;
+}
+#start {
+    display: inline-block;
+    position: absolute;
+    right: 9em;
+    top: 0;
+    font-size: 18px;
+    font-weight: 600;
+    text-shadow: none;
+    color: white !important;
+    padding: 0.5em 1.5em 0.45em 1.5em;
+    text-decoration: none;
+    -webkit-border-radius: 5px;
+    -moz-border-radius: 5px;
+	background: rgb(0,0,0);
+		background-image: -webkit-gradient(linear, 0% 0%, 0% 100%, to(rgb(0,0,0)), from(rgb(90,90,90)));
+		background-image: -moz-linear-gradient(100% 100% 90deg, rgb(0,0,0), rgb(90,90,90) 100%);
+    border: 1px solid black;
+}
+div.inner-row {
+    display: block;
+    position: relative;
+    padding: 1em 1em 1em 10em;
+}
+div.inner-row + div.inner-row {
+    padding-top: 4.8em;
+    margin-top: 1em;
+}
+div.tool {
+    display: inline-block;
+    position: relative;
+    width: 30%;
+    padding: 0 1em 3em 0;
+}
+div.tool img {
+    position: absolute;
+    left: -64px;
+    top: 0;
+}
+div.tool input.unlabeled {
+    position: absolute;
+    left: -46px;
+    top: 60px;
+}
+div.tool .checkbox-wrapper {
+    display: block;
+    position: absolute;
+    top: 6em;
+}
+div.tool .checkbox-wrapper span {
+    font-size: 13px;
+    font-weight: 600;
+}
+div.tool h1, div.welcome {
+    font-size:18px;
+    font-weight: 300;
+}
+div.tool h1 {
+    position: relative;
+    top: -10px;
+}
+div.tool p {
+    display: block;
+    font-size: 13px;
+    line-height: 18px;
+    position: absolute;
+    padding-right: 6em;
+    top: 12px;
+}
+
+form input[type=checkbox][name=Git],
+form input[type=checkbox][name=SVN] {
+    float: none;
+}

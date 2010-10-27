@@ -1,18 +1,66 @@
-<form xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:py="http://genshi.edgewall.org/"
-      xmlns:xi="http://www.w3.org/2001/XInclude"
-      method="POST"
-      action="$action">
-  <ol>
-    <li>
-      <label for="pid">Project ID:</label>
-      ${Markup(c.widget.widget_type.display_field_by_idx(0))}
-      <!-- if ctx['errors'] and field.show_errors and not ignore_errors:
-          display = "%s<div class='error'>%s</div>" % (display, ctx['errors']) -->
-    </li>
-    <li>
-      <label>&nbsp;</label>
-      <input type="submit" id="submit" value="Create"/>
-    </li>
-  </ol>
+<form action="{{action}}" enctype="None" method="POST">
+
+    <div class="welcome">
+        <span>Project Name:</span>
+        {{c.widget.widget_type.display_field_by_idx(0)|safe}}
+        </p>
+    </div>
+    <div class="inner-row">
+        <div class="tool">
+            <img src="/nf/images/wiki_48.png">
+            {{c.widget.widget_type.display_field_by_idx(3)|safe}}
+            <h1>Wikis</h1>
+            <p>
+                Documentation is key to your project and the wiki tool helps make it easy for anyone to contribute.
+            </p>
+        </div>
+        <div class="tool">
+            <img src="/nf/images/code_48.png">
+            <h1>Code</h1>
+            <p>
+                SVN, Git and Mercurial will help you keep track of your changes.
+            </p>
+            <div class="checkbox-wrapper">
+            <span>{{c.widget.widget_type.display_field_by_idx(4)|safe}} Git</span>
+            <span>{{c.widget.widget_type.display_field_by_idx(5)|safe}} SVN</span>
+            </div>
+        </div>
+        <div class="tool">
+            <img src="/nf/images/tickets_48.png">
+            {{c.widget.widget_type.display_field_by_idx(6)|safe}}
+            <h1>Tickets</h1>
+            <p>
+                Bugs, enhancements, tasks, etc., will help you plan and manage your development.
+            </p>
+        </div>
+    </div>
+    <div class="inner-row">
+        <div class="tool">
+            <img src="/nf/images/downloads_48.png">
+            {{c.widget.widget_type.display_field_by_idx(7)|safe}}
+            <h1>Downloads</h1>
+            <p>
+                Use the largest free, managed, global mirror network to distribute your files.
+            </p>
+        </div>
+        <div class="tool">
+            <img src="/nf/images/stats_48.png">
+            <h1>Stats</h1>
+            <p>
+                Follow the download trends that enable you to develop better software.
+                (Comes with Downloads)
+            </p>
+        </div>
+        <div class="tool">
+            <img src="/nf/images/forums_48.png">
+            {{c.widget.widget_type.display_field_by_idx(8)|safe}}
+            <h1>Forums</h1>
+            <p>
+                Collaborate with your community in your forums.
+            </p>
+        </div>
+    </div>
+    <div class="inner-row">
+        <input type="submit" value="Start" id="start">
+    </div>
 </form>

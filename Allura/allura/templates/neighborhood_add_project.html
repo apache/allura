@@ -3,8 +3,6 @@
 
 {% block title %}{{neighborhood.name}} / Create a Project{% endblock %}
 
-{% block header %}Create a Project{% endblock %}
-
 {% block content %}
-          {{c.add_project.display(action=neighborhood.url()+'register',value=form_data)}}
+    {{c.add_project.display(action=neighborhood.url()+'register',value=form_data)}}
 {% endblock %}

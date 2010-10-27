@@ -131,18 +131,15 @@ class NeighborhoodController(object):
                     limit=limit, page=page, count=count)
 
     @expose('jinja:neighborhood_add_project.html')
-    def add_project(self, project_unixname=None, project_description=None, project_name=None):
+    def add_project(self, **form_data):
         require(has_neighborhood_access('create', self.neighborhood), 'Create access required')
         c.add_project = W.add_project
-        form_data = dict(project_unixname=project_unixname,
-                         project_description=project_description,
-                         project_name=project_name)
         return dict(neighborhood=self.neighborhood, form_data=form_data)
 
     @h.vardec
     @expose()
     @validate(W.add_project, error_handler=add_project)
-    def register(self, project_unixname=None, project_description=None, project_name=None):
+    def register(self, project_unixname=None, project_description=None, project_name=None, **kw):
         require(has_neighborhood_access('create', self.neighborhood), 'Create access required')
         try:
             p = self.neighborhood.register_project(project_unixname.lower())
@@ -162,11 +159,18 @@ class NeighborhoodController(object):
             p.name = project_name
         if project_description:
             p.short_description = project_description
+        c.project = p
+        ming.orm.ormsession.ThreadLocalORMSession.flush_all()
+        # require(has_project_access('tool'))
+        for i, tool in enumerate(kw):
+            if kw[tool]:
+                h.log_action(log, 'install tool').info(
+                    'install tool %s', tool,
+                    meta=dict(tool_type=tool, mount_point=(tool.lower() or h.nonce()), mount_label=tool))
+                p.install_app(tool, (tool.lower() or h.nonce()), mount_label=tool, ordinal=i)
         flash('Welcome to the SourceForge Beta System! '
-              'To get started, please select some tools for your project. '
-              'Next, you may want to check out the "Overview" screen '
-              'and fill out some information about your project.')
-        redirect(p.script_name + 'admin/tools_starter')
+              'To get started, fill out some information about your project.')
+        redirect(p.script_name + 'admin/overview')
 
     @expose()
     def icon(self):

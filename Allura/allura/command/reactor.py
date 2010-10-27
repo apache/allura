@@ -208,7 +208,7 @@ class ReactorCommand(base.Command):
                             cfg.options.mount_point)
                         method(pylons.c.app, msg.delivery_info['routing_key'], data)
                 else:
-                    # Classmethod or function -- just call once 
+                    # Classmethod or function -- just call once
                     method(msg.delivery_info['routing_key'], data)
             except: # pragma no cover
                 base.log.exception('Exception react handling %s: %s', tool_name, method)
