@@ -1,3 +1,4 @@
+import sys
 from pprint import pprint
 import csv
 import urllib2
@@ -17,8 +18,10 @@ def parse_options():
     optparser = OptionParser(usage=''' %prog <Trac URL>
  
 Export ticket data from a Trac instance''')
+    optparser.add_option('-o', '--out-file', dest='out_filename', help='Write to file (default stdout)')
     optparser.add_option('--start', dest='start_id', type='int', default=1, help='Start with given ticket numer (or next accessible)')
     optparser.add_option('--limit', dest='limit', type='int', default=None, help='Limit number of tickets')
+    optparser.add_option('-v', '--verbose', dest='verbose', action='store_true', help='Verbose operation')
     options, args = optparser.parse_args()
     if len(args) != 1:
         optparser.error("Wrong number of arguments.")
@@ -72,7 +75,8 @@ class TracExport(object):
         return d.strftime("%Y-%m-%dT%H:%M:%SZ")
 
     def csvopen(self, url):
-        print url
+        if options.verbose:
+            print >>sys.stderr, url
         f = urllib2.urlopen(url)
         # Trac doesn't throw 403 error, just shows normal 200 HTML page
         # telling that access denied. So, we'll emulate 403 ourselves.
@@ -168,4 +172,9 @@ if __name__ == '__main__':
     options, args = parse_options()
     ex = TracExport(args[0], start_id=options.start_id)
     doc = [t for t in islice(ex, options.limit)]
-    print json.dumps(doc, cls=DateJSONEncoder, indent=2)
+    out_file = sys.stdout
+    if options.out_filename:
+        out_file = open(options.out_filename, 'w')
+    out_file.write(json.dumps(doc, cls=DateJSONEncoder, indent=2))
+    # It's bad habit not to terminate lines
+    out_file.write('\n')
