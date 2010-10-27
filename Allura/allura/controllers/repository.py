@@ -43,11 +43,14 @@ class RepoRootController(BaseController):
 
     @with_trailing_slash
     @expose('jinja:repo/fork.html')
-    def fork(self, to_name=None):
+    def fork(self, to_name=None, project_name=None):
         security.require_authenticated()
         if not c.app.forkable: raise exc.HTTPNotFound
         from_repo = c.app.repo
-        to_project_name = 'u/' + c.user.username
+        if project_name:
+            to_project_name = project_name
+        else:
+            to_project_name = 'u/' + c.user.username
         ThreadLocalORMSession.flush_all()
         ThreadLocalORMSession.close_all()
         from_project = c.project
@@ -70,7 +73,7 @@ class RepoRootController(BaseController):
                         from_repo.tool_name, to_name,
                         cloned_from_project_id=from_project._id,
                         cloned_from_repo_id=from_repo._id)
-                    redirect('/'+to_project_name+'/'+to_name+'/')
+                    redirect(to_project.url()+to_name+'/')
                 except exc.HTTPRedirection:
                     raise
                 except Exception, ex:
