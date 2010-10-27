@@ -103,7 +103,7 @@ class HgImplementation(M.RepositoryImplementation):
         result.set_context(self._repo)
         return result
 
-    def new_commits(self):
+    def new_commits(self, all_commits=False):
         graph = {}
         to_visit = [ self._hg[hd.object_id] for hd in self._repo.heads ]
         while to_visit:
@@ -113,9 +113,12 @@ class HgImplementation(M.RepositoryImplementation):
                 p.hex() for p in obj.parents()
                 if p.hex() != obj.hex())
             to_visit += obj.parents()
-        return [
-            oid for oid in topological_sort(graph)
-            if M.Commit.query.find(dict(repo_id='hg', object_id=oid)).count() == 0 ]
+        if all_commits:
+            return list(topological_sort(graph))
+        else:
+            return [
+                oid for oid in topological_sort(graph)
+                if M.Commit.query.find(dict(repo_id='hg', object_id=oid)).count() == 0 ]
 
     def commit_context(self, commit):
         prev_ids = commit.parent_ids

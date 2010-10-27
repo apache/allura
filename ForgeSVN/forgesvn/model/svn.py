@@ -115,12 +115,12 @@ class SVNImplementation(M.RepositoryImplementation):
         result.set_context(self._repo)
         return result
 
-    def new_commits(self):
+    def new_commits(self, all_commits=False):
         head_revno = self._revno(self._repo.heads[0].object_id)
         result = []
         for revno in range(1, head_revno+1):
             oid = self._oid(revno)
-            if M.Commit.query.find(dict(repo_id='svn', object_id=oid)).count() == 0:
+            if all_commits or M.Commit.query.find(dict(repo_id='svn', object_id=oid)).count() == 0:
                 result.append(oid)
         return result
 

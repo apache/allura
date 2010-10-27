@@ -215,14 +215,14 @@ class Repository(Artifact):
                 content_type, encoding = 'application/octet-stream', None
         return content_type, encoding
 
-    def refresh(self):
+    def refresh(self, all_commits=False):
         '''Find any new commits in the repository and update'''
         self._impl.refresh_heads()
         self.status = 'analyzing'
         session(self).flush()
         sess = session(Commit)
         log.info('Refreshing repository %s', self)
-        commit_ids = self._impl.new_commits()
+        commit_ids = self._impl.new_commits(all_commits)
         log.info('... %d new commits', len(commit_ids))
         # Refresh history
         i=0
