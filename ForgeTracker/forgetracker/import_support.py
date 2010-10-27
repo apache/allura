@@ -58,11 +58,14 @@ class ImportSupport(object):
         FIELD_NAME_MAP = {
           'date': ('created_date', self.parse_date), 
           'date_updated': ('mod_date', self.parse_date), 
+          'keywords': ('labels', lambda s: s.split()),
+          'version': (None, None),
         }
         remapped = {}
         for f, v in ticket_dict.iteritems():
             f, conv = FIELD_NAME_MAP.get(f, (f, lambda x:x))
-            remapped[f] = conv(v)
+            if f:
+                remapped[f] = conv(v)
 
         log.info('==========Calling constr============')
         ticket = TM.Ticket(
