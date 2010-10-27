@@ -186,6 +186,21 @@ class ForgeTrackerApp(Application):
         links.append(SitemapEntry('Markdown Syntax', self.config.url() + 'markdown_syntax', className='nav_child'))
         return links
 
+    def get_custom_fields(self):
+        return self.globals.custom_fields
+
+    def has_custom_field(self, field):
+        '''Checks if given custom field is defined. (Custom field names
+        must start with '_'.)
+        '''
+        for f in self.get_custom_fields():
+            if f['name'] == field:
+                return True
+        return False
+        
+    def add_custom_field(self, field_def):
+        self.globals.custom_fields.append(field_def)
+
     def install(self, project):
         'Set up any default permissions and roles here'
 
@@ -951,7 +966,7 @@ class TrackerAdminController(DefaultAdminController):
         require(has_artifact_access('configure', app=self.app))
         self.app.globals.open_status_names=post_data['open_status_names']
         self.app.globals.closed_status_names=post_data['closed_status_names']
-        custom_fields = post_data['custom_fields']
+        custom_fields = post_data.get('custom_fields', [])
         for field in custom_fields:
             field['name'] = '_' + '_'.join([w for w in NONALNUM_RE.split(field['label'].lower()) if w])
             field['label'] = field['label'].title()
