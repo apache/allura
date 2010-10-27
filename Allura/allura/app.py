@@ -13,6 +13,7 @@ from allura.lib.helpers import push_config
 from allura.lib.security import require, has_artifact_access
 from allura import model
 from allura.controllers import BaseController
+from allura.lib.decorators import react
 
 log = logging.getLogger(__name__)
 
@@ -136,6 +137,12 @@ class Application(object):
     def is_visible_to(self, user):
         '''Whether the user can view the app.'''
         return has_artifact_access('read', app=self)(user=user)
+
+    @react('forge.project_updated')
+    def subscribe_new_admin(self, routing_key, doc):
+        if str(c.project._id) == doc['project_id']:
+            for u in model.ProjectRole.query.find({'name':'Admin'}).first().users_with_role():
+                model.Mailbox.subscribe(type='direct', user_id=u._id, project_id=doc['project_id'], app_config_id=self.config._id)
 
     @classmethod
     def default_options(cls):

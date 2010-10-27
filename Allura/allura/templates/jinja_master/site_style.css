@@ -1230,8 +1230,8 @@ ul.ui-tab li a {
 .ui-icon-tool-Tickets { background-image: url('{{g.forge_static("images/tickets_24.png")}}'); }
 .ui-icon-tool-Downloads { background-image: url('{{g.forge_static("images/downloads_24.png")}}'); }
 .ui-icon-tool-Link { background-image: url('{{g.forge_static("images/ext_24.png")}}'); }
-.ui-icon-tool-Blog { background-image: url('{{g.forge_static("images/blog_24.png")}}'); }
-.ui-icon-tool-Chat { background-image: url('{{g.forge_static("images/chat_24.png")}}'); }
+.ui-icon-tool-blog { background-image: url('{{g.forge_static("images/blog_24.png")}}'); }
+.ui-icon-tool-chat { background-image: url('{{g.forge_static("images/chat_24.png")}}'); }
 
 /* Attachments */
 
