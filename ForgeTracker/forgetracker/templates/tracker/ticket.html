@@ -169,7 +169,7 @@
           });
 
           // Allow the ticket metadata links to function without turning on edit mode
-          $('.editbox a').click(function(event){
+          $('.editbox a, #ticket_content a').click(function(event){
             event.stopPropagation();
           });
         });
