@@ -5,9 +5,12 @@ import json
 import time
 from optparse import OptionParser
 from itertools import islice
+from datetime import datetime
 
 import feedparser
 from html2text import html2text
+import dateutil.parser
+import pytz
 
 
 def parse_options():
@@ -62,11 +65,11 @@ class TracExport(object):
         glue = '&' if '?' in suburl else '?'
         return self.base_url + suburl + glue + 'format=' + type
 
-    @staticmethod
-    def trac2z_date(s):
-        assert len(s) == 25
-        assert s.endswith('+00:00')
-        return s[0:10] + 'T' + s[11:19] + 'Z'
+    @classmethod
+    def trac2z_date(cls, s):
+        d = dateutil.parser.parse(s)
+        d = d.astimezone(pytz.UTC)
+        return d.strftime("%Y-%m-%dT%H:%M:%SZ")
 
     def csvopen(self, url):
         print url
