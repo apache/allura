@@ -17,6 +17,7 @@ import markdown
 import feedparser
 
 from . import macro
+from . import helpers as h
 
 log = logging.getLogger(__name__)
 
@@ -38,6 +39,7 @@ class ForgeExtension(markdown.Extension):
         # Rewrite all relative links that don't start with . to have a '../' prefix
         md.postprocessors['rewrite_relative_links'] = RelativeLinkRewriter(
             make_absolute=self._is_email)
+        md.postprocessors['mark_safe'] = MarkAsSafe()
 
     def reset(self):
         self.forge_processor.reset()
@@ -195,6 +197,11 @@ class ForgeTreeProcessor(markdown.treeprocessors.Treeprocessor):
             classes = node.get('class', '').split() + [ self.parent._store('link', href) ]
             node.attrib['class'] = ' '.join(classes)
         return root
+
+class MarkAsSafe(markdown.postprocessors.Postprocessor):
+
+    def run(self, text):
+        return h.html.literal(text)
 
 class RelativeLinkRewriter(markdown.postprocessors.Postprocessor):
 

@@ -76,9 +76,11 @@ class ForgeConfig(AppConfig):
                 log.info('Registering templates for application %s', ep.module_name)
                 loaders[ep.module_name] = PackageLoader(ep.module_name, 'templates')
 
-        config['pylons.app_globals'].jinja2_env = Environment(loader=ChoiceLoader(loaders.values()),
-                 auto_reload=self.auto_reload_templates,
-                 extensions=['jinja2.ext.do'])
+        config['pylons.app_globals'].jinja2_env = Environment(
+            loader=ChoiceLoader(loaders.values()),
+            auto_reload=self.auto_reload_templates,
+            autoescape=True,
+            extensions=['jinja2.ext.do'])
         # Jinja's unable to request c's attributes without strict_c
         config['pylons.strict_c'] = True
 
