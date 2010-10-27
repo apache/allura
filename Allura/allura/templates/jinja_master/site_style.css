@@ -1215,9 +1215,11 @@ ul.ui-tab li a {
     width: 24px;
     height: 24px;
     top: -2px;
-    left: -2px;
     background-position: 0 0;
 }
+
+#nav_menu .ico-l, #nav_menu .ico-r,
+.quik .ico-l, .quik .ico-l {padding-left: 30px !important;}
 
 .ui-icon-tool-home { background-image: url('{{g.forge_static("images/home_24.png")}}'); }
 .ui-icon-tool-Wiki { background-image: url('{{g.forge_static("images/wiki_24.png")}}'); }
