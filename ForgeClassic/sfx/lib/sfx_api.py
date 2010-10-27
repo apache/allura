@@ -43,7 +43,7 @@ class SFXUserApi(object):
             urllib.quote(self.project_host or request.host),
             id)
 
-    def user_data(self, username, timeout=2):
+    def user_data(self, username, timeout=10):
         """
         given a sfnet hostname and userid, returns a dict of user data
         """
