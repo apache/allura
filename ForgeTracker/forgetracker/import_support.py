@@ -48,9 +48,14 @@ class ImportSupport(object):
         return datetime.strptime(date_string, '%Y-%m-%dT%H:%M:%SZ')
 
     def custom(self, ticket, field, value):
+        field = '_' + field
+        if not c.app.has_custom_field(field):
+            log.warning('Custom field %s is not defined, defining as string', field)
+            c.app.add_custom_field(dict(name=field, label=field[1:].capitalize(), type='string'))
+            ThreadLocalORMSession.flush_all()
         if 'custom_fields' not in ticket:
             ticket['custom_fields'] = {}
-        ticket['custom_fields']['_' + field] = value
+        ticket['custom_fields'][field] = value
 
     def make_user_placeholder(self, username):
         user = M.User.register(dict(username=username,
@@ -69,6 +74,7 @@ class ImportSupport(object):
           'resolution': self.custom,
           'milestone': self.custom,
           'priority': self.custom,
+          'private': self.custom,
           'version': (None, None),
         }
         remapped = {}
