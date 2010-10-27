@@ -122,13 +122,20 @@ class BranchBrowser(BaseController):
                 offset=start,
                 limit=limit)
         c.log_widget = self.log_widget
+        if self._branch is None:
+            if c.app.repo.heads:
+                count = c.app.repo.heads[0].count
+            else:
+                count = 0
+        else:
+            count = self._branch.count
         return dict(
             username=c.user._id and c.user.username,
             branch=self._branch,
             log=revisions,
             page=page,
             limit=limit,
-            count=self._branch.count,
+            count=count,
             **kw)
 
 class CommitBrowser(BaseController):
