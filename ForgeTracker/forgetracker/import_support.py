@@ -47,6 +47,11 @@ class ImportSupport(object):
     def parse_date(self, date_string):
         return datetime.strptime(date_string, '%Y-%m-%dT%H:%M:%SZ')
 
+    def custom(self, ticket, field, value):
+        if 'custom_fields' not in ticket:
+            ticket['custom_fields'] = {}
+        ticket['custom_fields']['_' + field] = value
+
     def make_user_placeholder(self, username):
         user = M.User.register(dict(username=username,
                                    display_name=username), False)
@@ -55,23 +60,32 @@ class ImportSupport(object):
         return user
 
     def make_artifact(self, ticket_dict):
+        # (new_field_name, value_convertor(val)) or
+        # handler(ticket, field, val)
         FIELD_NAME_MAP = {
           'date': ('created_date', self.parse_date), 
           'date_updated': ('mod_date', self.parse_date), 
           'keywords': ('labels', lambda s: s.split()),
+          'resolution': self.custom,
+          'milestone': self.custom,
+          'priority': self.custom,
           'version': (None, None),
         }
         remapped = {}
         for f, v in ticket_dict.iteritems():
-            f, conv = FIELD_NAME_MAP.get(f, (f, lambda x:x))
-            if f:
-                remapped[f] = conv(v)
+            transform = FIELD_NAME_MAP.get(f, (f, lambda x:x))
+            if callable(transform):
+                transform(remapped, f, v)
+            else:
+                f, conv = transform
+                if f:
+                    remapped[f] = conv(v)
 
         log.info('==========Calling constr============')
         ticket = TM.Ticket(
             app_config_id=c.app.config._id,
             custom_fields=dict(),
-            ticket_num=c.app.globals.next_ticket_num(), mod_date=remapped['mod_date'])
+            ticket_num=c.app.globals.next_ticket_num())
         log.info('==========Calling update============')
         ticket.update(remapped)
         log.info('==========Setting in_migr============')
