@@ -850,7 +850,10 @@ class GitLikeTree(object):
         cur = self
         for part in dirpath:
             cur = cur.trees[part]
-        cur.blobs.pop(filename)
+        if filename in cur.trees:
+            cur.trees.pop(filename, None)
+        else:
+            cur.blobs.pop(filename, None)
 
     def hex(self):
         '''Compute a recursive sha1 hash on the tree'''
