@@ -11,17 +11,14 @@ from html2text import html2text
 
 
 def parse_options():
-    optparser = OptionParser(usage=''' %prog --base-url=
+    optparser = OptionParser(usage=''' %prog <Trac URL>
  
 Export ticket data from a Trac instance''')
-    optparser.add_option('-u', '--base-url', dest='base_url', default='https://sourceforge.net/apps/trac/sourceforge', help='Base Trac URL (%default)')
     optparser.add_option('--start', dest='start_id', type='int', default=1, help='Start with given ticket numer (or next accessible)')
     optparser.add_option('--limit', dest='limit', type='int', default=None, help='Limit number of tickets')
     options, args = optparser.parse_args()
-    if len(args) != 0:
+    if len(args) != 1:
         optparser.error("Wrong number of arguments.")
-    if not options.base_url:
-        optparser.error("URL are required.")
     return options, args
 
 
@@ -166,6 +163,6 @@ class DateJSONEncoder(json.JSONEncoder):
 
 if __name__ == '__main__':
     options, args = parse_options()
-    ex = TracExport(options.base_url, start_id=options.start_id)
+    ex = TracExport(args[0], start_id=options.start_id)
     doc = [t for t in islice(ex, options.limit)]
     print json.dumps(doc, cls=DateJSONEncoder, indent=2)
