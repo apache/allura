@@ -74,7 +74,7 @@
           <div class="column grid_{{outer_width}} pad">
             {% set flash = tg.flash_obj.render('flash', use_js=False) %}
             {% if flash %}
-              <div>{{flash}}</div>
+              <div>{{flash | safe}}</div>
             {% endif %}
             <h1 class="title">{% block header %}{% endblock %}</h1>
         		<div class="actions">{% block actions %}{% endblock %}</div>
