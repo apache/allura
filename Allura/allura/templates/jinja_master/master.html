@@ -110,9 +110,9 @@
     {% endfor %}
     {% block extra_js %}{% endblock %}
     {% if neighborhood %}
-      {{ neighborhood.site_specific_html }}
+      {{ neighborhood.site_specific_html | safe }}
     {% elif c.project.neighborhood %}
-      {{ c.project.neighborhood.site_specific_html }}
+      {{ c.project.neighborhood.site_specific_html | safe }}
     {% endif %}
   </body>
 </html>
