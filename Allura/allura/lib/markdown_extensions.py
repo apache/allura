@@ -229,9 +229,12 @@ class RelativeLinkRewriter(markdown.postprocessors.Postprocessor):
         val = tag.get(attr)
         if val is None: return
         if '://' in val:
-            tag[attr] = '/nf/redirect/?path=%s' % quote(val)
-            tag['rel']='nofollow'
-            return
+            if 'sf.net' in val or 'sourceforge.net' in val:
+                return
+            else:
+                tag[attr] = '/nf/redirect/?path=%s' % quote(val)
+                tag['rel']='nofollow'
+                return
         if val.startswith('/'): return
         if val.startswith('.'): return
         tag[attr] = '../' + val
