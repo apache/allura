@@ -134,7 +134,7 @@ class Globals(object):
                 return u'<pre>' + text + u'</pre>'
         else:
             lexer = pygments.lexers.get_lexer_by_name(lexer, encoding='chardet')
-        return pygments.highlight(text, lexer, self.pygments_formatter)
+        return h.html.literal(pygments.highlight(text, lexer, self.pygments_formatter))
 
     def forge_markdown(self, **kwargs):
         return markdown.Markdown(
