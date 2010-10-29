@@ -16,6 +16,7 @@ from ming.orm import MappedClass, FieldProperty, session
 from ming.utils import LazyProperty
 
 from allura import model as M
+from allura.lib import helpers as h
 from allura.model.repository import GitLikeTree
 
 log = logging.getLogger(__name__)
@@ -211,19 +212,19 @@ class SVNImplementation(M.RepositoryImplementation):
             root = GitLikeTree.from_tree(parent_ci.tree)
         for path in log_entry.changed_paths:
             if path.action == 'D':
-                root.del_blob(path.path)
+                root.del_blob(h.really_unicode(path.path))
             else:
                 try:
                     data = self._svn.cat(
-                        self._url + path.path,
+                        self._url + h.really_unicode(path.path),
                         revision=log_entry.revision)
                     oid = sha1('blob\n' + data).hexdigest()
-                    root.set_blob(path.path, oid)
+                    root.set_blob(h.really_unicode(path.path), oid)
                 except pysvn.ClientError:
                     # probably a directory; create an empty file named '.'
                     data = ''
                     oid = sha1(data).hexdigest()
-                    root.set_blob(path.path + '/.', oid)
+                    root.set_blob(h.really_unicode(path.path) + '/.', oid)
         return root
 
     def _refresh_tree(self, tree, obj):

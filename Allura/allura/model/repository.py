@@ -916,12 +916,15 @@ class GitLikeTree(object):
             self._hex = sha_obj.hexdigest()
         return self._hex
 
-    def __repr__(self):
+    def __unicode__(self):
         lines = [('t %s %s' % (t.hex(), name))
                   for name, t in self.trees.iteritems() ]
         lines += [('b %s %s' % (oid, name))
                   for name, oid in self.blobs.iteritems() ]
-        return '\n'.join(sorted(lines))
+        return u'\n'.join(sorted(lines))
+
+    def __repr__(self):
+        return unicode(self).encode('utf-8')
 
 def topological_sort(graph):
     '''Return the topological sort of a graph.
