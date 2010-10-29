@@ -183,7 +183,9 @@ class TreeBrowser(BaseController):
         next=unquote(next)
         if not rest:
             # Might be a file rather than a dir
-            filename = request.environ['PATH_INFO'].rsplit('/')[-1]
+            filename = h.really_unicode(
+                unquote(
+                    request.environ['PATH_INFO'].rsplit('/')[-1]))
             if filename and self._tree.is_blob(filename):
                 return self.FileBrowserClass(
                     self._commit,
