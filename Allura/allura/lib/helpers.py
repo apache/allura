@@ -520,8 +520,11 @@ class log_action(object):
             try:
                 result['url'] = request.url
                 ip_address = request.headers.get('X_FORWARDED_FOR', request.remote_addr)
-                ip_address = ip_address.split(',')[0].strip()
-                result['ip_address'] = ip_address
+                if ip_address is not None: 
+                    ip_address = ip_address.split(',')[0].strip()
+                    result['ip_address'] = ip_address
+                else:
+                    result['ip_address'] = '0.0.0.0'
             except TypeError:
                 pass
             return result
