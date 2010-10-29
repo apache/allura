@@ -8,7 +8,7 @@ import json
 import logging
 import cPickle as pickle
 from hashlib import sha1
-from datetime import datetime
+from datetime import datetime, timedelta
 
 import tg
 import genshi.template
@@ -222,9 +222,12 @@ def ago(start_time):
     E.g., "3 hours ago"
     """
 
+    if start_time is None: return 'unknown'
     granularities = ['century', 'decade', 'year', 'month', 'day', 'hour',
                      'minute']
     end_time = datetime.utcnow()
+    if end_time - start_time > timedelta(days=7):
+        return start_time.strftime('%Y-%m-%d')
 
     while True:
         granularity = granularities.pop()

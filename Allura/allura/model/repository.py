@@ -271,6 +271,7 @@ class Repository(Artifact):
         i=0
         for i, oid in enumerate(commit_ids):
             ci = self._impl.commit(oid)
+            ci.tree.set_last_commit(ci)
             ci.compute_diffs(seen_objects)
             if (i+1) % self.BATCH_SIZE == 0:
                 seen_objects = {}
@@ -373,6 +374,16 @@ class RepoObject(MappedClass):
         if repo is None: repo = pylons.c.app.repo
         lc = LastCommitFor.query.get(
             repo_id=repo._id, object_id=self.object_id)
+        if lc is None:
+            return dict(
+                author=None,
+                author_email=None,
+                author_url=None,
+                date=None,
+                id=None,
+                href=None,
+                shortlink=None,
+                summary=None)
         return lc.last_commit
 
     def __repr__(self):
@@ -550,7 +561,7 @@ class Commit(RepoObject):
             tree = self.tree
             for oid, name in tree.object_ids.items():
                 self.diffs.added.append('/'+name)
-                obj = RepoObject.query.get(oid)
+                obj = RepoObject.query.get(object_id=oid)
                 obj.set_last_commit(self)
 
     def context(self):
