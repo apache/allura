@@ -858,7 +858,7 @@ class GitLikeTree(object):
     def hex(self):
         '''Compute a recursive sha1 hash on the tree'''
         if self._hex is None:
-            sha_obj = sha1(repr(self))
+            sha_obj = sha1('tree\n' + repr(self))
             self._hex = sha_obj.hexdigest()
         return self._hex
 

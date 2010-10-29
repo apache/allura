@@ -207,7 +207,7 @@ class HgImplementation(M.RepositoryImplementation):
         root = GitLikeTree()
         for filepath in changectx.manifest():
             fctx = changectx[filepath]
-            oid = sha1(fctx.data()).hexdigest()
+            oid = sha1('blob\n' + fctx.data()).hexdigest()
             root.set_blob(filepath, oid)
         return root
 

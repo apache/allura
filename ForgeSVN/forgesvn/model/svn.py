@@ -214,7 +214,7 @@ class SVNImplementation(M.RepositoryImplementation):
                     data = self._svn.cat(
                         self._url + path.path,
                         revision=log_entry.revision)
-                    oid = sha1(data).hexdigest()
+                    oid = sha1('blob\n' + data).hexdigest()
                     root.set_blob(path.path, oid)
                 except pysvn.ClientError:
                     # probably a directory; create an empty file named '.'
