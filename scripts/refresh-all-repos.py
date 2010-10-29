@@ -40,6 +40,8 @@ def main():
         for app in (p.app_instance(mp) for mp in mount_points):
             c.app = app
             if not hasattr(app, 'repo'): continue
+            if options.clean:
+                M.LastCommitFor.query.remove(dict(repo_id=c.app.repo._id))
             try:
                 c.app.repo._impl._setup_receive_hook()
             except:

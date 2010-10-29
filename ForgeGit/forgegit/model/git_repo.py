@@ -193,7 +193,8 @@ class GitImplementation(M.RepositoryImplementation):
 
     def _refresh_tree(self, tree, obj, seen_object_ids):
         tree.object_ids = Object(
-            (o.hexsha, o.name) for o in obj )
+            (o.hexsha, o.name) for o in obj
+            if o.type in ('blob', 'tree') ) # submodules poorly supported by GitPython
         for o in obj.trees:
             if o.binsha in seen_object_ids: continue
             subtree, isnew = M.Tree.upsert(o.hexsha)
