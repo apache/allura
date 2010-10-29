@@ -122,13 +122,15 @@ class BranchBrowser(BaseController):
                 offset=start,
                 limit=limit)
         c.log_widget = self.log_widget
+        count = 0
         if self._branch is None:
             if c.app.repo.heads:
                 count = c.app.repo.heads[0].count
-            else:
-                count = 0
         else:
-            count = self._branch.count
+            for branch in c.app.repo.branches:
+                if branch['name'] == self._branch:
+                    count = branch['count']
+                    break
         return dict(
             username=c.user._id and c.user.username,
             branch=self._branch,
