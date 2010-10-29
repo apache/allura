@@ -95,10 +95,10 @@ class HgImplementation(M.RepositoryImplementation):
         session(self._repo).flush()
 
     def commit(self, rev):
-        result = M.Commit.query.get(repo_id='hg', object_id=rev)
+        result = M.Commit.query.get(object_id=rev)
         if result is None:
             impl = self._hg[str(rev)]
-            result = M.Commit.query.get(repo_id='hg', object_id=impl.hex())
+            result = M.Commit.query.get(object_id=impl.hex())
         if result is None: return None
         result.set_context(self._repo)
         return result
@@ -118,15 +118,13 @@ class HgImplementation(M.RepositoryImplementation):
         else:
             return [
                 oid for oid in topological_sort(graph)
-                if M.Commit.query.find(dict(repo_id='hg', object_id=oid)).count() == 0 ]
+                if M.Commit.query.find(dict(object_id=oid)).count() == 0 ]
 
     def commit_context(self, commit):
         prev_ids = commit.parent_ids
         prev = M.Commit.query.find(dict(
-                repo_id='hg',
                 object_id={'$in':prev_ids})).all()
         next = M.Commit.query.find(dict(
-                repo_id='hg',
                 parent_ids=commit.object_id,
                 repositories=self._repo._id)).all()
         for ci in prev + next:
@@ -165,7 +163,7 @@ class HgImplementation(M.RepositoryImplementation):
         # Save commit tree (must build a fake git-like tree from the changectx)
         fake_tree = self._tree_from_changectx(obj)
         ci.tree_id = fake_tree.hex()
-        tree, isnew = M.Tree.upsert('hg', fake_tree.hex())
+        tree, isnew = M.Tree.upsert(fake_tree.hex())
         if isnew:
             tree.set_context(ci)
             tree.set_last_commit(ci)
@@ -219,13 +217,13 @@ class HgImplementation(M.RepositoryImplementation):
             (oid, name)
             for name, oid in obj.blobs.iteritems())
         for name, o in obj.trees.iteritems():
-            subtree, isnew = M.Tree.upsert('hg', o.hex())
+            subtree, isnew = M.Tree.upsert(o.hex())
             if isnew:
                 subtree.set_context(tree, name)
                 subtree.set_last_commit(tree.commit)
                 self._refresh_tree(subtree, o)
         for name, oid in obj.blobs.iteritems():
-            blob, isnew = M.Blob.upsert('hg', oid)
+            blob, isnew = M.Blob.upsert(oid)
             if isnew:
                 blob.set_context(tree, name)
                 blob.set_last_commit(tree.commit)

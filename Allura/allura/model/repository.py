@@ -231,13 +231,13 @@ class Repository(Artifact):
             if len(seen_object_ids) > 10000:
                 log.info('... flushing seen object cache')
                 seen_object_ids = set()
-            ci, isnew = Commit.upsert(self.repo_id, oid)
+            ci, isnew = Commit.upsert(oid)
             if self._id not in ci.repositories:
                 # update the commit's repo list
                 ci.query.update(
                     dict(_id=ci._id),
                     {'$push':dict(repositories=self._id)})
-            if not isnew:
+            if not isnew and not all_commits:
                  # race condition, let the other proc handle it
                 sess.expunge(ci)
                 continue
@@ -298,7 +298,7 @@ class RepoObject(MappedClass):
     # ID Fields
     _id = FieldProperty(S.ObjectId)
     type = FieldProperty(str)
-    repo_id = FieldProperty(str) # either 'hg', 'git', or the repo path (for svn)
+    repo_id = FieldProperty(S.Deprecated)
     object_id = FieldProperty(str)
     last_commit = FieldProperty(dict(
         date=datetime,
@@ -311,24 +311,24 @@ class RepoObject(MappedClass):
         summary=str))
 
     @classmethod
-    def upsert(cls, repo_id, object_id):
+    def upsert(cls, object_id):
         isnew = False
         r = cls.query.get(
             type=cls.__mongometa__.polymorphic_identity,
-            repo_id=repo_id, object_id=object_id)
+            object_id=object_id)
         if r is not None:
             return r, isnew
         try:
             r = cls(
                 type=cls.__mongometa__.polymorphic_identity,
-                repo_id=repo_id, object_id=object_id)
+                object_id=object_id)
             session(r).flush(r)
             isnew = True
         except pymongo.errors.DuplicateKeyError:
             session(r).expunge(r)
             r = cls.query.get(
                 type=cls.__mongometa__.polymorphic_identity,
-                repo_id=repo_id, object_id=object_id)
+                object_id=object_id)
         return r, isnew
 
     def set_last_commit(self, ci):
@@ -368,7 +368,7 @@ class LogCache(RepoObject):
 
     @classmethod
     def get(cls, repo, object_id):
-        lc, new = cls.upsert(repo.repo_id, '$' + object_id)
+        lc, new = cls.upsert('$' + object_id)
         if not lc.object_ids:
             lc.object_ids, lc.candidates = repo._impl.log(object_id, 0, 50)
         return lc
@@ -421,7 +421,7 @@ class Commit(RepoObject):
 
     @LazyProperty
     def tree(self):
-        t = Tree.query.get(repo_id=self.repo_id, object_id=self.tree_id)
+        t = Tree.query.get(object_id=self.tree_id)
         t.set_context(self)
         return t
 
@@ -446,14 +446,12 @@ class Commit(RepoObject):
     def dump_ref(self):
         return CommitReference(
             commit_class=self.__class__,
-            repo_id=self.repo_id,
             object_id=self.object_id)
 
     def log(self, skip, count):
         oids = list(self.log_iter(skip, count))
         commits = self.query.find(dict(
                 type='commit',
-                repo_id=self.repo_id,
                 object_id={'$in':oids}))
         commits_by_oid = {}
         for ci in commits:
@@ -550,7 +548,6 @@ class Tree(RepoObject):
     @LazyProperty
     def objects(self):
         objects = RepoObject.query.find(dict(
-                repo_id=self.repo_id,
                 object_id={'$in':self.object_ids.keys()})).all()
         for o in objects:
             o.set_context(self, self.object_ids[o.object_id])
@@ -647,7 +644,6 @@ class Tree(RepoObject):
 
     def is_blob(self, name):
         obj = RepoObject.query.get(
-            repo_id=self.repo_id,
             object_id=self.object_id_index[name])
         return isinstance(obj, Blob)
 
@@ -776,15 +772,14 @@ class Blob(RepoObject):
         return differ.get_opcodes()
 
 class CommitReference(object):
-    def __init__(self, commit_class, repo_id, commit_id):
+    def __init__(self, commit_class, commit_id):
         self.commit_class = commit_class
-        self.repo_id = repo_id
         self.commit_id = commit_id
 
     @property
     def artifact(self):
         return self.commit_class.query.get(
-            repo_id=self.repo_id, commit_id=self.commit_id)
+            commit_id=self.commit_id)
 
 class DiffObject(object):
     a_path = b_path = None
@@ -830,7 +825,7 @@ class GitLikeTree(object):
         for o in tree.blobs:
             self.blobs[o.name] = o.object_id
         for o in tree.trees:
-            subtree = Tree.query.get(repo_id=tree.repo_id, object_id=o.object_id)
+            subtree = Tree.query.get(object_id=o.object_id)
             self.trees[o.name] = GitLikeTree.from_tree(subtree)
         return self
 

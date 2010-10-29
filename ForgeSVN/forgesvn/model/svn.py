@@ -110,7 +110,7 @@ class SVNImplementation(M.RepositoryImplementation):
             oid = self._oid(rev)
         else:
             oid = rev
-        result = M.Commit.query.get(repo_id='svn', object_id=oid)
+        result = M.Commit.query.get(object_id=oid)
         if result is None: return None
         result.set_context(self._repo)
         return result
@@ -120,7 +120,7 @@ class SVNImplementation(M.RepositoryImplementation):
         result = []
         for revno in range(1, head_revno+1):
             oid = self._oid(revno)
-            if all_commits or M.Commit.query.find(dict(repo_id='svn', object_id=oid)).count() == 0:
+            if all_commits or M.Commit.query.find(dict(object_id=oid)).count() == 0:
                 result.append(oid)
         return result
 
@@ -160,7 +160,7 @@ class SVNImplementation(M.RepositoryImplementation):
         # Save commit tree (must build a fake git-like tree from the log entry)
         fake_tree = self._tree_from_log(parent_ci, log_entry)
         ci.tree_id = fake_tree.hex()
-        tree, isnew = M.Tree.upsert('svn', fake_tree.hex())
+        tree, isnew = M.Tree.upsert(fake_tree.hex())
         if isnew:
             tree.set_context(ci)
             tree.set_last_commit(ci)
@@ -205,6 +205,10 @@ class SVNImplementation(M.RepositoryImplementation):
             root = GitLikeTree()
         else:
             session(parent_ci).flush() # need to make sure the tree is in mongo first
+            try:
+                parent_ci.tree
+            except:
+                self.refresh_commit(parent_ci, set())
             root = GitLikeTree.from_tree(parent_ci.tree)
         for path in log_entry.changed_paths:
             if path.action == 'D':
@@ -231,13 +235,13 @@ class SVNImplementation(M.RepositoryImplementation):
             (oid, name)
             for name, oid in obj.blobs.iteritems())
         for name, o in obj.trees.iteritems():
-            subtree, isnew = M.Tree.upsert('svn', o.hex())
+            subtree, isnew = M.Tree.upsert(o.hex())
             if isnew:
                 subtree.set_context(tree, name)
                 subtree.set_last_commit(tree.commit)
                 self._refresh_tree(subtree, o)
         for name, oid in obj.blobs.iteritems():
-            blob, isnew = M.Blob.upsert('svn', oid)
+            blob, isnew = M.Blob.upsert(oid)
             if isnew:
                 blob.set_context(tree, name)
                 blob.set_last_commit(tree.commit)

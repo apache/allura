@@ -88,10 +88,10 @@ class GitImplementation(M.RepositoryImplementation):
         session(self._repo).flush()
 
     def commit(self, rev):
-        result = M.Commit.query.get(repo_id='git', object_id=rev)
+        result = M.Commit.query.get(object_id=rev)
         if result is None:
             impl = self._git.rev_parse(str(rev) + '^0')
-            result = M.Commit.query.get(repo_id='git', object_id=impl.hexsha)
+            result = M.Commit.query.get(object_id=impl.hexsha)
         if result is None: return None
         result.set_context(self._repo)
         return result
@@ -109,15 +109,13 @@ class GitImplementation(M.RepositoryImplementation):
         else:
             return [
                 oid for oid in topological_sort(graph)
-                if M.Commit.query.find(dict(repo_id='git', object_id=oid)).count() == 0 ]
+                if M.Commit.query.find(dict(object_id=oid)).count() == 0 ]
 
     def commit_context(self, commit):
         prev_ids = commit.parent_ids
         prev = M.Commit.query.find(dict(
-                repo_id='git',
                 object_id={'$in':prev_ids})).all()
         next = M.Commit.query.find(dict(
-                repo_id='git',
                 parent_ids=commit.object_id,
                 repositories=self._repo._id)).all()
         for ci in prev + next:
@@ -156,7 +154,7 @@ class GitImplementation(M.RepositoryImplementation):
         ci.message=h.really_unicode(obj.message or '')
         ci.parent_ids=[ p.hexsha for p in obj.parents ]
         # Save commit tree
-        tree, isnew = M.Tree.upsert('git', obj.tree.hexsha)
+        tree, isnew = M.Tree.upsert(obj.tree.hexsha)
         seen_object_ids.add(obj.tree.binsha)
         if isnew:
             tree.set_context(ci)
@@ -199,7 +197,7 @@ class GitImplementation(M.RepositoryImplementation):
             (o.hexsha, o.name) for o in obj )
         for o in obj.trees:
             if o.binsha in seen_object_ids: continue
-            subtree, isnew = M.Tree.upsert('git', o.hexsha)
+            subtree, isnew = M.Tree.upsert(o.hexsha)
             seen_object_ids.add(o.binsha)
             if isnew:
                 subtree.set_context(tree, o.name)
@@ -207,7 +205,7 @@ class GitImplementation(M.RepositoryImplementation):
                 self._refresh_tree(subtree, o, seen_object_ids)
         for o in obj.blobs:
             if o.binsha in seen_object_ids: continue
-            blob, isnew = M.Blob.upsert('git', o.hexsha)
+            blob, isnew = M.Blob.upsert(o.hexsha)
             seen_object_ids.add(o.binsha)
             if isnew:
                 blob.set_context(tree, o.name)
