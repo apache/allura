@@ -4,7 +4,7 @@
   {% endfor %}
   {% if limit %}
   <p class="light">Showing
-  {% if limit and count>limit %}
+  {% if limit and count|int>limit|int %}
     <select class="results_per_page" name="limit">
       {% for per_page in [25, 50, 100, 250] %}
           <option {% if per_page == limit|int %}selected="selected"{% endif %}

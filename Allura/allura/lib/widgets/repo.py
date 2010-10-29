@@ -14,6 +14,11 @@ class SCMLogWidget(ew.Widget):
         page_list=ffw.PageList()
         page_size=ffw.PageSize()
 
+    def resources(self):
+        for f in self.fields:
+            for r in f.resources():
+                yield r
+
 class SCMRevisionWidget(ew.Widget):
     template='jinja:widgets/repo/revision.html'
     params=['value', 'prev', 'next']

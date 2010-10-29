@@ -3,7 +3,7 @@
   {% set limit = limit|int %}
   {% set count = count|int %}
   {% if limit < count %}
-  {% set pages = count / limit + (count % limit and 1 or 0) %}
+  {% set pages = count // limit + (count % limit and 1 or 0) %}
   <div style="float: right;">
     {% if page != 0 %}
     <a class="btn"
