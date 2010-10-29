@@ -158,7 +158,6 @@ class GitImplementation(M.RepositoryImplementation):
         seen_object_ids.add(obj.tree.binsha)
         if isnew:
             tree.set_context(ci)
-            tree.set_last_commit(ci)
             self._refresh_tree(tree, obj.tree, seen_object_ids)
 
     def log(self, object_id, skip, count):
@@ -201,15 +200,11 @@ class GitImplementation(M.RepositoryImplementation):
             seen_object_ids.add(o.binsha)
             if isnew:
                 subtree.set_context(tree, o.name)
-                subtree.set_last_commit(tree.commit)
                 self._refresh_tree(subtree, o, seen_object_ids)
         for o in obj.blobs:
             if o.binsha in seen_object_ids: continue
             blob, isnew = M.Blob.upsert(o.hexsha)
             seen_object_ids.add(o.binsha)
-            if isnew:
-                blob.set_context(tree, o.name)
-                blob.set_last_commit(tree.commit)
 
     def _object(self, oid):
         evens = oid[::2]

@@ -163,7 +163,6 @@ class SVNImplementation(M.RepositoryImplementation):
         tree, isnew = M.Tree.upsert(fake_tree.hex())
         if isnew:
             tree.set_context(ci)
-            tree.set_last_commit(ci)
             self._refresh_tree(tree, fake_tree)
 
     def log(self, object_id, skip, count):
@@ -238,13 +237,9 @@ class SVNImplementation(M.RepositoryImplementation):
             subtree, isnew = M.Tree.upsert(o.hex())
             if isnew:
                 subtree.set_context(tree, name)
-                subtree.set_last_commit(tree.commit)
                 self._refresh_tree(subtree, o)
         for name, oid in obj.blobs.iteritems():
             blob, isnew = M.Blob.upsert(oid)
-            if isnew:
-                blob.set_context(tree, name)
-                blob.set_last_commit(tree.commit)
 
     def _revno(self, oid):
         return int(oid.split(':')[1])

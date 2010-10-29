@@ -22,7 +22,7 @@ from allura.lib import helpers as h
 
 from .artifact import Artifact
 from .auth import User
-from .session import repository_orm_session
+from .session import repository_orm_session, project_orm_session
 
 log = logging.getLogger(__name__)
 
@@ -286,6 +286,39 @@ class Repository(Artifact):
                  self, len(commit_ids))
         self.status = 'ready'
 
+class LastCommitFor(MappedClass):
+    class __mongometa__:
+        session = project_orm_session
+        name='last_commit_for'
+        unique_indexes = [ ('repo_id', 'object_id') ]
+
+    _id = FieldProperty(S.ObjectId)
+    repo_id = FieldProperty(S.ObjectId)
+    object_id = FieldProperty(str)
+    last_commit = FieldProperty(dict(
+        date=datetime,
+        author=str,
+        author_email=str,
+        author_url=str,
+        id=str,
+        href=str,
+        shortlink=str,
+        summary=str))
+
+    @classmethod
+    def upsert(cls, repo_id, object_id):
+        isnew = False
+        r = cls.query.get(repo_id=repo_id, object_id=object_id)
+        if r is not None: return r, isnew
+        try:
+            r = cls(repo_id=repo_id, object_id=object_id)
+            session(r).flush(r)
+            isnew = True
+        except pymongo.errors.DuplicateKeyError:
+            session(r).expunge(r)
+            r = cls.query.get(repo_id=repo_id, object_id=object_id)
+        return r, isnew
+
 class RepoObject(MappedClass):
     class __mongometa__:
         session = repository_orm_session
@@ -300,22 +333,12 @@ class RepoObject(MappedClass):
     type = FieldProperty(str)
     repo_id = FieldProperty(S.Deprecated)
     object_id = FieldProperty(str)
-    last_commit = FieldProperty(dict(
-        date=datetime,
-        author=str,
-        author_email=str,
-        author_url=str,
-        id=str,
-        href=str,
-        shortlink=str,
-        summary=str))
+    last_commit=FieldProperty(S.Deprecated)
 
     @classmethod
     def upsert(cls, object_id):
         isnew = False
-        r = cls.query.get(
-            type=cls.__mongometa__.polymorphic_identity,
-            object_id=object_id)
+        r = cls.query.get(object_id=object_id)
         if r is not None:
             return r, isnew
         try:
@@ -326,22 +349,31 @@ class RepoObject(MappedClass):
             isnew = True
         except pymongo.errors.DuplicateKeyError:
             session(r).expunge(r)
-            r = cls.query.get(
-                type=cls.__mongometa__.polymorphic_identity,
-                object_id=object_id)
+            r = cls.query.get(object_id=object_id)
         return r, isnew
 
-    def set_last_commit(self, ci):
-        '''Update the last_commit field based on the passed in commit'''
-        self.last_commit.author = ci.authored.name
-        self.last_commit.author_email = ci.authored.email
-        self.last_commit.author_url = ci.author_url
-        self.last_commit.date = ci.authored.date
-        self.last_commit.id = ci.object_id
-        self.last_commit.href = ci.url()
-        self.last_commit.shortlink = ci.shorthand_id()
-        self.last_commit.summary = ci.summary
-        assert self.last_commit.date
+    def set_last_commit(self, ci, repo=None):
+        '''Update the last_commit_for object based on the passed in commit &
+        repo'''
+        if repo is None: repo = pylons.c.app.repo
+        lc, isnew = LastCommitFor.upsert(repo_id=repo._id, object_id=self.object_id)
+        if isnew:
+            lc.last_commit.author = ci.authored.name
+            lc.last_commit.author_email = ci.authored.email
+            lc.last_commit.author_url = ci.author_url
+            lc.last_commit.date = ci.authored.date
+            lc.last_commit.id = ci.object_id
+            lc.last_commit.href = ci.url()
+            lc.last_commit.shortlink = ci.shorthand_id()
+            lc.last_commit.summary = ci.summary
+            assert lc.last_commit.date
+        return lc, isnew
+
+    def get_last_commit(self, repo=None):
+        if repo is None: repo = pylons.c.app.repo
+        lc = LastCommitFor.query.get(
+            repo_id=repo._id, object_id=self.object_id)
+        return lc.last_commit
 
     def __repr__(self):
         return '<%s %s>' % (
@@ -500,19 +532,26 @@ class Commit(RepoObject):
             for diff in Tree.diff(parent.tree, self.tree, seen_objects):
                 if diff.is_new:
                     self.diffs.added.append(diff.b_path)
+                    obj = RepoObject.query.get(object_id=diff.b_object_id)
+                    obj.set_last_commit(self)
                 elif diff.is_delete:
                     self.diffs.removed.append(diff.a_path)
                 elif diff.is_copy:
                     self.diffs.copied.append(dict(
                             old=diff.a_path, new=diff.b_path))
+                    obj = RepoObject.query.get(object_id=diff.b_object_id)
+                    obj.set_last_commit(self)
                 else:
                     self.diffs.changed.append(diff.a_path)
+                    obj = RepoObject.query.get(object_id=diff.b_object_id)
+                    obj.set_last_commit(self)
         else:
             # Parent-less, so the whole tree is additions
             tree = self.tree
-            self.diffs.added = [
-                '/' + name for name in
-                tree.object_ids.values() ]
+            for oid, name in tree.object_ids.items():
+                self.diffs.added.append('/'+name)
+                obj = RepoObject.query.get(oid)
+                obj.set_last_commit(self)
 
     def context(self):
         return self.repo.commit_context(self)
@@ -545,6 +584,14 @@ class Tree(RepoObject):
             sha_obj.update(line)
         return sha_obj.hexdigest()
 
+    def set_last_commit(self, ci, repo=None):
+        lc, isnew = super(Tree, self).set_last_commit(ci, repo)
+        if isnew:
+            for oid in self.object_ids:
+                obj = RepoObject.query.get(object_id=oid)
+                obj.set_last_commit(ci, repo)
+        return lc, isnew
+        
     @LazyProperty
     def objects(self):
         objects = RepoObject.query.find(dict(
@@ -616,14 +663,14 @@ class Tree(RepoObject):
 
     def ls(self):
         for obj in sorted(self.trees, key=lambda o:o.name):
-            ci = obj.last_commit
+            ci = obj.get_last_commit()
             yield dict(kind='DIR',
                        last_commit=ci,
                        name=obj.name,
                        href=obj.name + '/')
         for obj in sorted(self.blobs, key=lambda o:o.name):
             if obj.name == '.': continue
-            ci = obj.last_commit
+            ci = obj.get_last_commit()
             yield dict(kind='FILE',
                        last_commit=ci,
                        name=obj.name,
@@ -714,8 +761,9 @@ class Blob(RepoObject):
 
     @LazyProperty
     def prev_commit(self):
-        if self.last_commit.id:
-            last_commit = self.repo.commit(self.last_commit.id)
+        lc = self.get_last_commit()
+        if lc.id:
+            last_commit = self.repo.commit(lc.id)
             if last_commit.parent_ids:
                 return self.repo.commit(last_commit.parent_ids[0])
         return None
