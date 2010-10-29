@@ -271,7 +271,7 @@ class Repository(Artifact):
         i=0
         for i, oid in enumerate(commit_ids):
             ci = self._impl.commit(oid)
-            ci.tree.set_last_commit(ci)
+            ci.tree.set_last_commit(ci, self)
             ci.compute_diffs(seen_objects)
             if (i+1) % self.BATCH_SIZE == 0:
                 seen_objects = {}
@@ -544,25 +544,25 @@ class Commit(RepoObject):
                 if diff.is_new:
                     self.diffs.added.append(diff.b_path)
                     obj = RepoObject.query.get(object_id=diff.b_object_id)
-                    obj.set_last_commit(self)
+                    obj.set_last_commit(self, self.repo)
                 elif diff.is_delete:
                     self.diffs.removed.append(diff.a_path)
                 elif diff.is_copy:
                     self.diffs.copied.append(dict(
                             old=diff.a_path, new=diff.b_path))
                     obj = RepoObject.query.get(object_id=diff.b_object_id)
-                    obj.set_last_commit(self)
+                    obj.set_last_commit(self, self.repo)
                 else:
                     self.diffs.changed.append(diff.a_path)
                     obj = RepoObject.query.get(object_id=diff.b_object_id)
-                    obj.set_last_commit(self)
+                    obj.set_last_commit(self, self.repo)
         else:
             # Parent-less, so the whole tree is additions
             tree = self.tree
             for oid, name in tree.object_ids.items():
                 self.diffs.added.append('/'+name)
                 obj = RepoObject.query.get(object_id=oid)
-                obj.set_last_commit(self)
+                obj.set_last_commit(self, self.repo)
 
     def context(self):
         return self.repo.commit_context(self)
