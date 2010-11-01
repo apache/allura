@@ -157,7 +157,7 @@ class NeighborhoodController(object):
             ming.orm.ormsession.ThreadLocalORMSession.close_all()
             flash('%s: %s' % (ex.__class__, str(ex)), 'error')
             redirect('add_project?project_unixname=%s&project_description=%s&project_name=%s' %
-                     (project_unixname,project_description,project_name))
+                     (quote(project_unixname),quote(project_description),quote(project_name)))
         if project_name:
             p.name = project_name
         if project_description:
