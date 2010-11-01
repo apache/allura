@@ -44,6 +44,31 @@ log = logging.getLogger(__name__)
 
 class ImportSupport(object):
 
+    def __init__(self):
+        # At first the idea to use Ticket introspection comes,
+        # but it contains various internal fields, so we'd need
+        # to define somethig explicitly anyway.
+        #
+        # Map JSON interchange format fields to Ticket fields
+        # key is JSON's field name, value is:
+        #   None - drop
+        #   True - map as is
+        #   (new_field_name, value_convertor(val)) - use new field name and convert JSON's value
+        #   handler(ticket, field, val) - arbitrary transform, expected to modify ticket in-place
+        ImportSupport.FIELD_MAP = {
+            'assigned_to': ('assigned_to_id', self.get_user_id),
+            'class': None,
+            'date': ('created_date', self.parse_date), 
+            'date_updated': ('mod_date', self.parse_date),
+            'description': True,
+            'id': None,
+            'keywords': ('labels', lambda s: s.split()),
+            'status': True,
+            'submitter': ('reported_by_id', self.get_user_id),
+            'summary': True,
+        }
+
+
     @staticmethod
     def parse_date(date_string):
         return datetime.strptime(date_string, '%Y-%m-%dT%H:%M:%SZ')
@@ -66,29 +91,21 @@ class ImportSupport(object):
         ticket['custom_fields'][field] = value
 
     def make_artifact(self, ticket_dict):
-        # (new_field_name, value_convertor(val)) or
-        # handler(ticket, field, val)
-        FIELD_NAME_MAP = {
-          'assigned_to': ('assigned_to_id', self.get_user_id),
-          'submitter': ('reported_by_id', self.get_user_id),
-          'date': ('created_date', self.parse_date), 
-          'date_updated': ('mod_date', self.parse_date), 
-          'keywords': ('labels', lambda s: s.split()),
-          'resolution': self.custom,
-          'milestone': self.custom,
-          'priority': self.custom,
-          'private': self.custom,
-          'version': (None, None),
-        }
         remapped = {}
         for f, v in ticket_dict.iteritems():
-            transform = FIELD_NAME_MAP.get(f, (f, lambda x:x))
-            if callable(transform):
-                transform(remapped, f, v)
+            if f in self.FIELD_MAP:
+                transform = self.FIELD_MAP[f]
+                if transform is None:
+                    continue
+                elif transform is True:
+                    remapped[f] = v
+                elif callable(transform):
+                    transform(remapped, f, v)
+                else:
+                    new_f, conv = transform
+                    remapped[new_f] = conv(v)
             else:
-                f, conv = transform
-                if f:
-                    remapped[f] = conv(v)
+                self.custom(remapped, f, v)
 
         log.info('==========Calling constr============')
         ticket = TM.Ticket(
