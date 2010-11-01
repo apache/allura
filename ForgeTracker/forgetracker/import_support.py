@@ -14,7 +14,7 @@ from formencode import validators
 from pymongo.bson import ObjectId
 
 from ming.orm.ormsession import ThreadLocalORMSession
-from ming.orm import session
+from ming.orm import session, state
 
 # Pyforge-specific imports
 from allura import model as M
@@ -44,8 +44,16 @@ log = logging.getLogger(__name__)
 
 class ImportSupport(object):
 
-    def parse_date(self, date_string):
+    @staticmethod
+    def parse_date(date_string):
         return datetime.strptime(date_string, '%Y-%m-%dT%H:%M:%SZ')
+
+    @staticmethod
+    def get_user_id(username):
+        u = M.User.by_username(username)
+        if u:
+            return u._id
+        return None
 
     def custom(self, ticket, field, value):
         field = '_' + field
@@ -57,17 +65,12 @@ class ImportSupport(object):
             ticket['custom_fields'] = {}
         ticket['custom_fields'][field] = value
 
-    def make_user_placeholder(self, username):
-        user = M.User.register(dict(username=username,
-                                   display_name=username), False)
-        ThreadLocalORMSession.flush_all()
-        logging.info('Created user: %s', user._id)
-        return user
-
     def make_artifact(self, ticket_dict):
         # (new_field_name, value_convertor(val)) or
         # handler(ticket, field, val)
         FIELD_NAME_MAP = {
+          'assigned_to': ('assigned_to_id', self.get_user_id),
+          'submitter': ('reported_by_id', self.get_user_id),
           'date': ('created_date', self.parse_date), 
           'date_updated': ('mod_date', self.parse_date), 
           'keywords': ('labels', lambda s: s.split()),
@@ -92,6 +95,8 @@ class ImportSupport(object):
             app_config_id=c.app.config._id,
             custom_fields=dict(),
             ticket_num=c.app.globals.next_ticket_num())
+        log.info('Ticket schema: %s', ticket.__mongometa__.schema.fields)
+        log.info('Ticket state doc: %s', state(ticket).document)
         log.info('==========Calling update============')
         ticket.update(remapped)
         log.info('==========Setting in_migr============')
@@ -102,14 +107,7 @@ class ImportSupport(object):
     def make_comment(self, thread, comment_dict):
         ts = self.parse_date(comment_dict['date'])
         comment = thread.post(text=comment_dict['comment'], timestamp=ts)
-        user = M.User.by_username(comment_dict['submitter'])
-        if not user:
-            log.warning('Unknown user %s during comment import', comment_dict['submitter'])
-            # XXX: created mostly for debugging
-            user = self.make_user_placeholder(comment_dict['submitter'])
-            comment.author_id = user._id
-        else:
-            comment.author_id = user._id
+        comment.author_id = self.get_user_id(comment_dict['submitter'])
 
     def collect_users(self, artifacts):
         users = set()
@@ -127,6 +125,12 @@ class ImportSupport(object):
                 unknown.add(u)
         return unknown
 
+    def make_user_placeholders(self, usernames):
+        for username in usernames:
+            M.User.register(dict(username=username,
+                                 display_name=username), False)
+        ThreadLocalORMSession.flush_all()
+        log.info('Created %d user placeholders', len(usernames))
 
 
     def validate_import(self, doc):
@@ -143,10 +147,15 @@ class ImportSupport(object):
             
         return errors, warnings
 
-    def perform_import(self, doc):
+    def perform_import(self, doc, create_users=True):
 #        log.info('migrate called: %s', doc) 
-        M.session.artifact_orm_session._get().skip_mod_date = True
         artifacts = json.loads(doc)
+        if create_users:
+            users = self.collect_users(artifacts)
+            unknown_users = self.find_unknown_users(users)
+            self.make_user_placeholders(unknown_users)
+        
+        M.session.artifact_orm_session._get().skip_mod_date = True
         log.info('users in doc: %s', self.collect_users(artifacts))
         for a in artifacts:
             comments = a['comments']
