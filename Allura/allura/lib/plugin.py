@@ -259,6 +259,8 @@ class ProjectRegistrationProvider(object):
                 log.exception('Error dropping database %s', database)
                 pass
             raise
+        session(p).flush(p)
+        c.project = p
         g.publish('react', 'forge.project_created')
         return p
 
