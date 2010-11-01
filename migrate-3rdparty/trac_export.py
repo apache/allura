@@ -175,6 +175,6 @@ if __name__ == '__main__':
     out_file = sys.stdout
     if options.out_filename:
         out_file = open(options.out_filename, 'w')
-    out_file.write(json.dumps(doc, cls=DateJSONEncoder, indent=2))
+    out_file.write(json.dumps(doc, cls=DateJSONEncoder, indent=2, sort_keys=True))
     # It's bad habit not to terminate lines
     out_file.write('\n')
