@@ -145,20 +145,23 @@ class SFXProjectApi(object):
             if ug_name is None:
                 ug_name = self._unix_group_name(p.neighborhood, p.shortname)
                 p.set_tool_data('sfx', unix_group_name=ug_name)
+            c.project = p
             dev_role = M.ProjectRole.query.get(name='Developer')
             admin_role = M.ProjectRole.query.get(name='Admin')
             args = dict(
                 user_id=user.tool_data.sfx.userid,
                 group_name=p.name.encode('utf-8'),
-                short_description=p.short_description,
-                developers = [
+                short_description=p.short_description)
+            if dev_role:
+                args['developers'] = [
                     u.get_tool_data('sfx', 'userid')
                     for u in dev_role.users_with_role()
                     if u.get_tool_data('sfx', 'userid') is not None],
-                admins = [
+            if admin_role:
+                args['admins'] = [
                     u.get_tool_data('sfx', 'userid')
                     for u in admin_role.users_with_role()
-                    if u.get_tool_data('sfx', 'userid') is not None])
+                    if u.get_tool_data('sfx', 'userid') is not None]
             conn.request('PUT', self.project_path + '/' + ug_name, json.dumps(args))
             response = conn.getresponse()
             return read_response(response)
