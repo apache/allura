@@ -15,7 +15,7 @@ div.welcome p {
     display: block;
     position: relative;
     left: 8em;
-    width: 75%;
+    width: 80%;
 }
 div.welcome a {
     display: inline-block;
