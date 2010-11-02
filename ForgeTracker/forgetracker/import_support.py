@@ -107,18 +107,11 @@ class ImportSupport(object):
             else:
                 self.custom(remapped, f, v)
 
-        log.info('==========Calling constr============')
         ticket = TM.Ticket(
             app_config_id=c.app.config._id,
             custom_fields=dict(),
             ticket_num=c.app.globals.next_ticket_num())
-        log.info('Ticket schema: %s', ticket.__mongometa__.schema.fields)
-        log.info('Ticket state doc: %s', state(ticket).document)
-        log.info('==========Calling update============')
         ticket.update(remapped)
-        log.info('==========Setting in_migr============')
-        log.info('==========Calling save============')
-#        session(ticket).save(ticket)
         return ticket
 
     def make_comment(self, thread, comment_dict):
@@ -173,14 +166,13 @@ class ImportSupport(object):
             self.make_user_placeholders(unknown_users)
         
         M.session.artifact_orm_session._get().skip_mod_date = True
-        log.info('users in doc: %s', self.collect_users(artifacts))
         for a in artifacts:
             comments = a['comments']
             del a['comments']
-            log.info(a)
+#            log.info(a)
             t = self.make_artifact(a)
-            log.info('Created ticket: %d', t.ticket_num)
             for c_entry in comments:
                 self.make_comment(t.discussion_thread, c_entry)
+            log.info('Imported ticket: %d', t.ticket_num)
 
         return True
