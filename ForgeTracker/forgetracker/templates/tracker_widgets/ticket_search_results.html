@@ -5,25 +5,59 @@
     <table class="ticket-list">
       <thead>
         <tr>
-          <th data-sort="ticket_num_i">#</th>
-          <th>Summary</th>
-          <th>Milestone</th>
-          <th data-sort="status_s">Status</th>
-          <th data-sort="assigned_to_s">Owner</th>
+          {% for col in columns if col['active'] %}
+            <th data-sort="{{col['sort_name']}}">
+              {% if col['name'] == 'ticket_num' %}
+                #
+              {% else %}
+                {{col['label']}}
+              {% endif %}
+            </th>
+          {% endfor %}
+          <th style="width:15px">
+            <a href="#" class="ico" id="col_menu"><b class="ui-icon ui-icon-gear"></b></a>
+          </th>
         </tr>
       </thead>
       <tbody>
         {% for t in tickets %}
           <tr class="{{loop.index0%2 and 'even' or ''}}">
-            <td><a href="{{t.url()}}">{{t.ticket_num}}</a></td>
-            <td><a href="{{t.url()}}">{{t.summary}}</a></td>
-            <td>{{t._milestone}}</td>
-            <td class="{{t.open_or_closed}}">{{t.status}}</td>
-            <td>{% if t.assigned_to_id %}{{t.assigned_to.display_name}}{% endif %}</td>
+            {% for col in columns if col['active'] %}
+              {% if col['name'] in ['ticket_num', 'summary'] %}
+                <td><a href="{{t.url()}}">{{t[col['name']]}}</a></td>
+              {% elif col['name'] == 'status' %}
+                <td class="{{t.open_or_closed}}">{{t.status}}</td>
+              {% elif col['name'] == 'assigned_to' %}
+                <td>{% if t.assigned_to_id %}{{t.assigned_to.display_name}}{% endif %}</td>
+              {% else %}
+                <td>{{t.custom_fields.get(col['name'])}}</td>
+              {% endif %}
+            {% endfor %}
+            <td>&nbsp;</td>
           </tr>
         {% endfor %}
       </tbody>
     </table>
+    <div id="col_list" style="display:none">
+      <form action="">
+        <input type="hidden" name="limit" value="{{limit}}">
+        <input type="hidden" name="page" value="{{page}}">
+        <input type="hidden" name="sort" value="{{sort}}">
+        <input type="hidden" name="query" value="{{query}}">
+        <ul>
+        {% for col in columns %}
+          <li class="clear">
+            <input type="hidden" name="columns-{{loop.index0}}.name" value="{{col['name']}}">
+            <input type="hidden" name="columns-{{loop.index0}}.sort_name" value="{{col['sort_name']}}">
+            <input type="hidden" name="columns-{{loop.index0}}.label" value="{{col['label']}}">
+            <input type="checkbox" name="columns-{{loop.index0}}.active"{% if col['active'] %} checked="checked"{% endif %}> {{col['label']}}
+          </li>
+        {% endfor %}
+        </ul>
+        <div class="clear">&nbsp;</div>
+        <input type="submit" value="Save">
+      </form>
+    </div>
   {% endif %}
   {{fields['page_list'].display(limit=limit, page=page, count=count)}}
   <script type="text/javascript">

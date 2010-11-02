@@ -3,7 +3,8 @@ from allura.lib.widgets import form_fields as ffw
 
 class TicketSearchResults(ew.SimpleForm):
     template='jinja:tracker_widgets/ticket_search_results.html'
-    params=['solr_error','count','limit','query','tickets','sortable_custom_fields','sort','page']
+    params=['solr_error','count','limit','query','tickets','sortable_custom_fields','sort','page',
+            'columns']
     solr_error=None
     count=None
     limit=None
@@ -12,6 +13,7 @@ class TicketSearchResults(ew.SimpleForm):
     sortable_custom_fields=None
     page=1
     sort=None
+    columns=None
 
     class fields(ew.WidgetsList):
         page_list=ffw.PageList()
@@ -19,6 +21,7 @@ class TicketSearchResults(ew.SimpleForm):
 
     def resources(self):
         yield ew.resource.JSLink('tracker_js/ticket-list.js')
+        yield ew.resource.CSSLink('tracker_css/ticket-list.css')
         for r in ffw.PageList().resources(): yield r
         for r in ffw.PageSize().resources(): yield r
 

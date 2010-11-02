@@ -240,7 +240,7 @@ class RootController(BaseController):
         setattr(self, 'feed.rss', self.feed)
         self._discuss = AppDiscussionController()
 
-    def paged_query(self, q, limit=None, page=0, sort=None, **kw):
+    def paged_query(self, q, limit=None, page=0, sort=None, columns=None, **kw):
         """Query tickets, sorting and paginating the result.
 
         We do the sorting and skipping right in SOLR, before we ever ask
@@ -290,16 +290,28 @@ class RootController(BaseController):
             # and pull them out in the order given by ticket_numbers
             tickets = [ticket_for_num[tn] for tn in ticket_numbers
                        if tn in ticket_for_num and has_artifact_access('read', ticket_for_num[tn])()]
+        sortable_custom_fields=c.app.globals.sortable_custom_fields_shown_in_search()
+        if not columns:
+            columns = [dict(name='ticket_num', sort_name='ticket_num_i', label='Ticket Number', active=True),
+                       dict(name='summary', sort_name='', label='Summary', active=True),
+                       dict(name='_milestone', sort_name='', label='Milestone', active=True),
+                       dict(name='status', sort_name='status_s', label='Status', active=True),
+                       dict(name='assigned_to', sort_name='assigned_to_s', label='Owner', active=True)]
+            for field in sortable_custom_fields:
+                columns.append(dict(name=field['name'], sort_name=field['sortable_name'], label=field['label'], active=True))
         return dict(tickets=tickets,
-                    sortable_custom_fields=c.app.globals.sortable_custom_fields_shown_in_search(),
+                    sortable_custom_fields=sortable_custom_fields,
+                    columns=columns,
                     count=count, q=q, limit=limit, page=page, sort=sort,
                     solr_error=solr_error, **kw)
 
     @with_trailing_slash
+    @h.vardec
     @expose('jinja:tracker/index.html')
-    def index(self, limit=250, **kw):
+    def index(self, limit=250, columns=None, page=0, **kw):
         require(has_artifact_access('read'))
-        result = self.paged_query(c.app.globals.not_closed_query, sort='ticket_num_i desc', limit=int(limit))
+        result = self.paged_query(c.app.globals.not_closed_query, sort='ticket_num_i desc',
+                                  limit=int(limit), columns=columns, page=page)
         c.subscribe_form = W.subscribe_form
         result['subscribed'] = M.Mailbox.subscribed()
         result['allow_edit'] = has_artifact_access('write')()
@@ -367,6 +379,7 @@ class RootController(BaseController):
         redirect('milestones')
 
     @with_trailing_slash
+    @h.vardec
     @expose('jinja:tracker/search.html')
     @validate(validators=dict(
             q=validators.UnicodeString(if_empty=None),
@@ -375,12 +388,14 @@ class RootController(BaseController):
             limit=validators.Int(if_invalid=None),
             page=validators.Int(if_empty=0),
             sort=validators.UnicodeString(if_empty=None)))
-    def search(self, q=None, project=None, **kw):
+    def search(self, q=None, query=None, project=None, columns=None, page=0, sort=None, **kw):
         require(has_artifact_access('read'))
+        if query and not q:
+            q = query
         c.bin_form = W.bin_form
         if project:
             redirect(c.project.url() + 'search?' + urlencode(dict(q=q, history=kw.get('history'))))
-        result = self.paged_query(q, **kw)
+        result = self.paged_query(q, columns=columns, **kw)
         result['allow_edit'] = has_artifact_access('write')()
         c.ticket_search_results = W.ticket_search_results
         return result
@@ -1028,14 +1043,15 @@ class MilestoneController(BaseController):
         self.query = '%s:%s' % (fld.name, m.name)
 
     @with_trailing_slash
+    @h.vardec
     @expose('jinja:tracker/milestone.html')
     @validate(validators=dict(
             limit=validators.Int(if_invalid=None),
             page=validators.Int(if_empty=0),
             sort=validators.UnicodeString(if_empty=None)))
-    def index(self, q=None, project=None, **kw):
+    def index(self, q=None, project=None, columns=None, page=0, query=None, sort=None, **kw):
         require(has_artifact_access('read'))
-        result = self.root.paged_query(self.query, **kw)
+        result = self.root.paged_query(self.query, columns=columns, **kw)
         result['allow_edit'] = has_artifact_access('write')()
         total = 0
         closed = 0
