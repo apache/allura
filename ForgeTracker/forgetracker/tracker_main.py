@@ -809,28 +809,16 @@ class TicketController(BaseController):
         if request.method != 'POST':
             raise Exception('update_ticket must be a POST request')
         changes = changelog()
-        comment = None
-        if 'comment' in post_data:
-            comment = post_data['comment']
-            del post_data['comment']
-        if 'tags' in post_data and len(post_data['tags']):
-            tags = post_data['tags']
-            del post_data['tags']
-        else:
-            tags = []
-        if 'labels' in post_data and len(post_data['labels']):
+        comment = post_data.pop('comment', None)
+        tags = post_data.pop('tags', None) or []
+        labels = post_data.pop('labels', None) or []
+        if labels:
             changes['labels'] = self.ticket.labels
-            self.ticket.labels = post_data['labels']
-            changes['labels'] = self.ticket.labels
-            del post_data['labels']
-        else:
-            self.ticket.labels = []
+            changes['labels'] = labels
+        self.ticket.labels = labels
         for k in ['summary', 'description', 'status']:
             changes[k] = getattr(self.ticket, k)
-            if k in post_data:
-                setattr(self.ticket, k, post_data[k])
-            else:
-                setattr(self.ticket, k, '')
+            setattr(self.ticket, k, post_data.pop(k, ''))
             changes[k] = getattr(self.ticket, k)
         if 'assigned_to' in post_data:
             who = post_data['assigned_to']
