@@ -1,15 +1,18 @@
 import sys
 from pprint import pprint
 import csv
+import urlparse
 import urllib2
 import json
 import time
+import re
 from optparse import OptionParser
 from itertools import islice
 from datetime import datetime
 
 import feedparser
 from html2text import html2text
+from BeautifulSoup import BeautifulSoup
 import dateutil.parser
 import pytz
 
@@ -19,6 +22,7 @@ def parse_options():
  
 Export ticket data from a Trac instance''')
     optparser.add_option('-o', '--out-file', dest='out_filename', help='Write to file (default stdout)')
+    optparser.add_option('--attachments', dest='do_attachments', action='store_true', help='Export attachment info')
     optparser.add_option('--start', dest='start_id', type='int', default=1, help='Start with given ticket numer (or next accessible)')
     optparser.add_option('--limit', dest='limit', type='int', default=None, help='Limit number of tickets')
     optparser.add_option('-v', '--verbose', dest='verbose', action='store_true', help='Verbose operation')
@@ -34,6 +38,8 @@ class TracExport(object):
     TICKET_URL = '/ticket/%d'
     QUERY_MAX_ID_URL  = '/query?col=id&order=id&desc=1&max=2'
     QUERY_BY_PAGE_URL = '/query?col=id&col=time&col=changetime&order=id&max=' + str(PAGE_SIZE)+ '&page=%d'
+    ATTACHMENT_LIST_URL = '/attachment/ticket/%d/'
+    ATTACHMENT_URL = '/raw-attachment/ticket/%d/%s'
 
     FIELD_MAP = {
         'reporter': 'submitter',
@@ -64,9 +70,17 @@ class TracExport(object):
             out['private'] = bool(int(out['private']))
         return out
 
-    def full_url(self, suburl, type):
+    def full_url(self, suburl, type=None):
+        url = urlparse.urljoin(self.base_url, suburl)
+        if type is None:
+            return url
         glue = '&' if '?' in suburl else '?'
-        return self.base_url + suburl + glue + 'format=' + type
+        return  url + glue + 'format=' + type
+
+    @staticmethod
+    def log_url(url):
+        if options.verbose:
+            print >>sys.stderr, url
 
     @classmethod
     def trac2z_date(cls, s):
@@ -74,9 +88,14 @@ class TracExport(object):
         d = d.astimezone(pytz.UTC)
         return d.strftime("%Y-%m-%dT%H:%M:%SZ")
 
+    @staticmethod
+    def match_pattern(regexp, string):
+        m = re.match(regexp, string)
+        assert m
+        return m.group(1)
+
     def csvopen(self, url):
-        if options.verbose:
-            print >>sys.stderr, url
+        self.log_url(url)
         f = urllib2.urlopen(url)
         # Trac doesn't throw 403 error, just shows normal 200 HTML page
         # telling that access denied. So, we'll emulate 403 ourselves.
@@ -96,8 +115,9 @@ class TracExport(object):
 
     def parse_ticket_comments(self, id):
         # Use RSS export to get ticket comments
-        d = feedparser.parse(self.full_url(self.TICKET_URL % id, 'rss'))
-    #    pprint.pprint(d['entries'])
+        url = self.full_url(self.TICKET_URL % id, 'rss')
+        self.log_url(url)
+        d = feedparser.parse(url)
         res = []
         for comment in d['entries']:
             c = {}
@@ -108,6 +128,35 @@ class TracExport(object):
             res.append(c)
         return res
 
+    def parse_ticket_attachments(self, id):
+        SIZE_PATTERN = r'(\d+) bytes'
+        TIMESTAMP_PATTERN = r'(.+) in Timeline'
+        # Scrape HTML to get ticket attachments
+        url = self.full_url(self.ATTACHMENT_LIST_URL % id)
+        self.log_url(url)
+        f = urllib2.urlopen(url)
+        soup = BeautifulSoup(f)
+        attach = soup.find('div', id='attachments')
+        assert attach
+        list = []
+        while True:
+            attach = attach.findNext('dt')
+            if not attach:
+                break
+            d = {}
+            d['filename'] = attach.a['href'].rsplit('/', 1)[1]
+            d['url'] = self.full_url(self.ATTACHMENT_URL % (id, d['filename']))
+            size_s = attach.span['title']
+            d['size'] = int(self.match_pattern(SIZE_PATTERN, size_s))
+            timestamp_s = attach.find('a', {'class': 'timeline'})['title']
+            d['date'] = self.trac2z_date(self.match_pattern(TIMESTAMP_PATTERN, timestamp_s))
+            d['by'] = attach.find(text=re.compile('added by')).nextSibling.renderContents()
+            desc_el = attach.findNext('dd')
+            # TODO: Convert to Allura link syntax as needed
+            d['description'] = ''.join(desc_el.findAll(text=True)).strip()
+            list.append(d)
+        return list
+
     def get_max_ticket_id(self):
         url = self.full_url(self.QUERY_MAX_ID_URL, 'csv')
         f = self.csvopen(url)
@@ -117,8 +166,13 @@ class TracExport(object):
         return int(fields['id'])
 
     def get_ticket(self, id, extra={}):
+        '''Get ticket with given id
+        extra: extra fields to add to ticket (parsed elsewhere)
+        '''
         t = self.parse_ticket_body(id)
         t['comments'] = self.parse_ticket_comments(id)
+        if options.do_attachments:
+            t['attachments'] = self.parse_ticket_attachments(id)
         t.update(extra)
         return t
 
