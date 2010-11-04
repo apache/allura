@@ -21,6 +21,7 @@
     });
 
     $('#col_list').dialog({autoOpen: false, title:"Column Preferences"});
+    $('#col_list').parent().css('border', '1px solid black');
 
     $('#col_menu').click(function(){
         $('#col_list').dialog('open');
