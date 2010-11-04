@@ -27,7 +27,6 @@ def on_import():
     TreeBrowser.FileBrowserClass = FileBrowser
 
 class RepoRootController(BaseController):
-    mr_widget=SCMMergeRequestWidget()
 
     def _check_security(self):
         security.require(security.has_artifact_access('read'))
@@ -83,24 +82,38 @@ class RepoRootController(BaseController):
                     flash(str(ex), 'error')
                     redirect(request.referer)
 
+    @property
+    def mr_widget(self):
+        source_branches = [
+            b.name
+            for b in c.app.repo.branches + c.app.repo.tags]
+        with c.app.repo.push_upstream_context():
+            target_branches = [
+                b.name
+                for b in c.app.repo.branches + c.app.repo.tags]
+        return SCMMergeRequestWidget(
+            source_branches=source_branches,
+            target_branches=target_branches)
+
     @without_trailing_slash
     @expose('jinja:repo/request_merge.html')
     def request_merge(self, branch=None):
         c.form = self.mr_widget
         if branch is None:
-            branch=c.app.repo.branches[0].name
-        return dict(branch=branch)
+            source_branch=c.app.repo.branches[0].name
+        return dict(source_branch=source_branch)
 
     @expose()
-    @validate(form=mr_widget)
     def do_request_merge(self, **kw):
+        kw = self.mr_widget.to_python(kw)
         downstream=dict(
             project_id=c.project._id,
             mount_point=c.app.config.options.mount_point,
-            commit_id=c.app.repo.commit(kw['branch']).object_id)
+            commit_id=c.app.repo.commit(kw['source_branch']).object_id)
         with c.app.repo.push_upstream_context():
             mr = M.MergeRequest.upsert(
                 downstream=downstream,
+                target_branch=kw['target_branch'],
                 summary=kw['summary'],
                 description=kw['description'])
             redirect(mr.url())
@@ -117,6 +130,7 @@ class MergeRequestsController(object):
         return MergeRequestController(num), remainder
 
 class MergeRequestController(object):
+    log_widget=SCMLogWidget()
     thread_widget=w.Thread(
         page=None, limit=None, page_size=None, count=None,
         style='linear')
@@ -125,10 +139,12 @@ class MergeRequestController(object):
         self.req = M.MergeRequest.query.get(
             request_number=int(num))
         if self.req is None: raise exc.HTTPNotFound
+        self.ci = CommitsController()
 
     @expose('jinja:repo/merge_request.html')
     def index(self):
         c.thread = self.thread_widget
+        c.log_widget = self.log_widget
         return dict(req=self.req)
 
 class RefsController(object):

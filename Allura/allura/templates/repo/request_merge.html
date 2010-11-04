@@ -13,6 +13,6 @@
 {% block content %}
   {{ clone_info(c.app.repo) }}
 
-  {{ c.form.display(action='do_request_merge', value=dict(branch=branch))}}
+  {{ c.form.display(action='do_request_merge', value=dict(source_branch=source_branch))}}
 
 {% endblock %}

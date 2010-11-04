@@ -33,7 +33,15 @@ class Repository(M.Repository):
         return 'git clone git://%s %s' % (self.scm_url_path, c.project.shortname)
 
     def readwrite_clone_command(self):
-        return 'git clone ssh://%s@%s %s' % (c.user.username, self.scm_url_path, c.project.shortname)
+        return 'git clone ssh://%s@%s %s' % (
+            c.user.username, self.scm_url_path, c.project.shortname)
+
+    def merge_command(self, merge_request):
+        '''Return the command to merge a given commit to a given target branch'''
+        return 'git checkout %s;\ngit pull git://%s %s' % (
+            merge_request.target_branch,
+            merge_request.downstream_repo_url,
+            merge_request.downstream.commit_id)
 
 class GitImplementation(M.RepositoryImplementation):
     post_receive_template = string.Template(

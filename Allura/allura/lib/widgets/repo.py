@@ -39,11 +39,19 @@ class SCMTreeWidget(ew.Widget):
         self.list = list
 
 class SCMMergeRequestWidget(ff.ForgeForm):
-    class fields(ew.WidgetsList):
-        summary=ew.TextField()
-        branch=ew.SingleSelectField(
-            label='Branch or Tag',
-            options=lambda:[
-                b.name
-                for b in pylons.c.app.repo.branches + pylons.c.app.repo.tags])
-        description=ffw.AutoResizeTextarea()
+    target_branches=[]
+
+    @property
+    def fields(self):
+        result = [
+            ew.TextField(name='summary'),
+            ew.SingleSelectField(
+                name='source_branch',
+                label='Source Branch',
+                options=self.source_branches),
+            ew.SingleSelectField(
+                name='target_branch',
+                label='Target Branch',
+                options=self.target_branches),
+            ffw.AutoResizeTextarea(name='description') ]
+        return result

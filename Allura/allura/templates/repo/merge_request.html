@@ -10,13 +10,26 @@
 
 {% block header %}{{c.app.config.options.mount_label}}
 Merge Request #{{req.request_number}}: {{req.summary}}
-from <a href="{{req.downstream_url}}">{{req.downstream_url}}</a>
-by <a href="{{req.creator_url}}">{{req.creator_name}}</a>
 {% endblock %}
 
 {% block content %}
-  {{ clone_info(c.app.repo) }}
 
-<div>{{g.markdown.convert(req.description)}}</div>
+  {{ clone_info(c.app.repo) }}
+  <p>
+    <a href="{{req.creator_url}}">{{req.creator_name}}</a>
+    would like you to merge {{ req.commits | count }} commits
+    from <a href="{{req.downstream_url}}">{{req.downstream_url}}</a>
+    to {{ req.target_branch }}
+  </p>
+
+  <p>To merge the commits, please execute the following commands in your working
+    copy: </p>
+  <textarea
+     style="width:80%"
+     readonly
+     >{{ c.app.repo.merge_command(req) | safe }}</textarea>
+  <div>{{g.markdown.convert(req.description)}}</div>
+
+  {{ c.log_widget.display(value=req.commits) }}
 
 {% endblock %}

@@ -36,7 +36,16 @@ class Repository(M.Repository):
         return 'hg clone http://%s %s' % (self.scm_url_path, c.project.shortname)
 
     def readwrite_clone_command(self):
-        return 'hg clone ssh://%s@%s %s' % (c.user.username, self.scm_url_path, c.project.shortname)
+        return 'hg clone ssh://%s@%s %s' % (
+            c.user.username, self.scm_url_path, c.project.shortname)
+
+    def merge_command(self, merge_request):
+        '''Return the command to merge a given commit into a given target branch'''
+        return 'hg checkout %s;\nhg pull -r %s hg://%s; hg merge %s' % (
+            merge_request.target_branch,
+            merge_request.downstream.commit_id,
+            merge_request.downstream.repo_url,
+            merge_request.downstream.commit_id)
 
     def count(self, branch='default'):
         return super(Repository, self).count(branch)

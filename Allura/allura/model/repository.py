@@ -234,6 +234,8 @@ class Repository(Artifact):
         i=0
         seen_object_ids = set()
         for i, oid in enumerate(commit_ids):
+            if oid == 'd5cccda85a522ae48a76732b428ffb164355bfd9':
+                import pdb; pdb.set_trace()
             if len(seen_object_ids) > 10000:
                 log.info('... flushing seen object cache')
                 seen_object_ids = set()
@@ -247,7 +249,9 @@ class Repository(Artifact):
                  # race condition, let the other proc handle it
                 sess.expunge(ci)
                 continue
-            ci.respositories = [ self._id ]
+            repos = [ self._id ]
+            ci.repositories = repos
+            assert ci.repositories
             ci.set_context(self)
             self._impl.refresh_commit(ci, seen_object_ids)
             if (i+1) % self.BATCH_SIZE == 0:
@@ -319,6 +323,7 @@ class MergeRequest(VersionedArtifact):
             project_id=S.ObjectId,
             mount_point=str,
             commit_id=str))
+    target_branch=FieldProperty(str)
     creator_id=FieldProperty(S.ObjectId, if_missing=lambda:pylons.c.user._id)
     created=FieldProperty(datetime, if_missing=datetime.utcnow)
     summary=FieldProperty(str)
@@ -341,6 +346,28 @@ class MergeRequest(VersionedArtifact):
     def downstream_url(self):
         with h.push_context(self.downstream.project_id, self.downstream.mount_point):
             return pylons.c.app.url
+
+    @LazyProperty
+    def downstream_repo_url(self):
+        with h.push_context(self.downstream.project_id, self.downstream.mount_point):
+            return pylons.c.app.repo.scm_url_path
+
+    @LazyProperty
+    def commits(self):
+        return self._commits()
+
+    def _commits(self):
+        result = []
+        next = [ self.downstream.commit_id ]
+        while next:
+            oid = next.pop(0)
+            ci = Commit.query.get(object_id=oid)
+            if self.app.repo._id in ci.repositories:
+                continue
+            result.append(ci)
+            ci.set_context(self.app.repo)
+            next += ci.parent_ids
+        return result
 
     @classmethod
     def upsert(cls, **kw):
