@@ -133,7 +133,8 @@ class File(MappedClass):
             elif height > width:
                 # image is taller than wide, so center vertically
                 new_image.paste(image, (0, (height-width)/2))
-            image = new_image
+            if height != width:
+                image = new_image
         if thumbnail_size:
             image.thumbnail(thumbnail_size, Image.ANTIALIAS)
         with cls.create(content_type=content_type,
