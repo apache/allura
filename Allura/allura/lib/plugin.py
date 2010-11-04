@@ -193,13 +193,14 @@ class ProjectRegistrationProvider(object):
             shortname=shortname)
         if p: raise forge_exc.ProjectConflict()
         name = 'Home Project for %s' % neighborhood.name
+        database_uri = M.Project.default_database_uri(shortname)
         p = M.Project(neighborhood_id=neighborhood._id,
                     shortname=shortname,
                     name=name,
                     short_description='',
                     description=('# ' + name + '\n\n'
                                  + 'You can edit this description in the admin page'),
-                    database_uri=config.get('ming.project.master'),
+                    database_uri=database_uri,
                     last_updated = datetime.utcnow(),
                     is_root=True)
         try:

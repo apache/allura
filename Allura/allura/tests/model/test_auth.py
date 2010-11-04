@@ -69,7 +69,7 @@ def test_user():
     ThreadLocalORMSession.flush_all()
     assert u.private_project().shortname == 'u/nosetest-user'
     roles = list(u.role_iter())
-    assert len(roles) == 3, roles
+    assert len(roles) == 6, roles
     u.set_password('foo')
     provider = plugin.LocalAuthenticationProvider(Request.blank('/'))
     assert provider._validate_password(u, 'foo')

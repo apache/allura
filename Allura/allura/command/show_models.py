@@ -71,7 +71,11 @@ class EnsureIndexCommand(base.Command):
                 M.main_orm_session.update_indexes(cls, background=True)
             else:
                 continue
+        configured_dbs = set()
         for p in projects:
+            db = p.database or p.database_uri
+            if db in configured_dbs: continue
+            configured_dbs.add(db)
             if not p.database_configured: continue
             time.sleep(asint(tg.config.get('ensure_index.sleep', 2)))
             base.log.info('Building project indexes for %s', p.shortname)

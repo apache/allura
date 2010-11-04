@@ -79,10 +79,8 @@ class {{egg}}App(Application):
         pr = c.user.project_role()
         for perm in self.permissions:
               self.config.acl[perm] = [ pr._id ]
-        self.config.acl['read'].append(
-            ProjectRole.query.get(name='*anonymous')._id)      
-        self.config.acl['comment'].append(
-            ProjectRole.query.get(name='*authenticated')._id)
+        self.config.aecl['read'].append(ProjectRole.anonymous()._id)
+        self.config.acl['comment'].append(ProjectRole.authenticated()._id)
         art = model.MyArtifact(
             text='This is a sample artifact')
 

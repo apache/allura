@@ -12,17 +12,25 @@ log = logging.getLogger(__name__)
 MONGO_HOME=os.environ.get('MONGO_HOME', '/usr')
 MONGO_DUMP=os.path.join(MONGO_HOME, 'bin/mongodump')
 MONGO_RESTORE=os.path.join(MONGO_HOME, 'bin/mongorestore')
+SHARD_LENGTH=1
 
 def main():
     if len(sys.argv) > 1:
         shortnames = sys.argv[1:]
     else:
         shortnames = [ p.shortname for p in M.Project.query.find(dict(is_root=True)) ]
+    databases = set(M.session.main_doc_session.db.connection.database_names())
     for pname in shortnames:
-        migrate_project_database(pname)
+        # This needs to be a .find() instead of a .get() because of the
+        # __init__ projects, which have the same shortname but exist in
+        # multiple neighborhoods.
+        for project in M.Project.query.find(dict(shortname=pname)):
+            migrate_project_database(project, pname, databases)
 
-def migrate_project_database(pname):
-    c.project = project = M.Project.query.get(shortname=pname)
+def migrate_project_database(project, pname, databases):
+    c.project = project
+    target_uri = M.Project.default_database_uri(pname)
+    target_db = target_uri.rsplit('/')[-1]
     if project is None:
         log.fatal('Project %s not found', pname)
         print 'Project %s not found' % pname
@@ -36,18 +44,24 @@ def migrate_project_database(pname):
     host = '%s:%s' % (conn.host, conn.port)
     dirname = os.tempnam()
     try:
-        log.info('Backing up %s to %s', pname, dirname)
-        assert 0 == os.system('%s --host %s --db %s -o %s' % (
-                MONGO_DUMP, host, project.database, dirname))
-        assert 0 == os.system('%s --host %s --db project-data %s/%s ' % (
-                MONGO_RESTORE, host, dirname, project.database))
+        if c.project.database not in databases:
+            skip=True
+            log.warning('No db for %s, so not migrating data', pname)
+        else:
+            skip=False
+            log.info('Backing up %s to %s', pname, dirname)
+            assert 0 == os.system('%s --host %s --db %s -o %s' % (
+                    MONGO_DUMP, host, project.database, dirname))
+            assert 0 == os.system('%s --host %s --db %s %s/%s ' % (
+                    MONGO_RESTORE, host, target_db, dirname, project.database))
         database = project.database
         for p in M.Project.query.find(dict(database=database)):
             p.database = ''
-            p.database_uri = 'ming://%s/project-data' % host
+            p.database_uri = M.Project.default_database_uri(pname)
         project.ensure_project_indexes()
         session(project).flush()
-        conn.drop_database(database)
+        if not skip:
+            conn.drop_database(database)
     finally:
         if os.path.exists(dirname):
             shutil.rmtree(dirname)

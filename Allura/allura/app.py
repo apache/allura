@@ -141,7 +141,7 @@ class Application(object):
     @react('forge.project_updated')
     def subscribe_new_admin(self, routing_key, doc):
         if str(c.project._id) == doc['project_id']:
-            for u in model.ProjectRole.query.find({'name':'Admin'}).first().users_with_role():
+            for u in model.ProjectRole.by_name('Admin').users_with_role():
                 model.Mailbox.subscribe(type='direct', user_id=u._id, project_id=doc['project_id'], app_config_id=self.config._id)
 
     @classmethod

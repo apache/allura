@@ -1,6 +1,7 @@
 import logging
 from datetime import datetime, timedelta
 
+from tg import config
 from pylons import c, g, request
 import pkg_resources
 from webob import exc
@@ -103,6 +104,7 @@ class ProjectCategory(MappedClass):
         return self.query.find(dict(parent_id=self._id)).all()
 
 class Project(MappedClass):
+    SHARD_LENGTH=1
     class __mongometa__:
         session = main_orm_session
         name='project'
@@ -140,6 +142,12 @@ class Project(MappedClass):
     ordinal = FieldProperty(int, if_missing=0)
     database_configured = FieldProperty(bool, if_missing=True)
     _extra_tool_status = FieldProperty([str])
+
+    @classmethod
+    def default_database_uri(cls, shortname):
+        base = config.get('ming.project.master')
+        shard = ''.join(ch.lower() for ch in shortname if ch.isalpha())[-cls.SHARD_LENGTH:]
+        return base + '-' + shard
 
     @LazyProperty
     def allowed_tool_status(self):
@@ -334,8 +342,7 @@ class Project(MappedClass):
         with h.push_config(c, project=self, app=app):
             session(cfg).flush()
             app.install(self)
-            admin_role = M.ProjectRole.query.get(
-                name='Admin', project_id=self._id)
+            admin_role = M.ProjectRole.by_name('Admin', project=self.root_project)
             if admin_role:
                 for u in admin_role.users_with_role():
                     M.Mailbox.subscribe(
@@ -420,11 +427,12 @@ class Project(MappedClass):
                         ('search', 'search')]
         with h.push_config(c, project=self, user=users[0]):
             # Install default named roles (#78)
-            role_admin = M.ProjectRole.upsert(name='Admin', project_id=self._id)
-            role_developer = M.ProjectRole.upsert(name='Developer', project_id=self._id)
-            role_member = M.ProjectRole.upsert(name='Member', project_id=self._id)
-            role_auth = M.ProjectRole.upsert(name='*authenticated', project_id=self._id)
-            role_anon = M.ProjectRole.upsert(name='*anonymous', project_id=self._id)
+            root_project_id=self.root_project._id
+            role_admin = M.ProjectRole.upsert(name='Admin', project_id=root_project_id)
+            role_developer = M.ProjectRole.upsert(name='Developer', project_id=root_project_id)
+            role_member = M.ProjectRole.upsert(name='Member', project_id=root_project_id)
+            role_auth = M.ProjectRole.upsert(name='*authenticated', project_id=root_project_id)
+            role_anon = M.ProjectRole.upsert(name='*anonymous', project_id=root_project_id)
             # Setup subroles
             role_admin.roles = [ role_developer._id ]
             role_developer.roles = [ role_member._id ]
