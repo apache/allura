@@ -196,11 +196,11 @@ class Repository(Artifact):
     def scm_url_path(self):
         return self.scm_host() + self.url_path + self.name
 
-    @LazyProperty
-    def merge_requests(self):
+    def merge_requests_by_statuses(self, *statuses):
         return MergeRequest.query.find(dict(
-                app_config_id=self.app.config._id)).sort(
-            'request_number').all()
+                app_config_id=self.app.config._id,
+                status={'$in':statuses})).sort(
+            'request_number')
 
     @LazyProperty
     def _additional_viewable_extensions(self):
@@ -234,24 +234,14 @@ class Repository(Artifact):
         i=0
         seen_object_ids = set()
         for i, oid in enumerate(commit_ids):
-            if oid == 'd5cccda85a522ae48a76732b428ffb164355bfd9':
-                import pdb; pdb.set_trace()
             if len(seen_object_ids) > 10000:
                 log.info('... flushing seen object cache')
                 seen_object_ids = set()
             ci, isnew = Commit.upsert(oid)
-            if self._id not in ci.repositories:
-                # update the commit's repo list
-                ci.query.update(
-                    dict(_id=ci._id),
-                    {'$push':dict(repositories=self._id)})
             if not isnew and not all_commits:
                  # race condition, let the other proc handle it
                 sess.expunge(ci)
                 continue
-            repos = [ self._id ]
-            ci.repositories = repos
-            assert ci.repositories
             ci.set_context(self)
             self._impl.refresh_commit(ci, seen_object_ids)
             if (i+1) % self.BATCH_SIZE == 0:
@@ -263,7 +253,15 @@ class Repository(Artifact):
                  i % self.BATCH_SIZE, i)
         sess.flush()
         sess.clear()
-        self.compute_diffs(commit_ids)
+        # Mark all commits in this repo as being in this repo
+        all_commit_ids = self._impl.new_commits(True)
+        Commit.query.update(
+            dict(
+                object_id={'$in':all_commit_ids},
+                repositories={'$ne':self._id}),
+            {'$push':dict(repositories=self._id)},
+            upsert=False, multi=True)
+        self.compute_diffs()
         for head in self.heads + self.branches + self.tags:
             ci = self.commit(head.object_id)
             if ci is not None:
@@ -271,18 +269,18 @@ class Repository(Artifact):
         session(self).flush()
         return len(commit_ids)
 
-    def compute_diffs(self, commit_ids=None):
-        if commit_ids is None:
-            commit_ids = self._impl.new_commits(all_commits=True)
+    def compute_diffs(self):
+        commit_ids = self._impl.new_commits(all_commits=True)
         sess = session(Commit)
-        # Compute diffs on new commits
+        # Compute diffs on all commits
         log.info('... computing diffs')
         seen_objects = {}
         i=0
         for i, oid in enumerate(commit_ids):
             ci = self._impl.commit(oid)
             ci.tree.set_last_commit(ci, self)
-            ci.compute_diffs(seen_objects)
+            if not ci.diffs_computed:
+                ci.compute_diffs(seen_objects)
             if (i+1) % self.BATCH_SIZE == 0:
                 seen_objects = {}
                 log.info('...... flushing %d commits (%d total)',
@@ -306,11 +304,13 @@ class Repository(Artifact):
     def pending_upstream_merges(self):
         q = {
             'downstream.project_id':self.project_id,
-            'downstream.mount_point':self.app.config.options.mount_point}
+            'downstream.mount_point':self.app.config.options.mount_point,
+            'status':'open'}
         with self.push_upstream_context():
             return MergeRequest.query.find(q).count()
 
 class MergeRequest(VersionedArtifact):
+    statuses=['open', 'merged', 'rejected']
     class __mongometa__:
         name='merge-request'
         indexes=['commit_id']
@@ -318,7 +318,7 @@ class MergeRequest(VersionedArtifact):
     type_s='Repository'
 
     request_number=FieldProperty(int)
-    status=FieldProperty(str, if_missing='new')
+    status=FieldProperty(str, if_missing='open')
     downstream=FieldProperty(dict(
             project_id=S.ObjectId,
             mount_point=str,
@@ -344,13 +344,16 @@ class MergeRequest(VersionedArtifact):
 
     @LazyProperty
     def downstream_url(self):
-        with h.push_context(self.downstream.project_id, self.downstream.mount_point):
+        with self.push_downstream_context():
             return pylons.c.app.url
 
     @LazyProperty
     def downstream_repo_url(self):
-        with h.push_context(self.downstream.project_id, self.downstream.mount_point):
+        with self.push_downstream_context():
             return pylons.c.app.repo.scm_url_path
+
+    def push_downstream_context(self):
+        return h.push_context(self.downstream.project_id, self.downstream.mount_point)
 
     @LazyProperty
     def commits(self):
@@ -365,8 +368,9 @@ class MergeRequest(VersionedArtifact):
             if self.app.repo._id in ci.repositories:
                 continue
             result.append(ci)
-            ci.set_context(self.app.repo)
             next += ci.parent_ids
+        with self.push_downstream_context():
+            for ci in result: ci.set_context(pylons.c.app.repo)
         return result
 
     @classmethod
@@ -549,6 +553,13 @@ class Commit(RepoObject):
 
     def set_context(self, repo):
         self.repo = repo
+
+    @property
+    def diffs_computed(self):
+        if self.diffs.added: return True
+        if self.diffs.removed: return True
+        if self.diffs.changed: return True
+        if self.diffs.copied: return True
 
     @LazyProperty
     def author_url(self):

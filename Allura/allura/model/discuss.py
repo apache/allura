@@ -141,6 +141,12 @@ class Thread(Artifact):
         if aref is None: return self.discussion
         return aref.artifact
 
+    @property
+    def post_count(self):
+        return Post.query.find(dict(
+                discussion_id=self.discussion_id,
+                thread_id=self._id)).count()
+
     def primary(self, primary_class=None):
         result = primary_class.query.get(_id=self.artifact_reference.artifact_id)
         if result is None: return self

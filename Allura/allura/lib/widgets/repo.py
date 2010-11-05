@@ -1,6 +1,7 @@
 import pylons
 
 import ew
+from allura import model as M
 from allura.lib.widgets import forms as ff
 from allura.lib.widgets import form_fields as ffw
 
@@ -39,6 +40,7 @@ class SCMTreeWidget(ew.Widget):
         self.list = list
 
 class SCMMergeRequestWidget(ff.ForgeForm):
+    source_branches=[]
     target_branches=[]
 
     @property
@@ -55,3 +57,17 @@ class SCMMergeRequestWidget(ff.ForgeForm):
                 options=self.target_branches),
             ffw.AutoResizeTextarea(name='description') ]
         return result
+
+class SCMMergeRequestFilterWidget(ff.ForgeForm):
+    submit_text='Filter'
+    method='GET'
+
+    class fields(ew.WidgetsList):
+        status=ew.MultiSelectField(options=M.MergeRequest.statuses)
+
+class SCMMergeRequestDisposeWidget(ff.ForgeForm):
+
+    class fields(ew.WidgetsList):
+        status=ew.SingleSelectField(
+            label='Change Status',
+            options=M.MergeRequest.statuses)

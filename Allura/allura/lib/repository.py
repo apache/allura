@@ -20,7 +20,10 @@ log = logging.getLogger(__name__)
 class RepositoryApp(Application):
     END_OF_REF_ESCAPE='~'
     __version__ = version.__version__
-    permissions = [ 'read', 'write', 'create', 'admin', 'configure' ]
+    permissions = [
+        'read', 'write', 'create',
+        'unmoderated_post', 'post', 'moderate', 'admin',
+        'configure']
     config_options = Application.config_options + [
         ConfigOption('cloned_from_project_id', ObjectId, None),
         ConfigOption('cloned_from_repo_id', ObjectId, None)
@@ -77,12 +80,13 @@ class RepositoryApp(Application):
             links.append(SitemapEntry('Admin',
                                       c.project.url()+'admin/'+self.config.options.mount_point,
                                       ui_icon='tool-admin'))
-        if self.repo.merge_requests:
+        merge_request_count = self.repo.merge_requests_by_statuses('open').count()
+        if merge_request_count:
             links += [
                 SitemapEntry(
                     'Merge Requests', c.app.url + 'merge-requests/',
                     className='nav_child',
-                    small=len(self.repo.merge_requests)) ]
+                    small=merge_request_count) ]
         if self.repo.upstream_repo.name:
             links += [
                 SitemapEntry('Clone of'),
@@ -119,11 +123,16 @@ class RepositoryApp(Application):
         self.config.options['project_name'] = project.name
         super(RepositoryApp, self).install(project)
         role_developer = M.ProjectRole.by_name('Developer')._id
+        role_auth = M.ProjectRole.authenticated()
+        role_anon = M.ProjectRole.anonymous()
         self.config.acl.update(
             configure=c.project.roleids_with_permission('tool'),
             read=c.project.roleids_with_permission('read'),
             create=[role_developer],
             write=[role_developer],
+            unmoderated_post=[role_auth],
+            post=[role_anon],
+            moderate=[role_developer],
             admin=c.project.roleids_with_permission('tool'))
 
     def uninstall(self, project):
@@ -165,6 +174,8 @@ class RepositoryApp(Application):
         if repo is not None:
             shutil.rmtree(repo.full_fs_path, ignore_errors=True)
             repo.delete()
+        M.MergeRequest.query.remove(dict(
+                app_config_id=c.app.config._id))
         super(RepositoryApp, c.app).uninstall(project=c.project)
 
 class RepoAdminController(DefaultAdminController):

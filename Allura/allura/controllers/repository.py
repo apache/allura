@@ -7,14 +7,16 @@ from webob import exc
 from tg import redirect, expose, override_template, flash, url, validate
 from tg.decorators import with_trailing_slash, without_trailing_slash
 
-from ming.orm import ThreadLocalORMSession
+from ming.orm import ThreadLocalORMSession, session
 
 from allura.lib import patience
 from allura.lib import security
 from allura.lib import helpers as h
 from allura.lib import widgets as w
+from allura.controllers import AppDiscussionController
 from allura.lib.widgets.repo import SCMLogWidget, SCMRevisionWidget, SCMTreeWidget
-from allura.lib.widgets.repo import SCMMergeRequestWidget
+from allura.lib.widgets.repo import SCMMergeRequestWidget, SCMMergeRequestFilterWidget
+from allura.lib.widgets.repo import SCMMergeRequestDisposeWidget
 from allura import model as M
 
 from .base import BaseController
@@ -27,6 +29,7 @@ def on_import():
     TreeBrowser.FileBrowserClass = FileBrowser
 
 class RepoRootController(BaseController):
+    _discuss = AppDiscussionController()
 
     def _check_security(self):
         security.require(security.has_artifact_access('read'))
@@ -116,14 +119,26 @@ class RepoRootController(BaseController):
                 target_branch=kw['target_branch'],
                 summary=kw['summary'],
                 description=kw['description'])
+            t = M.Thread(
+                discussion_id=c.app.config.discussion_id,
+                artifact_reference=mr.dump_ref(),
+                subject='Discussion for Merge Request #:%s: %s' % (
+                    mr.request_number, mr.summary))
+            session(t).flush()
             redirect(mr.url())
 
 class MergeRequestsController(object):
+    mr_filter=SCMMergeRequestFilterWidget()
 
     @expose('jinja:repo/merge_requests.html')
-    def index(self):
-        requests = c.app.repo.merge_requests
-        return dict(requests=requests)
+    @validate(mr_filter)
+    def index(self, status=None):
+        status = status or ['open']
+        requests = c.app.repo.merge_requests_by_statuses(*status)
+        c.mr_filter = self.mr_filter
+        return dict(
+            status=status,
+            requests=requests)
 
     @expose()
     def _lookup(self, num, *remainder):
@@ -134,18 +149,32 @@ class MergeRequestController(object):
     thread_widget=w.Thread(
         page=None, limit=None, page_size=None, count=None,
         style='linear')
+    mr_dispose_form=SCMMergeRequestDisposeWidget()
 
     def __init__(self, num):
         self.req = M.MergeRequest.query.get(
             request_number=int(num))
         if self.req is None: raise exc.HTTPNotFound
-        self.ci = CommitsController()
 
     @expose('jinja:repo/merge_request.html')
-    def index(self):
+    def index(self, page=0, limit=250):
         c.thread = self.thread_widget
         c.log_widget = self.log_widget
-        return dict(req=self.req)
+        c.mr_dispose_form = self.mr_dispose_form
+        return dict(
+            req=self.req,
+            page=page,
+            limit=limit,
+            count=self.req.discussion_thread.post_count)
+
+    @expose()
+    @validate(mr_dispose_form)
+    def save(self, status=None):
+        security.require(
+            security.has_artifact_access('write', self.req), 'Write access required')
+        self.req.status = status
+        redirect('.')
+
 
 class RefsController(object):
 

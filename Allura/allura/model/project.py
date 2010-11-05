@@ -64,7 +64,7 @@ class ScheduledMessage(MappedClass):
             {'when' : { '$lt':now},
              'nonce': None },
             {'$set': {'nonce':nonce}},
-            False)
+            upsert=False)
         # Actually fire
         for obj in cls.query.find(dict(nonce=nonce)):
             log.info('Firing scheduled message to %s:%s',
