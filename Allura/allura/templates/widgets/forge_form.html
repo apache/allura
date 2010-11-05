@@ -1,5 +1,5 @@
-<form method="POST"
-      enctype="{{enctype}}"
+<form method="{{method}}"
+      enctype="{{enctype or ''}}"
       action="{{action}}">
   <ol>
     {% for field in fields %}
