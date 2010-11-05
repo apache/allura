@@ -123,8 +123,8 @@ class RepositoryApp(Application):
         self.config.options['project_name'] = project.name
         super(RepositoryApp, self).install(project)
         role_developer = M.ProjectRole.by_name('Developer')._id
-        role_auth = M.ProjectRole.authenticated()
-        role_anon = M.ProjectRole.anonymous()
+        role_auth = M.ProjectRole.authenticated()._id
+        role_anon = M.ProjectRole.anonymous()._id
         self.config.acl.update(
             configure=c.project.roleids_with_permission('tool'),
             read=c.project.roleids_with_permission('read'),
