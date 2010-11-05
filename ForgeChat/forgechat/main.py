@@ -80,8 +80,7 @@ class ForgeChatApp(Application):
         pr = c.user.project_role()
         for perm in self.permissions:
               self.config.acl[perm] = [ pr._id ]
-        self.config.acl['read'].append(
-            ProjectRole.query.get(name='*anonymous')._id)
+        self.config.acl['read'].append(ProjectRole.anonymous()._id)
         CM.ChatChannel(
             project_id=self.config.project_id,
             app_config_id=self.config._id,

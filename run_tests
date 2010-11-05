@@ -27,6 +27,8 @@ fi
 if [ "$TEST_MODULES"  == "" ]; then
     TEST_MODULES="\
     Allura \
+    ForgeBlog \
+    ForgeLink \
     ForgeDiscussion \
     ForgeGit \
     ForgeHg \

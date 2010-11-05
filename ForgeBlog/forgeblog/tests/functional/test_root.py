@@ -74,6 +74,5 @@ class TestRootController(TestController):
         self._post('/2010/08/my-post', text='sometext')
         self.app.get('/blog/2010/08/my-post/revert?version=1')
         response = self.app.get('/blog/2010/08/my-post/')
-        assert 'Unsubscribe' in response
         response = self.app.get('/blog/2010/08/my-post/diff?v1=0&v2=0')
         assert 'My Post' in response
