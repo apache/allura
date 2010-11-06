@@ -8,23 +8,28 @@
 <p>You can use
   <a href="http://daringfireball.net/projects/markdown/">MarkDown</a>
   Syntax here</p>
+
+{% set sample = '''\
+# First-level heading
+
+* *emphasized*, 
+* **strong**, 
+* and <s>strike-thru</s> text
+
+#### Fourth-level heading
+'''
+%}
+
 <h4>Example Input</h4>
 <pre style="background-color:#fff">
-# First-level heading
-
-Some *emphasized* and **strong** text
-
-#### Fourth-level heading
-
+{{sample}}
 </pre>
+<hr />
+
 <h4>Example Rendering</h4>
-<div style="background-color:#fff">{{g.markdown.convert('''
-# First-level heading
+<div style="background-color:#fff">
+{{g.markdown.convert(sample)}}
+</div>
 
-Some *emphasized* and **strong** text
-
-#### Fourth-level heading
-
-''')}}</div>
 <a href="http://daringfireball.net/projects/markdown/syntax">More Examples</a>
 {% endblock %}
