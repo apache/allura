@@ -103,14 +103,14 @@ class ImportSupport(object):
         #   True - map as is
         #   (new_field_name, value_convertor(val)) - use new field name and convert JSON's value
         #   handler(ticket, field, val) - arbitrary transform, expected to modify ticket in-place
-        ImportSupport.FIELD_MAP = {
+        self.FIELD_MAP = {
             'assigned_to': ('assigned_to_id', self.get_user_id),
             'class': None,
             'date': ('created_date', self.parse_date), 
             'date_updated': ('mod_date', self.parse_date),
             'description': True,
             'id': None,
-            'keywords': ('labels', lambda s: s.split()),
+            'keywords': ('labels', lambda s: s.split()), # default way of handling, see below
             'status': True,
             'submitter': ('reported_by_id', self.get_user_id),
             'summary': True,
@@ -119,9 +119,16 @@ class ImportSupport(object):
         self.errors = []
         self.options = {}
         
-    def option(self, name):
-        return self.options.get('option_' + name, False)
+    def init_options(self, post_params):
+        self.options = post_params
+        opt_keywords = self.option('keywords_as', 'split_labels')
+        if opt_keywords == 'single_label':
+            self.FIELD_MAP['keywords'] = ('labels', lambda s: [s])
+        elif opt_keywords == 'custom':
+            del self.FIELD_MAP['keywords']
 
+    def option(self, name, default=None):
+        return self.options.get('option_' + name, False)
 
     @staticmethod
     def parse_date(date_string):
@@ -224,7 +231,7 @@ class ImportSupport(object):
 
     def perform_import(self, doc, **options):
         log.info('import called: %s', options) 
-        self.options = options
+        self.init_options(options)
         artifacts = json.loads(doc)
         if self.option('create_users'):
             users = self.collect_users(artifacts)
