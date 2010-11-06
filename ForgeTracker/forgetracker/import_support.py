@@ -4,6 +4,7 @@ import json, urllib, re
 from datetime import datetime, timedelta
 from urllib import urlencode
 from webob import exc
+from cStringIO import StringIO
 
 # Non-stdlib imports
 import pkg_resources
@@ -42,7 +43,54 @@ from forgetracker.widgets.admin_custom_fields import TrackerFieldAdmin, TrackerF
 log = logging.getLogger(__name__)
 
 
+class ResettableStream(object):
+    '''Class supporting seeks within a header of otherwise
+    unseekable stream.'''
+
+    # Seeks are supported with header of this size
+    HEADER_BUF_SIZE = 2048
+
+    def __init__(self, fp, header_size=-1):
+        self.fp = fp
+        self.buf = None
+        self.buf_size = header_size if header_size >= 0 else self.HEADER_BUF_SIZE
+        self.buf_pos = 0
+        self.stream_pos = 0
+        
+    def read(self, size=-1):
+        if self.buf is None:
+            data = self.fp.read(self.buf_size)
+            self.buf = StringIO(data)
+            self.buf_len = len(data)
+            self.stream_pos = self.buf_len
+        
+        data = ''
+        if self.buf_pos < self.stream_pos:
+            data = self.buf.read(size)
+            self.buf_pos += len(data)
+            if len(data) == size:
+                return data
+            size -= len(data)
+
+        data += self.fp.read(size)
+        self.stream_pos += len(data)
+        return data
+        
+    def seek(self, pos):
+        if self.stream_pos > self.buf_len:
+            assert False, 'Started reading stream body, cannot reset pos'
+        self.buf.seek(pos)
+        self.buf_pos = pos
+        
+    def tell(self):
+        if self.buf_pos < self.stream_pos:
+            return self.buf_pos
+        else:
+            return self.stream_pos
+
 class ImportSupport(object):
+
+    ATTACHMENT_SIZE_LIMIT = 1024*1024
 
     def __init__(self):
         # At first the idea to use Ticket introspection comes,
@@ -67,6 +115,8 @@ class ImportSupport(object):
             'submitter': ('reported_by_id', self.get_user_id),
             'summary': True,
         }
+        self.warnings = []
+        self.errors = []
 
 
     @staticmethod
@@ -119,6 +169,17 @@ class ImportSupport(object):
         comment = thread.post(text=comment_dict['comment'], timestamp=ts)
         comment.author_id = self.get_user_id(comment_dict['submitter'])
 
+    def make_attachment(self, org_ticket_id, ticket_id, att_dict):
+        import urllib2
+        if att_dict['size'] > self.ATTACHMENT_SIZE_LIMIT:
+            self.errors.append('Ticket #%s: Attachment %s (@ %s) is too large, skipping' %
+                               (org_ticket_id, att_dict['filename'], att_dict['url']))
+            return
+        f = urllib2.urlopen(att_dict['url'])
+        TM.TicketAttachment.save_attachment(att_dict['filename'], ResettableStream(f),
+                                            ticket_id=ticket_id)
+        f.close()
+
     def collect_users(self, artifacts):
         users = set()
         for a in artifacts:
@@ -153,9 +214,9 @@ class ImportSupport(object):
         users = self.collect_users(artifacts)
         unknown_users = self.find_unknown_users(users)
         unknown_users = sorted(list(unknown_users))
-        errors.append('Document contains unknown users: %s' % unknown_users)
+        self.warnings.append('Document contains unknown users: %s' % unknown_users)
             
-        return errors, warnings
+        return self.errors, self.warnings
 
     def perform_import(self, doc, create_users=True):
 #        log.info('migrate called: %s', doc) 
@@ -168,11 +229,15 @@ class ImportSupport(object):
         M.session.artifact_orm_session._get().skip_mod_date = True
         for a in artifacts:
             comments = a['comments']
+            attachments = a['attachments']
             del a['comments']
+            del a['attachments']
 #            log.info(a)
             t = self.make_artifact(a)
             for c_entry in comments:
                 self.make_comment(t.discussion_thread, c_entry)
+            for a_entry in attachments:
+                self.make_attachment(a['id'], t._id, a_entry)
             log.info('Imported ticket: %d', t.ticket_num)
 
         return True
