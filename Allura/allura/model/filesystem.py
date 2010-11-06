@@ -18,8 +18,8 @@ from .session import project_orm_session
 
 SUPPORTED_BY_PIL=set([
         'image/jpg',
-        'image/png',
         'image/jpeg',
+        'image/png',
         'image/gif'])
 
 class File(MappedClass):
@@ -103,7 +103,7 @@ class File(MappedClass):
             else: content_type = 'application/octet-stream'
         if not content_type.lower() in SUPPORTED_BY_PIL:
             return None, None
-        thumbnail_meta = thumbnail_meta or {}
+
         image = Image.open(fp)
         format = image.format
         if save_original:
@@ -118,7 +118,8 @@ class File(MappedClass):
                     image.save(fp_w, format)
             original = cls.query.get(filename=fp_w.name)
         else:
-            original=None
+            original = None
+
         if square:
             height = image.size[0]
             width = image.size[1]
@@ -137,6 +138,7 @@ class File(MappedClass):
                 image = new_image
         if thumbnail_size:
             image.thumbnail(thumbnail_size, Image.ANTIALIAS)
+        thumbnail_meta = thumbnail_meta or {}
         with cls.create(content_type=content_type,
                         filename=filename,
                         **thumbnail_meta) as fp_w:
@@ -144,7 +146,7 @@ class File(MappedClass):
                 image.save(fp_w, format, transparency=image.info['transparency'])
             else:
                 image.save(fp_w, format)
-        thumbnail=cls.query.get(filename=fp_w.name)
+        thumbnail = cls.query.get(filename=fp_w.name)
         return original, thumbnail
         
     def is_image(self):

@@ -48,17 +48,22 @@ class BaseAttachment(File):
             content_type = guess_type(filename)
             if content_type[0]: content_type = content_type[0]
             else: content_type = 'application/octet-stream'
+
         thumbnail_meta = dict(type="thumbnail", app_config_id=c.app.config._id)
         thumbnail_meta.update(kwargs)
         original_meta = dict(type="attachment", app_config_id=c.app.config._id)
         original_meta.update(kwargs)
+        # Try to save as image, with thumbnail
         orig, thumbnail = cls.save_image(
             filename, fp, content_type=content_type,
             square=True, thumbnail_size=cls.thumbnail_size,
             thumbnail_meta=thumbnail_meta,
             save_original=True,
             original_meta=original_meta)
-        if orig is not None: return orig, thumbnail
+        if orig is not None:
+            return orig, thumbnail
+
+        # No, generic attachment
         with cls.create(
             content_type=content_type,
             filename=filename,
