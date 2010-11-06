@@ -117,6 +117,10 @@ class ImportSupport(object):
         }
         self.warnings = []
         self.errors = []
+        self.options = {}
+        
+    def option(self, name):
+        return self.options.get('option_' + name, False)
 
 
     @staticmethod
@@ -218,20 +222,25 @@ class ImportSupport(object):
             
         return self.errors, self.warnings
 
-    def perform_import(self, doc, create_users=True):
-#        log.info('migrate called: %s', doc) 
+    def perform_import(self, doc, **options):
+        log.info('import called: %s', options) 
+        self.options = options
         artifacts = json.loads(doc)
-        if create_users:
+        if self.option('create_users'):
             users = self.collect_users(artifacts)
             unknown_users = self.find_unknown_users(users)
             self.make_user_placeholders(unknown_users)
         
         M.session.artifact_orm_session._get().skip_mod_date = True
         for a in artifacts:
-            comments = a['comments']
-            attachments = a['attachments']
-            del a['comments']
-            del a['attachments']
+            comments = []
+            attachments = []
+            if 'comments' in a:
+                comments = a['comments']
+                del a['comments']
+            if 'attachments' in a:
+                attachments = a['attachments']
+                del a['attachments']
 #            log.info(a)
             t = self.make_artifact(a)
             for c_entry in comments:
