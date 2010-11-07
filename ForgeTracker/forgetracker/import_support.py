@@ -168,10 +168,21 @@ class ImportSupport(object):
             else:
                 self.custom(remapped, f, v)
 
+        ticket_num = ticket_dict['id']
+        existing_ticket = TM.Ticket.query.get(app_config_id=c.app.config._id,
+                                          ticket_num=ticket_num)
+        if existing_ticket:
+            ticket_num = c.app.globals.next_ticket_num()
+            self.warnings.append('Ticket #%s: Ticket with this id already exists, using next available id: %s' % (ticket_dict['id'], ticket_num))
+        else:
+            if c.app.globals.last_ticket_num < ticket_num:
+                c.app.globals.last_ticket_num = ticket_num
+                ThreadLocalORMSession.flush_all()
+
         ticket = TM.Ticket(
             app_config_id=c.app.config._id,
             custom_fields=dict(),
-            ticket_num=c.app.globals.next_ticket_num())
+            ticket_num=ticket_num)
         ticket.update(remapped)
         return ticket
 
@@ -268,4 +279,4 @@ class ImportSupport(object):
                 self.make_attachment(a['id'], t._id, a_entry)
             log.info('Imported ticket: %d', t.ticket_num)
 
-        return True
+        return {'status': True, 'errors': self.errors, 'warnings': self.warnings}
