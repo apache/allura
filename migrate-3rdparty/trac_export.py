@@ -67,6 +67,7 @@ class TracExport(object):
         for k, v in dict.iteritems():
             out[self.FIELD_MAP.get(k, k)] = v
             
+        out['id'] = int(out['id'])
         if 'private' in out:
             out['private'] = bool(int(out['private']))
         return out
