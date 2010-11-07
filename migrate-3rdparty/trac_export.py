@@ -23,6 +23,7 @@ def parse_options():
 Export ticket data from a Trac instance''')
     optparser.add_option('-o', '--out-file', dest='out_filename', help='Write to file (default stdout)')
     optparser.add_option('--attachments', dest='do_attachments', action='store_true', help='Export attachment info')
+    optparser.add_option('--only-tickets', dest='only_tickets', action='store_true', help='Export only ticket list')
     optparser.add_option('--start', dest='start_id', type='int', default=1, help='Start with given ticket numer (or next accessible)')
     optparser.add_option('--limit', dest='limit', type='int', default=None, help='Limit number of tickets')
     optparser.add_option('-v', '--verbose', dest='verbose', action='store_true', help='Verbose operation')
@@ -225,7 +226,15 @@ class DateJSONEncoder(json.JSONEncoder):
 if __name__ == '__main__':
     options, args = parse_options()
     ex = TracExport(args[0], start_id=options.start_id)
+    # Implement iterator sequence limiting using islice()
     doc = [t for t in islice(ex, options.limit)]
+
+    if not options.only_tickets:
+        doc = {
+            'class': 'PROJECT',
+            'trackers': {'default': {'artifacts': doc}}
+        }
+
     out_file = sys.stdout
     if options.out_filename:
         out_file = open(options.out_filename, 'w')

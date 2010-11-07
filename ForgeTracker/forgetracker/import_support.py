@@ -221,7 +221,12 @@ class ImportSupport(object):
         errors = []
         warnings = []
 
-        artifacts = json.loads(doc)
+        project_doc = json.loads(doc)
+        tracker_names = project_doc['trackers'].keys()
+        if len(tracker_names) > 1:
+            self.errors.append('Only single tracker import is supported')
+            return self.errors, self.warnings
+        artifacts = project_doc['trackers'][tracker_names[0]]['artifacts']
         users = self.collect_users(artifacts)
         unknown_users = self.find_unknown_users(users)
         unknown_users = sorted(list(unknown_users))
@@ -232,7 +237,14 @@ class ImportSupport(object):
     def perform_import(self, doc, **options):
         log.info('import called: %s', options) 
         self.init_options(options)
-        artifacts = json.loads(doc)
+
+        project_doc = json.loads(doc)
+        tracker_names = project_doc['trackers'].keys()
+        if len(tracker_names) > 1:
+            self.errors.append('Only single tracker import is supported')
+            return self.errors, self.warnings
+        artifacts = project_doc['trackers'][tracker_names[0]]['artifacts']
+        
         if self.option('create_users'):
             users = self.collect_users(artifacts)
             unknown_users = self.find_unknown_users(users)
