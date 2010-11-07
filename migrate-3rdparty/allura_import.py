@@ -17,6 +17,7 @@ Import project data dump in JSON format into Allura project.''')
     optparser.add_option('-s', '--secret-key', dest='secret_key', help='Secret key')
     optparser.add_option('-u', '--base-url', dest='base_url', default='https://sourceforge.net', help='Base Allura URL (%default)')
     optparser.add_option('--validate', dest='validate', action='store_true', help='Validate import data')
+    optparser.add_option('-v', '--verbose', dest='verbose', action='store_true', help='Verbose operation')
     options, args = optparser.parse_args()
     if len(args) != 1:
         optparser.error("Wrong number of arguments.")
@@ -48,8 +49,9 @@ class AlluraRestClient(object):
             result = urllib2.urlopen(url, urllib.urlencode(params))
             return result.read()
         except urllib2.HTTPError, e:
-            error_content = e.read()
-            e.msg += '. Error response:\n' + error_content
+            if options.verbose:
+                error_content = e.read()
+                e.msg += '. Error response:\n' + error_content
             raise e
 
     
