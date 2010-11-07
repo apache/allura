@@ -1008,21 +1008,20 @@ class RootRestController(BaseController):
     def validate_import(self, doc=None, **post_data):
         migrator = ImportSupport()
         try:
-            errors, warnings = migrator.validate_import(doc)
-            if errors or warnings:
-                return dict(status=False, message='See details in errors/warnings', errors=errors, warnings=warnings)
-            return dict(status=True)
+            status = migrator.validate_import(doc, **post_data)
+            return status
         except Exception, e:
-            return dict(status=False, message=str(e))
+            return dict(status=False, errors=[str(e)])
 
     @expose('json:')
     def perform_import(self, doc=None, **post_data):
         migrator = ImportSupport()
         try:
-            status = migrator.perform_import(doc)
-            return dict(status=status)
+            status = migrator.perform_import(doc, **post_data)
+            log.info(status)
+            return status
         except Exception, e:
-            return dict(status=False, message=str(e))
+            return dict(status=False, errors=[str(e)])
 
     @expose()
     def _lookup(self, ticket_num, *remainder):
