@@ -75,6 +75,8 @@ class ApiToken(MappedClass):
     user_id = ForeignIdProperty('User')
     api_key = FieldProperty(str, if_missing=lambda:h.nonce(20))
     secret_key = FieldProperty(str, if_missing=h.cryptographic_nonce)
+    expires = FieldProperty(datetime, if_missing=None)
+    capabilities = FieldProperty({str:str}, if_missing={})
 
     user = RelationProperty('User')
 
@@ -83,6 +85,8 @@ class ApiToken(MappedClass):
             # Validate timestamp
             timestamp = iso8601.parse_date(params['api_timestamp'])
             timestamp_utc = timestamp.replace(tzinfo=None) - timestamp.utcoffset()
+            if self.expires and datetime.utcnow() > self.expires:
+                return False
             if abs(datetime.utcnow() - timestamp_utc) > timedelta(minutes=10):
                 return False
             # Validate signature

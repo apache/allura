@@ -20,13 +20,15 @@ class RestController(object):
         api_key = request.params.get('api_key')
         api_token = M.ApiToken.query.get(api_key=api_key)
         if api_token is not None and api_token.authenticate_request(request.path, request.params):
-            return api_token.user
+            return api_token
         else:
             raise exc.HTTPForbidden
 
     @expose()
     def _lookup(self, name, *remainder):
-        c.user = self._authenticate_request()
+        api_token = self._authenticate_request()
+        c.api_token = api_token
+        c.user = api_token.user
         neighborhood = M.Neighborhood.query.get(url_prefix = '/' + name + '/')
         if not neighborhood: raise exc.HTTPNotFound, name
         return NeighborhoodRestController(neighborhood), remainder
