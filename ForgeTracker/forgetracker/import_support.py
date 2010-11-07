@@ -226,11 +226,9 @@ class ImportSupport(object):
         log.info('Created %d user placeholders', len(usernames))
 
 
-    def validate_import(self, doc):
+    def validate_import(self, doc, **options):
         log.info('validate_migration called: %s', doc)
-        migrator = ImportSupport()
-        errors = []
-        warnings = []
+        self.init_options(options)
 
         project_doc = json.loads(doc)
         tracker_names = project_doc['trackers'].keys()
@@ -241,9 +239,10 @@ class ImportSupport(object):
         users = self.collect_users(artifacts)
         unknown_users = self.find_unknown_users(users)
         unknown_users = sorted(list(unknown_users))
-        self.warnings.append('Document contains unknown users: %s' % unknown_users)
+        if unknown_users:
+            self.warnings.append('Document references unknown users: %s' % unknown_users)
             
-        return self.errors, self.warnings
+        return {'status': True, 'errors': self.errors, 'warnings': self.warnings}
 
     def perform_import(self, doc, **options):
         log.info('import called: %s', options) 
