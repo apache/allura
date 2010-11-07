@@ -21,7 +21,7 @@ from allura.lib import helpers as h
 from allura.app import Application, SitemapEntry, DefaultAdminController
 from allura.lib.search import search_artifact
 from allura.lib.decorators import audit, react
-from allura.lib.security import require, has_artifact_access
+from allura.lib.security import require, has_artifact_access, has_project_access
 from allura.lib import widgets as w
 from allura.lib.widgets import form_fields as ffw
 from allura.lib.widgets.subscriptions import SubscribeForm
@@ -1006,6 +1006,7 @@ class RootRestController(BaseController):
 
     @expose('json:')
     def validate_import(self, doc=None, **post_data):
+        require(has_artifact_access('write'))
         migrator = ImportSupport()
         try:
             status = migrator.validate_import(doc, **post_data)
@@ -1015,10 +1016,10 @@ class RootRestController(BaseController):
 
     @expose('json:')
     def perform_import(self, doc=None, **post_data):
+        require(has_project_access('tool'))
         migrator = ImportSupport()
         try:
             status = migrator.perform_import(doc, **post_data)
-            log.info(status)
             return status
         except Exception, e:
             return dict(status=False, errors=[str(e)])
