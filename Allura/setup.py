@@ -81,6 +81,9 @@ setup(
     [allura.project_registration]
     local = allura.lib.plugin:LocalProjectRegistrationProvider
 
+    [allura.theme]
+    allura = allura.lib.plugin:ThemeProvider
+
     [flyway.migrations]
     pyforge = allura.migrations
 

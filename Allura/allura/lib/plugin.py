@@ -284,5 +284,31 @@ class ProjectRegistrationProvider(object):
            It should be overridden for your specific envirnoment'''
         return None
 
+class ThemeProvider(object):
+    master_template = 'jinja_master/master.html'
+    footer = 'jinja_master/footer.html'
+    main_menu = 'jinja_master/main_menu.html'
+    nav_menu = 'jinja_master/nav_menu.html'
+    top_nav = 'jinja_master/top_nav.html'
+    sidebar_menu = 'jinja_master/sidebar_menu.html'
+    base_css = 'jinja_master/site_style.css'
+    theme_css = ['jinja_master/allura.css']
+
+    @classmethod
+    def get(cls):
+        name = config.get('theme', 'allura')
+        for ep in pkg_resources.iter_entry_points('allura.theme', name):
+            return ep.load()()
+
+    def set_theme(self, globs):
+        globs.theme = dict(master = self.master_template,
+                           footer = self.footer,
+                           main_menu = self.main_menu,
+                           nav_menu = self.nav_menu,
+                           top_nav = self.top_nav,
+                           sidebar_menu = self.sidebar_menu,
+                           base_css = self.base_css,
+                           theme_css = self.theme_css)
+
 class LocalProjectRegistrationProvider(ProjectRegistrationProvider):
     pass

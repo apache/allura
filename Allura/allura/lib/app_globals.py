@@ -35,7 +35,7 @@ import ew
 from allura import model as M
 from allura.lib.markdown_extensions import ForgeExtension
 
-from allura.lib import gravatar
+from allura.lib import gravatar, plugin
 from allura.lib import helpers as h
 from allura.lib.widgets import analytics
 
@@ -92,6 +92,10 @@ class Globals(object):
 
         # Setup analytics
         self.analytics = analytics.GoogleAnalytics(account=config.get('ga.account', 'UA-32013-6'))
+
+        # Setup theme
+        provider = plugin.ThemeProvider.get()
+        provider.set_theme(self)
 
     def handle_paging(self, limit, page, default=50):
         if limit:
@@ -214,6 +218,13 @@ class Globals(object):
             base = request.scheme + base
         return base + resource
         
+    def theme_static(self, resource):
+        base = config['static.url_base']
+        if base.startswith(':'):
+            base = request.scheme + base
+        theme_name = config.get('theme', 'allura')
+        return base + theme_name + '/' + resource
+
     def app_static(self, resource, app=None):
         base = config['static.url_base']
         app = app or c.app
