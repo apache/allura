@@ -355,7 +355,10 @@ class ProjectRole(MappedClass):
     @classmethod
     def by_name(cls, name, project=None):
         if project is None: project = c.project.root_project
-        return cls.query.get(name=name, project_id=project._id)
+        role = cls.query.get(name=name, project_id=project._id)
+        if role is None:
+            role = cls.query.get(name=name, project_id=None)
+        return role
 
     @classmethod
     def anonymous(cls, project=None):
