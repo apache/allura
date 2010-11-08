@@ -898,7 +898,7 @@ class Blob(RepoObject):
     @LazyProperty
     def prev_commit(self):
         lc = self.get_last_commit()
-        if lc.id:
+        if lc['id']:
             last_commit = self.repo.commit(lc.id)
             if last_commit.parent_ids:
                 return self.repo.commit(last_commit.parent_ids[0])
