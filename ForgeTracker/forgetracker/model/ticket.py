@@ -265,9 +265,37 @@ class Ticket(VersionedArtifact):
 
     def commit(self):
         VersionedArtifact.commit(self)
-        if self.version == 1:
-            # Send an email when the ticket is created; later changes will be reflected in
-            # discussion posts that automatically email themselves.
+        if self.version > 1:
+            hist = TicketHistory.query.get(artifact_id=self._id, version=self.version-1)
+            old = hist.data
+            changes = ['Ticket %s has been modified: %s' % (
+                    self.ticket_num, self.summary),
+                       'Edited By: %s (%s)' % (c.user.display_name, c.user.username)]
+            fields = [
+                ('Summary', old.summary, self.summary),
+                ('Status', old.status, self.status) ]
+            for key in self.custom_fields:
+                fields.append((key, old.custom_fields.get(key, ''), self.custom_fields[key]))
+            for title, o, n in fields:
+                if o != n:
+                    changes.append('%s updated: %r => %r' % (
+                            title, o, n))
+            o = hist.assigned_to
+            n = self.assigned_to
+            if o != n:
+                changes.append('Owner updated: %r => %r' % (
+                        o and o.username, n and n.username))
+                self.subscribe(user=n)
+            if old.description != self.description:
+                changes.append('Description updated:')
+                changes.append('\n'.join(
+                        patience.unified_diff(
+                            a=old.description.split('\n'),
+                            b=self.description.split('\n'),
+                            fromfile='description-old',
+                            tofile='description-new')))
+            description = '\n'.join(changes)
+        else:
             self.subscribe()
             if self.assigned_to_id:
                 self.subscribe(user=User.query.get(_id=self.assigned_to_id))
@@ -280,8 +308,8 @@ class Ticket(VersionedArtifact):
             Thread(discussion_id=self.app_config.discussion_id,
                    artifact_reference=self.dump_ref(),
                    subject='#%s discussion' % self.ticket_num)
-            Feed.post(self, description)
             Notification.post(artifact=self, topic='metadata', text=description, subject=subject)
+        Feed.post(self, description)
 
     def url(self):
         return self.app_config.url() + str(self.ticket_num) + '/'
