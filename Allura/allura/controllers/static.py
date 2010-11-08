@@ -12,7 +12,7 @@ from allura import model as M
 
 class NewForgeController(object):
 
-    @expose('jinja:jinja_master/site_style.css', content_type='text/css')
+    @expose(content_type='text/css')
     @without_trailing_slash
     def site_style(self, **kw):
         """Display the css for the default theme."""
@@ -20,15 +20,17 @@ class NewForgeController(object):
         response.headers['Content-Type'] = ''
         response.content_type = 'text/css'
         utils.cache_forever()
-        return dict(
-            color1=theme.color1,
-            color2=theme.color2,
-            color3=theme.color3,
-            color4=theme.color4,
-            color5=theme.color5,
-            color6=theme.color6,
-            g=g,
-            extra_css='')
+        params = dict(color1=theme.color1,
+                      color2=theme.color2,
+                      color3=theme.color3,
+                      color4=theme.color4,
+                      color5=theme.color5,
+                      color6=theme.color6,
+                      g=g)
+        css = g.jinja2_env.get_template(g.theme['base_css']).render(extra_css='', **params)
+        for t in g.theme['theme_css']:
+            css = css + '\n' + g.jinja2_env.get_template(t).render(**params)
+        return css
 
     @expose()
     @without_trailing_slash

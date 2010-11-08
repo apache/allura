@@ -1,8 +1,10 @@
 {% set hide_left_bar = True %}
-{% extends 'jinja_master/master.html' %}
+{% extends g.theme.master %}
 
 {% block title %}{{neighborhood.name}} / Create a Project{% endblock %}
 
+{% block header %}Create a Project{% endblock %}
+
 {% block content %}
-    {{c.add_project.display(action=neighborhood.url()+'register',value=form_data)}}
+          {{c.add_project.display(action=neighborhood.url()+'register',value=form_data)}}
 {% endblock %}

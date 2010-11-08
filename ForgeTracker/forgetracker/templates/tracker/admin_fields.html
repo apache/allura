@@ -1,4 +1,4 @@
-{% extends 'jinja_master/master.html' %}
+{% extends g.theme.master %}
 
 {% if allow_config %}
   {% do g.register_app_js('js/custom-fields.js', app=app) %}

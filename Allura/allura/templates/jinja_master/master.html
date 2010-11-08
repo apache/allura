@@ -46,22 +46,22 @@
     {% for blob in g.resource_manager.emit('body_top_js') %}
       {{ blob }}
     {% endfor %}
-    {% include 'jinja_master/main_menu.html' %}
+    {% include g.theme.main_menu %}
     <div class="container{{g.document_class(neighborhood)}}">
 			<div id="header">
 	      <div class="row">
           {% block nav_menu %}
-          {% include 'jinja_master/nav_menu.html' %}
+          {% include g.theme.nav_menu %}
           {% endblock %}
 				</div>
 			</div>
       <div id="section">
         {% block top_nav %}
-        {% include 'jinja_master/top_nav.html' %}
+        {% include g.theme.top_nav %}
         {% endblock %}
 				<div class="row base">
 				  {% if not hide_left_bar %}
-            {% include 'jinja_master/sidebar_menu.html' %}
+            {% include g.theme.sidebar_menu %}
             {% set outer_width = 10 %}
 				  {% else %}
             {% set outer_width = 12 %}
@@ -95,7 +95,7 @@
           </div>
         </div>
       </div>
-      {% include 'jinja_master/footer.html' %}
+      {% include g.theme.footer %}
     </div>
     <div id="notifications">
       {% for n in h.pop_user_notifications() %}

@@ -1,5 +1,5 @@
 {% set hide_left_bar = not neighborhood.allow_browse %}
-{% extends 'jinja_master/master.html' %}
+{% extends g.theme.master %}
 
 {% block title %}{{neighborhood.name}} / {{title}}{% endblock %}
 
