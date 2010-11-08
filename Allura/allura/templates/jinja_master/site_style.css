@@ -248,6 +248,7 @@ img {border: none;}
     text-shadow: rgb(255,255,255) 0 1px;
     background: none;
     border: none;
+    width: 14px;
 }
 .card .quik a b {top: 0;}
 .card .feature {
