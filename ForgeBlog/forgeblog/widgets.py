@@ -22,8 +22,9 @@ class EditPostForm(NewPostForm):
 
 class ViewPostForm(ew.Widget):
     template='jinja:blog_widgets/view_post.html'
-    params = [ 'value', 'subscribed' ]
+    params = [ 'value', 'subscribed', 'base_post' ]
     value=None
+    base_post=None
     subscribed=None
 
     def __call__(self, **kw):

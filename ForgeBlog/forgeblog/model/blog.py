@@ -63,6 +63,9 @@ class BlogPost(M.VersionedArtifact):
     slug = FieldProperty(str)
     state = FieldProperty(schema.OneOf('draft', 'published'), if_missing='draft')
 
+    def author(self):
+        return M.User.query.get(_id=self.history().first().author.id) or User.anonymous
+
     def _get_date(self):
         return self.timestamp.date()
     def _set_date(self, value):

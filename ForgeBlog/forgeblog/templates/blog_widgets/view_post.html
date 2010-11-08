@@ -1,26 +1,21 @@
-<div>
-  <h2 class="title">{{value.title}}</h2>
-  <div class="actions">
-    {% if h.has_artifact_access('write', value)() %}
-      <a href="edit" class="btn ico-l"><b class="ui-icon ui-icon-pencil"></b> <span>Edit</span></a>
-    {% endif %}
-    <a href="history" class="btn ico-l"><b class="ui-icon ui-icon-search"></b> <span>History</span></a>
-    {{c.subscribe_form.display(value=subscribed, action='subscribe', style='icon')}}
-    <a href="feed" class="btn ico"><b class="ui-icon ui-icon-signal-diag"></b> <span>RSS</span></a>
-  </div>
-  <div class="content">
-    <div class="row">
-      <div class="column grid_12">
-        <em>Posted {{h.ago(value.timestamp)}}</em>
-        {% if value.state != 'published' %}
-          <em>State: {{value.state}}</em><br/>
-        {% endif %}
-        <strong>Labels:</strong>
-        {% for l in value.labels %}
-          <span><a href="{{c.app.url}}search?q=labels_t:{{l}}">{{l}}</a> </span>
-        {% endfor %}
-        {{value.html_text|safe}}
-      </div>
-    </div>
-  </div>
+{% import 'jinja_master/lib.html' as lib with context %}
+<div class="actions">
+  {% if h.has_artifact_access('write', value)() %}
+    <a href="edit" class="btn ico-l"><b class="ui-icon ui-icon-pencil"></b> <span>Edit</span></a>
+  {% endif %}
+  <a href="history" class="btn ico-l"><b class="ui-icon ui-icon-search"></b> <span>History</span></a>
+  {{c.subscribe_form.display(value=subscribed, action='subscribe', style='icon')}}
+  <a href="feed" class="btn ico"><b class="ui-icon ui-icon-signal-diag"></b> <span>RSS</span></a>
 </div>
+
+<em>Posted by <a href="{{base_post.author().url()}}">{{lib.gravatar(base_post.author(), size=16)}}</a> {{h.ago(value.timestamp)}}</em><br/>
+{% if value.state != 'published' %}
+  <em>State: {{value.state}}</em><br/>
+{% endif %}
+{% if value.labels %}
+  <strong>Labels:</strong>
+{% endif %}
+{% for l in value.labels %}
+  <span><a href="{{c.app.url}}search?q=labels_t:{{l}}">{{l}}</a> </span>
+{% endfor %}
+{{value.html_text|safe}}

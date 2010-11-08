@@ -239,7 +239,8 @@ class PostController(BaseController):
         c.thread = W.thread
         version = kw.pop('version', None)
         post = self._get_version(version)
-        return dict(post=post)
+        base_post = self.post
+        return dict(post=post, base_post=base_post)
 
     @expose('jinja:blog/edit_post.html')
     @without_trailing_slash

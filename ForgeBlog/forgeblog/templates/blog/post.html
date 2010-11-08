@@ -2,8 +2,10 @@
 
 {% block title %}{{c.project.name}} / {{c.app.config.options.mount_label}}: {{post.title}}{% endblock %}
 
+{% block header %}{{post.title}}{% endblock %}
+
 {% block content %}
-    {{c.form.display(value=post)}}
+    {{c.form.display(value=post, base_post=base_post)}}
     <div style="clear:both;"></div>
     {% if post.discussion_thread and c.app.show_discussion %}
     <div>
