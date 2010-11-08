@@ -40,5 +40,8 @@ setup(
     [allura.project_registration]
     sfx = sfx:SFXProjectRegistrationProvider
 
+    [allura.theme]
+    sfx = sfx:ThemeProvider
+
     """,
       )

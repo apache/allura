@@ -183,6 +183,10 @@ class SFXProjectRegistrationProvider(plugin.ProjectRegistrationProvider):
         proj_name = short_split + (neighborhood_prefix != 'p' and '.' + neighborhood_prefix or '')
         return '/projects/%s/best_release.html' % proj_name
 
+class ThemeProvider(plugin.ThemeProvider):
+    footer = 'sfx/theme/footer.html'
+    theme_css = ['sfx/theme/sfx.css']
+
 @contextmanager
 def fake_pylons_context(request):
     from allura.lib.app_globals import Globals
