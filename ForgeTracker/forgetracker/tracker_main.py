@@ -308,9 +308,9 @@ class RootController(BaseController):
     @with_trailing_slash
     @h.vardec
     @expose('jinja:tracker/index.html')
-    def index(self, limit=250, columns=None, page=0, **kw):
+    def index(self, limit=250, columns=None, page=0, sort='ticket_num_i desc', **kw):
         require(has_artifact_access('read'))
-        result = self.paged_query(c.app.globals.not_closed_query, sort='ticket_num_i desc',
+        result = self.paged_query(c.app.globals.not_closed_query, sort=sort,
                                   limit=int(limit), columns=columns, page=page)
         c.subscribe_form = W.subscribe_form
         result['subscribed'] = M.Mailbox.subscribed()
@@ -395,7 +395,7 @@ class RootController(BaseController):
         c.bin_form = W.bin_form
         if project:
             redirect(c.project.url() + 'search?' + urlencode(dict(q=q, history=kw.get('history'))))
-        result = self.paged_query(q, columns=columns, **kw)
+        result = self.paged_query(q, page=page, sort=sort, columns=columns, **kw)
         result['allow_edit'] = has_artifact_access('write')()
         c.ticket_search_results = W.ticket_search_results
         return result
@@ -1039,7 +1039,7 @@ class MilestoneController(BaseController):
             sort=validators.UnicodeString(if_empty=None)))
     def index(self, q=None, project=None, columns=None, page=0, query=None, sort=None, **kw):
         require(has_artifact_access('read'))
-        result = self.root.paged_query(self.query, columns=columns, **kw)
+        result = self.root.paged_query(self.query, page=page, sort=sort, columns=columns, **kw)
         result['allow_edit'] = has_artifact_access('write')()
         total = 0
         closed = 0
