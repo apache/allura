@@ -505,6 +505,8 @@ class VersionedArtifact(Artifact):
         history_class = Snapshot
 
     version = FieldProperty(S.Int, if_missing=0)
+    # Not null if artifact originated from external batch import
+    import_id = FieldProperty(S.ObjectId, if_missing=None)
 
     def commit(self):
         '''Save off a snapshot of the artifact and increment the version #'''

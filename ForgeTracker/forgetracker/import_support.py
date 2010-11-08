@@ -182,7 +182,8 @@ class ImportSupport(object):
         ticket = TM.Ticket(
             app_config_id=c.app.config._id,
             custom_fields=dict(),
-            ticket_num=ticket_num)
+            ticket_num=ticket_num,
+            import_id=self.import_batch._id)
         ticket.update(remapped)
         return ticket
 
@@ -190,6 +191,7 @@ class ImportSupport(object):
         ts = self.parse_date(comment_dict['date'])
         comment = thread.post(text=comment_dict['comment'], timestamp=ts)
         comment.author_id = self.get_user_id(comment_dict['submitter'])
+        comment.import_id=self.import_batch._id
 
     def make_attachment(self, org_ticket_id, ticket_id, att_dict):
         import urllib2
@@ -253,6 +255,15 @@ class ImportSupport(object):
         if len(tracker_names) > 1:
             self.errors.append('Only single tracker import is supported')
             return self.errors, self.warnings
+
+        self.import_batch = M.ImportBatch(
+            user_id=c.user._id,
+            project_id=c.project._id,
+            app_config_id=c.app.config._id,
+            api_key=c.api_token.api_key,
+            description='Tracker import')
+        log.info('Import id: %s', self.import_batch._id)
+
         artifacts = project_doc['trackers'][tracker_names[0]]['artifacts']
         
         if self.option('create_users'):
