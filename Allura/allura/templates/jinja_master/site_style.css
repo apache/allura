@@ -988,6 +988,12 @@ ul.ui-tab li a {
 
 #comment ul .column.grid_8 {width: 74%;}
 
+#comment .display_post ul{
+    float: none;
+    padding-left: 1em;
+    list-style-type: disc;
+}
+
 .gravatar img {
 	border: 3px solid rgb(255,255,255);
 	box-shadow: rgba(0,0,0, 0.4) 0 1px 4px;
