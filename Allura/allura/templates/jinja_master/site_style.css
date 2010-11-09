@@ -1251,13 +1251,30 @@ div.attachment_thumb{
     position: relative;
     padding: 10px;
 }
-div.attachment_thumb img{
-    border: 1px solid #ccc;
-}
 div.attachment_thumb .delete_attachment{
     position: absolute;
     top: 0;
     left: 100px;
+}
+div.attachment_thumb .file_type{
+    border: 1px solid #ccc;
+    display: block;
+    height: 100px;
+    width: 100px;
+    position: relative;
+    text-transform: uppercase;
+    text-align: center;
+    font-weight: bold;
+    font-size: 1.2em;
+    margin-bottom: .5em;
+	background: #ccc;
+		background-image: -webkit-gradient(linear, 0% 0%, 0% 100%, to(#ccc), from(#fff));
+		background-image: -moz-linear-gradient(100% 100% 90deg, #ccc, #fff 100%);
+}
+div.attachment_thumb .file_type span{
+    display: block;
+    margin-top: 45px;
+    color: #666;
 }
 
 /* WMD WYSIWIG */

@@ -71,13 +71,13 @@
         {% for att in ticket.attachments %}
             <div class="attachment_thumb">
               {% if att.is_image() and not att.is_embedded() %}
-                <a href="{{att.url()}}">
+                <a href="{{att.url()}}" class="file_type">
                   <img src="{{att.url()}}/thumb">
-                </a><br/>
+                </a>
               {% else %}
-                <a href="{{att.url()}}">
-                  <img src="{{att.url()}}/thumb">
-                </a><br/>
+                <a href="{{att.url()}}" class="file_type">
+                  <span>{{att.metadata.filename.split('.')[-1] or 'file'}}</span>
+                </a>
               {% endif %}
               <a href="{{att.url()}}">{{att.metadata.filename}}</a>
               <a href="{{att.url()}}" class="btn ico delete_attachment"><b class="ui-icon ui-icon-close"></b></a>
