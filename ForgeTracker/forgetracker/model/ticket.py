@@ -1,7 +1,8 @@
 from time import sleep
 from datetime import datetime, timedelta
-
+import logging
 import urllib
+
 import tg
 from pymongo import bson
 from pylons import c
@@ -17,6 +18,9 @@ from allura.lib import helpers as h
 from allura.lib import patience
 from allura.lib.search import search_artifact
 from allura.lib.security import require, has_artifact_access
+
+
+log = logging.getLogger(__name__)
 
 common_suffix = tg.config.get('forgemail.domain', '.sourceforge.net')
 
@@ -75,7 +79,7 @@ class Globals(MappedClass):
 
     @property
     def milestone_fields(self):
-        return [ fld for fld in self.custom_fields if fld.type == 'milestone' ]
+        return [ fld for fld in self.custom_fields if fld['type'] == 'milestone' ]
 
     def _refresh_counts(self):
         # Refresh bin counts
@@ -356,7 +360,7 @@ class Ticket(VersionedArtifact):
         if super_sums is None:
             super_sums = {}
             globals = Globals.query.get(app_config_id=c.app.config._id)
-            for k in [cf.name for cf in globals.custom_fields or [] if cf.type=='sum']:
+            for k in [cf.name for cf in globals.custom_fields or [] if cf['type'] == 'sum']:
                 super_sums[k] = float(0)
 
         # if there are no custom fields of type 'sum', we're done
@@ -407,9 +411,9 @@ class Ticket(VersionedArtifact):
         custom_sums = set()
         other_custom_fields = set()
         for cf in self.globals.custom_fields or []:
-            (custom_sums if cf.type=='sum' else other_custom_fields).add(cf.name)
-            if cf.type == 'boolean' and 'custom_fields.'+cf.name not in ticket_form:
-                self.custom_fields[cf.name] = 'False'
+            (custom_sums if cf['type'] == 'sum' else other_custom_fields).add(cf['name'])
+            if cf['type'] == 'boolean' and 'custom_fields.' + cf['name'] not in ticket_form:
+                self.custom_fields[cf['name']] = 'False'
         # this has to happen because the milestone custom field has special layout treatment
         if '_milestone' in ticket_form:
             other_custom_fields.add('_milestone')
