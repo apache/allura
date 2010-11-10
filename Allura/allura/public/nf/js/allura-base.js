@@ -98,13 +98,23 @@ $(function(){
     $('.selectText').focus(function(){this.select()});
 });
 
+function auto_close( o, timeout ){
+    var $o = $(o);
+    setTimeout(function(){
+        $o.fadeOut('slow');
+    }, timeout);
+    return $o;
+}
+
 function add_close_box( o ){
     return $(o).prepend('<a class="btn ico close-box"><b class="ui-icon ui-icon-close"></b></a>');
 }
 
-function flash( html, kind ){
+function flash( html, kind, timeout ){
     kind || (kind = 'notice');
-    return add_close_box($('<div class="'+kind+'">').append(html).prependTo('#notifications'));
+    var $message = add_close_box($('<div class="'+kind+'">').append(html).prependTo('#notifications'));
+    timeout && auto_close($message, timeout);
+    return $message;
 }
 
 function attach_form_retry( form ){
@@ -137,7 +147,7 @@ $(function(){
         prependTo('#notifications').
         each(function(){
             this.className || (this.className = 'notice');
-            add_close_box(this);
+            auto_close(add_close_box(this), 45000);
         });
     $('#notifications a.close-box').live('click', function(){
         $(this).parent().hide();
