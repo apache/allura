@@ -7,7 +7,9 @@
         <select name="{{field.name}}">
           <option value="" selected="selected">no change</option>
           {% for m in field.milestones %}
-            <option value="{{m.name}}">{{m.name}}</option>
+            {% if not m.complete %}
+              <option value="{{m.name}}">{{m.name}}</option>
+            {% endif %}
           {% endfor %}
         </select>
       </div>
@@ -51,7 +53,9 @@
             <select name="{{field.name}}">
               <option value="" selected="selected">no change</option>
               {% for m in field.milestones %}
-                <option value="{{m.name}}">{{m.name}}</option>
+                {% if not m.complete %}
+                  <option value="{{m.name}}">{{m.name}}</option>
+                {% endif %}
               {% endfor %}
             </select>
           {% else %}
