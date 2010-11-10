@@ -30,7 +30,7 @@ class NeighborhoodAddProjectForm(ForgeForm):
             ew.HiddenField(name='project_description', label='Public Description'),
             ew.Checkbox(name="Wiki", label="", attrs={'class':'unlabeled'}),
             ew.Checkbox(name="Git", label="", attrs={'class':'labeled'}),
-            # ew.Checkbox(name="Hg", label="", attrs={'class':'labeled'}),
+            ew.Checkbox(name="Hg", label="", attrs={'class':'labeled'}),
             ew.Checkbox(name="SVN", label="", attrs={'class':'labeled'}),
             ew.Checkbox(name="Tickets", label="", attrs={'class':'unlabeled'}),
             ew.Checkbox(name="Downloads", label="", attrs={'class':'unlabeled'}),
