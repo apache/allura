@@ -164,10 +164,7 @@ class NeighborhoodController(object):
         # require(has_project_access('tool'))
         for i, tool in enumerate(kw):
             if kw[tool]:
-                h.log_action(log, 'install tool').info(
-                    'install tool %s', tool,
-                    meta=dict(tool_type=tool, mount_point=(tool.lower() or h.nonce()), mount_label=tool))
-                p.install_app(tool, (tool.lower() or h.nonce()), mount_label=tool, ordinal=i)
+                p.install_app(tool, ordinal=i)
         flash('Welcome to the SourceForge Beta System! '
               'To get started, fill out some information about your project.')
         redirect(p.script_name + 'admin/overview')

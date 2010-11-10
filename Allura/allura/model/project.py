@@ -309,14 +309,8 @@ class Project(MappedClass):
         from .artifact import AwardGrant
         return AwardGrant.query.find(dict(granted_to_project_id=self._id)).all()
 
-    def install_app(self, ep_name, mount_point, mount_label=None, ordinal=0, **override_options):
+    def install_app(self, ep_name, mount_point=None, mount_label=None, ordinal=0, **override_options):
         from allura import model as M
-        if not h.re_path_portion.match(mount_point):
-            raise exceptions.ToolError, 'Mount point "%s" is invalid' % mount_point
-        if self.app_instance(mount_point) is not None:
-            raise exceptions.ToolError, (
-                'Mount point "%s" is already in use' % mount_point)
-        assert self.app_instance(mount_point) is None
         for ep in pkg_resources.iter_entry_points('allura', ep_name):
             App = ep.load()
             break
@@ -328,11 +322,22 @@ class Project(MappedClass):
                     break
             else: # pragma no cover
                 raise exc.HTTPNotFound, ep_name
+        if not mount_point:
+            mount_point = App.default_mount_point
+        if not h.re_path_portion.match(mount_point):
+            raise exceptions.ToolError, 'Mount point "%s" is invalid' % mount_point
+        if self.app_instance(mount_point) is not None:
+            raise exceptions.ToolError, (
+                'Mount point "%s" is already in use' % mount_point)
+        assert self.app_instance(mount_point) is None
         options = App.default_options()
         options['mount_point'] = mount_point
-        options['mount_label'] = mount_label or mount_point
+        options['mount_label'] = mount_label or App.default_mount_label or mount_point
         options['ordinal'] = ordinal
         options.update(override_options)
+        h.log_action(log, 'install tool').info(
+            'install tool %s', ep_name,
+            meta=dict(tool_type=ep_name, mount_point=options['mount_point'], mount_label=options['mount_label']))
         cfg = AppConfig(
             project_id=self._id,
             tool_name=ep.name,
