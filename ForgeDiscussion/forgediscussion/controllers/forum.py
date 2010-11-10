@@ -148,7 +148,22 @@ class ForumModerationController(ModerationController):
     @h.vardec
     @expose('jinja:discussion/moderate.html')
     @validate(pass_validator)
-    def index(self, **kw):
+    def index(self, post=None, **kw):
+        if kw.pop('delete', None):
+            for p in post:
+                if 'checked' in p:
+                    posted = DM.ForumPost.query.find(dict(slug=p['slug'])).first()
+                    posted.delete()
+        elif kw.pop('spam', None):
+            for p in post:
+                if 'checked' in p:
+                    posted = DM.ForumPost.query.find(dict(slug=p['slug'])).first()
+                    posted.status = 'spam'
+        elif kw.pop('approve', None):
+            for p in post:
+                if 'checked' in p:
+                    posted = DM.ForumPost.query.find(dict(slug=p['slug'])).first()
+                    posted.status = 'ok'
         kw = WidgetConfig.post_filter.validate(kw, None)
         page = kw.pop('page', 0)
         limit = kw.pop('limit', 50)
