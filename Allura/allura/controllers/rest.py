@@ -16,7 +16,8 @@ class RestController(object):
 
     def _authenticate_request(self):
         'Based on request.params, authenticate the request'
-        if 'api_key' not in request.params: return M.User.anonymous()
+        if 'api_key' not in request.params:
+            return None
         api_key = request.params.get('api_key')
         api_token = M.ApiToken.query.get(api_key=api_key)
         if api_token is not None and api_token.authenticate_request(request.path, request.params):
@@ -28,7 +29,10 @@ class RestController(object):
     def _lookup(self, name, *remainder):
         api_token = self._authenticate_request()
         c.api_token = api_token
-        c.user = api_token.user
+        if api_token:
+            c.user = api_token.user
+        else:
+            c.user = M.User.anonymous()
         neighborhood = M.Neighborhood.query.get(url_prefix = '/' + name + '/')
         if not neighborhood: raise exc.HTTPNotFound, name
         return NeighborhoodRestController(neighborhood), remainder
