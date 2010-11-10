@@ -22,7 +22,7 @@ def parse_options():
  
 Export ticket data from a Trac instance''')
     optparser.add_option('-o', '--out-file', dest='out_filename', help='Write to file (default stdout)')
-    optparser.add_option('--attachments', dest='do_attachments', action='store_true', help='Export attachment info')
+    optparser.add_option('--no-attachments', dest='do_attachments', action='store_false', defaulr=True, help='Export attachment info')
     optparser.add_option('--only-tickets', dest='only_tickets', action='store_true', help='Export only ticket list')
     optparser.add_option('--start', dest='start_id', type='int', default=1, help='Start with given ticket numer (or next accessible)')
     optparser.add_option('--limit', dest='limit', type='int', default=None, help='Limit number of tickets')
