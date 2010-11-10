@@ -12,7 +12,7 @@ from datetime import datetime
 
 import feedparser
 from html2text import html2text
-from BeautifulSoup import BeautifulSoup
+from BeautifulSoup import BeautifulSoup, NavigableString
 import dateutil.parser
 import pytz
 
@@ -139,9 +139,8 @@ class TracExport(object):
         f = urllib2.urlopen(url)
         soup = BeautifulSoup(f)
         attach = soup.find('div', id='attachments')
-        assert attach
         list = []
-        while True:
+        while attach:
             attach = attach.findNext('dt')
             if not attach:
                 break
@@ -153,9 +152,16 @@ class TracExport(object):
             timestamp_s = attach.find('a', {'class': 'timeline'})['title']
             d['date'] = self.trac2z_date(self.match_pattern(TIMESTAMP_PATTERN, timestamp_s))
             d['by'] = attach.find(text=re.compile('added by')).nextSibling.renderContents()
-            desc_el = attach.findNext('dd')
-            # TODO: Convert to Allura link syntax as needed
-            d['description'] = ''.join(desc_el.findAll(text=True)).strip()
+            d['description'] = ''
+            # Skip whitespace
+            while type(attach.nextSibling) is NavigableString:
+                attach = attach.nextSibling
+            # if there's a description, there will be a <dd> element, other immediately next <dt>
+            if attach.nextSibling.name == 'dd':
+                desc_el = attach.nextSibling
+                if desc_el:
+                    # TODO: Convert to Allura link syntax as needed
+                    d['description'] = ''.join(desc_el.findAll(text=True)).strip()
             list.append(d)
         return list
 
@@ -174,7 +180,9 @@ class TracExport(object):
         t = self.parse_ticket_body(id)
         t['comments'] = self.parse_ticket_comments(id)
         if options.do_attachments:
-            t['attachments'] = self.parse_ticket_attachments(id)
+            atts = self.parse_ticket_attachments(id)
+            if atts:
+                t['attachments'] = atts
         t.update(extra)
         return t
 
