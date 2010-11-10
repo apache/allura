@@ -1,11 +1,15 @@
 from pylons import c
 from formencode import validators as fev
 
-import ew
+import ew as ew_core
+import ew.jinja2_ew as ew
+
 from allura.lib.widgets import forms as ff
 
 class OptionsAdmin(ff.ForgeForm):
-    submit_text = 'Save'
+    defaults=dict(
+        ff.ForgeForm.defaults,
+        submit_text = 'Save')
 
     @property
     def fields(self):

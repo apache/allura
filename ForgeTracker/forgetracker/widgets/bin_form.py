@@ -8,8 +8,10 @@ from formencode import validators as fev
 
 class BinForm(ew.SimpleForm):
     template='jinja:tracker_widgets/bin_form.html'
-    name="bin_form"
-    submit_text = "Save Bin"
+    defaults=dict(
+        ew.SimpleForm.defaults,
+        name="bin_form",
+        submit_text = "Save Bin")
 
     @property
     def fields(self):

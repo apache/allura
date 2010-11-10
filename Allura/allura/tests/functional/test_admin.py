@@ -125,7 +125,7 @@ class TestProjectAdmin(TestController):
     def test_tool_list(self):
         r = self.app.get('/admin/tools')
         new_ep_opts = r.html.find('select',{'class':"new_ep_name"}).findAll('option')
-        strings = [ opt.string.strip() for opt in new_ep_opts ]
+        strings = [ ' '.join(opt.string.strip().split()) for opt in new_ep_opts ]
         assert strings == [
             'New Tool',
             'External Link',
@@ -140,6 +140,8 @@ class TestProjectAdmin(TestController):
             'VHOST',
             'Classic Hosted Apps',
             'MySQL Databases',
+            'Chat (alpha)',
+            'Blog (alpha)',
             'Subproject' ], strings
 
     def test_project_icon(self):

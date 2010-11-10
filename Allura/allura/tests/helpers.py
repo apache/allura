@@ -9,6 +9,7 @@ from pylons import c, g, h, url, request, response, session
 from webtest import TestApp
 from webob import Request, Response
 
+import ew
 from ming.orm import ThreadLocalORMSession
 
 from allura.lib.app_globals import Globals
@@ -34,7 +35,11 @@ def setup_basic_test(config=DFL_CONFIG, app_name=DFL_APP_NAME):
         conf_dir = tg.config.here
     except AttributeError:
         conf_dir = getcwd()
-    ENV.set_environment({})
+    environ = {}
+    ew.TemplateEngine.initialize({})
+    ew.widget_context.set_up(environ)
+    ew.widget_context.resource_manager = ew.ResourceManager()
+    ENV.set_environment(environ)
     test_file = path.join(conf_dir, config)
     cmd = SetupCommand('setup-app')
     cmd.run([test_file])

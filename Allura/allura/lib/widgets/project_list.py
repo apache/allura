@@ -2,8 +2,9 @@ import ew
 
 class ProjectSummary(ew.Widget):
     template='jinja:widgets/project_summary.html'
-    params=['value']
-    value=None
+    defaults=dict(
+        ew.Widget.defaults,
+        value=None)
 
     def resources(self):
         yield ew.resource.JSLink('js/jquery.tools.min.js')
@@ -28,10 +29,11 @@ class ProjectSummary(ew.Widget):
 
 class ProjectList(ew.Widget):
     template='jinja:widgets/project_list_widget.html'
-    params=['projects', 'project_summary', 'display_mode']
-    projects=[]
-    project_summary=ProjectSummary()
-    display_mode='list'
+    defaults=dict(
+        ew.Widget.defaults,
+        projects=[],
+        project_summary=ProjectSummary(),
+        display_mode='list')
 
     def resources(self):
         for r in self.project_summary.resources():

@@ -146,7 +146,7 @@ class ThreadController(BaseController):
     @validate(pass_validator, error_handler=index)
     def post(self, **kw):
         require(has_artifact_access('post', self.thread))
-        kw = self.W.edit_post.validate(kw, None)
+        kw = self.W.edit_post.to_python(kw, None)
         file_info = kw.pop('file_info', None)
         p = self.thread.add_post(**kw)
         if hasattr(file_info, 'file'):
@@ -231,7 +231,7 @@ class PostController(BaseController):
         c.post = self.W.post
         if request.method == 'POST':
             require(has_artifact_access('moderate', self.post))
-            post_fields = self.W.edit_post.validate(kw, None)
+            post_fields = self.W.edit_post.to_python(kw, None)
             for k,v in post_fields.iteritems():
                 try:
                     setattr(self.post, k, v)
@@ -262,7 +262,7 @@ class PostController(BaseController):
     @validate(pass_validator, error_handler=index)
     def reply(self, **kw):
         require(has_artifact_access('post', self.thread))
-        kw = self.W.edit_post.validate(kw, None)
+        kw = self.W.edit_post.to_python(kw, None)
         self.thread.post(parent_id=self.post._id, **kw)
         self.thread.num_replies += 1
         redirect(request.referer)
@@ -284,7 +284,7 @@ class PostController(BaseController):
     @expose()
     @validate(pass_validator, error_handler=index)
     def flag(self, **kw):
-        self.W.flag_post.validate(kw, None)
+        self.W.flag_post.to_python(kw, None)
         if c.user._id not in self.post.flagged_by:
             self.post.flagged_by.append(c.user._id)
             self.post.flags += 1
@@ -338,7 +338,7 @@ class ModerationController(BaseController):
     @expose('jinja:discussion/moderate.html')
     @validate(pass_validator)
     def index(self, **kw):
-        kw = WidgetConfig.post_filter.validate(kw, None)
+        kw = WidgetConfig.post_filter.to_python(kw, None)
         page = kw.pop('page', 0)
         limit = kw.pop('limit', 50)
         status = kw.pop('status', '-')
@@ -394,7 +394,7 @@ class PostRestController(PostController):
     @validate(pass_validator, error_handler=h.json_validation_error)
     def reply(self, **kw):
         require(has_artifact_access('post', self.thread))
-        kw = self.W.edit_post.validate(kw, None)
+        kw = self.W.edit_post.to_python(kw, None)
         post = self.thread.post(parent_id=self.post._id, **kw)
         self.thread.num_replies += 1
         redirect(post.slug.split('/')[-1] + '/')
@@ -410,7 +410,7 @@ class ThreadRestController(ThreadController):
     @validate(pass_validator, error_handler=h.json_validation_error)
     def new(self, **kw):
         require(has_artifact_access('post', self.thread))
-        kw = self.W.edit_post.validate(kw, None)
+        kw = self.W.edit_post.to_python(kw, None)
         p = self.thread.add_post(**kw)
         redirect(p.slug + '/')
 

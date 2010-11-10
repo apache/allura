@@ -19,6 +19,9 @@ from tg.configuration import AppConfig, config
 from pylons.middleware import StatusCodeRedirect
 from paste.deploy.converters import asbool
 from routes import Mapper
+from webhelpers.html import literal
+
+import ew
 
 import sfx.middleware
 import allura
@@ -86,5 +89,30 @@ class ForgeConfig(AppConfig):
 
         self.render_functions.jinja = render_jinja
 
+class JinjaEngine(ew.TemplateEngine):
+
+    def __init__(self, entry_point, config):
+        import jinja2
+        self.jinja2 = jinja2
+        super(JinjaEngine, self).__init__(entry_point, config)
+
+    @property
+    def _environ(self):
+        return config['pylons.app_globals'].jinja2_env
+
+    def load(self, template_name):
+        try:
+            return self._environ.get_template(template_name)
+        except self.jinja2.TemplateNotFound:
+            raise ew.errors.TemplateNotFound, '%s not found' % template_name
+
+    def parse(self, template_text, filepath=None):
+        return self._environ.from_string(template_text)
+
+    def render(self, template, context):
+        context = self.context(context)
+        with ew.utils.push_context(ew.widget_context, render_context=context):
+            text = template.render(**context)
+            return literal(text)
 
 base_config = ForgeConfig()

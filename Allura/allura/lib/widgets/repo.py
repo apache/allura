@@ -1,20 +1,23 @@
 import pylons
 
-import ew
+import ew as ew_core
+import ew.jinja2_ew as ew
+
 from allura import model as M
 from allura.lib.widgets import forms as ff
 from allura.lib.widgets import form_fields as ffw
 
-class SCMLogWidget(ew.Widget):
+class SCMLogWidget(ew_core.Widget):
     template='jinja:widgets/repo/log.html'
-    params=['value', 'limit', 'page', 'count', 'show_paging', 'fields']
-    value=None
-    limit=None
-    page=0
-    count=0
-    show_paging=True
+    defaults=dict(
+        ew_core.Widget.defaults,
+        value=None,
+        limit=None,
+        page=0,
+        count=0,
+        show_paging=True)
 
-    class fields(ew.WidgetsList):
+    class fields(ew_core.NameList):
         page_list=ffw.PageList()
         page_size=ffw.PageSize()
 
@@ -23,21 +26,20 @@ class SCMLogWidget(ew.Widget):
             for r in f.resources():
                 yield r
 
-class SCMRevisionWidget(ew.Widget):
+class SCMRevisionWidget(ew_core.Widget):
     template='jinja:widgets/repo/revision.html'
-    params=['value', 'prev', 'next']
-    value=None
-    prev=()
-    next=()
+    defaults=dict(
+        ew_core.Widget.defaults,
+        value=None,
+        prev=ew_core.NoDefault,
+        next=ew_core.NoDefault)
 
-class SCMTreeWidget(ew.Widget):
+class SCMTreeWidget(ew_core.Widget):
     template='jinja:widgets/repo/tree_widget.html'
-    params=['tree', 'list']
-    tree=None
-
-    def __init__(self, **kw):
-        super(SCMTreeWidget, self).__init__(**kw)
-        self.list = list
+    defaults=dict(
+        ew_core.Widget.defaults,
+        tree=None,
+        list=list)
 
 class SCMMergeRequestWidget(ff.ForgeForm):
     source_branches=[]
@@ -59,15 +61,17 @@ class SCMMergeRequestWidget(ff.ForgeForm):
         return result
 
 class SCMMergeRequestFilterWidget(ff.ForgeForm):
-    submit_text='Filter'
-    method='GET'
+    defaults=dict(
+        ff.ForgeForm.defaults,
+        submit_text='Filter',
+        method='GET')
 
-    class fields(ew.WidgetsList):
+    class fields(ew_core.NameList):
         status=ew.MultiSelectField(options=M.MergeRequest.statuses)
 
 class SCMMergeRequestDisposeWidget(ff.ForgeForm):
 
-    class fields(ew.WidgetsList):
+    class fields(ew_core.NameList):
         status=ew.SingleSelectField(
             label='Change Status',
             options=M.MergeRequest.statuses)

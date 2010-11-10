@@ -105,6 +105,9 @@ setup(
     [easy_widgets.resources]
     ew_resources=allura.config.resources:register_ew_resources
 
+    [easy_widgets.engines]
+    jinja = allura.config.app_cfg:JinjaEngine
+
     """,
 )
 

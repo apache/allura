@@ -2,16 +2,17 @@
       enctype="{{enctype or ''}}"
       action="{{action}}">
   <ol>
-    {% for field in fields %}
+    {% for field in widget.fields %}
+      {% set ctx=widget.context_for(field) %}
       {% if field.field_type != 'hidden' %}
       <li>
         {% if field.show_label %}
           <label for="{{field.name}}">{{field.label}}:</label>
         {% endif %}
-        {{c.widget.widget_type.display_field_by_idx(loop.index0)|safe}}
+        {{field.display(**ctx)}}
       </li>
       {% else %}
-        {{c.widget.widget_type.display_field_by_idx(loop.index0)|safe}}
+        {{field.display(**ctx)}}
       {% endif %}
     {% endfor %}
     <li>

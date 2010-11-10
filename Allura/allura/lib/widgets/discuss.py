@@ -1,7 +1,8 @@
 from pylons import c
 from formencode import validators as fev
 
-import ew
+import ew as ew_core
+import ew.jinja2_ew as ew
 
 from allura.lib import validators as V
 from allura.lib import helpers as h
@@ -17,21 +18,29 @@ class NullValidator(fev.FancyValidator):
 
 # Discussion forms
 class ModerateThread(ew.SimpleForm):
-    class buttons(ew.WidgetsList):
+    defaults=dict(
+        ew.SimpleForm.defaults,
+        submit_text=None)
+    class buttons(ew_core.NameList):
         delete=ew.SubmitButton(label='Delete Thread')
-    submit_text=None
 
 class ModeratePost(ew.SimpleForm):
     template='jinja:widgets/moderate_post.html'
-    submit_text=None
+    defaults=dict(
+        ew.SimpleForm.defaults,
+        submit_text=None)
 
 class FlagPost(ew.SimpleForm):
     template='jinja:widgets/flag_post.html'
-    submit_text=None
+    defaults=dict(
+        ew.SimpleForm.defaults,
+        submit_text=None)
 
 class AttachPost(ff.ForgeForm):
-    submit_text='Attach File'
-    enctype='multipart/form-data'
+    defaults=dict(
+        ff.ForgeForm.defaults,
+        submit_text='Attach File',
+        enctype='multipart/form-data')
 
     @property
     def fields(self):
@@ -42,7 +51,9 @@ class AttachPost(ff.ForgeForm):
 
 class ModeratePosts(ew.SimpleForm):
     template='jinja:widgets/moderate_posts.html'
-    submit_text=None
+    defaults=dict(
+        ew.SimpleForm.defaults,
+        submit_text=None)
     def resources(self):
         for r in super(ModeratePosts, self).resources(): yield r
         yield ew.JSScript('''
@@ -59,8 +70,10 @@ class ModeratePosts(ew.SimpleForm):
       }(jQuery));''')
 
 class PostFilter(ew.SimpleForm):
-    submit_text=None
-    method='GET'
+    defaults=dict(
+        ew.SimpleForm.defaults,
+        submit_text=None,
+        method='GET')
     fields = [
         ew.FieldSet(label='Post Filter', fields=[
                 ew.SingleSelectField(
@@ -96,11 +109,12 @@ class TagPost(ew.SimpleForm):
         for r in ffw.LabelEdit(name='labels').resources(): yield r
 
 class EditPost(ff.ForgeForm):
-    show_subject=False
-    value=None
     template='jinja:widgets/edit_post.html'
-    params=['value', 'att_name']
-    att_name='file_info'
+    defaults=dict(
+        ff.ForgeForm.defaults,
+        show_subject=False,
+        value=None,
+        att_name='file_info')
 
     @property
     def fields(self):
@@ -138,15 +152,16 @@ class EditPost(ff.ForgeForm):
 
 class NewTopicPost(EditPost):
     template='jinja:widgets/new_topic_post.html'
-    show_subject = True
-    forums=None
-    params=['forums']
+    defaults=dict(
+        EditPost.defaults,
+        show_subject = True,
+        forums=None)
 
 class _ThreadsTable(ew.TableField):
     template='jinja:widgets/threads_table.html'
-    class hidden_fields(ew.WidgetsList):
+    class hidden_fields(ew_core.NameList):
         _id=ew.HiddenField(validator=V.Ming(M.Thread))
-    class fields(ew.WidgetsList):
+    class fields(ew_core.NameList):
         num_replies=ew.HTMLField(show_label=True, label='Num Posts')
         num_views=ew.HTMLField(show_label=True)
         last_post=ew.HTMLField(text="${value and value.summary()}", show_label=True)
@@ -169,7 +184,7 @@ class SubscriptionForm(ew.SimpleForm):
     submit_text='Update Subscriptions'
     params=['value', 'threads', 'show_actions', 'limit', 'page', 'count',
             'show_discussion_email', 'show_subject', 'allow_create_thread']
-    class fields(ew.WidgetsList):
+    class fields(ew_core.NameList):
         page_list=ffw.PageList()
         page_size=ffw.PageSize()
         threads=_ThreadsTable()
@@ -189,12 +204,14 @@ class SubscriptionForm(ew.SimpleForm):
         });''')
 
 # Widgets
-class HierWidget(ew.Widget):
+class HierWidget(ew_core.Widget):
     widgets = {}
 
-    def __call__(self, **kw):
-        response = super(HierWidget, self).__call__(**kw)
+    def prepare_context(self, context):
+        response = super(HierWidget, self).prepare_context(context)
         response['widgets'] = self.widgets
+        for w in self.widgets.values():
+            w.parent_widget = self
         return response
 
     def resources(self):
@@ -202,7 +219,7 @@ class HierWidget(ew.Widget):
             for r in w.resources():
                 yield r
 
-class Attachment(ew.Widget):
+class Attachment(ew_core.Widget):
     template='jinja:widgets/attachment.html'
     params=['value', 'post']
     value=None
@@ -230,13 +247,14 @@ class ThreadHeader(HierWidget):
 
 class Post(HierWidget):
     template='jinja:widgets/post_widget.html'
-    params=['value', 'show_subject', 'indent', 'page', 'limit', 'supress_promote']
-    value=None
-    indent=0
-    page=0
-    limit=25
-    show_subject=False
-    supress_promote=False
+    defaults=dict(
+        HierWidget.defaults,
+        value=None,
+        indent=0,
+        page=0,
+        limit=25,
+        show_subject=False,
+        suppress_promote=False)
     widgets=dict(
         moderate_post=ModeratePost(),
         edit_post=EditPost(submit_text='Save'),
@@ -288,26 +306,29 @@ class Post(HierWidget):
         })();
         ''')
 
-class PostThread(ew.Widget):
+class PostThread(ew_core.Widget):
     template='jinja:widgets/post_thread.html'
-    params=['value', 'show_subject', 'indent', 'page', 'limit', 'supress_promote']
-    value=None
-    indent=0
-    page=0
-    limit=25
-    show_subject=False
-    supress_promote=False
+    defaults=dict(
+        ew_core.Widget.defaults,
+        value=None,
+        indent=0,
+        page=0,
+        limit=25,
+        show_subject=False,
+        suppress_promote=False,
+        parent=None)
 
 class Thread(HierWidget):
     template='jinja:widgets/thread_widget.html'
     name='thread'
-    params=['value', 'page', 'limit', 'count', 'show_subject','new_post_text']
-    value=None
-    page=None
-    limit=50
-    count=None
-    show_subject=False
-    new_post_text="+ New Comment"
+    defaults=dict(
+        HierWidget.defaults,
+        value=None,
+        page=None,
+        limit=50,
+        count=None,
+        show_subject=False,
+        new_post_text='+ New Comment')
     widgets=dict(
         page_list=ffw.PageList(),
         thread_header=ThreadHeader(),
@@ -374,13 +395,13 @@ class Thread(HierWidget):
 
 class Discussion(HierWidget):
     template='jinja:widgets/discussion.html'
-    params=['value', 'threads',
-            'show_discussion_email', 'show_subject', 'allow_create_thread']
-    value=None
-    threads=None
-    show_discussion_email=False
-    show_subject=False
-    allow_create_thread=False
+    defaults=dict(
+        HierWidget.defaults,
+        value=None,
+        threads=None,
+        show_discussion_email=False,
+        show_subject=False,
+        allow_create_thread=False)
     widgets=dict(
         discussion_header=DiscussionHeader(),
         edit_post=EditPost(submit_text='New Topic'),

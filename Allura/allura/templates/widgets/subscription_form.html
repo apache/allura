@@ -9,10 +9,10 @@
   </div>
   {% endif %}
   <div class="clear"></div>
-  {{fields['page_list'].display(limit=limit, page=page, count=count)}}
+  {{widget.fields['page_list'].display(limit=limit, page=page, count=count)}}
   <form method="{{method}}" action="{{action}}" enctype="{{enctype}}" class="follow_form">
-    {{fields['threads'].display(value=threads)}}
+    {{widget.fields['threads'].display(value=threads)}}
   </form>
-  {{fields['page_list'].display(limit=limit, page=page, count=count)}}
-  {{fields['page_size'].display(limit=limit)}}
+  {{widget.fields['page_list'].display(limit=limit, page=page, count=count)}}
+  {{widget.fields['page_size'].display(limit=limit)}}
 </div>

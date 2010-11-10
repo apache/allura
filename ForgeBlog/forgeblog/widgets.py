@@ -1,11 +1,12 @@
-import ew
+import ew as ew_core
+import ew.jinja2_ew as ew
 
 from allura.lib.widgets import form_fields as ffw
 from allura.lib.widgets import forms
 from allura import model as M
 
 class NewPostForm(forms.ForgeForm):
-    class fields(ew.WidgetsList):
+    class fields(ew_core.NameList):
         title = ew.TextField()
         text = ffw.MarkdownEdit(show_label=False)
         date = ew.DateField()
@@ -17,15 +18,16 @@ class NewPostForm(forms.ForgeForm):
         labels = ffw.LabelEdit()
 
 class EditPostForm(NewPostForm):
-    class buttons(ew.WidgetsList):
+    class buttons(ew_core.NameList):
         delete = ew.SubmitButton()
 
-class ViewPostForm(ew.Widget):
+class ViewPostForm(ew_core.Widget):
     template='jinja:blog_widgets/view_post.html'
-    params = [ 'value', 'subscribed', 'base_post' ]
-    value=None
-    base_post=None
-    subscribed=None
+    defaults=dict(
+        ew_core.Widget.defaults,
+        value=None,
+        subscribed=None,
+        base_post=None)
 
     def __call__(self, **kw):
         kw = super(ViewPostForm, self).__call__(**kw)
@@ -33,7 +35,8 @@ class ViewPostForm(ew.Widget):
             M.Mailbox.subscribed(artifact=kw.get('value'))
         return kw
 
-class PreviewPostForm(ew.Widget):
+class PreviewPostForm(ew_core.Widget):
     template='jinja:blog_widgets/preview_post.html'
-    params = [ 'value' ]
-    value=None
+    defaults=dict(
+        ew_core.Widget.defaults,
+        value=None)

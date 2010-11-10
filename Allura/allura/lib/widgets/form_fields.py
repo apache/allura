@@ -4,7 +4,9 @@ from urllib import urlencode
 import json
 
 from formencode import validators as fev
-import ew
+
+import ew as ew_core
+import ew.jinja2_ew as ew
 
 def onready(text):
     return ew.JSScript('$(function(){%s});' % text);
@@ -23,11 +25,12 @@ class LabelList(fev.UnicodeString):
 class LabelEdit(ew.InputField):
     template='jinja:widgets/label_edit.html'
     validator = LabelList()
-    params=['name', 'className', 'show_label', 'value']
-    show_label=True
-    name=None
-    value=None
-    className=''
+    defaults=dict(
+        ew.InputField.defaults,
+        name=None,
+        value=None,
+        className='',
+        show_label=True)
 
     def from_python(self, value, state=None):
         return value
@@ -44,16 +47,17 @@ class LabelEdit(ew.InputField):
 
 class ProjectUserSelect(ew.InputField):
     template='jinja:widgets/project_user_select.html'
-    params=['name', 'value', 'show_label', 'className']
-    show_label=True
-    name=None
-    value=None
-    className=None
+    defaults=dict(
+        ew.InputField.defaults,
+        name=None,
+        value=None,
+        show_label=True,
+        className=None)
 
     def __init__(self, **kw):
+      super(ProjectUserSelect, self).__init__(**kw)
       if not isinstance(self.value, list):
           self.value=[self.value]
-      super(ProjectUserSelect, self).__init__(**kw)
 
     def from_python(self, value, state=None):
         return value
@@ -78,17 +82,19 @@ class ProjectUserSelect(ew.InputField):
             minLength: 2
           });''' % c.project.url())
 
-class AttachmentList(ew.Widget):
+class AttachmentList(ew_core.Widget):
     template='jinja:widgets/attachment_list.html'
-    params=['attachments','edit_mode']
-    attachments=None
-    edit_mode=None
+    defaults=dict(
+        ew_core.Widget.defaults,
+        attachments=None,
+        edit_mode=None)
 
-class AttachmentAdd(ew.Widget):
+class AttachmentAdd(ew_core.Widget):
     template='jinja:widgets/attachment_add.html'
-    params=['action','name']
-    action=None
-    name=None
+    defaults=dict(
+        ew_core.Widget.defaults,
+        action=None,
+        name=None)
 
     def resources(self):
         for r in super(AttachmentAdd, self).resources(): yield r
@@ -103,10 +109,11 @@ class SubmitButton(ew.SubmitButton):
     attrs={'class':'ui-state-default ui-button ui-button-text'}
 
 class AutoResizeTextarea(ew.TextArea):
-    params=['name', 'value']
-    name=None
-    value=None
-    css_class="auto_resize"
+    defaults=dict(
+        ew.TextArea.defaults,
+        name=None,
+        value=None,
+        css_class='auto_resize')
 
     def resources(self):
         yield ew.resource.JSLink('js/jquery.autoresize.min.js')
@@ -122,10 +129,11 @@ class AutoResizeTextarea(ew.TextArea):
 class MarkdownEdit(AutoResizeTextarea):
     template='jinja:widgets/markdown_edit.html'
     validator = fev.UnicodeString()
-    params=['name','value','show_label']
-    show_label=True
-    name=None
-    value=None
+    defaults=dict(
+        AutoResizeTextarea.defaults,
+        name=None,
+        value=None,
+        show_label=True)
 
     def from_python(self, value, state=None):
         return value
@@ -135,14 +143,15 @@ class MarkdownEdit(AutoResizeTextarea):
         yield ew.resource.JSLink('js/sf_markitup.js')
         yield ew.resource.CSSLink('css/markitup_sf.css')
 
-class PageList(ew.Widget):
+class PageList(ew_core.Widget):
     template='jinja:widgets/page_list.html'
-    params=['limit','count','page', 'url_params']
-    show_label=False
-    name=None
-    limit=None
-    count=0
-    page=0
+    defaults=dict(
+        ew_core.Widget.defaults,
+        name=None,
+        limit=None,
+        count=0,
+        page=0,
+        show_label=False)
     
     @property
     def url_params(self, **kw):
@@ -152,12 +161,14 @@ class PageList(ew.Widget):
                 url_params[k] = v
         return url_params
 
-class PageSize(ew.Widget):
+class PageSize(ew_core.Widget):
     template='jinja:widgets/page_size.html'
-    params=['limit','url_params']
-    show_label=False
-    name=None
-    limit=None
+    defaults=dict(
+        ew_core.Widget.defaults,
+        limit=None,
+        name=None,
+        count=0,
+        show_label=False)
     
     @property
     def url_params(self, **kw):
@@ -174,9 +185,10 @@ class PageSize(ew.Widget):
 
 class FileChooser(ew.InputField):
     template='jinja:widgets/file_chooser.html'
-    params=['name']
-    name=None
     validator=fev.FieldStorageUploadConverter()
+    defaults=dict(
+        ew.InputField.defaults,
+        name=None)
 
     def resources(self):
         for r in super(FileChooser, self).resources(): yield r
@@ -234,43 +246,48 @@ class SortableRepeatedMixin(JQueryMixin):
         'stub_cls',
         'msg_cls',
         ]
-    params = js_params + [
-        'button',
-        'empty_msg',
-        'nonempty_msg'
-        ]
-    container_cls='sortable-repeated-field'
-    field_cls='sortable-field'
-    flist_cls='sortable-field-list'
-    stub_cls='sortable-field-stub'
-    msg_cls='sortable-field-message'
+    defaults=dict(
+        container_cls='sortable-repeated-field',
+        field_cls='sortable-field',
+        flist_cls='sortable-field-list',
+        stub_cls='sortable-field-stub',
+        msg_cls='sortable-field-message',
+        empty_msg='No fields have been defined',
+        nonempty_msg='Drag and drop the fields to reorder',
+        repetitions=0)
     button =  ew.InputField(
         css_class='add', field_type='button', value='New Field')
-    empty_msg='No fields have been defined'
-    nonempty_msg='Drag and drop the fields to reorder'
-    repetitions=0
 
 class SortableRepeatedField(SortableRepeatedMixin, ew.RepeatedField):
     template='genshi:allura.templates.widgets.sortable_repeated_field'
+    defaults=dict(
+        ew.RepeatedField.defaults,
+        **SortableRepeatedMixin.defaults)
 
 class SortableTable(SortableRepeatedMixin, ew.TableField):
     template='genshi:allura.templates.widgets.sortable_table'
+    defaults=dict(
+        ew.TableField.defaults,
+        **SortableRepeatedMixin.defaults)
 
 class StateField(JQueryMixin, ew.CompoundField):
     template='genshi:allura.templates.widgets.state_field'
-    js_widget_name = 'StateField'
-    js_plugin_file = ew.JSLink('js/state_field.js')
     js_params = JQueryMixin.js_params + [
         'selector_cls',
         'field_cls',
         ]
-    params = js_params + [ 'selector', 'states' ]
-    container_cls='state-field-container'
-    selector_cls='state-field-selector'
-    field_cls='state-field'
-    show_label=False
-    selector = None
-    states = {}
+    defaults=dict(
+        ew.CompoundField.defaults,
+        js_widget_name = 'StateField',
+        js_plugin_file = ew.JSLink('js/state_field.js'),
+        js_params = js_params,
+        container_cls='state-field-container',
+        selector_cls='state-field-selector',
+        field_cls='state-field',
+        show_label=False,
+        selector = None,
+        states = {},
+        )
 
     @property
     def fields(self):
@@ -279,9 +296,10 @@ class StateField(JQueryMixin, ew.CompoundField):
 class DateField(JQueryMixin, ew.TextField):
     js_widget_name = 'datepicker'
     js_params = JQueryMixin.js_params
-    params = js_params
-    container_cls = 'ui-date-field'
-    css_class = 'ui-date-field'
+    defaults=dict(
+        ew.TextField.defaults,
+        container_cls = 'ui-date-field',
+        css_class = 'ui-date-field')
 
 class FieldCluster(ew.CompoundField):
     template='genshi:allura.templates.widgets.field_cluster'
@@ -289,12 +307,13 @@ class FieldCluster(ew.CompoundField):
 class AdminField(ew.InputField):
     '''Field with the correct layout/etc for an admin page'''
     template='genshi:allura.templates.widgets.admin_field'
-    params=['field']
-    field=None
+    defaults=dict(
+        ew.InputField.defaults,
+        field=None)
 
     def __init__(self, **kw):
         super(AdminField, self).__init__(**kw)
-        for p in self.field.params:
+        for p in self.field.get_params():
             setattr(self, p, getattr(self.field, p))
 
     def resources(self):

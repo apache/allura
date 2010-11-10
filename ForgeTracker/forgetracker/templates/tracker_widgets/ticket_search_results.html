@@ -1,6 +1,6 @@
 <div>
   {% if solr_error %}<p>{{solr_error}}</p>{% endif %}
-  {{fields['page_size'].display(limit=limit)}}
+  {{widget.fields['page_size'].display(limit=limit)}}
   {% if count != 0 and query %}
     <table class="ticket-list">
       <thead>
@@ -59,7 +59,7 @@
       </form>
     </div>
   {% endif %}
-  {{fields['page_list'].display(limit=limit, page=page, count=count)}}
+  {{widget.fields['page_list'].display(limit=limit, page=page, count=count)}}
   <script type="text/javascript">
     var q="{{query}}", count={{count}}, limit={{limit}}, page={{page}}, sort="{{sort}}";
   </script>

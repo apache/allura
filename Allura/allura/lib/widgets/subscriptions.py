@@ -1,20 +1,20 @@
 from pylons import c
 
-import ew
+import ew as ew_core
+import ew.jinja2_ew as ew
 
 from allura.lib import validators as V
-from allura.lib import helpers as h
 from allura import model as M
 
 from .form_fields import SubmitButton
 
 # Discussion forms
 class _SubscriptionTable(ew.TableField):
-    class hidden_fields(ew.WidgetsList):
+    class hidden_fields(ew_core.NameList):
         _id = ew.HiddenField(validator=V.Ming(M.Mailbox))
         topic = ew.HiddenField()
         artifact_index_id = ew.HiddenField()
-    class fields(ew.WidgetsList):
+    class fields(ew_core.NameList):
         project_name = ew.HTMLField(label='Project', show_label=True)
         mount_point = ew.HTMLField(label='App', show_label=True)
         topic = ew.HTMLField(label='Topic', show_label=True)
@@ -25,17 +25,23 @@ class _SubscriptionTable(ew.TableField):
         unsubscribe = ew.Checkbox(suppress_label=True, show_label=True)
 
 class SubscriptionForm(ew.SimpleForm):
-    class fields(ew.WidgetsList):
+    defaults=dict(
+        ew.SimpleForm.defaults,
+        submit_text='Unsubscribe from marked artifacts')
+    class fields(ew_core.NameList):
         subscriptions=_SubscriptionTable()
-    submit_text='Unsubscribe from marked artifacts'
 
 class SubscribeForm(ew.SimpleForm):
     template='jinja:widgets/subscribe.html'
-    params=['thing','style', 'value']
-    thing='tool'
-    style='text'
-    value=None
-    perform_validation=False
-    class fields(ew.WidgetsList):
+    defaults=dict(
+        ew.SimpleForm.defaults,
+        thing='tool',
+        style='text',
+        value=None)
+
+    class fields(ew_core.NameList):
         subscribe=SubmitButton()
         unsubscribe=SubmitButton()
+
+    def from_python(self, value, state):
+        return value

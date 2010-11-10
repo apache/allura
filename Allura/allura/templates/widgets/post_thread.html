@@ -1,9 +1,10 @@
 <li>
-              {{widgets.post.display(value=value, show_subject=show_subject, indent=indent,
-                                     supress_promote=supress_promote, page=page, limit=limit)}}
-              <ul>
-              {% for child in value.descendants() if child.status == 'ok' and child.parent_id == value._id %}
-                <li>{{c.widget.widget_type.display(value=child, indent=indent+1)}}</li>
-              {% endfor %}
-              </ul>
+{{widget.parent_widget.widgets.post.display(
+    value=value, show_subject=show_subject, indent=indent,
+    supress_promote=supress_promote, page=page, limit=limit)}}
+    <ul>
+    {% for child in value.descendants() if child.status == 'ok' and child.parent_id == value._id %}
+      <li>{{widget.display(value=child, indent=indent+1)}}</li>
+    {% endfor %}
+    </ul>
 </li>

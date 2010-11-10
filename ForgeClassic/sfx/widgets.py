@@ -2,7 +2,8 @@ from pylons import c
 from formencode import validators as fev
 from formencode import schema as fes
 
-import ew
+import ew as ew_core
+import ew.jinja2_ew as ew
 
 from allura.lib.widgets.forms import ForgeForm
 from allura.lib import validators as V
@@ -11,9 +12,9 @@ from sfx import model as M
 
 class _MailingListRow(ew.RowField):
     template='jinja:sfx/list_admin_row.html'
-    class hidden_fields(ew.WidgetsList):
+    class hidden_fields(ew_core.NameList):
         name = ew.HiddenField()
-    class fields(ew.WidgetsList):
+    class fields(ew_core.NameList):
         name = ew.HTMLField(label='List Name', show_label=True)
         description = ew.TextField(label='Description', show_label=True)
         is_public = ew.SingleSelectField(
@@ -28,7 +29,7 @@ class ListAdmin(ew.SimpleForm):
     submit_text = 'Save'
     enctype=None
 
-    class fields(ew.WidgetsList):
+    class fields(ew_core.NameList):
         lists = ew.TableField(field=_MailingListRow())
 
 class NewList(ForgeForm):
@@ -36,7 +37,7 @@ class NewList(ForgeForm):
     submit_text = 'Create'
     enctype=None
 
-    class fields(ew.WidgetsList):
+    class fields(ew_core.NameList):
         name = ew.TextField()
         description = ew.TextField()
         is_public = ew.SingleSelectField(
@@ -47,7 +48,7 @@ class NewList(ForgeForm):
 class SubscriberSearch(ForgeForm):
     submit_text = 'Search'
 
-    class fields(ew.WidgetsList):
+    class fields(ew_core.NameList):
         search_criteria = ew.TextField()
         sort_by = ew.SingleSelectField(
             options=[ ew.Option(label='User name', py_value='user name'),
@@ -58,7 +59,7 @@ class SubscriberSearch(ForgeForm):
 class PasswordChange(ForgeForm):
     submit_text = 'Save'
 
-    class fields(ew.WidgetsList):
+    class fields(ew_core.NameList):
         new_password=ew.TextField(field_type='password')
         confirm_password=ew.TextField(field_type='password')
 
@@ -82,11 +83,13 @@ class NewVHost(ForgeForm):
     submit_text = 'Create'
     enctype=None
 
-    class fields(ew.WidgetsList):
+    class fields(ew_core.NameList):
         name=ew.TextField(label='New virtual host', attrs=dict(title='(e.g. vhost.org)'))
 
 class MySQLPassword(ForgeForm):
-    submit_text = 'Set passwords'
+    defaults=dict(
+        ForgeForm.defaults,
+        submit_text='Set passwords')
 
     @property
     def fields(self):

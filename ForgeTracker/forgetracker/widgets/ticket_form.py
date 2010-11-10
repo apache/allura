@@ -1,9 +1,12 @@
-import ew
 from allura.lib.widgets import form_fields as ffw
 
 from pylons import c
-from forgetracker import model
 from formencode import validators as fev
+
+import ew as ew_core
+import ew.jinja2_ew as ew
+
+from forgetracker import model
 
 class TicketCustomFields(ew.CompoundField):
     template='jinja:tracker_widgets/ticket_custom_fields.html'
@@ -19,15 +22,16 @@ class TicketCustomFields(ew.CompoundField):
         return fields
 
 class GenericTicketForm(ew.SimpleForm):
-    name="ticket_form"
-    submit_text='Save'
-    ticket=None
-    show_comment = False
-    params=['submit_text','ticket', 'show_comment']
+    defaults=dict(
+        ew.SimpleForm.defaults,
+        name="ticket_form",
+        submit_text='Save',
+        ticket=None,
+        show_comment=False)
 
     def display_field_by_name(self, idx, ignore_errors=False):
         field = self.fields[idx]
-        ctx = c.widget.context_for(field.name)
+        ctx = self.context_for(field)
         display = field.display(**ctx)
         if ctx['errors'] and field.show_errors and not ignore_errors:
             display = "%s<div class='error'>%s</div>" % (display, ctx['errors'])
@@ -58,13 +62,13 @@ class GenericTicketForm(ew.SimpleForm):
                 if cf.name == '_milestone':
                     fields.append(TicketCustomField.make(cf))
                     break
-        return ew.NameList(fields)
+        return ew_core.NameList(fields)
 
 class TicketForm(GenericTicketForm):
     template='jinja:tracker_widgets/ticket_form.html'
     @property
     def fields(self):
-        fields = ew.NameList(super(TicketForm, self).fields)
+        fields = ew_core.NameList(super(TicketForm, self).fields)
         if c.app.globals.custom_fields:
             fields.append(TicketCustomFields(name="custom_fields"))
         return fields

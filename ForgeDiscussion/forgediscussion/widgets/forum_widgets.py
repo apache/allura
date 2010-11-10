@@ -1,7 +1,8 @@
 from pylons import c
 from formencode import validators as fev
 
-import ew
+import ew as ew_core
+import ew.jinja2_ew as ew
 
 from allura.lib import validators as V
 from allura.lib.widgets import discuss as DW
@@ -9,18 +10,19 @@ from allura.lib.widgets import form_fields as ffw
 
 from forgediscussion import model as M
 
-class _ForumSummary(ew.Widget):
+class _ForumSummary(ew_core.Widget):
     template='jinja:discussion_widgets/forum_summary.html'
-    params=['value', 'show_label', 'label', 'name']
-    name=None
-    value=None
-    show_label = True
-    label=None
+    defaults=dict(
+        ew_core.Widget.defaults,
+        name=None,
+        value=None,
+        show_label=True,
+        label=None)
 
 class _ForumsTable(ew.TableField):
-    class hidden_fields(ew.WidgetsList):
+    class hidden_fields(ew_core.NameList):
         _id=ew.HiddenField(validator=V.Ming(M.ForumThread))
-    class fields(ew.WidgetsList):
+    class fields(ew_core.NameList):
         num_topics=ew.HTMLField(show_label=True, label='Topics')
         num_posts=ew.HTMLField(show_label=True, label='Posts')
         last_post=ew.HTMLField(text="${value and value.summary()}",
@@ -29,14 +31,14 @@ class _ForumsTable(ew.TableField):
     fields.insert(0, _ForumSummary())
 
 class ForumSubscriptionForm(ew.SimpleForm):
-    class fields(ew.WidgetsList):
+    class fields(ew_core.NameList):
         forums=_ForumsTable()
         page_list=ffw.PageList()
         page_size=ffw.PageSize()
     submit_text='Update Subscriptions'
 
 class _ThreadsTable(DW._ThreadsTable):
-    class fields(ew.WidgetsList):
+    class fields(ew_core.NameList):
         num_replies=ew.HTMLField(show_label=True, label='Num Replies')
         num_views=ew.HTMLField(show_label=True)
         flags=ew.HTMLField(show_label=True, text="${unicode(', '.join(value))}")
@@ -47,13 +49,13 @@ class _ThreadsTable(DW._ThreadsTable):
             href="${value['url']()}", show_label=True))
 
 class ThreadSubscriptionForm(DW.SubscriptionForm):
-    class fields(ew.WidgetsList):
+    class fields(ew_core.NameList):
         threads=_ThreadsTable()
         page_list=ffw.PageList()
         page_size=ffw.PageSize()
 
 class AnnouncementsTable(DW._ThreadsTable):
-    class fields(ew.WidgetsList):
+    class fields(ew_core.NameList):
         num_replies=ew.HTMLField(show_label=True, label='Num Replies')
         num_views=ew.HTMLField(show_label=True)
         flags=ew.HTMLField(show_label=True, text="${unicode(', '.join(value))}")
@@ -78,10 +80,10 @@ class _ForumSelector(ew.SingleSelectField):
 
 class ModerateThread(ew.SimpleForm):
     submit_text='Save Changes'
-    class fields(ew.WidgetsList):
+    class fields(ew_core.NameList):
         forum=_ForumSelector(label='New Forum')
         flags=ew.CheckboxSet(options=['Sticky', 'Announcement'])
-    class buttons(ew.WidgetsList):
+    class buttons(ew_core.NameList):
         delete=ew.SubmitButton(label='Delete Thread')
 
 class ModeratePost(ew.SimpleForm):
@@ -117,8 +119,9 @@ class Post(DW.Post):
                  promote_to_thread=PromoteToThread())
 
 class Thread(DW.Thread):
-    params=['show_subject']
-    show_subject=False
+    defaults=dict(
+        DW.Thread.defaults,
+        show_subject=False)
     widgets=dict(DW.Thread.widgets,
                  thread_header=ThreadHeader(),
                  post=Post())

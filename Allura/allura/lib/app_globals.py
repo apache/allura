@@ -159,7 +159,7 @@ class Globals(object):
 
     @property
     def resource_manager(self):
-        return request.environ.get('ew.resource_manager', ew.ResourceManager())
+        return ew.widget_context.resource_manager
 
     def register_forge_css(self, href, **kw):
         self.resource_manager.register(ew.CSSLink('allura/' + href, **kw))

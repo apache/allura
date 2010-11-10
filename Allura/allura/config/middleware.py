@@ -75,15 +75,31 @@ def _make_core_app(root, global_conf, full_stack=True, **app_conf):
     if asbool(app_conf.get('auth.method', 'local')=='sfx'):
         app = SSLMiddleware(app, app_conf.get('no_redirect.pattern'))
 
-    app = ew.ResourceMiddleware(
+    app = ew.WidgetMiddleware(
         app,
         compress=not asbool(global_conf['debug']),
         # compress=True,
         script_name=app_conf.get('ew.script_name', '/_ew_resources/'),
         url_base=app_conf.get('ew.url_base', '/_ew_resources/'))
+    ew.render.TemplateEngine.register_variable_provider(get_tg_vars)
 
     app = StaticFilesMiddleware(app, app_conf.get('static.script_name'))
 
     return app
     
 
+def get_tg_vars(context):
+    import pylons, tg
+    from allura.lib import helpers as h
+    from urllib import quote_plus
+    context.setdefault('g', pylons.g)
+    context.setdefault('c', pylons.c)
+    context.setdefault('h', h)
+    context.setdefault('request', pylons.request)
+    context.setdefault('response', pylons.response)
+    context.setdefault('url', pylons.url)
+    context.setdefault('tg', dict(
+            config=tg.config,
+            flash_obj=tg.flash,
+            quote_plus=quote_plus,
+            url=tg.url))

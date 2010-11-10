@@ -1,5 +1,7 @@
 from os import path, environ
 
+from nose.tools import with_setup
+
 import webob
 from urllib import quote
 from tg import config
@@ -9,7 +11,7 @@ from pylons import c, g, session, request
 
 from . import helpers
 
-def setUp(self):
+def setUp():
     """Method called by nose before running each test"""
     helpers.setup_basic_test()
     helpers.setup_global_objects()
@@ -23,7 +25,7 @@ def test_app_globals():
     assert g.url('/foo', a='foo bar') == 'http://localhost:80/foo?a=foo+bar', g.url('/foo', a='foo bar')
     assert g.url('/foo') == 'http://localhost:80/foo', g.url('/foo')
 
-
+@with_setup(setUp)
 def test_markdown():
     'Just a test to get coverage in our markdown extension'
     g.set_project('test')

@@ -1,7 +1,7 @@
 {% set cf_count=0 %}
 <div class="row">
-{% for field in c.widget.widget_type.fields %}
-  {% set ctx=c.widget.context_for(field.name) %}
+{% for field in widget.fields %}
+  {% set ctx=widget.context_for(field) %}
   {% if cf_count%4 == 0 and cf_count != 0 %}
     </div><div class="row">
   {% endif %}

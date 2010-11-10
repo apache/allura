@@ -1,17 +1,18 @@
-from pylons import c
 from formencode import validators as fev
 
-import ew
+import ew as ew_core
+import ew.jinja2_ew as ew
 
 class ForgeForm(ew.SimpleForm):
     template='jinja:widgets/forge_form.html'
-    params=['submit_text','enctype']
-    submit_text = 'Save'
-    enctype=None
+    defaults=dict(
+        ew.SimpleForm.defaults,
+        submit_text='Save',
+        enctype=None)
 
     def display_field_by_idx(self, idx, ignore_errors=False):
         field = self.fields[idx]
-        ctx = c.widget.context_for(field.name)
+        ctx = self.context_for(field)
         display = field.display(**ctx)
         if ctx['errors'] and field.show_errors and not ignore_errors:
             display = "%s<div class='error'>%s</div>" % (display, ctx['errors'])
@@ -19,7 +20,9 @@ class ForgeForm(ew.SimpleForm):
 
 class NeighborhoodAddProjectForm(ForgeForm):
     template = 'jinja:widgets/neighborhood_add_project.html'
-    submit_text = 'Start'
+    defaults=dict(
+        ForgeForm.defaults,
+        submit_text = 'Start')
 
     @property
     def fields(self):
@@ -41,4 +44,4 @@ class NeighborhoodAddProjectForm(ForgeForm):
 
     def resources(self):
         for r in super(NeighborhoodAddProjectForm, self).resources(): yield r
-        yield ew.resource.CSSLink('css/add_project.css')
+        yield ew_core.resource.CSSLink('css/add_project.css')

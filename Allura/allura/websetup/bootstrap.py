@@ -160,6 +160,7 @@ def bootstrap(command, conf, vars):
     p_adobe2 = n_adobe.register_project('adobe-2', u_adobe)
     n_projects.register_project('allura', u_admin1)
     p0 = n_projects.register_project('test', u0)
+    p0._extra_tool_status = [ 'alpha', 'beta' ]
     c.project = p0
     c.user = u0
     p1 = p0.new_subproject('sub1')

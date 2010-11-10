@@ -14,7 +14,7 @@ class TestTicketForm(TrackerTestWithModel):
         g.open_status_names = 'open'
         g.closed_status_names = 'closed'
         ThreadLocalORMSession.flush_all()
-        assert self.options_for_field('status') == ['open', 'closed']
+        assert self.options_for_field('status')() == ['open', 'closed']
 
     def options_for_field(self, field_name):
         fields = ticket_form.TicketForm().fields

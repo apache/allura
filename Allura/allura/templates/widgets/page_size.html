@@ -1,5 +1,5 @@
 <form method="get">
-  {% for k,v in url_params.iteritems() %}
+  {% for k,v in widget.url_params.iteritems() %}
     <input type="hidden" name="{{k}}" value="{{v}}"/>
   {% endfor %}
   {% if limit %}

@@ -7,13 +7,13 @@
           data-empty-message="$empty_msg"
           data-nonempty-message="$nonempty_msg"
           /></div>
-  ${button.display()}
+  ${widget.button.display()}
   <br/>
   <div class="$flist_cls">
     <py:for each="i in xrange(repetitions)"
-            py:with="ctx=c.widget.context_for(i)">
-      ${field.display(css_class=field_cls, **ctx)}
+            py:with="ctx=widget.context_for(i)">
+      ${widget.field.display(css_class=field_cls, **ctx)}
     </py:for>
-    ${field.display(name=name+'#', css_class=stub_cls)}
+    ${widget.field.display(name=name+'#', css_class=stub_cls)}
   </div>
 </div>

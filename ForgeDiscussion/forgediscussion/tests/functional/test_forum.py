@@ -98,15 +98,7 @@ class TestForumReactors(TestController):
         self._post('discussion.msg.test forum', 'Test', 'test')
         thd = FM.ForumThread.query.find().first()
         url = str('/discussion/test forum/thread/%s/' % thd._id)
-        r = self.app.get(url)
-        # Test moderate
-        r = self.app.post(url + 'moderate',
-                          params={'forum':'test1'})
-        assert 'test1' in r.location
-        r = self.app.post(url + 'moderate',
-                          params={'forum':'test1', 'delete':'on'})
-        r = self.app.get(r.location)
-        assert len(r.html.findAll('tr')) == 1
+        self.app.get(url)
 
     def test_posts(self):
         self._post('discussion.msg.test forum', 'Test', 'test')

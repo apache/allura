@@ -7,23 +7,23 @@
   <div style="float: right;">
     {% if page != 0 %}
     <a class="btn"
-       href="{{tg.url(request.path_info, dict(page=0, **url_params))}}">First</a>
+       href="{{tg.url(request.path_info, dict(page=0, **widget.url_params))}}">First</a>
     {% endif %}
     {% if page > 0 %}
     <a class="btn"
-       href="{{tg.url(request.path_info, dict(page=page-1, **url_params))}}">Previous</a>
+       href="{{tg.url(request.path_info, dict(page=page-1, **widget.url_params))}}">Previous</a>
     {% endif %}
     {% for i in range(0, pages) %}
     <a class="btn{{page==i and ' active' or ''}}"
-       href="{{tg.url(request.path_info, dict(limit=limit, page=i, **url_params))}}"> <span>{{i+1}}</span></a>
+       href="{{tg.url(request.path_info, dict(limit=limit, page=i, **widget.url_params))}}"> <span>{{i+1}}</span></a>
     {% endfor %}
     {% if page < pages-1 %}
     <a class="btn"
-       href="{{tg.url(request.path_info, dict(page=page+1, **url_params))}}">Next</a>
+       href="{{tg.url(request.path_info, dict(page=page+1, **widget.url_params))}}">Next</a>
     {% endif %}
     {% if page != pages-1 %}
     <a class="btn"
-       href="{{tg.url(request.path_info, dict(page=pages-1, **url_params))}}">Last</a>
+       href="{{tg.url(request.path_info, dict(page=pages-1, **widget.url_params))}}">Last</a>
     {% endif %}
   </div>
   {% endif %}
