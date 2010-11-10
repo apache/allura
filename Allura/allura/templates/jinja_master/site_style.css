@@ -638,6 +638,7 @@ button, input[type=submit], input[type=reset], input[type=button] {font-size: 1e
     right:5px;
 }
 #notifications > div {
+    position:relative;
     display:block;
     width:40%;
     min-width:18em;
@@ -645,9 +646,15 @@ button, input[type=submit], input[type=reset], input[type=button] {font-size: 1e
     margin-left:auto;
     margin-right:auto;
     margin-bottom:5px;
+    padding:0.8em 2em;
     opacity:0.8;
     -moz-border-radius:0.7em;
     -webkit-border-radius:0.7em;
+}
+#notifications a.close-box {
+    position:absolute;
+    top:0;
+    right:0;
 }
 
 

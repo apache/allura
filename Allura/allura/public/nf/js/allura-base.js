@@ -98,9 +98,13 @@ $(function(){
     $('.selectText').focus(function(){this.select()});
 });
 
+function add_close_box( o ){
+    return $(o).prepend('<a class="btn ico close-box"><b class="ui-icon ui-icon-close"></b></a>');
+}
+
 function flash( html, kind ){
     kind || (kind = 'notice');
-    return $('<div class="'+kind+'">').append(html).prependTo('#notifications');
+    return add_close_box($('<div class="'+kind+'">').append(html).prependTo('#notifications'));
 }
 
 function attach_form_retry( form ){
@@ -109,16 +113,18 @@ function attach_form_retry( form ){
 
         var $message = $('#save-message');
         $message.length || ($message = flash('<p>saving...</p>').attr('id', 'save-message'));
+        var $text = $message.find('p');
         setTimeout(function(){
             // After 7 seconds, express our concern.
+            $text.text('The server is taking too long to respond.<br/>Retrying in 30 seconds.');
             $message.
                 addClass('error').
                 removeClass('notice').
-                html('<p>The server is taking too long to respond.<br/>Retrying in 30 seconds.</p>').
                 show();
             setTimeout(function(){
                 // After 30 seconds total, give up and try again.
-                $message.html('<p>retrying...</p>').show();
+                $text.text('retrying...');
+                $message.show();
                 $form.submit();
             }, 23000)
         }, 7000);
@@ -131,9 +137,10 @@ $(function(){
         prependTo('#notifications').
         each(function(){
             this.className || (this.className = 'notice');
+            add_close_box(this);
         });
-    $('#notifications > div').live('click', function(){
-        $(this).hide();
+    $('#notifications a.close-box').live('click', function(){
+        $(this).parent().hide();
     });
 
     // Add notifications for form submission.
