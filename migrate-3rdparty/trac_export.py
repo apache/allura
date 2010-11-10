@@ -36,11 +36,11 @@ Export ticket data from a Trac instance''')
 class TracExport(object):
 
     PAGE_SIZE = 100
-    TICKET_URL = '/ticket/%d'
-    QUERY_MAX_ID_URL  = '/query?col=id&order=id&desc=1&max=2'
-    QUERY_BY_PAGE_URL = '/query?col=id&col=time&col=changetime&order=id&max=' + str(PAGE_SIZE)+ '&page=%d'
-    ATTACHMENT_LIST_URL = '/attachment/ticket/%d/'
-    ATTACHMENT_URL = '/raw-attachment/ticket/%d/%s'
+    TICKET_URL = 'ticket/%d'
+    QUERY_MAX_ID_URL  = 'query?col=id&order=id&desc=1&max=2'
+    QUERY_BY_PAGE_URL = 'query?col=id&col=time&col=changetime&order=id&max=' + str(PAGE_SIZE)+ '&page=%d'
+    ATTACHMENT_LIST_URL = 'attachment/ticket/%d/'
+    ATTACHMENT_URL = 'raw-attachment/ticket/%d/%s'
 
     FIELD_MAP = {
         'reporter': 'submitter',
