@@ -48,7 +48,7 @@ class ResettableStream(object):
     unseekable stream.'''
 
     # Seeks are supported with header of this size
-    HEADER_BUF_SIZE = 2048
+    HEADER_BUF_SIZE = 4096
 
     def __init__(self, fp, header_size=-1):
         self.fp = fp
