@@ -105,7 +105,7 @@ class Thread(Artifact):
     discussion_id = ForeignIdProperty(Discussion)
     artifact_id = FieldProperty(None)
     artifact_reference = FieldProperty(ArtifactReferenceType)
-    subject = FieldProperty(str, if_missing='(no subject)')
+    subject = FieldProperty(str, if_missing='')
     num_replies = FieldProperty(int, if_missing=0)
     num_views = FieldProperty(int, if_missing=0)
     subscriptions = FieldProperty({str:bool})
@@ -355,7 +355,12 @@ class Post(Message, VersionedArtifact):
 
     @property
     def subject(self):
-        return self.thread.subject
+        subject = self.thread.subject
+        if not subject:
+            artifact = self.thread.artifact
+            if artifact:
+                subject = getattr(artifact, 'email_subject', '')
+        return subject or '(no subject)'
 
     @property
     def attachments(self):

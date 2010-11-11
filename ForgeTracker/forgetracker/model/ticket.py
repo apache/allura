@@ -255,6 +255,10 @@ class Ticket(VersionedArtifact):
         domain = '.'.join(reversed(self.app.url[1:-1].split('/'))).replace('_', '-')
         return '%s@%s%s' % (self.ticket_num, domain, common_suffix)
 
+    @property
+    def email_subject(self)
+        return '#%s %s' % (self.ticket_num, self.summary)
+
     @LazyProperty
     def globals(self):
         return Globals.query.get(app_config_id=self.app_config_id)
@@ -306,8 +310,7 @@ class Ticket(VersionedArtifact):
             subject = 'Ticket #%s created by %s (%s): %s' % (
                 self.ticket_num, c.user.display_name, c.user.username, self.summary)
             Thread(discussion_id=self.app_config.discussion_id,
-                   artifact_reference=self.dump_ref(),
-                   subject='#%s discussion' % self.ticket_num)
+                   artifact_reference=self.dump_ref())
             Notification.post(artifact=self, topic='metadata', text=description, subject=subject)
         Feed.post(self, description)
 

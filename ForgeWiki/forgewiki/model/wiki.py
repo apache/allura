@@ -112,6 +112,10 @@ class Page(VersionedArtifact):
         domain = '.'.join(reversed(self.app.url[1:-1].split('/'))).replace('_', '-')
         return '%s@%s%s' % (self.title.replace('/', '.'), domain, common_suffix)
 
+    @property
+    def email_subject(self):
+        return 'Discussion for %s page' % self.title
+
     def url(self):
         return self.app_config.url() + self.title + '/'
 
@@ -148,8 +152,7 @@ class Page(VersionedArtifact):
                     app_config_id=context.app.config._id,
                     )
                 t = Thread(discussion_id=obj.app_config.discussion_id,
-                           artifact_reference=obj.dump_ref(),
-                           subject='Discussion for %s page' % title)
+                           artifact_reference=obj.dump_ref())
             return obj
         else:
             pg = cls.upsert(title)
