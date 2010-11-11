@@ -306,6 +306,8 @@ class User(MappedClass):
                 yield role
 
     def project_role(self, project=None):
+        if self._id is None:
+            return ProjectRole.anonymous(project)
         pr = ProjectRole.by_user(self, project)
         if pr is not None: return pr
         if project is None: project = c.project
