@@ -306,11 +306,10 @@ class User(MappedClass):
                 yield role
 
     def project_role(self, project=None):
-        if project is None: project = c.project.root_project
-        with h.push_config(c, project=project, user=self):
-            if self._id is None:
-                return ProjectRole.anonymous(project)
-            return ProjectRole.upsert(user_id=self._id, project_id=project._id)
+        pr = ProjectRole.by_user(self, project)
+        if pr is not None: return pr
+        if project is None: project = c.project
+        return ProjectRole.upsert(user_id=self._id, project_id=project.root_project._id)
 
     def set_password(self, new_password):
         return plugin.AuthenticationProvider.get(request).set_password(
@@ -328,7 +327,7 @@ class ProjectRole(MappedClass):
     
     _id = FieldProperty(S.ObjectId)
     user_id = FieldProperty(S.ObjectId, if_missing=None) # if role is a user
-    project_id = FieldProperty(S.ObjectId, if_missing=lambda:c.project._id)
+    project_id = FieldProperty(S.ObjectId, if_missing=None)
     name = FieldProperty(str)
     roles = FieldProperty([S.ObjectId])
 
@@ -349,25 +348,34 @@ class ProjectRole(MappedClass):
     @classmethod
     def by_user(cls, user=None, project=None):
         if user is None: user = c.user
-        if project is None: project = c.project.root_project
-        return cls.query.get(user_id=user._id, project_id=project._id)
+        if project is None: project = c.project
+        pr = cls.query.get(
+            user_id=user._id,
+            project_id={'$in':[project.root_project._id, None]})
+        if pr is None:
+            pr = cls.query.get(
+                user_id=user._id,
+                project_id={'$exists':False})
+        return pr
 
     @classmethod
     def by_name(cls, name, project=None):
-        if project is None: project = c.project.root_project
-        role = cls.query.get(name=name, project_id=project._id)
+        if project is None: project = c.project
+        role = cls.query.get(
+            name=name,
+            project_id={'$in':[project.root_project._id, None]})
         if role is None:
-            role = cls.query.get(name=name, project_id=None)
+            role = cls.query.get(
+                name=name,
+                project_id={'$exists':False})
         return role
 
     @classmethod
     def anonymous(cls, project=None):
-        if project is None: project = c.project.root_project
         return cls.by_name('*anonymous', project)
 
     @classmethod
     def authenticated(cls, project=None):
-        if project is None: project = c.project.root_project
         return cls.by_name('*authenticated', project)
 
     @classmethod
