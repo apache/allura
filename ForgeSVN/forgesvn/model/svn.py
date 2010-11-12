@@ -192,7 +192,7 @@ class SVNImplementation(M.RepositoryImplementation):
         'Set up the hg changegroup hook'
         text = self.post_receive_template.substitute(
             url=tg.config.get('base_url', 'localhost:8080')
-            + self._repo.url()[1:] + 'refresh')
+            + '/auth/refresh_repo' + self._repo.url())
         fn = os.path.join(self._repo.fs_path, self._repo.name, 'hooks', 'post-commit')
         with open(fn, 'wb') as fp:
             fp.write(text)
