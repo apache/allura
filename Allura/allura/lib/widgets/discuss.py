@@ -302,6 +302,14 @@ class Post(HierWidget):
                         return false;
                     });
                 }
+                if($('.shortlink', post)){
+                    var popup = $('.shortlink_popup', post).dialog({modal: true, autoOpen: false}).show();
+                    $('.shortlink', post).click(function(ele){
+                        popup.dialog('open');
+                        $('input', popup).select();
+                        return false;
+                    });
+                }
             });
         })();
         ''')

@@ -56,7 +56,7 @@
     	<div class="options">
         <a href="" class="reply_post btn">Reply</a>
         <div style="clear:both">
-          <a href="{{tg.url(url.current(),dict(page=page,limit=limit))}}#{{value.slug}}" class="little_link"><span>Link</span></a><br/>
+          <a href="{{tg.url(url.current(),dict(page=page,limit=limit))}}#{{value.slug}}" class="little_link shortlink"><span>Link</span></a><br/>
           <a href="" class="edit_post little_link"><span>Edit</span></a><br/>
           {% if h.has_artifact_access('moderate', value)() %}
             {{widgets.moderate_post.display(value=value, action=value.url()+'moderate')}}
@@ -65,7 +65,12 @@
             <a href="#" class="add_attachment little_link"><span>Attach</span></a>
           {% endif %}
         </div>
-    	</div>
+	</div>
+      <div class="shortlink_popup" style="display: none">
+        If you would like to refer to this comment somewhere else in this project, copy and paste the following link:
+        <input type="text" style="width:100%"
+          value='<a href="{{tg.url(url.current(),dict(page=page,limit=limit))}}#{{value.slug}}">{{value.subject or "comment"}}</a>'>
+      </div>
     </div>
     <ul>
       <li>
