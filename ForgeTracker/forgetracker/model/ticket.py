@@ -256,7 +256,7 @@ class Ticket(VersionedArtifact):
         return '%s@%s%s' % (self.ticket_num, domain, common_suffix)
 
     @property
-    def email_subject(self)
+    def email_subject(self):
         return '#%s %s' % (self.ticket_num, self.summary)
 
     @LazyProperty
