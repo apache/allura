@@ -30,7 +30,8 @@ from carrot.messaging import Publisher
 from pymongo.bson import ObjectId
 from paste.deploy.converters import asint, asbool
 
-import ew
+import ew as ew_core
+import ew.jinja2_ew as ew
 
 from allura import model as M
 from allura.lib.markdown_extensions import ForgeExtension
@@ -159,7 +160,7 @@ class Globals(object):
 
     @property
     def resource_manager(self):
-        return ew.widget_context.resource_manager
+        return ew_core.widget_context.resource_manager
 
     def register_forge_css(self, href, **kw):
         self.resource_manager.register(ew.CSSLink('allura/' + href, **kw))

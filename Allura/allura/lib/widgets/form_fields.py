@@ -36,7 +36,7 @@ class LabelEdit(ew.InputField):
         return value
 
     def resources(self):
-        yield ew.resource.JSLink('js/jquery.tag.editor.js')
+        yield ew.JSLink('js/jquery.tag.editor.js')
         yield onready('''
           $('input.label_edit').tagEditor({
             confirmRemoval: false,
@@ -64,7 +64,7 @@ class ProjectUserSelect(ew.InputField):
 
     def resources(self):
         for r in super(ProjectUserSelect, self).resources(): yield r
-        yield ew.resource.CSSLink('css/autocomplete.css')
+        yield ew.CSSLink('css/autocomplete.css')
         yield onready('''
           $('input.project_user_select').autocomplete({
             source: function(request, response) {
@@ -116,7 +116,7 @@ class AutoResizeTextarea(ew.TextArea):
         css_class='auto_resize')
 
     def resources(self):
-        yield ew.resource.JSLink('js/jquery.autoresize.min.js')
+        yield ew.JSLink('js/jquery.autoresize.min.js')
         yield onready('''
             $('textarea.auto_resize').autoResize({
                 // Quite slow animation:
@@ -140,8 +140,8 @@ class MarkdownEdit(AutoResizeTextarea):
 
     def resources(self):
         for r in super(MarkdownEdit, self).resources(): yield r
-        yield ew.resource.JSLink('js/sf_markitup.js')
-        yield ew.resource.CSSLink('css/markitup_sf.css')
+        yield ew.JSLink('js/sf_markitup.js')
+        yield ew.CSSLink('css/markitup_sf.css')
 
 class PageList(ew_core.Widget):
     template='jinja:widgets/page_list.html'
@@ -192,7 +192,7 @@ class FileChooser(ew.InputField):
 
     def resources(self):
         for r in super(FileChooser, self).resources(): yield r
-        yield ew.resource.JSLink('js/jquery.file_chooser.js')
+        yield ew.JSLink('js/jquery.file_chooser.js')
         yield onready('''
             var num_files = 0;
             var chooser = $('input.file_chooser').file();

@@ -1,13 +1,14 @@
-import ew
+import ew as ew_core
+import ew.jinja2_ew as ew
 
-class ProjectSummary(ew.Widget):
+class ProjectSummary(ew_core.Widget):
     template='jinja:widgets/project_summary.html'
     defaults=dict(
-        ew.Widget.defaults,
+        ew_core.Widget.defaults,
         value=None)
 
     def resources(self):
-        yield ew.resource.JSLink('js/jquery.tools.min.js')
+        yield ew.JSLink('js/jquery.tools.min.js')
         yield ew.JSScript('''
         $(document).ready(function() {
             var badges = $('small.badge');
@@ -27,10 +28,10 @@ class ProjectSummary(ew.Widget):
 		});
         ''')
 
-class ProjectList(ew.Widget):
+class ProjectList(ew_core.Widget):
     template='jinja:widgets/project_list_widget.html'
     defaults=dict(
-        ew.Widget.defaults,
+        ew_core.Widget.defaults,
         projects=[],
         project_summary=ProjectSummary(),
         display_mode='list')

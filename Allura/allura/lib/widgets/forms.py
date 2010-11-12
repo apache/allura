@@ -44,4 +44,4 @@ class NeighborhoodAddProjectForm(ForgeForm):
 
     def resources(self):
         for r in super(NeighborhoodAddProjectForm, self).resources(): yield r
-        yield ew_core.resource.CSSLink('css/add_project.css')
+        yield ew.CSSLink('css/add_project.css')

@@ -22,8 +22,8 @@ class TicketSearchResults(ew_core.SimpleForm):
         page_size=ffw.PageSize()
 
     def resources(self):
-        yield ew.resource.JSLink('tracker_js/ticket-list.js')
-        yield ew.resource.CSSLink('tracker_css/ticket-list.css')
+        yield ew.JSLink('tracker_js/ticket-list.js')
+        yield ew.CSSLink('tracker_css/ticket-list.css')
         for r in ffw.PageList().resources(): yield r
         for r in ffw.PageSize().resources(): yield r
 
@@ -39,7 +39,7 @@ class MassEdit(ew_core.Widget):
         sort=None)
 
     def resources(self):
-        yield ew.resource.JSLink('tracker_js/ticket-list.js')
+        yield ew.JSLink('tracker_js/ticket-list.js')
 
 class MassEditForm(ew_core.Widget):
     template='jinja:tracker_widgets/mass_edit_form.html'
@@ -49,4 +49,4 @@ class MassEditForm(ew_core.Widget):
         query=None)
 
     def resources(self):
-        yield ew.resource.JSLink('tracker_js/mass-edit.js')
+        yield ew.JSLink('tracker_js/mass-edit.js')
