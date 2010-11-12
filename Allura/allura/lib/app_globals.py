@@ -205,6 +205,15 @@ class Globals(object):
                 virtual_host=config.get('amqp.vhost', 'testvhost'))
         return environ['allura.carrot.connection']
 
+    def amqp_reconnect(self):
+        from .custom_middleware import environ
+        try:
+            self.conn.close()
+        except:
+            log.exception('Error closing amqp connection')
+        del environ['allura.carrot.connection']
+        self.conn
+
     def oid_session(self):
         if 'openid_info' in session:
             return session['openid_info']
