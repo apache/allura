@@ -52,6 +52,14 @@ class List(object):
     def admin_url(self):
         return 'https://lists.sourceforge.net/mailman/admin/%s' % self.name
 
+    @property
+    def info_url(self):
+        return 'https://lists.sourceforge.net/lists/listinfo/%s' % self.name
+
+    @property
+    def archive_url(self):
+        return 'https://sourceforge.net/mailarchive/forum.php?forum_name=%s' % self.name
+
     @classmethod
     def create(cls, name, is_public, description):
         action_logger.info('CreateML')

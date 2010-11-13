@@ -5,7 +5,7 @@ from tg import expose, redirect, validate, flash
 from tg.decorators import with_trailing_slash, without_trailing_slash
 from pylons import c
 
-from allura.app import DefaultAdminController
+from allura.app import DefaultAdminController, SitemapEntry
 from allura.lib import helpers as h
 
 from . import widgets
@@ -64,6 +64,14 @@ class MailmanApp(SFXBaseApp):
         @expose()
         def _lookup(self, name, *remainder):
             return ListAdmin(SM.List(name)), remainder
+
+    @property
+    @h.exceptionless([], log)
+    def sitemap(self):
+        result = []
+        for lst in SM.List.find():
+            result.append(SitemapEntry(lst.name, lst.info_url))
+        return result
 
 class ListAdmin(object):
 
