@@ -62,9 +62,13 @@ class RepoRootController(BaseController):
         to_project = M.Project.query.get(shortname=to_project_name)
         with h.push_config(c, project=to_project):
             if request.method!='POST' or to_name is None:
-                prefix_len = len(to_project_name+'/')
-                in_use = [sp.shortname[prefix_len:] for sp in to_project.direct_subprojects]
-                in_use += [ac.options['mount_point'] for ac in to_project.app_configs]
+                if to_project is None:
+                    in_use = []
+                    to_project_name = ''
+                else:
+                    prefix_len = len(to_project_name+'/')
+                    in_use = [sp.shortname[prefix_len:] for sp in to_project.direct_subprojects]
+                    in_use += [ac.options['mount_point'] for ac in to_project.app_configs]
                 return dict(from_repo=from_repo,
                             to_project_name=to_project_name,
                             in_use=in_use,
