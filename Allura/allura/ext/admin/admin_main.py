@@ -431,7 +431,7 @@ class ProjectAdminController(BaseController):
                     flash('No user %s' % username, 'error')
             for u in r.get('users', []):
                 if u.get('delete'):
-                    user = M.User.query.get(_id=u['id'])
+                    user = M.User.query.get(_id=ObjectId(u['id']))
                     ur = M.ProjectRole.by_user(user)
                     ur.roles = [ rid for rid in ur.roles if str(rid) != r['id'] ]
                     h.log_action(log, 'remove_user_from_role').info(
