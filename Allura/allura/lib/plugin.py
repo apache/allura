@@ -243,9 +243,9 @@ class ProjectRegistrationProvider(object):
             ThreadLocalORMSession.close_all()
             log.exception('Error registering project %s' % p)
             raise
-        session(p).flush(p)
-        c.project = p
-        g.publish('react', 'forge.project_created')
+        ThreadLocalORMSession.flush_all()
+        with h.push_config(c, project=p):
+            g.publish('react', 'forge.project_created')
         return p
 
     def register_subproject(self, project, name, user, install_apps):
