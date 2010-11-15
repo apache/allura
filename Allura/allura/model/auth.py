@@ -76,7 +76,7 @@ class ApiToken(MappedClass):
     api_key = FieldProperty(str, if_missing=lambda:h.nonce(20))
     secret_key = FieldProperty(str, if_missing=h.cryptographic_nonce)
     expires = FieldProperty(datetime, if_missing=None)
-    capabilities = FieldProperty({str:str}, if_missing={})
+    capabilities = FieldProperty({str:str})
 
     user = RelationProperty('User')
 
