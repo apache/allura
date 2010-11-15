@@ -4,27 +4,27 @@
       action="{{action}}"
       enctype="{{enctype}}">
 
-  {% set ctx=c.widget.context_for('name') %}
-  {% set field=fields.name %}
+  {% set ctx=widget.context_for(widget.fields.name) %}
+  {% set field=widget.fields.name %}
   <label for="name">New List Name:</label>
   {% if ctx.errors %}<span class="{{error_class}}">{{ctx.errors}}</span><br/>{% endif %}
   {{c.app.project.shortname}}-{{field.display(**ctx)}}@lists.sourceforge.net
   <br/>
 
-  {% set ctx=c.widget.context_for('description') %}
-  {% set field=fields.description %}
+  {% set ctx=widget.context_for(widget.fields.description) %}
+  {% set field=widget.fields.description %}
   <label for="description">Description:</label>
   {% if ctx.errors %}<span class="{{error_class}}">{{ctx.errors}}</span><br/>{% endif %}
   {{field.display(**ctx)}}
   <br/>
 
-  {% set ctx=c.widget.context_for('is_public') %}
-  {% set field=fields.is_public %}
+  {% set ctx=widget.context_for(widget.fields.is_public) %}
+  {% set field=widget.fields.is_public %}
   <label for="is_public">Is this list public?</label>
   {% if ctx.errors %}<span class="{{error_class}}">{{ctx.errors}}</span><br/>{% endif %}
   {{field.display(**ctx)}}
   <br/>
 
   <label>&nbsp;</label>
-  {% for b in buttons %}{{b.display()}}{% endfor %}
+  {% for b in widget.buttons %}{{b.display()}}{% endfor %}
 </form>

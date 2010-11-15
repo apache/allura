@@ -309,7 +309,9 @@ class AdminField(ew.InputField):
     template='genshi:allura.templates.widgets.admin_field'
     defaults=dict(
         ew.InputField.defaults,
-        field=None)
+        field=None,
+        css_class=None,
+        errors=None)
 
     def __init__(self, **kw):
         super(AdminField, self).__init__(**kw)

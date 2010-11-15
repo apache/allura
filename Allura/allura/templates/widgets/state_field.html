@@ -2,13 +2,13 @@
      xmlns:py="http://genshi.edgewall.org/"
      xmlns:xi="http://www.w3.org/2001/XInclude"
      class="$container_cls">
-  <py:with vars="ctx=c.widget.context_for(selector.name)">
+  <py:with vars="ctx=widget.context_for(selector)">
     <py:if test="selector.show_label"><label for="$ctx.name">$selector.label</label><br/></py:if>
     <py:if test="ctx.errors and selector.show_errors"><span class="$error_class">$ctx.errors</span><br/></py:if>
     ${selector.display(css_class=selector_cls, **ctx)}
   </py:with>
   <div py:for="name, field in states.iteritems()"
-       py:with="ctx=c.widget.context_for(field.name)"
+       py:with="ctx=widget.context_for(field)"
        class="$field_cls"
        data-name="$name">
     <py:if test="field.show_label"><label for="$ctx.name">$field.label</label><br/></py:if>

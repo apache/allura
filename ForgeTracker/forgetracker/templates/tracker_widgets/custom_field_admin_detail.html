@@ -1,8 +1,8 @@
 <div class="{{container_cls}}">
-  {% set ctx=c.widget.context_for(selector.name) %}
+  {% set ctx=widget.context_for(selector) %}
   {{selector.display(css_class=selector_cls, **ctx)}}
   {% for name, field in states.iteritems() %}
-    {% set ctx=c.widget.context_for(field.name) %}
+    {% set ctx=widget.context_for(field) %}
     <div class="{{field_cls}}" data-name="{{name}}">
       {{field.display(**ctx)}}
     </div>

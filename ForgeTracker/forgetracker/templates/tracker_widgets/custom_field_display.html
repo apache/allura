@@ -1,5 +1,5 @@
 <div class="custom-field {{'ui-helper-hidden' if hidden else None}}">
-  {% for f in fields %}
+  {% for f in widget.fields %}
     <div class="span-3 clear">{{f.label}}</div>
     <div class="span-9 last">{{f.value}}</div>
   {% endfor %}

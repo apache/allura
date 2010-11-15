@@ -2,8 +2,8 @@
      xmlns:py="http://genshi.edgewall.org/"
      xmlns:xi="http://www.w3.org/2001/XInclude"
      py:strip="True">
-    <py:for each="field in fields"
-            py:with="ctx=c.widget.context_for(field.name)">
+    <py:for each="field in widget.fields"
+            py:with="ctx=widget.context_for(field)">
       ${field.display(**ctx)}
     </py:for>
 </div>

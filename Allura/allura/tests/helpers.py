@@ -58,7 +58,6 @@ def setup_global_objects():
     c._push_object(MagicalC(mock.Mock(), ENV))
     h._push_object(helpers)
     url._push_object(lambda:None)
-    c.widget = None
     c.queued_messages = None
     request._push_object(Request.blank('/'))
     response._push_object(Response())
