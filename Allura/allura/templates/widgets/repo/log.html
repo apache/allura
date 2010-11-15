@@ -2,7 +2,7 @@
 <div>
   {% if show_paging %}
     <div style="clear:both">
-      {{fields['page_list'].display(limit=limit, page=page, count=count)}}
+      {{widget.fields['page_list'].display(limit=limit, page=page, count=count)}}
     </div>
   {% endif %}
   <table>
@@ -45,8 +45,8 @@
   </table>
   {% if show_paging %}
     <div style="clear:both">
-      {{fields['page_list'].display(limit=limit, page=page, count=count)}}
-      {{fields['page_size'].display(limit=limit)}}
+      {{widget.fields['page_list'].display(limit=limit, page=page, count=count)}}
+      {{widget.fields['page_size'].display(limit=limit)}}
     </div>
   {% endif %}
 </div>
