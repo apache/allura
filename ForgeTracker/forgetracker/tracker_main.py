@@ -999,22 +999,22 @@ class RootRestController(BaseController):
         redirect(str(ticket.ticket_num)+'/')
 
     @expose('json:')
-    def validate_import(self, doc=None, **post_data):
+    def validate_import(self, doc=None, options=None, **post_data):
         require(has_artifact_access('write'))
         migrator = ImportSupport()
         try:
-            status = migrator.validate_import(doc, **post_data)
+            status = migrator.validate_import(doc, options, **post_data)
             return status
         except Exception, e:
             log.exception(e)
             return dict(status=False, errors=[str(e)])
 
     @expose('json:')
-    def perform_import(self, doc=None, **post_data):
+    def perform_import(self, doc=None, options=None, **post_data):
         require(has_project_access('tool'))
         migrator = ImportSupport()
         try:
-            status = migrator.perform_import(doc, **post_data)
+            status = migrator.perform_import(doc, options, **post_data)
             return status
         except Exception, e:
             log.exception(e)

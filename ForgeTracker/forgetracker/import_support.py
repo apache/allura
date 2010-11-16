@@ -42,6 +42,8 @@ from forgetracker.widgets.admin_custom_fields import TrackerFieldAdmin, TrackerF
 
 log = logging.getLogger(__name__)
 
+class ImportException(Exception):
+    pass
 
 class ResettableStream(object):
     '''Class supporting seeks within a header of otherwise
@@ -121,8 +123,8 @@ class ImportSupport(object):
         self.options = {}
         
 
-    def init_options(self, post_params):
-        self.options = post_params
+    def init_options(self, options_json):
+        self.options = json.loads(options_json)
         opt_keywords = self.option('keywords_as', 'split_labels')
         if opt_keywords == 'single_label':
             self.FIELD_MAP['keywords'] = ('labels', lambda s: [s])
@@ -130,7 +132,7 @@ class ImportSupport(object):
             del self.FIELD_MAP['keywords']
 
     def option(self, name, default=None):
-        return self.options.get('option_' + name, False)
+        return self.options.get(name, False)
 
 
     #
@@ -141,7 +143,7 @@ class ImportSupport(object):
         return datetime.strptime(date_string, '%Y-%m-%dT%H:%M:%SZ')
 
     def get_user_id(self, username):
-        username = self.user_map.get(username, username)
+        username = self.options['user_map'].get(username, username)
         u = M.User.by_username(username)
         if u:
             return u._id
@@ -230,7 +232,7 @@ class ImportSupport(object):
     def find_unknown_users(self, users):
         unknown  = set()
         for u in users:
-            if u and not M.User.by_username(u):
+            if u and not u in self.options['user_map'] and not M.User.by_username(u):
                 unknown.add(u)
         return unknown
 
@@ -241,17 +243,27 @@ class ImportSupport(object):
                 allura_username = c.project.shortname + '-' + username
             M.User.register(dict(username=allura_username,
                                  display_name=username), False)
-            self.user_map[username] = allura_username
+            self.options['user_map'][username] = allura_username
         ThreadLocalORMSession.flush_all()
         log.info('Created %d user placeholders', len(usernames))
+
+    def validate_user_mapping(self):
+        if 'user_map' not in self.options:
+            self.options['user_map'] = {}
+        for foreign_user, allura_user in self.options['user_map'].iteritems():
+            u = M.User.by_username(allura_user)
+            if not u:
+                raise ImportException('User mapping %s:%s - target user does not exist' % (foreign_user, allura_user))
 
 
     #
     # Main methods
     #
-    def validate_import(self, doc, **options):
+    def validate_import(self, doc, options, **post_data):
         log.info('validate_migration called: %s', doc)
         self.init_options(options)
+        log.info('options: %s', self.options)
+        self.validate_user_mapping()
 
         project_doc = json.loads(doc)
         tracker_names = project_doc['trackers'].keys()
@@ -269,9 +281,10 @@ Unknown users: %s''' % unknown_users)
             
         return {'status': True, 'errors': self.errors, 'warnings': self.warnings}
 
-    def perform_import(self, doc, **options):
+    def perform_import(self, doc, options, **post_data):
         log.info('import called: %s', options) 
         self.init_options(options)
+        self.validate_user_mapping()
 
         project_doc = json.loads(doc)
         tracker_names = project_doc['trackers'].keys()
