@@ -25,6 +25,7 @@ class MailmanApp(SFXBaseApp):
     tool_label='Mailing List'
     default_mount_label='List'
     default_mount_point='sfx-list'
+    status='alpha'
     ordinal=8
 
     class AdminController(DefaultAdminController):

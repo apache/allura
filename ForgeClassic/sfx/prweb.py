@@ -22,6 +22,7 @@ class VHostApp(SFXBaseApp):
     tool_label='VHOST'
     default_mount_label='VHOST'
     default_mount_point='sfx-vhost'
+    status='alpha'
     ordinal=9
 
     class AdminController(DefaultAdminController):
@@ -52,6 +53,7 @@ class MySQLApp(SFXBaseApp):
     tool_label='MySQL Databases'
     default_mount_label='MySQL'
     default_mount_point='sfx-mysql'
+    status='alpha'
     ordinal=10
 
     class AdminController(DefaultAdminController):
