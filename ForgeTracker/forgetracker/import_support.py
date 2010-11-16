@@ -120,6 +120,7 @@ class ImportSupport(object):
         self.errors = []
         self.options = {}
         
+
     def init_options(self, post_params):
         self.options = post_params
         opt_keywords = self.option('keywords_as', 'split_labels')
@@ -131,6 +132,10 @@ class ImportSupport(object):
     def option(self, name, default=None):
         return self.options.get('option_' + name, False)
 
+
+    #
+    # Field/value convertors
+    #
     @staticmethod
     def parse_date(date_string):
         return datetime.strptime(date_string, '%Y-%m-%dT%H:%M:%SZ')
@@ -152,6 +157,10 @@ class ImportSupport(object):
             ticket['custom_fields'] = {}
         ticket['custom_fields'][field] = value
 
+
+    #
+    # Object convertors
+    #
     def make_artifact(self, ticket_dict):
         remapped = {}
         for f, v in ticket_dict.iteritems():
@@ -192,7 +201,7 @@ class ImportSupport(object):
         ts = self.parse_date(comment_dict['date'])
         comment = thread.post(text=comment_dict['comment'], timestamp=ts)
         comment.author_id = self.get_user_id(comment_dict['submitter'])
-        comment.import_id=self.import_batch._id
+        comment.import_id = self.import_batch._id
 
     def make_attachment(self, org_ticket_id, ticket_id, att_dict):
         import urllib2
@@ -205,6 +214,10 @@ class ImportSupport(object):
                                             ticket_id=ticket_id)
         f.close()
 
+
+    #
+    # User handling
+    #
     def collect_users(self, artifacts):
         users = set()
         for a in artifacts:
@@ -233,6 +246,9 @@ class ImportSupport(object):
         log.info('Created %d user placeholders', len(usernames))
 
 
+    #
+    # Main methods
+    #
     def validate_import(self, doc, **options):
         log.info('validate_migration called: %s', doc)
         self.init_options(options)
@@ -247,7 +263,9 @@ class ImportSupport(object):
         unknown_users = self.find_unknown_users(users)
         unknown_users = sorted(list(unknown_users))
         if unknown_users:
-            self.warnings.append('Document references unknown users: %s' % unknown_users)
+            self.warnings.append('''Document references unknown users. You should provide 
+option user_map, or at least option create_user_stubs to avoid losing username information.
+Unknown users: %s''' % unknown_users)
             
         return {'status': True, 'errors': self.errors, 'warnings': self.warnings}
 
