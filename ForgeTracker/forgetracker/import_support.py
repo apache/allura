@@ -115,6 +115,7 @@ class ImportSupport(object):
             'submitter': ('reported_by_id', self.get_user_id),
             'summary': True,
         }
+        self.user_map = {}
         self.warnings = []
         self.errors = []
         self.options = {}
@@ -134,8 +135,8 @@ class ImportSupport(object):
     def parse_date(date_string):
         return datetime.strptime(date_string, '%Y-%m-%dT%H:%M:%SZ')
 
-    @staticmethod
-    def get_user_id(username):
+    def get_user_id(self, username):
+        username = self.user_map.get(username, username)
         u = M.User.by_username(username)
         if u:
             return u._id
@@ -222,8 +223,12 @@ class ImportSupport(object):
 
     def make_user_placeholders(self, usernames):
         for username in usernames:
-            M.User.register(dict(username=username,
+            allura_username = username
+            if self.option('create_users') != '_unprefixed':
+                allura_username = c.project.shortname + '-' + username
+            M.User.register(dict(username=allura_username,
                                  display_name=username), False)
+            self.user_map[username] = allura_username
         ThreadLocalORMSession.flush_all()
         log.info('Created %d user placeholders', len(usernames))
 
