@@ -40,20 +40,6 @@ def monkeypatch(obj):
         setattr(obj, func.__name__, func)
     return patchit
 
-def site_style_link(neighborhood=None):
-    from allura import model as M
-    theme = None
-    base = '/nf/site_style.css'
-    if neighborhood is not None:
-        theme = M.Theme.query.get(neighborhood_id=neighborhood._id)
-        base = neighborhood.url_prefix + 'site_style.css'
-    if theme is None:
-        theme = M.Theme.query.get(name='forge_default')
-    s_state = pickle.dumps(state(theme).document.deinstrumented_clone())
-    s_state += tg.config.get('build_key', '1')
-    checksum = sha1(s_state).hexdigest()
-    return tg.url(tg.config.get('cdn.url_base', '')+base, dict(s=checksum))
-
 def really_unicode(s):
     if s is None: return u''
     # try naive conversion to unicode

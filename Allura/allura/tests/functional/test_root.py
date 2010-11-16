@@ -82,29 +82,6 @@ class TestRootController(TestController):
         r = self.app.get('/nf/markdown_to_html?markdown=*aaa*bb[Home]&project=test&app=bugs')
         assert '<p><em>aaa</em>bb<a href="/p/test/wiki/Home/">[Home]</a></p>' in r
 
-    def test_site_css(self):
-        r = self.app.get('/nf/site_style.css')
-        assert(
-"""a {color: #117AB4; text-decoration: none;}""" in r)
-        assert(
-""".active {
-	color: #272727 !important;""" in r)
-        assert(
-"""#header h1 a {color: #454545; text-shadow: #fff 0 1px;}""" in r)
-        theme = M.Theme.query.find(dict(name='forge_default')).first()
-        theme.color1='#aaa'
-        theme.color2='#bbb'
-        theme.color3='#ccc'
-        session(theme).flush()
-        r = self.app.get('/nf/site_style.css')
-        assert(
-"""a {color: #aaa; text-decoration: none;}""" in r)
-        assert(
-""".active {
-	color: #bbb !important;""" in r)
-        assert(
-"""#header h1 a {color: #ccc; text-shadow: #fff 0 1px;}""" in r)
-
     def test_redirect_external(self):
         r = self.app.get('/nf/redirect/?path=%s' % quote('http://google.com'))
         assert r.status_int == 302

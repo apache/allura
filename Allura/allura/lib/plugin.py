@@ -291,8 +291,8 @@ class ThemeProvider(object):
     nav_menu = 'jinja_master/nav_menu.html'
     top_nav = 'jinja_master/top_nav.html'
     sidebar_menu = 'jinja_master/sidebar_menu.html'
-    base_css = 'jinja_master/site_style.css'
-    theme_css = ['jinja_master/allura.css']
+    base_css = 'css/site_style.css'
+    theme_css = ['css/allura.css']
 
     @classmethod
     def get(cls):

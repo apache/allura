@@ -19,12 +19,19 @@
       {{ blob }}
     {% endfor %}
     {% endif %}
-    {% if c.project %}
-      <link rel="stylesheet" type="text/css" media="screen" href="{{h.site_style_link(c.project.neighborhood)}}" />
-    {% elif neighborhood %}
-      <link rel="stylesheet" type="text/css" media="screen" href="{{h.site_style_link(neighborhood)}}" />
-    {% else %}
-      <link rel="stylesheet" type="text/css" media="screen" href="{{h.site_style_link()}}" />
+    <link rel="stylesheet" type="text/css" media="screen" href="{{g.theme_static(g.theme['base_css'])}}">
+    {% for t in g.theme['theme_css'] %}
+      <link rel="stylesheet" type="text/css" media="screen" href="{{g.theme_static(t)}}">
+    {% endfor %}
+      
+    {% if c.project and c.project.neighborhood.css %}
+      <style type="text/css">
+        {{c.project.neighborhood.css}}
+      </style>
+    {% elif neighborhood and neighborhood.css %}
+      <style type="text/css">
+        {{neighborhood.css}}
+      </style>
     {% endif %}
     {% block extra_css %}{% endblock %}
 

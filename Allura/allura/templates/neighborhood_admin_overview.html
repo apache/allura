@@ -4,19 +4,6 @@
 
 {% block header %}Administration Overview for {{neighborhood.name}}{% endblock %}
 
-{% macro custom_color(number) %}
-    <li>
-      <label>Custom Color {{number}}</label>
-      <div class="editable viewing">
-        <div class="viewer">{{neighborhood.theme and neighborhood.theme['color%s' % number] or 'None'}}</div>
-        <div class="editor">
-          <input name="color{{number}}" value="{{neighborhood.theme and neighborhood.theme['color%s' % number] or ''}}"/>
-        </div>
-      </div>
-    </li>
-    <hr/>
-{% endmacro %}
-
 {% block nav_menu %}
 {% include 'jinja_master/neigh_nav_menu.html' %}
 {% endblock %}
@@ -70,26 +57,6 @@
                 </div>
               </li>
               <hr/>
-              <li>
-                <div class="span-18 last">
-                  Custom colors override the default theme for your neighborhood.
-                </div>
-              </li>
-              <li>
-                <label>Custom Color 1</label>
-                <div class="editable viewing span-15 last">
-                  <div class="viewer">{{neighborhood.theme and neighborhood.theme.color1 or 'None'}}</div>
-                  <div class="editor">
-                    <input name="color1" value="{{neighborhood.theme and neighborhood.theme.color1 or ''}}"/>
-                  </div>
-                </div>
-              </li>
-              <hr/>
-              {{custom_color(2)}}
-              {{custom_color(3)}}
-              {{custom_color(4)}}
-              {{custom_color(5)}}
-              {{custom_color(6)}}
               <li>
                 <label>Custom CSS</label>
                 <div class="editable viewing span-15 last">

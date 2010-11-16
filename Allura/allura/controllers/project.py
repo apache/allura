@@ -181,30 +181,6 @@ class NeighborhoodController(object):
             return fp.read()
         return icon.filename
 
-    @expose(content_type='text/css')
-    @without_trailing_slash
-    def site_style(self, **kw):
-        """Display the css for the default theme."""
-        theme = M.Theme.query.find(dict(neighborhood_id=self.neighborhood._id)).first()
-        if theme == None:
-            theme = M.Theme.query.find(dict(name='forge_default')).first()
-
-        response.headers['Content-Type'] = ''
-        response.content_type = 'text/css'
-        utils.cache_forever()
-
-        params = dict(color1=theme.color1,
-                      color2=theme.color2,
-                      color3=theme.color3,
-                      color4=theme.color4,
-                      color5=theme.color5,
-                      color6=theme.color6,
-                      g=g)
-        css = g.jinja2_env.get_template(g.theme['base_css']).render(extra_css=self.neighborhood.css or '', **params)
-        for t in g.theme['theme_css']:
-            css = css + '\n' + g.jinja2_env.get_template(t).render(**params)
-        return css
-
 class NeighborhoodProjectBrowseController(ProjectBrowseController):
     def __init__(self, neighborhood=None, category_name=None, parent_category=None):
         self.neighborhood = neighborhood
@@ -450,25 +426,12 @@ class NeighborhoodAdminController(object):
             neighborhood=self.neighborhood)
 
     @expose()
-    def update(self, name=None, css=None, homepage=None, icon=None,
-               color1=None, color2=None, color3=None, color4=None, color5=None, color6=None,
-               **kw):
+    def update(self, name=None, css=None, homepage=None, icon=None, **kw):
         self.neighborhood.name = name
         self.neighborhood.redirect = kw.pop('redirect', '')
         self.neighborhood.homepage = homepage
         self.neighborhood.css = css
         self.neighborhood.allow_browse = 'allow_browse' in kw
-        if color1 or color2 or color3 or color4 or color5 or color6:
-            if not self.neighborhood.theme:
-                theme = M.Theme(neighborhood_id=self.neighborhood._id)
-            else:
-                theme = self.neighborhood.theme
-            theme.color1 = color1
-            theme.color2 = color2
-            theme.color3 = color3
-            theme.color4 = color4
-            theme.color5 = color5
-            theme.color6 = color6
         if icon is not None and icon != '':
             if self.neighborhood.icon:
                 M.NeighborhoodFile.query.remove({'metadata.neighborhood_id':self.neighborhood._id})

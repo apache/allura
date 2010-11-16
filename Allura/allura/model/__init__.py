@@ -2,7 +2,7 @@
 """The application's model objects"""
 
 from .session import ProjectSession
-from .neighborhood import Neighborhood, NeighborhoodFile, Theme
+from .neighborhood import Neighborhood, NeighborhoodFile
 from .project import Project, ProjectCategory, ProjectFile, AppConfig, SearchConfig, ScheduledMessage
 from .discuss import Discussion, Thread, PostHistory, Post, DiscussionAttachment
 from .artifact import Artifact, Message, VersionedArtifact, Snapshot, ArtifactLink, Feed, AwardFile, Award, AwardGrant

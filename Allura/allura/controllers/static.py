@@ -12,26 +12,6 @@ from allura import model as M
 
 class NewForgeController(object):
 
-    @expose(content_type='text/css')
-    @without_trailing_slash
-    def site_style(self, **kw):
-        """Display the css for the default theme."""
-        theme = M.Theme.query.find(dict(name='forge_default')).first()
-        response.headers['Content-Type'] = ''
-        response.content_type = 'text/css'
-        utils.cache_forever()
-        params = dict(color1=theme.color1,
-                      color2=theme.color2,
-                      color3=theme.color3,
-                      color4=theme.color4,
-                      color5=theme.color5,
-                      color6=theme.color6,
-                      g=g)
-        css = g.jinja2_env.get_template(g.theme['base_css']).render(extra_css='', **params)
-        for t in g.theme['theme_css']:
-            css = css + '\n' + g.jinja2_env.get_template(t).render(**params)
-        return css
-
     @expose()
     @without_trailing_slash
     def markdown_to_html(self, markdown, project=None, app=None):

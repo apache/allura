@@ -164,37 +164,6 @@ class TestNeighborhood(TestController):
         r = self.app.post('/adobe/_admin/awards/FOO/delete',
                           extra_environ=dict(username='root'))
 
-    def test_site_css(self):
-        r = self.app.get('/p/site_style.css')
-        assert(
-"""a {color: #117AB4; text-decoration: none;}""" in r)
-        assert(
-""".active {
-	color: #272727 !important;""" in r)
-        assert(
-"""#header h1 a {color: #454545; text-shadow: #fff 0 1px;}""" in r)
-        self.app.post('/p/_admin/update',
-                          params=dict(name='Projects', css='', homepage='projects',
-                          color1='#aaa', color2='#bbb', color3='#ccc', color4='#ddd'),
-                          extra_environ=dict(username='root'))
-        r = self.app.get('/p/site_style.css')
-        assert(
-"""a {color: #aaa; text-decoration: none;}""" in r)
-        assert(
-""".active {
-	color: #bbb !important;""" in r)
-        assert(
-"""#header h1 a {color: #ccc; text-shadow: #fff 0 1px;}""" in r)
-
-    def test_custom_css(self):
-        r = self.app.get('/adobe/site_style.css')
-        assert("body {background-color: #f00;}" not in r)
-        r = self.app.post('/adobe/_admin/update',
-                          params=dict(name='Adobe', css='body {background-color: #f00;}', homepage=''),
-                          extra_environ=dict(username='root'))
-        r = self.app.get('/adobe/site_style.css')
-        assert("body {background-color: #f00;}" in r)
-
     def test_add_a_project_link(self):
         r = self.app.get('/p/')
         assert 'Add a Project' in r
