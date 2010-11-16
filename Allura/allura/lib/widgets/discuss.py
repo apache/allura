@@ -123,9 +123,9 @@ class EditPost(ff.ForgeForm):
             name='text',
             attrs={'style':'height:7em; width:90%'}))
         fields.append(ew.HiddenField(name='forum', if_missing=None))
-        if ew.widget_context.widget:
+        if ew_core.widget_context.widget:
             # we are being displayed
-            if ew.widget_context.render_context.get('show_subject', self.show_subject):
+            if ew_core.widget_context.render_context.get('show_subject', self.show_subject):
                 fields.append(ew.TextField(name='subject'))
         else:
             # We are being validated
