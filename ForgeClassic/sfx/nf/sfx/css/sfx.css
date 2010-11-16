@@ -1,6 +1,6 @@
 #mainmenu .logo{
     display: block;
-    background-image: url('{{g.theme_static('images/sf10.png')}}');
+    background-image: url('../images/sf10.png');
     background-repeat: no-repeat;
     background-position: 0 10px;
     width: 110px;

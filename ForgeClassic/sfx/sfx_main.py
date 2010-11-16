@@ -185,7 +185,7 @@ class SFXProjectRegistrationProvider(plugin.ProjectRegistrationProvider):
 
 class ThemeProvider(plugin.ThemeProvider):
     footer = 'sfx/theme/footer.html'
-    theme_css = ['sfx/theme/sfx.css']
+    theme_css = ['css/sfx.css']
 
 @contextmanager
 def fake_pylons_context(request):

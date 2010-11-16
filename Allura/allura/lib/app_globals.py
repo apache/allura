@@ -229,10 +229,14 @@ class Globals(object):
         return base + resource
         
     def theme_static(self, resource):
+        if isinstance(resource,tuple):
+            theme_name = resource[1]
+            resource = resource[0]
+        else:    
+            theme_name = config.get('theme', 'allura')
         base = config['static.url_base']
         if base.startswith(':'):
             base = request.scheme + base
-        theme_name = config.get('theme', 'allura')
         return base + theme_name + '/' + resource
 
     def app_static(self, resource, app=None):
