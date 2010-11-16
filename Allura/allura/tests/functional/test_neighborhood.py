@@ -48,7 +48,7 @@ class TestNeighborhood(TestController):
 
     def test_icon(self):
         file_name = 'neo-icon-set-454545-256x350.png'
-        file_path = os.path.join(allura.__path__[0],'public','nf','images',file_name)
+        file_path = os.path.join(allura.__path__[0],'public','nf','allura','images',file_name)
         file_data = file(file_path).read()
         upload = ('icon', file_name, file_data)
 

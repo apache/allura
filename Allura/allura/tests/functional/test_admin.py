@@ -146,7 +146,7 @@ class TestProjectAdmin(TestController):
 
     def test_project_icon(self):
         file_name = 'neo-icon-set-454545-256x350.png'
-        file_path = os.path.join(allura.__path__[0],'public','nf','images',file_name)
+        file_path = os.path.join(allura.__path__[0],'public','nf','allura','images',file_name)
         file_data = file(file_path).read()
         upload = ('icon', file_name, file_data)
 
@@ -163,7 +163,7 @@ class TestProjectAdmin(TestController):
 
     def test_project_screenshot(self):
         file_name = 'neo-icon-set-454545-256x350.png'
-        file_path = os.path.join(allura.__path__[0],'public','nf','images',file_name)
+        file_path = os.path.join(allura.__path__[0],'public','nf','allura','images',file_name)
         file_data = file(file_path).read()
         upload = ('screenshot', file_name, file_data)
 
