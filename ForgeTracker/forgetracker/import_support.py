@@ -145,7 +145,7 @@ class ImportSupport(object):
         field = '_' + field
         if not c.app.has_custom_field(field):
             log.warning('Custom field %s is not defined, defining as string', field)
-            c.app.add_custom_field(dict(name=field, label=field[1:].capitalize(), type='string'))
+            c.app.globals.custom_fields.append(dict(name=field, label=field[1:].capitalize(), type='string'))
             ThreadLocalORMSession.flush_all()
         if 'custom_fields' not in ticket:
             ticket['custom_fields'] = {}
