@@ -148,13 +148,13 @@ class NeighborhoodController(object):
                 'A project already exists with that name, please choose another.', 'error')
             ming.orm.ormsession.ThreadLocalORMSession.close_all()
             redirect('add_project?project_unixname=%s&project_description=%s&project_name=%s' %
-                     (quote(project_unixname),quote(project_description),quote(project_name)))
+                     (quote(project_unixname or ''),quote(project_description or ''),quote(project_name or '')))
         except Exception, ex:
             c.project = None
             ming.orm.ormsession.ThreadLocalORMSession.close_all()
             flash('%s: %s' % (ex.__class__, str(ex)), 'error')
             redirect('add_project?project_unixname=%s&project_description=%s&project_name=%s' %
-                     (quote(project_unixname),quote(project_description),quote(project_name)))
+                     (quote(project_unixname or ''),quote(project_description or ''),quote(project_name or '')))
         if project_name:
             p.name = project_name
         if project_description:
