@@ -91,7 +91,10 @@ class SFXUserApi(object):
                 whereclause=T.users.c.user_id==user_data['id'])
             .execute()
             .fetchone())
-        u.claim_only_addresses(u_row.email, user_data['sf_email'])
+        try:
+            u.claim_only_addresses(u_row.email, user_data['sf_email'])
+        except:
+            log.exception('Error claiming sf_email addresses from user_data %s', user_data)
         if u.preferences.email_address != user_data['sf_email']:
             u.preferences.email_address = user_data['sf_email']
         return u
