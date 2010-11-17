@@ -6,7 +6,6 @@ from tg import expose, validate, redirect, flash
 from tg.decorators import with_trailing_slash
 from pylons import g, c, request
 from formencode import validators
-from pymongo.bson import ObjectId
 from webob import exc
 
 from ming.orm.base import session

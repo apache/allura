@@ -161,7 +161,7 @@ class TestFunctionalController(TestController):
         ticket_editor = self.app.post('/bugs/1/update_ticket',{
             'summary':'zzz'
         }, upload_files=[upload]).follow()
-        assert_true(file_name in ticket_editor)
+        assert file_name in ticket_editor, ticket_editor.showbrowser()
         req = self.app.get('/bugs/1/')
         file_link = req.html.findAll('form')[2].findAll('a')[7]
         print req.html.findAll('form')[2].findAll('a')

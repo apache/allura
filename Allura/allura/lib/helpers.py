@@ -15,7 +15,7 @@ import genshi.template
 import chardet
 from formencode.validators import FancyValidator
 from dateutil.parser import parse
-from pymongo.bson import ObjectId
+from bson import ObjectId
 from pymongo.errors import InvalidId
 from contextlib import contextmanager
 from pylons import c, response, request
@@ -24,10 +24,6 @@ from formencode.variabledecode import variable_decode
 import formencode
 
 from webhelpers import date, feedgenerator, html, number, misc, text
-
-from pymongo import bson
-
-from ming.orm import state
 
 from allura.lib import exceptions as exc
 # Reimport to make available to templates
@@ -160,7 +156,7 @@ def set_context(project_shortname, mount_point=None, app_config_id=None):
         c.app = p.app_instance(mount_point)
     else:
         if isinstance(app_config_id, basestring):
-            app_config_id = bson.ObjectId(app_config_id)
+            app_config_id = ObjectId(app_config_id)
         app_config = model.AppConfig.query.get(_id=app_config_id)
         c.app = p.app_instance(app_config)
 

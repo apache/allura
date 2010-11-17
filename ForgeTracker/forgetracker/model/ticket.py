@@ -4,7 +4,7 @@ import logging
 import urllib
 
 import tg
-from pymongo import bson
+import bson
 from pylons import c
 
 from ming import schema
@@ -229,6 +229,10 @@ class Ticket(VersionedArtifact):
             result['assigned_to_s'] = self.assigned_to.username
         return result
 
+    @classmethod
+    def attachment_class(cls):
+        return TicketAttachment
+
     @property
     def _milestone(self):
         milestone = None
@@ -331,7 +335,8 @@ class Ticket(VersionedArtifact):
 
     @property
     def attachments(self):
-        return TicketAttachment.by_metadata(ticket_id=self._id,type='attachment')
+        return TicketAttachment.query.find(dict(
+            app_config_id=self.app_config_id, artifact_id=self._id, type='attachment'))
 
     def set_as_subticket_of(self, new_super_id):
         # For this to be generally useful we would have to check first that
@@ -445,8 +450,9 @@ class Ticket(VersionedArtifact):
                     self.custom_fields[k] = v
         self.commit()
         if attachment is not None:
-            TicketAttachment.save_attachment(attachment.filename, attachment.file,
-                content_type=attachment.type, ticket_id=self._id)
+            self.attach(
+                attachment.filename, attachment.file,
+                content_type=attachment.type)
         # flush so we can participate in a subticket search (if any)
         session(self).flush()
         super_id = ticket_form.get('super_id')
@@ -472,21 +478,6 @@ class Ticket(VersionedArtifact):
 
 class TicketAttachment(BaseAttachment):
     thumbnail_size = (100, 100)
-
-    metadata=FieldProperty(dict(
-            ticket_id=schema.ObjectId,
-            app_config_id=schema.ObjectId,
-            type=str,
-            filename=str))
-
-    @property
-    def artifact(self):
-        return Ticket.query.get(_id=self.metadata.ticket_id)
-
-    @classmethod
-    def metadata_for(cls, ticket):
-        return dict(
-            ticket_id=ticket._id,
-            app_config_id=ticket.app_config_id)
+    ArtifactType=Ticket
 
 MappedClass.compile_all()

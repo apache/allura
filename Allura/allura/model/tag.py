@@ -1,19 +1,13 @@
 import logging
-import warnings
 from datetime import datetime
 
-from pylons import c, g, request
-import pkg_resources
-from webob import exc
-from pymongo import bson
+from pylons import c
+
 
 from ming import schema as S
-from ming.orm.base import mapper, session
 from ming.orm.mapped_class import MappedClass
 from ming.orm.property import FieldProperty, RelationProperty, ForeignIdProperty
-from ming.orm.ormsession import ThreadLocalORMSession
 
-from allura.lib.helpers import push_config
 from .session import main_orm_session
 from .types import ArtifactReferenceType
 

@@ -16,6 +16,35 @@ from forgesvn import model as SVNM
 
 STATS_COLLECTION_SIZE=100000
 
+class MigrateFiles(Migration):
+    version = 14
+
+    def up(self):
+        db = self.session.db
+        for collection in db.collection_names():
+            if collection.endswith('.files'):
+                self.up_collection(db, collection)
+
+    def down(self):
+        # Nothing to do, really, as long as we don't update
+        # any metadata while upgraded
+        pass
+
+    def _up_collection(self, db, collection_name):
+        collection = db[collection_name]
+        # First, create a 'root' collection, clearing it out as well
+        root_collection = db[collection_name.split('.')[0]]
+        root_collection.remove({})
+        for doc in collection.find():
+            newdoc = dict(doc)
+            newdoc.update(doc['metadata'])
+            newdoc.pop('metadata')
+            newdoc['file_id'] = doc['_id']
+            for aid_name in ('post_id', 'page_id', 'post_id', 'ticket_id'):
+                if aid_name in newdoc:
+                    newdoc['artifact_id'] = newdoc.pop(aid_name)
+            root_collection.save(newdoc)
+
 class CreateStatsCollection(Migration):
     version = 13
 

@@ -88,8 +88,7 @@ class Discussion(Artifact):
         # Delete all the threads, posts, and artifacts
         self.thread_class().query.remove(dict(discussion_id=self._id))
         self.post_class().query.remove(dict(discussion_id=self._id))
-        for att in self.attachment_class().by_metadata(discussion_id=self._id):
-            att.delete()
+        self.attachment_class().remove(dict(discussion_id=self._id))
         super(Discussion, self).delete()
 
     def find_posts(self, **kw):
@@ -266,8 +265,7 @@ class Thread(Artifact):
 
     def delete(self):
         self.post_class().query.remove(dict(thread_id=self._id))
-        for att in self.attachment_class().by_metadata(thread_id=self._id):
-            att.delete()
+        self.attachment_class().remove(dict(thread_id=self._id))
         super(Thread, self).delete()
 
 class PostHistory(Snapshot):
@@ -365,8 +363,8 @@ class Post(Message, VersionedArtifact):
 
     @property
     def attachments(self):
-        return self.attachment_class().by_metadata(
-            post_id=self._id, type='attachment')
+        return self.attachment_class().query.find(dict(
+            post_id=self._id, type='attachment'))
 
     def primary(self, primary_class=None):
         return self.thread.primary(primary_class)
@@ -395,8 +393,7 @@ class Post(Message, VersionedArtifact):
             return 'Re: ' +(self.subject or '(no subject)')
 
     def delete(self):
-        for att in self.attachment_class().by_metadata(post_id=self._id):
-            att.delete()
+        self.attachment_class().remove(dict(post_id=self._id))
         super(Post, self).delete()
 
     def approve(self):
@@ -428,39 +425,27 @@ class DiscussionAttachment(BaseAttachment):
     DiscussionClass=Discussion
     ThreadClass=Thread
     PostClass=Post
+    ArtifactClass=Post
     thumbnail_size = (100, 100)
     class __mongometa__:
-        name = 'attachment.files'
-        indexes = [
-            'metadata.filename',
-            'metadata.discussion_id',
-            'metadata.thread_id',
-            'metadata.post_id' ]
+        indexes = [ 'filename', 'discussion_id', 'thread_id', 'post_id' ]
 
-    # Override the metadata schema here
-    metadata=FieldProperty(dict(
-            discussion_id=schema.ObjectId,
-            thread_id=str,
-            post_id=str,
-            filename=str,
-            app_config_id=schema.ObjectId,
-            type=str))
-
-    @property
-    def artifact(self):
-        return self.post
+    discussion_id=FieldProperty(schema.ObjectId)
+    thread_id=FieldProperty(str)
+    post_id=FieldProperty(str)
+    artifact_id=FieldProperty(str)
 
     @property
     def discussion(self):
-        return self.DiscussionClass.query.get(_id=self.metadata.discussion_id)
+        return self.DiscussionClass.query.get(_id=self.discussion_id)
 
     @property
     def thread(self):
-        return self.ThreadClass.query.get(_id=self.metadata.thread_id)
+        return self.ThreadClass.query.get(_id=self.thread_id)
 
     @property
     def post(self):
-        return self.PostClass.query.get(_id=self.metadata.post_id)
+        return self.PostClass.query.get(_id=self.post_id)
 
     @classmethod
     def metadata_for(cls, post):
@@ -471,9 +456,9 @@ class DiscussionAttachment(BaseAttachment):
             app_config_id=post.app_config_id)
 
     def url(self):
-        if self.metadata.post_id:
+        if self.post_id:
             return self.post.url() + 'attachment/' + self.filename
-        elif self.metadata.thread_id:
+        elif self.thread_id:
             return self.thread.url() + 'attachment/' + self.filename
         else:
             return self.discussion.url() + 'attachment/' + self.filename

@@ -111,10 +111,10 @@
             </a>
           {% else %}
             <a href="{{att.url()}}" class="file_type">
-              <span>{{att.metadata.filename.split('.')[-1] or 'file'}}</span>
+              <span>{{att.filename.split('.')[-1] or 'file'}}</span>
             </a>
           {% endif %}
-          <a href="{{att.url()}}">{{att.metadata.filename}}</a>
+          <a href="{{att.url()}}">{{att.filename}}</a>
         </div>
     {% endfor %}
     </div>

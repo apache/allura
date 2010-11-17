@@ -12,7 +12,7 @@ from tg import expose, validate, redirect, flash
 from tg.decorators import with_trailing_slash, without_trailing_slash
 from pylons import g, c, request, response
 from formencode import validators
-from pymongo.bson import ObjectId
+from bson import ObjectId
 
 from ming.orm.ormsession import ThreadLocalORMSession
 from ming.orm import session, state

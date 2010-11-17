@@ -217,9 +217,9 @@ The wiki uses [Markdown](%s) syntax.
 
     def uninstall(self, project):
         "Remove all the tool's artifacts from the database"
-        WM.WikiAttachment.query.remove({'metadata.app_config_id':c.app.config._id})
-        WM.Page.query.remove(dict(app_config_id=c.app.config._id))
-        WM.Globals.query.remove(dict(app_config_id=c.app.config._id))
+        WM.WikiAttachment.query.remove(dict(app_config_id=self.config._id))
+        WM.Page.query.remove(dict(app_config_id=self.config._id))
+        WM.Globals.query.remove(dict(app_config_id=self.config._id))
         super(ForgeWikiApp, self).uninstall(project)
 
 class RootController(BaseController):
@@ -617,9 +617,7 @@ class PageController(BaseController):
             raise exc.HTTPNotFound
         require(has_artifact_access('edit', self.page))
         if hasattr(file_info, 'file'):
-            WM.WikiAttachment.save_attachment(
-                file_info.filename, file_info.file, content_type=file_info.type,
-                page_id=self.page._id)
+            self.page.attach(file_info.filename, file_info.file, content_type=file_info.type)
         redirect(request.referer)
 
     @expose()

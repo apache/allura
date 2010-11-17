@@ -7,7 +7,6 @@ from pylons import c, request
 from tg import expose, redirect, flash
 from tg.decorators import with_trailing_slash
 from webob import exc
-from pymongo.bson import ObjectId
 
 
 from allura import version

@@ -1,18 +1,15 @@
+import os
 from mimetypes import guess_type
-from datetime import datetime
+from cStringIO import StringIO
 
+import pylons
 import Image
-import pymongo
 from gridfs import GridFS
-import tg
 
-from .session import project_doc_session
-
-from ming.base import build_mongometa
 from ming import schema
 from ming.orm.base import session
-from ming.orm.property import FieldProperty, ForeignIdProperty, RelationProperty
-from ming.orm.mapped_class import MappedClass, MappedClassMeta
+from ming.orm.property import FieldProperty
+from ming.orm.mapped_class import MappedClass
 
 from .session import project_orm_session
 
@@ -25,69 +22,80 @@ SUPPORTED_BY_PIL=set([
 class File(MappedClass):
     class __mongometa__:
         session = project_orm_session
-        name = 'fs.files' # must always end in '.files'
-        indexes = [
-            'metadata.filename' ] # actual "stored" filename
+        name = 'fs'
+        indexes = [ 'filename' ]
 
-    _id=FieldProperty(schema.ObjectId)
-    # We don't actually store the filename here, just a randomish hash
-    filename=FieldProperty(str, if_missing=lambda:str(pymongo.bson.ObjectId()))
-    # There is much weirdness in gridfs; the fp.content_type property is stored
-    # in the contentType field
-    contentType=FieldProperty(str)
-    length=FieldProperty(int)
-    chunkSize=FieldProperty(int)
-    uploadDate=FieldProperty(datetime)
-    aliases=FieldProperty([str])
-    metadata=FieldProperty(dict(
-            # the real filename is stored here
-            filename=str))
-    md5=FieldProperty(str)
-    next=FieldProperty(None)
+    _id = FieldProperty(schema.ObjectId)
+    file_id = FieldProperty(schema.ObjectId)
+    filename=FieldProperty(str, if_missing='unknown')
+    content_type=FieldProperty(str)
+
+    def __init__(self, **kw):
+        super(File, self).__init__(**kw)
+        if self.content_type is None:
+            content_type = guess_type(self.filename)
+            if content_type: self.content_type = content_type[0]
+            else: self.content_type = 'application/octet-stream'
 
     @classmethod
     def _fs(cls):
-        return GridFS(session(cls).impl.db)
+        return GridFS(
+            session(cls).impl.db,
+            cls._root_collection())
 
     @classmethod
-    def _grid_coll_name(cls):
-         # drop the '.files' suffix
-        return cls.__mongometa__.name.rsplit('.', 1)[0]
+    def _root_collection(cls):
+        return cls.__mongometa__.name
 
     @classmethod
     def remove(cls, spec):
-        return cls._fs().remove(spec, collection=cls._grid_coll_name())
+        for fobj in cls.query.find(spec):
+            fobj.delete()
 
     @classmethod
-    def list(cls):
-        return cls._fs().list(collection=cls._grid_coll_name())
+    def from_stream(cls, filename, stream, **kw):
+        obj = cls(filename=filename, **kw)
+        with obj.wfile() as fp_w:
+            while True:
+                s = stream.read()
+                if not s: break
+                fp_w.write(s)
+        return obj
 
     @classmethod
-    def save(cls, filename, content_type, content, **metadata):
-        f = cls.by_metadata(filename=filename).first()
-        if f is None:
-            fn = str(pymongo.bson.ObjectId())
-        else:
-            fn = f.filename
-        with cls._fs().open(fn, 'w', collection=cls._grid_coll_name()) as fp:
-            fp.content_type = content_type
-            fp.metadata = dict(metadata, filename=filename)
-            fp.write(content)
-        return cls.query.get(filename=fn)
+    def from_path(cls, path, **kw):
+        filename = os.path.basename(path)
+        with open(path, 'rb') as stream:
+            return cls.from_stream(filename, stream, **kw)
 
     @classmethod
-    def by_metadata(cls, **kw):
-        return cls.query.find(dict(
-                ('metadata.%s' % k, v)
-                for k,v in kw.iteritems()))
+    def from_data(cls, filename, data, **kw):
+        return cls.from_stream(filename, StringIO(data), **kw)
 
-    @classmethod
-    def create(cls, content_type=None, **meta_kwargs):
-        fn = str(pymongo.bson.ObjectId())
-        fp = cls._fs().open(fn, 'w', collection=cls._grid_coll_name())
-        fp.content_type = content_type
-        fp.metadata =dict(meta_kwargs)
+    def delete(self):
+        self._fs().delete(self.file_id)
+        super(File, self).delete()
+
+    def rfile(self):
+        return self._fs().get(self.file_id)
+
+    def wfile(self):
+        fp = self._fs().new_file(
+            filename=self.filename,
+            content_type=self.content_type)
+        self.file_id = fp._id
         return fp
+
+    def serve(self, embed=True):
+        '''Sets the response headers and serves as a wsgi iter'''
+        fp = self.rfile()
+        pylons.response.headers['Content-Type'] = ''
+        pylons.response.content_type = fp.content_type.encode('utf-8')
+        if not embed:
+            pylons.response.headers.add(
+                'Content-Disposition',
+                'attachment;filename=%s' % self.filename)
+        return iter(fp)
 
     @classmethod
     def save_image(cls, filename, fp,
@@ -108,15 +116,13 @@ class File(MappedClass):
         format = image.format
         if save_original:
             original_meta = original_meta or {}
-            with cls.create(content_type=content_type,
-                            filename=filename,
-                            **original_meta) as fp_w:
-                filename = fp_w.name
+            original = cls(
+                filename=filename, content_type=content_type, **original_meta)
+            with original.wfile() as fp_w:
                 if 'transparency' in image.info:
                     image.save(fp_w, format, transparency=image.info['transparency'])
                 else:
                     image.save(fp_w, format)
-            original = cls.query.get(filename=fp_w.name)
         else:
             original = None
 
@@ -139,24 +145,16 @@ class File(MappedClass):
         if thumbnail_size:
             image.thumbnail(thumbnail_size, Image.ANTIALIAS)
         thumbnail_meta = thumbnail_meta or {}
-        with cls.create(content_type=content_type,
-                        filename=filename,
-                        **thumbnail_meta) as fp_w:
+        thumbnail = cls(
+            filename=filename, content_type=content_type, **thumbnail_meta)
+        with thumbnail.wfile() as fp_w:
             if 'transparency' in image.info:
                 image.save(fp_w, format, transparency=image.info['transparency'])
             else:
                 image.save(fp_w, format)
-        thumbnail = cls.query.get(filename=fp_w.name)
         return original, thumbnail
         
     def is_image(self):
-        if not self.contentType:
-            return False
-        return self.contentType.lower() in SUPPORTED_BY_PIL
-
-    def open(self, mode='r'):
-        return self._fs().open(self.filename, mode, collection=self._grid_coll_name())
-
-    def delete(self):
-        self.remove(self.filename)
+        return (self.content_type
+                and self.content_type.lower() in SUPPORTED_BY_PIL)
 

@@ -2,7 +2,7 @@
 """
 Model tests for artifact
 """
-import re
+from cStringIO import StringIO
 import time
 from datetime import datetime
 
@@ -109,31 +109,26 @@ def test_attachment_methods():
     d = M.Discussion(shortname='test', name='test')
     t = M.Thread(discussion_id=d._id, subject='Test Thread')
     p = t.post('This is a post')
-    a = M.DiscussionAttachment(**dict(metadata=dict(
+    a = p.attach('foo.text', StringIO('Hello, world!'),
                 discussion_id=d._id,
                 thread_id=t._id,
-                post_id=p._id,
-                filename='foo.text')))
-    with a.open('w') as fp:
-        fp.write('Hello, world!')
+                post_id=p._id)
     ThreadLocalORMSession.flush_all()
     assert a.post == p
     assert a.thread == t
     assert a.discussion == d
     assert 'wiki/_discuss' in a.url()
     assert 'attachment/' in a.url()
-    assert 'foo' not in a.url()
 
 @with_setup(setUp, tearDown)
 def test_discussion_delete():
     d = M.Discussion(shortname='test', name='test')
     t = M.Thread(discussion_id=d._id, subject='Test Thread')
     p = t.post('This is a post')
-    a = M.DiscussionAttachment(**dict(metadata=dict(
+    p.attach('foo.text', StringIO(''),
                 discussion_id=d._id,
                 thread_id=t._id,
-                post_id=p._id,
-                filename='foo.text')))
+                post_id=p._id)
     ThreadLocalORMSession.flush_all()
     d.delete()
 
@@ -142,11 +137,10 @@ def test_thread_delete():
     d = M.Discussion(shortname='test', name='test')
     t = M.Thread(discussion_id=d._id, subject='Test Thread')
     p = t.post('This is a post')
-    a = M.DiscussionAttachment(**dict(metadata=dict(
+    p.attach('foo.text', StringIO(''),
                 discussion_id=d._id,
                 thread_id=t._id,
-                post_id=p._id,
-                filename='foo.text')))
+                post_id=p._id)
     ThreadLocalORMSession.flush_all()
     t.delete()
 
@@ -155,11 +149,10 @@ def test_post_delete():
     d = M.Discussion(shortname='test', name='test')
     t = M.Thread(discussion_id=d._id, subject='Test Thread')
     p = t.post('This is a post')
-    a = M.DiscussionAttachment(**dict(metadata=dict(
+    p.attach('foo.text', StringIO(''),
                 discussion_id=d._id,
                 thread_id=t._id,
-                post_id=p._id,
-                filename='foo.text')))
+                post_id=p._id)
     ThreadLocalORMSession.flush_all()
     p.delete()
 

@@ -7,8 +7,6 @@ from tg import expose, validate, redirect, response, config
 from tg.decorators import with_trailing_slash, without_trailing_slash
 from pylons import g, c, request
 
-from pymongo.bson import ObjectId
-
 # Pyforge-specific imports
 from allura.app import Application, ConfigOption, SitemapEntry, DefaultAdminController
 from allura.lib import helpers as h

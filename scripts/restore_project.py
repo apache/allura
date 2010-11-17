@@ -7,7 +7,7 @@ from ming.orm import state, session, mapper, MappedClass
 from ming.orm.base import instrument, DocumentTracker
 
 from pylons import c
-from pymongo.bson import BSON
+from bson import BSON
 from allura import model as M
 from allura.command import ReindexCommand
 

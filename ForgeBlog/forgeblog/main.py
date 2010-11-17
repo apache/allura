@@ -8,7 +8,6 @@ from tg import expose, validate, redirect, flash
 from tg.decorators import with_trailing_slash, without_trailing_slash
 from pylons import g, c, request, response
 from formencode import validators
-from pymongo.bson import ObjectId
 from webob import exc
 
 # Pyforge-specific imports
@@ -117,7 +116,7 @@ class ForgeBlogApp(Application):
 
     def uninstall(self, project):
         "Remove all the tool's artifacts from the database"
-        BM.Attachment.query.remove({'metadata.app_config_id':c.app.config._id})
+        BM.Attachment.query.remove(app_config_id=c.app.config._id)
         BM.BlogPost.query.remove(dict(app_config_id=c.app.config._id))
         BM.BlogPostSnapshot.query.remove(dict(app_config_id=c.app.config._id))
         super(ForgeBlogApp, self).uninstall(project)

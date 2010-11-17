@@ -8,7 +8,7 @@ import pkg_resources
 from pylons import g, c, request
 from tg import expose, redirect, flash, url
 from tg.decorators import with_trailing_slash, without_trailing_slash
-from pymongo.bson import ObjectId
+from bson import ObjectId
 from ming.orm.base import session
 from ming import schema
 

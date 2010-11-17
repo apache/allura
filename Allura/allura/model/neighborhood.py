@@ -12,11 +12,7 @@ from .filesystem import File
 class NeighborhoodFile(File):
     class __mongometa__:
         session = main_orm_session
-
-    # Override the metadata schema here
-    metadata=FieldProperty(dict(
-            neighborhood_id=S.ObjectId,
-            filename=str))
+    neighborhood_id=FieldProperty(S.ObjectId)
 
 class Neighborhood(MappedClass):
     '''Provide a grouping of related projects.
@@ -79,5 +75,5 @@ class Neighborhood(MappedClass):
 
     @property
     def icon(self):
-        return NeighborhoodFile.query.find({'metadata.neighborhood_id':self._id}).first()
+        return NeighborhoodFile.query.get(neighborhood_id=self._id)
 

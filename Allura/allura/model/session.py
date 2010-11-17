@@ -1,4 +1,5 @@
 import logging
+import urllib
 from itertools import chain
 
 from pylons import c
@@ -33,7 +34,9 @@ class ProjectSession(Session):
                     return None
             if p is None: return None
             if p.database_uri:
-                return ShardedDataStore.get(p.database_uri).db
+                scheme, rest = p.database_uri.split('://')
+                host, database = rest.split('/', 1)
+                return ShardedDataStore.get(scheme + '://' + host, database).db
             return getattr(self.main_session.bind.conn, p.database)
         except (KeyError, AttributeError), ex:
             return None

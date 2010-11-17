@@ -1,4 +1,4 @@
-from pymongo.bson import ObjectId
+from bson import ObjectId
 from formencode import validators as fev
 
 class Ming(fev.FancyValidator):

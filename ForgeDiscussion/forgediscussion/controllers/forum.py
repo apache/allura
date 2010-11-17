@@ -79,12 +79,7 @@ class ForumController(DiscussionController):
 
     @expose()
     def icon(self):
-        with self.discussion.icon.open() as fp:
-            filename = fp.metadata['filename'].encode('utf-8')
-            response.headers['Content-Type'] = ''
-            response.content_type = fp.content_type.encode('utf-8')
-            return fp.read()
-        return self.discussion.icon.filename
+        return self.discussion.icon.serve()
 
     @expose('jinja:discussionforums/deleted.html')
     def deleted(self):

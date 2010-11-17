@@ -4,12 +4,12 @@
   <div class="attachment_thumb">
     <a href="{{value.url()}}"><img src="{{value.url()}}/thumb"/></a>
     <br/>
-    <a href="{{value.url()}}">{{value.metadata.filename}}</a>
+    <a href="{{value.url()}}">{{value.filename}}</a>
     ({{value.length}} bytes)
   </div>
   {% else %}
   <div>
-    <a href="{{value.url()}}">{{value.metadata.filename}}</a>
+    <a href="{{value.url()}}">{{value.filename}}</a>
     ({{value.length}} bytes)
   </div>
   {% endif %}

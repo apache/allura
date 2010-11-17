@@ -5,7 +5,7 @@ from tg import config
 from pylons import c, g, request
 import pkg_resources
 from webob import exc
-from pymongo import bson
+from bson import ObjectId
 
 from ming import schema as S
 from ming.utils import LazyProperty
@@ -58,7 +58,7 @@ class ScheduledMessage(MappedClass):
     def fire_when_ready(cls):
         now = datetime.utcnow()
         # Lock the objects to fire
-        nonce = bson.ObjectId()
+        nonce = ObjectId()
         m = mapper(cls)
         session(cls).impl.update_partial(
             m.doc_cls,
@@ -80,10 +80,8 @@ class ProjectFile(File):
     class __mongometa__:
         session = main_orm_session
 
-    metadata=FieldProperty(dict(
-            project_id=S.ObjectId,
-            category=str,
-            filename=str))
+    project_id=FieldProperty(S.ObjectId)
+    category=FieldProperty(str)
 
 class ProjectCategory(MappedClass):
     class __mongometa__:
@@ -147,8 +145,9 @@ class Project(MappedClass):
     @classmethod
     def default_database_uri(cls, shortname):
         base = config.get('ming.project.master')
+        db = config.get('ming.project.database')
         shard = ''.join(ch.lower() for ch in shortname if ch.isalpha())[-cls.SHARD_LENGTH:]
-        return base + '-' + shard
+        return base + '/' + db + '-' + shard
 
     @LazyProperty
     def allowed_tool_status(self):
@@ -207,11 +206,15 @@ class Project(MappedClass):
         return provider.best_download_url(self)
 
     def get_screenshots(self):
-        return ProjectFile.query.find({'metadata.project_id':self._id, 'metadata.category':'screenshot'}).all()
+        return ProjectFile.query.find(dict(
+                project_id=self._id,
+                category='screenshot')).all()
 
     @property
     def icon(self):
-        return ProjectFile.query.find({'metadata.project_id':self._id, 'metadata.category':'icon'}).first()
+        return ProjectFile.query.get(
+            project_id=self._id,
+            category='icon')
 
     @property
     def description_html(self):

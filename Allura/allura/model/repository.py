@@ -1,7 +1,6 @@
 import os
 import stat
 import errno
-import string
 import mimetypes
 import logging
 from hashlib import sha1
@@ -10,10 +9,9 @@ from collections import defaultdict
 
 import pylons
 from tg import config
-import pymongo.bson
+import pymongo.errors
 
 from ming import schema as S
-from ming.base import Object
 from ming.utils import LazyProperty
 from ming.orm import MappedClass, FieldProperty, session, mapper
 

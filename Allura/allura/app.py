@@ -5,7 +5,7 @@ from cStringIO import StringIO
 from tg import expose, redirect, flash
 from tg.decorators import without_trailing_slash
 from pylons import c, g
-from pymongo.bson import ObjectId
+from bson import ObjectId
 
 from ming.orm import session
 
@@ -202,6 +202,7 @@ class Application(object):
         # Handle attachments
         message_id = data['message_id'][0]
         if data.get('filename'):
+            # Special case - the actual post may not have been created yet
             log.info('Saving attachment %s', data['filename'])
             fp = StringIO(data['payload'])
             self.AttachmentClass.save_attachment(
@@ -209,25 +210,26 @@ class Application(object):
                 content_type=data.get('content_type', 'application/octet-stream'),
                 discussion_id=self.config.discussion_id,
                 thread_id=thd._id,
-                post_id=message_id)
+                post_id=message_id,
+                artifact_id=message_id)
             return
         # Handle duplicates
-        original = self.PostClass.query.get(_id=message_id)
-        if original:
+        post = self.PostClass.query.get(_id=message_id)
+        if post:
             log.info('Saving text attachment')
-            self.AttachmentClass.save(
-                'alternate',
-                data.get('content_type', 'application/octet-stream'),
-                data['payload'],
+            fp = StringIO(data['payload'])
+            post.attach(
+                'alternate', fp,
+                content_type=data.get('content_type', 'application/octet-stream'),
                 discussion_id=self.config.discussion_id,
                 thread_id=thd._id,
                 post_id=message_id)
-            return
-        thd.post(
-            text=data['payload'] or '--no text body--',
-            message_id=message_id,
-            parent_id=parent_id,
-            **kw)
+        else:
+            post = thd.post(
+                text=data['payload'] or '--no text body--',
+                message_id=message_id,
+                parent_id=parent_id,
+                **kw)
 
 
 class DefaultAdminController(BaseController):

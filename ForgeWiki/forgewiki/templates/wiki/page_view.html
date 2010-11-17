@@ -72,12 +72,12 @@
       <a href="{{att.url()}}">
         <img src="{{att.url()}}/thumb"/>
       </a><br/>
-      <a href="{{att.url()}}">{{att.metadata.filename}}</a>
+      <a href="{{att.url()}}">{{att.filename}}</a>
       ({{att.length}} bytes)
     </div>
     {% else %}
     <div>
-      <a href="{{att.url()}}">{{att.metadata.filename}}</a>
+      <a href="{{att.url()}}">{{att.filename}}</a>
       ({{att.length}} bytes)
     </div>
     {% endif %}

@@ -94,13 +94,10 @@ class Forum(M.Discussion):
 
     @property
     def icon(self):
-        return ForumFile.query.find({'metadata.forum_id':self._id}).first()
+        return ForumFile.query.get(forum_id=self._id)
 
 class ForumFile(M.File):
-    # Override the metadata schema here
-    metadata=FieldProperty(dict(
-            forum_id=schema.ObjectId,
-            filename=str))
+    forum_id=FieldProperty(schema.ObjectId)
 
 class ForumThread(M.Thread):
     class __mongometa__:
@@ -133,8 +130,7 @@ class ForumThread(M.Thread):
             dict(discussion_id=self.discussion_id, thread_id=self._id),
             {'$set':dict(discussion_id=new_forum._id)})
         self.attachment_class().query.update(
-            {'metadata.discussion_id':self.discussion_id,
-             'metadata.thread_id':self._id},
+            {'discussion_id':self.discussion_id, 'thread_id':self._id},
             {'$set':dict(discussion_id=new_forum._id)})
         self.discussion_id = new_forum._id
 

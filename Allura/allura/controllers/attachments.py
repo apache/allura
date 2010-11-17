@@ -37,22 +37,20 @@ class AttachmentController(BaseController):
     @LazyProperty
     def attachment(self):
         metadata = self.AttachmentClass.metadata_for(self.artifact)
-        metadata_query = dict(
-            ('metadata.%s' % k, v)
-            for k, v in metadata.iteritems())
-        attachment = self.AttachmentClass.query.get(filename=self.filename, **metadata_query)
-        if attachment is None:
-            attachment = self.AttachmentClass.by_metadata(filename=self.filename, **metadata).first()
+        metadata['type'] = 'attachment'
+        attachment = self.AttachmentClass.query.get(filename=self.filename, **metadata)
         if attachment is None:
             raise exc.HTTPNotFound
         return attachment
 
     @LazyProperty
     def thumbnail(self):
-        thumbnail = self.AttachmentClass.by_metadata(filename=self.attachment.filename).first()
-        if thumbnail is None:
+        metadata = self.AttachmentClass.metadata_for(self.artifact)
+        metadata['type'] = 'thumbnail'
+        attachment = self.AttachmentClass.query.get(filename=self.filename, **metadata)
+        if attachment is None:
             raise exc.HTTPNotFound
-        return thumbnail
+        return attachment
         
     @expose()
     def index(self, delete=False, embed=True, **kw):
@@ -66,31 +64,8 @@ class AttachmentController(BaseController):
                 except exc.HTTPNotFound:
                     pass
             redirect(request.referer)
-        with self.attachment.open() as fp:
-            if fp is None:
-                raise exc.HTTPNotFound()
-            filename = fp.metadata['filename'].encode('utf-8')
-            if fp.content_type is None:
-                fp.content_type = 'application/octet-stream'
-            response.headers['Content-Type'] = fp.content_type.encode('utf-8')
-            response.content_type = fp.content_type.encode('utf-8')
-            if not embed:
-                response.headers.add('Content-Disposition',
-                                     'attachment;filename="%s"' % filename)
-            else:
-                response.headers.add('Content-Disposition',
-                                     'filename="%s"' % filename)
-            return fp.read()
-        return self.filename
+        return self.attachment.serve(embed)
 
     @expose()
     def thumb(self, embed=True):
-        with self.thumbnail.open() as fp:
-            filename = fp.metadata['filename'].encode('utf-8')
-            response.headers['Content-Type'] = ''
-            response.content_type = fp.content_type.encode('utf-8')
-            if not embed:
-                response.headers.add('Content-Disposition',
-                                     'attachment;filename=%s' % filename)
-            return fp.read()
-        return self.filename
+        return self.thumbnail.serve(embed)

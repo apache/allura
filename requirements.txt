@@ -45,7 +45,7 @@ mock==0.6.0
 nose==0.11.3
 numpy==1.4.1
 pyflakes==0.4.0
-pymongo==1.5.2
+pymongo==1.9
 pysolr==2.0.9
 python-daemon==1.5.5
 python-dateutil==1.5

@@ -4,7 +4,7 @@ import struct
 import logging
 
 from pylons import c
-from pymongo.bson import BSON
+from bson import BSON
 
 from ming.orm import MappedClass, state, mapper
 

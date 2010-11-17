@@ -150,9 +150,8 @@ class ThreadController(BaseController):
         file_info = kw.pop('file_info', None)
         p = self.thread.add_post(**kw)
         if hasattr(file_info, 'file'):
-            self.M.Attachment.save_attachment(
+            p.attach(
                 file_info.filename, file_info.file, content_type=file_info.type,
-                post_id=p._id,
                 thread_id=p.thread_id,
                 discussion_id=p.discussion_id)
         if self.thread.artifact:
@@ -295,7 +294,7 @@ class PostController(BaseController):
     def attach(self, file_info=None):
         require(has_artifact_access('moderate', self.post))
         if hasattr(file_info, 'file'):
-            self.M.Attachment.save_attachment(
+            self.post.attach(
                 file_info.filename, file_info.file, content_type=file_info.type,
                 post_id=self.post._id,
                 thread_id=self.post.thread_id,

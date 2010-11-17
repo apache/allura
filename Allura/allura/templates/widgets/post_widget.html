@@ -37,9 +37,9 @@
               {% if att.is_image() %}
                 <a href="{{att.url()}}"><img src="{{att.url()}}/thumb"/></a>
                 <br/>
-                <a href="{{att.url()}}">{{att.metadata.filename}}</a>
+                <a href="{{att.url()}}">{{att.filename}}</a>
               {% else %}
-                <a href="{{att.url()}}">{{att.metadata.filename}}</a>
+                <a href="{{att.url()}}">{{att.filename}}</a>
               {% endif %}
               {% if c.user._id and value.author_id==c.user._id %}
               <br>

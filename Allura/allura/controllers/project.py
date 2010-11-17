@@ -10,11 +10,12 @@ from tg.decorators import with_trailing_slash, without_trailing_slash
 from pylons import c, g
 from paste.httpheaders import CACHE_CONTROL
 from webob import exc
-from pymongo.bson import ObjectId
+from bson import ObjectId
 import pymongo
 from formencode import validators
 
 import  ming.orm.ormsession
+from ming.utils import LazyProperty
 
 import allura
 from allura import model as M
@@ -184,12 +185,7 @@ class NeighborhoodController(object):
         icon = self.neighborhood.icon
         if not icon:
             raise exc.HTTPNotFound
-        with icon.open() as fp:
-            filename = fp.metadata['filename'].encode('utf-8')
-            response.headers['Content-Type'] = ''
-            response.content_type = fp.content_type.encode('utf-8')
-            return fp.read()
-        return icon.filename
+        return icon.serve()
 
 class NeighborhoodProjectBrowseController(ProjectBrowseController):
     def __init__(self, neighborhood=None, category_name=None, parent_category=None):
@@ -309,12 +305,7 @@ class ProjectController(object):
         icon = c.project.icon
         if not icon:
             raise exc.HTTPNotFound
-        with icon.open() as fp:
-            filename = fp.metadata['filename'].encode('utf-8')
-            response.headers['Content-Type'] = ''
-            response.content_type = fp.content_type.encode('utf-8')
-            return fp.read()
-        return icon.filename
+        return icon.serve()
 
     @expose()
     def user_icon(self):
@@ -339,7 +330,10 @@ class ScreenshotsController(object):
 
     @expose()
     def _lookup(self, filename, *args):
-        filename=unquote(filename)
+        if args:
+            filename=unquote(filename)
+        else:
+            filename = unquote(request.path.rsplit('/', 1)[-1])
         return ScreenshotController(filename), args
 
 class ScreenshotController(object):
@@ -349,29 +343,29 @@ class ScreenshotController(object):
 
     @expose()
     def index(self, embed=True, **kw):
-        screenshot = M.ProjectFile.query.find({'metadata.project_id':c.project._id, 'metadata.category':'screenshot', 'filename':self.filename}).first()
-        with screenshot.open() as fp:
-            filename = fp.metadata['filename'].encode('utf-8')
-            response.headers['Content-Type'] = ''
-            response.content_type = fp.content_type.encode('utf-8')
-            if not embed:
-                response.headers.add('Content-Disposition',
-                                     'attachment;filename=%s' % filename)
-            return fp.read()
-        return self.filename
+        return self._screenshot.serve(embed)
 
     @expose()
     def thumb(self, embed=True):
-        thumb = M.ProjectFile.query.find({'metadata.project_id':c.project._id, 'metadata.category':'screenshot_thumb', 'metadata.filename':self.filename}).first()
-        with thumb.open() as fp:
-            filename = fp.metadata['filename'].encode('utf-8')
-            response.headers['Content-Type'] = ''
-            response.content_type = fp.content_type.encode('utf-8')
-            if not embed:
-                response.headers.add('Content-Disposition',
-                                     'attachment;filename=%s' % filename)
-            return fp.read()
-        return self.filename
+        return self._thumb.serve(embed)
+
+    @LazyProperty
+    def _screenshot(self):
+        f = M.ProjectFile.query.get(
+            project_id=c.project._id,
+            category='screenshot',
+            filename=self.filename)
+        if not f: raise exc.HTTPNotFound
+        return f
+
+    @LazyProperty
+    def _thumb(self):
+        f = M.ProjectFile.query.get(
+            project_id=c.project._id,
+            category='screenshot_thumb',
+            filename=self.filename)
+        if not f: raise exc.HTTPNotFound
+        return f
 
 class NeighborhoodAdminController(object):
 
@@ -444,7 +438,7 @@ class NeighborhoodAdminController(object):
         self.neighborhood.allow_browse = 'allow_browse' in kw
         if icon is not None and icon != '':
             if self.neighborhood.icon:
-                M.NeighborhoodFile.query.remove({'metadata.neighborhood_id':self.neighborhood._id})
+                self.neighborhood.icon.delete()
             M.NeighborhoodFile.save_image(
                 icon.filename, icon.file, content_type=icon.type,
                 square=True, thumbnail_size=(48,48),
@@ -616,12 +610,7 @@ class AwardController(object):
         icon = self.award.icon
         if not icon:
             raise exc.HTTPNotFound
-        with icon.open() as fp:
-            filename = fp.metadata['filename'].encode('utf-8')
-            response.headers['Content-Type'] = ''
-            response.content_type = fp.content_type.encode('utf-8')
-            return fp.read()
-        return icon.filename
+        return icon.serve()
 
     @expose()
     def grant(self, recipient=None):
@@ -642,7 +631,7 @@ class AwardController(object):
             grants = M.AwardGrant.query.find(dict(award_id=self.award._id))
             for grant in grants:
                 grant.delete()
-            M.AwardFile.query.remove({'metadata.award_id':self.award._id})
+            M.AwardFile.query.remove(dict(award_id=self.award._id))
             self.award.delete()
         redirect('../..')
 
@@ -673,12 +662,7 @@ class GrantController(object):
         icon = self.award.icon
         if not icon:
             raise exc.HTTPNotFound
-        with icon.open() as fp:
-            filename = fp.metadata['filename'].encode('utf-8')
-            response.headers['Content-Type'] = ''
-            response.content_type = fp.content_type.encode('utf-8')
-            return fp.read()
-        return icon.filename
+        return icon.serve()
 
     @expose()
     def revoke(self):

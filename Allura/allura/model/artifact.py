@@ -8,6 +8,7 @@ from time import sleep
 from datetime import datetime
 import Image
 
+import bson
 import pymongo
 from pylons import c, g
 from ming import Document, Session, Field
@@ -300,6 +301,10 @@ class Artifact(MappedClass):
     backreferences = FieldProperty({str:ArtifactReferenceType})
     app_config = RelationProperty('AppConfig')
 
+    @classmethod
+    def attachment_class(cls):
+        raise NotImplementedError, 'attachment_class'
+
     def subscribe(self, user=None, topic=None, type='direct', n=1, unit='day'):
         from allura.model import Mailbox
         if user is None: user = c.user
@@ -350,7 +355,7 @@ class Artifact(MappedClass):
             d = ArtifactReference(dict(
                     project_id=self.app_config.project._id,
                     mount_point=self.app_config.options.mount_point,
-                    artifact_type=pymongo.bson.Binary(pickle.dumps(self.__class__)),
+                    artifact_type=bson.Binary(pickle.dumps(self.__class__)),
                     artifact_id=self._id))
             return d
         except AttributeError:
@@ -459,6 +464,12 @@ class Artifact(MappedClass):
     @LazyProperty
     def discussion_thread(self):
         return self.get_discussion_thread()
+
+    def attach(self, filename, fp, **kw):
+        att = self.attachment_class().save_attachment(
+            filename=filename,
+            fp=fp, artifact_id=self._id, **kw)
+        return att
 
 class Snapshot(Artifact):
     class __mongometa__:
@@ -636,12 +647,8 @@ class Message(Artifact):
 class AwardFile(File):
     class __mongometa__:
         session = main_orm_session
-        name = 'award_file.files'
-
-    # Override the metadata schema here
-    metadata=FieldProperty(dict(
-            award_id=S.ObjectId,
-            filename=str))
+        name = 'award_file'
+    award_id=FieldProperty(S.ObjectId)
 
 class Award(Artifact):
     class __mongometa__:
@@ -671,7 +678,7 @@ class Award(Artifact):
 
     @property
     def icon(self):
-        return AwardFile.query.find({'metadata.award_id':self._id}).first()
+        return AwardFile.query.get(award_id=self._id)
 
     def url(self):
         return urllib.unquote_plus(str(self.short))
@@ -712,7 +719,7 @@ class AwardGrant(Artifact):
 
     @property
     def icon(self):
-        return AwardFile.query.find({'metadata.award_id':self.award_id}).first()
+        return AwardFile.query.get(award_id=self.award_id)
 
     def url(self):
         slug = str(self.granted_to_project.shortname).replace('/','_')

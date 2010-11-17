@@ -5,7 +5,6 @@ import sys
 import logging
 import shutil
 from datetime import datetime
-from mimetypes import guess_type
 
 import tg
 from pylons import c, g
@@ -107,19 +106,7 @@ def bootstrap(command, conf, vars):
     # add the adobe icon
     file_name = 'adobe_icon.png'
     file_path = os.path.join(allura.__path__[0],'public','nf','images',file_name)
-    f = file(file_path, 'r')
-    content_type = guess_type(file_name)
-    if content_type: content_type = content_type[0]
-    else: content_type = 'application/octet-stream'
-    with M.NeighborhoodFile.create(
-        content_type=content_type,
-        filename=file_name,
-        neighborhood_id=n_adobe._id) as fp:
-        while True:
-            s = f.read()
-            if not s: break
-            fp.write(s)
-
+    M.NeighborhoodFile.from_path(file_path, neighborhood_id=n_adobe._id)
     log.info('Registering "regular users" (non-root)')
     u_adobe = M.User.register(dict(username='adobe-admin',
                                    display_name='Adobe Admin'))
@@ -229,7 +216,7 @@ def wipe_database():
                 except:
                     pass
         # Run flyway
-        flyway.run(['--force', '-u', 'ming://%s:%s/' % (conn.host, conn.port)])
+        flyway.run(['--force', '-u', 'mongodb://%s:%s/' % (conn.host, conn.port)])
     index.run([])
 
 

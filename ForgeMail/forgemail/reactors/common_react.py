@@ -2,7 +2,7 @@ import logging
 
 import tg
 from pylons import c, g
-from pymongo.bson import ObjectId
+from bson import ObjectId
 
 from allura.lib.decorators import audit, react
 from allura.lib.helpers import push_config

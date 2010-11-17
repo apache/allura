@@ -21,7 +21,7 @@ setup(
         "Babel >= 0.9.4",
         "Lamson",
         "Carrot",
-        "pymongo >= 1.5, < 1.6",
+        "pymongo >= 1.7",
         "pysolr",
         "repoze.what-quickstart",
         "sqlalchemy-migrate",

@@ -293,7 +293,7 @@ in_reply_to (optional)
   Value to put in the `In-Reply-To` header (the `parent_id` field of a
   :class:`allura.model.artifact.Message` is suitable for this)
 destinations
-  List of email addresses and/or :class:`pymongo.bson.ObjectId` s for
+  List of email addresses and/or :class:`bson.ObjectId` s for
   :class:`allura.model.auth.User` objects
 text
   Markdown-formatted body of the message (If the user has requested html or

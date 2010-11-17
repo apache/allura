@@ -1,7 +1,7 @@
 import cPickle as pickle
 from itertools import chain
 
-import pymongo
+import bson
 from ming.orm import state
 from pylons import c
 
@@ -54,7 +54,7 @@ class V0(TrackerMigration):
         return ArtifactReference(dict(
             project_id=app_config.project_id,
             mount_point=app_config.options.mount_point,
-            artifact_type=pymongo.bson.Binary(pickle.dumps(art.__class__)),
+            artifact_type=bson.Binary(pickle.dumps(art.__class__)),
             artifact_id=art._id))
 
 

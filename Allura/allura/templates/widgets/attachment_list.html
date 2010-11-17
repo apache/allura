@@ -8,7 +8,7 @@
             <a href="{{att.url()}}">
               <img src="{{att.url()}}/thumb"/>
             </a><br/>
-            {{att.metadata.filename}}
+            {{att.filename}}
             {% if edit_mode %}
             <form method="post" action="{{att.url()}}">
               <input type="hidden" name="delete" value="True"/>
@@ -22,7 +22,7 @@
     {% for att in attachments if not att.is_image() %}
       <div>
         <form method="post" action="{{att.url()}}">
-          <a href="{{att.url()}}">{{att.metadata.filename}}</a>
+          <a href="{{att.url()}}">{{att.filename}}</a>
           ({{att.length}} bytes)
           <input type="hidden" name="delete" value="True"/>
           {% if edit_mode %}

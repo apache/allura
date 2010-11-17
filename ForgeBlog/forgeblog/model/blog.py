@@ -155,14 +155,6 @@ class BlogPost(M.VersionedArtifact):
             artifact=self, topic='metadata', text=description, subject=subject)
 
 class Attachment(M.BaseAttachment):
-    metadata=FieldProperty(dict(
-            artifact_id=schema.ObjectId,
-            app_config_id=schema.ObjectId,
-            type=str,
-            filename=str))
-
-    @property
-    def artifact(self):
-        return M.BlogPost.query.get(_id=self.metadata.artifact_id)
+    ArtifactClass=BlogPost
 
 MappedClass.compile_all()

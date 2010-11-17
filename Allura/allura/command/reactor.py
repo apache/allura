@@ -5,7 +5,7 @@ from multiprocessing import Process
 
 import ming
 import pylons
-from pymongo.bson import ObjectId
+from bson import ObjectId
 from carrot.messaging import Consumer, ConsumerSet
 
 from . import base

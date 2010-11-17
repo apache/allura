@@ -11,7 +11,7 @@ from tg import expose, validate, redirect, flash
 from tg.decorators import with_trailing_slash, without_trailing_slash
 from pylons import g, c, request, response
 from formencode import validators
-from pymongo.bson import ObjectId
+from bson import ObjectId
 
 from ming.orm.ormsession import ThreadLocalORMSession
 
@@ -235,7 +235,7 @@ class ForgeTrackerApp(Application):
 
     def uninstall(self, project):
         "Remove all the tool's artifacts from the database"
-        TM.TicketAttachment.query.remove({'metadata.app_config_id':c.app.config._id})
+        TM.TicketAttachment.query.remove(app_config_id=c.app.config._id)
         app_config_id = {'app_config_id':c.app.config._id}
         TM.Ticket.query.remove(app_config_id)
         TM.Bin.query.remove(app_config_id)
@@ -851,9 +851,8 @@ class TicketController(BaseController):
         if 'attachment' in post_data:
             attachment = post_data['attachment']
             if hasattr(attachment, 'file'):
-                TM.TicketAttachment.save_attachment(
-                    attachment.filename, attachment.file, content_type=attachment.type,
-                    ticket_id=self.ticket._id)
+                self.ticket.attach(
+                    attachment.filename, attachment.file, content_type=attachment.type)
         any_sums = False
         for cf in c.app.globals.custom_fields or []:
             if 'custom_fields.'+cf.name in post_data:

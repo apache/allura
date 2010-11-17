@@ -52,7 +52,7 @@ def setup_functional_test(config=DFL_CONFIG, app_name=DFL_APP_NAME):
                       relative_to=conf_dir)
     return TestApp(wsgiapp)
 
-def setup_global_objects():
+def setup_unit_test():
     from allura.lib import helpers
     g._push_object(Globals())
     c._push_object(MagicalC(mock.Mock(), ENV))
@@ -63,6 +63,9 @@ def setup_global_objects():
     response._push_object(Response())
     session._push_object(beaker.session.SessionObject({}))
     ThreadLocalORMSession.close_all()
+
+def setup_global_objects():
+    setup_unit_test()
     g.set_project('test')
     g.set_app('wiki')
     c.user = M.User.query.get(username='test-admin')

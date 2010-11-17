@@ -6,7 +6,7 @@ import pkg_resources
 from tg import expose, validate, redirect
 from pylons import g, c, request
 from formencode import validators
-from pymongo.bson import ObjectId
+from bson import ObjectId
 
 # Pyforge-specific imports
 from allura.app import Application, ConfigOption, SitemapEntry

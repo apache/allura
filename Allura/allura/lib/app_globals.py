@@ -27,7 +27,7 @@ from tg import config, session
 from pylons import c, request
 from carrot.connection import BrokerConnection
 from carrot.messaging import Publisher
-from pymongo.bson import ObjectId
+from bson import ObjectId
 from paste.deploy.converters import asint, asbool
 
 import ew as ew_core

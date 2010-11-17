@@ -10,7 +10,7 @@ from pylons import c, g, request
 from tg import expose, redirect, flash, validate
 from tg.decorators import with_trailing_slash, without_trailing_slash
 from webob import exc
-from pymongo.bson import ObjectId
+from bson import ObjectId
 from formencode.validators import UnicodeString
 
 
@@ -225,7 +225,7 @@ class ProjectAdminController(BaseController):
         require(has_project_access('update'), 'Update access required')
 
         if 'delete_icon' in kw:
-            M.ProjectFile.query.remove({'metadata.project_id':c.project._id, 'metadata.category':'icon'})
+            M.ProjectFile.query.remove(dict(project_id=c.project._id, category='icon'))
             h.log_action(log, 'remove project icon').info('')
             redirect('.')
         elif 'delete' in kw:
@@ -258,7 +258,7 @@ class ProjectAdminController(BaseController):
 
         if icon is not None and icon != '':
             if c.project.icon:
-                M.ProjectFile.query.remove({'metadata.project_id':c.project._id, 'metadata.category':'icon'})
+                M.ProjectFile.remove(dict(project_id=c.project._id, category='icon'))
             M.ProjectFile.save_image(
                 icon.filename, icon.file, content_type=icon.type,
                 square=True, thumbnail_size=(48,48),
