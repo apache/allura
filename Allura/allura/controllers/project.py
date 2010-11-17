@@ -84,7 +84,7 @@ class NeighborhoodController(object):
             elif c.user.username == pname:
                 log.info('Configuring %s database for access to %r',
                          pname, remainder)
-                project.configure_project_database(is_user_project=True)
+                project.configure_project(is_user_project=True)
             else:
                 raise exc.HTTPNotFound, pname
         c.project = project

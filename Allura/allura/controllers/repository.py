@@ -75,7 +75,7 @@ class RepoRootController(BaseController):
                             to_name=to_name or '')
             else:
                 if not to_project.database_configured:
-                    to_project.configure_project_database(is_user_project=True)
+                    to_project.configure_project(is_user_project=True)
                 security.require(security.has_project_access('tool', to_project))
                 try:
                     to_project.install_app(
