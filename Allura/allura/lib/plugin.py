@@ -223,22 +223,24 @@ class ProjectRegistrationProvider(object):
         from allura import model as M
         assert h.re_path_portion.match(shortname.replace('/', '')), \
             'Invalid project shortname'
-        p = M.Project.query.get(shortname=shortname)
-        if p: raise forge_exc.ProjectConflict()
-        p = M.Project(neighborhood_id=neighborhood._id,
-                    shortname=shortname,
-                    name=shortname,
-                    short_description='',
-                    description=(shortname + '\n'
-                                 + '=' * 80 + '\n\n'
-                                 + 'You can edit this description in the admin page'),
-                    database_uri=config.get('ming.project.master'),
-                    last_updated = datetime.utcnow(),
-                    is_root=True)
         try:
+            p = M.Project.query.get(shortname=shortname)
+            if p: raise forge_exc.ProjectConflict()
+            p = M.Project(neighborhood_id=neighborhood._id,
+                        shortname=shortname,
+                        name=shortname,
+                        short_description='',
+                        description=(shortname + '\n'
+                                     + '=' * 80 + '\n\n'
+                                     + 'You can edit this description in the admin page'),
+                        database_uri=M.Project.default_database_uri(shortname),
+                        last_updated = datetime.utcnow(),
+                        is_root=True)
             p.configure_project(
                 users=[user],
                 is_user_project=user_project)
+        except forge_exc.ProjectConflict:
+            raise
         except:
             ThreadLocalORMSession.close_all()
             log.exception('Error registering project %s' % p)
