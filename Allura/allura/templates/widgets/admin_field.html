@@ -1,9 +1,7 @@
-<div xmlns="http://www.w3.org/1999/xhtml"
-     xmlns:py="http://genshi.edgewall.org/"
-     data-name="$field.name">
+<div data-name="{{field.name}}">
   <div class="span-3 clear">
-    <label py:if="field.label and field.show_label">$field.label:</label>
-    <label py:if="not field.label or not field.show_label">&nbsp;</label>
+    {% if field.label and field.show_label %}<label>{{field.label}}</label>
+    {% else %}<label>&nbsp;</label>{% endif %}
   </div>
-  <div class="span-9 last">${field.display(css_class=css_class, name=name, value=value, errors=errors)}</div>
+  <div class="span-9 last">{{field.display(css_class=css_class, name=name, value=value, errors=errors)}}</div>
 </div>

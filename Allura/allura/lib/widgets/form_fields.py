@@ -306,7 +306,7 @@ class FieldCluster(ew.CompoundField):
 
 class AdminField(ew.InputField):
     '''Field with the correct layout/etc for an admin page'''
-    template='genshi:allura.templates.widgets.admin_field'
+    template='jinja:widgets/admin_field.html'
     defaults=dict(
         ew.InputField.defaults,
         field=None,
