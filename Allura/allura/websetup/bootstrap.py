@@ -14,6 +14,7 @@ from paste.deploy.converters import asbool
 from flyway.command import MigrateCommand
 from flyway.model import MigrationInfo
 from ming import Session, mim
+from ming.orm import state, session
 from ming.orm.ormsession import ThreadLocalORMSession
 
 import allura
@@ -75,11 +76,13 @@ def bootstrap(command, conf, vars):
     M.SearchConfig(last_commit = datetime.utcnow(),
                    pending_commit = 0)
     g.publish('audit', 'search.check_commit', {})
+
     log.info('Registering initial users & neighborhoods')
     anonymous = M.User(_id=None,
                        username='*anonymous',
                        display_name='Anonymous Coward')
     root = create_user('Root')
+
     n_projects = M.Neighborhood(name='Projects',
                              url_prefix='/p/',
                              acl=dict(read=[None], create=[],
@@ -100,6 +103,7 @@ def bootstrap(command, conf, vars):
     p_adobe = project_reg.register_neighborhood_project(n_adobe, [root])
     ThreadLocalORMSession.flush_all()
     ThreadLocalORMSession.close_all()
+
     # add the adobe icon
     file_name = 'adobe_icon.png'
     file_path = os.path.join(allura.__path__[0],'public','nf','images',file_name)
@@ -115,6 +119,7 @@ def bootstrap(command, conf, vars):
             s = f.read()
             if not s: break
             fp.write(s)
+
     log.info('Registering "regular users" (non-root)')
     u_adobe = M.User.register(dict(username='adobe-admin',
                                    display_name='Adobe Admin'))
@@ -127,6 +132,18 @@ def bootstrap(command, conf, vars):
     u_admin1 = M.User.register(dict(username='admin1',
                                     display_name='Admin 1'))
     n_adobe.acl['admin'].append(u_adobe._id)
+    # Admin1 is almost root, with admin access for Users and Projects neighborhoods
+    n_projects.acl['admin'].append(u_admin1._id)
+    n_users.acl['admin'].append(u_admin1._id)
+    # Ming doesn't detect substructural changes in newly created objects (vs loaded from DB)
+    state(n_adobe).status = 'dirty'
+    state(n_projects).status = 'dirty'
+    state(n_users).status = 'dirty'
+    # TODO: Hope that Ming can be improved to at least avoid stuff below
+    session(n_adobe).flush(n_adobe)
+    session(n_projects).flush(n_projects)
+    session(n_users).flush(n_users)
+
     u_adobe.set_password('foo')
     u0.set_password('foo')
     u1.set_password('foo')
@@ -150,11 +167,13 @@ def bootstrap(command, conf, vars):
     log.info('Registering initial projects')
     p_adobe1 = n_adobe.register_project('adobe-1', u_adobe)
     p_adobe2 = n_adobe.register_project('adobe-2', u_adobe)
-    n_projects.register_project('allura', u_admin1)
+    p_allura = n_projects.register_project('allura', u_admin1)
     p0 = n_projects.register_project('test', u0)
     p0._extra_tool_status = [ 'alpha', 'beta' ]
+
     c.project = p0
     c.user = u0
+    p0.add_user(u_admin1, ['Admin'])
     p1 = p0.new_subproject('sub1')
     ThreadLocalORMSession.flush_all()
     if asbool(conf.get('load_test_data')):

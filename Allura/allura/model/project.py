@@ -21,6 +21,7 @@ from allura.lib import exceptions
 from .session import main_orm_session
 from .session import project_doc_session, project_orm_session
 from .neighborhood import Neighborhood
+from .auth import ProjectRole
 
 from filesystem import File
 
@@ -460,6 +461,13 @@ class Project(MappedClass):
                 self.install_app(ep_name, mount_point)
             self.database_configured = True
             ThreadLocalORMSession.flush_all()
+
+    def add_user(self, user, role_names):
+        'Convenience method to add member with the given role(s).'
+        pr = user.project_role(self)
+        for role_name in role_names:
+            r = ProjectRole.by_name(role_name, self)
+            pr.roles.append(r._id)
 
     def ensure_project_indexes(self):
             for mc in MappedClass._registry.itervalues():
