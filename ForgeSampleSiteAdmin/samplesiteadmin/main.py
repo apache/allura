@@ -55,6 +55,10 @@ class SiteAdminController(BaseController):
         require(has_project_access('read'),
                 'Read access required')
 
+    @expose('jinja:sample_site_admin.html')
+    def index(self):
+        return {}
+
     @expose('jinja:user_special_api_keys.html')
     def api_keys(self, **data):
         import json
