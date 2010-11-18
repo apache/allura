@@ -216,12 +216,12 @@ class HgImplementation(M.RepositoryImplementation):
         return root
 
     def _refresh_tree(self, tree, obj):
-        tree.object_ids=Object(
-            (o.hex(), name)
-            for name, o in obj.trees.iteritems())
-        tree.object_ids.update(
-            (oid, name)
-            for name, oid in obj.blobs.iteritems())
+        tree.object_ids=[
+            Object(object_id=o.hex(), name=name)
+            for name, o in obj.trees.iteritems() ]
+        tree.object_ids += [
+            Object(object_id=oid, name=name)
+            for name, oid in obj.blobs.iteritems() ]
         for name, o in obj.trees.iteritems():
             subtree, isnew = M.Tree.upsert(o.hex())
             if isnew:

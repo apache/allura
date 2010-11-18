@@ -49,6 +49,9 @@ class TestSVNRepo(unittest.TestCase):
         for entry in self.repo.log():
             assert entry.committed.name == 'rick446'
             assert entry.message
+            print '=='
+            print entry.message
+            print entry.diffs
 
     def test_commit(self):
         entry = self.repo.commit(1)

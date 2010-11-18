@@ -274,15 +274,13 @@ class Repository(Artifact):
         sess = session(Commit)
         # Compute diffs on all commits
         log.info('... computing diffs')
-        seen_objects = {}
         i=0
         for i, oid in enumerate(commit_ids):
             ci = self._impl.commit(oid)
             ci.tree.set_last_commit(ci, self)
             if not ci.diffs_computed:
-                ci.compute_diffs(seen_objects)
+                ci.compute_diffs()
             if (i+1) % self.BATCH_SIZE == 0:
-                seen_objects = {}
                 log.info('...... flushing %d commits (%d total)',
                          self.BATCH_SIZE, (i+1))
                 sess.flush()
@@ -642,14 +640,14 @@ class Commit(RepoObject):
             candidates += lc.candidates
         return len(seen_oids)
 
-    def compute_diffs(self, seen_objects):
+    def compute_diffs(self):
         self.diffs.added = []
         self.diffs.removed = []
         self.diffs.changed = []
         self.diffs.copied = []
         if self.parent_ids:
             parent = self.repo.commit(self.parent_ids[0])
-            for diff in Tree.diff(parent.tree, self.tree, seen_objects):
+            for diff in Tree.diff(parent.tree, self.tree):
                 if diff.is_new:
                     self.diffs.added.append(diff.b_path)
                     obj = RepoObject.query.get(object_id=diff.b_object_id)
@@ -668,9 +666,9 @@ class Commit(RepoObject):
         else:
             # Parent-less, so the whole tree is additions
             tree = self.tree
-            for oid, name in tree.object_ids.items():
-                self.diffs.added.append('/'+name)
-                obj = RepoObject.query.get(object_id=oid)
+            for x in tree.object_ids:
+                self.diffs.added.append('/'+x.name)
+                obj = RepoObject.query.get(object_id=x.object_id)
                 obj.set_last_commit(self, self.repo)
 
     def context(self):
@@ -699,7 +697,7 @@ class Tree(RepoObject):
     type_s = 'Tree'
 
     type = FieldProperty(str, if_missing='tree')
-    object_ids = FieldProperty({str:str}) # objects[oid] = name
+    object_ids = FieldProperty([dict(object_id=str,name=str)])
 
     def __init__(self, **kw):
         super(Tree, self).__init__(**kw)
@@ -713,8 +711,10 @@ class Tree(RepoObject):
         '''Compute a hash based on the contents of the tree.  Note that this
         hash does not necessarily correspond to any actual DVCS hash.
         '''
-        lines = [('t' + oid + name) for oid, name in self.trees.iteritems() ]
-        lines += [('b' + oid + name) for oid, name in self.trees.iteritems() ]
+        lines = []
+        for x in self.object_ids:
+            obj = RepoObject.query.get(x.object_id)
+            lines.append(obj.type[0] + x.object_id + x.name)
         sha_obj = sha1()
         for line in sorted(lines):
             sha_obj.update(line)
@@ -723,61 +723,53 @@ class Tree(RepoObject):
     def set_last_commit(self, ci, repo=None):
         lc, isnew = super(Tree, self).set_last_commit(ci, repo)
         if isnew:
-            for oid in self.object_ids:
-                obj = RepoObject.query.get(object_id=oid)
+            for x in self.object_ids:
+                obj = RepoObject.query.get(object_id=x.object_id)
                 obj.set_last_commit(ci, repo)
         return lc, isnew
         
     @LazyProperty
-    def objects(self):
-        objects = RepoObject.query.find(dict(
-                object_id={'$in':self.object_ids.keys()})).all()
-        for o in objects:
-            o.set_context(self, self.object_ids[o.object_id])
-        return objects
-
-    @LazyProperty
-    def trees(self):
-        return [ o for o in self.objects if isinstance(o, Tree) ]
-
-    @LazyProperty
-    def blobs(self):
-        return [ o for o in self.objects if isinstance(o, Blob) ]
-
-    @LazyProperty
-    def object_index(self):
-        return dict((o.name, o) for o in self.objects)
-
-    @LazyProperty
     def object_id_index(self):
-        return dict((name, oid) for oid,name in self.object_ids.iteritems())
+        return dict((x.name, x.object_id) for x in self.object_ids)
+
+    @LazyProperty
+    def object_name_index(self):
+        result = defaultdict(list)
+        for x in self.object_ids:
+            result[x.object_id].append(x.name)
+        return result
 
     def get(self, name, default=None):
-        return self.object_index.get(name, default)
+        try:
+            return self[name]
+        except KeyError:
+            return default
 
     def __getitem__(self, name):
-        return self.object_index[name]
+        oid = self.object_id_index.get(name)
+        obj = RepoObject.query.get(object_id=oid)
+        if obj is None: raise KeyError, name
+        obj.set_context(self, name)
+        return obj
 
     @classmethod
-    def diff(cls, a, b, seen_objects):
+    def diff(cls, a, b):
         '''Recursive diff of two tree objects, yielding DiffObjects'''
         if not isinstance(a, Tree) or not isinstance(b, Tree):
             yield DiffObject(a, b)
         else:
-            for a_oid, a_name in a.object_ids.iteritems():
-                b_oid = b.object_id_index.get(a_name)
-                if a_oid == b_oid: continue
-                a_obj = seen_objects.get(a_oid)
-                b_obj = seen_objects.get(b_oid)
-                if a_obj is None: a_obj = seen_objects[a_oid] = a.get(a_name)
-                if b_obj is None: b_obj = seen_objects[b_oid] = b.get(a_name)
+            for a_x in a.object_ids:
+                b_oid = b.object_id_index.get(a_x.name)
+                if a_x.object_id == b_oid: continue
+                a_obj = a.get(a_x.name)
+                b_obj = b.get(a_x.name)
                 if b_obj is None:
                     yield DiffObject(a_obj, None)
                 else:
-                    for x in cls.diff(a_obj, b_obj, seen_objects): yield x
-            for b_oid, b_name in b.object_ids.iteritems():
-                if b_name in a.object_id_index: continue
-                b_obj = seen_objects[b_oid] = b.get(b_name)
+                    for x in cls.diff(a_obj, b_obj): yield x
+            for b_x in b.object_ids:
+                if b_x.name in a.object_id_index: continue
+                b_obj = b.get(b_x.name)
                 yield DiffObject(None, b_obj)
 
     def set_context(self, commit_or_tree, name=None):
@@ -791,26 +783,25 @@ class Tree(RepoObject):
             self.commit = commit_or_tree
 
     def readme(self):
-        for name in self.object_ids:
-            if self.object_ids[name] in self.README_NAMES:
-                blob = self.get_blob(self.object_ids[name])
-                return h.really_unicode(blob.text)
+        for x in self.object_ids:
+            if x.name in self.README_NAMES:
+                obj = self[x.name]
+                if isinstance(obj, Blob):
+                    return h.really_unicode(obj.text)
         return ''
 
     def ls(self):
-        for obj in sorted(self.trees, key=lambda o:o.name):
+        results = []
+        for x in self.object_ids:
+            obj = self[x.name]
             ci = obj.get_last_commit()
-            yield dict(kind='DIR',
-                       last_commit=ci,
-                       name=obj.name,
-                       href=obj.name + '/')
-        for obj in sorted(self.blobs, key=lambda o:o.name):
-            if obj.name == '.': continue
-            ci = obj.get_last_commit()
-            yield dict(kind='FILE',
-                       last_commit=ci,
-                       name=obj.name,
-                       href=obj.name)
+            d = dict(last_commit=ci, name=x.name)
+            if isinstance(obj, Tree):
+                results.append(dict(d, kind='DIR', href=x.name + '/'))
+            else:
+                results.append(dict(d, kind='DIR', href=x.name + '/'))
+        results.sort(key=lambda d:(d['kind'], d['name']))
+        return results
 
     def index_id(self):
         return repr(self)
@@ -836,15 +827,17 @@ class Tree(RepoObject):
         return None
 
     def get_blob(self, name, path_parts=None):
-        if path_parts:
-            t = self.get_tree(path_parts[0])
-            if t:
-                return t.get_blob(name, path_parts[1:])
-            else:
-                return None
-        b = self.get(name)
+        if path_parts is None: path_parts = []
+        b = self.get_object(name, *path_parts)
         if isinstance(b, Blob): return b
         return None
+
+    def get_object(self, *path_parts):
+        cur = self
+        for part in path_parts:
+            if not isinstance(cur, Tree): return None
+            cur = cur.get(part)
+        return cur
 
 class Blob(RepoObject):
     class __mongometa__:
@@ -1006,12 +999,22 @@ class GitLikeTree(object):
     @classmethod
     def from_tree(cls, tree):
         self = GitLikeTree()
-        for o in tree.blobs:
-            self.blobs[o.name] = o.object_id
-        for o in tree.trees:
-            subtree = Tree.query.get(object_id=o.object_id)
-            self.trees[o.name] = GitLikeTree.from_tree(subtree)
+        for x in tree.object_ids:
+            obj = tree[x.name]
+            if isinstance(obj, Tree):
+                self.trees[x.name] = GitLikeTree.from_tree(obj)
+            else:
+                self.blobs[x.name] = x.object_id
         return self
+
+    def set_tree(self, path, tree):
+        if path.startswith('/'): path = path[1:]
+        path_parts = path.split('/')
+        dirpath, last = path_parts[:-1], path_parts[-1]
+        cur = self
+        for part in dirpath:
+            cur = cur.trees[part]
+        cur.trees[last] = tree
 
     def set_blob(self, path, oid):
         if path.startswith('/'): path = path[1:]

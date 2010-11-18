@@ -219,20 +219,28 @@ class SVNImplementation(M.RepositoryImplementation):
                         revision=log_entry.revision)
                     oid = sha1('blob\n' + data).hexdigest()
                     root.set_blob(h.really_unicode(path.path), oid)
+                    continue
                 except pysvn.ClientError:
-                    # probably a directory; create an empty file named '.'
-                    data = ''
-                    oid = sha1(data).hexdigest()
-                    root.set_blob(h.really_unicode(path.path) + '/.', oid)
+                    # Must be a directory, check additional stuff
+                    pass
+                if path.get('copyfrom_path') and path.get('copyfrom_revision'):
+                    # Directory copy
+                    src_path = path['copyfrom_path']
+                    src_ci = self._repo.commit(path['copyfrom_revision'].number)
+                    src_tree = src_ci.tree.get_object(*src_path[1:].split('/'))
+                    root.set_tree(path.path, GitLikeTree.from_tree(src_tree))
+                else:
+                    # Create empty directory
+                    root.set_tree(path.path, GitLikeTree())
         return root
 
     def _refresh_tree(self, tree, obj):
-        tree.object_ids=Object(
-            (o.hex(), name)
-            for name, o in obj.trees.iteritems())
-        tree.object_ids.update(
-            (oid, name)
-            for name, oid in obj.blobs.iteritems())
+        tree.object_ids=[
+            Object(object_id=o.hex(), name=name)
+            for name, o in obj.trees.iteritems() ]
+        tree.object_ids += [
+            Object(object_id=oid, name=name)
+            for name, oid in obj.blobs.iteritems() ]
         for name, o in obj.trees.iteritems():
             subtree, isnew = M.Tree.upsert(o.hex())
             if isnew:
