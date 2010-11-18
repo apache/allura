@@ -1,6 +1,6 @@
 import os, re
 import logging
-from urllib import unquote, quote
+from urllib import unquote, quote_plus
 from mimetypes import guess_type
 
 import pkg_resources
@@ -141,6 +141,9 @@ class NeighborhoodController(object):
     @validate(W.add_project, error_handler=add_project)
     def register(self, project_unixname=None, project_description=None, project_name=None, **kw):
         require(has_neighborhood_access('create', self.neighborhood), 'Create access required')
+        project_unixname = h.really_unicode(project_unixname or '').encode('utf-8')
+        project_description = h.really_unicode(project_description or '').encode('utf-8')
+        project_name = h.really_unicode(project_name or '').encode('utf-8')
         try:
             p = self.neighborhood.register_project(project_unixname.lower())
         except forge_exc.ProjectConflict:
@@ -148,13 +151,18 @@ class NeighborhoodController(object):
                 'A project already exists with that name, please choose another.', 'error')
             ming.orm.ormsession.ThreadLocalORMSession.close_all()
             redirect('add_project?project_unixname=%s&project_description=%s&project_name=%s' %
-                     (quote(project_unixname or ''),quote(project_description or ''),quote(project_name or '')))
+                     (quote_plus(project_unixname),
+                      quote_plus(project_description),
+                      quote_plus(project_name)))
         except Exception, ex:
+            flash('%s: %s' % (ex.__class__, str(ex)), 'error')
+            log.exception('Unexpected error creating project')
             c.project = None
             ming.orm.ormsession.ThreadLocalORMSession.close_all()
-            flash('%s: %s' % (ex.__class__, str(ex)), 'error')
             redirect('add_project?project_unixname=%s&project_description=%s&project_name=%s' %
-                     (quote(project_unixname or ''),quote(project_description or ''),quote(project_name or '')))
+                     (quote_plus(project_unixname),
+                      quote_plus(project_description),
+                      quote_plus(project_name)))
         if project_name:
             p.name = project_name
         if project_description:
