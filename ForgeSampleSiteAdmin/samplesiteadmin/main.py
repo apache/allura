@@ -31,6 +31,7 @@ class SampleSiteAdminApp(Application):
     tool_label='Sample Site Admin'
     default_mount_label='SiteAdmin'
     default_mount_point='site'
+    status='user'
 
     def __init__(self, user, config):
         Application.__init__(self, user, config)

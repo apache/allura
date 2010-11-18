@@ -100,7 +100,7 @@ class Application(object):
         ConfigOption('mount_point', str, 'app'),
         ConfigOption('mount_label', str, 'app'),
         ConfigOption('ordinal', int, '0') ]
-    status_map = [ 'production', 'beta', 'alpha' ]
+    status_map = [ 'production', 'beta', 'alpha', 'user' ]
     status='production'
     templates=None # path to templates
     script_name=None
