@@ -1,0 +1,35 @@
+id: 0-2.0-5.r5/0
+type: dir
+pred: 0-2.0.r4/369
+count: 2
+text: 4 324 32 32 88381c3705b01c806dca609e7382631c
+cpath: /b
+copyfrom: 4 /a
+
+PLAIN
+K 6
+README
+V 16
+file 0-1.0.r3/60
+K 1
+a
+V 16
+dir 0-2.0.r4/369
+K 1
+b
+V 16
+dir 0-2.0-5.r5/0
+END
+ENDREP
+id: 0.0.r5/238
+type: dir
+pred: 0.0.r4/578
+count: 5
+text: 5 132 93 93 d52ce4b82dfb4165ba5cc22b7b6b6582
+cpath: /
+copyroot: 0 /
+
+0-2._0.t4-4 add-dir false false /b
+4 /a
+
+238 364
