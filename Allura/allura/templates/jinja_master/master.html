@@ -1,6 +1,9 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
           "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 {% import 'jinja_master/lib.html' as lib with context %}
+{% if g.theme.jinja_macros %}
+  {% import g.theme.jinja_macros as theme_macros with context %}
+{% endif %}
 {# TODO: convert to lib.gravatar() and remove #}
 {% from 'jinja_master/lib.html' import gravatar with context %}
 {% do g.register_forge_js('js/jquery-base.js') %}
@@ -49,61 +52,60 @@
 {% if g.production_mode %}{{g.analytics.display()}}{% endif %}
   </head>
 
-  <body{% block body_attrs %}{% endblock %}>
+  <body{% block body_attrs %}{% endblock %} id="forge">
     {% for blob in g.resource_manager.emit('body_top_js') %}
       {{ blob }}
     {% endfor %}
-    {% include g.theme.main_menu %}
-    <div class="container{{g.document_class(neighborhood)}}">
-			<div id="header">
-	      <div class="row">
-          {% block nav_menu %}
-          {% include g.theme.nav_menu %}
-          {% endblock %}
-				</div>
-			</div>
-      <div id="section">
+    {{theme_macros.header(c.user, g.login_url)}}
+    {% set flash = tg.flash_obj.render('flash', use_js=False) %}
+    {% if flash %}
+      <div class="contain">
+        <div id="message" class="error hide" style="position: fixed; top: 20px;">
+          {{flash | safe}}
+        </div>
+      </div>
+    {% endif %}
+    <section class="{{g.document_class(neighborhood)}}">
+		<div class="grid-12">
+        {% block nav_menu %}
+        {% include g.theme.nav_menu %}
+        {% endblock %}
+      </div>
+      <div id="top_nav" class="">
         {% block top_nav %}
         {% include g.theme.top_nav %}
         {% endblock %}
-				<div class="row base">
-				  {% if not hide_left_bar %}
-            {% include g.theme.sidebar_menu %}
-            {% set outer_width = 10 %}
-				  {% else %}
-            {% set outer_width = 12 %}
-          {% endif %}
-				  {% if show_right_bar %}
-            {% set inner_width = outer_width - 2 %}
-				  {% else %}
-            {% set inner_width = outer_width + 2 %}
-          {% endif %}
-          <div class="column grid_{{outer_width}} pad">
-            {% set flash = tg.flash_obj.render('flash', use_js=False) %}
-            {% if flash %}
-              <div>{{flash | safe}}</div>
-            {% endif %}
-            <h1 class="title">{% block header %}{% endblock %}</h1>
-        		<div class="actions">{% block actions %}{% endblock %}</div>
-        		{% block edit_box %}{% endblock %}
-            <div class="content">
-              <div class="row{% if show_right_bar %} dual{% endif %}">
-                <div class="column {% block inner_grid %}grid_{{inner_width}}{% endblock %}">
-                  {% block content %}{% endblock %}
-                </div>
-          			{% if show_right_bar %}
-                <div id="sidebar-right" class="column grid_4 fright">
-                  {% block right_content %}{% endblock %}
-                </div>
-                {% endif %}
-              </div>
-              {% block after_content %}{% endblock %}
+      </div>
+      <div id="content_base">
+			  {% if not hide_left_bar %}
+          {% include g.theme.sidebar_menu %}
+          {% set outer_width = 10 %}
+			  {% else %}
+          {% set outer_width = 12 %}
+        {% endif %}
+			  {% if show_right_bar %}
+          {% set inner_width = outer_width - 4 %}
+			  {% else %}
+          {% set inner_width = outer_width %}
+        {% endif %}
+        <div class="grid-{{outer_width}} pad">
+          <h2 class="dark">{% block header %}{% endblock %}<small>{% block actions %}{% endblock %}</small></h2>
+		{% block edit_box %}{% endblock %}
+          <div class="nested-grid-container">
+            <div{% if show_right_bar %} class="{% block inner_grid %}grid-{{inner_width}}"{% endblock %}{% endif %}>
+              {% block content %}{% endblock %}
             </div>
+			{% if show_right_bar %}
+            <div id="sidebar-right" class="grid-3 fright">
+              {% block right_content %}{% endblock %}
+            </div>
+            {% endif %}
+            {% block after_content %}{% endblock %}
           </div>
         </div>
       </div>
-      {% include g.theme.footer %}
-    </div>
+    </section>
+    {{theme_macros.footer()}}
     <div id="notifications">
       {% for n in h.pop_user_notifications() %}
         <div class="notice">{{ n.text }}</div>

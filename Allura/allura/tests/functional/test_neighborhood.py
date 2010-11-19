@@ -112,7 +112,7 @@ class TestNeighborhood(TestController):
                           params=dict(pid='adobe-1'),
                           extra_environ=dict(username='root'))
         r = self.app.get(r.location, extra_environ=dict(username='root'))
-        assert 'error' not in r
+        assert 'adobe-1 evicted to Projects' in r
 
     def test_home(self):
         r = self.app.get('/adobe/')

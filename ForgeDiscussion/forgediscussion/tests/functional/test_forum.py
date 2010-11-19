@@ -30,7 +30,6 @@ class TestForumReactors(TestController):
                                   'new_forum.parent':'',
                                   })
         r = self.app.get('/admin/discussion/forums')
-        assert 'error' not in r
         assert 'Test Forum' in r
         r = self.app.post('/admin/discussion/update_forums',
                           params={'new_forum.shortname':'test1',
@@ -40,7 +39,6 @@ class TestForumReactors(TestController):
                                   'new_forum.parent':'',
                                   })
         r = self.app.get('/admin/discussion/forums')
-        assert 'error' not in r
         assert 'Test Forum 1' in r
         conf_dir = getattr(config, 'here', os.getcwd())
         test_config = os.environ.get('SF_SYSTEM_FUNC') and 'sandbox-test.ini' or 'test.ini'
@@ -184,7 +182,6 @@ class TestForum(TestController):
                                   'new_forum.parent':'',
                                   })
         r = self.app.get('/admin/discussion/forums')
-        assert 'error' not in r
         assert 'TestForum' in r
         h.set_context('test', 'discussion')
         frm = FM.Forum.query.get(shortname='TestForum')
@@ -197,7 +194,6 @@ class TestForum(TestController):
                                   'new_forum.parent':str(frm._id),
                                   })
         r = self.app.get('/admin/discussion/forums')
-        assert 'error' not in r
         assert 'ChildForum' in r
 
     def test_forum_search(self):
@@ -307,7 +303,6 @@ class TestForumAdmin(TestController):
                                   'new_forum.parent':'',
                                   })
         r = self.app.get('/admin/discussion/forums')
-        assert 'error' not in r
         assert 'TestForum' in r
         h.set_context('test', 'Forum')
         frm = FM.Forum.query.get(shortname='TestForum')
@@ -318,7 +313,6 @@ class TestForumAdmin(TestController):
                                   'forum-0.name':'New Test Forum',
                                   'forum-0.description':'My desc'})
         r = self.app.get('/admin/discussion/forums')
-        assert 'error' not in r
         assert 'New Test Forum' in r
         assert 'My desc' in r
 
@@ -332,7 +326,6 @@ class TestForumAdmin(TestController):
                                   'new_forum.parent':'',
                                   })
         r = self.app.get('/admin/discussion/forums')
-        assert 'error' not in r
         assert 'TestForum' in r
         h.set_context('test', 'discussion')
         frm = FM.Forum.query.get(shortname='TestForum')
@@ -345,7 +338,6 @@ class TestForumAdmin(TestController):
                                   'new_forum.parent':str(frm._id),
                                   })
         r = self.app.get('/admin/discussion/forums')
-        assert 'error' not in r
         assert 'ChildForum' in r
 
     def test_bad_forum_names(self):

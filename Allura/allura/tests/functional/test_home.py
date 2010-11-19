@@ -11,7 +11,7 @@ class TestProjectHome(TestController):
     def test_project_nav(self):
         response = self.app.get('/p/test/_nav.json')
         root = self.app.get('/p/test/home/')
-        nav_links = root.html.find('div', dict(id='nav_menu')).findAll('a')
+        nav_links = root.html.find('div', dict(id='top_nav')).findAll('a')
         assert len(nav_links) ==  len(response.json['menu'])
         for nl, entry in zip(nav_links, response.json['menu']):
             assert nl['href'] == entry['url']

@@ -148,11 +148,11 @@ class ForgeTrackerApp(Application):
             ticket = TM.Ticket.query.find(dict(app_config_id=self.config._id,ticket_num=int(ticket))).first()
         else:
             ticket = None
-        links = [SitemapEntry('Create Ticket', self.config.url() + 'new/', ui_icon='plus')]
+        links = [SitemapEntry('Create Ticket', self.config.url() + 'new/', ui_icon='+')]
         if has_artifact_access('configure', app=self)():
-            links.append(SitemapEntry('Edit Milestones', self.config.url() + 'milestones', ui_icon='calendar'))
-            links.append(SitemapEntry('Edit Searches', c.project.url() + 'admin/' + c.app.config.options.mount_point + '/bins/', ui_icon='search'))
-        links.append(SitemapEntry('View Stats', self.config.url() + 'stats', ui_icon='folder-collapsed'))
+            links.append(SitemapEntry('Edit Milestones', self.config.url() + 'milestones', ui_icon='n'))
+            links.append(SitemapEntry('Edit Searches', c.project.url() + 'admin/' + c.app.config.options.mount_point + '/bins/', ui_icon='s'))
+        links.append(SitemapEntry('View Stats', self.config.url() + 'stats', ui_icon='Y'))
         if ticket:
             for aref in ticket.references+ticket.backreferences.values():
                 artifact = M.ArtifactReference(aref).artifact

@@ -20,7 +20,7 @@ from urllib import quote
 class TestRootController(TestController):
     def test_index(self):
         response = self.app.get('/')
-        assert response.html.find('h1',{'class':'title'}).string == 'All Projects'
+        assert response.html.find('h2',{'class':'dark'}).contents[0] == 'All Projects'
         projects = response.html.findAll('div',{'class':'border card'})
         assert projects[0].find('a').get('href') == '/adobe/adobe-1/'
         assert projects[0].find('img').get('alt') == 'adobe-1 Logo'

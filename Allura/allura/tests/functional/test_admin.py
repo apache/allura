@@ -42,9 +42,9 @@ class TestProjectAdmin(TestController):
         assert 'error' not in r.cookies_set.get('webflash', ''), r.showbrowser()
         # check the nav
         r = self.app.get('/p/test/test-tool/').follow()
-        active_link = r.html.findAll('li',{'class':'active'})
+        active_link = r.html.findAll('span',{'class':'arrow'})
         assert len(active_link) == 1
-        assert active_link[0].find('a')['href'] == '/p/test/test-tool/'
+        assert active_link[0].parent['href'] == '/p/test/test-tool/'
         r = self.app.post('/admin/update_mounts', params={
                 'new.install':'install',
                 'new.ep_name':'Wiki',
@@ -54,13 +54,13 @@ class TestProjectAdmin(TestController):
         assert 'error' not in r.cookies_set.get('webflash', ''), r.showbrowser()
         # check the nav - the similarly named tool should NOT be active
         r = self.app.get('/p/test/test-tool/Home/')
-        active_link = r.html.findAll('li',{'class':'active'})
+        active_link = r.html.findAll('span',{'class':'arrow'})
         assert len(active_link) == 1
-        assert active_link[0].find('a')['href'] == '/p/test/test-tool/'
+        assert active_link[0].parent['href'] == '/p/test/test-tool/'
         r = self.app.get('/p/test/test-tool2/Home/')
-        active_link = r.html.findAll('li',{'class':'active'})
+        active_link = r.html.findAll('span',{'class':'arrow'})
         assert len(active_link) == 1
-        assert active_link[0].find('a')['href'] == '/p/test/test-tool2/'
+        assert active_link[0].parent['href'] == '/p/test/test-tool2/'
         r = self.app.post('/admin/update_mounts', params={
                 'new.install':'install',
                 'new.ep_name':'Wiki',
