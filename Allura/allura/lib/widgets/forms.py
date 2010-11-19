@@ -19,10 +19,10 @@ class ForgeForm(ew.SimpleForm):
         return display
 
 class NeighborhoodAddProjectForm(ForgeForm):
-    template = 'jinja:widgets/neighborhood_add_project.html'
+    template='jinja:widgets/neighborhood_add_project.html'
     defaults=dict(
         ForgeForm.defaults,
-        submit_text = 'Start')
+        submit_text='Start')
 
     @property
     def fields(self):

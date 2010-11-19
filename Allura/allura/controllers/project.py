@@ -134,6 +134,8 @@ class NeighborhoodController(object):
     def add_project(self, **form_data):
         require(has_neighborhood_access('create', self.neighborhood), 'Create access required')
         c.add_project = W.add_project
+        for checkbox in ['Wiki','Git','Tickets','Downloads','Discussion']:
+            form_data.setdefault(checkbox, True)
         return dict(neighborhood=self.neighborhood, form_data=form_data)
 
     @h.vardec
