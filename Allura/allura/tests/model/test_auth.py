@@ -96,8 +96,10 @@ def test_default_project_roles():
         for pr in M.ProjectRole.query.find(dict(
                 project_id=c.project._id)).all()
         if pr.name)
+    # There're 2 users assigned to project, represented by
+    # relational (vs named) ProjectRole's
     assert len(roles) == M.ProjectRole.query.find(dict(
-        project_id=c.project._id)).count()-1
+        project_id=c.project._id)).count() - 2
     assert 'Admin' in roles.keys(), roles.keys()
     assert 'Developer' in roles.keys(), roles.keys()
     assert 'Member' in roles.keys(), roles.keys()
