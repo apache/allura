@@ -52,8 +52,9 @@ class SampleSiteAdminApp(Application):
 class SiteAdminController(BaseController):
 
     def _check_security(self):
-        require(has_project_access('read'),
-                'Read access required')
+        # Only user to whom this tool was added may access it
+        if c.project.shortname != 'u/' + c.user.username:
+            raise exc.HTTPForbidden()
 
     @expose('jinja:sample_site_admin.html')
     def index(self):
