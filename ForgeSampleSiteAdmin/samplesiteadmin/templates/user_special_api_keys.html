@@ -21,6 +21,7 @@ Expiration date: <input name="expires" type="text" value="{{expires}}"><br />
 <table>
 <tr>
 <th>API Key</th>
+<th>Secret Key</th>
 <th>Username</th>
 <th>Expiration Date</th>
 <th>Capabilities</th>
@@ -28,6 +29,7 @@ Expiration date: <input name="expires" type="text" value="{{expires}}"><br />
 {% for token in token_list %}
 <tr>
 <td>{{token.api_key}}</td>
+<td>{{token.secret_key}}</td>
 <td>{{token.user.username}}</td>
 <td>{{token.expires}}</td>
 <td>{{token.capabilities}}</td>
