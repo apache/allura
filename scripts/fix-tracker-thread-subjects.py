@@ -23,9 +23,9 @@ def main():
             thread = ticket.get_discussion_thread()
             thread.subject = ''
         if test:
-            log.info('... would fix ticket threads in %s', p.shortname)
+            log.info('... would fix ticket threads in %s', project.shortname)
         else:
-            log.info('... fixing ticket threads in %s', p.shortname)
+            log.info('... fixing ticket threads in %s', project.shortname)
             session(project).flush()
         session(project).clear()
 
