@@ -16,6 +16,7 @@ Periodically:
 Notifications are also available for use in feeds
 '''
 
+import logging
 from datetime import datetime, timedelta
 from collections import defaultdict
 
@@ -30,6 +31,9 @@ from allura.lib import helpers as h
 
 from .session import main_orm_session, project_orm_session
 from .types import ArtifactReferenceType
+
+
+log = logging.getLogger(__name__)
 
 MAILBOX_QUIESCENT=timedelta(minutes=10)
 
@@ -240,16 +244,17 @@ class Mailbox(MappedClass):
             artifact_url = None
             artifact_index_id = None
         else:
+            i = artifact.index()
+            artifact_title = i['title_s']
+            artifact_url = artifact.url()
+            artifact_index_id = i['id']
             if cls.query.get(
                 user_id=user_id, project_id=project_id, app_config_id=app_config_id,
                 artifact_index_id=None):
                 # don't subscribe to individual artifacts when already
                 # subscribed to tool
+                log.warning('Tried to subscribe to artifact %s, while there is a tool subscription', artifact_url)
                 return 
-            i = artifact.index()
-            artifact_title = i['title_s']
-            artifact_url = artifact.url()
-            artifact_index_id = i['id']
         d = dict(user_id=user_id, project_id=project_id, app_config_id=app_config_id,
                  artifact_index_id=artifact_index_id, topic=topic)
         sess = session(cls)
