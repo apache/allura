@@ -6,38 +6,22 @@
 {% block header %}Create an Account{% endblock %}
 
 {% block content %}
-          <form action="/auth/save_new" method="post" id="create_account">
-            <ol>
-              <li>
-                <label for="display_name">Display Name:</label>
-                <input type="text" name="display_name"/>
-              </li>
-              <li>
-                <label for="email_addresses">Email address:</label>
-                <input type="text" name="email_addresses"/>
-              </li>
-              <li>
-                <label for="open_ids">Open IDs:</label>
-                <input type="text" name="open_ids"/>
-              </li>
-              <li>
-                <label for="username">Username:</label>
-                <input type="text" name="username" id="username"/>
-              </li>
-              <li>
-                <label for="password">Password:</label>
-                <input type="password" name="password" id="password"/>
-              </li>
-              <li>
-                <label>Confirm Password:</label>
-                <input type="password" id="confirm_password"/>
-              </li>
-              <li>
-                <label>&nbsp;</label>
-                <input type="submit" id="submit" value="Create"/>
-              </li>
-            </ol>
-          </form>
+  <form action="/auth/save_new" method="post" id="create_account">
+    <label for="display_name" class="grid-2">Display Name:</label>
+    <div class="grid-9"><input type="text" name="display_name"/></div>
+    <label for="email_addresses" class="grid-2">Email address:</label>
+    <div class="grid-9"><input type="text" name="email_addresses"/></div>
+    <label for="open_ids" class="grid-2">Open IDs:</label>
+    <div class="grid-9"><input type="text" name="open_ids"/></div>
+    <label for="username" class="grid-2">Username:</label>
+    <div class="grid-9"><input type="text" name="username" id="username"/></div>
+    <label for="password" class="grid-2">Password:</label>
+    <div class="grid-9"><input type="password" name="password" id="password"/></div>
+    <label class="grid-2">Confirm Password:</label>
+    <div class="grid-9"><input type="password" id="confirm_password"/></div>
+    <label class="grid-2">&nbsp;</label>
+    <div class="grid-9"><input type="submit" id="submit" value="Create"/></div>
+  </form>
 {% endblock %}
 
 {% block extra_js %}

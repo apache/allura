@@ -6,51 +6,37 @@
 {% block header %}Login{% endblock %}
 
 {% block content %}
-        <div id="loginform" class="span-18 last">
+        <div id="loginform">
           <form action="/auth/do_login" method="post" class="loginfields">
             <input type="hidden" name="return_to" value="{{return_to}}"/>
             <h2><span>Password Login</span></h2>
-            <ol>
-              <li>
-                <label for="username">Username:</label>
-                <input type="text" id="username" name="username"/>
-              </li>
-              <li>
-                <label for="password">Password:</label>
-                <input type="password" id="password" name="password"/>
-              </li>
-              <li>
-                <label>&nbsp;</label>
-                <input type="submit" id="submit" value="Login"/>
-              </li>
-            </ol>
+            <label for="username" class="grid-2">Username:</label>
+            <div class="grid-9"><input type="text" id="username" name="username"/></div>
+            <label for="password" class="grid-2">Password:</label>
+            <div class="grid-9"><input type="password" id="password" name="password"/></div>
+            <label class="grid-2">&nbsp;</label>
+            <div class="grid-9"><input type="submit" id="submit" value="Login"/></div>
           </form>
         </div>
 
-        <br />
+        <div class="clear">&nbsp;</div>
         
-        <div id="loginform_oid" class="span-18 last">
+        <div id="loginform_oid">
           <form action="/auth/login_verify_oid" method="post" class="loginfields">
             <input type="hidden" name="return_to" value="{{return_to}}"/>
             <h2><span>OpenID Login</span></h2>
-            <ol>
-              <li>
-                <label for="provider">Provider</label>
-                <select id="provider" name="provider">
-                  {%- for label, url in oid_providers %}
-                    <option value="{{url}}">{{label}}</option>
-                  {%- endfor %}
-                </select>
-              </li>
-              <li>
-                <label for="username">Username:</label>
-                <input type="text" id="username" name="username"/>
-              </li>
-              <li>
-                <label>&nbsp;</label>
-                <input type="submit" id="submit" value="Login"/>
-              </li>
-            </ol>
+            <label for="provider" class="grid-2">Provider</label>
+            <div class="grid-9">
+              <select id="provider" name="provider">
+                {%- for label, url in oid_providers %}
+                  <option value="{{url}}">{{label}}</option>
+                {%- endfor %}
+              </select>
+            </div>
+            <label for="username" class="grid-2">Username:</label>
+            <div class="grid-9"><input type="text" id="username" name="username"/></div>
+            <label class="grid-2">&nbsp;</label>
+            <div class="grid-9"><input type="submit" id="submit" value="Login"/></div>
           </form>
         </div>
 {% endblock %}

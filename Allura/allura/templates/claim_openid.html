@@ -1,3 +1,4 @@
+{% set hide_left_bar = True %}
 {% extends g.theme.master %}
 
 {% block title %}OpenId Claim Form{% endblock %}
@@ -5,18 +6,24 @@
 {% block header %}OpenId Claim Form{% endblock %}
 
 {% block content %}
-          <div id="loginform_oid">
-            <form action="claim_verify_oid" method="post" class="loginfields">
-              <label for="provider">Provider</label>
-              <select id="provider" name="provider">
-                {%- for label, url in oid_providers %}
-                  <option value="{{url}}">{{label}}</option>
-                {%- endfor %}
-              </select>
-              <br/>
-              <label for="username">Username:</label>
-              <input type="text" id="username" name="username" class="text"/><br/>
-              <input type="submit" id="submit" value="Claim" />
-            </form>
-          </div>
+  <div id="loginform_oid">
+    <form action="claim_verify_oid" method="post" class="loginfields">
+      <label for="provider" class="grid-2">Provider</label>
+      <div class="grid-9">
+        <select id="provider" name="provider">
+          {%- for label, url in oid_providers %}
+            <option value="{{url}}">{{label}}</option>
+          {%- endfor %}
+        </select>
+      </div>
+      <label class="grid-2" for="username">Username:</label>
+      <div class="grid-9">
+        <input type="text" id="username" name="username" class="text"/>
+      </div>
+      <label class="grid-2">&nbsp;</label>
+      <div class="grid-9">
+        <input type="submit" id="submit" value="Claim">
+      </div>
+    </form>
+  </div>
 {% endblock %}

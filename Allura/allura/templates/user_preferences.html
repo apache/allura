@@ -14,16 +14,14 @@
       <b>Secret Key:</b><br/>
       {{api_token.secret_key}}<br/>
     </p>
-    <form method="POST" action="del_api_token">
-      <input type="submit" value="Delete API Token"
-            />
+    <form method="POST" action="del_api_token" class="grid-11">
+      <input type="submit" value="Delete API Token">
     </form>
   {% else %}
-    No API token generated
+    <p>No API token generated</p>
   {% endif %}
-  <form method="POST" action="gen_api_token">
-    <input type="submit" value="(Re)generate API Token"
-            />
+  <form method="POST" action="gen_api_token" class="grid-11">
+    <input type="submit" value="(Re)generate API Token">
   </form>
   <div style="clear:both"></div>
 
@@ -31,43 +29,40 @@
   {% if subscriptions %}
     {{c.form.display(action='update_subscriptions', value=dict(subscriptions=subscriptions))}}
   {% else%}
-    No subscriptions.
+    <p>No subscriptions.</p>
   {% endif %}
   <br/>
   
   <form action="update" method="post">
-    <ol>
-      <li>
-        <label>Display Name</label>
-        <input type="text" value="{{c.user.display_name}}" name="display_name"/>
-      </li>
-      <li>
-        <label>Email Format</label>
-        <select name="preferences.email_format">
-          <option value="plain" {{'selected' if c.user.preferences.email_format == 'plain' else ''}}>Plain Text</option>
-          <option value="html" {{'selected' if c.user.preferences.email_format == 'html' else ''}}>HTML</option>
-          <option value="both" {{'selected' if c.user.preferences.email_format == 'both' else ''}}>Combined</option>
-        </select>
-      </li>
-      <li>
-        <label>Page Size</label>
-        <select name="preferences.results_per_page">
-          {% for per_page in [25, 50, 100, 250] %}
-              <option {% if per_page == c.user.preferences.results_per_page %}selected="selected"{% endif %}
-                 value="{{per_page}}">{{per_page}}</option>
-          {% endfor %}
-        </select>
-      </li>
-    </ol>
+        <label class="grid-2">Display Name</label>
+        <div class="grid-9">
+          <input type="text" value="{{c.user.display_name}}" name="display_name"/>
+        </div>
+        <label class="grid-2">Email Format</label>
+        <div class="grid-9">
+          <select name="preferences.email_format">
+            <option value="plain" {{'selected' if c.user.preferences.email_format == 'plain' else ''}}>Plain Text</option>
+            <option value="html" {{'selected' if c.user.preferences.email_format == 'html' else ''}}>HTML</option>
+            <option value="both" {{'selected' if c.user.preferences.email_format == 'both' else ''}}>Combined</option>
+          </select>
+        </div>
+        <label class="grid-2">Page Size</label>
+        <div class="grid-9">
+          <select name="preferences.results_per_page">
+            {% for per_page in [25, 50, 100, 250] %}
+                <option {% if per_page == c.user.preferences.results_per_page %}selected="selected"{% endif %}
+                   value="{{per_page}}">{{per_page}}</option>
+            {% endfor %}
+          </select>
+        </div>
     
     {% if tg.config.get('auth.method', 'local') == 'local' %}
       {% for a in c.user.email_addresses %}
         <input name="addr-{{loop.index0}}.ord" value="{{loop.index0}}" type="hidden"/>
       {% endfor %}
 
-      <fieldset>
-        <legend>Email Addresses</legend>
-        <table>
+        <h3 class="grid-11">Email Addresses</h3>
+        <table class="grid-11">
           <tr>
             <th>Primary?</th>
             <th>Address</th>
@@ -94,12 +89,13 @@
           </tr>
           {% endfor %}
         </table>
+        <div class="grid-11">
         {{lib.text_field('new_addr.addr', 'New Address')}}
         {{lib.submit_button('Claim Address', name='new_addr.claim')}}
-      </fieldset>
-      <fieldset>
-        <legend>OpenIDs Claimed</legend>
-        <table>
+        </div>
+
+        <h3 class="grid-11">OpenIDs Claimed</h3>
+        <table class="grid-11">
           <tr>
             <th>OpenID</th>
             <th></th>
@@ -112,9 +108,12 @@
           </tr>
           {% endfor %}
         </table>
+        <div class="grid-11">
         <a href="/auth/claim_oid">Claim New OpenID</a>
-      </fieldset>
+        </div>
     {% endif %}
+    <div class="grid-11">
     {{lib.submit_button('Save Changes')}}
+    </div>
   </form>
 {% endblock %}

@@ -15,7 +15,7 @@
             {{lib.gravatar(user)}}
           {% endif %}
           {{c.project.description_html|safe}}
-          <div class="project-list">
+          <div class="project-list grid-9">
             <b>Projects</b>
             <ul>
               {% for p in user.my_projects() %}
@@ -26,7 +26,7 @@
             </ul>
           </div>
           {% if c.user.username == user.username %}
-              <div class="address-list">
+              <div class="address-list grid-9">
                 <b>Email Addresses</b>
                 <ul>
                   {% for email in user.email_addresses %}
@@ -41,7 +41,7 @@
                   {% endfor %}
                 </ul>
               </div>
-              <div class="openid-list">
+              <div class="openid-list grid-9">
                 <b>OpenIDs</b>
                 <ul>
                   {% for openid in user.open_ids %}

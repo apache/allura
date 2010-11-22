@@ -14,29 +14,25 @@
 {% endblock %}
 
 {% block content %}
-          <div>
-            <h2>Invite Projects?</h2>
-            <form method="POST" action="invite">
-              <label for="pid">Project Shortname</label>
-              <input name="pid"/>
-              <input type="submit" name="invite" value="Invite!"/>
-              <input type="submit" name="uninvite" value="Cancel Invitation!"/>
-            </form>
-          </div>
-          
-          <br/><br/>
+  <h2>Invite Projects?</h2>
+  <form method="POST" action="invite" class="grid-10">
+    <label for="pid">Project Shortname</label>
+    <input name="pid"/>
+    <input type="submit" name="invite" value="Invite!"/>
+    <input type="submit" name="uninvite" value="Cancel Invitation!"/>
+  </form>
 
-          <div>
-            <h2>Evict Projects?</h2>
-            <form method="POST" action="evict">
-              <select name="pid">
-                {% for p in neighborhood.projects if p.is_root and p.shortname != '--init--' %}
-                  <option value="{{p.shortname}}">
-                    {{p.name}} ({{p.shortname}})
-                  </option>
-                {% endfor %}
-              </select>
-              <input type="submit" value="Evict!"/>
-            </form>
-          </div>
+  <div class="clear">&nbsp;</div>
+
+  <h2>Evict Projects?</h2>
+  <form method="POST" action="evict" class="grid-10">
+    <select name="pid">
+      {% for p in neighborhood.projects if p.is_root and p.shortname != '--init--' %}
+        <option value="{{p.shortname}}">
+          {{p.name}} ({{p.shortname}})
+        </option>
+      {% endfor %}
+    </select>
+    <input type="submit" value="Evict!"/>
+  </form>
 {% endblock %}

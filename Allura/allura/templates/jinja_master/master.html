@@ -91,17 +91,15 @@
         <div class="grid-{{outer_width}} pad">
           <h2 class="dark">{% block header %}{% endblock %}<small>{% block actions %}{% endblock %}</small></h2>
 		{% block edit_box %}{% endblock %}
-          <div class="nested-grid-container">
-            <div{% if show_right_bar %} class="{% block inner_grid %}grid-{{inner_width}}"{% endblock %}{% endif %}>
-              {% block content %}{% endblock %}
-            </div>
-			{% if show_right_bar %}
-            <div id="sidebar-right" class="grid-3 fright">
-              {% block right_content %}{% endblock %}
-            </div>
-            {% endif %}
-            {% block after_content %}{% endblock %}
+          <div{% if show_right_bar %} class="{% block inner_grid %}grid-{{inner_width}}"{% endblock %}{% endif %}>
+            {% block content %}{% endblock %}
           </div>
+			{% if show_right_bar %}
+          <div id="sidebar-right" class="grid-3 fright">
+            {% block right_content %}{% endblock %}
+          </div>
+          {% endif %}
+          {% block after_content %}{% endblock %}
         </div>
       </div>
     </section>

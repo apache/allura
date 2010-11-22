@@ -5,15 +5,14 @@
 {% block header %}Choose Login Name{% endblock %}
 
 {% block content %}
-          <div id="loginform">
-            <form method="POST" action="do_setup_openid_user">
-              <label for="username">Login Name:</label>
-              <input id="username" name="username"/>
-              <br />
-              <label for="display_name">Displayed Name:</label>
-              <input id="display_name" name="display_name"/>
-              <br />
-              <input type="submit" value="Setup Account"/>
-            </form>
-          </div>
+  <div id="loginform">
+    <form method="POST" action="do_setup_openid_user">
+      <label for="username" class="grid-2">Login Name:</label>
+      <div class="grid-9"><input id="username" name="username"/></div>
+      <label for="display_name" class="grid-2">Displayed Name:</label>
+      <div class="grid-9"><input id="display_name" name="display_name"/></div>
+      <label class="grid-2">&nbsp;</label>
+      <div class="grid-9"><input type="submit" value="Setup Account"/></div>
+    </form>
+  </div>
 {% endblock %}

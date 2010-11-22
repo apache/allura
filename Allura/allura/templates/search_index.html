@@ -1,3 +1,4 @@
+{% set hide_left_bar = True %}
 {% extends g.theme.master %}
 
 {% block title %}{{c.project.name}} / Search{% endblock %}
@@ -5,27 +6,27 @@
 {% block header %}Search Project: {{q}}{% endblock %}
 
 {% block content %}
-          <form method="GET" action=".">
-            <input type="text" name="q" value="{{q}}" class="title"/><br/>
-            Search history? <input type="checkbox" name="history" {% if history %}checked="on"{% endif %}/><br/>
-            &nbsp;<br/>
-            <input type="submit" value="Search"/>
-          </form>
-          {% if count == 0 and q %}
-            <p>No results.</p>
-          {% elif count == 1 and q %}
-            <p>{{count}} result.</p>
-          {% elif count > 1 and q %}
-            <p>{{count}} results.</p>
-          {% endif %}
-          
-          {% for doc in results %}
-          <div>
-            <a href="{{doc['url_s']}}">{{doc.title_s}}</a><br/>
-            <py:if test="doc.get('snippet')">
-              {{doc['snippet']|safe}}<br/>
-            </py:if>
-            <hr/>
-          </div>
-          {% endfor %}
+  <form method="GET" action="." class="grid-11">
+    <input type="text" name="q" value="{{q}}" class="title"/><br/>
+    Search history? <input type="checkbox" name="history" {% if history %}checked="on"{% endif %}/><br/>
+    &nbsp;<br/>
+    <input type="submit" value="Search"/>
+  </form>
+  {% if count == 0 and q %}
+    <p>No results.</p>
+  {% elif count == 1 and q %}
+    <p>{{count}} result.</p>
+  {% elif count > 1 and q %}
+    <p>{{count}} results.</p>
+  {% endif %}
+
+  {% for doc in results %}
+  <div class="grid-11">
+    <a href="{{doc['url_s']}}">{{doc.title_s}}</a><br/>
+    <py:if test="doc.get('snippet')">
+      {{doc['snippet']|safe}}<br/>
+    </py:if>
+    <hr/>
+  </div>
+  {% endfor %}
 {% endblock %}
