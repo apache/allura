@@ -15,7 +15,7 @@
 {% block actions %}
 <a href="{{ticket.url()}}feed.rss" class="btn ico"><b class="ui-icon ui-icon-signal-diag"></b> <span>Follow this Ticket</span></a>
 {% if c.user and c.user != c.user.anonymous() %}
-  {{c.subscribe_form.display(value=subscribed, action='subscribe', style='icon')}}
+  {{c.subscribe_form.display(value=subscribed, tool_subscribed=tool_subscribed, action='subscribe', style='icon')}}
   <a href="#" class="btn ico-l edit_ticket"><b class="ui-icon ui-icon-pencil"></b> <span>Edit</span></a>
 {% endif %}
 {% endblock %}

@@ -4,21 +4,33 @@
       action="{{action}}"
       enctype="{{enctype}}"
       {{attrs|default({}, true)|xmlattr}}>
-  {% if value %}
-    {% if style == 'icon' %}
-      <a href="{{action}}?unsubscribe=True" class="artifact_unsubscribe btn ico btn_activate" title="Unsubscribe from this {{thing}}"><b class="ui-icon ui-icon-mail-closed"></b> <span>Unsubscribe from this {{thing}}</span></a>
-    {% else %}
-      You are currently subscribed to this {{thing}}.
-      <br/>
-      {{fields['unsubscribe'].display()}}
-    {% endif %}
+  {% if tool_subscribed %}
+
+      {% if style == 'icon' %}
+        <span class="artifact_toolsubscription btn ico btn_activate" title="Subscribed to every {{thing}} in this tool"><b class="ui-icon ui-icon-mail-closed"></b> <span>Subscribed to every {{thing}} in this tool</span></span>
+      {% else %}
+        You are currently subscribed to every {{thing}} in this tool.
+      {% endif %}
+
   {% else %}
-    {% if style == 'icon' %}
-      <a href="{{action}}?subscribe=True" class="artifact_subscribe btn ico" title="Subscribe to this {{thing}}"><b class="ui-icon ui-icon-mail-closed"></b> <span>Subscribe to this {{thing}}</span></a>
+
+    {% if value %}
+      {% if style == 'icon' %}
+        <a href="{{action}}?unsubscribe=True" class="artifact_unsubscribe btn ico btn_activate" title="Unsubscribe from this {{thing}}"><b class="ui-icon ui-icon-mail-closed"></b> <span>Unsubscribe from this {{thing}}</span></a>
+      {% else %}
+        You are currently subscribed to this {{thing}}.
+        <br/>
+        {{fields['unsubscribe'].display()}}
+      {% endif %}
     {% else %}
-      You are currently not subscribed to this {{thing}}.
-      <br/>
-      {{fields['subscribe'].display()}}
+      {% if style == 'icon' %}
+        <a href="{{action}}?subscribe=True" class="artifact_subscribe btn ico" title="Subscribe to this {{thing}}"><b class="ui-icon ui-icon-mail-closed"></b> <span>Subscribe to this {{thing}}</span></a>
+      {% else %}
+        You are currently not subscribed to this {{thing}}.
+        <br/>
+        {{fields['subscribe'].display()}}
+      {% endif %}
     {% endif %}
+
   {% endif %}
 </form>

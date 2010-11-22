@@ -37,6 +37,7 @@ class SubscribeForm(ew.SimpleForm):
         ew.SimpleForm.defaults,
         thing='tool',
         style='text',
+        tool_subscribed=False,
         value=None)
 
     class fields(ew_core.NameList):

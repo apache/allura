@@ -744,9 +744,14 @@ class TicketController(BaseController):
             thread = self.ticket.discussion_thread
             post_count = M.Post.query.find(dict(discussion_id=thread.discussion_id, thread_id=thread._id)).count()
             c.ticket_custom_field = W.ticket_custom_field
-            subscribed = M.Mailbox.subscribed(artifact=self.ticket)
+            tool_subscribed = M.Mailbox.subscribed()
+            if tool_subscribed:
+                subscribed = False
+            else:
+                subscribed = M.Mailbox.subscribed(artifact=self.ticket)
             return dict(ticket=self.ticket, globals=c.app.globals,
                         allow_edit=has_artifact_access('write', self.ticket)(),
+                        tool_subscribed=tool_subscribed,
                         subscribed=subscribed,
                         page=page, limit=limit, count=post_count)
         else:
