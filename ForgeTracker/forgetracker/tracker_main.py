@@ -476,8 +476,6 @@ class RootController(BaseController):
                 custom_fields=dict(),
                 ticket_num=c.app.globals.next_ticket_num())
         ticket.update(ticket_form)
-        for u in M.ProjectRole.by_name('Admin').users_with_role():
-            ticket.subscribe(user=u)
         redirect(str(ticket.ticket_num)+'/')
 
     @with_trailing_slash
