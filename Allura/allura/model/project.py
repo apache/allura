@@ -356,7 +356,7 @@ class Project(MappedClass):
             if admin_role:
                 for u in admin_role.users_with_role():
                     M.Mailbox.subscribe(
-                        user_id=c.user._id,
+                        user_id=u._id,
                         project_id=self._id,
                         app_config_id=cfg._id,
                         artifact=None, topic=None,
