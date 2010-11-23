@@ -34,20 +34,20 @@
   <br/>
   
   <form action="update" method="post">
-        <label class="grid-2">Display Name</label>
-        <div class="grid-9">
+        <label class="grid-4">Display Name</label>
+        <div class="grid-18">
           <input type="text" value="{{c.user.display_name}}" name="display_name"/>
         </div>
-        <label class="grid-2">Email Format</label>
-        <div class="grid-9">
+        <label class="grid-4">Email Format</label>
+        <div class="grid-18">
           <select name="preferences.email_format">
             <option value="plain" {{'selected' if c.user.preferences.email_format == 'plain' else ''}}>Plain Text</option>
             <option value="html" {{'selected' if c.user.preferences.email_format == 'html' else ''}}>HTML</option>
             <option value="both" {{'selected' if c.user.preferences.email_format == 'both' else ''}}>Combined</option>
           </select>
         </div>
-        <label class="grid-2">Page Size</label>
-        <div class="grid-9">
+        <label class="grid-4">Page Size</label>
+        <div class="grid-18">
           <select name="preferences.results_per_page">
             {% for per_page in [25, 50, 100, 250] %}
                 <option {% if per_page == c.user.preferences.results_per_page %}selected="selected"{% endif %}

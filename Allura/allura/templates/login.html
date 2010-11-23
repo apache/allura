@@ -10,12 +10,12 @@
           <form action="/auth/do_login" method="post" class="loginfields">
             <input type="hidden" name="return_to" value="{{return_to}}"/>
             <h2><span>Password Login</span></h2>
-            <label for="username" class="grid-2">Username:</label>
-            <div class="grid-9"><input type="text" id="username" name="username"/></div>
-            <label for="password" class="grid-2">Password:</label>
-            <div class="grid-9"><input type="password" id="password" name="password"/></div>
-            <label class="grid-2">&nbsp;</label>
-            <div class="grid-9"><input type="submit" id="submit" value="Login"/></div>
+            <label for="username" class="grid-4">Username:</label>
+            <div class="grid-18"><input type="text" id="username" name="username"/></div>
+            <label for="password" class="grid-4">Password:</label>
+            <div class="grid-18"><input type="password" id="password" name="password"/></div>
+            <label class="grid-4">&nbsp;</label>
+            <div class="grid-18"><input type="submit" id="submit" value="Login"/></div>
           </form>
         </div>
 
@@ -25,18 +25,18 @@
           <form action="/auth/login_verify_oid" method="post" class="loginfields">
             <input type="hidden" name="return_to" value="{{return_to}}"/>
             <h2><span>OpenID Login</span></h2>
-            <label for="provider" class="grid-2">Provider</label>
-            <div class="grid-9">
+            <label for="provider" class="grid-4">Provider</label>
+            <div class="grid-18">
               <select id="provider" name="provider">
                 {%- for label, url in oid_providers %}
                   <option value="{{url}}">{{label}}</option>
                 {%- endfor %}
               </select>
             </div>
-            <label for="username" class="grid-2">Username:</label>
-            <div class="grid-9"><input type="text" id="username" name="username"/></div>
-            <label class="grid-2">&nbsp;</label>
-            <div class="grid-9"><input type="submit" id="submit" value="Login"/></div>
+            <label for="username" class="grid-4">Username:</label>
+            <div class="grid-18"><input type="text" id="username" name="username"/></div>
+            <label class="grid-4">&nbsp;</label>
+            <div class="grid-18"><input type="submit" id="submit" value="Login"/></div>
           </form>
         </div>
 {% endblock %}

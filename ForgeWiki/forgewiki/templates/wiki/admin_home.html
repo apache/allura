@@ -6,20 +6,17 @@
 
 {% block content %}
 <form method="POST" action="set_home">
-  <ol>
-    <li>
-      <label for="title">Wiki Home Page:</label>
-      {% if allow_config %}
-       <input type="text" name="new_home" id="new_home" value="{{home}}"/>
-      {% else %}
-        <span>{{home}}</span>
-      {% endif %}
-    </li>
-    <hr/>
-    <li>
-      <label>&nbsp;</label>
-      {% if allow_config %}<input type="submit" value="Save"/>{% endif %}
-    </li>
-  </ol>
+  <label for="title" class="grid-4">Wiki Home Page:</label>
+  <div class="grid-14">
+    {% if allow_config %}
+     <input type="text" name="new_home" id="new_home" value="{{home}}"/>
+    {% else %}
+      <span>{{home}}</span>
+    {% endif %}
+  </div>
+  <label class="grid-4">&nbsp;</label>
+  <div class="grid-14">
+    {% if allow_config %}<input type="submit" value="Save"/>{% endif %}
+  </div>
 </form>
 {% endblock %}

@@ -79,12 +79,12 @@
       <div id="content_base">
 			  {% if not hide_left_bar %}
           {% include g.theme.sidebar_menu %}
-          {% set outer_width = 10 %}
+          {% set outer_width = 20 %}
 			  {% else %}
-          {% set outer_width = 12 %}
+          {% set outer_width = 24 %}
         {% endif %}
 			  {% if show_right_bar %}
-          {% set inner_width = outer_width - 4 %}
+          {% set inner_width = outer_width - 8 %}
 			  {% else %}
           {% set inner_width = outer_width %}
         {% endif %}

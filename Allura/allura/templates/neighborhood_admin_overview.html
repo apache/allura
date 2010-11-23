@@ -14,25 +14,25 @@
 
 {% block content %}
   <form method="POST" action="update" enctype="multipart/form-data">
-    <label class="grid-2">Name</label>
-    <div class="grid-7"><input name="name" value="{{neighborhood.name}}"></div>
-    <label class="grid-2">Redirect</label>
-    <div class="grid-7"><input name="redirect" value="{{neighborhood.redirect}}"/></div>
-    <label class="grid-2">Home Content (HTML)</label>
-    <div class="grid-7">{{c.markdown_editor.display(name='homepage', value=neighborhood.homepage)}}</div>
-    <label class="grid-2">Allow Browsing</label>
-    <div class="grid-7"><input type="checkbox" name="allow_browse" {% if neighborhood.allow_browse %}checked="checked"{% endif %}/></div>
-    <label class="grid-2">Custom CSS</label>
-    <div class="grid-7"><textarea name="css">{{neighborhood.css}}</textarea></div>
-    <label class="grid-2">Icon</label>
-    <div class="grid-7">
+    <label class="grid-4">Name</label>
+    <div class="grid-14"><input name="name" value="{{neighborhood.name}}"></div>
+    <label class="grid-4">Redirect</label>
+    <div class="grid-14"><input name="redirect" value="{{neighborhood.redirect}}"/></div>
+    <label class="grid-4">Home Content (HTML)</label>
+    <div class="grid-14">{{c.markdown_editor.display(name='homepage', value=neighborhood.homepage)}}</div>
+    <label class="grid-4">Allow Browsing</label>
+    <div class="grid-14"><input type="checkbox" name="allow_browse" {% if neighborhood.allow_browse %}checked="checked"{% endif %}/></div>
+    <label class="grid-4">Custom CSS</label>
+    <div class="grid-14"><textarea name="css">{{neighborhood.css}}</textarea></div>
+    <label class="grid-4">Icon</label>
+    <div class="grid-14">
       {% if neighborhood.icon %}
         <img src="{{neighborhood.url()}}/icon" style="vertical-align: middle">
       {% endif %}
       {{lib.file_field('icon', '')}}
     </div>
-    <label class="grid-2">&nbsp;</label>
-    <div class="grid-7"><input type="submit" value="Save"/></div>
+    <label class="grid-4">&nbsp;</label>
+    <div class="grid-14"><input type="submit" value="Save"/></div>
   </form>
 {% endblock %}
 

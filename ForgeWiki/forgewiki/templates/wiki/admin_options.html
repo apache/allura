@@ -6,38 +6,33 @@
 
 {% block content %}
 <form method="POST" action="set_options">
-  <ol>
-    <li>
-      <label for="title">Show discussion:</label>
+    <label class="grid-4" for="title">Show discussion:</label>
+    <div class="grid-14">
       {% if allow_config %}
         <input type="checkbox" name="show_discussion" id="show_discussion"{% if app.show_discussion %} checked="checked"{% endif %}/>
       {% else %}
         <span>{{app.show_discussion}}</span>
       {% endif %}
-    </li>
-    <hr/>
-    <li>
-      <label for="title">Show left bar:</label>
+    </div>
+    <label class="grid-4" for="title">Show left bar:</label>
+    <div class="grid-14">
       {% if allow_config %}
         <input type="checkbox" name="show_left_bar" id="show_left_bar"{% if app.show_left_bar %} checked="checked"{% endif %}/>
       {% else %}
         <span>{{app.show_left_bar}}</span>
       {% endif %}
-    </li>
-    <hr/>
-    <li>
-      <label for="title">Show right bar:</label>
+    </div>
+    <label class="grid-4" for="title">Show right bar:</label>
+    <div class="grid-14">
       {% if allow_config %}
         <input type="checkbox" name="show_right_bar" id="show_right_bar"{% if app.show_right_bar %} checked="checked"{% endif %}/>
       {% else %}
         <span>{{app.show_right_bar}}</span>
       {% endif %}
-    </li>
-    <hr/>
-    <li>
-      <label>&nbsp;</label>
+    </div>
+    <label class="grid-4">&nbsp;</label>
+    <div class="grid-14">
       {% if allow_config %}<input type="submit" value="Save"/>{% endif %}
-    </li>
-  </ol>
+    </div>
 </form>
 {% endblock %}

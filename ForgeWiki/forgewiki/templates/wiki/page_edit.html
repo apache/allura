@@ -13,37 +13,29 @@
 {% endblock %}
 
 {% block actions %}
-  <a href="." class="btn ico-l"><b class="ui-icon ui-icon-search"></b> <span>View Page</span></a>
+  <a href="." title="View Page"><b data-icon="s" class="ico" title="View Page"></b></a>
   {% if page_exists and has_artifact_access('delete', page)() %}
-    <a href="./delete" class="btn ico-l"><b class="ui-icon ui-icon-minusthick"></b> <span>Delete</span></a>
+    <a href="./delete" title="Delete"><b data-icon="D" class="ico" title="Delete"></b></a>
   {% endif %}
 {% endblock %}
 
 {% block wiki_content %}
 <form method="POST" class="can-retry" action="update" id="page_edit_form">
-	<ol>
-		<li>
-			<label for="title">Name:</label>
-			<input type="text" name="title" id="title" value="{{page.title}}" placeholder="Page name" required="required" autofocus="autofocus"/>
-		</li>
-		<li>
-			<label for="text">Content:</label>
-			<div style="clear:both"></div>
-			{{c.markdown_editor.display(name='text',value=page.text)}}
-		</li>
-		<li>
-		  <div class="row dual">
-			<div class="column" style="margin-right:0">
-			<label for="labels">Labels:</label>
-		</div>
-		<div class="column" style="margin-left:0">
-			{{c.label_edit.display(name='labels', value=page.labels)}}
-		</div>
+	<label for="title" class="grid-4">Name:</label>
+	<div class="grid-14">
+	  <input type="text" name="title" id="title" value="{{page.title}}" placeholder="Page name" required="required" autofocus="autofocus"/>
 	</div>
-		</li>
+	<label for="text" class="grid-18">Content:</label>
+	<div class="grid-18">
+	  {{c.markdown_editor.display(name='text',value=page.text)}}
+	</div>
+	<label for="labels" class="grid-4">Labels:</label>
+	<div class="grid-14" style="margin-left:0">
+		{{c.label_edit.display(name='labels', value=page.labels)}}
+	</div>
     {% if not page_exists or has_artifact_access('edit_page_permissions', page)() %}
-    <li>
-      <label>Viewable by:</label>
+      <label class="grid-4">Viewable by:</label>
+      <div class="grid-14">
       {% set j = 0 %}
       {% for u in page.viewable_by %}
         <span class="removable">
@@ -52,24 +44,24 @@
         </span>
         {% set j = j + 1 %}
       {% endfor %}
-    </li>
-    <li>
-      <label for="new_viewable_by">Add Viewer:</label>
-      {{c.user_select.display(name='new_viewable_by', value='')}}
-    </li>
+      </div>
+      <label for="new_viewable_by" class="grid-4">Add Viewer:</label>
+      <div class="grid-14">
+        {{c.user_select.display(name='new_viewable_by', value='')}}
+      </div>
     {% endif %}
-		<li>
-      <label>&nbsp;</label>
+    <label class="grid-4">&nbsp;</label>
+    <div class="grid-14">
       <input type="submit" value="Save"/>
       <input type="reset" value="Cancel"/>
-		</li>
-	</ol>
+		</div>
 </form>
-<hr class="clear clearfix" />
-{{c.attachment_list.display(attachments=page.attachments, edit_mode=page_exists and has_artifact_access('edit', page)())}}
-{% if page_exists and has_artifact_access('edit', page)() %}
-  {{c.attachment_add.display(action=page.url() + 'attach', name='file_info')}}
-{% endif %}
+<div style="margin: 0 10px">
+  {{c.attachment_list.display(attachments=page.attachments, edit_mode=page_exists and has_artifact_access('edit', page)())}}
+  {% if page_exists and has_artifact_access('edit', page)() %}
+    {{c.attachment_add.display(action=page.url() + 'attach', name='file_info')}}
+  {% endif %}
+</div>
 {% endblock %}
 
 {% block wiki_extra_js %}

@@ -23,16 +23,16 @@
 {% block actions %}
   {% if not page['deleted'] %}
     {% if c.user and c.user != c.user.anonymous() %}
-      <a href="edit" class="btn ico-l"><b class="ui-icon ui-icon-pencil"></b> <span>Edit</span></a>
+      <a href="edit" title="Edit"><b data-icon="p" class="ico" title="Edit"></b></a>
     {% endif %}
-    <a href="history" class="btn ico-l"><b class="ui-icon ui-icon-search"></b> <span>History</span></a>
+    <a href="history" title="History"><b data-icon="N" class="ico" title="History"></b></a>
   {% elif has_artifact_access('delete', page)() %}
-    <a href="undelete" class="btn ico-l"><b class="ui-icon ui-icon-plusthick"></b> <span>Undelete</span></a>
+    <a href="undelete" title="Undelete"><b data-icon="#" class="ico" title="Undelete"></b></a>
   {% endif %}
   {% if c.user and c.user != c.user.anonymous() %}
     {{c.subscribe_form.display(value=subscribed, action='subscribe', style='icon')}}
   {% endif %}
-	<a href="feed" class="btn ico"><b class="ui-icon ui-icon-signal-diag"></b> <span>RSS</span></a>
+	<a href="feed" title="RSS"><b data-icon="f" class="ico" title="Feed"></b></a>
 {% endblock %}
 
 {% block wiki_content %}
@@ -48,7 +48,6 @@
         <span><a href="{{c.app.url}}search/?q=labels_t:{{label}}">{{label}} ({{page.artifacts_labeled_with(label).count()}})</a></span>
       {% endif %}
     {% endfor %}
-    <hr/>
   </div>
   {% endif %}
   <div class="gravatar sm">
@@ -61,12 +60,10 @@
   </div>
   {% if page.attachments %}
   <div>
-    <hr/>
     <strong>Attachments</strong>
   </div>
   {% endif %}
   {% for att in page.attachments %}
-    <hr/>
     {% if att.is_image() and not att.is_embedded() %}
     <div class="attachment_thumb">
       <a href="{{att.url()}}">

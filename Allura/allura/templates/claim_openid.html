@@ -8,20 +8,20 @@
 {% block content %}
   <div id="loginform_oid">
     <form action="claim_verify_oid" method="post" class="loginfields">
-      <label for="provider" class="grid-2">Provider</label>
-      <div class="grid-9">
+      <label for="provider" class="grid-4">Provider</label>
+      <div class="grid-18">
         <select id="provider" name="provider">
           {%- for label, url in oid_providers %}
             <option value="{{url}}">{{label}}</option>
           {%- endfor %}
         </select>
       </div>
-      <label class="grid-2" for="username">Username:</label>
-      <div class="grid-9">
+      <label class="grid-4" for="username">Username:</label>
+      <div class="grid-18">
         <input type="text" id="username" name="username" class="text"/>
       </div>
-      <label class="grid-2">&nbsp;</label>
-      <div class="grid-9">
+      <label class="grid-4">&nbsp;</label>
+      <div class="grid-18">
         <input type="submit" id="submit" value="Claim">
       </div>
     </form>
