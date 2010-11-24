@@ -2,117 +2,108 @@
 <form method="POST" action="{{action}}" enctype="multipart/form-data">
   {{widget.display_field_by_name('ticket_num')|safe}}
   {{widget.display_field_by_name('super_id')|safe}}
-  <div class="row">
-	  <div class="column">
+  <div class="grid-16">
       {{widget.display_field_by_name('summary')|safe}}
-    </div>
   </div>
-  <div class="row">
     {% if widget.fields['_milestone'] %}
-      <div class="column grid_3">
+      <div class="grid-5">
         <label class="cr">Milestone:</label>
         {{widget.display_field_by_name('_milestone')|safe}}
       </div>
     {% endif %}
-    <div class="column grid_3">
+    <div class="grid-5">
       <label class="cr">Status:</label>
       {{widget.display_field_by_name('status')|safe}}
     </div>
-    <div class="column grid_3">
+    <div class="grid-5">
       <label class="cr">Owner:</label>
       {{widget.display_field_by_name('assigned_to')|safe}}
     </div>
-  </div>
+  <div style="clear:both"></div>
   {% set min_c_fields = widget.fields['_milestone'] and 1 or 0 %}
   {% if c.app.globals.custom_fields and c.app.globals.custom_fields.__len__() > min_c_fields %}
     {{widget.display_field_by_name('custom_fields', ignore_errors=True)}}
   {% endif %}
-  <div class="row">
-    <div class="column grid_12">
-      <label class="cr">Labels:</label>
-      {{widget.display_field_by_name('labels')|safe}}
-    </div>
+  <div class="grid-16">
+    <label class="cr">Labels:</label>
+    {{widget.display_field_by_name('labels')|safe}}
   </div>
-  <div class="row">
-    <div class="column grid_3">
-      <label class="simple">Updated:</label>
-      {% if ticket %}
-        {{h.ago(ticket.mod_date)}}
-      {% else %}
-        Now
-      {% endif %}
-    </div>
-    <div class="column grid_3">
-      <label class="simple">Created:</label>
-      {% if ticket %}
-        {{h.ago(ticket.created_date)}}
-      {% else %}
-        Now
-      {% endif %}
-    </div>
-    <div class="column grid_6">
-      <label class="simple">Creator:</label>
-      {% if ticket %}
-        <a href="{{ticket.reported_by.url()}}">{{ticket.reported_by.display_name}}</a>
-      {% else %}
-        <a href="{{c.user.url()}}">{{c.user.display_name}}</a>
-      {% endif %}
-    </div>
+  <div style="clear:both"></div>
+  <div class="grid-5">
+    <label class="simple">Updated:</label>
+    {% if ticket %}
+      {{h.ago(ticket.mod_date)}}
+    {% else %}
+      Now
+    {% endif %}
   </div>
-  <div class="row">
-    <div class="column grid_12">
-      {{widget.display_field_by_name('description')|safe}}
-    </div>
+  <div class="grid-5">
+    <label class="simple">Created:</label>
+    {% if ticket %}
+      {{h.ago(ticket.created_date)}}
+    {% else %}
+      Now
+    {% endif %}
   </div>
-  <div class="row">
-    <div class="column grid_12">
-      {% if ticket %}
-        <div class="clear">
-        {% for att in ticket.attachments %}
-            <div class="attachment_thumb">
-              {% if att.is_image() and not att.is_embedded() %}
-                <a href="{{att.url()}}" class="file_type">
-                  <img src="{{att.url()}}/thumb">
-                </a>
-              {% else %}
-                <a href="{{att.url()}}" class="file_type">
-                  <span>{{att.filename.split('.')[-1] or 'file'}}</span>
-                </a>
-              {% endif %}
-              <a href="{{att.url()}}">{{att.filename}}</a>
-              <a href="{{att.url()}}" class="btn ico delete_attachment"><b class="ui-icon ui-icon-close"></b></a>
-            </div>
-        {% endfor %}
-        </div>
-        <div class="clear"></div>
-      {% endif %}
-      <div id="show_attach">
-        <input type="checkbox"> I would like to add an attachment
+  <div class="grid-5">
+    <label class="simple">Creator:</label>
+    {% if ticket %}
+      <a href="{{ticket.reported_by.url()}}">{{ticket.reported_by.display_name}}</a>
+    {% else %}
+      <a href="{{c.user.url()}}">{{c.user.display_name}}</a>
+    {% endif %}
+  </div>
+  <div style="clear:both"></div>
+  <div class="grid-16">
+    {{widget.display_field_by_name('description')|safe}}
+  </div>
+  <div style="clear:both"></div>
+  <div class="grid-16">
+    {% if ticket %}
+      <div class="clear">
+      {% for att in ticket.attachments %}
+          <div class="attachment_thumb">
+            {% if att.is_image() and not att.is_embedded() %}
+              <a href="{{att.url()}}" class="file_type">
+                <img src="{{att.url()}}/thumb">
+              </a>
+            {% else %}
+              <a href="{{att.url()}}" class="file_type">
+                <span>{{att.filename.split('.')[-1] or 'file'}}</span>
+              </a>
+            {% endif %}
+            <a href="{{att.url()}}">{{att.filename}}</a>
+            <a href="{{att.url()}}" class="btn ico delete_attachment"><b class="ui-icon ui-icon-close"></b></a>
+          </div>
+      {% endfor %}
       </div>
-      <div id="view_attach" style="display:none">
-        {{widget.display_field_by_name('attachment')|safe}}
-      </div>
+      <div class="clear"></div>
+    {% endif %}
+    <div id="show_attach">
+      <input type="checkbox"> I would like to add an attachment
+    </div>
+    <div id="view_attach" style="display:none">
+      {{widget.display_field_by_name('attachment')|safe}}
     </div>
   </div>
-  <div class="row reply"{% if not show_comment %} style="display:none"{% endif %}>
-	<div class="column grid_1 tcenter">
+  <div style="clear:both"></div>
+  <div class="reply"{% if not show_comment %} style="display:none"{% endif %}>
+	<div class="grid-2 tcenter">
 		<p class="gravatar">
         {{lib.gravatar(c.user)}}<br/><br/>
         <a href="{{c.user.url()}}">{{c.user.display_name}}</a>
 		</p>
 	</div>
-	<div class="column grid_8">
+	<div class="grid-14">
 	  <div style="position: relative">
         {{widget.display_field_by_name('comment')|safe}}
         <span class="arw"><span></span></span>
       </div>
     </div>
   </div>
-  <div class="clear"></div>
-  <div class="row">
-    <div class="column grid_12">
-      {{widget.display_field_by_name('submit')|safe}}
-      <a href="{{c.app.url}}" class="btn_link cancel_form">Cancel</a>
-    </div>
+  <div style="clear:both"></div>
+  <div class="grid-16">
+    {{widget.display_field_by_name('submit')|safe}}
+    <a href="{{c.app.url}}" class="btn_link cancel_form">Cancel</a>
   </div>
 </form>

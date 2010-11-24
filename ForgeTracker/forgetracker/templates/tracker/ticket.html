@@ -13,10 +13,10 @@
 {% block header %}#{{ticket.ticket_num}} {{ticket.summary}}{% endblock %}
 
 {% block actions %}
-<a href="{{ticket.url()}}feed.rss" class="btn ico"><b class="ui-icon ui-icon-signal-diag"></b> <span>Follow this Ticket</span></a>
+<a href="{{ticket.url()}}feed.rss" title="Follow this Ticket"><b data-icon="f" class="ico"></b></a>
 {% if c.user and c.user != c.user.anonymous() %}
   {{c.subscribe_form.display(value=subscribed, tool_subscribed=tool_subscribed, action='subscribe', style='icon')}}
-  <a href="#" class="btn ico-l edit_ticket"><b class="ui-icon ui-icon-pencil"></b> <span>Edit</span></a>
+  <a href="#" title="Edit" class="edit_ticket"><b data-icon="p" class="ico"></b></a>
 {% endif %}
 {% endblock %}
 
@@ -27,9 +27,8 @@
       value=ticket, ticket=ticket, show_comment=True)}}
   </div>
   <div class="view_holder">
-    <div class="row">
       {% if '_milestone' in ticket.custom_fields %}
-        <div class="column grid_3">
+        <div class="grid-4">
           <label class="simple">Milestone: </label>
           {% if ticket.custom_fields['_milestone'] %}
             <a href="{{c.app.url}}milestone/{{ticket.custom_fields['_milestone']}}">{{ticket.custom_fields['_milestone']}}</a>
@@ -38,11 +37,11 @@
           {% endif %}
         </div>
       {% endif %}
-      <div class="column grid_3">
+      <div class="grid-4">
         <label class="simple">Status: </label>
         <span class="{{ticket.open_or_closed}}">{{ticket.status}}</span>
       </div>
-      <div class="column grid_3 ticket-assigned-to">
+      <div class="grid-4 ticket-assigned-to">
         <label class="simple">Owner: </label>
         {% if ticket.assigned_to_id %}
           <a href="{{ticket.assigned_to.url()}}">{{ticket.assigned_to_name()}}</a>
@@ -50,7 +49,7 @@
           {{ticket.assigned_to_name()}}
         {% endif %}
       </div>
-      <div class="column grid_3">
+      <div class="grid-4">
         <label class="simple">Labels: </label>
         {% for label in ticket.labels %}
           <span class="ui-corner-all tag">
@@ -60,38 +59,35 @@
           None
         {% endfor %}
       </div>
-    </div>
+    <div style="clear:both"></div>
     {% set min_c_fields = '_milestone' in ticket.custom_fields and 1 or 0 %}
     {% if globals.custom_fields and globals.custom_fields.__len__() > min_c_fields %}
-    <div class="row">
       {% set cf_count=0 %}
       {% for field in globals.custom_fields or [] %}
         {% if field.name != '_milestone' %}
           {% if cf_count%4 == 0 and cf_count != 0 %}
-            </div><div class="row">
+            <div style="clear:both"></div>
           {% endif %}
-            <div class="column grid_3">
+            <div class="grid-4">
               <label class="simple">{{field.label}}:</label>
               {{ticket.custom_fields[field.name]}}
             </div>
           {% set cf_count=cf_count+1 %}
         {% endif %}
       {% endfor %}
-    </div>
     {% endif %}
-    <div class="row">
-      <div class="column grid_3">
-        <label class="simple">Updated:</label>
-        {{h.ago(ticket.mod_date)}}
-      </div>
-      <div class="column grid_3">
-        <label class="simple">Created:</label>
-        {{h.ago(ticket.created_date)}}
-      </div>
-      <div class="column grid_6">
-        <label class="simple">Creator:</label>
-        <a href="{{ticket.reported_by.url()}}">{{ticket.reported_by.display_name}}</a>
-      </div>
+    <div style="clear:both"></div>
+    <div class="grid-4">
+      <label class="simple">Updated:</label>
+      {{h.ago(ticket.mod_date)}}
+    </div>
+    <div class="grid-4">
+      <label class="simple">Created:</label>
+      {{h.ago(ticket.created_date)}}
+    </div>
+    <div class="grid-8">
+      <label class="simple">Creator:</label>
+      <a href="{{ticket.reported_by.url()}}">{{ticket.reported_by.display_name}}</a>
     </div>
   </div>
 </div>
@@ -179,8 +175,10 @@
 
 {% block extra_css %}
 <style type="text/css">
-  div.form_holder{
-    margin-top: -45px;
+  input[name='ticket_form.summary']{
+    top: 5px;
+    position: absolute;
+    z-index: 21;
   }
   div.form_holder .reply textarea{
     height: 60px;

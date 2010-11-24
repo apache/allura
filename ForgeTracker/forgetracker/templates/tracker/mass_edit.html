@@ -13,7 +13,7 @@
 {% block header %}ForgeTracker for {{c.project.shortname}}{% endblock %}
 
 {% block actions %}
-  <a href="{{tg.url(c.app.url+'edit/', dict(q=q, limit=limit, sort=sort))}}" class="btn btn_activate ico-l"><b class="ui-icon ui-icon-pencil"></b> <span>Bulk Edit</span></a>
+    <a href="{{tg.url(c.app.url+'edit/', dict(q=q, limit=limit, sort=sort))}}" title="Bulk Edit"><b data-icon="p" class="ico active"></b></a>
 {% endblock %}
 
 {% block edit_box %}

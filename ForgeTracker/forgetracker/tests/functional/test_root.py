@@ -269,7 +269,7 @@ class TestFunctionalController(TestController):
         summary = 'test default assignment'
         self.new_ticket(summary=summary)
         response = self.app.get('/p/test/bugs/1/')
-        assert 'nobody' in str(response.html.find('div', {'class': 'column grid_3 ticket-assigned-to'}))
+        assert 'nobody' in str(response.html.find('div', {'class': 'grid-4 ticket-assigned-to'}))
     
     def test_assign_ticket(self):
         summary = 'test assign ticket'
@@ -288,7 +288,7 @@ class TestFunctionalController(TestController):
             'comment': ''
         })
         response = self.app.get('/p/test/bugs/1/')
-        assert 'nobody' in str(response.html.find('div', {'class': 'column grid_3 ticket-assigned-to'}))
+        assert 'nobody' in str(response.html.find('div', {'class': 'grid-4 ticket-assigned-to'}))
         assert '<li><strong>summary</strong>: test assign ticket --&gt; zzz' in response
         assert '<li><strong>status</strong>: open --&gt; ccc' in response
     
@@ -458,7 +458,7 @@ class TestFunctionalController(TestController):
         # set a summary, submit, and check for success
         error_form.forms[1]['ticket_form.summary'] = summary
         success = error_form.forms[1].submit().follow().html
-        assert success.findAll('form')[2].get('action') == '/p/test/bugs/1/update_ticket_from_widget'
+        assert success.findAll('form')[1].get('action') == '/p/test/bugs/1/update_ticket_from_widget'
         assert success.find('input', {'name':'ticket_form.summary'})['value'] == summary
 
     def test_edit_ticket_validation(self):

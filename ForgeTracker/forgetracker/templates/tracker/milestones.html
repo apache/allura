@@ -44,9 +44,7 @@
           {{c.date_field.display(value=m.due_date, name='milestones-%s.due_date' % loop.index0)}}
         </td>
         <td>{{m.closed}} / {{m.total}}</td>
-        <td style="width:20px;"><a href="#" class="ico edit_milestone">
-          <b class="ui-icon ui-icon-pencil"></b> <span>Edit</span>
-        </a></td>
+        <td style="width:20px;"><a href="#" title="Edit" class="edit_milestone"><b data-icon="p" class="ico"></b></a></td>
       </tr>
       {% else %}
       <tr class="empty_message">
@@ -76,8 +74,8 @@
       </tr>
     </tbody>
   </table>
-  <a href="#" class="btn add_milestone">Add Milestone</a>
-  <div class="save_controls" style="display:none">
+  <div class="grid-16"><a href="#" class="btn add_milestone grid-3">Add Milestone</a></div>
+  <div class="grid-16 save_controls" style="display:none">
     <input type="submit" value="Save">
     <a href="#" class="btn_link cancel_edit">Cancel</a>
   </div>

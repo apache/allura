@@ -37,6 +37,7 @@ class LabelEdit(ew.InputField):
 
     def resources(self):
         yield ew.JSLink('js/jquery.tag.editor.js')
+        yield ew.CSSLink('css/tagEditor.css')
         yield onready('''
           $('input.label_edit').tagEditor({
             confirmRemoval: false,

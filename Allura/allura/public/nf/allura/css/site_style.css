@@ -1302,35 +1302,6 @@ div.attachment_thumb .file_type span{
 .wmd_holder div div {background: none !important;}
 .wmd_holder span {padding: 0 10px !important;}
 
-/* Tags */
-input.label_edit{ float: left; }
-.tagEditor
-{
-	margin: 4px 0;
-	padding: 0;
-	float: left;
-}
-
-.tagEditor li, .removable
-{
-	display: inline;
-	background-image: url('../images/minus_small.png');
-	background-color: #eef;
-	background-position: right center;
-	background-repeat: no-repeat;
-	list-style-type: none;
-	padding: 0 18px 0 6px;
-	margin: 0 4px;
-	cursor: pointer;
-	-moz-border-radius: 5px;
-	-webkit-border-radius: 5px;
-}
-
-.tagEditor li:hover
-{
-	background-color: #ebebeb;
-}
-
 /* Inline editing of content */
 .editor input, .editor textarea, .editor select {margin: 0;}
 .edit span.ui-icon {float: left; margin: auto; margin-right: 5px;}

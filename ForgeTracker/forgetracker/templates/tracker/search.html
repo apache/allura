@@ -12,7 +12,7 @@
 
 {% block actions %}
 {% if allow_edit and count != 0 %}
-  <a href="{{tg.url(c.app.url+'edit/', dict(q=q, limit=limit, sort=sort))}}" class="btn ico-l"><b class="ui-icon ui-icon-pencil"></b> <span>Bulk Edit</span></a>
+  <a href="{{tg.url(c.app.url+'edit/', dict(q=q, limit=limit, sort=sort))}}" title="Bulk Edit"><b data-icon="p" class="ico"></b></a>
 {% endif %}
 {% endblock %}
 
@@ -28,6 +28,7 @@
 {% endif %}
 
 {% block content %}
+<div class="grid-19">
 <form method="GET" action=".">
   <input type="text" name="q" value="{{q}}" style="width: 525px; float: left; margin-right: .5em">
   <input type="submit" value="Search"/>
@@ -35,6 +36,7 @@
 {% if q and h.has_artifact_access('save_searches')() %}
   <input type="button" value="Save Search" id="save_search"/>
 {% endif %}
+</div>
 <div style="clear:both"></div>
 {{c.ticket_search_results.display(solr_error=solr_error,
   count=count,

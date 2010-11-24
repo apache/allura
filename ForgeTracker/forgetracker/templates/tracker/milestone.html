@@ -8,23 +8,21 @@
 
 {% block actions %}
 {% if allow_edit %}
-  <a href="{{tg.url(c.app.url+'edit/', dict(q=q, limit=limit, sort=sort))}}" class="btn ico-l"><b class="ui-icon ui-icon-pencil"></b> <span>Bulk Edit</span></a>
+  <a href="{{tg.url(c.app.url+'edit/', dict(q=q, limit=limit, sort=sort))}}" title="Bulk Edit"><b data-icon="p" class="ico"></b></a>
 {% endif %}
 {% endblock %}
 
 {% block edit_box %}
 <div class="editbox">
-  <div class="row">
-    <div class="column grid_3">
+    <div class="grid-6">
       <label>Status:</label> {{milestone.closed and 'Closed' or 'Open'}}
     </div>
-    <div class="column grid_3">
+    <div class="grid-6">
       <label>Due Date:</label> {{milestone.due_date or 'N/A'}}
     </div>
-    <div class="column grid_3">
+    <div class="grid-6">
       <label>Progress:</label> {{closed}} / {{total}}
     </div>
-  </div>
 </div>
 {% endblock %}
 
