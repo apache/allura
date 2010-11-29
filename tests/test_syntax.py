@@ -31,12 +31,13 @@ def test_no_now():
 
 def test_no_prints():
     skips = [
-        '/dstat/',
         '/tests/',
-        'sf.gobble/sf/gobble/tasks/check_stats_status.py', # nagios plugin for SOG
-        'sf.gobble/sf/gobble/tasks/check_queue_activity.py', # nagios plugin for SOG
+        'Allura/allura/command/',
+        'Allura/ez_setup/',
+        'Allura/push_re.py',
+        'ForgeMail/forgemail/sstress.py',
     ]
-    if run(find_py + " | grep -v '" + "' | grep -v '".join(skips) + "' | xargs grep 'print ' | grep -v pprint | grep -v '#' ") != 1:
+    if run(find_py + " | grep -v '" + "' | grep -v '".join(skips) + "' | xargs grep -v '^ *#' | grep 'print ' | grep -E -v '(pprint|#pragma: ?printok)' ") != 1:
         raise Exception("These should use logging instead of print")
 
 def test_no_tabs():
