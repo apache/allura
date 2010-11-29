@@ -46,7 +46,7 @@ setup(
     packages=find_packages(exclude=['ez_setup']),
     include_package_data=True,
     test_suite='nose.collector',
-    tests_require=['WebTest >= 1.2', 'BeautifulSoup'],
+    tests_require=['WebTest >= 1.2', 'BeautifulSoup', 'pytidylib'],
     package_data={'allura': ['i18n/*/LC_MESSAGES/*.mo',
                                  'templates/*/*',
                                  'public/*/*']},
