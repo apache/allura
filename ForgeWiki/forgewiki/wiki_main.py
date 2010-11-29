@@ -154,7 +154,7 @@ class ForgeWikiApp(Application):
         except:
             page = None
         links = [SitemapEntry('Create New Page', c.app.url, ui_icon='plus', className='add_wiki_page'),
-	             SitemapEntry('')]
+                 SitemapEntry('')]
         if page:
             for aref in page.references+page.backreferences.values():
                 artifact = M.ArtifactReference(aref).artifact
@@ -168,10 +168,10 @@ class ForgeWikiApp(Application):
         links = links + [
             SitemapEntry('Wiki Home',c.app.url),
             SitemapEntry('Browse Pages',c.app.url+'browse_pages/'),
-		    SitemapEntry('Browse Labels',c.app.url+'browse_tags/'),
-		    SitemapEntry(''),
-		    SitemapEntry('Wiki Help',c.app.url+'wiki_help/', className='nav_child'),
-		    SitemapEntry('Markdown Syntax',c.app.url+'markdown_syntax/', className='nav_child')
+            SitemapEntry('Browse Labels',c.app.url+'browse_tags/'),
+            SitemapEntry(''),
+            SitemapEntry('Wiki Help',c.app.url+'wiki_help/', className='nav_child'),
+            SitemapEntry('Markdown Syntax',c.app.url+'markdown_syntax/', className='nav_child')
         ]
         return links
 
