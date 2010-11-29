@@ -155,7 +155,7 @@ class ThreadController(BaseController):
                 thread_id=p.thread_id,
                 discussion_id=p.discussion_id)
         if self.thread.artifact:
-            self.thread.artifact.mod_date = datetime.now()
+            self.thread.artifact.mod_date = datetime.utcnow()
         flash('Message posted')
         redirect(request.referer)
 

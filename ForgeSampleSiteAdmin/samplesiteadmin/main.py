@@ -96,7 +96,7 @@ class SiteAdminController(BaseController):
                     log.exception('Could not create API key:')
                     flash('Error creating API key')
         else:
-            data = {'expires': datetime.now() + timedelta(days=1)}
+            data = {'expires': datetime.utcnow() + timedelta(days=1)}
 
         username = c.project.shortname.split('/')[1]
         data['user'] = User.by_username(username)
