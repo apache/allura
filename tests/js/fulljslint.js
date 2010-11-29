@@ -656,14 +656,14 @@ var JSLINT = (function () {
             meter:    {},
             nav:      {},
             noframes: {parent: ' html body '},
-            noscript: {parent: ' body head noframes '},
+            noscript: {},
             object:   {},
             ol:       {},
             optgroup: {parent: ' select '},
             option:   {parent: ' optgroup select '},
             output:   {},
             p:        {},
-            param:    {empty: true, parent: ' applet object '},
+            param:    {parent: ' applet object '},
             pre:      {},
             progress: {},
             q:        {},
@@ -900,7 +900,8 @@ var JSLINT = (function () {
 // unsafe comment or string
         ax = /@cc|<\/?|script|\]*s\]|<\s*!|&lt/i,
 // unsafe characters that are silently deleted by one or more browsers
-        cx = /[\u0000-\u001f\u007f-\u009f\u00ad\u0600-\u0604\u070f\u17b4\u17b5\u200c-\u200f\u2028-\u202f\u2060-\u206f\ufeff\ufff0-\uffff]/,
+// Whitelist Replacement Char, 0xfffd
+        cx = /[\u0000-\u001f\u007f-\u009f\u00ad\u0600-\u0604\u070f\u17b4\u17b5\u200c-\u200f\u2028-\u202f\u2060-\u206f\ufeff\ufff0-\ufffc\ufffe-\uffff]/,
 // token
         tx = /^\s*([(){}\[.,:;'"~\?\]#@]|==?=?|\/(\*(jslint|members?|global)?|=|\/)?|\*[\/=]?|\+(?:=|\++)?|-(?:=|-+)?|%=?|&[&=]?|\|[|=]?|>>?>?=?|<([\/=!]|\!(\[|--)?|<=?)?|\^=?|\!=?=?|[a-zA-Z_$][a-zA-Z0-9_$]*|[0-9]+([xX][0-9a-fA-F]+|\.[0-9]*)?([eE][+\-]?[0-9]+)?)/,
 // html token
@@ -924,7 +925,9 @@ var JSLINT = (function () {
 // attributes characters
         qx = /[^a-zA-Z0-9+\-_\/ ]/,
 // query characters for ids
-        dx = /[\[\]\/\\"'*<>.&:(){}+=#]/,
+        //dx = /[\[\]\/\\"'*<>.&:(){}+=#]/,
+        // allow .
+        dx = /[\[\]\/\\"'*<>&:(){}+=#]/,
 
         rx = {
             outer: hx,
@@ -1207,6 +1210,22 @@ var JSLINT = (function () {
                     value += c;
                 }
 
+            },
+
+// skip all content up to marker
+
+            skip_till: function (end) {
+                            for (;;) {
+                                i = s.indexOf(end);
+                                if (i >= 0) {
+                                    break;
+                                }
+                                if (!nextLine()) {
+                                    errorAt("Unclosed {a} block.", line, character, end);
+                                }
+                            }
+                            character += i;
+                            s = s.substr(i);
             },
 
 // token -- this is called by advance to get the next token.
@@ -1772,7 +1791,7 @@ klass:                                  do {
                                 if (i >= 0) {
                                     break;
                                 }
-                                i = s.indexOf('<!');
+                                i = s.indexOf('<!-');
                                 if (i >= 0) {
                                     errorAt("Nested HTML comment.",
                                         line, character + i);
@@ -1781,7 +1800,7 @@ klass:                                  do {
                                     errorAt("Unclosed HTML comment.", l, c);
                                 }
                             }
-                            l = s.indexOf('<!');
+                            l = s.indexOf('<!-');
                             if (l >= 0 && l < i) {
                                 errorAt("Nested HTML comment.",
                                     line, character + l);
@@ -3359,7 +3378,8 @@ loop:   for (;;) {
                 }
             }
             if (nexttoken.id === '}' || nexttoken.id === xquote) {
-                warning("Missing '{a}'.", nexttoken, ';');
+// Trailing ';' is optional if not disallowed - see http://www.w3.org/TR/css-style-attr/#syntax
+//                warning("Missing '{a}'.", nexttoken, ';');
             } else {
                 advance(';');
             }
@@ -3598,7 +3618,7 @@ loop:   for (;;) {
                 warning("Unexpected character '{a}' in {b}.", token, v.charAt(x), a);
             }
             ids[u] = true;
-        } else if (a === 'class' || a === 'type' || a === 'name') {
+        } else if (/*a === 'class' || */a === 'type' || a === 'name') { // class' content is cdata
             x = v.search(qx);
             if (x >= 0) {
                 warning("Unexpected character '{a}' in {b}.", token, v.charAt(x), a);
@@ -3681,14 +3701,20 @@ loop:   for (;;) {
                 if (option.adsafe && (!adsafe_may || !approved[a.src])) {
                     warning("ADsafe unapproved script source.", token);
                 }
-                if (a.type) {
+                /*if (a.type) {
                     warning("type is unnecessary.", token);
-                }
+                }*/
             } else {
-                if (adsafe_went) {
-                    error("ADsafe script violation.", token);
+
+                if (a.type && a.type !== 'text/javascript') {
+                    lex.skip_till('</script>');
+                    advance();
+                } else {
+                    if (adsafe_went) {
+                        error("ADsafe script violation.", token);
+                    }
+                    statements('script');
                 }
-                statements('script');
             }
             xmode = 'html';
             advance('</');
