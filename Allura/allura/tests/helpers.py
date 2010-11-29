@@ -3,6 +3,7 @@ from os import path, environ, getcwd
 import logging
 import tempfile
 import subprocess
+import json
 
 import tg
 import mock
@@ -161,8 +162,8 @@ def validate_json(json_or_response):
 
         try:
             obj = json.loads(j)
-        except:
-            ok_(False, "Couldn't validate the JSON")
+        except Exception, e:
+            ok_(False, "Couldn't validate JSON: " + str(e) + ':' + j[:100] + '...')
 
         return obj
 
