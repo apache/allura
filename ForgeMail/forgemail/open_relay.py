@@ -5,9 +5,12 @@ import smtplib
 import asyncore
 from ConfigParser import ConfigParser
 
+
+log = logging.getLogger(__name__)
+
 def main():
     cp = ConfigParser()
-    print cp.read([os.path.join(os.environ['HOME'], '.open_relay.ini')])
+    log.info('Read config from: %s', cp.read([os.path.join(os.environ['HOME'], '.open_relay.ini')]))
     host = cp.get('open_relay', 'host')
     port = cp.getint('open_relay', 'port')
     ssl = cp.getboolean('open_relay', 'ssl')
@@ -32,8 +35,8 @@ class MailClient(object):
 
     def sendmail(self, mailfrom, rcpttos, data):
         if str(mailfrom) == 'None': mailfrom = rcpttos[0]
-        print 'Sending mail to %s' % rcpttos
-        print 'Sending mail from %s' % mailfrom
+        log.info('Sending mail to %s' % rcpttos)
+        log.info('Sending mail from %s' % mailfrom)
         try:
             self._client.sendmail(mailfrom, rcpttos, data)
         except:

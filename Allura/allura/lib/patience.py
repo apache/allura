@@ -193,7 +193,7 @@ def test():
     # sys.stdout.write(''.join(b))
     sm = SequenceMatcher(None, a, b)
     # print 'Patience opcodes:', sm.get_opcodes()
-    print ''.join(unified_diff(a, b))
+    print ''.join(unified_diff(a, b)) #pragma:printok
     # for prefix, line in diff_gen(a, b, sm.get_opcodes()):
     #     sys.stdout.write(''.join((prefix, line)))
     # sm = difflib.SequenceMatcher(None, a, b)

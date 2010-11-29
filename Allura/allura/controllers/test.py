@@ -59,11 +59,14 @@ class TestController(BaseController, ProjectController):
     def _setup_request(self):
         # This code fixes a race condition in our tests
         c.project = M.Project.query.get(shortname='test')
+        count = 20
         while c.project is None:
             import sys, time
             time.sleep(0.5)
-            print >> sys.stderr, 'Project "test" not found, retrying...'
+            log.warning('Project "test" not found, retrying...')
             c.project = M.Project.query.get(shortname='test')
+            count -= 1
+            assert count > 0, 'Timeout waiting for test project to appear'
 
     @expose()
     def _lookup(self, name, *remainder):
@@ -152,7 +155,7 @@ class SecurityTest(object):
     def needs_project_access_ok(self):
         pred = has_project_access('read')
         if not pred():
-            print 'Inside needs_project_access, c.user = %s' % c.user
+            log.info('Inside needs_project_access, c.user = %s' % c.user)
         require(pred)
         return ''
 

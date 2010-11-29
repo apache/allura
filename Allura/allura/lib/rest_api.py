@@ -9,6 +9,9 @@ from datetime import datetime
 from tg.controllers.util import smart_str
 from formencode import variabledecode
 
+
+log = logging.getLogger(__name__)
+
 class RestClient(object):
 
     def __init__(self, api_key, secret_key, base_uri,
@@ -60,7 +63,7 @@ class RestClient(object):
                                           if k.lower() not in ("content-length", "content-type")
                                          )
                         result = urlparse(newurl)
-                        print 'Redirect to %s' % result.path
+                        log.debug('Redirect to %s' % result.path)
                         return client.Request(
                             'GET', result.path,
                             headers=newheaders,
