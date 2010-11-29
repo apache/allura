@@ -16,19 +16,27 @@ from forgesvn import model as SVNM
 
 STATS_COLLECTION_SIZE=100000
 
-class MigrateFiles(Migration):
+class MigrateProjectsAndFiles(Migration):
     version = 14
 
     def up(self):
+        self._up_projects()
         db = self.session.db
         for collection in db.collection_names():
             if collection.endswith('.files'):
-                self.up_collection(db, collection)
+                self._up_collection(db, collection)
 
     def down(self):
         # Nothing to do, really, as long as we don't update
         # any metadata while upgraded
         pass
+
+    def _up_projects(self):
+        projects = self.session.db.project
+        for p in projects.find():
+            if p.get('database_uri').startswith('mongo://'):
+                p['database_uri'] = p['database_uri'].replace('mongo://', 'mongodb://')
+                projects.save(p)
 
     def _up_collection(self, db, collection_name):
         collection = db[collection_name]
@@ -40,9 +48,12 @@ class MigrateFiles(Migration):
             newdoc.update(doc['metadata'])
             newdoc.pop('metadata')
             newdoc['file_id'] = doc['_id']
-            for aid_name in ('post_id', 'page_id', 'post_id', 'ticket_id'):
+            for aid_name in ('page_id', 'ticket_id'):
                 if aid_name in newdoc:
                     newdoc['artifact_id'] = newdoc.pop(aid_name)
+            if 'post_id' in newdoc:
+                # post_id is stored along with artifact_id in posts
+                newdoc['artifact_id'] = newdoc['post_id']
             root_collection.save(newdoc)
 
 class CreateStatsCollection(Migration):
