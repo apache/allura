@@ -151,9 +151,6 @@ class UnderToDash(Migration):
 class MergeDuplicateRoles(Migration):
     version = 6
 
-    def up_requires(self): yield ('allura', 5)
-    def down_requires(self): yield ('allura', 6)
-
     def up(self):
         if self.session.db.name == 'allura': self.up_allura()
         else: self.up_project()
@@ -203,9 +200,6 @@ class MergeDuplicateRoles(Migration):
 class UnifyPermissions(Migration):
     version = 5
 
-    def up_requires(self):
-        yield ('allura', 4)
-
     def up(self):
         perm_owner = self.ormsession.find(M.ProjectRole, dict(name='owner')).first()
         perm_Owner = self.ormsession.find(M.ProjectRole, dict(name='Owner')).first()
@@ -237,11 +231,6 @@ class UnifyPermissions(Migration):
 
 class UpdateProjectsToTools(Migration):
     version = 4
-
-    def up_requires(self):
-        yield ('allura', 3)
-        # yield ('ForgeWiki', 3)
-        # yield ('ForgeTracker', 3)
 
     def up(self):
         # if self.session.db.name == 'allura':
@@ -335,9 +324,6 @@ class UpdateProjectsToTools(Migration):
 class UpdateThemeToShinyBook(Migration):
     version = 3
 
-    def up_requires(self):
-        yield ('allura', 2)
-
     def up(self):
         if self.session.db.name == 'allura':
             theme = self.ormsession.find(M.Theme, {'name':'forge_default'}).first()
@@ -366,9 +352,6 @@ class UpdateThemeToShinyBook(Migration):
 
 class RenameNeighborhoods(Migration):
     version = 2
-
-    def up_requires(self):
-        yield ('allura', 1)
 
     def up(self):
         n_users = self.ormsession.find(M.Neighborhood, dict(name='Users')).first()
@@ -416,7 +399,7 @@ class DowncaseMountPoints(Migration):
     def up_requires(self):
         yield ('ForgeWiki', 0)
         yield ('ForgeTracker', 0)
-        yield ('allura', 0)
+        yield ('pyforge', 0)
 
     def up(self):
         fix_pathnames(self.ormsession, lambda s:s.lower().replace(' ', '_'))

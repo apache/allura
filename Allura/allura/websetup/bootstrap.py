@@ -216,7 +216,7 @@ def wipe_database():
         clear_all_database_tables()
         for db in conn.database_names():
             db = conn[db]
-            flyway.run(['-u', 'mim:///'+db.name])
+            flyway.run(['--force', '-u', 'mim:///'+db.name])
     else:
         for database in conn.database_names():
             log.info('Wiping database %s', database)
@@ -229,7 +229,7 @@ def wipe_database():
                 except:
                     pass
         # Run flyway
-        flyway.run(['-u', 'ming://%s:%s/' % (conn.host, conn.port)])
+        flyway.run(['--force', '-u', 'ming://%s:%s/' % (conn.host, conn.port)])
     index.run([])
 
 
