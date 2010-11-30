@@ -231,8 +231,7 @@ def validate_js(html_or_response):
             os.unlink(f.name)
             return
         stdout = stdout.decode('UTF-8', 'replace')
-        log.warning('jslint validation (see ' + f.name + ' for reference): ' + stdout)
-        raise Exception('JavaScript validation error(s):  ' + '\n'.join(repr(s) for s in stdout.split('\n') if s))
+        raise Exception('JavaScript validation error(s) (see ' + f.name + '):  ' + '\n'.join(repr(s) for s in stdout.split('\n') if s))
 
 def validate_page(html_or_response):
     validate_html(html_or_response)
