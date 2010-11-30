@@ -21,9 +21,9 @@
       {{ blob }}
     {% endfor %}
     {% endif %}
-    <link rel="stylesheet" type="text/css" media="screen" href="{{g.theme_static(g.theme['base_css'])}}">
+    <link rel="stylesheet" type="text/css" media="screen" href="{{g.theme_static(g.theme['base_css'])}}" />
     {% for t in g.theme['theme_css'] %}
-      <link rel="stylesheet" type="text/css" media="screen" href="{{g.theme_static(t)}}">
+      <link rel="stylesheet" type="text/css" media="screen" href="{{g.theme_static(t)}}" />
     {% endfor %}
       
     {% if c.project and c.project.neighborhood.css %}
@@ -40,7 +40,7 @@
     {% block head %}
     {% endblock %}
 <!--[if lt IE 9]>
-		<link rel="stylesheet" href="/nf/css/forge/ie.css" type="text/css" charset="utf-8">
+		<link rel="stylesheet" href="/nf/css/forge/ie.css" type="text/css" charset="utf-8" />
 <![endif]-->
 <!--[if IE]>
 		<style type="text/css">
