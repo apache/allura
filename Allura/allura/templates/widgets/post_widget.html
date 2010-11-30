@@ -3,7 +3,7 @@
 <div>
   <div id="{{value.slug}}" class="discussion-post">
     <div class="row">
-    	<div class="column grid_1 tcenter">
+	<div class="grid-3 tcenter">
     		<p class="gravatar">
     		  {% set size = value.parent and 32 or 48 %}
           <a href="{{value.author().url()}}">{{lib.gravatar(value.author(), size=size)}}</a><br/>
@@ -11,7 +11,7 @@
     		</p>
     	</div>
 
-    	<div class="column grid_8">
+	<div class="grid-13" style="width: {{indent == 0 and 475 or 465-indent*10}}px">
         <div class="display_post">
           {% if show_subject %}
             <b>{{value.subject or '(no subject)'}}<br/></b>
@@ -53,7 +53,7 @@
         {% endif %}
     	</div>
         
-    	<div class="options">
+	<div class="options grid-3">
         <a href="" class="reply_post btn">Reply</a>
         <div style="clear:both">
           <a href="{{tg.url(url.current(),dict(page=page,limit=limit))}}#{{value.slug}}" class="little_link shortlink"><span>Link</span></a><br/>
@@ -77,13 +77,13 @@
         {% if h.has_artifact_access('post', value.thread)() %}
         <div class="row reply_post_form" style="display:none">
           <div class="reply">
-            <div class="column grid_1 tcenter">
+            <div class="grid-3 tcenter">
               <p class="gravatar">
                 {{lib.gravatar(c.user, size=32)}}<br/><br/>
                 <a href="{{c.user.url()}}">{{c.user.display_name}}</a>
               </p>
             </div>
-            <div class="column grid_8">
+            <div class="grid-13" style="width: {{575-indent*10}}px">
               {{widgets.edit_post.display(
                 submit_text='Post Reply',
                 action=value.url()+'reply',

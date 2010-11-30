@@ -4,12 +4,13 @@
       action="{{action}}"
       enctype="{{enctype}}"
       {{attrs|default({}, true)|xmlattr}}>
-  <fieldset>
+  <fieldset class="grid-19">
     <legend>Update marked posts</legend>
     <input type="submit" name="approve" value="Approve Marked"/>
     <input type="submit" name="spam" value="Spam Marked"/>
     <input type="submit" name="delete" value="Delete Marked"/>
   </fieldset>
+  <div style="clear:both"></div>
   <table>
     <thead>
       <tr>

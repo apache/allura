@@ -69,7 +69,7 @@ class ModeratePosts(ew.SimpleForm):
           });
       }(jQuery));''')
 
-class PostFilter(ew.SimpleForm):
+class PostFilter(ff.ForgeForm):
     defaults=dict(
         ew.SimpleForm.defaults,
         submit_text=None,
@@ -195,8 +195,15 @@ class SubscriptionForm(ew.SimpleForm):
             $('tbody').children(':even').addClass('even');
             $('.discussion_subscription_form').each(function(){
                 var discussion = this;
+                var follow_btn = $('.follow', discussion);
+                var email_btn = $('.email', discussion);
+                var action_holder = $('h2.dark small');
+                action_holder.append(follow_btn);
+                action_holder.append(email_btn);
+                follow_btn.show();
+                email_btn.show();
                 $('.submit', discussion).button();
-                $('.follow', discussion).click(function(ele){
+                follow_btn.click(function(ele){
                     $('.follow_form', discussion).submit();
                     return false;
                 });
