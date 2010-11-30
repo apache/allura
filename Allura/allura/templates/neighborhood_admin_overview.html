@@ -38,11 +38,11 @@
 
 {% block extra_js %}
   <script type="text/javascript">
-    $('div.editable').each(function(){
+    $('div.editable').each(function () {
       var $editable = $(this);
-      $('div.viewer', $editable).click(function(){
-        if($('textarea.auto_resize', $editable)){
-          $('textarea.auto_resize', $editable)[1].style.height="200px";
+      $('div.viewer', $editable).click(function () {
+        if ($('textarea.auto_resize', $editable)) {
+          $('textarea.auto_resize', $editable)[1].style.height = "200px";
         }
       });
     });

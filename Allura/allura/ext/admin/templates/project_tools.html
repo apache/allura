@@ -158,7 +158,7 @@
         '{{tool.name}}':{'default_label':'{{tool.app.default_mount_label}}','default_mount':'{{tool.app.default_mount_point}}'},
       {% endfor %}
     };
-    $('select.new_ep_name').change(function() {
+    $('select.new_ep_name').change(function () {
       var tool = defaults[$(this).val()];
       var row = $(this).closest('tr')
       row.find('input.new_mount_point').val(tool.default_mount);
@@ -174,7 +174,7 @@
           $('#save_order').show();
         }
       });
-      $('#save_order').click(function(e){
+      $('#save_order').click(function (e) {
         var sortables = $('#tool_admin .sortables');
         var tools = 0
         var subs = 0
@@ -194,7 +194,7 @@
             subs++;
           }
         }
-        $.post('update_mount_order', params, function(){
+        $.post('update_mount_order', params, function () {
             location.reload();
         });
       });
@@ -204,18 +204,18 @@
         modal: true,
         autoOpen: false,
         buttons: {
-          'Delete': function() {
+          'Delete': function () {
             form_to_delete.submit();
             $(this).dialog('close');
             form_to_delete = null;
           },
-          Cancel: function() {
+          Cancel: function () {
             $(this).dialog('close');
             form_to_delete = null;
           }
         }
       });
-      $('input.mount_delete').click(function() {
+      $('input.mount_delete').click(function () {
         form_to_delete = this.parentNode;
         $('#delete-confirm').dialog('open');
         $('div.ui-dialog-buttonpane > button:last').focus();

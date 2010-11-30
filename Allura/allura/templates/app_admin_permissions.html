@@ -57,11 +57,11 @@
 
 {% block extra_js %}
   <script type="text/javascript">
-    $(function() {
+    $(function () {
       $("#acl-admin").accordion({
         autoHeight: false,
         navigation: true,
-        change: function(event,ui) {
+        change: function (event, ui) {
           var hid = ui.newHeader.children('a').attr('id');
           if (hid === undefined) {
             $.cookie('app-acl-admin', null);
@@ -71,7 +71,7 @@
         }
       });
     });
-    $(document).ready(function(){
+    $(document).ready(function () {
       if($.cookie('app-acl-admin')) {
       $('#acl-admin').accordion('option', 'animated', false)
                      .accordion('activate', $('#' + $.cookie('app-acl-admin')).parent('h3'))

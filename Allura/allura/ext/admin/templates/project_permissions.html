@@ -71,11 +71,11 @@
 {% block extra_js %}
   <script type="text/javascript">
     /*<![CDATA[*/
-    $(function() {
+    $(function () {
       $("#acl-admin").accordion({
         autoHeight: false,
         navigation: true,
-        change: function(event,ui) {
+        change: function (event, ui) {
           var hid = ui.newHeader.children('a').attr('id');
           if (hid === undefined) {
             $.cookie('project-acl-admin', null);
@@ -85,7 +85,7 @@
         }
       });
     });
-    $(document).ready(function(){
+    $(document).ready(function () {
       if($.cookie('project-acl-admin')) {
         $('#acl-admin').accordion('option', 'animated', false)
                        .accordion('activate', $('#' + $.cookie('project-acl-admin')).parent('h3'))

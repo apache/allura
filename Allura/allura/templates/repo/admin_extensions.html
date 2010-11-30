@@ -29,11 +29,11 @@
 {% block extra_js %}
   {% if allow_config %}
     <script type="text/javascript">
-      function save_extensions(){
+      function save_extensions() {
           $.post('set_extensions', {
               additional_viewable_extensions: $('#additional_viewable_extensions').val()
           },
-          function(){
+          function () {
               location.reload();
           });
       }

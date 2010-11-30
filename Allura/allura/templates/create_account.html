@@ -27,7 +27,7 @@
 {% block extra_js %}
   <script type="text/javascript">
     //<!--
-    $('#create_account').submit(function(){
+    $('#create_account').submit(function () {
       if(!$('#username').attr('value').match(/^[a-zA-Z0-9]+$/)){
         alert('Username can only contain numbers and letters.');
         return false;

@@ -111,9 +111,9 @@
 {% endblock %}
 
 {% block extra_js %}
-  <script type="text/javascript" src="{{g.forge_static('js/jquery.maxlength-min.js')}}"/>
+  <script type="text/javascript" src="{{g.forge_static('js/jquery.maxlength-min.js')}}"></script>
   <script type="text/javascript">
-    $(document).ready(function(){
+    $(document).ready(function () {
       $('#short_description_textarea').maxlength({maxCharacters: 250});
     });
   </script>

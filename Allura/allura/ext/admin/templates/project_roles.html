@@ -86,14 +86,14 @@
     $('span.removable').click(function(e){
       var vals = $('#roles_form').serialize();
       var del_name = $('input', this)[0].name.replace('.id','.delete');
-      $.post($('#roles_form')[0].action, vals+'&'+del_name+'=Del', function(){
+      $.post($('#roles_form')[0].action, vals+'&'+del_name+'=Del', function () {
         e.target.parentNode.removeChild(e.target);
       });
     });
     $('select.add_role').change(function(e){
       var vals = $('#roles_form').serialize();
       var add_name = e.target.name.replace('.id','.add');
-      $.post($('#roles_form')[0].action, vals+'&'+add_name+'=Add', function(){
+      $.post($('#roles_form')[0].action, vals+'&'+add_name+'=Add', function () {
         window.location.reload();
       });
     });

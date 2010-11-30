@@ -9,7 +9,7 @@ import ew as ew_core
 import ew.jinja2_ew as ew
 
 def onready(text):
-    return ew.JSScript('$(function(){%s});' % text);
+    return ew.JSScript('$(function () {%s});' % text);
 
 class LabelList(fev.UnicodeString):
 
@@ -69,14 +69,14 @@ class ProjectUserSelect(ew.InputField):
         yield ew.CSSLink('css/autocomplete.css')
         yield onready('''
           $('input.project_user_select').autocomplete({
-            source: function(request, response) {
+            source: function (request, response) {
               $.ajax({
                 url: "%suser_search",
                 dataType: "json",
                 data: {
                   term: request.term
                 },
-                success: function(data) {
+                success: function (data) {
                   response(data.users);
                 }
               });
@@ -101,7 +101,7 @@ class AttachmentAdd(ew_core.Widget):
     def resources(self):
         for r in super(AttachmentAdd, self).resources(): yield r
         yield onready('''
-            $("input.attachment_form_add_button").click(function(){
+            $("input.attachment_form_add_button").click(function () {
                 $(this).hide();
                 $(".attachment_form_fields", this.parentNode).show();
             });
@@ -182,7 +182,7 @@ class PageSize(ew_core.Widget):
 
     def resources(self):
         yield onready('''
-            $('select.results_per_page').change(function(){
+            $('select.results_per_page').change(function () {
                 this.form.submit();})''')
 
 class FileChooser(ew.InputField):
@@ -198,7 +198,7 @@ class FileChooser(ew.InputField):
         yield onready('''
             var num_files = 0;
             var chooser = $('input.file_chooser').file();
-            chooser.choose(function(e, input) {
+            chooser.choose(function (e, input) {
                 var holder = document.createElement('div');
                 holder.style.clear = 'both';
                 e.target.parentNode.appendChild(holder);
@@ -212,7 +212,7 @@ class FileChooser(ew.InputField):
                 var icon = document.createElement('b');
                 icon.className = 'ico delete';
                 delete_link.appendChild(icon);
-                $(delete_link).click(function(){
+                $(delete_link).click(function () {
                     this.parentNode.parentNode.removeChild(this.parentNode);
                 });
                 $(holder).append(delete_link);

@@ -60,8 +60,8 @@ class ModeratePosts(ew.SimpleForm):
       (function($){
           var tbl = $('form table');
           var checkboxes = $('input[type=checkbox]', tbl);
-          $('a[href=#]', tbl).click(function() {
-              checkboxes.each(function() {
+          $('a[href=#]', tbl).click(function () {
+              checkboxes.each(function () {
                   if(this.checked) { this.checked = false; }
                   else { this.checked = true; }
               });
@@ -137,7 +137,7 @@ class EditPost(ff.ForgeForm):
     def resources(self):
         for r in ew.TextField(name='subject').resources(): yield r
         for r in ffw.AutoResizeTextarea(name='text').resources(): yield r
-        yield ew.JSScript('''$(document).ready(function(){
+        yield ew.JSScript('''$(document).ready(function () {
             $("a.attachment_form_add_button").click(function(evt){
                 $(this).hide();
                 $(".attachment_form_fields", this.parentNode).show();
@@ -191,9 +191,9 @@ class SubscriptionForm(ew.SimpleForm):
     def resources(self):
         for r in super(SubscriptionForm, self).resources(): yield r
         yield ew.JSScript('''
-        $(window).load(function() {
+        $(window).load(function () {
             $('tbody').children(':even').addClass('even');
-            $('.discussion_subscription_form').each(function(){
+            $('.discussion_subscription_form').each(function () {
                 var discussion = this;
                 var follow_btn = $('.follow', discussion);
                 var email_btn = $('.email', discussion);
@@ -203,7 +203,7 @@ class SubscriptionForm(ew.SimpleForm):
                 follow_btn.show();
                 email_btn.show();
                 $('.submit', discussion).button();
-                follow_btn.click(function(ele){
+                follow_btn.click(function (ele) {
                     $('.follow_form', discussion).submit();
                     return false;
                 });
@@ -273,16 +273,16 @@ class Post(HierWidget):
             for r in w.resources():
                 yield r
         yield ew.JSScript('''
-        (function(){
-            $('div.discussion-post').each(function(){
+        (function () {
+            $('div.discussion-post').each(function () {
                 var post = this;
                 $('.submit', post).button();
-                $('.flag_post, .delete_post', post).click(function(ele){
+                $('.flag_post, .delete_post', post).click(function (ele) {
                     this.parentNode.submit();
                     return false;
                 });
                 if($('a.edit_post', post)){
-                    $('a.edit_post', post).click(function(ele){
+                    $('a.edit_post', post).click(function (ele) {
                         $('.display_post', post).hide();
                         $('.edit_post_form', post).show();
                         $('.edit_post_form textarea', post).focus();
@@ -290,7 +290,7 @@ class Post(HierWidget):
                     });
                 }
                 if($('.reply_post', post)){
-                    $('.reply_post', post).click(function(ele){
+                    $('.reply_post', post).click(function (ele) {
                         $('.reply_post_form', post).show();
                         $('.reply_post_form textarea', post).focus()
                         return false;
@@ -298,20 +298,20 @@ class Post(HierWidget):
                     $('.reply_post', post).button();
                 }
                 if($('.add_attachment', post)){
-                    $('.add_attachment', post).click(function(ele){
+                    $('.add_attachment', post).click(function (ele) {
                         $('.add_attachment_form', post).show();
                         return false;
                     });
                 }
                 if($('.promote_to_thread', post)){
-                    $('.promote_to_thread', post).click(function(ele){
+                    $('.promote_to_thread', post).click(function (ele) {
                         $('.promote_to_thread_form', post).show();
                         return false;
                     });
                 }
                 if($('.shortlink', post)){
                     var popup = $('.shortlink_popup', post).dialog({modal: true, autoOpen: false}).show();
-                    $('.shortlink', post).click(function(ele){
+                    $('.shortlink', post).click(function (ele) {
                         popup.dialog('open');
                         $('input', popup).select();
                         return false;
@@ -357,7 +357,7 @@ class Thread(HierWidget):
             for r in w.resources():
                 yield r
         yield ew.JSScript('''
-        $(document).ready(function(){
+        $(document).ready(function () {
             var thread_reply = $('a.sidebar_thread_reply');
             var thread_tag = $('a.sidebar_thread_tag');
             var thread_spam = $('a.sidebar_thread_spam');
@@ -367,18 +367,18 @@ class Thread(HierWidget):
             var allow_moderate = $('#allow_moderate');
             var mod_thread_link = $('#mod_thread_link');
             var mod_thread_form = $('#mod_thread_form');
-            if(mod_thread_link.length){
-                if(mod_thread_form.length){
-                    mod_thread_link.click(function(e){
+            if (mod_thread_link.length) {
+                if (mod_thread_form.length) {
+                    mod_thread_link.click(function (e) {
                         mod_thread_form.show();
                         return false;
                     });
                 }
             }
-            if(thread_reply.length){
-                if(new_post_holder.length){
+            if (thread_reply.length) {
+                if (new_post_holder.length) {
                     thread_reply[0].style.display='block';
-                    thread_reply.click(function(e){
+                    thread_reply.click(function (e) {
                         new_post_create.hide();
                         new_post_holder.show();
                         // focus the submit to scroll to the bottom, then focus the subject for them to start typing
@@ -388,10 +388,10 @@ class Thread(HierWidget):
                     });
                 }
             }
-            if(thread_tag.length){
-                if(tag_thread_holder.length){
+            if (thread_tag.length) {
+                if (tag_thread_holder.length) {
                     thread_tag[0].style.display='block';
-                    thread_tag.click(function(e){
+                    thread_tag.click(function (e) {
                         tag_thread_holder.show();
                         // focus the submit to scroll to the bottom, then focus the subject for them to start typing
                         $('input[type="submit"]', tag_thread_holder).focus();
@@ -400,8 +400,8 @@ class Thread(HierWidget):
                     });
                 }
             }
-            if(thread_spam.length){
-                if(allow_moderate.length){
+            if (thread_spam.length) {
+                if (allow_moderate.length) {
                     thread_spam[0].style.display='block';
                 }
             }
