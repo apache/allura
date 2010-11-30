@@ -104,11 +104,12 @@ class SMTPClient(object):
 
     def sendmail(self, addrs, addrfrom, reply_to, subject, message_id, in_reply_to, message):
         if not addrs: return
-        message['To'] = reply_to
-        message['From'] = addrfrom
+        charset = message.get_charset()
+        message['To'] = reply_to.encode(charset)
+        message['From'] = addrfrom.encode(charset)
         if reply_to is not None:
-            message['Reply-To'] = reply_to
-        message['Subject'] = subject
+            message['Reply-To'] = reply_to.encode(charset)
+        message['Subject'] = subject.encode(charset)
         message['Message-ID'] = '<' + message_id + '>'
         if in_reply_to:
             if isinstance(in_reply_to, basestring):
