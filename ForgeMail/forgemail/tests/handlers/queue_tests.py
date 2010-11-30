@@ -1,5 +1,4 @@
-from nose.tools import *
-from lamson.testing import *
+from lamson.testing import relay, RouterConversation
 import os
 from lamson import server
 
