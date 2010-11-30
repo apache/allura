@@ -3,9 +3,9 @@
 {% else %}
   <a href="{{c.project.url()}}">
     {% if c.project.icon %}
-      <img src="{{c.project.url()}}/icon" class="project_icon"/>
+      <img src="{{c.project.url()}}/icon" class="project_icon" alt="Project Logo" />
     {% else %}
-      <img src="{{g.forge_static('images/project_default.png')}}" class="project_icon"/>
+      <img src="{{g.forge_static('images/project_default.png')}}" class="project_icon" alt="Default Project Icon" />
     {% endif %}
 	<h1>
       {% if c.project.shortname.endswith('--init--') %}
