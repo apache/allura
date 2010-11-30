@@ -78,7 +78,7 @@ async==0.6.1
 
 GitPython==0.3.0-beta2dev-20100908
 EasyWidgets==0.2dev-20101117
-Ming==0.2dev-20101130
+Ming==0.2.1dev-20101130
 TurboGears2==2.1b2dev-20100628
 sf.phpsession==0.1
 tg.devtools==2.0.2dev-20100628
