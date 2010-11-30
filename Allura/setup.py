@@ -87,10 +87,6 @@ setup(
     [flyway.migrations]
     pyforge = allura.migrations
 
-    [flyway.test_migrations]
-    a = flyway.tests.migrations_a
-    b = flyway.tests.migrations_b
-
     [paste.paster_command]
     reactor_setup = allura.command:ReactorSetupCommand
     reactor = allura.command:ReactorCommand
@@ -100,7 +96,6 @@ setup(
     ensure_index = allura.command:EnsureIndexCommand
     script = allura.command:ScriptCommand
     set-tool-access = allura.command:SetToolAccessCommand
-    flyway = flyway.command:MigrateCommand
     
     [easy_widgets.resources]
     ew_resources=allura.config.resources:register_ew_resources
