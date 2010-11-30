@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+import logging
 import os
 import smtpd
 import smtplib

@@ -3,6 +3,7 @@ import json
 import hashlib
 import urllib
 import urllib2
+import logging
 from urlparse import urljoin, urlparse
 from datetime import datetime
 

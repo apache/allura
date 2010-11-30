@@ -1,6 +1,6 @@
 from config import settings
 from lamson.routing import Router
-from lamson.server import Relay, SMTPReceiver
+from lamson.server import Relay, QueueReceiver
 from lamson import view
 import logging
 import logging.config

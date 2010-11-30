@@ -1,9 +1,11 @@
 # -*- coding: utf-8 -*- 
 from os import path, environ, getcwd
+import os
 import logging
 import tempfile
 import subprocess
 import json
+import urllib2
 
 import tg
 import mock
@@ -15,6 +17,8 @@ from webtest import TestApp
 from webob import Request, Response
 from tidylib import tidy_document
 from nose.tools import ok_, assert_true, assert_false
+from poster.encode import multipart_encode
+from poster.streaminghttp import register_openers
 
 import ew
 from ming.orm import ThreadLocalORMSession
