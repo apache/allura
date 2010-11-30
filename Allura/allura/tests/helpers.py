@@ -111,6 +111,7 @@ def validate_xhtml(html):
                        'replacing invalid character code',
                        'discarding invalid character code',
                        '<a> proprietary attribute "alt"', # event RSS feed generated this 
+                       '<table> lacks "summary" attribute',
                        
                        # parser appears to get mightily confused 
                        # see also http://sourceforge.net/tracker/?func=detail&atid=390963&aid=1986717&group_id=27659 
