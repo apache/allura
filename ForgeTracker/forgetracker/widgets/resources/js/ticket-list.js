@@ -2,7 +2,7 @@
     var max_page=Math.max(0, Math.floor((count+limit-1)/limit)-1);
 
     function requery(){
-        window.location = '?q=' + encodeURIComponent(q) +
+        window.location = '?q=' + q +
                           '&limit=' + limit +
                           '&page=' + page +
                           '&sort=' + encodeURIComponent(sort);
