@@ -1,16 +1,17 @@
 <div>
   <h3><a href="{{value.url()}}">{{value.title}}</a></h3>
-  <em>Posted {{h.ago(value.timestamp)}}</em>
+  <em class="grid-19">Posted {{h.ago(value.timestamp)}}</em>
   {% if value.state != 'published' %}
-    <em>({{value.state}})</em>
+    <em class="grid-19">({{value.state}})</em>
   {% endif %}
   {% if h.has_artifact_access('write', value)() %}
-    <a href="{{value.url()}}edit">Edit</a>
+    <div class="grid-19"><a href="{{value.url()}}edit">Edit</a></div>
   {% endif %}
-  <br/>
-  <strong>Labels:</strong>
-  {% for l in value.labels %}
-    <span><a href="{{c.app.url}}search?q=labels_t:{{l}}">{{l}}</a> </span>
-  {% endfor %}
+  <div class="grid-19">
+    <strong>Labels:</strong>
+    {% for l in value.labels %}
+      <span><a href="{{c.app.url}}search?q=labels_t:{{l}}">{{l}}</a> </span>
+    {% endfor %}
+  </div>
   {{value.html_text_preview|safe}}
 </div>

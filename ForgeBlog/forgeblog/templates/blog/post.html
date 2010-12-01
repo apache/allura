@@ -4,6 +4,15 @@
 
 {% block header %}{{post.title}}{% endblock %}
 
+{% block actions %}
+  {% if h.has_artifact_access('write', post)() %}
+    <a href="edit" title="Edit"><b data-icon="p" class="ico"></b></a>
+  {% endif %}
+  <a href="history" title="History"><b data-icon="N" class="ico"></b></a>
+  {{c.subscribe_form.display(value=subscribed, action='subscribe', style='icon')}}
+  <a href="feed" title="RSS"><b data-icon="f" class="ico"></b></a>
+{% endblock %}
+
 {% block content %}
     {{c.form.display(value=post, base_post=base_post)}}
     <div style="clear:both;"></div>

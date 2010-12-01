@@ -10,10 +10,10 @@
 {% endblock %}
 
 {% block content %}
-          {% for post in posts %}
-            {% if not loop.first %}
-              <hr />
-            {% endif %}
-            {{c.form.display(value=post)}}
-          {% endfor %}
+  {% for post in posts %}
+    {% if not loop.first %}
+      <hr />
+    {% endif %}
+    {{c.form.display(value=post)}}
+  {% endfor %}
 {% endblock %}
