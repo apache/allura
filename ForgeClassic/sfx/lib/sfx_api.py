@@ -149,8 +149,8 @@ class SFXProjectApi(object):
                 ug_name = self._unix_group_name(p.neighborhood, p.shortname)
                 p.set_tool_data('sfx', unix_group_name=ug_name)
             c.project = p
-            dev_role = M.ProjectRole.query.get(name='Developer')
-            admin_role = M.ProjectRole.query.get(name='Admin')
+            dev_role = M.ProjectRole.by_name('Developer')
+            admin_role = M.ProjectRole.by_name('Admin')
             args = dict(
                 user_id=user.tool_data.sfx.userid,
                 group_name=p.name.encode('utf-8'),

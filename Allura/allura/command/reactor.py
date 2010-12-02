@@ -227,7 +227,7 @@ class ReactorCommand(base.Command):
 class SendMessageCommand(base.Command):
     min_args=3
     max_args=4
-    usage = 'NAME <ini file> <exchange> <topic> [<json message>]'
+    usage = '<ini file> <exchange> <topic> [<json message>]'
     summary = 'Send a message to a RabbitMQ exchange'
     parser = base.Command.standard_parser(verbose=True)
     parser.add_option('-c', '--context', dest='context',
