@@ -9,7 +9,7 @@ import pkg_resources
 from pylons import c, request
 from tg import expose, redirect, flash
 from webob import exc
-from pymongo.bson import ObjectId
+from bson import ObjectId
 
 
 from ming.orm import session
