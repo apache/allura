@@ -7,24 +7,23 @@
 {% block content %}
 <form action="." method="POST">
     {% if c.user != c.user.anonymous() %}
-      <ol>
-        <li>
-          <label>Project:</label>
-          <select name="project_name">
-            <option value="{{to_project_name}}" selected="selected">{{to_project_name}}</option>
-          {% for p in c.user.my_projects() %}
-            <option value="{{p.shortname}}">{{p.name}}</option>
-          {% endfor %}
-          </select>
-        </li>
-        <li>
-          <label>Repository Name:</label>
-          <input type="text" name="to_name" value="{{to_name}}"/>
-        <li>
-          <label>&nbsp;</label>
-          <input type="submit" value="Fork"/>
-        </li>
-      </ol>
+      <label class="grid-4">Project:</label>
+      <div class="grid-15">
+        <select name="project_name">
+          <option value="{{to_project_name}}" selected="selected">{{to_project_name}}</option>
+        {% for p in c.user.my_projects() %}
+          <option value="{{p.shortname}}">{{p.name}}</option>
+        {% endfor %}
+        </select>
+      </div>
+      <label class="grid-4">Repository Name:</label>
+      <div class="grid-15">
+        <input type="text" name="to_name" value="{{to_name}}"/>
+      </div>
+      <label class="grid-4">&nbsp;</label>
+      <div class="grid-15">
+        <input type="submit" value="Fork"/>
+      </div>
     {% endif %}
 </form>
 <div id="in-use" style="display:none">

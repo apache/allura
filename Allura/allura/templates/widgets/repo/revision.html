@@ -1,4 +1,5 @@
 {% from 'jinja_master/lib.html' import email_gravatar with context %}
+<p>
 {% if value.author_url %}
   Authored by
   <a href="{{value.author_url}}">{{email_gravatar(value.authored.email, title=h.really_unicode(value.authored.name), size=16)}}</a>
@@ -19,17 +20,19 @@
   {% endif %}
   {% if value.committed.date %}{{h.ago(value.committed.date)}}{% endif %}
 {% endif %}
+</p>
 
-<br/>
-<a href="{{value.url()}}tree/">Tree</a><br/>
+<p><a href="{{value.url()}}tree/">Tree</a></p>
 {% if prev %}
+<p>
   Parent(s):
   {% for ci in prev %}<a href="{{ci.url()}}">{{ci.shorthand_id()}}</a>{% endfor %}
-  <br/>
+</p>
 {% endif %}
 {% if next %}
+<p>
   Child(ren):
   {% for ci in next %}<a href="{{ci.url()}}">{{ci.shorthand_id()}}</a>{% endfor %}
-  <br/>
+</p>
 {% endif %}
 {{g.markdown.convert(h.really_unicode(value.message))}}

@@ -1,7 +1,7 @@
 {% from 'jinja_master/lib.html' import email_gravatar with context %}
 <div>
   {% if show_paging %}
-    <div style="clear:both">
+    <div class="grid-19" style="clear:both">
       {{widget.fields['page_list'].display(limit=limit, page=page, count=count)}}
     </div>
   {% endif %}
@@ -44,7 +44,7 @@
     </tbody>
   </table>
   {% if show_paging %}
-    <div style="clear:both">
+    <div class="grid-19" style="clear:both">
       {{widget.fields['page_list'].display(limit=limit, page=page, count=count)}}
       {{widget.fields['page_size'].display(limit=limit)}}
     </div>

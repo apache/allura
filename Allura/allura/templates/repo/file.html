@@ -15,28 +15,30 @@
 {% block content %}
   {{ clone_info(c.app.repo) }}
   {% if prev %}
+  <p>
     Parent:
     <a href="{{prev.url()}}">{{prev.commit.shorthand_id()}}</a>
     <a href="?diff={{prev.commit.object_id}}">(diff)</a>
-    <br/>
+  </p>
   {% endif %}
 
   {% if next %}
+  <p>
     Child:
     <a href="{{next.url()}}">{{next.commit.shorthand_id()}}</a>
     <a href="{{next.url()}}?diff={{blob.commit.object_id}}">(diff)</a>
-    <br/>
+  </p>
   {% endif %}
 
   {% if blob.has_image_view %}<img src="?format=raw"/>{% endif %}
   {% if not blob.has_html_view and not blob.has_image_view and not force_display %}
-    {{h.really_unicode(blob.name)}} is not known to be viewable in your browser.
+    <p>{{h.really_unicode(blob.name)}} is not known to be viewable in your browser.
     Try to <a href="?force=True">display it</a> anyway or
-    <a href="?format=raw">download it</a> instead.
+    <a href="?format=raw">download it</a> instead.</p>
   {% endif %}
   {% if blob.has_html_view and not blob.has_image_view or force_display %}
-    <a href="?format=raw">Download this file</a>
-    <div class="clip">
+    <p><a href="?format=raw">Download this file</a></p>
+    <div class="clip grid-19">
       <h3><span class="ico-l"><b class="ui-icon ui-icon-document"></b> {{h.really_unicode(blob.name)}}</span></h3>
       {{g.highlight(blob.text, filename=blob.name)}}
     </div>
