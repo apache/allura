@@ -30,8 +30,8 @@ def main():
     if options.clean:
         log.info('Removing all repository objects')
         M.repository.RepoObject.query.remove()
-    projects = M.Project.query.find(q_project).all()
-    for p in projects:
+    all_projects = M.Project.query.find(q_project).all()
+    for p in all_projects:
         c.project = p
         if projects:
             mount_points = projects[p.shortname]
