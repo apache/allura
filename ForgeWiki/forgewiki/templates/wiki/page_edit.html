@@ -56,7 +56,7 @@
       <input type="reset" value="Cancel"/>
 		</div>
 </form>
-<div style="margin: 0 10px">
+<div class="grid-19">
   {{c.attachment_list.display(attachments=page.attachments, edit_mode=page_exists and has_artifact_access('edit', page)())}}
   {% if page_exists and has_artifact_access('edit', page)() %}
     {{c.attachment_add.display(action=page.url() + 'attach', name='file_info')}}

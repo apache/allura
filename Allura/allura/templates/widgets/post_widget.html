@@ -11,7 +11,7 @@
     		</p>
     	</div>
 
-	<div class="grid-13" style="width: {{indent == 0 and 475 or 465-indent*10}}px">
+	<div class="grid-13" style="width: {{indent == 0 and 475 or (indent <= 40 and 465-indent*10 or 65)}}px">
         <div class="display_post">
           {% if show_subject %}
             <b>{{value.subject or '(no subject)'}}<br/></b>
@@ -83,7 +83,7 @@
                 <a href="{{c.user.url()}}">{{c.user.display_name}}</a>
               </p>
             </div>
-            <div class="grid-13" style="width: {{575-indent*10}}px">
+            <div class="grid-13" style="width: {{indent <= 40 and 575-indent*10 or 175}}px">
               {{widgets.edit_post.display(
                 submit_text='Post Reply',
                 action=value.url()+'reply',
