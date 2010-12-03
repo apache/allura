@@ -31,7 +31,7 @@
                   <td>Tool: {{item['ac'].tool_name}}</td>
                   <td>{{item['ac'].options.mount_point}}</td>
                   <td>
-                    <form method="POST" action="update_mounts" id="mounts_edit">
+                    <form method="post" action="update_mounts" id="mounts_edit-{{i}}">
                       <input type="hidden"
                              name="tool-{{i}}.mount_point"
                              class="mount_point"
@@ -63,7 +63,7 @@
                     {% endif %}
                   </td>
                   <td>
-                    <form method="POST" action="update_mounts" id="mounts_edit">
+                    <form method="post" action="update_mounts" id="mounts_edit_2-{{i}}">
                       <input type="hidden"
                              name="tool-{{i}}.mount_point"
                              value="{{item['ac'].options.mount_point}}"/>
@@ -78,7 +78,7 @@
                   <td>Subproject</td>
                   <td>{{item['sub'].shortname}}</td>
                   <td>
-                  <form method="POST" action="update_mounts" id="mounts_edit">
+                  <form method="post" action="update_mounts" id="mounts_edit-{{i}}">
                       <input type="hidden"
                              name="subproject-{{i}}.shortname"
                              class="shortname"
@@ -102,7 +102,7 @@
                   </a></td>
                   {% endif %}
                   <td>
-                  <form method="POST" action="update_mounts" id="mounts_edit">
+                  <form method="post" action="update_mounts" id="mounts_edit_2-{{i}}">
                       <input type="hidden"
                              name="subproject-{{i}}.shortname"
                              value="{{item['sub'].shortname}}"/>
@@ -115,7 +115,7 @@
                 {% endif %}
               </tr>
               {% endfor %}
-              <form method="POST" action="update_mounts">
+              <form method="post" action="update_mounts">
                 <input type="hidden" name="new.ordinal" value="{{installable_tools|length + c.project.direct_subprojects|length}}"/>
                 {% if h.has_project_access('tool')() %}
                 <tr>
