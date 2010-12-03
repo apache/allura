@@ -39,7 +39,7 @@ class TestFunctionalController(TestController):
         summary = 'test new ticket'
         ticket_view = self.new_ticket(summary=summary)
         assert_true(summary in ticket_view)
-        assert 'class="artifact_toolsubscription' in ticket_view
+        assert 'class="artifact_subscribe' in ticket_view
 
     def test_new_with_milestone(self):
         ticket_view = self.new_ticket(summary='test new with milestone', **{'_milestone':'1.0'})
@@ -163,8 +163,7 @@ class TestFunctionalController(TestController):
         }, upload_files=[upload]).follow()
         assert file_name in ticket_editor, ticket_editor.showbrowser()
         req = self.app.get('/bugs/1/')
-        file_link = req.html.findAll('form')[2].findAll('a')[7]
-        print req.html.findAll('form')[2].findAll('a')
+        file_link = req.html.findAll('form')[1].findAll('a')[7]
         assert file_link.string == file_name
         self.app.post(str(file_link['href']),{
             'delete':'True'
@@ -180,7 +179,7 @@ class TestFunctionalController(TestController):
         ticket_editor = self.app.post('/bugs/1/update_ticket',{
             'summary':'zzz'
         }, upload_files=[upload]).follow()
-        download = self.app.get(str(ticket_editor.html.findAll('form')[2].findAll('a')[7]['href']))
+        download = self.app.get(str(ticket_editor.html.findAll('form')[1].findAll('a')[7]['href']))
         assert_true(download.body == file_data)
     
     def test_new_image_attachment_content(self):
@@ -469,7 +468,7 @@ class TestFunctionalController(TestController):
         # check that existing form is valid
         assert response.html.find('input', {'name':'ticket_form.summary'})['value'] == old_summary
         assert not response.html.find('div', {'class':'error'})
-        form = response.forms[2]
+        form = response.forms[1]
         # try submitting with no summary set and check for error message
         form['ticket_form.summary'] = ""
         error_form = form.submit()
@@ -478,11 +477,11 @@ class TestFunctionalController(TestController):
         assert error_message.string == 'You must provide a Title'
         assert error_message.findPreviousSibling('input').get('name') == 'ticket_form.summary'
         # set a summary, submit, and check for success
-        error_form.forms[2]['ticket_form.summary'] = new_summary
-        r = error_form.forms[2].submit()
+        error_form.forms[1]['ticket_form.summary'] = new_summary
+        r = error_form.forms[1].submit()
         assert r.status_int == 302, r.showbrowser()
         success = r.follow().html
-        assert success.findAll('form')[2].get('action') == '/p/test/bugs/1/update_ticket_from_widget'
+        assert success.findAll('form')[1].get('action') == '/p/test/bugs/1/update_ticket_from_widget'
         assert success.find('input', {'name':'ticket_form.summary'})['value'] == new_summary
 
 #   def test_home(self):
