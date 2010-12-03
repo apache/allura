@@ -7,13 +7,12 @@
 {% block content %}
   {% if lists %}
     <h2>Existing Lists</h2>
-    <div class="content">
+    <div class="grid-19">
       {{c.list.display(action='save', value=dict(lists=lists))}}
-      <br style="clear:both"/>
     </div>
   {% endif %}
   <h2>New List</h2>
-  <div class="content">
+  <div>
     {{c.new.display(action='create')}}
   </div>
 {% endblock %}

@@ -8,19 +8,23 @@
 
 <p>Service details:</p>
   <div>
-    <a href="{{g.url('/apps/admin/%s/' % c.project.shortname)}}"
-       >Access this project's databases over the internet</a><br/>
-    <a href="http://p.sf.net/sourceforge/mysql"
-       >Documentation: Guide to MySQL Database Services</a><br/>
-    Hostname: {{value.hostname}} (exactly as shown, with no domain suffix)<br/>
-    Database name prefix: {{value.prefix}}_ &mdash; i.e. "CREATE DATABASE
-    {{value.prefix}}_myapp" as your ADMIN user.<br/>
-    RO User: {{value.prefix}}ro (SELECT)<br/>
-    RW User: {{value.prefix}}rw (SELECT, INSERT , DELETE, UPDATE)<br/>
-    ADMIN User: {{value.prefix}}admin (has RW account privileges, and CREATE,
-    DROP, ALTER, INDEX, LOCK TABLES))<br/>
-    web-access URL: <a href="{{value.url}}"
-                       >{{value.url}}</a><br/>
+    <p>
+      <a href="{{g.url('/apps/admin/%s/' % c.project.shortname)}}"
+       >Access this project's databases over the internet</a><br>
+       <a href="http://p.sf.net/sourceforge/mysql"
+       >Documentation: Guide to MySQL Database Services</a>
+    </p>
+    <p>
+      Hostname: {{value.hostname}} (exactly as shown, with no domain suffix)<br/>
+      Database name prefix: {{value.prefix}}_ &mdash; i.e. "CREATE DATABASE
+      {{value.prefix}}_myapp" as your ADMIN user.<br/>
+      RO User: {{value.prefix}}ro (SELECT)<br/>
+      RW User: {{value.prefix}}rw (SELECT, INSERT , DELETE, UPDATE)<br/>
+      ADMIN User: {{value.prefix}}admin (has RW account privileges, and CREATE,
+      DROP, ALTER, INDEX, LOCK TABLES))<br/>
+      web-access URL: <a href="{{value.url}}"
+                         >{{value.url}}</a>
+    </p>
     {% if value.passwd_rouser %}
       <p>
         Please note that your MySQL passwords are displayed here as plaintext
