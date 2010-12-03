@@ -22,8 +22,8 @@
             <div style="clear:both;"><a href="{{n.url()}}"><h2>{{n.name}}</h2></a></div>
             <div class="list" style="clear:both">
               {% for p in subprojects %}
-            	{% do g.set_project(p.shortname) %}
-            	{% if h.has_project_access('read', p)() %}
+                {% do g.set_project(p.shortname) %}
+                {% if h.has_project_access('read', p)() %}
                   {{c.project_summary.display(value=p)}}
                 {% endif %}
               {% endfor %}
@@ -31,7 +31,7 @@
 {% endmacro %}
 
 {% block content %}
-      	  {% set old_project = c.project %}
+          {% set old_project = c.project %}
           
           {% if text %}
             {{text|safe}}
@@ -48,8 +48,8 @@
             {% else %}
               <div class="list">
                 {% for project in projects %}
-              	  {% do g.set_project(project.shortname) %}
-              	  {% if h.has_project_access('read', project)() %}
+                  {% do g.set_project(project.shortname) %}
+                  {% if h.has_project_access('read', project)() %}
                     {{c.project_summary.display(value=project)}}
                   {% endif %}
                 {% endfor %}

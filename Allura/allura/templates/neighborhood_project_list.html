@@ -33,7 +33,7 @@
 
 {% block content %}
     {% if neighborhood.homepage %}
-  	  {{neighborhood.homepage|safe}}
+      {{neighborhood.homepage|safe}}
     {% endif %}
     {% if neighborhood.allow_browse %}
       {% if not projects %}
@@ -43,8 +43,8 @@
         {{c.page_list.display(limit=limit, page=page, count=count)}}
         <div style="clear:both"></div>
         {% for project in projects %}
-      	  {% do g.set_project(project.shortname) %}
-      	  {% if h.has_project_access('read', project)() %}
+          {% do g.set_project(project.shortname) %}
+          {% if h.has_project_access('read', project)() %}
             {{c.project_summary.display(value=project)}}
           {% endif %}
         {% endfor %}

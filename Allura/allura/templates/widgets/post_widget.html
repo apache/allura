@@ -8,8 +8,8 @@
     		  {% set size = value.parent and 32 or 48 %}
           <a href="{{value.author().url()}}">{{lib.gravatar(value.author(), size=size)}}</a><br/>
           <a href="{{value.author().url()}}">{{value.author().display_name}}</a><br />{{h.ago(value.timestamp)}}
-    		</p>
-    	</div>
+         </p>
+        </div>
 
 	<div class="grid-13" style="width: {{indent == 0 and 475 or (indent <= 40 and 465-indent*10 or 65)}}px">
         <div class="display_post">
@@ -19,9 +19,9 @@
           {{g.markdown.convert(value.text)|safe}}
         </div>
         {% if h.has_artifact_access('post', value.thread)() %}
-      	<div class="edit_post_form reply" style="display:none">
+        <div class="edit_post_form reply" style="display:none">
             {{widgets.edit_post.display(value=value, submit_text='Save', action=value.url())}}
-      	</div>
+        </div>
         {% endif %}
         {% if h.has_artifact_access('moderate', value)() %}
         <div class="add_attachment_form" style="display:none; clear: both; overflow: auto;">
@@ -51,7 +51,7 @@
           {% endfor %}
         </div>
         {% endif %}
-    	</div>
+        </div>
         
 	<div class="options grid-3">
         <a href="" class="reply_post btn">Reply</a>
@@ -65,7 +65,7 @@
             <a href="#" class="add_attachment little_link"><span>Attach</span></a>
           {% endif %}
         </div>
-	</div>
+        </div>
       <div class="shortlink_popup" style="display: none">
         If you would like to refer to this comment somewhere else in this project, copy and paste the following link:
         <input type="text" style="width:100%"

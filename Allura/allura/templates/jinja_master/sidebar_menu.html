@@ -14,26 +14,26 @@
 
 <div id="sidebar">
   {% if c.app and c.app.searchable %}
-	<form id="search" method="GET" action="{{c.app.url + 'search/'}}">
-		<input name="q" class="border defaultText" type="text" title="Search {{c.app.config.options.mount_point.title()}}"/>
-	</form>
+    <form id="search" method="GET" action="{{c.app.url + 'search/'}}">
+      <input name="q" class="border defaultText" type="text" title="Search {{c.app.config.options.mount_point.title()}}"/>
+    </form>
   {% else %}
     <div>&nbsp;</div>
   {% endif %}
 	<ul>
     {% if c.custom_sidebar_menu %}
-	    {% for s in c.custom_sidebar_menu %}
-	      {{sidebar_item(s)}}
+      {% for s in c.custom_sidebar_menu %}
+        {{sidebar_item(s)}}
       {% endfor %}
     {% endif %}
     {% if c.app %}
-	    {% for s in c.app.sidebar_menu() %}
-	      {{sidebar_item(s)}}
+      {% for s in c.app.sidebar_menu() %}
+        {{sidebar_item(s)}}
       {% endfor %}
     {% elif c.project %}
-	    {% for s in c.project.sidebar_menu() %}
-	      {{sidebar_item(s)}}
+      {% for s in c.project.sidebar_menu() %}
+        {{sidebar_item(s)}}
       {% endfor %}
     {% endif %}
-	</ul>
+    </ul>
 </div>

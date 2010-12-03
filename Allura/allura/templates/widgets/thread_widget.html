@@ -1,8 +1,8 @@
 {% import 'jinja_master/lib.html' as lib with context %}
 
 <div>
-		<div class="row">
-			<div class="column grid_12">
+                <div class="row">
+                        <div class="column grid_12">
       {% if limit %}
         {{widgets.page_list.display(limit=limit, page=page, count=count)}}
       {% endif %}
@@ -46,7 +46,7 @@
     	</div>
 	<div class="grid-16">
         {{widgets.edit_post.display(submit_text='Save', action=value.url() + 'post')}}
-      </div>
+        </div>
     </div>
   </div>
 {% endif %}
