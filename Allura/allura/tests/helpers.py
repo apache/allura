@@ -97,7 +97,7 @@ def validate_html(html_or_response):
                     
         if html.startswith('<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"'):
             return validate_xhtml(html)
-        elif html.startswith('<!DOCTYPE html">'):
+        elif html.startswith('<!DOCTYPE html>'):
             return validate_html5(html)
         else:
             assert False, 'Non-valid HTML: ' + html[:100] + '...'
@@ -204,7 +204,7 @@ def validate_html5(html_or_response):
         
 def validate_html5_chunk(html):
         """ When you don't have a html & body tags - this adds it"""
-        html = '''<!DOCTYPE html"> 
+        html = '''<!DOCTYPE html> 
         <html> 
         <head><title></title></head> 
         <body> 
