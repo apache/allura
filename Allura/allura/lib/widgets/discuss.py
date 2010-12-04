@@ -292,7 +292,7 @@ class Post(HierWidget):
                 if($('.reply_post', post)){
                     $('.reply_post', post).click(function (ele) {
                         $('.reply_post_form', post).show();
-                        $('.reply_post_form textarea', post).focus()
+                        $('.reply_post_form textarea', post).focus();
                         return false;
                     });
                     $('.reply_post', post).button();
@@ -318,7 +318,7 @@ class Post(HierWidget):
                     });
                 }
             });
-        })();
+        }());
         ''')
 
 class PostThread(ew_core.Widget):

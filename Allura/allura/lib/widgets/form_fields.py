@@ -183,7 +183,7 @@ class PageSize(ew_core.Widget):
     def resources(self):
         yield onready('''
             $('select.results_per_page').change(function () {
-                this.form.submit();})''')
+                this.form.submit();});''')
 
 class FileChooser(ew.InputField):
     template='jinja:widgets/file_chooser.html'
