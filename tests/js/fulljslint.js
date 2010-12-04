@@ -3833,10 +3833,11 @@ loop:   for (;;) {
                         }
                         warning("Bad identifier.");
                     }
-                    option.white = true;
+// Don't try to enable white if we said no
+//                    option.white = true;
                     nonadjacent(token, nexttoken);
                     a = nexttoken.value;
-                    option.white = w;
+//                    option.white = w;
                     advance();
                     if (!option.cap && a !== a.toLowerCase()) {
                         warning("Attribute '{a}' not all lower case.", nexttoken, a);
