@@ -121,5 +121,6 @@
     {% elif c.project.neighborhood %}
       {{ c.project.neighborhood.site_specific_html | safe }}
     {% endif %}
+    {{theme_macros.custom_js(g.theme_static(''))}}
   </body>
 </html>
