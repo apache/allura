@@ -57,7 +57,7 @@ class ForgeDownloadsApp(Application):
         'Set up any default permissions and roles here'
         super(ForgeDownloadsApp, self).install(project)
         # Setup permissions
-        role_anon = ProjectRole.query.get(name='*anonymous')._id
+        role_anon = ProjectRole.anonymous()._id
         c.project.show_download_button = True
         self.config.acl.update(
             configure=c.project.acl['tool'],
