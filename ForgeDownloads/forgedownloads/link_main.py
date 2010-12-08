@@ -54,7 +54,7 @@ class ForgeLinkApp(Application):
         self.config.options['project_name'] = project.name
         super(ForgeLinkApp, self).install(project)
         # Setup permissions
-        role_anon = ProjectRole.query.get(name='*anonymous')._id
+        role_anon = ProjectRole.anonymous()._id
         self.config.acl.update(
             configure=c.project.acl['tool'],
             read=[role_anon])
