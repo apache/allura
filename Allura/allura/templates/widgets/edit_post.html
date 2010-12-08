@@ -8,7 +8,7 @@
     {{widget.display_field_by_idx(0)}}
     <span class="arw"><span></span></span><br/>
     <div class="attachment_form_fields" style="display:none; padding: 5px 0;">
-      <input type="file" class="text" name="{{att_name}}" id="{{att_name}}"/>
+      <input type="file" class="text" name="{{att_name}}" {% if att_id %}id="{{att_id}}"{% endif %}/>
     </div>
     <div style="clear:both"></div>
     <input type="submit" value="{{submit_text}}"/>
