@@ -198,7 +198,10 @@ def validate_html5(html_or_response):
             resp = resp.replace('Error: ' + ignore, 'Ignoring: ' + ignore)
 
         if 'Error:' in resp:
-            message = "Validation errors:\n" + resp
+            f = tempfile.NamedTemporaryFile(prefix='html5-', delete=False)
+            f.write(html)
+            f.close()
+            message = "Validation errors (" + f.name + "):\n" + resp
             message = message.decode('ascii','ignore')
             ok_(False, message)
         
