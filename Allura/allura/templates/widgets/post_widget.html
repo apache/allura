@@ -69,7 +69,7 @@
       <div class="shortlink_popup" style="display: none">
         If you would like to refer to this comment somewhere else in this project, copy and paste the following link:
         <input type="text" style="width:100%"
-          value='<a href="{{tg.url(url.current(),dict(page=page,limit=limit))}}#{{value.slug}}">{{value.subject or "comment"}}</a>'>
+          value='{% filter forceescape %}<a href="{{tg.url(url.current(),dict(page=page,limit=limit))}}#{{value.slug}}">{{value.subject or "comment"}}</a>{% endfilter %}'>
       </div>
     </div>
     <ul>
