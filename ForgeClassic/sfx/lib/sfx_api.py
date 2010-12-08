@@ -159,7 +159,7 @@ class SFXProjectApi(object):
                 args['developers'] = [
                     u.get_tool_data('sfx', 'userid')
                     for u in dev_role.users_with_role()
-                    if u.get_tool_data('sfx', 'userid') is not None],
+                    if u.get_tool_data('sfx', 'userid') is not None]
             if admin_role:
                 args['admins'] = [
                     u.get_tool_data('sfx', 'userid')

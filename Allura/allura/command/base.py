@@ -25,12 +25,12 @@ class Command(command.Command):
             conf = appconfig('config:%s' % self.args[0],relative_to=os.getcwd())
             try:
                 if self.setup_global_config:
-                    logging.config.fileConfig(self.args[0])
+                    logging.config.fileConfig(self.args[0], disable_existing_loggers=False)
             except Exception:
                 try:
                     # logging does not understand section#subsection syntax,
                     # so strip away the #subsection and try again.
-                    logging.config.fileConfig(self.args[0].split('#')[0])
+                    logging.config.fileConfig(self.args[0].split('#')[0], disable_existing_loggers=False)
                 except Exception:
                     print >> sys.stderr, (
                         'Could not configure logging with config file %s' % self.args[0])

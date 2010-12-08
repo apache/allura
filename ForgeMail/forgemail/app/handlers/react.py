@@ -1,5 +1,5 @@
 import logging
-logging.config.fileConfig("config/react_logging.conf")
+logging.config.fileConfig("config/react_logging.conf", disable_existing_loggers=False)
 
 from lamson.routing import route, route_like, stateless
 from config.settings import relay
