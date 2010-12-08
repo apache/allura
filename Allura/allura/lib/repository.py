@@ -68,18 +68,18 @@ class RepositoryApp(Application):
         else:
             default_branch_url = c.app.url
         links = [
-            SitemapEntry('Browse', default_branch_url,ui_icon='o') ]
+            SitemapEntry('Browse', default_branch_url,ui_icon=g.icons['folder']) ]
         if c.app.repo.heads:
             links.append(
                 SitemapEntry(
                     'History', default_branch_url+'log/',
-                    ui_icon='N', small=c.app.repo.heads[0].count))
+                    ui_icon=g.icons['history'], small=c.app.repo.heads[0].count))
         if self.forkable and self.repo.status == 'ready':
-            links.append(SitemapEntry('Fork', c.app.url + 'fork', ui_icon='R'))
+            links.append(SitemapEntry('Fork', c.app.url + 'fork', ui_icon=g.icons['fork']))
         if security.has_artifact_access('admin', app=c.app)():
             links.append(SitemapEntry('Admin',
                                       c.project.url()+'admin/'+self.config.options.mount_point,
-                                      ui_icon='x'))
+                                      ui_icon=g.icons['admin']))
         merge_request_count = self.repo.merge_requests_by_statuses('open').count()
         if merge_request_count:
             links += [
@@ -93,7 +93,7 @@ class RepositoryApp(Application):
                 SitemapEntry(self.repo.upstream_repo.name, self.repo.upstream_repo.url,
                              className='nav_child'),
                 SitemapEntry('Request Merge', c.app.url + 'request_merge',
-                             ui_icon='J',
+                             ui_icon=g.icons['merge'],
                              className='nav_child')
                 ]
             pending_upstream_merges = self.repo.pending_upstream_merges()

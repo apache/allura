@@ -39,7 +39,7 @@
   {% if blob.has_html_view and not blob.has_image_view or force_display %}
     <p><a href="?format=raw">Download this file</a></p>
     <div class="clip grid-19">
-      <h3><span class="ico-l"><b class="ui-icon ui-icon-document"></b> {{h.really_unicode(blob.name)}}</span></h3>
+      <h3><span class="ico-l"><b data-icon="{{g.icons['table'].char}}" class="ico {{g.icons['table'].css}}"></b> {{h.really_unicode(blob.name)}}</span></h3>
       {{g.highlight(blob.text, filename=blob.name)}}
     </div>
   {% endif %}

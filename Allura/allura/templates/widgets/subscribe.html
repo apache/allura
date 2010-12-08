@@ -1,6 +1,6 @@
 {% if value %}
   {% if style == 'icon' %}
-    <a href="{{action}}?unsubscribe=True" class="artifact_unsubscribe" title="Unsubscribe from this {{thing}}"><b data-icon="M" class="ico" title="Unsubscribe from this {{thing}}"></b></a>
+    <a href="{{action}}?unsubscribe=True" class="artifact_unsubscribe" title="Unsubscribe from this {{thing}}"><b data-icon="{{g.icons['mail'].char}}" class="ico {{g.icons['mail'].css}}" title="Unsubscribe from this {{thing}}"></b></a>
   {% else %}
     You are currently subscribed to this {{thing}}.
     <br/>
@@ -8,7 +8,7 @@
   {% endif %}
 {% else %}
   {% if style == 'icon' %}
-    <a href="{{action}}?subscribe=True" class="artifact_subscribe" title="Subscribe to this {{thing}}"><b data-icon="M" class="ico" title="Subscribe to this {{thing}}"></b></a>
+    <a href="{{action}}?subscribe=True" class="artifact_subscribe" title="Subscribe to this {{thing}}"><b data-icon="{{g.icons['mail'].char}}" class="ico {{g.icons['mail'].css}}" title="Subscribe to this {{thing}}"></b></a>
   {% else %}
     You are currently not subscribed to this {{thing}}.
     <br/>

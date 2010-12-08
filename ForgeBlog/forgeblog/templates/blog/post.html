@@ -6,11 +6,11 @@
 
 {% block actions %}
   {% if h.has_artifact_access('write', post)() %}
-    <a href="edit" title="Edit"><b data-icon="p" class="ico"></b></a>
+    <a href="edit" title="Edit"><b data-icon="{{g.icons['pencil'].char}}" class="ico {{g.icons['pencil'].css}}"></b></a>
   {% endif %}
-  <a href="history" title="History"><b data-icon="N" class="ico"></b></a>
+  <a href="history" title="History"><b data-icon="{{g.icons['history'].char}}" class="ico {{g.icons['history'].css}}"></b></a>
   {{c.subscribe_form.display(value=subscribed, action='subscribe', style='icon')}}
-  <a href="feed" title="RSS"><b data-icon="f" class="ico"></b></a>
+  <a href="feed" title="RSS"><b data-icon="{{g.icons['feed'].char}}" class="ico {{g.icons['feed'].css}}"></b></a>
 {% endblock %}
 
 {% block content %}

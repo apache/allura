@@ -3,3 +3,29 @@
     width: 110px;
     height: 24px;
 }
+b.ico {
+    background-image: url('../images/neo-icon-set-454545-256x350.png');
+    display: inline-block;
+    text-indent: -99999px;
+    overflow: hidden;
+    background-repeat: no-repeat;
+}
+h2.dark b.ico {background-image: url('../images/neo-icon-set-ffffff-256x350.png');}
+
+b.ico.fork { background-position: -240px -16px; }
+b.ico.merge { background-position: -224px -16px; }
+b.ico.folder { background-position: 0 -96px; }
+b.ico.table, b.ico.stats { background-position: -48px -96px; }
+b.ico.mail { background-position: -80px -96px; }
+b.ico.reply, b.ico.conversation { background-position: -128px -96px; }
+b.ico.tag { background-position: -240px -96px; }
+b.ico.flag { background-position: -16px -112px; }
+b.ico.history { background-position: -32px -112px; }
+b.ico.pencil { background-position: -64px -112px; }
+b.ico.search { background-position: -160px -112px; }
+b.ico.admin { background-position: -192px -112px; }
+b.ico.plus { background-position: -16px -128px; }
+b.ico.delete { background-position: -80px -128px; }
+b.ico.help { background-position: -48px -144px; }
+b.ico.pin { background-position: -144px -144px; }
+b.ico.feed { background-position: -16px -176px; }

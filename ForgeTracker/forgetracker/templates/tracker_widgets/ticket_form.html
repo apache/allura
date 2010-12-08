@@ -73,7 +73,7 @@
               </a>
             {% endif %}
             <a href="{{att.url()}}">{{att.filename}}</a>
-            <a href="{{att.url()}}" class="btn ico delete_attachment"><b class="ui-icon ui-icon-close"></b></a>
+            <a href="{{att.url()}}" class="btn delete_attachment"><b data-icon="{{g.icons['delete'].char}}" class="ico {{g.icons['delete'].css}}"></b></a>
           </div>
       {% endfor %}
       </div>

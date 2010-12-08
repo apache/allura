@@ -22,7 +22,7 @@
         {% if not thread.first_post %}
         <td class="topic">
           {% if 'flags' in thread and 'Sticky' in thread.flags %}
-		<a href="{{thread.url()}}" class="btn ico"><b class="ui-icon ui-icon-pin-s"></b> <span>Sticky</span></a>
+		<a href="{{thread.url()}}" class="btn"><b data-icon="{{g.icons['pin'].char}}" class="ico {{g.icons['pin'].css}}"></b> <span>Sticky</span></a>
           {% endif %}
           <h3><a href="{{thread.url()}}">{{thread.subject and h.text.truncate(thread.subject, 72) or '(no subject)'}}</a></h3>
         </td>
@@ -30,7 +30,7 @@
         <td class="topic">
           {% set author = thread.first_post.author() %}
           {% if 'flags' in thread and 'Sticky' in thread.flags %}
-	    <a href="{{thread.url()}}" class="btn ico"><b class="ui-icon ui-icon-pin-s"></b> <span>Sticky</span></a>
+	    <a href="{{thread.url()}}" class="btn ico"><b data-icon="{{g.icons['pin'].char}}" class="ico {{g.icons['pin'].css}}"></b> <span>Sticky</span></a>
           {% endif %}
           <h3><a href="{{thread.url()}}">{{thread.subject and h.text.truncate(thread.subject, 72) or '(no subject)'}}</a></h3>
 

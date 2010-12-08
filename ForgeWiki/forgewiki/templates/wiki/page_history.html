@@ -5,7 +5,7 @@
 {% block header %}{{title}}{% endblock %}
 
 {% block actions %}
-  <a href="." title="View Page"><b data-icon="s" class="ico" title="View Page"></b></a>
+  <a href="." title="View Page"><b data-icon="{{g.icons['search'].char}}" class="ico {{g.icons['search'].css}}" title="View Page"></b></a>
 {% endblock %}
 
 {% block wiki_content %}

@@ -44,7 +44,7 @@
           {{c.date_field.display(value=m.due_date, name='milestones-%s.due_date' % loop.index0)}}
         </td>
         <td>{{m.closed}} / {{m.total}}</td>
-        <td style="width:20px;"><a href="#" title="Edit" class="edit_milestone"><b data-icon="p" class="ico"></b></a></td>
+        <td style="width:20px;"><a href="#" title="Edit" class="edit_milestone"><b data-icon="{{g.icons['pencil'].char}}" class="ico {{g.icons['pencil'].css}}"></b></a></td>
       </tr>
       {% else %}
       <tr class="empty_message">

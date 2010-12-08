@@ -254,24 +254,24 @@ class TestForum(TestController):
     def test_sidebar_menu(self):
         r = self.app.get('/discussion/')
         sidebarmenu = str(r.html.find('div',{'id':'sidebar'}))
-        assert '<a href="/p/test/discussion/create_topic"><b data-icon="+" class="ico"></b> <span>Create Topic</span></a>' in sidebarmenu
-        assert '<a href="/p/test/discussion/?new_forum=True"><b data-icon="q" class="ico"></b> <span>Add Forum</span></a>' in sidebarmenu
+        assert '<a href="/p/test/discussion/create_topic"><b data-icon="+" class="ico plus"></b> <span>Create Topic</span></a>' in sidebarmenu
+        assert '<a href="/p/test/discussion/?new_forum=True"><b data-icon="q" class="ico conversation"></b> <span>Add Forum</span></a>' in sidebarmenu
         assert '<h3 class="">Help</h3>' in sidebarmenu
         assert '<a href="/p/test/discussion/help" class="nav_child"><span>Forum Help</span></a>' in sidebarmenu
         assert '<a href="/p/test/discussion/markdown_syntax" class="nav_child"><span>Markdown Syntax</span></a>' in sidebarmenu
-        assert '<a href="#" class="sidebar_thread_reply"><b data-icon="w" class="ico"></b> <span>Reply to This</span></a>' not in sidebarmenu
-        assert '<a href="#" class="sidebar_thread_tag"><b data-icon="z" class="ico"></b> <span>Label This</span></a>' not in sidebarmenu
-        assert '<a href="feed.rss"><b data-icon="f" class="ico"></b> <span>Follow This</span></a>' not in sidebarmenu
-        assert '<a href="flag_as_spam" class="sidebar_thread_spam"><b data-icon="^" class="ico"></b> <span>Mark as Spam</span></a>' not in sidebarmenu
+        assert '<a href="#" class="sidebar_thread_reply"><b data-icon="w" class="ico reply"></b> <span>Reply to This</span></a>' not in sidebarmenu
+        assert '<a href="#" class="sidebar_thread_tag"><b data-icon="z" class="ico tag"></b> <span>Label This</span></a>' not in sidebarmenu
+        assert '<a href="feed.rss"><b data-icon="f" class="ico feed"></b> <span>Follow This</span></a>' not in sidebarmenu
+        assert '<a href="flag_as_spam" class="sidebar_thread_spam"><b data-icon="^" class="ico flag"></b> <span>Mark as Spam</span></a>' not in sidebarmenu
         thread = self.app.post('/discussion/save_new_topic', params=dict(
                 forum='TestForum',
                 subject='AAA',
                 text='aaa')).follow()
         thread_sidebarmenu = str(thread.html.find('div',{'id':'sidebar'}))
-        assert '<a href="#" class="sidebar_thread_reply"><b data-icon="w" class="ico"></b> <span>Reply to This</span></a>' in thread_sidebarmenu
-        assert '<a href="#" class="sidebar_thread_tag"><b data-icon="z" class="ico"></b> <span>Label This</span></a>' in thread_sidebarmenu
-        assert '<a href="feed.rss"><b data-icon="f" class="ico"></b> <span>Follow This</span></a>' in thread_sidebarmenu
-        assert '<a href="flag_as_spam" class="sidebar_thread_spam"><b data-icon="^" class="ico"></b> <span>Mark as Spam</span></a>' in thread_sidebarmenu
+        assert '<a href="#" class="sidebar_thread_reply"><b data-icon="w" class="ico reply"></b> <span>Reply to This</span></a>' in thread_sidebarmenu
+        assert '<a href="#" class="sidebar_thread_tag"><b data-icon="z" class="ico tag"></b> <span>Label This</span></a>' in thread_sidebarmenu
+        assert '<a href="feed.rss"><b data-icon="f" class="ico feed"></b> <span>Follow This</span></a>' in thread_sidebarmenu
+        assert '<a href="flag_as_spam" class="sidebar_thread_spam"><b data-icon="^" class="ico flag"></b> <span>Mark as Spam</span></a>' in thread_sidebarmenu
 
     def test_recent_topics_truncated(self):
         r = self.app.post('/discussion/save_new_topic', params=dict(

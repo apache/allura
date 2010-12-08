@@ -13,10 +13,10 @@
 {% block header %}#{{ticket.ticket_num}} {{ticket.summary}}{% endblock %}
 
 {% block actions %}
-<a href="{{ticket.url()}}feed.rss" title="Follow this Ticket"><b data-icon="f" class="ico"></b></a>
+<a href="{{ticket.url()}}feed.rss" title="Follow this Ticket"><b data-icon="{{g.icons['feed'].char}}" class="ico {{g.icons['feed'].css}}"></b></a>
 {% if c.user and c.user != c.user.anonymous() %}
   {{c.subscribe_form.display(value=subscribed, tool_subscribed=tool_subscribed, action='subscribe', style='icon')}}
-  <a href="#" title="Edit" class="edit_ticket"><b data-icon="p" class="ico"></b></a>
+  <a href="#" title="Edit" class="edit_ticket"><b data-icon="{{g.icons['pencil'].char}}" class="ico {{g.icons['pencil'].css}}"></b></a>
 {% endif %}
 {% endblock %}
 

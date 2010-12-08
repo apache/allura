@@ -2,9 +2,9 @@
   {% if show_actions %}
   <div class="actions">
     {% if show_discussion_email %}
-    <a href="{{value.email_link(subject=None)}}" class="email" title="Email" style="display:none"><b data-icon="M" class="ico"></b></a>
+    <a href="{{value.email_link(subject=None)}}" class="email" title="Email" style="display:none"><b data-icon="{{g.icons['mail'].char}}" class="ico {{g.icons['mail'].css}}"></b></a>
     {% endif %}
-    <a href="" class="follow" title="Follow" style="display:none"><b data-icon="f" class="ico"></b></a>
+    <a href="" class="follow" title="Follow" style="display:none"><b data-icon="{{g.icons['feed'].char}}" class="ico {{g.icons['feed'].css}}"></b></a>
   </div>
   {% endif %}
   <div class="clear"></div>

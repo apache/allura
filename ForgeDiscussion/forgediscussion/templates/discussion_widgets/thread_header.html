@@ -2,7 +2,7 @@
 
 <div class="actions">
   {% if show_moderate and h.has_artifact_access('moderate', value)() %}
-  <a href="#" title="Moderate" id="mod_thread_link"><b data-icon="p" class="ico"></b></a>
+  <a href="#" title="Moderate" id="mod_thread_link"><b data-icon="{{g.icons['pencil'].char}}" class="ico {{g.icons['pencil'].css}}"></b></a>
   {% endif %}
 </div>
 

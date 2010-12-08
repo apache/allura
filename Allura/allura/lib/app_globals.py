@@ -98,6 +98,29 @@ class Globals(object):
         provider = plugin.ThemeProvider.get()
         provider.set_theme(self)
 
+        self.icons = dict(
+            admin = Icon('x', 'admin'),
+            pencil = Icon('p', 'pencil'),
+            help = Icon('h', 'help'),
+            search = Icon('s', 'search'),
+            history = Icon('N', 'history'),
+            feed = Icon('f', 'feed'),
+            mail = Icon('M', 'mail'),
+            reply = Icon('w', 'reply'),
+            tag = Icon('z', 'tag'),
+            flag = Icon('^', 'flag'),
+            undelete = Icon('#', 'undelete'),
+            delete = Icon('D', 'delete'),
+            table = Icon('n', 'table'),
+            stats = Icon('Y', 'stats'),
+            pin = Icon('@', 'pin'),
+            folder = Icon('o', 'folder'),
+            fork = Icon('R', 'fork'),
+            merge = Icon('J', 'merge'),
+            plus = Icon('+', 'plus'),
+            conversation = Icon('q', 'conversation')
+        )
+
     def handle_paging(self, limit, page, default=50):
         if limit:
             if c.user in (None, M.User.anonymous()):
@@ -413,4 +436,7 @@ class MockAMQ(object):
                       .replace('#', r'(?:\w+)(?:\.\w+)*'))
         return re.match(re_pattern+'$', key)
 
-
+class Icon(object):
+    def __init__(self, char, css):
+        self.char = char
+        self.css = css

@@ -57,9 +57,8 @@
                   </td>
                   <td>
                     {% if h.has_project_access('tool')() and item['ac'].load().installable %}
-                    <a href="{{item['ac'].options.mount_point}}/"
-                       class="ico-l">
-                       <b class="ui-icon ui-icon-pencil"></b> <span>Edit</span>
+                    <a href="{{item['ac'].options.mount_point}}/">
+                       <b data-icon="{{g.icons['pencil'].char}}" class="ico {{g.icons['pencil'].css}}"></b>
                     </a>
                     {% endif %}
                   </td>
@@ -98,8 +97,8 @@
                   </form>
                   </td>
                   {% if h.has_project_access('tool')() %}
-                  <td><a href="{{item['sub'].url() + 'admin/'}}" class="ico-l">
-                    <b class="ui-icon ui-icon-pencil"></b> <span>Edit</span>
+                  <td><a href="{{item['sub'].url() + 'admin/'}}">
+                    <b data-icon="{{g.icons['pencil'].char}}" class="ico {{g.icons['pencil'].css}}"></b>
                   </a></td>
                   {% endif %}
                   <td>

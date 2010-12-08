@@ -257,12 +257,6 @@ caption {
   margin: 0 10px;
 }
 
-@font-face {
-  font-family: "Pictos";
-  src: url('fonts/pictos-web.eot');
-  src: local("☺"), url('fonts/pictos-web.woff') format('woff'), url('fonts/pictos-web.ttf') format('truetype'), url('fonts/pictos-web.svg') format('svg');
-}
-
 /*
  * General CSS rules governing high-level elements.
  *
@@ -845,7 +839,6 @@ li.active, .btn.active, .btn:active:hover, button:active:hover, .btn-set .btn.ic
 }
 
 .ico, .ico-l::before, .ico-r::after {
-  font: normal 16px/4px "Pictos";
   text-decoration: none;
   width: 16px;
   display: inline-block;
@@ -856,7 +849,7 @@ li.active, .btn.active, .btn:active:hover, button:active:hover, .btn-set .btn.ic
 }
 
 .ico {
-  line-height: 4px;
+  line-height: 16px;
 }
 
 .btn em, .ico + em {

@@ -1,12 +1,12 @@
 {% macro sidebar_item(s) -%}
   {% if s.url %}
     <li{% if request.url.find(s.url,-s.url.__len__()) != -1 %} class="active"{% endif %}>
-      <a href="{{s.url}}"{% if s.className %} class="{{s.className or ''}}"{% endif %}>{% if s.ui_icon %}<b data-icon="{{s.ui_icon}}" class="ico"></b> {% endif %}<span{% if s.small != None %} class="has_small"{% endif %}>{{s.label}}</span>{% if s.small != None %}<small>{{s.small}}</small>{% endif %}</a>
+      <a href="{{s.url}}"{% if s.className %} class="{{s.className or ''}}"{% endif %}>{% if s.ui_icon %}<b data-icon="{{s.ui_icon.char}}" class="ico {{s.ui_icon.css}}"></b> {% endif %}<span{% if s.small != None %} class="has_small"{% endif %}>{{s.label}}</span>{% if s.small != None %}<small>{{s.small}}</small>{% endif %}</a>
     </li>
   {% else %}
     </ul>
       {% if s.label %}
-        <h3 class="{{s.className or ''}}">{% if s.ui_icon %}<b data-icon="{{s.ui_icon}}" class="ico" title="Edit"></b>{% endif %}{{s.label}}</h3>
+        <h3 class="{{s.className or ''}}">{% if s.ui_icon %}<b data-icon="{{s.ui_icon.char}}" class="ico {{s.ui_icon.css}}"></b>{% endif %}{{s.label}}</h3>
       {% endif %}
     <ul class="sidebarmenu">
   {% endif %}

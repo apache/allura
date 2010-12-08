@@ -153,7 +153,7 @@ class ForgeWikiApp(Application):
             page = WM.Page.query.find(dict(app_config_id=self.config._id, title=page, deleted=False)).first()
         except:
             page = None
-        links = [SitemapEntry('Create Page', c.app.url, ui_icon='+', className='add_wiki_page'),
+        links = [SitemapEntry('Create Page', c.app.url, ui_icon=g.icons['plus'], className='add_wiki_page'),
 	             SitemapEntry('')]
         if page:
             for aref in page.references+page.backreferences.values():

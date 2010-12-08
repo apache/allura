@@ -207,9 +207,9 @@ class FileChooser(ew.InputField):
                 input.hide();
                 ++num_files;
                 var delete_link = document.createElement('a');
-                delete_link.className = 'btn ico';
+                delete_link.className = 'btn';
                 var icon = document.createElement('b');
-                icon.className = 'ui-icon ui-icon-close';
+                icon.className = 'ico delete';
                 delete_link.appendChild(icon);
                 $(delete_link).click(function(){
                     this.parentNode.parentNode.removeChild(this.parentNode);

@@ -145,22 +145,22 @@ class ForgeDiscussionApp(Application):
             if forums:
                 for f in forums:
                     if f.url() in request.url and h.has_artifact_access('moderate', f)():
-                        moderate_link = SitemapEntry('Moderate', "%smoderate/" % f.url(), ui_icon='p',
+                        moderate_link = SitemapEntry('Moderate', "%smoderate/" % f.url(), ui_icon=g.icons['pencil'],
                         small = DM.ForumPost.query.find({'discussion_id':f._id, 'status':{'$ne': 'ok'}}).count())
                     forum_links.append(SitemapEntry(f.name, f.url(), className='nav_child'))
             if has_artifact_access('post', app=c.app)():
-                l.append(SitemapEntry('Create Topic', c.app.url + 'create_topic', ui_icon='+'))
+                l.append(SitemapEntry('Create Topic', c.app.url + 'create_topic', ui_icon=g.icons['plus']))
             if has_artifact_access('configure', app=c.app)():
-                l.append(SitemapEntry('Add Forum', url(c.app.url,dict(new_forum=True)), ui_icon='q'))
+                l.append(SitemapEntry('Add Forum', url(c.app.url,dict(new_forum=True)), ui_icon=g.icons['conversation']))
             if moderate_link:
                 l.append(moderate_link)
             # if we are in a thread, provide placeholder links to use in js
             if '/thread/' in request.url:
                 l += [
-                    SitemapEntry('Reply to This', '#', ui_icon='w', className='sidebar_thread_reply'),
-                    SitemapEntry('Label This', '#', ui_icon='z', className='sidebar_thread_tag'),
-                    SitemapEntry('Follow This', 'feed.rss', ui_icon='f'),
-                    SitemapEntry('Mark as Spam', 'flag_as_spam', ui_icon='^', className='sidebar_thread_spam')
+                    SitemapEntry('Reply to This', '#', ui_icon=g.icons['reply'], className='sidebar_thread_reply'),
+                    SitemapEntry('Label This', '#', ui_icon=g.icons['tag'], className='sidebar_thread_tag'),
+                    SitemapEntry('Follow This', 'feed.rss', ui_icon=g.icons['feed']),
+                    SitemapEntry('Mark as Spam', 'flag_as_spam', ui_icon=g.icons['flag'], className='sidebar_thread_spam')
                 ]
             recent_topics = [ SitemapEntry(h.text.truncate(thread.subject, 72), thread.url(), className='nav_child',
                                 small=thread.num_replies)

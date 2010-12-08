@@ -25,8 +25,8 @@
     {% for dirent in tree.ls() %}
     <tr>
       <td>
-        <a href="{{h.really_unicode(dirent.href)}}" class="ico-l">
-          <b class="ui-icon ui-icon-{{dirent.kind == 'DIR' and 'folder-collapsed' or 'document-b'}}"></b>
+        <a href="{{h.really_unicode(dirent.href)}}">
+          <b data-icon="{{dirent.kind == 'DIR' and 'o' or 'n'}}" class="ico {{dirent.kind == 'DIR' and 'folder' or 'table'}}"></b>
           <span>{{h.really_unicode(dirent.name)}}</span>
         </a>
       </td>
