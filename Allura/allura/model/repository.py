@@ -797,7 +797,7 @@ class Tree(RepoObject):
             if isinstance(obj, Tree):
                 results.append(dict(d, kind='DIR', href=x.name + '/'))
             else:
-                results.append(dict(d, kind='DIR', href=x.name + '/'))
+                results.append(dict(d, kind='FILE', href=x.name))
         results.sort(key=lambda d:(d['kind'], d['name']))
         return results
 
