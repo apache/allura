@@ -3,7 +3,7 @@
   <a href="#" class="markdown_edit btn" style="display:none" title="Edit"><b data-icon="{{g.icons['pencil'].char}}" class="ico {{g.icons['pencil'].css}}"></b> Edit</a>
   <a href="#" class="markdown_help btn" title="Help"><b data-icon="{{g.icons['help'].char}}" class="ico {{g.icons['help'].css}}"></b> Help</a>
   <div class="clear"></div>
-  <textarea name="{{name}}" class="auto_resize">{{value or ''}}</textarea>
+  <textarea id="{{id or name}}" name="{{name}}" class="auto_resize">{{value or ''}}</textarea>
   <div class="markdown_preview" style="display:none"></div>
   <div class="markdown_help" style="display:none">
     <p>You can use
