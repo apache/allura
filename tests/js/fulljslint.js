@@ -3597,9 +3597,10 @@ loop:   for (;;) {
             if (ids[u] === true) {
                 warning("Duplicate id='{a}'.", nexttoken, v);
             }
-            if (!/^[A-Za-z][A-Za-z0-9._:\-]*$/.test(v)) {
+            // No random syntax in ids
+            /*if (!/^[A-Za-z][A-Za-z0-9._:\-]*$/.test(v)) {
                 warning("Bad id: '{a}'.", nexttoken, v);
-            } else if (option.adsafe) {
+            } else*/ if (option.adsafe) {
                 if (adsafe_id) {
                     if (v.slice(0, adsafe_id.length) !== adsafe_id) {
                         warning("ADsafe violation: An id must have a '{a}' prefix",
