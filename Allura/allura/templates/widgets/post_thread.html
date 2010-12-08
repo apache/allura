@@ -1,10 +1,14 @@
+<!-- post_thread -->
 <li>
 {{widget.parent_widget.widgets.post.display(
     value=value, show_subject=show_subject, indent=indent,
     supress_promote=supress_promote, page=page, limit=limit)}}
+    <!-- post_thread replies -->
     <ul>
     {% for child in value.descendants() if child.status == 'ok' and child.parent_id == value._id %}
-      <li>{{widget.display(value=child, indent=indent+1)}}</li>
+      {{widget.display(value=child, indent=indent+1)}}
     {% endfor %}
     </ul>
+    <!-- post_thread /replies -->
 </li>
+<!-- /post_thread -->
