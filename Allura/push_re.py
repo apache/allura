@@ -106,12 +106,14 @@ def format_changes(changes):
             ticket = cli.request(
                 'GET',
                 urljoin('/rest/p/allura/tickets/', str(ticket_num)) + '/')['ticket']
+            if ticket is None: continue
             verb = {
                 'validation': 'Fix',
                 'closed': 'Fix' }.get(ticket['status'], 'Address')
             yield ' * %s %s: %s\n' % (verb, ref, ticket['summary'])
     except:
         print '*** ERROR CONTACTING FORGE FOR TICKET SUMMARIES ***'
+        raise
         for ci in changes:
             yield ci
 
