@@ -9,7 +9,7 @@
   {% endif %}
   <div class="clear"></div>
   {{widget.fields['page_list'].display(limit=limit, page=page, count=count)}}
-  <form method="{{method}}" action="{{action}}" enctype="{{enctype}}" class="follow_form">
+  <form method="{{method}}" action="{{action}}" {% if enctype %}enctype="{{enctype}}"{% endif %} class="follow_form">
     {{widget.fields['threads'].display(value=threads)}}
   </form>
   {{widget.fields['page_list'].display(limit=limit, page=page, count=count)}}
