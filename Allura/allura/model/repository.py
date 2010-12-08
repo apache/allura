@@ -797,7 +797,7 @@ class Tree(RepoObject):
             if isinstance(obj, Tree):
                 results.append(dict(d, kind='DIR', href=x.name + '/'))
             else:
-                results.append(dict(d, kind='DIR', href=x.name + '/'))
+                results.append(dict(d, kind='FILE', href=x.name))
         results.sort(key=lambda d:(d['kind'], d['name']))
         return results
 
@@ -1005,14 +1005,17 @@ class GitLikeTree(object):
                 self.blobs[x.name] = x.object_id
         return self
 
-    def set_tree(self, path, tree):
+    def set_tree(self, path, tree, replace=False):
         if path.startswith('/'): path = path[1:]
         path_parts = path.split('/')
         dirpath, last = path_parts[:-1], path_parts[-1]
         cur = self
         for part in dirpath:
             cur = cur.trees[part]
-        cur.trees[last] = tree
+        if replace:
+            cur.trees[last] = tree
+        else:
+            cur.trees.setdefault(last, tree)
 
     def set_blob(self, path, oid):
         if path.startswith('/'): path = path[1:]
