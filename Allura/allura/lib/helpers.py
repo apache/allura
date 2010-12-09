@@ -272,8 +272,20 @@ def absurl(url):
     return request.scheme + '://' + request.host + url
 
 def diff_text(t1, t2, differ=None):
-    t1_words = re.split(' ', t1)
-    t2_words = re.split(' ', t2)
+    t1_lines = t1.replace('\r', '').split('\n')
+    t2_lines = t2.replace('\r', '').split('\n')
+    t1_words = []
+    for line in t1_lines:
+        for word in line.split(' '):
+            t1_words.append(word)
+            t1_words.append(' ')
+        t1_words.append('\n')
+    t2_words = []
+    for line in t2_lines:
+        for word in line.split(' '):
+            t2_words.append(word)
+            t2_words.append(' ')
+        t2_words.append('\n')
     if differ is None:
         differ = difflib.SequenceMatcher(None, t1_words, t2_words)
     result = []
