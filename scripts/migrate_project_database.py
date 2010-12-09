@@ -6,7 +6,6 @@ import logging
 from pylons import c
 from ming.orm import session
 from allura import model as M
-
 log = logging.getLogger(__name__)
 
 MONGO_HOME=os.environ.get('MONGO_HOME', '/usr')
@@ -39,7 +38,7 @@ def migrate_project_database(project, pname, databases):
         log.fatal('Project %s is already migrated to %s', pname, project.database_uri)
         print 'Project %s already migrated to %s' % (pname, project.database_uri)
         return 2
-    M.ProjectRole.query.update(dict(project_id=None), dict(project_id=c.project._id))
+    M.ProjectRole.query.update(dict(project_id=None), dict({'$set':dict(project_id=c.project._id)}), multi=True)
     conn = M.session.main_doc_session.db.connection
     host = '%s:%s' % (conn.host, conn.port)
     dirname = os.tempnam()
