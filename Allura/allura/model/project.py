@@ -307,7 +307,7 @@ class Project(MappedClass):
                     name={'$in':['Admin','Developer']})).all()
             if not root_roles:
                 root_roles = auth.ProjectRole.query.find(dict(
-                        a={'$exists': False },
+                        project_id={'$exists': False },
                         name={'$in':['Admin','Developer']})).all()
             roles = list(auth.ProjectRole.roles_that_reach(*root_roles))
             return sorted(roles, key=lambda r:r.display())
