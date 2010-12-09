@@ -47,7 +47,7 @@ class TestRootController(TestController):
         assert len(resp.html.findAll('tr')) == 2, resp.showbrowser()
         resp = self.app.get(ci + 'tree/')
         assert 'README' in resp, resp.showbrowser()
-        links = [ a.href for a in resp.html.findAll('a') ]
+        links = [ a['href'] for a in resp.html.findAll('a') ]
         assert 'README' in links, resp.showbrowser()
         assert 'README/' not in links, resp.showbrowser()
 
