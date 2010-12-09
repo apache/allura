@@ -240,6 +240,11 @@ class BranchBrowser(BaseController):
             count=count,
             **kw)
 
+    @expose('jinja:repo/tags.html')
+    @with_trailing_slash
+    def tags(self, **kw):
+        return dict(tags=c.app.repo.repo_tags)
+
 class CommitBrowser(BaseController):
     TreeBrowserClass=None
     revision_widget = SCMRevisionWidget()

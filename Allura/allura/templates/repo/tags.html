@@ -1,0 +1,20 @@
+{% extends 'repo/repo_master.html' %}
+
+{% block title %}
+  {% if c.app.repo %}
+    Tags: {{c.app.repo.name}}
+  {% else %}
+    Tags
+  {% endif %}
+{% endblock %}
+
+{% block header %}{{c.app.config.options.mount_label}} Tags{% endblock %}
+
+{% block content %}
+  {{ clone_info(c.app.repo) }}
+  <div class="grid-19">
+  {% for b in self.repo.repo_tags %}
+    <a href="{{c.app.url}}?branch=ref/{{b.name}}">{{b.name}}</a><br>
+  {% endfor %}
+  </div>
+{% endblock %}

@@ -112,11 +112,16 @@ class RepositoryApp(Application):
                         small=b.count))
         if self.repo.repo_tags:
             links.append(SitemapEntry('Tags'))
-            for b in self.repo.repo_tags:
-                links.append(SitemapEntry(
-                        b.name, url(c.app.url, dict(branch='ref/' + b.name)),
-                        className='nav_child',
-                        small=b.count))
+            max_tags = 10
+            for i, b in enumerate(self.repo.repo_tags):
+                if i < max_tags:
+                    links.append(SitemapEntry(
+                            b.name, url(c.app.url, dict(branch='ref/' + b.name)),
+                            className='nav_child',
+                            small=b.count))
+                elif i == max_tags:
+                    links.append(SitemapEntry('More Tags', default_branch_url+'tags/'), className='nav_child')
+                    break
         return links
 
     def install(self, project):
