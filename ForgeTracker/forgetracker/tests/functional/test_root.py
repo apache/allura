@@ -68,11 +68,7 @@ class TestFunctionalController(TestController):
     
     def test_render_index(self):
         index_view = self.app.get('/bugs/')
-        assert index_view.html.find('p',{'class':'light'}).string == '''Showing
-  
-    0
-  
-  results of 0 '''
+        assert 'No tickets found.' in index_view
     
     def test_render_help(self):
         summary = 'test render help'
