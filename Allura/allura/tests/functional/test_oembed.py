@@ -15,7 +15,7 @@ class TestOEmbedController(TestController):
             'http://www.viddler.com/explore/cdevroe/videos/424/',
             'http://qik.com/qiknews',
             'http://qik.com/video/49565',
-            'http://revision3.com/diggnation/2008-04-17xsanned/',
+            #'http://revision3.com/diggnation/2008-04-17xsanned/',
             'http://www.hulu.com/watch/20807/late-night-with-conan-obrein-wed-may-21-2008',
             # 'http://www.vimeo.com/757219',
             'http://www.amazon.com/Essential-SQLAlchemy-Rick-Copeland/dp/0596516142/',
