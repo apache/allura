@@ -106,7 +106,7 @@ class AdminApp(Application):
         admin_url = c.project.url()+'admin/'
         if len(links):
             links.append(SitemapEntry('Project'))
-        links = links + [SitemapEntry('Overview', admin_url+'overview', className='nav_child'),
+        links = links + [SitemapEntry('Summary', admin_url+'overview', className='nav_child'),
                          SitemapEntry('Homepage', admin_url+'homepage', className='nav_child'),
                          SitemapEntry('Tools', admin_url+'tools', className='nav_child')]
         if len(c.project.neighborhood_invitations):

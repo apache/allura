@@ -30,7 +30,8 @@ class LabelEdit(ew.InputField):
         name=None,
         value=None,
         className='',
-        show_label=True)
+        show_label=True,
+        placeholder=None)
 
     def from_python(self, value, state=None):
         return value

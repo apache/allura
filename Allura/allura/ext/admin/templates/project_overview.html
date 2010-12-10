@@ -9,183 +9,103 @@
           <div class="notice">This project has been deleted and is not visible to non-admin users</div>
         {% endif %}
         {% if not h.has_project_access('update')() %}
-          <form>
-            <ol>
-                <li>
-                    <label>Name:</label>
-                    {{c.project.name}}
-                </li>
-                <li>
-                    <label>Shortname:</label>
-                    {{c.project.shortname}}
-                </li>
-                <li>
-                    <label>Category:</label>
-                    {{c.project.category and c.project.category.label or 'Uncategorized'}}
-                </li>
-                <li>
-                    <label>Icon:</label>
-                    {% if c.project.icon %}
-                      <img src="{{c.project.url()}}icon"/>
-                    {% else %}
-                      <span>&nbsp;</span>
-                    {% endif %}
-                </li>
-                <li>
-                    <label>Summary:</label>
-                    <pre>{{c.project.short_description}}</pre>
-                </li>
-                <li>
-                    <label>Description:</label>
-                    {{c.project.description_html|safe}}
-                </li>
-                <li>
-                    <label>Screenshots:</label>
-                    {% for ss in c.project.get_screenshots() %}
-                      <a href="{{c.project.url()}}screenshot/{{ss.filename}}"><img src="{{c.project.url()}}screenshot/{{ss.filename}}/thumb" style="margin-right: 1em"/></a>
-                    {% else %}
-                      No screenshots have been created.
-                    {% endfor %}
-                </li>
-            </ol>
-          </form>
+          <div class="grid-9">
+            <label>Name:</label>
+            {{c.project.name}}
+          </div>
+          <div class="grid-9">
+            <label>Category:</label>
+            {{c.project.category and c.project.category.label or 'Uncategorized'}}
+          </div>
+          <div class="grid-9">
+            <label>Unixname:</label>
+            {{c.project.shortname}}
+          </div>
+          <div class="grid-9">
+            <label>Labels:</label>
+            {{c.project.labels and ', '.join(c.project.labels) or "No Labels"}}
+          </div>
+          <div class="grid-9">
+            <label>Summary:</label>
+            <br>
+            <pre>{{c.project.short_description}}</pre>
+          </div>
+          <div class="grid-9">
+            <label>Icon:</label>
+            <br>
+            {% if c.project.icon %}
+              <img src="{{c.project.url()}}icon"/>
+            {% else %}
+              <span>No icon has been created.</span>
+            {% endif %}
+          </div>
         {% else %} {# has_project_access('update') #}
           <form method="POST" action="update" enctype="multipart/form-data">
-            <ol>
-                <li>
-                  <div class="row dual">
-                    <div class="column" style="margin-right:0">
-                      <label for="name"
-                             title="This is the publicly viewable name of the project, and will appear on project listings.
-                                   It should be what you want to see as the project title in search listing.">Name:</label>
-                    </div>
-                    <div class="column grid_10" style="margin-left:0">
-                      <div class="editable viewing">
-                          <div class="viewer">{{c.project.name}}</div>
-                          <div class="editor"><input type="text" name="name" id="name" value="{{c.project.name}}"/></div>
-                      </div>
-                    </div>
+            <div class="grid-9">
+              <label for="name">Name:</label>
+              <br>
+              <input type="text" name="name" value="{{c.project.name}}"
+                     placeholder="This is the publicly viewable name of the project, and will appear on project listings.
+                                  It should be what you want to see as the project title in search listing.">
+            </div>
+            <div class="grid-9">
+              <label for="category">Category:</label>
+              <br>
+              <select name="category" placeholder="This will determine which pages you appear under in the SourceForge Directory.">
+                <option value="">Uncategorized</option>
+                {% for cat in categories %}
+                  <option value="{{cat._id}}" {% if c.project.category and c.project.category._id == cat._id %}selected="selected"{% endif%}>{{cat.label}}</option>
+                  {% for subcat in cat.subcategories %}
+                    <option value="{{subcat._id}}" {% if c.project.category and c.project.category._id == subcat._id %}selected="selected"{% endif %}>-- {{subcat.label}}</option>
+                  {% endfor %}
+                {% endfor %}
+              </select>
+            </div>
+            <div style="clear: both"></div>
+            <div class="grid-9">
+              <label>Unixname:</label>
+              <br>
+              <input type="text" disabled="true" value="{{c.project.shortname}}">
+            </div>
+            <div class="grid-9">
+              <label for="labels">Labels:</label>
+              <br>
+              {{c.label_edit.display(name='labels', value=c.project.labels, 
+                     placeholder="Free-form labels to describe your project.
+                           These can be used to search for similar projects.")}}
+            </div>
+            <div class="grid-9">
+              <label for="short_description">Summary:</label>
+              <br>
+              <textarea name="short_description" id="short_description_textarea" style="height: 100px;"
+                        placeholder="Add a short one or two sentence summary for your project.">{{c.project.short_description}}</textarea>
+            </div>
+            <div class="grid-9">
+              <label for="icon">Icon:</label>
+              <br>
+              <div class="editable viewing">
+                {% if c.project.icon %}
+                  <div class="viewer"><img src="{{c.project.url()}}/icon"/></div>
+                {% else %}
+                  <div class="viewer">No icon has been created.</div>
+                {% endif %}
+                <div class="editor">{{lib.file_field('icon', '')}}</div>
+              </div>  
+              {% if c.project.icon %}
+                  <div>
+                      <input type="submit" name="delete_icon" value="Delete Icon">
                   </div>
-                </li>
-                <li>
-                    <label>Shortname:</label>
-                    {{c.project.shortname}}
-                </li>
-                <li>
-                  <div class="row dual">
-                    <div class="column" style="margin-right:0">
-                      <label for="category" title="This will determine which pages you appear under in the SourceForge Directory.">Category:</label>
-                    </div>
-                    <div class="column grid_10" style="margin-left:0">
-                      <div class="editable viewing">
-                          <div class="viewer">{{c.project.category and c.project.category.label or 'Uncategorized'}}</div>
-                          <div class="editor">
-                              <select name="category" id="category">
-                                <option value="">Uncategorized</option>
-                                {% for cat in categories %}
-                                  <option value="{{cat._id}}" {% if c.project.category and c.project.category._id == cat._id %}selected="selected"{% endif%}>{{cat.label}}</option>
-                                  {% for subcat in cat.subcategories %}
-                                    <option value="{{subcat._id}}" {% if c.project.category and c.project.category._id == subcat._id %}selected="selected"{% endif %}>-- {{subcat.label}}</option>
-                                  {% endfor %}
-                                {% endfor %}
-                              </select>
-                            </div>
-                        </div>
-                      </div>
-                  </div>
-                </li>
-                <li>
-                  <div class="row dual">
-                    <div class="column" style="margin-right:0">
-                      <label for="icon"
-                             title="This is the icon that will appear on your project header and search results.
-                                   For best appearance, use a square image with a transparent background.">Icon:</label>
-                    </div>
-                    <div class="column grid_10" style="margin-left:0">
-                      <div class="editable viewing">
-                          {% if c.project.icon %}
-                            <div class="viewer"><img src="{{c.project.url()}}/icon"/></div>
-                          {% else %}
-                            <div class="viewer">No icon has been created.</div>
-                          {% endif %}
-                          <div class="editor">{{lib.file_field('icon', '')}}</div>
-                      </div>    
-                      {% if c.project.icon %}
-                          <div>
-                              <input type="submit" name="delete_icon" value="Delete Icon"
-                                     class="ui-state-default ui-button ui-button-text clear clearfix"/>
-                          </div>
-                      {% endif %}
-                    </div>
-                  </div>
-                </li>
-                <li>
-                  <div class="row dual">
-                    <div class="column" style="margin-right:0">
-                      <label for="short_description_textarea"
-                             title="This is a text only project summary which will be included on search results and project listings.
-                                   Typically this is one or two sentences describing the project, and is plain text.">Summary:</label>
-                    </div>
-                    <div class="column grid_10" style="margin-left:0">
-                      <div class="editable viewing">
-                          <div class="viewer"><div data-prompt="Write a brief summary of your project">{{c.project.short_description}}</div></div>
-                          <div class="editor multiline"><textarea name="short_description" id="short_description_textarea" style="width: 95%; height: 100px;">{{c.project.short_description}}</textarea></div>
-                      </div>
-                    </div>
-                  </div>
-                </li>
-                <li>
-                  <div class="row dual">
-                    <div class="column" style="margin-right:0">
-                      <label for="description"
-                             title='This is the contents of the front page, and uses the markdown/HTML syntax similar to the wiki.
-                                   This can be as long as you need it to be.'>Home Page:</label>
-                    </div>
-                    <div class="column grid_10" style="margin-left:0">
-                      {{c.markdown_editor.display(id='description', name='description', value=c.project.description)}}
-                    </div>
-                  </div>
-                </li>
-                <li>
-                  <div class="row dual">
-                    <div class="column" style="margin-right:0">
-                      <label for="labels"
-                             title="Free-form labels to describe your project.
-                                   These can be used to search for similar projects.">Labels:</label>
-                    </div>
-                    <div class="column grid_10" style="margin-left:0">
-                      <div class="editable viewing">
-                          <div class="viewer">{{c.project.labels and ', '.join(c.project.labels) or "No Labels"}}</div>
-                          <div class="editor">{{c.label_edit.display(name='labels', value=c.project.labels)}}</div>
-                      </div>
-                    </div>
-                  </div>
-                </li>
-                <!-- <li>
-                    <label for="screenshot">Screenshots:</label>
-                    <div class="editable viewing">
-                        <div class="viewer">
-                          {% for ss in c.project.get_screenshots() %}
-                            <a href="{{c.project.url()}}screenshot/{{ss.filename}}"><img src="{{c.project.url()}}screenshot/{{ss.filename}}/thumb" style="margin-right: 1em"/></a>
-                          {% else %}
-                            No screenshots have been created.
-                          {% endfor %}
-                        </div>
-                        <div class="editor multiline">{{lib.file_field('screenshot', 'File')}}</div>
-                    </div>
-                </li>
-                <hr class="clear clearfix" /> -->
-                <li>
-                    <label>&nbsp;</label>
-                    <input type="submit" value="Save"
-                          />
-                    {% if not c.project.deleted %}
-                      <input type="submit" value="Delete Project" name="delete" />
-                    {% elif config.get('auth.method', 'local') != 'sfx' %}
-                      <input type="submit" value="Undelete Project" name="undelete" />
-                    {% endif %}
-                </li>
-            </ol>
+              {% endif %}
+            </div>
+            <hr class="grid-19" style="margin-top: 1em; margin-bottom: 1em;">
+            <div class="grid-15">
+              <input type="submit" value="Save">
+            </div>
+            {% if not c.project.deleted %}
+              <input type="submit" value="Delete Project" name="delete" class="fright">
+            {% elif config.get('auth.method', 'local') != 'sfx' %}
+              <input type="submit" value="Undelete Project" name="undelete" class="fright">
+            {% endif %}
           </form>
         {% endif %}
 {% endblock %}
@@ -197,5 +117,13 @@
       $('#short_description_textarea').maxlength({maxCharacters: 250});
     });
   </script>
+{% endblock %}
+
+{% block extra_css %}
+  <style type="text/css">
+    .grid-9 input[type=text], .grid-9 select, .grid-9 textarea{
+      width: 95%
+    }
+  </style>
 {% endblock %}
 
