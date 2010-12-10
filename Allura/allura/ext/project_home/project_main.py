@@ -31,6 +31,12 @@ class ProjectHomeApp(Application):
     __version__ = version.__version__
     widget = ProjectWidgets
     installable = False
+    tool_label = 'home'
+    icons={
+        24:'images/home_24.png',
+        32:'images/home_32.png',
+        48:'images/home_48.png'
+    }
 
     def __init__(self, project, config):
         Application.__init__(self, project, config)

@@ -57,6 +57,11 @@ class ForgeWikiApp(Application):
     default_mount_point='wiki'
     ordinal=5
     default_root_page_name = u'Home'
+    icons={
+        24:'allura/images/wiki_24.png',
+        32:'allura/images/wiki_32.png',
+        48:'allura/images/wiki_48.png'
+    }
 
     def __init__(self, project, config):
         Application.__init__(self, project, config)

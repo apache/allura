@@ -71,6 +71,11 @@ class ForgeTrackerApp(Application):
     default_mount_label='Tickets'
     default_mount_point='tickets'
     ordinal=6
+    icons={
+        24:'allura/images/tickets_24.png',
+        32:'allura/images/tickets_32.png',
+        48:'allura/images/tickets_48.png'
+    }
 
     def __init__(self, project, config):
         Application.__init__(self, project, config)

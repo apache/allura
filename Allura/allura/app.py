@@ -119,6 +119,7 @@ class Application(object):
     default_mount_label='Tool Name'
     default_mount_point='tool'
     ordinal=0
+    icons={}
 
     def __init__(self, project, app_config_object):
         self.project = project
@@ -129,6 +130,13 @@ class Application(object):
     @classmethod
     def status_int(self):
         return self.status_map.index(self.status)
+
+    @classmethod
+    def icon_url(self, size):
+        resource = self.icons.get(size)
+        if resource:
+            return g.forge_static(resource)
+        return ''
 
     def has_access(self, user, topic):
         '''Whether the user has access to send email to the given topic'''

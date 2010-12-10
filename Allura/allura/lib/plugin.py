@@ -294,6 +294,13 @@ class ThemeProvider(object):
     sidebar_menu = 'jinja_master/sidebar_menu.html'
     base_css = ('css/site_style.css', 'allura')
     theme_css = ['css/allura.css']
+    icons = {
+        'subproject': {
+            24: 'images/ext_24.png',
+            32: 'images/ext_32.png',
+            48: 'images/ext_48.png'
+        }
+    }
 
     @property
     def master(self):
@@ -304,6 +311,17 @@ class ThemeProvider(object):
         name = config.get('theme', 'allura')
         for ep in pkg_resources.iter_entry_points('allura.theme', name):
             return ep.load()()
+
+    def app_icon_url(self, app, size):
+        """returns the default icon for the given app (or non-app thing like 'subproject').
+            Takes an instance of class Application, or else a string.
+            Expected to be overriden by derived Themes.
+        """
+        if isinstance(app, str):
+            if app in self.icons and size in self.icons[app]:
+                return g.forge_static(self.icons[app][size])
+        else:
+            return app.icon_url(size)
 
 
 class LocalProjectRegistrationProvider(ProjectRegistrationProvider):
