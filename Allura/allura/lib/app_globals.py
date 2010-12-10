@@ -95,8 +95,7 @@ class Globals(object):
         self.analytics = analytics.GoogleAnalytics(account=config.get('ga.account', 'UA-32013-6'))
 
         # Setup theme
-        provider = plugin.ThemeProvider.get()
-        provider.set_theme(self)
+        self.theme = plugin.ThemeProvider.get()
 
         self.icons = dict(
             admin = Icon('x', 'admin'),

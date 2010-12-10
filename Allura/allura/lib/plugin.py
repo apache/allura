@@ -295,20 +295,16 @@ class ThemeProvider(object):
     base_css = ('css/site_style.css', 'allura')
     theme_css = ['css/allura.css']
 
+    @property
+    def master(self):
+        return self.master_template
+
     @classmethod
     def get(cls):
         name = config.get('theme', 'allura')
         for ep in pkg_resources.iter_entry_points('allura.theme', name):
             return ep.load()()
 
-    def set_theme(self, globs):
-        globs.theme = dict(master = self.master_template,
-                           jinja_macros = self.jinja_macros,
-                           nav_menu = self.nav_menu,
-                           top_nav = self.top_nav,
-                           sidebar_menu = self.sidebar_menu,
-                           base_css = self.base_css,
-                           theme_css = self.theme_css)
 
 class LocalProjectRegistrationProvider(ProjectRegistrationProvider):
     pass
