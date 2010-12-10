@@ -107,6 +107,7 @@ class AdminApp(Application):
         if len(links):
             links.append(SitemapEntry('Project'))
         links = links + [SitemapEntry('Overview', admin_url+'overview', className='nav_child'),
+                         SitemapEntry('Homepage', admin_url+'homepage', className='nav_child'),
                          SitemapEntry('Tools', admin_url+'tools', className='nav_child')]
         if len(c.project.neighborhood_invitations):
             links.append(SitemapEntry('Invitation(s)', admin_url+'invitations', className='nav_child'))
@@ -159,6 +160,12 @@ class ProjectAdminController(BaseController):
         c.label_edit = W.label_edit
         categories = M.ProjectCategory.query.find(dict(parent_id=None)).sort('label').all()
         return dict(categories=categories)
+
+    @without_trailing_slash
+    @expose('jinja:project_homepage.html')
+    def homepage(self, **kw):
+        c.markdown_editor = W.markdown_editor
+        return dict()
 
     @without_trailing_slash
     @expose('jinja:project_tools_starter.html')
@@ -272,6 +279,16 @@ class ProjectAdminController(BaseController):
                 thumbnail_meta=dict(project_id=c.project._id,category='screenshot_thumb'))
         g.publish('react', 'forge.project_updated')
         redirect('overview')
+
+    @expose()
+    @validate(validators=dict(description=UnicodeString()))
+    def update_homepage(self, description=None, **kw):
+        require(has_project_access('update'), 'Update access required')
+        if description != c.project.description:
+            h.log_action(log, 'change project description').info('')
+            c.project.description = description
+        g.publish('react', 'forge.project_updated')
+        redirect('homepage')
 
     @expose()
     def join_neighborhood(self, nid):

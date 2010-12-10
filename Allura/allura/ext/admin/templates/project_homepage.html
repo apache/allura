@@ -1,0 +1,34 @@
+{% extends g.theme.master %}
+
+{% block title %}{{c.project.name}} / Homepage{% endblock %}
+
+{% block header %}Project Homepage{% endblock %}
+
+{% block content %}
+  {% if c.project.deleted %}
+    <div class="notice">This project has been deleted and is not visible to non-admin users</div>
+  {% endif %}
+  {% if not h.has_project_access('update')() %}
+      {{c.project.description_html|safe}}
+  {% else %} {# has_project_access('update') #}
+    <form method="POST" action="update_homepage" enctype="multipart/form-data">
+        <label class="grid-19" for="description"
+               title='This is the contents of the front page, and uses the markdown/HTML syntax similar to the wiki.
+                     This can be as long as you need it to be.'>Content:</label>
+        <div class="grid-19">
+          {{c.markdown_editor.display(name='description', value=c.project.description)}}
+        </div>
+        <hr class="grid-19" style="margin-top: 1em; margin-bottom: 1em">
+        <div class="grid-19"><input type="submit" value="Save"></div>
+    </form>
+  {% endif %}
+{% endblock %}
+
+{% block extra_js %}
+  <script type="text/javascript" src="{{g.forge_static('js/jquery.maxlength-min.js')}}"/>
+  <script type="text/javascript">
+    $(document).ready(function(){
+      $('#short_description_textarea').maxlength({maxCharacters: 250});
+    });
+  </script>
+{% endblock %}

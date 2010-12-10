@@ -2,3 +2,7 @@
     height: 200px;
     width: 95%;
 }
+.markdown_edit .btn{
+    margin: 5px 5px 5px 0;
+    display: inline-block;
+}
