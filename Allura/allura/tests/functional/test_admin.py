@@ -8,6 +8,8 @@ from ming.orm.ormsession import ThreadLocalORMSession
 from allura.tests import TestController
 from allura import model as M
 from allura.lib import helpers as h
+from allura.tests.helpers import validate_page, validate_json
+
 
 class TestProjectAdmin(TestController):
 
@@ -20,6 +22,7 @@ class TestProjectAdmin(TestController):
                 description=u'\u00bf A long description ?'.encode('utf-8'),
                 labels='aaa,bbb'))
         r = self.app.get('/admin/overview')
+        validate_page(r)
         # Add/Remove a subproject
         self.app.post('/admin/update_mounts', params={
                 'new.install':'install',
@@ -42,6 +45,7 @@ class TestProjectAdmin(TestController):
         assert 'error' not in r.cookies_set.get('webflash', ''), r.showbrowser()
         # check the nav
         r = self.app.get('/p/test/test-tool/').follow()
+        validate_page(r)
         active_link = r.html.findAll('span',{'class':'arrow'})
         assert len(active_link) == 1
         assert active_link[0].parent['href'] == '/p/test/test-tool/'
@@ -54,10 +58,12 @@ class TestProjectAdmin(TestController):
         assert 'error' not in r.cookies_set.get('webflash', ''), r.showbrowser()
         # check the nav - the similarly named tool should NOT be active
         r = self.app.get('/p/test/test-tool/Home/')
+        validate_page(r)
         active_link = r.html.findAll('span',{'class':'arrow'})
         assert len(active_link) == 1
         assert active_link[0].parent['href'] == '/p/test/test-tool/'
         r = self.app.get('/p/test/test-tool2/Home/')
+        validate_page(r)
         active_link = r.html.findAll('span',{'class':'arrow'})
         assert len(active_link) == 1
         assert active_link[0].parent['href'] == '/p/test/test-tool2/'
@@ -124,6 +130,7 @@ class TestProjectAdmin(TestController):
 
     def test_tool_list(self):
         r = self.app.get('/admin/tools')
+        validate_page(r)
         new_ep_opts = r.html.find('select',{'class':"new_ep_name"}).findAll('option')
         strings = [ ' '.join(opt.string.strip().split()) for opt in new_ep_opts ]
         assert strings == [
@@ -186,6 +193,7 @@ class TestProjectAdmin(TestController):
 
     def test_project_delete_undelete(self):
         r = self.app.get('/p/test/admin/overview')
+        validate_page(r)
         assert 'This project has been deleted and is not visible to non-admin users' not in r
         assert r.html.find('input',{'value':'Delete Project'})
         assert not r.html.find('input',{'value':'Undelete Project'})
@@ -196,6 +204,7 @@ class TestProjectAdmin(TestController):
                 description='A long description',
                 delete='on'))
         r = self.app.get('/p/test/admin/overview')
+        validate_page(r)
         assert 'This project has been deleted and is not visible to non-admin users' in r
         assert not r.html.find('input',{'value':'Delete Project'})
         assert r.html.find('input',{'value':'Undelete Project'})
@@ -206,6 +215,7 @@ class TestProjectAdmin(TestController):
                 description='A long description',
                 undelete='on'))
         r = self.app.get('/p/test/admin/overview')
+        validate_page(r)
         assert 'This project has been deleted and is not visible to non-admin users' not in r
         assert r.html.find('input',{'value':'Delete Project'})
         assert not r.html.find('input',{'value':'Undelete Project'})

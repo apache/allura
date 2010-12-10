@@ -10,17 +10,21 @@ functional tests exercise the whole application and its WSGI stack.
 Please read http://pythonpaste.org/webtest/ for more information.
 
 """
+from urllib import quote
+
 from nose.tools import assert_true
 
 from allura.tests import TestController
 from allura import model as M
 from ming.orm import session
-from urllib import quote
+from allura.tests.helpers import validate_page, validate_json, validate_html5_chunk
+
 
 class TestRootController(TestController):
     def test_index(self):
         response = self.app.get('/')
         assert response.html.find('h2',{'class':'dark'}).contents[0] == 'All Projects'
+        validate_page(response)
         projects = response.html.findAll('div',{'class':'border card'})
         assert projects[0].find('a').get('href') == '/adobe/adobe-1/'
         assert projects[0].find('img').get('alt') == 'adobe-1 Logo'
@@ -43,17 +47,21 @@ class TestRootController(TestController):
         fax_cat = M.ProjectCategory.query.find(dict(label='Fax')).first()
         M.Project.query.find(dict(name='adobe-1')).first().category_id = com_cat._id
         response = self.app.get('/browse')
+        validate_page(response)
         assert len(response.html.findAll('img',{'alt':'adobe-1 Logo'})) == 1
         assert len(response.html.findAll('img',{'alt':'adobe-2 Logo'})) == 1
         response = self.app.get('/browse/communications')
+        validate_page(response)
         assert len(response.html.findAll('img',{'alt':'adobe-1 Logo'})) == 1
         assert len(response.html.findAll('img',{'alt':'adobe-2 Logo'})) == 0
         response = self.app.get('/browse/communications/fax')
+        validate_page(response)
         assert len(response.html.findAll('img',{'alt':'adobe-1 Logo'})) == 0
         assert len(response.html.findAll('img',{'alt':'adobe-2 Logo'})) == 0
 
     def test_neighborhood_index(self):
         response = self.app.get('/adobe/')
+        validate_page(response)
         projects = response.html.findAll('div',{'class':'border card'})
         assert len(projects) == 2
         assert projects[0].find('img').get('alt') == 'adobe-1 Logo'
@@ -69,17 +77,21 @@ class TestRootController(TestController):
         M.Project.query.find(dict(name='adobe-1')).first().category_id = com_cat._id
         M.Project.query.find(dict(name='adobe-2')).first().category_id = fax_cat._id
         response = self.app.get('/adobe/browse')
+        validate_page(response)
         assert len(response.html.findAll('img',{'alt':'adobe-1 Logo'})) == 1
         assert len(response.html.findAll('img',{'alt':'adobe-2 Logo'})) == 1
         response = self.app.get('/adobe/browse/communications')
+        validate_page(response)
         assert len(response.html.findAll('img',{'alt':'adobe-1 Logo'})) == 1
         assert len(response.html.findAll('img',{'alt':'adobe-2 Logo'})) == 1
         response = self.app.get('/adobe/browse/communications/fax')
+        validate_page(response)
         assert len(response.html.findAll('img',{'alt':'adobe-1 Logo'})) == 0
         assert len(response.html.findAll('img',{'alt':'adobe-2 Logo'})) == 1
 
     def test_markdown_to_html(self):
         r = self.app.get('/nf/markdown_to_html?markdown=*aaa*bb[Home]&project=test&app=bugs')
+        validate_html5_chunk(r)
         assert '<p><em>aaa</em>bb<a href="/p/test/wiki/Home/">[Home]</a></p>' in r
 
     def test_redirect_external(self):
