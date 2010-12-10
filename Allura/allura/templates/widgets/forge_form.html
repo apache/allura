@@ -6,6 +6,9 @@
       {% set ctx=widget.context_for(field) %}
       {% if field.field_type != 'hidden' %}
       <li>
+        {% if ctx.errors and field.show_errors -%}
+        <span {{widget.j2_attrs({'class':error_class})}}>{{ctx.errors}}<br>
+        {%- endif %}
         {% if field.show_label and field.label %}
         <label for="{{field.name}}">{{field.label}}:</label>
         {% endif %}

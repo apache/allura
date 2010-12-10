@@ -44,6 +44,7 @@ mercurial==1.4.1
 mock==0.6.0
 nose==0.11.3
 numpy==1.4.1
+oauth2==1.2.0
 pyflakes==0.4.0
 pymongo==1.9
 pysolr==2.0.9
