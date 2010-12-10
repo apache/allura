@@ -74,13 +74,13 @@
     /*<![CDATA[*/
     var delete_user = function () {
       var vals = roles_form.serializeArray();
-      var del_name = id_to_delete.name.replace('.id','.delete');
+      var del_name = id_to_delete.name.replace('.id', '.delete');
       vals.push({name:del_name, value:'Del'});
       $.post(roles_form[0].action, vals, function () {
         var holder = id_to_delete.parentNode.parentNode;
         holder.removeChild(id_to_delete.parentNode);
         var remaining = $('span', holder);
-        if(remaining.length == 1){
+        if (remaining.length === 1){
           $(remaining).removeClass('removable');
         }
         id_to_delete = null;
@@ -104,14 +104,13 @@
     });
     $('span.removable').click(function (e) {
       // make sure this is still removable when clicked
-      if($(e.target).hasClass('removable')){
+      if ($(e.target).hasClass('removable')) {
         var id_input = $('input', this)[0];
         id_to_delete = id_input;
-        if(id_input.value == user_id){
+        if (id_input.value === user_id) {
             $('#delete-confirm').dialog('open');
             $('div.ui-dialog-buttonpane > button:last').focus();
-        }
-        else{
+        } else {
           delete_user();
         }
       }
@@ -120,7 +119,7 @@
       var roles_form = $(this);
       var vals = roles_form.serialize();
       $('td.add_role input', this).each(function () {
-        if(this.value){
+        if (this.value) {
           roles_form.append('<input type="hidden" name="'+this.name.replace('.id','.add')+'" value="Add"/>');
         }
       });

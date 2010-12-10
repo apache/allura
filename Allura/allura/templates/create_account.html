@@ -26,21 +26,21 @@
 
 {% block extra_js %}
   <script type="text/javascript">
-    //<!--
+    /*<![CDATA[*/
     $('#create_account').submit(function () {
-      if(!$('#username').attr('value').match(/^[a-zA-Z0-9]+$/)){
+      if (!$('#username').attr('value').match(/^[a-zA-Z0-9]+$/)) {
         alert('Username can only contain numbers and letters.');
         return false;
       }
-      if($('#password').attr('value').length < 8){
+      if ($('#password').attr('value').length < 8) {
         alert('Password must be at least 8 characters long.');
         return false;
       }
-      if($('#password').attr('value') != $('#confirm_password').attr('value')){
+      if ($('#password').attr('value') !== $('#confirm_password').attr('value')) {
         alert('Password and Confirm Password must match.');
         return false;
       }
     });
-    // -->
+    /*]]>*/
   </script>
 {% endblock %}
