@@ -16,3 +16,9 @@ class OAuthApplicationForm(ForgeForm):
                                        validator=V.UniqueOAuthApplicationName())
         application_description = AutoResizeTextarea(label='Application Description')
 
+class OAuthRevocationForm(ForgeForm):
+    submit_text='Revoke Access'
+    fields = []
+    class fields(ew_core.NameList):
+        _id=ew.HiddenField()
+

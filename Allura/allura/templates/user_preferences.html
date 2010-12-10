@@ -27,6 +27,18 @@
   </form>
   <div style="clear:both"></div>
 
+  <h2>Authorized Third-party Applications</h2>
+  {% for access_tok in authorized_applications %}
+    <div>
+      <h3>{{access_tok.consumer_token.name}}</h3>
+      {{access_tok.consumer_token.description_html}}
+      {{ c.revoke_access.display(value=access_tok) }}
+      <br style="clear:both"/>
+  </div>
+ {% endfor %}
+    {% if not authorized_applications %}<p>No authorized third-party applications</p>{% endif %}
+
+
   <h2>Subscriptions</h2>
   {% if subscriptions %}
     {{c.form.display(action='update_subscriptions', value=dict(subscriptions=subscriptions))}}
