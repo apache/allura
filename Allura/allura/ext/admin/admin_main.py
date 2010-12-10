@@ -168,11 +168,6 @@ class ProjectAdminController(BaseController):
         return dict()
 
     @without_trailing_slash
-    @expose('jinja:project_tools_starter.html')
-    def tools_starter(self, **kw):
-        return dict()
-
-    @without_trailing_slash
     @expose('jinja:project_tools.html')
     def tools(self, **kw):
         c.markdown_editor = W.markdown_editor
