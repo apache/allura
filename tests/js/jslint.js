@@ -927,8 +927,8 @@ var JSLINT = (function () {
         qx = /[^a-zA-Z0-9+\-_\/ .]/, // We want dots in names, period
 // query characters for ids
         //dx = /[\[\]\/\\"'*<>.&:(){}+=#]/,
-        // allow .
-        dx = /[\[\]\/\\"'*<>&:(){}+=#]/,
+        // allow . and /
+        dx = /[\[\]\\"'*<>&:(){}+=#]/,
 
         rx = {
             outer: hx,
