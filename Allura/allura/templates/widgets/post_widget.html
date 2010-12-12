@@ -3,15 +3,15 @@
 <div>
   <div id="{{value.slug}}" class="discussion-post">
     <div class="row">
-	<div class="grid-3 tcenter">
-    		<p class="gravatar">
-    		  {% set size = value.parent and 32 or 48 %}
+        <div class="grid-3 tcenter">
+         <p class="gravatar">
+          {% set size = value.parent and 32 or 48 %}
           <a href="{{value.author().url()}}">{{lib.gravatar(value.author(), size=size)}}</a><br/>
           <a href="{{value.author().url()}}">{{value.author().display_name}}</a><br />{{h.ago(value.timestamp)}}
          </p>
         </div>
 
-	<div class="grid-13" style="width: {{indent == 0 and 475 or (indent <= 40 and 465-indent*10 or 65)}}px">
+        <div class="grid-13" style="width: {{indent == 0 and 475 or (indent <= 40 and 465-indent*10 or 65)}}px">
         <div class="display_post">
           {% if show_subject %}
             <b>{{value.subject or '(no subject)'}}<br/></b>
@@ -53,7 +53,7 @@
         {% endif %}
         </div>
         
-	<div class="options grid-3">
+        <div class="options grid-3">
         <a href="" class="reply_post btn">Reply</a>
         <div style="clear:both">
           <a href="{{tg.url(url.current(),dict(page=page,limit=limit))}}#{{value.slug}}" class="little_link shortlink"><span>Link</span></a><br/>

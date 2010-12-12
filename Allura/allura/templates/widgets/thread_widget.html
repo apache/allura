@@ -38,15 +38,15 @@
   <div id="new_post_holder">
     <a name="comment"></a>
     <div class="row reply">
-	<div class="grid-3 tcenter">
-    		<p class="gravatar">
-              {{lib.gravatar(c.user, size=48)}}<br/><br/>
-    			<a href="{{c.user.url()}}">{{c.user.display_name}}</a>
-    		</p>
-    	</div>
-	<div class="grid-16">
-        {{widgets.edit_post.display(submit_text='Save', action=value.url() + 'post')}}
+      <div class="grid-3 tcenter">
+          <p class="gravatar">
+            {{lib.gravatar(c.user, size=48)}}<br/><br/>
+            <a href="{{c.user.url()}}">{{c.user.display_name}}</a>
+          </p>
         </div>
+        <div class="grid-16">
+        {{widgets.edit_post.display(submit_text='Save', action=value.url() + 'post')}}
+      </div>
     </div>
   </div>
 {% endif %}
