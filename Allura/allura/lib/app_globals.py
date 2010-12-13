@@ -9,6 +9,7 @@ import re
 import cgi
 import json
 import shlex
+import datetime
 from urllib import urlencode
 from ConfigParser import RawConfigParser
 from collections import defaultdict
@@ -324,6 +325,9 @@ data       : %r
         text = '''
 '''
         return json.dumps(dict(text=text))
+
+    def year(self):
+        return datetime.datetime.utcnow().year
 
 class MockSOLR(object):
 

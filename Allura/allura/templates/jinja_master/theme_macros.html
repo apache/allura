@@ -1,11 +1,11 @@
-{%- macro header(u, login_url) %}
+{%- macro header(username, userid, name, login_url, logout_url) %}
 <header id="site-header">
   <hgroup>
     <nav>
-      {% if u and u._id %}
+      {% if userid %}
         <a href="/account/">Account</a>
-        <a href="/users/{{u.username}}">{{u.display_name}}</a>
-        <a href="/auth/logout">Log Out</a>
+        <a href="/users/{{username}}">{{name}}</a>
+        <a href="{{logout_url}}">Log Out</a>
       {% else %}
         <a href="/auth/create_account">Register</a>
         <a href="{{login_url}}">Log In</a>
@@ -15,7 +15,7 @@
 </header>
 {%- endmacro %}
 
-{%- macro footer() %}
+{%- macro footer(year) %}
 <footer id="site-footer">
   <nav>
 	  This project is powered by <a href="http://sourceforge.net/p/allura/home/">Allura</a>.

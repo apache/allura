@@ -59,7 +59,7 @@
     {% for blob in g.resource_manager.emit('body_top_js') %}
       {{ blob }}
     {% endfor %}
-    {{theme_macros.header(c.user, g.login_url)}}
+    {{theme_macros.header(c.user.username, c.user._id, c.user.display_name, g.login_url, '/auth/logout')}}
     {% set flash = tg.flash_obj.render('flash', use_js=False) %}
     {% if flash %}
       <div class="contain">
@@ -106,7 +106,7 @@
         </div>
       </div>
     </section>
-    {{theme_macros.footer()}}
+    {{theme_macros.footer(g.year())}}
     <div id="notifications">
       {% for n in h.pop_user_notifications() %}
         <div class="notice">{{ n.text }}</div>
