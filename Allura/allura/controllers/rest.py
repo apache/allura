@@ -103,12 +103,12 @@ class OAuthNegotiator(object):
         except:
             log.error('Invalid signature')
             raise exc.HTTPForbidden
-        req_token = M.OAuthRequestToken(consumer_token_id=consumer_token._id)
+        req_token = M.OAuthRequestToken(
+            consumer_token_id=consumer_token._id,
+            callback=req.get('oauth_callback', 'oob')
+            )
         session(req_token).flush()
         log.info('Saving new request token with key: %s', req_token.api_key)
-        for tok in M.OAuthToken.query.find():
-            log.info(tok.api_key)
-        print req_token.to_string()
         return req_token.to_string()
 
     @expose('jinja:oauth_authorize.html')
@@ -131,8 +131,17 @@ class OAuthNegotiator(object):
             rtok.delete()
             flash('%s NOT AUTHORIZED' % rtok.consumer_token.name, 'error')
             redirect('/auth/oauth/')
-        rtok.validation_pin = h.nonce(6)
-        return dict(rtok=rtok)
+        if rtok.callback == 'oob':
+            rtok.validation_pin = h.nonce(6)
+            return dict(rtok=rtok)
+        rtok.validation_pin = h.nonce(20)
+        if '?' in rtok.callback:
+            url = rtok.callback + '&'
+        else:
+            url = rtok.callback + '?'
+        url+='oauth_token=%s&oauth_verifier=%s' % (
+            rtok.api_key, rtok.validation_pin)
+        redirect(url)
         
     @expose()
     def access_token(self, **kw):

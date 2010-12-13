@@ -78,6 +78,7 @@ class OAuthRequestToken(OAuthToken):
     type = FieldProperty(str, if_missing='request')
     consumer_token_id = ForeignIdProperty('OAuthConsumerToken')
     user_id = ForeignIdProperty('User', if_missing=lambda:c.user._id)
+    callback = FieldProperty(str)
     validation_pin = FieldProperty(str)
 
     consumer_token = RelationProperty('OAuthConsumerToken')
