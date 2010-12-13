@@ -208,7 +208,7 @@ def validate_html5(html_or_response):
             if ENABLE_CONTENT_VALIDATION:
                 ok_(False, message)
             else:
-                sys.stderr.write('=' * 40 + '\n' + msg + '\n')
+                sys.stderr.write('=' * 40 + '\n' + message + '\n')
                 
         
 def validate_html5_chunk(html):
