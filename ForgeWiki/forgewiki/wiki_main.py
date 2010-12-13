@@ -154,7 +154,7 @@ class ForgeWikiApp(Application):
         except:
             page = None
         links = [SitemapEntry('Create Page', c.app.url, ui_icon=g.icons['plus'], className='add_wiki_page'),
-	             SitemapEntry('')]
+                 SitemapEntry('')]
         if page:
             for aref in page.references+page.backreferences.values():
                 artifact = M.ArtifactReference(aref).artifact
