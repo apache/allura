@@ -150,9 +150,9 @@ class ProjectAdminController(BaseController):
                 'Read access required')
 
     @with_trailing_slash
-    @expose()
+    @expose('jinja:project_admin.html')
     def index(self, **kw):
-        redirect('overview')
+        return dict()
 
     @without_trailing_slash
     @expose('jinja:project_invitations.html')

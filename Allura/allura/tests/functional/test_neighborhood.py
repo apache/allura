@@ -18,8 +18,6 @@ class TestNeighborhood(TestController):
         validate_page(r)
         assert 'Welcome' in str(r), str(r)
         r = self.app.get('/adobe/admin/')
-        assert r.location.endswith('/adobe/admin/overview')
-        r = r.follow()
         validate_page(r)
         assert 'admin' in str(r), str(r)
 

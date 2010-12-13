@@ -1,0 +1,119 @@
+{% extends g.theme.master %}
+{% set wiki_found = False %}
+{% set code_found = False %}
+{% set tracker_found = False %}
+{% set downloads_found = False %}
+{% set forum_found = False %}
+
+{% block title %}{{c.project.name}} / Admin{% endblock %}
+
+{% block header %}Project Admin{% endblock %}
+
+{% block content %}
+  <p>SourceForge beta projects come with a number of Tools, which can be configured and adjusted to your needs.</p>
+
+  <div class="grid-2">
+    <img src="{{g.forge_static('images/project_default.png')}}">
+  </div>
+  <div class="grid-13">
+    <h3>Project Setup</h3>
+    <p>The first thing to do to setup your project is to create a solid description, so folks coming to your page can figure out what the project is all about. You'll then want to input information about the project, and we'll make sure all this relevant information gets added to the SourceForge sourceforge project directory.</p>
+  </div>
+  <div class="grid-4">
+    <a href="homepage">Update Description</a><br>
+    <a href="overview">Update MetaData</a>
+  </div>
+  <div style="clear:both"></div>
+
+  <div class="grid-2">
+    <img src="{{ g.theme.app_icon_url('Wiki', 48) }}">
+  </div>
+  <div class="grid-13">
+    <h3>Wikis</h3>
+    <p>You can create documentation, post proposed feature descriptions, and discuss these shared documents.</p>
+  </div>
+  <div class="grid-4">
+    {% for tool in c.project.app_configs %}
+      {% if tool.tool_name == 'Wiki' and not wiki_found %}
+        <a href="{{c.project.url()}}{{tool.options.mount_point}}/add">Add Page</a><br>
+        <a href="{{c.project.url()}}{{tool.options.mount_point}}/">View Wiki</a>
+        {% set wiki_found = True %}
+      {% endif %}
+    {% endfor %}
+  </div>
+  <div style="clear:both"></div>
+
+  <div class="grid-2">
+    <img src="{{ g.theme.app_icon_url('Git', 48) }}">
+  </div>
+  <div class="grid-13">
+    <h3>Code</h3>
+    <p>Git/SVN/Hg will help you keep track of code changes over time. A repository has already been created, checkout, add files and upload code.</p>
+  </div>
+  <div class="grid-4">
+    {% for tool in c.project.app_configs %}
+      {% if (tool.tool_name == 'Git' or tool.tool_name == 'Hg' or tool.tool_name == 'SVN') and not code_found %}
+        <a href="{{c.project.url()}}{{tool.options.mount_point}}/fork">Checkout repo</a><br>
+        <a href="{{c.project.url()}}{{tool.options.mount_point}}/">View source</a>
+        {% set code_found = True %}
+      {% endif %}
+    {% endfor %}
+  </div>
+  <div style="clear:both"></div>
+
+  <div class="grid-2">
+    <img src="{{ g.theme.app_icon_url('Tickets', 48) }}">
+  </div>
+  <div class="grid-13">
+  <h3>Tickets</h3>
+    <p>With the SourceForge tracker you can keep track of items of work that need to be done. You can create one or more trackers for bugs, enhancements, tasks, that will help you plan and manage your development process.</p>
+  </div>
+  <div class="grid-4">
+    {% for tool in c.project.app_configs %}
+      {% if tool.tool_name == 'Tickets' and not tracker_found %}
+        <a href="{{c.project.url()}}{{tool.options.mount_point}}/new">Create Ticket</a><br>
+        <a href="{{c.project.url()}}{{tool.options.mount_point}}/milestones">Edit Milestones</a><br>
+        <a href="{{c.project.url()}}{{tool.options.mount_point}}/">View Tickets</a>
+        {% set tracker_found = True %}
+      {% endif %}
+    {% endfor %}
+  </div>
+  <div style="clear:both"></div>
+
+  {% if config.get('auth.method', 'local') == 'sfx' %}
+    <div class="grid-2">
+      <img src="{{ g.theme.app_icon_url('Downloads', 48) }}">
+    </div>
+    <div class="grid-13">
+      <h3>Downloads</h3>
+      <p>Upload releases, track who is downloading your project around the world, and use the largest free, managed, global mirror network to distribute your files.</p>
+    </div>
+    <div class="grid-4">
+      {% for tool in c.project.app_configs %}
+        {% if tool.tool_name == 'Downloads' and not downloads_found %}
+          <a href="/projects/{{c.project.get_tool_data('sfx', 'unix_group_name') }}/upload/">Upload Release</a><br>
+          <a href="/projects/{{c.project.get_tool_data('sfx', 'unix_group_name') }}/files/">View Releases</a>
+          {% set downloads_found = True %}
+        {% endif %}
+      {% endfor %}
+    </div>
+    <div style="clear:both"></div>
+  {% endif %}
+
+  <div class="grid-2">
+    <img src="{{ g.theme.app_icon_url('Discussion', 48) }}">
+  </div>
+  <div class="grid-13">
+    <h3>Forums</h3>
+    <p>To use the forums, create a couple of forums, post introductory messages, and check out the spam controll/post moderation options.</p>
+  </div>
+  <div class="grid-4">
+    {% for tool in c.project.app_configs %}
+      {% if tool.tool_name == 'Discussion' and not forum_found %}
+          <a href="{{c.project.url()}}{{tool.options.mount_point}}/?new_forum=True">Create Forum</a><br>
+          <a href="{{c.project.url()}}{{tool.options.mount_point}}/">View Forums</a>
+        {% set forum_found = True %}
+      {% endif %}
+    {% endfor %}
+  </div>
+{% endblock %}
