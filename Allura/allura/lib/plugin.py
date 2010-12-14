@@ -320,6 +320,10 @@ class ThemeProvider(object):
         if isinstance(app, str):
             if app in self.icons and size in self.icons[app]:
                 return g.forge_static(self.icons[app][size])
+            else:
+                for ep in pkg_resources.iter_entry_points('allura', app):
+                    app_class = ep.load()
+                    return app_class.icon_url(size)
         else:
             return app.icon_url(size)
 
