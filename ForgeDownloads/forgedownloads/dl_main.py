@@ -45,7 +45,7 @@ class ForgeDownloadsApp(Application):
     @h.exceptionless([], log)
     def sitemap(self):
         menu_id = self.config.options.mount_label.title()
-        url='/downloads/' + c.project.get_tool_data('sfx', 'unix_group_name') + '/'
+        url='/projects/' + c.project.get_tool_data('sfx', 'unix_group_name') + '/files/'
         return [SitemapEntry(menu_id, url)[self.sidebar_menu()] ]
 
     def sidebar_menu(self):
