@@ -23,14 +23,12 @@ WebError==0.10.2
 WebFlash==0.1a9
 WebHelpers==1.0
 WebOb==0.9.8
-WebTest==1.2
 amqplib==0.6.1
 anyjson==0.2.3
 billiard==0.2.3
 carrot==0.10.3
 celery==1.0.2
 chardet==1.0.1
-coverage==3.3.1
 decorator==3.1.2
 django-picklefield==0.1.4
 docutils==0.6
@@ -41,8 +39,6 @@ iso8601==0.1.4
 lamson==1.0pre11
 lockfile==0.8
 mercurial==1.4.1
-mock==0.6.0
-nose==0.11.3
 numpy==1.4.1
 pyflakes==0.4.0
 pymongo==1.9
@@ -75,8 +71,6 @@ feedparser==4.1-r295
 psycopg2==2.2.2
 gitdb==0.5.1
 async==0.6.1
-pytidylib==0.2.1
-poster==0.7.0
 
 GitPython==0.3.0-beta2dev-20100908
 EasyWidgets==0.2dev-20101209
@@ -84,3 +78,11 @@ Ming==0.2.1dev-20101208
 TurboGears2==2.1b2dev-20100628
 sf.phpsession==0.1
 tg.devtools==2.0.2dev-20100628
+
+# Test requirements
+WebTest==1.2
+coverage==3.3.1
+mock==0.6.0
+nose==0.11.3
+poster==0.7.0
+pytidylib==0.2.1
