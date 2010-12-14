@@ -40,6 +40,7 @@ lamson==1.0pre11
 lockfile==0.8
 mercurial==1.4.1
 numpy==1.4.1
+oauth2==1.2.0
 pyflakes==0.4.0
 pymongo==1.9
 pysolr==2.0.9

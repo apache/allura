@@ -16,6 +16,7 @@ from .repository import Repository, RepositoryImplementation, RepoObject, Commit
 from .repository import CommitReference, LogCache, LastCommitFor, MergeRequest
 from .stats import Stats
 from .import_batch import ImportBatch
+from .oauth import OAuthToken, OAuthConsumerToken, OAuthRequestToken, OAuthAccessToken
 
 from .types import ArtifactReference, ArtifactReferenceType
 

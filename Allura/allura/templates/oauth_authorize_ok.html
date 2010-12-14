@@ -1,0 +1,15 @@
+{% set hide_left_bar = True %}
+{% extends g.theme.master %}
+
+{% block title %} Third-party application authorized. {% endblock %}
+
+{% block header %}Third-party application authorized.{% endblock %}
+
+{% block content %}
+<p>You have authorized {{ rtok.consumer_token.name }} access to your account.  If you wish
+  to revoke this access at any time, please visit 
+  <a href="{{g.url('/auth/prefs/') }}">user preferences</a>
+  and click 'revoke access'.</p>
+<h2>PIN: {{ rtok.validation_pin }}</h2>
+<a href="{{g.url('/auth/prefs/')}}">Return to preferences</a>
+{% endblock %}

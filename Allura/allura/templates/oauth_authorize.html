@@ -1,0 +1,21 @@
+{% set hide_left_bar = True %}
+{% extends g.theme.master %}
+
+{% block title %} Authorize third-party application? {% endblock %}
+
+{% block header %}Authorize third party application?{% endblock %}
+
+{% block content %}
+<p>The application {{ consumer.name }} wishes to access your account.  If you
+  grant them access, they will be able to perform any actions on the site as
+  though they were logged in as you.  Do you wish to grant them access? </p>
+<form method="POST" action="do_authorize">
+  <input type="hidden" name="oauth_token" value="{{oauth_token}}"/>
+  <input type="submit" name="no" value="No, do not authorize {{ consumer.name }}">
+  <input type="submit" name="yes" value="Yes, authorize {{ consumer.name }}"><br>
+</form>
+<br style="clear:both"/>
+<h2>{{consumer.name}}</h2>
+<h3>Description</h3>
+{{consumer.description_html|safe}}
+{% endblock %}

@@ -28,3 +28,4 @@ class NewForgeController(object):
     def redirect(self, path, **kw):
         """Redirect to external sites."""
         redirect(path)
+

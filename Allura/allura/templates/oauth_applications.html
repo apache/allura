@@ -1,0 +1,24 @@
+{% set hide_left_bar = True %}
+{% extends g.theme.master %}
+
+{% block title %}{{c.user.username}} / Applications {% endblock %}
+
+{% block header %}Applications registered for {{c.user.username}}{% endblock %}
+
+{% block content %}
+{% for token in apps %}
+<h2>{{token.name}}</h2>
+{{token.description_html | safe }}
+<dl>
+  <dt>Consumer Key</dt><dd>{{token.api_key}}</dd>
+  <dt>Consumer Secret</dt><dd>{{token.secret_key}}</dd>
+</dl>
+<br>
+<form method="POST" action="delete"><input type="hidden" name="id" value="{{token._id}}">
+<input type="submit" value="Deregister {{token.name}}">
+</form>
+<br style="clear:both"/>
+{% endfor %}
+<h2>Register a new application</h2>
+{{ c.form.display() }}
+{% endblock %}

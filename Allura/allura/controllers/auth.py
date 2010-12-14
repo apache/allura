@@ -2,6 +2,7 @@ import logging, string, os
 from urllib import urlencode
 from pprint import pformat
 
+import bson
 from tg import expose, session, flash, redirect, validate, config
 from tg.decorators import with_trailing_slash, without_trailing_slash
 from pylons import c, g, request, response
@@ -11,7 +12,7 @@ from allura.lib.oid_helper import verify_oid, process_oid
 from allura.lib.security import require_authenticated, has_artifact_access
 from allura.lib import helpers as h
 from allura.lib import plugin
-from allura.lib.widgets import SubscriptionForm
+from allura.lib.widgets import SubscriptionForm, OAuthApplicationForm, OAuthRevocationForm
 from allura.lib import exceptions as exc
 from allura.controllers import BaseController
 
@@ -33,11 +34,14 @@ OID_PROVIDERS=[
 
 class F(object):
     subscription_form=SubscriptionForm()
+    oauth_application_form = OAuthApplicationForm(action='register')
+    oauth_revocation_form = OAuthRevocationForm(action='revoke_oauth')
 
 class AuthController(BaseController):
 
     def __init__(self):
         self.prefs = PreferencesController()
+        self.oauth = OAuth()
 
     @expose('jinja:login.html')
     @with_trailing_slash
@@ -253,6 +257,7 @@ class PreferencesController(BaseController):
     def index(self, **kw):
         require_authenticated()
         c.form = F.subscription_form
+        c.revoke_access = F.oauth_revocation_form
         subscriptions = []
         for mb in M.Mailbox.query.find(dict(user_id=c.user._id)):
             try:
@@ -273,7 +278,10 @@ class PreferencesController(BaseController):
             except exc.NoSuchProjectError:
                 mb.delete() # project went away
         api_token = M.ApiToken.query.get(user_id=c.user._id)
-        return dict(subscriptions=subscriptions, api_token=api_token)
+        return dict(
+            subscriptions=subscriptions,
+            api_token=api_token,
+            authorized_applications=M.OAuthAccessToken.for_user(c.user))
 
     @h.vardec
     @expose()
@@ -338,3 +346,43 @@ class PreferencesController(BaseController):
         if tok is None: return
         tok.delete()
         redirect(request.referer)
+
+    @expose()
+    def revoke_oauth(self, _id=None):
+        tok = M.OAuthAccessToken.query.get(_id=bson.ObjectId(_id))
+        if tok is None:
+            flash('Invalid app ID', 'error')
+            redirect('.')
+        if tok.user_id != c.user._id:
+            flash('Invalid app ID', 'error')
+            redirect('.')
+        tok.delete()
+        flash('Application access revoked')
+        redirect('.')
+
+class OAuth(BaseController):
+
+    @expose('jinja:oauth_applications.html')
+    def index(self, **kw):
+        c.form = F.oauth_application_form
+        return dict(apps=M.OAuthConsumerToken.for_user(c.user))
+
+    @expose()
+    @validate(F.oauth_application_form, error_handler=index)
+    def register(self, application_name=None, application_description=None, **kw):
+        M.OAuthConsumerToken(name=application_name, description=application_description)
+        flash('Application registered')
+        redirect('.')
+
+    @expose()
+    def delete(self, id=None):
+        app = M.OAuthConsumerToken.query.get(_id=bson.ObjectId(id))
+        if app is None:
+            flash('Invalid app ID', 'error')
+            redirect('.')
+        if app.user_id != c.user._id:
+            flash('Invalid app ID', 'error')
+            redirect('.')
+        app.delete()
+        flash('Application deleted')
+        redirect('.')
