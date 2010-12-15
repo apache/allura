@@ -3,10 +3,10 @@ from glob import glob
 from subprocess import Popen, PIPE
 import sys
 
-dir = os.path.abspath(os.path.dirname(__file__) + "/..")
+toplevel_dir = os.path.abspath(os.path.dirname(__file__) + "/../..")
 
 def run(cmd):
-    proc = Popen(cmd, shell=True, cwd=dir, stdout=PIPE, stderr=PIPE)
+    proc = Popen(cmd, shell=True, cwd=toplevel_dir, stdout=PIPE, stderr=PIPE)
     # must capture & reprint stdount, so that nosetests can capture it
     (stdout, stderr) = proc.communicate()
     print stdout,
