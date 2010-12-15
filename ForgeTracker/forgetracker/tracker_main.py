@@ -298,8 +298,11 @@ class RootController(BaseController):
             for t in query:
                 ticket_for_num[t.ticket_num] = t
             # and pull them out in the order given by ticket_numbers
-            tickets = [ticket_for_num[tn] for tn in ticket_numbers
-                       if tn in ticket_for_num and has_artifact_access('read', ticket_for_num[tn])()]
+            tickets = [ ticket_for_num[tn] for tn in ticket_numbers if tn in ticket_for_num ]
+            if not has_artifact_access('read')():
+                my_role_ids = set(pr._id for pr in c.user.project_role().role_iter())
+                tickets = [ t for t in tickets
+                            if has_artifact_access('read', t, user_roles=my_role_ids) ]
         sortable_custom_fields=c.app.globals.sortable_custom_fields_shown_in_search()
         if not columns:
             columns = [dict(name='ticket_num', sort_name='ticket_num_i', label='Ticket Number', active=True),

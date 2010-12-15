@@ -16,13 +16,15 @@ def has_neighborhood_access(access_type, neighborhood, user=None):
         return False
     return result
 
-def has_project_access(access_type, project=None, user=None):
-    def result(project=project, user=user):
+def has_project_access(access_type, project=None, user=None,
+                       user_roles=None):
+    def result(project=project, user=user, user_roles=user_roles):
         if project is None: project = c.project
         if user is None: user = c.user
         if not project.database_configured: return False
         assert user, 'c.user should always be at least M.User.anonymous()'
-        user_roles = set(r._id for r in user.role_iter())
+        if user_roles is None:
+            user_roles = set(r._id for r in user.role_iter())
         for proj in project.parent_iter():
             acl = set(proj.acl.get(access_type, []))
             if acl & user_roles: return True
@@ -31,17 +33,20 @@ def has_project_access(access_type, project=None, user=None):
         return False
     return result
 
-def has_artifact_access(access_type, obj=None, user=None, app=None):
-    def result(user=user, app=app):
+def has_artifact_access(access_type, obj=None, user=None, app=None,
+                        user_roles=None):
+    def result(user=user, app=app, user_roles=user_roles):
         if user is None: user = c.user
         if app is None: app = c.app
         assert user, 'c.user should always be at least M.User.anonymous()'
-        user_roles = set(r._id for r in user.role_iter())
+        if user_roles is None:
+            user_roles = set(r._id for r in user.role_iter())
         acl = set(app.config.acl.get(access_type, []))
         if obj is not None:
             acl |= set(obj.acl.get(access_type, []))
         if acl & user_roles: return True
-        if has_neighborhood_access('admin', app.project.neighborhood, user)():
+        if has_neighborhood_access(
+            'admin', app.project.neighborhood, user, user_roles)():
             return True
         return False
     return result
