@@ -219,7 +219,9 @@ class Feed(MappedClass):
     class __mongometa__:
         session = project_orm_session
         name = 'artifact_feed'
-        indexes = [ 'pubdate' ]
+        indexes = [
+            'pubdate',
+            ('artifact_ref.project_id', 'artifact_ref.mount_point') ]
 
     _id = FieldProperty(S.ObjectId)
     artifact_reference = FieldProperty(ArtifactReferenceType)
@@ -476,6 +478,7 @@ class Snapshot(Artifact):
         session = artifact_orm_session
         name='artifact_snapshot'
         unique_indexes = [ ('artifact_class', 'artifact_id', 'version') ]
+        indexes = [ ('artifact_id', 'version') ]
 
     _id = FieldProperty(S.ObjectId)
     artifact_id = FieldProperty(S.ObjectId)

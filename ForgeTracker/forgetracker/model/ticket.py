@@ -29,6 +29,7 @@ class Globals(MappedClass):
     class __mongometa__:
         name = 'globals'
         session = project_orm_session
+        indexes = [ 'app_config_id' ]
 
     type_s = 'Globals'
     _id = FieldProperty(schema.ObjectId)
@@ -189,8 +190,10 @@ class Ticket(VersionedArtifact):
         name = 'ticket'
         history_class = TicketHistory
         indexes = [
+            ('app_config_id', 'ticket_num'),
             'ticket_num',
-            'app_config_id' ]
+            'app_config_id'
+            ]
 
     type_s = 'Ticket'
     _id = FieldProperty(schema.ObjectId)

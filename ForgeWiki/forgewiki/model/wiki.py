@@ -25,6 +25,7 @@ class Globals(MappedClass):
     class __mongometa__:
         name = 'wiki-globals'
         session = project_orm_session
+        indexes = [ 'app_config_id' ]
 
     type_s = 'WikiGlobals'
     _id = FieldProperty(schema.ObjectId)

@@ -46,6 +46,9 @@ class ScheduledMessage(MappedClass):
     class __mongometa__:
         session = main_orm_session
         name='scheduled_message'
+        indexes = [
+            'nonce',
+            'when' ]
 
     _id = FieldProperty(S.ObjectId)
     when = FieldProperty(datetime)
@@ -108,6 +111,9 @@ class Project(MappedClass):
         session = main_orm_session
         name='project'
         indexes = [
+            'name',
+            'neighborhood_id',
+            ('neighborhood_id', 'name'),
             'shortname' ]
 
     # Project schema
