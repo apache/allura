@@ -40,6 +40,7 @@ setup(
         "sf.phpsession==0.1",
         "chardet==1.0.1",
         "feedparser>=4.1,<=4.2",
+        "oauth2==1.2.0",
         ],
     setup_requires=["PasteScript >= 1.7"],
     paster_plugins=['PasteScript', 'Pylons', 'TurboGears2', 'tg.devtools', 'ForgeMail', 'Ming'],
