@@ -35,6 +35,7 @@ decorator==3.1.2
 django-picklefield==0.1.4
 docutils==0.6
 elementtree==1.2.7-20070827-preview
+httplib2==0.4.0
 importlib==1.0.2
 ipython==0.10
 iso8601==0.1.4
