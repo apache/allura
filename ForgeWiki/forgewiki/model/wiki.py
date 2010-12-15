@@ -80,6 +80,7 @@ class Page(VersionedArtifact):
     text=FieldProperty(schema.String, if_missing='')
     viewable_by=FieldProperty([str])
     deleted=FieldProperty(bool, if_missing=False)
+    type_s = 'Wiki'
 
     def commit(self):
         self.subscribe()

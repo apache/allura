@@ -203,14 +203,14 @@ class TestFunctionalController(TestController):
     def test_sidebar_static_page(self):
         response = self.app.get('/bugs/search/')
         assert 'Create Ticket' in response
-        assert 'Related Artifacts' not in response
+        assert 'Related Pages' not in response
     
     def test_sidebar_ticket_page(self):
         summary = 'test sidebar logic for a ticket page'
         self.new_ticket(summary=summary)
         response = self.app.get('/p/test/bugs/1/')
         assert 'Create Ticket' in response
-        assert 'Related Artifacts' not in response
+        assert 'Related Pages' not in response
         self.app.get('/wiki/aaa/update?title=aaa&text=&tags=&tags_old=&labels=&labels_old=&viewable_by-0.id=all')
         self.new_ticket(summary='bbb')
         
@@ -244,9 +244,9 @@ class TestFunctionalController(TestController):
         ThreadLocalORMSession.close_all()
         
         response = self.app.get('/p/test/bugs/1/')
-        assert 'Related Artifacts' in response
-        assert 'aaa' in response
-        assert '#2' in response
+        assert 'Related Pages' in response
+        assert 'Wiki: aaa' in response
+        assert 'Ticket: #2' in response
     
     def test_ticket_view_editable(self):
         summary = 'test ticket view page can be edited'

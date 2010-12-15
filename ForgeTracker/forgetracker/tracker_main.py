@@ -184,7 +184,7 @@ class ForgeTrackerApp(Application):
             links.append(SitemapEntry('Searches'))
             links = links + search_bins
         if len(related_artifacts):
-            links.append(SitemapEntry('Related Artifacts'))
+            links.append(SitemapEntry('Related Pages'))
             links = links + related_artifacts
         links.append(SitemapEntry('Help'))
         links.append(SitemapEntry('Ticket Help', self.config.url() + 'help', className='nav_child'))
