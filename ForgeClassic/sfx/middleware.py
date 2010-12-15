@@ -56,6 +56,10 @@ def configure_databases(config):
     T.mysql_auth = select([
         t,
         func.which_user(t.c.modified_by_uid).label('modified_user')]).alias('msql_auth_user')
+    T._prweb_email = t = Table('prweb_email', M.site_meta, autoload=True)
+    T.prweb_email = select([
+        t,
+        func.which_user(t.c.modified_by_uid).label('modified_user')]).alias('prweb_email_user')
     T.trove_cat = Table('trove_cat', M.site_meta, autoload=True)
     # MailDB tables
     T.lists = Table('lists', M.mail_meta, autoload=True)

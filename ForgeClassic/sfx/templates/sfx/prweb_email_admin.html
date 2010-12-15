@@ -1,0 +1,36 @@
+{% extends g.theme.master %}
+
+{% block title %}{{c.project.name}} project: Admin: Editing Project Web Email Info{% endblock %}
+
+{% block header %}Project Web SMTP Service{% endblock %}
+
+{% block content %}
+
+<p>Service details:</p>
+  <div>
+    <p>Set the password for outgoing email from your project web instance</p>
+    {% if value.passwd %}
+      <p>
+        Please note that your email password is displayed here as plaintext
+        for your convenience. This password is readily available on the
+        project shell and web servers. Their display here allows for easy lookup
+        by project administrators.
+      </p>
+    {% else %}
+      <p>
+        Outgoing email service will be available when you have set a password on the provided
+        account.
+      </p>
+    {% endif %}
+  </div>
+  <div>
+    <h2>Password</h2>
+    {{c.form.display(value=dict(passwd=value.passwd), action='save')}}<br/>
+  </div>
+  {% if value.modified_user %}
+    <p>
+      Password data last set {{h.ago_ts(value.row_modtime)}} ago
+      by {{value.modified_user}}
+    </p>
+  {% endif %}
+{% endblock %}

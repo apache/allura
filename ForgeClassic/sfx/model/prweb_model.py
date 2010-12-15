@@ -131,3 +131,39 @@ class MySQL(object):
             return self._row[name]
         except KeyError:
             raise AttributeError, name
+
+class PRWebEmailAddress(object):
+
+    @classmethod
+    def create(cls, passwd=None):
+        action_logger.info('Create PRWebEmailAddress')
+        stmt = T._prweb_email.insert()
+        stmt.execute(
+            passwd=passwd,
+            modified_by_uid=context.user.get_tool_data('sfx', 'userid'),
+            group_id=context.project.get_tool_data('sfx', 'group_id'))
+
+    def update(self, passwd=None):
+        action_logger.info('Update PRWebEmailAddress')
+        stmt = T._prweb_email.update(
+            whereclause=T._prweb_email.c.group_id==self.group_id)
+        stmt.execute(
+            passwd=passwd,
+            modified_by_uid=context.user.get_tool_data('sfx', 'userid'))
+
+    @LazyProperty
+    def _row(self):
+        q = T.prweb_email.select()
+        q = q.where(
+            T.prweb_email.c.group_id==context.project.get_tool_data('sfx', 'group_id'))
+        return q.execute().first()
+
+    def __getattr__(self, name):
+        if name == '_row':
+            raise AttributeError, name
+        elif self._row is None:
+            return None
+        try:
+            return self._row[name]
+        except KeyError:
+            raise AttributeError, name
