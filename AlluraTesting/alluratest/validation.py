@@ -169,11 +169,11 @@ def validate_js(html_or_response):
         else:
             html = html_or_response
         basedir = path.dirname(path.abspath(__file__))
-        js_dir = basedir + '/../../../tests/js'
+        jslint_dir = basedir + '/../jslint'
         f = tempfile.NamedTemporaryFile(prefix='jslint', delete=False)
         f.write(html)
         f.close()
-        cmd = 'java -jar ' + js_dir + '/js.jar '+ js_dir +'/jslint.js ' + f.name
+        cmd = 'java -jar ' + jslint_dir + '/js.jar '+ jslint_dir +'/jslint.js ' + f.name
         p = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
         stdout, stderr = p.communicate(html)
         if stdout.startswith('jslint: No problems found'):
