@@ -4,7 +4,7 @@ from formencode.variabledecode import variable_encode
 from ming.orm.ormsession import ThreadLocalORMSession
 
 from allura.tests import TestController
-from allura.tests.helpers import validate_page, validate_json
+from alluratest.validation import validate_page, validate_json
 
 
 class TestUserProfile(TestController):

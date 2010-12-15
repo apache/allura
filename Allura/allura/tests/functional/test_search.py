@@ -1,5 +1,5 @@
 from allura.tests import TestController
-from allura.tests.helpers import validate_page
+from alluratest.validation import validate_page
 
 
 class TestSearch(TestController):

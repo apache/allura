@@ -6,7 +6,7 @@ from ming.orm.ormsession import ThreadLocalORMSession
 import Image, StringIO
 
 from allura.tests import TestController
-from allura.tests.helpers import validate_page, validate_json
+from alluratest.validation import validate_page, validate_json
 
 
 class TestNeighborhood(TestController):

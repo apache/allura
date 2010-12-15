@@ -8,7 +8,7 @@ from ming.orm.ormsession import ThreadLocalORMSession
 from allura.tests import TestController
 from allura import model as M
 from allura.lib import helpers as h
-from allura.tests.helpers import validate_page, validate_json
+from alluratest.validation import validate_page
 
 
 class TestProjectAdmin(TestController):

@@ -17,7 +17,7 @@ from nose.tools import assert_true
 from allura.tests import TestController
 from allura import model as M
 from ming.orm import session
-from allura.tests.helpers import validate_page, validate_json, validate_html5_chunk
+from alluratest.validation import validate_page, validate_json, validate_html5_chunk
 
 
 class TestRootController(TestController):

@@ -3,7 +3,7 @@ from formencode.variabledecode import variable_encode
 
 from allura.tests import TestController
 from allura import model as M
-from allura.tests.helpers import validate_page, validate_json
+from alluratest.validation import validate_page, validate_json
 
 
 class TestDiscuss(TestController):
