@@ -137,48 +137,29 @@ class NeighborhoodController(object):
         c.add_project = W.add_project
         for checkbox in ['Wiki','Git','Tickets','Downloads','Discussion']:
             form_data.setdefault(checkbox, True)
+        form_data['neighborhood'] = self.neighborhood.name
         return dict(neighborhood=self.neighborhood, form_data=form_data)
 
     @h.vardec
     @expose()
     @validate(W.add_project, error_handler=add_project)
-    def register(self, project_unixname=None, project_description=None, project_name=None, **kw):
+    def register(self, project_unixname=None, project_description=None, project_name=None, neighborhood=None, **kw):
         require(has_neighborhood_access('create', self.neighborhood), 'Create access required')
-        project_unixname = h.really_unicode(project_unixname or '').encode('utf-8')
         project_description = h.really_unicode(project_description or '').encode('utf-8')
         project_name = h.really_unicode(project_name or '').encode('utf-8')
-        try:
-            p = self.neighborhood.register_project(project_unixname.lower())
-        except forge_exc.ProjectConflict:
-            flash(
-                'A project already exists with that name, please choose another.', 'error')
-            ming.orm.ormsession.ThreadLocalORMSession.close_all()
-            redirect('add_project?project_unixname=%s&project_description=%s&project_name=%s' %
-                     (quote_plus(project_unixname),
-                      quote_plus(project_description),
-                      quote_plus(project_name)))
-        except Exception, ex:
-            flash('%s: %s' % (ex.__class__, str(ex)), 'error')
-            log.exception('Unexpected error creating project')
-            c.project = None
-            ming.orm.ormsession.ThreadLocalORMSession.close_all()
-            redirect('add_project?project_unixname=%s&project_description=%s&project_name=%s' %
-                     (quote_plus(project_unixname),
-                      quote_plus(project_description),
-                      quote_plus(project_name)))
+        c.project = M.Project.query.find({'shortname':project_unixname,'neighborhood_id':self.neighborhood._id}).first()
         if project_name:
-            p.name = project_name
+            c.project.name = project_name
         if project_description:
-            p.short_description = project_description
-        c.project = p
+            c.project.short_description = project_description
         ming.orm.ormsession.ThreadLocalORMSession.flush_all()
         # require(has_project_access('tool'))
         for i, tool in enumerate(kw):
             if kw[tool]:
-                p.install_app(tool, ordinal=i)
+                c.project.install_app(tool, ordinal=i)
         flash('Welcome to the SourceForge Beta System! '
               'To get started, fill out some information about your project.')
-        redirect(p.script_name + 'admin/overview')
+        redirect(c.project.script_name + 'admin/overview')
 
     @expose()
     def icon(self):

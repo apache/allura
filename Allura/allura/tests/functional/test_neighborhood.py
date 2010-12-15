@@ -128,19 +128,19 @@ class TestNeighborhood(TestController):
 
     def test_register(self):
         r = self.app.post('/adobe/register',
-                          params=dict(project_unixname='mymoz', project_name='', project_description=''),
+                          params=dict(project_unixname='mymoz', project_name='', project_description='', neighborhood='Adobe'),
                           extra_environ=dict(username='*anonymous'),
                           status=302)
         r = self.app.post('/adobe/register',
-                          params=dict(project_unixname='foo.mymoz', project_name='', project_description=''),
+                          params=dict(project_unixname='foo.mymoz', project_name='', project_description='', neighborhood='Adobe'),
                           extra_environ=dict(username='root'))
-        assert r.html.find('div',{'class':'error'}).string == 'Please use only letters, numbers, and dash characters.'
+        assert r.html.find('div',{'class':'error'}).string == 'Invalid project shortname'
         r = self.app.post('/p/register',
-                          params=dict(project_unixname='test', project_name='', project_description=''),
+                          params=dict(project_unixname='test', project_name='', project_description='', neighborhood='Adobe'),
                           extra_environ=dict(username='root'))
-        assert 'error' in r.cookies_set['webflash']
+        assert r.html.find('div',{'class':'error'}).string == 'A project already exists with that name, please choose another.'
         r = self.app.post('/adobe/register',
-                          params=dict(project_unixname='mymoz', project_name='', project_description=''),
+                          params=dict(project_unixname='mymoz', project_name='', project_description='', neighborhood='Adobe'),
                           extra_environ=dict(username='root'))
 
     def test_neighborhood_project(self):
