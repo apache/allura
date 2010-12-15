@@ -45,8 +45,7 @@ def has_artifact_access(access_type, obj=None, user=None, app=None,
         if obj is not None:
             acl |= set(obj.acl.get(access_type, []))
         if acl & user_roles: return True
-        if has_neighborhood_access(
-            'admin', app.project.neighborhood, user, user_roles)():
+        if has_neighborhood_access('admin', app.project.neighborhood, user)():
             return True
         return False
     return result
