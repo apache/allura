@@ -3,15 +3,15 @@
 <div>
   <div id="{{value.slug}}" class="discussion-post">
     <div class="row">
-        <div class="grid-3 tcenter">
-         <p class="gravatar">
-          {% set size = value.parent and 32 or 48 %}
-          <a href="{{value.author().url()}}">{{lib.gravatar(value.author(), size=size)}}</a><br/>
-          <a href="{{value.author().url()}}">{{value.author().display_name}}</a><br />{{h.ago(value.timestamp)}}
-         </p>
-        </div>
+      <div class="grid-3 tcenter">
+       <p class="gravatar">
+        {% set size = value.parent and 32 or 48 %}
+        <a href="{{value.author().url()}}">{{lib.gravatar(value.author(), size=size)}}</a><br/>
+        <a href="{{value.author().url()}}">{{value.author().display_name}}</a><br />{{h.ago(value.timestamp)}}
+       </p>
+      </div>
 
-        <div class="grid-13" style="width: {{indent == 0 and 475 or (indent <= 40 and 465-indent*10 or 65)}}px">
+      <div class="grid-13" style="width: {{indent == 0 and 475 or (indent <= 40 and 465-indent*10 or 65)}}px">
         <div class="display_post">
           {% if show_subject %}
             <b>{{value.subject or '(no subject)'}}<br/></b>
@@ -65,8 +65,9 @@
             <a href="#" class="add_attachment little_link"><span>Attach</span></a>
           {% endif %}
         </div>
-        </div>
-      <div class="shortlink_popup" style="display: none">
+      </div>
+      <div class="shortlink_popup modal" style="display: none">
+        <b data-icon="{{g.icons['delete'].char}}" class="ico {{g.icons['delete'].css}} close"></b>
         If you would like to refer to this comment somewhere else in this project, copy and paste the following link:
         <input type="text" style="width:100%"
           value='{% filter forceescape %}<a href="{{tg.url(url.current(),dict(page=page,limit=limit))}}#{{value.slug}}">{{value.subject or "comment"}}</a>{% endfilter %}'>

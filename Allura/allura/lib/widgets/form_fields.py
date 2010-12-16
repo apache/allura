@@ -142,6 +142,7 @@ class MarkdownEdit(AutoResizeTextarea):
 
     def resources(self):
         for r in super(MarkdownEdit, self).resources(): yield r
+        yield ew.JSLink('js/jquery.lightbox_me.js')
         yield ew.JSLink('js/sf_markitup.js')
         yield ew.CSSLink('css/markitup_sf.css')
 
@@ -323,3 +324,24 @@ class AdminField(ew.InputField):
     def resources(self):
         for r in self.field.resources():
             yield r
+
+class Lightbox(ew_core.Widget):
+    template='jinja:widgets/lightbox.html'
+    defaults=dict(
+        name=None,
+        trigger=None,
+        content='')
+
+    def resources(self):
+        yield ew.JSLink('js/jquery.lightbox_me.js')
+        yield onready('''
+            var $lightbox = $('#lightbox_%s');
+            var $trigger = $('%s');
+            $trigger.bind('click', function() {
+                $lightbox.lightbox_me();
+                return false;
+            });
+            $('.close', $lightbox).bind('click', function() {
+                $lightbox.hide();
+            });
+        ''' % (self.name, self.trigger))

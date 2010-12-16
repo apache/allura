@@ -8,7 +8,7 @@ $(window).load(function() {
             var $edit = $('a.markdown_edit', $container);
             var $help = $('a.markdown_help', $container);
             var $preview_area = $('div.markdown_preview', $container);
-            var $help_area = $('div.markdown_help', $container).dialog({autoOpen:false}).show();
+            var $help_area = $('div.markdown_help', $container);
             $preview.click(function(evt){
                 evt.preventDefault();
                 $.post('/nf/markdown_to_html', {
@@ -33,7 +33,10 @@ $(window).load(function() {
             });
             $help.click(function(evt){
                 evt.preventDefault();
-                $help_area.dialog('open');
+                $help_area.lightbox_me();
+            });
+            $('.close', $help_area).bind('click', function() {
+                $help_area.hide();
             });
         });
     }

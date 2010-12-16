@@ -1,16 +1,17 @@
 <div class="markdown_edit">
-  <a href="#" class="markdown_preview btn" title="Preview"><b data-icon="{{g.icons['search'].css}}" class="ico {{g.icons['search'].css}}"></b> Preview</a>
+  <a href="#" class="markdown_preview btn" title="Preview"><b data-icon="{{g.icons['search'].char}}" class="ico {{g.icons['search'].css}}"></b> Preview</a>
   <a href="#" class="markdown_edit btn" style="display:none" title="Edit"><b data-icon="{{g.icons['pencil'].char}}" class="ico {{g.icons['pencil'].css}}"></b> Edit</a>
   <a href="#" class="markdown_help btn" title="Help"><b data-icon="{{g.icons['help'].char}}" class="ico {{g.icons['help'].css}}"></b> Help</a>
   <div class="clear"></div>
   <textarea id="{{id or name}}" name="{{name}}" class="auto_resize">{{value or ''}}</textarea>
   <div class="markdown_preview" style="display:none"></div>
-  <div class="markdown_help" style="display:none">
+  <div class="modal markdown_help" style="display:none">
+    <b data-icon="{{g.icons['delete'].char}}" class="ico {{g.icons['delete'].css}} close"></b>
     <p>You can use
       <a href="http://daringfireball.net/projects/markdown/">MarkDown</a>
       Syntax here</p>
     <h4>Example Input</h4>
-    <pre style="background-color:#fff">
+    <pre>
 # First-level heading
 
 Some *emphasized* and **strong** text
@@ -19,7 +20,7 @@ Some *emphasized* and **strong** text
 
 </pre>
     <h4>Example Rendering</h4>
-    <div style="background-color:#fff">{{g.markdown.convert('''
+    <div>{{g.markdown.convert('''
 # First-level heading
 
 Some *emphasized* and **strong** text

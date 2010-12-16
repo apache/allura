@@ -272,6 +272,7 @@ class Post(HierWidget):
         for w in self.widgets.itervalues():
             for r in w.resources():
                 yield r
+        yield ew.JSLink('js/jquery.lightbox_me.js')
         yield ew.JSScript('''
         (function () {
             $('div.discussion-post').each(function () {
@@ -310,11 +311,14 @@ class Post(HierWidget):
                     });
                 }
                 if($('.shortlink', post)){
-                    var popup = $('.shortlink_popup', post).dialog({modal: true, autoOpen: false}).show();
-                    $('.shortlink', post).click(function (ele) {
-                        popup.dialog('open');
+                    var popup = $('.shortlink_popup', post);
+                    $('.shortlink', post).click(function(evt){
+                        evt.preventDefault();
+                        popup.lightbox_me();
                         $('input', popup).select();
-                        return false;
+                    });
+                    $('.close', popup).bind('click', function() {
+                        popup.hide();
                     });
                 }
             });

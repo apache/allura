@@ -12,6 +12,14 @@
 {% endblock %}
 
 {% block extra_js %}
-  <script type="text/javascript" src="{{g.app_static('js/wiki.js')}}"></script>
+  {{c.create_page_lightbox.display(content='''
+    <h1>Add a Wiki Page</h1>
+    <form class="grid-10">
+        <label class="grid-2">Name</label>
+        <div class="grid-7"><input type="text" name="name"></div>
+        <label class="grid-2">&nbsp;</label>
+        <div class="grid-7"><input type="submit" value="Create page"></div>
+    </form>
+  ''')}}
   {% block wiki_extra_js %}{% endblock %}
 {% endblock %}

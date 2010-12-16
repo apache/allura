@@ -14,7 +14,7 @@
               {% endif %}
             </th>
           {% endfor %}
-          <th style="width:15px">&nbsp;
+          <th style="width:15px">
             <a href="#" id="col_menu"><b data-icon="{{g.icons['admin'].char}}" class="ico {{g.icons['admin'].css}}"></b></a>
           </th>
         </tr>
@@ -38,26 +38,25 @@
         {% endfor %}
       </tbody>
     </table>
-    <div id="col_list" style="display:none">
-      <form action="">
-        <input type="hidden" name="limit" value="{{limit}}">
-        <input type="hidden" name="page" value="{{page}}">
-        <input type="hidden" name="sort" value="{{sort}}">
-        <input type="hidden" name="query" value="{{query}}">
-        <ul>
-        {% for col in columns %}
-          <li class="clear">
-            <input type="hidden" name="columns-{{loop.index0}}.name" value="{{col['name']}}">
-            <input type="hidden" name="columns-{{loop.index0}}.sort_name" value="{{col['sort_name']}}">
-            <input type="hidden" name="columns-{{loop.index0}}.label" value="{{col['label']}}">
-            <input type="checkbox" name="columns-{{loop.index0}}.active"{% if col['active'] %} checked="checked"{% endif %}> {{col['label']}}
-          </li>
-        {% endfor %}
-        </ul>
-        <div class="clear">&nbsp;</div>
-        <input type="submit" value="Save">
-      </form>
-    </div>
+    <form action="" id="col_list_form" style="display:none">
+      <input type="hidden" name="limit" value="{{limit}}">
+      <input type="hidden" name="page" value="{{page}}">
+      <input type="hidden" name="sort" value="{{sort}}">
+      <input type="hidden" name="query" value="{{query}}">
+      <ul>
+      {% for col in columns %}
+        <li class="clear">
+          <input type="hidden" name="columns-{{loop.index0}}.name" value="{{col['name']}}">
+          <input type="hidden" name="columns-{{loop.index0}}.sort_name" value="{{col['sort_name']}}">
+          <input type="hidden" name="columns-{{loop.index0}}.label" value="{{col['label']}}">
+          <input type="checkbox" name="columns-{{loop.index0}}.active"{% if col['active'] %} checked="checked"{% endif %}> {{col['label']}}
+        </li>
+      {% endfor %}
+      </ul>
+      <div class="clear">&nbsp;</div>
+      <input type="submit" value="Save">
+    </form>
+    {{widget.fields['lightbox'].display()}}
   {% endif %}
   {{widget.fields['page_list'].display(limit=limit, page=page, count=count)}}
   <script type="text/javascript">

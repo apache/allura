@@ -29,6 +29,7 @@ from allura.lib.widgets.subscriptions import SubscribeForm
 # Local imports
 from forgewiki import model as WM
 from forgewiki import version
+from forgewiki.widgets.wiki import CreatePageWidget
 
 log = logging.getLogger(__name__)
 
@@ -36,6 +37,7 @@ class W:
     thread=w.Thread(
         page=None, limit=None, page_size=None, count=None,
         style='linear')
+    create_page_lightbox = CreatePageWidget(name='create_wiki_page', trigger='#sidebar a.add_wiki_page')
     markdown_editor = ffw.MarkdownEdit()
     label_edit = ffw.LabelEdit()
     attachment_add = ffw.AttachmentAdd()
@@ -232,6 +234,7 @@ class RootController(BaseController):
     def __init__(self):
         setattr(self, 'feed.atom', self.feed)
         setattr(self, 'feed.rss', self.feed)
+        c.create_page_lightbox = W.create_page_lightbox
         self._discuss = AppDiscussionController()
 
     def _check_security(self):
@@ -386,6 +389,7 @@ class PageController(BaseController):
             app_config_id=c.app.config._id, title=self.title, deleted=False)
         if self.page:
             self.attachment = WikiAttachmentsController(self.page)
+        c.create_page_lightbox = W.create_page_lightbox
         setattr(self, 'feed.atom', self.feed)
         setattr(self, 'feed.rss', self.feed)
 

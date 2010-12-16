@@ -20,12 +20,13 @@ class TicketSearchResults(ew_core.SimpleForm):
     class fields(ew_core.NameList):
         page_list=ffw.PageList()
         page_size=ffw.PageSize()
+        lightbox=ffw.Lightbox(name='col_list',trigger='#col_menu')
 
     def resources(self):
         yield ew.JSLink('tracker_js/ticket-list.js')
         yield ew.CSSLink('tracker_css/ticket-list.css')
-        for r in ffw.PageList().resources(): yield r
-        for r in ffw.PageSize().resources(): yield r
+        for r in super(TicketSearchResults, self).resources():
+            yield r
 
 class MassEdit(ew_core.Widget):
     template='jinja:tracker_widgets/mass_edit.html'

@@ -20,14 +20,10 @@
         requery();
     });
 
-    $('#col_list').dialog({autoOpen: false, title:"Column Preferences"});
-    $('#col_list').parent().css('border', '1px solid black');
+    $('#lightbox_col_list').append($('#col_list_form'));
+    $('#col_list_form').show();
 
-    $('#col_menu').click(function(){
-        $('#col_list').dialog('open');
-    });
-
-    $('#col_list ul').sortable({
+    $('#col_list_form ul').sortable({
         stop: function(){
             $('li',$(this)).each(function(i, ele){
                 var $ele = $(ele);
