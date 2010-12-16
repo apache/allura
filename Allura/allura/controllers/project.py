@@ -20,7 +20,7 @@ from ming.utils import LazyProperty
 import allura
 from allura import model as M
 from allura.app import SitemapEntry
-from allura.lib.base import BaseController
+from allura.lib.base import WsgiDispatchController
 from allura.lib import helpers as h
 from allura.lib import utils
 from allura.controllers.error import ErrorController
@@ -196,7 +196,7 @@ class NeighborhoodProjectBrowseController(ProjectBrowseController):
                     sort=sort,
                     limit=limit, page=page, count=count)
 
-class HostNeighborhoodController(BaseController, NeighborhoodController):
+class HostNeighborhoodController(WsgiDispatchController, NeighborhoodController):
     '''Neighborhood controller with support for use as a root controller, for
     instance, when using adobe.sourceforge.net (if this is allowed).
     '''

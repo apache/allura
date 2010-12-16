@@ -13,11 +13,11 @@ from tg.decorators import override_template
 from webob import exc
 from pylons import c, g
 
-from allura.lib.base import BaseController
+from allura.lib.base import WsgiDispatchController
 
 log = logging.getLogger(__name__)
 
-class OEmbedController(BaseController):
+class OEmbedController(WsgiDispatchController):
     '''Controller that serves up oembedded resources'''
 
     @expose('jinja:oembed/generic.html')

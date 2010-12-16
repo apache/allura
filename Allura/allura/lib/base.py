@@ -15,9 +15,9 @@ from ming.orm.middleware import MingMiddleware
 
 from allura.lib.custom_middleware import ForgeMiddleware
 
-__all__ = ['BaseController']
+__all__ = ['WsgiDispatchController']
 
-class BaseController(TGController):
+class WsgiDispatchController(TGController):
     """
     Base class for the controllers in the application.
 

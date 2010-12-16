@@ -3,12 +3,12 @@
 
 from pylons.controllers.util import abort
 
-from allura.lib.base import BaseController
+from allura.lib.base import WsgiDispatchController
 
 __all__ = ['TemplateController']
 
 
-class TemplateController(BaseController):
+class TemplateController(WsgiDispatchController):
     """
     The fallback controller for allura.
     

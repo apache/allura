@@ -13,7 +13,7 @@ import ming
 
 import allura
 from allura.app import SitemapEntry
-from allura.lib.base import BaseController
+from allura.lib.base import WsgiDispatchController
 from allura.lib import helpers as h
 from allura.lib import plugin
 from allura.controllers.error import ErrorController
@@ -34,7 +34,7 @@ log = logging.getLogger(__name__)
 class W:
     project_summary = plw.ProjectSummary()
 
-class RootController(BaseController):
+class RootController(WsgiDispatchController):
     """
     The root controller for the allura application.
     

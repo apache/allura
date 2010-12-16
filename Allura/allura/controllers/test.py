@@ -13,7 +13,7 @@ from tg.decorators import without_trailing_slash
 import  ming.orm.ormsession
 
 import allura
-from allura.lib.base import BaseController
+from allura.lib.base import WsgiDispatchController
 from allura.lib.security import require, require_authenticated, has_project_access, has_artifact_access
 from allura.lib import helpers as h
 from allura.lib import plugin
@@ -31,7 +31,7 @@ __all__ = ['RootController']
 
 log = logging.getLogger(__name__)
 
-class TestController(BaseController, ProjectController):
+class TestController(WsgiDispatchController, ProjectController):
     '''Root controller for testing -- it behaves just like a
     ProjectController for test/ except that all tools are mounted,
     on-demand, at the mount point that is the same as their entry point
@@ -96,7 +96,7 @@ class TestController(BaseController, ProjectController):
         c.project = M.Project.query.get(shortname='test')
         c.user = plugin.AuthenticationProvider.get(request).by_username(
             environ.get('username', 'test-admin'))
-        return BaseController.__call__(self, environ, start_response)
+        return WsgiDispatchController.__call__(self, environ, start_response)
 
 class DispatchTest(object):
 
