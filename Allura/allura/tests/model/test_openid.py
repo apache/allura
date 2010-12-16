@@ -28,7 +28,6 @@ def setUp():
     g.set_app('hello')
     c.user = M.User.query.get(username='test-admin')
     c.user.email_addresses = c.user.open_ids = []
-    c.user.projects = c.user.projects[:2]
     c.user.project_role().roles = []
 
 def test_oid_model():
