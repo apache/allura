@@ -17,6 +17,25 @@ from allura.lib.custom_middleware import ForgeMiddleware
 
 __all__ = ['WsgiDispatchController']
 
+def wsgi_dispatch(environ):
+        import allura.model as model
+        host = environ['HTTP_HOST'].lower()
+        if host == config['oembed.host']:
+            from allura.controllers.oembed import OEmbedController
+            return OEmbedController()
+
+        neighborhood = model.Neighborhood.query.get(url_prefix='//' + host + '/')
+        if neighborhood:
+            from allura.controllers.project import HostNeighborhoodController
+            return HostNeighborhoodController(neighborhood.name, neighborhood.shortname_prefix)
+
+        if environ['PATH_INFO'].startswith('/_wsgi_/'):
+            for ep in pkg_resources.iter_entry_points('allura'):
+                App = ep.load()
+                if App.wsgi and App.wsgi.handles(environ): return App.wsgi
+
+        return None
+
 class WsgiDispatchController(TGController):
     """
     Base class for the controllers in the application.
@@ -41,17 +60,9 @@ class WsgiDispatchController(TGController):
         return app(environ, start_response)
 
     def _wsgi_handler(self, environ):
-        import allura.model as model
-        host = environ['HTTP_HOST'].lower()
-        if host == config['oembed.host']:
-            return OEmbedController()
-        neighborhood = model.Neighborhood.query.get(url_prefix='//' + host + '/')
-        if neighborhood:
-            return HostNeighborhoodController(neighborhood.name, neighborhood.shortname_prefix)
-        if environ['PATH_INFO'].startswith('/_wsgi_/'):
-            for ep in pkg_resources.iter_entry_points('allura'):
-                App = ep.load()
-                if App.wsgi and App.wsgi.handles(environ): return App.wsgi
+        # Have to move out of class in the attemp to break
+        # dependency loop between superclass and subclasses.
+        return wsgi_dispatch(environ)
 
     def _setup_request(self):
         '''Responsible for setting all the values we need to be set on pylons.c'''
