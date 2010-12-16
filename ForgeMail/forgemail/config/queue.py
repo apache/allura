@@ -16,7 +16,9 @@ settings.relay = Relay(host=settings.relay_config['host'],
 settings.receiver = QueueReceiver(settings.queue_config['queue'],
                                   settings.queue_config['sleep'])
 
-settings.database = configure_database(settings.database_config, also_create=False)
+## FIXME: such a function doesn't exist
+##settings.database = configure_database(settings.database_config, also_create=False)
+raise NotImplementedError
 
 Router.defaults(**settings.router_defaults)
 # NOTE: this is using a different handlers variable in settings
