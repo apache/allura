@@ -62,7 +62,7 @@ def test_openid():
 def test_user():
     assert c.user.url() .endswith('/u/test-admin/')
     assert c.user.script_name .endswith('/u/test-admin/')
-    assert len(list(c.user.my_projects())) == 0
+    assert len(list(c.user.my_projects())) == 1
     assert M.User.anonymous().project_role().name == '*anonymous'
     u = M.User.register(dict(
             username='nosetest-user'))

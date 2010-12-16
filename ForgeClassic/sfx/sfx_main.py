@@ -50,6 +50,18 @@ class SFXApp(Application):
         api = SFXProjectApi()
         api.delete(pylons.c.user, pylons.c.project)
 
+    @classmethod
+    @react('sfx.userUpdate')
+    def user_updated(cls, routing_key, doc):
+        if config['registration.method'] != 'sfx': return
+        userid = doc['sfx_user_id']
+        user = M.User.query.get(**{'tool_data.sfx.userid':doc['sfx_user_id']})
+        if user is None:
+            log.warning('Unknown SFX user updated uid=%r', userid)
+            return
+        api = SFXUserApi()
+        api.upsert_user(user.username)
+
     def sidebar_menu(self):
         return [ ]
 

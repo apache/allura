@@ -207,7 +207,7 @@ class User(MappedClass):
     open_ids=FieldProperty([str])
     email_addresses=FieldProperty([str])
     password=FieldProperty(str)
-    projects=FieldProperty([S.ObjectId])
+    projects=FieldProperty(S.Deprecated)
     preferences=FieldProperty(dict(
             results_per_page=int,
             email_address=str,
@@ -294,11 +294,20 @@ class User(MappedClass):
         return '/u/' + self.username + '/'
 
     def my_projects(self):
-        from .project import Project
-        for p in self.projects:
-            project = Project.query.get(_id=p, deleted=False)
-            if project and self._id in [role.user_id for role in project.roles] and not project.shortname.startswith('u/'):
-                yield project
+        seen_project_ids = set()
+        seen_role_ids = set()
+        candidates = ProjectRole.query.find(dict(user_id=self._id)).all()
+        user_project = 'u/' + self.username
+        while candidates:
+            r = candidates.pop(0)
+            if r._id in seen_role_ids: continue
+            seen_role_ids.add(r._id)
+            if r.name and r.project_id not in seen_project_ids:
+                seen_project_ids.add(r.project_id)
+                if r.project.shortname != user_project: 
+                    yield r.project
+            candidates += ProjectRole.query.find(dict(
+                    _id={'$in':r.roles}))
 
     def role_iter(self):
         anon_role = ProjectRole.anonymous()
@@ -328,17 +337,29 @@ class User(MappedClass):
     def anonymous(cls):
         return User.query.get(_id=None)
 
-class ProjectRole(MappedClass):
+class OldProjectRole(MappedClass):
     class __mongometa__:
         session = project_orm_session
         name='user'
         unique_indexes = [ ('user_id', 'project_id', 'name') ]
+
+class ProjectRole(MappedClass):
+    class __mongometa__:
+        session = main_orm_session
+        name='project_role'
+        unique_indexes = [ ('user_id', 'project_id', 'name') ]
+        indexes = [
+            ('user_id',)
+            ]
     
     _id = FieldProperty(S.ObjectId)
-    user_id = FieldProperty(S.ObjectId, if_missing=None) # if role is a user
-    project_id = FieldProperty(S.ObjectId, if_missing=None)
+    user_id = ForeignIdProperty('User', if_missing=None) # if role is a user
+    project_id = ForeignIdProperty('Project', if_missing=None)
     name = FieldProperty(str)
     roles = FieldProperty([S.ObjectId])
+
+    user = RelationProperty('User')
+    project = RelationProperty('Project')
 
     def __init__(self, **kw):
         assert 'project_id' in kw, 'Project roles must specify a project id'

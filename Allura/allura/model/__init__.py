@@ -7,7 +7,7 @@ from .project import Project, ProjectCategory, ProjectFile, AppConfig, SearchCon
 from .discuss import Discussion, Thread, PostHistory, Post, DiscussionAttachment
 from .artifact import Artifact, Message, VersionedArtifact, Snapshot, ArtifactLink, Feed, AwardFile, Award, AwardGrant
 from .attachments import BaseAttachment
-from .auth import User, ProjectRole, OpenId, EmailAddress, ApiToken
+from .auth import User, ProjectRole, OpenId, EmailAddress, ApiToken, OldProjectRole
 from .openid_model import OpenIdStore, OpenIdAssociation, OpenIdNonce
 from .filesystem import File
 from .tag import TagEvent, Tag, UserTags
