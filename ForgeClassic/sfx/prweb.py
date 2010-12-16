@@ -16,6 +16,8 @@ log = logging.getLogger(__name__)
 class W:
     new_vhost = widgets.NewVHost()
     mysql_password = widgets.MySQLPassword()
+    prweb_email_password = widgets.PRWebEmailPassword()
+
 
 class VHostApp(SFXBaseApp):
     '''This is the VHOST app for PyForge'''
@@ -75,4 +77,33 @@ class MySQLApp(SFXBaseApp):
             else:
                 db.update(**kw)
                 flash('Passwords updated')
+            redirect('.')
+
+class PRWebEmailApp(SFXBaseApp):
+    '''This is the Project Web Email Password app for PyForge'''
+    tool_label='Project Web Outgoing Email'
+    default_mount_label='PRWebEmail'
+    default_mount_point='sfx-smtp'
+    status='alpha'
+    ordinal=11
+
+    class AdminController(DefaultAdminController):
+
+        @with_trailing_slash
+        @expose('jinja:sfx/prweb_email_admin.html')
+        def index(self, **kw):
+            c.form = W.prweb_email_password
+            return dict(value=SM.PRWebEmailAddress())
+
+        @without_trailing_slash
+        @validate(W.prweb_email_password, error_handler=index)
+        @expose()
+        def save(self, **kw):
+            db = SM.PRWebEmailAddress()
+            if db.passwd is None:
+                SM.PRWebEmailAddress.create(**kw)
+                flash('Password set')
+            else:
+                db.update(**kw)
+                flash('Password updated')
             redirect('.')

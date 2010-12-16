@@ -181,7 +181,8 @@ class HgImplementation(M.RepositoryImplementation):
         result = []
         seen = set()
         while count and candidates:
-            obj = candidates.pop(0)
+            candidates.sort(key=lambda c:sum(c.date()))
+            obj = candidates.pop(-1)
             if obj.hex() in seen: continue
             seen.add(obj.hex())
             if skip == 0:

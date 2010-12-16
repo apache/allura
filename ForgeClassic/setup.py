@@ -32,6 +32,7 @@ setup(
     mailman = sfx:MailmanApp
     vhost = sfx:VHostApp
     mysql = sfx:MySQLApp
+    smtp = sfx:PRWebEmailApp
     hosted_apps = sfx:HostedAppsApp
 
     [allura.auth]

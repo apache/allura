@@ -173,7 +173,8 @@ class GitImplementation(M.RepositoryImplementation):
         result = []
         seen = set()
         while count and candidates:
-            obj = candidates.pop(0)
+            candidates.sort(key=lambda c:c.committed_date)
+            obj = candidates.pop(-1)
             if obj.hexsha in seen: continue
             seen.add(obj.hexsha)
             if skip == 0:

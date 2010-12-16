@@ -100,3 +100,10 @@ class MySQLPassword(ForgeForm):
             ew.TextField(label=prefix+'ro', name='passwd_rouser'),
             ew.TextField(label=prefix+'rw', name='passwd_rwuser'),
             ew.TextField(label=prefix+'admin', name='passwd_adminuser')]
+
+class PRWebEmailPassword(ForgeForm):
+    defaults=dict(
+        ForgeForm.defaults,
+        submit_text='Set password')
+    class fields(ew_core.NameList):
+        passwd = ew.TextField(label='SMTP Password')
