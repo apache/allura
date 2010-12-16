@@ -20,7 +20,7 @@ class HostedAppsApp(SFXBaseApp):
     default_mount_label='Hosted Apps'
     default_mount_point='sfx-hosted-apps'
     status='alpha'
-    ordinal=10
+    ordinal=12
 
     class AdminController(DefaultAdminController):
 

@@ -145,8 +145,9 @@ class TestProjectAdmin(TestController):
             'Downloads',
             'Mailing List (alpha)',
             'VHOST (alpha)',
-            'Classic Hosted Apps (alpha)',
             'MySQL Databases (alpha)',
+            'Project Web Outgoing Email (alpha)',
+            'Classic Hosted Apps (alpha)',
             'Chat (alpha)',
             'Blog (alpha)',
             'Subproject' ], strings
