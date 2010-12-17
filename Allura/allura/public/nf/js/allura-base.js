@@ -106,35 +106,39 @@ function auto_close( o, timeout ){
     return $o;
 }
 
-function add_close_box( o ){
-    return $(o).prepend('<a class="btn close-box"><b data-icon="d" class="ico ico-delete"></b></a>');
-}
-
 function flash( html, kind, timeout ){
-    kind || (kind = 'notice');
-    var $message = add_close_box($('<div class="'+kind+'">').append(html).prependTo('#notifications'));
-    timeout && auto_close($message, timeout);
-    return $message;
+    var status = kind || 'info';
+    var title = 'Notice:';
+    if(status == 'error'){
+        title = 'Error:';
+    }
+    $('#messages').notify(html, {
+        title: title,
+        status: status
+    });
 }
 
 function attach_form_retry( form ){
     $(form).submit(function(){
         $form = $(this);
+        $messages = $('#messages')
 
-        var $message = $('#save-message');
-        $message.length || ($message = flash('<p>saving...</p>').attr('id', 'save-message'));
-        var $text = $message.find('p');
+        $messages.notify('Saving...', {
+            title: 'Form save in progress',
+            status: 'info'
+        });
         setTimeout(function(){
             // After 7 seconds, express our concern.
-            $text.text('The server is taking too long to respond.<br/>Retrying in 30 seconds.');
-            $message.
-                addClass('error').
-                removeClass('notice').
-                show();
+            $messages.notify('The server is taking too long to respond.<br/>Retrying in 30 seconds.', {
+                title: 'Form save in progress',
+                status: 'error'
+            });
             setTimeout(function(){
                 // After 30 seconds total, give up and try again.
-                $text.text('retrying...');
-                $message.show();
+                $messages.notify('Retrying...', {
+                    title: 'Form save in progress',
+                    status: 'warning'
+                });
                 $form.submit();
             }, 23000)
         }, 7000);
@@ -142,19 +146,23 @@ function attach_form_retry( form ){
 }
 
 $(function(){
-    // Setup notifications.
-    $('#flash > div').
-        prependTo('#notifications').
-        each(function(){
-            this.className || (this.className = 'notice');
-            auto_close(add_close_box(this), 45000);
-        });
-    $('#notifications a.close-box').live('click', function(){
-        $(this).parent().hide();
-    });
-
     // Add notifications for form submission.
     attach_form_retry('form.can-retry');
+
+    $('#messages').notifier();
+    // Process Flash messages
+    $('#flash > div').
+        each(function(){
+            var status = this.className || 'info';
+            var title = 'Notice:';
+            if(status == 'error'){
+                title = 'Error:';
+            }
+            $('#messages').notify(this.innerHTML, {
+                title: title,
+                status: status
+            });
+        });
 
     // Make life a little better for Chrome users by setting tab-order on inputs.
     // This won't stop Chrome from tabbing over links, but should stop links from

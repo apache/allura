@@ -805,7 +805,7 @@ class TicketController(BaseController):
     @h.vardec
     def update_ticket(self, **post_data):
         if not post_data.get('summary'):
-            flash('You must provide a Name')
+            flash('You must provide a Name','error')
             redirect('.')
         c.app.globals.invalidate_bin_counts()
         if 'labels' in post_data:

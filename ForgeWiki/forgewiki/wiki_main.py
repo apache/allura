@@ -573,7 +573,7 @@ class PageController(BaseController):
                viewable_by=None,
                new_viewable_by=None,**kw):
         if not title:
-            flash('You must provide a title for the page.')
+            flash('You must provide a title for the page.','error')
             redirect('edit')
         if not self.page:
             # the page doesn't exist yet, so create it

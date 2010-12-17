@@ -279,7 +279,7 @@ class PostController(BaseController):
         require(has_artifact_access('write', None))
         if delete:
             self.post.delete()
-            flash('Post deleted')
+            flash('Post deleted', 'info')
             redirect(c.app.url)
         for k,v in kw.iteritems():
             setattr(self.post, k, v)

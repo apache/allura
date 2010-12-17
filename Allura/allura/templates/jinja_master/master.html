@@ -6,6 +6,7 @@
 {# TODO: convert to lib.gravatar() and remove #}
 {% from 'jinja_master/lib.html' import gravatar with context %}
 {% do g.register_forge_js('js/jquery-base.js') %}
+{% do g.register_forge_js('js/jquery.notify.js') %}
 {% do g.register_forge_js('js/allura-base.js') %}
 {% do g.register_forge_css('css/forge/hilite.css') %}
 {% do g.resource_manager.register_widgets(c) %}
@@ -62,10 +63,8 @@
     {{theme_macros.header(c.user.username, c.user._id, c.user.display_name, g.login_url, '/auth/logout')}}
     {% set flash = tg.flash_obj.render('flash', use_js=False) %}
     {% if flash %}
-      <div class="contain">
-        <div id="message" class="error hide" style="position: fixed; top: 20px;">
-          {{flash | safe}}
-        </div>
+      <div style="display:none">
+        {{flash | safe}}
       </div>
     {% endif %}
     <section id="page-body" class="{{g.document_class(neighborhood)}}">
@@ -107,10 +106,13 @@
       </div>
     </section>
     {{theme_macros.footer(g.year())}}
-    <div id="notifications">
-      {% for n in h.pop_user_notifications() %}
-        <div class="notice">{{ n.text }}</div>
-      {% endfor %}
+    <div id="messages">
+        {% for n in h.pop_user_notifications() %}
+          <section class="message info">
+            <header>Notification:</header>
+            <div class="content">{{ n.text }}</div>
+          </section>
+        {% endfor %}
     </div>
     {% for blob in g.resource_manager.emit('body_js') %}
       {{ blob }}
