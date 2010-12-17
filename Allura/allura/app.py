@@ -172,7 +172,7 @@ class Application(object):
         'Whatever logic is required to tear down a tool'
         if project_id is None: project_id = project._id
         # De-index all the artifacts belonging to this tool in one fell swoop
-        g.solr.delete('project_id_s:%s AND mount_point_s:%s' % (
+        g.solr.delete(q='project_id_s:"%s" AND mount_point_s:"%s"' % (
                 project_id, self.config.options['mount_point']))
         for d in model.Discussion.query.find({
                 'project_id':project_id,
