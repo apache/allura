@@ -29,6 +29,9 @@ log = logging.getLogger(__name__)
 class W:
     markdown_editor = ffw.MarkdownEdit()
     label_edit = ffw.LabelEdit()
+    mount_delete = ffw.Lightbox(name='mount_delete',trigger='a.mount_delete')
+    admin_modal = ffw.Lightbox(name='admin_modal',trigger='a.admin_modal')
+    install_modal = ffw.Lightbox(name='install_modal',trigger='a.install_trig')
 
 class AdminWidgets(WidgetController):
     widgets=['users', 'tool_status']
@@ -122,15 +125,6 @@ class AdminApp(Application):
         #     links.append(SitemapEntry('Permissions', admin_url+'permissions', className='nav_child'))
         # if c.project.is_root and has_project_access('security')():
         #     links.append(SitemapEntry('Roles', admin_url+'roles', className='nav_child'))
-
-        for ac in c.project.app_configs:
-            app = c.project.app_instance(ac.options.mount_point)
-#             if len(app.config_options) > 3 or (app.permissions and
-#             has_artifact_access('configure', app=app)()) and
-#             len(app.admin_menu()):
-            if app.permissions and has_artifact_access('configure', app=app)() and len(app.admin_menu()):
-                links.append(SitemapEntry(ac.options.mount_point).bind_app(self))
-                links = links + app.admin_menu()
         return links
 
     def admin_menu(self):
@@ -173,10 +167,13 @@ class ProjectAdminController(BaseController):
         return dict()
 
     @without_trailing_slash
-    @expose('jinja:project_tools.html')
+    @expose('jinja:project_tools_2.html')
     def tools(self, **kw):
         c.markdown_editor = W.markdown_editor
         c.label_edit = W.label_edit
+        c.mount_delete = W.mount_delete
+        c.admin_modal = W.admin_modal
+        c.install_modal = W.install_modal
         mounts = []
         for sub in c.project.direct_subprojects:
             mounts.append({'ordinal':sub.ordinal,'sub':sub})
@@ -331,6 +328,7 @@ class ProjectAdminController(BaseController):
                     'delete subproject %s', sp['shortname'],
                     meta=dict(name=sp['shortname']))
                 p = M.Project.query.get(shortname=sp['shortname'])
+                print p
                 plugin.ProjectRegistrationProvider.get().delete_project(p, c.user)
             elif not new:
                 p = M.Project.query.get(shortname=sp['shortname'])

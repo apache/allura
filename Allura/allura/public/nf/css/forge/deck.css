@@ -1,0 +1,66 @@
+ul.deck {
+    display: inline-block;
+    font-family: sans-serif;
+    font-size: 13px;
+    border-radius: 4px;
+    -moz-border-radius: 4px;
+    -moz-box-shadow: 0 1px 0 #FFFFFF;
+    -webkit-box-shadow: white 0px 1px 0px;
+    background: -moz-linear-gradient(100% 100% 90deg, #E5E5E5, #FFFFFF 100%) repeat scroll 0 0 #E5E5E5;
+    background-image: -webkit-gradient(linear, 0% 0%, 0% 100%, from(white), to(#E5E5E5));
+    border: 1px solid #AAAAAA;
+    width: 182px;
+    padding: 0;
+}
+
+ul.deck h3 {
+    color: #444;
+    font-family: "TitilliumText22Bold", arial, sans-serif;
+    font-weight: normal;
+    text-transform: uppercase;
+}
+
+ul.deck li:first-child {
+    border-top: medium none !important;
+}
+
+ul.deck li:last-child {
+    border-bottom: medium none !important;
+}
+
+ul.deck li {
+    position: relative;
+    border-top: 1px solid #FFFFFF;
+    border-bottom: 1px solid #AAAAAA;
+    list-style: none outside none;
+}
+
+ul.deck li a {
+    color: #555555;
+    display: block;
+    padding: 5px 10px;
+}
+
+ul.deck li a:hover {
+    background: none repeat scroll 0 0 rgba(229, 229, 229, 0.9);
+}
+
+ul.deck img {
+    margin: 10px auto;
+    display: block;
+}
+
+ul.deck li small {
+    margin: 0;
+    padding: 0 3px;
+    position: absolute;
+    right: 5px;
+    text-align: center;
+    top: 4px;
+    width: 26px;
+}
+
+a:hover {
+    color: #0099CC !important;
+    text-decoration: underline;
+}

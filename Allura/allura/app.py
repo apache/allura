@@ -196,7 +196,7 @@ class Application(object):
         # if self.permissions and has_artifact_access('configure', app=self)():
         #     links.append(SitemapEntry('Permissions', admin_url + 'permissions', className='nav_child'))
         if len(self.config_options) > 3:
-            links.append(SitemapEntry('Options', admin_url + 'options', className='nav_child'))
+            links.append(SitemapEntry('Options', admin_url + 'options', className='admin_modal'))
         return links
 
     def message_auditor(self, routing_key, data, artifact, **kw):

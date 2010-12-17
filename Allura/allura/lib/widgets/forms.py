@@ -27,6 +27,9 @@ class ForgeForm(ew.SimpleForm):
             display = "%s<div class='error'>%s</div>" % (display, ctx['errors'])
         return display
 
+class AdminForm(ForgeForm):
+    template='jinja:widgets/admin_form.html'
+
 class NeighborhoodAddProjectForm(ForgeForm):
     template='jinja:widgets/neighborhood_add_project.html'
     defaults=dict(

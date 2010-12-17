@@ -1,22 +1,18 @@
-{% extends g.theme.master %}
-
-{% block title %}{{c.project.name}} / {{c.app.config.options.mount_label}} / Admin Home{% endblock %}
-
-{% block header %}{{app.config.options.mount_point}} Admin Home{% endblock %}
-
-{% block content %}
-<form method="POST" action="set_home">
+<form method="POST" action="{{c.project.url()}}admin/{{app.config.options.mount_point}}/set_home">
   <label for="title" class="grid-4">Wiki Home Page:</label>
-  <div class="grid-14">
+  <div class="grid-9">
     {% if allow_config %}
      <input type="text" name="new_home" id="new_home" value="{{home}}"/>
     {% else %}
       <span>{{home}}</span>
     {% endif %}
   </div>
-  <label class="grid-4">&nbsp;</label>
-  <div class="grid-14">
-    {% if allow_config %}<input type="submit" value="Save"/>{% endif %}
-  </div>
+  {% if allow_config %}
+    <div class="grid-13">&nbsp;</div>
+    <hr>
+    <div class="grid-13">&nbsp;</div>
+    <div class="grid-13">
+      <input type="submit" value="Save"/>
+    </div>
+  {% endif %}
 </form>
-{% endblock %}

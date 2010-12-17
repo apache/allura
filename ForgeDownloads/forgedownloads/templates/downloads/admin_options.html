@@ -1,22 +1,15 @@
-{% extends g.theme.master %}
-
-{% block title %}{{c.project.name}} / {{app.config.options.mount_label}} / Admin Options{% endblock %}
-
-{% block header %}{{app.config.options.mount_label}} Admin Options{% endblock %}
-
-{% block content %}
-  <form method="POST" action="update_options">
-    <label class="grid-3"
-           for="show_download_button"
-           title="Select this if you want a download button on the project's home page to give users an easy path to download the latest release.
-                 The download button will appear in the upper left corner of your projects home page.">Show Download:</label>
-    <div class="grid-16">
-        <input name="show_download_button" type="checkbox" checked="{{c.project.show_download_button or None}}"/>
-    </div>
-
-    <label class="grid-3">&nbsp;</label>
-    <div class="grid-16">
-      <input type="submit" value="Save"/>
-    </div>
-  </form>
-{% endblock %}
+<form method="POST" action="{{c.project.url()}}admin/{{app.config.options.mount_point}}/update_options">
+  <label class="grid-4"
+         for="show_download_button"
+         title="Select this if you want a download button on the project's home page to give users an easy path to download the latest release.
+               The download button will appear in the upper left corner of your projects home page.">Show Download:</label>
+  <div class="grid-9">
+      <input name="show_download_button" type="checkbox" checked="{{c.project.show_download_button or None}}"/>
+  </div>
+  <div class="grid-13">&nbsp;</div>
+  <hr>
+  <div class="grid-13">&nbsp;</div>
+  <div class="grid-13">
+    <input type="submit" value="Save"/>
+  </div>
+</form>

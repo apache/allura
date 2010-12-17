@@ -147,8 +147,8 @@ class ForgeWikiApp(Application):
 
     def admin_menu(self):
         admin_url = c.project.url()+'admin/'+self.config.options.mount_point+'/'
-        links = [SitemapEntry('Set Home', admin_url + 'home', className='nav_child'),
-                 SitemapEntry('Options', admin_url + 'options', className='nav_child')]
+        links = [SitemapEntry('Set Home', admin_url + 'home', className='admin_modal'),
+                 SitemapEntry('Options', admin_url + 'options', className='admin_modal')]
         return links
 
     def sidebar_menu(self):
@@ -743,5 +743,5 @@ class WikiAdminController(DefaultAdminController):
         self.app.config.options['show_discussion'] = show_discussion
         self.app.config.options['show_left_bar'] = show_left_bar
         self.app.config.options['show_right_bar'] = show_right_bar
-        flash('Options updated')
-        redirect('options')
+        flash('Wiki options updated')
+        redirect(c.project.url()+'admin/tools')

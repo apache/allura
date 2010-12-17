@@ -3,7 +3,7 @@ import logging
 
 # Non-stdlib imports
 import pkg_resources
-from tg import expose, validate, redirect, response
+from tg import expose, validate, redirect, response, flash
 from pylons import g, c, request
 
 # Pyforge-specific imports
@@ -84,4 +84,5 @@ class LinkAdminController(DefaultAdminController):
 
     @expose()
     def index(self, **kw):
-        redirect('options')
+        flash('External link URL updated.')
+        redirect(c.project.url()+'admin/tools')

@@ -1,13 +1,6 @@
-{% extends g.theme.master %}
-
-{% block title %}{{c.project.name}} / {{c.app.config.options.mount_label}} / Admin Viewable Files{% endblock %}
-
-{% block header %}{{app.config.options.mount_point}} Admin Viewable Files{% endblock %}
-
-{% block content %}
 <form>
   <label class="grid-4">Extensions:</label>
-  <div class="grid-15">
+  <div class="grid-9">
     {% if allow_config %}
       <input type="text" name="additional_viewable_extensions"
              id="additional_viewable_extensions" title="e.g., .svnignore,.gitignore,.ini"
@@ -18,25 +11,23 @@
   </div>
 
   {% if allow_config %}
-  <label class="grid-4">&nbsp;</label>
-  <div class="grid-15">
+  <div class="grid-13">&nbsp;</div>
+  <hr>
+  <div class="grid-13">&nbsp;</div>
+  <div class="grid-13">
     <input type="button" onclick="save_extensions()" value="Save">
   </div>
   {% endif %}
 </form>
-{% endblock %}
-
-{% block extra_js %}
-  {% if allow_config %}
-    <script type="text/javascript">
-      function save_extensions() {
-          $.post('set_extensions', {
-              additional_viewable_extensions: $('#additional_viewable_extensions').val()
-          },
-          function () {
-              location.reload();
-          });
-      }
-    </script>
-  {% endif %}
-{% endblock %}
+{% if allow_config %}
+  <script type="text/javascript">
+    function save_extensions() {
+        $.post('{{c.project.url()}}admin/{{app.config.options.mount_point}}/set_extensions', {
+            additional_viewable_extensions: $('#additional_viewable_extensions').val()
+        },
+        function () {
+            location.reload();
+        });
+    }
+  </script>
+{% endif %}

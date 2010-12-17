@@ -6,7 +6,7 @@ from datetime import date, time, datetime, timedelta
 
 # Non-stdlib imports
 import pkg_resources
-from tg import expose, validate, redirect
+from tg import expose, validate, redirect, flash
 from tg.decorators import with_trailing_slash
 from pylons import g, c, request
 from formencode import validators
@@ -69,7 +69,7 @@ class ForgeChatApp(Application):
         links = [
             SitemapEntry('Options',
                          admin_url + 'options',
-                         className='nav_child'),
+                         className='admin_modal'),
             SitemapEntry('Permissions',
                          admin_url + 'permissions/',
                          className='nav_child'),
@@ -101,7 +101,7 @@ class AdminController(DefaultAdminController):
 
     @with_trailing_slash
     def index(self, **kw):
-        redirect('options')
+        redirect(c.project.url()+'admin/tools')
 
     @expose()
     def configure(self, channel=None):
@@ -112,6 +112,7 @@ class AdminController(DefaultAdminController):
                 project_id=self.app.config.project_id,
                 app_config_id=self.app.config._id)
             chan.channel = channel
+        flash('Chat options updated')
         super(AdminController, self).configure(channel=channel)
 
 class RootController(BaseController):

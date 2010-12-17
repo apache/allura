@@ -3,7 +3,7 @@ import logging
 
 # Non-stdlib imports
 import pkg_resources
-from tg import expose, validate, redirect, response, config
+from tg import expose, validate, redirect, response, config, flash
 from tg.decorators import with_trailing_slash, without_trailing_slash
 from pylons import g, c, request
 
@@ -55,7 +55,7 @@ class ForgeDownloadsApp(Application):
         admin_url = c.project.url()+'admin/'+self.config.options.mount_point+'/'
         links = super(ForgeDownloadsApp, self).admin_menu()
         if has_artifact_access('configure', app=self)():
-            links.append(SitemapEntry('Options', admin_url + 'options', className='nav_child'))
+            links.append(SitemapEntry('Options', admin_url + 'options', className='admin_modal'))
         return links
 
     def install(self, project):
@@ -112,4 +112,5 @@ class DownloadAdminController(DefaultAdminController):
         if bool(show_download_button) != c.project.show_download_button:
             h.log_action(log, 'update project download button').info('')
             c.project.show_download_button = bool(show_download_button)
-        redirect(request.referrer)
+        flash('Download options updated')
+        redirect(c.project.url()+'admin/tools')

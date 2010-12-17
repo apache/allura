@@ -136,7 +136,7 @@ class ForgeDiscussionApp(Application):
         admin_url = c.project.url()+'admin/'+self.config.options.mount_point+'/'
         links = super(ForgeDiscussionApp, self).admin_menu()
         if has_artifact_access('configure', app=self)():
-            links.append(SitemapEntry('Forums', admin_url + 'forums', className='nav_child'))
+            links.append(SitemapEntry('Forums', admin_url + 'forums'))
         return links
 
     def sidebar_menu(self):

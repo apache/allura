@@ -1,9 +1,3 @@
-{% extends g.theme.master %}
-
-{% block title %}{{c.project.name}} / {{app.config.options.mount_label}} / Admin Options{% endblock %}
-
-{% block header %}{{app.config.options.mount_label}} Admin Options{% endblock %}
-
 {% block content %}
-{{c.options_admin.display(value=form_value, action="configure")}}
+{{c.options_admin.display(value=form_value, action=c.project.url()+'admin/'+app.config.options.mount_point+"/configure")}}
 {% endblock %}

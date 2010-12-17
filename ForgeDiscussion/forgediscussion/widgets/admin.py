@@ -6,7 +6,7 @@ import ew.jinja2_ew as ew
 
 from allura.lib.widgets import forms as ff
 
-class OptionsAdmin(ff.ForgeForm):
+class OptionsAdmin(ff.AdminForm):
     defaults=dict(
         ff.ForgeForm.defaults,
         submit_text = 'Save')
