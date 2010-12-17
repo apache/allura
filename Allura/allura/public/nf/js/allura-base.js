@@ -2,7 +2,7 @@
     // Setup label help text
     $('label[title]').each(function(){
         var $this = $(this);
-        $this.append('<a href="#" class="help_icon"><b data-icon="h" class="ico help"></b></a>');
+        $this.append('<a href="#" class="help_icon"><b data-icon="h" class="ico ico-help"></b></a>');
         $this.tooltip({showURL: false});
     });
     // Setup title-pane widgets
@@ -22,7 +22,7 @@
     // Setup editable widgets
     $('div.editable, span.editable, h1.editable')
         .find('.viewer')
-        .append('<a class="edit_btn btn"><b data-icon="p" class="ico pencil"></b></a>')
+        .append('<a class="edit_btn btn"><b data-icon="p" class="ico ico-pencil"></b></a>')
         .end()
         .click(function(e){
             var editable = $(this).closest('.editable');
@@ -107,7 +107,7 @@ function auto_close( o, timeout ){
 }
 
 function add_close_box( o ){
-    return $(o).prepend('<a class="btn close-box"><b data-icon="d" class="ico delete"></b></a>');
+    return $(o).prepend('<a class="btn close-box"><b data-icon="d" class="ico ico-delete"></b></a>');
 }
 
 function flash( html, kind, timeout ){

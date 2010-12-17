@@ -99,26 +99,26 @@ class Globals(object):
         self.theme = plugin.ThemeProvider.get()
 
         self.icons = dict(
-            admin = Icon('x', 'admin'),
-            pencil = Icon('p', 'pencil'),
-            help = Icon('h', 'help'),
-            search = Icon('s', 'search'),
-            history = Icon('N', 'history'),
-            feed = Icon('f', 'feed'),
-            mail = Icon('M', 'mail'),
-            reply = Icon('w', 'reply'),
-            tag = Icon('z', 'tag'),
-            flag = Icon('^', 'flag'),
-            undelete = Icon('#', 'undelete'),
-            delete = Icon('D', 'delete'),
-            table = Icon('n', 'table'),
-            stats = Icon('Y', 'stats'),
-            pin = Icon('@', 'pin'),
-            folder = Icon('o', 'folder'),
-            fork = Icon('R', 'fork'),
-            merge = Icon('J', 'merge'),
-            plus = Icon('+', 'plus'),
-            conversation = Icon('q', 'conversation')
+            admin = Icon('x', 'ico-admin'),
+            pencil = Icon('p', 'ico-pencil'),
+            help = Icon('h', 'ico-help'),
+            search = Icon('s', 'ico-search'),
+            history = Icon('N', 'ico-history'),
+            feed = Icon('f', 'ico-feed'),
+            mail = Icon('M', 'ico-mail'),
+            reply = Icon('w', 'ico-reply'),
+            tag = Icon('z', 'ico-tag'),
+            flag = Icon('^', 'ico-flag'),
+            undelete = Icon('#', 'ico-undelete'),
+            delete = Icon('D', 'ico-delete'),
+            table = Icon('n', 'ico-table'),
+            stats = Icon('Y', 'ico-stats'),
+            pin = Icon('@', 'ico-pin'),
+            folder = Icon('o', 'ico-folder'),
+            fork = Icon('R', 'ico-fork'),
+            merge = Icon('J', 'ico-merge'),
+            plus = Icon('+', 'ico-plus'),
+            conversation = Icon('q', 'ico-conversation')
         )
 
     def handle_paging(self, limit, page, default=50):
