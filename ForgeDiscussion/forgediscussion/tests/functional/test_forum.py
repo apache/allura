@@ -10,7 +10,7 @@ from pylons import g, c
 
 from ming.orm.ormsession import ThreadLocalORMSession
 
-from forgediscussion.tests import TestController
+from alluratest.controller import TestController
 from allura import model as M
 from allura.command import reactor
 from allura.lib import helpers as h

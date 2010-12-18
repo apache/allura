@@ -1,5 +1,5 @@
-import pprint
-from forgelink.tests import TestController
+from alluratest.controller import TestController
+
 
 class TestRootController(TestController):
     def test_root(self):

@@ -1,10 +1,10 @@
 import allura
 
-from forgelink.tests import TestController
-
+from alluratest.controller import TestController
 from allura.lib import helpers as h
 from allura.ext.search import search_main
 from ming.orm.ormsession import ThreadLocalORMSession
+
 
 class TestRootController(TestController):
     def test_root_index_no_url(self):

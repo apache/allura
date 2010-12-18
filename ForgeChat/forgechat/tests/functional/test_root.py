@@ -1,4 +1,5 @@
-from forgechat.tests import TestController
+from alluratest.controller import TestController
+
 
 class TestRootController(TestController):
 

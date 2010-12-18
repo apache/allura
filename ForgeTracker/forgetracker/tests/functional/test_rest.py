@@ -11,7 +11,7 @@ from allura import model as M
 from allura.lib import helpers as h
 from allura.tests import helpers
 
-from forgetracker.tests import TestController
+from alluratest.controller import TestController
 from forgetracker import model as TM
 
 class TestRestApiBase(TestController):

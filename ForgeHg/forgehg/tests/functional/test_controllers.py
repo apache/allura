@@ -5,7 +5,8 @@ from pylons import c
 from ming.orm import ThreadLocalORMSession
 
 from allura.lib import helpers as h
-from forgehg.tests import TestController
+from alluratest.controller import TestController
+
 
 class TestRootController(TestController):
 
