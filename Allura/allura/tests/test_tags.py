@@ -8,6 +8,7 @@ from paste.script.appinstall import SetupCommand
 from pylons import c, g
 from ming.orm.ormsession import ThreadLocalORMSession
 
+from alluratest.controller import setup_basic_test
 from allura.command import reactor
 from allura import model as M
 from allura.lib import helpers as h
@@ -15,17 +16,7 @@ from forgewiki import model as WM
 
 def setUp(self):
     """Method called by nose before running each test"""
-    test_config = 'test.ini'
-
-    # Loading the application:
-    conf_dir = config.here
-    wsgiapp = loadapp('config:%s#main' % test_config,
-                      relative_to=conf_dir)
-    # Setting it up:
-    test_file = path.join(conf_dir, test_config)
-    cmd = SetupCommand('setup-app')
-    cmd.run([test_file])
-    ThreadLocalORMSession.flush_all()
+    setup_basic_test()
 
 def test_tag_untag():
     h.set_context('test', 'wiki')

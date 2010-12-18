@@ -19,7 +19,7 @@ from allura.lib.custom_middleware import environ as ENV, MagicalC
 
 DFL_APP_NAME = 'main_without_authn'
 
-def get_config(config):
+def get_config_file(config=None):
     if not config:
         return os.environ.get('SF_SYSTEM_FUNC') and 'sandbox-test.ini' or 'test.ini'
     return config
@@ -35,13 +35,13 @@ def setup_basic_test(config=None, app_name=DFL_APP_NAME):
     ew.widget_context.set_up(environ)
     ew.widget_context.resource_manager = ew.ResourceManager()
     ENV.set_environment(environ)
-    test_file = os.path.join(conf_dir, get_config(config))
+    test_file = os.path.join(conf_dir, get_config_file(config))
     cmd = SetupCommand('setup-app')
     cmd.run([test_file])
 
 def setup_functional_test(config=None, app_name=DFL_APP_NAME):
     '''Create clean environment for running tests.  Also return WSGI test app'''
-    config = get_config(config)
+    config = get_config_file(config)
     setup_basic_test(config, app_name)
     conf_dir = tg.config.here
     wsgiapp = loadapp('config:%s#%s' % (config, app_name),

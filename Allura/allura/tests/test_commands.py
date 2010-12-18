@@ -8,7 +8,7 @@ from paste.deploy import loadapp
 from paste.script.appinstall import SetupCommand
 from pylons import c, g
 
-from alluratest.controller import setup_basic_test, setup_global_objects
+from alluratest.controller import setup_basic_test, setup_global_objects, get_config_file
 from allura.command import reactor, script
 from allura import model as M
 

@@ -5,7 +5,7 @@ import allura
 from nose.tools import assert_true, assert_false, eq_
 from formencode.variabledecode import variable_encode
 
-from alluratest.controller import TestController
+from alluratest.controller import TestController, get_config_file
 from forgewiki import model as wm
 from forgetracker import model as tm
 

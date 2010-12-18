@@ -5,22 +5,14 @@ from paste.deploy import loadapp
 from paste.script.appinstall import SetupCommand
 from paste.deploy import appconfig
 
+from alluratest.controller import setup_basic_test, get_config_file
 from allura.config.middleware import make_app
 
 
-test_config = 'test.ini'
-
 def setUp(self):
     """Method called by nose before running each test"""
-    # Loading the application:
-    conf_dir = config.here
-    wsgiapp = loadapp('config:%s#main' % test_config,
-                      relative_to=conf_dir)
-    # Setting it up:
-    test_file = path.join(conf_dir, test_config)
-    cmd = SetupCommand('setup-app')
-    cmd.run([test_file])
+    setup_basic_test()
 
 def test_make_app():
-    conf = appconfig('config:%s#main' % test_config, relative_to=config.here)
+    conf = appconfig('config:%s#main' % get_config_file(), relative_to=config.here)
     make_app(conf.global_conf, **conf.local_conf)
