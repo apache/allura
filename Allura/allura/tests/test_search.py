@@ -14,12 +14,12 @@ from allura.ext.search import search_main
 from allura.lib.app_globals import Globals
 
 from forgewiki import model as WM
+from alluratest import controller
 
-from . import helpers
 
 def setUp():
-    helpers.setup_basic_test()
-    helpers.setup_global_objects()
+    controller.setup_basic_test()
+    controller.setup_global_objects()
 
 def test_index_artifact():
     app = M.Project.query.get(shortname='test').app_instance('wiki')

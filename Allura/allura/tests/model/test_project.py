@@ -12,11 +12,12 @@ from ming.orm.ormsession import ThreadLocalORMSession
 
 from allura import model as M
 from allura.lib.app_globals import Globals
-from allura.tests import helpers
+from alluratest.controller import setup_basic_test, setup_global_objects
+
 
 def setUp():
-    helpers.setup_basic_test()
-    helpers.setup_global_objects()
+    setup_basic_test()
+    setup_global_objects()
 
 def test_search_config():
     "just make sure needs_commit doesn't throw an exception"

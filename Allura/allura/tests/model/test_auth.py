@@ -13,12 +13,12 @@ import allura.model.auth
 from allura.lib.app_globals import Globals
 from allura import model as M
 from allura.lib import plugin
-from allura.tests import helpers
+from alluratest.controller import setup_basic_test, setup_global_objects
 
 def setUp():
-    helpers.setup_basic_test()
+    setup_basic_test()
     ThreadLocalORMSession.close_all()
-    helpers.setup_global_objects()
+    setup_global_objects()
 
 @with_setup(setUp)
 def test_password_encoder():

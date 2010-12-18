@@ -4,11 +4,11 @@ from ming.orm.ormsession import ThreadLocalORMSession
 from allura.websetup import bootstrap
 from allura.lib import helpers as h
 from allura import model as M
-from allura.tests.helpers import run_app_setup
+from alluratest.controller import setup_basic_test
 
 
 def setUp():
-    run_app_setup()
+    setup_basic_test()
 
 
 class TrackerTestWithModel(object):

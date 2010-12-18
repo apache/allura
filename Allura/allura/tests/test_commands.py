@@ -8,17 +8,18 @@ from paste.deploy import loadapp
 from paste.script.appinstall import SetupCommand
 from pylons import c, g
 
+from alluratest.controller import setup_basic_test, setup_global_objects
 from allura.command import reactor, script
 from allura import model as M
-from allura.tests import helpers
+
 
 test_config = 'test.ini#main'
 
 def setUp(self):
     """Method called by nose before running each test"""
-    #helpers.setup_basic_test(app_name='main_with_amqp')
-    helpers.setup_basic_test()
-    helpers.setup_global_objects()
+    #setup_basic_test(app_name='main_with_amqp')
+    setup_basic_test()
+    setup_global_objects()
 
 def test_reactor_setup():
     cmd = reactor.ReactorSetupCommand('setup')

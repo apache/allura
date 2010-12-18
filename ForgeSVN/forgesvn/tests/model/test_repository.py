@@ -7,15 +7,15 @@ from pylons import c
 
 from ming.orm import ThreadLocalORMSession
 
-from allura.tests import helpers
+from alluratest.controller import setup_basic_test, setup_global_objects
 from allura.lib import helpers as h
 from forgesvn import model as SM
 
 class TestSVNRepo(unittest.TestCase):
 
     def setUp(self):
-        helpers.setup_basic_test()
-        helpers.setup_global_objects()
+        setup_basic_test()
+        setup_global_objects()
         repo_dir = pkg_resources.resource_filename(
             'forgesvn', 'tests/data')
         self.repo = SM.Repository(

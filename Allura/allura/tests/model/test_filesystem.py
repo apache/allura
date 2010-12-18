@@ -8,7 +8,8 @@ from ming.orm import MappedClass, session
 
 
 from allura import model as M
-from allura.tests import helpers
+from alluratest.controller import setup_unit_test
+
 
 class File(M.File):
     class __mongometa__:
@@ -18,7 +19,7 @@ MappedClass.compile_all()
 class TestFile(TestCase):
 
     def setUp(self):
-        helpers.setup_unit_test()
+        setup_unit_test()
         self.session = session(File)
         self.conn = M.session.main_doc_session.db._connection
         self.conn.drop_all()

@@ -9,12 +9,13 @@ from paste.deploy import loadapp
 from paste.script.appinstall import SetupCommand
 from pylons import c, g, session, request
 
-from . import helpers
+from alluratest.controller import setup_basic_test, setup_global_objects
+
 
 def setUp():
     """Method called by nose before running each test"""
-    helpers.setup_basic_test()
-    helpers.setup_global_objects()
+    setup_basic_test()
+    setup_global_objects()
 
 def test_app_globals():
     g.oid_session()

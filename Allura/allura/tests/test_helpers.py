@@ -9,11 +9,12 @@ from nose.tools import eq_
 from allura import model as M
 from allura.lib import helpers as h
 
-from . import helpers
+from alluratest.controller import setup_basic_test
+
 
 def setUp(self):
     """Method called by nose before running each test"""
-    helpers.setup_basic_test()
+    setup_basic_test()
 
 def test_really_unicode():
     here_dir = path.dirname(__file__)

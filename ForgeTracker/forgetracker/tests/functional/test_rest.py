@@ -9,7 +9,7 @@ from ming.orm import session
 
 from allura import model as M
 from allura.lib import helpers as h
-from allura.tests import helpers
+from alluratest.controller import setup_basic_test, setup_global_objects
 
 from alluratest.controller import TestController
 from forgetracker import model as TM
@@ -18,7 +18,7 @@ class TestRestApiBase(TestController):
 
     def setUp(self):
         super(TestRestApiBase, self).setUp()
-        helpers.setup_global_objects()
+        setup_global_objects()
         h.set_context('test', 'bugs')
         user = M.User.query.get(username='test-admin')
         self.token = M.ApiToken(user_id=user._id)

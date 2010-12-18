@@ -1,9 +1,9 @@
-from allura.tests.helpers import run_app_setup
+from alluratest.controller import setup_basic_test
 from allura.websetup.bootstrap import clear_all_database_tables
 
 
 def setUp(self):
-    run_app_setup()
+    setup_basic_test()
 
 
 class MockPatchTestCase(object):
