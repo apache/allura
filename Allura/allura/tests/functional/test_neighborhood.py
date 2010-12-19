@@ -6,7 +6,6 @@ from ming.orm.ormsession import ThreadLocalORMSession
 import Image, StringIO
 
 from allura.tests import TestController
-from alluratest.validation import validate_page, validate_json
 
 
 class TestNeighborhood(TestController):
@@ -15,10 +14,8 @@ class TestNeighborhood(TestController):
         r = self.app.get('/adobe/home/')
         assert r.location.endswith('/adobe/home/Home/')
         r = r.follow()
-        validate_page(r)
         assert 'Welcome' in str(r), str(r)
         r = self.app.get('/adobe/admin/')
-        validate_page(r)
         assert 'admin' in str(r), str(r)
 
     def test_redirect(self):
@@ -64,7 +61,6 @@ class TestNeighborhood(TestController):
 
     def test_invite(self):
         r = self.app.get('/adobe/_moderate/', extra_environ=dict(username='root'))
-        validate_page(r)
         r = self.app.post('/adobe/_moderate/invite',
                           params=dict(pid='adobe-1', invite='on'),
                           extra_environ=dict(username='root'))
@@ -74,20 +70,17 @@ class TestNeighborhood(TestController):
                           params=dict(pid='no_such_user', invite='on'),
                           extra_environ=dict(username='root'))
         r = self.app.get(r.location, extra_environ=dict(username='root'))
-        validate_page(r)
         assert 'error' in r
         r = self.app.post('/adobe/_moderate/invite',
                           params=dict(pid='test', invite='on'),
                           extra_environ=dict(username='root'))
         r = self.app.get(r.location, extra_environ=dict(username='root'))
-        validate_page(r)
         assert 'invited' in r
         assert 'warning' not in r
         r = self.app.post('/adobe/_moderate/invite',
                           params=dict(pid='test', invite='on'),
                           extra_environ=dict(username='root'))
         r = self.app.get(r.location, extra_environ=dict(username='root'))
-        validate_page(r)
         assert 'warning' in r
         r = self.app.post('/adobe/_moderate/invite',
                           params=dict(pid='test', uninvite='on'),
@@ -113,18 +106,15 @@ class TestNeighborhood(TestController):
                           params=dict(pid='test'),
                           extra_environ=dict(username='root'))
         r = self.app.get(r.location, extra_environ=dict(username='root'))
-        validate_page(r)
         assert 'error' in r
         r = self.app.post('/adobe/_moderate/evict',
                           params=dict(pid='adobe-1'),
                           extra_environ=dict(username='root'))
         r = self.app.get(r.location, extra_environ=dict(username='root'))
-        validate_page(r)
         assert 'adobe-1 evicted to Projects' in r
 
     def test_home(self):
         r = self.app.get('/adobe/')
-        validate_page(r)
 
     def test_register(self):
         r = self.app.post('/adobe/register',
@@ -147,7 +137,6 @@ class TestNeighborhood(TestController):
         r = self.app.get('/adobe/test/home/', status=302)
         r = self.app.get('/adobe/adobe-1/home/', status=200)
         r = self.app.get('/p/test/sub1/home/')
-        validate_page(r)
         r = self.app.get('/p/test/sub1/', status=302)
         r = self.app.get('/p/test/no-such-app/', status=404)
 
@@ -158,7 +147,6 @@ class TestNeighborhood(TestController):
         upload = ('icon', file_name, file_data)
 
         r = self.app.get('/adobe/_admin/awards', extra_environ=dict(username='root'))
-        validate_page(r)
         r = self.app.post('/adobe/_admin/awards/create',
                           params=dict(short='FOO', full='A basic foo award'),
                           extra_environ=dict(username='root'), upload_files=[upload])
@@ -177,11 +165,8 @@ class TestNeighborhood(TestController):
 
     def test_add_a_project_link(self):
         r = self.app.get('/p/')
-        validate_page(r)
         assert 'Add a Project' in r
         r = self.app.get('/u/')
-        validate_page(r)
         assert 'Add a Project' not in r
         r = self.app.get('/adobe/')
-        validate_page(r)
         assert 'Add a Project' not in r

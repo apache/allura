@@ -4,17 +4,14 @@ from formencode.variabledecode import variable_encode
 from ming.orm.ormsession import ThreadLocalORMSession
 
 from allura.tests import TestController
-from alluratest.validation import validate_page, validate_json
 
 
 class TestUserProfile(TestController):
 
     def test_profile(self):
         response = self.app.get('/u/test-admin/profile/')
-        validate_page(response)
         assert 'OpenIDs' in response
         response = self.app.get('/u/test-admin/profile/configuration')
-        validate_page(response)
         assert 'Configure Dashboard' in response
 
     def test_neighborhood_profile(self):

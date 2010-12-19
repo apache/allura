@@ -25,5 +25,5 @@ class TestOEmbedController(TestController):
             'http://twitter.com/mai_co_jp/statuses/822499364',
             ]
         for href in urls:
-            r = self.app.get('/oembed/', params=dict(href=href), status=[200,503])
+            r = self.app.get('/oembed/', params=dict(href=href), status=[200,503], validate_skip=True)
 

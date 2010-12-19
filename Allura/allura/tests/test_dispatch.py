@@ -4,6 +4,8 @@ app = None
 
 class TestDispatch(TestController):
 
+    validate_skip = True
+
     def test_dispatch(self):
         r = self.app.get('/dispatch/foo/')
         assert r.body == 'index foo', r

@@ -1,7 +1,6 @@
 from allura.tests import TestController
 from allura import model as M
 from ming.orm.ormsession import ThreadLocalORMSession
-from alluratest.validation import validate_page, validate_json
 
 
 def unentity(s):
@@ -11,18 +10,15 @@ class TestAuth(TestController):
 
     def test_login(self):
         result = self.app.get('/auth/')
-        validate_page(result)
         r = self.app.post('/auth/send_verification_link', params=dict(a='test@example.com'))
         r = self.app.post('/auth/send_verification_link', params=dict(a='Beta@wiki.test.projects.sourceforge.net'))
         ThreadLocalORMSession.flush_all()
         r = self.app.get('/auth/verify_addr', params=dict(a='foo'))
         r = self.app.get(r.location)
-        validate_page(r)
         assert 'class="error"' in r
         ea = M.EmailAddress.query.find().first()
         r = self.app.get('/auth/verify_addr', params=dict(a=ea.nonce))
         r = self.app.get(r.location)
-        validate_page(r)
         assert 'class="error"' not in r
         r = self.app.get('/auth/logout')
         r = self.app.get('/auth/do_login', params=dict(
@@ -97,18 +93,15 @@ class TestAuth(TestController):
 
     def test_create_account(self):
         r = self.app.get('/auth/create_account')
-        validate_page(r)
         assert 'Create an Account' in r
         r = self.app.post('/auth/save_new', params=dict(username='aaa',password='123'))
         r = r.follow()
-        validate_page(r)
         assert 'Password must be at least 8 characters.' in r
         r = self.app.post('/auth/save_new', params=dict(username='aaa',
                                                         password='12345678',
                                                         display_name='Test Me',
                                                         open_ids='http://somewhere',
                                                         email_addresses='test@test.com')).follow()
-        validate_page(r)
         assert 'User "Test Me" registered' in unentity(r.body)
         r = self.app.post('/auth/save_new', params=dict(username='aaa',password='12345678')).follow()
         assert 'That username is already taken. Please choose another.' in r
@@ -126,5 +119,4 @@ class TestAuth(TestController):
         user = M.User.query.get(username='aaa')
         assert M.ProjectRole.query.find(dict(user_id=user._id, project_id=p._id)).count() == 0
         r = self.app.get('/p/test/admin/perms',extra_environ=dict(username='aaa'))
-        validate_page(r)
         assert M.ProjectRole.query.find(dict(user_id=user._id, project_id=p._id)).count() == 1

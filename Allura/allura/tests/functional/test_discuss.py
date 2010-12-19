@@ -3,14 +3,12 @@ from formencode.variabledecode import variable_encode
 
 from allura.tests import TestController
 from allura import model as M
-from alluratest.validation import validate_page, validate_json
 
 
 class TestDiscuss(TestController):
 
     def test_subscribe_unsubscribe(self):
         home = self.app.get('/wiki/_discuss/')
-        validate_page(home)
         subscribed = [ i for i in home.html.findAll('input')
                        if i.get('type') == 'checkbox'][0]
         assert 'checked' not in subscribed.attrMap
@@ -23,7 +21,6 @@ class TestDiscuss(TestController):
                           params=params,
                           headers={'Referer':'/wiki/_discuss/'})
         r = r.follow()
-        validate_page(r)
         subscribed = [ i for i in r.html.findAll('input')
                        if i.get('type') == 'checkbox'][0]
         assert 'checked' in subscribed.attrMap
@@ -34,7 +31,6 @@ class TestDiscuss(TestController):
                           params=params,
                           headers={'Referer':'/wiki/_discuss/'})
         r = r.follow()
-        validate_page(r)
         subscribed = [ i for i in r.html.findAll('input')
                        if i.get('type') == 'checkbox'][0]
         assert 'checked' not in subscribed.attrMap
@@ -61,22 +57,18 @@ class TestDiscuss(TestController):
         assert 'This is a post' in r, r
         post_link = str(r.html.find('div',{'class':'edit_post_form reply'}).find('form')['action'])
         r = self.app.get(post_link)
-        validate_page(r)
         r = self.app.get(post_link[:-2], status=302)
         r = self.app.post(post_link,
                           params=dict(text='This is a new post'),
                           headers={'Referer':thread_link.encode("utf-8")})
         r = r.follow()
-        validate_page(r)
         assert 'This is a new post' in r, r
         r = self.app.get(post_link)
-        validate_page(r)
         assert str(r).count('This is a new post') == 2
         r = self.app.post(post_link + 'reply',
                           params=dict(text='Tis a reply'),
                           headers={'Referer':post_link.encode("utf-8")})
         r = self.app.get(thread_link)
-        validate_page(r)
         assert 'Tis a reply' in r, r
         permalinks = [post.find('form')['action'].encode('utf-8') for post in r.html.findAll('div',{'class':'edit_post_form reply'})]
         self.app.post(permalinks[1]+'flag')
@@ -105,7 +97,6 @@ class TestAttachment(TestController):
         r = self.app.post(self.post_link + 'attach',
                           upload_files=[('file_info', 'test.txt', 'HiThere!')])
         r = self.app.get(self.post_link)
-        validate_page(r)
         for alink in r.html.findAll('a'):
             if 'attachment' in alink['href']:
                 alink = str(alink['href'])
