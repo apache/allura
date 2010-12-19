@@ -16,6 +16,7 @@ from allura import model as M
 from allura.lib.app_globals import Globals
 from allura.lib.custom_middleware import environ as ENV, MagicalC
 
+from .validation import ValidatingTestApp
 
 DFL_APP_NAME = 'main_without_authn'
 
@@ -46,7 +47,7 @@ def setup_functional_test(config=None, app_name=DFL_APP_NAME):
     conf_dir = tg.config.here
     wsgiapp = loadapp('config:%s#%s' % (config, app_name),
                       relative_to=conf_dir)
-    return TestApp(wsgiapp)
+    return wsgiapp
 
 def setup_unit_test():
     from allura.lib import helpers
@@ -70,10 +71,12 @@ def setup_global_objects():
 class TestController(object):
     
     application_under_test = 'main'
+    validate_skip = False
 
     def setUp(self):
         """Method called by nose before running each test"""
-        self.app = setup_functional_test(app_name=self.application_under_test)
+        self.app = ValidatingTestApp(setup_functional_test(app_name=self.application_under_test))
+        self.app.validate_skip = self.validate_skip
     
     def tearDown(self):
         """Method called by nose after running each test"""

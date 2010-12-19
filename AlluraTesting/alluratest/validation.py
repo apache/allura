@@ -127,6 +127,7 @@ def validate_html5(html_or_response):
             resp = urllib2.urlopen(request, timeout=3).read()
         except:
             resp = "Couldn't connect to validation service to check the HTML"
+            sys.stderr.write('WARNING: ' + resp + '\n')
             #ok_(False, "Couldn't connect to validation service to check the HTML") 
         
         resp = resp.replace('“','"').replace('”','"').replace('–','-')
@@ -189,3 +190,58 @@ def validate_js(html_or_response):
 def validate_page(html_or_response):
     validate_html(html_or_response)
     validate_js(html_or_response)
+
+
+class ValidatingTestApp(TestApp):
+
+    # Subclasses may set this to True to skip validation altogether
+    validate_skip = False
+
+    def _validate(self, resp, method, val_params):
+        """Perform validation on webapp response. This handles responses of
+        various types and forms."""
+        if resp.status_int != 200:
+            return
+
+        content = resp.body
+        content_type = resp.headers['Content-Type']
+        if content_type.startswith('text/html'):
+            if val_params['validate_chunk']:
+                validate_html5_chunk(resp)
+            else:
+                validate_page(resp)
+        elif content_type.startswith('text/plain'):
+            pass
+        elif content_type.startswith('application/json'):
+            validate_json(content)
+        elif content_type.startswith('application/x-javascript'):
+            validate_js(content)
+        elif content_type.startswith('application/xml'):
+            import feedparser
+            d = feedparser.parse(content)
+            assert d.bozo == 0, 'Non-wellformed feed'
+        elif content_type.startswith('image/'):
+            pass
+        else:
+            assert False, 'Unexpected output content type: ' + content_type
+
+    def _get_validation_params(self, kw):
+        "Separate validation params from normal TestApp methods params."
+        params = {}
+        for k in ('validate_skip', 'validate_chunk'):
+            params[k] = kw.pop(k, False)
+        return params, kw
+
+    def get(self, url, **kw):
+        val_params, kw = self._get_validation_params(kw)
+        resp = TestApp.get(self, url, **kw)
+        if not self.validate_skip and not val_params['validate_skip']: 
+            self._validate(resp, 'get', val_params)
+        return resp
+
+    def post(self, url, **kw):
+        val_params, kw = self._get_validation_params(kw)
+        resp = TestApp.post(self, url, **kw)
+        if not self.validate_skip and not val_params['validate_skip']: 
+            self._validate(resp, 'post', val_params)
+        return resp
