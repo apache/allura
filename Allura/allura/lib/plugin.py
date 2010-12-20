@@ -310,7 +310,9 @@ class ThemeProvider(object):
     def get(cls):
         name = config.get('theme', 'allura')
         for ep in pkg_resources.iter_entry_points('allura.theme', name):
+            log.info("Loading theme '%s'", name)
             return ep.load()()
+        log.critical("Could not find theme '%s'", name)
 
     def app_icon_url(self, app, size):
         """returns the default icon for the given app (or non-app thing like 'subproject').
