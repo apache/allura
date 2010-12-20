@@ -1,6 +1,7 @@
 import os, allura
 import Image, StringIO
 
+from nose.tools import assert_equals, assert_true
 from pylons import g, c
 
 from ming.orm.ormsession import ThreadLocalORMSession
@@ -127,7 +128,7 @@ class TestProjectAdmin(TestController):
         r = self.app.get('/admin/tools')
         new_ep_opts = r.html.find('select',{'class':"new_ep_name"}).findAll('option')
         strings = [ ' '.join(opt.string.strip().split()) for opt in new_ep_opts ]
-        assert strings == [
+        assert_equals(strings, [
             'New Tool',
             'External Link',
             'Git',
@@ -144,7 +145,7 @@ class TestProjectAdmin(TestController):
             'Classic Hosted Apps (alpha)',
             'Chat (alpha)',
             'Blog (alpha)',
-            'Subproject' ], strings
+            'Subproject'])
 
     def test_project_icon(self):
         file_name = 'neo-icon-set-454545-256x350.png'
