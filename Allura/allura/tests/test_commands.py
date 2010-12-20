@@ -12,8 +12,7 @@ from allura.command import reactor, script
 from allura import model as M
 from allura.tests import helpers
 
-test_config = '%s#main' % (
-    environ.get('SF_SYSTEM_FUNC') and 'sandbox-test.ini' or 'test.ini')
+test_config = 'test.ini#main'
 
 def setUp(self):
     """Method called by nose before running each test"""
