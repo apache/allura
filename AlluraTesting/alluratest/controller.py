@@ -76,7 +76,8 @@ class TestController(object):
     def setUp(self):
         """Method called by nose before running each test"""
         self.app = ValidatingTestApp(setup_functional_test(app_name=self.application_under_test))
-        self.app.validate_skip = self.validate_skip
+        if self.validate_skip:
+            self.app.validate_skip = self.validate_skip
     
     def tearDown(self):
         """Method called by nose after running each test"""

@@ -210,7 +210,7 @@ class ValidatingTestApp(TestApp):
                 validate_html5_chunk(resp)
             else:
                 validate_page(resp)
-        elif content_type.startswith('text/plain'):
+        elif content_type.split(';', 1)[0] in ('text/plain', 'text/x-python', 'application/octet-stream'):
             pass
         elif content_type.startswith('application/json'):
             validate_json(content)
@@ -232,16 +232,16 @@ class ValidatingTestApp(TestApp):
             params[k] = kw.pop(k, False)
         return params, kw
 
-    def get(self, url, **kw):
+    def get(self, *args, **kw):
         val_params, kw = self._get_validation_params(kw)
-        resp = TestApp.get(self, url, **kw)
+        resp = TestApp.get(self, *args, **kw)
         if not self.validate_skip and not val_params['validate_skip']: 
             self._validate(resp, 'get', val_params)
         return resp
 
-    def post(self, url, **kw):
+    def post(self, *args, **kw):
         val_params, kw = self._get_validation_params(kw)
-        resp = TestApp.post(self, url, **kw)
+        resp = TestApp.post(self, *args, **kw)
         if not self.validate_skip and not val_params['validate_skip']: 
             self._validate(resp, 'post', val_params)
         return resp

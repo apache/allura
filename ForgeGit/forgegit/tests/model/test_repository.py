@@ -57,8 +57,8 @@ class TestGitRepo(unittest.TestCase):
 class TestGitCommit(unittest.TestCase):
 
     def setUp(self):
-        helpers.setup_basic_test()
-        helpers.setup_global_objects()
+        setup_basic_test()
+        setup_global_objects()
         h.set_context('test', 'src')
         repo_dir = pkg_resources.resource_filename(
             'forgegit', 'tests/data')

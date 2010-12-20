@@ -1,6 +1,6 @@
 from nose.tools import assert_true
 
-from forgetracker.tests import TestController
+from alluratest.controller import TestController
 
 
 class TestRootController(TestController):
