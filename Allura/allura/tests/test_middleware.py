@@ -8,7 +8,7 @@ from paste.deploy import appconfig
 from allura.config.middleware import make_app
 
 
-test_config = environ.get('SF_SYSTEM_FUNC') and 'sandbox-test.ini' or 'test.ini'
+test_config = 'test.ini'
 
 def setUp(self):
     """Method called by nose before running each test"""

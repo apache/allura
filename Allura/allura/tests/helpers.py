@@ -28,7 +28,7 @@ from allura.lib.app_globals import Globals
 from allura import model as M
 from allura.lib.custom_middleware import environ as ENV, MagicalC
 
-DFL_CONFIG = environ.get('SF_SYSTEM_FUNC') and 'sandbox-test.ini' or 'test.ini'
+DFL_CONFIG = 'test.ini'
 DFL_APP_NAME = 'main_without_authn'
 ENABLE_CONTENT_VALIDATION = False
 
@@ -36,7 +36,7 @@ log = logging.getLogger(__name__)
 
 
 def run_app_setup():
-    test_config = environ.get('SF_SYSTEM_FUNC') and 'sandbox-test.ini' or 'test.ini'
+    test_config = 'test.ini'
     conf_dir = tg.config.here = path.abspath(
         path.dirname(__file__) + '/../..')
     test_file = path.join(conf_dir, test_config)

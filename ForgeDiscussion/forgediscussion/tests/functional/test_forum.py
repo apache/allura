@@ -41,7 +41,7 @@ class TestForumReactors(TestController):
         r = self.app.get('/admin/discussion/forums')
         assert 'Test Forum 1' in r
         conf_dir = getattr(config, 'here', os.getcwd())
-        test_config = os.environ.get('SF_SYSTEM_FUNC') and 'sandbox-test.ini' or 'test.ini'
+        test_config = 'test.ini'
         test_file = os.path.join(conf_dir, test_config)
         cmd = reactor.ReactorCommand('reactor')
         cmd.args = [ test_config ]
