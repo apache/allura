@@ -308,13 +308,10 @@ class Project(MappedClass):
     def roles(self):
         from . import auth
         with h.push_config(c, project=self):
-            root_roles = auth.ProjectRole.query.find(dict(
-                    project_id=self.root_project._id,
-                    name={'$in':['Admin','Developer']})).all()
-            if not root_roles:
-                root_roles = auth.ProjectRole.query.find(dict(
-                        project_id={'$exists': False },
-                        name={'$in':['Admin','Developer']})).all()
+            root_roles = [
+                role for role in auth.ProjectRole.query.find(dict(
+                        project_id=self.root_project._id))
+                if role.name ]
             roles = list(auth.ProjectRole.roles_that_reach(*root_roles))
             return sorted(roles, key=lambda r:r.display())
 

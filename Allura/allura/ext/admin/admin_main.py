@@ -24,6 +24,8 @@ from allura.lib import exceptions as forge_exc
 from allura.lib import plugin
 from allura.controllers import BaseController
 
+from . import widgets as aw
+
 log = logging.getLogger(__name__)
 
 class W:
@@ -32,6 +34,10 @@ class W:
     mount_delete = ffw.Lightbox(name='mount_delete',trigger='a.mount_delete')
     admin_modal = ffw.Lightbox(name='admin_modal',trigger='a.admin_modal')
     install_modal = ffw.Lightbox(name='install_modal',trigger='a.install_trig')
+    group_card = aw.GroupCard()
+    permission_card = aw.PermissionCard()
+    group_settings = aw.GroupSettings()
+    new_group_settings = aw.NewGroupSettings()
 
 class AdminWidgets(WidgetController):
     widgets=['users', 'tool_status']
@@ -114,17 +120,17 @@ class AdminApp(Application):
         admin_url = c.project.url()+'admin/'
         if len(links):
             links.append(SitemapEntry('Project'))
-        links = links + [SitemapEntry('Summary', admin_url+'overview', className='nav_child'),
-                         SitemapEntry('Homepage', admin_url+'homepage', className='nav_child'),
-                         SitemapEntry('Tools', admin_url+'tools', className='nav_child')]
+        links += [
+            SitemapEntry('Summary', admin_url+'overview', className='nav_child'),
+            SitemapEntry('Homepage', admin_url+'homepage', className='nav_child')
+            ]
+        if has_project_access('security')():
+            links.append(SitemapEntry('Permissions', admin_url+'permissions', className='nav_child'))
+        links.append(SitemapEntry('Tools', admin_url+'tools', className='nav_child'))
+        if has_project_access('security')():
+            links.append(SitemapEntry('Usergroups', admin_url+'groups', className='nav_child'))
         if len(c.project.neighborhood_invitations):
             links.append(SitemapEntry('Invitation(s)', admin_url+'invitations', className='nav_child'))
-        if has_project_access('security')():
-            links.append(SitemapEntry('Permissions', admin_url+'perms', className='nav_child'))
-        # if has_project_access('security')():
-        #     links.append(SitemapEntry('Permissions', admin_url+'permissions', className='nav_child'))
-        # if c.project.is_root and has_project_access('security')():
-        #     links.append(SitemapEntry('Roles', admin_url+'roles', className='nav_child'))
         return links
 
     def admin_menu(self):
@@ -141,6 +147,10 @@ class ProjectAdminController(BaseController):
     def _check_security(self):
         require(has_project_access('read'),
                 'Read access required')
+
+    def __init__(self):
+        self.permissions = PermissionsController()
+        self.groups = GroupsController()
 
     @with_trailing_slash
     @expose('jinja:project_admin.html')
@@ -190,22 +200,9 @@ class ProjectAdminController(BaseController):
             users=[M.User.query.get(_id=id) for id in c.project.acl.read ])
 
     @without_trailing_slash
-    @expose('jinja:project_perms.html')
-    def perms(self, **kw):
-        """Simplified permission management screen for the project"""
-        c.user_select = ffw.ProjectUserSelect()
-        return dict()
-
-    @without_trailing_slash
     @expose('jinja:project_permissions.html')
-    def permissions(self):
-        """Advanced permission management screen for the project. Currently not linked to anywhere."""
+    def groups(self, **kw):
         return dict()
-
-    @without_trailing_slash
-    @expose('jinja:project_roles.html')
-    def roles(self):
-        return dict(roles=M.ProjectRole.query.find(dict(project_id=c.project.root_project._id)).sort('_id').all())
 
     @expose()
     def _lookup(self, name, *remainder):
@@ -454,6 +451,140 @@ class ProjectAdminController(BaseController):
                         meta=dict(user_role=u['id'], role=r['id']))
         g.publish('react', 'forge.project_updated')
         redirect('perms')
+
+class PermissionsController(BaseController):
+
+    def _check_security(self):
+        require(has_project_access('security'),
+                'Security access required')
+
+    @with_trailing_slash
+    @expose('jinja:project_permissions.html')
+    def index(self, **kw):
+        c.admin_modal = W.admin_modal
+        c.card = W.permission_card
+        return dict(permissions=c.project.acl)
+
+    @without_trailing_slash
+    @expose()
+    @h.vardec
+    def update(self, card=None, **kw):
+        for args in card:
+            perm = args['id']
+            new_group_ids = args.get('new', [])
+            group_ids = args.get('value', [])
+            if isinstance(new_group_ids, basestring):
+                new_group_ids = [ new_group_ids ]
+            if isinstance(group_ids, basestring):
+                group_ids = [ group_ids ]
+            role_ids = map(ObjectId, group_ids + new_group_ids)
+            roles = M.ProjectRole.query.find(dict(
+                _id={'$in':role_ids},
+                project_id=c.project._id))
+            c.project.acl[perm] = [ r._id for r in roles ]
+        redirect('.')
+
+class GroupsController(BaseController):
+
+    def _check_security(self):
+        require(has_project_access('security'),
+                'Security access required')
+
+    @with_trailing_slash
+    @expose('jinja:project_groups.html')
+    def index(self, **kw):
+        c.admin_modal = W.admin_modal
+        c.card = W.group_card
+        roles = list(sorted(
+            (role for role in c.project.roles if role.name and role.name[0] != '*'),
+            key=lambda r:r.name))
+        roles.append(None)
+        return dict(roles=roles)
+
+    @without_trailing_slash
+    @expose()
+    @h.vardec
+    def update(self, card=None, **kw):
+        for pr in card:
+            group = M.ProjectRole.query.get(_id=ObjectId(pr['id']))
+            assert group.project == c.project, 'Security violation'
+            user_ids = pr.get('value', [])
+            new_users = pr.get('new', [])
+            if isinstance(user_ids, basestring):
+                user_ids = [ user_ids ]
+            if isinstance(new_users, basestring):
+                new_users = [ new_users ]
+            # Handle new users in groups
+            for username in new_users:
+                user = M.User.by_username(username)
+                if not user:
+                    flash('User %s not found' % pr['new'], 'error')
+                    redirect('.')
+                user.project_role().roles.append(group._id)
+            # Handle users removed from groups
+            user_ids = set(map(ObjectId, user_ids))
+            for role in M.ProjectRole.query.find(
+                dict(user_id={'$ne':None}, roles=group._id)):
+                if role.user_id not in user_ids:
+                    role.roles.remove(group._id)
+        redirect('.')
+
+    @without_trailing_slash
+    @expose('jinja:project_group.html')
+    def new(self):
+        c.form = W.new_group_settings
+        return dict(
+            group=None,
+            show_settings=True,
+            action="create")
+
+    @expose()
+    @validate(W.new_group_settings)
+    @h.vardec
+    def create(self, name=None, **kw):
+        if M.ProjectRole.by_name(name):
+            flash('%s already exists', 'error')
+        else:
+            M.ProjectRole(project_id=c.project._id, name=name)
+        redirect('.')
+
+    @expose()
+    def _lookup(self, name, *remainder):
+        return GroupController(name), remainder
+
+class GroupController(BaseController):
+
+    def __init__(self, name):
+        self._group = M.ProjectRole.query.get(_id=ObjectId(name))
+
+    @with_trailing_slash
+    @expose('jinja:project_group.html')
+    def index(self):
+        if self._group.name in ('Admin', 'Developer', 'Member'):
+            show_settings = False
+        else:
+            show_settings = True
+        c.form = W.group_settings
+        return dict(
+            group=self._group,
+            show_settings=show_settings,
+            action=self._group.settings_href + 'update')
+
+    @expose()
+    @h.vardec
+    @validate(W.group_settings)
+    def update(self, _id=None, delete=None, name=None, **kw):
+        pr = M.ProjectRole.by_name(name)
+        if pr and pr._id != _id._id:
+            flash('%s already exists' % name, 'error')
+            redirect('..')
+        if delete:
+            _id.delete()
+            flash('%s deleted' % name)
+            redirect('..')
+        _id.name = name
+        flash('%s updated' % name)
+        redirect('..')
 
 class AdminAppAdminController(DefaultAdminController):
     '''Administer the admin app'''

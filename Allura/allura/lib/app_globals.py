@@ -118,7 +118,15 @@ class Globals(object):
             fork = Icon('R', 'ico-fork'),
             merge = Icon('J', 'ico-merge'),
             plus = Icon('+', 'ico-plus'),
-            conversation = Icon('q', 'ico-conversation')
+            conversation = Icon('q', 'ico-conversation'),
+            group = Icon('g', 'ico-group'),
+            # Permissions
+            perm_read = Icon('E', 'ico-focus'),
+            perm_update = Icon('0', 'ico-sync'),
+            perm_create = Icon('e', 'ico-config'),
+            perm_delete = Icon('-', 'ico-minuscirc'),
+            perm_tool = Icon('x', 'ico-config'),
+            perm_security = Icon('(', 'ico-lock'),
         )
 
     def handle_paging(self, limit, page, default=50):

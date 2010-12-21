@@ -459,6 +459,16 @@ class ProjectRole(MappedClass):
         return [
             role.user for role in self.roles_that_reach(self) if role.user_id ]
 
+    def users_with_role_directly(self):
+        return [
+            role.user for role in self.query.find(dict(roles=self._id))
+            if role.user_id ]
+
     def role_iter(self):
         return self.roles_reachable_from(self)
 
+    @property
+    def settings_href(self):
+        if self.name in ('Admin', 'Developer', 'Member'):
+            return None
+        return self.project.url() + 'admin/groups/' + str(self._id) + '/'

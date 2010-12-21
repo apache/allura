@@ -1,0 +1,40 @@
+<div class="fleft active-card">
+  <input type="hidden" name="card-{{index}}.id" value="{{id}}"/>
+  <ul class="deck">
+    <li class="tcenter">
+      <h3>{{name}}</h3>
+      {% if settings_href %}
+      <a href="{{settings_href}}" class="admin_modal" title="{{name}} Settings">
+        <small
+           data-icon="{{g.icons.perm_tool.char}}"
+           class="ico-r admin_modal {{g.icons.perm_tool.css}}"></small>
+      </a>
+      {% endif %}
+      <p><b
+            data-icon="{{g.icons[icon_name].char}}"
+            class="ico x48 {{g.icons[icon_name].css}}"></b></p>
+    </li>
+    {% for item in items %}
+    <li>
+        <a href="#" class="deleter">
+          {{ widget.item_display(item) }}
+          <input type="hidden" name="card-{{index}}.value" value="{{widget.item_id(item)}}"/>
+          <small data-icon="{{g.icons['perm_delete'].char}}"
+                 class="ico-r {{g.icons['perm_delete'].css}}"
+                 title="Remove"></small>
+        </a>
+    </li>
+    {% endfor %}
+    <li class="new-item">
+      {{ widget.new_item.display(name='card-%s.new' % index) }}
+    </li>
+    <li>
+      <a href="#"  class="adder">
+        Add
+        <small data-icon="{{g.icons['plus'].char}}"
+               class="ico-r {{g.icons['plus'].css}}"
+               title="Add a user"></small>
+      </a>
+    </li>
+  </ul>
+</div>

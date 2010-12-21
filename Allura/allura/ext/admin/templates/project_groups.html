@@ -1,0 +1,82 @@
+{% extends g.theme.master %}
+
+{% do g.register_forge_css('css/forge/deck.css') %}
+
+{% block title %}{{c.project.name}} / Usergroups {% endblock %}
+
+{% block header %}Usergroups{% endblock %}
+
+{% block extra_css %}
+<style>
+button.linklike {
+border: 0;
+background: transparent;
+}
+button.linklike:hover {
+border: 0 !important;
+background: transparent !important;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<form method="POST" action="update">
+  {% set index=0 %}
+  {% for row in roles|batch(4) %}
+  {% set i0=loop.index0  %}
+  <div class="fourcol">
+    {% for role in row %}
+    {% set i1 = i0*4 + loop.index0 %}
+    {% if role == None %}
+    <div class="fleft tcenter">
+      <a href="new" class="admin_modal" title="Add Group">
+        <h3>Add a Group</h3>
+        <p>
+          <b data-icon="{{g.icons['plus'].char}}"
+             class="ico x48 {{g.icons['plus'].css}}">
+          </b>
+        </p>
+      </a>
+    </div>
+    {% else %}
+    {{c.card.display(
+        index=i1,
+        id=role._id,
+        name=role.name,
+        items=role.users_with_role_directly(),
+        settings_href=role.settings_href,
+    )}}
+    {% endif %}
+    {% endfor %}
+    <br style="clear:both"/>
+  </div>
+  {% endfor %}
+  <hr/>
+  <p class="clearfix">
+    <input type="submit" value="Save">
+    <a href="" class="btn link cancel">Cancel</a>
+  </p>
+</form>
+
+{{c.admin_modal.display(content='<h1 id="popup_title"></h1><div id="popup_contents"></div>')}}
+{% endblock %}
+
+{% block extra_js %}
+<script type="text/javascript">$(function() {
+var $popup_title = $('#popup_title');
+var $popup_contents = $('#popup_contents');
+$('a.admin_modal').click(function(evt){
+  evt.preventDefault();
+  evt.stopPropagation();
+  var link = this;
+  $popup_title.html('');
+  $popup_contents.html('Loading...');
+  $.get(link.href, function (data) {
+    $popup_title.html(link.title);
+    $popup_contents.html(data);
+  });
+});
+$('#sortable').sortable({items: ".fleft"});
+})
+</script>
+{% endblock %}
