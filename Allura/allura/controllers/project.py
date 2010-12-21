@@ -1,7 +1,6 @@
 import os, re
 import logging
 from urllib import unquote, quote_plus
-from mimetypes import guess_type
 
 import pkg_resources
 import Image

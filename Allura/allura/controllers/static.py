@@ -7,7 +7,6 @@ from webob import exc
 
 from pylons import c, g
 from allura.lib import helpers as h
-from allura.lib import utils
 from allura import model as M
 
 class NewForgeController(object):

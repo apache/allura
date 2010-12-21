@@ -1,5 +1,3 @@
-from mimetypes import guess_type
-
 from pylons import c
 from ming.orm import FieldProperty
 from ming import schema as S

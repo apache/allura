@@ -2,7 +2,6 @@ import difflib
 import logging
 from pprint import pformat
 from collections import defaultdict
-from mimetypes import guess_type
 import Image
 
 import pkg_resources
