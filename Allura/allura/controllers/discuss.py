@@ -1,4 +1,3 @@
-from mimetypes import guess_type
 from urllib import unquote
 from datetime import datetime
 
@@ -13,6 +12,7 @@ from ming.utils import LazyProperty
 
 from allura import model as M
 from base import BaseController
+from allura.lib import utils
 from allura.lib import helpers as h
 from allura.lib.security import require, has_artifact_access
 from allura.lib.helpers import DateTimeConverter
@@ -294,8 +294,12 @@ class PostController(BaseController):
     def attach(self, file_info=None):
         require(has_artifact_access('moderate', self.post))
         if hasattr(file_info, 'file'):
+            mime_type = file_info.type
+            # If mime type was not passed or bogus, guess it
+            if not mime_type or '/' not in mime_type:
+                mime_type = utils.guess_mime_type(file_info.filename)
             self.post.attach(
-                file_info.filename, file_info.file, content_type=file_info.type,
+                file_info.filename, file_info.file, content_type=mime_type,
                 post_id=self.post._id,
                 thread_id=self.post.thread_id,
                 discussion_id=self.post.discussion_id)

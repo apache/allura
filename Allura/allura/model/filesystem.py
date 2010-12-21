@@ -1,5 +1,4 @@
 import os
-from mimetypes import guess_type
 from cStringIO import StringIO
 
 import pylons
@@ -12,6 +11,8 @@ from ming.orm.property import FieldProperty
 from ming.orm.mapped_class import MappedClass
 
 from .session import project_orm_session
+from allura.lib import utils
+
 
 SUPPORTED_BY_PIL=set([
         'image/jpg',
@@ -33,9 +34,7 @@ class File(MappedClass):
     def __init__(self, **kw):
         super(File, self).__init__(**kw)
         if self.content_type is None:
-            content_type = guess_type(self.filename)
-            if content_type: self.content_type = content_type[0]
-            else: self.content_type = 'application/octet-stream'
+            self.content_type = utils.guess_mime_type(self.filename)
 
     @classmethod
     def _fs(cls):
@@ -106,9 +105,7 @@ class File(MappedClass):
                    save_original=False,
                    original_meta=None):
         if content_type is None:
-            content_type = guess_type(filename)
-            if content_type[0]: content_type = content_type[0]
-            else: content_type = 'application/octet-stream'
+            content_type = utils.guess_mime_type(filename)
         if not content_type.lower() in SUPPORTED_BY_PIL:
             return None, None
 
