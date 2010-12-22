@@ -1,17 +1,17 @@
 {%- macro header(username, userid, name, login_url, logout_url) %}
 <header id="site-header">
-  <hgroup>
-    <nav>
-      {% if userid %}
-        <a href="/account/">Account</a>
-        <a href="/users/{{username}}">{{name}}</a>
-        <a href="{{logout_url}}">Log Out</a>
-      {% else %}
-        <a href="/auth/create_account">Register</a>
-        <a href="{{login_url}}">Log In</a>
-      {% endif %}
-    </nav>
-  </hgroup>
+    <div class="wrapper">
+        <nav>
+          {% if userid %}
+            <a href="/account/">Account</a>
+            <a href="/users/{{username}}">{{name}}</a>
+            <a href="{{logout_url}}">Log Out</a>
+          {% else %}
+            <a href="/auth/create_account">Register</a>
+            <a href="{{login_url}}">Log In</a>
+          {% endif %}
+        </nav>
+    </div>
 </header>
 {%- endmacro %}
 
