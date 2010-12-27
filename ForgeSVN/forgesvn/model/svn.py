@@ -146,7 +146,7 @@ class SVNImplementation(M.RepositoryImplementation):
             discover_changed_paths=True)[0]
         # Save commit metadata
         ci.committed = Object(
-            name=log_entry.author,
+            name=log_entry.get('author', '--none--'),
             email='',
             date=datetime.fromtimestamp(log_entry.date))
         ci.authored=Object(ci.committed)
