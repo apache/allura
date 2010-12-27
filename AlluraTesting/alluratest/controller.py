@@ -22,7 +22,7 @@ DFL_APP_NAME = 'main_without_authn'
 
 def get_config_file(config=None):
     if not config:
-        return os.environ.get('SF_SYSTEM_FUNC') and 'sandbox-test.ini' or 'test.ini'
+        return 'test.ini'
     return config
 
 def setup_basic_test(config=None, app_name=DFL_APP_NAME):
