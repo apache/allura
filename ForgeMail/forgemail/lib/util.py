@@ -105,10 +105,8 @@ class SMTPClient(object):
     def sendmail(self, addrs, addrfrom, reply_to, subject, message_id, in_reply_to, message):
         if not addrs: return
         charset = message.get_charset()
-        if reply_to is not None:
-            message['To'] = reply_to.encode(charset)
-        else:
-            message['To'] = addrs.encode(charset)
+        if charset is None: charset = 'latin-1'
+        message['To'] = reply_to.encode(charset)
         message['From'] = addrfrom.encode(charset)
         if reply_to is not None:
             message['Reply-To'] = reply_to.encode(charset)
