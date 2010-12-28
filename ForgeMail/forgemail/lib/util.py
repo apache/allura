@@ -105,7 +105,9 @@ class SMTPClient(object):
 
     def sendmail(self, addrs, addrfrom, reply_to, subject, message_id, in_reply_to, message):
         if not addrs: return
-        charset = 'iso-8859-1'
+        charset = message.get_charset()
+        if charset is None: 
+            charset = 'iso-8859-1'
         message['To'] = Header(reply_to, charset)
         message['From'] = Header(addrfrom, charset)
         message['Reply-To'] = Header(reply_to, charset)
