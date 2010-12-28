@@ -1,0 +1,5 @@
+{% if show_settings %}
+{{c.form.display(value=group, action=action)}}
+{% else %}
+<p>No settings available for reserved groups</p>
+{% endif %}
