@@ -275,14 +275,14 @@ class SortableTable(SortableRepeatedMixin, ew.TableField):
 
 class StateField(JQueryMixin, ew.CompoundField):
     template='genshi:allura.templates.widgets.state_field'
+    js_widget_name = 'StateField'
+    js_plugin_file = ew.JSLink('js/state_field.js')
     js_params = JQueryMixin.js_params + [
         'selector_cls',
         'field_cls',
         ]
     defaults=dict(
         ew.CompoundField.defaults,
-        js_widget_name = 'StateField',
-        js_plugin_file = ew.JSLink('js/state_field.js'),
         js_params = js_params,
         container_cls='state-field-container',
         selector_cls='state-field-selector',
@@ -299,10 +299,15 @@ class StateField(JQueryMixin, ew.CompoundField):
 class DateField(JQueryMixin, ew.TextField):
     js_widget_name = 'datepicker'
     js_params = JQueryMixin.js_params
+    container_cls = 'ui-date-field'
     defaults=dict(
         ew.TextField.defaults,
         container_cls = 'ui-date-field',
         css_class = 'ui-date-field')
+
+    def resources(self):
+        for r in super(DateField, self).resources(): yield r
+        yield ew.CSSLink('css/jquery.ui.datepicker.css')
 
 class FieldCluster(ew.CompoundField):
     template='genshi:allura.templates.widgets.field_cluster'

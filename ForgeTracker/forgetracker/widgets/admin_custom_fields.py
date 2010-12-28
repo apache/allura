@@ -19,16 +19,24 @@ class MilestonesAdmin(ffw.SortableTable):
         repetitions=0)
     fields = [
         ew.Checkbox(name='complete', show_label=True, suppress_label=True),
-        ew.TextField(name='name'),
-        ffw.DateField(name='due_date'),
+        ew.TextField(name='name',
+        attrs={'style':'width: 80px'}),
+        ffw.DateField(name='due_date',
+        attrs={'style':'width: 80px'}),
         ffw.AutoResizeTextarea(
             name='description',
-            attrs={'style':'height:2em; width: 300px'}),
+            attrs={'style':'height:1em; width: 150px'}),
         ew.InputField(
             label='Delete',
             field_type='button',
-            attrs={'class':'delete', 'value':'Delete Milestone'}),
+            attrs={'class':'delete', 'value':'Delete'}),
         ]
+    button =  ew.InputField(
+        css_class='add', field_type='button', value='New Milestone')
+
+    def resources(self):
+        for r in super(MilestonesAdmin, self).resources(): yield r
+        yield ew.CSSScript('''div.state-field table{ width: 700px; }''')
 
 class CustomFieldAdminDetail(ffw.StateField):
     template='jinja:tracker_widgets/custom_field_admin_detail.html'
@@ -78,8 +86,9 @@ class TrackerFieldAdmin(f.ForgeForm):
         closed_status_names = ew.TextField(label='Closed Statuses')
         custom_fields = ffw.SortableRepeatedField(field=CustomFieldAdmin())
     class buttons(ew_core.NameList):
-        save = ew.SubmitButton()
+        save = ew.SubmitButton(label='Save')
         cancel = ew.SubmitButton(
+            label="Cancel",
             css_class='cancel', attrs=dict(
                 onclick='window.location.reload(); return false;'))
 

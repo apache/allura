@@ -85,6 +85,7 @@
                         tpl_name,
                         self.fld_name + '-0'));
                 }).end();
+            $new_field.find('.hasDatepicker').removeClass('hasDatepicker');
             self.data.$flist.prepend($new_field);
             _renumberFields();
             _manageMessages();
