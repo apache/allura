@@ -1,5 +1,5 @@
 <form method="{{method}}"
-      enctype="{{enctype or ''}}"
+      {% if enctype %}enctype="{{enctype}}"{% endif %}
       action="{{action}}">
   {% for field in widget.fields %}
     {% set ctx=widget.context_for(field) %}
