@@ -1,5 +1,5 @@
 <form method="POST" action="{{c.project.url()}}admin/{{app.config.options.mount_point}}/set_home">
-  <label for="title" class="grid-4">Wiki Home Page:</label>
+  <label class="grid-4">Wiki Home Page:</label>
   <div class="grid-9">
     {% if allow_config %}
      <input type="text" name="new_home" id="new_home" value="{{home}}"/>

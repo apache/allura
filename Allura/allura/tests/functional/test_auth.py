@@ -118,5 +118,5 @@ class TestAuth(TestController):
                                                         email_addresses='test@test.com')).follow()
         user = M.User.query.get(username='aaa')
         assert M.ProjectRole.query.find(dict(user_id=user._id, project_id=p._id)).count() == 0
-        r = self.app.get('/p/test/admin/perms',extra_environ=dict(username='aaa'))
+        r = self.app.get('/p/test/admin/permissions',extra_environ=dict(username='aaa'))
         assert M.ProjectRole.query.find(dict(user_id=user._id, project_id=p._id)).count() == 1

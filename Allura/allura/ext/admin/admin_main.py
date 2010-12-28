@@ -125,10 +125,10 @@ class AdminApp(Application):
             SitemapEntry('Homepage', admin_url+'homepage', className='nav_child')
             ]
         if has_project_access('security')():
-            links.append(SitemapEntry('Permissions', admin_url+'permissions', className='nav_child'))
+            links.append(SitemapEntry('Permissions', admin_url+'permissions/', className='nav_child'))
         links.append(SitemapEntry('Tools', admin_url+'tools', className='nav_child'))
         if has_project_access('security')():
-            links.append(SitemapEntry('Usergroups', admin_url+'groups', className='nav_child'))
+            links.append(SitemapEntry('Usergroups', admin_url+'groups/', className='nav_child'))
         if len(c.project.neighborhood_invitations):
             links.append(SitemapEntry('Invitation(s)', admin_url+'invitations', className='nav_child'))
         return links
@@ -325,7 +325,6 @@ class ProjectAdminController(BaseController):
                     'delete subproject %s', sp['shortname'],
                     meta=dict(name=sp['shortname']))
                 p = M.Project.query.get(shortname=sp['shortname'])
-                print p
                 plugin.ProjectRegistrationProvider.get().delete_project(p, c.user)
             elif not new:
                 p = M.Project.query.get(shortname=sp['shortname'])

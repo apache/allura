@@ -27,11 +27,6 @@ class MailmanApp(SFXBaseApp):
     default_mount_point='sfx-list'
     status='alpha'
     ordinal=8
-    icons={
-        24:'images/admin_24.png',
-        32:'images/admin_32.png',
-        48:'images/admin_48.png'
-    }
 
     class AdminController(DefaultAdminController):
 

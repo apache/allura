@@ -1,5 +1,5 @@
-<form method="POST" action="{{c.project.url()}}admin/{{app.config.options.mount_point}}/set_options">
-    <label class="grid-4" for="title">Show discussion:</label>
+<form action="{{c.project.url()}}admin/{{app.config.options.mount_point}}/set_options" method="post">
+    <label class="grid-4">Show discussion:</label>
     <div class="grid-9">
       {% if allow_config %}
         <input type="checkbox" name="show_discussion" id="show_discussion"{% if app.show_discussion %} checked="checked"{% endif %}/>
@@ -7,7 +7,7 @@
         <span>{{app.show_discussion}}</span>
       {% endif %}
     </div>
-    <label class="grid-4" for="title">Show left bar:</label>
+    <label class="grid-4">Show left bar:</label>
     <div class="grid-9">
       {% if allow_config %}
         <input type="checkbox" name="show_left_bar" id="show_left_bar"{% if app.show_left_bar %} checked="checked"{% endif %}/>
@@ -15,7 +15,7 @@
         <span>{{app.show_left_bar}}</span>
       {% endif %}
     </div>
-    <label class="grid-4" for="title">Show right bar:</label>
+    <label class="grid-4">Show right bar:</label>
     <div class="grid-9">
       {% if allow_config %}
         <input type="checkbox" name="show_right_bar" id="show_right_bar"{% if app.show_right_bar %} checked="checked"{% endif %}/>
