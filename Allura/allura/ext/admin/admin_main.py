@@ -542,7 +542,7 @@ class GroupsController(BaseController):
     @h.vardec
     def create(self, name=None, **kw):
         if M.ProjectRole.by_name(name):
-            flash('%s already exists', 'error')
+            flash('%s already exists' % name, 'error')
         else:
             M.ProjectRole(project_id=c.project._id, name=name)
         redirect('.')
