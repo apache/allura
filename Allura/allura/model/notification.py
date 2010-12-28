@@ -124,6 +124,7 @@ class Notification(MappedClass):
                 text=kwargs.pop('text', subject))
         if not d.get('text'):
             d['text'] = ''
+        assert d['reply_to_address'] is not None
         n = cls(artifact_reference=artifact.dump_ref(),
                 topic=topic,
                 link=kwargs.pop('link', artifact.url()),
@@ -170,7 +171,7 @@ To unsubscribe from further messages, please visit <%s/auth/prefs/>
         g.publish('audit', 'forgemail.send_email', {
                 'destinations':[str(user_id)],
                 'from':from_address,
-                'reply_to':from_address,
+                'reply_to':reply_to_address,
                 'subject':subject,
                 'message_id':h.gen_message_id(),
                 'text':text},
