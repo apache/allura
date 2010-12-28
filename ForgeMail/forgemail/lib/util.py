@@ -4,6 +4,7 @@ import smtplib
 import email.feedparser
 from email.MIMEMultipart import MIMEMultipart
 from email.MIMEText import MIMEText
+from email.header import Header
 
 import tg
 from paste.deploy.converters import asbool, asint, aslist
@@ -104,18 +105,17 @@ class SMTPClient(object):
 
     def sendmail(self, addrs, addrfrom, reply_to, subject, message_id, in_reply_to, message):
         if not addrs: return
-        charset = message.get_charset()
-        if charset is None: charset = 'latin-1'
-        message['To'] = reply_to.encode(charset)
-        message['From'] = addrfrom.encode(charset)
-        if reply_to is not None:
-            message['Reply-To'] = reply_to.encode(charset)
-        message['Subject'] = subject.encode(charset)
-        message['Message-ID'] = '<' + message_id + '>'
+        charset = 'iso-8859-1'
+        message['To'] = Header(reply_to, charset)
+        message['From'] = Header(addrfrom, charset)
+        message['Reply-To'] = Header(reply_to, charset)
+        message['Subject'] = Header(subject, charset)
+        message['Message-ID'] = Header('<' + message_id + '>', charset)
         if in_reply_to:
             if isinstance(in_reply_to, basestring):
                 in_reply_to = [ in_reply_to ]
-            message['In-Reply-To'] = ','.join(('<' + irt + '>') for irt in in_reply_to)
+            in_reply_to = ','.join(('<' + irt + '>') for irt in in_reply_to)
+            message['In-Reply-To'] = Header(in_reply_to, charset)
         content = message.as_string()
         try:
             self._client.sendmail(addrfrom, addrs, content)
