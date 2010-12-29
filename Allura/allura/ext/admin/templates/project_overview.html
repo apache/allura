@@ -44,14 +44,14 @@
             <div class="grid-9">
               <label for="name">Name:</label>
               <br>
-              <input type="text" name="name" value="{{c.project.name}}"
+              <input type="text" name="name" id="name" value="{{c.project.name}}"
                      title="This is the publicly viewable name of the project, and will appear on project listings.
                             It should be what you want to see as the project title in search listing.">
             </div>
             <div class="grid-9">
               <label for="category">Category:</label>
               <br>
-              <select name="category" title="This will determine which pages the project will appear under in the SourceForge Directory.">
+              <select name="category" id="category" title="This will determine which pages the project will appear under in the SourceForge Directory.">
                 <option value="">Uncategorized</option>
                 {% for cat in categories %}
                   <option value="{{cat._id}}" {% if c.project.category and c.project.category._id == cat._id %}selected="selected"{% endif%}>{{cat.label}}</option>
@@ -70,12 +70,12 @@
             <div class="grid-9">
               <label for="labels">Labels:</label>
               <br>
-              {{c.label_edit.display(name='labels', value=c.project.labels, 
+              {{c.label_edit.display(name='labels', value=c.project.labels, id='labels',
                      title="Free-form labels to describe your project.
                            These can be used to search for similar projects.")}}
             </div>
             <div class="grid-9">
-              <label for="short_description">Summary:</label>
+              <label for="short_description_textarea">Summary:</label>
               <br>
               <textarea name="short_description" id="short_description_textarea" style="height: 100px;"
                         title="Add a short one or two sentence summary for your project.">{{c.project.short_description}}</textarea>
