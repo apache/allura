@@ -3,6 +3,7 @@ import re
 import shutil
 import string
 import logging
+from binascii import b2a_hex
 from hashlib import sha1
 from datetime import datetime
 from cStringIO import StringIO
@@ -125,8 +126,8 @@ class HgImplementation(M.RepositoryImplementation):
         if all_commits:
             return list(topological_sort(graph))
         else:
-            return M.Commit.unknown_commit_ids_in(topological_sort(
-                    self._repo._id, graph))
+            return M.Commit.unknown_commit_ids_in(
+                self._repo._id, topological_sort(graph))
 
     def commit_context(self, commit):
         prev_ids = commit.parent_ids
@@ -213,7 +214,7 @@ class HgImplementation(M.RepositoryImplementation):
         root = GitLikeTree()
         for filepath in changectx.manifest():
             fctx = changectx[filepath]
-            oid = sha1('blob\n' + fctx.data()).hexdigest()
+            oid = b2a_hex(fctx.filenode())
             root.set_blob(filepath, oid)
         return root
 

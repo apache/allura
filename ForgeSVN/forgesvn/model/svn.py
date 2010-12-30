@@ -214,25 +214,25 @@ class SVNImplementation(M.RepositoryImplementation):
             if path.action == 'D':
                 root.del_blob(h.really_unicode(path.path))
             else:
-                try:
-                    data = self._svn.cat(
-                        self._url + h.really_unicode(path.path),
-                        revision=log_entry.revision)
-                    oid = sha1('blob\n' + data).hexdigest()
-                    root.set_blob(h.really_unicode(path.path), oid)
-                    continue
-                except pysvn.ClientError:
-                    # Must be a directory, check additional stuff
-                    pass
-                if path.get('copyfrom_path') and path.get('copyfrom_revision'):
-                    # Directory copy
-                    src_path = path['copyfrom_path']
-                    src_ci = self._repo.commit(path['copyfrom_revision'].number)
-                    src_tree = src_ci.tree.get_object(*src_path[1:].split('/'))
-                    root.set_tree(path.path, GitLikeTree.from_tree(src_tree))
+                info = self._svn.info2(
+                    self._url + h.really_unicode(path.path),
+                    revision=log_entry.revision)[0]
+                if info[1].kind == pysvn.node_kind.dir:
+                    if path.get('copyfrom_path') and path.get('copyfrom_revision'):
+                        # Directory copy
+                        src_path = path['copyfrom_path']
+                        src_ci = self._repo.commit(path['copyfrom_revision'].number)
+                        src_tree = src_ci.tree.get_object(*src_path[1:].split('/'))
+                        root.set_tree(path.path, GitLikeTree.from_tree(src_tree))
+                    else:
+                        # Create empty directory
+                        root.set_tree(path.path, GitLikeTree())
                 else:
-                    # Create empty directory
-                    root.set_tree(path.path, GitLikeTree())
+                    data = 'blob\n%s\n%s' % (
+                        log_entry.revision.number,
+                        path.path)
+                    oid = sha1(data).hexdigest()
+                    root.set_blob(h.really_unicode(path.path), oid)
         return root
 
     def _refresh_tree(self, tree, obj):
