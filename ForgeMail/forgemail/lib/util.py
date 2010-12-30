@@ -4,7 +4,7 @@ import smtplib
 import email.feedparser
 from email.MIMEMultipart import MIMEMultipart
 from email.MIMEText import MIMEText
-from email.header import Header
+from email import header
 
 import tg
 from paste.deploy.converters import asbool, asint, aslist
@@ -19,6 +19,15 @@ log = logging.getLogger(__name__)
 
 RE_MESSAGE_ID = re.compile(r'<(.*)>')
 COMMON_SUFFIX = tg.config.get('forgemail.domain', '.sourceforge.net')
+
+def Header(text, charset):
+    '''Helper to make sure we don't over-encode headers
+
+    (gmail barfs with encoded email addresses.)'''
+    h = header.Header('', charset)
+    for word in text.split(' '):
+        h.append(word)
+    return h
 
 def parse_address(addr):
     userpart, domain = addr.split('@')
