@@ -122,7 +122,8 @@ class SVNImplementation(M.RepositoryImplementation):
         if all_commits:
             return oids
         else:
-            return M.Commit.unknown_commit_ids_in(oids)
+            return M.Commit.unknown_commit_ids_in(
+                self._repo._id, oids)
 
     def commit_context(self, commit):
         revno = int(commit.object_id.split(':')[1])

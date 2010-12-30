@@ -116,7 +116,8 @@ class GitImplementation(M.RepositoryImplementation):
         if all_commits:
             return list(topological_sort(graph))
         else:
-            return M.Commit.unknown_commit_ids_in(topological_sort(graph))
+            return M.Commit.unknown_commit_ids_in(
+                self._repo._id, topological_sort(graph))
 
     def commit_context(self, commit):
         prev_ids = commit.parent_ids
