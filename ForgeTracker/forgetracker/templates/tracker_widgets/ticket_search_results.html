@@ -15,7 +15,7 @@
             </th>
           {% endfor %}
           <th style="width:15px">
-            <a href="#" id="col_menu"><b data-icon="{{g.icons['admin'].char}}" class="ico {{g.icons['admin'].css}}"></b></a>
+            <a href="#" id="col_menu" title="Select Columns"><b data-icon="{{g.icons['admin'].char}}" class="ico {{g.icons['admin'].css}}"></b></a>
           </th>
         </tr>
       </thead>
@@ -23,8 +23,10 @@
         {% for t in tickets %}
           <tr class="{{loop.index0%2 and 'even' or ''}}">
             {% for col in columns if col['active'] %}
-              {% if col['name'] in ['ticket_num', 'summary'] %}
+              {% if col['name'] == 'ticket_num' %}
                 <td><a href="{{t.url()}}">{{t[col['name']]}}</a></td>
+              {% elif col['name'] == 'summary' %}
+                <td>{{t[col['name']]}}</td>
               {% elif col['name'] == 'status' %}
                 <td class="{{t.open_or_closed}}">{{t.status}}</td>
               {% elif col['name'] == 'assigned_to' %}
