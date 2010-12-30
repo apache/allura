@@ -1,3 +1,4 @@
+<!DOCTYPE html>
 <form method="post" action="{{c.project.url()}}admin/{{app.config.options.mount_point}}/configure">
   {% for o in app.config_options if o.name not in ['mount_point', 'mount_label', 'ordinal'] %}
     <label for="{{o.name}}" class="grid-4">{{o.name}}</label>
