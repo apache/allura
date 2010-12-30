@@ -93,7 +93,7 @@ class Globals(object):
             linenos='inline')
 
         # Setup analytics
-        self.analytics = analytics.GoogleAnalytics(account=config.get('ga.account', 'UA-32013-6'))
+        self.analytics = analytics.GoogleAnalytics(account=config.get('ga.account', 'UA-32013-57'))
 
         # Setup theme
         self.theme = plugin.ThemeProvider.get()

@@ -2,6 +2,8 @@ import ew
 
 class GoogleAnalytics(ew.Widget):
     template='jinja:widgets/analytics.html'
-    params=['account']
-    account='UA-XXXXX-X'
+    defaults=dict(
+        ew.Widget.defaults,
+        account='UA-XXXXX-X')
+    
     
