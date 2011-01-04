@@ -144,7 +144,7 @@ def validate_html5(html_or_response):
             f = tempfile.NamedTemporaryFile(prefix='html5-', delete=False)
             f.write(html)
             f.close()
-            message = "Validation errors (" + f.name + "):\n" + resp
+            message = "HTML5 Validation errors (" + f.name + "):\n" + resp
             message = message.decode('ascii','ignore')
             if ENABLE_CONTENT_VALIDATION:
                 ok_(False, message)
