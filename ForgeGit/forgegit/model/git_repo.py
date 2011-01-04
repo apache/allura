@@ -99,8 +99,11 @@ class GitImplementation(M.RepositoryImplementation):
     def commit(self, rev):
         result = M.Commit.query.get(object_id=rev)
         if result is None:
-            impl = self._git.rev_parse(str(rev) + '^0')
-            result = M.Commit.query.get(object_id=impl.hexsha)
+            try:
+                impl = self._git.rev_parse(str(rev) + '^0')
+                result = M.Commit.query.get(object_id=impl.hexsha)
+            except Exception, e:
+                log.exception(e)
         if result is None: return None
         result.set_context(self._repo)
         return result

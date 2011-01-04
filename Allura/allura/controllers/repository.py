@@ -231,6 +231,8 @@ class CommitBrowser(BaseController):
     def __init__(self, revision):
         self._revision = revision
         self._commit = c.app.repo.commit(revision)
+        if self._commit is None:
+            raise exc.HTTPNotFound
         self.tree = self.TreeBrowserClass(self._commit, tree=self._commit.tree)
 
     @expose('jinja:repo/commit.html')

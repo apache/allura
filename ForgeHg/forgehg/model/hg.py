@@ -106,8 +106,11 @@ class HgImplementation(M.RepositoryImplementation):
     def commit(self, rev):
         result = M.Commit.query.get(object_id=rev)
         if result is None:
-            impl = self._hg[str(rev)]
-            result = M.Commit.query.get(object_id=impl.hex())
+            try:
+                impl = self._hg[str(rev)]
+                result = M.Commit.query.get(object_id=impl.hex())
+            except Exception, e:
+                log.exception(e)
         if result is None: return None
         result.set_context(self._repo)
         return result
