@@ -39,7 +39,7 @@ class NeighborhoodAddProjectForm(ForgeForm):
     @property
     def fields(self):
         fields = [
-            ew.InputField(name='project_unixname', label='',
+            ew.InputField(name='project_unixname', label='', field_type='text',
                           validator=formencode.All(
                             fev.Regex(r'^[A-z][-A-z0-9]{2,}$', messages={'invalid':'Please use only letters, numbers, and dash characters.'}),
                             NeighborhoodAddProjectValidator())),
