@@ -5,9 +5,14 @@
 {% endblock %}
 
 {% block header -%}
-Commit
-<a href={{commit.url()}}>{{commit.shorthand_id()}}</a>
+Commit<a href="{{commit.url()}}">{{commit.shorthand_id()}}</a>
 {%- endblock %}
+
+{% block actions %}
+<a href="{{commit.url()}}log/">
+  <b data-icon="{{g.icons.history.char}}" class="ico {{g.icons.history.css}}" title="History"> </b>
+</a>
+{% endblock %}
 
 {% block content %}
   {{ clone_info(c.app.repo) }}

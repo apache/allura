@@ -12,6 +12,7 @@
 
 {% block content %}
   {{ clone_info(c.app.repo) }}
+  <br style="clear:both"/>
   {% if log %}
     {{c.log_widget.display(value=log, limit=limit, page=page, count=count)}}
   {% else %}

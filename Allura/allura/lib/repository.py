@@ -72,13 +72,7 @@ class RepositoryApp(Application):
                 + '/')
         else:
             default_branch_url = c.app.url
-        links = [
-            SitemapEntry('Browse', default_branch_url,ui_icon=g.icons['folder']) ]
-        if c.app.repo.heads:
-            links.append(
-                SitemapEntry(
-                    'History', default_branch_url+'log/',
-                    ui_icon=g.icons['history'], small=c.app.repo.heads[0].count))
+        links = []
         if self.forkable and self.repo.status == 'ready':
             links.append(SitemapEntry('Fork', c.app.url + 'fork', ui_icon=g.icons['fork']))
         if security.has_artifact_access('admin', app=c.app)():

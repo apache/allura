@@ -204,7 +204,6 @@ class CommitsController(object):
         return CommitBrowser(ci), remainder
 
 class BranchBrowser(BaseController):
-    log_widget=SCMLogWidget()
     CommitBrowserClass=None
 
     def __init__(self, branch):
@@ -213,41 +212,21 @@ class BranchBrowser(BaseController):
     def _check_security(self):
         security.require(security.has_artifact_access('read', c.app.repo))
 
-    @expose('jinja:repo/log.html')
-    @with_trailing_slash
-    def log(self, limit=None, page=0, count=0, **kw):
-        limit, page, start = g.handle_paging(limit, page)
-        revisions = c.app.repo.log(
-                branch=self._branch,
-                offset=start,
-                limit=limit)
-        c.log_widget = self.log_widget
-        count = 0
-        if self._branch is None:
-            if c.app.repo.heads:
-                count = c.app.repo.heads[0].count
-        else:
-            for branch in c.app.repo.branches:
-                if branch['name'] == self._branch:
-                    count = branch['count']
-                    break
-        return dict(
-            username=c.user._id and c.user.username,
-            branch=self._branch,
-            log=revisions,
-            page=page,
-            limit=limit,
-            count=count,
-            **kw)
-
     @expose('jinja:repo/tags.html')
     @with_trailing_slash
     def tags(self, **kw):
         return dict(tags=c.app.repo.repo_tags)
 
+    @expose()
+    @with_trailing_slash
+    def log(self, **kw):
+        ci = c.app.repo.commit(self._branch)
+        redirect(ci.url() + 'log/')
+
 class CommitBrowser(BaseController):
     TreeBrowserClass=None
     revision_widget = SCMRevisionWidget()
+    log_widget=SCMLogWidget()
 
     def __init__(self, revision):
         self._revision = revision
@@ -261,6 +240,25 @@ class CommitBrowser(BaseController):
         if self._commit:
             result.update(self._commit.context())
         return result
+
+    @expose('jinja:repo/log.html')
+    @with_trailing_slash
+    def log(self, limit=None, page=0, count=0, **kw):
+        limit, page, start = g.handle_paging(limit, page)
+        revisions = c.app.repo.log(
+                branch=self._commit.object_id,
+                offset=start,
+                limit=limit)
+        c.log_widget = self.log_widget
+        count = 0
+        return dict(
+            username=c.user._id and c.user.username,
+            branch=None,
+            log=revisions,
+            page=page,
+            limit=limit,
+            count=count,
+            **kw)
 
 class TreeBrowser(BaseController):
     tree_widget = SCMTreeWidget()

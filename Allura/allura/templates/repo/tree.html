@@ -11,8 +11,15 @@
 {{lib.path_links(path.split('/')[1:-1])}}
 {% endblock %}
 
+{% block actions %}
+<a href="{{commit.url()}}log/">
+  <b data-icon="{{g.icons.history.char}}" class="ico {{g.icons.history.css}}" title="History"> </b>
+</a>
+{% endblock %}
+
 {% block content %}
   {{ clone_info(c.app.repo) }}
+  <br style="clear:both"/>
 {{c.tree_widget.display(repo=repo, commit=commit, tree=tree, path=path)}}
 {% if tree.readme() %}
   <h1>Read Me</h1>
