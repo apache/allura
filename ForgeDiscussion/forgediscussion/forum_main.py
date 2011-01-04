@@ -169,7 +169,7 @@ class ForgeDiscussionApp(Application):
                 ]
             recent_topics = [ SitemapEntry(h.text.truncate(thread.subject, 72), thread.url(), className='nav_child',
                                 small=thread.num_replies)
-                   for thread in DM.ForumThread.query.find().sort('mod_date', pymongo.DESCENDING).limit(3)
+                   for thread in DM.ForumThread.query.find(dict(app_config_id=self.config._id)).sort('mod_date', pymongo.DESCENDING).limit(3)
                    if (not thread.discussion.deleted or has_artifact_access('configure', app=c.app)()) ]
             if len(recent_topics):
                 l.append(SitemapEntry('Recent Topics'))
