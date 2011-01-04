@@ -1,17 +1,22 @@
 import sys
 import logging
 
-from pylons import g
+from pylons import g, c
 
-from ming.orm import session
+from ming.orm import session, mapper, MappedClass
 
 from allura import model as M
 
 log = logging.getLogger(__name__)
 
+
 def main():
-    if len(sys.argv) != 2:
-        log.error('Usage: %s <shortname>', sys.argv[0])
+    USAGE='Usage: %s <shortname> [test]' % sys.argv[0]
+    if len(sys.argv) not in (2,3):
+        log.error(USAGE)
+        return 1
+    if len(sys.argv) == 3 and sys.argv[2] != 'test':
+        log.error(USAGE)
         return 1
     pname = sys.argv[1]
     log.info('Purging %s', pname)
@@ -19,6 +24,8 @@ def main():
     if project is None:
         log.fatal('Project %s not found', pname)
         return 2
+    if sys.argv[2] == 'test':
+        log.info('Test mode, not purging project')
     purge_project(project)
 
 def purge_project(project):
@@ -27,6 +34,23 @@ def purge_project(project):
     project.deleted = True
     g.solr.delete(q='project_id_s:%s' % project._id)
     session(project).flush()
+    c.project = project
+    app_config_ids = [
+        ac._id for ac in M.AppConfig.query.find(dict(project_id=c.project._id)) ]
+    for name, cls in MappedClass._registry.iteritems():
+        if 'project_id' in mapper(cls).property_index:
+            # Purge the things directly related to the project
+            cls.query.remove(
+                dict(project_id=project._id),
+                multiple=True)
+        elif 'app_config_id' in mapper(cls).property_index:
+            # ... and the things related to its apps
+            cls.query.remove(
+                dict(app_config_id={'$in':app_config_ids}),
+                multiple=True)
+        else:
+            # Don't dump other things
+            continue
 
 if __name__ == '__main__':
     sys.exit(main())
