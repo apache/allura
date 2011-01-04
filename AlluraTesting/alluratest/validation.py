@@ -216,6 +216,8 @@ class ValidatingTestApp(TestApp):
             validate_json(content)
         elif content_type.startswith('application/x-javascript'):
             validate_js(content)
+        elif content_type.startswith('application/javascript'):
+            validate_js(content)
         elif content_type.startswith('application/xml'):
             import feedparser
             d = feedparser.parse(content)
