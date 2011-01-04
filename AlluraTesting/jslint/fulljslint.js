@@ -753,6 +753,7 @@ var JSLINT = (function () {
 // ECMAScript standard.
 
         standard = {
+            'void'              : false,
             Array               : false,
             Boolean             : false,
             Date                : false,
@@ -5177,7 +5178,7 @@ loop:   for (;;) {
         return this;
     }).exps = true;
 
-    reserve('void');
+//    reserve('void');
 
 //  Superfluous reserved words
 
