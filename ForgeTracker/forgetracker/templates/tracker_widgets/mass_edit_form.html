@@ -34,7 +34,7 @@
           <div style="clear: both"></div>
         {% endif %}
         <div class="grid-4">
-          <label for="{{field.name}}" class="cr">{{field.label}}:</label>
+          <label for="{{field.id}}" class="cr">{{field.label}}:</label>
           {% if field.type == 'boolean' %}
             <input name="{{field.name}}" type="checkbox" value="True"/>
           {% elif field.type == 'select' %}

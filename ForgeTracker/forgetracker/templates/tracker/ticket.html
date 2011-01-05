@@ -130,25 +130,25 @@
 {% block extra_js %}
   {% if h.has_artifact_access('write', ticket)() %}
     <script type="text/javascript">
-        $(document).ready(function() {
+        $(document).ready(function () {
           // show/hide form
           var form_holder = $('div.form_holder');
           var view_holder = $('div.view_holder');
-          var discussion_holder = $('#discussion_holder')
+          var discussion_holder = $('#discussion_holder');
           var ticket_content = $('#ticket_content');
           var title_holder = $('h1.title');
           var original_title = title_holder.text();
-          $('a.edit_ticket, div.view_holder, #ticket_content').click(function(){
+          $('a.edit_ticket, div.view_holder, #ticket_content').click(function () {
             form_holder.show();
             view_holder.hide();
             discussion_holder.hide();
             ticket_content.hide();
             title_holder.text('\u00A0');
             $('a.edit_ticket').addClass('btn_activate');
-            $('textarea[name="ticket_form.description"]').focus()
+            $('textarea[name="ticket_form.description"]').focus();
             return false;
           });
-          $('a.cancel_form').click(function(){
+          $('a.cancel_form').click(function () {
             form_holder.hide();
             view_holder.show();
             discussion_holder.show();
@@ -158,15 +158,15 @@
             return false;
           });
           // delete attachments
-          $('div.attachment_thumb a.delete_attachment').click(function(){
-            $.post(this.href, {'delete': 'True'}, function(){
+          $('div.attachment_thumb a.delete_attachment').click(function () {
+            $.post(this.href, {'delete': 'True'}, function () {
                 location.reload();
             });
             return false;
           });
 
           // Allow the ticket metadata links to function without turning on edit mode
-          $('.editbox a, #ticket_content a').click(function(event){
+          $('.editbox a, #ticket_content a').click(function (event) {
             event.stopPropagation();
           });
         });
