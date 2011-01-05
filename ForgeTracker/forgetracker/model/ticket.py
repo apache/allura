@@ -255,7 +255,7 @@ class Ticket(VersionedArtifact):
 
     @classmethod
     def translate_query(cls, q, fields):
-        super(Ticket, cls).translate_query(q, fields)
+        q = super(Ticket, cls).translate_query(q, fields)
         cf = [f.name for f in c.app.globals.custom_fields]
         for f in cf:
             actual = '_%s_s' % f[1:]
