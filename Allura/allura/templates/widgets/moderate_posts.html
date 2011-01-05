@@ -1,8 +1,4 @@
-<form name="{{name}}"
-      id="{{name}}"
-      method="{{method}}"
-      action="{{action}}"
-      enctype="{{enctype}}"
+<form {{widget.j2_attrs({'name':name, 'id':id, 'method':method, 'action':action, 'enctype':enctype})}}
       {{attrs|default({}, true)|xmlattr}}>
   <fieldset class="grid-19">
     <legend>Update marked posts</legend>
