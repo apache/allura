@@ -5,6 +5,7 @@ import logging
 import urllib
 import hmac
 import hashlib
+from email import header
 from datetime import timedelta, datetime
 from hashlib import sha256
 
@@ -336,6 +337,12 @@ class User(MappedClass):
     @classmethod
     def anonymous(cls):
         return User.query.get(_id=None)
+
+    def email_address_header(self):
+        h = header.Header()
+        h.append(u'"%s"' % self.display_name)
+        h.append(u'<%s>' % self.preferences.email_address)
+        return h
 
 class OldProjectRole(MappedClass):
     class __mongometa__:

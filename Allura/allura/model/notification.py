@@ -105,8 +105,7 @@ class Notification(MappedClass):
             author = post.author()
             d = dict(
                 _id=post._id,
-                from_address='"%s" <%s>' % (
-                    author.display_name, author.preferences.email_address),
+                from_address=str(author._id),
                 reply_to_address='"%s" <%s>' % (
                     subject_prefix, getattr(artifact, 'email_address', 'noreply@in.sf.net')),
                 subject=subject_prefix + subject,

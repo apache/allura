@@ -88,7 +88,7 @@ def send_email(routing_key, data):
             if not user:
                 log.warning('Cannot find user with ID %s', addr)
                 continue
-            addr = user.preferences.email_address
+            addr = user.email_address_header()
             if not addr and user.email_addresses:
                 addr = user.email_addresses[0]
                 log.warning('User %s has not set primary email address, using %s',

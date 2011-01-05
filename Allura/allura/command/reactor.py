@@ -2,6 +2,7 @@ import sys
 import time
 import json
 from multiprocessing import Process
+from weberror.errormiddleware import handle_exception
 
 import ming
 import pylons
@@ -135,6 +136,24 @@ class ReactorCommand(base.Command):
             time.sleep(5)
             if self.options.dry_run: return
 
+    def send_error_report(self, exc_info):
+        C = pylons.config['pylons.errorware']
+        handle_exception(
+            exc_info, sys.stderr,
+            html=True,
+            debug_mode=C.get('debug', False),
+            error_email=C.get('error_email'),
+            error_log=C.get('error_log'),
+            show_exceptions_in_wsgi_errors=False,
+            error_email_from=C.get('from_address'),
+            smtp_server=C.get('smtp_server'),
+            smtp_username=C.get('smtp_username'),
+            smtp_password=C.get('smtp_password'),
+            smtp_use_tls=C.get('smtp_use_tls'),
+            error_subject_prefix=C.get('error_subject_prefix'),
+            error_message=C.get('error_message'),
+            simple_html_error=C.get('simple_html_error'))
+
     def route_audit(self, tool_name, method):
         'Auditors only respond to their particluar mount point'
         def callback(data, msg):
@@ -175,6 +194,7 @@ class ReactorCommand(base.Command):
                     'Exception audit handling %s: %s',
                     tool_name, method)
                 if self.options.dry_run: raise
+                self.send_error_report(sys.exc_info())
             else:
                 ming.orm.ormsession.ThreadLocalORMSession.flush_all()
             finally:
@@ -218,6 +238,7 @@ class ReactorCommand(base.Command):
             except: # pragma no cover
                 base.log.exception('Exception react handling %s: %s', tool_name, method)
                 if self.options.dry_run: raise
+                self.send_error_report(sys.exc_info())
             else:
                 ming.orm.ormsession.ThreadLocalORMSession.flush_all()
             finally:

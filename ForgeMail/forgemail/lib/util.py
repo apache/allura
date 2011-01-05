@@ -7,7 +7,7 @@ from email.MIMEText import MIMEText
 from email import header
 
 import tg
-from paste.deploy.converters import asbool, asint, aslist
+from paste.deploy.converters import asbool, asint
 from pylons import c
 
 from allura.lib.helpers import push_config, find_project
@@ -24,6 +24,8 @@ def Header(text, charset):
     '''Helper to make sure we don't over-encode headers
 
     (gmail barfs with encoded email addresses.)'''
+    if isinstance(text, Header):
+        return text
     h = header.Header('', charset)
     for word in text.split(' '):
         h.append(word)
