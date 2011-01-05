@@ -132,7 +132,7 @@ class ForgeTrackerApp(Application):
                     small=c.app.globals.bin_counts.get(bin.shorthand_id())))
         for fld in c.app.globals.milestone_fields:
             milestones.append(SitemapEntry(h.text.truncate(fld.label, 72)))
-            for m in fld.milestones:
+            for m in getattr(fld, "milestones", []):
                 if m.complete: continue
                 hits = 0
                 for ms in c.app.globals.milestone_counts:

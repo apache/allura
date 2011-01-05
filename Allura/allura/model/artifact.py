@@ -307,6 +307,15 @@ class Artifact(MappedClass):
     def attachment_class(cls):
         raise NotImplementedError, 'attachment_class'
 
+    @classmethod
+    def translate_query(cls, q, fields):
+        for f in fields:
+            if f[-2] == '_':
+                base = f[:-2]
+                actual = f
+                q = q.replace(base+':', actual+':')
+        return q
+
     def subscribe(self, user=None, topic=None, type='direct', n=1, unit='day'):
         from allura.model import Mailbox
         if user is None: user = c.user
