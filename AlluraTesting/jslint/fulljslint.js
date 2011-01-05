@@ -926,7 +926,7 @@ var JSLINT = (function () {
         ssx = /^\s*(\.?\d+(?:\.\d+)?|[@#!"'};:\-%.=,+\[\]()*_]|[a-zA-Z][a-zA-Z0-9._\-]*|\/\*?|<\/)/,
 // attributes characters
         //qx = /[^a-zA-Z0-9+\-_\/ ]/,
-        qx = /[^a-zA-Z0-9+\-_\/ .]/, // We want dots in names, period
+        qx = /[^a-zA-Z0-9+\-_\/ .#]/, // We want dots in names, period; and hashes for templating
 // query characters for ids
         //dx = /[\[\]\/\\"'*<>.&:(){}+=#]/,
         // allow . and /
