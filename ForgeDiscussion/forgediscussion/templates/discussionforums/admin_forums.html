@@ -9,9 +9,9 @@
   <table id="forums">
     <thead>
       <tr>
-        <th/>
+        <th></th>
         <th>Forum</th><th>Topics</th><th>Posts</th><th>Last Post</th>
-        <th/>
+        <th></th>
       </tr>
     </thead>
     <tbody>
@@ -37,7 +37,7 @@
             </span>
           </div>
           <div class="editable viewing">
-            <span class="viewer">{{g.markdown.convert(forum.description)|safe}}</span>
+            <div class="viewer">{{g.markdown.convert(forum.description)|safe}}</div>
             <span class="editor multiline">
               {{lib.text_area('forum-%s.description' % loop.index0, 'Description', forum.description)}}
             </span>
