@@ -670,6 +670,7 @@ var JSLINT = (function () {
             rp:       {},
             rt:       {},
             ruby:     {},
+            s:        {},
             samp:     {},
             script:   {empty: true, parent: ' body div frame head iframe p pre span '},
             section:  {},
