@@ -489,10 +489,7 @@ class RootController(BaseController):
             if not ticket:
                 raise Exception('Ticket number not found.')
         else:
-            ticket = TM.Ticket(
-                app_config_id=c.app.config._id,
-                custom_fields=dict(),
-                ticket_num=c.app.globals.next_ticket_num())
+            ticket = TM.Ticket.new()
         ticket.update(ticket_form)
         redirect(str(ticket.ticket_num)+'/')
 

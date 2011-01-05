@@ -214,6 +214,21 @@ class Ticket(VersionedArtifact):
 
     reported_by = RelationProperty(User, via='reported_by_id')
 
+    @classmethod
+    def new(cls):
+        '''Create a new ticket, safely (ensuring a unique ticket_num'''
+        while True:
+            ticket_num = c.app.globals.next_ticket_num()
+            ticket = cls(
+                app_config_id=c.app.config._id,
+                custom_fields=dict(),
+                ticket_num=ticket_num)
+            try:
+                session(ticket).flush(ticket)
+                return ticket
+            except:
+                session(ticket).expunge(ticket)
+
     def index(self):
         result = VersionedArtifact.index(self)
         result.update(
