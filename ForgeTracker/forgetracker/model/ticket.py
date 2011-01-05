@@ -190,9 +190,11 @@ class Ticket(VersionedArtifact):
         name = 'ticket'
         history_class = TicketHistory
         indexes = [
-            ('app_config_id', 'ticket_num'),
             'ticket_num',
             'app_config_id'
+            ]
+        unique_indexes = [
+            ('app_config_id', 'ticket_num'),
             ]
 
     type_s = 'Ticket'
