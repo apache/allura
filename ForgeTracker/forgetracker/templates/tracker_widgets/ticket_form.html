@@ -58,9 +58,9 @@
     {{widget.display_field_by_name('description')|safe}}
   </div>
   <div style="clear:both"></div>
-  <div class="grid-16">
+  <div class="grid-18">
     {% if ticket %}
-      <div class="clear">
+      <div class="clearfix">
       {% for att in ticket.attachments %}
           <div class="attachment_thumb">
             {% if att.is_image() and not att.is_embedded() %}
@@ -77,16 +77,16 @@
           </div>
       {% endfor %}
       </div>
-      <div class="clear"></div>
+      <div style="clear:both"></div>
     {% endif %}
     <div id="show_attach">
       <input type="checkbox"> I would like to add an attachment
     </div>
+    <div style="clear:both"></div>
     <div id="view_attach" style="display:none">
       {{widget.display_field_by_name('attachment')|safe}}
     </div>
   </div>
-  <div style="clear:both"></div>
   <div class="reply"{% if not show_comment %} style="display:none"{% endif %}>
 	<div class="grid-2 tcenter">
         <p class="gravatar">

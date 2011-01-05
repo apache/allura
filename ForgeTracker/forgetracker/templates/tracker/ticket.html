@@ -97,7 +97,7 @@
 <div id="ticket_content">
   {{g.markdown.convert(ticket.description)|safe}}
   {% if ticket.attachments %}
-    <strong>{{ticket.attachments.__len__()}} Attachments</strong>
+    <strong class="grid-18">{{ticket.attachments.__len__()}} Attachments</strong>
     <div class="clear">
     {% for att in ticket.attachments %}
         <div class="attachment_thumb">
@@ -114,6 +114,7 @@
         </div>
     {% endfor %}
     </div>
+    <div style="clear:both"></div>
   {% endif %}
 </div>
 {% endblock %}
