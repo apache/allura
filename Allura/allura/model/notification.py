@@ -206,6 +206,8 @@ class Mailbox(MappedClass):
             ('user_id', 'project_id', 'app_config_id',
              'artifact_index_id', 'topic', 'is_flash'),
             ]
+        indexes = [
+            ('project_id', 'artifact_index_id') ]
     _id = FieldProperty(S.ObjectId)
     user_id = ForeignIdProperty('User', if_missing=lambda:c.user._id)
     project_id = ForeignIdProperty('Project', if_missing=lambda:c.project._id)

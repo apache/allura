@@ -424,7 +424,10 @@ class RepoObject(MappedClass):
         name='repo_object'
         polymorphic_on = 'type'
         polymorphic_identity=None
-        indexes = [ 'parent_ids' ]
+        indexes = [
+            ('parent_ids',),
+            ('repo_id','type')
+            ]
         unique_indexes = [ 'object_id' ]
 
     # ID Fields
