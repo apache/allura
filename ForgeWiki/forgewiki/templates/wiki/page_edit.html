@@ -6,7 +6,7 @@
 
 {% block extra_css %}
 <style type="text/css">
-  textarea[name=text]{
+  textarea[name="text"]{
     height: 600px;
   }
 </style>
@@ -27,11 +27,11 @@
 	</div>
 	<label class="grid-18">Content:</label>
 	<div class="grid-18">
-	  {{c.markdown_editor.display(name='text',value=page.text)}}
+	  {{c.markdown_editor.display(id='text', name='text',value=page.text)}}
 	</div>
 	<label class="grid-4">Labels:</label>
 	<div class="grid-14" style="margin-left:0">
-		{{c.label_edit.display(name='labels', value=page.labels)}}
+		{{c.label_edit.display(id='labels', name='labels', value=page.labels)}}
 	</div>
     {% if not page_exists or has_artifact_access('edit_page_permissions', page)() %}
       <label class="grid-4">Viewable by:</label>
