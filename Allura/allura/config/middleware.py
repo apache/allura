@@ -84,9 +84,16 @@ def _make_core_app(root, global_conf, full_stack=True, **app_conf):
     ew.render.TemplateEngine.register_variable_provider(get_tg_vars)
 
     app = StaticFilesMiddleware(app, app_conf.get('static.script_name'))
+    app = set_scheme_middleware(app)
 
     return app
     
+def set_scheme_middleware(app):
+    def SchemeMiddleware(environ, start_response):
+        if asbool(environ.get('HTTP_X_SFINC_SSL', 'false')):
+            environ['wsgi.url_scheme'] = 'https'
+        return app(environ, start_response)
+    return SchemeMiddleware
 
 def get_tg_vars(context):
     import pylons, tg

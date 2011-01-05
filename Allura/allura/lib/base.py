@@ -32,8 +32,6 @@ class BaseController(TGController):
         self._app = ForgeMiddleware(self._app)
 
     def _base_app(self, environ, start_response):
-        if asbool(environ.get('HTTP_X_SFINC_SSL', 'false')):
-            environ['wsgi.url_scheme'] = 'https'
         self._setup_request()
         app = self._wsgi_handler(environ)
         if app is None:
