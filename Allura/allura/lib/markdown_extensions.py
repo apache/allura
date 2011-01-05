@@ -3,7 +3,7 @@ import os
 import logging
 import string
 from collections import defaultdict
-from urllib import quote
+from urllib import quote, quote_plus
 from urlparse import urljoin
 from ConfigParser import RawConfigParser
 from pprint import pformat
@@ -119,7 +119,7 @@ class ForgeProcessor(object):
                 new_link.url, link)
         elif self._use_wiki and ':' not in link:
             return '<a href="%s" class="notfound">[%s]</a>' % (
-                link, link)
+                quote_plus(link), link)
         else:
             return link
 
@@ -228,6 +228,11 @@ class RelativeLinkRewriter(markdown.postprocessors.Postprocessor):
     def _rewrite(self, tag, attr):
         val = tag.get(attr)
         if val is None: return
+        if ' ' in val:
+            # Don't urllib.quote to avoid possible double-quoting
+            # just make sure no spaces
+            val = val.replace(' ', '+')
+            tag[attr] = val
         if '://' in val:
             if 'sf.net' in val or 'sourceforge.net' in val:
                 return
