@@ -98,6 +98,10 @@ class Discussion(Artifact):
 class Thread(Artifact):
     class __mongometa__:
         name='thread'
+        indexes = [
+            ('artifact_id',),
+            ('artifact_reference',),
+            ]
     type_s = 'Thread'
 
     _id=FieldProperty(str, if_missing=lambda:h.nonce(8))

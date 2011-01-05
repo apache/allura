@@ -94,7 +94,7 @@ class Page(VersionedArtifact):
                     la, lb,
                     'v%d' % v1.version,
                     'v%d' % v2.version))
-            description = diff
+            description = '<pre>' + diff + '</pre>'
             if v1.title != v2.title:
                 subject = '%s renamed page %s to %s' % (
                     context.user.username, v2.title, v1.title)

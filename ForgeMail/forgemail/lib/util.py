@@ -4,6 +4,7 @@ import smtplib
 import email.feedparser
 from email.MIMEMultipart import MIMEMultipart
 from email.MIMEText import MIMEText
+from email import header
 
 import tg
 from paste.deploy.converters import asbool, asint, aslist
@@ -18,6 +19,15 @@ log = logging.getLogger(__name__)
 
 RE_MESSAGE_ID = re.compile(r'<(.*)>')
 COMMON_SUFFIX = tg.config.get('forgemail.domain', '.sourceforge.net')
+
+def Header(text, charset):
+    '''Helper to make sure we don't over-encode headers
+
+    (gmail barfs with encoded email addresses.)'''
+    h = header.Header('', charset)
+    for word in text.split(' '):
+        h.append(word)
+    return h
 
 def parse_address(addr):
     userpart, domain = addr.split('@')
@@ -105,16 +115,18 @@ class SMTPClient(object):
     def sendmail(self, addrs, addrfrom, reply_to, subject, message_id, in_reply_to, message):
         if not addrs: return
         charset = message.get_charset()
-        message['To'] = reply_to.encode(charset)
-        message['From'] = addrfrom.encode(charset)
-        if reply_to is not None:
-            message['Reply-To'] = reply_to.encode(charset)
-        message['Subject'] = subject.encode(charset)
-        message['Message-ID'] = '<' + message_id + '>'
+        if charset is None: 
+            charset = 'iso-8859-1'
+        message['To'] = Header(reply_to, charset)
+        message['From'] = Header(addrfrom, charset)
+        message['Reply-To'] = Header(reply_to, charset)
+        message['Subject'] = Header(subject, charset)
+        message['Message-ID'] = Header('<' + message_id + '>', charset)
         if in_reply_to:
             if isinstance(in_reply_to, basestring):
                 in_reply_to = [ in_reply_to ]
-            message['In-Reply-To'] = ','.join(('<' + irt + '>') for irt in in_reply_to)
+            in_reply_to = ','.join(('<' + irt + '>') for irt in in_reply_to)
+            message['In-Reply-To'] = Header(in_reply_to, charset)
         content = message.as_string()
         try:
             self._client.sendmail(addrfrom, addrs, content)
