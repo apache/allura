@@ -923,7 +923,7 @@ var JSLINT = (function () {
         ux = /&|\+|\u00AD|\.\.|\/\*|%[^;]|base64|url|expression|data|mailto/i,
 // style
         sx = /^\s*([{:#%.=,>+\[\]@()"';]|\*=?|\$=|\|=|\^=|~=|[a-zA-Z_][a-zA-Z0-9_\-]*|[0-9]+|<\/|\/\*)/,
-        ssx = /^\s*([@#!"'};:\-%.=,+\[\]()*_]|[a-zA-Z][a-zA-Z0-9._\-]*|\/\*?|\d+(?:\.\d+)?|<\/)/,
+        ssx = /^\s*(\.?\d+(?:\.\d+)?|[@#!"'};:\-%.=,+\[\]()*_]|[a-zA-Z][a-zA-Z0-9._\-]*|\/\*?|<\/)/,
 // attributes characters
         //qx = /[^a-zA-Z0-9+\-_\/ ]/,
         qx = /[^a-zA-Z0-9+\-_\/ .]/, // We want dots in names, period
@@ -1426,7 +1426,12 @@ var JSLINT = (function () {
 
     //      number
 
-                        if (c.isDigit()) {
+                        if (c.isDigit() || (c === '.' && t.substr(1, 1).isDigit())) {
+                            if (c === '.') {
+                                t = '0' + t;
+                                c = '0';
+                            }
+                        
                             if (xmode !== 'style' && !isFinite(Number(t))) {
                                 warningAt("Bad number '{a}'.",
                                     line, character, t);
