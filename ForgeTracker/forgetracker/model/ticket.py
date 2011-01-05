@@ -238,13 +238,7 @@ class Ticket(VersionedArtifact):
 
     @classmethod
     def translate_query(cls, q, fields):
-        for f in fields:
-            if f[-2] == '_':
-                base = f[:-2]
-                if base[0] == '_': # ignore custom fields here
-                    continue
-                actual = f
-                q = q.replace(base+':', actual+':')
+        q = super(Ticket, cls).translate_query(q, fields)
         cf = [f.name for f in c.app.globals.custom_fields]
         for f in cf:
             actual = '_%s_s' % f[1:]
