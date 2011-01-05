@@ -171,7 +171,7 @@ class TestSubscriptionTypes(unittest.TestCase):
         assert num_msgs == 1, num_msgs
         msg = g.mock_amq.exchanges['audit'][0]['message']
         assert 'Home@wiki.test.p' in msg['reply_to']
-        assert 'Test Admin' in msg['from']
+        assert str(M.User.by_username('test-admin')._id) in msg['from'], msg['from']
 
     def _clear_subscriptions(self):
         M.Mailbox.query.remove({})
