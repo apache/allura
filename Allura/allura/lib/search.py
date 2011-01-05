@@ -87,13 +87,7 @@ def search_artifact(atype, q, history=False, rows=10, **kw):
     if a is None: return # if there are no instance of atype, we won't find anything
     fields = a.index()
     # Now, we'll translate all the fld:
-    for f in fields:
-        if f[-2] == '_':
-            base = f[:-2]
-            if base[0] == '_': # handle tracker custom fields
-                base = base[1:]
-            actual = f
-            q = q.replace(base+':', actual+':')
+    q = atype.translate_query(q, fields)
     fq = [
         'type_s:%s' % fields['type_s'],
         'project_id_s:%s' % c.project._id,
