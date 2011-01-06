@@ -34,7 +34,6 @@ class ForumSubscriptionForm(ew.SimpleForm):
     class fields(ew_core.NameList):
         forums=_ForumsTable()
         page_list=ffw.PageList()
-        page_size=ffw.PageSize()
     submit_text='Update Subscriptions'
 
 class _ThreadsTable(DW._ThreadsTable):
