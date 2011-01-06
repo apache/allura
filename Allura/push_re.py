@@ -23,6 +23,7 @@ def main():
     engineer = option('re', 'engineer', 'Name of engineer pushing: ')
     api_key = option('re', 'api_key', 'Forge API Key:')
     secret_key = option('re', 'secret_key', 'Forge Secret Key:')
+    classic_path = option('re', 'classic_path', 'The path to your forge-classic repo:')
     CRED['api_key'] = api_key
     CRED['secret_key'] = secret_key
     text, tag = make_ticket_text(engineer)
@@ -40,11 +41,19 @@ def main():
     print re_ticket_ref.sub('FO:\g<1>', text)
     print '---END---'
     raw_input('Now link the two tickets...')
+    print "Let's tag the forge repo:"
     command('git', 'tag', '-a', '-m', '[#%s] - Push to RE' % newforge_num, tag, 'master')
+    print "Let's make a matching tag in the forge-classic repo:"
+    command('git', '--git-dir=%s' % classic_path, 'tag', '-a', '-m', '[#%s] - Push to RE' % newforge_num, tag, 'master')
     command('git', 'push', 'origin', 'master')
-    command('git', 'push', 'live', 'master')
     command('git', 'push', '--tags', 'origin')
+    command('git', 'push', 'live', 'master')
     command('git', 'push', '--tags', 'live')
+
+    command('git', '--git-dir=%s' % classic_path, 'push', 'origin', 'master')
+    command('git', '--git-dir=%s' % classic_path, 'push', '--tags', 'origin')
+    command('git', '--git-dir=%s' % classic_path, 'push', 'live', 'master')
+    command('git', '--git-dir=%s' % classic_path, 'push', '--tags', 'live')
     raw_input('Now go to the sog-engr channel and let them know that %s is ready'
               ' for pushing (include the JIRA ticket #' % tag)
     raw_input('Make sure SOG restarted reactors and web services.')
@@ -71,16 +80,13 @@ def make_ticket_text(engineer):
     print 'Tickets:\n%s' % changes
     prelaunch = []
     postlaunch = []
-    needs_reactor_setup = raw_input('Does this release require a reactor_setup? [n]')
     needs_flyway = raw_input('Does this release require a migration? [y]')
-    if needs_reactor_setup[:1].lower() in ('y', '1'):
-        postlaunch.append('* service reactor stop')
-        postlaunch.append('* allurapaste reactor_setup /var/local/config/production.ini')
-        postlaunch.append('* service reactor start')
+    needs_ensure_index = raw_input('Does this release require ensure_index? [y]')
     if needs_flyway[:1].lower() in ('', 'y', '1'):
         prelaunch.append('* dump the database in case we need to roll back')
         postlaunch.append('* allurapaste flyway --url mongo://sfn-mongo:27017/')
-    postlaunch.append('* allurapaste ensure_index /var/local/config/production.ini')
+    if needs_ensure_index[:1].lower() in ('', 'y', '1'):
+        postlaunch.append('* allurapaste ensure_index /var/local/config/production.ini')
     if postlaunch:
         postlaunch = [ 'From sfu-scmprocess-1 do the following:\n' ] + postlaunch
         postlaunch = '\n'.join(postlaunch)
@@ -163,6 +169,8 @@ $postlaunch
 
 (engr) Approved for release (Dean/Dave/John): None
 (sog) Outcome of sync:
+
+reference: 
 }}}''')
 
 if __name__ == '__main__':
