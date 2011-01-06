@@ -159,6 +159,9 @@ def validate_html5(html_or_response):
         
 def validate_html5_chunk(html):
         """ When you don't have a html & body tags - this adds it"""
+        doctype = '<!DOCTYPE html>'
+        if html.startswith(doctype):
+            html = html[len(doctype):]
         html = '''<!DOCTYPE html> 
         <html> 
         <head><title></title></head> 
@@ -226,7 +229,7 @@ class ValidatingTestApp(TestApp):
         content_type = resp.headers['Content-Type']
         if content_type.startswith('text/html'):
             if val_params['validate_chunk']:
-                validate_html5_chunk(resp)
+                validate_html5_chunk(content)
             else:
                 validate_page(resp)
         elif content_type.split(';', 1)[0] in ('text/plain', 'text/x-python', 'application/octet-stream'):

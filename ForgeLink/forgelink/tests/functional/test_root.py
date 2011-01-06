@@ -12,7 +12,7 @@ class TestRootController(TestController):
         assert 'Link is not configured' in response
 
     def test_root_index_with_url(self):
-        response = self.app.get('/admin/link/options')
+        response = self.app.get('/admin/link/options', validate_chunk=True)
         response.form['url'] = 'http://www.google.com/'
         response.form.submit()
         redirected = self.app.get('/link/index').follow()
