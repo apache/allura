@@ -24,7 +24,7 @@ def main():
     if project is None:
         log.fatal('Project %s not found', pname)
         return 2
-    if sys.argv[2] == 'test':
+    if len(sys.argv) == 3:
         log.info('Test mode, not purging project')
     else:
         purge_project(project)
