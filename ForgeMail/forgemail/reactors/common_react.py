@@ -79,6 +79,14 @@ def send_email(routing_key, data):
     addrs_plain = []
     addrs_html = []
     addrs_multi = []
+    fromaddr = data['from']
+    if '@' not in fromaddr:
+        user = M.User.query.get(_id=ObjectId(fromaddr))
+        if not user:
+            log.warning('Cannot find user with ID %s', fromaddr)
+            fromaddr = 'noreply@in.sf.net'
+        else:
+            fromaddr = user.email_address_header()
     # Divide addresses based on preferred email formats
     for addr in data['destinations']:
         if '@' in addr:
@@ -109,7 +117,7 @@ def send_email(routing_key, data):
     multi_msg = util.make_multipart_message(plain_msg, html_msg)
     smtp_client.sendmail(
         addrs_multi,
-        data['from'],
+        fromaddr,
         data['reply_to'],
         data['subject'],
         data['message_id'],
@@ -117,7 +125,7 @@ def send_email(routing_key, data):
         multi_msg)
     smtp_client.sendmail(
         addrs_plain,
-        data['from'],
+        fromaddr,
         data['reply_to'],
         data['subject'],
         data['message_id'],
@@ -125,7 +133,7 @@ def send_email(routing_key, data):
         plain_msg)
     smtp_client.sendmail(
         addrs_html,
-        data['from'],
+        fromaddr,
         data['reply_to'],
         data['subject'],
         data['message_id'],

@@ -109,6 +109,13 @@ def _parse_message_id(msgid):
     return [ mo.group(1)
              for mo in RE_MESSAGE_ID.finditer(msgid) ]
 
+def _parse_smtp_addr(addr):
+    addr = str(addr)
+    addrs = _parse_message_id(addr)
+    if addrs: return addrs[0]
+    if '@' in addr: return addr
+    return 'noreply@in.sf.net'
+
 class SMTPClient(object):
 
     def __init__(self):
@@ -131,10 +138,10 @@ class SMTPClient(object):
             message['In-Reply-To'] = Header(in_reply_to, charset)
         content = message.as_string()
         try:
-            self._client.sendmail(addrfrom, addrs, content)
+            self._client.sendmail(_parse_smtp_addr(addrfrom), map(_parse_smtp_addr, addrs), content)
         except:
             self._connect()
-            self._client.sendmail(addrfrom, addrs, content)
+            self._client.sendmail(_parse_smtp_addr(addrfrom), map(_parse_smtp_addr, addrs), content)
 
     def _connect(self):
         if asbool(tg.config.get('smtp_ssl', False)):
