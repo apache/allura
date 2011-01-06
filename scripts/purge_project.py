@@ -26,7 +26,9 @@ def main():
         return 2
     if sys.argv[2] == 'test':
         log.info('Test mode, not purging project')
-    purge_project(project)
+    else:
+        purge_project(project)
+    return 0
 
 def purge_project(project):
     gid = project.tool_data.get('sfx', {}).get('group_id', project._id)
