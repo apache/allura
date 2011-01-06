@@ -27,38 +27,38 @@ log = logging.getLogger(__name__)
 class RepositoryImplementation(object):
 
     # Repository-specific code
-    def init(self):
+    def init(self): # pragma no cover
         raise NotImplementedError, 'init'
 
-    def clone_from(self, source_path):
+    def clone_from(self, source_path): # pragma no cover
         raise NotImplementedError, 'clone_from'
 
-    def commit(self, revision):
+    def commit(self, revision): # pragma no cover
         raise NotImplementedError, 'commit'
 
-    def new_commits(self, all_commits=False):
+    def new_commits(self, all_commits=False): # pragma no cover
         '''Return any commit object_ids in the native repo that are not (yet) stored
         in the database in topological order (parents first)'''
         raise NotImplementedError, 'commit'
 
-    def commit_context(self, object_id):
+    def commit_context(self, object_id): # pragma no cover
         '''Returns {'prev':Commit, 'next':Commit}'''
         raise NotImplementedError, 'context'
 
-    def refresh_heads(self):
+    def refresh_heads(self): # pragma no cover
         '''Sets repository metadata such as heads, tags, and branches'''
         raise NotImplementedError, 'refresh_heads'
 
-    def refresh_commit(self, ci, seen_object_ids):
+    def refresh_commit(self, ci, seen_object_ids): # pragma no cover
         '''Refresh the data in the commit object 'ci' with data from the repo'''
-        raise NotImplementedError, 'refresh_heads'
+        raise NotImplementedError, 'refresh_commit'
 
-    def _setup_receive_hook(self):
+    def _setup_receive_hook(self): # pragma no cover
         '''Install a hook in the repository that will ping the refresh url for
         the repo'''
         raise NotImplementedError, '_setup_receive_hook'
 
-    def log(self, object_id, skip, count):
+    def log(self, object_id, skip, count): # pragma no cover
         '''Return a list of object_ids beginning at the given commit ID and continuing
         to the parent nodes in a breadth-first traversal.  Also return a list of 'next commit' options
         (these are candidates for he next commit after 'count' commits have been
@@ -69,7 +69,7 @@ class RepositoryImplementation(object):
         '''Used in hg and svn to compute a git-like-tree lazily'''
         raise NotImplementedError, 'compute_tree'
 
-    def open_blob(self, blob):
+    def open_blob(self, blob): # pragma no cover
         '''Return a file-like object that contains the contents of the blob'''
         raise NotImplementedError, 'open_blob'
 
@@ -125,7 +125,7 @@ class Repository(Artifact):
                 kw['url_path'] = pylons.c.project.url()
         super(Repository, self).__init__(**kw)
 
-    def __repr__(self):
+    def __repr__(self): # pragma no cover
         return '<%s %s>' % (
             self.__class__.__name__,
             self.full_fs_path)
@@ -165,7 +165,7 @@ class Repository(Artifact):
             ci = self.commit(branch)
             if ci is None: return 0
             return ci.count_revisions()
-        except:
+        except: # pragma no cover
             log.exception('Error getting repo count')
             return 0
 
@@ -173,7 +173,7 @@ class Repository(Artifact):
         if self._impl is None: return None
         try:
             return self.commit(branch)
-        except:
+        except: # pragma no cover
             return None
 
     def url(self):
@@ -193,12 +193,12 @@ class Repository(Artifact):
     def full_fs_path(self):
         return os.path.join(self.fs_path, self.name)
 
-    def scm_host(self):
-        return self.tool + config.get('scm.host', '.' + pylons.request.host)
-
     @property
     def scm_url_path(self):
         return self.scm_host() + self.url_path + self.name
+
+    def scm_host(self):
+        return self.tool + config.get('scm.host', '.' + pylons.request.host)
 
     def merge_requests_by_statuses(self, *statuses):
         return MergeRequest.query.find(dict(
@@ -238,7 +238,7 @@ class Repository(Artifact):
         i=0
         seen_object_ids = set()
         for i, oid in enumerate(commit_ids):
-            if len(seen_object_ids) > 10000:
+            if len(seen_object_ids) > 10000: # pragma no cover
                 log.info('... flushing seen object cache')
                 seen_object_ids = set()
             ci, isnew = Commit.upsert(oid)
@@ -384,7 +384,7 @@ class MergeRequest(VersionedArtifact):
                 r = cls(request_number=num, **kw)
                 session(r).flush(r)
                 return r
-            except pymongo.errors.DuplicateKeyError:
+            except pymongo.errors.DuplicateKeyError: # pragma no cover
                 session(r).expunge(r)
                 num += 1
 
@@ -419,7 +419,7 @@ class LastCommitFor(MappedClass):
             r = cls(repo_id=repo_id, object_id=object_id)
             session(r).flush(r)
             isnew = True
-        except pymongo.errors.DuplicateKeyError:
+        except pymongo.errors.DuplicateKeyError: # pragma no cover
             session(r).expunge(r)
             r = cls.query.get(repo_id=repo_id, object_id=object_id)
         return r, isnew
@@ -455,7 +455,7 @@ class RepoObject(MappedClass):
                 object_id=object_id)
             session(r).flush(r)
             isnew = True
-        except pymongo.errors.DuplicateKeyError:
+        except pymongo.errors.DuplicateKeyError: # pragma no cover
             session(r).expunge(r)
             r = cls.query.get(object_id=object_id)
         return r, isnew
@@ -500,7 +500,7 @@ class RepoObject(MappedClass):
     def index_id(self):
         return repr(self)
 
-    def set_context(self, context):
+    def set_context(self, context): # pragma no cover
         '''Set ephemeral (unsaved) attributes based on a context object'''
         raise NotImplementedError, 'set_context'
 
@@ -581,7 +581,7 @@ class Commit(RepoObject):
         if self.tree_id is None:
             self.tree_id = self.repo.compute_tree(self)
         t = Tree.query.get(object_id=self.tree_id)
-        t.set_context(self)
+        if t is not None: t.set_context(self)
         return t
 
     @LazyProperty
@@ -601,11 +601,6 @@ class Commit(RepoObject):
 
     def url(self):
         return self.repo.url_for_commit(self)
-
-    def dump_ref(self):
-        return CommitReference(
-            commit_class=self.__class__,
-            object_id=self.object_id)
 
     def log(self, skip, count):
         oids = list(self.log_iter(skip, count))
@@ -663,11 +658,6 @@ class Commit(RepoObject):
                     obj.set_last_commit(self, self.repo)
                 elif diff.is_delete:
                     self.diffs.removed.append(diff.a_path)
-                elif diff.is_copy:
-                    self.diffs.copied.append(dict(
-                            old=diff.a_path, new=diff.b_path))
-                    obj = RepoObject.query.get(object_id=diff.b_object_id)
-                    obj.set_last_commit(self, self.repo)
                 else:
                     self.diffs.changed.append(diff.a_path)
                     obj = RepoObject.query.get(object_id=diff.b_object_id)
@@ -948,22 +938,11 @@ class Blob(RepoObject):
         differ = SequenceMatcher(v0, v1)
         return differ.get_opcodes()
 
-class CommitReference(object):
-    def __init__(self, commit_class, commit_id):
-        self.commit_class = commit_class
-        self.commit_id = commit_id
-
-    @property
-    def artifact(self):
-        return self.commit_class.query.get(
-            commit_id=self.commit_id)
-
 class DiffObject(object):
     a_path = b_path = None
     a_object_id = b_object_id = None
     is_new = False
     is_delete = False
-    is_copy = False
 
     def __init__(self, a, b):
         if a:
@@ -982,9 +961,6 @@ class DiffObject(object):
             return '<new %s>' % self.b_path
         elif self.is_delete:
             return '<remove %s>' % self.a_path
-        elif self.is_copy:
-            return '<copy %s to %s>' % (
-                self.a_path, self.b_path)
         else:
             return '<change %s>' % (self.a_path)
 

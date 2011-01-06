@@ -138,10 +138,16 @@ class SMTPClient(object):
             message['In-Reply-To'] = Header(in_reply_to, charset)
         content = message.as_string()
         try:
-            self._client.sendmail(_parse_smtp_addr(addrfrom), map(_parse_smtp_addr, addrs), content)
+            self._client.sendmail(
+                _parse_smtp_addr(addrfrom),
+                map(_parse_smtp_addr, addrs),
+                content)
         except:
             self._connect()
-            self._client.sendmail(_parse_smtp_addr(addrfrom), map(_parse_smtp_addr, addrs), content)
+            self._client.sendmail(
+                _parse_smtp_addr(addrfrom),
+                map(_parse_smtp_addr, addrs),
+                content)
 
     def _connect(self):
         if asbool(tg.config.get('smtp_ssl', False)):

@@ -304,7 +304,7 @@ class SVNImplementation(M.RepositoryImplementation):
                         # Directory copy
                         src_path = path['copyfrom_path']
                         src_ci = self._repo.commit(path['copyfrom_revision'].number)
-                        src_tree = src_ci.tree.get_object(*src_path[1:].split('/'))
+                        src_tree = src_ci.tree.get_object(*src_path.split('/'))
                         root.set_tree(path.path, GitLikeTree.from_tree(src_tree))
                     else:
                         # Create empty directory

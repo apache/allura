@@ -13,7 +13,7 @@ from .filesystem import File
 from .tag import TagEvent, Tag, UserTags
 from .notification import Notification, Mailbox
 from .repository import Repository, RepositoryImplementation, RepoObject, Commit, Tree, Blob
-from .repository import CommitReference, LogCache, LastCommitFor, MergeRequest
+from .repository import LogCache, LastCommitFor, MergeRequest
 from .stats import Stats
 from .import_batch import ImportBatch
 from .oauth import OAuthToken, OAuthConsumerToken, OAuthRequestToken, OAuthAccessToken
