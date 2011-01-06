@@ -13,14 +13,14 @@
     {% for tool in installable_tools %}
       <span class="tcenter grid-4">
         <a class="install_trig" data-tool="{{ tool['name'] }}">
-          <h3>{{ tool['app'].tool_label }}{{' (%s)' % tool.app.status if tool.app.status != 'production' else ''}}</h3>
-          <img src="{{ g.theme.app_icon_url(tool['app'], 32) }}">
+          <span class="tool_title">{{ tool['app'].tool_label }}{{' (%s)' % tool.app.status if tool.app.status != 'production' else ''}}</span><br />
+          <img src="{{ g.theme.app_icon_url(tool['app'], 32) or 'unk.png' }}">
         </a>
       </span>
     {% endfor %}
     <span class="tcenter grid-4">
       <a class="install_trig" data-tool="">
-        <h3>Subproject</h3>
+        <span class="tool_title">Subproject</span><br />
         <img src="{{ g.theme.app_icon_url('subproject', 32) }}">
       </a>
     </span>
@@ -29,9 +29,9 @@
     <input type="hidden" name="new.ordinal" value="{{installable_tools|length + c.project.direct_subprojects|length}}"/>
     <input type="hidden" name="new.ep_name" class="new_ep_name">
     <label class="grid-4">Label</label>
-    <div class="grid-9"><input name="new.mount_label" class="new_mount_label"></div>
+    <div class="grid-9"><input type="text" name="new.mount_label" class="new_mount_label"></div>
     <label class="grid-4">Mount Point</label>
-    <div class="grid-9"><input name="new.mount_point" class="new_mount_point"></div>
+    <div class="grid-9"><input type="text" name="new.mount_point" class="new_mount_point"></div>
     <div class="grid-13">&nbsp;</div>
     <hr>
     <div class="grid-13">&nbsp;</div>
@@ -55,7 +55,7 @@
             <div class="fleft">
                 <ul class="deck">
                     <li class="tcenter">
-                        <h3>{{ label }}</h3>
+                        <span class="tool_title">{{ label }}</span><br />
                         <img src="{{ g.theme.app_icon_url(app, 48) }}">
                     </li>
                     {% for link in links %}
@@ -75,17 +75,18 @@
                         {% endif %}
                       </form>
                     </li>
-                    {% else %}
-                      <input type="hidden" class="mount_point" value="{{mount['ac'].options.mount_point}}"/>
                     {% endif %}
                 </ul>
+                {% if not app.installable %}
+                  <input type="hidden" class="mount_point" value="{{mount['ac'].options.mount_point}}"/>
+                {% endif %}
             </div>
         {% endif %}
         {% if 'sub' in mount and not mount['sub'].deleted %}
             <div class="fleft">
                 <ul class="deck">
                     <li class="tcenter">
-                        <h3>{{ mount['sub'].name }}</h3>
+                        <span class="tool_name">{{ mount['sub'].name }}</span><br />
                         <img src="{{ g.theme.app_icon_url('subproject', 48) }}">
                     </li>
                     <li>
@@ -116,13 +117,14 @@
 </form>
 {{c.admin_modal.display(content='<h1 id="popup_title"></h1><div id="popup_contents"></div>')}}
 {{c.mount_delete.display(content='<h1>Confirm Delete</h1>')}}
+<div><!--dummy-->
 {% endblock %}
 
 {% block extra_js %}
 <script type="text/javascript">
 var defaults = {
   {% for tool in installable_tools %}
-    '{{tool.name}}':{'default_label':'{{tool.app.default_mount_label}}','default_mount':'{{tool.app.default_mount_point}}'},
+    '{{tool.name}}':{'default_label':'{{tool.app.default_mount_label}}','default_mount':'{{tool.app.default_mount_point}}'}{% if not loop.last %},{% endif %}
   {% endfor %}
 };
 // Install popup
@@ -135,14 +137,13 @@ var install_tool_label = $('#install_tool_label');
 install_popup.append(install_form.show());
 $('a.install_trig').click(function () {
   var datatool = $(this).attr('data-tool');
-  if(datatool){
+  if (datatool) {
     var tool = defaults[datatool];
     install_tool_label.html(tool.default_label);
     new_ep_name.val(datatool);
     new_mount_point.val(tool.default_mount);
     new_mount_label.val(tool.default_label);
-  }
-  else{
+  } else {
     install_tool_label.html("Subproject");
     new_ep_name.val('');
     new_mount_point.val('');
@@ -152,7 +153,7 @@ $('a.install_trig').click(function () {
 // Edit popup
 var $popup_title = $('#popup_title');
 var $popup_contents = $('#popup_contents');
-$('a.admin_modal').click(function(){
+$('a.admin_modal').click(function () {
   var link = this;
   $popup_title.html('');
   $popup_contents.html('Loading...');
@@ -166,11 +167,11 @@ var form_to_delete = null;
 var mount_delete_popup = $('#lightbox_mount_delete');
 var mount_delete_form = $('#mount_delete_form');
 mount_delete_popup.append(mount_delete_form.show());
-mount_delete_form.find('.continue_delete').click(function(){
+mount_delete_form.find('.continue_delete').click(function () {
   form_to_delete.submit();
   form_to_delete = null;
 });
-mount_delete_form.find('.cancel_delete').click(function(){
+mount_delete_form.find('.cancel_delete').click(function () {
   form_to_delete = null;
 });
 $('a.mount_delete').click(function () {
@@ -180,21 +181,21 @@ $('a.mount_delete').click(function () {
 // sorting
 $('#sortable').sortable({items: ".fleft"}).bind( "sortupdate", function (e) {
   var sortables = $('#sortable .fleft');
-  var tools = 0
-  var subs = 0
-  var params = {}
-  for(var i=0,len=sortables.length; i<len; i++){
-    var item = $(sortables[i])
+  var tools = 0;
+  var subs = 0;
+  var params = {};
+  for (var i = 0, len = sortables.length; i < len; i++) {
+    var item = $(sortables[i]);
     var mount_point = item.find('input.mount_point');
     var shortname = item.find('input.shortname');
-    if(mount_point.length){
-      params['tools-'+tools+'.mount_point']=mount_point.val();
-      params['tools-'+tools+'.ordinal']=i;
+    if (mount_point.length) {
+      params['tools-' + tools + '.mount_point'] = mount_point.val();
+      params['tools-' + tools + '.ordinal'] = i;
       tools++;
     }
-    if(shortname.length){
-      params['subs-'+subs+'.shortname']=shortname.val();
-      params['subs-'+subs+'.ordinal']=i;
+    if (shortname.length) {
+      params['subs-' + subs + '.shortname'] = shortname.val();
+      params['subs-' + subs + '.ordinal'] = i;
       subs++;
     }
   }
@@ -205,7 +206,7 @@ $('#sortable').sortable({items: ".fleft"}).bind( "sortupdate", function (e) {
 
 {% block extra_css %}
 <style type="text/css">
-.pad .fourcol .fleft{
+.pad .fourcol .fleft {
   min-height: 200px;
 }
 </style>

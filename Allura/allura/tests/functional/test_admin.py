@@ -127,7 +127,7 @@ class TestProjectAdmin(TestController):
     def test_tool_list(self):
         r = self.app.get('/admin/tools')
         new_ep_opts = r.html.findAll('a',{'class':"install_trig"})
-        strings = [ ' '.join(opt.find('h3').string.strip().split()) for opt in new_ep_opts ]
+        strings = [ ' '.join(opt.find('span').string.strip().split()) for opt in new_ep_opts ]
         assert_equals(strings, [
             'External Link',
             'Git',

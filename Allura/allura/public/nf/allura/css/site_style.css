@@ -285,7 +285,7 @@ a:visited {
   color: #006699;
 }
 
-h1, h2, h3, h4, h5, h6, #site-header nav, #site-footer {
+h1, h2, h3, h4, h5, h6, #site-header nav, #site-footer, .tool_title {
   font-family: "TitilliumText22Bold", sans-serif;
   font-weight: normal;
   text-transform: uppercase;
