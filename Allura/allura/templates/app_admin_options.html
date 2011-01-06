@@ -6,7 +6,7 @@
       {% if not allow_config %}
            {{app.config.options.get(o.name, o.default)}}
       {% else%}
-        <input name="{{o.name}}" value="{{app.config.options.get(o.name, o.default)}}">
+        <input id="{{o.name}}" name="{{o.name}}" value="{{app.config.options.get(o.name, o.default)}}">
       {% endif %}  
     </div>
   {% else %}
