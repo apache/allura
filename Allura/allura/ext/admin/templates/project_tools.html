@@ -115,11 +115,11 @@
                 {% endif %}
               </tr>
               {% endfor %}
-              <form method="post" action="update_mounts">
-                <input type="hidden" name="new.ordinal" value="{{installable_tools|length + c.project.direct_subprojects|length}}"/>
-                {% if h.has_project_access('tool')() %}
+              {% if h.has_project_access('tool')() %}
                 <tr>
                   <td>
+                  <form id="new_tool_form" method="post" action="update_mounts">
+                   <input type="hidden" name="new.ordinal" value="{{installable_tools|length + c.project.direct_subprojects|length}}"/>
                     <select name="new.ep_name" class="new_ep_name">
                         <option value="" disabled="disabled">New Tool</option>
                         {% for tool in installable_tools %}
@@ -129,19 +129,28 @@
                         {% endfor %}
                         <option value="">Subproject</option>
                     </select>
+                    <input type="hidden" name="new.mount_point" id="new_mount_point_id" value="" />
+                    <input type="hidden" name="new.mount_label" id="new_mount_label_id" value="" />
+                    <input type="hidden" value="Install" name="new.install" />
+                  </form>
                   </td>
                   <td>
-                    <input name="new.mount_point" class="new_mount_point"/>
+                    <form>
+                    <input name="new.mount_point_vis" class="new_mount_point"/>
+                    </form>
                   </td>
                   <td>
-                    <input name="new.mount_label" class="new_mount_label"/>
+                   <form>
+                    <input name="new.mount_label_vis" class="new_mount_label"/>
+                   </form>
                   </td>
                   <td colspan="2">
-                    <input type="submit" value="Install" name="new.install"/>
+                   <form>
+                    <input type="button" id="install_button" value="Install" name="new.install"/>
+                   </form>
                   </td>
                 </tr>
-                {% endif %}
-              </form>
+              {% endif %}
             </tbody>
           </table>
           {% if h.has_project_access('tool')() %}
@@ -197,6 +206,14 @@
         $.post('update_mount_order', params, function () {
             location.reload();
         });
+      });
+      $('#install_button').click(function (e) {
+        var row = $(this).closest('tr');
+        var mount = row.find('input.new_mount_point').val();
+        var label = row.find('input.new_mount_label').val();
+        $('#new_mount_point_id').val(mount);
+        $('#new_mount_label_id').val(label);
+        $('#new_tool_form').submit();
       });
       $("#delete-confirm").dialog({
         resizable: false,
