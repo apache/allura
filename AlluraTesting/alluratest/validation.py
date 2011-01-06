@@ -123,12 +123,17 @@ def validate_html5(html_or_response):
         params = [("out","text"),("content",html)]
         datagen, headers = multipart_encode(params)
         request = urllib2.Request("http://html5.validator.nu/", datagen, headers)
-        try:
-            resp = urllib2.urlopen(request, timeout=3).read()
-        except:
-            resp = "Couldn't connect to validation service to check the HTML"
-            sys.stderr.write('WARNING: ' + resp + '\n')
-            #ok_(False, "Couldn't connect to validation service to check the HTML") 
+        count = 3
+        while True:
+            try:
+                resp = urllib2.urlopen(request, timeout=3).read()
+                break
+            except:
+                resp = "Couldn't connect to validation service to check the HTML"
+                count -= 1
+                if count == 0:
+                    sys.stderr.write('WARNING: ' + resp + '\n')
+                    break
         
         resp = resp.replace('“','"').replace('”','"').replace('–','-')
         
