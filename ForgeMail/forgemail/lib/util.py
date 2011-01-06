@@ -24,7 +24,7 @@ def Header(text, charset):
     '''Helper to make sure we don't over-encode headers
 
     (gmail barfs with encoded email addresses.)'''
-    if isinstance(text, Header):
+    if isinstance(text, header.Header):
         return text
     h = header.Header('', charset)
     for word in text.split(' '):
