@@ -249,11 +249,11 @@ class TestRootController(TestController):
         self.app.get('/wiki/TEST/update?title=TEST&text=sometext&tags=&tags_old=&labels=&labels_old=&viewable_by-0.id=all')
         wiki_page = self.app.get('/wiki/TEST/')
         assert wiki_page.html.find('div',{'id':'new_post_holder'})
-        options_admin = self.app.get('/admin/wiki/options')
+        options_admin = self.app.get('/admin/wiki/options', validate_chunk=True)
         assert options_admin.form['show_discussion'].checked
         options_admin.form['show_discussion'].checked = False
         options_admin.form.submit()
-        options_admin2 = self.app.get('/admin/wiki/options')
+        options_admin2 = self.app.get('/admin/wiki/options', validate_chunk=True)
         assert not options_admin2.form['show_discussion'].checked
         wiki_page2 = self.app.get('/wiki/TEST/')
         assert not wiki_page2.html.find('div',{'id':'new_post_holder'})
@@ -262,11 +262,11 @@ class TestRootController(TestController):
         self.app.get('/wiki/TEST/update?title=TEST&text=sometext&tags=&tags_old=&labels=&labels_old=&viewable_by-0.id=all')
         wiki_page = self.app.get('/wiki/TEST/')
         assert wiki_page.html.find('ul',{'class':'sidebarmenu'})
-        options_admin = self.app.get('/admin/wiki/options')
+        options_admin = self.app.get('/admin/wiki/options', validate_chunk=True)
         assert options_admin.form['show_left_bar'].checked
         options_admin.form['show_left_bar'].checked = False
         options_admin.form.submit()
-        options_admin2 = self.app.get('/admin/wiki/options')
+        options_admin2 = self.app.get('/admin/wiki/options', validate_chunk=True)
         assert not options_admin2.form['show_left_bar'].checked
         wiki_page2 = self.app.get('/wiki/TEST/',extra_environ=dict(username='*anonymous'))
         assert not wiki_page2.html.find('ul',{'class':'sidebarmenu'})
@@ -277,11 +277,11 @@ class TestRootController(TestController):
         self.app.get('/wiki/TEST/update?title=TEST&text=sometext&tags=&tags_old=&labels=&labels_old=&viewable_by-0.id=all')
         wiki_page = self.app.get('/wiki/TEST/')
         assert wiki_page.html.find('div',{'id':'sidebar-right'})
-        options_admin = self.app.get('/admin/wiki/options')
+        options_admin = self.app.get('/admin/wiki/options', validate_chunk=True)
         assert options_admin.form['show_right_bar'].checked
         options_admin.form['show_right_bar'].checked = False
         options_admin.form.submit()
-        options_admin2 = self.app.get('/admin/wiki/options')
+        options_admin2 = self.app.get('/admin/wiki/options', validate_chunk=True)
         assert not options_admin2.form['show_right_bar'].checked
         wiki_page2 = self.app.get('/wiki/TEST/')
         assert not wiki_page2.html.find('div',{'id':'sidebar-right'})
