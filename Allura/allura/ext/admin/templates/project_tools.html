@@ -136,12 +136,12 @@
                   </td>
                   <td>
                     <form>
-                    <input name="new.mount_point_vis" class="new_mount_point"/>
+                    <input type="text" name="new.mount_point_vis" class="new_mount_point"/>
                     </form>
                   </td>
                   <td>
                    <form>
-                    <input name="new.mount_label_vis" class="new_mount_label"/>
+                    <input type="text" name="new.mount_label_vis" class="new_mount_label"/>
                    </form>
                   </td>
                   <td colspan="2">
@@ -164,12 +164,12 @@
     var form_to_delete = null;
     var defaults = {
       {% for tool in installable_tools %}
-        '{{tool.name}}':{'default_label':'{{tool.app.default_mount_label}}','default_mount':'{{tool.app.default_mount_point}}'},
+        '{{tool.name}}':{'default_label':'{{tool.app.default_mount_label}}','default_mount':'{{tool.app.default_mount_point}}'}{% if not loop.last %},{% endif %}
       {% endfor %}
     };
     $('select.new_ep_name').change(function () {
       var tool = defaults[$(this).val()];
-      var row = $(this).closest('tr')
+      var row = $(this).closest('tr');
       row.find('input.new_mount_point').val(tool.default_mount);
       row.find('input.new_mount_label').val(tool.default_label);
     });
@@ -179,27 +179,27 @@
       $('#tool_admin').sortable({
         items: 'tr.sortables',
         axis: 'y',
-        update: function(e){
+        update: function(e) {
           $('#save_order').show();
         }
       });
       $('#save_order').click(function (e) {
         var sortables = $('#tool_admin .sortables');
-        var tools = 0
-        var subs = 0
-        var params = {}
-        for(var i=0,len=sortables.length; i<len; i++){
-          var item = $(sortables[i])
+        var tools = 0;
+        var subs = 0;
+        var params = {};
+        for (var i=0, len=sortables.length; i<len; i++) {
+          var item = $(sortables[i]);
           var mount_point = item.find('input.mount_point');
           var shortname = item.find('input.shortname');
-          if(mount_point.length){
-            params['tools-'+tools+'.mount_point']=mount_point.val();
-            params['tools-'+tools+'.ordinal']=i;
+          if (mount_point.length) {
+            params['tools-' + tools + '.mount_point'] = mount_point.val();
+            params['tools-' + tools + '.ordinal'] = i;
             tools++;
           }
-          if(shortname.length){
-            params['subs-'+subs+'.shortname']=shortname.val();
-            params['subs-'+subs+'.ordinal']=i;
+          if (shortname.length) {
+            params['subs-' + subs + '.shortname'] = shortname.val();
+            params['subs-' + subs + '.ordinal'] = i;
             subs++;
           }
         }
