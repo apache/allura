@@ -15,6 +15,8 @@ DEBUG=1
 CP = ConfigParser()
 
 re_ticket_ref = re.compile(r'\[#(\d+)\]')
+re_allura_ref = re.compile(r'\nreference: ')
+re_git_dir = re.compile(r'.*\.git/?\Z')
 
 CRED={}
 
@@ -24,6 +26,8 @@ def main():
     api_key = option('re', 'api_key', 'Forge API Key:')
     secret_key = option('re', 'secret_key', 'Forge Secret Key:')
     classic_path = option('re', 'classic_path', 'The path to your forge-classic repo:')
+    if not re_git_dir.match(classic_path):
+        classic_path += '/.git/'
     CRED['api_key'] = api_key
     CRED['secret_key'] = secret_key
     text, tag = make_ticket_text(engineer)
@@ -38,7 +42,8 @@ def main():
     newforge_num = raw_input('What is the newforge ticket number? ')
     print '*** Create a SOG Trac ticket (https://control.sog.geek.net/sog/trac/newticket?keywords=LIAISON) with the same summary...'
     print '---BEGIN---'
-    print re_ticket_ref.sub('FO:\g<1>', text)
+    sog_text = re_ticket_ref.sub('FO:\g<1>', text)
+    print re_allura_ref.sub('\nreference: https://sourceforge.net/p/allura/tickets/%s/' % newforge_num, sog_text)
     print '---END---'
     raw_input('Now link the two tickets...')
     print "Let's tag the forge repo:"
@@ -73,8 +78,9 @@ def make_ticket_text(engineer):
     else: last_release = ''
     changes = command(
             'git', 'log', "--format=* %h %s", last_release.strip() + '..')
-    assert changes, 'There were no commits found; maybe you forgot to merge dev->master?'
-    changelog = ''.join(changes)
+    if not changes:
+        print 'There were no commits found; maybe you forgot to merge dev->master? (Ctrl-C to abort)'
+    changelog = ''.join(changes or [])
     changes = ''.join(format_changes(changes))
     print 'Changelog:\n%s' % changelog
     print 'Tickets:\n%s' % changes
@@ -100,6 +106,8 @@ def make_ticket_text(engineer):
     return TICKET_TEMPLATE.substitute(locals()), tag
 
 def format_changes(changes):
+    if not changes:
+        return ['-none-']
     ticket_groups = defaultdict(list)
     for change in changes:
         for m in re_ticket_ref.finditer(change):
