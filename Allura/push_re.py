@@ -107,7 +107,7 @@ def make_ticket_text(engineer):
 
 def format_changes(changes):
     if not changes:
-        return ['-none-']
+        yield '-none-'
     ticket_groups = defaultdict(list)
     for change in changes:
         for m in re_ticket_ref.finditer(change):
