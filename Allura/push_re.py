@@ -30,7 +30,7 @@ def main():
         classic_path += '/.git/'
     CRED['api_key'] = api_key
     CRED['secret_key'] = secret_key
-    text, tag = make_ticket_text(engineer)
+    text, tag = make_ticket_text(engineer, classic_path)
     raw_input("Verify that there are no new dependencies, or RPM's are built for all deps...")
     raw_input("Verify that a new sandbox builds starts without engr help...")
     print '*** Create a ticket on SourceForge (https://sourceforge.net/p/allura/tickets/new/) with the following contents:'
@@ -65,7 +65,7 @@ def main():
     CP.write(open(os.path.join(os.environ['HOME'], '.forgepushrc'), 'w'))
     print "You're done!"
 
-def make_ticket_text(engineer):
+def make_ticket_text(engineer, classic_path):
     tag_prefix = date.today().strftime('release_%Y%m%d')
     # get release tag
     existing_tags_today = command('git tag -l %s*' % tag_prefix)
@@ -78,6 +78,8 @@ def make_ticket_text(engineer):
     else: last_release = ''
     changes = command(
             'git', 'log', "--format=* %h %s", last_release.strip() + '..')
+    changes += command(
+            'git', '--git-dir=%s' % classic_path, 'log', "--format=* %h %s", last_release.strip() + '..')
     if not changes:
         print 'There were no commits found; maybe you forgot to merge dev->master? (Ctrl-C to abort)'
     changelog = ''.join(changes or [])
@@ -160,7 +162,7 @@ TICKET_TEMPLATE=string.Template('''{{{
 #!push
 
 (engr) Name of Engineer pushing: $engineer
-(engr) Which code tree(s): allura
+(engr) Which code tree(s): allura, forge-classic
 (engr) Is configtree to be pushed?: no
 (engr) Which release/revision is going to be synced?: $tag
 (engr) Itemized list of changes to be launched with sync:
