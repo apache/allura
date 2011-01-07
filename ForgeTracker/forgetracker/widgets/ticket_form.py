@@ -96,7 +96,7 @@ class TicketCustomField(object):
         return ew.SingleSelectField(label=field.label, name=str(field.name), options=options)
 
     def _milestone(field):
-        options = [ ew.Option(label='None',html_value='',py_value='')]
+        options = []
         for m in field.milestones:
             if not m.complete:
                 options.append(ew.Option(
