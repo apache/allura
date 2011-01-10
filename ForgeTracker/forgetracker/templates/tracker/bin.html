@@ -36,7 +36,7 @@
             <td><a href="{{bin.url()}}">{{bin.summary}}</a></td>
             <td>{{bin.terms}}</td>
             <td>
-              <a href="delbin?summary={{bin.summary}}" class="btn">Delete</a>
+              <a href="delbin?summary={{h.urlquote(bin.summary)}}" class="btn">Delete</a>
               <a href="#" class="btn bin_edit_activate">Edit</a>
               <input type="hidden" name="summary" value="{{bin.summary}}">
               <input type="hidden" name="terms" value="{{bin.terms}}">

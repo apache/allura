@@ -36,6 +36,9 @@ def monkeypatch(obj):
         setattr(obj, func.__name__, func)
     return patchit
 
+def urlquote(url):
+    return urllib.quote_plus(url)
+
 def really_unicode(s):
     if s is None: return u''
     # try naive conversion to unicode
