@@ -1,0 +1,162 @@
+{% extends g.theme.master %}
+
+{% block title %}{{c.project.name}} / {{c.app.config.options.mount_label}} / Markdown Syntax{% endblock %}
+
+{% block header %}Markdown Syntax{% endblock %}
+
+{% block content %}
+<h1>Quick Markdown Syntax Guide</h1>
+<p>The Allura code uses markdown syntax everywhere to allow you to create rich<br>text markup, and extends markdown in several ways to allow for quick linking<br>to other artifacts in your project. </p><p>Markdown was created with one goal in mind: </p>
+<blockquote>
+<p>Markdown is intended to be as easy-to-read and easy-to-write as is feasible.</p>
+</blockquote>
+<p>But the most important goal was to make it readable in its raw plain text <br>format. </p><h2>Links</h2>
+
+<div class="codehilite"><pre>For a URL or email, just write it like this:
+
+&lt;http://someurl&gt;
+
+&lt;somebbob@example.com&gt;
+
+To use text for the link, write it [like this](http://someurl).
+
+You can add a *title* (which shows up under the cursor),
+[like this](http://someurl "this title shows up when you hover").
+</pre></div>
+<h2>Reference Links</h2>
+<div class="codehilite"><pre>You can also put the [link URL][1] below the current paragraph like [this][2].
+
+   [1]: http://url
+   [2]: http://another.url "A funky title"
+
+Here the text "link URL" gets linked to "http://url", and the lines showing
+"[1]: http://url" won't show anything.
+
+Or you can use a [shortcut][] reference, which links the text "shortcut"
+to the link named "[shortcut]" on the next paragraph.
+
+   [shortcut]: http://goes/with/the/link/name/text
+</pre></div>
+<h2>Text</h2>
+<div class="codehilite"><pre>Use * or _ to emphasize things:
+
+*this is in italic*  and _so is this_
+
+**this is in bold**  and __so is this__
+
+***this is bold and italic***  and ___so is this___
+
+Just write paragraphs like in a text file and they will display how you would
+expect.  A blank line separates paragraphs.
+
+So this is a new paragraph. But any text on adjacent lines
+will all end up
+in the same paragraph.
+</pre></div>
+
+<h2>Blockquotes</h2>
+<div class="codehilite"><pre>&gt; Use the &gt; character in front of a line, *just like in email*.
+&gt; Use it if you're quoting a person, a song or whatever.
+
+&gt; You can use *italic* or lists inside them also.
+And just like with other paragraphs,
+all of these lines are still
+part of the blockquote, even without the &gt; character in front.
+
+To end the blockquote, just put a blank line before the following paragraph.
+</pre></div>
+<h2>Preformatted Text</h2>
+<div class="codehilite"><pre>If you want some text to show up exactly as you write it, without Markdown
+doing anything to it, just indent every line by at least 4 spaces (or 1 tab).
+
+    This line won't *have any markdown* formatting applied.
+    I can even write &lt;b&gt;HTML&lt;/b&gt; and it will show up as text.
+    This is great for showing program source code, or HTML or even Markdown.
+    &lt;b&gt;this won't show up as HTML&lt;/b&gt; but exactly &lt;i&gt;as you see it in
+    this text file&lt;/i&gt;.
+
+As a shortcut you can use backquotes to do the same thing while inside
+a normal pargraph.  `This won't be *italic* or **bold** at all.`
+
+</pre></div>
+<h2>Lists</h2>
+<div class="codehilite"><pre>* an asterisk starts an unordered list
+* and this is another item in the list
++ or you can also use the + character
+- or the - character
+
+To start an ordered list, write this:
+
+1. this starts a list *with* numbers
++  this will show as number "2"
+*  this will show as number "3."
+9. any number, +, -, or * will keep the list going.
+    * just indent by 4 spaces (or tab) to make a sub-list
+        1. keep indenting for more sub lists
+    * here i'm back to the second level
+</pre></div>
+<h2>Headers</h2>
+<div class="codehilite"><pre>This is a huge header
+==================
+
+this is a smaller header
+------------------
+
+Just put 1 or more dashes or equals signs (--- or ===) below the title.
+</pre></div>
+<h2>Horizontal Rule</h2>
+<div class="codehilite"><pre>just put three or more *'s or -'s on a line:
+
+----------------
+
+or you can use single spaces between then, like this:
+
+* * *
+
+or
+
+- - - - - - -
+
+Make sure you have a blank line above the dashes, though, or else:
+
+you will get a header
+---
+</pre></div>
+<h2>Images</h2>
+<div class="codehilite"><pre>To include an image, just put a "!" in front of a text link:
+
+![alternate text](http://someurl/image.gif)
+
+The "alternate text" will show up if the browser can't load the image.
+
+You can also use a title if you want, like this:
+
+![tiny arrow](http://greg.vario.us/img/extlink.png "tiny arrow")
+</pre></div>
+
+<h2>Escapes</h2>
+<p>What if you want to just show asterisks, not italics?</p>
+<div class="codehilite"><pre>* this shows up in italics: *a happy day*
+* this shows the asterisks: \*a happy day\*
+</pre></div>
+<p>The backslashes will disappear and leave the asterisks.</p>
+<p>You can do the same with any of the characters that have a special meaning<br>for Markdown.</p><h2>More Headers</h2>
+<div class="codehilite"><pre>More ways of doing headers:
+
+# this is a huge header #
+## this is a smaller header ##
+### this is even smaller ###
+#### more small ####
+##### even smaller #####
+###### smallest still: `&lt;h6&gt;` header
+</pre></div>
+<p>You can use up to 6 <code>#</code> characters at the beginning of the line.<br>
+
+</p>
+<h2>HTML</h2>
+<p>Don't worry about special characters which need to be escaped in html. </p>
+<p>You can write an ampersand &amp; a less-than sign, and they show up expected:  3 &lt; 4.</p>
+<h2>Thanks</h2>
+<p>Thanks to John Gruber and Aaron Swartz for creating Markdown.<br>
+This page is based on some examples from Greg Schueler, <a class="notfound" href="../mailto:greg@vario.us">greg@vario.us</a>
+{% endblock %}

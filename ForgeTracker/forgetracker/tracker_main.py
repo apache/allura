@@ -435,7 +435,7 @@ class RootController(BaseController):
         return dict(action=c.app.config.url()+'save_ticket',
                     super_id=super_id)
 
-    @expose('jinja:tracker/markdown_syntax.html')
+    @expose('jinja:markdown_syntax.html')
     def markdown_syntax(self):
         'Static page explaining markdown.'
         return dict()

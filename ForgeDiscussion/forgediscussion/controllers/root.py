@@ -103,7 +103,7 @@ class RootController(BaseController):
             if results: count=results.hits
         return dict(q=q, history=history, results=results or [], count=count)
 
-    @expose('jinja:discussionforums/markdown_syntax.html')
+    @expose('jinja:markdown_syntax.html')
     def markdown_syntax(self):
         'Static page explaining markdown.'
         return dict()

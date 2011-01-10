@@ -345,7 +345,7 @@ class RootController(BaseController):
         return dict(labels=page_tags, limit=limit, count=count, page=pagenum)
 
     @with_trailing_slash
-    @expose('jinja:wiki/markdown_syntax.html')
+    @expose('jinja:markdown_syntax.html')
     def markdown_syntax(self):
         'Display a page about how to use markdown.'
         return dict(example=MARKDOWN_EXAMPLE)
