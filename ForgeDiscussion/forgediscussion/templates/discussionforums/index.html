@@ -36,7 +36,8 @@
   {% for forum in forums %}
     {% if not forum.deleted or h.has_artifact_access('configure', app=c.app)() %}
       <div class="discussion_forum grid-9">
-        <strong class="forum_name">{{forum.name}}:</strong> {{forum.description}}<br/>
+        <strong class="forum_name">{{forum.name}}:</strong>
+        <br>{{forum.description}}<br>&nbsp;<br>
         {% if forum.deleted %}
           <div class="notice">This forum has been deleted and is not visible to non-admin users</div>
         {% endif %}
@@ -44,7 +45,7 @@
           {% if loop.index0 == 5 %}
             <a href="{{forum.url()}}">More</a>
           {% else %}
-            <p>{{thread.num_replies}} posts to <a href="{{thread.url()}}">{{h.text.truncate(h.really_unicode(thread.subject or '(no subject)'),75)}}</a></p>
+            {{thread.num_replies}} posts to <a href="{{thread.url()}}">{{h.text.truncate(h.really_unicode(thread.subject or '(no subject)'),75)}}</a><br>
           {% endif %}
         {% endfor %}
       </div>
