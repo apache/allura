@@ -11,8 +11,8 @@
 {% block wiki_content %}
 {{c.page_size.display(limit=limit,count=count,page=page)}}
 <form method="get" action="diff">
-  <input type="submit" value="Compare revisions"/>
-  <br/> <br/>
+  <div class="grid-19"><input type="submit" value="Compare revisions"/></div>
+  <div style="clear:both"></div>
   <table>
     <thead>
       <tr>
@@ -31,11 +31,11 @@
           <td>{{h.ago(p.mod_date)}}</td>
           <td><input name="v1" type="radio" value="{{p.version}}"/></td>
           <td><input name="v2" type="radio" value="{{p.version}}"/></td>
-          <td>
-            <a href="./?version={{p.version}}" class="btn">View Revision</a>
+          <td class="tright">
             {% if i != 0 and has_artifact_access('edit', p)() %}
-              <a href="./revert?version={{p.version}}" class="btn">Revert to version {{p.version}}</a>
+              <a href="./revert?version={{p.version}}"><b data-icon="{{g.icons['fork'].char}}" class="ico {{g.icons['fork'].css}}" title="Revert to version {{p.version}}"></b></a>
             {% endif %}
+            <a href="./?version={{p.version}}"><b data-icon="{{g.icons['search'].char}}" class="ico {{g.icons['search'].css}}" title="View Revision"></b></a>
           </td>
         </tr>
         {% set i = i+1 %}
