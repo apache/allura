@@ -12,9 +12,6 @@
       {{c.project.description_html|safe}}
   {% else %} {# has_project_access('update') #}
     <form method="POST" action="update_homepage" enctype="multipart/form-data">
-        <label class="grid-19" for="description"
-               title='This is the contents of the front page, and uses the markdown/HTML syntax similar to the wiki.
-                     This can be as long as you need it to be.'>Content:</label>
         <div class="grid-19">
           {{c.markdown_editor.display(name='description', value=c.project.description)}}
         </div>
