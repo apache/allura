@@ -44,6 +44,8 @@ class Repository(M.Repository):
         if ci is None: return []
         return ci.log(int(skip), int(max_count))
 
+    def compute_diffs(self): return
+
     def count(self, *args, **kwargs):
         return super(Repository, self).count(None)
 
@@ -121,9 +123,12 @@ class SVNImplementation(M.RepositoryImplementation):
         oids = [ self._oid(revno) for revno in range(1, head_revno+1) ]
         if all_commits:
             return oids
-        else:
-            return M.Commit.unknown_commit_ids_in(
-                self._repo._id, oids)
+        # Find max commit id -- everything greater than that will be "unknown"
+        q = M.Commit.query.find(dict(type='commit')).sort('-object_id')
+        last_commit = q.first()
+        if last_commit is None: return oids
+        return [
+            oid for oid in oids if oid > last_commit.object_id ]
 
     def commit_context(self, commit):
         revno = int(commit.object_id.split(':')[1])
@@ -154,17 +159,82 @@ class SVNImplementation(M.RepositoryImplementation):
         ci.message=log_entry.message
         if revno > 1:
             parent_oid = self._oid(revno - 1)
-            parent_ci = self.commit(parent_oid)
             ci.parent_ids = [ parent_oid ]
-        else:
-            parent_ci = None
-        # Save commit tree (must build a fake git-like tree from the log entry)
-        fake_tree = self._tree_from_log(parent_ci, log_entry)
-        ci.tree_id = fake_tree.hex()
-        tree, isnew = M.Tree.upsert(fake_tree.hex())
-        if isnew:
-            tree.set_context(ci)
-            self._refresh_tree(tree, fake_tree)
+        # Save diff info
+        ci.diffs.added = []
+        ci.diffs.removed = []
+        ci.diffs.changed = []
+        ci.diffs.copied = []
+        lst = dict(
+            A=ci.diffs.added,
+            D=ci.diffs.removed,
+            M=ci.diffs.changed,
+            R=ci.diffs.changed)
+        for path in log_entry.changed_paths:
+            if path.copyfrom_path:
+                ci.diffs.copied.append(dict(
+                        old=h.really_unicode(path.copyfrom_path),
+                        new=h.really_unicode(path.path)))
+                continue
+            lst[path.action].append(h.really_unicode(path.path))
+
+    def compute_tree(self, commit, tree_path='/'):
+        tree_path = tree_path[:-1]
+        tree_id = self._tree_oid(commit.object_id, tree_path)
+        tree, isnew = M.Tree.upsert(tree_id)
+        if not isnew: return tree_id
+        log.debug('Computing tree for %s: %s',
+                 self._revno(commit.object_id), tree_path)
+        revno = self._revno(commit.object_id)
+        try:
+            infos = self._svn.info2(
+                self._url + tree_path,
+                revision=pysvn.Revision(
+                    pysvn.opt_revision_kind.number,
+                    revno),
+                depth=pysvn.depth.immediates)
+        except pysvn.ClientError:
+            tree.object_ids = []
+            return tree_id
+        gl_tree = GitLikeTree()
+        log.debug('Compute tree for %d paths', len(infos))
+        for path, info in infos[1:]:
+            if info.kind == pysvn.node_kind.dir:
+                oid = self._tree_oid(commit.object_id, path)
+                gl_tree.set_blob(path, oid)
+            elif info.kind == pysvn.node_kind.file:
+                oid = self._blob_oid(commit.object_id, path)
+                gl_tree.set_blob(path, oid)
+                M.Blob.upsert(oid)
+            else:
+                assert False
+        tree.object_ids = [
+            Object(object_id=oid, name=name)
+            for name, oid in gl_tree.blobs.iteritems() ]
+        # Save last commit info
+        log.debug('Save commit info for %d paths', len(infos))
+        for i, (path, info) in enumerate(infos):
+            if i==0:
+                oid = tree_id
+            else:
+                oid = gl_tree.get_blob(path)
+            lc, isnew = M.LastCommitFor.upsert(repo_id=self._repo._id, object_id=oid)
+            if not isnew: continue
+            lc.last_commit.author = lc.last_commit.author_email = info.last_changed_author
+            lc.last_commit.date = datetime.fromtimestamp(info.last_changed_date)
+            lc.last_commit.id = self._oid(info.last_changed_rev.number)
+            lc.last_commit.href = '%s%d/' % (self._repo.url(), info.last_changed_rev.number)
+            lc.last_commit.shortlink = '[r%d]' % info.last_changed_rev.number
+            lc.last_commit.summary = ''
+        return tree_id
+
+    def _tree_oid(self, commit_id, path):
+        data = 'tree\n%s\n%s' % (commit_id, path)
+        return sha1(data).hexdigest()
+
+    def _blob_oid(self, commit_id, path):
+        data = 'blob\n%s\n%s' % (commit_id, path)
+        return sha1(data).hexdigest()
 
     def log(self, object_id, skip, count):
         revno = self._revno(object_id)
@@ -234,21 +304,6 @@ class SVNImplementation(M.RepositoryImplementation):
                     oid = sha1(data).hexdigest()
                     root.set_blob(h.really_unicode(path.path), oid)
         return root
-
-    def _refresh_tree(self, tree, obj):
-        tree.object_ids=[
-            Object(object_id=o.hex(), name=name)
-            for name, o in obj.trees.iteritems() ]
-        tree.object_ids += [
-            Object(object_id=oid, name=name)
-            for name, oid in obj.blobs.iteritems() ]
-        for name, o in obj.trees.iteritems():
-            subtree, isnew = M.Tree.upsert(o.hex())
-            if isnew:
-                subtree.set_context(tree, name)
-                self._refresh_tree(subtree, o)
-        for name, oid in obj.blobs.iteritems():
-            blob, isnew = M.Blob.upsert(oid)
 
     def _revno(self, oid):
         return int(oid.split(':')[1])

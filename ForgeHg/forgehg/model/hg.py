@@ -119,15 +119,16 @@ class HgImplementation(M.RepositoryImplementation):
         while to_visit:
             obj = to_visit.pop()
             if obj.hex() in graph: continue
+            if not all_commits:
+                # Look up the object
+                if M.Commit.query.find(dict(object_id=obj.hex())).count():
+                    graph[obj.hex()] = set() # mark as parentless
+                    continue
             graph[obj.hex()] = set(
                 p.hex() for p in obj.parents()
                 if p.hex() != obj.hex())
             to_visit += obj.parents()
-        if all_commits:
-            return list(topological_sort(graph))
-        else:
-            return M.Commit.unknown_commit_ids_in(
-                self._repo._id, topological_sort(graph))
+        return list(topological_sort(graph))
 
     def commit_context(self, commit):
         prev_ids = commit.parent_ids

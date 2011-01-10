@@ -65,6 +65,10 @@ class RepositoryImplementation(object):
         exhausted).'''
         raise NotImplementedError, '_log'
 
+    def compute_tree(self, commit, path='/'):
+        '''Used in hg and svn to compute a git-like-tree lazily'''
+        raise NotImplementedError, 'compute_tree'
+
     def open_blob(self, blob):
         '''Return a file-like object that contains the contents of the blob'''
         raise NotImplementedError, 'open_blob'
@@ -139,6 +143,8 @@ class Repository(Artifact):
         return self._impl.shorthand_for_commit(commit)
     def url_for_commit(self, commit):
         return self._impl.url_for_commit(commit)
+    def compute_tree(self, commit, path='/'):
+        return self._impl.compute_tree(commit, path)
 
     def _log(self, rev, skip, max_count):
         ci = self.commit(rev)
@@ -260,6 +266,9 @@ class Repository(Artifact):
             {'$push':dict(repositories=self._id)},
             upsert=False, multi=True)
         self.compute_diffs()
+        log.info('... refreshed repository %s.  Found %d new commits',
+                 self, len(commit_ids))
+        self.status = 'ready'
         for head in self.heads + self.branches + self.tags:
             ci = self.commit(head.object_id)
             if ci is not None:
@@ -287,9 +296,6 @@ class Repository(Artifact):
                  i % self.BATCH_SIZE, i)
         sess.flush()
         sess.clear()
-        log.info('... refreshed repository %s.  Found %d new commits',
-                 self, len(commit_ids))
-        self.status = 'ready'
 
     def push_upstream_context(self):
         project, rest=h.find_project(self.upstream_repo.url)
@@ -572,6 +578,8 @@ class Commit(RepoObject):
 
     @LazyProperty
     def tree(self):
+        if self.tree_id is None:
+            self.tree_id = self.repo.compute_tree(self)
         t = Tree.query.get(object_id=self.tree_id)
         t.set_context(self)
         return t
@@ -675,18 +683,6 @@ class Commit(RepoObject):
     def context(self):
         return self.repo.commit_context(self)
 
-    @classmethod
-    def unknown_commit_ids_in(cls, repo_id, commit_ids):
-        # Get all commit ids in the repo
-        doc_session = session(cls).impl
-        q = doc_session.find(
-            Commit,
-            dict(repo_id=repo_id, type='Commit'),
-            dict(object_id=True))
-        known_commit_ids = set(
-            d['object_id'] for d in q.cursor)
-        return [ cid for cid in commit_ids if cid not in known_commit_ids ]
-
 class Tree(RepoObject):
     README_NAMES=set(['readme.txt','README.txt','README.TXT','README'])
     class __mongometa__:
@@ -743,8 +739,11 @@ class Tree(RepoObject):
             return default
 
     def __getitem__(self, name):
-        oid = self.object_id_index.get(name)
+        oid = self.object_id_index[name]
         obj = RepoObject.query.get(object_id=oid)
+        if obj is None:
+            oid = self.repo.compute_tree(self.commit, self.path() + name + '/')
+            obj = RepoObject.query.get(object_id=oid)
         if obj is None: raise KeyError, name
         obj.set_context(self, name)
         return obj
@@ -1015,6 +1014,23 @@ class GitLikeTree(object):
             cur.trees[last] = tree
         else:
             cur.trees.setdefault(last, tree)
+
+    def get_tree(self, path):
+        if path.startswith('/'): path = path[1:]
+        if not path: return self
+        cur = self
+        for part in path.split('/'):
+            cur = cur.trees[part]
+        return cur
+
+    def get_blob(self, path):
+        if path.startswith('/'): path = path[1:]
+        path_parts = path.split('/')
+        dirpath, last = path_parts[:-1], path_parts[-1]
+        cur = self
+        for part in dirpath:
+            cur = cur.trees[part]
+        return cur.blobs[last]
 
     def set_blob(self, path, oid):
         if path.startswith('/'): path = path[1:]
