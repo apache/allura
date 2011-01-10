@@ -5,8 +5,11 @@
 {% block header %}Browse Pages{% endblock %}
 
 {% block wiki_content %}
-{{c.page_size.display(limit=limit,count=count,page=page)}}
-<p>View: <a id="sort_recent" href="?sort=recent">Recently Updated</a> | <a id="sort_alpha" href="?sort=alpha">Alphabetical</a></p>
+<div class="nested-grid-container">
+  <div class="grid-10">{{c.page_size.display(limit=limit,count=count,page=page)}}</div>
+  <div class="grid-10 tright">View: <a id="sort_recent" href="?sort=recent">Recently Updated</a> | <a id="sort_alpha" href="?sort=alpha">Alphabetical</a>&nbsp;</div>
+</div>
+<div style="clear:both"></div>
 <table id="forge_wiki_browse">
   <thead>
     <tr>
@@ -17,7 +20,7 @@
   </thead>
   <tbody>
     {% for page in pages %}
-      <tr class="{{'deleted' if page.deleted else ''}}">
+      <tr class="{{'deleted ' if page.deleted else ''}}{{loop.cycle('', 'even')}}">
         <td><a href="../{{page['title']+'/'+('?deleted=True' if page.deleted else '')}}">{{page['title']}}</a></td>
       
         {% if 'user_label' in page %}

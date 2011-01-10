@@ -7,9 +7,6 @@ function toggle_deleted( show ){
     var $rows       = $('#forge_wiki_browse tbody > tr'),
         num_deleted = $rows.filter('.deleted').toggle(show).length;
 
-    $rows.filter(':visible').each(function(i){
-        $(this).toggleClass('even', !(i%2))
-    });
     if ( can_delete && num_deleted ) {
         $('#toggle_deleted span').text(show ? 'Hide' : 'Show');
         var suffix = show ? '&show_deleted=True' : '';
