@@ -22,8 +22,13 @@ DFL_APP_NAME = 'main_without_authn'
 
 def get_config_file(config=None):
     if not config:
-        return 'test.ini'
-    return config
+        config = 'test.ini'
+
+    try:
+        conf_dir = tg.config.here
+    except AttributeError:
+        conf_dir = os.getcwd()
+    return os.path.join(conf_dir, config)
 
 def setup_basic_test(config=None, app_name=DFL_APP_NAME):
     '''Create clean environment for running tests'''

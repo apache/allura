@@ -4,7 +4,7 @@ import allura
 
 from nose.tools import assert_true
 
-from alluratest.controller import TestController, get_config_file
+from alluratest.controller import TestController
 from forgewiki import model
 
 # These are needed for faking reactor actions

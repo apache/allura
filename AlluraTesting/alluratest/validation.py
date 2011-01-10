@@ -188,9 +188,25 @@ def validate_js(html_or_response):
             sys.stderr.write('=' * 40 + '\n' + msg + '\n')
 
 def validate_page(html_or_response):
-    validate_html(html_or_response)
-    validate_js(html_or_response)
+    c = get_validation_config()
+    if c.get('validation', 'validate_html5') == 'online':
+        print "val html5"
+        validate_html(html_or_response)
+    if c.getboolean('validation', 'validate_js'):
+        print "val js"
+        validate_js(html_or_response)
 
+_val_config = None
+def get_validation_config():
+    global _val_config
+    if _val_config:
+        return _val_config
+    from . import controller
+    import ConfigParser
+    c = ConfigParser.ConfigParser({'validate_html5': 'false', 'validate_js': 'true'})
+    c.read(controller.get_config_file())
+    _val_config = c
+    return c
 
 class ValidatingTestApp(TestApp):
 
