@@ -74,6 +74,10 @@ $('a.admin_modal').click(function(evt){
   $.get(link.href, function (data) {
     $popup_title.html(link.title);
     $popup_contents.html(data);
+    $('.btn.link.close').click(function(){
+        $(this).trigger('close');
+        return false;
+    });
   });
 });
 $('#sortable').sortable({items: ".fleft"});

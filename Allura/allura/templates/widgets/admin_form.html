@@ -8,9 +8,9 @@
       <span {{widget.j2_attrs({'class':error_class})}}>{{ctx.errors}}<br>
       {%- endif %}
       {% if field.show_label and field.label %}
-      <label for="{{field.name}}" class="grid-4">{{field.label}}:</label>
+      <label for="{{field.name}}" class="grid-13">{{field.label}}:</label>
       {% endif %}
-      <div class="grid-9">{{field.display(**ctx)}}</div>
+      <div class="grid-13">{{field.display(**ctx)}}</div>
     {% else %}
       {{field.display(**ctx)}}
     {% endif %}
@@ -22,5 +22,6 @@
     {% for b in buttons %}
       {{b.display()}}
     {% endfor %}
+    <a href="#" class="btn link close">Cancel</a>
   </div>
 </form>

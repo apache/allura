@@ -5,6 +5,7 @@ from ew import jinja2_ew as ew
 
 from allura import model as M
 from allura.lib import validators as V
+from allura.lib.widgets import forms as ff
 
 class CardField(ew_core.Widget):
     template = 'jinja:admin_widgets/card_field.html'
@@ -92,7 +93,7 @@ class GroupSettings(ew.SimpleForm):
         save = ew.SubmitButton(label='Save')
         delete = ew.SubmitButton(label='Delete Group')
 
-class NewGroupSettings(ew.SimpleForm):
+class NewGroupSettings(ff.AdminForm):
     submit_text='Save'
     class fields(ew_core.NameList):
         name = ew.InputField(label='Name')
