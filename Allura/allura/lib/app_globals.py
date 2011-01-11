@@ -120,6 +120,7 @@ class Globals(object):
             plus = Icon('+', 'ico-plus'),
             conversation = Icon('q', 'ico-conversation'),
             group = Icon('g', 'ico-group'),
+            user = Icon('U', 'ico-user'),
             # Permissions
             perm_read = Icon('E', 'ico-focus'),
             perm_update = Icon('0', 'ico-sync'),

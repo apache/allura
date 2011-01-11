@@ -40,8 +40,8 @@
     <div class="row reply">
       <div class="grid-3 tcenter">
           <p class="gravatar">
-            {{lib.gravatar(c.user, size=48)}}<br/><br/>
-            <a href="{{c.user.url()}}">{{c.user.display_name}}</a>
+            {{lib.gravatar(c.user, size=48)}}<br>
+            <small><a href="{{c.user.url()}}">{{c.user.display_name}}</a></small>
           </p>
         </div>
         <div class="grid-16">

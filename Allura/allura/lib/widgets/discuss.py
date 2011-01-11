@@ -121,7 +121,7 @@ class EditPost(ff.ForgeForm):
         fields = []
         fields.append(ffw.AutoResizeTextarea(
             name='text',
-            attrs={'style':'height:7em; width:90%'}))
+            attrs={'style':'height:7em; width:98%'}))
         fields.append(ew.HiddenField(name='forum', if_missing=None))
         if ew_core.widget_context.widget:
             # we are being displayed

@@ -1,28 +1,34 @@
 {% macro gravatar(user, size) -%}
   {% set display_name = h.really_unicode(user.display_name) %}
-  {% set icon_url = '/u/'+user.username.replace('_', '-')+'/user_icon' %}
-  {% if user.preferences.email_address %}
-    {% set icon_url = g.gravatar(user.preferences.email_address, default=g.url('/u/'+user.username.replace('_', '-')+'/user_icon')) %}
-  {% elif user == user.anonymous() %}
-    {% set icon_url = g.forge_static('images/user.png') %}
+  {% if user.private_project.icon %}
+    {% set icon_url = '/u/'+user.username.replace('_', '-')+'/user_icon' %}
+  {% else %}
+    {% set icon_url = None %}
   {% endif %}
-  {% if size %}
+  {% if user.preferences.email_address %}
+    {% set icon_url = g.gravatar(user.preferences.email_address, default=None) %}
+  {% elif user == user.anonymous() %}
+    {% set icon_url = None %}
+  {% endif %}
+  {% if icon_url %}
     <img src="{{icon_url}}"
          alt="{{display_name}}"
          title="{{display_name}}"
-         height="{{size}}"
-         width="{{size}}"/>
+         class="emboss {% if size %} x{{size}}{% endif %}">
   {% else %}
-    <img src="{{icon_url}}" alt="{{display_name}}" title="{{display_name}}"/>
+    <b data-icon="{{g.icons['user'].char}}" class="ico emboss {{g.icons['user'].css}}{% if size %} x{{size}}{% endif %}"></b>
   {% endif %}
 {%- endmacro %}
 
 {% macro email_gravatar(email, title=None, size=None) -%}
   {% set title=h.really_unicode(title) %}
   {% if email %}
-    <img src="{{g.gravatar(email, size=size)}}" alt="{{title or email}}" title="{{title or email}}"{% if size %} width="{{size}}" height="{{size}}"{% endif %}/>
+    <img src="{{g.gravatar(email, size=size)}}"
+         alt="{{title or email}}"
+         title="{{title or email}}"
+         class="emboss {% if size %} x{{size}}{% endif %}">
   {% else %}
-    <img src="{{g.forge_static('images/user.png')}}" alt="{{title}}" title="{{title}}"{% if size %} width="{{size}}" height="{{size}}"{% endif %}/>
+    <b data-icon="{{g.icons['user'].char}}" class="ico emboss {{g.icons['user'].css}}{% if size %} x{{size}}{% endif %}"></b>
   {% endif %}
 {%- endmacro %}
 

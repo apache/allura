@@ -2,7 +2,7 @@
   <form method="post" action="{{action}}"
         enctype="multipart/form-data">
     {% if show_subject %}
-    <input name="subject" style="width:90%"
+    <input name="subject" style="width:98%"
            value="{{value and (value.subject or '(no subject)')}}"/>
     {% endif %}
     {{widget.display_field_by_idx(0)}}
@@ -12,7 +12,7 @@
     </div>
     <div style="clear:both"></div>
     <input type="submit" value="{{submit_text}}"/>
-    <a href="#" class="btn_link cancel_edit_post">Cancel</a>
-    <a href="#" class="btn_link attachment_form_add_button">Add attachment</a>
+    <a href="#" class="btn link cancel_edit_post">Cancel</a> &nbsp;
+    <a href="#" class="btn link attachment_form_add_button">Add attachment</a>
   </form>
 </div>

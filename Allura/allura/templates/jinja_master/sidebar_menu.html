@@ -15,7 +15,7 @@
 <div id="sidebar">
   {% if c.app and c.app.searchable %}
     <form id="search" method="GET" action="{{c.app.url + 'search/'}}">
-      <input name="q" class="border defaultText" type="text" title="Search {{c.app.config.options.mount_point.title()}}"/>
+      <input name="q" type="text" title="Search {{c.app.config.options.mount_point.title()}}" placeholder="Search {{c.app.config.options.mount_point.title()}}">
     </form>
   {% else %}
     <div>&nbsp;</div>
