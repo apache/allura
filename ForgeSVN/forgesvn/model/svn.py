@@ -125,12 +125,21 @@ class SVNImplementation(M.RepositoryImplementation):
         if all_commits:
             return oids
         # Find max commit id -- everything greater than that will be "unknown"
+        prefix = self._oid('')
         q = M.Commit.query.find(
-            dict(type='commit')).sort('object_id', pymongo.DESCENDING)
-        last_commit = q.first()
-        if last_commit is None: return oids
+            dict(
+                type='commit',
+                object_id={'$gt':prefix},
+                ),
+            dict(object_id=True)
+            )
+        seen_oids = set()
+        for d in q.ming_cursor.cursor:
+            oid = d['object_id']
+            if not oid.startswith(prefix): break
+            seen_oids.add(oid)
         return [
-            oid for oid in oids if oid > last_commit.object_id ]
+            oid for oid in oids if oid not in seen_oids ]
 
     def commit_context(self, commit):
         revno = int(commit.object_id.split(':')[1])
