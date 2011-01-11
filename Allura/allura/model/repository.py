@@ -827,6 +827,7 @@ class Tree(RepoObject):
             t = self
         else:
             t = self.get_object(*path_parts)
+        if t is None: return None
         b = t.get(name)
         if isinstance(b, Blob): return b
         return None
