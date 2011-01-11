@@ -381,7 +381,7 @@ class Post(Message, VersionedArtifact):
 
     def url(self):
         if self.thread:
-            return self.thread.url() + urllib.quote_plus(self.slug) + '/'
+            return self.thread.url() + urllib.quote(self.slug) + '/'
         else: # pragma no cover
             return None
 
@@ -462,10 +462,10 @@ class DiscussionAttachment(BaseAttachment):
 
     def url(self):
         if self.post_id:
-            return self.post.url() + 'attachment/' + urllib.quote_plus(self.filename)
+            return self.post.url() + 'attachment/' + urllib.quote(self.filename)
         elif self.thread_id:
-            return self.thread.url() + 'attachment/' + urllib.quote_plus(self.filename)
+            return self.thread.url() + 'attachment/' + urllib.quote(self.filename)
         else:
-            return self.discussion.url() + 'attachment/' + urllib.quote_plus(self.filename)
+            return self.discussion.url() + 'attachment/' + urllib.quote(self.filename)
 
 
