@@ -8,6 +8,7 @@ from cStringIO import StringIO
 from datetime import datetime
 
 import tg
+import pymongo
 import pysvn
 from pylons import c
 
@@ -124,7 +125,8 @@ class SVNImplementation(M.RepositoryImplementation):
         if all_commits:
             return oids
         # Find max commit id -- everything greater than that will be "unknown"
-        q = M.Commit.query.find(dict(type='commit')).sort('-object_id')
+        q = M.Commit.query.find(
+            dict(type='commit')).sort('object_id', pymongo.DESCENDING)
         last_commit = q.first()
         if last_commit is None: return oids
         return [
