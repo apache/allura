@@ -190,10 +190,8 @@ def validate_js(html_or_response):
 def validate_page(html_or_response):
     c = get_validation_config()
     if c.get('validation', 'validate_html5') == 'online':
-        print "val html5"
         validate_html(html_or_response)
     if c.getboolean('validation', 'validate_js'):
-        print "val js"
         validate_js(html_or_response)
 
 _val_config = None
