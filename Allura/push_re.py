@@ -15,6 +15,8 @@ DEBUG=1
 CP = ConfigParser()
 
 re_ticket_ref = re.compile(r'\[#(\d+)\]')
+re_allura_ref = re.compile(r'\nreference: ')
+re_git_dir = re.compile(r'.*\.git/?\Z')
 
 CRED={}
 
@@ -23,9 +25,12 @@ def main():
     engineer = option('re', 'engineer', 'Name of engineer pushing: ')
     api_key = option('re', 'api_key', 'Forge API Key:')
     secret_key = option('re', 'secret_key', 'Forge Secret Key:')
+    classic_path = option('re', 'classic_path', 'The path to your forge-classic repo:')
+    if not re_git_dir.match(classic_path):
+        classic_path += '/.git/'
     CRED['api_key'] = api_key
     CRED['secret_key'] = secret_key
-    text, tag = make_ticket_text(engineer)
+    text, tag = make_ticket_text(engineer, classic_path)
     raw_input("Verify that there are no new dependencies, or RPM's are built for all deps...")
     raw_input("Verify that a new sandbox builds starts without engr help...")
     print '*** Create a ticket on SourceForge (https://sourceforge.net/p/allura/tickets/new/) with the following contents:'
@@ -37,21 +42,30 @@ def main():
     newforge_num = raw_input('What is the newforge ticket number? ')
     print '*** Create a SOG Trac ticket (https://control.sog.geek.net/sog/trac/newticket?keywords=LIAISON) with the same summary...'
     print '---BEGIN---'
-    print re_ticket_ref.sub('FO:\g<1>', text)
+    sog_text = re_ticket_ref.sub('FO:\g<1>', text)
+    print re_allura_ref.sub('\nreference: https://sourceforge.net/p/allura/tickets/%s/' % newforge_num, sog_text)
     print '---END---'
     raw_input('Now link the two tickets...')
+    print "Let's tag the forge repo:"
     command('git', 'tag', '-a', '-m', '[#%s] - Push to RE' % newforge_num, tag, 'master')
+    print "Let's make a matching tag in the forge-classic repo:"
+    command('git', '--git-dir=%s' % classic_path, 'tag', '-a', '-m', '[#%s] - Push to RE' % newforge_num, tag, 'master')
     command('git', 'push', 'origin', 'master')
-    command('git', 'push', 'live', 'master')
     command('git', 'push', '--tags', 'origin')
+    command('git', 'push', 'live', 'master')
     command('git', 'push', '--tags', 'live')
+
+    command('git', '--git-dir=%s' % classic_path, 'push', 'origin', 'master')
+    command('git', '--git-dir=%s' % classic_path, 'push', '--tags', 'origin')
+    command('git', '--git-dir=%s' % classic_path, 'push', 'live', 'master')
+    command('git', '--git-dir=%s' % classic_path, 'push', '--tags', 'live')
     raw_input('Now go to the sog-engr channel and let them know that %s is ready'
               ' for pushing (include the JIRA ticket #' % tag)
     raw_input('Make sure SOG restarted reactors and web services.')
     CP.write(open(os.path.join(os.environ['HOME'], '.forgepushrc'), 'w'))
     print "You're done!"
 
-def make_ticket_text(engineer):
+def make_ticket_text(engineer, classic_path):
     tag_prefix = date.today().strftime('release_%Y%m%d')
     # get release tag
     existing_tags_today = command('git tag -l %s*' % tag_prefix)
@@ -64,23 +78,23 @@ def make_ticket_text(engineer):
     else: last_release = ''
     changes = command(
             'git', 'log', "--format=* %h %s", last_release.strip() + '..')
-    assert changes, 'There were no commits found; maybe you forgot to merge dev->master?'
-    changelog = ''.join(changes)
+    changes += command(
+            'git', '--git-dir=%s' % classic_path, 'log', "--format=* %h %s", last_release.strip() + '..')
+    if not changes:
+        print 'There were no commits found; maybe you forgot to merge dev->master? (Ctrl-C to abort)'
+    changelog = ''.join(changes or [])
     changes = ''.join(format_changes(changes))
     print 'Changelog:\n%s' % changelog
     print 'Tickets:\n%s' % changes
     prelaunch = []
     postlaunch = []
-    needs_reactor_setup = raw_input('Does this release require a reactor_setup? [n]')
     needs_flyway = raw_input('Does this release require a migration? [y]')
-    if needs_reactor_setup[:1].lower() in ('y', '1'):
-        postlaunch.append('* service reactor stop')
-        postlaunch.append('* allurapaste reactor_setup /var/local/config/production.ini')
-        postlaunch.append('* service reactor start')
+    needs_ensure_index = raw_input('Does this release require ensure_index? [y]')
     if needs_flyway[:1].lower() in ('', 'y', '1'):
         prelaunch.append('* dump the database in case we need to roll back')
         postlaunch.append('* allurapaste flyway --url mongo://sfn-mongo:27017/')
-    postlaunch.append('* allurapaste ensure_index /var/local/config/production.ini')
+    if needs_ensure_index[:1].lower() in ('', 'y', '1'):
+        postlaunch.append('* allurapaste ensure_index /var/local/config/production.ini')
     if postlaunch:
         postlaunch = [ 'From sfu-scmprocess-1 do the following:\n' ] + postlaunch
         postlaunch = '\n'.join(postlaunch)
@@ -94,6 +108,8 @@ def make_ticket_text(engineer):
     return TICKET_TEMPLATE.substitute(locals()), tag
 
 def format_changes(changes):
+    if not changes:
+        yield '-none-'
     ticket_groups = defaultdict(list)
     for change in changes:
         for m in re_ticket_ref.finditer(change):
@@ -146,7 +162,7 @@ TICKET_TEMPLATE=string.Template('''{{{
 #!push
 
 (engr) Name of Engineer pushing: $engineer
-(engr) Which code tree(s): allura
+(engr) Which code tree(s): allura, forge-classic
 (engr) Is configtree to be pushed?: no
 (engr) Which release/revision is going to be synced?: $tag
 (engr) Itemized list of changes to be launched with sync:
@@ -163,6 +179,8 @@ $postlaunch
 
 (engr) Approved for release (Dean/Dave/John): None
 (sog) Outcome of sync:
+
+reference: 
 }}}''')
 
 if __name__ == '__main__':

@@ -19,8 +19,8 @@
       <td></td>
     </tr>
     {% endif %}
-   {% if not ls %}
-      <td colspan="5">&mdash; No files &mdash;</td>
+    {% if not ls %}
+    <tr><td colspan="5">&mdash; No files &mdash;</td></tr>
    {% endif %}
     {% for dirent in tree.ls() %}
     <tr>

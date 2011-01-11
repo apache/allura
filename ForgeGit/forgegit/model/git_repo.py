@@ -110,17 +110,19 @@ class GitImplementation(M.RepositoryImplementation):
 
     def new_commits(self, all_commits=False):
         graph = {}
+
         to_visit = [ self._git.commit(rev=hd.object_id) for hd in self._repo.heads ]
         while to_visit:
             obj = to_visit.pop()
             if obj.hexsha in graph: continue
+            if not all_commits:
+                # Look up the object
+                if M.Commit.query.find(dict(object_id=obj.hexsha)).count():
+                    graph[obj.hexsha] = set() # mark as parentless
+                    continue
             graph[obj.hexsha] = set(p.hexsha for p in obj.parents)
             to_visit += obj.parents
-        if all_commits:
-            return list(topological_sort(graph))
-        else:
-            return M.Commit.unknown_commit_ids_in(
-                self._repo._id, topological_sort(graph))
+        return list(topological_sort(graph))
 
     def commit_context(self, commit):
         prev_ids = commit.parent_ids

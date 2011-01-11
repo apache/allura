@@ -43,7 +43,7 @@ Commit<a href="{{commit.url()}}">{{commit.shorthand_id()}}</a>
       <td>
         <a href="{{prev[0].url()}}tree{{h.really_unicode(diff.old)}}">{{h.really_unicode(diff.old)}}</a>
         <br/>to<br/>
-        <a href="./tree{{h.really_unicode(diff)}}">{{h.really_unicode(diff)}}</a>
+        <a href="./tree{{h.really_unicode(diff.new)}}">{{h.really_unicode(diff.new)}}</a>
       </td>
     </tr>
     {% endfor %}
