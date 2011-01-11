@@ -112,7 +112,7 @@ def _parse_message_id(msgid):
 def _parse_smtp_addr(addr):
     addr = str(addr)
     addrs = _parse_message_id(addr)
-    if addrs: return addrs[0]
+    if addrs and addrs[0]: return addrs[0]
     if '@' in addr: return addr
     return 'noreply@in.sf.net'
 
