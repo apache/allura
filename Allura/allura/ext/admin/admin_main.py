@@ -23,6 +23,7 @@ from allura.lib.widgets import form_fields as ffw
 from allura.lib import exceptions as forge_exc
 from allura.lib import plugin
 from allura.controllers import BaseController
+from allura.lib.decorators import require_post
 
 from . import widgets as aw
 
@@ -275,6 +276,7 @@ class ProjectAdminController(BaseController):
         redirect('overview')
 
     @expose()
+    @require_post
     @validate(validators=dict(description=UnicodeString()))
     def update_homepage(self, description=None, **kw):
         require(has_project_access('update'), 'Update access required')

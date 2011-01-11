@@ -20,7 +20,7 @@ from allura import model as M
 from allura.lib import helpers as h
 from allura.app import Application, SitemapEntry, DefaultAdminController
 from allura.lib.search import search_artifact
-from allura.lib.decorators import audit, react
+from allura.lib.decorators import audit, react, require_post
 from allura.lib.security import require, has_artifact_access, has_project_access
 from allura.lib import widgets as w
 from allura.lib.widgets import form_fields as ffw
@@ -473,11 +473,10 @@ class RootController(BaseController):
 
     @expose()
     @h.vardec
+    @require_post
     @validate(W.ticket_form, error_handler=new)
     def save_ticket(self, ticket_form=None, **post_data):
         require(has_artifact_access('write'))
-        if request.method != 'POST':
-            raise Exception('save_ticket must be a POST request')
         # if c.app.globals.milestone_names is None:
         #     c.app.globals.milestone_names = ''
         ticket_num = ticket_form.pop('ticket_num', None)
@@ -511,6 +510,7 @@ class RootController(BaseController):
         return result
 
     @expose()
+    @require_post
     def update_tickets(self, **post_data):
         c.app.globals.invalidate_bin_counts()
         tickets = TM.Ticket.query.find(dict(
@@ -659,12 +659,11 @@ class BinController(BaseController):
     @with_trailing_slash
     @h.vardec
     @expose()
+    @require_post
     @validate(W.bin_form, error_handler=newbin)
     def save_bin(self, bin_form=None, **post_data):
         require(has_artifact_access('save_searches', app=self.app))
         self.app.globals.invalidate_bin_counts()
-        if request.method != 'POST':
-            raise Exception('save_bin must be a POST request')
         if bin_form['old_summary']:
             TM.Bin.query.find(dict(summary=bin_form['old_summary'])).first().delete()
         bin = TM.Bin(summary=bin_form['summary'], terms=bin_form['terms'])
@@ -823,10 +822,9 @@ class TicketController(BaseController):
                 data['custom_fields.'+k] = data['custom_fields'][k]
         self._update_ticket(data)
         
+    @require_post
     def _update_ticket(self, post_data):
         require(has_artifact_access('write', self.ticket))
-        if request.method != 'POST':
-            raise Exception('update_ticket must be a POST request')
         changes = changelog()
         comment = post_data.pop('comment', None)
         tags = post_data.pop('tags', None) or []
@@ -986,12 +984,11 @@ class RootRestController(BaseController):
 
     @expose()
     @h.vardec
+    @require_post
     @validate(W.ticket_form, error_handler=h.json_validation_error)
     def new(self, ticket_form=None, **post_data):
         require(has_artifact_access('write'))
         c.app.globals.invalidate_bin_counts()
-        if request.method != 'POST':
-            raise Exception('save_ticket must be a POST request')
         if c.app.globals.milestone_names is None:
             c.app.globals.milestone_names = ''
         ticket = TM.Ticket(
@@ -1046,12 +1043,11 @@ class TicketRestController(BaseController):
 
     @expose()
     @h.vardec
+    @require_post
     @validate(W.ticket_form, error_handler=h.json_validation_error)
     def save(self, ticket_form=None, **post_data):
         require(has_artifact_access('write', self.ticket))
         c.app.globals.invalidate_bin_counts()
-        if request.method != 'POST':
-            raise Exception('save_ticket must be a POST request')
         # if c.app.globals.milestone_names is None:
         #     c.app.globals.milestone_names = ''
         self.ticket.update(ticket_form)

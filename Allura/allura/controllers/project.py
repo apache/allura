@@ -22,6 +22,7 @@ from allura.app import SitemapEntry
 from allura.lib.base import WsgiDispatchController
 from allura.lib import helpers as h
 from allura.lib import utils
+from allura.lib.decorators import require_post
 from allura.controllers.error import ErrorController
 from allura.lib.security import require, has_project_access, has_neighborhood_access, has_artifact_access
 from allura.lib.widgets import form_fields as ffw
@@ -531,9 +532,8 @@ class NeighborhoodAwardsController(object):
         return AwardController(short), remainder
 
     @expose()
+    @require_post
     def create(self, icon=None, short=None, full=None):
-        if request.method != 'POST':
-            raise Exception('award_save must be a POST request')
         app_config_id = ObjectId()
         tool_version = { 'neighborhood':'0' }
         if short is not None:
@@ -548,9 +548,8 @@ class NeighborhoodAwardsController(object):
         redirect(request.referer)
 
     @expose()
+    @require_post
     def grant(self, grant=None, recipient=None):
-        if request.method != 'POST':
-            raise Exception('award_grant must be a POST request')
         grant_q = M.Award.query.find(dict(short=grant)).first()
         recipient_q = M.Project.query.find(dict(name=recipient, deleted=False)).first()
         app_config_id = ObjectId()
@@ -593,9 +592,8 @@ class AwardController(object):
         return icon.serve()
 
     @expose()
+    @require_post
     def grant(self, recipient=None):
-        if request.method != 'POST':
-            raise Exception('award_grant must be a POST request')
         recipient_q = M.Project.query.find(dict(name=recipient, deleted=False)).first()
         app_config_id = ObjectId()
         tool_version = { 'neighborhood':'0' }

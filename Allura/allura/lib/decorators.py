@@ -2,8 +2,19 @@ import sys
 import json
 import logging
 from urllib import unquote
+from tg.decorators import before_validate
+from tg import request
 
 import webob
+from webob import exc
+
+def require_post(func):
+    def check_method(remainder, params):
+        if request.method != 'POST':
+            raise exc.HTTPMethodNotAllowed(headers={'Allow':'POST'})
+    before_validate(check_method)(func)
+    return func
+
 
 class ConsumerDecoration(object):
 
