@@ -6,6 +6,11 @@ from pylons import g, c
 
 from ming.orm.ormsession import ThreadLocalORMSession
 
+try:
+    import sfx
+except ImportError:
+    sfx = None
+
 from allura.tests import TestController
 from allura import model as M
 from allura.lib import helpers as h
@@ -128,7 +133,7 @@ class TestProjectAdmin(TestController):
         r = self.app.get('/admin/tools')
         new_ep_opts = r.html.findAll('a',{'class':"install_trig"})
         strings = [ ' '.join(opt.find('span').string.strip().split()) for opt in new_ep_opts ]
-        assert_equals(strings, [
+        expected_tools = [
             'External Link',
             'Git',
             'Mercurial',
@@ -136,15 +141,19 @@ class TestProjectAdmin(TestController):
             'Wiki',
             'Tickets',
             'Discussion',
-            'Downloads',
+            'Downloads' ]
+        if sfx:
+            expected_tools += [
             'Mailing List (alpha)',
             'VHOST (alpha)',
             'MySQL Databases (alpha)',
             'Project Web Outgoing Email (alpha)',
-            'Classic Hosted Apps (alpha)',
+            'Classic Hosted Apps (alpha)' ]
+        expected_tools += [
             'Chat (alpha)',
             'Blog (alpha)',
-            'Subproject'])
+            'Subproject']
+        assert strings == expected_tools
 
     def test_project_icon(self):
         file_name = 'neo-icon-set-454545-256x350.png'

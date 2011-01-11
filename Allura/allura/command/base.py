@@ -49,7 +49,11 @@ class Command(command.Command):
             ming.configure(**conf)
         else:
             log = logging.getLogger('allura.command')
-        self.tools = [
-            (ep.name, ep.load()) for ep in iter_entry_points('allura') ]
+        self.tools = []
+        for ep in iter_entry_points('allura'):
+            try:
+                self.tools.append((ep.name, ep.load()))
+            except ImportError:
+                log.warning('Canot load entry point %s', ep)
         log.info('Loaded tools')
 

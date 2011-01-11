@@ -23,7 +23,10 @@ from webhelpers.html import literal
 
 import ew
 
-import sfx.middleware
+try:
+    import sfx.middleware
+except ImportError:
+    sfx = None
 import allura
 import allura.lib.helpers as h
 from allura import model
@@ -77,7 +80,11 @@ class ForgeConfig(AppConfig):
         for ep in pkg_resources.iter_entry_points('allura'):
             if not ep.module_name in loaders:
                 log.info('Registering templates for application %s', ep.module_name)
-                loaders[ep.module_name] = PackageLoader(ep.module_name, 'templates')
+                try:
+                    loaders[ep.module_name] = PackageLoader(ep.module_name, 'templates')
+                except ImportError:
+                    log.warning('Cannot import entry point %s', ep)
+                    continue
 
         config['pylons.app_globals'].jinja2_env = Environment(
             loader=ChoiceLoader(loaders.values()),

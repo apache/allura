@@ -405,8 +405,12 @@ class MockAMQ(object):
         self.queue_bindings = defaultdict(list)
         base.log = logging.getLogger('allura.command')
         base.M = M
-        self.tools = [
-            (ep.name, ep.load()) for ep in pkg_resources.iter_entry_points('allura') ]
+        self.tools = []
+        for ep in pkg_resources.iter_entry_points('allura'):
+            try:
+                self.tools.append((ep.name, ep.load()))
+            except ImportError:
+                log.warning('Canot load entry point %s', ep)
         self.reactor = ReactorCommand('reactor_setup')
         self.reactor.parse_args([])
         for name, tool in self.tools:

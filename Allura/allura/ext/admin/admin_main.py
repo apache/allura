@@ -101,10 +101,13 @@ class AdminApp(Application):
     def installable_tools_for(project):
         cls = AdminApp
         if cls._installable_tools is None:
-            tools = sorted(
-                [ dict(name=ep.name, app=ep.load())
-                  for ep in pkg_resources.iter_entry_points('allura') ],
-                key=lambda t:(t['app'].status_int(), t['app'].ordinal))
+            tools = []
+            for ep in pkg_resources.iter_entry_points('allura'):
+                try:
+                    tools.append(dict(name=ep.name, app=ep.load()))
+                except ImportError:
+                    log.warning('Canot load entry point %s', ep)
+            tools.sort(key=lambda t:(t['app'].status_int(), t['app'].ordinal))
             cls._installable_tools = [ t for t in tools if t['app'].installable ]
         return [ t for t in cls._installable_tools
             if t['app'].status in project.allowed_tool_status ]

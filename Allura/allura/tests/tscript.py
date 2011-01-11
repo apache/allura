@@ -7,7 +7,6 @@ from pylons import c
 from allura import model as M
 from allura.lib import helpers as h
 from allura.lib.security import roles_with_project_access
-from sfx.lib.sfx_api import SFXProjectApi
 
 log = logging.getLogger(__name__)
 
