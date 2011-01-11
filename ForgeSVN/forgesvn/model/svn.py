@@ -237,6 +237,7 @@ class SVNImplementation(M.RepositoryImplementation):
             lc.last_commit.href = '%s%d/' % (self._repo.url(), info.last_changed_rev.number)
             lc.last_commit.shortlink = '[r%d]' % info.last_changed_rev.number
             lc.last_commit.summary = ''
+        session(tree).flush(tree)
         return tree_id
 
     def _tree_oid(self, commit_id, path):
