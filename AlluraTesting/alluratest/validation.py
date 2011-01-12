@@ -29,6 +29,19 @@ ENABLE_CONTENT_VALIDATION = False
 log = logging.getLogger(__name__)
 
 
+def report_validation_error(val_name, filename, message):
+    message = '%s Validation errors (%s):\n%s\n' % (val_name, filename, message)
+    if ENABLE_CONTENT_VALIDATION:
+        ok_(False, message)
+    else:
+        sys.stderr.write('=' * 40 + '\n' + message)
+
+def dump_to_file(prefix, html):
+    f = tempfile.NamedTemporaryFile(prefix=prefix, delete=False)
+    f.write(html)
+    f.close()
+    return f.name
+
 def validate_html(html_or_response):
         if hasattr(html_or_response, 'body'):
             html = html_or_response.body
@@ -146,22 +159,20 @@ def validate_html5(html_or_response):
             resp = resp.replace('Error: ' + ignore, 'Ignoring: ' + ignore)
 
         if 'Error:' in resp:
-            f = tempfile.NamedTemporaryFile(prefix='html5-', delete=False)
-            f.write(html)
-            f.close()
-            message = "HTML5 Validation errors (" + f.name + "):\n" + resp
-            message = message.decode('ascii','ignore')
-            if ENABLE_CONTENT_VALIDATION:
-                ok_(False, message)
-            else:
-                sys.stderr.write('=' * 40 + '\n' + message + '\n')
+            fname = dump_to_file('html5-', html)
+            message = resp.decode('ascii','ignore')
+            report_validation_error('HTML5', fname, message)
                 
         
 def validate_html5_chunk(html):
         """ When you don't have a html & body tags - this adds it"""
+        # WebTest doesn't like HTML fragments without doctype,
+        # so we output them sometimes for fragments, which is hack.
+        # Unhack it here.
         doctype = '<!DOCTYPE html>'
         if html.startswith(doctype):
             html = html[len(doctype):]
+
         html = '''<!DOCTYPE html> 
         <html> 
         <head><title></title></head> 
@@ -179,25 +190,20 @@ def validate_js(html_or_response):
             html = html_or_response
         basedir = path.dirname(path.abspath(__file__))
         jslint_dir = basedir + '/../jslint'
-        f = tempfile.NamedTemporaryFile(prefix='jslint', delete=False)
-        f.write(html)
-        f.close()
-        cmd = 'java -jar ' + jslint_dir + '/js.jar '+ jslint_dir +'/jslint.js ' + f.name
+        fname = dump_to_file('jslint-', html)
+        cmd = 'java -jar ' + jslint_dir + '/js.jar '+ jslint_dir +'/jslint.js ' + fname
         p = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
         stdout, stderr = p.communicate(html)
         if stdout.startswith('jslint: No problems found'):
-            os.unlink(f.name)
+            os.unlink(fname)
             return
         stdout = stdout.decode('UTF-8', 'replace')
-        msg = 'JavaScript validation error(s) (see ' + f.name + '):  ' + '\n'.join(repr(s) for s in stdout.split('\n') if s)
-        if ENABLE_CONTENT_VALIDATION:
-            raise Exception(msg)
-        else:
-            sys.stderr.write('=' * 40 + '\n' + msg + '\n')
+        msg = '\n'.join(repr(s) for s in stdout.split('\n') if s)
+        report_validation_error('JavaScript', fname, msg)
 
 def validate_page(html_or_response):
     c = get_validation_config()
-    if c.get('validation', 'validate_html5') == 'online':
+    if c.get('validation', 'validate_html5') != 'false':
         validate_html(html_or_response)
     if c.getboolean('validation', 'validate_js'):
         validate_js(html_or_response)
