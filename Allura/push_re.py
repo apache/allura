@@ -26,11 +26,12 @@ def main():
     api_key = option('re', 'api_key', 'Forge API Key:')
     secret_key = option('re', 'secret_key', 'Forge Secret Key:')
     classic_path = option('re', 'classic_path', 'The path to your forge-classic repo:')
+    theme_path = option('re', 'theme_path', 'The path to your sftheme repo:')
     if not re_git_dir.match(classic_path):
         classic_path += '/.git/'
     CRED['api_key'] = api_key
     CRED['secret_key'] = secret_key
-    text, tag = make_ticket_text(engineer, classic_path)
+    text, tag = make_ticket_text(engineer, classic_path, theme_path)
     raw_input("Verify that there are no new dependencies, or RPM's are built for all deps...")
     raw_input("Verify that a new sandbox builds starts without engr help...")
     print '*** Create a ticket on SourceForge (https://sourceforge.net/p/allura/tickets/new/) with the following contents:'
@@ -48,20 +49,26 @@ def main():
     raw_input('Now link the two tickets...')
     print "Let's tag the forge repo:"
     command('git', 'tag', '-a', '-m', '[#%s] - Push to RE' % newforge_num, tag, 'master')
-    print "Let's make a matching tag in the forge-classic repo:"
-    command('git', '--git-dir=%s' % classic_path, 'tag', '-a', '-m', '[#%s] - Push to RE' % newforge_num, tag, 'master')
     command('git', 'push', 'origin', 'master', '--tags')
     command('git', 'push', 'live', 'master', '--tags')
 
+    print "Let's make a matching tag in the forge-classic repo:"
+    command('git', '--git-dir=%s' % classic_path, 'tag', '-a', '-m', '[#%s] - Push to RE' % newforge_num, tag, 'master')
     command('git', '--git-dir=%s' % classic_path, 'push', 'origin', 'master', '--tags')
     command('git', '--git-dir=%s' % classic_path, 'push', 'live', 'master', '--tags')
+
+    print "...and in the sftheme repo:"
+    command('git', '--git-dir=%s' % theme_path, 'tag', '-a', '-m', '[#%s] - Push to RE' % newforge_num, tag, 'master')
+    command('git', '--git-dir=%s' % theme_path, 'push', 'origin', 'master', '--tags')
+    command('git', '--git-dir=%s' % theme_path, 'push', 'live', 'master', '--tags')
+
     raw_input('Now go to the sog-engr channel and let them know that %s is ready'
               ' for pushing (include the JIRA ticket #' % tag)
     raw_input('Make sure SOG restarted reactors and web services.')
     CP.write(open(os.path.join(os.environ['HOME'], '.forgepushrc'), 'w'))
     print "You're done!"
 
-def make_ticket_text(engineer, classic_path):
+def make_ticket_text(engineer, classic_path, theme_path):
     tag_prefix = date.today().strftime('release_%Y%m%d')
     # get release tag
     existing_tags_today = command('git tag -l %s*' % tag_prefix)
@@ -76,6 +83,8 @@ def make_ticket_text(engineer, classic_path):
             'git', 'log', "--format=* %h %s", last_release.strip() + '..')
     changes += command(
             'git', '--git-dir=%s' % classic_path, 'log', "--format=* %h %s", last_release.strip() + '..')
+    changes += command(
+            'git', '--git-dir=%s' % theme_path, 'log', "--format=* %h %s", last_release.strip() + '..')
     if not changes:
         print 'There were no commits found; maybe you forgot to merge dev->master? (Ctrl-C to abort)'
     changelog = ''.join(changes or [])
@@ -158,7 +167,7 @@ TICKET_TEMPLATE=string.Template('''{{{
 #!push
 
 (engr) Name of Engineer pushing: $engineer
-(engr) Which code tree(s): allura, forge-classic
+(engr) Which code tree(s): allura, forge-classic, sftheme
 (engr) Is configtree to be pushed?: no
 (engr) Which release/revision is going to be synced?: $tag
 (engr) Itemized list of changes to be launched with sync:
