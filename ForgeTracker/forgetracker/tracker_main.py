@@ -233,7 +233,7 @@ class ForgeTrackerApp(Application):
         bin = TM.Bin(summary='Open Tickets', terms=self.globals.not_closed_query)
         bin.app_config_id = self.config._id
         bin.custom_fields = dict()
-        bin = TM.Bin(summary='Recent Changes', terms=self.globals.not_closed_query, sort='mod_date_dt desc')
+        bin = TM.Bin(summary='Changes', terms=self.globals.not_closed_query, sort='mod_date_dt desc')
         bin.app_config_id = self.config._id
         bin.custom_fields = dict()
 

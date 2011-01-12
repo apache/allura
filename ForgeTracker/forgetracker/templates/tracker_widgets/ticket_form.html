@@ -2,34 +2,35 @@
 <form method="POST" action="{{action}}" enctype="multipart/form-data">
   {{widget.display_field_by_name('ticket_num')|safe}}
   {{widget.display_field_by_name('super_id')|safe}}
-  <div class="grid-16">
+  <div class="grid-18">
       {{widget.display_field_by_name('summary')|safe}}
   </div>
     {% if widget.fields['_milestone'] %}
-      <div class="grid-5">
+      <div class="grid-6">
         <label class="cr">Milestone:</label>
         {{widget.display_field_by_name('_milestone')|safe}}
       </div>
     {% endif %}
-    <div class="grid-5">
+    <div class="grid-6">
       <label class="cr">Status:</label>
       {{widget.display_field_by_name('status')|safe}}
     </div>
-    <div class="grid-5">
+    <div class="grid-6">
       <label class="cr">Owner:</label>
       {{widget.display_field_by_name('assigned_to')|safe}}
     </div>
-  <div style="clear:both"></div>
+  <div style="clear:both">&nbsp;</div>
   {% set min_c_fields = widget.fields['_milestone'] and 1 or 0 %}
   {% if c.app.globals.custom_fields and c.app.globals.custom_fields.__len__() > min_c_fields %}
     {{widget.display_field_by_name('custom_fields', ignore_errors=True)}}
   {% endif %}
-  <div class="grid-16">
+  <div style="clear:both">&nbsp;</div>
+  <div class="grid-18">
     <label class="cr">Labels:</label>
     {{widget.display_field_by_name('labels')|safe}}
   </div>
-  <div style="clear:both"></div>
-  <div class="grid-5">
+  <div style="clear:both">&nbsp;</div>
+  <div class="grid-6">
     <label class="simple">Updated:</label>
     {% if ticket %}
       {{h.ago(ticket.mod_date)}}
@@ -37,7 +38,7 @@
       Now
     {% endif %}
   </div>
-  <div class="grid-5">
+  <div class="grid-6">
     <label class="simple">Created:</label>
     {% if ticket %}
       {{h.ago(ticket.created_date)}}
@@ -45,7 +46,7 @@
       Now
     {% endif %}
   </div>
-  <div class="grid-5">
+  <div class="grid-6">
     <label class="simple">Creator:</label>
     {% if ticket %}
       <a href="{{ticket.reported_by.url()}}">{{ticket.reported_by.display_name}}</a>
@@ -53,11 +54,11 @@
       <a href="{{c.user.url()}}">{{c.user.display_name}}</a>
     {% endif %}
   </div>
-  <div style="clear:both"></div>
-  <div class="grid-16">
+  <div style="clear:both">&nbsp;</div>
+  <div class="grid-18">
     {{widget.display_field_by_name('description')|safe}}
   </div>
-  <div style="clear:both"></div>
+  <div style="clear:both">&nbsp;</div>
   <div class="grid-18">
     {% if ticket %}
       <div class="clearfix">
@@ -77,12 +78,12 @@
           </div>
       {% endfor %}
       </div>
-      <div style="clear:both"></div>
+      <div style="clear:both">&nbsp;</div>
     {% endif %}
     <div id="show_attach">
       <input type="checkbox"> I would like to add an attachment
     </div>
-    <div style="clear:both"></div>
+    <div style="clear:both">&nbsp;</div>
     <div id="view_attach" style="display:none">
       {{widget.display_field_by_name('attachment')|safe}}
     </div>
@@ -101,9 +102,9 @@
       </div>
     </div>
   </div>
-  <div style="clear:both"></div>
-  <div class="grid-16">
+  <div style="clear:both">&nbsp;</div>
+  <div class="grid-18">
     {{widget.display_field_by_name('submit')|safe}}
-    <a href="{{c.app.url}}" class="btn_link cancel_form">Cancel</a>
+    <a href="{{c.app.url}}" class="btn link cancel_form">Cancel</a>
   </div>
 </form>

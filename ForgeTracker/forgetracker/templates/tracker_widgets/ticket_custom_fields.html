@@ -2,9 +2,9 @@
 {% for field in widget.fields %}
   {% set ctx=widget.context_for(field) %}
   {% if cf_count%4 == 0 and cf_count != 0 %}
-  <div style="clear:both"></div>
+  <div style="clear:both">&nbsp;</div>
   {% endif %}
-    <div class="grid-5">
+    <div class="grid-6">
       <label for="{{ctx.id}}" class="cr">{{field.label}}:</label>
       {{field.display(**ctx)}}
       {% if ctx.errors and field.show_errors %}<div class="error">{{ctx.errors}}</div>{% endif %}
