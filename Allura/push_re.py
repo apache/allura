@@ -50,15 +50,11 @@ def main():
     command('git', 'tag', '-a', '-m', '[#%s] - Push to RE' % newforge_num, tag, 'master')
     print "Let's make a matching tag in the forge-classic repo:"
     command('git', '--git-dir=%s' % classic_path, 'tag', '-a', '-m', '[#%s] - Push to RE' % newforge_num, tag, 'master')
-    command('git', 'push', 'origin', 'master')
-    command('git', 'push', '--tags', 'origin')
-    command('git', 'push', 'live', 'master')
-    command('git', 'push', '--tags', 'live')
+    command('git', 'push', 'origin', 'master', '--tags')
+    command('git', 'push', 'live', 'master', '--tags')
 
-    command('git', '--git-dir=%s' % classic_path, 'push', 'origin', 'master')
-    command('git', '--git-dir=%s' % classic_path, 'push', '--tags', 'origin')
-    command('git', '--git-dir=%s' % classic_path, 'push', 'live', 'master')
-    command('git', '--git-dir=%s' % classic_path, 'push', '--tags', 'live')
+    command('git', '--git-dir=%s' % classic_path, 'push', 'origin', 'master', '--tags')
+    command('git', '--git-dir=%s' % classic_path, 'push', 'live', 'master', '--tags')
     raw_input('Now go to the sog-engr channel and let them know that %s is ready'
               ' for pushing (include the JIRA ticket #' % tag)
     raw_input('Make sure SOG restarted reactors and web services.')
