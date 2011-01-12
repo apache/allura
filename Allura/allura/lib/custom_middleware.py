@@ -95,13 +95,15 @@ class StaticFilesMiddleware(object):
                         'nf',
                         ep.name,
                         filename))
-                return fileapp.FileApp(file_path)
+                return fileapp.FileApp(file_path, [
+                        ('Access-Control-Allow-Origin', '*')])
         filename = environ['PATH_INFO'][len(self.script_name):]
         file_path = pkg_resources.resource_filename(
             'allura', os.path.join(
                 'public', 'nf',
                 filename))
-        return fileapp.FileApp(file_path)
+        return fileapp.FileApp(file_path, [
+                ('Access-Control-Allow-Origin', '*')])
 
 class LoginRedirectMiddleware(object):
     '''Actually converts a 401 into a 302 so we can do a redirect to a different
