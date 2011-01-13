@@ -119,4 +119,4 @@ class TestAuth(TestController):
         user = M.User.query.get(username='aaa')
         assert M.ProjectRole.query.find(dict(user_id=user._id, project_id=p._id)).count() == 0
         r = self.app.get('/p/test/admin/permissions',extra_environ=dict(username='aaa'), status=403)
-        assert M.ProjectRole.query.find(dict(user_id=user._id, project_id=p._id)).count() == 1
+        assert M.ProjectRole.query.find(dict(user_id=user._id, project_id=p._id)).count() <= 1

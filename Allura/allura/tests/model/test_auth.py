@@ -13,6 +13,7 @@ import allura.model.auth
 from allura.lib.app_globals import Globals
 from allura import model as M
 from allura.lib import plugin
+from allura.lib import security
 from alluratest.controller import setup_basic_test, setup_global_objects
 
 def setUp():
@@ -62,13 +63,14 @@ def test_openid():
 def test_user():
     assert c.user.url() .endswith('/u/test-admin/')
     assert c.user.script_name .endswith('/u/test-admin/')
-    assert len(list(c.user.my_projects())) == 1
+    assert len(list(c.user.my_projects())) == 2, [ p.shortname for p in c.user.my_projects() ]
     assert M.User.anonymous().project_role().name == '*anonymous'
     u = M.User.register(dict(
             username='nosetest-user'))
     ThreadLocalORMSession.flush_all()
     assert u.private_project().shortname == 'u/nosetest-user'
-    roles = list(u.role_iter())
+    roles = g.credentials.user_roles(
+        u._id, project_id=u.private_project().root_project._id)
     assert len(roles) == 3, roles
     u.set_password('foo')
     provider = plugin.LocalAuthenticationProvider(Request.blank('/'))
@@ -83,11 +85,11 @@ def test_project_role():
     role = M.ProjectRole(project_id=c.project._id, name='test_role')
     c.user.project_role().roles.append(role._id)
     ThreadLocalORMSession.flush_all()
-    for pr in c.user.role_iter():
+    for pr in g.credentials.user_roles(
+        c.user._id, project_id=c.project.root_project._id):
         assert pr.display()
         pr.special
         assert pr.user in (c.user, None)
-        list(pr.role_iter())
 
 @with_setup(setUp)
 def test_default_project_roles():

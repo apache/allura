@@ -17,6 +17,7 @@ from ming.orm.property import FieldProperty, RelationProperty, ForeignIdProperty
 from allura.lib import helpers as h
 from allura.lib import plugin
 from allura.lib import exceptions
+from allura.lib import security
 
 from .session import main_orm_session
 from .session import project_doc_session, project_orm_session
@@ -305,23 +306,18 @@ class Project(MappedClass):
         return self.query.find(dict(parent_id=self._id))
 
     @property
-    def roles(self):
-        from . import auth
-        with h.push_config(c, project=self):
-            root_roles = [
-                role for role in auth.ProjectRole.query.find(dict(
-                        project_id=self.root_project._id))
-                if role.name ]
-            roles = list(auth.ProjectRole.roles_that_reach(*root_roles))
-            return sorted(roles, key=lambda r:r.display())
-
-    @property
     def accolades(self):
         from .artifact import AwardGrant
         return AwardGrant.query.find(dict(granted_to_project_id=self._id)).all()
 
+    @property
+    def named_roles(self):
+        roles = sorted(
+            g.credentials.project_roles(self.root_project._id).named,
+            key=lambda r:r.name.lower())
+        return roles
+
     def install_app(self, ep_name, mount_point=None, mount_label=None, ordinal=0, **override_options):
-        from allura import model as M
         for ep in pkg_resources.iter_entry_points('allura', ep_name):
             App = ep.load()
             break
@@ -358,15 +354,6 @@ class Project(MappedClass):
         with h.push_config(c, project=self, app=app):
             session(cfg).flush()
             app.install(self)
-            admin_role = M.ProjectRole.by_name('Admin', project=self.root_project)
-            if admin_role:
-                for u in admin_role.users_with_role():
-                    M.Mailbox.subscribe(
-                        user_id=u._id,
-                        project_id=self._id,
-                        app_config_id=cfg._id,
-                        artifact=None, topic=None,
-                        type='direct', n=1, unit='day')
         return app
 
     def uninstall_app(self, mount_point):
@@ -421,11 +408,19 @@ class Project(MappedClass):
             return [ (self.neighborhood.name, self.neighborhood.url())] + [ entry ]
 
     def users(self):
-        return [ r.user for r in self.roles if r.user_id is not None ]
+        '''Find all the users who have named roles for this project'''
+        named_roles = security.RoleCache(
+            g.credentials,
+            g.credentials.project_roles(project_id=self.root_project._id).named)
+        return [ r.user for r in named_roles.roles_that_reach if r.user_id is not None ]
 
-    def user_in_project(self, username=None):
+    def user_in_project(self, username):
         from .auth import User
-        return User.query.find({'_id':{'$in':[role.user_id for role in c.project.roles]},'username':username}).first()
+        u = User.by_username(username)
+        named_roles = g.credentials.project_roles(project_id=self.root_project._id).named
+        for r in named_roles.roles_that_reach:
+            if r.user_id == u._id: return u
+        return None
 
     def configure_project(
         self,

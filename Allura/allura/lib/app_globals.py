@@ -40,6 +40,7 @@ from allura.lib.markdown_extensions import ForgeExtension
 from allura.lib import gravatar, plugin
 from allura.lib import helpers as h
 from allura.lib.widgets import analytics
+from allura.lib.security import Credentials
 
 log = logging.getLogger(__name__)
 
@@ -129,6 +130,10 @@ class Globals(object):
             perm_tool = Icon('x', 'ico-config'),
             perm_security = Icon('(', 'ico-lock'),
         )
+
+    @property
+    def credentials(self):
+        return Credentials.get()
 
     def handle_paging(self, limit, page, default=50):
         if limit:

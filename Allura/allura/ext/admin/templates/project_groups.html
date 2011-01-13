@@ -43,7 +43,7 @@ background: transparent !important;
         index=i1,
         id=role._id,
         name=role.name,
-        items=role.users_with_role_directly(),
+        items=g.credentials.users_with_named_role(c.project.root_project._id, role.name),
         settings_href=role.settings_href,
     )}}
     {% endif %}

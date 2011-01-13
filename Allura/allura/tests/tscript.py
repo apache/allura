@@ -6,7 +6,6 @@ from pylons import c
 
 from allura import model as M
 from allura.lib import helpers as h
-from allura.lib.security import roles_with_project_access
 
 log = logging.getLogger(__name__)
 

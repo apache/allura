@@ -45,7 +45,6 @@ def test_project():
     assert p.script_name in p.url()
     assert c.project.shortname == 'test'
     assert '<p>' in c.project.description_html
-    c.project.roles
     try:
         c.project.uninstall_app('hello-test-mount-point')
         ThreadLocalORMSession.flush_all()

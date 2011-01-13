@@ -270,20 +270,20 @@ class TestFunctionalController(TestController):
         summary = 'test assign ticket'
         self.new_ticket(summary=summary)
         response = self.app.get('/p/test/bugs/1/')
-        self.app.post('/bugs/1/update_ticket',{
+        assert 'nobody' in str(response.html.find('div', {'class': 'grid-4 ticket-assigned-to'}))
+        response = self.app.post('/bugs/1/update_ticket',{
             'summary':'zzz',
             'description':'bbb',
             'status':'ccc',
             '_milestone':'',
-            'assigned_to':'test_admin',
+            'assigned_to':'test-admin',
             'tags':'',
             'tags_old':'',
             'labels':'',
             'labels_old':'',
             'comment': ''
-        })
-        response = self.app.get('/p/test/bugs/1/')
-        assert 'nobody' in str(response.html.find('div', {'class': 'grid-4 ticket-assigned-to'}))
+        }).follow()
+        assert 'test-admin' in str(response.html.find('div', {'class': 'grid-4 ticket-assigned-to'}))
         assert '<li><strong>summary</strong>: test assign ticket --&gt; zzz' in response
         assert '<li><strong>status</strong>: open --&gt; ccc' in response
     

@@ -14,15 +14,14 @@ import pymongo
 from pylons import c, g, request
 
 from ming import schema as S
-from ming.orm.ormsession import ThreadLocalORMSession
 from ming.orm import session, state, MappedClass
 from ming.orm import FieldProperty, RelationProperty, ForeignIdProperty
 
 from allura.lib import helpers as h
 from allura.lib import plugin
-from .session import ProjectSession
-from .session import main_doc_session, main_orm_session
-from .session import project_doc_session, project_orm_session
+from allura.lib import security
+from .session import main_orm_session
+from .session import project_orm_session
 
 log = logging.getLogger(__name__)
 
@@ -295,40 +294,22 @@ class User(MappedClass):
         return '/u/' + self.username + '/'
 
     def my_projects(self):
+        '''Find the projects for which this user has a named role.'''
+        reaching_role_ids = g.credentials.user_roles(user_id=self._id).reaching_ids_set
+        reaching_roles = [ ProjectRole.query.get(_id=i) for i in reaching_role_ids ]
+        named_roles = [ r for r in reaching_roles if r.name ]
         seen_project_ids = set()
-        seen_role_ids = set()
-        candidates = ProjectRole.query.find(dict(user_id=self._id)).all()
-        user_project = 'u/' + self.username
-        while candidates:
-            r = candidates.pop(0)
-            if r._id in seen_role_ids: continue
-            seen_role_ids.add(r._id)
-            if r.name and r.project_id not in seen_project_ids:
-                seen_project_ids.add(r.project_id)
-                if r.project.shortname != user_project: 
-                    yield r.project
-            candidates += ProjectRole.query.find(dict(
-                    _id={'$in':r.roles}))
-
-    def role_iter(self):
-        anon_role = ProjectRole.anonymous()
-        auth_role = ProjectRole.authenticated()
-        if anon_role:
-            yield anon_role
-        if self._id and auth_role:
-            yield auth_role
-        if self._id:
-            pr = self.project_role()
-            for role in pr.role_iter():
-                yield role
+        for r in named_roles:
+            if r.project_id in seen_project_ids: continue
+            seen_project_ids.add(r.project_id)
+            yield r.project
 
     def project_role(self, project=None):
+        if project is None: project = c.project
         if self._id is None:
             return ProjectRole.anonymous(project)
-        pr = ProjectRole.by_user(self, project)
-        if pr is not None: return pr
-        if project is None: project = c.project
-        return ProjectRole.upsert(user_id=self._id, project_id=project.root_project._id)
+        else:
+            return ProjectRole.upsert(user_id=self._id, project_id=project.root_project._id)
 
     def set_password(self, new_password):
         return plugin.AuthenticationProvider.get(request).set_password(
@@ -385,11 +366,13 @@ class ProjectRole(MappedClass):
 
     @classmethod
     def by_user(cls, user=None, project=None):
+        if user is None and project is None:
+            return c.user.current_project_role
         if user is None: user = c.user
         if project is None: project = c.project
         pr = cls.query.get(
             user_id=user._id,
-            project_id={'$in':[project.root_project._id, None]})
+            project_id=project.root_project._id)
         if pr is None:
             pr = cls.query.get(
                 user_id=user._id,
@@ -401,7 +384,7 @@ class ProjectRole(MappedClass):
         if project is None: project = c.project
         role = cls.query.get(
             name=name,
-            project_id={'$in':[project.root_project._id, None]})
+            project_id=project.root_project._id)
         if role is None:
             role = cls.query.get(
                 name=name,
@@ -440,40 +423,6 @@ class ProjectRole(MappedClass):
     def user(self):
         if self.user_id is None: return None
         return User.query.get(_id=self.user_id)
-
-    @classmethod
-    def roles_reachable_from(cls, *roots):
-        to_visit = list(roots)
-        visited = set()
-        while to_visit:
-            pr = to_visit.pop(0)
-            if pr in visited: continue
-            visited.add(pr)
-            yield pr
-            to_visit += cls.query.find(dict(_id={'$in':pr.roles})).all()
-
-    @classmethod
-    def roles_that_reach(cls, *roots):
-        to_visit = list(roots)
-        visited = set()
-        while to_visit:
-            pr = to_visit.pop(0)
-            if pr in visited: continue
-            visited.add(pr)
-            yield pr
-            to_visit += cls.query.find(dict(roles=pr._id)).all()
-
-    def users_with_role(self):
-        return [
-            role.user for role in self.roles_that_reach(self) if role.user_id ]
-
-    def users_with_role_directly(self):
-        return [
-            role.user for role in self.query.find(dict(roles=self._id))
-            if role.user_id ]
-
-    def role_iter(self):
-        return self.roles_reachable_from(self)
 
     @property
     def settings_href(self):

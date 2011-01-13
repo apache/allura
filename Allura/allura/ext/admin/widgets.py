@@ -5,6 +5,7 @@ from ew import jinja2_ew as ew
 
 from allura import model as M
 from allura.lib import validators as V
+from allura.lib import security
 from allura.lib.widgets import forms as ff
 
 class CardField(ew_core.Widget):
@@ -61,12 +62,9 @@ class GroupCard(CardField):
 class _GroupSelect(ew.SingleSelectField):
 
     def options(self):
-        roles = sorted(
-            (role for role in c.project.roles if role.name),
-            key=lambda r:r.name)
         options = [
             ew.Option(py_value=role._id, label=role.name)
-            for role in roles ]
+            for role in c.project.named_roles ]
         return options
 
 class PermissionCard(CardField):

@@ -50,7 +50,7 @@ class ForgeBlogApp(Application):
     default_mount_point='blog'
     permissions = ['configure', 'read', 'write',
                     'unmoderated_post', 'post', 'moderate', 'admin']
-    ordinal=13
+    ordinal=14
     installable=True
     config_options = Application.config_options
     show_discussion=True

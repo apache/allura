@@ -202,7 +202,6 @@ class ForgeTrackerApp(Application):
         
     def install(self, project):
         'Set up any default permissions and roles here'
-
         super(ForgeTrackerApp, self).install(project)
         # Setup permissions
         role_developer = M.ProjectRole.by_name('Developer')._id
@@ -305,9 +304,7 @@ class RootController(BaseController):
             # and pull them out in the order given by ticket_numbers
             tickets = [ ticket_for_num[tn] for tn in ticket_numbers if tn in ticket_for_num ]
             if not has_artifact_access('read')():
-                my_role_ids = set(pr._id for pr in c.user.project_role().role_iter())
-                tickets = [ t for t in tickets
-                            if has_artifact_access('read', t, user_roles=my_role_ids) ]
+                tickets = [ t for t in tickets if has_artifact_access('read', t)() ]
         sortable_custom_fields=c.app.globals.sortable_custom_fields_shown_in_search()
         if not columns:
             columns = [dict(name='ticket_num', sort_name='ticket_num_i', label='Ticket Number', active=True),

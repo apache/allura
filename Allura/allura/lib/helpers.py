@@ -85,25 +85,27 @@ def find_executable(exe_name):
         path = os.path.join(dirname, exe_name)
         if os.access(path, os.X_OK): return path
 
-def make_neighborhoods(uids):
-    from allura import model as M
-    result = (M.Neighborhood.query.get(_id=uid) for uid in uids)
-    return (r for r in result if r is not None)
+def make_neighborhoods(ids):
+    return _make_xs('Neighborhood', ids)
 
-def make_projects(uids):
-    from allura import model as M
-    result = (M.Project.query.get(_id=uid) for uid in uids)
-    return (r for r in result if r is not None)
+def make_projects(ids):
+    return _make_xs('Project', ids)
 
-def make_users(uids):
-    from allura import model as M
-    result = (M.User.query.get(_id=uid) for uid in uids)
-    return (r for r in result if r is not None)
+def make_users(ids):
+    return _make_xs('User', ids)
 
 def make_roles(ids):
+    return _make_xs('ProjectRole', ids)
+
+def _make_xs(X, ids):
     from allura import model as M
-    result = (M.ProjectRole.query.get(_id=id) for id in ids)
-    return (pr for pr in result if pr is not None)
+    X = getattr(M, X)
+    ids = list(ids)
+    results = dict(
+        (r._id, r)
+        for r in X.query.find(dict(_id={'$in':ids})))
+    result = ( results.get(i) for i in ids )
+    return ( r for r in result if r is not None )
 
 @contextmanager
 def push_config(obj, **kw):

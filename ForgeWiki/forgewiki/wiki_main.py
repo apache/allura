@@ -580,8 +580,6 @@ class PageController(BaseController):
             require(has_artifact_access('create'))
             self.page = WM.Page.upsert(self.title)
             self.page.viewable_by = ['all']
-            for u in M.ProjectRole.by_name('Admin').users_with_role():
-                self.page.subscribe(user=u)
         require(has_artifact_access('edit', self.page))
         if tags: tags = tags.split(',')
         else: tags = []

@@ -47,14 +47,7 @@ class AdminWidgets(WidgetController):
 
     @expose('jinja:widgets/users.html')
     def users(self):
-        def uniq(users): 
-            t = {}
-            for user in users:
-                t[user.username] = user
-            return t.values()
-        # remove duplicates, ticket #195
-        project_users = uniq([r.user for r in c.project.roles if r.user])
-        return dict(project_users=project_users)
+        return dict(project_users=c.project.users())
 
     @expose('jinja:widgets/tool_status.html')
     def tool_status(self):
@@ -499,9 +492,7 @@ class GroupsController(BaseController):
     def index(self, **kw):
         c.admin_modal = W.admin_modal
         c.card = W.group_card
-        roles = list(sorted(
-            (role for role in c.project.roles if role.name and role.name[0] != '*'),
-            key=lambda r:r.name))
+        roles = c.project.named_roles
         roles.append(None)
         return dict(roles=roles)
 

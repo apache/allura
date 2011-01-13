@@ -85,6 +85,7 @@ def _make_core_app(root, global_conf, full_stack=True, **app_conf):
 
     app = StaticFilesMiddleware(app, app_conf.get('static.script_name'))
     app = set_scheme_middleware(app)
+    app = credentials_middleware(app)
 
     return app
     
@@ -94,6 +95,13 @@ def set_scheme_middleware(app):
             environ['wsgi.url_scheme'] = 'https'
         return app(environ, start_response)
     return SchemeMiddleware
+
+def credentials_middleware(app):
+    def CredentialsMiddleware(environ, start_response):
+        from allura.lib import security
+        environ['allura.credentials'] = security.Credentials()
+        return app(environ, start_response)
+    return CredentialsMiddleware
 
 def get_tg_vars(context):
     import pylons, tg

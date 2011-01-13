@@ -149,8 +149,15 @@ class Application(object):
     @react('forge.project_updated')
     def subscribe_new_admin(self, routing_key, doc):
         if str(c.project._id) == doc['project_id']:
-            for u in model.ProjectRole.by_name('Admin').users_with_role():
-                model.Mailbox.subscribe(type='direct', user_id=u._id, project_id=doc['project_id'], app_config_id=self.config._id)
+            self.subscribe_admins()
+
+    def subscribe_admins(self):
+        for uid in g.credentials.userids_with_named_role(self.project._id, 'Admin'):
+            model.Mailbox.subscribe(
+                type='direct',
+                user_id=uid,
+                project_id=self.project._id,
+                app_config_id=self.config._id)
 
     @classmethod
     def default_options(cls):
@@ -167,6 +174,7 @@ class Application(object):
             description='Forum for %s comments' % self.config.options.mount_point)
         session(discussion).flush()
         self.config.discussion_id = discussion._id
+        self.subscribe_admins()
 
     def uninstall(self, project=None, project_id=None):
         'Whatever logic is required to tear down a tool'

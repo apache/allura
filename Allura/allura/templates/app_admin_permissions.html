@@ -43,7 +43,7 @@
                   <form method="POST" action="add_perm">
                     <input type="hidden" name="permission" value="{{p}}"/>
                     <select name="role">
-                      {% for role in c.project.roles %}
+                      {% for role in c.project.named_roles %}
                         <option value="{{role._id}}">{{role.display()}}</option>
                       {% endfor %}
                     </select>

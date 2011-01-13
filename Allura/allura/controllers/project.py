@@ -24,7 +24,7 @@ from allura.lib import helpers as h
 from allura.lib import utils
 from allura.lib.decorators import require_post
 from allura.controllers.error import ErrorController
-from allura.lib.security import require, has_project_access, has_neighborhood_access, has_artifact_access
+from allura.lib.security import require, has_project_access, has_neighborhood_access
 from allura.lib.widgets import form_fields as ffw
 from allura.lib.widgets import forms as forms
 from allura.lib.widgets import project_list as plw
@@ -298,10 +298,10 @@ class ProjectController(object):
     @expose('json:')
     def user_search(self,term=''):
         name_regex = re.compile('(?i)%s' % re.escape(term))
+        roles = g.credentials.project_roles(c.project.root_project._id)
         users = M.User.query.find({
-                    '_id':{'$in':[role.user_id for role in c.project.roles]},
-                    'display_name':name_regex},
-                    ['display_name','username'])
+                    '_id':{'$in':[role.user_id for role in roles]},
+                    'display_name':name_regex})
         users = [dict(label='%s (%s)' % (u.display_name, u.username),
                       value=u.username,
                       id=u.username) for u in users.sort('username').all()]

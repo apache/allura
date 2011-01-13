@@ -32,7 +32,7 @@ class ForgeChatApp(Application):
     status='alpha'
     default_mount_label='Chat'
     default_mount_point='chat'
-    ordinal=12
+    ordinal=13
     installable = True
     permissions = ['configure', 'read' ]
     config_options = Application.config_options + [
