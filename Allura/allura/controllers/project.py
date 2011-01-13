@@ -118,7 +118,7 @@ class NeighborhoodController(object):
         c.custom_sidebar_menu = []
         if self.neighborhood.name == 'Projects':
             c.custom_sidebar_menu += [
-                SitemapEntry('+ Add a Project', self.neighborhood.url()+'add_project'),
+                SitemapEntry('Add a Project', self.neighborhood.url()+'add_project', ui_icon=g.icons['plus']),
                 SitemapEntry('')
             ]
         c.custom_sidebar_menu = c.custom_sidebar_menu + [
