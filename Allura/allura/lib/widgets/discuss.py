@@ -121,7 +121,7 @@ class EditPost(ff.ForgeForm):
         fields = []
         fields.append(ffw.AutoResizeTextarea(
             name='text',
-            attrs={'style':'height:7em; width:98%'}))
+            attrs={'style':'min-height:7em; width:97%'}))
         fields.append(ew.HiddenField(name='forum', if_missing=None))
         if ew_core.widget_context.widget:
             # we are being displayed
@@ -362,11 +362,8 @@ class Thread(HierWidget):
                 yield r
         yield ew.JSScript('''
         $(document).ready(function () {
-            var thread_reply = $('a.sidebar_thread_reply');
-            var thread_tag = $('a.sidebar_thread_tag');
+            var thread_tag = $('a.thread_tag');
             var thread_spam = $('a.sidebar_thread_spam');
-            var new_post_holder = $('#new_post_holder');
-            var new_post_create = $('#new_post_create');
             var tag_thread_holder = $('#tag_thread_holder');
             var allow_moderate = $('#allow_moderate');
             var mod_thread_link = $('#mod_thread_link');
@@ -375,19 +372,6 @@ class Thread(HierWidget):
                 if (mod_thread_form.length) {
                     mod_thread_link.click(function (e) {
                         mod_thread_form.show();
-                        return false;
-                    });
-                }
-            }
-            if (thread_reply.length) {
-                if (new_post_holder.length) {
-                    thread_reply[0].style.display='block';
-                    thread_reply.click(function (e) {
-                        new_post_create.hide();
-                        new_post_holder.show();
-                        // focus the submit to scroll to the bottom, then focus the subject for them to start typing
-                        $('input[type="submit"]', new_post_holder).focus();
-                        $('input[type="text"]', new_post_holder).focus();
                         return false;
                     });
                 }

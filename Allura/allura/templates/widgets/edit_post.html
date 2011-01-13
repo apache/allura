@@ -2,7 +2,7 @@
   <form method="post" action="{{action}}"
         enctype="multipart/form-data">
     {% if show_subject %}
-    <input name="subject" style="width:98%"
+    <input name="subject" style="width:97%"
            value="{{value and (value.subject or '(no subject)')}}"/>
     {% endif %}
     {{widget.display_field_by_idx(0)}}

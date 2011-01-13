@@ -161,12 +161,7 @@ class ForgeDiscussionApp(Application):
                 l.append(moderate_link)
             # if we are in a thread, provide placeholder links to use in js
             if '/thread/' in request.url:
-                l += [
-                    SitemapEntry('Reply to This', '#', ui_icon=g.icons['reply'], className='sidebar_thread_reply'),
-                    SitemapEntry('Label This', '#', ui_icon=g.icons['tag'], className='sidebar_thread_tag'),
-                    SitemapEntry('Follow This', 'feed.rss', ui_icon=g.icons['feed']),
-                    SitemapEntry('Mark as Spam', 'flag_as_spam', ui_icon=g.icons['flag'], className='sidebar_thread_spam')
-                ]
+                l.append(SitemapEntry('Mark as Spam', 'flag_as_spam', ui_icon=g.icons['flag'], className='sidebar_thread_spam'))
             recent_topics = [ SitemapEntry(h.text.truncate(thread.subject, 72), thread.url(), className='nav_child',
                                 small=thread.num_replies)
                    for thread in DM.ForumThread.query.find(dict(app_config_id=self.config._id)).sort('mod_date', pymongo.DESCENDING).limit(3)

@@ -3,15 +3,17 @@
 <div>
   <div id="{{value.slug}}" class="discussion-post">
     <div class="row">
-      <div class="grid-3 tcenter">
+      <div class="grid-2 tcenter">
        <p class="gravatar">
         {% set size = value.parent and 32 or 48 %}
         {{lib.gravatar(value.author(), size=size)}}<br>
-        <small><a href="{{value.author().url()}}">{{value.author().display_name}}</a></small><br />{{h.ago(value.timestamp)}}
+        <small><a href="{{value.author().url()}}">{{value.author().display_name}}</a></small>
+        <br>
+        <small>{{h.ago(value.timestamp)}}</small>
        </p>
       </div>
 
-      <div class="grid-13" style="width: {{indent == 0 and 475 or (indent <= 40 and 465-indent*10 or 65)}}px">
+      <div class="grid-14" style="width: {{indent == 0 and 525 or (indent <= 40 and 515-indent*10 or 65)}}px">
         <div class="display_post">
           {% if show_subject %}
             <b>{{value.subject or '(no subject)'}}<br/></b>
@@ -54,7 +56,7 @@
         </div>
         
         <div class="options grid-3">
-        <a href="" class="reply_post btn">Reply</a>
+        <a href="" class="reply_post btn"><b data-icon="{{g.icons['reply'].char}}" class="ico {{g.icons['reply'].css}}"></b>Reply</a>
         <div style="clear:both">
           <a href="{{tg.url(url.current(),dict(page=page,limit=limit))}}#{{value.slug}}" class="little_link shortlink"><span>Link</span></a><br/>
           <a href="" class="edit_post little_link"><span>Edit</span></a><br/>
@@ -78,13 +80,13 @@
         {% if h.has_artifact_access('post', value.thread)() %}
         <div class="row reply_post_form" style="display:none">
           <div class="reply">
-            <div class="grid-3 tcenter">
+            <div class="grid-2 tcenter">
               <p class="gravatar">
                 {{lib.gravatar(c.user, size=32)}}<br>
                 <small><a href="{{c.user.url()}}">{{c.user.display_name}}</a></small>
               </p>
             </div>
-            <div class="grid-13" style="width: {{indent <= 40 and 575-indent*10 or 175}}px">
+            <div class="grid-14" style="width: {{indent <= 40 and 625-indent*10 or 225}}px">
               {{widgets.edit_post.display(
                 submit_text='Post Reply',
                 action=value.url()+'reply',
