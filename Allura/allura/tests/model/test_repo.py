@@ -52,7 +52,7 @@ class _TestWithRepo(_Test):
         if isnew:
             ci.committed.email=c.user.email_addresses[0]
             ci.authored.email=c.user.email_addresses[0]
-            ci.authored.date = datetime.now()
+            ci.authored.date = datetime.utcnow()
             ci.message='summary\n\nddescription'
             ci.set_context(self.repo)
             ci.tree_id = 't_' + object_id
