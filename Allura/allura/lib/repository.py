@@ -119,7 +119,11 @@ class RepositoryApp(Application):
                             className='nav_child',
                             small=b.count))
                 elif i == max_tags:
-                    links.append(SitemapEntry('More Tags', default_branch_url+'tags/'), className='nav_child')
+                    links.append(
+                        SitemapEntry(
+                            'More Tags',
+                            default_branch_url+'tags/',
+                            className='nav_child'))
                     break
         return links
 
