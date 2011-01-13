@@ -7,28 +7,32 @@
   <div class="markdown_preview" style="display:none"></div>
   <div class="modal markdown_help" style="display:none">
     <b data-icon="{{g.icons['delete'].char}}" class="ico {{g.icons['delete'].css}} close"></b>
-    <p>You can use
-      <a href="http://daringfireball.net/projects/markdown/">MarkDown</a>
-      Syntax here</p>
-    <h4>Example Input</h4>
-    <pre>
-# First-level heading
+    <h1 id="popup_title">Markdown Syntax</h1>
+    &nbsp;
+    <div id="popup_contents">
+      <p>You can use
+        <a href="http://daringfireball.net/projects/markdown/">MarkDown</a>
+        Syntax here</p>
+      <h4>Example Input</h4>
+      <pre>
+  # First-level heading
 
-Some *emphasized* and **strong** text
+  Some *emphasized* and **strong** text
 
-#### Fourth-level heading
+  #### Fourth-level heading
 
-</pre>
-    <h4>Example Rendering</h4>
-    <div>{{g.markdown.convert('''
-# First-level heading
+  </pre>
+      <h4>Example Rendering</h4>
+      <div>{{g.markdown.convert('''
+  # First-level heading
 
-Some *emphasized* and **strong** text
+  Some *emphasized* and **strong** text
 
-#### Fourth-level heading
+  #### Fourth-level heading
 
-''')|safe}}</div>
-    <p><a href="http://daringfireball.net/projects/markdown/syntax">More Examples</a></p>
+  ''')|safe}}</div>
+      <p><a href="http://daringfireball.net/projects/markdown/syntax">More Examples</a></p>
+    </div>
   </div>
   <input type="hidden" class="markdown_project" value="{{c.project.shortname}}">
   <input type="hidden" class="markdown_app" value="{{c.app.config.options.mount_point}}">
