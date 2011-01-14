@@ -97,6 +97,43 @@ class File(MappedClass):
         return iter(fp)
 
     @classmethod
+    def save_thumbnail(cls, filename, image,
+                   content_type,
+                   thumbnail_size=None,
+                   thumbnail_meta=None,
+                   square=False):
+        format = image.format
+        height = image.size[0]
+        width = image.size[1]
+        if square and height != width:
+            sz = max(width, height)
+            if 'transparency' in image.info:
+                new_image = Image.new('RGBA', (sz,sz))
+            else:
+                new_image = Image.new('RGB', (sz,sz), 'white')
+            if height < width:
+                # image is wider than tall, so center horizontally
+                new_image.paste(image, ((width-height)/2, 0))
+            elif height > width:
+                # image is taller than wide, so center vertically
+                new_image.paste(image, (0, (height-width)/2))
+            image = new_image
+
+        if thumbnail_size:
+            image.thumbnail(thumbnail_size, Image.ANTIALIAS)
+
+        thumbnail_meta = thumbnail_meta or {}
+        thumbnail = cls(
+            filename=filename, content_type=content_type, **thumbnail_meta)
+        with thumbnail.wfile() as fp_w:
+            if 'transparency' in image.info:
+                image.save(fp_w, format, transparency=image.info['transparency'])
+            else:
+                image.save(fp_w, format)
+
+        return thumbnail
+
+    @classmethod
     def save_image(cls, filename, fp,
                    content_type=None,
                    thumbnail_size=None,
@@ -123,32 +160,8 @@ class File(MappedClass):
         else:
             original = None
 
-        if square:
-            height = image.size[0]
-            width = image.size[1]
-            sz = max(width, height)
-            if 'transparency' in image.info:
-                new_image = Image.new('RGBA', (sz,sz))
-            else:
-                new_image = Image.new('RGB', (sz,sz), 'white')
-            if height < width:
-                # image is wider than tall, so center horizontally
-                new_image.paste(image, ((width-height)/2, 0))
-            elif height > width:
-                # image is taller than wide, so center vertically
-                new_image.paste(image, (0, (height-width)/2))
-            if height != width:
-                image = new_image
-        if thumbnail_size:
-            image.thumbnail(thumbnail_size, Image.ANTIALIAS)
-        thumbnail_meta = thumbnail_meta or {}
-        thumbnail = cls(
-            filename=filename, content_type=content_type, **thumbnail_meta)
-        with thumbnail.wfile() as fp_w:
-            if 'transparency' in image.info:
-                image.save(fp_w, format, transparency=image.info['transparency'])
-            else:
-                image.save(fp_w, format)
+        thumbnail = cls.save_thumbnail(filename, image, content_type, thumbnail_size, thumbnail_meta, square)
+
         return original, thumbnail
         
     def is_image(self):
