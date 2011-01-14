@@ -32,6 +32,7 @@ class ProjectHomeApp(Application):
     widget = ProjectWidgets
     installable = False
     tool_label = 'home'
+    default_mount_label='Project Home'
     icons={
         24:'images/home_24.png',
         32:'images/home_32.png',
