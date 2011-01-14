@@ -11,14 +11,14 @@
   <h3>Click to install</h3>
   <div class="nested-grid-container">
     {% for tool in installable_tools %}
-      <span class="tcenter grid-4">
+      <span class="tcenter grid-4 installable_tool">
         <a class="install_trig" data-tool="{{ tool['name'] }}">
           <span class="tool_title">{{ tool['app'].tool_label }}{{' (%s)' % tool.app.status if tool.app.status != 'production' else ''}}</span><br />
           <img src="{{ g.theme.app_icon_url(tool['app'], 32) or 'unk.png' }}">
         </a>
       </span>
     {% endfor %}
-    <span class="tcenter grid-4">
+    <span class="tcenter grid-4 installable_tool">
       <a class="install_trig" data-tool="">
         <span class="tool_title">Subproject</span><br />
         <img src="{{ g.theme.app_icon_url('subproject', 32) }}">
