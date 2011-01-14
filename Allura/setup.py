@@ -97,6 +97,7 @@ setup(
     ensure_index = allura.command:EnsureIndexCommand
     script = allura.command:ScriptCommand
     set-tool-access = allura.command:SetToolAccessCommand
+    rethumb = allura.command:RethumbCommand
     
     [easy_widgets.resources]
     ew_resources=allura.config.resources:register_ew_resources
