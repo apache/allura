@@ -119,7 +119,7 @@ class Page(VersionedArtifact):
         return 'Discussion for %s page' % self.title
 
     def url(self):
-        s = self.app_config.url() + h.urlquote(self.title) + '/'
+        s = self.app_config.url() + h.urlquote(self.title.encode('utf-8')) + '/'
         if self.deleted:
             s += '?deleted=True'
         return s
