@@ -197,7 +197,7 @@ class SubscriptionForm(ew.SimpleForm):
                 var discussion = this;
                 var follow_btn = $('.follow', discussion);
                 var email_btn = $('.email', discussion);
-                var action_holder = $('h2.dark small');
+                var action_holder = $('h2.title small');
                 action_holder.append(follow_btn);
                 action_holder.append(email_btn);
                 follow_btn.show();

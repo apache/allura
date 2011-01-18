@@ -118,7 +118,7 @@ class ThreadHeader(DW.ThreadHeader):
             var tag_btn = $('div.actions a.thread_tag');
             var feed_btn = $('div.actions a.thread_feed');
             var mod_btn = $('div.actions a.mod_thread_link');
-            var action_holder = $('h2.dark small');
+            var action_holder = $('h2.title small');
             action_holder.append(tag_btn);
             tag_btn.show();
             action_holder.append(feed_btn);
