@@ -1,11 +1,13 @@
 <form method="post" action="{{action}}">
     {% if show_subject %}
+    <div class="grid-19">&nbsp;</div>
     <div class="grid-19">
       <label for="subject" class="cr">Subject:</label>
-      <input name="subject"{% if value %} value="{{value.subject or '(no subject)'}}"{% endif %}>
+      <input name="subject" style="width: 90%"{% if value %} value="{{value.subject or '(no subject)'}}"{% endif %}>
     </div>
     {% endif %}
     {% if forums %}
+    <div class="grid-19">&nbsp;</div>
     <div class="grid-19">
       <label for="forum" class="cr">Forum:</label>
       <select name="forum">
@@ -15,11 +17,13 @@
       </select>
     </div>
     {% endif %}
+    <div class="grid-19">&nbsp;</div>
     <div class="grid-19">
       <label for="text" class="cr">Description:</label>
       <textarea name="text" rows="12" class="wide">{{(value and 'text' in value) and value['text'] or ''}}</textarea>
     </div>
+    <div class="grid-19">&nbsp;</div>
     <div class="grid-19">
-      <input type="submit" value="{{submit_text}}">
+      <input type="submit" value="{{submit_text}}"> <a href=".." class="btn link">Cancel</a>
     </div>
 </form>
