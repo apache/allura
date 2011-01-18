@@ -93,7 +93,7 @@ class PostFilter(ff.ForgeForm):
                 ])
         ]
 
-class TagPost(ew.SimpleForm):
+class TagPost(ff.ForgeForm):
 
     # this ickiness is to override the default submit button
     def __call__(self, **kw):
@@ -250,7 +250,8 @@ class ThreadHeader(HierWidget):
     widgets=dict(
         page_list=ffw.PageList(),
         page_size=ffw.PageSize(),
-        moderate_thread=ModerateThread())
+        moderate_thread=ModerateThread(),
+        tag_post=TagPost())
 
 class Post(HierWidget):
     template='jinja:widgets/post_widget.html'
@@ -353,7 +354,6 @@ class Thread(HierWidget):
         thread_header=ThreadHeader(),
         post_thread=PostThread(),
         post=Post(),
-        tag_post=TagPost(),
         edit_post=EditPost(submit_text='Submit'))
     def resources(self):
         for r in super(Thread, self).resources(): yield r
@@ -378,11 +378,19 @@ class Thread(HierWidget):
             }
             if (thread_tag.length) {
                 if (tag_thread_holder.length) {
+                    var submit_button = $('input[type="submit"]', tag_thread_holder);
+                    var cancel_button = $('<a href="#" class="btn link">Cancel</a>').click(function(evt){
+                        evt.preventDefault();
+                        tag_thread_holder.hide();
+                        thread_tag.removeClass('active');
+                    });
+                    submit_button.after(cancel_button);
                     thread_tag[0].style.display='block';
                     thread_tag.click(function (e) {
                         tag_thread_holder.show();
-                        // focus the submit to scroll to the bottom, then focus the subject for them to start typing
-                        $('input[type="submit"]', tag_thread_holder).focus();
+                        thread_tag.addClass('active');
+                        // focus the submit to scroll to the form, then focus the subject for them to start typing
+                        submit_button.focus();
                         $('input[type="text"]', tag_thread_holder).focus();
                         return false;
                     });

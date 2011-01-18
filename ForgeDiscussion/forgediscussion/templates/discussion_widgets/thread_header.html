@@ -22,3 +22,9 @@
     <div style="clear: both;">&nbsp;</div>
   </div>
 {% endif %}
+
+{% if h.has_artifact_access('post', value)() %}
+  <div id="tag_thread_holder" style="display:none" class="grid-18">
+    {{widgets.tag_post.display(value=value,submit_text='Save', action=value.url() + 'tag')}}
+  </div>
+{% endif %}
