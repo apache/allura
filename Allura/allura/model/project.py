@@ -126,6 +126,7 @@ class Project(MappedClass):
     show_download_button=FieldProperty(bool, if_missing=True)
     short_description=FieldProperty(str, if_missing='')
     description=FieldProperty(str, if_missing='')
+    homepage_title=FieldProperty(str, if_missing='')
     database=FieldProperty(str)
     database_uri=FieldProperty(str)
     is_root=FieldProperty(bool)

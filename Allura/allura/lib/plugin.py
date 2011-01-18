@@ -198,8 +198,8 @@ class ProjectRegistrationProvider(object):
                     shortname=shortname,
                     name=name,
                     short_description='',
-                    description=('# ' + name + '\n\n'
-                                 + 'You can edit this description in the admin page'),
+                    description=('You can edit this description in the admin page'),
+                    homepage_title = '# ' + name,
                     database_uri=database_uri,
                     last_updated = datetime.utcnow(),
                     is_root=True)
@@ -230,9 +230,8 @@ class ProjectRegistrationProvider(object):
                         shortname=shortname,
                         name=shortname,
                         short_description='',
-                        description=(shortname + '\n'
-                                     + '=' * 80 + '\n\n'
-                                     + 'You can edit this description in the admin page'),
+                        description=('You can edit this description in the admin page'),
+                        homepage_title=shortname,
                         database_uri=M.Project.default_database_uri(shortname),
                         last_updated = datetime.utcnow(),
                         is_root=True)

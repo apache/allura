@@ -274,11 +274,14 @@ class ProjectAdminController(BaseController):
     @expose()
     @require_post
     @validate(validators=dict(description=UnicodeString()))
-    def update_homepage(self, description=None, **kw):
+    def update_homepage(self, description=None, homepage_title=None, **kw):
         require(has_project_access('update'), 'Update access required')
         if description != c.project.description:
             h.log_action(log, 'change project description').info('')
             c.project.description = description
+        if homepage_title != c.project.homepage_title:
+            h.log_action(log, 'change project homepage title').info('')
+            c.project.homepage_title = homepage_title
         g.publish('react', 'forge.project_updated')
         redirect('homepage')
 

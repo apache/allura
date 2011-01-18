@@ -2,7 +2,9 @@
 {% set show_right_bar = True %}
 {% extends g.theme.master %}
 
-{% block title %}{{c.project.name}} / Dashboard{% endblock %}
+{% block title %}{{c.project.homepage_title}}{% endblock %}
+
+{% block header %}{{c.project.homepage_title}}{% endblock %}
 
 {% block extra_css %}
     <link rel="stylesheet" type="text/css" 
