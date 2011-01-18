@@ -10,6 +10,7 @@ from paste.deploy import appconfig
 import ming
 from allura.config.environment import load_environment
 from allura.lib.custom_middleware import MagicalC, environ
+from allura.lib import security
 
 class EmptyClass(object): pass
 
@@ -38,7 +39,9 @@ class Command(command.Command):
             M=model
             log = logging.getLogger('allura.command')
             log.info('Initialize reactor with config %r', self.args[0])
-            environ.set_environment({})
+            environ.set_environment({
+                    'allura.credentials':security.Credentials()
+                    })
             load_environment(conf.global_conf, conf.local_conf)
             try:
                 pylons.c._current_obj()
