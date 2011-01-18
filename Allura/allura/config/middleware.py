@@ -106,7 +106,7 @@ def credentials_middleware(app):
 def get_tg_vars(context):
     import pylons, tg
     from allura.lib import helpers as h
-    from urllib import quote_plus
+    from urllib import quote, quote_plus
     context.setdefault('g', pylons.g)
     context.setdefault('c', pylons.c)
     context.setdefault('h', h)
@@ -116,5 +116,6 @@ def get_tg_vars(context):
     context.setdefault('tg', dict(
             config=tg.config,
             flash_obj=tg.flash,
+            quote=quote,
             quote_plus=quote_plus,
             url=tg.url))

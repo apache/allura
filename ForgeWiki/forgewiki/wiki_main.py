@@ -304,7 +304,7 @@ class RootController(BaseController):
         q = q.skip(start).limit(int(limit))
         for page in q:
             recent_edit = page.history().first()
-            p = dict(title=page.title, deleted=page.deleted)
+            p = dict(title=page.title, url=page.url(), deleted=page.deleted)
             if recent_edit:
                 p['updated'] = recent_edit.timestamp
                 p['user_label'] = recent_edit.author.display_name

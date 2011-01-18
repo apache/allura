@@ -3,7 +3,7 @@ import os
 import logging
 import string
 from collections import defaultdict
-from urllib import quote, quote_plus
+from urllib import quote, quote
 from urlparse import urljoin
 from ConfigParser import RawConfigParser
 from pprint import pformat
@@ -119,7 +119,7 @@ class ForgeProcessor(object):
                 new_link.url, link)
         elif self._use_wiki and ':' not in link:
             return '<a href="%s" class="notfound">[%s]</a>' % (
-                quote_plus(link), link)
+                quote(link), link)
         else:
             return link
 

@@ -21,7 +21,7 @@
   <tbody>
     {% for page in pages %}
       <tr class="{{'deleted ' if page.deleted else ''}}{{loop.cycle('', 'even')}}">
-        <td><a href="../{{h.urlquote(page['title'])+'/'+('?deleted=True' if page.deleted else '')}}">{{page['title']}}</a></td>
+        <td><a href="{{page.url|safe}}">{{page['title']}}</a></td>
       
         {% if 'user_label' in page %}
           <td>{{page['user_label']}}</td>

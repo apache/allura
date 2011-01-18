@@ -37,7 +37,7 @@ def monkeypatch(obj):
     return patchit
 
 def urlquote(url):
-    return urllib.quote_plus(url)
+    return urllib.quote(url)
 
 def really_unicode(s):
     if s is None: return u''
