@@ -142,6 +142,7 @@ class NeighborhoodController(object):
 
     @h.vardec
     @expose()
+    @require_post
     @validate(W.add_project, error_handler=add_project)
     def register(self, project_unixname=None, project_description=None, project_name=None, neighborhood=None, **kw):
         require(has_neighborhood_access('create', self.neighborhood), 'Create access required')
