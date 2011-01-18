@@ -13,7 +13,7 @@ function update_tickets(){
     });
 
     $.post('../update_tickets', data, function(){
-        flash('<p>Updated '+count+' ticket'+(count!=1 ? 's' : '')+'</p>')
+        flash('Updated '+count+' ticket'+(count!=1 ? 's' : ''))
         location.reload();
     });
 }
