@@ -28,15 +28,15 @@
   <form method="post" action="update_mounts" id="install_form" style="display:none">
     <input type="hidden" name="new.ordinal" value="{{installable_tools|length + c.project.direct_subprojects|length}}"/>
     <input type="hidden" name="new.ep_name" class="new_ep_name">
-    <label class="grid-4">Label</label>
-    <div class="grid-9"><input type="text" name="new.mount_label" class="new_mount_label"></div>
-    <label class="grid-4">Mount Point</label>
-    <div class="grid-9"><input type="text" name="new.mount_point" class="new_mount_point"></div>
+    <label class="grid-13">Label</label>
+    <div class="grid-13"><input type="text" name="new.mount_label" class="new_mount_label"></div>
+    <label class="grid-13">Mount Point</label>
+    <div class="grid-13"><input type="text" name="new.mount_point" class="new_mount_point"></div>
     <div class="grid-13">&nbsp;</div>
     <hr>
     <div class="grid-13">&nbsp;</div>
     <div class="grid-13">
-      <input type="submit" value="Save" name="new.install">
+      <input type="submit" value="Save" name="new.install"> <a href="#" class="close btn link">Cancel</a>
     </div>
   </form>
   {{c.install_modal.display(content='<h1>Install <span id="install_tool_label">Tool</span></h1>')}}
