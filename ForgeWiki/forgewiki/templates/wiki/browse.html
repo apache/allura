@@ -38,7 +38,7 @@
   </tbody>
 </table>  
 {% if can_delete %}
-  <a id="toggle_deleted" href="#" style="display:none"><span></span> deleted pages</a>
+  <p><a id="toggle_deleted" href="#" style="display:none"><span></span> deleted pages</a></p>
 {% endif %}
 {{c.page_list.display(limit=limit, page=page, count=count)}}
 {% endblock %}
