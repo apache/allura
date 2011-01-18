@@ -8,7 +8,7 @@ from pylons import c
 from paste.deploy.converters import asint
 
 from ming.orm import MappedClass, mapper, ThreadLocalORMSession, session, state
-from . import base
+from allura.command import base
 import forgetracker.model
 
 
@@ -53,8 +53,9 @@ class RethumbCommand(base.Command):
 
     def command(self):
         from allura import model as M
-        self.basic_setup()
+#        self.basic_setup()
 
+        existing_thumbs = 0
         base.log.info('Collecting application attachment classes')
         package_model_map = {}
         for name, cls in MappedClass._registry.iteritems():
@@ -75,7 +76,7 @@ class RethumbCommand(base.Command):
             c.project = p
 
             if self.options.force:
-                existing_thumbs = M.BaseAttachment.query.find({'type': 'thumbnail'}).count()
+                existing_thumbs += M.BaseAttachment.query.find({'type': 'thumbnail'}).count()
                 base.log.info('Removing %d current thumbnails (per --force)', existing_thumbs)
                 M.BaseAttachment.query.remove({'type': 'thumbnail'})
 
@@ -107,3 +108,10 @@ class RethumbCommand(base.Command):
                 base.log.warning('There were %d thumbs before --force operation started, but %d recreated', existing_thumbs, self.created_thumbs)
 
         ThreadLocalORMSession.flush_all()
+
+
+if __name__ == '__main__':
+    command = RethumbCommand('rethumb')
+    command.parse_args(sys.argv)
+    command.command()
+
