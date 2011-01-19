@@ -36,8 +36,9 @@
             <td><a href="{{bin.url()}}">{{bin.summary}}</a></td>
             <td>{{bin.terms}}</td>
             <td>
-              <a href="delbin?summary={{h.urlquote(bin.summary)}}" class="btn">Delete</a>
+              <a href="delbin?bin={{bin._id | string}}" class="btn">Delete</a>
               <a href="#" class="btn bin_edit_activate">Edit</a>
+              <input type="hidden" name="id" value="{{bin._id | string}}">
               <input type="hidden" name="summary" value="{{bin.summary}}">
               <input type="hidden" name="terms" value="{{bin.terms}}">
             </td>
@@ -56,10 +57,12 @@
     $('a.bin_edit_activate').click(function(){
       form_holder.show();
       var editable_holder = $(this).closest('td');
+      var id = editable_holder.find('input[name=id]').val();
       var summary = editable_holder.find('input[name=summary]').val();
+      var terms = editable_holder.find('input[name=terms]').val();
+      form_holder.find('input[name=bin_form._id]').val(id);
       form_holder.find('input[name=bin_form.summary]').val(summary);
-      form_holder.find('input[name=bin_form.old_summary]').val(summary);
-      form_holder.find('input[name=bin_form.terms]').val(editable_holder.find('input[name=terms]').val());
+      form_holder.find('input[name=bin_form.terms]').val(terms);
       return false;
     });
     $('#cancel_new_bin').click(function(){

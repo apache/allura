@@ -23,6 +23,7 @@ from allura.lib.search import search_artifact
 from allura.lib.decorators import audit, react, require_post
 from allura.lib.security import require, has_artifact_access, has_project_access
 from allura.lib import widgets as w
+from allura.lib import validators as V
 from allura.lib.widgets import form_fields as ffw
 from allura.lib.widgets.subscriptions import SubscribeForm
 from allura.controllers import AppDiscussionController, AppDiscussionRestController
@@ -130,7 +131,7 @@ class ForgeTrackerApp(Application):
         related_urls = []
         milestones = []
         ticket = request.path_info.split(self.url)[-1].split('/')[0]
-        for bin in TM.Bin.query.find(dict(app_config_id=self.config._id)).sort('summary'):
+        for bin in self.bins:
             label = bin.shorthand_id()
             search_bins.append(SitemapEntry(
                     h.text.truncate(label, 72), bin.url(), className='nav_child',
@@ -246,6 +247,10 @@ class ForgeTrackerApp(Application):
         # model.Comment.query.remove(app_config_id)
         TM.Globals.query.remove(app_config_id)
         super(ForgeTrackerApp, self).uninstall(project)
+
+    @property
+    def bins(self):
+        return TM.Bin.query.find(dict(app_config_id=self.config._id)).sort('summary').all()
 
 class RootController(BaseController):
 
@@ -630,21 +635,16 @@ class BinController(BaseController):
     def index(self, **kw):
         require(has_artifact_access('save_searches', app=self.app))
         c.bin_form = W.bin_form
-        bins = TM.Bin.query.find()
-        count=0
-        count = len(bins)
-        return dict(bins=bins or [], count=count, app=self.app)
+        count = len(self.app.bins)
+        return dict(bins=self.app.bins, count=count, app=self.app)
 
     @with_trailing_slash
     @expose('jinja:tracker/bin.html')
     def bins(self):
         require(has_artifact_access('save_searches', app=self.app))
         c.bin_form = W.bin_form
-        bins = TM.Bin.query.find(dict(
-                app_config_id=c.app.config._id))
-        count=0
-        count = len(bins)
-        return dict(bins=bins or [], count=count, app=self.app)
+        count = len(self.app.bins)
+        return dict(bins=self.app.bins, count=count, app=self.app)
 
     @with_trailing_slash
     @expose('jinja:tracker/new_bin.html')
@@ -652,7 +652,6 @@ class BinController(BaseController):
         require(has_artifact_access('save_searches', app=self.app))
         c.bin_form = W.bin_form
         return dict(q=q or '', bin=bin or '', modelname='Bin', page='New Bin', globals=self.app.globals)
-        redirect(request.referer)
 
     @with_trailing_slash
     @h.vardec
@@ -662,17 +661,20 @@ class BinController(BaseController):
     def save_bin(self, bin_form=None, **post_data):
         require(has_artifact_access('save_searches', app=self.app))
         self.app.globals.invalidate_bin_counts()
-        if bin_form['old_summary']:
-            TM.Bin.query.find(dict(summary=bin_form['old_summary'])).first().delete()
-        bin = TM.Bin(summary=bin_form['summary'], terms=bin_form['terms'])
-        bin.app_config_id = self.app.config._id
-        bin.custom_fields = dict()
+        if bin_form['_id']:
+            bin = bin_form['_id']
+            require(lambda:bin.app_config_id==self.app.config._id)
+        else:
+            bin = TM.Bin(app_config_id=self.app.config._id, custom_fields={})
+        bin.summary=bin_form['summary']
+        bin.terms=bin_form['terms']
         redirect('.')
 
     @with_trailing_slash
     @expose()
-    def delbin(self, summary=None):
-        bin = TM.Bin.query.find(dict(summary=summary,)).first()
+    @validate(validators=dict(bin=V.Ming(TM.Bin)))
+    def delbin(self, bin=None):
+        require(lambda:bin.app_config_id==self.app.config._id)
         require(has_artifact_access('save_searches', app=self.app))
         self.app.globals.invalidate_bin_counts()
         bin.delete()

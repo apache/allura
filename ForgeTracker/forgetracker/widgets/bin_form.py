@@ -1,6 +1,8 @@
 import tw.forms as twf
 import ew
+from ew import jinja2_ew
 from allura.lib.widgets import form_fields as ffw
+from allura.lib import validators as V
 
 from pylons import c
 from forgetracker import model
@@ -13,11 +15,13 @@ class BinForm(ew.SimpleForm):
         name="bin_form",
         submit_text = "Save Bin")
 
-    @property
-    def fields(self):
-        fields = [
-            ew.TextField(name='summary', label='Bin Name', validator=fev.UnicodeString(not_empty=True)),
-            ew.TextField(name='terms', label='Search Terms', validator=fev.UnicodeString(not_empty=True)),
-            ew.HiddenField(name='old_summary', label='Old Name', validator=fev.UnicodeString()),
-            ew.HiddenField(name='sort', label='Sort Order', validator=fev.UnicodeString())]
-        return fields
+    class hidden_fields(ew.NameList):
+        _id=jinja2_ew.HiddenField(validator=V.Ming(model.Bin))
+
+    class fields(ew.NameList):
+        summary=jinja2_ew.TextField(
+            label='Bin Name',
+            validator=fev.UnicodeString(not_empty=True))
+        terms=jinja2_ew.TextField(
+            label='Search Terms',
+            validator=fev.UnicodeString(not_empty=True))
