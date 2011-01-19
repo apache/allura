@@ -75,10 +75,6 @@ class RepositoryApp(Application):
         links = []
         if self.forkable and self.repo.status == 'ready':
             links.append(SitemapEntry('Fork', c.app.url + 'fork', ui_icon=g.icons['fork']))
-        if security.has_artifact_access('admin', app=c.app)():
-            links.append(SitemapEntry('Admin',
-                                      c.project.url()+'admin/'+self.config.options.mount_point,
-                                      ui_icon=g.icons['admin']))
         merge_request_count = self.repo.merge_requests_by_statuses('open').count()
         if merge_request_count:
             links += [
