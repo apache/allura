@@ -11,12 +11,16 @@ div.welcome span, div.welcome input {
     left: 4em;
 }
 div.welcome input {
-    left: 4em;
     width: 65%;
     line-height: 20px;
     font-size: 18px;
     -webkit-border-radius: 5px;
     -moz-border-radius: 5px;
+}
+div.welcome .error {
+    position: relative;
+    left: 4em;
+    width: 75%;
 }
 #start {
     display: inline-block;
