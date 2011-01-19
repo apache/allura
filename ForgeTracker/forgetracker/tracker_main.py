@@ -658,14 +658,13 @@ class BinController(BaseController):
     @expose()
     @require_post
     @validate(W.bin_form, error_handler=newbin)
-    def save_bin(self, bin_form=None, **post_data):
+    def save_bin(self, **bin_form):
         require(has_artifact_access('save_searches', app=self.app))
         self.app.globals.invalidate_bin_counts()
-        if bin_form['_id']:
-            bin = bin_form['_id']
-            require(lambda:bin.app_config_id==self.app.config._id)
-        else:
-            bin = TM.Bin(app_config_id=self.app.config._id, custom_fields={})
+        bin = bin_form['_id']
+        if bin is None:
+            bin = TM.Bin(app_config_id=self.app.config._id, summary='')
+        require(lambda:bin.app_config_id==self.app.config._id)
         bin.summary=bin_form['summary']
         bin.terms=bin_form['terms']
         redirect('.')

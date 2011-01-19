@@ -509,33 +509,35 @@ class TestFunctionalController(TestController):
 
     def test_saved_search_labels_truncated(self):
         r = self.app.post('/admin/bugs/bins/save_bin',{
-            'bin_form.summary': 'This is not too long.',
-            'bin_form.terms': 'aaa',
-            'bin_form.old_summary': '',
-            'bin_form.sort': ''}).follow()
-        sidebar_contains(r, 'This is not too long.')
+            'summary': 'This is not too long.',
+            'terms': 'aaa',
+            'old_summary': '',
+            'sort': ''}).follow()
+        r = self.app.get('/bugs/')
+        assert sidebar_contains(r, 'This is not too long.')
         r = self.app.post('/admin/bugs/bins/save_bin',{
-            'bin_form.summary': 'This will be truncated because it is too long to show in the sidebar without being ridiculous.',
-            'bin_form.terms': 'aaa',
-            'bin_form.old_summary': '',
-            'bin_form.sort': ''}).follow()
-        sidebar_contains(r, 'This will be truncated because it is too long to show in the sidebar ...')
+            'summary': 'This will be truncated because it is too long to show in the sidebar without being ridiculous.',
+            'terms': 'aaa',
+            'old_summary': '',
+            'sort': ''}).follow()
+        r = self.app.get('/bugs/')
+        assert sidebar_contains(r, 'This will be truncated because it is too long to show in the sidebar ...')
 
     def test_edit_saved_search(self):
+        r = self.app.post('/admin/bugs/bins/save_bin',dict(
+                summary='Original', terms='aaa')).follow()
+        link = r.html.find('table').findAll('a')[-2]['href']
+        oid = link.rsplit('=')[-1]
+        r = self.app.get('/bugs/')
+        assert sidebar_contains(r, 'Original')
+        assert not sidebar_contains(r, 'New')
         r = self.app.post('/admin/bugs/bins/save_bin',{
-            'bin_form.summary': 'Original',
-            'bin_form.terms': 'aaa',
-            'bin_form.old_summary': '',
-            'bin_form.sort': ''}).follow()
-        sidebar_contains(r, 'Original')
-        not sidebar_contains(r, 'New')
-        r = self.app.post('/admin/bugs/bins/save_bin',{
-            'bin_form.summary': 'New',
-            'bin_form.terms': 'aaa',
-            'bin_form.old_summary': 'Original',
-            'bin_form.sort': ''}).follow()
-        sidebar_contains(r, 'New')
-        not sidebar_contains(r, 'Original')
+            'summary': 'New',
+            'terms': 'aaa',
+            '_id':oid}).follow()
+        r = self.app.get('/bugs/')
+        assert sidebar_contains(r, 'New')
+        assert not sidebar_contains(r, 'Original')
 
 
 def sidebar_contains(response, text):
