@@ -640,7 +640,8 @@ class BinController(BaseController):
     def bins(self):
         require(has_artifact_access('save_searches', app=self.app))
         c.bin_form = W.bin_form
-        bins = TM.Bin.query.find()
+        bins = TM.Bin.query.find(dict(
+                app_config_id=c.app.config._id))
         count=0
         count = len(bins)
         return dict(bins=bins or [], count=count, app=self.app)
