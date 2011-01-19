@@ -13,8 +13,8 @@ Moderation Queue
   <div>
     Displaying page {{pgnum}} / {{pages}}
   </div>
-  <a href="?status=$status&amp;flag=$flag&amp;page={{page-limit}}">Previous Page</a>
-  <a href="?status=$status&amp;flag=$flag&amp;page={{page+limit}}">Next Page</a>
+  <a href="?status={{status}}&amp;flag={{flag}}&amp;page={{page-limit}}">Previous Page</a>
+  <a href="?status={{status}}&amp;flag={{flag}}&amp;page={{page+limit}}">Next Page</a>
 </div>
 {{c.post_filter.display(action='.', value=dict(status=status, flag=flag))}}
 {{c.moderate_posts.display(value=dict(posts=posts), action='.')}}
