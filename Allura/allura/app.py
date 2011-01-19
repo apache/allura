@@ -119,7 +119,11 @@ class Application(object):
     default_mount_label='Tool Name'
     default_mount_point='tool'
     ordinal=0
-    icons={}
+    icons={
+        24:'images/admin_24.png',
+        32:'images/admin_32.png',
+        48:'images/admin_48.png'
+    }
 
     def __init__(self, project, app_config_object):
         self.project = project
@@ -133,6 +137,13 @@ class Application(object):
 
     @classmethod
     def icon_url(self, size):
+        '''Subclasses (tools) provide their own icons (preferred) or in
+        extraordinary circumstances override this routine to provide
+        the URL to an icon of the requested size specific to that tool.
+
+        Application.icons is simply a default if no more specific icon
+        is available.
+        '''
         resource = self.icons.get(size)
         if resource:
             return g.forge_static(resource)
