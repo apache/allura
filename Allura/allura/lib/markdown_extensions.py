@@ -3,7 +3,7 @@ import os
 import logging
 import string
 from collections import defaultdict
-from urllib import quote, quote
+from urllib import quote
 from urlparse import urljoin
 from ConfigParser import RawConfigParser
 from pprint import pformat
@@ -231,7 +231,7 @@ class RelativeLinkRewriter(markdown.postprocessors.Postprocessor):
         if ' ' in val:
             # Don't urllib.quote to avoid possible double-quoting
             # just make sure no spaces
-            val = val.replace(' ', '+')
+            val = val.replace(' ', '%20')
             tag[attr] = val
         if '://' in val:
             if 'sf.net' in val or 'sourceforge.net' in val:
