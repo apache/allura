@@ -37,7 +37,10 @@ def monkeypatch(obj):
     return patchit
 
 def urlquote(url):
-    return urllib.quote(url)
+    try:
+        return urllib.quote(str(url))
+    except UnicodeEncodeError:
+        return urllib.quote(url.encode('utf-8'))
 
 def really_unicode(s):
     if s is None: return u''
