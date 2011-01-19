@@ -152,6 +152,7 @@ class ThreadController(BaseController):
         if hasattr(file_info, 'file'):
             p.attach(
                 file_info.filename, file_info.file, content_type=file_info.type,
+                post_id=p._id,
                 thread_id=p.thread_id,
                 discussion_id=p.discussion_id)
         if self.thread.artifact:
@@ -231,6 +232,13 @@ class PostController(BaseController):
         if request.method == 'POST':
             require(has_artifact_access('moderate', self.post))
             post_fields = self.W.edit_post.to_python(kw, None)
+            file_info = post_fields.pop('file_info', None)
+            if hasattr(file_info, 'file'):
+                self.post.attach(
+                    file_info.filename, file_info.file, content_type=file_info.type,
+                    post_id=self.post._id,
+                    thread_id=self.post.thread_id,
+                    discussion_id=self.post.discussion_id)
             for k,v in post_fields.iteritems():
                 try:
                     setattr(self.post, k, v)
