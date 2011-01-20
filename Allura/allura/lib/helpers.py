@@ -42,6 +42,12 @@ def urlquote(url):
     except UnicodeEncodeError:
         return urllib.quote(url.encode('utf-8'))
 
+def urlquoteplus(url):
+    try:
+        return urllib.quote_plus(str(url))
+    except UnicodeEncodeError:
+        return urllib.quote_plus(url.encode('utf-8'))
+
 def really_unicode(s):
     if s is None: return u''
     # try naive conversion to unicode

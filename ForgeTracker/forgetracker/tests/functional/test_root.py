@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import os, urllib
 import Image, StringIO
 import allura
@@ -117,13 +118,13 @@ class TestFunctionalController(TestController):
             'status':'ccc',
             '_milestone':'',
             'assigned_to':'',
-            'labels':'yellow,green',
-            'labels_old':'yellow,green',
+            'labels':u'yellow,greén'.encode('utf-8'),
+            'labels_old':u'yellow,greén'.encode('utf-8'),
             'comment': ''
         })
         response = self.app.get('/bugs/1/')
         assert_true('yellow' in response)
-        assert_true('green' in response)
+        assert_true(u'greén' in response)
         self.app.post('/bugs/1/update_ticket',{
             'summary':'zzz',
             'description':'bbb',
