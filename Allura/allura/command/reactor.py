@@ -1,6 +1,7 @@
 import sys
 import time
 import json
+import string
 from multiprocessing import Process
 from weberror.errormiddleware import handle_exception
 
@@ -80,6 +81,15 @@ class ReactorCommand(base.Command):
     parser.add_option('--dry_run', dest='dry_run', action='store_true', default=False,
                       help="get ready to run the reactor, but don't actually run it")
 
+    error_template = string.Template('''
+<ul>
+<li>Project: $project
+<li>App: $app
+<li>Routing key: $key
+<li>Exchange: $exchange
+<li>Message: $message
+</ul>
+''')
     def command(self):
         self.basic_setup()
         processes = [ RestartableProcess(target=self.periodic_main, log=base.log, args=()) ]
@@ -136,8 +146,9 @@ class ReactorCommand(base.Command):
             time.sleep(5)
             if self.options.dry_run: return
 
-    def send_error_report(self, exc_info):
+    def send_error_report(self, exc_info, **kw):
         C = pylons.config['pylons.errorware']
+        error_message = self.error_template.safe_substitute(**kw)
         handle_exception(
             exc_info, sys.stderr,
             html=True,
@@ -151,7 +162,7 @@ class ReactorCommand(base.Command):
             smtp_password=C.get('smtp_password'),
             smtp_use_tls=C.get('smtp_use_tls'),
             error_subject_prefix=C.get('error_subject_prefix'),
-            error_message=C.get('error_message'),
+            error_message=error_message,
             simple_html_error=C.get('simple_html_error'))
 
     def route_audit(self, tool_name, method):
@@ -194,7 +205,13 @@ class ReactorCommand(base.Command):
                     'Exception audit handling %s: %s',
                     tool_name, method)
                 if self.options.dry_run: raise
-                self.send_error_report(sys.exc_info())
+                self.send_error_report(
+                    sys.exc_info(),
+                    project=pylons.c.project.shortname if pylons.c.project else None,
+                    app=pylons.c.app.config.options.mount_point if pylons.c.app else None,
+                    key=msg.delivery_info['routing_key'],
+                    exchange='audit',
+                    message=data)
             else:
                 ming.orm.ormsession.ThreadLocalORMSession.flush_all()
             finally:
@@ -238,7 +255,13 @@ class ReactorCommand(base.Command):
             except: # pragma no cover
                 base.log.exception('Exception react handling %s: %s', tool_name, method)
                 if self.options.dry_run: raise
-                self.send_error_report(sys.exc_info())
+                self.send_error_report(
+                    sys.exc_info(),
+                    project=pylons.c.project.shortname if pylons.c.project else None,
+                    app=pylons.c.app.config.options.mount_point if pylons.c.app else None,
+                    key=msg.delivery_info['routing_key'],
+                    exchange='react',
+                    message=data)
             else:
                 ming.orm.ormsession.ThreadLocalORMSession.flush_all()
             finally:
