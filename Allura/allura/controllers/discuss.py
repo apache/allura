@@ -14,6 +14,7 @@ from allura import model as M
 from base import BaseController
 from allura.lib import utils
 from allura.lib import helpers as h
+from allura.lib.decorators import require_post
 from allura.lib.security import require, has_artifact_access
 from allura.lib.helpers import DateTimeConverter
 
@@ -267,12 +268,13 @@ class PostController(BaseController):
     @h.vardec
     @expose()
     @validate(pass_validator, error_handler=index)
+    @require_post(redir='.')
     def reply(self, **kw):
         require(has_artifact_access('post', self.thread))
         kw = self.W.edit_post.to_python(kw, None)
         self.thread.post(parent_id=self.post._id, **kw)
         self.thread.num_replies += 1
-        redirect(request.referer)
+        redirect(self.thread.url())
 
     @h.vardec
     @expose()

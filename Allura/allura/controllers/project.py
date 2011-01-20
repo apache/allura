@@ -142,7 +142,7 @@ class NeighborhoodController(object):
 
     @h.vardec
     @expose()
-    @require_post
+    @require_post()
     @validate(W.add_project, error_handler=add_project)
     def register(self, project_unixname=None, project_description=None, project_name=None, neighborhood=None, **kw):
         require(has_neighborhood_access('create', self.neighborhood), 'Create access required')
@@ -533,7 +533,7 @@ class NeighborhoodAwardsController(object):
         return AwardController(short), remainder
 
     @expose()
-    @require_post
+    @require_post()
     def create(self, icon=None, short=None, full=None):
         app_config_id = ObjectId()
         tool_version = { 'neighborhood':'0' }
@@ -549,7 +549,7 @@ class NeighborhoodAwardsController(object):
         redirect(request.referer)
 
     @expose()
-    @require_post
+    @require_post()
     def grant(self, grant=None, recipient=None):
         grant_q = M.Award.query.find(dict(short=grant)).first()
         recipient_q = M.Project.query.find(dict(name=recipient, deleted=False)).first()
@@ -593,7 +593,7 @@ class AwardController(object):
         return icon.serve()
 
     @expose()
-    @require_post
+    @require_post()
     def grant(self, recipient=None):
         recipient_q = M.Project.query.find(dict(name=recipient, deleted=False)).first()
         app_config_id = ObjectId()

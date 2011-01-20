@@ -475,7 +475,7 @@ class RootController(BaseController):
 
     @expose()
     @h.vardec
-    @require_post
+    @require_post()
     @validate(W.ticket_form, error_handler=new)
     def save_ticket(self, ticket_form=None, **post_data):
         require(has_artifact_access('write'))
@@ -512,7 +512,7 @@ class RootController(BaseController):
         return result
 
     @expose()
-    @require_post
+    @require_post()
     def update_tickets(self, **post_data):
         c.app.globals.invalidate_bin_counts()
         tickets = TM.Ticket.query.find(dict(
@@ -656,7 +656,7 @@ class BinController(BaseController):
     @with_trailing_slash
     @h.vardec
     @expose()
-    @require_post
+    @require_post()
     @validate(W.bin_form, error_handler=newbin)
     def save_bin(self, **bin_form):
         require(has_artifact_access('save_searches', app=self.app))
@@ -821,7 +821,7 @@ class TicketController(BaseController):
                 data['custom_fields.'+k] = data['custom_fields'][k]
         self._update_ticket(data)
         
-    @require_post
+    @require_post()
     def _update_ticket(self, post_data):
         require(has_artifact_access('write', self.ticket))
         changes = changelog()
@@ -983,7 +983,7 @@ class RootRestController(BaseController):
 
     @expose()
     @h.vardec
-    @require_post
+    @require_post()
     @validate(W.ticket_form, error_handler=h.json_validation_error)
     def new(self, ticket_form=None, **post_data):
         require(has_artifact_access('write'))
@@ -1042,7 +1042,7 @@ class TicketRestController(BaseController):
 
     @expose()
     @h.vardec
-    @require_post
+    @require_post()
     @validate(W.ticket_form, error_handler=h.json_validation_error)
     def save(self, ticket_form=None, **post_data):
         require(has_artifact_access('write', self.ticket))

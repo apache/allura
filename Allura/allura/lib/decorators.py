@@ -3,18 +3,24 @@ import json
 import logging
 from urllib import unquote
 from tg.decorators import before_validate
-from tg import request
+from tg import request, redirect
 
 import webob
 from webob import exc
 
-def require_post(func):
-    def check_method(remainder, params):
-        if request.method != 'POST':
-            raise exc.HTTPMethodNotAllowed(headers={'Allow':'POST'})
-    before_validate(check_method)(func)
-    return func
+class require_post(object):
 
+    def __init__(self, redir=None):
+        self.redir = redir
+
+    def __call__(self, func):
+        def check_method(remainder, params):
+            if request.method != 'POST':
+                if self.redir is not None:
+                    redirect(self.redir)
+                raise exc.HTTPMethodNotAllowed(headers={'Allow':'POST'})
+        before_validate(check_method)(func)
+        return func
 
 class ConsumerDecoration(object):
 

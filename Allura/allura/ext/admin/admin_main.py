@@ -272,7 +272,7 @@ class ProjectAdminController(BaseController):
         redirect('overview')
 
     @expose()
-    @require_post
+    @require_post()
     @validate(validators=dict(description=UnicodeString()))
     def update_homepage(self, description=None, homepage_title=None, **kw):
         require(has_project_access('update'), 'Update access required')
