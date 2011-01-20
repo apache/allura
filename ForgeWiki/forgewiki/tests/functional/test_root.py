@@ -239,12 +239,6 @@ class TestRootController(TestController):
         assert 'aaa' in response
         assert 'bbb' in response
 
-    def test_page_permissions(self):
-        response = self.app.get('/wiki/TEST/').follow()
-        assert 'Viewable by' in response
-        self.app.get('/wiki/TEST/update?title=TEST&text=sometext&tags=&tags_old=&labels=&labels_old=&viewable_by-0.id=all&viewable_by-0.delete=True')
-        self.app.get('/wiki/TEST/', status=403)
-
     def test_show_discussion(self):
         self.app.get('/wiki/TEST/update?title=TEST&text=sometext&tags=&tags_old=&labels=&labels_old=&viewable_by-0.id=all')
         wiki_page = self.app.get('/wiki/TEST/')

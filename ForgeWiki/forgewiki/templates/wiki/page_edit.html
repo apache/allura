@@ -33,28 +33,10 @@
 	<div class="grid-14" style="margin-left:0">
 		{{c.label_edit.display(id='labels', name='labels', value=page.labels)}}
 	</div>
-    {% if not page_exists or has_artifact_access('edit_page_permissions', page)() %}
-      <label class="grid-4">Viewable by:</label>
-      <div class="grid-14">
-      {% set j = 0 %}
-      {% for u in page.viewable_by %}
-        <span class="removable">
-          {{u}}
-          <input type="hidden" name="viewable_by-{{j}}.id" value="{{u}}"/>
-        </span>
-        {% set j = j + 1 %}
-      {% endfor %}
-      </div>
-      <label for="new_viewable_by" class="grid-4">Add Viewer:</label>
-      <div class="grid-14">
-        {{c.user_select.display(name='new_viewable_by', value='')}}
-      </div>
-    {% endif %}
-    <label class="grid-4">&nbsp;</label>
-    <div class="grid-14">
-      <input type="submit" value="Save"/>
-      <input type="reset" value="Cancel"/>
-		</div>
+  <div class="grid-19">
+    <input type="submit" value="Save">
+    <input type="reset" value="Cancel">
+	</div>
 </form>
 <div class="grid-19">
   {{c.attachment_list.display(attachments=page.attachments, edit_mode=page_exists and has_artifact_access('edit', page)())}}
