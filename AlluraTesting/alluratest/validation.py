@@ -24,14 +24,59 @@ from nose.tools import ok_, assert_true, assert_false
 from poster.encode import multipart_encode
 from poster.streaminghttp import register_openers
 
+
 ENABLE_CONTENT_VALIDATION = False
+# By default we want to run only validations which are fast,
+# but on special test hosts - all.
+COMPLETE_TESTS_HOST = 'sb-forge-4039'
 
 log = logging.getLogger(__name__)
+
+class Config(object):
+    "Config to encapsulate flexible/complex test enabled/disabled rules."
+    _instance = None
+
+    def __init__(self):
+        self.ini_config = None
+        pass
+
+    @classmethod
+    def instance(cls):
+        if not cls._instance:
+            cls._instance = cls()
+        return cls._instance
+
+    @property
+    def test_ini(self):
+        if not self.ini_config:
+            from . import controller
+            import ConfigParser
+            conf = ConfigParser.ConfigParser({'validate_html5': 'false', 'validate_js': 'true'})
+            conf.read(controller.get_config_file())
+            self.ini_config = conf
+        return self.ini_config
+
+    @property
+    def hostname(self):
+        if os.path.exists('/etc/soghost'):
+            with open('/etc/soghost') as fp:
+                return fp.read().strip()
+
+    def validation_enabled(self, val_type):
+        if self.hostname == COMPLETE_TESTS_HOST:
+            return True
+        enabled = self.test_ini.getboolean('validation', 'validate_' + val_type)
+        return enabled
+
+    def fail_on_validation(self, val_type):
+        if self.hostname == COMPLETE_TESTS_HOST:
+            return True
+        return ENABLE_CONTENT_VALIDATION
 
 
 def report_validation_error(val_name, filename, message):
     message = '%s Validation errors (%s):\n%s\n' % (val_name, filename, message)
-    if ENABLE_CONTENT_VALIDATION:
+    if Config.instance().fail_on_validation():
         ok_(False, message)
     else:
         sys.stderr.write('=' * 40 + '\n' + message)
@@ -202,23 +247,10 @@ def validate_js(html_or_response):
         report_validation_error('JavaScript', fname, msg)
 
 def validate_page(html_or_response):
-    c = get_validation_config()
-    if c.get('validation', 'validate_html5') != 'false':
+    if Config.instance().validation_enabled('html5'):
         validate_html(html_or_response)
-    if c.getboolean('validation', 'validate_js'):
+    if Config.instance().validation_enabled('js'):
         validate_js(html_or_response)
-
-_val_config = None
-def get_validation_config():
-    global _val_config
-    if _val_config:
-        return _val_config
-    from . import controller
-    import ConfigParser
-    c = ConfigParser.ConfigParser({'validate_html5': 'false', 'validate_js': 'true'})
-    c.read(controller.get_config_file())
-    _val_config = c
-    return c
 
 class ValidatingTestApp(TestApp):
 
