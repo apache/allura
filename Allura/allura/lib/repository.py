@@ -86,11 +86,12 @@ class RepositoryApp(Application):
             links += [
                 SitemapEntry('Clone of'),
                 SitemapEntry(self.repo.upstream_repo.name, self.repo.upstream_repo.url,
-                             className='nav_child'),
-                SitemapEntry('Request Merge', c.app.url + 'request_merge',
-                             ui_icon=g.icons['merge'],
                              className='nav_child')
                 ]
+            if len(c.app.repo.branches):
+                links.append(SitemapEntry('Request Merge', c.app.url + 'request_merge',
+                             ui_icon=g.icons['merge'],
+                             className='nav_child'))
             pending_upstream_merges = self.repo.pending_upstream_merges()
             if pending_upstream_merges:
                 links.append(SitemapEntry(
