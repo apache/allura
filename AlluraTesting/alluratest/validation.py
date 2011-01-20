@@ -76,7 +76,7 @@ class Config(object):
 
 def report_validation_error(val_name, filename, message):
     message = '%s Validation errors (%s):\n%s\n' % (val_name, filename, message)
-    if Config.instance().fail_on_validation():
+    if Config.instance().fail_on_validation(val_name):
         ok_(False, message)
     else:
         sys.stderr.write('=' * 40 + '\n' + message)
@@ -206,7 +206,7 @@ def validate_html5(html_or_response):
         if 'Error:' in resp:
             fname = dump_to_file('html5-', html)
             message = resp.decode('ascii','ignore')
-            report_validation_error('HTML5', fname, message)
+            report_validation_error('html5', fname, message)
                 
         
 def validate_html5_chunk(html):
@@ -244,7 +244,7 @@ def validate_js(html_or_response):
             return
         stdout = stdout.decode('UTF-8', 'replace')
         msg = '\n'.join(repr(s) for s in stdout.split('\n') if s)
-        report_validation_error('JavaScript', fname, msg)
+        report_validation_error('js', fname, msg)
 
 def validate_page(html_or_response):
     if Config.instance().validation_enabled('html5'):
