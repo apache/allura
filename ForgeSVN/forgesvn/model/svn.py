@@ -151,7 +151,7 @@ class SVNImplementation(M.RepositoryImplementation):
         return dict(prev=prev, next=next)
 
     def refresh_commit(self, ci, seen_object_ids):
-        log.info('Refresh %r', ci)
+        log.info('Refresh %r %r', ci, self._repo)
         revno = self._revno(ci.object_id)
         rev = pysvn.Revision(
             pysvn.opt_revision_kind.number,
