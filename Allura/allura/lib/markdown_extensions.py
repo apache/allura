@@ -32,6 +32,7 @@ class ForgeExtension(markdown.Extension):
         md.registerExtension(self)
         self.forge_processor = ForgeProcessor(self._use_wiki, md)
         self.forge_processor.install()
+        md.preprocessors['fenced-code'] = FencedCodeProcessor()
         md.inlinePatterns['autolink_1'] = AutolinkPattern(r'(http(?:s?)://[a-zA-Z0-9./\-_0%?&=+]+)')
         md.treeprocessors['br'] = LineOrientedTreeProcessor(md)
         # Sanitize HTML
@@ -43,6 +44,22 @@ class ForgeExtension(markdown.Extension):
 
     def reset(self):
         self.forge_processor.reset()
+
+class FencedCodeProcessor(markdown.preprocessors.Preprocessor):
+    pattern = '~~~~'
+
+    def run(self, lines):
+        in_block = False
+        new_lines = []
+        for line in lines:
+            if line.lstrip().startswith(self.pattern):
+                in_block = not in_block
+                continue
+            if in_block:
+                new_lines.append('    ' + line)
+            else:
+                new_lines.append(line)
+        return new_lines
 
 class ForgeProcessor(object):
     alink_pattern = r'(?<!\[)\[([^\]\[]*)\]'

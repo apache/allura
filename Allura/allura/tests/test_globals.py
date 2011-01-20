@@ -59,6 +59,10 @@ Some text in a regular paragraph
         print i
 ''')
     assert 'http://localhost/' in  g.forge_markdown(email=True).convert('[Home]')
+    assert 'class="codehilite"' in g.markdown.convert('''
+~~~~
+def foo(): pass
+~~~~''')
 
 def _disabled_test_oembed():
     g.set_project('test')
