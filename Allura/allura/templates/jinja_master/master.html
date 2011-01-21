@@ -81,7 +81,9 @@
       </div>
       <div id="content_base">
 			  {% if not hide_left_bar %}
+			    {% block sidebar_menu %}
           {% include g.theme.sidebar_menu %}
+          {% endblock %}
           {% set outer_width = 20 %}
 			  {% else %}
           {% set outer_width = 24 %}

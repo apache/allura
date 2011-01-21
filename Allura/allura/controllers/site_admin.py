@@ -42,11 +42,11 @@ class SiteAdminController(object):
                 agg_timings[t].append(val)
         for url, timings in stats.iteritems():
             new_timings = dict(
-                (timer, sum(readings)/len(readings))
+                (timer, round(sum(readings)/len(readings),3))
                 for timer, readings in timings.iteritems())
             timings.update(new_timings)
         agg_timings = dict(
-            (timer, sum(readings)/len(readings))
+            (timer, round(sum(readings)/len(readings),3))
             for timer, readings in agg_timings.iteritems())
         stats = sorted(stats.iteritems(), key=lambda x:-x[1]['total'])
         return dict(

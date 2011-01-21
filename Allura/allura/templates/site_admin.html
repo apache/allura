@@ -1,7 +1,8 @@
-{% set hide_left_bar=True %}
+{% set hide_left_bar=False %}
 {% extends g.theme.master %}
 
 {% block title %}Forge Site Admin{% endblock %}
+{% block header %}Forge Site Admin{% endblock %}
 
 {% block nav_menu %}
 <div class="column grid_1">
@@ -13,14 +14,13 @@
 <div class="column grid_2">&nbsp;</div>
 {% endblock %}
 
-{% block top_nav %}
-<div class="row project">
-  <div class="column grid_9">
-    <ul class="ui-tab">
-      <li class="{{page=='index' and 'active' or ''}}"><a href="." class="ico-l"><b data-icon="{{g.icons['admin'].char}}" class="ico {{g.icons['admin'].css}}"></b>Home</a>
-      <li class="{{page=='stats' and 'active' or ''}}"><a href="stats" class="ico-l"><b data-icon="{{g.icons['stats'].char}}" class="ico {{g.icons['stats'].css}}"></b>Stats</a>
-    </ul>
-  </div>
+{% block sidebar_menu %}
+<div id="sidebar">
+  <div>&nbsp;</div>
+  <ul>
+    <li class="{{page=='index' and 'active' or ''}}"><a href="."><b data-icon="{{g.icons['admin'].char}}" class="ico {{g.icons['admin'].css}}"></b>Home</a>
+    <li class="{{page=='stats' and 'active' or ''}}"><a href="stats"><b data-icon="{{g.icons['stats'].char}}" class="ico {{g.icons['stats'].css}}"></b>Stats</a>
+  </ul>
 </div>
 {% endblock %}
 
