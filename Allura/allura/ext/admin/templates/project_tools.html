@@ -1,244 +1,213 @@
 {% extends g.theme.master %}
 
+{% do g.register_forge_css('css/forge/deck.css') %}
+
 {% block title %}{{c.project.name}} / Tools{% endblock %}
 
-{% block header %}Select Tools for {{c.project.shortname}}{% endblock %}
+{% block header %}Tools{% endblock %}
 
 {% block content %}
-          {% if c.project.deleted %}
-            <div class="notice">This project has been deleted and is not visible to non-admin users</div>
-          {% endif %}
-          {% if h.has_project_access('tool')() %}
-            <p>Drag and drop tools to reorder.</p>
-          {% endif %}
-          <table>
-            <thead>
-              <tr>
-                <th>Type</th>
-                <th>Mount Point</th>
-                <th>Label</th>
-                {% if h.has_project_access('tool')() %}
-                  <th>Edit</th>
-                  <th></th>
-                {% endif %}
-              </tr>
-            </thead>
-            <tbody id="tool_admin">
-              {% for item in mounts %}
-              {% set i = loop.index0 %}
-              <tr class="sortables">
-                {% if 'ac' in item %}
-                  <td>Tool: {{item['ac'].tool_name}}</td>
-                  <td>{{item['ac'].options.mount_point}}</td>
-                  <td>
-                    <form method="post" action="update_mounts" id="mounts_edit-{{i}}">
-                      <input type="hidden"
-                             name="tool-{{i}}.mount_point"
-                             class="mount_point"
-                             value="{{item['ac'].options.mount_point}}"/>
-                      <input type="hidden"
-                             name="tool-{{i}}.ordinal"
-                             value="{{'ordinal' in item['ac'].options and item['ac'].options.ordinal or 0}}"/>
-                      {% if h.has_project_access('tool')() and item['ac'].load().installable %}
-                      <div class="editable viewing span-15 last">
-                        <div class="viewer">{{item['ac'].options.mount_label}}</div>
-                        <div class="editor">
-                          <input type="text"
-                                 name="tool-{{i}}.mount_label"
-                                 value="{{item['ac'].options.mount_label}}"/>
-                        </div>
-                      </div>
-                      {% else %}
-                      <div>
-                        {{item['ac'].options.mount_label}}
-                      </div>
-                      {% endif %}
-                    </form>
-                  </td>
-                  <td>
-                    {% if h.has_project_access('tool')() and item['ac'].load().installable %}
-                    <a href="{{item['ac'].options.mount_point}}/">
-                       <b data-icon="{{g.icons['pencil'].char}}" class="ico {{g.icons['pencil'].css}}"></b>
-                    </a>
+{% if h.has_project_access('tool')() %}
+  <h3>Click to install</h3>
+  <div class="nested-grid-container">
+    {% for tool in installable_tools %}
+      <span class="tcenter grid-4 installable_tool">
+        <a class="install_trig" data-tool="{{ tool['name'] }}">
+          <span class="tool_title">{{ tool['app'].tool_label }}{{' (%s)' % tool.app.status if tool.app.status != 'production' else ''}}</span><br />
+          <img src="{{ g.theme.app_icon_url(tool['app'], 32) or 'unk.png' }}">
+        </a>
+      </span>
+    {% endfor %}
+    <span class="tcenter grid-4 installable_tool">
+      <a class="install_trig" data-tool="">
+        <span class="tool_title">Subproject</span><br />
+        <img src="{{ g.theme.app_icon_url('subproject', 32) }}">
+      </a>
+    </span>
+  </div>
+  <form method="post" action="update_mounts" id="install_form" style="display:none">
+    <input type="hidden" name="new.ordinal" value="{{installable_tools|length + c.project.direct_subprojects|length}}"/>
+    <input type="hidden" name="new.ep_name" class="new_ep_name">
+    <label class="grid-13">Label</label>
+    <div class="grid-13"><input type="text" name="new.mount_label" class="new_mount_label"></div>
+    <label class="grid-13">Mount Point</label>
+    <div class="grid-13"><input type="text" name="new.mount_point" class="new_mount_point"></div>
+    <div class="grid-13">&nbsp;</div>
+    <hr>
+    <div class="grid-13">&nbsp;</div>
+    <div class="grid-13">
+      <input type="submit" value="Save" name="new.install"> <a href="#" class="close btn link">Cancel</a>
+    </div>
+  </form>
+  {{c.install_modal.display(content='<h1>Install <span id="install_tool_label">Tool</span></h1>')}}
+{% endif %}
+
+<h3>Installed tools</h3>
+<p>
+    Sortable - define top menu order by moving tools with your mouse.
+</p>
+<div id="sortable" class="clearfix fourcol">
+    {% for mount in mounts %}
+        {% if 'ac' in mount %}
+            {% set app = mount['ac'].load()(c.project, mount['ac']) %}
+            {% set links = app.admin_menu() %}
+            {% set label = mount['ac'].options['mount_label'] if mount['ac'].options['mount_label'] != 'Tool Name' else mount['ac'].options['mount_point'] %}
+            <div class="fleft">
+                <ul class="deck">
+                    <li class="tcenter">
+                        <span class="tool_title">{{ label }}</span><br />
+                        <img src="{{ g.theme.app_icon_url(app, 48) }}">
+                    </li>
+                    {% for link in links %}
+                    <li>
+                        <a href="{{ link.url }}" class="{{ link.className }}">{{ link.label }}</a>
+                    </li>
+                    {% endfor %}
+                    {% if app.installable %}
+                    <li>
+                      <form method="post" action="update_mounts" id="mounts_edit_2-{{loop.index0}}">
+                        <input type="hidden" class="mount_point"
+                               name="tool-{{loop.index0}}.mount_point"
+                               value="{{mount['ac'].options.mount_point}}"/>
+                        <input name="tool-{{loop.index0}}.delete" type="hidden" value="Delete"/>
+                        {% if h.has_project_access('tool')() and mount['ac'].load().installable %}
+                          <a href="#" class="mount_delete">Delete</a>
+                        {% endif %}
+                      </form>
+                    </li>
                     {% endif %}
-                  </td>
-                  <td>
-                    <form method="post" action="update_mounts" id="mounts_edit_2-{{i}}">
-                      <input type="hidden"
-                             name="tool-{{i}}.mount_point"
-                             value="{{item['ac'].options.mount_point}}"/>
-                      <input name="tool-{{i}}.delete" type="hidden" value="Delete"/>
-                      {% if h.has_project_access('tool')() and item['ac'].load().installable %}
-                        <input class="mount_delete" type="button" value="Delete"/>
-                      {% endif %}
-                    </form>
-                  </td>
+                </ul>
+                {% if not app.installable %}
+                  <input type="hidden" class="mount_point" value="{{mount['ac'].options.mount_point}}"/>
                 {% endif %}
-                {% if 'sub' in item and not item['sub'].deleted %}
-                  <td>Subproject</td>
-                  <td>{{item['sub'].shortname}}</td>
-                  <td>
-                  <form method="post" action="update_mounts" id="mounts_edit-{{i}}">
-                      <input type="hidden"
-                             name="subproject-{{i}}.shortname"
-                             class="shortname"
-                             value="{{item['sub'].shortname}}"/>
-                      <input type="hidden"
-                             name="subproject-{{i}}.ordinal"
-                             value="{{'ordinal' in item['sub'] and item['sub'].ordinal or 0}}"/>
-                      <div class="editable viewing span-15 last">
-                        <div class="viewer">{{item['sub'].name}}</div>
-                        <div class="editor">
-                          <input type="text"
-                                 name="subproject-{{i}}.name"
-                                 value="{{item['sub'].name}}"/>
-                        </div>
-                      </div>
-                  </form>
-                  </td>
-                  {% if h.has_project_access('tool')() %}
-                  <td><a href="{{item['sub'].url() + 'admin/'}}">
-                    <b data-icon="{{g.icons['pencil'].char}}" class="ico {{g.icons['pencil'].css}}"></b>
-                  </a></td>
-                  {% endif %}
-                  <td>
-                  <form method="post" action="update_mounts" id="mounts_edit_2-{{i}}">
-                      <input type="hidden"
-                             name="subproject-{{i}}.shortname"
-                             value="{{item['sub'].shortname}}"/>
-                      <input name="subproject-{{i}}.delete" type="hidden" value="Delete"/>
-                      {% if h.has_project_access('tool')() %}
-                        <input class="mount_delete" type="button" value="Delete"/>
-                      {% endif %}
-                  </form>
-                  </td>
-                {% endif %}
-              </tr>
-              {% endfor %}
-              {% if h.has_project_access('tool')() %}
-                <tr>
-                  <td>
-                  <form id="new_tool_form" method="post" action="update_mounts">
-                   <input type="hidden" name="new.ordinal" value="{{installable_tools|length + c.project.direct_subprojects|length}}"/>
-                    <select name="new.ep_name" class="new_ep_name">
-                        <option value="" disabled="disabled">New Tool</option>
-                        {% for tool in installable_tools %}
-                          <option value="{{tool.name}}">{{tool.app.tool_label}}
-                            {{'(%s)' % tool.app.status if tool.app.status != 'production' else ''}}
-                          </option>
-                        {% endfor %}
-                        <option value="">Subproject</option>
-                    </select>
-                    <input type="hidden" name="new.mount_point" id="new_mount_point_id" value="" />
-                    <input type="hidden" name="new.mount_label" id="new_mount_label_id" value="" />
-                    <input type="hidden" value="Install" name="new.install" />
-                  </form>
-                  </td>
-                  <td>
-                    <form>
-                    <input type="text" name="new.mount_point_vis" class="new_mount_point"/>
-                    </form>
-                  </td>
-                  <td>
-                   <form>
-                    <input type="text" name="new.mount_label_vis" class="new_mount_label"/>
-                   </form>
-                  </td>
-                  <td colspan="2">
-                   <form>
-                    <input type="button" id="install_button" value="Install" name="new.install"/>
-                   </form>
-                  </td>
-                </tr>
-              {% endif %}
-            </tbody>
-          </table>
-          {% if h.has_project_access('tool')() %}
-            <input type="button" id="save_order" value="Save Tool Order" style="display:none" />
-            <div id="delete-confirm">Warning: This will destroy all data in this tool and is non reversable!</div>
-          {% endif %}
+            </div>
+        {% endif %}
+        {% if 'sub' in mount and not mount['sub'].deleted %}
+            <div class="fleft">
+                <ul class="deck">
+                    <li class="tcenter">
+                        <span class="tool_name">{{ mount['sub'].name }}</span><br />
+                        <img src="{{ g.theme.app_icon_url('subproject', 48) }}">
+                    </li>
+                    <li>
+                      <form method="post" action="update_mounts" id="mounts_edit_2-{{loop.index0}}">
+                          <input type="hidden" class="shortname"
+                                 name="subproject-{{loop.index0}}.shortname"
+                                 value="{{mount['sub'].shortname}}"/>
+                          <input name="subproject-{{loop.index0}}.delete" type="hidden" value="Delete"/>
+                          {% if h.has_project_access('tool')() %}
+                            <a href="#" class="mount_delete">Delete</a>
+                          {% endif %}
+                      </form>
+                    </li>
+                </ul>
+            </div>
+        {% endif %}
+    {% endfor %}
+    </div>
+</div>
+<form id="mount_delete_form" style="display:none">
+  <div class="grid-13">Warning: This will destroy all data in this tool and is non reversable!</div>
+  <div class="grid-13">&nbsp;</div>
+  <hr>
+  <div class="grid-13">&nbsp;</div>
+  <div class="grid-13">
+    <input type="button" value="Delete" class="continue_delete"> <input type="button" value="Cancel" class="cancel_delete close">
+  </div>
+</form>
+{{c.admin_modal.display(content='<h1 id="popup_title"></h1><div id="popup_contents"></div>')}}
+{{c.mount_delete.display(content='<h1>Confirm Delete</h1>')}}
+<div><!--dummy-->
 {% endblock %}
 
 {% block extra_js %}
-  <script type="text/javascript">
-    var form_to_delete = null;
-    var defaults = {
-      {% for tool in installable_tools %}
-        '{{tool.name}}':{'default_label':'{{tool.app.default_mount_label}}','default_mount':'{{tool.app.default_mount_point}}'}{% if not loop.last %},{% endif %}
-      {% endfor %}
-    };
-    $('select.new_ep_name').change(function () {
-      var tool = defaults[$(this).val()];
-      var row = $(this).closest('tr');
-      row.find('input.new_mount_point').val(tool.default_mount);
-      row.find('input.new_mount_label').val(tool.default_label);
-    });
-    
-    {% if h.has_project_access('tool')() %}
-    /*<![CDATA[*/
-      $('#tool_admin').sortable({
-        items: 'tr.sortables',
-        axis: 'y',
-        update: function(e) {
-          $('#save_order').show();
-        }
-      });
-      $('#save_order').click(function (e) {
-        var sortables = $('#tool_admin .sortables');
-        var tools = 0;
-        var subs = 0;
-        var params = {};
-        for (var i=0, len=sortables.length; i<len; i++) {
-          var item = $(sortables[i]);
-          var mount_point = item.find('input.mount_point');
-          var shortname = item.find('input.shortname');
-          if (mount_point.length) {
-            params['tools-' + tools + '.mount_point'] = mount_point.val();
-            params['tools-' + tools + '.ordinal'] = i;
-            tools++;
-          }
-          if (shortname.length) {
-            params['subs-' + subs + '.shortname'] = shortname.val();
-            params['subs-' + subs + '.ordinal'] = i;
-            subs++;
-          }
-        }
-        $.post('update_mount_order', params, function () {
-            location.reload();
-        });
-      });
-      $('#install_button').click(function (e) {
-        var row = $(this).closest('tr');
-        var mount = row.find('input.new_mount_point').val();
-        var label = row.find('input.new_mount_label').val();
-        $('#new_mount_point_id').val(mount);
-        $('#new_mount_label_id').val(label);
-        $('#new_tool_form').submit();
-      });
-      $("#delete-confirm").dialog({
-        resizable: false,
-        height:200,
-        modal: true,
-        autoOpen: false,
-        buttons: {
-          'Delete': function () {
-            form_to_delete.submit();
-            $(this).dialog('close');
-            form_to_delete = null;
-          },
-          Cancel: function () {
-            $(this).dialog('close');
-            form_to_delete = null;
-          }
-        }
-      });
-      $('input.mount_delete').click(function () {
-        form_to_delete = this.parentNode;
-        $('#delete-confirm').dialog('open');
-        $('div.ui-dialog-buttonpane > button:last').focus();
-        return false;
-      });
-    /*]]>*/
-    {% endif %}
-  </script>
+<script type="text/javascript">
+var defaults = {
+  {% for tool in installable_tools %}
+    '{{tool.name}}':{'default_label':'{{tool.app.default_mount_label}}','default_mount':'{{tool.app.default_mount_point}}'}{% if not loop.last %},{% endif %}
+  {% endfor %}
+};
+// Install popup
+var install_popup = $('#lightbox_install_modal');
+var install_form = $('#install_form');
+var new_ep_name = install_form.find('input.new_ep_name');
+var new_mount_point = install_form.find('input.new_mount_point');
+var new_mount_label = install_form.find('input.new_mount_label');
+var install_tool_label = $('#install_tool_label');
+install_popup.append(install_form.show());
+$('a.install_trig').click(function () {
+  var datatool = $(this).attr('data-tool');
+  if (datatool) {
+    var tool = defaults[datatool];
+    install_tool_label.html(tool.default_label);
+    new_ep_name.val(datatool);
+    new_mount_point.val(tool.default_mount);
+    new_mount_label.val(tool.default_label);
+  } else {
+    install_tool_label.html("Subproject");
+    new_ep_name.val('');
+    new_mount_point.val('');
+    new_mount_label.val('');
+  }
+});
+// Edit popup
+var $popup_title = $('#popup_title');
+var $popup_contents = $('#popup_contents');
+$('a.admin_modal').click(function () {
+  var link = this;
+  $popup_title.html('');
+  $popup_contents.html('Loading...');
+  $.get(link.href, function (data) {
+    $popup_title.html($(link).html());
+    $popup_contents.html(data);
+  });
+});
+// delete popup
+var form_to_delete = null;
+var mount_delete_popup = $('#lightbox_mount_delete');
+var mount_delete_form = $('#mount_delete_form');
+mount_delete_popup.append(mount_delete_form.show());
+mount_delete_form.find('.continue_delete').click(function () {
+  form_to_delete.submit();
+  form_to_delete = null;
+});
+mount_delete_form.find('.cancel_delete').click(function () {
+  form_to_delete = null;
+});
+$('a.mount_delete').click(function () {
+  form_to_delete = this.parentNode;
+  return false;
+});
+// sorting
+$('#sortable').sortable({items: ".fleft"}).bind( "sortupdate", function (e) {
+  var sortables = $('#sortable .fleft');
+  var tools = 0;
+  var subs = 0;
+  var params = {};
+  for (var i = 0, len = sortables.length; i < len; i++) {
+    var item = $(sortables[i]);
+    var mount_point = item.find('input.mount_point');
+    var shortname = item.find('input.shortname');
+    if (mount_point.length) {
+      params['tools-' + tools + '.mount_point'] = mount_point.val();
+      params['tools-' + tools + '.ordinal'] = i;
+      tools++;
+    }
+    if (shortname.length) {
+      params['subs-' + subs + '.shortname'] = shortname.val();
+      params['subs-' + subs + '.ordinal'] = i;
+      subs++;
+    }
+  }
+  $.post('update_mount_order', params);
+});
+</script>
+{% endblock %}
+
+{% block extra_css %}
+<style type="text/css">
+.pad .fourcol .fleft {
+  min-height: 200px;
+}
+</style>
 {% endblock %}
