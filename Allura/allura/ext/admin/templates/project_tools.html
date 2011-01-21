@@ -199,7 +199,19 @@ $('#sortable').sortable({items: ".fleft"}).bind( "sortupdate", function (e) {
       subs++;
     }
   }
-  $.post('update_mount_order', params);
+  $.ajax({
+    type: 'POST',
+    url: 'update_mount_order',
+    data: params,
+    success: function(xhr, textStatus, errorThrown) {
+        $('#messages').notify('Tool order updated, refresh this page to see the updated project navigation.',
+                              {status: 'confirm'});
+    },
+    error: function(xhr, textStatus, errorThrown) {
+        $('#messages').notify('Error saving tool order.',
+                              {status: 'error'});
+    }
+  });
 });
 </script>
 {% endblock %}
