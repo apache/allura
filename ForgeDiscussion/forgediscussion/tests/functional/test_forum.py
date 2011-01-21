@@ -354,6 +354,51 @@ class TestForumAdmin(TestController):
         r = self.app.get('/admin/discussion/forums')
         assert 'error' in r
 
+    def test_duplicate_forum_names(self):
+        self.app.post('/admin/discussion/update_forums',
+                        params={'new_forum.shortname':'a',
+                                'new_forum.create':'on',
+                                'new_forum.name':'Forum A',
+                                'new_forum.description':'',
+                                'new_forum.parent':''
+                               })
+        self.app.post('/admin/discussion/update_forums',
+                        params={'new_forum.shortname':'b',
+                                'new_forum.create':'on',
+                                'new_forum.name':'Forum B',
+                                'new_forum.description':'',
+                                'new_forum.parent':''
+                               })
+        h.set_context('test', 'Forum')
+        forum_a = FM.Forum.query.get(shortname='a')
+        self.app.post('/admin/discussion/update_forums',
+                        params={'new_forum.create':'',
+                                'forum-0.delete':'on',
+                                'forum-0.id':str(forum_a._id),
+                                'forum-0.name':'Forum A',
+                                'forum-0.description':''
+                               })
+        # Now we have two forums: 'a', and 'b'.  'a' is deleted.
+        # Let's try to create new forums with these names.
+        self.app.post('/admin/discussion/update_forums',
+                        params={'new_forum.shortname':'a',
+                                'new_forum.create':'on',
+                                'new_forum.name':'Forum A',
+                                'new_forum.description':'',
+                                'new_forum.parent':''
+                               })
+        r = self.app.get('/admin/discussion/forums')
+        assert 'error' in r
+        self.app.post('/admin/discussion/update_forums',
+                        params={'new_forum.shortname':'b',
+                                'new_forum.create':'on',
+                                'new_forum.name':'Forum B',
+                                'new_forum.description':'',
+                                'new_forum.parent':''
+                               })
+        r = self.app.get('/admin/discussion/forums')
+        assert 'error' in r
+
     def test_forum_icon(self):
         file_name = 'neo-icon-set-454545-256x350.png'
         file_path = os.path.join(allura.__path__[0],'public','nf','allura','images',file_name)

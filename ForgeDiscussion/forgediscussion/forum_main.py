@@ -242,6 +242,9 @@ class ForumAdminController(DefaultAdminController):
     def create_forum(self, new_forum):
         if 'shortname' not in new_forum:
             new_forum['shortname'] = new_forum['name']
+        if new_forum['shortname'] in [ f.shortname for f in self.app.forums ]:
+            flash('There is already a forum named "%s".' % new_forum['shortname'], 'error')
+            redirect('.')
         if '.' in new_forum['shortname'] or '/' in new_forum['shortname']:
             flash('Shortname cannot contain . or /', 'error')
             redirect('.')
