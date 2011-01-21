@@ -1297,7 +1297,7 @@ var JSLINT = (function () {
                             if (option.safe && xmode === 'html') {
                                 warningAt("ADsafe string violation.",
                                         line, character + j);
-                            } else if (s.charAt(j + 1) === '/' && (xmode || option.safe)) {
+                            } else if (s.charAt(j + 1) === '/' && (xmode || option.safe) && s.substr(j + 2, 6) === 'script') {
                                 warningAt("Expected '<\\/' and instead saw '</'.", line, character);
                             } else if (s.charAt(j + 1) === '!' && (xmode || option.safe)) {
                                 warningAt("Unexpected '<!' in a string.", line, character);
