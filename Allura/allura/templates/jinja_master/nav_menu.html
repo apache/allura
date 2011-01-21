@@ -1,6 +1,9 @@
 {% if not c.project %}
   <div id="nav_menu_missing"></div>
 {% else %}
+  {% if c.project.neighborhood.icon %}
+    <a href="{{c.project.neighborhood.url()}}"><img src="{{c.project.neighborhood.url()}}/icon" class="neighborhood_icon" alt="Neighborhood Logo"></a>
+  {% endif %}
   <a href="{{c.project.url()}}">
     {% if c.project.icon %}
       <img src="{{c.project.url()}}/icon" class="project_icon" alt="Project Logo" />
