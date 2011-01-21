@@ -31,7 +31,7 @@
             $(this).remove();
         }
         function fadeComplete() {
-            $(this).animate({ height: 0, border: 0, padding: 0, margin: 0 }, { duration: 100, queue: false, complete: slideComplete });
+            $(this).slideUp(100, slideComplete);
         }
         $(message).animate({ opacity: 0 }, { duration: 250, queue: false, complete: fadeComplete });
     }
@@ -39,21 +39,24 @@
     function scanMessages(container, o) {
         function helper() {
             var $msg = $('.' + o.newClass + '.' + o.messageClass, container);
-            $msg.prepend(o.closeIcon);
-            $msg.click(function(e) {
-                e.preventDefault();
-                closer(this, o);
-            });
-            $msg.fadeIn(500, function() {
-                var self = this;
-                $(self).removeClass(o.newClass).addClass(o.activeClass);
-                if (!$(self).hasClass(o.stickyClass)) {
-                    var timer = $(self).attr('data-timer') || o.timer;
-                    setTimeout(function() {
-                        closer(self, o);
-                    }, timer);
-                }
-            });
+            if ($msg.length) {
+                $msg.prepend(o.closeIcon);
+                $msg.click(function(e) {
+                    e.preventDefault();
+                    closer(this, o);
+                });
+                $msg.removeClass(o.newClass).addClass(o.activeClass);
+                $msg.each(function() {
+                    var self = this;
+                    if (!$(self).hasClass(o.stickyClass)) {
+                        var timer = $(self).attr('data-timer') || o.timer;
+                        setTimeout(function() {
+                            closer($(self), o);
+                        }, timer);
+                    }
+                    $(self).fadeIn(500);
+                });
+            }
             setTimeout(helper, o.interval);
         }
         helper();
@@ -68,7 +71,6 @@
         return $(this).each(function() {
             var self = this,
                 o = $.metadata ? $.extend(opts, $(this).metadata()) : opts;
-            $.fn.notifier.element = self;
             if (o.scrollcss) {
                 $(window).scroll(function() {
                     $(self).css(o.scrollcss);
@@ -79,17 +81,27 @@
         });
     };
     
-    $.fn.notify = function(msg, options) {
-        var opts = $.extend({message: msg}, $.fn.notify.defaults, options);
+    $.fn.notify = function(msg_or_opts, options) {
+        var opts;
+        // For backwards compatibility
+        if (typeof msg_or_opts === 'string') {
+            opts = $.extend({message: msg_or_opts}, $.fn.notify.defaults, options);
+        } else {
+            opts = $.extend({}, $.fn.notify.defaults, msg_or_opts);
+        }
+        // For backwards compatibility
+        if (opts.status === 'success') {
+            opts.status = 'confirm';
+        }
         return $(this).each(function() {
-            if (msg) {
+            if (opts.message) {
                 var o = $.metadata ? $.extend(opts, $(this).metadata()) : opts;
                 if (o.sanitize) {
                     o.message = sanitize(o.message);
                     o.title = sanitize(o.title);
                 }
                 var html = tmpl(o.tmpl, o);
-                $($.fn.notifier.element).append(html);
+                $(this).append(html);
             } else {
                 if (window.console) {
                     //#JSCOVERAGE_IF window.console
@@ -107,7 +119,7 @@
         sticky: false,
         title: '',
         sanitize: true,
-        tmpl: '<section class="message <%=newClass%> <%=status%> <% if (sticky) { %><%=stickyClass %><% } %>" data-timer="<%=timer%>"><% if (title) { %><header><%=title%></header><% } %><div class="content"><%=message%><div></section>',
+        tmpl: '<div class="message <%=newClass%> <%=status%> <% if (sticky) { %><%=stickyClass %><% } %>" data-timer="<%=timer%>"><% if (title) { %><h6><%=title%></h6><% } %><div class="content"><%=message%></div></div>',
         scrollcss: { position: 'fixed', top: '20px' },
         stickyClass: 'notify-sticky',
         newClass: 'notify-new',
