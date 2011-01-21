@@ -2,6 +2,7 @@ import sys
 import time
 import json
 import string
+from pprint import pformat
 from multiprocessing import Process
 from weberror.errormiddleware import handle_exception
 
@@ -81,15 +82,6 @@ class ReactorCommand(base.Command):
     parser.add_option('--dry_run', dest='dry_run', action='store_true', default=False,
                       help="get ready to run the reactor, but don't actually run it")
 
-    error_template = string.Template('''
-<ul>
-<li>Project: $project
-<li>App: $app
-<li>Routing key: $key
-<li>Exchange: $exchange
-<li>Message: $message
-</ul>
-''')
     def command(self):
         self.basic_setup()
         processes = [ RestartableProcess(target=self.periodic_main, log=base.log, args=()) ]
@@ -146,9 +138,8 @@ class ReactorCommand(base.Command):
             time.sleep(5)
             if self.options.dry_run: return
 
-    def send_error_report(self, exc_info, **kw):
+    def send_error_report(self, exc_info):
         C = pylons.config['pylons.errorware']
-        error_message = self.error_template.safe_substitute(**kw)
         handle_exception(
             exc_info, sys.stderr,
             html=True,
@@ -162,7 +153,7 @@ class ReactorCommand(base.Command):
             smtp_password=C.get('smtp_password'),
             smtp_use_tls=C.get('smtp_use_tls'),
             error_subject_prefix=C.get('error_subject_prefix'),
-            error_message=error_message,
+            error_message=C.get('error_message'),
             simple_html_error=C.get('simple_html_error'))
 
     def route_audit(self, tool_name, method):
@@ -170,6 +161,8 @@ class ReactorCommand(base.Command):
         def callback(data, msg):
             msg.ack()
             try:
+                __traceback_supplement__ = (
+                    self.Supplement, pylons.c, data, msg, 'audit')
                 if 'project_id' in data:
                     try:
                         if data['project_id']:
@@ -204,14 +197,10 @@ class ReactorCommand(base.Command):
                 base.log.exception(
                     'Exception audit handling %s: %s',
                     tool_name, method)
+                for k,v in self.Supplement(pylons.c, data, msg, 'audit').extraData().items():
+                    base.log.error('    %s: %s', k, v)
                 if self.options.dry_run: raise
-                self.send_error_report(
-                    sys.exc_info(),
-                    project=pylons.c.project.shortname if pylons.c.project else None,
-                    app=pylons.c.app.config.options.mount_point if pylons.c.app else None,
-                    key=msg.delivery_info['routing_key'],
-                    exchange='audit',
-                    message=data)
+                self.send_error_report(sys.exc_info())
             else:
                 ming.orm.ormsession.ThreadLocalORMSession.flush_all()
             finally:
@@ -224,6 +213,8 @@ class ReactorCommand(base.Command):
         def callback(data, msg):
             msg.ack()
             try:
+                __traceback_supplement__ = (
+                    self.Supplement, pylons.c, data, msg, 'react')
                 # log.info('React(%s): %s', msg.delivery_info['routing_key'], data)
                 if 'user_id' in data:
                     try:
@@ -254,19 +245,34 @@ class ReactorCommand(base.Command):
                     method(msg.delivery_info['routing_key'], data)
             except: # pragma no cover
                 base.log.exception('Exception react handling %s: %s', tool_name, method)
+                for k,v in self.Supplement(pylons.c, data, msg, 'audit').extraData().items():
+                    base.log.error('    %s: %s', k, v)
                 if self.options.dry_run: raise
-                self.send_error_report(
-                    sys.exc_info(),
-                    project=pylons.c.project.shortname if pylons.c.project else None,
-                    app=pylons.c.app.config.options.mount_point if pylons.c.app else None,
-                    key=msg.delivery_info['routing_key'],
-                    exchange='react',
-                    message=data)
+                self.send_error_report(sys.exc_info())
             else:
                 ming.orm.ormsession.ThreadLocalORMSession.flush_all()
             finally:
                 ming.orm.ormsession.ThreadLocalORMSession.close_all()
         return callback
+
+    class Supplement(object):
+        def __init__(self, c, data, msg, exchange):
+            self.c = c
+            self.data = data
+            self.msg = msg
+            self.exchange = exchange
+
+        def extraData(self):
+            project = getattr(self.c, 'project', None)
+            app = getattr(self.c, 'app', None)
+            user = getattr(self.c, 'user', None)
+            return dict(
+                project=project.shortname if project else None,
+                app=app.config.options.mount_point if app else None,
+                user=user.username if user else None,
+                key=self.msg.delivery_info['routing_key'],
+                exchange=self.exchange,
+                message=pformat(self.data))
 
 class SendMessageCommand(base.Command):
     min_args=3
