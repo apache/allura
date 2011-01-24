@@ -1,0 +1,166 @@
+ABOUT ALLURA
+
+Allura is an open source implementation of a software "forge", a
+web-site that manages source code repositories, bug reports,
+discussions, mailing lists, wiki pages, blogs and more for any
+number of individual projects.
+
+SourceForge.net is running an instance of Allura (aka New Forge, or
+Forge 2.0); and Allura itself is a project managed there:
+
+  <https://sourceforge.net/p/allura/>
+
+The source for Allura is available there from a Git repo under the
+Apache License, Version 2.0.
+
+  <http://www.apache.org/licenses/LICENSE-2.0>
+
+Allura is written in Python and leverages a great many existing Python
+packages (see requirements.txt and friends).  It comes with tests which
+we run with nose (see <http://somethingaboutorange.com/mrl/projects/nose/1.0.0/>).
+It is extensible in several ways, most importantly via the notion of
+"tools" based on allura.Application; but also with themes,
+authentication, and various other pluggable-APIs.
+
+CONTRIBUTING
+
+Allura is an effort _for_ the community: an open source platform for
+sharing development.  We think it should be _of_ the community as well.
+We want to encourage community involvement in development, testing and
+design.  We do that with a public git repo, a bug tracker, a discussion
+list and an IRC channel.
+
+
+- REPORTING BUGS
+
+Report bugs to our public tracker at:
+
+  <https://sourceforge.net/p/allura/tickets/>
+
+Four things make for a good bug report:
+
+  + it's not a duplicate of an existing bug
+
+  + it has a clear description of what was expected vs. what actually
+    happened and why what actually happened was wrong
+
+  + it has a recipe as simple as possible to reproduce it
+
+  + it describes the environment in which the bug happens, i.e., your
+    os, browser, and browser version; or if you're running your own
+    forge -- the relevant details of the host os and supporting tools
+
+Other things that increase the value of a bug report but aren't always
+possible or applicable:
+
+  + screen shots
+
+  + code (to be added to the automated tests) that tests for the problem
+
+  + patches to fix the problem
+
+
+- GETTING THE CODE
+
+The code is self-hosted in a public git repository.  Get it by cloning:
+
+  git clone git://git.code.sf.net/p/allura/git.git allura
+
+You can also 'fork' our repo at <https://sourceforge.net/p/allura/git/>.
+
+- CONTRIBUTING CODE
+
+Develop and test your patches locally and then get them to us in one of
+two ways:
+
+  + use the git tools format-patch and send-email to send your patches
+    to the mailing list
+
+      <mailto:develop@discussion.allura.p.re.sf.net>
+
+  + push your changes up to your 'forked' repo, and from there send us
+    a merge request
+
+Things your patch-sequence must have/do:
+
+  + follow PEP-8 <http://www.python.org/dev/peps/pep-0008/> coding
+    guidelines
+
+  + signify that you have full and clear rights to the code you are
+    supplying and that you wish to share it under the terms of the
+    Apache License Version 2.0 by using git commit --signoff
+
+  + contain appropriate tests to be added to the automated testing
+    machinery
+
+  + pass existing tests (and/or fix existing tests that need to change)
+
+  + be divided into an appropriate number of commits, one per reasonable
+    "chunk" of functionality
+
+Things your patch will have before it can be merged into branch 'dev' or
+'master':
+
+  + Discussion either on the mailing list or in the merge request, where
+    you submitted it
+
+  + Code-review (possibly many times as you re-work your patches in
+    response to discussion)
+
+Very small patches might not need much discussion.
+
+
+- CONTRIBUTING TO THE DISCUSSION
+
+We intend to develop "out in the open", which means having a public
+discussion where we talk about new features, submitted patches, bugs,
+direction, and deployment.  You can join in the discussion on the
+mailing list:
+
+  <mailto:develop@discussion.allura.p.re.sf.net>
+
+
+- ASKING QUESTIONS
+
+First, is your question already answered in the FAQ?
+
+  <https://sourceforge.net/p/allura/wiki/FAQ/>
+
+If not, then the right place to ask is either the mailing list (above)
+or the IRC channel:
+
+  <irc://irc.freenode.com:6667/#sourceforge>
+
+
+- OUR DEVELOPMENT MODEL
+
+Our model is a somewhat scaled-down version of how the Git project
+itself is run.  We have two main branches
+
+  + master: release quality
+
+  + dev: integration branch for commits expected to go to master
+
+  + feature branches not yet ready for integration testing, starting
+    with the two character initials of the author, e.g., db/1368 for Dave
+    Brondsema's work on bug [#1368] or wo/contributing for Wolf's work on
+    the CONTRIBUTING doc
+
+'master' and 'dev' are stable; they will never be rewound or rebased.
+Feature branches are typically cut from 'dev', and usually rebased to
+'dev' just before they are merged there.  In the meanwhile they may be
+rebased or rewound as necessary.  Being on 'dev' is not a guarantee that
+a commit will make it to master.  Anything that turns out to not
+actually be ready will be reverted.
+
+'dev' will always contain 'master'.  Emergency fixes may go directly to
+'master' which would then immediately be merged down into 'dev'.
+
+As we get more contributors and start having "patch-churn", we will
+re-evaluate a three-branch model, like Git.  The third branch would be
+'pu' (for "proposed update").
+
+We expect that people deploying the code will deploy from 'master' or
+from a release tag.  We expect that people experimenting with the code
+will deploy from 'dev' or from their own feature branches or integration
+branches cut from 'dev'.
