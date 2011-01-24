@@ -120,9 +120,9 @@ class Application(object):
     default_mount_point='tool'
     ordinal=0
     icons={
-        24:'images/admin_24.png',
-        32:'images/admin_32.png',
-        48:'images/admin_48.png'
+        24:'allura/images/admin_24.png',
+        32:'allura/images/admin_32.png',
+        48:'allura/images/admin_48.png'
     }
 
     def __init__(self, project, app_config_object):
