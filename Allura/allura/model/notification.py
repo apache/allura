@@ -35,7 +35,7 @@ from .types import ArtifactReferenceType
 
 log = logging.getLogger(__name__)
 
-MAILBOX_QUIESCENT=timedelta(minutes=10)
+MAILBOX_QUIESCENT=None # Re-enable with [#1384]: timedelta(minutes=10)
 
 class Notification(MappedClass):
     class __mongometa__:
