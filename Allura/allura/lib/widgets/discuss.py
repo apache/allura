@@ -144,7 +144,7 @@ class EditPost(ff.ForgeForm):
                 evt.preventDefault();
             });
             $("a.cancel_edit_post").click(function(evt){
-                $("textarea", this.parentNode).val('');
+                $("textarea", this.parentNode).val($("input.original_value", this.parentNode).val());
                 $(".attachment_form_fields input", this.parentNode).val('');
                 evt.preventDefault();
             });
@@ -289,6 +289,10 @@ class Post(HierWidget):
                         $('.edit_post_form', post).show();
                         $('.edit_post_form textarea', post).focus();
                         return false;
+                    });
+                    $("a.cancel_edit_post", post).click(function(evt){
+                        $('.display_post', post).show();
+                        $('.edit_post_form', post).hide();
                     });
                 }
                 if($('.reply_post', post)){
