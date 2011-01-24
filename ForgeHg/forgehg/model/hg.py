@@ -7,6 +7,7 @@ from binascii import b2a_hex
 from hashlib import sha1
 from datetime import datetime
 from cStringIO import StringIO
+from ConfigParser import ConfigParser
 
 import tg
 from pylons import c
@@ -55,9 +56,6 @@ class Repository(M.Repository):
         return super(Repository, self).log(branch, offset, limit)
 
 class HgImplementation(M.RepositoryImplementation):
-    post_receive_template = string.Template(
-        '\n[hooks]\n'
-        'changegroup = curl -s $url\n')
     re_hg_user = re.compile('(.*) <(.*)>')
 
     def __init__(self, repo):
@@ -205,12 +203,16 @@ class HgImplementation(M.RepositoryImplementation):
 
     def _setup_receive_hook(self):
         'Set up the hg changegroup hook'
-        text = self.post_receive_template.substitute(
-            url=tg.config.get('base_url', 'localhost:8080')
-            + '/auth/refresh_repo' + self._repo.url())
+        cp = ConfigParser()
         fn = os.path.join(self._repo.fs_path, self._repo.name, '.hg', 'hgrc')
-        with open(fn, 'ab') as fp:
-            fp.write(text)
+        cp.read(fn)
+        if not cp.has_section('hooks'):
+            cp.add_section('hooks')
+        url = (tg.config.get('base_url', 'http://localhost:8080')
+               + '/auth/refresh_repo' + self._repo.url())
+        cp.set('hooks','changegroup','curl -s %s' % url)
+        with open(fn, 'w') as fp:
+            cp.write(fp)
         os.chmod(fn, 0755)
 
     def _tree_from_changectx(self, changectx):
