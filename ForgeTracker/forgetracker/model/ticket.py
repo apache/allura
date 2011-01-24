@@ -40,7 +40,8 @@ class Globals(MappedClass):
     closed_status_names = FieldProperty(str)
     milestone_names = FieldProperty(str, if_missing='')
     custom_fields = FieldProperty([{str:None}])
-    _bin_counts = FieldProperty({str:int})
+    _bin_counts = FieldProperty(schema.Deprecated) # {str:int})
+    _bin_counts_data = FieldProperty([dict(summary=str, hits=int)])
     _bin_counts_expire = FieldProperty(datetime)
     _milestone_counts = FieldProperty([dict(name=str,hits=int,closed=int)])
     _milestone_counts_expire = FieldProperty(datetime)
@@ -84,10 +85,12 @@ class Globals(MappedClass):
 
     def _refresh_counts(self):
         # Refresh bin counts
+        self._bin_counts_data = []
         for b in Bin.query.find(dict(
                 app_config_id=self.app_config_id)):
             r = search_artifact(Ticket, b.terms, rows=0)
-            self._bin_counts[b.summary] = r is not None and r.hits or 0
+            hits = r is not None and r.hits or 0
+            self._bin_counts_data.append(dict(summary=b.summary,hits=hits))
         # Refresh milestone field counts
         self._milestone_counts = []
         for fld in self.milestone_fields:
@@ -102,17 +105,19 @@ class Globals(MappedClass):
             self._bin_counts_expire = \
             datetime.utcnow() + timedelta(minutes=60)
 
-    @property
-    def bin_counts(self):
-        if self._bin_counts_expire is None or datetime.utcnow() > self._bin_counts_expire:
+    def bin_count(self, name):
+        if self._bin_counts_expire < datetime.utcnow():
             self._refresh_counts()
-        return self._bin_counts
+        for d in self._bin_counts_data:
+            if d['summary'] == name: return d
+        return dict(summary=name, hits=0)
 
-    @property
-    def milestone_counts(self):
-        if self._bin_counts_expire is None or datetime.utcnow() > self._bin_counts_expire:
+    def milestone_count(self, name):
+        if self._milestone_counts_expire < datetime.utcnow():
             self._refresh_counts()
-        return self._milestone_counts
+        for d in self._milestone_counts:
+            if d['name'] == name: return d
+        return dict(name=name, hits=0)
 
     def invalidate_bin_counts(self):
         '''Expire it just a bit in the future to allow data to propagate through

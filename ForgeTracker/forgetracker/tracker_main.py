@@ -135,21 +135,18 @@ class ForgeTrackerApp(Application):
             label = bin.shorthand_id()
             search_bins.append(SitemapEntry(
                     h.text.truncate(label, 72), bin.url(), className='nav_child',
-                    small=c.app.globals.bin_counts.get(bin.shorthand_id())))
+                    small=c.app.globals.bin_count(label)['hits']))
         for fld in c.app.globals.milestone_fields:
             milestones.append(SitemapEntry(h.text.truncate(fld.label, 72)))
             for m in getattr(fld, "milestones", []):
                 if m.complete: continue
-                hits = 0
-                for ms in c.app.globals.milestone_counts:
-                    if ms['name'] == '%s:%s' % (fld.name, m.name):
-                        hits = ms['hits']
                 milestones.append(
                     SitemapEntry(
                         h.text.truncate(m.name, 72),
                         self.url + fld.name[1:] + '/' + m.name + '/',
                         className='nav_child',
-                        small=hits))
+                        small=c.app.globals.milestone_count(
+                            '%s:%s' % (fld.name, m.name))['hits']))
         if ticket.isdigit():
             ticket = TM.Ticket.query.find(dict(app_config_id=self.config._id,ticket_num=int(ticket))).first()
         else:
@@ -347,19 +344,14 @@ class RootController(BaseController):
         for fld in c.app.globals.milestone_fields:
             if fld.name == '_milestone':
                 for m in fld.milestones:
-                    total = 0
-                    closed = 0
-                    for ms in c.app.globals.milestone_counts:
-                        if ms['name'] == '%s:%s' % (fld.name, m.name):
-                            total = ms['hits']
-                            closed = ms['closed']
+                    d =  c.app.globals.milestone_count('%s:%s' % fld.name, m.name)
                     milestones.append(dict(
                         name=m.name,
                         due_date=m.get('due_date'),
                         description=m.get('description'),
                         complete=m.get('complete'),
-                        total=total,
-                        closed=closed))
+                        total=d['hits'],
+                        closed=d['closed']))
         return dict(milestones=milestones)
 
     @without_trailing_slash
@@ -1079,17 +1071,12 @@ class MilestoneController(BaseController):
         require(has_artifact_access('read'))
         result = self.root.paged_query(self.query, page=page, sort=sort, columns=columns, **kw)
         result['allow_edit'] = has_artifact_access('write')()
-        total = 0
-        closed = 0
-        for ms in c.app.globals.milestone_counts:
-            if ms['name'] == '%s:%s' % (self.field.name, self.milestone.name):
-                total = ms['hits']
-                closed = ms['closed']
+        d = c.app.globals.milestone_count('%s:%s' % (self.field.name, self.milestone.name))
         result.update(
             field=self.field,
             milestone=self.milestone,
-            total=total,
-            closed=closed)
+            total=d['hits'],
+            closed=d['closed'])
         c.ticket_search_results = W.ticket_search_results
         c.auto_resize_textarea = W.auto_resize_textarea
         return result
