@@ -10,6 +10,7 @@ import tempfile
 import subprocess
 import json
 import urllib2
+import re
 
 import tg
 import mock
@@ -199,9 +200,10 @@ def validate_html5(html_or_response):
             'Required attributes missing on element "object"',
             'Stray end tag "embed".',
             'Stray end tag "param".',
+            r'Bad value .+? for attribute "onclick" on element "input": invalid return',
         ]
         for ignore in ignored_errors:
-            resp = resp.replace('Error: ' + ignore, 'Ignoring: ' + ignore)
+            resp = re.sub('Error: ' + ignore, 'Ignoring: ' + ignore, resp)
 
         if 'Error:' in resp:
             fname = dump_to_file('html5-', html)
