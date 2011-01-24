@@ -41,6 +41,7 @@ class NeighborhoodAddProjectForm(ForgeForm):
         fields = [
             ew.InputField(name='project_unixname', label='', field_type='text',
                           validator=formencode.All(
+                            fev.String(not_empty=True),
                             fev.Regex(r'^[A-z][-A-z0-9]{2,}$', messages={'invalid':'Please use only letters, numbers, and dash characters.'}),
                             NeighborhoodAddProjectValidator())),
             ew.HiddenField(name='project_name', label='Project Name'),
