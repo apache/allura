@@ -60,9 +60,9 @@
       var id = editable_holder.find('input[name=id]').val();
       var summary = editable_holder.find('input[name=summary]').val();
       var terms = editable_holder.find('input[name=terms]').val();
-      form_holder.find('input[name=bin_form._id]').val(id);
-      form_holder.find('input[name=bin_form.summary]').val(summary);
-      form_holder.find('input[name=bin_form.terms]').val(terms);
+      form_holder.find('input[name=_id]').val(id);
+      form_holder.find('input[name=summary]').val(summary);
+      form_holder.find('input[name=terms]').val(terms);
       return false;
     });
     $('#cancel_new_bin').click(function(){
