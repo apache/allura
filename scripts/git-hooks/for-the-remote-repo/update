@@ -19,7 +19,11 @@ def git_user():
         user = run('id', '-u', '-n')
     if user == 'scollins':
         user = 'wolf'
-    return user
+    if user == 'jwh':
+        prefix = 'jwh'
+    else:
+        prefix = user[0:2]
+    return (user, prefix)
 
 
 def unwrap_commit_ids(git_output):
@@ -45,7 +49,7 @@ def main():
     old_rev = sys.argv[2]   # the pre-update commit-id of that branch (or '0'*40 if we're creating the branch)
     new_rev = sys.argv[3]   # the post-update commit-id of that branch (or '0'*40 if we're deleting the branch)
 
-    user_name = git_user()
+    (user_name, user_prefix) = git_user()
 
     if old_rev == no_commit:
         action = 'create'
@@ -57,8 +61,10 @@ def main():
         action = 'update'
         merge_base = unwrap_commit_ids(run('git', 'merge-base', old_rev, new_rev))[0]
 
-    if ref_name.startswith('refs/heads/') and not ref_name.startswith('refs/heads/%s/' % user_name[0:2]) and user_name != 'wolf':
-        substitutions = (user_name, ref_name, 'refs/heads/%s/*' % user_name[0:2])
+    if ref_name.startswith('refs/heads/%s/' % user_prefix) or ref_name.startswith('refs/heads/ffa/') or user_name == 'wolf':
+        pass # no restrictions
+    elif ref_name.startswith('refs/heads/'):
+        substitutions = (user_name, ref_name, 'refs/heads/%s/*' % user_prefix)
         if action == 'create':
             deny_update("You (%s) may not create '%s'; you have full rights over '%s'." % substitutions)
         elif action == 'destroy':
