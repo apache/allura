@@ -233,6 +233,13 @@ class Project(MappedClass):
         if self.is_root: return None
         return self.query.get(_id=self.parent_id)
 
+    def private_project_of(self):
+        user = None
+        if self.shortname.startswith('u/'):
+            from .auth import User
+            user = User.query.get(username=self.shortname[2:])
+        return user
+
     @LazyProperty
     def root_project(self):
         if self.is_root: return self

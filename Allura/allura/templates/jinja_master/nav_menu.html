@@ -1,3 +1,4 @@
+{% import 'jinja_master/lib.html' as lib with context %}
 {% if not c.project %}
   <div id="nav_menu_missing"></div>
 {% else %}
@@ -5,10 +6,12 @@
     <a href="{{c.project.neighborhood.url()}}"><img src="{{c.project.neighborhood.url()}}/icon" class="neighborhood_icon" alt="Neighborhood Logo"></a>
   {% endif %}
   <a href="{{c.project.url()}}">
-    {% if c.project.icon %}
-      <img src="{{c.project.url()}}/icon" class="project_icon" alt="Project Logo" />
+    {% if c.project.private_project_of() %}
+      {{lib.gravatar(c.project.private_project_of(), size=24, className='project_icon')}}
+    {% elif c.project.icon %}
+      <img src="{{c.project.url()}}/icon" class="project_icon" alt="Project Logo">
     {% else %}
-      <img src="{{g.forge_static('images/project_default.png')}}" class="project_icon" alt="Default Project Icon" />
+      <img src="{{g.forge_static('images/project_default.png')}}" class="project_icon" alt="Default Project Icon">
     {% endif %}
 	<h1>
       {% if c.project.shortname.endswith('--init--') %}

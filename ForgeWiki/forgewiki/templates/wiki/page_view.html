@@ -54,7 +54,7 @@
     Authors:
     {% for author in page.authors() %}
       <a href="{{author.url()}}">
-        {{gravatar(author, size=16)}}
+        {{lib.gravatar(author, size=16)}}
       </a>  
     {% endfor %}
   </div>
