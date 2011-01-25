@@ -1,0 +1,6 @@
+#!/bin/bash
+
+grep '^Signed-off-by: ' $1 || {
+    echo >&2 No Sign-off.
+    exit 1
+}

@@ -1,0 +1,86 @@
+#!/usr/bin/python
+
+import os, re, sys, subprocess
+
+signoff = re.compile('^Signed-off-by: ', flags=re.MULTILINE)
+no_commit = '0' * 40
+
+
+def run(*args):
+    p = subprocess.Popen(list(args), stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+    p.wait()
+    return p.stdout.readlines()
+
+
+def git_user():
+    if 'GITOSIS_USER' in os.environ:
+        user = os.environ['GITOSIS_USER']
+    else:
+        user = run('id', '-u', '-n')
+    if user == 'scollins':
+        user = 'wolf'
+    return user
+
+
+def unwrap_commit_ids(git_output):
+    return [ commit_id[:-1] for commit_id in git_output ]
+
+
+def all_commits_signed_off(from_rev, to_rev):
+    commits = unwrap_commit_ids(run('git', 'rev-list', '%s..%s' % (from_rev, to_rev)))
+    for commit in commits:
+        body = ''.join(run('git', 'log', '-1', '--format=format:%b', commit))
+        if not signoff.search(body):
+            return False
+    return True
+
+
+def deny_update(message):
+    print message
+    sys.exit(1)
+
+
+def main():
+    ref_name = sys.argv[1]  # the branch being updated, e.g., refs/heads/master
+    old_rev = sys.argv[2]   # the pre-update commit-id of that branch (or '0'*40 if we're creating the branch)
+    new_rev = sys.argv[3]   # the post-update commit-id of that branch (or '0'*40 if we're deleting the branch)
+
+    user_name = git_user()
+
+    if old_rev == no_commit:
+        action = 'create'
+        merge_base = '%s^' % new_rev # not ideal, we don't know how many commits your new branch contains
+            # so you could squeeze unsigned commits into the repo; but you couldn't get them onto master or dev
+    elif new_rev == no_commit:
+        action = 'destroy'
+    else:
+        action = 'update'
+        merge_base = unwrap_commit_ids(run('git', 'merge-base', old_rev, new_rev))[0]
+
+    if ref_name.startswith('refs/heads/') and not ref_name.startswith('refs/heads/%s/' % user_name[0:2]) and user_name != 'wolf':
+        substitutions = (user_name, ref_name, 'refs/heads/%s/*' % user_name[0:2])
+        if action == 'create':
+            deny_update("You (%s) may not create '%s'; you have full rights over '%s'." % substitutions)
+        elif action == 'destroy':
+            deny_update("You (%s) may not destroy '%s'; you have full rights over '%s'." % substitutions)
+        elif old_rev != merge_base:
+            deny_update("You (%s) may not rewind or rebase '%s'; you have full rights over '%s'." % substitutions)
+
+    if ref_name.startswith('refs/heads/') and action != 'destroy' and not all_commits_signed_off(merge_base, new_rev):
+        deny_update('Not all commits were signed-off.')
+
+# If we were going to report via email (e.g., to a Jabber bot) we would do something like this:
+#
+# report = run('git', 'log',
+#              '--no-color',
+#              '--pretty=oneline',
+#              '--abbrev-commit',
+#              '%s..%s' % (merge_base, new_rev))
+#
+# subject = '%s..%s FORGE %s (%s)' % (old_rev[0:7], new_rev[0:7], ref_name, user_name)
+#
+# ...but we're not currently using that feature of the existing hook, so...
+#
+
+if __name__ == '__main__':
+    main()
