@@ -24,7 +24,8 @@ class TestProjectAdmin(TestController):
                 name='Test Project',
                 shortname='test',
                 short_description=u'\u00bf A Test Project ?'.encode('utf-8'),
-                description=u'\u00bf A long description ?'.encode('utf-8'),
+                description=u'''\u00bf
+                A long description ?'''.encode('utf-8'),
                 labels='aaa,bbb'))
         r = self.app.get('/admin/overview')
         # Add/Remove a subproject

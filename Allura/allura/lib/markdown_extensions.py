@@ -291,7 +291,7 @@ class LineOrientedTreeProcessor(markdown.treeprocessors.Treeprocessor):
             if '\n' not in node.text: continue
             text = self._markdown.serializer(node)
             text = self._markdown.postprocessors['raw_html'].run(text)
-            text = text.strip()
+            text = text.strip().encode('utf-8')
             if '\n' not in text: continue
             new_text = (text
                         .replace('<br>', '<br/>')
