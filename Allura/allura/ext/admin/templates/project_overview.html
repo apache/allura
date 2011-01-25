@@ -87,7 +87,10 @@ These can be used to search for similar projects.")}}
                 {% if c.project.icon %}
                   <div class="viewer"><img src="{{c.project.url()}}/icon"/></div>
                 {% else %}
-                  <div class="viewer">No icon has been created.</div>
+                  <div class="viewer">
+                    No icon has been created. A gravatar image associated with your primary email
+                    address will be used instead if you have created one at <a href="http://gravatar.com/">gravatar.com</a>.
+                  </div>
                 {% endif %}
                 <div class="editor">{{lib.file_field('icon', '')}}</div>
               </div>  
