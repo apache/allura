@@ -241,9 +241,10 @@ class Mailbox(MappedClass):
         if user_id is None: user_id = c.user._id
         if project_id is None: project_id = c.project._id
         if app_config_id is None: app_config_id = c.app.config._id
-        tool_already_subscribed = cls.query.get(
-                user_id=user_id, project_id=project_id, app_config_id=app_config_id,
-                artifact_index_id=None)
+        tool_already_subscribed = cls.query.get(user_id=user_id,
+            project_id=project_id,
+            app_config_id=app_config_id,
+            artifact_index_id=None)
         if tool_already_subscribed:
             log.warning('Tried to subscribe to artifact %s, while there is a tool subscription', artifact)
             return
@@ -256,6 +257,12 @@ class Mailbox(MappedClass):
             artifact_title = i['title_s']
             artifact_url = artifact.url()
             artifact_index_id = i['id']
+            artifact_already_subscribed = cls.query.get(user_id=user_id,
+                project_id=project_id,
+                app_config_id=app_config_id,
+                artifact_index_id=artifact_index_id)
+            if artifact_already_subscribed:
+                return
         d = dict(user_id=user_id, project_id=project_id, app_config_id=app_config_id,
                  artifact_index_id=artifact_index_id, topic=topic)
         sess = session(cls)
