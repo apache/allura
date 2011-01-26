@@ -77,6 +77,7 @@ class RootController(BaseController):
                 headers=dict(Subject=subject)))
         post = thd.post(subject, text)
         thd.first_post_id = post._id
+        thd.num_replies = 1
         flash('Message posted')
         redirect(thd.url())
                   
