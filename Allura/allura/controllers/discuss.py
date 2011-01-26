@@ -81,6 +81,7 @@ class DiscussionController(BaseController):
                 thread['subscription'] = True
             else:
                 thread['subscription'] = False
+            M.session.artifact_orm_session._get().skip_mod_date = True
         redirect(request.referer)
 
 class AppDiscussionController(DiscussionController):
@@ -135,6 +136,7 @@ class ThreadController(BaseController):
         c.thread_header = self.W.thread_header
         limit, page, start = g.handle_paging(limit, page)
         self.thread.num_views += 1
+        M.session.artifact_orm_session._get().skip_mod_date = True # the update to num_views shouldn't affect it
         count = self.thread.query_posts(page=page, limit=int(limit)).count()
         return dict(discussion=self.thread.discussion,
                     thread=self.thread,
