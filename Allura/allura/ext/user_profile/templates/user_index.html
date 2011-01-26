@@ -2,7 +2,7 @@
 
 {% block title %}{{user.display_name}} / Profile{% endblock %}
 
-{% block header %}{{user.display_name}} ({{user.username}}){% endblock %}
+{% block header %}{{c.project.homepage_title}}{% endblock %}
 
 {% block extra_css %}
     <link rel="stylesheet" type="text/css" 
@@ -12,7 +12,7 @@
 
 {% block content %}
           {% if user.preferences.email_address %}
-            {{lib.gravatar(user)}}
+            <p>{{lib.gravatar(user)}}</p>
           {% endif %}
           {{c.project.description_html|safe}}
           <div class="project-list grid-18">

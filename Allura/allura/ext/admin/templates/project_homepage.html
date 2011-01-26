@@ -14,7 +14,7 @@
     <form method="POST" action="update_homepage" enctype="multipart/form-data">
         <label class="grid-19" for="homepage_title">Title: </label>
         <div class="grid-19">
-          <input name="homepage_title" id="homepage_title" style="width: 95%">
+          <input name="homepage_title" id="homepage_title" style="width: 95%" value="{{c.project.homepage_title}}">
         </div>
         <div class="grid-19">
           {{c.markdown_editor.display(name='description', value=c.project.description)}}
