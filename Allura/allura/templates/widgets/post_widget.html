@@ -18,7 +18,7 @@
           {% if show_subject %}
             <b>{{value.subject or '(no subject)'}}<br/></b>
           {% endif %}
-          {{g.markdown.convert(value.text)|safe}}
+          {{g.markdown.convert(value.text)|safe}}&nbsp;
         </div>
         {% if h.has_artifact_access('post', value.thread)() %}
         <div class="edit_post_form reply" style="display:none">

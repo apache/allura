@@ -148,6 +148,9 @@ class ThreadController(BaseController):
     def post(self, **kw):
         require(has_artifact_access('post', self.thread))
         kw = self.W.edit_post.to_python(kw, None)
+        if not kw['text']:
+            flash('Your post was not saved. You must provide content.', 'error')
+            redirect(request.referer)
         file_info = kw.pop('file_info', None)
         p = self.thread.add_post(**kw)
         if hasattr(file_info, 'file'):
