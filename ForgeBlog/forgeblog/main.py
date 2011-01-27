@@ -338,4 +338,4 @@ class PostController(BaseController):
         try:
             return self.post.get_version(version)
         except ValueError:
-            return None
+            raise exc.HTTPNotFound()
