@@ -1,16 +1,11 @@
 <div {{attrs|default({}, true)|xmlattr}} class="discussion_subscription_form">
-  {% if show_actions %}
-  <div class="actions">
-    {% if show_discussion_email %}
-    <a href="{{value.email_link(subject=None)}}" class="email" title="Email" style="display:none"><b data-icon="{{g.icons['mail'].char}}" class="ico {{g.icons['mail'].css}}"></b></a>
-    {% endif %}
-    <a href="" class="follow" title="Follow" style="display:none"><b data-icon="{{g.icons['feed'].char}}" class="ico {{g.icons['feed'].css}}"></b></a>
-  </div>
-  {% endif %}
   <div class="clear"></div>
   {{widget.fields['page_list'].display(limit=limit, page=page, count=count)}}
   <form method="{{method}}" action="{{action}}" {% if enctype %}enctype="{{enctype}}"{% endif %} class="follow_form">
     {{widget.fields['threads'].display(value=threads)}}
+    <p>
+    <input type="submit" value="Update email subscriptions"/>
+    </p>
   </form>
   {{widget.fields['page_list'].display(limit=limit, page=page, count=count)}}
   {{widget.fields['page_size'].display(limit=limit, page=page, count=count)}}

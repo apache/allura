@@ -174,16 +174,14 @@ class SubscriptionForm(ew.SimpleForm):
     template='jinja:widgets/subscription_form.html'
     value=None
     threads=None
-    show_discussion_email=False
-    show_actions=False
     show_subject=False
     allow_create_thread=False
     limit=None
     page=0
     count=0
     submit_text='Update Subscriptions'
-    params=['value', 'threads', 'show_actions', 'limit', 'page', 'count',
-            'show_discussion_email', 'show_subject', 'allow_create_thread']
+    params=['value', 'threads', 'limit', 'page', 'count',
+            'show_subject', 'allow_create_thread']
     class fields(ew_core.NameList):
         page_list=ffw.PageList()
         page_size=ffw.PageSize()
@@ -193,21 +191,6 @@ class SubscriptionForm(ew.SimpleForm):
         yield ew.JSScript('''
         $(window).load(function () {
             $('tbody').children(':even').addClass('even');
-            $('.discussion_subscription_form').each(function () {
-                var discussion = this;
-                var follow_btn = $('.follow', discussion);
-                var email_btn = $('.email', discussion);
-                var action_holder = $('h2.title small');
-                action_holder.append(follow_btn);
-                action_holder.append(email_btn);
-                follow_btn.show();
-                email_btn.show();
-                $('.submit', discussion).button();
-                follow_btn.click(function (ele) {
-                    $('.follow_form', discussion).submit();
-                    return false;
-                });
-            });
         });''')
 
 # Widgets
@@ -414,7 +397,6 @@ class Discussion(HierWidget):
         HierWidget.defaults,
         value=None,
         threads=None,
-        show_discussion_email=False,
         show_subject=False,
         allow_create_thread=False)
     widgets=dict(

@@ -144,7 +144,6 @@ class Thread(DW.Thread):
 
 class Forum(DW.Discussion):
     allow_create_thread=True
-    show_discussion_email = True
     show_subject = True
     widgets=dict(DW.Discussion.widgets,
                  discussion_header=ForumHeader(),
