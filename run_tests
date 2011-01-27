@@ -26,6 +26,7 @@ fi
 
 if [ "$TEST_MODULES"  == "" ]; then
     TEST_MODULES="\
+    AlluraTesting \
     Allura \
     ForgeBlog \
     ForgeLink \
@@ -37,14 +38,16 @@ if [ "$TEST_MODULES"  == "" ]; then
     ForgeTracker \
     ForgeWiki \
     ForgeDownloads \
-    ."
+    "
 fi
 
+# Run with --with-coverage for coverage (add --cover-html for html report)
 for module in $TEST_MODULES; do
     (
         echo "Running tests in module $module"
         cd $module
-        nosetests $* || exit
+        # Use bash4 feature to lowercase string
+        cover_package=${module,,}
+        nosetests --cover-package=$cover_package --cover-html-dir=report.coverage --cover-erase $* || exit
     ) || exit
 done
-

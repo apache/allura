@@ -6,6 +6,8 @@ tags
 *.pyc
 *.orig
 *.coverage
+*,cover
+.coverage*
 *~
 *.swp
 .dbshell
