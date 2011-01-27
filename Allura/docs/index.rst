@@ -11,13 +11,12 @@ Introducing the new *Forge Platform:*
    
    intro
 
-Installation / Getting Started
+Getting Started
 =====================================================================
 
 .. toctree::
    :maxdepth: 2
 
-   install
    platform_tour
 
 Writing a PyForge based app
