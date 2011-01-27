@@ -7,7 +7,7 @@
   <textarea id="{{id or name}}" name="{{name}}" class="auto_resize">{{value or ''}}</textarea>
   <div class="markdown_preview" style="display:none"></div>
   <div class="modal markdown_help" style="display:none">
-    <b data-icon="{{g.icons['delete'].char}}" class="ico {{g.icons['delete'].css}} close"></b>
+    <b data-icon="{{g.icons['close'].char}}" class="ico {{g.icons['close'].css}} close"></b>
     {{lib.markdown_syntax()}}
   </div>
   <input type="hidden" class="markdown_project" value="{{c.project.shortname}}">

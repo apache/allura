@@ -112,6 +112,7 @@ class Globals(object):
             flag = Icon('^', 'ico-flag'),
             undelete = Icon('+', 'ico-undelete'),
             delete = Icon('#', 'ico-delete'),
+            close = Icon('D', 'ico-close'),
             table = Icon('n', 'ico-table'),
             stats = Icon('Y', 'ico-stats'),
             pin = Icon('@', 'ico-pin'),

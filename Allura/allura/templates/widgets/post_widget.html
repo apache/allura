@@ -69,7 +69,7 @@
         </div>
       </div>
       <div class="shortlink_popup modal" style="display: none">
-        <b data-icon="{{g.icons['delete'].char}}" class="ico {{g.icons['delete'].css}} close"></b>
+        <b data-icon="{{g.icons['close'].char}}" class="ico {{g.icons['close'].css}} close"></b>
         If you would like to refer to this comment somewhere else in this project, copy and paste the following link:
         <input type="text" style="width:100%"
           value='{% filter forceescape %}<a href="{{tg.url(url.current(),dict(page=page,limit=limit))}}#{{value.slug}}">{{value.subject or "comment"}}</a>{% endfilter %}'>
