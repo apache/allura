@@ -52,7 +52,8 @@ class TestRootController(TestController):
     def test_post_index(self):
         self._post()
         response = self.app.get('/blog/2010/08/my-post/')
-        assert 'Nothing' in response
+        assert 'Nothing to see here' in response
+        self.app.get('/blog/2010/08/no-my-post', status=404)
 
     def test_post_edit(self):
         self._post()
@@ -68,6 +69,8 @@ class TestRootController(TestController):
         # two revisions are shown
         assert '2 by Test Admin' in response
         assert '1 by Test Admin' in response
+        self.app.get('/blog/2010/08/my-post?version=1')
+        self.app.get('/blog/2010/08/my-post?version=foo', status=404)
 
     def test_post_diff(self):
         self._post()
@@ -76,3 +79,14 @@ class TestRootController(TestController):
         response = self.app.get('/blog/2010/08/my-post/')
         response = self.app.get('/blog/2010/08/my-post/diff?v1=0&v2=0')
         assert 'My Post' in response
+
+    def test_feeds(self):
+        self.app.get('/blog/feed.rss')
+        self.app.get('/blog/feed.atom')
+
+    def test_post_feeds(self):
+        self._post()
+        response = self.app.get('/blog/2010/08/my-post/feed.rss')
+        assert 'Nothing to see' in response
+        response = self.app.get('/blog/2010/08/my-post/feed.atom')
+        assert 'Nothing to see' in response
