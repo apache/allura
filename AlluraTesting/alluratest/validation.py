@@ -64,8 +64,17 @@ class Config(object):
                 return fp.read().strip()
 
     def validation_enabled(self, val_type):
+        env_var = os.getenv('ALLURA_VALIDATION')
+        if env_var == 'all':
+            return True
+        elif env_var == 'none':
+            return False
+        elif env_var is not None:
+            return val_type in env_var.split(',')
+
         if self.hostname == COMPLETE_TESTS_HOST:
             return True
+
         enabled = self.test_ini.getboolean('validation', 'validate_' + val_type)
         return enabled
 
