@@ -18,11 +18,14 @@ from ming.orm import MappedClass, FieldProperty, session, mapper
 from allura.lib.patience import SequenceMatcher
 from allura.lib import helpers as h
 
-from .artifact import Artifact, VersionedArtifact
+from .artifact import Artifact, VersionedArtifact, Feed
 from .auth import User
 from .session import repository_orm_session, project_orm_session
+from .notification import Notification
 
 log = logging.getLogger(__name__)
+common_suffix = config.get('forgemail.domain', '.sourceforge.net')
+common_prefix = config.get('forgemail.url', 'https://sourceforge.net')
 
 class RepositoryImplementation(object):
 
@@ -182,6 +185,11 @@ class Repository(Artifact):
     def shorthand_id(self):
         return self.name
 
+    @property
+    def email_address(self):
+        domain = '.'.join(reversed(self.app.url[1:-1].split('/'))).replace('_', '-')
+        return 'noreply@%s%s' % (domain, common_suffix)
+
     def index(self):
         result = Artifact.index(self)
         result.update(
@@ -237,6 +245,7 @@ class Repository(Artifact):
         # Refresh history
         i=0
         seen_object_ids = set()
+        commit_msgs = []
         for i, oid in enumerate(commit_ids):
             if len(seen_object_ids) > 10000: # pragma no cover
                 log.info('... flushing seen object cache')
@@ -253,6 +262,13 @@ class Repository(Artifact):
                          self.BATCH_SIZE, (i+1))
                 sess.flush()
                 sess.clear()
+            commit_msgs.append('%s <%s%s>' % (ci.summary,common_prefix,ci.url()))
+        if not all_commits:
+            Notification.post(
+                artifact=self,
+                topic='metadata',
+                subject='New commit to %s %s' % (self.app.project.name,self.app.config.options.mount_label),
+                text='\n'.join(commit_msgs))
         log.info('...... flushing %d commits (%d total)',
                  i % self.BATCH_SIZE, i)
         sess.flush()
