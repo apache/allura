@@ -14,7 +14,13 @@ class TestUserProfile(TestController):
         response = self.app.get('/u/test-admin/profile/configuration')
         assert 'Configure Dashboard' in response
 
-    def test_neighborhood_profile(self):
+    def test_profile_config(self):
+        # Not fully implemented, just do coverage
+        response = self.app.post('/u/test-admin/profile/update_configuration', params=variable_encode({
+                                     'layout_class': 'something', 'divs': [{'name': 'foo', 'content': [{'widget': 'lotsa/content'}]}], 
+                                     'new_div': {'name': 'bar', 'new_widget': 'widg'}}))
+
+    def test_wrong_profile(self):
         response = self.app.get('/u/no-such-user/profile/', status=404)
 
     def test_seclusion(self):
@@ -29,6 +35,9 @@ class TestUserPermissions(TestController):
     allow = dict(allow_read=True, allow_write=True, allow_create=True)
     read = dict(allow_read=True, allow_write=False, allow_create=False)
     disallow = dict(allow_read=False, allow_write=False, allow_create=False)
+
+    def test_permissions_page(self):
+        response = self.app.get('/u/test-admin/profile/permissions', params={'repo_path': 'git/test/src'})
 
     def test_unknown_project(self):
         r = self._check_repo('/git/foo/bar', status=404)

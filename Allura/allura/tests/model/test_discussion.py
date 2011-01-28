@@ -7,7 +7,7 @@ import time
 from datetime import datetime
 
 from pylons import c, g, request, response
-from nose.tools import assert_raises, with_setup
+from nose.tools import assert_raises, assert_equals, with_setup
 import mock
 
 from ming.orm.ormsession import ThreadLocalORMSession
@@ -49,6 +49,8 @@ def test_discussion_methods():
     assert d.index()['name_s'] == 'test'
     assert d.subscription() == None
     assert d.find_posts().count() == 0
+    jsn = d.__json__()
+    assert jsn['name'] == d.name
     d.delete()
     ThreadLocalORMSession.flush_all()
     ThreadLocalORMSession.close_all()
@@ -74,6 +76,9 @@ def test_thread_methods():
     posts0 = t.find_posts(page=0, limit=10, style='threaded')
     posts1 = t.find_posts(page=0, limit=10, style='timestamp')
     assert posts0 != posts1
+    posts2 = t.find_posts(page=0, limit=10, style='threaded', timestamp=p0.timestamp)
+    assert len(posts2) > 0
+
     assert 'wiki/_discuss/' in t.url()
     assert t.index()['views_i'] == 0
     assert not t.subscription
@@ -82,6 +87,10 @@ def test_thread_methods():
     t.subscription = False
     assert not t.subscription
     assert t.top_level_posts().count() == 2
+    assert t.post_count == 3
+    jsn = t.__json__()
+    assert '_id' in jsn
+    assert_equals(len(jsn['posts']), 3)
     t.delete()
 
 @with_setup(setUp, tearDown)
@@ -99,8 +108,14 @@ def test_post_methods():
     assert 'Test Admin' in p.summary()
     assert 'wiki/_discuss' in p.url()
     assert p.reply_subject() == 'Re: Test Thread'
+
     ss = p.history().first()
     assert 'Version' in ss.index()['title_s']
+    assert '#' in ss.shorthand_id()
+
+    jsn = p.__json__()
+    assert jsn["thread_id"] == t._id
+
     p.spam()
     p.delete()
 
@@ -109,16 +124,23 @@ def test_attachment_methods():
     d = M.Discussion(shortname='test', name='test')
     t = M.Thread(discussion_id=d._id, subject='Test Thread')
     p = t.post('This is a post')
-    a = p.attach('foo.text', StringIO('Hello, world!'),
+    p_att = p.attach('foo.text', StringIO('Hello, world!'),
                 discussion_id=d._id,
                 thread_id=t._id,
                 post_id=p._id)
+    t_att = p.attach('foo2.text', StringIO('Hello, thread!'),
+                discussion_id=d._id,
+                thread_id=t._id)
+    d_att = p.attach('foo3.text', StringIO('Hello, discussion!'),
+                discussion_id=d._id)
+
     ThreadLocalORMSession.flush_all()
-    assert a.post == p
-    assert a.thread == t
-    assert a.discussion == d
-    assert 'wiki/_discuss' in a.url()
-    assert 'attachment/' in a.url()
+    assert p_att.post == p
+    assert p_att.thread == t
+    assert p_att.discussion == d
+    for att in (p_att, t_att, d_att):
+        assert 'wiki/_discuss' in att.url()
+        assert 'attachment/' in att.url()
 
 @with_setup(setUp, tearDown)
 def test_discussion_delete():
