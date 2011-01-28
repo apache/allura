@@ -1,17 +1,21 @@
 import sys
 import time
 import json
-import string
 from pprint import pformat
 from multiprocessing import Process
-from weberror.errormiddleware import handle_exception
+import logging
 
 import ming
 import pylons
 from bson import ObjectId
 from carrot.messaging import Consumer, ConsumerSet
+from weberror.errormiddleware import handle_exception
 
+from allura.lib.custom_middleware import MagicalC, environ
 from . import base
+
+
+log = logging.getLogger(__name__)
 
 class RestartableProcess(object):
 
@@ -161,6 +165,11 @@ class ReactorCommand(base.Command):
         def callback(data, msg):
             msg.ack()
             try:
+                # reset pylons.c
+                pylons.c._pop_object()
+                environ.set_environment({})
+                pylons.c._push_object(MagicalC(base.EmptyClass(), environ))
+                
                 __traceback_supplement__ = (
                     self.Supplement, pylons.c, data, msg, 'audit')
                 if 'project_id' in data:
@@ -213,6 +222,11 @@ class ReactorCommand(base.Command):
         def callback(data, msg):
             msg.ack()
             try:
+                # reset pylons.c
+                pylons.c._pop_object()
+                environ.set_environment({})
+                pylons.c._push_object(MagicalC(base.EmptyClass(), environ))
+
                 __traceback_supplement__ = (
                     self.Supplement, pylons.c, data, msg, 'react')
                 # log.info('React(%s): %s', msg.delivery_info['routing_key'], data)
