@@ -63,6 +63,24 @@ class TestAuth(TestController):
          r = self.app.get('/auth/prefs/')
          assert 'class="error"' in r
 
+    def test_api_key(self):
+         r = self.app.get('/auth/prefs/')
+         assert 'No API token generated' in r
+         r = self.app.post('/auth/prefs/gen_api_token', status=302)
+         r = self.app.get('/auth/prefs/')
+         assert 'No API token generated' not in r
+         assert 'API Key:' in r
+         assert 'Secret Key:' in r
+         r = self.app.post('/auth/prefs/del_api_token', status=302)
+         r = self.app.get('/auth/prefs/')
+         assert 'No API token generated' in r
+
+    def test_oauth(self):
+         r = self.app.get('/auth/oauth/')
+         r = self.app.post('/auth/oauth/register', params={'application_name': 'oautstapp', 'application_description': 'Oauth rulez'}).follow()
+         assert 'oautstapp' in r
+         r = self.app.post('/auth/oauth/delete').follow()
+         assert 'Invalid app ID' in r
 
     def test_openid(self):
         result = self.app.get('/auth/login_verify_oid', params=dict(
