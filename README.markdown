@@ -3,38 +3,29 @@
 We'll use [VirtualBox](http://www.virtualbox.org) and [Ubuntu 10.10](http://ubuntu.com) to create a disposable sandbox for Forge development/testing.
 
 * Download and install [VirtualBox](http://www.virtualbox.org/wiki/Downloads) for your platform.
-  
+
 * Download a minimal [Ubuntu 10.10](https://help.ubuntu.com/community/Installation/MinimalCD) ISO (~15MB).
-  
+
 * Create a new virtual machine in Virtual Box, selecting Ubuntu (64 bit) as the OS type.  The rest of the wizards' defaults are fine.
-  
+
 * When you launch the virtual machine for the first time, you will be prompted to attach your installation media.  Browse to the `mini.iso` that you downloaded earlier.
-  
+
 * Consult [available documentation](https://help.ubuntu.com/) for help installing Ubuntu.
-  
+
 
 # Forge Installation
 
-Before we begin, you'll need the following additional packages in order to checkout the Forge source code.
+Before we begin, you'll need the following additional packages in order to work with the Forge source code.
 
-    ~$ sudo apt-get install git-core mercurial
+    ~$ sudo apt-get install git-core gitweb subversion python-svn libtidy-0.99-0
 
 You'll also need additional development packages in order to compile some of the modules.
 
     ~$ sudo apt-get install default-jdk python-dev libssl-dev libldap2-dev libsasl2-dev
 
-Running the test suite requires additional packages.
+And finally our document-oriented database, MongoDB, and our messaging server, RabbitMQ.
 
-    ~$ sudo apt-get install libtidy-0.99-0 gitweb
-
-... and our messaging server, RabbitMQ.
-
-    ~$ sudo apt-get install rabbitmq-server
-
-And finally our document-oriented database, MongoDB.
-
-    ~$ sudo apt-get install mongodb
-
+    ~$ sudo apt-get install mongodb rabbitmq-server
 
 ## Setting up a virtual python environment
 
@@ -45,7 +36,7 @@ The first step to installing the Forge platform is installing a virtual environm
 
 Once you have virtualenv installed, you need to create a virtual environment.  We'll call our Forge environment 'anvil'.
 
-    ~$ virtualenv --no-site-packages anvil
+    ~$ virtualenv anvil
 
 This gives us a nice, clean environment into which we can install all the forge dependencies.  In order to use the virtual environment, you'll need to activate it.  You'll need to do this whenever you're working on the Forge codebase so you may want to consider adding it to your `~/.bashrc` file.
 
@@ -86,7 +77,7 @@ Hopefully everything completed without errors.  We'll also need to create a plac
     for SCM in git svn hg
     do
         mkdir -p ~/var/scm/$SCM
-        chmod -R 777 ~/var/scm
+        chmod 777 ~/var/scm/$SCM
         sudo ln -s ~/var/scm/$SCM /
     done
 
@@ -145,12 +136,7 @@ Routes messages from email addresses to tools in the forge.
 
 ### TurboGears application server
 
-One of the modules we need for Subversion integration is not available in egg format, however the distribution copy will work fine.
-
-    (anvil)~$ sudo apt-get install python-svn
-    (anvil)~$ echo '/usr/lib/python2.6/dist-packages' >> ~/anvil/lib/python2.6/site-packages/setuptools.pth
-
-In order to initialize the forge database, you'll need to run the following:
+In order to initialize the Forge database, you'll need to run the following:
 
     (anvil)~/src/forge/Allura$ paster setup-app development.ini
 
@@ -175,6 +161,7 @@ Forge documentation currently lives in the `Allura/docs` directory and can be co
 You will also want to give the test suite a run, to verify there were no problems with the installation.
 
     (anvil)~$ cd ~/src/forge
+    (anvil)~/src/forge$ export ALLURA_VALIDATION=none
     (anvil)~/src/forge$ ./run_tests
 
 Happy hacking!
@@ -182,21 +169,7 @@ Happy hacking!
 
 # Current Local Tweaks
 
-[#1405] Remove sf.phpsession from forge/Allura/setup.py
-
-    diff --git a/Allura/setup.py b/Allura/setup.py
-    index f9fc0c4..ea1eb16 100644
-    --- a/Allura/setup.py
-    +++ b/Allura/setup.py
-    @@ -37,7 +37,6 @@ setup(
-             "EasyWidgets >= 0.1.1",
-             "PIL >= 1.1.7",
-             "iso8601",
-    -        "sf.phpsession==0.1",
-             "chardet==1.0.1",
-             "feedparser>=4.1,<=4.2",
-             "oauth2==1.2.0",
-
+[#1411] Edit forge/Allura/development.ini, change theme=sftheme to theme=allura
 
 [#1407] Remove all rtstats traces from Allura/development.ini
 
