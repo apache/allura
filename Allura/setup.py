@@ -37,7 +37,6 @@ setup(
         "EasyWidgets >= 0.1.1",
         "PIL >= 1.1.7",
         "iso8601",
-        "sf.phpsession==0.1",
         "chardet==1.0.1",
         "feedparser>=4.1,<=4.2",
         "oauth2==1.2.0",
