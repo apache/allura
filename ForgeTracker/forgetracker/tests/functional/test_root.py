@@ -3,7 +3,7 @@ import os, urllib
 import Image, StringIO
 import allura
 
-from nose.tools import assert_true, assert_false, eq_
+from nose.tools import assert_true, assert_false, eq_, assert_equal
 from formencode.variabledecode import variable_encode
 
 from alluratest.controller import TestController
@@ -160,8 +160,8 @@ class TestFunctionalController(TestController):
         }, upload_files=[upload]).follow()
         assert file_name in ticket_editor, ticket_editor.showbrowser()
         req = self.app.get('/bugs/1/')
-        file_link = req.html.findAll('form')[1].findAll('a')[7]
-        assert file_link.string == file_name
+        file_link = req.html.findAll('form')[1].findAll('a')[6]
+        assert_equal(file_link.string, file_name)
         self.app.post(str(file_link['href']),{
             'delete':'True'
         })
@@ -177,7 +177,7 @@ class TestFunctionalController(TestController):
             'summary':'zzz'
         }, upload_files=[upload]).follow()
         download = self.app.get(str(ticket_editor.html.findAll('form')[1].findAll('a')[7]['href']))
-        assert_true(download.body == file_data)
+        assert_equal(download.body, file_data)
     
     def test_new_image_attachment_content(self):
         h.set_context('test', 'bugs')
