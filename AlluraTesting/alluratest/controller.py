@@ -1,5 +1,6 @@
 """Unit and functional test suite for allura."""
 import os
+import urllib
 
 import mock
 import beaker.session
@@ -87,3 +88,7 @@ class TestController(object):
     def tearDown(self):
         """Method called by nose after running each test"""
         pass
+
+    def webflash(self, response):
+        "Extract webflash content from response."
+        return urllib.unquote(response.cookies_set.get('webflash', ''))
