@@ -136,7 +136,7 @@ class AdminApp(Application):
     def install(self, project):
         pass
 
-    def uninstall(self, project):
+    def uninstall(self, project): # pragma no cover
         raise NotImplementedError, "uninstall"
 
 class ProjectAdminController(BaseController):
@@ -571,13 +571,15 @@ class GroupController(BaseController):
     def index(self):
         if self._group.name in ('Admin', 'Developer', 'Member'):
             show_settings = False
+            action = None
         else:
             show_settings = True
+            action = self._group.settings_href + 'update'
         c.form = W.group_settings
         return dict(
             group=self._group,
             show_settings=show_settings,
-            action=self._group.settings_href + 'update')
+            action=action)
 
     @expose()
     @h.vardec
