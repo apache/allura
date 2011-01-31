@@ -274,7 +274,8 @@ class ProjectRegistrationProvider(object):
             log.exception('Error registering project %s' % p)
             raise
         ThreadLocalORMSession.flush_all()
-        with h.push_config(c, project=p):
+        with h.push_config(c, project=p, user=user):
+            # have to add user to context, since this may occur inside auth code for user-project reg, and c.user isn't set yet
             g.publish('react', 'forge.project_created')
         return p
 

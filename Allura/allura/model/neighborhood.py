@@ -1,3 +1,5 @@
+import logging
+
 from ming import schema as S
 from ming.orm import MappedClass
 from ming.orm import FieldProperty, RelationProperty, ForeignIdProperty
@@ -8,6 +10,8 @@ from allura.lib import plugin
 
 from .session import main_orm_session
 from .filesystem import File
+
+log = logging.getLogger(__name__)
 
 class NeighborhoodFile(File):
     class __mongometa__:
@@ -65,7 +69,7 @@ class Neighborhood(MappedClass):
         become the project's superuser.  If no user is specified, c.user is used.
         '''
         provider = plugin.ProjectRegistrationProvider.get()
-        return provider.register_project(self, shortname, user or c.user, user_project)
+        return provider.register_project(self, shortname, user or getattr(c,'user',None), user_project)
 
     def bind_controller(self, controller):
         from allura.controllers.project import NeighborhoodController
