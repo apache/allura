@@ -1,5 +1,10 @@
 {% extends g.theme.master %}
 
+{% block extra_css %}
+    <link rel="alternate" type="application/rss+xml" title="RSS" href="{{c.app.url}}feed.rss"/>
+    <link rel="alternate" type="application/atom+xml" title="Atom" href="{{c.app.url}}feed.atom"/>
+{% endblock %}
+
 {% macro clone_info(repo) %}
   {% if repo %}
     <label for="ro" class="grid-3">Read-only</label>

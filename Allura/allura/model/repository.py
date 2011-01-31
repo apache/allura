@@ -268,6 +268,7 @@ class Repository(Artifact):
                          self.BATCH_SIZE, (i+1))
                 sess.flush()
                 sess.clear()
+            Feed.post(self, title='New commit', description='%s<br><a href="%s%s">View Changes</a>' % (ci.summary,common_prefix,ci.url()))
             commit_msgs.append('%s <%s%s>' % (ci.summary,common_prefix,ci.url()))
         if not all_commits:
             Notification.post(

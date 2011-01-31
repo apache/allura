@@ -6,6 +6,7 @@ from pylons import c, g, request, response
 from webob import exc
 from tg import redirect, expose, override_template, flash, url, validate
 from tg.decorators import with_trailing_slash, without_trailing_slash
+from formencode import validators
 
 from ming.orm import ThreadLocalORMSession, session
 
@@ -130,6 +131,31 @@ class RepoRootController(BaseController):
                     mr.request_number, mr.summary))
             session(t).flush()
             redirect(mr.url())
+
+    @without_trailing_slash
+    @expose()
+    @validate(dict(
+            since=h.DateTimeConverter(if_empty=None, if_invalid=None),
+            until=h.DateTimeConverter(if_empty=None, if_invalid=None),
+            offset=validators.Int(if_empty=None),
+            limit=validators.Int(if_empty=None)))
+    def feed(self, since=None, until=None, offset=None, limit=None):
+        if request.environ['PATH_INFO'].endswith('.atom'):
+            feed_type = 'atom'
+        else:
+            feed_type = 'rss'
+        title = 'Recent changes to %s' % c.app.config.options.mount_point
+        feed = M.Feed.feed(
+            {'artifact_reference.mount_point':c.app.config.options.mount_point,
+             'artifact_reference.project_id':c.project._id},
+            feed_type,
+            title,
+            c.app.url,
+            title,
+            since, until, offset, limit)
+        response.headers['Content-Type'] = ''
+        response.content_type = 'application/xml'
+        return feed.writeString('utf-8')
 
 class MergeRequestsController(object):
     mr_filter=SCMMergeRequestFilterWidget()

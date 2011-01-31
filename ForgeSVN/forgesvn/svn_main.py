@@ -34,6 +34,7 @@ class ForgeSVNApp(RepositoryApp):
         self.root = BranchBrowser()
         default_root = RepoRootController()
         self.root.refresh = default_root.refresh
+        self.root.feed = default_root.feed
 
     @LazyProperty
     def repo(self):
