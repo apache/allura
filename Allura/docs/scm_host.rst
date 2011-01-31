@@ -2,7 +2,7 @@ SCM (Git, Mercurial, Subversion) Hosting Installation
 ==========================================================
 
 The following instructions assume you are using a version of Ubuntu Linux with
-support for dchroot and debootstrap.  We will use a chroot jail to allow users to
+support for schroot and debootstrap.  We will use a chroot jail to allow users to
 access their repositories via ssh.
 
 Install a chroot environment

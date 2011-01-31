@@ -51,14 +51,16 @@ class UploadKeyForm(ForgeForm):
 
 class RegistrationForm(ForgeForm):
     class fields(ew_core.NameList):
-        display_name = ew.TextField(label='Displayed Name')
+        display_name = ew.TextField(
+            label='Displayed Name',
+            validator=fev.UnicodeString(not_empty=True))
         username = ew.TextField(
             label='Desired Username',
             validator=fev.Regex(
                 h.re_path_portion))
         username.validator._messages['invalid'] = (
-            'Usernames must include only letters, numbers, and dashes,'
-            ' and must start with a letter and be at least 3 characters'
+            'Usernames must include only letters, numbers, and dashes.'
+            ' They must also start with a letter and be at least 3 characters'
             ' long.')
         pw = ew.PasswordField(
             label='New Password',

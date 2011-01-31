@@ -94,7 +94,7 @@ class AuthController(BaseController):
 
     @expose()
     @validate(F.registration_form, error_handler=create_account)
-    def save_new(self,display_name=None,username=None,pw=None, **kw):
+    def save_new(self, display_name=None, username=None, pw=None, **kw):
         user = M.User.register(
             dict(username=username,
                  display_name=display_name,

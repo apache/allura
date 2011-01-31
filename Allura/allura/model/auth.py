@@ -222,7 +222,6 @@ class AuthGlobals(MappedClass):
             new=True)
         return g.next_uid
 
-            
 class User(MappedClass):
     SALT_LEN=8
     class __mongometa__:

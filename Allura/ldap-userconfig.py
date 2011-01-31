@@ -22,7 +22,7 @@ def init(uname):
     os.chown(ssh, u.pw_uid, g.gr_gid)
 
 def upload(uname, pubkey):
-    keyfile = os.path.join('/home', uname, '.ssh', 'authorized_keys2')
+    keyfile = os.path.join('/home', uname, '.ssh', 'authorized_keys')
     u = pwd.getpwnam(uname)
     g = grp.getgrnam('scm')
     with open(keyfile, 'w') as fp:
