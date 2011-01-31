@@ -1,7 +1,9 @@
 import mimetypes
+import logging
 
 from pylons import response
 from paste.httpheaders import CACHE_CONTROL, EXPIRES
+from ming.utils import LazyProperty
 
 def cache_forever():
     headers = [
@@ -27,3 +29,19 @@ def guess_mime_type(filename):
     else:
         content_type = 'application/octet-stream'
     return content_type
+
+
+class lazy_logger(object):
+    '''Lazy instatiation of a logger, to ensure that it does not get
+    created before logging is configured (which would make it disabled)'''
+
+    def __init__(self, name):
+        self._name = name
+
+    @LazyProperty
+    def _logger(self):
+        return logging.getLogger(self._name)
+
+    def __getattr__(self, name):
+        if name.startswith('_'): raise AttributeError, name
+        return getattr(self._logger, name)
