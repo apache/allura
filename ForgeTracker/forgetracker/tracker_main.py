@@ -344,7 +344,7 @@ class RootController(BaseController):
         for fld in c.app.globals.milestone_fields:
             if fld.name == '_milestone':
                 for m in fld.milestones:
-                    d =  c.app.globals.milestone_count('%s:%s' % fld.name, m.name)
+                    d =  c.app.globals.milestone_count('%s:%s' % (fld.name, m.name))
                     milestones.append(dict(
                         name=m.name,
                         due_date=m.get('due_date'),
