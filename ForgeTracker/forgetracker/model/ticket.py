@@ -512,5 +512,8 @@ class Ticket(VersionedArtifact):
 class TicketAttachment(BaseAttachment):
     thumbnail_size = (100, 100)
     ArtifactType=Ticket
+    class __mongometa__:
+        polymorphic_identity='TicketAttachment'
+    attachment_type=FieldProperty(str, if_missing='TicketAttachment')
 
 MappedClass.compile_all()

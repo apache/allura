@@ -213,5 +213,8 @@ class ForumAttachment(M.DiscussionAttachment):
     DiscussionClass=Forum
     ThreadClass=ForumThread
     PostClass=ForumPost
+    class __mongometa__:
+        polymorphic_identity='ForumAttachment'
+    attachment_type=FieldProperty(str, if_missing='ForumAttachment')
 
 MappedClass.compile_all()

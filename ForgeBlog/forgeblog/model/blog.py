@@ -157,5 +157,9 @@ class BlogPost(M.VersionedArtifact):
 
 class Attachment(M.BaseAttachment):
     ArtifactClass=BlogPost
+    class __mongometa__:
+        polymorphic_identity='BlogAttachment'
+    attachment_type=FieldProperty(str, if_missing='BlogAttachment')
+
 
 MappedClass.compile_all()

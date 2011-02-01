@@ -15,12 +15,15 @@ class BaseAttachment(File):
 
     class __mongometa__:
         name = 'attachment'
+        polymorphic_on = 'attachment_type'
+        polymorphic_identity=None
         session = project_orm_session
         indexes = [ 'artifact_id', 'app_config_id' ]
 
     artifact_id=FieldProperty(S.ObjectId)
     app_config_id=FieldProperty(S.ObjectId)
     type=FieldProperty(str)
+    attachment_type=FieldProperty(str)
 
     @property
     def artifact(self):

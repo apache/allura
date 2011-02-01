@@ -430,12 +430,14 @@ class DiscussionAttachment(BaseAttachment):
     ArtifactClass=Post
     thumbnail_size = (100, 100)
     class __mongometa__:
+        polymorphic_identity='DiscussionAttachment'
         indexes = [ 'filename', 'discussion_id', 'thread_id', 'post_id' ]
 
     discussion_id=FieldProperty(schema.ObjectId)
     thread_id=FieldProperty(str)
     post_id=FieldProperty(str)
     artifact_id=FieldProperty(str)
+    attachment_type=FieldProperty(str, if_missing='DiscussionAttachment')
 
     @property
     def discussion(self):

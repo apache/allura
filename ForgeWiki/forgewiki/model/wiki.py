@@ -189,5 +189,8 @@ class Page(VersionedArtifact):
 
 class WikiAttachment(BaseAttachment):
     ArtifactType=Page
+    class __mongometa__:
+        polymorphic_identity='WikiAttachment'
+    attachment_type=FieldProperty(str, if_missing='WikiAttachment')
 
 MappedClass.compile_all()
