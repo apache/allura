@@ -47,7 +47,7 @@ class Forum(M.Discussion):
     @property
     def subforums(self):
         return Forum.query.find(dict(parent_id=self._id)).all()
-        
+
     @property
     def email_address(self):
         domain = '.'.join(reversed(self.app.url[1:-1].split('/'))).replace('_', '-')
@@ -80,7 +80,7 @@ class Forum(M.Discussion):
         subject = '[no subject]'
         parent_id = None
         if data is not None:
-            parent_id = data.get('in_reply_to', [ None ])[0]
+            parent_id = (data.get('in_reply_to') or [None])[0]
             subject = data['headers'].get('Subject', subject)
         if parent_id is not None:
             parent = self.post_class().query.get(_id=parent_id)
@@ -177,7 +177,7 @@ class ForumPost(M.Post):
         # Add a placeholder to note the move
         placeholder = self.thread.post(
             subject='Discussion moved',
-            text='', 
+            text='',
             parent_id=self.parent_id)
         placeholder.slug = self.slug
         placeholder.full_slug = self.full_slug
