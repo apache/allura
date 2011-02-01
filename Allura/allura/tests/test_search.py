@@ -1,4 +1,5 @@
 import os
+from datetime import datetime, timedelta
 
 import mock
 from pylons import c, g, request
@@ -61,4 +62,10 @@ def test_searchapp():
     assert len(a.references) == 1
     assert len(a.backreferences) == 0
 
-
+def test_check_commit():
+    # TODO: just coverage so far
+    M.SearchConfig.query.remove()
+    M.SearchConfig(last_commit = datetime.utcnow() - timedelta(days=1),
+                   pending_commit = 1)
+    g.publish('audit', 'search.check_commit', {})
+    g.mock_amq.handle_all()
