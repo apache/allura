@@ -351,7 +351,7 @@ class RootController(BaseController):
                         description=m.get('description'),
                         complete=m.get('complete'),
                         total=d['hits'],
-                        closed=d['closed']))
+                        closed=d.get('closed', 0)))
         return dict(milestones=milestones)
 
     @without_trailing_slash

@@ -17,6 +17,12 @@ from allura.command import reactor
 from allura.ext.search import search_main
 from ming.orm.ormsession import ThreadLocalORMSession
 
+class TestMilestones(TestController):
+
+    def test_milestone_list(self):
+        r = self.app.get('/bugs/milestones')
+        assert '1.0' in r, r.showbrowser()
+
 class TestFunctionalController(TestController):
 
     def new_ticket(self, mount_point='/bugs/', **kw):
