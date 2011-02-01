@@ -28,27 +28,45 @@ class TestProjectAdmin(TestController):
                 A long description ?'''.encode('utf-8'),
                 labels='aaa,bbb'))
         r = self.app.get('/admin/overview')
-        # Add/Remove a subproject
+        assert 'A Test Project ?' in r
+        assert 'Test Subproject' not in r
+
+        r = self.app.get('/home/')
+        assert 'A long description ?' in r
+
+        # Add a subproject
         self.app.post('/admin/update_mounts', params={
                 'new.install':'install',
                 'new.ep_name':'',
                 'new.ordinal':1,
                 'new.mount_point':'test-subproject',
                 'new.mount_label':'Test Subproject'})
+        r = self.app.get('/admin/overview')
+        assert 'Test Subproject' in r
+        # Rename a subproject
+        self.app.post('/admin/update_mounts', params={
+                'subproject-0.shortname':'test/test-subproject',
+                'subproject-0.name':'Tst Sbprj',
+                'subproject-0.ordinal':100,
+                })
+        r = self.app.get('/admin/overview')
+        assert 'Tst Sbprj' in r
+        # Remove a subproject
         self.app.post('/admin/update_mounts', params={
                 'subproject-0.delete':'on',
                 'subproject-0.shortname':'test/test-subproject',
                 'new.ep_name':'',
                 })
-        # Add/Remove a tool
+
+        # Add a tool
         r = self.app.post('/admin/update_mounts', params={
                 'new.install':'install',
                 'new.ep_name':'Wiki',
                 'new.ordinal':1,
                 'new.mount_point':'test-tool',
                 'new.mount_label':'Test Tool'})
-        assert 'error' not in r.cookies_set.get('webflash', ''), r.showbrowser()
-        # check the nav
+        assert 'error' not in self.webflash(r)
+        # check tool in the nav
         r = self.app.get('/p/test/test-tool/').follow()
         active_link = r.html.findAll('span',{'class':'arrow'})
         assert len(active_link) == 1
@@ -59,7 +77,7 @@ class TestProjectAdmin(TestController):
                 'new.ordinal':1,
                 'new.mount_point':'test-tool2',
                 'new.mount_label':'Test Tool2'})
-        assert 'error' not in r.cookies_set.get('webflash', ''), r.showbrowser()
+        assert 'error' not in self.webflash(r)
         # check the nav - the similarly named tool should NOT be active
         r = self.app.get('/p/test/test-tool/Home/')
         active_link = r.html.findAll('span',{'class':'arrow'})
@@ -69,18 +87,29 @@ class TestProjectAdmin(TestController):
         active_link = r.html.findAll('span',{'class':'arrow'})
         assert len(active_link) == 1
         assert active_link[0].parent['href'] == '/p/test/test-tool2/'
+        # check can't create dup tool
         r = self.app.post('/admin/update_mounts', params={
                 'new.install':'install',
                 'new.ep_name':'Wiki',
                 'new.ordinal':1,
                 'new.mount_point':'test-tool',
                 'new.mount_label':'Test Tool'})
-        assert 'error' in r.cookies_set.get('webflash', ''), r.showbrowser()
+        assert 'error' in self.webflash(r)
+        # Rename a tool
+        self.app.post('/admin/update_mounts', params={
+                'tool-0.mount_point':'test-tool',
+                'tool-0.mount_label':'Tst Tuul',
+                'tool-0.ordinal':200,
+                })
+        r = self.app.get('/admin/overview')
+        assert 'Tst Tuul' in r
+        # Remove a tool
         self.app.post('/admin/update_mounts', params={
                 'tool-0.delete':'on',
                 'tool-0.mount_point':'test-tool',
                 'new.ep_name':'',
                 })
+
         # Update ACL
         h.set_context('test', 'wiki')
         role = M.User.anonymous().project_role()
@@ -221,3 +250,67 @@ class TestProjectAdmin(TestController):
         assert 'This project has been deleted and is not visible to non-admin users' not in r
         assert r.html.find('input',{'value':'Delete Project'})
         assert not r.html.find('input',{'value':'Undelete Project'})
+
+    def test_project_homepage(self):
+        r = self.app.get('/admin/homepage')
+        assert 'Awesome description' not in r
+        self.app.post('/admin/update_homepage', {'description': 'Awesome description'})
+        r = self.app.get('/admin/homepage')
+        assert 'Awesome description' in r
+        r = self.app.get('/p/test/home/')
+        assert 'Awesome description' in r, r
+
+    def test_project_permissions(self):
+        r = self.app.get('/admin/permissions/')
+        assert len(r.html.findAll('input', {'name': 'card-0.value'})) == 1
+        select = r.html.find('select', {'name': 'card-0.new'})
+        opt_admin = select.find(text='Admin').parent
+        opt_developer = select.find(text='Developer').parent
+        assert opt_admin.name == 'option'
+        assert opt_developer.name == 'option'
+        r = self.app.post('/admin/permissions/update', params={
+                'card-0.new': opt_developer['value'],
+                'card-0.value': opt_admin['value'],
+                'card-0.id': 'create'})
+        r = self.app.get('/admin/permissions/')
+        assigned_ids = [t['value'] for t in r.html.findAll('input', {'name': 'card-0.value'})]
+        assert len(assigned_ids) == 2
+        assert opt_developer['value'] in assigned_ids
+        assert opt_admin['value'] in assigned_ids
+
+    def test_project_groups(self):
+        r = self.app.get('/admin/groups/')
+        developer_id = r.html.find('input', {'name': 'card-1.id'})['value']
+        r = self.app.post('/admin/groups/update', params={
+                'card-1.id': developer_id,
+                'card-1.new': 'test-user'})
+        r = self.app.get('/admin/groups/')
+        users = [t.previous.strip() for t in r.html.findAll('input', {'name': 'card-1.value'})]
+        assert 'test-user' in users
+        # Make sure we can open role page for builtin role
+        r = self.app.get('/admin/groups/' + developer_id + '/')
+
+    def test_new_group(self):
+        r = self.app.get('/admin/groups/new')
+        r = self.app.post('/admin/groups/create', params={'name': 'Developer'})
+        assert 'error' in self.webflash(r)
+        r = self.app.post('/admin/groups/create', params={'name': 'RoleNew1'})
+        r = self.app.get('/admin/groups/')
+        assert 'RoleNew1' in r
+        role_id = r.html.find(text='RoleNew1').findPrevious('input', {'type': 'hidden'})['value']
+        r = self.app.get('/admin/groups/' + role_id + '/')
+
+        r = self.app.post('/admin/groups/' + str(role_id) + '/update', params={'_id': role_id, 'name': 'Developer'})
+        assert 'error' in self.webflash(r)
+        assert 'already exists' in self.webflash(r)
+
+        r = self.app.post('/admin/groups/' + str(role_id) + '/update', params={'_id': role_id, 'name': 'rleNew2'}).follow()
+        assert 'RoleNew1' not in r
+        assert 'rleNew2' in r
+
+        r = self.app.post('/admin/groups/' + str(role_id) + '/update', params={'_id': role_id, 'name': 'rleNew2', 'delete': 'delete'})
+        assert 'deleted' in self.webflash(r)
+        r = self.app.get('/admin/groups/')
+        roles = [t.string for t in r.html.findAll('h3')]
+        assert 'RoleNew1' not in roles
+        assert 'rleNew2' not in roles
