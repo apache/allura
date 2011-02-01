@@ -61,7 +61,8 @@ class ForgeDiscussionApp(Application):
             subscriptions={})
 
     def has_access(self, user, topic):
-        f = DM.Forum.query.get(shortname=topic.replace('.', '/'))
+        f = DM.Forum.query.get(shortname=topic.replace('.', '/'),
+                               app_config_id=self.config._id)
         return has_artifact_access('post', f, user=user)()
 
     @audit('Discussion.msg.#')
@@ -71,7 +72,8 @@ class ForgeDiscussionApp(Application):
         log.info('Headers are: %s', data['headers'])
         try:
             shortname = routing_key.split('.', 2)[-1]
-            f = DM.Forum.query.get(shortname=shortname.replace('.', '/'))
+            f = DM.Forum.query.get(shortname=shortname.replace('.', '/'),
+                                   app_config_id=self.config._id)
         except:
             log.exception('Error looking up forum: %s', routing_key)
             return
@@ -86,7 +88,8 @@ class ForgeDiscussionApp(Application):
     def forum_stats_auditor(self, routing_key, data):
         try:
             shortname = routing_key.split('.', 2)[-1]
-            f = DM.Forum.query.get(shortname=shortname.replace('.', '/'))
+            f = DM.Forum.query.get(shortname=shortname.replace('.', '/'),
+                                   app_config_id=self.config._id)
         except:
             log.exception('Error looking up forum: %s', routing_key)
             return
@@ -179,7 +182,7 @@ class ForgeDiscussionApp(Application):
         except: # pragma no cover
             log.exception('sidebar_menu')
             return []
-        
+
     def install(self, project):
         'Set up any default permissions and roles here'
         # Don't call super install here, as that sets up discussion for a tool
@@ -195,7 +198,7 @@ class ForgeDiscussionApp(Application):
             post=[role_anon],
             moderate=[role_developer],
             admin=c.project.roleids_with_permission('tool'))
-        
+
         self.admin.create_forum(new_forum=dict(
             shortname='general',
             create='on',

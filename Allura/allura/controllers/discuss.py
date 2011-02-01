@@ -88,7 +88,8 @@ class AppDiscussionController(DiscussionController):
 
     @LazyProperty
     def discussion(self):
-        return self.M.Discussion.query.get(shortname=c.app.config.options.mount_point)
+        return self.M.Discussion.query.get(shortname=c.app.config.options.mount_point,
+                                           app_config_id=c.app.config._id)
 
 class ThreadsController(BaseController):
     __metaclass__=h.ProxiedAttrMeta
@@ -439,4 +440,3 @@ class AppDiscussionRestController(AppDiscussionController):
     @expose('json:')
     def index(self, **kw):
         return dict(discussion=self.discussion)
-

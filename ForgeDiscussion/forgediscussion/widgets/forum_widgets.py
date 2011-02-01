@@ -63,14 +63,14 @@ class AnnouncementsTable(DW._ThreadsTable):
             label='Subject', text="${value['subject']}",
             href="${value['url']()}", show_label=True))
     name='announcements'
-    
+
 class _ForumSelector(ew.SingleSelectField):
     def _options(self):
         return [
             ew.Option(label=f.name, py_value=f, html_value=f.shortname)
             for f in c.app.forums ]
     def to_python(self, value, state):
-        result = M.Forum.query.get(shortname=value)
+        result = M.Forum.query.get(shortname=value, app_config_id=c.app.config._id)
         if not result:
             raise fev.Invalid('Illegal forum shortname: %s' % value, value, state)
         return result

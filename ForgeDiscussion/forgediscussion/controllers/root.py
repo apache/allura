@@ -80,7 +80,7 @@ class RootController(BaseController):
         thd.num_replies = 1
         flash('Message posted')
         redirect(thd.url())
-                  
+
     @with_trailing_slash
     @expose('jinja:discussionforums/search.html')
     @validate(dict(q=validators.UnicodeString(if_empty=None),
@@ -122,6 +122,7 @@ class RootController(BaseController):
         else:
             raise exc.HTTPNotFound()
 
+    # FIXME this code is not used, but it should be so we can do Forum-level subscriptions
     @h.vardec
     @expose()
     @validate(W.forum_subscription_form)
@@ -131,7 +132,8 @@ class RootController(BaseController):
         thread = kw.pop('thread', [])
         objs = []
         for data in forum:
-            objs.append(dict(obj=model.Forum.query.get(shortname=data['shortname']),
+            objs.append(dict(obj=model.Forum.query.get(shortname=data['shortname'],
+                                                       app_config_id=c.app.config._id),
                              subscribed=bool(data.get('subscribed'))))
         for data in thread:
             objs.append(dict(obj=model.Thread.query.get(_id=data['id']),
@@ -142,4 +144,3 @@ class RootController(BaseController):
             else:
                 obj['obj'].subscriptions.pop(str(c.user._id), None)
         redirect(request.referer)
-
