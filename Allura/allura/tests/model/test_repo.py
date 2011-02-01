@@ -112,8 +112,10 @@ class TestRepo(_TestWithRepo):
         assert i['name_s'] == 'test1', i
 
     def test_scm_host_url(self):
-        assert self.repo.scm_host() == 'svn.localhost:80', self.repo.scm_host()
-        assert self.repo.scm_url_path == 'svn.localhost:80/p/test/test1', self.repo.scm_url_path
+        assert (
+            self.repo.readwrite_path('nobody')
+            == 'svn+ssh://nobody@localhost:8022/scm-repo/p/test/test1'),\
+            self.repo.readwrite_path('nobody')
 
     def test_merge_request(self):
         M.MergeRequest.upsert(app_config_id=c.app.config._id, status='open')
@@ -190,7 +192,7 @@ class TestMergeRequest(_TestWithRepoAndCommit):
         assert mr.creator_name == u.display_name
         assert mr.creator_url == u.url()
         assert mr.downstream_url == '/p/test/test2/'
-        assert mr.downstream_repo_url == 'svn.localhost:80/p/test/test2'
+        assert mr.downstream_repo_url == 'http://svn.localhost/p/test/test2'
         assert mr.commits == [ self._make_commit('foo')[0] ]
 
 class TestLastCommitFor(_TestWithRepoAndCommit):

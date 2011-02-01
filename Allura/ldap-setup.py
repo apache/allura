@@ -2,9 +2,13 @@
 import os
 import shutil
 import string
+import logging
 from contextlib import contextmanager
 from tempfile import mkstemp
 from ConfigParser import ConfigParser, NoOptionError
+
+logging.basicConfig(level=logging.DEBUG)
+log = logging.getLogger('ldap-setup')
 
 config = ConfigParser()
 
@@ -46,11 +50,11 @@ def main():
         run('apt-get install ldapscripts')
         with tempfile(ldapscripts_conf, locals()) as name:
             shutil.copy(name, '/etc/ldapscripts/ldapscripts.conf')
-        print 'writing passwd'
+        log.info('writing passwd')
         with open('/etc/ldapscripts/ldapscripts.passwd', 'w') as fp:
             fp.write(secret)
         os.chmod('/etc/ldapscripts/ldapscripts.passwd', 0400)
-        print 'writing runtime'
+        log.info('writing runtime')
         with open('/usr/share/ldapscripts/runtime.debian', 'w') as fp:
             fp.write(ldapscripts_debian)
 
@@ -69,7 +73,7 @@ def get_value(key, default):
 def run(command):
     rc = os.system(command)
     if rc != 0:
-        print 'Error running %s' % command
+        log.error('Error running %s', command)
     assert rc == 0
     return rc
 
@@ -251,9 +255,9 @@ getfield() {
     local field="$1"
     local nssconffile='/etc/libnss-ldap.conf'
     if [ -f "$nssconffile" ];then
-	local value=$(awk "/^\s*$field/ {print \$2}" /etc/libnss-ldap.conf)
+        local value=$(awk "/^\s*$field/ {print \$2}" /etc/libnss-ldap.conf)
     else
-	local value="$2"
+        local value="$2"
     fi
     echo ${value:-$2}
 }
@@ -268,9 +272,9 @@ getsuffix() {
 SERVER=$(getfield uri "$(getfield host '')")
 BINDDN=$(getfield rootbinddn '')
 if [ -f /etc/libnss-ldap.secret ];then
-	BINDPWDFILE=/etc/libnss-ldap.secret
+        BINDPWDFILE=/etc/libnss-ldap.secret
 elif [ -f /etc/ldap.secret ];then
-	BINDPWDFILE=/etc/ldap.secret
+        BINDPWDFILE=/etc/ldap.secret
 fi
 
 SUFFIX=`getfield base`

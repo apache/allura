@@ -65,12 +65,6 @@ class HgImplementation(M.RepositoryImplementation):
     def __init__(self, repo):
         self._repo = repo
 
-    def readonly_clone_command(self):
-        return 'hg clone http://%s' % self.scm_url_path
-
-    def readwrite_clone_command(self):
-        return 'hg clone ssh://%s@%s' % (c.user.username, self.scm_url_path)
-
     @LazyProperty
     def _hg(self):
         return hg.repository(ui.ui(), self._repo.full_fs_path)

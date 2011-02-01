@@ -94,16 +94,24 @@ class TestAuth(TestController):
     def test_create_account(self):
         r = self.app.get('/auth/create_account')
         assert 'Create an Account' in r
-        r = self.app.post('/auth/save_new', params=dict(username='aaa',password='123'))
+        r = self.app.post('/auth/save_new', params=dict(username='aaa',pw='123'))
+        assert 'Enter a value 8 characters long or more' in r
+        r = self.app.post(
+            '/auth/save_new',
+            params=dict(
+                username='aaa',
+                pw='12345678',
+                pw2='12345678',
+                display_name='Test Me'))
         r = r.follow()
-        assert 'Password must be at least 8 characters.' in r
-        r = self.app.post('/auth/save_new', params=dict(username='aaa',
-                                                        password='12345678',
-                                                        display_name='Test Me',
-                                                        open_ids='http://somewhere',
-                                                        email_addresses='test@test.com')).follow()
         assert 'User "Test Me" registered' in unentity(r.body)
-        r = self.app.post('/auth/save_new', params=dict(username='aaa',password='12345678')).follow()
+        r = self.app.post(
+            '/auth/save_new',
+            params=dict(
+                username='aaa',
+                pw='12345678',
+                pw2='12345678',
+                display_name='Test Me'))
         assert 'That username is already taken. Please choose another.' in r
 
     def test_one_project_role(self):
@@ -111,11 +119,11 @@ class TestAuth(TestController):
            There was an issue with extra project roles getting created if a user went directly to
            an admin page."""
         p = M.Project.query.get(shortname='test')
-        self.app.post('/auth/save_new', params=dict(username='aaa',
-                                                        password='12345678',
-                                                        display_name='Test Me',
-                                                        open_ids='http://somewhere',
-                                                        email_addresses='test@test.com')).follow()
+        self.app.post('/auth/save_new', params=dict(
+                username='aaa',
+                pw='12345678',
+                pw2='12345678',
+                display_name='Test Me')).follow()
         user = M.User.query.get(username='aaa')
         assert M.ProjectRole.query.find(dict(user_id=user._id, project_id=p._id)).count() == 0
         r = self.app.get('/p/test/admin/permissions',extra_environ=dict(username='aaa'), status=403)

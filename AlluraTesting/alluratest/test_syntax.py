@@ -33,6 +33,8 @@ def test_no_prints():
     skips = [
         '/tests/',
         'Allura/allura/command/',
+        'Allura/ldap-setup.py',
+        'Allura/ldap-userconfig.py',
         'Allura/ez_setup/',
         'Allura/push_re.py',
         'ForgeMail/forgemail/sstress.py',

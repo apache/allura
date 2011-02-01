@@ -202,10 +202,6 @@ class Repository(Artifact):
     def full_fs_path(self):
         return os.path.join(self.fs_path, self.name)
 
-    @property
-    def scm_url_path(self):
-        return self.scm_host() + self.url_path + self.name
-
     def readonly_path(self, username):
         tpl = string.Template(config.get('scm.host.ro.%s' % self.tool))
         return tpl.substitute(dict(username=username, path=self.url_path+self.name))
@@ -375,7 +371,8 @@ class MergeRequest(VersionedArtifact):
     @LazyProperty
     def downstream_repo_url(self):
         with self.push_downstream_context():
-            return pylons.c.app.repo.scm_url_path
+            return pylons.c.app.repo.readonly_path(
+                pylons.c.user.username)
 
     def push_downstream_context(self):
         return h.push_context(self.downstream.project_id, self.downstream.mount_point)
