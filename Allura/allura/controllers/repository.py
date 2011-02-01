@@ -35,6 +35,7 @@ class RepoRootController(BaseController):
     def _check_security(self):
         security.require(security.has_artifact_access('read'))
 
+    @with_trailing_slash
     @expose()
     def index(self, offset=0, branch=None, **kw):
         if branch is None:
