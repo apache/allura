@@ -4,6 +4,10 @@
 
 {% block header %}{{c.app.config.options.mount_label}}{% endblock %}
 
+{% block actions %}
+  <a href="feed" class="follow" title="Follow"><b data-icon="{{g.icons['feed'].char}}" class="ico {{g.icons['feed'].css}}"></b></a>
+{% endblock %}
+
 {% if h.has_artifact_access('configure', app=c.app)() and (not hide_forum) %}
   {% block edit_box %}
     <div  id="add_forum_form"{% if hide_forum %} style="display:none"{% endif %} class="editbox">

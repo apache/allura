@@ -84,6 +84,30 @@ class DiscussionController(BaseController):
             M.session.artifact_orm_session._get().skip_mod_date = True
         redirect(request.referer)
 
+    @without_trailing_slash
+    @expose()
+    @validate(dict(
+            since=DateTimeConverter(if_empty=None),
+            until=DateTimeConverter(if_empty=None),
+            page=validators.Int(if_empty=None),
+            limit=validators.Int(if_empty=None)))
+    def feed(self, since=None, until=None, page=None, limit=None):
+        if request.environ['PATH_INFO'].endswith('.atom'):
+            feed_type = 'atom'
+        else:
+            feed_type = 'rss'
+        title = 'Recent posts to %s' % self.discussion.name
+        feed = M.Feed.feed(
+            {'artifact_reference':{'$in': [t.dump_ref() for t in self.discussion.threads]}},
+            feed_type,
+            title,
+            self.discussion.url(),
+            title,
+            since, until, page, limit)
+        response.headers['Content-Type'] = ''
+        response.content_type = 'application/xml'
+        return feed.writeString('utf-8')
+
 class AppDiscussionController(DiscussionController):
 
     @LazyProperty

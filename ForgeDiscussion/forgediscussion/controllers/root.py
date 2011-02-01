@@ -2,7 +2,7 @@ import logging
 import pymongo
 from urllib import urlencode, unquote
 
-from tg import expose, validate, redirect, flash
+from tg import expose, validate, redirect, flash, response
 from tg.decorators import with_trailing_slash
 from pylons import g, c, request
 from formencode import validators
@@ -12,7 +12,7 @@ from ming.orm.base import session
 
 from allura.app import Application, ConfigOption, SitemapEntry, DefaultAdminController
 from allura.lib.security import require, has_artifact_access, has_project_access, require_authenticated
-from allura.model import ProjectRole
+from allura.model import ProjectRole, Feed
 from allura.lib.search import search
 from allura.lib import helpers as h
 from allura.controllers import BaseController
@@ -142,3 +142,35 @@ class RootController(BaseController):
             else:
                 obj['obj'].subscriptions.pop(str(c.user._id), None)
         redirect(request.referer)
+
+    @expose()
+    @validate(dict(
+            since=h.DateTimeConverter(if_empty=None),
+            until=h.DateTimeConverter(if_empty=None),
+            page=validators.Int(if_empty=None),
+            limit=validators.Int(if_empty=None)))
+    def feed(self, since=None, until=None, page=None, limit=None):
+        if request.environ['PATH_INFO'].endswith('.atom'):
+            feed_type = 'atom'
+        else:
+            feed_type = 'rss'
+        title = 'Recent posts to %s' % c.app.config.options.mount_label
+
+        forums = model.Forum.query.find(dict(
+                        app_config_id=c.app.config._id,
+                        parent_id=None)).all()
+        threads = []
+        for forum in forums:
+            threads += model.ForumThread.query.find(dict(
+                            discussion_id=forum._id)).sort('mod_date', pymongo.DESCENDING).limit(6).all()
+
+        feed = Feed.feed(
+            {'artifact_reference':{'$in': [t.dump_ref() for t in threads]}},
+            feed_type,
+            title,
+            c.app.url,
+            title,
+            since, until, page, limit)
+        response.headers['Content-Type'] = ''
+        response.content_type = 'application/xml'
+        return feed.writeString('utf-8')
