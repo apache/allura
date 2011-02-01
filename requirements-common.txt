@@ -8,6 +8,7 @@ billiard==0.2.3
 carrot==0.10.3
 celery==1.0.2
 chardet==1.0.1
+datadiff==1.1.2
 decorator==3.1.2
 Django==1.1.1
 django-picklefield==0.1.4
