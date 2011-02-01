@@ -37,7 +37,7 @@ def parse_address(addr):
     if not domain.endswith(COMMON_SUFFIX):
         raise exc.AddressException, 'Unknown domain: ' + domain
     domain = domain[:-len(COMMON_SUFFIX)]
-    path = '/' + '/'.join(reversed(domain.split('.')))
+    path = '/'.join(reversed(domain.split('.')))
 
     project, mount_point = find_project(path)
     if project is None:
@@ -50,7 +50,7 @@ def parse_address(addr):
             raise exc.AddressException, 'Unknown tool: ' + domain
         topic = '%s.msg.%s' % (app.config.tool_name, userpart)
     return topic, project, app
-        
+
 def parse_message(data):
     # Parse the email to its constituent parts
     parser = email.feedparser.FeedParser()
@@ -124,7 +124,7 @@ class SMTPClient(object):
     def sendmail(self, addrs, addrfrom, reply_to, subject, message_id, in_reply_to, message):
         if not addrs: return
         charset = message.get_charset()
-        if charset is None: 
+        if charset is None:
             charset = 'iso-8859-1'
         message['To'] = Header(reply_to, charset)
         message['From'] = Header(addrfrom, charset)
