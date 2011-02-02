@@ -61,7 +61,7 @@ def setup_unit_test():
     h._push_object(helpers)
     url._push_object(lambda:None)
     c.queued_messages = None
-    request._push_object(Request.blank('/'))
+    request._push_object(Request.blank('/', remote_addr='1.1.1.1'))
     response._push_object(Response())
     session._push_object(beaker.session.SessionObject({}))
     ThreadLocalORMSession.close_all()

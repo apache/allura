@@ -5,20 +5,19 @@ Model tests for artifact
 import re
 from datetime import datetime
 
-from pylons import c, g
+from pylons import c, g, request
 from nose.tools import assert_raises
+from nose import with_setup
 import mock
+import webob
 
-from ming import schema as S
-from ming.base import Object
-from ming.orm.property import FieldProperty
 from ming.orm.ormsession import ThreadLocalORMSession
 
-import allura.model.artifact
 from allura import model as M
 from allura.lib import helpers as h
 from allura.lib.custom_middleware import MagicalC, environ as ENV
 from allura.lib.app_globals import Globals
+from alluratest.controller import setup_basic_test, setup_unit_test
 from forgewiki import model as WM
 
 class Checkmessage(M.Message):
@@ -33,11 +32,9 @@ class Checkmessage(M.Message):
 Checkmessage.compile_all()
 
 def setUp():
-    g._push_object(Globals())
-    c._push_object(MagicalC(mock.Mock(), ENV))
-    ThreadLocalORMSession.close_all()
-    g.set_project('test')
-    g.set_app('wiki')
+    setup_basic_test()
+    setup_unit_test()
+    h.set_context('test', 'wiki')
     Checkmessage.query.remove({})
     WM.Page.query.remove({})
     WM.PageHistory.query.remove({})
@@ -49,6 +46,7 @@ def setUp():
 def tearDown():
     ThreadLocalORMSession.close_all()
 
+@with_setup(setUp, tearDown)
 def test_artifact():
     pg = WM.Page(title='TestPage1')
     assert pg.project == c.project
@@ -72,6 +70,7 @@ def test_artifact():
     assert 'text' in idx
     assert 'TestPage' in pg.shorthand_id()
 
+@with_setup(setUp, tearDown)
 def test_artifactlink():
     pg = WM.Page(title='TestPage2')
     q = M.ArtifactLink.query.find(dict(
@@ -91,9 +90,11 @@ def test_artifactlink():
     ThreadLocalORMSession.flush_all()
     assert q.count() == 0
 
+@with_setup(setUp, tearDown)
 def test_gen_messageid():
     assert re.match(r'[0-9a-zA-Z]*.wiki@test.p.sourceforge.net', h.gen_message_id())
 
+@with_setup(setUp, tearDown)
 def test_versioning():
     pg = WM.Page(title='TestPage3')
     pg.commit()
@@ -102,6 +103,7 @@ def test_versioning():
     pg.commit()
     ThreadLocalORMSession.flush_all()
     ss = pg.get_version(1)
+    assert ss.author.logged_ip == '1.1.1.1'
     assert ss.index()['is_history_b']
     assert ss.shorthand_id() == pg.shorthand_id() + '#1'
     assert ss.title == pg.title
@@ -118,6 +120,7 @@ def test_versioning():
     assert ss.text != pg.text
     assert pg.history().count() == 3
 
+@with_setup(setUp, tearDown)
 def test_messages():
     m = Checkmessage()
     assert m.author() == c.user

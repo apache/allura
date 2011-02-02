@@ -10,7 +10,7 @@ import Image
 
 import bson
 import pymongo
-from pylons import c, g
+from pylons import c, g, request
 from ming import Document, Session, Field
 from ming import schema as S
 from ming import orm
@@ -496,7 +496,8 @@ class Snapshot(Artifact):
     author = FieldProperty(dict(
             id=S.ObjectId,
             username=str,
-            display_name=str))
+            display_name=str,
+            logged_ip=str))
     timestamp = FieldProperty(datetime)
     data = FieldProperty(None)
 
@@ -534,6 +535,11 @@ class VersionedArtifact(Artifact):
     def commit(self):
         '''Save off a snapshot of the artifact and increment the version #'''
         self.version += 1
+        try:
+            ip_address = request.headers.get('X_FORWARDED_FOR', request.remote_addr)
+            ip_address = ip_address.split(',')[0].strip()
+        except:
+            ip_address = '0.0.0.0'
         data = dict(
             artifact_id=self._id,
             artifact_class='%s.%s' % (
@@ -543,7 +549,8 @@ class VersionedArtifact(Artifact):
             author=dict(
                 id=c.user._id,
                 username=c.user.username,
-                display_name=c.user.display_name),
+                display_name=c.user.display_name,
+                logged_ip=ip_address),
             timestamp=datetime.utcnow(),
             data=state(self).document.deinstrumented_clone())
         ss = self.__mongometa__.history_class(**data)
