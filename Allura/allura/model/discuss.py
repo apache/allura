@@ -466,5 +466,3 @@ class DiscussionAttachment(BaseAttachment):
             return self.thread.url() + 'attachment/' + urllib.quote(self.filename)
         else:
             return self.discussion.url() + 'attachment/' + urllib.quote(self.filename)
-
-

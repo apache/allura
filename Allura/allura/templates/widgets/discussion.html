@@ -5,7 +5,9 @@
 {% block header %}{{value.name}}{% endblock %}
 
 {% block actions %}
-  <a href="{{value.email_link(subject=None)}}" class="email" title="Send Email to Create a New Topic" ><b data-icon="{{g.icons['mail'].char}}" class="ico {{g.icons['mail'].css}}"></b></a>
+  {% if value.email_address %}
+    <a href="{{value.email_link(subject=None)}}" class="email" title="Send Email to Create a New Topic" ><b data-icon="{{g.icons['mail'].char}}" class="ico {{g.icons['mail'].css}}"></b></a>
+  {% endif %}
 {% endblock %}
 
 {% block edit_box %}
@@ -15,7 +17,7 @@
 {% block content %}
 {{widgets.subscription_form.display(value=value,
                                     threads=threads,
-                                    action=value.url() + 'subscribe', 
+                                    action=value.url() + 'subscribe',
                                     allow_create_thread=allow_create_thread,
                                     show_subject=show_subject,
                                     limit=limit,
