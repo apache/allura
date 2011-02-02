@@ -99,7 +99,7 @@
         return false;
       });
       $('a.edit_milestone').click(function(){
-        $row = $(this).closest('tr');
+        var $row = $(this).closest('tr');
         $('td.view', $row).hide();
         $('td.edit', $row).show();
         $save_controls.show();
