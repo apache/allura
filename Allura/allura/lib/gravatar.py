@@ -44,20 +44,20 @@ def url(email=None, gravatar_id=None, **kw):
     Example:
         gravatar.url('Wolf@example.com', size=24)
     Result:
-        "http://gravatar.com/avatar/d3514940ac1b2051c8aa42970d17e3fe?size=24&r=pg&d=wavatar"
+        "https://secure.gravatar.com/avatar/d3514940ac1b2051c8aa42970d17e3fe?size=24&r=pg&d=wavatar"
 
     Example:
         saved_id = gravatar.id('Wolf@example.com')
         url = gravatar.url(gravatar_id=saved_id, r='g')
     Result:
-        "http://gravatar.com/avatar/d3514940ac1b2051c8aa42970d17e3fe?r=g&d=wavatar"
+        "https://secure.gravatar.com/avatar/d3514940ac1b2051c8aa42970d17e3fe?r=g&d=wavatar"
 
     """
     assert gravatar_id or email
     if gravatar_id is None:
         gravatar_id = id(email)
     if 'r' not in kw and 'rating' not in kw: kw['r'] = 'pg'
-    return ('http://gravatar.com/avatar/%s?%s' % (gravatar_id, urllib.urlencode(kw)))
+    return ('https://secure.gravatar.com/avatar/%s?%s' % (gravatar_id, urllib.urlencode(kw)))
 
 def for_user(user):
     return url(user.preferences['email_address'])

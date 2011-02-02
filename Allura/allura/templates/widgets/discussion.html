@@ -7,6 +7,7 @@
 {% block actions %}
   {% if value.email_address %}
     <a href="{{value.email_link(subject=None)}}" class="email" title="Send Email to Create a New Topic" ><b data-icon="{{g.icons['mail'].char}}" class="ico {{g.icons['mail'].css}}"></b></a>
+    <a href="feed" title="Feed" ><b data-icon="{{g.icons['feed'].char}}" class="ico {{g.icons['feed'].css}}"></b></a>
   {% endif %}
 {% endblock %}
 

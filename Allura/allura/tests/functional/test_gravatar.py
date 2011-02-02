@@ -16,7 +16,7 @@ class TestGravatar(TestController):
         email = 'Wolf@example.com'
         expected_id = 'd3514940ac1b2051c8aa42970d17e3fe'
         url = urlparse(gravatar.url(email=email))
-        assert url.netloc == 'gravatar.com'
+        assert url.netloc == 'secure.gravatar.com'
         assert url.path == '/avatar/' + expected_id
 
     def test_defaults(self):
