@@ -243,7 +243,7 @@ class Application(object):
         # Handle duplicates
         post = self.PostClass.query.get(_id=message_id)
         if post:
-            log.info('Saving text attachment')
+            log.info('Existing message_id %s found - saving this as text attachment' % message_id)
             fp = StringIO(data['payload'])
             post.attach(
                 'alternate', fp,
@@ -314,5 +314,3 @@ class DefaultAdminController(BaseController):
         require(has_artifact_access('configure', app=self.app))
         self.app.config.acl[permission].remove(ObjectId(role))
         redirect('permissions')
-        
-

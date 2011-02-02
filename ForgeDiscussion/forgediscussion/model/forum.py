@@ -123,6 +123,9 @@ class ForumThread(M.Thread):
         post = super(ForumThread, self).post(text, message_id=message_id, parent_id=parent_id)
         if subject:
             post.subject = subject
+        if not self.first_post_id:
+            self.first_post_id = post._id
+            self.num_replies = 1
         return post
 
     def set_forum(self, new_forum):

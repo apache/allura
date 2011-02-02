@@ -3,10 +3,12 @@ import random
 import allura
 import Image
 from StringIO import StringIO
+import logging
 
 import mock
 from tg import config
 from pylons import g, c
+from nose.tools import assert_equal
 
 from ming.orm.ormsession import ThreadLocalORMSession
 
@@ -16,6 +18,8 @@ from allura.command import reactor
 from allura.lib import helpers as h
 
 from forgediscussion import model as FM
+
+log = logging.getLogger(__name__)
 
 class TestForumReactors(TestController):
 
@@ -75,11 +79,17 @@ class TestForumReactors(TestController):
     def test_reply(self):
         self._post('discussion.msg.test forum', 'Test Thread', 'Nothing here',
                    message_id='test_reply@sf.net')
+        assert_equal(FM.ForumThread.query.find().count(), 1)
+        assert_equal(FM.ForumPost.query.find().count(), 1)
+        assert_equal(FM.ForumThread.query.get().num_replies, 1)
+        assert_equal(FM.ForumThread.query.get().first_post_id, 'test_reply@sf.net')
+
         self._post('discussion.msg.test forum', 'Test Reply', 'Nothing here, either',
                    message_id='test_reply1@sf.net',
                    in_reply_to=[ 'test_reply@sf.net' ])
-        assert FM.ForumThread.query.find().count() == 1
-        assert FM.ForumPost.query.find().count() == 2
+        assert_equal(FM.ForumThread.query.find().count(), 1)
+        assert_equal(FM.ForumPost.query.find().count(), 2)
+        assert_equal(FM.ForumThread.query.get().first_post_id, 'test_reply@sf.net')
 
     def test_attach(self):
         self._post('discussion.msg.test forum', 'Attachment Thread', 'This is a text file',
@@ -199,7 +209,7 @@ class TestForum(TestController):
     def test_forum_search(self):
         r = self.app.get('/discussion/search')
         r = self.app.get('/discussion/search', params=dict(q='foo'))
-    
+
     def test_render_help(self):
         summary = 'test render help'
         r = self.app.get('/discussion/help')
@@ -219,11 +229,11 @@ class TestForum(TestController):
                 'forum-0.shortname':'TestForum',
                 'forum-0.subscribed':'',
                 })
-    
+
     def test_forum_index(self):
         r = self.app.get('/discussion/TestForum/')
         r = self.app.get('/discussion/TestForum/ChildForum/')
-    
+
     def test_posting(self):
         r = self.app.post('/discussion/save_new_topic', params=dict(
                 subject='Test Thread',
