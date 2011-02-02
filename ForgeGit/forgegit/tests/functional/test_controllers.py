@@ -1,9 +1,11 @@
 import os
 
+import tg
 import pkg_resources
 from pylons import c
 from ming.orm import ThreadLocalORMSession
 
+from allura import model as M
 from allura.lib import helpers as h
 from alluratest.controller import TestController
 
@@ -72,4 +74,10 @@ class TestRootController(TestController):
         assert 'readme' in resp, resp.showbrowser()
         assert '+++' in resp, resp.showbrowser()
 
+    def test_refresh(self):
+        notification = M.Notification.query.find(dict(subject='[test:src-git] New commit to test Git')).first()
+        domain = '.'.join(reversed(c.app.url[1:-1].split('/'))).replace('_', '-')
+        common_suffix = tg.config.get('forgemail.domain', '.sourceforge.net')
+        email = 'noreply@%s%s' % (domain, common_suffix)
+        assert email in notification['reply_to_address']
 
