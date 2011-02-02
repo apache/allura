@@ -1,7 +1,6 @@
 import logging
 import urllib
 
-import tg
 import pymongo
 from pylons import c, g
 
@@ -16,8 +15,6 @@ from .attachments import BaseAttachment
 from .types import ArtifactReference, ArtifactReferenceType
 
 log = logging.getLogger(__name__)
-
-common_suffix = tg.config.get('forgemail.domain', '.sourceforge.net')
 
 class Discussion(Artifact):
     class __mongometa__:

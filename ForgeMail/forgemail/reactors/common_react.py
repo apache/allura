@@ -1,6 +1,5 @@
 import logging
 
-import tg
 from pylons import c, g
 from bson import ObjectId
 
@@ -12,7 +11,6 @@ from forgemail.lib import util, exc
 
 log = logging.getLogger(__name__)
 
-common_suffix = tg.config.get('forgemail.domain', '.sourceforge.net')
 smtp_client = util.SMTPClient()
 
 @audit('search.check_commit')

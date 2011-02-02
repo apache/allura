@@ -1,24 +1,18 @@
-from time import sleep
-from datetime import datetime
-
-import tg
 from pylons import g #g is a namespace for globally accessable app helpers
 from pylons import c as context
-from pylons import request
-
-from pymongo.errors import OperationFailure
 
 from ming import schema
-from ming.orm.base import state, session
 from ming.orm.mapped_class import MappedClass
-from ming.orm.property import FieldProperty, ForeignIdProperty, RelationProperty
+from ming.orm.property import FieldProperty, ForeignIdProperty
 
-from allura.model import VersionedArtifact, Snapshot, Message, Feed, Thread, Post, User, BaseAttachment
+from allura.model import VersionedArtifact, Snapshot, Feed, Thread, Post, User, BaseAttachment
 from allura.model import Notification, project_orm_session
 from allura.lib import helpers as h
 from allura.lib import patience
+from allura.lib import utils
 
-common_suffix = tg.config.get('forgemail.domain', '.sourceforge.net')
+config = utils.ConfigProxy(
+    common_suffix='forgemail.domain')
 
 class Globals(MappedClass):
 
@@ -112,7 +106,7 @@ class Page(VersionedArtifact):
     @property
     def email_address(self):
         domain = '.'.join(reversed(self.app.url[1:-1].split('/'))).replace('_', '-')
-        return '%s@%s%s' % (self.title.replace('/', '.'), domain, common_suffix)
+        return '%s@%s%s' % (self.title.replace('/', '.'), domain, config.common_suffix)
 
     @property
     def email_subject(self):

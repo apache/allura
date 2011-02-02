@@ -8,16 +8,17 @@ from hashlib import sha1
 from datetime import datetime
 from collections import defaultdict
 
+import tg
 import pylons
-from tg import config
 import pymongo.errors
 
 from ming import schema as S
 from ming.utils import LazyProperty
-from ming.orm import MappedClass, FieldProperty, session, mapper
+from ming.orm import MappedClass, FieldProperty, session
 
 from allura.lib.patience import SequenceMatcher
 from allura.lib import helpers as h
+from allura.lib import utils
 
 from .artifact import Artifact, VersionedArtifact, Feed
 from .auth import User
@@ -25,8 +26,9 @@ from .session import repository_orm_session, project_orm_session
 from .notification import Notification
 
 log = logging.getLogger(__name__)
-common_suffix = config.get('forgemail.domain', '.sourceforge.net')
-common_prefix = config.get('forgemail.url', 'https://sourceforge.net')
+config = utils.ConfigProxy(
+    common_suffix='forgemail.domain',
+    common_prefix='forgemail.url')
 
 class RepositoryImplementation(object):
 
@@ -189,7 +191,7 @@ class Repository(Artifact):
     @property
     def email_address(self):
         domain = '.'.join(reversed(self.app.url[1:-1].split('/'))).replace('_', '-')
-        return 'noreply@%s%s' % (domain, common_suffix)
+        return 'noreply@%s%s' % (domain, config.common_suffix)
 
     def index(self):
         result = Artifact.index(self)
@@ -203,11 +205,11 @@ class Repository(Artifact):
         return os.path.join(self.fs_path, self.name)
 
     def readonly_path(self, username):
-        tpl = string.Template(config.get('scm.host.ro.%s' % self.tool))
+        tpl = string.Template(tg.config.get('scm.host.ro.%s' % self.tool))
         return tpl.substitute(dict(username=username, path=self.url_path+self.name))
 
     def readwrite_path(self, username):
-        tpl = string.Template(config.get('scm.host.rw.%s' % self.tool))
+        tpl = string.Template(tg.config.get('scm.host.rw.%s' % self.tool))
         return tpl.substitute(dict(username=username, path=self.url_path+self.name))
 
     def merge_requests_by_statuses(self, *statuses):
@@ -264,8 +266,13 @@ class Repository(Artifact):
                          self.BATCH_SIZE, (i+1))
                 sess.flush()
                 sess.clear()
-            Feed.post(self, title='New commit', description='%s<br><a href="%s%s">View Changes</a>' % (ci.summary,common_prefix,ci.url()))
-            commit_msgs.append('%s <%s%s>' % (ci.summary,common_prefix,ci.url()))
+            Feed.post(
+                self,
+                title='New commit',
+                description='%s<br><a href="%s%s">View Changes</a>' % (
+                    ci.summary,config.common_prefix,ci.url()))
+            commit_msgs.append('%s <%s%s>' % (
+                    ci.summary,config.common_prefix,ci.url()))
         if not all_commits:
             Notification.post(
                 artifact=self,

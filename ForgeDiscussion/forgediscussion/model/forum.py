@@ -2,17 +2,16 @@ import urllib
 import re
 from itertools import chain
 
-import tg
-from pylons import g
-
 from ming import schema
 from ming.utils import LazyProperty
 from ming.orm.mapped_class import MappedClass
 from ming.orm.property import FieldProperty, RelationProperty, ForeignIdProperty
 
 from allura import model as M
+from allura.lib import utils
 
-common_suffix = tg.config.get('forgemail.domain', '.sourceforge.net')
+config = utils.ConfigProxy(
+    common_suffix='forgemail.domain')
 
 class Forum(M.Discussion):
     class __mongometa__:
@@ -52,7 +51,7 @@ class Forum(M.Discussion):
     @property
     def email_address(self):
         domain = '.'.join(reversed(self.app.url[1:-1].split('/'))).replace('_', '-')
-        return '%s@%s%s' % (self.shortname.replace('/', '.'), domain, common_suffix)
+        return '%s@%s%s' % (self.shortname.replace('/', '.'), domain, config.common_suffix)
 
     @LazyProperty
     def announcements(self):

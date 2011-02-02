@@ -16,20 +16,14 @@ import logging
 import pkg_resources
 
 from tg.configuration import AppConfig, config
-from pylons.middleware import StatusCodeRedirect
 from paste.deploy.converters import asbool
 from routes import Mapper
 from webhelpers.html import literal
 
 import ew
 
-try:
-    import sfx.middleware
-except ImportError:
-    sfx = None
 import allura
 import allura.lib.helpers as h
-from allura import model
 from allura.lib import app_globals, custom_middleware
 
 
@@ -59,6 +53,7 @@ class ForgeConfig(AppConfig):
 
     def add_core_middleware(self, app):
         if asbool(config.get('auth.method', 'local')=='sfx'):
+            import sfx.middleware
             d = h.config_with_prefix(config, 'auth.')
             d.update(h.config_with_prefix(config, 'sfx.'))
             app = sfx.middleware.SfxMiddleware(app, d)

@@ -1,9 +1,7 @@
-from time import sleep
 from datetime import datetime, timedelta
 import logging
 import urllib
 
-import tg
 import bson
 from pylons import c
 
@@ -12,17 +10,17 @@ from ming.utils import LazyProperty
 from ming.orm import MappedClass, session
 from ming.orm import FieldProperty, ForeignIdProperty, RelationProperty
 
-from allura.model import Artifact, VersionedArtifact, Snapshot, Message, project_orm_session, Project, BaseAttachment
-from allura.model import User, Feed, Thread, Post, Notification
+from allura.model import Artifact, VersionedArtifact, Snapshot, project_orm_session, BaseAttachment
+from allura.model import User, Feed, Thread, Notification
 from allura.lib import helpers as h
 from allura.lib import patience
 from allura.lib.search import search_artifact
-from allura.lib.security import require, has_artifact_access
-
+from allura.lib import utils
 
 log = logging.getLogger(__name__)
 
-common_suffix = tg.config.get('forgemail.domain', '.sourceforge.net')
+config = utils.ConfigProxy(
+    common_suffix='forgemail.domain')
 
 class Globals(MappedClass):
 
@@ -296,7 +294,7 @@ class Ticket(VersionedArtifact):
     @property
     def email_address(self):
         domain = '.'.join(reversed(self.app.url[1:-1].split('/'))).replace('_', '-')
-        return '%s@%s%s' % (self.ticket_num, domain, common_suffix)
+        return '%s@%s%s' % (self.ticket_num, domain, config.common_suffix)
 
     @property
     def email_subject(self):

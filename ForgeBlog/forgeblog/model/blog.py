@@ -2,7 +2,6 @@ from time import sleep
 from datetime import datetime
 from random import randint
 
-import tg
 from pylons import c, g
 from pymongo.errors import OperationFailure, DuplicateKeyError
 
@@ -10,9 +9,11 @@ from ming import schema
 from ming.orm import FieldProperty, MappedClass, session, state
 from allura import model as M
 from allura.lib import helpers as h
+from allura.lib import utils
 from allura.lib import patience
 
-common_suffix = tg.config.get('forgemail.domain', '.sourceforge.net')
+config = utils.ConfigProxy(
+    common_suffix='forgemail.domain')
 
 class BlogPostSnapshot(M.Snapshot):
     class __mongometa__:
@@ -89,7 +90,7 @@ class BlogPost(M.VersionedArtifact):
     @property
     def email_address(self):
         domain = '.'.join(reversed(self.app.url[1:-1].split('/'))).replace('_', '-')
-        return '%s@%s%s' % (self.title.replace('/', '.'), domain, common_suffix)
+        return '%s@%s%s' % (self.title.replace('/', '.'), domain, config.common_suffix)
 
     def make_slug(self):
         slugsafe = ''.join(
