@@ -33,6 +33,9 @@ def guess_mime_type(filename):
     return content_type
 
 class ConfigProxy(object):
+    '''Wrapper for loading config values at module-scope so we don't
+    have problems when a module is imported before tg.config is initialized
+    '''
 
     def __init__(self, **kw):
         self._kw = kw
