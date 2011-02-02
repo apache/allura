@@ -1,9 +1,11 @@
 import difflib
 import logging
+import time
 from datetime import datetime, timedelta
 from pprint import pformat
 
 import pkg_resources
+import pysolr
 from pylons import c, g, request
 from tg import expose, redirect, validate
 from tg.decorators import with_trailing_slash
@@ -38,6 +40,8 @@ class SearchApp(Application):
     @react('artifacts_altered')
     def add_artifacts(cls, routing_key, doc):
         log.info('Adding %d artifacts', len(doc['artifacts']))
+        M.session.artifact_orm_session._get().skip_mod_date = True
+        M.session.artifact_orm_session._get().disable_artifact_index = True
         obj = SearchConfig.query.find().first()
         obj.pending_commit += len(doc['artifacts'])
         artifacts = [ ref.artifact for ref in doc['artifacts'] if ref.artifact ]
@@ -45,7 +49,15 @@ class SearchApp(Application):
         artifacts = [ (a, s) for a,s in artifacts if s is not None ]
 
         # Add to solr
-        g.solr.add([ s for a,s in artifacts])
+        try:
+            g.solr.add([ s for a,s in artifacts])
+        except:
+            log.exception('Error adding to solr')
+            time.sleep(5)
+            g.publish('react', 'artifacts_altered',
+                      dict(artifacts=[ a.dump_ref() for a,s in artifacts]),
+                      serializer='pickle')
+            return
         # Add backreferences
         for a, s in artifacts:
             if isinstance(a, M.Snapshot): continue
@@ -57,9 +69,6 @@ class SearchApp(Application):
                 a = M.ArtifactReference(r.artifact_reference).artifact
                 if a is None: continue
                 a.backreferences[s['id']] =aref
-        # TODO: maybe move to the top of function?
-        M.session.artifact_orm_session._get().skip_mod_date = True
-        M.session.artifact_orm_session._get().disable_artifact_index = True
 
     @classmethod
     @react('artifacts_removed')
