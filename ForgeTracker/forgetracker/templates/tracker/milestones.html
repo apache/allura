@@ -23,8 +23,10 @@
     <tbody>
       {% for m in milestones %}
       <tr class="{{loop.index0%2 and 'even' or ''}}">
-        <input type="hidden" name="milestones-{{loop.index0}}.old_name" value="{{m.name}}">
-        <td class="view">&nbsp; &nbsp;<strong><a href="{{c.app.url}}milestone/{{m.name}}/">{{m.name}}</a></strong></td>
+        <td class="view">
+          <input type="hidden" name="milestones-{{loop.index0}}.old_name" value="{{m.name}}">
+          &nbsp; &nbsp;
+          <strong><a href="{{c.app.url}}milestone/{{m.name}}/">{{m.name}}</a></strong></td>
         <td class="view">&nbsp; &nbsp;{{m.description}}</td>
         <td class="view {{m.complete and 'closed' or 'open'}}">&nbsp; &nbsp;{{m.complete and 'Closed' or 'Open'}}</td>
         <td class="view">&nbsp; &nbsp;{{m.due_date or 'N/A'}}</td>
