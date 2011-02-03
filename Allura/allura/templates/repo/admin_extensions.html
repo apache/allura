@@ -22,8 +22,10 @@
 {% if allow_config %}
   <script type="text/javascript">
     function save_extensions() {
+        var cval = $.cookie('allura');
         $.post('{{c.project.url()}}admin/{{app.config.options.mount_point}}/set_extensions', {
-            additional_viewable_extensions: $('#additional_viewable_extensions').val()
+            additional_viewable_extensions: $('#additional_viewable_extensions').val(),
+            allura:cval
         },
         function () {
             location.reload();
