@@ -27,7 +27,7 @@ class TestForumReactors(TestController):
         TestController.setUp(self)
         self.app.get('/discussion/')
         r = self.app.post('/admin/discussion/update_forums',
-                          params={'new_forum.shortname':'test forum',
+                          params={'new_forum.shortname':'testforum',
                                   'new_forum.create':'on',
                                   'new_forum.name':'Test Forum',
                                   'new_forum.description':'',
@@ -77,14 +77,14 @@ class TestForumReactors(TestController):
     #     self._notify('test_notify1@sf.net')
 
     def test_reply(self):
-        self._post('discussion.msg.test forum', 'Test Thread', 'Nothing here',
+        self._post('discussion.msg.testforum', 'Test Thread', 'Nothing here',
                    message_id='test_reply@sf.net')
         assert_equal(FM.ForumThread.query.find().count(), 1)
         assert_equal(FM.ForumPost.query.find().count(), 1)
         assert_equal(FM.ForumThread.query.get().num_replies, 1)
         assert_equal(FM.ForumThread.query.get().first_post_id, 'test_reply@sf.net')
 
-        self._post('discussion.msg.test forum', 'Test Reply', 'Nothing here, either',
+        self._post('discussion.msg.testforum', 'Test Reply', 'Nothing here, either',
                    message_id='test_reply1@sf.net',
                    in_reply_to=[ 'test_reply@sf.net' ])
         assert_equal(FM.ForumThread.query.find().count(), 1)
@@ -92,36 +92,36 @@ class TestForumReactors(TestController):
         assert_equal(FM.ForumThread.query.get().first_post_id, 'test_reply@sf.net')
 
     def test_attach(self):
-        self._post('discussion.msg.test forum', 'Attachment Thread', 'This is a text file',
+        self._post('discussion.msg.testforum', 'Attachment Thread', 'This is a text file',
                    message_id='test.attach.100@sf.net',
                    filename='test.txt',
                    content_type='text/plain')
-        self._post('discussion.msg.test forum', 'Test Thread', 'Nothing here',
+        self._post('discussion.msg.testforum', 'Test Thread', 'Nothing here',
                    message_id='test.attach.100@sf.net')
-        self._post('discussion.msg.test forum', 'Attachment Thread', 'This is a text file',
+        self._post('discussion.msg.testforum', 'Attachment Thread', 'This is a text file',
                    message_id='test.attach.100@sf.net',
                    content_type='text/plain')
 
     def test_threads(self):
-        self._post('discussion.msg.test forum', 'Test', 'test')
+        self._post('discussion.msg.testforum', 'Test', 'test')
         thd = FM.ForumThread.query.find().first()
-        url = str('/discussion/test forum/thread/%s/' % thd._id)
+        url = str('/discussion/testforum/thread/%s/' % thd._id)
         self.app.get(url)
 
     def test_posts(self):
-        self._post('discussion.msg.test forum', 'Test', 'test')
+        self._post('discussion.msg.testforum', 'Test', 'test')
         thd = FM.ForumThread.query.find().first()
-        thd_url = str('/discussion/test%%20forum/thread/%s/' % thd._id)
+        thd_url = str('/discussion/testforum/thread/%s/' % thd._id)
         r = self.app.get(thd_url)
         p = FM.ForumPost.query.find().first()
-        url = str('/discussion/test forum/thread/%s/%s/' % (thd._id, p.slug))
+        url = str('/discussion/testforum/thread/%s/%s/' % (thd._id, p.slug))
         r = self.app.get(url)
         r = self.app.post(url, params=dict(subject='New Subject', text='Asdf'))
         assert 'Asdf' in self.app.get(url)
         r = self.app.get(url, params=dict(version=1))
         r = self.app.post(url + 'reply',
                           params=dict(subject='Reply', text='text'))
-        self._post('discussion.msg.test forum', 'Test Reply', 'Nothing here, either',
+        self._post('discussion.msg.testforum', 'Test Reply', 'Nothing here, either',
                    message_id='test_posts@sf.net',
                    in_reply_to=[ p._id ])
         reply = FM.ForumPost.query.get(subject='Test Reply')
@@ -315,6 +315,7 @@ class TestForumAdmin(TestController):
                                   'forum-0.delete':'',
                                   'forum-0.id':str(frm._id),
                                   'forum-0.name':'New Test Forum',
+                                  'forum-0.shortname':'NewTestForum',
                                   'forum-0.description':'My desc'})
         r = self.app.get('/admin/discussion/forums')
         assert 'New Test Forum' in r
@@ -356,6 +357,15 @@ class TestForumAdmin(TestController):
         assert 'error' in r
         r = self.app.post('/admin/discussion/update_forums',
                           params={'new_forum.shortname':'Test/Forum',
+                                  'new_forum.create':'on',
+                                  'new_forum.name':'Test Forum',
+                                  'new_forum.description':'',
+                                  'new_forum.parent':'',
+                                  })
+        r = self.app.get('/admin/discussion/forums')
+        assert 'error' in r
+        r = self.app.post('/admin/discussion/update_forums',
+                          params={'new_forum.shortname':'Test Forum',
                                   'new_forum.create':'on',
                                   'new_forum.name':'Test Forum',
                                   'new_forum.description':'',

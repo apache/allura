@@ -31,9 +31,15 @@
         </td>
         <td>
           <div class="editable viewing">
-            <span class="viewer"><a href="{{forum.url()}}">{{forum.name}}</a>({{forum.shortname}})</span>
+            <span class="viewer"><a href="{{forum.url()}}">{{forum.name}}</a></span>
             <span class="editor">
-              {{lib.text_field('forum-%s.name' % loop.index0, 'Forum Name', forum.name)}}
+              {{lib.text_field('forum-%s.name' % loop.index0, 'Forum Title', forum.name)}}
+            </span>
+          </div>
+          <div class="editable viewing">
+            <span class="viewer">{{forum.shortname}}</span>
+            <span class="editor">
+              {{lib.text_field('forum-%s.shortname' % loop.index0, 'Forum Short Name', forum.shortname)}}
             </span>
           </div>
           <div class="editable viewing">

@@ -12,20 +12,24 @@
   {% block edit_box %}
     <div  id="add_forum_form"{% if hide_forum %} style="display:none"{% endif %} class="editbox">
       <form method="POST" enctype="multipart/form-data" id="new_forum_form"
-        action="{{c.project.url()}}admin/{{c.app.config.options.mount_point}}/update_forums">
-        <div class="grid-9">
-			  <label class="cr">Name:</label>
-			  <input type="text" name="new_forum.name" class="wide"/>
-			</div>
-			<div class="grid-9">
-			  <label class="cr">Summary:</label>
-			  <input type="text" name="new_forum.description" class="wide"/>
-			</div>
-		<div style="clear:both">&nbsp;</div>
-			<div class="grid-19">
-			  <input type="submit" id="new_forum.create" name="new_forum.create" value="Save">
-        <a id="add_forum_cancel" class="btn link">Cancel</a>
-			</div>
+      action="{{c.project.url()}}admin/{{c.app.config.options.mount_point}}/update_forums">
+        <div class="grid-6">
+          <label class="cr">Title:</label>
+          <input type="text" name="new_forum.name" class="wide"/>
+        </div>
+        <div class="grid-6">
+          <label class="cr">Short Name:</label>
+          <input type="text" name="new_forum.shortname" class="wide"/>
+        </div>
+        <div class="grid-6">
+          <label class="cr">Summary:</label>
+          <input type="text" name="new_forum.description" class="wide"/>
+        </div>
+        <div style="clear:both">&nbsp;</div>
+        <div class="grid-19">
+          <input type="submit" id="new_forum.create" name="new_forum.create" value="Save">
+          <a id="add_forum_cancel" class="btn link">Cancel</a>
+        </div>
       </form>
     </div>
   {% endblock %}

@@ -243,14 +243,18 @@ class ForumAdminController(DefaultAdminController):
             thumbnail_meta=dict(forum_id=forum._id))
 
     def create_forum(self, new_forum):
-        if 'shortname' not in new_forum:
-            new_forum['shortname'] = new_forum['name']
+        if 'name' not in new_forum or new_forum['name'] == '':
+            flash('You must create a name for the forum.', 'error')
+            redirect(request.referrer)
+        if 'shortname' not in new_forum or new_forum['shortname'] == '':
+            flash('You must create a short name for the forum.', 'error')
+            redirect(request.referrer)
         if new_forum['shortname'] in [ f.shortname for f in self.app.forums ]:
             flash('There is already a forum named "%s".' % new_forum['shortname'], 'error')
-            redirect('.')
-        if '.' in new_forum['shortname'] or '/' in new_forum['shortname']:
-            flash('Shortname cannot contain . or /', 'error')
-            redirect('.')
+            redirect(request.referrer)
+        if '.' in new_forum['shortname'] or '/' in new_forum['shortname'] or ' ' in new_forum['shortname']:
+            flash('Shortname cannot contain space . or /', 'error')
+            redirect(request.referrer)
         if 'parent' in new_forum and new_forum['parent']:
             parent_id = ObjectId(str(new_forum['parent']))
             shortname = (DM.Forum.query.get(_id=parent_id).shortname + '/'
@@ -275,8 +279,8 @@ class ForumAdminController(DefaultAdminController):
     def update_forums(self, forum=None, new_forum=None, **kw):
         if forum is None: forum = []
         if new_forum.get('create'):
-            if 'shortname' in new_forum and ('.' in new_forum['shortname'] or '/' in new_forum['shortname']):
-                flash('Shortname cannot contain . or /', 'error')
+            if 'shortname' in new_forum and ('.' in new_forum['shortname'] or '/' in new_forum['shortname'] or ' ' in new_forum['shortname']):
+                flash('Shortname cannot contain space . or /', 'error')
                 redirect('.')
             f = self.create_forum(new_forum)
         for f in forum:
@@ -286,7 +290,11 @@ class ForumAdminController(DefaultAdminController):
             elif f.get('undelete'):
                 forum.deleted=False
             else:
+                if '.' in f['shortname'] or '/' in f['shortname'] or ' ' in f['shortname']:
+                    flash('Shortname cannot contain space . or /', 'error')
+                    redirect('.')
                 forum.name = f['name']
+                forum.shortname = f['shortname']
                 forum.description = f['description']
                 if 'icon' in f and f['icon'] is not None and f['icon'] != '':
                     self.save_forum_icon(forum, f['icon'])
