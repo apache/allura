@@ -29,3 +29,97 @@ b.ico.ico-delete { background-position: -80px -128px; }
 b.ico.ico-help { background-position: -48px -144px; }
 b.ico.ico-pin { background-position: -144px -144px; }
 b.ico.ico-feed { background-position: -16px -176px; }
+
+.ui-icon-tool-home {
+  background-image: url("../images/home_24.png");
+  background-repeat: no-repeat;
+}
+
+.ui-icon-tool-Wiki {
+  background-image: url("../images/wiki_24.png");
+  background-repeat: no-repeat;
+}
+
+.ui-icon-tool-Git, .ui-icon-tool-SVN, .ui-icon-tool-Hg {
+  background-image: url("../images/code_24.png");
+  background-repeat: no-repeat;
+}
+
+.ui-icon-tool-Stats {
+  background-image: url("../images/stats_24.png");
+  background-repeat: no-repeat;
+}
+
+.ui-icon-tool-admin, .ui-icon-admin {
+  background-image: url("../images/admin_24.png");
+  background-repeat: no-repeat;
+}
+
+.ui-icon-tool-Discussion {
+  background-image: url("../images/forums_24.png");
+  background-repeat: no-repeat;
+}
+
+.ui-icon-tool-Tickets {
+  background-image: url("../images/tickets_24.png");
+  background-repeat: no-repeat;
+}
+
+.ui-icon-tool-Downloads {
+  background-image: url("../images/downloads_24.png");
+  background-repeat: no-repeat;
+}
+
+.ui-icon-tool-Link {
+  background-image: url("../images/ext_24.png");
+  background-repeat: no-repeat;
+}
+
+.ui-icon-tool-blog {
+  background-image: url("../images/blog_24.png");
+  background-repeat: no-repeat;
+}
+
+.ui-icon-tool-Chat {
+  background-image: url("../images/chat_24.png");
+  background-repeat: no-repeat;
+}
+
+.ui-icon-tool-hosted_apps {
+  background-image: url("../images/admin_24.png");
+  background-repeat: no-repeat;
+}
+
+#top_nav .ui-icon-tool-home {
+  background-image: url("../images/home_32.png");
+}
+#top_nav .ui-icon-tool-Wiki {
+  background-image: url("../images/wiki_32.png");
+}
+#top_nav .ui-icon-tool-Git, #top_nav .ui-icon-tool-SVN, #top_nav .ui-icon-tool-Hg {
+  background-image: url("../images/code_32.png");
+}
+#top_nav .ui-icon-tool-Stats {
+  background-image: url("../images/stats_32.png");
+}
+#top_nav .ui-icon-tool-admin, #top_nav .ui-icon-admin {
+  background-image: url("../images/admin_32.png");
+}
+#top_nav .ui-icon-tool-Discussion {
+  background-image: url("../images/forums_32.png");
+}
+#top_nav .ui-icon-tool-Tickets {
+  background-image: url("../images/tickets_32.png");
+}
+#top_nav .ui-icon-tool-Downloads {
+  background-image: url("../images/downloads_32.png");
+}
+#top_nav .ui-icon-tool-Link {
+  background-image: url("../images/ext_32.png");
+}
+#top_nav .ui-icon-tool-blog {
+  background-image: url("../images/blog_32.png");
+}
+#top_nav .ui-icon-tool-chat {
+  background-image: url("../images/chat_32.png");
+}
