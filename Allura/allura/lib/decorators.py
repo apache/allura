@@ -57,7 +57,7 @@ class react(object):
             deco.react_keys.add(bk)
         return func
         
-class log_action(object):
+class log_action(object): # pragma no cover
 
     def __init__(self,
                  logger=None,

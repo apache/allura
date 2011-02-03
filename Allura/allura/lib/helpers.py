@@ -235,7 +235,7 @@ def ago(start_time):
     return ago + ' ago'
 
 def ago_ts(timestamp):
-    return ago(datetime.fromtimestamp(timestamp))
+    return ago(datetime.utcfromtimestamp(timestamp))
 
 def tag_artifact(artifact, user, tags):
     from allura import model as M

@@ -117,6 +117,7 @@ class TestNeighborhood(TestController):
         r = self.app.get('/adobe/')
 
     def test_register(self):
+        r = self.app.get('/adobe/register', status=405)
         r = self.app.post('/adobe/register',
                           params=dict(project_unixname='', project_name='', project_description='', neighborhood='Adobe'),
                           extra_environ=dict(username='root'))

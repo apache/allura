@@ -146,3 +146,7 @@ class TestAuth(TestController):
         assert M.ProjectRole.query.find(dict(user_id=user._id, project_id=p._id)).count() == 0
         r = self.app.get('/p/test/admin/permissions',extra_environ=dict(username='aaa'), status=403)
         assert M.ProjectRole.query.find(dict(user_id=user._id, project_id=p._id)).count() <= 1
+
+    def test_default_lookup(self):
+        # Make sure that default _lookup() throws 404
+        self.app.get('/auth/foobar', status=404)

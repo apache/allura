@@ -4,7 +4,7 @@ from tg import config
 from pylons import c, g
 from paste.deploy import loadapp
 from paste.script.appinstall import SetupCommand
-from nose.tools import eq_
+from nose.tools import eq_, assert_equals
 
 from allura import model as M
 from allura.lib import helpers as h
@@ -22,6 +22,8 @@ def test_really_unicode():
     assert s.startswith(u'\ufeff')
     s = h.really_unicode(open(path.join(here_dir, 'data/unicode_test.txt')).read())
     assert isinstance(s, unicode)
+    # try non-ascii string in legacy 8bit encoding
+    h.really_unicode(u'\u0410\u0401'.encode('cp1251'))
 
 def test_render_genshi_plaintext():
     here_dir = path.dirname(__file__)
@@ -87,5 +89,14 @@ def test_encode_keys():
 
 def test_ago():
     from datetime import datetime, timedelta
-    assert h.ago(datetime.utcnow() - timedelta(days=2)) == '2 days ago'
+    import time
+    assert_equals(h.ago(datetime.utcnow() - timedelta(days=2)), '2 days ago')
+    assert_equals(h.ago_ts(time.time() - 60*60*2), '2 hours ago')
 
+def test_urlquote_unicode():
+    # No exceptions please
+    h.urlquote(u'\u0410')
+    h.urlquoteplus(u'\u0410')
+
+def test_sharded_path():
+    assert_equals(h.sharded_path('foobar'), 'f/fo')

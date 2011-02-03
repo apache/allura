@@ -104,10 +104,10 @@ class SearchApp(Application):
             exchange='audit',
             routing_key='search.check_commit')
 
-    def sidebar_menu(self):
+    def sidebar_menu(self): # pragma no cover
         return [ ]
 
-    def admin_menu(self):
+    def admin_menu(self): # pragma no cover
         return []
 
     def install(self, project):

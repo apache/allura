@@ -32,7 +32,7 @@ class Command(command.Command):
                     # logging does not understand section#subsection syntax,
                     # so strip away the #subsection and try again.
                     logging.config.fileConfig(self.args[0].split('#')[0], disable_existing_loggers=False)
-                except Exception:
+                except Exception: # pragma no cover
                     print >> sys.stderr, (
                         'Could not configure logging with config file %s' % self.args[0])
             from allura import model

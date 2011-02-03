@@ -178,7 +178,7 @@ class SequenceMatcher(difflib.SequenceMatcher):
         self.matching_blocks = sorted(matching_blocks)
         return self.matching_blocks
 
-def test():
+def test(): # pragma no cover
     if len(sys.argv) == 3:
         fn_a = sys.argv[1]
         fn_b = sys.argv[2]
@@ -201,5 +201,5 @@ def test():
     # for prefix, line in diff_gen(a, b, sm.get_opcodes()):
     #     sys.stdout.write(''.join((prefix, line)))
 
-if __name__ == '__main__':
+if __name__ == '__main__': # pragma no cover
     test()
