@@ -8,6 +8,7 @@ billiard==0.2.3
 carrot==0.10.3
 celery==1.0.2
 chardet==1.0.1
+Creoleparser==0.7.3
 datadiff==1.1.2
 decorator==3.1.2
 Django==1.1.1
@@ -42,6 +43,7 @@ pyflakes==0.4.0
 Pygments==1.3.1
 Pylons==0.9.7
 pymongo==1.9
+Pypeline==0.1dev
 pysolr==2.0.9
 python-daemon==1.5.5
 python-dateutil==1.5
@@ -66,6 +68,7 @@ SQLAlchemy==0.6beta3
 sqlalchemy-migrate==0.5.4
 stopwatch==0.3.1
 Tempita==0.4
+textile==2.1.4
 ToscaWidgets==0.9.9
 transaction==1.0.0
 tw.forms==0.9.9

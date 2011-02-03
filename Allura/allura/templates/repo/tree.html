@@ -24,8 +24,9 @@
   {{ clone_info(c.app.repo) }}
   <br style="clear:both"/>
 {{c.tree_widget.display(repo=repo, commit=commit, tree=tree, path=path)}}
-{% if tree.readme() %}
+{% set name, text = tree.readme() %}
+{% if name %}
   <h1>Read Me</h1>
-  {{g.markdown.convert(tree.readme())|safe}}
+  {{g.pypeline_markup.render(name, text)|safe}}
 {% endif %}
 {% endblock %}

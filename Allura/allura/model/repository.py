@@ -4,6 +4,7 @@ import errno
 import mimetypes
 import logging
 import string
+import re
 from hashlib import sha1
 from datetime import datetime
 from collections import defaultdict
@@ -29,6 +30,9 @@ log = logging.getLogger(__name__)
 config = utils.ConfigProxy(
     common_suffix='forgemail.domain',
     common_prefix='forgemail.url')
+
+README_RE = re.compile('^README(\.[^.]*)?$', re.IGNORECASE)
+
 
 class RepositoryImplementation(object):
 
@@ -701,7 +705,6 @@ class Commit(RepoObject):
         return self.repo.commit_context(self)
 
 class Tree(RepoObject):
-    README_NAMES=set(['readme.txt','README.txt','README.TXT','README'])
     class __mongometa__:
         polymorphic_identity='tree'
     type_s = 'Tree'
@@ -797,11 +800,11 @@ class Tree(RepoObject):
 
     def readme(self):
         for x in self.object_ids:
-            if x.name in self.README_NAMES:
+            if README_RE.match(x.name):
                 obj = self[x.name]
                 if isinstance(obj, Blob):
-                    return h.really_unicode(obj.text)
-        return ''
+                    return (x.name, h.really_unicode(obj.text))
+        return (None, '')
 
     def ls(self):
         results = []

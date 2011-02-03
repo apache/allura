@@ -20,6 +20,7 @@ import mock
 import pysolr
 import oembed
 import markdown
+from pypeline.markup import markup as pypeline_markup
 import pygments
 import pygments.lexers
 import pygments.formatters
@@ -92,6 +93,9 @@ class Globals(object):
         self.pygments_formatter = pygments.formatters.HtmlFormatter(
             cssclass='codehilite',
             linenos='inline')
+
+        # Setup Pypeline
+        self.pypeline_markup = pypeline_markup
 
         # Setup analytics
         self.analytics = analytics.GoogleAnalytics(account=config.get('ga.account', 'UA-32013-57'))
@@ -180,6 +184,7 @@ class Globals(object):
         return h.html.literal(pygments.highlight(text, lexer, self.pygments_formatter))
 
     def forge_markdown(self, **kwargs):
+        '''return a markdown.Markdown object on which you can call convert'''
         return markdown.Markdown(
                 extensions=['codehilite', ForgeExtension(**kwargs), 'tables'],
                 output_format='html4')
