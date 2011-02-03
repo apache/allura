@@ -16,6 +16,7 @@ from allura.config.app_cfg import ForgeConfig
 from allura.lib.custom_middleware import StatsMiddleware
 from allura.lib.custom_middleware import SSLMiddleware
 from allura.lib.custom_middleware import StaticFilesMiddleware
+from allura.lib.custom_middleware import CSRFMiddleware
 from allura.lib import patches
 
 __all__ = ['make_app']
@@ -86,6 +87,8 @@ def _make_core_app(root, global_conf, full_stack=True, **app_conf):
     app = StaticFilesMiddleware(app, app_conf.get('static.script_name'))
     app = set_scheme_middleware(app)
     app = credentials_middleware(app)
+    if not app_conf.get('disable_csrf_protection'):
+        app = CSRFMiddleware(app, 'allura')
 
     return app
     

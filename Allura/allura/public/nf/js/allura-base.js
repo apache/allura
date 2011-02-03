@@ -180,4 +180,8 @@ $(function(){
             $this.css('color', 'gray').text($this.attr('data-prompt'))
         }
     });
+
+    // Provide CSRF protection
+    var cval = $.cookie('allura');
+    $('form').append('<input name="allura" type="hidden" value="'+cval+'">');
 });

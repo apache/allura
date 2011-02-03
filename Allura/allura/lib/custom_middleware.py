@@ -124,6 +124,28 @@ class LoginRedirectMiddleware(object):
         start_response(status, headers, exc_info)
         return app_iter
 
+class CSRFMiddleware(object):
+    '''On POSTs, looks for a special field name that matches the value of a given
+    cookie.  If this field is missing, the cookies are cleared to anonymize the
+    request.'''
+
+    def __init__(self, app, cookie_name, param_name=None):
+        if param_name is None: param_name = cookie_name
+        self._app = app
+        self._param_name = param_name
+        self._cookie_name = cookie_name
+
+    def __call__(self, environ, start_response):
+        req = Request(environ)
+        if req.method == 'POST':
+            cookie = req.cookies.get(self._cookie_name)
+            param = req.params.get(self._param_name)
+            if cookie != param:
+                log.warning('CSRF attempt detected, %r != %r', cookie, param)
+                del environ['HTTP_COOKIE']
+        return self._app(environ, start_response)
+
+
 class SSLMiddleware(object):
     'Verify the https/http schema is correct'
 
