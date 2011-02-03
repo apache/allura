@@ -137,9 +137,9 @@ class CSRFMiddleware(object):
 
     def __call__(self, environ, start_response):
         req = Request(environ)
+        param = req.str_POST.pop(self._param_name, None)
         if req.method == 'POST':
             cookie = req.cookies.get(self._cookie_name)
-            param = req.params.get(self._param_name)
             if cookie != param:
                 log.warning('CSRF attempt detected, %r != %r', cookie, param)
                 del environ['HTTP_COOKIE']
