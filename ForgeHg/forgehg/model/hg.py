@@ -163,7 +163,7 @@ class HgImplementation(M.RepositoryImplementation):
         ci.committed = Object(
             name=user_name,
             email=user_email,
-            date=datetime.fromtimestamp(sum(obj.date())))
+            date=datetime.utcfromtimestamp(sum(obj.date())))
         ci.authored=Object(ci.committed)
         ci.message=obj.description() or ''
         ci.parent_ids=[

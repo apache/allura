@@ -170,7 +170,7 @@ class SVNImplementation(M.RepositoryImplementation):
         ci.committed = Object(
             name=log_entry.get('author', '--none--'),
             email='',
-            date=datetime.fromtimestamp(log_entry.date))
+            date=datetime.utcfromtimestamp(log_entry.date))
         ci.authored=Object(ci.committed)
         ci.message=log_entry.message
         if revno > 1:
@@ -237,7 +237,7 @@ class SVNImplementation(M.RepositoryImplementation):
             lc, isnew = M.LastCommitFor.upsert(repo_id=self._repo._id, object_id=oid)
             if not isnew: continue
             lc.last_commit.author = lc.last_commit.author_email = info.last_changed_author
-            lc.last_commit.date = datetime.fromtimestamp(info.last_changed_date)
+            lc.last_commit.date = datetime.utcfromtimestamp(info.last_changed_date)
             lc.last_commit.id = self._oid(info.last_changed_rev.number)
             lc.last_commit.href = '%s%d/' % (self._repo.url(), info.last_changed_rev.number)
             lc.last_commit.shortlink = '[r%d]' % info.last_changed_rev.number

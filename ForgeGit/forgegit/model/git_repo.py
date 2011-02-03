@@ -169,12 +169,12 @@ class GitImplementation(M.RepositoryImplementation):
         ci.committed = Object(
             name=h.really_unicode(obj.committer.name),
             email=h.really_unicode(obj.committer.email),
-            date=datetime.fromtimestamp(
+            date=datetime.utcfromtimestamp(
                 obj.committed_date-obj.committer_tz_offset))
         ci.authored=Object(
             name=h.really_unicode(obj.author.name),
             email=h.really_unicode(obj.author.email),
-            date=datetime.fromtimestamp(
+            date=datetime.utcfromtimestamp(
                 obj.authored_date-obj.author_tz_offset))
         ci.message=h.really_unicode(obj.message or '')
         ci.parent_ids=[ p.hexsha for p in obj.parents ]
