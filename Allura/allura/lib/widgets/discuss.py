@@ -323,7 +323,8 @@ class PostThread(ew_core.Widget):
         limit=25,
         show_subject=False,
         suppress_promote=False,
-        parent=None)
+        parent=None,
+        children=None)
 
 class Thread(HierWidget):
     template='jinja:widgets/thread_widget.html'

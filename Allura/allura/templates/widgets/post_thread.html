@@ -5,9 +5,11 @@
     supress_promote=supress_promote, page=page, limit=limit)}}
     <!-- post_thread replies -->
     <ul>
-    {% for child in value.descendants() if child.status == 'ok' and child.parent_id == value._id %}
-      {{widget.display(value=child, indent=indent+1)}}
-    {% endfor %}
+      {%- if children %}
+      {%- for child in children if child.post.status == 'ok' %}
+      {{widget.display(value=child.post, children=child.children, indent=indent+1)}}
+      {%- endfor %}
+      {%- endif %}
     </ul>
     <!-- post_thread /replies -->
 </li>

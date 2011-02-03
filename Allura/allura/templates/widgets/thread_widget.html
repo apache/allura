@@ -11,8 +11,9 @@
           {% if posts %}
             {% for t in value.create_post_threads(posts) %}
             <ul>
-              {{widgets.post_thread.display(value=t['post'], indent=0, show_subject=show_subject,
-                                             supress_promote=True, page=page, limit=limit)}}
+              {{widgets.post_thread.display(value=t['post'], children=t['children'],
+                  indent=0, show_subject=show_subject,
+                  supress_promote=True, page=page, limit=limit)}}
             </ul>
             {% endfor %}
           {% endif %}
