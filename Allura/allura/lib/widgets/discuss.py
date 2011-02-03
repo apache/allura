@@ -75,6 +75,9 @@ class PostFilter(ff.ForgeForm):
         submit_text=None,
         method='GET')
     fields = [
+        ew.HiddenField(
+            name='page',
+            validator=fev.Int()),
         ew.FieldSet(label='Post Filter', fields=[
                 ew.SingleSelectField(
                     name='status',
