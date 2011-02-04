@@ -17,6 +17,7 @@ class ForgeForm(ew.SimpleForm):
     defaults=dict(
         ew.SimpleForm.defaults,
         submit_text='Save',
+        method='post',
         enctype=None)
 
     def display_field_by_idx(self, idx, ignore_errors=False):
@@ -88,6 +89,7 @@ class NeighborhoodAddProjectForm(ForgeForm):
     template='jinja:widgets/neighborhood_add_project.html'
     defaults=dict(
         ForgeForm.defaults,
+        method='post',
         submit_text='Start')
 
     @property
