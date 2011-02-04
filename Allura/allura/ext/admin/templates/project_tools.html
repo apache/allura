@@ -183,7 +183,7 @@ $('#sortable').sortable({items: ".fleft"}).bind( "sortupdate", function (e) {
   var sortables = $('#sortable .fleft');
   var tools = 0;
   var subs = 0;
-  var params = {'allura':$.cookie('allura')};
+  var params = {'_session_id':$.cookie('_session_id')};
   for (var i = 0, len = sortables.length; i < len; i++) {
     var item = $(sortables[i]);
     var mount_point = item.find('input.mount_point');

@@ -88,7 +88,7 @@ def _make_core_app(root, global_conf, full_stack=True, **app_conf):
     app = set_scheme_middleware(app)
     app = credentials_middleware(app)
     if not app_conf.get('disable_csrf_protection'):
-        app = CSRFMiddleware(app, 'allura')
+        app = CSRFMiddleware(app, '_session_id')
 
     return app
     

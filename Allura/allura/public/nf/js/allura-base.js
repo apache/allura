@@ -182,6 +182,6 @@ $(function(){
     });
 
     // Provide CSRF protection
-    var cval = $.cookie('allura');
-    $('form').append('<input name="allura" type="hidden" value="'+cval+'">');
+    var cval = $.cookie('_session_id');
+    $('form').append('<input name="_session_id" type="hidden" value="'+cval+'">');
 });

@@ -16,6 +16,7 @@ from tg.controllers import DecoratedController
 from webob import exc, Request
 
 from allura.lib.stats import timing, StatsRecord
+from allura.lib import helpers as h
 
 log = logging.getLogger(__name__)
 
@@ -137,13 +138,18 @@ class CSRFMiddleware(object):
 
     def __call__(self, environ, start_response):
         req = Request(environ)
+        cookie = req.cookies.get(self._cookie_name, None)
+        if cookie is None:
+            cookie = h.cryptographic_nonce()
         if req.method == 'POST':
             param = req.str_POST.pop(self._param_name, None)
-            cookie = req.cookies.get(self._cookie_name)
             if cookie != param:
                 log.warning('CSRF attempt detected, %r != %r', cookie, param)
                 del environ['HTTP_COOKIE']
-        return self._app(environ, start_response)
+        def session_start_response(status, headers, exc_info = None):
+            headers.append(('Set-cookie', '%s=%s; Path=/' % (self._cookie_name, cookie)))
+            return start_response(status, headers, exc_info)
+        return self._app(environ, session_start_response)
 
 
 class SSLMiddleware(object):
