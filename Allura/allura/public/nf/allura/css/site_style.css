@@ -127,6 +127,7 @@ html {
 
 ul {
   margin-left: 30px;
+  margin-bottom: 1em;
 }
 
 
@@ -238,7 +239,7 @@ caption {
 }
 
 
-h1, h2, h3, h4, h5, h6, #site-header nav {
+h2.title, #site-header nav {
   font-weight: normal;
 }
 
@@ -309,11 +310,6 @@ h1 small {
 
 .contain {
   position: relative;
-}
-
-
-p {
-  margin-bottom: 20px;
 }
 
 
@@ -2192,7 +2188,7 @@ nav .ico {
 }
 
 .pad p, .pad h1, .pad h2, .pad h3, .pad h4 {
-  padding: 0 10px;
+  padding: 0 10px 1em;
 }
 
 .pad .paginate {
