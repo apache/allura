@@ -54,7 +54,7 @@ div.tool h1, div.welcome {
 }
 div.tool h1 {
     position: relative;
-    top: -10px;
+    top: -15px;
 }
 div.tool p {
     display: block;
