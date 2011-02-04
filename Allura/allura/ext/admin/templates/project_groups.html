@@ -62,7 +62,9 @@ background: transparent !important;
 {% endblock %}
 
 {% block extra_js %}
-<script type="text/javascript">$(function() {
+<script type="text/javascript">(function() {
+var cval = $.cookie('_session_id');
+var csrf_input = $('<input name="_session_id" type="hidden" value="'+cval+'">');
 var $popup_title = $('#popup_title');
 var $popup_contents = $('#popup_contents');
 $('a.admin_modal').click(function(evt){
@@ -74,6 +76,7 @@ $('a.admin_modal').click(function(evt){
   $.get(link.href, function (data) {
     $popup_title.html(link.title);
     $popup_contents.html(data);
+    $popup_contents.find('form').append(csrf_input);
     $('.btn.link.close').click(function(){
         $(this).trigger('close');
         return false;
@@ -81,6 +84,6 @@ $('a.admin_modal').click(function(evt){
   });
 });
 $('#sortable').sortable({items: ".fleft"});
-})
+})();
 </script>
 {% endblock %}

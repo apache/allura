@@ -34,7 +34,9 @@
 {% endblock %}
 
 {% block extra_js %}
-<script type="text/javascript">
+<script type="text/javascript">(function() {
+var cval = $.cookie('_session_id');
+var csrf_input = $('<input name="_session_id" type="hidden" value="'+cval+'">');
 var $popup_title = $('#popup_title');
 var $popup_contents = $('#popup_contents');
 $('a.admin_modal').click(function(){
@@ -46,8 +48,10 @@ $('a.admin_modal').click(function(){
     console.debug(data)
     $popup_title.html($(link).html());
     $popup_contents.html(data);
+    $popup_contents.find('form').append(csrf_input);
   });
 });
 $('#sortable').sortable({items: ".fleft"});
+})();
 </script>
 {% endblock %}
