@@ -12,7 +12,8 @@ from ming.utils import LazyProperty
 
 from allura import model as M
 from allura.lib import helpers as h
-from allura.lib import security 
+from allura.lib import security
+from allura.lib.decorators import require_post
 
 log = logging.getLogger(__name__)
 action_logger = h.log_action(log, 'API:')
@@ -84,6 +85,7 @@ class OAuthNegotiator(object):
         return access_token
 
     @expose()
+    @require_post()
     def request_token(self, **kw):
         req = oauth.Request.from_request(
             request.method,
@@ -144,6 +146,7 @@ class OAuthNegotiator(object):
         redirect(url)
         
     @expose()
+    @require_post()
     def access_token(self, **kw):
         req = oauth.Request.from_request(
             request.method,

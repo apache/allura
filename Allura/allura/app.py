@@ -13,7 +13,7 @@ from allura.lib.helpers import push_config
 from allura.lib.security import require, has_artifact_access
 from allura import model
 from allura.controllers import BaseController
-from allura.lib.decorators import react
+from allura.lib.decorators import react, require_post
 
 log = logging.getLogger(__name__)
 
@@ -280,6 +280,7 @@ class DefaultAdminController(BaseController):
                     allow_config=has_artifact_access('configure', app=self.app)())
 
     @expose()
+    @require_post()
     def configure(self, **kw):
         with push_config(c, app=self.app):
             require(has_artifact_access('configure', app=self.app), 'Must have configure permission')
@@ -304,12 +305,14 @@ class DefaultAdminController(BaseController):
                 redirect('../' + self.app.config.options.mount_point + '/')
 
     @expose()
+    @require_post()
     def add_perm(self, permission=None, role=None):
         require(has_artifact_access('configure', app=self.app))
         self.app.config.acl.setdefault(permission, []).append(ObjectId(role))
         redirect('permissions')
 
     @expose()
+    @require_post()
     def del_perm(self, permission=None, role=None):
         require(has_artifact_access('configure', app=self.app))
         self.app.config.acl[permission].remove(ObjectId(role))

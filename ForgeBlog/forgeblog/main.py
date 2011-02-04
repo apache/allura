@@ -14,7 +14,7 @@ from webob import exc
 from allura.app import Application, ConfigOption, SitemapEntry
 from allura.lib import helpers as h
 from allura.lib.search import search
-from allura.lib.decorators import audit, react
+from allura.lib.decorators import audit, react, require_post
 from allura.lib.security import require, has_artifact_access
 from allura.lib import widgets as w
 from allura.lib.widgets.subscriptions import SubscribeForm
@@ -181,6 +181,7 @@ class RootController(BaseController):
         return dict(post=post)
 
     @expose()
+    @require_post()
     @validate(form=W.edit_post_form, error_handler=new)
     @without_trailing_slash
     def save(self, **kw):
@@ -273,6 +274,7 @@ class PostController(BaseController):
         return dict(p1=p1, p2=p2, edits=result)
 
     @expose()
+    @require_post()
     @validate(form=W.edit_post_form, error_handler=edit)
     @without_trailing_slash
     def save(self, delete=None, **kw):
@@ -287,6 +289,7 @@ class PostController(BaseController):
         redirect('.')
 
     @without_trailing_slash
+    @require_post()
     @expose()
     def revert(self, version):
         require(has_artifact_access('write', self.post))
@@ -297,6 +300,7 @@ class PostController(BaseController):
         redirect('.')
 
     @expose()
+    @require_post()
     @validate(W.subscribe_form)
     def subscribe(self, subscribe=None, unsubscribe=None):
         require(has_artifact_access('read'))

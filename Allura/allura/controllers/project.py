@@ -412,6 +412,7 @@ class NeighborhoodAdminController(object):
             neighborhood=self.neighborhood)
 
     @expose()
+    @require_post()
     def update(self, name=None, css=None, homepage=None, icon=None, **kw):
         self.neighborhood.name = name
         self.neighborhood.redirect = kw.pop('redirect', '')
@@ -429,6 +430,7 @@ class NeighborhoodAdminController(object):
 
     @h.vardec
     @expose()
+    @require_post()
     def update_acl(self, permission=None, user=None, new=None, **kw):
         if user is None: user = []
         for u in user:
@@ -465,6 +467,7 @@ class NeighborhoodModerateController(object):
         return dict(neighborhood=self.neighborhood)
 
     @expose()
+    @require_post()
     def invite(self, pid, invite=None, uninvite=None):
         p = M.Project.query.get(shortname=pid, deleted=False)
         if p is None:
@@ -488,6 +491,7 @@ class NeighborhoodModerateController(object):
         redirect('.')
 
     @expose()
+    @require_post()
     def evict(self, pid):
         p = M.Project.query.get(shortname=pid, neighborhood_id=self.neighborhood._id, deleted=False)
         if p is None:
@@ -605,6 +609,7 @@ class AwardController(object):
         redirect(request.referer)
 
     @expose()
+    @require_post()
     def delete(self):
         if self.award:
             grants = M.AwardGrant.query.find(dict(award_id=self.award._id))
@@ -644,6 +649,7 @@ class GrantController(object):
         return icon.serve()
 
     @expose()
+    @require_post()
     def revoke(self):
         self.grant.delete()
         redirect(request.referer)

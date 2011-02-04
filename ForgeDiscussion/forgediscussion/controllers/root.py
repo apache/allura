@@ -15,6 +15,7 @@ from allura.lib.security import require, has_artifact_access, has_project_access
 from allura.model import ProjectRole, Feed
 from allura.lib.search import search
 from allura.lib import helpers as h
+from allura.lib.decorators import require_post
 from allura.controllers import BaseController
 
 from .forum import ForumController
@@ -64,6 +65,7 @@ class RootController(BaseController):
 
     @h.vardec
     @expose()
+    @require_post()
     @validate(W.new_topic, error_handler=create_topic)
     def save_new_topic(self, subject=None, text=None, forum=None, **kw):
         discussion = model.Forum.query.get(
@@ -123,6 +125,7 @@ class RootController(BaseController):
     # FIXME this code is not used, but it should be so we can do Forum-level subscriptions
     @h.vardec
     @expose()
+    @require_post()
     @validate(W.forum_subscription_form)
     def subscribe(self, **kw):
         require_authenticated()

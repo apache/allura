@@ -14,6 +14,7 @@ from allura.lib.oid_helper import verify_oid, process_oid
 from allura.lib.security import require_authenticated, has_artifact_access
 from allura.lib import helpers as h
 from allura.lib import plugin
+from allura.lib.decorators import require_post
 from allura.lib.widgets import SubscriptionForm, OAuthApplicationForm, OAuthRevocationForm
 from allura.lib.widgets import forms
 from allura.lib import exceptions as exc
@@ -72,6 +73,7 @@ class AuthController(BaseController):
                           prompt='Click below to continue')
 
     @expose()
+    @require_post()
     def login_process_oid(self, **kw):
         oid_obj = process_oid(failure_redirect='.')
         c.user = oid_obj.claimed_by_user()
@@ -93,6 +95,7 @@ class AuthController(BaseController):
         return dict()
 
     @expose()
+    @require_post()
     @validate(F.registration_form, error_handler=create_account)
     def save_new(self, display_name=None, username=None, pw=None, **kw):
         user = M.User.register(
@@ -124,6 +127,7 @@ class AuthController(BaseController):
         redirect('/')
 
     @expose()
+    @require_post()
     def do_setup_openid_user(self, username=None, display_name=None):
         u = M.User.by_username(username)
         if u and username != c.user.username:
@@ -155,6 +159,7 @@ class AuthController(BaseController):
                           prompt='Click below to continue')
 
     @expose()
+    @require_post()
     def claim_process_oid(self, **kw):
         oid_obj = process_oid(failure_redirect='claim_oid')
         if c.user:
@@ -171,6 +176,7 @@ class AuthController(BaseController):
             redirect('/')
 
     @expose()
+    @require_post()
     def do_login(self, return_to=None, **kw):
         user = plugin.AuthenticationProvider.get(request).login()
         if return_to and return_to != request.url:
@@ -272,6 +278,7 @@ class PreferencesController(BaseController):
 
     @h.vardec
     @expose()
+    @require_post()
     def update(self,
                display_name=None,
                addr=None,
@@ -311,6 +318,7 @@ class PreferencesController(BaseController):
         
     @h.vardec
     @expose()
+    @require_post()
     @validate(F.subscription_form, error_handler=index)
     def update_subscriptions(self, subscriptions=None, **kw):
         for s in subscriptions:
@@ -319,6 +327,7 @@ class PreferencesController(BaseController):
         redirect(request.referer)
 
     @expose()
+    @require_post()
     def gen_api_token(self):
         tok = M.ApiToken.query.get(user_id=c.user._id)
         if tok is None:
@@ -328,6 +337,7 @@ class PreferencesController(BaseController):
         redirect(request.referer)
 
     @expose()
+    @require_post()
     def del_api_token(self):
         tok = M.ApiToken.query.get(user_id=c.user._id)
         if tok is None: return
@@ -335,6 +345,7 @@ class PreferencesController(BaseController):
         redirect(request.referer)
 
     @expose()
+    @require_post()
     def revoke_oauth(self, _id=None):
         tok = M.OAuthAccessToken.query.get(_id=bson.ObjectId(_id))
         if tok is None:
@@ -348,6 +359,7 @@ class PreferencesController(BaseController):
         redirect('.')
 
     @expose()
+    @require_post()
     @validate(V.NullValidator(), error_handler=index)
     def change_password(self, **kw):
         kw = g.theme.password_change_form.to_python(kw, None)
@@ -361,6 +373,7 @@ class PreferencesController(BaseController):
         redirect('.')
 
     @expose()
+    @require_post()
     def upload_sshkey(self, key=None):
         ap = plugin.AuthenticationProvider.get(request)
         try:
@@ -378,6 +391,7 @@ class OAuth(BaseController):
         return dict(apps=M.OAuthConsumerToken.for_user(c.user))
 
     @expose()
+    @require_post()
     @validate(F.oauth_application_form, error_handler=index)
     def register(self, application_name=None, application_description=None, **kw):
         M.OAuthConsumerToken(name=application_name, description=application_description)
@@ -385,6 +399,7 @@ class OAuth(BaseController):
         redirect('.')
 
     @expose()
+    @require_post()
     def delete(self, id=None):
         app = M.OAuthConsumerToken.query.get(_id=bson.ObjectId(id))
         if app is None:

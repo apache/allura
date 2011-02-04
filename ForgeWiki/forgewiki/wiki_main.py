@@ -18,7 +18,7 @@ from allura import model as M
 from allura.lib import helpers as h
 from allura.app import Application, SitemapEntry, DefaultAdminController
 from allura.lib.search import search
-from allura.lib.decorators import audit, react
+from allura.lib.decorators import audit, react, require_post
 from allura.lib.security import require, has_artifact_access
 from allura.controllers import AppDiscussionController, BaseController
 from allura.controllers import attachments as ac
@@ -467,6 +467,7 @@ class PageController(BaseController):
 
     @without_trailing_slash
     @expose()
+    @require_post()
     def delete(self):
         require(has_artifact_access('delete', self.page))
         M.ArtifactLink.remove(self.page)
@@ -477,6 +478,7 @@ class PageController(BaseController):
 
     @without_trailing_slash
     @expose()
+    @require_post()
     def undelete(self):
         self.page = WM.Page.query.get(app_config_id=c.app.config._id, title=self.title, deleted=True)
         if not self.page:
@@ -553,6 +555,7 @@ class PageController(BaseController):
 
     @without_trailing_slash
     @expose()
+    @require_post()
     @validate(dict(version=validators.Int(if_empty=1)))
     def revert(self, version):
         if not self.page:
@@ -567,6 +570,7 @@ class PageController(BaseController):
     @without_trailing_slash
     @h.vardec
     @expose()
+    @require_post()
     def update(self, title=None, text=None,
                tags=None, tags_old=None,
                labels=None, labels_old=None,
@@ -619,6 +623,7 @@ class PageController(BaseController):
 
     @without_trailing_slash
     @expose()
+    @require_post()
     def attach(self, file_info=None):
         if not self.page:
             raise exc.HTTPNotFound
@@ -628,6 +633,7 @@ class PageController(BaseController):
         redirect(request.referer)
 
     @expose()
+    @require_post()
     @validate(W.subscribe_form)
     def subscribe(self, subscribe=None, unsubscribe=None):
         if not self.page:
@@ -676,6 +682,7 @@ class RootRestController(RestController):
 
     @h.vardec
     @expose()
+    @require_post()
     def post(self, title, **post_data):
         exists = WM.Page.query.find(dict(app_config_id=c.app.config._id, title=title, deleted=False)).first()
         if not exists:
@@ -717,6 +724,7 @@ class WikiAdminController(DefaultAdminController):
 
     @without_trailing_slash
     @expose()
+    @require_post()
     def set_home(self, new_home):
         require(has_artifact_access('configure', app=self.app))
         globals = WM.Globals.query.get(app_config_id=self.app.config._id)
@@ -730,6 +738,7 @@ class WikiAdminController(DefaultAdminController):
 
     @without_trailing_slash
     @expose()
+    @require_post()
     def set_options(self, show_discussion=False, show_left_bar=False, show_right_bar=False):
         require(has_artifact_access('configure', app=self.app))
         if show_discussion:

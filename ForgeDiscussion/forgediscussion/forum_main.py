@@ -16,7 +16,7 @@ from ming import schema
 from allura import model as M
 from allura.app import Application, ConfigOption, SitemapEntry, DefaultAdminController
 from allura.lib import helpers as h
-from allura.lib.decorators import audit, react
+from allura.lib.decorators import audit, react, require_post
 from allura.lib.security import require, has_artifact_access
 
 # Local imports
@@ -276,6 +276,7 @@ class ForumAdminController(DefaultAdminController):
 
     @h.vardec
     @expose()
+    @require_post()
     def update_forums(self, forum=None, new_forum=None, **kw):
         if forum is None: forum = []
         if new_forum.get('create'):

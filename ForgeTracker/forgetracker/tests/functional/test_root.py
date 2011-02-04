@@ -218,7 +218,14 @@ class TestFunctionalController(TestController):
         response = self.app.get('/p/test/bugs/1/')
         assert 'Create Ticket' in response
         assert 'Related Pages' not in response
-        self.app.get('/wiki/aaa/update?title=aaa&text=&tags=&tags_old=&labels=&labels_old=&viewable_by-0.id=all')
+        self.app.post('/wiki/aaa/update', params={
+                'title':'aaa',
+                'text':'',
+                'tags':'',
+                'tags_old':'',
+                'labels':'',
+                'labels_old':'',
+                'viewable_by-0.id':'all'})
         self.new_ticket(summary='bbb')
         
         # Fake out updating the pages since reactor doesn't work with tests

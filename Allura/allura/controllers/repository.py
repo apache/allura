@@ -14,6 +14,7 @@ from allura.lib import patience
 from allura.lib import security
 from allura.lib import helpers as h
 from allura.lib import widgets as w
+from allura.lib.decorators import require_post
 from allura.controllers import AppDiscussionController
 from allura.lib.widgets.repo import SCMLogWidget, SCMRevisionWidget, SCMTreeWidget
 from allura.lib.widgets.repo import SCMMergeRequestWidget, SCMMergeRequestFilterWidget
@@ -113,6 +114,7 @@ class RepoRootController(BaseController):
         return dict(source_branch=source_branch)
 
     @expose()
+    @require_post()
     def do_request_merge(self, **kw):
         kw = self.mr_widget.to_python(kw)
         downstream=dict(
@@ -199,6 +201,7 @@ class MergeRequestController(object):
             count=self.req.discussion_thread.post_count)
 
     @expose()
+    @require_post()
     @validate(mr_dispose_form)
     def save(self, status=None):
         security.require(

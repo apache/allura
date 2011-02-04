@@ -63,8 +63,26 @@ class TestRootController(TestController):
 
     def test_page_history(self):
         self.app.get('/wiki/TEST/')
-        self.app.get('/wiki/TEST/update?title=TEST&text=text1&tags=&tags_old=&labels=&labels_old=&viewable_by-0.id=all')
-        self.app.get('/wiki/TEST/update?title=TEST&text=text2&tags=&tags_old=&labels=&labels_old=&viewable_by-0.id=all')
+        self.app.post(
+            '/wiki/TEST/update',
+            params={
+                'title':'TEST',
+                'text':'text1',
+                'tags':'',
+                'tags_old':'',
+                'labels':'',
+                'labels_old':'',
+                'viewable_by-0.id':'all'})
+        self.app.post(
+            '/wiki/TEST/update',
+            params={
+                'title':'TEST',
+                'text':'text2',
+                'tags':'',
+                'tags_old':'',
+                'labels':'',
+                'labels_old':'',
+                'viewable_by-0.id':'all'})
         response = self.app.get('/wiki/TEST/history')
         assert 'TEST' in response
         # two revisions are shown
@@ -82,46 +100,127 @@ class TestRootController(TestController):
         assert not response.html.find('a',{'href':'./revert?version=2'})
 
     def test_page_diff(self):
-        self.app.get('/wiki/TEST/update?title=TEST&text=sometext&tags=&tags_old=&labels=&labels_old=&viewable_by-0.id=all')
-        self.app.get('/wiki/TEST/revert?version=1')
+        self.app.post(
+            '/wiki/TEST/update',
+            params={
+                'title':'TEST',
+                'text':'sometext',
+                'tags':'',
+                'tags_old':'',
+                'labels':'',
+                'labels_old':'',
+                'viewable_by-0.id':'all'})
+        self.app.post('/wiki/TEST/revert', params=dict(version='1'))
         response = self.app.get('/wiki/TEST/')
         assert 'Subscribe' in response
         response = self.app.get('/wiki/TEST/diff?v1=0&v2=0')
         assert 'TEST' in response
 
     def test_page_raw(self):
-        self.app.get('/wiki/TEST/update?title=TEST&text=sometext&tags=&tags_old=&labels=&labels_old=&viewable_by-0.id=all')
+        self.app.post(
+            '/wiki/TEST/update',
+            params={
+                'title':'TEST',
+                'text':'sometext',
+                'tags':'',
+                'tags_old':'',
+                'labels':'',
+                'labels_old':'',
+                'viewable_by-0.id':'all'})
         response = self.app.get('/wiki/TEST/raw')
         assert 'TEST' in response
 
     def test_page_revert_no_text(self):
-        self.app.get('/wiki/TEST/update?title=TEST&text=&tags=&tags_old=&labels=&labels_old=&viewable_by-0.id=all')
-        response = self.app.get('/wiki/TEST/revert?version=1')
+        self.app.post(
+            '/wiki/TEST/update',
+            params={
+                'title':'TEST',
+                'text':'',
+                'tags':'',
+                'tags_old':'',
+                'labels':'',
+                'labels_old':'',
+                'viewable_by-0.id':'all'})
+        response = self.app.post('/wiki/TEST/revert', params=dict(version='1'))
         assert 'TEST' in response
 
     def test_page_revert_with_text(self):
         self.app.get('/wiki/TEST/')
-        self.app.get('/wiki/TEST/update?title=TEST&text=sometext&tags=&tags_old=&labels=&labels_old=&viewable_by-0.id=all')
-        response = self.app.get('/wiki/TEST/revert?version=1')
+        self.app.post(
+            '/wiki/TEST/update',
+            params={
+                'title':'TEST',
+                'text':'sometext',
+                'tags':'',
+                'tags_old':'',
+                'labels':'',
+                'labels_old':'',
+                'viewable_by-0.id':'all'})
+        response = self.app.post('/wiki/TEST/revert', params=dict(version='1'))
         assert 'TEST' in response
 
     def test_page_update(self):
         self.app.get('/wiki/TEST/')
-        response = self.app.get('/wiki/TEST/update?title=TEST&text=sometext&tags=&tags_old=&labels=&labels_old=&viewable_by-0.id=all')
+        response = self.app.post(
+            '/wiki/TEST/update',
+            params={
+                'title':'TEST',
+                'text':'sometext',
+                'tags':'',
+                'tags_old':'',
+                'labels':'',
+                'labels_old':'',
+                'viewable_by-0.id':'all'})
         assert 'TEST' in response
 
     def test_page_tag_untag(self):
         self.app.get('/wiki/TEST/')
-        response = self.app.get('/wiki/TEST/update?title=TEST&text=sometext&tags=red,blue&tags_old=red,blue&labels=&labels_old=&viewable_by-0.id=all')
+        response = self.app.post(
+            '/wiki/TEST/update',
+            params={
+                'title':'TEST',
+                'text':'sometext',
+                'tags':'red,blue',
+                'tags_old':'red,blue',
+                'labels':'',
+                'labels_old':'',
+                'viewable_by-0.id':'all'})
         assert 'TEST' in response
-        response = self.app.get('/wiki/TEST/update?title=TEST&text=sometext&tags=red&tags_old=red&labels=&labels_old=&viewable_by-0.id=all')
+        response = self.app.post(
+            '/wiki/TEST/update',
+            params={
+                'title':'TEST',
+                'text':'sometext',
+                'tags':'red',
+                'tags_old':'red',
+                'labels':'',
+                'labels_old':'',
+                'viewable_by-0.id':'all'})
         assert 'TEST' in response
 
     def test_page_label_unlabel(self):
         self.app.get('/wiki/TEST/')
-        response = self.app.get('/wiki/TEST/update?title=TEST&text=sometext&tags=&tags_old=&labels=yellow,green&labels_old=yellow,green&viewable_by-0.id=all')
+        response = self.app.post(
+            '/wiki/TEST/update',
+            params={
+                'title':'TEST',
+                'text':'sometext',
+                'tags':'',
+                'tags_old':'',
+                'labels':'yellow,green',
+                'labels_old':'yellow,green',
+                'viewable_by-0.id':'all'})
         assert 'TEST' in response
-        response = self.app.get('/wiki/TEST/update?title=TEST&text=sometext&tags=&tags_old=&labels=yellow&labels_old=yellow&viewable_by-0.id=all')
+        response = self.app.post(
+            '/wiki/TEST/update',
+            params={
+                'title':'TEST',
+                'text':'sometext',
+                'tags':'',
+                'tags_old':'',
+                'labels':'yellow',
+                'labels_old':'yellow',
+                'viewable_by-0.id':'all'})
         assert 'TEST' in response
 
     def test_new_attachment(self):
@@ -160,7 +259,14 @@ class TestRootController(TestController):
         assert_true(download.body == file_data)
 
     def test_new_image_attachment_content(self):
-        self.app.get('/wiki/TEST/update?title=TEST&text=sometext&tags=&tags_old=&labels=&labels_old=&viewable_by-0.id=all')
+        self.app.post('/wiki/TEST/update', params={
+                'title':'TEST',
+                'text':'sometext',
+                'tags':'',
+                'tags_old':'',
+                'labels':'',
+                'labels_old':'',
+                'viewable_by-0.id':'all'})
         file_name = 'neo-icon-set-454545-256x350.png'
         file_path = os.path.join(allura.__path__[0],'public','nf','allura','images',file_name)
         file_data = file(file_path).read()
@@ -201,9 +307,30 @@ class TestRootController(TestController):
         response = self.app.get('/wiki/TEST/').follow()
         assert 'Edit TEST' in response
         assert 'Related Pages' not in response
-        self.app.get('/wiki/TEST/update?title=TEST&text=sometext&tags=&tags_old=&labels=&labels_old=&viewable_by-0.id=all')
-        self.app.get('/wiki/aaa/update?title=aaa&text=&tags=&tags_old=&labels=&labels_old=&viewable_by-0.id=all')
-        self.app.get('/wiki/bbb/update?title=bbb&text=&tags=&tags_old=&labels=&labels_old=&viewable_by-0.id=all')
+        self.app.post('/wiki/TEST/update', params={
+                'title':'TEST',
+                'text':'sometext',
+                'tags':'',
+                'tags_old':'',
+                'labels':'',
+                'labels_old':'',
+                'viewable_by-0.id':'all'})
+        self.app.post('/wiki/aaa/update', params={
+                'title':'aaa',
+                'text':'',
+                'tags':'',
+                'tags_old':'',
+                'labels':'',
+                'labels_old':'',
+                'viewable_by-0.id':'all'})
+        self.app.post('/wiki/bbb/update', params={
+                'title':'bbb',
+                'text':'',
+                'tags':'',
+                'tags_old':'',
+                'labels':'',
+                'labels_old':'',
+                'viewable_by-0.id':'all'})
         
         # Fake out updating the pages since reactor doesn't work with tests
         app = search_main.SearchApp
@@ -240,7 +367,14 @@ class TestRootController(TestController):
         assert 'bbb' in response
 
     def test_show_discussion(self):
-        self.app.get('/wiki/TEST/update?title=TEST&text=sometext&tags=&tags_old=&labels=&labels_old=&viewable_by-0.id=all')
+        self.app.post('/wiki/TEST/update', params={
+                'title':'TEST',
+                'text':'sometext',
+                'tags':'',
+                'tags_old':'',
+                'labels':'',
+                'labels_old':'',
+                'viewable_by-0.id':'all'})
         wiki_page = self.app.get('/wiki/TEST/')
         assert wiki_page.html.find('div',{'id':'new_post_holder'})
         options_admin = self.app.get('/admin/wiki/options', validate_chunk=True)
@@ -253,7 +387,14 @@ class TestRootController(TestController):
         assert not wiki_page2.html.find('div',{'id':'new_post_holder'})
 
     def test_show_left_bar(self):
-        self.app.get('/wiki/TEST/update?title=TEST&text=sometext&tags=&tags_old=&labels=&labels_old=&viewable_by-0.id=all')
+        self.app.post('/wiki/TEST/update', params={
+                'title':'TEST',
+                'text':'sometext',
+                'tags':'',
+                'tags_old':'',
+                'labels':'',
+                'labels_old':'',
+                'viewable_by-0.id':'all'})
         wiki_page = self.app.get('/wiki/TEST/')
         assert wiki_page.html.find('ul',{'class':'sidebarmenu'})
         options_admin = self.app.get('/admin/wiki/options', validate_chunk=True)
@@ -268,7 +409,14 @@ class TestRootController(TestController):
         assert wiki_page3.html.find('ul',{'class':'sidebarmenu'})
 
     def test_show_right_bar(self):
-        self.app.get('/wiki/TEST/update?title=TEST&text=sometext&tags=&tags_old=&labels=&labels_old=&viewable_by-0.id=all')
+        self.app.post('/wiki/TEST/update', params={
+                'title':'TEST',
+                'text':'sometext',
+                'tags':'',
+                'tags_old':'',
+                'labels':'',
+                'labels_old':'',
+                'viewable_by-0.id':'all'})
         wiki_page = self.app.get('/wiki/TEST/')
         assert wiki_page.html.find('div',{'id':'sidebar-right'})
         options_admin = self.app.get('/admin/wiki/options', validate_chunk=True)
@@ -321,12 +469,26 @@ class TestRootController(TestController):
         assert 'The resource was found at http://localhost/p/test/wiki/new_title/;' in self.app.get('/p/test/wiki/')
 
     def test_page_delete(self):
-        self.app.get('/wiki/aaa/update?title=aaa&text=&tags=&tags_old=&labels=&labels_old=&viewable_by-0.id=all')
-        self.app.get('/wiki/bbb/update?title=bbb&text=&tags=&tags_old=&labels=&labels_old=&viewable_by-0.id=all')
+        self.app.post('/wiki/aaa/update', params={
+                'title':'aaa',
+                'text':'',
+                'tags':'',
+                'tags_old':'',
+                'labels':'',
+                'labels_old':'',
+                'viewable_by-0.id':'all'})
+        self.app.post('/wiki/bbb/update', params={
+                'title':'bbb',
+                'text':'',
+                'tags':'',
+                'tags_old':'',
+                'labels':'',
+                'labels_old':'',
+                'viewable_by-0.id':'all'})
         response = self.app.get('/wiki/browse_pages/')
         assert 'aaa' in response
         assert 'bbb' in response
-        self.app.get('/wiki/bbb/delete')
+        self.app.post('/wiki/bbb/delete')
         response = self.app.get('/wiki/browse_pages/')
         assert 'aaa' in response
         assert '?deleted=True">bbb' in response

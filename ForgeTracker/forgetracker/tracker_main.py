@@ -357,6 +357,7 @@ class RootController(BaseController):
     @without_trailing_slash
     @h.vardec
     @expose()
+    @require_post()
     def update_milestones(self, field_name=None, milestones=None, **kw):
         require(has_artifact_access('configure'))
         update_counts = False
@@ -605,6 +606,7 @@ class RootController(BaseController):
                 globals=globals)
 
     @expose()
+    @require_post()
     @validate(W.subscribe_form)
     def subscribe(self, subscribe=None, unsubscribe=None):
         require(has_artifact_access('read'))
@@ -663,6 +665,7 @@ class BinController(BaseController):
 
     @with_trailing_slash
     @expose()
+    @require_post()
     @validate(validators=dict(bin=V.Ming(TM.Bin)))
     def delbin(self, bin=None):
         require(lambda:bin.app_config_id==self.app.config._id)
@@ -789,6 +792,7 @@ class TicketController(BaseController):
         return feed.writeString('utf-8')
 
     @expose()
+    @require_post()
     @h.vardec
     def update_ticket(self, **post_data):
         if not post_data.get('summary'):
@@ -802,6 +806,7 @@ class TicketController(BaseController):
         self._update_ticket(post_data)
 
     @expose()
+    @require_post()
     @h.vardec
     @validate(W.ticket_form, error_handler=index)
     def update_ticket_from_widget(self, **post_data):
@@ -895,6 +900,7 @@ class TicketController(BaseController):
         redirect('.')
 
     @expose()
+    @require_post()
     @validate(W.subscribe_form)
     def subscribe(self, subscribe=None, unsubscribe=None):
         require(has_artifact_access('read', self.ticket))
@@ -948,6 +954,7 @@ class TrackerAdminController(DefaultAdminController):
 
     @expose()
     @validate(W.field_admin, error_handler=fields)
+    @require_post()
     @h.vardec
     def set_custom_fields(self, **post_data):
         require(has_artifact_access('configure', app=self.app))

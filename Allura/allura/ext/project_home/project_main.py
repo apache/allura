@@ -16,6 +16,7 @@ from allura.controllers import BaseController
 from allura.ext.project_home import model as M
 from allura import model
 from allura.lib.security import require, has_project_access
+from allura.lib.decorators import require_post
 
 log = logging.getLogger(__name__)
 
@@ -103,6 +104,7 @@ class ProjectHomeController(BaseController):
 
     @h.vardec
     @expose()
+    @require_post()
     def update_configuration(self, divs=None, layout_class=None, new_div=None, **kw):
         require(has_project_access('update'), 'Update access required')
         config = M.PortalConfig.current()

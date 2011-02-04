@@ -11,6 +11,7 @@ from pylons import g, c, request
 from allura.app import Application, ConfigOption, SitemapEntry, DefaultAdminController
 from allura.lib import helpers as h
 from allura.lib.security import require, has_artifact_access
+from allura.lib.decorators import require_post
 from allura.model import ProjectRole
 from allura.controllers import BaseController
 
@@ -107,6 +108,7 @@ class DownloadAdminController(DefaultAdminController):
 
     @h.vardec
     @expose()
+    @require_post()
     def update_options(self, **kw):
         show_download_button = kw.pop('show_download_button', '')
         if bool(show_download_button) != c.project.show_download_button:

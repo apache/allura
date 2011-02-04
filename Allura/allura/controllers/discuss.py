@@ -72,6 +72,7 @@ class DiscussionController(BaseController):
 
     @h.vardec
     @expose()
+    @require_post()
     @validate(pass_validator, error_handler=index)
     def subscribe(self, **kw):
         threads = kw.pop('threads')
@@ -86,6 +87,7 @@ class DiscussionController(BaseController):
 
     @without_trailing_slash
     @expose()
+    @require_post()
     @validate(dict(
             since=DateTimeConverter(if_empty=None),
             until=DateTimeConverter(if_empty=None),
@@ -171,6 +173,7 @@ class ThreadController(BaseController):
 
     @h.vardec
     @expose()
+    @require_post()
     @validate(pass_validator, error_handler=index)
     def post(self, **kw):
         require(has_artifact_access('post', self.thread))
@@ -192,12 +195,14 @@ class ThreadController(BaseController):
         redirect(request.referer)
 
     @expose()
+    @require_post()
     def tag(self, labels, **kw):
         require(has_artifact_access('post', self.thread))
         self.thread.labels = labels.split(',')
         redirect(request.referer)
 
     @expose()
+    @require_post()
     def flag_as_spam(self, **kw):
         require(has_artifact_access('moderate', self.thread))
         self.thread.first_post.status='spam'
@@ -297,6 +302,7 @@ class PostController(BaseController):
 
     @h.vardec
     @expose()
+    @require_post()
     @validate(pass_validator, error_handler=index)
     @require_post(redir='.')
     def reply(self, **kw):
@@ -308,6 +314,7 @@ class PostController(BaseController):
 
     @h.vardec
     @expose()
+    @require_post()
     @validate(pass_validator, error_handler=index)
     def moderate(self, **kw):
         require(has_artifact_access('moderate', self.post.thread))
@@ -321,6 +328,7 @@ class PostController(BaseController):
 
     @h.vardec
     @expose()
+    @require_post()
     @validate(pass_validator, error_handler=index)
     def flag(self, **kw):
         self.W.flag_post.to_python(kw, None)
@@ -331,6 +339,7 @@ class PostController(BaseController):
 
     @h.vardec
     @expose()
+    @require_post()
     def attach(self, file_info=None):
         require(has_artifact_access('moderate', self.post))
         if hasattr(file_info, 'file'):
@@ -409,6 +418,7 @@ class ModerationController(BaseController):
 
     @h.vardec
     @expose()
+    @require_post()
     def moderate(self, post=None,
                  approve=None,
                  spam=None,
@@ -434,6 +444,7 @@ class PostRestController(PostController):
 
     @h.vardec
     @expose()
+    @require_post()
     @validate(pass_validator, error_handler=h.json_validation_error)
     def reply(self, **kw):
         require(has_artifact_access('post', self.thread))
@@ -450,6 +461,7 @@ class ThreadRestController(ThreadController):
 
     @h.vardec
     @expose()
+    @require_post()
     @validate(pass_validator, error_handler=h.json_validation_error)
     def new(self, **kw):
         require(has_artifact_access('post', self.thread))

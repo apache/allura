@@ -209,6 +209,7 @@ class ProjectAdminController(BaseController):
         return app.admin, remainder
 
     @expose()
+    @require_post()
     @validate(validators=dict(
             name=UnicodeString(),
             short_description=UnicodeString(),
@@ -286,6 +287,7 @@ class ProjectAdminController(BaseController):
         redirect('homepage')
 
     @expose()
+    @require_post()
     def join_neighborhood(self, nid):
         require(has_project_access('update'), 'Update access required')
         if not nid:
@@ -304,6 +306,7 @@ class ProjectAdminController(BaseController):
 
     @h.vardec
     @expose()
+    @require_post()
     def update_mount_order(self, subs=None, tools=None, **kw):
         if subs:
             for sp in subs:
@@ -316,6 +319,7 @@ class ProjectAdminController(BaseController):
 
     @h.vardec
     @expose()
+    @require_post()
     def update_mounts(self, subproject=None, tool=None, new=None, **kw):
         if subproject is None: subproject = []
         if tool is None: tool = []
@@ -368,6 +372,7 @@ class ProjectAdminController(BaseController):
 
     @h.vardec
     @expose()
+    @require_post()
     def starter_mounts(self, **kw):
         require(has_project_access('tool'))
         for i, tool in enumerate(kw):
@@ -379,6 +384,7 @@ class ProjectAdminController(BaseController):
 
     @h.vardec
     @expose()
+    @require_post()
     def update_acl(self, permission=None, role=None, new=None, **kw):
         require(has_project_access('security'))
         if role is None: role = []
@@ -400,6 +406,7 @@ class ProjectAdminController(BaseController):
 
     @h.vardec
     @expose()
+    @require_post()
     def update_roles(self, role=None, new=None, **kw):
         require(has_project_access('security'))
         if role is None: role = []
@@ -422,6 +429,7 @@ class ProjectAdminController(BaseController):
 
     @h.vardec
     @expose()
+    @require_post()
     def update_user_roles(self, role=None, new=None, **kw):
         require(has_project_access('security'))
         if role is None: role = []
@@ -468,6 +476,7 @@ class PermissionsController(BaseController):
     @without_trailing_slash
     @expose()
     @h.vardec
+    @require_post()
     def update(self, card=None, **kw):
         for args in card:
             perm = args['id']
@@ -501,6 +510,7 @@ class GroupsController(BaseController):
 
     @without_trailing_slash
     @expose()
+    @require_post()
     @h.vardec
     def update(self, card=None, **kw):
         for pr in card:
@@ -537,6 +547,7 @@ class GroupsController(BaseController):
             action="create")
 
     @expose()
+    @require_post()
     @validate(W.new_group_settings)
     @h.vardec
     def create(self, name=None, **kw):
@@ -570,6 +581,7 @@ class GroupController(BaseController):
 
     @expose()
     @h.vardec
+    @require_post()
     @validate(W.group_settings)
     def update(self, _id=None, delete=None, name=None, **kw):
         pr = M.ProjectRole.by_name(name)

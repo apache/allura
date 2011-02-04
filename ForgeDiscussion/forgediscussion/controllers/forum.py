@@ -9,6 +9,7 @@ from webob import exc
 from allura.lib import helpers as h
 from allura import model as M
 from allura.lib.security import require, has_artifact_access
+from allura.lib.decorators import require_post
 from allura.controllers import DiscussionController, ThreadController, PostController, ModerationController
 from allura.lib.widgets import discuss as DW
 
@@ -96,6 +97,7 @@ class ForumThreadController(ThreadController):
 
     @h.vardec
     @expose()
+    @require_post()
     @validate(pass_validator, index)
     def moderate(self, **kw):
         require(has_artifact_access('moderate', self.thread))
@@ -123,6 +125,7 @@ class ForumPostController(PostController):
         return super(ForumPostController, self).index(**kw)
 
     @expose()
+    @require_post()
     @validate(pass_validator, error_handler=index)
     def moderate(self, **kw):
         require(has_artifact_access('moderate', self.post.thread))

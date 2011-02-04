@@ -11,7 +11,7 @@ from allura import version
 from allura.lib import helpers as h
 from allura import model as M
 from allura.lib import security
-from allura.lib.decorators import audit
+from allura.lib.decorators import audit, require_post
 from allura.app import Application, SitemapEntry, DefaultAdminController, ConfigOption
 
 log = logging.getLogger(__name__)
@@ -206,5 +206,6 @@ class RepoAdminController(DefaultAdminController):
 
     @without_trailing_slash
     @expose()
+    @require_post()
     def set_extensions(self, **post_data):
         self.repo.additional_viewable_extensions = post_data['additional_viewable_extensions']

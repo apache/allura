@@ -21,12 +21,12 @@ class TestAuth(TestController):
         r = self.app.get(r.location)
         assert 'class="error"' not in r
         r = self.app.get('/auth/logout')
-        r = self.app.get('/auth/do_login', params=dict(
+        r = self.app.post('/auth/do_login', params=dict(
                 username='test-user', password='foo'))
-        r = self.app.get('/auth/do_login', params=dict(
+        r = self.app.post('/auth/do_login', params=dict(
                 username='test-user', password='food'),
                          status=302)
-        r = self.app.get('/auth/do_login', params=dict(
+        r = self.app.post('/auth/do_login', params=dict(
                 username='test-usera', password='foo'),
                          status=302)
 

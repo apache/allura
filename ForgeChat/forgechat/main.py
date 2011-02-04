@@ -15,7 +15,7 @@ from formencode import validators
 from allura.app import Application, ConfigOption, SitemapEntry, DefaultAdminController
 from allura.lib import helpers as h
 from allura.lib.search import search
-from allura.lib.decorators import audit, react
+from allura.lib.decorators import audit, react, require_post
 from allura.lib.security import require, has_artifact_access
 from allura.model import ProjectRole
 from allura.controllers import BaseController
@@ -104,6 +104,7 @@ class AdminController(DefaultAdminController):
         redirect(c.project.url()+'admin/tools')
 
     @expose()
+    @require_post()
     def configure(self, channel=None):
         with h.push_config(c, app=self.app):
             require(has_artifact_access('configure', app=self.app),

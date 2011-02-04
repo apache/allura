@@ -221,11 +221,11 @@ class TestForum(TestController):
         assert 'Markdown Syntax' in r
 
     def test_forum_subscribe(self):
-        r = self.app.get('/discussion/subscribe', params={
+        r = self.app.post('/discussion/subscribe', params={
                 'forum-0.shortname':'TestForum',
                 'forum-0.subscribed':'on',
                 })
-        r = self.app.get('/discussion/subscribe', params={
+        r = self.app.post('/discussion/subscribe', params={
                 'forum-0.shortname':'TestForum',
                 'forum-0.subscribed':'',
                 })

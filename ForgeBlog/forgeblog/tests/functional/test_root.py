@@ -72,7 +72,7 @@ class TestRootController(TestController):
     def test_post_diff(self):
         self._post()
         self._post('/2010/08/my-post', text='sometext')
-        self.app.get('/blog/2010/08/my-post/revert?version=1')
+        self.app.post('/blog/2010/08/my-post/revert', params=dict(version='1'))
         response = self.app.get('/blog/2010/08/my-post/')
         response = self.app.get('/blog/2010/08/my-post/diff?v1=0&v2=0')
         assert 'My Post' in response
