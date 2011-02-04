@@ -886,7 +886,8 @@ class TicketController(BaseController):
                 log.info('Folding ticket updates into %s', post)
         tpl_fn = pkg_resources.resource_filename(
             'forgetracker', 'data/ticket_changed_tmpl')
-        change_text = h.render_genshi_plaintext(tpl_fn,
+        change_text = h.render_genshi_plaintext(
+            tpl_fn,
             changelist=changes.get_changed())
         if post is None:
             post = thread.add_post(text=change_text)

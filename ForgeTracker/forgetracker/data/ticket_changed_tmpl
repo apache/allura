@@ -1,7 +1,22 @@
+{% python from allura.lib import patience %}\
 {% for key, values in changelist %}\
 {% choose %}\
 {% when key == 'description' %}\
-  description has changed
+- Description has changed:
+
+Diff:
+
+~~~~
+
+${'\n'.join(patience.unified_diff(
+                            a=values[0].splitlines(),
+                            b=values[1].splitlines(),
+                            fromfile='old',
+                            tofile='new',
+                            lineterm=''))}
+
+~~~~
+
 {% end %}\
 {% otherwise %}\
 {% with oldv, newv = values %}\
