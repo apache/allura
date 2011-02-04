@@ -101,13 +101,21 @@ class GitImplementation(M.RepositoryImplementation):
         session(self._repo).flush()
 
     def commit(self, rev):
+        '''Return a Commit object.  rev can be object_id or a branch/tag name'''
         result = M.Commit.query.get(object_id=rev)
         if result is None:
+            # find the id by branch/tag name
             try:
                 impl = self._git.rev_parse(str(rev) + '^0')
                 result = M.Commit.query.get(object_id=impl.hexsha)
             except Exception, e:
-                log.exception(e)
+                url = ''
+                try:
+                    from tg import request
+                    url = ' at ' + request.url
+                except:
+                    pass
+                log.exception('Error with rev_parse(%s)%s' % (str(rev) + '^0', url))
         if result is None: return None
         result.set_context(self._repo)
         return result

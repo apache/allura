@@ -92,10 +92,14 @@ class RepositoryImplementation(object):
     def _setup_paths(self, create_repo_dir=True):
         if not self._repo.fs_path.endswith('/'): self._repo.fs_path += '/'
         fullname = os.path.join(self._repo.fs_path, self._repo.name)
+        path = fullname if create_repo_dir else self._repo.fs_path
         try:
-            os.makedirs(fullname if create_repo_dir else self._repo.fs_path)
+            os.makedirs(path)
         except OSError, e: # pragma no cover
-            if e.errno != errno.EEXIST: raise
+            if e.errno != errno.EEXIST:
+                raise
+            else:
+                log.warn('setup_paths error %s' % path, exc_info=True)
         return fullname
 
     def _setup_special_files(self):
@@ -740,7 +744,7 @@ class Tree(RepoObject):
                 obj = RepoObject.query.get(object_id=x.object_id)
                 obj.set_last_commit(ci, repo)
         return lc, isnew
-        
+
     @LazyProperty
     def object_id_index(self):
         return dict((x.name, x.object_id) for x in self.object_ids)
