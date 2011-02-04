@@ -31,6 +31,7 @@ from allura.lib import helpers as h
 
 from .session import main_orm_session, project_orm_session
 from .types import ArtifactReferenceType
+from .auth import User
 
 
 log = logging.getLogger(__name__)
@@ -62,8 +63,8 @@ class Notification(MappedClass):
             link=str,
             created=S.DateTime(if_missing=datetime.utcnow),
             unique_id=S.String(if_missing=lambda:h.nonce(40)),
-            author_name=S.String(if_missing=lambda:c.user.display_name),
-            author_link=S.String(if_missing=lambda:c.user.url())))
+            author_name=S.String(if_missing=lambda:c.user.display_name if hasattr(c, 'user') else None),
+            author_link=S.String(if_missing=lambda:c.user.url() if hasattr(c, 'user') else None)))
 
     @classmethod
     def post(cls, artifact, topic, **kw):
@@ -113,7 +114,7 @@ class Notification(MappedClass):
                 in_reply_to=post.parent_id)
         else:
             subject = kwargs.pop('subject', '%s modified by %s' % (
-                    idx['title_s'], c.user.display_name))
+                    idx['title_s'], c.user.display_name if hasattr(c, 'user') else '(unknown user)'))
             d = dict(
                 from_address='%s <%s>' % (
                     idx['title_s'], artifact.email_address),

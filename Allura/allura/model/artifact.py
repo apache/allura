@@ -230,8 +230,8 @@ class Feed(MappedClass):
     pubdate = FieldProperty(datetime, if_missing=datetime.utcnow)
     description = FieldProperty(str)
     unique_id = FieldProperty(str, if_missing=lambda:h.nonce(40))
-    author_name = FieldProperty(str, if_missing=lambda:c.user.display_name)
-    author_link = FieldProperty(str, if_missing=lambda:c.user.url())
+    author_name = FieldProperty(str, if_missing=lambda:c.user.display_name if hasattr(c, 'user') else None)
+    author_link = FieldProperty(str, if_missing=lambda:c.user.url() if hasattr(c, 'user') else None)
 
     @classmethod
     def post(cls, artifact, title=None, description=None):
@@ -418,7 +418,7 @@ class Artifact(MappedClass):
             l = self.acl.setdefault(at, [])
             if project_role_id not in l:
                 l.append(project_role_id)
-            
+
     def revoke_access(self, *access_types, **kw):
         user = kw.pop('user', c.user)
         project = kw.pop('project', c.project)
@@ -428,7 +428,7 @@ class Artifact(MappedClass):
             l = self.acl.setdefault(at, [])
             if project_role_id in l:
                 l.remove(project_role_id)
-            
+
     def index_id(self):
         id = '%s.%s#%s' % (
             self.__class__.__module__,
@@ -515,7 +515,7 @@ class Snapshot(Artifact):
 
     def original(self):
         raise NotImplemented, 'original' # pragma no cover
-            
+
     def shorthand_id(self):
         return '%s#%s' % (self.original().shorthand_id(), self.version)
 
@@ -755,4 +755,3 @@ class AwardGrant(Artifact):
             return self.award.short
         else:
             return None
-
