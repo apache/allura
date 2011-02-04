@@ -86,6 +86,16 @@ class TestFunctionalController(TestController):
         summary = 'test render markdown syntax'
         r = self.app.get('/bugs/markdown_syntax')
         assert_true('Markdown Syntax' in r)
+
+    def test_ticket_diffs(self):
+        self.new_ticket(summary='difftest', description='1\n2\n3\n')
+        self.app.post('/bugs/1/update_ticket',{
+            'summary':'difftest',
+            'description':'1\n3\n4\n',
+        })
+        r = self.app.get('/bugs/1/')
+        assert '<span class="gd">-2</span>' in r, r.showbrowser()
+        assert '<span class="gi">+4</span>' in r, r.showbrowser()
     
     def test_ticket_tag_untag(self):
         summary = 'test tagging and untagging a ticket'
