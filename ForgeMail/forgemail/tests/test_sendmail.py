@@ -53,7 +53,7 @@ class TestSendmail(unittest.TestCase):
             encode_email_part('Test message', 'text/plain'))
         assert self.mail._client.sendmail.called
         args, kwargs =  self.mail._client.sendmail.call_args
-        assert args[0] == 'test@example.com'
+        assert args[0] == 'noreply@sourceforge.net'
         assert '"Rick Copeland" <test@example.com>' in args[2]
 
     def test_user_unicode(self):
@@ -70,7 +70,7 @@ class TestSendmail(unittest.TestCase):
             encode_email_part('Test message', 'text/plain'))
         assert self.mail._client.sendmail.called
         args, kwargs =  self.mail._client.sendmail.call_args
-        assert args[0] == 'test@example.com'
+        assert args[0] == 'noreply@sourceforge.net'
         assert '=?utf-8?q?=22Rick_Cop=C3=A9land=22?= <test@example.com>' in args[2]
 
 class TestReactor(unittest.TestCase):
@@ -110,7 +110,7 @@ class TestReactor(unittest.TestCase):
                 'text':'Test message'})
         assert self.sendmail.called
         args, kwargs =  self.sendmail.call_args
-        assert args[0] == 'test@example.com'
+        assert args[0] == 'noreply@sourceforge.net'
         assert '"Rick Copeland" <test@example.com>' in args[2]
 
     def test_user_unicode(self):
@@ -127,5 +127,5 @@ class TestReactor(unittest.TestCase):
                 'text':'Test message'})
         assert self.sendmail.called
         args, kwargs =  self.sendmail.call_args
-        assert args[0] == 'test@example.com'
+        assert args[0] == 'noreply@sourceforge.net'
         assert '=?utf-8?q?=22Rick_Cop=C3=A9land=22?= <test@example.com>' in args[2]
