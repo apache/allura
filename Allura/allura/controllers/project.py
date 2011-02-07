@@ -1,6 +1,7 @@
 import os, re
 import logging
 from urllib import unquote, quote
+from itertools import chain
 
 import pkg_resources
 import Image
@@ -25,6 +26,7 @@ from allura.lib import utils
 from allura.lib.decorators import require_post
 from allura.controllers.error import ErrorController
 from allura.lib.security import require, has_project_access, has_neighborhood_access
+from allura.lib.security import RoleCache
 from allura.lib.widgets import form_fields as ffw
 from allura.lib.widgets import forms as forms
 from allura.lib.widgets import project_list as plw
@@ -299,14 +301,20 @@ class ProjectController(object):
     @expose('json:')
     def user_search(self,term=''):
         name_regex = re.compile('(?i)%s' % re.escape(term))
-        roles = g.credentials.project_roles(c.project.root_project._id)
-        users = M.User.query.find({
-                    '_id':{'$in':[role.user_id for role in roles]},
-                    'display_name':name_regex})
-        users = [dict(label='%s (%s)' % (u.display_name, u.username),
-                      value=u.username,
-                      id=u.username) for u in users.sort('username').all()]
-        return dict(users=users)
+        users = M.User.query.find(dict(
+                display_name=name_regex)).sort('username').all()
+        named_roles = RoleCache(
+            g.credentials,
+            g.credentials.project_roles(project_id=c.project.root_project._id).named)
+        result = [ [], [], [] ]
+        for u in users:
+            if u._id in named_roles.userids_that_reach: result[0].append(u)
+            else: result[1].append(u)
+        return dict(users=[
+                dict(label='%s (%s)' % (u.display_name, u.username),
+                     value=u.username,
+                     id=u.username)
+                for u in chain(*result)])
 
 class ScreenshotsController(object):
 
