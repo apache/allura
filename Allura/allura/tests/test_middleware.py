@@ -20,13 +20,13 @@ def test_make_app():
     conf = appconfig('config:%s#main' % get_config_file(), relative_to=config.here)
     make_app(conf.global_conf, **conf.local_conf)
 
-@patch('sf.phpsession.SFXSessionMgr.__new__')
-@patch('sfx.middleware.configure_databases')
-def test_all_middleware(__new__, configure_databases):
-    conf = appconfig('config:%s#main' % get_config_file(), relative_to=config.here)
-    conf.local_conf['auth.method'] = 'sfx'
-    conf.local_conf['stats.sample_rate'] = '0.25'
-    app = make_app(conf.global_conf, **conf.local_conf)
+#@patch('sf.phpsession.SFXSessionMgr.__new__')
+#@patch('sfx.middleware.configure_databases')
+#def test_all_middleware(__new__, configure_databases):
+#    conf = appconfig('config:%s#main' % get_config_file(), relative_to=config.here)
+#    conf.local_conf['auth.method'] = 'sfx'
+#    conf.local_conf['stats.sample_rate'] = '0.25'
+#    app = make_app(conf.global_conf, **conf.local_conf)
 
 def test_environ():
     d = {'foo': 'qwe', 'bar': 1234}
