@@ -511,7 +511,7 @@ class PageController(BaseController):
     @validate(dict(
             v1=validators.Int(),
             v2=validators.Int()))
-    def diff(self, v1, v2):
+    def diff(self, v1, v2, **kw):
         if not self.page:
             raise exc.HTTPNotFound
         require(has_artifact_access('read', self.page))
