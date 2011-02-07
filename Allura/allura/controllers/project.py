@@ -1,7 +1,7 @@
 import os, re
 import logging
 from urllib import unquote, quote
-from itertools import chain
+from itertools import chain, islice
 
 import pkg_resources
 import Image
@@ -306,15 +306,20 @@ class ProjectController(object):
         named_roles = RoleCache(
             g.credentials,
             g.credentials.project_roles(project_id=c.project.root_project._id).named)
-        result = [ [], [], [] ]
+        result = [ [], [] ]
         for u in users:
-            if u._id in named_roles.userids_that_reach: result[0].append(u)
-            else: result[1].append(u)
-        return dict(users=[
-                dict(label='%s (%s)' % (u.display_name, u.username),
-                     value=u.username,
-                     id=u.username)
-                for u in chain(*result)])
+            if u._id in named_roles.userids_that_reach:
+                result[0].append(u)
+            else:
+                result[1].append(u)
+        result = list(islice(chain(*result), 10))
+        return dict(
+            users=[
+                dict(
+                    label='%s (%s)' % (u.display_name, u.username),
+                    value=u.username,
+                    id=u.username)
+                for u in result])
 
 class ScreenshotsController(object):
 
