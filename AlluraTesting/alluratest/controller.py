@@ -2,6 +2,7 @@
 import os
 import urllib
 
+from formencode import variabledecode
 import mock
 import beaker.session
 from paste.deploy import loadapp
@@ -12,12 +13,13 @@ from webtest import TestApp
 from webob import Request, Response
 import ew
 from ming.orm import ThreadLocalORMSession
+import ming.orm
 
 from allura import model as M
 from allura.lib.app_globals import Globals
 from allura.lib.custom_middleware import environ as ENV, MagicalC
-
 from .validation import ValidatingTestApp
+
 
 DFL_APP_NAME = 'main_without_authn'
 
@@ -92,3 +94,30 @@ class TestController(object):
     def webflash(self, response):
         "Extract webflash content from response."
         return urllib.unquote(response.cookies_set.get('webflash', ''))
+
+
+class TestRestApiBase(TestController):
+
+    def setUp(self):
+        super(TestRestApiBase, self).setUp()
+        setup_global_objects()
+#        h.set_context('test', 'home')
+        user = M.User.query.get(username='test-admin')
+        self.token = M.ApiToken(user_id=user._id)
+        ming.orm.session(self.token).flush()
+
+    def api_post(self, path, api_key=None, api_timestamp=None, api_signature=None,
+                 **params):
+        params = variabledecode.variable_encode(params, add_repetitions=False)
+        if api_key: params['api_key'] = api_key
+        if api_timestamp: params['api_timestamp'] = api_timestamp
+        if api_signature: params['api_signature'] = api_signature
+        params = self.token.sign_request(path, params)
+        response = self.app.post(
+            str(path),
+            params=params,
+            status=[200, 302, 400, 403, 404])
+        if response.status_int == 302:
+            return response.follow()
+        else:
+            return response

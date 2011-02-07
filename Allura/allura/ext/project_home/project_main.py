@@ -43,6 +43,7 @@ class ProjectHomeApp(Application):
     def __init__(self, project, config):
         Application.__init__(self, project, config)
         self.root = ProjectHomeController()
+        self.api_root = RootRestController()
         self.templates = pkg_resources.resource_filename(
             'allura.ext.project_home', 'templates')
 
@@ -132,4 +133,14 @@ class ProjectHomeController(BaseController):
                     name=div['name'],
                     content=content))
         redirect('configuration')
-    
+
+
+class RootRestController(BaseController):
+
+    def _check_security(self):
+        require(has_project_access('read'),
+                'Read access required')
+
+    @expose('json:')
+    def index(self, **kwargs):
+        return dict(shortname=c.project.shortname)
