@@ -1,104 +1,144 @@
 import os
 import re
+import readline # changes raw_input to allow line editing (sorry, pyflakes)
 import shlex
 import string
 import subprocess
+import sys
 from collections import defaultdict
 from ConfigParser import ConfigParser
 from datetime import date
 from urlparse import urljoin
+from optparse import OptionParser
 
-from allura.config import middleware
 from allura.lib import rest_api
 
-DEBUG=1
+VERBOSE = 2
+DRY_RUN = False
 CP = ConfigParser()
 
 re_ticket_ref = re.compile(r'\[#(\d+)\]')
 re_allura_ref = re.compile(r'\nreference: ')
 re_git_dir = re.compile(r'.*\.git/?\Z')
+re_ws = re.compile(r'\s')
 
 CRED={}
 
 def main():
+    global DRY_RUN, VERBOSE
+    op = OptionParser()
+    op.add_option('--dry-run', action='store_true', dest='dry_run', default=False)
+    (options, args) = op.parse_args(sys.argv[1:])
+    if options.dry_run:
+        DRY_RUN = True
+        print("This is a dry-run: tags will be created locally but nothing will be pushed.")
+
     CP.read(os.path.join(os.environ['HOME'], '.forgepushrc'))
     engineer = option('re', 'engineer', 'Name of engineer pushing: ')
+    sf_identity = option('re', 'sf_identity', 'Your SourceForge.net user-name: ')
     api_key = option('re', 'api_key', 'Forge API Key:')
     secret_key = option('re', 'secret_key', 'Forge Secret Key:')
     classic_path = option('re', 'classic_path', 'The path to your forge-classic repo:')
     theme_path = option('re', 'theme_path', 'The path to your sftheme repo:')
     if not re_git_dir.match(classic_path):
         classic_path += '/.git/'
+    if not re_git_dir.match(theme_path):
+        theme_path += '/.git/'
     CRED['api_key'] = api_key
     CRED['secret_key'] = secret_key
-    text, tag = make_ticket_text(engineer, classic_path, theme_path)
-    raw_input("Verify that there are no new dependencies, or RPM's are built for all deps...")
-    raw_input("Verify that a new sandbox builds starts without engr help...")
-    print '*** Create a ticket on SourceForge (https://sourceforge.net/p/allura/tickets/new/) with the following contents:'
-    print '*** Summary: Production Push (R:%s, D:%s) - allura' % (
-        tag, date.today().strftime('%Y%m%d'))
-    print '---BEGIN---'
-    print text
-    print '---END---'
+
+    if ask_yes_or_no('Confirm each git command?', 'y'):
+        VERBOSE = 2
+    elif ask_yes_or_no('Echo each git command?', 'y'):
+        VERBOSE = 1
+    else:
+        VERBOSE = 0
+
+    if VERBOSE:
+        print("Making sure our existing tags are up-to-date...")
+    git('fetch origin --tags')
+    git('fetch origin --tags', git_dir=classic_path)
+    git('fetch origin --tags', git_dir=theme_path)
+    text, new_tag = make_ticket_text(engineer, classic_path, theme_path)
+    raw_input("Make sure you merged dev up into master for forge, forge_classic, and sftheme.")
+    raw_input("Make sure there are no new dependencies, or RPM's are built for all dependencies.")
+    raw_input("Make sure a new sandbox builds and starts without engr help.")
+    print('*** Create a ticket on SourceForge (https://sourceforge.net/p/allura/tickets/new/) with the following contents:')
+    print('*** Summary: Production Push (R:%s, D:%s) - allura' % (
+        new_tag, date.today().strftime('%Y%m%d')))
+    print('---BEGIN---')
+    print(text)
+    print('---END---')
     newforge_num = raw_input('What is the newforge ticket number? ')
-    print '*** Create a SOG Trac ticket (https://control.sog.geek.net/sog/trac/newticket?keywords=LIAISON) with the same summary...'
-    print '---BEGIN---'
+    print('*** Create a SOG Trac ticket (https://control.sog.geek.net/sog/trac/newticket?keywords=LIAISON) with the same summary...')
+    print('---BEGIN---')
     sog_text = re_ticket_ref.sub('FO:\g<1>', text)
-    print re_allura_ref.sub('\nreference: https://sourceforge.net/p/allura/tickets/%s/' % newforge_num, sog_text)
-    print '---END---'
-    raw_input('Now link the two tickets...')
-    print "Let's tag the forge repo:"
-    command('git', 'tag', '-a', '-m', '[#%s] - Push to RE' % newforge_num, tag, 'master')
-    command('git', 'push', 'origin', 'master', '--tags')
-    command('git', 'push', 'live', 'master', '--tags')
+    print(re_allura_ref.sub('\nreference: https://sourceforge.net/p/allura/tickets/%s/' % newforge_num, sog_text))
+    print('---END---')
+    sog_num = raw_input('What is the SOG ticket number? ')
+    raw_input('Now link the two tickets.')
+    if VERBOSE:
+        print("Ask for approval (copy/paste the following text into Jabber)")
+    raw_input('Allura %s push for your approval (https://control.sog.geek.net/sog/trac/ticket/%s).' % (new_tag, sog_num))
 
-    print "Let's make a matching tag in the forge-classic repo:"
-    command('git', '--git-dir=%s' % classic_path, 'tag', '-a', '-m', '[#%s] - Push to RE' % newforge_num, tag, 'master')
-    command('git', '--git-dir=%s' % classic_path, 'push', 'origin', 'master', '--tags')
-    command('git', '--git-dir=%s' % classic_path, 'push', 'live', 'master', '--tags')
+    if VERBOSE:
+        print("Tag and push the Allura repo for release...")
+    tag_message = '[#%s] - Push to RE' % newforge_num
+    git('tag', '-a', '-m', tag_message, new_tag, 'master')
+    git('push', 'origin', 'master', new_tag)
+    git('push', 'control.sog.geek.net:allura-live', 'master', new_tag)
+    if ask_yes_or_no('Do you want to push to the public repo, too?', 'n'):
+        git('push', 'ssh://%s@git.code.sf.net/p/allura/git.git' % sf_identity, 'master', new_tag, fail_ok=True)
 
-    print "...and in the sftheme repo:"
-    command('git', '--git-dir=%s' % theme_path, 'tag', '-a', '-m', '[#%s] - Push to RE' % newforge_num, tag, 'master')
-    command('git', '--git-dir=%s' % theme_path, 'push', 'origin', 'master', '--tags')
-    command('git', '--git-dir=%s' % theme_path, 'push', 'live', 'master', '--tags')
+    if VERBOSE:
+        print("Tag and push the forge-classic repo for release...")
+    git('tag', '-a', '-m', tag_message, new_tag, 'master', git_dir=classic_path)
+    git('push', 'origin', 'master', new_tag, git_dir=classic_path)
+    git('push', 'control.sog.geek.net:forge-classic-live', 'master', new_tag, git_dir=classic_path)
 
-    raw_input('Now go to the sog-engr channel and let them know that %s is ready'
-              ' for pushing (include the JIRA ticket #' % tag)
-    raw_input('Make sure SOG restarted reactors and web services.')
+    if VERBOSE:
+        print("Tag and push the sftheme repo for release...")
+    git('tag', '-a', '-m', tag_message, new_tag, 'master', git_dir=theme_path)
+    git('push', 'origin', 'master', new_tag, git_dir=theme_path)
+    git('push', 'control.sog.geek.net:sftheme-live', 'master', new_tag, git_dir=theme_path)
+
+    if VERBOSE:
+        print("Tell SOG we're ready (copy/paste the following text into Jabber)")
+    print('Allura %s is ready for pushing (https://control.sog.geek.net/sog/trac/ticket/%s).' % (new_tag, sog_num))
     CP.write(open(os.path.join(os.environ['HOME'], '.forgepushrc'), 'w'))
-    print "You're done!"
+    if VERBOSE:
+        print("That's all, folks!")
 
 def make_ticket_text(engineer, classic_path, theme_path):
     tag_prefix = date.today().strftime('release_%Y%m%d')
     # get release tag
-    existing_tags_today = command('git tag -l %s*' % tag_prefix)
+    existing_tags_today = git('tag -l %s*' % tag_prefix)
     if existing_tags_today:
-        tag = '%s.%.2d' % (tag_prefix, len(existing_tags_today))
+        new_tag = '%s.%.2d' % (tag_prefix, len(existing_tags_today))
     else:
-        tag = tag_prefix
-    last_release = command('git tag -l release_*')
-    if last_release: last_release = last_release[-1]
-    else: last_release = ''
-    changes = command(
-            'git', 'log', "--format=* %h %s", last_release.strip() + '..')
-    changes += command(
-            'git', '--git-dir=%s' % classic_path, 'log', "--format=* %h %s", last_release.strip() + '..')
-    changes += command(
-            'git', '--git-dir=%s' % theme_path, 'log', "--format=* %h %s", last_release.strip() + '..')
+        new_tag = tag_prefix
+    last_release = get_last_release_tag()
+    since_last_release = last_release + '..master'
+    format = '--format=* %h %s'
+    if VERBOSE:
+        print("Examining commits to build the list of fixed tickets...")
+    changes = git('log', format, since_last_release, strip_eol=False)
+    changes += git('log', format, since_last_release, git_dir=classic_path, strip_eol=False)
+    changes += git('log', format, since_last_release, git_dir=theme_path, strip_eol=False)
     if not changes:
-        print 'There were no commits found; maybe you forgot to merge dev->master? (Ctrl-C to abort)'
+        print('There were no commits found; maybe you forgot to merge dev->master? (Ctrl-C to abort)')
     changelog = ''.join(changes or [])
     changes = ''.join(format_changes(changes))
-    print 'Changelog:\n%s' % changelog
-    print 'Tickets:\n%s' % changes
+    print('Changelog:\n%s' % changelog)
+    print('Tickets:\n%s' % changes)
     prelaunch = []
     postlaunch = []
-    needs_flyway = raw_input('Does this release require a migration? [y]')
-    needs_ensure_index = raw_input('Does this release require ensure_index? [y]')
-    if needs_flyway[:1].lower() in ('', 'y', '1'):
+    needs_flyway = ask_yes_or_no('Does this release require a migration?', 'y')
+    needs_ensure_index = ask_yes_or_no('Does this release require ensure_index?', 'y')
+    if needs_flyway:
         prelaunch.append('* dump the database in case we need to roll back')
         postlaunch.append('* allurapaste flyway --url mongo://sfn-mongo:27017/')
-    if needs_ensure_index[:1].lower() in ('', 'y', '1'):
+    if needs_ensure_index:
         postlaunch.append('* allurapaste ensure_index /var/local/config/production.ini')
     if postlaunch:
         postlaunch = [ 'From sfu-scmprocess-1 do the following:\n' ] + postlaunch
@@ -110,7 +150,7 @@ def make_ticket_text(engineer, classic_path, theme_path):
         prelaunch = '\n'.join(prelaunch)
     else:
         prelaunch = '-none-'
-    return TICKET_TEMPLATE.substitute(locals()), tag
+    return TICKET_TEMPLATE.substitute(locals()), new_tag
 
 def format_changes(changes):
     if not changes:
@@ -133,25 +173,58 @@ def format_changes(changes):
                 'closed': 'Fix' }.get(ticket['status'], 'Address')
             yield ' * %s %s: %s\n' % (verb, ref, ticket['summary'])
     except:
-        print '*** ERROR CONTACTING FORGE FOR TICKET SUMMARIES ***'
+        print('*** ERROR CONTACTING FORGE FOR TICKET SUMMARIES ***')
         raise
         for ci in changes:
             yield ci
 
-def command(*args):
-    if len(args) == 1 and isinstance(args[0], basestring):
+def ask_yes_or_no(prompt, default):
+    result = raw_input('%s [%s] ' % (prompt, default)) or default
+    return result[:1].lower() in ('y', '1')
+
+def assemble_command(*args):
+    quoted = [ "'%s'" % arg if re_ws.search(arg) else arg for arg in args ]
+    return ' '.join(quoted)
+
+def git(*args, **kwargs):
+    if len(args)==1 and isinstance(args[0], basestring):
         argv = shlex.split(args[0])
     else:
         argv = list(args)
-    if DEBUG:
-        print ' '.join(argv)
-        raw_input('Press enter to run this command...')
+    if argv[0] != 'git':
+        argv.insert(0, 'git')
+    if DRY_RUN and argv[1]=='push':
+        argv.insert(2, '--dry-run')
+    if 'git_dir' in kwargs:
+        argv.insert(1, '--git-dir=%s' % kwargs['git_dir'])
+    full_command = assemble_command(*argv)
+    if VERBOSE==2:
+        raw_input(full_command)
+    elif VERBOSE==1:
+        print(full_command)
     p = subprocess.Popen(argv, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
     rc = p.wait()
-    if rc != 0:
-        print 'Error running %s' % ' '.join(argv)
-        import pdb; pdb.set_trace()
-    return p.stdout.readlines()
+    output = p.stdout.readlines()
+    if kwargs.get('strip_eol', True):
+        output = [ line[:-1] for line in output ]
+    if rc:
+        print('Error: %s' % full_command)
+        for line in output: print(line.rstrip())
+        if not kwargs.get('fail_ok', False):
+            import pdb; pdb.set_trace()
+    return output
+
+def get_last_release_tag():
+    has_clear_history = getattr(readline, 'clear_history')
+    if has_clear_history:
+        readline.clear_history()
+    for tag in git('tag -l release_*'):
+        readline.add_history(tag)
+    default = tag or ''
+    result = raw_input('Last successful push? [%s] ' % default) or default
+    if has_clear_history:
+        readline.clear_history()
+    return result
 
 def option(section, key, prompt=None):
     if not CP.has_section(section):
@@ -169,7 +242,7 @@ TICKET_TEMPLATE=string.Template('''{{{
 (engr) Name of Engineer pushing: $engineer
 (engr) Which code tree(s): allura, forge-classic, sftheme
 (engr) Is configtree to be pushed?: no
-(engr) Which release/revision is going to be synced?: $tag
+(engr) Which release/revision is going to be synced?: $new_tag
 (engr) Itemized list of changes to be launched with sync:
 
 $changes
