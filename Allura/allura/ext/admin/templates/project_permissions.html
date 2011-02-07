@@ -41,17 +41,15 @@ var $popup_title = $('#popup_title');
 var $popup_contents = $('#popup_contents');
 $('a.admin_modal').click(function(){
   var link = this;
-  console.debug($(link).html())
   $popup_title.html('');
   $popup_contents.html('Loading...');
   $.get(link.href, function (data) {
-    console.debug(data)
     $popup_title.html($(link).html());
     $popup_contents.html(data);
     $popup_contents.find('form').append(csrf_input);
   });
 });
 $('#sortable').sortable({items: ".fleft"});
-})();
+}());
 </script>
 {% endblock %}

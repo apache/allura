@@ -14,7 +14,7 @@
     <form method="POST" action="update_homepage" enctype="multipart/form-data">
         <label class="grid-19" for="homepage_title">Title: </label>
         <div class="grid-19">
-          <input name="homepage_title" id="homepage_title" style="width: 95%" value="{{c.project.homepage_title}}">
+          <input name="homepage_title" id="homepage_title" style="width: 95%" value="{{c.project.homepage_title}}" type="text">
         </div>
         <div class="grid-19">
           {{c.markdown_editor.display(name='description', value=c.project.description)}}
@@ -26,7 +26,7 @@
 {% endblock %}
 
 {% block extra_js %}
-  <script type="text/javascript" src="{{g.forge_static('js/jquery.maxlength-min.js')}}"/>
+  <script type="text/javascript" src="{{g.forge_static('js/jquery.maxlength-min.js')}}"></script>
   <script type="text/javascript">
     $(document).ready(function(){
       $('#short_description_textarea').maxlength({maxCharacters: 250});

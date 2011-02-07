@@ -48,10 +48,10 @@ width: 148px;
             newitem.clone().insertBefore(adder.closest('li'));
         });
     });
-})''')
+});''')
 
 class GroupCard(CardField):
-    new_item=ew.InputField(attrs=dict(placeholder='type a username'))
+    new_item=ew.InputField(field_type='text', attrs=dict(placeholder='type a username'))
 
     def item_display(self, user):
         return user.username

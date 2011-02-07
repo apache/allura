@@ -288,17 +288,17 @@ class TestProjectAdmin(TestController):
         users = [t.previous.strip() for t in r.html.findAll('input', {'name': 'card-1.value'})]
         assert 'test-user' in users
         # Make sure we can open role page for builtin role
-        r = self.app.get('/admin/groups/' + developer_id + '/')
+        r = self.app.get('/admin/groups/' + developer_id + '/', validate_chunk=True)
 
     def test_new_group(self):
-        r = self.app.get('/admin/groups/new')
+        r = self.app.get('/admin/groups/new', validate_chunk=True)
         r = self.app.post('/admin/groups/create', params={'name': 'Developer'})
         assert 'error' in self.webflash(r)
         r = self.app.post('/admin/groups/create', params={'name': 'RoleNew1'})
         r = self.app.get('/admin/groups/')
         assert 'RoleNew1' in r
         role_id = r.html.find(text='RoleNew1').findPrevious('input', {'type': 'hidden'})['value']
-        r = self.app.get('/admin/groups/' + role_id + '/')
+        r = self.app.get('/admin/groups/' + role_id + '/', validate_chunk=True)
 
         r = self.app.post('/admin/groups/' + str(role_id) + '/update', params={'_id': role_id, 'name': 'Developer'})
         assert 'error' in self.webflash(r)

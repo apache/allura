@@ -54,7 +54,7 @@
   {% if label %}
     <label for="{{name}}">{{label}}</label><br/>
   {% endif %}
-  <input type="radio" id="{{name}}" name="{{name}}" class="text" value="{{option}}"
+  <input type="radio" name="{{name}}" class="text" value="{{option}}"
            {% if option == value %}checked="on"{% endif %}/><br/>
 {% endmacro %}
 

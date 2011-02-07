@@ -1,5 +1,5 @@
 <form method="{{method}}"
-      enctype="{{enctype or ''}}"
+       {% if enctype %}enctype="{{enctype}}"{% endif %}
       action="{{action}}">
   {% for field in widget.fields %}
     {% set ctx=widget.context_for(field) %}
@@ -8,7 +8,7 @@
       <span {{widget.j2_attrs({'class':error_class})}}>{{ctx.errors}}<br>
       {%- endif %}
       {% if field.show_label and field.label %}
-      <label for="{{field.name}}" class="grid-13">{{field.label}}:</label>
+      <label for="{{ctx.id}}" class="grid-13">{{field.label}}:</label>
       {% endif %}
       <div class="grid-13">{{field.display(**ctx)}}</div>
     {% else %}
