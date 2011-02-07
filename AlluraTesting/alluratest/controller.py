@@ -107,7 +107,9 @@ class TestRestApiBase(TestController):
         ming.orm.session(self.token).flush()
 
     def api_post(self, path, api_key=None, api_timestamp=None, api_signature=None,
-                 **params):
+                 wrap_args=None, **params):
+        if wrap_args:
+            params = {wrap_args: params}
         params = variabledecode.variable_encode(params, add_repetitions=False)
         if api_key: params['api_key'] = api_key
         if api_timestamp: params['api_timestamp'] = api_timestamp
