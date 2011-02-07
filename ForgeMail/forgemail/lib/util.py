@@ -19,6 +19,8 @@ log = logging.getLogger(__name__)
 
 RE_MESSAGE_ID = re.compile(r'<(.*)>')
 COMMON_SUFFIX = tg.config.get('forgemail.domain', '.sourceforge.net')
+RETURN_PATH = tg.config.get('forgemail.return_path', 'noreply@sourceforge.net')
+
 
 def Header(text, charset):
     '''Helper to make sure we don't over-encode headers
@@ -139,13 +141,13 @@ class SMTPClient(object):
         content = message.as_string()
         try:
             self._client.sendmail(
-                _parse_smtp_addr(addrfrom),
+                RETURN_PATH,
                 map(_parse_smtp_addr, addrs),
                 content)
         except:
             self._connect()
             self._client.sendmail(
-                _parse_smtp_addr(addrfrom),
+                RETURN_PATH,
                 map(_parse_smtp_addr, addrs),
                 content)
 
