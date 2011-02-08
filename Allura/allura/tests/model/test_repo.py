@@ -1,17 +1,18 @@
+import os
 import unittest
 from itertools import count
 from datetime import timedelta, datetime
 
-
 import mock
 from pylons import g, c
-
+import tg
 import ming
 from ming.orm import session, state, ThreadLocalORMSession
 
 from alluratest.controller import setup_basic_test, setup_global_objects
 from allura import model as M
 from allura.lib import helpers as h
+
 
 class _Test(unittest.TestCase):
     idgen = ( 'obj_%d' % i for i in count())
@@ -33,6 +34,7 @@ class _Test(unittest.TestCase):
         setup_global_objects()
         ThreadLocalORMSession.flush_all()
         ThreadLocalORMSession.close_all()
+        self.prefix = tg.config.get('scm.repos.root', '/')
 
 class _TestWithRepo(_Test):
     def setUp(self):
@@ -69,9 +71,9 @@ class _TestWithRepoAndCommit(_TestWithRepo):
 class TestRepo(_TestWithRepo):
 
     def test_create(self):
-        assert self.repo.fs_path == '/svn/p/test/'
+        assert self.repo.fs_path == os.path.join(self.prefix, 'svn/p/test/')
         assert self.repo.url_path == '/p/test/'
-        assert self.repo.full_fs_path == '/svn/p/test/test1'
+        assert self.repo.full_fs_path == os.path.join(self.prefix, 'svn/p/test/test1')
 
     def test_passthrough(self):
         argless = ['init']

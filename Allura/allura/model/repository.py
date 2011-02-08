@@ -132,7 +132,8 @@ class Repository(Artifact):
     def __init__(self, **kw):
         if 'name' in kw and 'tool' in kw:
             if 'fs_path' not in kw:
-                kw['fs_path'] = '/' + os.path.join(
+                repos_root = tg.config.get('scm.repos.root', '/')
+                kw['fs_path'] = os.path.join(repos_root,
                     kw['tool'],
                     pylons.c.project.url()[1:])
             if 'url_path' not in kw:
