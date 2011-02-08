@@ -79,6 +79,9 @@ class Config(object):
         return enabled
 
     def fail_on_validation(self, val_type):
+        env_var = os.getenv('ALLURA_VALIDATION')
+        if env_var == 'all':
+            return True
         if self.hostname == COMPLETE_TESTS_HOST:
             return True
         return ENABLE_CONTENT_VALIDATION
