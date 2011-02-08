@@ -121,8 +121,8 @@ class ForgeTrackerApp(Application):
         admin_url = c.project.url()+'admin/'+self.config.options.mount_point+'/'
         links = [SitemapEntry('Field Management', admin_url + 'fields'),
                  SitemapEntry('Edit Searches', admin_url + 'bins/')]
-        # if self.permissions and has_artifact_access('configure', app=self)():
-        #     links.append(SitemapEntry('Permissions', admin_url + 'permissions', className='nav_child'))
+        if self.permissions and has_artifact_access('configure', app=self)():
+            links.append(SitemapEntry('Permissions', admin_url + 'permissions', className='nav_child'))
         return links
 
     def sidebar_menu(self):
@@ -941,13 +941,6 @@ class TrackerAdminController(DefaultAdminController):
         else:
             c.form = W.field_display
         return dict(app=self.app, globals=self.app.globals)
-
-
-    @without_trailing_slash
-    @expose('jinja:tracker/admin_permissions.html')
-    def permissions(self):
-        return dict(app=self.app, globals=self.app.globals,
-                    allow_config=has_artifact_access('configure', app=self.app)())
 
     @expose()
     def update_tickets(self, **post_data):

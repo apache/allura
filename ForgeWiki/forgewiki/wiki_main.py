@@ -149,6 +149,8 @@ class ForgeWikiApp(Application):
         admin_url = c.project.url()+'admin/'+self.config.options.mount_point+'/'
         links = [SitemapEntry('Set Home', admin_url + 'home', className='admin_modal'),
                  SitemapEntry('Options', admin_url + 'options', className='admin_modal')]
+        if self.permissions and has_artifact_access('configure', app=self)():
+            links.append(SitemapEntry('Permissions', admin_url + 'permissions', className='nav_child'))
         return links
 
     def sidebar_menu(self):

@@ -62,9 +62,13 @@ class GroupCard(CardField):
 class _GroupSelect(ew.SingleSelectField):
 
     def options(self):
+        auth_role = M.ProjectRole.authenticated()
+        anon_role = M.ProjectRole.anonymous()
         options = [
             ew.Option(py_value=role._id, label=role.name)
             for role in c.project.named_roles ]
+        options.append(ew.Option(py_value=auth_role._id, label=auth_role.name))
+        options.append(ew.Option(py_value=anon_role._id, label=anon_role.name))
         return options
 
 class PermissionCard(CardField):

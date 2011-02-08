@@ -469,7 +469,6 @@ class PermissionsController(BaseController):
     @with_trailing_slash
     @expose('jinja:project_permissions.html')
     def index(self, **kw):
-        c.admin_modal = W.admin_modal
         c.card = W.permission_card
         return dict(permissions=c.project.acl)
 

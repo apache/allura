@@ -95,11 +95,9 @@ class ForgeBlogApp(Application):
 
     def admin_menu(self):
         admin_url = c.project.url()+'admin/'+self.config.options.mount_point+'/'
-        links = [
-            SitemapEntry('Permissions',
-                         admin_url + 'permissions/',
-                         className='nav_child'),
-            ]
+        links = []
+        if self.permissions and has_artifact_access('configure', app=self)():
+            links.append(SitemapEntry('Permissions', admin_url + 'permissions', className='nav_child'))
         return links
 
     def install(self, project):

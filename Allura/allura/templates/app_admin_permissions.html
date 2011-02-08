@@ -1,82 +1,36 @@
 {% extends g.theme.master %}
-                        
-{% block extra_css %}
-    <link rel="stylesheet" type="text/css" media="screen" href="{{g.forge_static('css/forge/accordion.css')}}" />
-{% endblock %}
+
+{% do g.register_forge_css('css/forge/deck.css') %}
           
 {% block title %}{{c.project.name}} / {{app.config.options.mount_label}} / Permissions{% endblock %}
 
 {% block header %}{{app.config.options.mount_point}} Permissions{% endblock %}
   
 {% block content %}
-          {% if not (app.permissions and allow_config) %}
-            You are not allowed to edit permissions for {{app.config.options.mount_point}}.
-          {% else %}
-            <div id="acl-admin">
-              {% for p in app.permissions %}
-                <h3><a href="#" id="permission_{{p}}">{{p}}</a></h3>
-                <div>
-                  <table>
-                    <thead>
-                      <tr>
-                        <th>Role</th>
-                        <th></th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {% for role in h.make_roles(app.config.acl.get(p, [])) %}
-                      <tr>
-                        <td>{{role.display()}}</td>
-                        <td>
-                          <form method="POST" action="del_perm" style="display:inline">
-                            <input type="hidden" name="permission" value="{{p}}"/>
-                            <input type="hidden" name="role" value="{{role._id}}"/>
-                          {% if role.display() != '*user-'+c.user.username %}
-                            <input type="submit" value="Remove" />
-                          {% endif %}
-                          </form>
-                        </td>
-                      </tr>
-                      {% endfor %}
-                    </tbody>
-                  </table>
-                  <form method="POST" action="add_perm">
-                    <input type="hidden" name="permission" value="{{p}}"/>
-                    <select name="role">
-                      {% for role in c.project.named_roles %}
-                        <option value="{{role._id}}">{{role.display()}}</option>
-                      {% endfor %}
-                    </select>
-                    <input type="submit" value="Add role"/>
-                  </form>
-                </div>
-              {% endfor %}
-            </div>
-          {%endif%}
-{% endblock %}
-
-{% block extra_js %}
-  <script type="text/javascript">
-    $(function () {
-      $("#acl-admin").accordion({
-        autoHeight: false,
-        navigation: true,
-        change: function (event, ui) {
-          var hid = ui.newHeader.children('a').attr('id');
-          if (hid === undefined) {
-            $.cookie('app-acl-admin', null);
-          } else {
-            $.cookie('app-acl-admin', hid, { path: '/', expires: 2 });
-          }
-        }
-      });
-    });
-    $(document).ready(function () {
-      if($.cookie('app-acl-admin')) {
-      $('#acl-admin').accordion('option', 'animated', false)
-                     .accordion('activate', $('#' + $.cookie('app-acl-admin')).parent('h3'))
-                     .accordion('option', 'animated', 'slide');
-      }
-    });
-</script>
+  {% if not (app.permissions and allow_config) %}
+    You are not allowed to edit permissions for {{app.config.options.mount_point}}.
+  {% else %}
+    <form method="POST" action="update">
+      {% for row in app.config.acl|dictsort|batch(4) %}
+      {% set i0=loop.index0  %}
+      <div class="fourcol">
+        {% for name, ids in row %}
+        {% set i1 = i0*4 + loop.index0 %}
+        {{c.card.display(
+            index=i1,
+            id=name,
+            name=name,
+            items=h.make_roles(ids)
+        )}}
+        {% endfor %}
+        <br style="clear:both"/>
+      </div>
+      {% endfor %}
+      <hr/>
+      <p class="clearfix">
+        <input type="submit" value="Save">
+        <a href="{{c.app.url}}" class="btn link cancel">Cancel</a>
+      </p>
+    </form>
+  {%endif%}
 {% endblock %}

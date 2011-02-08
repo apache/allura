@@ -9,7 +9,7 @@ from bson import ObjectId
 
 from ming.orm import session
 
-from allura.lib.helpers import push_config
+from allura.lib.helpers import push_config, vardec
 from allura.lib.security import require, has_artifact_access
 from allura import model
 from allura.controllers import BaseController
@@ -212,8 +212,8 @@ class Application(object):
     def admin_menu(self):
         admin_url = c.project.url()+'admin/'+self.config.options.mount_point+'/'
         links = []
-        # if self.permissions and has_artifact_access('configure', app=self)():
-        #     links.append(SitemapEntry('Permissions', admin_url + 'permissions', className='nav_child'))
+        if self.permissions and has_artifact_access('configure', app=self)():
+            links.append(SitemapEntry('Permissions', admin_url + 'permissions', className='nav_child'))
         if len(self.config_options) > 3:
             links.append(SitemapEntry('Options', admin_url + 'options', className='admin_modal'))
         return links
@@ -271,6 +271,8 @@ class DefaultAdminController(BaseController):
     @expose('jinja:app_admin_permissions.html')
     @without_trailing_slash
     def permissions(self):
+        from ext.admin.widgets import PermissionCard
+        c.card = W.PermissionCard()
         return dict(app=self.app,
                     allow_config=has_artifact_access('configure', app=self.app)())
 
@@ -304,12 +306,25 @@ class DefaultAdminController(BaseController):
             else:
                 redirect('../' + self.app.config.options.mount_point + '/')
 
+    @without_trailing_slash
     @expose()
+    @vardec
     @require_post()
-    def add_perm(self, permission=None, role=None):
-        require(has_artifact_access('configure', app=self.app))
-        self.app.config.acl.setdefault(permission, []).append(ObjectId(role))
-        redirect('permissions')
+    def update(self, card=None, **kw):
+        for args in card:
+            perm = args['id']
+            new_group_ids = args.get('new', [])
+            group_ids = args.get('value', [])
+            if isinstance(new_group_ids, basestring):
+                new_group_ids = [ new_group_ids ]
+            if isinstance(group_ids, basestring):
+                group_ids = [ group_ids ]
+            role_ids = map(ObjectId, group_ids + new_group_ids)
+            roles = model.ProjectRole.query.find(dict(
+                _id={'$in':role_ids},
+                project_id=c.project._id))
+            self.app.config.acl[perm] = [ r._id for r in roles ]
+        redirect('.')
 
     @expose()
     @require_post()
