@@ -8,7 +8,7 @@
 {% block content %}
   <form method="GET" action="." class="grid-11">
     <input type="text" name="q" value="{{q}}" class="title"/><br/>
-    Search history? <input type="checkbox" name="history" {% if history %}checked="on"{% endif %}/><br/>
+    Search history? <input type="checkbox" name="history" {% if history %}checked{% endif %}/><br/>
     &nbsp;<br/>
     <input type="submit" value="Search"/>
   </form>
