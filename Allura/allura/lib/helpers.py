@@ -281,7 +281,7 @@ class DateTimeConverter(FancyValidator):
         return value.isoformat()
 
 def absurl(url):
-    from tg import request
+    if url is None: return None
     if '://' in url: return url
     return request.scheme + '://' + request.host + url
 
