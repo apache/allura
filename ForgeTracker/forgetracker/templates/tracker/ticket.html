@@ -138,11 +138,14 @@
           var ticket_content = $('#ticket_content');
           var title_holder = $('h2.dark');
           var original_title = title_holder.text();
+          var title_actions = title_holder.find('small');
           $('a.edit_ticket, div.view_holder, #ticket_content').click(function () {
             form_holder.show();
             view_holder.hide();
             discussion_holder.hide();
             ticket_content.hide();
+            title_actions.hide();
+            title_actions.appendTo(document.body);
             title_holder.text('\u00A0');
             $('a.edit_ticket').addClass('btn_activate');
             $('textarea[name="ticket_form.description"]').focus();
@@ -154,6 +157,8 @@
             discussion_holder.show();
             ticket_content.show();
             title_holder.text(original_title);
+            title_actions.appendTo(title_holder);
+            title_actions.show();
             $('a.edit_ticket').removeClass('btn_activate');
             return false;
           });
