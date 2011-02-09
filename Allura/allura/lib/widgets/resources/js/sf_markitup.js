@@ -11,10 +11,12 @@ $(window).load(function() {
             var $help_area = $('div.markdown_help', $container);
             $preview.click(function(evt){
                 evt.preventDefault();
+                var cval = $.cookie('_session_id');
                 $.post('/nf/markdown_to_html', {
                     markdown:$textarea.val(),
                     project:$('input.markdown_project', $container).val(),
-                    app:$('input.markdown_app', $container).val()
+                    app:$('input.markdown_app', $container).val(),
+                    _session_id:cval
                 },
                 function(resp){
                     $preview_area.html(resp);
