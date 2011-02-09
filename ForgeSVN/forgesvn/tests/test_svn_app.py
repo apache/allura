@@ -21,7 +21,7 @@ class TestSVNApp(unittest.TestCase):
         ThreadLocalORMSession.close_all()
 
     def test_admin_menu(self):
-        assert len(c.app.admin_menu()) == 1
+        assert len(c.app.admin_menu()) == 2
         assert c.app.admin_menu()[0].label == 'Viewable Files'
 
     def test_uninstall(self):

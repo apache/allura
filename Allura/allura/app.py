@@ -272,7 +272,7 @@ class DefaultAdminController(BaseController):
     @without_trailing_slash
     def permissions(self):
         from ext.admin.widgets import PermissionCard
-        c.card = W.PermissionCard()
+        c.card = PermissionCard()
         return dict(app=self.app,
                     allow_config=has_artifact_access('configure', app=self.app)())
 

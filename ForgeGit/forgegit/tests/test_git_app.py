@@ -17,7 +17,7 @@ class TestGitApp(unittest.TestCase):
         ThreadLocalORMSession.close_all()
 
     def test_admin_menu(self):
-        assert len(c.app.admin_menu()) == 1
+        assert len(c.app.admin_menu()) == 2
 
     def test_uninstall(self):
         c.app.uninstall(c.project)
