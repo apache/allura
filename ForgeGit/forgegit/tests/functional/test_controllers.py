@@ -45,7 +45,6 @@ class TestRootController(TestController):
         assert 'Rick' in resp, resp.showbrowser()
 
     def test_feed(self):
-        ci = self._get_ci()
         assert 'Add README' in self.app.get('/feed')
 
     def test_tree(self):

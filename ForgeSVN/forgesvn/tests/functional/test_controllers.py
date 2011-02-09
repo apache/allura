@@ -27,6 +27,9 @@ class TestRootController(TestController):
         assert 'svn checkout' in resp
         assert '[r4]' in resp
 
+    def test_feed(self):
+        assert 'Remove hello.txt' in self.app.get('/src/feed')
+
     def test_commit(self):
         resp = self.app.get('/src/3/tree/')
         assert len(resp.html.findAll('tr')) == 3, resp.showbrowser()
