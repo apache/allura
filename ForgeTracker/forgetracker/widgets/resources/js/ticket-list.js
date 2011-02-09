@@ -1,6 +1,4 @@
 (function(){
-    var max_page=Math.max(0, Math.floor((count+limit-1)/limit)-1);
-
     function requery(){
         window.location = '?q=' + q +
                           '&limit=' + limit +
@@ -31,5 +29,11 @@
             });
         }
     }).disableSelection();
+    $("table.ticket-list").delegate("tr", "click", function(){
+        var link = $(this).find('td a').attr('href');
+        if(link){
+            location.href = link;
+        }
+    });
 
 })();
