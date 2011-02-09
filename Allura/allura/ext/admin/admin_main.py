@@ -490,6 +490,7 @@ class PermissionsController(BaseController):
                 _id={'$in':role_ids},
                 project_id=c.project._id))
             c.project.acl[perm] = [ r._id for r in roles ]
+        g.publish('react', 'forge.project_updated')
         redirect('.')
 
 class GroupsController(BaseController):
@@ -534,6 +535,7 @@ class GroupsController(BaseController):
                 dict(user_id={'$ne':None}, roles=group._id)):
                 if role.user_id not in user_ids:
                     role.roles.remove(group._id)
+        g.publish('react', 'forge.project_updated')
         redirect('.')
 
     @without_trailing_slash
@@ -554,6 +556,7 @@ class GroupsController(BaseController):
             flash('%s already exists' % name, 'error')
         else:
             M.ProjectRole(project_id=c.project._id, name=name)
+        g.publish('react', 'forge.project_updated')
         redirect('.')
 
     @expose()
