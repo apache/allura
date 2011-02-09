@@ -227,6 +227,7 @@ class User(MappedClass):
     class __mongometa__:
         name='user'
         session = main_orm_session
+        indexes = [ 'tool_data.sfx.userid' ]
         unique_indexes = [ 'username' ]
 
     _id=FieldProperty(S.ObjectId)
