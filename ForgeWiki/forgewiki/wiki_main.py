@@ -262,7 +262,7 @@ class RootController(BaseController):
     @validate(dict(q=validators.UnicodeString(if_empty=None),
                    history=validators.StringBool(if_empty=False),
                    project=validators.StringBool(if_empty=False)))
-    def search(self, q=None, history=None, project=None):
+    def search(self, q=None, history=None, project=None, **kw):
         'local wiki search'
         if project:
             redirect(c.project.url() + 'search?' + urlencode(dict(q=q, history=history)))

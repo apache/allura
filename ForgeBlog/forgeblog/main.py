@@ -147,7 +147,7 @@ class RootController(BaseController):
     @expose('jinja:blog/search.html')
     @validate(dict(q=validators.UnicodeString(if_empty=None),
                    history=validators.StringBool(if_empty=False)))
-    def search(self, q=None, history=None):
+    def search(self, q=None, history=None, **kw):
         'local tool search'
         results = []
         count=0
