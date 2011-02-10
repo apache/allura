@@ -11,17 +11,9 @@
 
 {% block header %}Saved Search Bins{% endblock %}
 
-{% block edit_box %}
-  <div class="editbox" style="display:none">
-    {{c.bin_form.display(
-      value=dict(),
-      action=c.project.url()+'admin/'+app.config.options.mount_point+'/bins/save_bin'
-    )}}
-  </div>
-{% endblock %}
-
 {% block content %}
   {% if bins.__len__() %}
+  <form action="{{c.project.url()}}admin/{{app.config.options.mount_point}}/bins/update_bins" method="post" class="update_bins">
     <table>
       <thead>
         <tr>
@@ -33,19 +25,38 @@
       <tbody class="bin-list">
         {% for bin in bins %}
           <tr{% if loop.index0 % 2 == 0 %} class="even"{% endif %}>
-            <td><a href="{{bin.url()}}">{{bin.summary}}</a></td>
-            <td>{{bin.terms}}</td>
-            <td>
-              <a href="delbin?bin={{bin._id | string}}" class="btn">Delete</a>
-              <a href="#" class="btn bin_edit_activate">Edit</a>
-              <input type="hidden" name="id" value="{{bin._id | string}}">
-              <input type="hidden" name="summary" value="{{bin.summary}}">
-              <input type="hidden" name="terms" value="{{bin.terms}}">
+            <td class="view"><a href="{{bin.url()}}">{{bin.summary}}</a></td>
+            <td class="view">{{bin.terms}}</td>
+            <td class="edit" style="display:none"><input type="text" name="bins-{{loop.index0}}.summary" value="{{bin.summary}}"></td>
+            <td class="edit" style="display:none"><input type="text" name="bins-{{loop.index0}}.terms" value="{{bin.terms}}"></td>
+            <td style="width:40px;">
+              <a href="#" title="Delete" class="del_bin"><b data-icon="{{g.icons['delete'].char}}" class="ico {{g.icons['delete'].css}}"></b></a>
+              <a href="#" title="Edit" class="edit_bin"><b data-icon="{{g.icons['pencil'].char}}" class="ico {{g.icons['pencil'].css}}"></b></a>
+              <input type="hidden" name="bins-{{loop.index0}}.id" value="{{bin._id | string}}">
+              <input type="hidden" name="bins-{{loop.index0}}.delete" value="False" class="delete_flag">
             </td>
           </tr>
         {% endfor %}
+        {% set num_bins = bins.__len__() %}
+        <tr class="new_bin" style="display:none">
+          <td>
+            <input type="hidden" name="bins-{{num_bins}}.id">
+            <input type="hidden" name="bins-{{loop.index0}}.delete" value="False" class="delete_flag">
+            <input type="text" name="bins-{{num_bins}}.summary" placeholder="Summary">
+          </td>
+          <td>
+            <input type="text" name="bins-{{num_bins}}.terms" placeholder="Terms">
+          </td>
+          <td>&nbsp;</td>
+        </tr>
       </tbody>
     </table>
+    <div class="grid-16"><a href="#" class="btn add_bin grid-3">Add Bin</a></div>
+    <div class="grid-16 save_controls" style="display:none">
+      <input type="submit" value="Save">
+      <a href="#" class="btn link cancel_edit">Cancel</a>
+    </div>
+  </form>
   {% else %}
     No saved search bins have been created yet.
   {% endif %}
@@ -53,21 +64,43 @@
 
 {% block extra_js %}
   <script type="text/javascript">
-    var form_holder = $('div.editbox');
-    $('a.bin_edit_activate').click(function(){
-      form_holder.show();
-      var editable_holder = $(this).closest('td');
-      var id = editable_holder.find('input[name=id]').val();
-      var summary = editable_holder.find('input[name=summary]').val();
-      var terms = editable_holder.find('input[name=terms]').val();
-      form_holder.find('input[name=_id]').val(id);
-      form_holder.find('input[name=summary]').val(summary);
-      form_holder.find('input[name=terms]').val(terms);
-      return false;
+  $(document).ready(function(){
+    $('form.update_bins').each(function(){
+      var $form = $(this);
+      var $new_row = $('tr.new_bin', $form);
+      var $add_button = $('a.add_bin', $form);
+      var $save_controls = $('div.save_controls', $form);
+      $('a.add_bin').click(function(){
+        $save_controls.show();
+        $add_button.hide();
+        $new_row.show();
+        return false;
+      });
+      $('a.edit_bin').click(function(){
+        var $row = $(this).closest('tr');
+        $('td.view', $row).hide();
+        $('td.edit', $row).show();
+        $save_controls.show();
+        $add_button.hide();
+        $(this).css({opacity: 0.5});
+        return false;
+      });
+      $('a.del_bin').click(function(){
+        var $row = $(this).closest('tr');
+        $('input.delete_flag', $row).val('True');
+        $form.submit();
+      });
+      $('a.cancel_edit').click(function(){
+        $('td.view', $form).show();
+        $('td.edit', $form).hide();
+        $save_controls.hide();
+        $add_button.show();
+        $new_row.hide();
+        $('input', $new_row).val('');
+        $('a.edit_bin').css({opacity: 1});
+        return false;
+      });
     });
-    $('#cancel_new_bin').click(function(){
-      form_holder.hide();
-      return false;
-    });
+  });
   </script>
 {% endblock %}

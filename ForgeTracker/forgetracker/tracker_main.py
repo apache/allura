@@ -627,7 +627,6 @@ class BinController(BaseController):
     @expose('jinja:tracker/bin.html')
     def index(self, **kw):
         require(has_artifact_access('save_searches', app=self.app))
-        c.bin_form = W.bin_form
         count = len(self.app.bins)
         return dict(bins=self.app.bins, count=count, app=self.app)
 
@@ -635,7 +634,6 @@ class BinController(BaseController):
     @expose('jinja:tracker/bin.html')
     def bins(self):
         require(has_artifact_access('save_searches', app=self.app))
-        c.bin_form = W.bin_form
         count = len(self.app.bins)
         return dict(bins=self.app.bins, count=count, app=self.app)
 
@@ -672,6 +670,27 @@ class BinController(BaseController):
         self.app.globals.invalidate_bin_counts()
         bin.delete()
         redirect(request.referer)
+
+    @without_trailing_slash
+    @h.vardec
+    @expose()
+    @require_post()
+    def update_bins(self, field_name=None, bins=None, **kw):
+        require(has_artifact_access('save_searches', app=self.app))
+        for bin_form in bins:
+            bin = None
+            if bin_form['id']:
+                bin = TM.Bin.query.find(dict(app_config_id=self.app.config._id, _id=ObjectId(bin_form['id']))).first()
+            elif bin_form['summary'] and bin_form['terms']:
+                bin = TM.Bin(app_config_id=self.app.config._id, summary='')
+            if bin:
+                if bin_form['delete'] == 'True':
+                    bin.delete()
+                else:
+                    bin.summary = bin_form['summary']
+                    bin.terms = bin_form['terms']
+        self.app.globals.invalidate_bin_counts()
+        redirect('.')
 
 class changelog(object):
     """

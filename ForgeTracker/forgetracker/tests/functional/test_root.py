@@ -548,17 +548,18 @@ class TestFunctionalController(TestController):
         assert sidebar_contains(r, 'This will be truncated because it is too long to show in the sidebar ...')
 
     def test_edit_saved_search(self):
-        r = self.app.post('/admin/bugs/bins/save_bin',dict(
-                summary='Original', terms='aaa')).follow()
-        link = r.html.find('table').findAll('a')[-2]['href']
-        oid = link.rsplit('=')[-1]
+        r = self.app.get('/admin/bugs/bins/')
+        edit_form = r.form
+        edit_form['bins-2.summary'] = 'Original'
+        edit_form['bins-2.terms'] = 'aaa'
+        edit_form.submit()
         r = self.app.get('/bugs/')
         assert sidebar_contains(r, 'Original')
         assert not sidebar_contains(r, 'New')
-        r = self.app.post('/admin/bugs/bins/save_bin',{
-            'summary': 'New',
-            'terms': 'aaa',
-            '_id':oid}).follow()
+        r = self.app.get('/admin/bugs/bins/')
+        edit_form = r.form
+        edit_form['bins-2.summary'] = 'New'
+        edit_form.submit()
         r = self.app.get('/bugs/')
         assert sidebar_contains(r, 'New')
         assert not sidebar_contains(r, 'Original')
