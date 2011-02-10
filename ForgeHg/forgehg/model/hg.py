@@ -37,13 +37,13 @@ class Repository(M.Repository):
     def readonly_clone_command(self):
         ro_path = self.readonly_path(c.user.username)
         if ro_path:
-            return 'hg clone %s %s' % (ro_path, c.project.shortname)
+            return 'hg clone %s %s' % (ro_path, c.project.shortname.replace('/','.'))
         else:
             return None
 
     def readwrite_clone_command(self):
         rw_path = self.readwrite_path(c.user.username)
-        return 'hg clone %s %s' % (rw_path, c.project.shortname)
+        return 'hg clone %s %s' % (rw_path, c.project.shortname.replace('/','.'))
 
     def merge_command(self, merge_request):
         '''Return the command to merge a given commit into a given target branch'''
