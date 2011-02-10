@@ -125,7 +125,6 @@ class RootController(BaseController):
     # FIXME this code is not used, but it should be so we can do Forum-level subscriptions
     @h.vardec
     @expose()
-    @require_post()
     @validate(W.forum_subscription_form)
     def subscribe(self, **kw):
         require_authenticated()

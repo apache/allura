@@ -635,7 +635,6 @@ class PageController(BaseController):
         redirect(request.referer)
 
     @expose()
-    @require_post()
     @validate(W.subscribe_form)
     def subscribe(self, subscribe=None, unsubscribe=None):
         if not self.page:

@@ -72,7 +72,6 @@ class DiscussionController(BaseController):
 
     @h.vardec
     @expose()
-    @require_post()
     @validate(pass_validator, error_handler=index)
     def subscribe(self, **kw):
         threads = kw.pop('threads')

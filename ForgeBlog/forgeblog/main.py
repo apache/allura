@@ -298,7 +298,6 @@ class PostController(BaseController):
         redirect('.')
 
     @expose()
-    @require_post()
     @validate(W.subscribe_form)
     def subscribe(self, subscribe=None, unsubscribe=None):
         require(has_artifact_access('read'))

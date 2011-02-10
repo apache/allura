@@ -606,7 +606,6 @@ class RootController(BaseController):
                 globals=globals)
 
     @expose()
-    @require_post()
     @validate(W.subscribe_form)
     def subscribe(self, subscribe=None, unsubscribe=None):
         require(has_artifact_access('read'))
@@ -901,7 +900,6 @@ class TicketController(BaseController):
         redirect('.')
 
     @expose()
-    @require_post()
     @validate(W.subscribe_form)
     def subscribe(self, subscribe=None, unsubscribe=None):
         require(has_artifact_access('read', self.ticket))
