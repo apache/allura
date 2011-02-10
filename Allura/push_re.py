@@ -110,15 +110,14 @@ def main():
         print("That's all, folks!")
 
 def make_ticket_text(engineer, classic_path, theme_path):
-    tag_prefix = date.today().strftime('release_%Y%m%d')
+    tag_prefix = date.today().strftime('allura_%Y%m%d')
     # get release tag
     existing_tags_today = git('tag -l %s*' % tag_prefix)
     if existing_tags_today:
         new_tag = '%s.%.2d' % (tag_prefix, len(existing_tags_today))
     else:
         new_tag = tag_prefix
-    last_release = get_last_release_tag()
-    since_last_release = last_release + '..master'
+    since_last_release = get_last_release_tag() + '..master'
     format = '--format=* %h %s'
     if VERBOSE:
         print("Examining commits to build the list of fixed tickets...")
@@ -133,12 +132,10 @@ def make_ticket_text(engineer, classic_path, theme_path):
     print('Tickets:\n%s' % changes)
     prelaunch = []
     postlaunch = []
-    needs_flyway = ask_yes_or_no('Does this release require a migration?', 'y')
-    needs_ensure_index = ask_yes_or_no('Does this release require ensure_index?', 'y')
-    if needs_flyway:
+    if ask_yes_or_no('Does this release require a migration?', 'y'):
         prelaunch.append('* dump the database in case we need to roll back')
         postlaunch.append('* allurapaste flyway --url mongo://sfn-mongo:27017/')
-    if needs_ensure_index:
+    if ask_yes_or_no('Does this release require ensure_index?', 'y'):
         postlaunch.append('* allurapaste ensure_index /var/local/config/production.ini')
     if postlaunch:
         postlaunch = [ 'From sfu-scmprocess-1 do the following:\n' ] + postlaunch
@@ -218,9 +215,11 @@ def get_last_release_tag():
     has_clear_history = getattr(readline, 'clear_history')
     if has_clear_history:
         readline.clear_history()
-    for tag in git('tag -l release_*'):
-        readline.add_history(tag)
-    default = tag or ''
+    for rtag in git('tag -l release_*'):
+        readline.add_history(rtag)
+    for atag in git('tag -l allura_*'):
+        readline.add_history(atag)
+    default = atag or rtag or ''
     result = raw_input('Last successful push? [%s] ' % default) or default
     if has_clear_history:
         readline.clear_history()
