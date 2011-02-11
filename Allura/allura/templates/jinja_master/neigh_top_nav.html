@@ -2,14 +2,14 @@
   <a href="{{neighborhood.url()}}" class="ui-icon-tool-home">
     Home
     {% if request.url.rfind(neighborhood.url(), - neighborhood.url()|length) != -1 %}
-      <span class="arrow"></span>
+      <span class="diamond"></span>
     {% endif %}
   </a>
   {% if h.has_neighborhood_access('admin', neighborhood)() %}
   <a href="{{neighborhood.url()}}_admin/" class="ui-icon-tool-admin">
     Admin
     {% if neighborhood.url()+'_admin' in request.url %}
-      <span class="arrow"></span>
+      <span class="diamond"></span>
     {% endif %}
   </a>
   {% endif %}
@@ -17,7 +17,7 @@
   <a href="{{neighborhood.url()}}_moderate/" class="ui-icon-tool-admin">
     Moderate
     {% if neighborhood.url()+'_moderate' in request.url %}
-      <span class="arrow"></span>
+      <span class="diamond"></span>
     {% endif %}
   </a>
   {% endif %}

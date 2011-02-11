@@ -68,7 +68,7 @@ class TestProjectAdmin(TestController):
         assert 'error' not in self.webflash(r)
         # check tool in the nav
         r = self.app.get('/p/test/test-tool/').follow()
-        active_link = r.html.findAll('span',{'class':'arrow'})
+        active_link = r.html.findAll('span',{'class':'diamond'})
         assert len(active_link) == 1
         assert active_link[0].parent['href'] == '/p/test/test-tool/'
         r = self.app.post('/admin/update_mounts', params={
@@ -80,11 +80,11 @@ class TestProjectAdmin(TestController):
         assert 'error' not in self.webflash(r)
         # check the nav - the similarly named tool should NOT be active
         r = self.app.get('/p/test/test-tool/Home/')
-        active_link = r.html.findAll('span',{'class':'arrow'})
+        active_link = r.html.findAll('span',{'class':'diamond'})
         assert len(active_link) == 1
         assert active_link[0].parent['href'] == '/p/test/test-tool/'
         r = self.app.get('/p/test/test-tool2/Home/')
-        active_link = r.html.findAll('span',{'class':'arrow'})
+        active_link = r.html.findAll('span',{'class':'diamond'})
         assert len(active_link) == 1
         assert active_link[0].parent['href'] == '/p/test/test-tool2/'
         # check can't create dup tool
