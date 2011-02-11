@@ -27,18 +27,18 @@ class TestReactor(unittest.TestCase):
 
     @raises(AddressException)
     def test_parse_address_bad_project(self):
-        parse_address('foo@wiki.unicorns.p.%s' % COMMON_SUFFIX)
+        parse_address('foo@wiki.unicorns.p' + COMMON_SUFFIX)
 
     @raises(AddressException)
     def test_parse_address_missing_tool(self):
-        parse_address('foo@test.p.%s' % COMMON_SUFFIX)
+        parse_address('foo@test.p' + COMMON_SUFFIX)
 
     @raises(AddressException)
     def test_parse_address_bad_tool(self):
-        parse_address('foo@hammer.test.p.%s' % COMMON_SUFFIX)
+        parse_address('foo@hammer.test.p' + COMMON_SUFFIX)
 
     def test_parse_address_good(self):
-        topic, project, app = parse_address('foo@wiki.test.p.%s' % COMMON_SUFFIX)
+        topic, project, app = parse_address('foo@wiki.test.p' + COMMON_SUFFIX)
         assert_equal(topic, 'Wiki.msg.foo')
         assert_equal(project.name, 'test')
         assert_equal(app.__class__.__name__, 'ForgeWikiApp')

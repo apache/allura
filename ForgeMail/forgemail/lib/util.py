@@ -41,7 +41,7 @@ def parse_address(addr):
     domain = domain[:-len(COMMON_SUFFIX)]
     path = '/'.join(reversed(domain.split('.')))
 
-    project, mount_point = find_project(path)
+    project, mount_point = find_project('/' + path)
     if project is None:
         raise exc.AddressException, 'Unknown project: ' + domain
     if len(mount_point) != 1:
