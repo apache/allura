@@ -13,7 +13,7 @@
              class="selectText"
              value="{{repo.readonly_clone_command()}}"/>
     </div>
-    {% if c.user != c.user.anonymous() %}
+    {% if h.has_artifact_access('write')() %}
     <label for="rw" class="grid-3">Read / write</label>
     <div class="grid-16">
       <input id="rw" style="width:40em;" readonly type="text"
