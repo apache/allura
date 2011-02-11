@@ -106,6 +106,9 @@
 				
 				// And this line is to catch the browser paste event
 				$textarea.live('input paste',function(e){ setTimeout( update, 250); });				
+
+                // Update when editing a ticket
+                $textarea.bind('editticket.forgetracker', function() { update(); });
 				
 				// Run update once when elastic is initialized
 				update();

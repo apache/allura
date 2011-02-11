@@ -148,7 +148,8 @@
             title_actions.appendTo(document.body);
             title_holder.text('\u00A0');
             $('a.edit_ticket').addClass('btn_activate');
-            $('textarea[name="ticket_form.description"]').focus();
+            $('textarea[name="ticket_form.description"]').trigger('editticket.forgetracker').focus();
+            $(this).trigger('editTicket');
             return false;
           });
           $('a.cancel_form').click(function () {
