@@ -79,7 +79,7 @@ def main():
     raw_input('Now link the two tickets.')
     if VERBOSE:
         print("Ask for approval (copy/paste the following text into Jabber)")
-    raw_input('Allura %s push for your approval (https://control.sog.geek.net/sog/trac/ticket/%s).' % (new_tag, sog_num))
+    raw_input('Allura push, %s, for your approval (https://control.sog.geek.net/sog/trac/ticket/%s).' % (new_tag, sog_num))
 
     if VERBOSE:
         print("Tag and push the Allura repo for release...")
@@ -104,7 +104,7 @@ def main():
 
     if VERBOSE:
         print("Tell SOG we're ready (copy/paste the following text into Jabber)")
-    print('Allura %s is ready for pushing (https://control.sog.geek.net/sog/trac/ticket/%s).' % (new_tag, sog_num))
+    print('Allura release %s is ready for pushing (https://control.sog.geek.net/sog/trac/ticket/%s).' % (new_tag, sog_num))
     CP.write(open(os.path.join(os.environ['HOME'], '.forgepushrc'), 'w'))
     if VERBOSE:
         print("That's all, folks!")
