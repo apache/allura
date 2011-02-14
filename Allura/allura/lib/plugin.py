@@ -370,3 +370,43 @@ class ThemeProvider(object):
 
 class LocalProjectRegistrationProvider(ProjectRegistrationProvider):
     pass
+
+class UserPreferencesProvider(object):
+
+    @classmethod
+    def get(cls):
+        method = config.get('user_prefs_storage.method', 'local')
+        for ep in pkg_resources.iter_entry_points('allura.user_prefs', method):
+            return ep.load()()
+
+    def get_pref(self, user, pref_name):
+        raise NotImplementedError, 'get_pref'
+
+    def save_pref(self, user, pref_name, pref_value):
+        raise NotImplementedError, 'set_pref'
+
+    def find_by_display_name(self, name, substring=True):
+        raise NotImplementedError, 'find_by_display_name'
+
+class LocalUserPreferencesProvider(UserPreferencesProvider):
+
+    def get_pref(self, user, pref_name):
+        if pref_name in user.preferences:
+            return user.preferences[pref_name]
+        else:
+            return getattr(user, pref_name)
+
+    def set_pref(self, user, pref_name, pref_value):
+        if pref_name in user.preferences:
+            user.preferences[pref_name] = pref_value
+        else:
+            setattr(user, pref_name, pref_value)
+
+    def find_by_display_name(self, name, substring=True):
+        from allura import model as M
+        if not substring:
+            raise NotImplementedError, 'non-substring'
+        name_regex = re.compile('(?i)%s' % re.escape(name))
+        users = M.User.query.find(dict(
+                display_name=name_regex)).sort('username').all()
+        return users
