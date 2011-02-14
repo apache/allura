@@ -163,8 +163,11 @@ class File(MappedClass):
         thumbnail = cls.save_thumbnail(filename, image, content_type, thumbnail_size, thumbnail_meta, square)
 
         return original, thumbnail
-        
+
     def is_image(self):
         return (self.content_type
                 and self.content_type.lower() in SUPPORTED_BY_PIL)
-
+    
+    @property
+    def length(self):
+        return self.rfile().length
