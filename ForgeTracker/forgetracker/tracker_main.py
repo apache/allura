@@ -237,8 +237,8 @@ class ForgeTrackerApp(Application):
 
     def uninstall(self, project):
         "Remove all the tool's artifacts from the database"
-        TM.TicketAttachment.query.remove(app_config_id=c.app.config._id)
         app_config_id = {'app_config_id':c.app.config._id}
+        TM.TicketAttachment.query.remove(app_config_id)
         TM.Ticket.query.remove(app_config_id)
         TM.Bin.query.remove(app_config_id)
         # model.Comment.query.remove(app_config_id)

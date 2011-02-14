@@ -119,7 +119,7 @@ class ForgeBlogApp(Application):
 
     def uninstall(self, project):
         "Remove all the tool's artifacts from the database"
-        BM.Attachment.query.remove(app_config_id=c.app.config._id)
+        BM.Attachment.query.remove(dict(app_config_id=c.app.config._id))
         BM.BlogPost.query.remove(dict(app_config_id=c.app.config._id))
         BM.BlogPostSnapshot.query.remove(dict(app_config_id=c.app.config._id))
         super(ForgeBlogApp, self).uninstall(project)
