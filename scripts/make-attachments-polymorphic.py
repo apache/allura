@@ -34,7 +34,7 @@ def main():
         for p in WM.Page.query.find():
             for a in WM.WikiAttachment.query.find(dict(
                     artifact_id=p._id)):
-                log.info('%s: %s' % p.url(), a.filename)
+                log.info('%s: %s', p.url(), a.filename)
         ThreadLocalORMSession.flush_all()
 
 if __name__ == '__main__':
