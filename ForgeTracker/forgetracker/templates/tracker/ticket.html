@@ -165,8 +165,8 @@
           });
           // delete attachments
           $('div.attachment_thumb a.delete_attachment').click(function () {
-            var cval = $.cookie('allura');
-            $.post(this.href, {'delete': 'True','allura':cval}, function () {
+            var cval = $.cookie('_session_id');
+            $.post(this.href, {'delete': 'True','_session_id':cval}, function () {
                 location.reload();
             });
             return false;
