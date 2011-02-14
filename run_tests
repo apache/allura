@@ -46,8 +46,7 @@ for module in $TEST_MODULES; do
     (
         echo "Running tests in module $module"
         cd $module
-        # Use bash4 feature to lowercase string
-        cover_package=${module,,}
+        cover_package=$(echo $module | tr "[:upper:]" "[:lower:]")
         nosetests --cover-package=$cover_package --cover-html-dir=report.coverage --cover-erase $* || exit
     ) || exit
 done
