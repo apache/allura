@@ -261,8 +261,9 @@ class Feed(MappedClass):
             query['pubdate']['$lte'] = until
         cur = cls.query.find(query)
         cur = cur.sort('pubdate', pymongo.DESCENDING)
-        if limit is not None: query = cur.limit(limit)
-        if offset is not None: query = cur.offset(limit)
+        if limit is None: limit = 10
+        query = cur.limit(limit)
+        if offset is not None: query = cur.offset(offset)
         for r in cur:
             feed.add_item(title=r.title,
                           link=h.absurl(r.link.encode('utf-8')),
