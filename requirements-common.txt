@@ -29,7 +29,7 @@ Mako==0.3.2
 Markdown==2.0.3
 MarkupSafe==0.11
 mercurial==1.4.1
-Ming==0.2.1dev-20110202
+Ming==0.2.1dev-20110214
 mock==0.6.0
 nose==0.11.3
 numpy==1.4.1
