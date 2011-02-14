@@ -24,7 +24,7 @@ from forgechat import model as CM
 class IRCBotCommand(allura.command.Command):
     min_args=1
     max_args=1
-    usage = 'NAME <ini file>'
+    usage = '<ini file>'
     summary = 'Connect to all configured IRC servers and relay messages'
     parser = command.Command.standard_parser(verbose=True)
     parser.add_option('-c', '--context', dest='context',

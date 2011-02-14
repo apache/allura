@@ -18,7 +18,7 @@ M = None
 class SMTPServerCommand(allura.command.Command):
     min_args=1
     max_args=1
-    usage = 'NAME <ini file>'
+    usage = '<ini file>'
     summary = 'Handle incoming emails, routing them to RabbitMQ'
     parser = command.Command.standard_parser(verbose=True)
     parser.add_option('-c', '--context', dest='context',
