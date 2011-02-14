@@ -1,14 +1,7 @@
 {% macro gravatar(user, size, className) -%}
   {% set display_name = h.really_unicode(user.display_name) %}
-  {% if user.private_project().icon %}
-    {% set icon_url = '/u/'+user.username.replace('_', '-')+'/user_icon' %}
-  {% elif user.preferences.email_address %}
-    {% set icon_url = g.gravatar(user.preferences.email_address, default=None) %}
-  {% else %}
-    {% set icon_url = None %}
-  {% endif %}
-  {% if icon_url %}
-    <img src="{{icon_url}}"
+  {% if user.icon_url() %}
+    <img src="{{user.icon_url()}}"
          alt="{{display_name}}"
          title="{{display_name}}"
          class="emboss{% if size %} x{{size}}{% endif %}{% if className %} {{className}}{% endif %}">

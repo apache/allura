@@ -248,6 +248,14 @@ class User(MappedClass):
     def url(self):
         return '/u/' + self.username.replace('_', '-') + '/'
 
+    def icon_url(self):
+        icon_url = None
+        if self.private_project() and self.private_project().icon:
+            icon_url = '/u/'+self.username.replace('_', '-')+'/user_icon'
+        elif self.preferences.email_address:
+            icon_url = g.gravatar(self.preferences.email_address, default=None)
+        return icon_url
+
     @classmethod
     def by_email_address(cls, addr):
         ea = EmailAddress.query.get(_id=addr)
