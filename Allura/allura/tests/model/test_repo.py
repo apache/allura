@@ -191,7 +191,7 @@ class TestMergeRequest(_TestWithRepoAndCommit):
             description='description')
         u = M.User.by_username('test-admin')
         assert mr.creator == u
-        assert mr.creator_name == u.display_name
+        assert mr.creator_name == u.get_pref('display_name')
         assert mr.creator_url == u.url()
         assert mr.downstream_url == '/p/test/test2/'
         assert mr.downstream_repo_url == 'http://svn.localhost/p/test/test2'

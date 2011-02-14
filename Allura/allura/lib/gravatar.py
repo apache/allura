@@ -60,4 +60,4 @@ def url(email=None, gravatar_id=None, **kw):
     return ('https://secure.gravatar.com/avatar/%s?%s' % (gravatar_id, urllib.urlencode(kw)))
 
 def for_user(user):
-    return url(user.preferences['email_address'])
+    return url(user.get_pref('email_address'))

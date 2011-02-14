@@ -73,7 +73,7 @@ class MyArtifactComment(Message):
         author = self.author()
         result.update(
             title_s='Comment on %s by %s' % (
-                self.artifact.shorthand_id(), author.display_name),
+                self.artifact.shorthand_id(), author.get_pref('display_name')),
             type_s=self.type_s)
         return result
 

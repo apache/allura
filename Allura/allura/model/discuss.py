@@ -373,7 +373,7 @@ class Post(Message, VersionedArtifact):
 
     def summary(self):
         return '<a href="%s">%s</a> %s' % (
-            self.author().url(), self.author().display_name,
+            self.author().url(), self.author().get_pref('display_name'),
             h.ago(self.timestamp))
 
     def url(self):

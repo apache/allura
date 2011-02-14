@@ -78,6 +78,9 @@ setup(
     local = allura.lib.plugin:LocalAuthenticationProvider
     ldap = allura.lib.plugin:LdapAuthenticationProvider
 
+    [allura.user_prefs]
+    local = allura.lib.plugin:LocalUserPreferencesProvider
+
     [allura.project_registration]
     local = allura.lib.plugin:LocalProjectRegistrationProvider
 

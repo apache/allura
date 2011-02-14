@@ -375,7 +375,7 @@ class MergeRequest(VersionedArtifact):
 
     @LazyProperty
     def creator_name(self):
-        return self.creator.display_name or self.creator.username
+        return self.creator.get_pref('display_name') or self.creator.username
 
     @LazyProperty
     def creator_url(self):

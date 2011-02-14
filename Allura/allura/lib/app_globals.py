@@ -146,12 +146,12 @@ class Globals(object):
                 session['results_per_page'] = int(limit)
                 session.save()
             else:
-                c.user.preferences.results_per_page = int(limit)
+                c.user.set_pref('results_per_page', int(limit))
         else:
             if c.user in (None, M.User.anonymous()):
                 limit = 'results_per_page' in session and session['results_per_page'] or default
             else:
-                limit = c.user.preferences.results_per_page or default
+                limit = c.user.get_pref('results_per_page') or default
         page = max(int(page), 0)
         start = page * int(limit)
         return (limit, page, start)

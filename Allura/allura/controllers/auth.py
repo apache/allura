@@ -81,7 +81,7 @@ class AuthController(BaseController):
         session.save()
         if not c.user.username:
             flash('Please choose a user name for SourceForge, %s.'
-                  % c.user.display_name)
+                  % c.user.get_pref('display_name'))
             redirect('setup_openid_user')
         redirect(kw.pop('return_to', '/'))
 
@@ -103,7 +103,7 @@ class AuthController(BaseController):
                  display_name=display_name,
                  password=pw))
         plugin.AuthenticationProvider.get(request).login(user)
-        flash('User "%s" registered' % user.display_name)
+        flash('User "%s" registered' % user.get_pref('display_name'))
         redirect('/')
 
     @expose()
@@ -135,7 +135,7 @@ class AuthController(BaseController):
                   'error')
             redirect('setup_openid_user')
         c.user.username = username
-        c.user.display_name = display_name
+        c.user.set_pref('display_name', display_name)
         if u is None:
             n = M.Neighborhood.query.get(name='Users')
             n.register_project('u/' + username)
@@ -289,14 +289,14 @@ class PreferencesController(BaseController):
                preferences=None,
                **kw):
         require_authenticated()
-        c.user.display_name = display_name
+        c.user.set_pref('display_name', display_name)
         if config.get('auth.method', 'local') == 'local':
             for i, (old_a, data) in enumerate(zip(c.user.email_addresses, addr or [])):
                 obj = c.user.address_object(old_a)
                 if data.get('delete') or not obj:
                     del c.user.email_addresses[i]
                     if obj: obj.delete()
-            c.user.preferences.email_address = primary_addr
+            c.user.set_pref('email_address', primary_addr)
             if new_addr.get('claim'):
                 if M.EmailAddress.query.get(_id=new_addr['addr'], confirmed=True):
                     flash('Email address already claimed', 'error')
@@ -313,7 +313,7 @@ class PreferencesController(BaseController):
         for k,v in preferences.iteritems():
             if k == 'results_per_page':
                 v = int(v)
-            c.user.preferences[k] = v
+            c.user.set_pref(k, v)
         redirect('.')
         
     @h.vardec

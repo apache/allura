@@ -63,7 +63,7 @@ class Notification(MappedClass):
             link=str,
             created=S.DateTime(if_missing=datetime.utcnow),
             unique_id=S.String(if_missing=lambda:h.nonce(40)),
-            author_name=S.String(if_missing=lambda:c.user.display_name if hasattr(c, 'user') else None),
+            author_name=S.String(if_missing=lambda:c.user.get_pref('display_name') if hasattr(c, 'user') else None),
             author_link=S.String(if_missing=lambda:c.user.url() if hasattr(c, 'user') else None)))
 
     @classmethod
@@ -114,7 +114,7 @@ class Notification(MappedClass):
                 in_reply_to=post.parent_id)
         else:
             subject = kwargs.pop('subject', '%s modified by %s' % (
-                    idx['title_s'], c.user.display_name if hasattr(c, 'user') else '(unknown user)'))
+                    idx['title_s'], c.user.get_pref('display_name') if hasattr(c, 'user') else '(unknown user)'))
             d = dict(
                 from_address=c.user.email_addresses[0] if len(c.user.email_addresses) else '%s <%s>' % (
                                                                 idx['title_s'], artifact.email_address),

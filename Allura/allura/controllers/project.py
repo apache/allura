@@ -300,9 +300,7 @@ class ProjectController(object):
 
     @expose('json:')
     def user_search(self,term=''):
-        name_regex = re.compile('(?i)%s' % re.escape(term))
-        users = M.User.query.find(dict(
-                display_name=name_regex)).sort('username').all()
+        users = M.Users.by_display_name(term, substring=True)
         named_roles = RoleCache(
             g.credentials,
             g.credentials.project_roles(project_id=c.project.root_project._id).named)
@@ -316,7 +314,7 @@ class ProjectController(object):
         return dict(
             users=[
                 dict(
-                    label='%s (%s)' % (u.display_name, u.username),
+                    label='%s (%s)' % (u.get_pref('display_name'), u.username),
                     value=u.username,
                     id=u.username)
                 for u in result])

@@ -233,18 +233,25 @@ class User(MappedClass):
     _id=FieldProperty(S.ObjectId)
     sfx_userid=FieldProperty(S.Deprecated)
     username=FieldProperty(str)
-    display_name=FieldProperty(str)
     open_ids=FieldProperty([str])
     email_addresses=FieldProperty([str])
     password=FieldProperty(str)
     projects=FieldProperty(S.Deprecated)
+    tool_preferences=FieldProperty({str:{str:None}}) # full mount point: prefs dict
+    tool_data = FieldProperty({str:{str:None}}) # entry point: prefs dict
+    # Don't use directly, use get/set_pref() instead
+    display_name=FieldProperty(str)
     preferences=FieldProperty(dict(
             results_per_page=int,
             email_address=str,
             email_format=str))
-    tool_preferences=FieldProperty({str:{str:None}}) # full mount point: prefs dict
-    tool_data = FieldProperty({str:{str:None}}) # entry point: prefs dict
-    
+
+    def get_pref(self, pref_name):
+        return plugin.UserPreferencesProvider.get().get_pref(self, pref_name)
+
+    def set_pref(self, pref_name, pref_value):
+        return plugin.UserPreferencesProvider.get().set_pref(self, pref_name, pref_value)
+
     def url(self):
         return '/u/' + self.username.replace('_', '-') + '/'
 
@@ -266,6 +273,10 @@ class User(MappedClass):
     def by_username(cls, name):
         return plugin.AuthenticationProvider.get(request).by_username(name)
 
+    @classmethod
+    def by_display_name(cls, name, substring=True):
+        return plugin.UserPreferencesProvider.get().find_by_display_name(name, substring)
+
     def get_tool_data(self, tool, key, default=None):
         return self.tool_data.get(tool, {}).get(key, None)
 
@@ -281,7 +292,7 @@ class User(MappedClass):
         return OpenId.query.get(_id=oid, claimed_by_user_id=self._id)
 
     def claim_openid(self, oid_url):
-        oid_obj = OpenId.upsert(oid_url, self.display_name)
+        oid_obj = OpenId.upsert(oid_url, self.get_pref('display_name'))
         oid_obj.claimed_by_user_id = self._id
         if oid_url in self.open_ids: return
         self.open_ids.append(oid_url)
@@ -315,13 +326,15 @@ class User(MappedClass):
     @classmethod
     def register(cls, doc, make_project=True):
         from allura import model as M
-        result = plugin.AuthenticationProvider.get(request).register_user(doc)
-        if result and make_project:
+        user = plugin.AuthenticationProvider.get(request).register_user(doc)
+        if user and 'display_name' in doc:
+            user.set_pref('display_name', doc['display_name'])
+        if user and make_project:
             n = M.Neighborhood.query.get(name='Users')
-            p = n.register_project('u/' + result.username, user=result, user_project=True)
+            p = n.register_project('u/' + user.username, user=user, user_project=True)
             # Allow for special user-only tools
             p._extra_tool_status = ['user']
-        return result
+        return user
 
     def private_project(self):
         from .project import Project
@@ -359,8 +372,8 @@ class User(MappedClass):
 
     def email_address_header(self):
         h = header.Header()
-        h.append(u'"%s"' % self.display_name)
-        h.append(u'<%s>' % self.preferences.email_address)
+        h.append(u'"%s"' % self.get_pref('display_name'))
+        h.append(u'<%s>' % self.get_pref('email_address'))
         return h
 
 class OldProjectRole(MappedClass):
@@ -397,7 +410,7 @@ class ProjectRole(MappedClass):
         if self.user_id:
             u = self.user
             if u.username: uname = u.username
-            elif u.display_name: uname = u.display_name
+            elif u.get_pref('display_name'): uname = u.get_pref('display_name')
             else: uname = u._id
             return '*user-%s' % uname
         return '**unknown name role: %s' % self._id # pragma no cover

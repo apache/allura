@@ -41,8 +41,8 @@ class TestSendmail(unittest.TestCase):
 
     def test_user(self):
         u = M.User.by_username('test-admin')
-        u.display_name = u'Rick Copeland'
-        u.preferences.email_address = 'test@example.com'
+        u.set_pref('display_name', u'Rick Copeland')
+        u.set_pref('email_address', 'test@example.com')
         self.mail.sendmail(
             ['test@example.com'],
             u.email_address_header(),
@@ -58,8 +58,8 @@ class TestSendmail(unittest.TestCase):
 
     def test_user_unicode(self):
         u = M.User.by_username('test-admin')
-        u.display_name = u'Rick Copéland'
-        u.preferences.email_address = 'test@example.com'
+        u.set_pref('display_name', u'Rick Copéland')
+        u.set_pref('email_address', 'test@example.com')
         self.mail.sendmail(
             ['test@example.com'],
             u.email_address_header(),
@@ -98,8 +98,8 @@ class TestReactor(unittest.TestCase):
 
     def test_user(self):
         u = M.User.by_username('test-admin')
-        u.display_name = u'Rick Copeland'
-        u.preferences.email_address = 'test@example.com'
+        u.set_pref('display_name', u'Rick Copeland')
+        u.set_pref('email_address', 'test@example.com')
         addr = str(u._id)
         common_react.send_email(None, {
                 'from':addr,
@@ -115,8 +115,8 @@ class TestReactor(unittest.TestCase):
 
     def test_user_unicode(self):
         u = M.User.by_username('test-admin')
-        u.display_name = u'Rick Copéland'
-        u.preferences.email_address = 'test@example.com'
+        u.set_pref('display_name', u'Rick Copéland')
+        u.set_pref('email_address', 'test@example.com')
         addr = str(u._id)
         common_react.send_email(None, {
                 'from':addr,

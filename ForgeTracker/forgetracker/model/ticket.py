@@ -315,7 +315,7 @@ class Ticket(VersionedArtifact):
             old = hist.data
             changes = ['Ticket %s has been modified: %s' % (
                     self.ticket_num, self.summary),
-                       'Edited By: %s (%s)' % (c.user.display_name, c.user.username)]
+                       'Edited By: %s (%s)' % (c.user.get_pref('display_name'), c.user.username)]
             fields = [
                 ('Summary', old.summary, self.summary),
                 ('Status', old.status, self.status) ]
@@ -346,10 +346,10 @@ class Ticket(VersionedArtifact):
                 self.subscribe(user=User.query.get(_id=self.assigned_to_id))
             changes = ['Ticket %s has been created: %s' % (
                     self.ticket_num, self.summary),
-                       'Created By: %s (%s)' % (c.user.display_name, c.user.username)]
+                       'Created By: %s (%s)' % (c.user.get_pref('display_name'), c.user.username)]
             description = '\n'.join(changes)
             subject = 'Ticket #%s created by %s (%s): %s' % (
-                self.ticket_num, c.user.display_name, c.user.username, self.summary)
+                self.ticket_num, c.user.get_pref('display_name'), c.user.username, self.summary)
             Thread(discussion_id=self.app_config.discussion_id,
                    artifact_reference=self.dump_ref())
             Notification.post(artifact=self, topic='metadata', text=description, subject=subject)
@@ -364,7 +364,7 @@ class Ticket(VersionedArtifact):
     def assigned_to_name(self):
         who = self.assigned_to
         if who in (None, User.anonymous()): return 'nobody'
-        return who.display_name
+        return who.get_pref('display_name')
 
     @property
     def attachments(self):

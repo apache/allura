@@ -230,14 +230,14 @@ class Feed(MappedClass):
     pubdate = FieldProperty(datetime, if_missing=datetime.utcnow)
     description = FieldProperty(str)
     unique_id = FieldProperty(str, if_missing=lambda:h.nonce(40))
-    author_name = FieldProperty(str, if_missing=lambda:c.user.display_name if hasattr(c, 'user') else None)
+    author_name = FieldProperty(str, if_missing=lambda:c.user.get_pref('display_name') if hasattr(c, 'user') else None)
     author_link = FieldProperty(str, if_missing=lambda:c.user.url() if hasattr(c, 'user') else None)
 
     @classmethod
     def post(cls, artifact, title=None, description=None):
         idx = artifact.index()
         if title is None:
-            title='%s modified by %s' % (idx['title_s'], c.user.display_name)
+            title='%s modified by %s' % (idx['title_s'], c.user.get_pref('display_name'))
         if description is None: description = title
         item = cls(artifact_reference=artifact.dump_ref(),
                    title=title,
@@ -549,7 +549,7 @@ class VersionedArtifact(Artifact):
             author=dict(
                 id=c.user._id,
                 username=c.user.username,
-                display_name=c.user.display_name,
+                display_name=c.user.get_pref('display_name'),
                 logged_ip=ip_address),
             timestamp=datetime.utcnow(),
             data=state(self).document.deinstrumented_clone())
@@ -655,7 +655,7 @@ class Message(Artifact):
         author = self.author()
         result.update(
             author_user_name_t=author.username,
-            author_display_name_t=author.display_name,
+            author_display_name_t=author.get_pref('display_name'),
             timestamp_dt=self.timestamp,
             text=self.text)
         return result

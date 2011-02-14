@@ -103,9 +103,9 @@ def send_email(routing_key, data):
                 log.error("User %s (%s) has not set any email address, can't deliver",
                           user._id, user.username)
                 continue
-            if user.preferences.email_format == 'plain':
+            if user.get_pref('email_format') == 'plain':
                 addrs_plain.append(addr)
-            elif user.preferences.email_format == 'html':
+            elif user.get_pref('email_format') == 'html':
                 addrs_html.append(addr)
             else:
                 addrs_multi.append(addr)
