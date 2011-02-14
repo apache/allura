@@ -309,7 +309,7 @@ class PostController(BaseController):
         kw = self.W.edit_post.to_python(kw, None)
         self.thread.post(parent_id=self.post._id, **kw)
         self.thread.num_replies += 1
-        redirect(self.thread.url())
+        redirect(request.referer)
 
     @h.vardec
     @expose()
