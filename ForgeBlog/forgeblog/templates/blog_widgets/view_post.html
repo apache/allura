@@ -1,5 +1,5 @@
 {% import 'jinja_master/lib.html' as lib with context %}
-<em class="grid-19">Posted by <a href="{{base_post.author().url()}}">{{lib.gravatar(base_post.author(), size=16)}}</a> {{h.ago(value.timestamp)}}</em>
+<em class="grid-19">Posted by <a href="{{base_post.author().url()}}">{{lib.gravatar(base_post.author(), size=16)}}</a> {{lib.abbr_date(value.timestamp)}}</em>
 {% if value.state != 'published' %}
   <em class="grid-19">State: {{value.state}}</em>
 {% endif %}

@@ -11,9 +11,9 @@
 <div class="grid-5"><label>Forum:</label> <a href="{{value.discussion.url()}}">{{value.discussion.name}}</a></div>
 {% if value.first_post %}
   <div class="grid-5"><label>Creator:</label> <a href="{{value.first_post.author().url()}}">{{value.first_post.author().display_name}}</a></div>
-  <div class="grid-4"><label>Created:</label> {{h.ago(value.first_post.timestamp)}}</div>
+  <div class="grid-4"><label>Created:</label> {{lib.abbr_date(value.first_post.timestamp)}}</div>
 {% endif %}
-<div class="grid-5"><label>Updated:</label> {{h.ago(value.mod_date)}}</div>
+<div class="grid-5"><label>Updated:</label> {{lib.abbr_date(value.mod_date)}}</div>
 
 {% if show_moderate and h.has_artifact_access('moderate', value)() %}
   <div id="mod_thread_form" style="display: none;">

@@ -1,4 +1,5 @@
 {% extends g.theme.master %}
+{% from 'jinja_master/lib.html' import abbr_date with context %}
 
 {% do g.register_forge_css('css/forge/hilite.css') %}
 {% do g.register_app_css('css/tracker.css') %}
@@ -79,11 +80,11 @@
     <div style="clear:both"></div>
     <div class="grid-4">
       <label class="simple">Updated:</label>
-      {{h.ago(ticket.mod_date)}}
+      {{abbr_date(ticket.mod_date)}}
     </div>
     <div class="grid-4">
       <label class="simple">Created:</label>
-      {{h.ago(ticket.created_date)}}
+      {{abbr_date(ticket.created_date)}}
     </div>
     <div class="grid-8">
       <label class="simple">Creator:</label>

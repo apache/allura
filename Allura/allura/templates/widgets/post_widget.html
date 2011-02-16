@@ -9,7 +9,7 @@
         {{lib.gravatar(value.author(), size=size)}}<br>
         <small><a href="{{value.author().url()}}">{{value.author().display_name}}</a></small>
         <br>
-        <small>{{h.ago(value.timestamp)}}</small>
+        <small>{{lib.abbr_date(value.timestamp)}}</small>
        </p>
       </div>
 

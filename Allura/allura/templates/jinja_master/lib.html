@@ -55,6 +55,9 @@
     <input type="submit" name="{{name}}" value="{{value}}"/><br/>
 {% endmacro %}
 
+{% macro abbr_date(start_time) %}
+    <span title="{{start_time.strftime('%a %b %d, %Y %I:%M %p UTC')}}">{{h.ago(start_time)}}</span>
+{% endmacro %}
 
 {% macro path_links(parts) %}
   {% set i=0 %}
@@ -68,7 +71,7 @@
   {% if post %}
     <span>
       by <a href="{{post.author().url()}}">{{post.author().display_name}}</a>
-      {{h.ago(post.timestamp)}}
+      {{abbr_date(post.timestamp)}}
     </span>
   {% endif %}
 {% endmacro %}

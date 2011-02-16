@@ -33,7 +33,7 @@
   <div class="grid-6">
     <label class="simple">Updated:</label>
     {% if ticket %}
-      {{h.ago(ticket.mod_date)}}
+      {{lib.abbr_date(ticket.mod_date)}}
     {% else %}
       Now
     {% endif %}
@@ -41,7 +41,7 @@
   <div class="grid-6">
     <label class="simple">Created:</label>
     {% if ticket %}
-      {{h.ago(ticket.created_date)}}
+      {{lib.abbr_date(ticket.created_date)}}
     {% else %}
       Now
     {% endif %}

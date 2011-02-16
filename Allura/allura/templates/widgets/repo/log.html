@@ -1,4 +1,4 @@
-{% from 'jinja_master/lib.html' import email_gravatar with context %}
+{% from 'jinja_master/lib.html' import email_gravatar, abbr_date with context %}
 <div>
   {% if show_paging %}
     <div class="grid-19" style="clear:both">
@@ -34,7 +34,7 @@
               {{email_gravatar(commit.authored.email, title=commit.authored.name, size=16)}} {{commit.authored.name}}
           </td>
           <td>
-            {% if commit.committed.date %}{{h.ago(commit.committed.date)}}{% endif %}
+            {% if commit.committed.date %}{{abbr_date(commit.committed.date)}}{% endif %}
           </td>
           <td style="text-align: right">
             <a href="{{commit.url()}}tree/">Tree</a>

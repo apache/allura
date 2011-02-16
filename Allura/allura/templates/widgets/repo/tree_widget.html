@@ -30,7 +30,7 @@
           <span>{{h.really_unicode(dirent.name)}}</span>
         </a>
       </td>
-      <td>{{h.ago(dirent.last_commit.date)}}</td>
+      <td>{{lib.abbr_date(dirent.last_commit.date)}}</td>
       <td>
         {% if dirent.last_commit.author_url %}
           <a href="{{dirent.last_commit.author_url}}">{{lib.email_gravatar(dirent.last_commit.author_email, title=h.really_unicode(dirent.last_commit.author), size=16)}}</a>

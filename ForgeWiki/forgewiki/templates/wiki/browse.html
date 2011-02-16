@@ -1,4 +1,5 @@
 {% extends 'wiki/master.html' %}
+{% from 'jinja_master/lib.html' import abbr_date with context %}
 
 {% block title %}{{c.project.name}} / {{c.app.config.options.mount_label}} / Browse Pages{% endblock %}
 
@@ -29,7 +30,7 @@
           <td></td>
         {% endif %}
         {% if 'updated' in page %}
-          <td>{{h.ago(page['updated'])}}</td>
+          <td>{{abbr_date(page['updated'])}}</td>
         {% else %}
           <td></td>
         {% endif %}
