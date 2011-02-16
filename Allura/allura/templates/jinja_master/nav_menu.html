@@ -7,13 +7,13 @@
   {% endif %}
   <a href="{{c.project.url()}}">
     {% if c.project.private_project_of() %}
-      {{lib.gravatar(c.project.private_project_of(), size=24, className='project_icon')}}
+      {{lib.gravatar(c.project.private_project_of(), size=48, className='project_icon')}}
     {% elif c.project.icon %}
       <img src="{{c.project.url()}}/icon" class="project_icon" alt="Project Logo">
     {% else %}
       <img src="{{g.forge_static('images/project_default.png')}}" class="project_icon" alt="Default Project Icon">
     {% endif %}
-	<h1>
+	<h1 class="project_title">
       {% if c.project.shortname.endswith('--init--') %}
         {{c.project.neighborhood.name}}
       {% else %}
