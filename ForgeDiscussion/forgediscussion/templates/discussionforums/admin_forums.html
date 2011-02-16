@@ -73,40 +73,9 @@
       {% endfor %}
     </tbody>
   </table>
-  <input type="button" id="add_forum" value="Add another forum"/>
-  <div id="add_forum_form" style="display:none">
-    <ol>
-      <li>
-			  <label>Name:</label>
-			  <input type="text" name="new_forum.name"/>
-      </li>
-      <li>
-			  <label>Short Name:</label>
-			  <input type="text" name="new_forum.shortname"/>
-      </li>
-      <li>
-			  <label>Parent Forum:</label>
-			  <select name="new_forum.parent">
-          <option value="">None</option>
-          {% for f in app.forums %}<option value="{{f._id}}">{{f.name}}</option>{% endfor %}
-        </select>
-      </li>
-      <li>
-			  <label>Description:</label>
-			  <textarea name="new_forum.description" style="height:50px;"></textarea>
-      </li>
-      <li>
-			  <label>Icon:</label>
-			  {{lib.file_field('new_forum.icon', '')}}
-      </li>
-      <li>
-			  <label>&nbsp;</label>
-			  <input type="submit" id="new_forum.create" name="new_forum.create" value="Create Forum"/>
-        <input type="button" id="add_forum_cancel" value="Cancel"/>
-      </li>
-    </ol>
-  </div>
+  <div class="grid-19"><input type="button" id="add_forum" value="Add another forum"></div>
 </form>
+{{c.add_forum.display(method='POST',action='add_forum',app=app, value=add_forum)}}
 {% endblock %}
 
 {% block extra_js %}

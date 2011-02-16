@@ -6,7 +6,7 @@ import pymongo
 # Non-stdlib imports
 import pkg_resources
 from pylons import g, c, request
-from tg import expose, redirect, flash, url
+from tg import expose, redirect, flash, url, validate
 from tg.decorators import with_trailing_slash, without_trailing_slash
 from bson import ObjectId
 from ming.orm.base import session
@@ -24,13 +24,14 @@ from forgediscussion import model as DM
 from forgediscussion import version
 from .controllers import RootController
 
-from widgets.admin import OptionsAdmin
+from widgets.admin import OptionsAdmin, AddForum
 
 
 log = logging.getLogger(__name__)
 
 class W:
     options_admin = OptionsAdmin()
+    add_forum = AddForum()
 
 class ForgeDiscussionApp(Application):
     __version__ = version.__version__
@@ -233,7 +234,8 @@ class ForumAdminController(DefaultAdminController):
                     ))
 
     @expose('jinja:discussionforums/admin_forums.html')
-    def forums(self):
+    def forums(self, add_forum=None, **kw):
+        c.add_forum = W.add_forum
         return dict(app=self.app,
                     allow_config=has_artifact_access('configure', app=self.app)())
 
@@ -245,18 +247,6 @@ class ForumAdminController(DefaultAdminController):
             thumbnail_meta=dict(forum_id=forum._id))
 
     def create_forum(self, new_forum):
-        if 'name' not in new_forum or new_forum['name'] == '':
-            flash('You must create a name for the forum.', 'error')
-            redirect(request.referrer)
-        if 'shortname' not in new_forum or new_forum['shortname'] == '':
-            flash('You must create a short name for the forum.', 'error')
-            redirect(request.referrer)
-        if new_forum['shortname'] in [ f.shortname for f in self.app.forums ]:
-            flash('There is already a forum named "%s".' % new_forum['shortname'], 'error')
-            redirect(request.referrer)
-        if '.' in new_forum['shortname'] or '/' in new_forum['shortname'] or ' ' in new_forum['shortname']:
-            flash('Shortname cannot contain space . or /', 'error')
-            redirect(request.referrer)
         if 'parent' in new_forum and new_forum['parent']:
             parent_id = ObjectId(str(new_forum['parent']))
             shortname = (DM.Forum.query.get(_id=parent_id).shortname + '/'
@@ -279,13 +269,8 @@ class ForumAdminController(DefaultAdminController):
     @h.vardec
     @expose()
     @require_post()
-    def update_forums(self, forum=None, new_forum=None, **kw):
+    def update_forums(self, forum=None, **kw):
         if forum is None: forum = []
-        if new_forum.get('create'):
-            if 'shortname' in new_forum and ('.' in new_forum['shortname'] or '/' in new_forum['shortname'] or ' ' in new_forum['shortname']):
-                flash('Shortname cannot contain space . or /', 'error')
-                redirect('.')
-            f = self.create_forum(new_forum)
         for f in forum:
             forum = DM.Forum.query.get(_id=ObjectId(str(f['id'])))
             if f.get('delete'):
@@ -303,3 +288,11 @@ class ForumAdminController(DefaultAdminController):
                     self.save_forum_icon(forum, f['icon'])
         flash('Forums updated')
         redirect(request.referrer)
+
+    @h.vardec
+    @expose()
+    @require_post()
+    @validate(form=W.add_forum, error_handler=forums)
+    def add_forum(self, add_forum=None, **kw):
+        f = self.create_forum(add_forum)
+        redirect(f.url())

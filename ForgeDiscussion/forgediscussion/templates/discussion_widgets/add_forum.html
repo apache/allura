@@ -1,0 +1,35 @@
+{% import 'jinja_master/lib.html' as lib with context %}
+<form method="{{method}}" action="{{action}}" enctype="multipart/form-data">
+  <input type="hidden" name="add_forum.app_id" value="{{app and app.config._id}}">
+  <div id="add_forum_form" style="display:none">
+    <label class="grid-4">Name:</label>
+    <div class="grid-15"><input type="text" name="add_forum.name" value="{{value and value['name']}}"></div>
+    <label class="grid-4">Short Name:</label>
+    <div class="grid-15"><input type="text" name="add_forum.shortname" value="{{value and value['shortname']}}"></div>
+    <label class="grid-4">Parent Forum:</label>
+    <div class="grid-15"><select name="add_forum.parent">
+    <option value="">None</option>
+    {% for f in app.forums %}<option value="{{f._id}}">{{f.name}}</option>{% endfor %}
+    </select></div>
+    <label class="grid-4">Description:</label>
+    <div class="grid-15"><textarea name="add_forum.description" style="height:50px;">{{value and value['description']}}</textarea></div>
+    <label class="grid-4">Icon:</label>
+    <div class="grid-15">{{lib.file_field('add_forum.icon', '')}}</div>
+    <label class="grid-4">&nbsp;</label>
+    <div class="grid-15">
+      <input type="submit" name="create" value="Create Forum">
+      <input type="button" id="add_forum_cancel" value="Cancel">
+    </div>
+  </div>
+</form>
+<script type="text/javascript">
+  {% for field in widget.fields %}
+    {% set ctx=widget.context_for(field) %}
+    {% if ctx.errors and field.show_errors -%}
+      window.onload = function(){$('#messages').notify("{{ctx.errors}}", {
+        title: 'Error',
+        status: 'error'
+      })};
+    {%- endif %}
+  {% endfor %}
+</script>

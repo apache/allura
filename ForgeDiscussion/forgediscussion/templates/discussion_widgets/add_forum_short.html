@@ -1,0 +1,20 @@
+<form method="{{method}}" action="{{action}}" enctype="multipart/form-data" id="new_forum_form">
+  <input type="hidden" name="add_forum.app_id" value="{{app and app.config._id}}">
+  <div class="grid-6">
+    <label class="cr">Title:</label>
+    <input type="text" name="add_forum.name" class="wide"/>
+  </div>
+  <div class="grid-6">
+    <label class="cr">Short Name:</label>
+    <input type="text" name="add_forum.shortname" class="wide"/>
+  </div>
+  <div class="grid-6">
+    <label class="cr">Summary:</label>
+    <input type="text" name="add_forum.description" class="wide"/>
+  </div>
+  <div style="clear:both">&nbsp;</div>
+  <div class="grid-19">
+    <input type="submit" id="new_forum.create" name="new_forum.create" value="Save">
+    <a id="add_forum_cancel" class="btn link">Cancel</a>
+  </div>
+</form>

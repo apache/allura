@@ -26,22 +26,15 @@ class TestForumReactors(TestController):
     def setUp(self):
         TestController.setUp(self)
         self.app.get('/discussion/')
-        r = self.app.post('/admin/discussion/update_forums',
-                          params={'new_forum.shortname':'testforum',
-                                  'new_forum.create':'on',
-                                  'new_forum.name':'Test Forum',
-                                  'new_forum.description':'',
-                                  'new_forum.parent':'',
-                                  })
+        r = self.app.get('/admin/discussion/forums')
+        r.forms[1]['add_forum.shortname'] = 'testforum'
+        r.forms[1]['add_forum.name'] = 'Test Forum'
+        r.forms[1].submit()
         r = self.app.get('/admin/discussion/forums')
         assert 'Test Forum' in r
-        r = self.app.post('/admin/discussion/update_forums',
-                          params={'new_forum.shortname':'test1',
-                                  'new_forum.create':'on',
-                                  'new_forum.name':'Test Forum 1',
-                                  'new_forum.description':'',
-                                  'new_forum.parent':'',
-                                  })
+        r.forms[1]['add_forum.shortname'] = 'test1'
+        r.forms[1]['add_forum.name'] = 'Test Forum 1'
+        r.forms[1].submit()
         r = self.app.get('/admin/discussion/forums')
         assert 'Test Forum 1' in r
         conf_dir = getattr(config, 'here', os.getcwd())
@@ -184,27 +177,20 @@ class TestForum(TestController):
         TestController.setUp(self)
         self.app.get('/discussion/')
         r = self.app.get('/admin/discussion/forums')
-        r = self.app.post('/admin/discussion/update_forums',
-                          params={'new_forum.shortname':'TestForum',
-                                  'new_forum.create':'on',
-                                  'new_forum.name':'Test Forum',
-                                  'new_forum.description':'',
-                                  'new_forum.parent':'',
-                                  })
+        r.forms[1]['add_forum.shortname'] = 'testforum'
+        r.forms[1]['add_forum.name'] = 'Test Forum'
+        r.forms[1].submit()
         r = self.app.get('/admin/discussion/forums')
-        assert 'TestForum' in r
+        assert 'testforum' in r
         h.set_context('test', 'discussion')
-        frm = FM.Forum.query.get(shortname='TestForum')
-        r = self.app.get('/admin/discussion/')
-        r = self.app.post('/admin/discussion/update_forums',
-                          params={'new_forum.shortname':'ChildForum',
-                                  'new_forum.create':'on',
-                                  'new_forum.name':'Child Forum',
-                                  'new_forum.description':'',
-                                  'new_forum.parent':str(frm._id),
-                                  })
+        frm = FM.Forum.query.get(shortname='testforum')
         r = self.app.get('/admin/discussion/forums')
-        assert 'ChildForum' in r
+        r.forms[1]['add_forum.shortname'] = 'childforum'
+        r.forms[1]['add_forum.name'] = 'Child Forum'
+        r.forms[1]['add_forum.parent'] = str(frm._id)
+        r.forms[1].submit()
+        r = self.app.get('/admin/discussion/forums')
+        assert 'childforum' in r
 
     def test_forum_search(self):
         r = self.app.get('/discussion/search')
@@ -222,32 +208,32 @@ class TestForum(TestController):
 
     def test_forum_subscribe(self):
         r = self.app.post('/discussion/subscribe', params={
-                'forum-0.shortname':'TestForum',
+                'forum-0.shortname':'testforum',
                 'forum-0.subscribed':'on',
                 })
         r = self.app.post('/discussion/subscribe', params={
-                'forum-0.shortname':'TestForum',
+                'forum-0.shortname':'testforum',
                 'forum-0.subscribed':'',
                 })
 
     def test_forum_index(self):
-        r = self.app.get('/discussion/TestForum/')
-        r = self.app.get('/discussion/TestForum/ChildForum/')
+        r = self.app.get('/discussion/testforum/')
+        r = self.app.get('/discussion/testforum/childforum/')
 
     def test_posting(self):
         r = self.app.post('/discussion/save_new_topic', params=dict(
                 subject='Test Thread',
                 text='This is a *test thread*',
-                forum='TestForum'))
+                forum='testforum'))
         r = self.app.get('/admin/discussion/forums')
         assert 'Message posted' in r
-        r = self.app.get('/discussion/TestForum/moderate/')
+        r = self.app.get('/discussion/testforum/moderate/')
 
     def test_thread(self):
         thread = self.app.post('/discussion/save_new_topic', params=dict(
                 subject='AAA',
                 text='aaa',
-                forum='TestForum')).follow()
+                forum='testforum')).follow()
         url = thread.request.url
         rep_url = thread.html.find('div',{'class':'row reply_post_form'}).find('form').get('action')
         thread = self.app.post(str(rep_url), params=dict(
@@ -271,7 +257,7 @@ class TestForum(TestController):
         assert '<a href="/p/test/discussion/markdown_syntax" class="nav_child"><span>Markdown Syntax</span></a>' in sidebarmenu
         assert '<a href="flag_as_spam" class="sidebar_thread_spam"><b data-icon="^" class="ico ico-flag"></b> <span>Mark as Spam</span></a>' not in sidebarmenu
         thread = self.app.post('/discussion/save_new_topic', params=dict(
-                forum='TestForum',
+                forum='testforum',
                 subject='AAA',
                 text='aaa')).follow()
         thread_sidebarmenu = str(thread.html.find('div',{'id':'sidebar'}))
@@ -279,13 +265,13 @@ class TestForum(TestController):
 
     def test_recent_topics_truncated(self):
         r = self.app.post('/discussion/save_new_topic', params=dict(
-                forum='TestForum',
+                forum='testforum',
                 subject='This is not too long',
                 text='text')).follow()
         sidebarmenu = str(r.html.find('div',{'id':'sidebar'}))
         assert 'This is not too long' in sidebarmenu
         r = self.app.post('/discussion/save_new_topic', params=dict(
-                forum='TestForum',
+                forum='testforum',
                 subject='This will be truncated because it is too long to show in the sidebar without being ridiculous.',
                 text='text')).follow()
         sidebarmenu = str(r.html.find('div',{'id':'sidebar'}))
@@ -299,20 +285,14 @@ class TestForumAdmin(TestController):
 
     def test_forum_CRUD(self):
         r = self.app.get('/admin/discussion/forums')
-        r = self.app.post('/admin/discussion/update_forums',
-                          params={'new_forum.shortname':'TestForum',
-                                  'new_forum.create':'on',
-                                  'new_forum.name':'Test Forum',
-                                  'new_forum.description':'',
-                                  'new_forum.parent':'',
-                                  })
-        r = self.app.get('/admin/discussion/forums')
-        assert 'TestForum' in r
+        r.forms[1]['add_forum.shortname'] = 'testforum'
+        r.forms[1]['add_forum.name'] = 'Test Forum'
+        r = r.forms[1].submit().follow()
+        assert 'Test Forum' in r
         h.set_context('test', 'Forum')
-        frm = FM.Forum.query.get(shortname='TestForum')
+        frm = FM.Forum.query.get(shortname='testforum')
         r = self.app.post('/admin/discussion/update_forums',
-                          params={'new_forum.create':'',
-                                  'forum-0.delete':'',
+                          params={'forum-0.delete':'',
                                   'forum-0.id':str(frm._id),
                                   'forum-0.name':'New Test Forum',
                                   'forum-0.shortname':'NewTestForum',
@@ -323,142 +303,105 @@ class TestForumAdmin(TestController):
 
     def test_forum_CRUD_hier(self):
         r = self.app.get('/admin/discussion/forums')
-        r = self.app.post('/admin/discussion/update_forums',
-                          params={'new_forum.shortname':'TestForum',
-                                  'new_forum.create':'on',
-                                  'new_forum.name':'Test Forum',
-                                  'new_forum.description':'',
-                                  'new_forum.parent':'',
-                                  })
+        r.forms[1]['add_forum.shortname'] = 'testforum'
+        r.forms[1]['add_forum.name'] = 'Test Forum'
+        r = r.forms[1].submit().follow()
         r = self.app.get('/admin/discussion/forums')
-        assert 'TestForum' in r
+        assert 'testforum' in r
         h.set_context('test', 'discussion')
-        frm = FM.Forum.query.get(shortname='TestForum')
+        frm = FM.Forum.query.get(shortname='testforum')
         r = self.app.get('/admin/discussion/forums')
-        r = self.app.post('/admin/discussion/update_forums',
-                          params={'new_forum.shortname':'ChildForum',
-                                  'new_forum.create':'on',
-                                  'new_forum.name':'Child Forum',
-                                  'new_forum.description':'',
-                                  'new_forum.parent':str(frm._id),
-                                  })
+        r.forms[1]['add_forum.shortname'] = 'childforum'
+        r.forms[1]['add_forum.name'] = 'Child Forum'
+        r.forms[1]['add_forum.parent'] = str(frm._id)
+        r.forms[1].submit()
         r = self.app.get('/admin/discussion/forums')
-        assert 'ChildForum' in r
+        assert 'Child Forum' in r
 
     def test_bad_forum_names(self):
-        r = self.app.post('/admin/discussion/update_forums',
-                          params={'new_forum.shortname':'Test.Forum',
-                                  'new_forum.create':'on',
-                                  'new_forum.name':'Test Forum',
-                                  'new_forum.description':'',
-                                  'new_forum.parent':'',
-                                  })
         r = self.app.get('/admin/discussion/forums')
+        r.forms[1]['add_forum.shortname'] = 'Test.Forum'
+        r.forms[1]['add_forum.name'] = 'Test Forum'
+        r = r.forms[1].submit()
         assert 'error' in r
-        r = self.app.post('/admin/discussion/update_forums',
-                          params={'new_forum.shortname':'Test/Forum',
-                                  'new_forum.create':'on',
-                                  'new_forum.name':'Test Forum',
-                                  'new_forum.description':'',
-                                  'new_forum.parent':'',
-                                  })
         r = self.app.get('/admin/discussion/forums')
+        r.forms[1]['add_forum.shortname'] = 'Test/Forum'
+        r.forms[1]['add_forum.name'] = 'Test Forum'
+        r = r.forms[1].submit()
         assert 'error' in r
-        r = self.app.post('/admin/discussion/update_forums',
-                          params={'new_forum.shortname':'Test Forum',
-                                  'new_forum.create':'on',
-                                  'new_forum.name':'Test Forum',
-                                  'new_forum.description':'',
-                                  'new_forum.parent':'',
-                                  })
         r = self.app.get('/admin/discussion/forums')
+        r.forms[1]['add_forum.shortname'] = 'Test Forum'
+        r.forms[1]['add_forum.name'] = 'Test Forum'
+        r = r.forms[1].submit()
         assert 'error' in r
 
     def test_duplicate_forum_names(self):
-        self.app.post('/admin/discussion/update_forums',
-                        params={'new_forum.shortname':'a',
-                                'new_forum.create':'on',
-                                'new_forum.name':'Forum A',
-                                'new_forum.description':'',
-                                'new_forum.parent':''
-                               })
-        self.app.post('/admin/discussion/update_forums',
-                        params={'new_forum.shortname':'b',
-                                'new_forum.create':'on',
-                                'new_forum.name':'Forum B',
-                                'new_forum.description':'',
-                                'new_forum.parent':''
-                               })
+        r = self.app.get('/admin/discussion/forums')
+        r.forms[1]['add_forum.shortname'] = 'a'
+        r.forms[1]['add_forum.name'] = 'Forum A'
+        r = r.forms[1].submit()
+        r = self.app.get('/admin/discussion/forums')
+        r.forms[1]['add_forum.shortname'] = 'b'
+        r.forms[1]['add_forum.name'] = 'Forum B'
+        r = r.forms[1].submit()
         h.set_context('test', 'Forum')
         forum_a = FM.Forum.query.get(shortname='a')
         self.app.post('/admin/discussion/update_forums',
-                        params={'new_forum.create':'',
-                                'forum-0.delete':'on',
+                        params={'forum-0.delete':'on',
                                 'forum-0.id':str(forum_a._id),
                                 'forum-0.name':'Forum A',
                                 'forum-0.description':''
                                })
         # Now we have two forums: 'a', and 'b'.  'a' is deleted.
         # Let's try to create new forums with these names.
-        self.app.post('/admin/discussion/update_forums',
-                        params={'new_forum.shortname':'a',
-                                'new_forum.create':'on',
-                                'new_forum.name':'Forum A',
-                                'new_forum.description':'',
-                                'new_forum.parent':''
-                               })
         r = self.app.get('/admin/discussion/forums')
+        r.forms[1]['add_forum.shortname'] = 'a'
+        r.forms[1]['add_forum.name'] = 'Forum A'
+        r = r.forms[1].submit()
         assert 'error' in r
-        self.app.post('/admin/discussion/update_forums',
-                        params={'new_forum.shortname':'b',
-                                'new_forum.create':'on',
-                                'new_forum.name':'Forum B',
-                                'new_forum.description':'',
-                                'new_forum.parent':''
-                               })
         r = self.app.get('/admin/discussion/forums')
+        r.forms[1]['add_forum.shortname'] = 'b'
+        r.forms[1]['add_forum.name'] = 'Forum B'
+        r = r.forms[1].submit()
         assert 'error' in r
 
     def test_forum_icon(self):
         file_name = 'neo-icon-set-454545-256x350.png'
         file_path = os.path.join(allura.__path__[0],'public','nf','allura','images',file_name)
         file_data = file(file_path).read()
-        upload = ('new_forum.icon', file_name, file_data)
+        upload = ('add_forum.icon', file_name, file_data)
 
         h.set_context('test', 'discussion')
         r = self.app.get('/admin/discussion/forums')
-        r = self.app.post('/admin/discussion/update_forums',
-                          params={'new_forum.shortname':'TestForum',
-                                  'new_forum.create':'on',
-                                  'new_forum.name':'Test Forum',
-                                  'new_forum.description':'',
-                                  'new_forum.parent':'',
+        app_id = r.forms[1]['add_forum.app_id'].value
+        r = self.app.post('/admin/discussion/add_forum',
+                          params={'add_forum.shortname':'testforum',
+                                  'add_forum.app_id':app_id,
+                                  'add_forum.name':'Test Forum',
+                                  'add_forum.description':'',
+                                  'add_forum.parent':'',
                                   },
                           upload_files=[upload]),
-        r = self.app.get('/discussion/TestForum/icon')
+        r = self.app.get('/discussion/testforum/icon')
         image = Image.open(StringIO(r.body))
         assert image.size == (48,48)
 
     def test_delete_undelete(self):
         r = self.app.get('/admin/discussion/forums')
-        r = self.app.post('/admin/discussion/update_forums',
-                          params={'new_forum.shortname':'TestForum',
-                                  'new_forum.create':'on',
-                                  'new_forum.name':'Test Forum',
-                                  'new_forum.description':'',
-                                  'new_forum.parent':'',
-                                  })
+        r = self.app.get('/admin/discussion/forums')
+        r.forms[1]['add_forum.shortname'] = 'testforum'
+        r.forms[1]['add_forum.name'] = 'Test Forum'
+        r = r.forms[1].submit()
         r = self.app.get('/admin/discussion/forums')
         assert len(r.html.findAll('input',{'value':'Delete'})) == 2
         assert len(r.html.findAll('input',{'value':'Undelete'})) == 0
         r = self.app.get('/discussion/')
         assert 'This forum has been deleted and is not visible to non-admin users' not in r
         h.set_context('test', 'Forum')
-        frm = FM.Forum.query.get(shortname='TestForum')
+        frm = FM.Forum.query.get(shortname='testforum')
 
         r = self.app.post('/admin/discussion/update_forums',
-                          params={'new_forum.create':'',
-                                  'forum-0.delete':'on',
+                          params={'forum-0.delete':'on',
                                   'forum-0.id':str(frm._id),
                                   'forum-0.name':'New Test Forum',
                                   'forum-0.description':'My desc'})
@@ -468,8 +411,7 @@ class TestForumAdmin(TestController):
         r = self.app.get('/discussion/')
         assert 'This forum has been deleted and is not visible to non-admin users' in r
         r = self.app.post('/admin/discussion/update_forums',
-                          params={'new_forum.create':'',
-                                  'forum-0.undelete':'on',
+                          params={'forum-0.undelete':'on',
                                   'forum-0.id':str(frm._id),
                                   'forum-0.name':'New Test Forum',
                                   'forum-0.description':'My desc'})

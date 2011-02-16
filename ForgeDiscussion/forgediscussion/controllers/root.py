@@ -23,6 +23,8 @@ from forgediscussion import model
 from forgediscussion import widgets as FW
 from allura.lib.widgets import discuss as DW
 
+from forgediscussion.widgets.admin import AddForumShort
+
 log = logging.getLogger(__name__)
 
 class RootController(BaseController):
@@ -31,6 +33,7 @@ class RootController(BaseController):
         forum_subscription_form=FW.ForumSubscriptionForm()
         new_topic=DW.NewTopicPost(submit_text='Save')
         announcements_table=FW.AnnouncementsTable()
+        add_forum=AddForumShort()
 
     def _check_security(self):
         require(has_artifact_access('read'))
@@ -39,7 +42,8 @@ class RootController(BaseController):
     @expose('jinja:discussionforums/index.html')
     def index(self, new_forum=False, **kw):
         c.new_topic = self.W.new_topic
-        c.announcements_table = self.W.announcements_table
+        c.new_topic = self.W.new_topic
+        c.add_forum = self.W.add_forum
         announcements=model.ForumThread.query.find(dict(
                 flags='Announcement')).all()
         forums = model.Forum.query.find(dict(
