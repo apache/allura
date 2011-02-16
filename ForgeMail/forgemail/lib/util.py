@@ -76,9 +76,15 @@ def parse_message(data):
                 content_type=part.get_content_type(),
                 filename=part.get_filename(None),
                 payload=part.get_payload(decode=True))
+            charset = part.get_content_charset()
+            if charset:
+                dpart['payload'] = dpart['payload'].decode(charset)
             result['parts'].append(dpart)
     else:
-        result['payload'] = msg.get_payload()
+        result['payload'] = msg.get_payload(decode=True)
+        charset = msg.get_content_charset()
+        if charset:
+            result['payload'] = result['payload'].decode(charset)
     return result
 
 def identify_sender(peer, email_address, headers, msg):
