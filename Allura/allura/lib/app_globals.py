@@ -180,8 +180,13 @@ class Globals(object):
                 text = cgi.escape(text)
                 return u'<pre>' + text + u'</pre>'
         else:
+            # Don't use line numbers for diff highlight's, as per [#1484]
+            if lexer == 'diff':
+                formatter = pygments.formatters.HtmlFormatter(cssclass='codehilite', linenos=False)
+            else:
+                formatter = self.pygments_formatter
             lexer = pygments.lexers.get_lexer_by_name(lexer, encoding='chardet')
-        return h.html.literal(pygments.highlight(text, lexer, self.pygments_formatter))
+        return h.html.literal(pygments.highlight(text, lexer, formatter))
 
     def forge_markdown(self, **kwargs):
         '''return a markdown.Markdown object on which you can call convert'''
