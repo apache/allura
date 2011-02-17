@@ -369,11 +369,13 @@ class DiscussionAttachmentsController(AttachmentsController):
 
 class ModerationController(BaseController):
     __metaclass__=h.ProxiedAttrMeta
+    PostModel = M.Post
     M=h.attrproxy('_discussion_controller', 'M')
     W=h.attrproxy('_discussion_controller', 'W')
     ThreadController=h.attrproxy('_discussion_controller', 'ThreadController')
     PostController=h.attrproxy('_discussion_controller', 'PostController')
     AttachmentController=h.attrproxy('_discussion_controller', 'AttachmentController')
+
 
     def _check_security(self):
         require(has_artifact_access('moderate', self.discussion))
@@ -389,10 +391,10 @@ class ModerationController(BaseController):
     @expose('jinja:discussion/moderate.html')
     @validate(pass_validator)
     def index(self, **kw):
-        kw = WidgetConfig.post_filter.to_python(kw, None)
+        kw = WidgetConfig.post_filter.validate(kw, None)
         page = kw.pop('page', 0)
         limit = kw.pop('limit', 50)
-        status = kw.pop('status', '-')
+        status = kw.pop('status', 'pending')
         flag = kw.pop('flag', None)
         c.post_filter = WidgetConfig.post_filter
         c.moderate_posts = WidgetConfig.moderate_posts
@@ -402,8 +404,10 @@ class ModerationController(BaseController):
             query['status'] = status
         if flag:
             query['flags'] = {'$gte': int(flag) }
-        q = M.Post.query.find(query)
+        q = self.PostModel.query.find(query)
         count = q.count()
+        if not page:
+            page = 0
         page = int(page)
         limit = int(limit)
         q = q.skip(page)
@@ -418,21 +422,16 @@ class ModerationController(BaseController):
     @h.vardec
     @expose()
     @require_post()
-    def moderate(self, post=None,
-                 approve=None,
-                 spam=None,
-                 delete=None,
-                 **kw):
-        for args in post:
-            if not args.get('checked', False): continue
-            post = M.Post.query.get(slug=args['slug'])
-            if approve:
-                if post.status != 'ok':
-                    post.approve()
-            elif spam:
-                if post.status != 'spam': post.spam()
-            elif delete:
-                post.delete()
+    def save_moderation(self, post=None, delete=None, spam=None, approve=None, **kw):
+        for p in post:
+            if 'checked' in p:
+                posted = self.PostModel.query.get(slug=p['slug'])
+                if delete:
+                    posted.delete()
+                elif spam:
+                    posted.status = 'spam'
+                elif approve:
+                    posted.status = 'ok'
         redirect(request.referer)
 
 class PostRestController(PostController):

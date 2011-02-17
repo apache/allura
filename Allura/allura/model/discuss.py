@@ -302,6 +302,7 @@ class Post(Message, VersionedArtifact):
     class __mongometa__:
         name='post'
         history_class = PostHistory
+        indexes = [ 'discussion_id', 'thread_id' ]
     type_s = 'Post'
 
     thread_id = ForeignIdProperty(Thread)

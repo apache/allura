@@ -87,7 +87,7 @@ class PostFilter(ff.ForgeForm):
                         ew.Option(py_value='spam', label='Spam'),
                         ew.Option(py_value='pending', label='Pending moderation'),
                         ew.Option(py_value='ok', label='Ok')],
-                    if_missing='-'),
+                    if_missing='pending'),
                 ew.IntField(name='flag',
                             label='Show posts with at least "n" flags',
                             css_class='text',

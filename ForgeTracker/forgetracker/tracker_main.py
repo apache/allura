@@ -156,6 +156,11 @@ class ForgeTrackerApp(Application):
             links.append(SitemapEntry('Edit Milestones', self.config.url() + 'milestones', ui_icon=g.icons['table']))
             links.append(SitemapEntry('Edit Searches', c.project.url() + 'admin/' + c.app.config.options.mount_point + '/bins/', ui_icon=g.icons['search']))
         links.append(SitemapEntry('View Stats', self.config.url() + 'stats', ui_icon=g.icons['stats']))
+        discussion = c.app.config.discussion
+        pending_mod_count = M.Post.query.find({'discussion_id':discussion._id, 'status':'pending'}).count()
+        if pending_mod_count and h.has_artifact_access('moderate', discussion)():
+            links.append(SitemapEntry('Moderate', discussion.url() + 'moderate', ui_icon=g.icons['pencil'],
+                small = pending_mod_count))
         if ticket:
             for aref in ticket.references+ticket.backreferences.values():
                 artifact = M.ArtifactReference(aref).artifact

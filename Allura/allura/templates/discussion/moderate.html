@@ -16,6 +16,6 @@ Moderation Queue
   <a href="?status={{status}}&amp;flag={{flag}}&amp;page={{page-limit}}">Previous Page</a>
   <a href="?status={{status}}&amp;flag={{flag}}&amp;page={{page+limit}}">Next Page</a>
 </div>
-{{c.post_filter.display(action='.', value=dict(status=status, flag=flag))}}
-{{c.moderate_posts.display(value=dict(posts=posts), action='.')}}
+{{c.post_filter.display(action=discussion.url()+'moderate', value=dict(status=status, flag=flag))}}
+{{c.moderate_posts.display(value=dict(posts=posts), action=discussion.url()+'moderate/save_moderation')}}
 {% endblock %}

@@ -142,48 +142,4 @@ class ForumPostController(PostController):
         super(ForumPostController, self).moderate(**kw)
 
 class ForumModerationController(ModerationController):
-
-    @h.vardec
-    @expose('jinja:discussion/moderate.html')
-    @validate(pass_validator)
-    def index(self, post=None, **kw):
-        if kw.pop('delete', None):
-            for p in post:
-                if 'checked' in p:
-                    posted = DM.ForumPost.query.find(dict(slug=p['slug'])).first()
-                    posted.delete()
-        elif kw.pop('spam', None):
-            for p in post:
-                if 'checked' in p:
-                    posted = DM.ForumPost.query.find(dict(slug=p['slug'])).first()
-                    posted.status = 'spam'
-        elif kw.pop('approve', None):
-            for p in post:
-                if 'checked' in p:
-                    posted = DM.ForumPost.query.find(dict(slug=p['slug'])).first()
-                    posted.status = 'ok'
-        kw = WidgetConfig.post_filter.validate(kw, None)
-        page = kw.pop('page', 0)
-        limit = kw.pop('limit', 50)
-        status = kw.pop('status', '-')
-        flag = kw.pop('flag', None)
-        c.post_filter = WidgetConfig.post_filter
-        c.moderate_posts = WidgetConfig.moderate_posts
-        query = dict(
-            discussion_id=self.discussion._id)
-        if status != '-':
-            query['status'] = status
-        if flag:
-            query['flags'] = {'$gte': int(flag) }
-        q = DM.ForumPost.query.find(query)
-        count = q.count()
-        page = int(page)
-        limit = int(limit)
-        q = q.skip(page)
-        q = q.limit(limit)
-        pgnum = (page // limit) + 1
-        pages = (count // limit) + 1
-        return dict(discussion=self.discussion,
-                    posts=q, page=page, limit=limit,
-                    status=status, flag=flag,
-                    pgnum=pgnum, pages=pages)
+    PostModel = DM.ForumPost

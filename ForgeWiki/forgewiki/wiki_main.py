@@ -177,8 +177,13 @@ class ForgeWikiApp(Application):
         links = links + [
             SitemapEntry('Wiki Home',c.app.url),
             SitemapEntry('Browse Pages',c.app.url+'browse_pages/'),
-            SitemapEntry('Browse Labels',c.app.url+'browse_tags/'),
-            SitemapEntry(''),
+            SitemapEntry('Browse Labels',c.app.url+'browse_tags/')]
+        discussion = c.app.config.discussion
+        pending_mod_count = M.Post.query.find({'discussion_id':discussion._id, 'status':'pending'}).count()
+        if pending_mod_count and h.has_artifact_access('moderate', discussion)():
+            links.append(SitemapEntry('Moderate', discussion.url() + 'moderate', ui_icon=g.icons['pencil'],
+                small = pending_mod_count))
+        links = links + [SitemapEntry(''),
             SitemapEntry('Wiki Help',c.app.url+'wiki_help/', className='nav_child'),
             SitemapEntry('Markdown Syntax',c.app.url+'markdown_syntax/', className='nav_child')
         ]
