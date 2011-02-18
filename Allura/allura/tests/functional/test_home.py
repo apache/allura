@@ -1,3 +1,4 @@
+import json
 from pylons import g
 from formencode.variabledecode import variable_encode
 
@@ -55,3 +56,8 @@ class TestProjectHome(TestController):
         r = self.app.get('/u/test-admin/sub1/')
         assert r.location.endswith('home/'), r.location
         r.follow()
+
+    def test_user_search(self):
+        r = self.app.get('/p/test/user_search?term=admi', status=200)
+        j = json.loads(r.body)
+        assert j['users'][0]['id'].startswith('admi')

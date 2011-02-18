@@ -58,7 +58,7 @@ class NeighborhoodController(object):
         self.browse = NeighborhoodProjectBrowseController(neighborhood=self.neighborhood)
         self._admin = NeighborhoodAdminController(self.neighborhood)
         self._moderate = NeighborhoodModerateController(self.neighborhood)
-    
+
     def _check_security(self):
         require(has_neighborhood_access('read', self.neighborhood),
                 'Read access required')
@@ -300,7 +300,7 @@ class ProjectController(object):
 
     @expose('json:')
     def user_search(self,term=''):
-        users = M.Users.by_display_name(term, substring=True)
+        users = M.User.by_display_name(term, substring=True)
         named_roles = RoleCache(
             g.credentials,
             g.credentials.project_roles(project_id=c.project.root_project._id).named)
@@ -664,4 +664,3 @@ class GrantController(object):
     def revoke(self):
         self.grant.delete()
         redirect(request.referer)
-
