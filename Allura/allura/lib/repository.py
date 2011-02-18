@@ -57,6 +57,9 @@ class RepositoryApp(Application):
     def admin_menu(self):
         admin_url = c.project.url()+'admin/'+self.config.options.mount_point+'/'
         links = [SitemapEntry('Viewable Files', admin_url + 'extensions', className='admin_modal')]
+        links.append(SitemapEntry('Refresh Repository',
+                                  c.project.url() + self.config.options.mount_point + '/refresh',
+                                  className='nav_child'))
         if self.permissions and security.has_artifact_access('configure', app=self)():
             links.append(SitemapEntry('Permissions', admin_url + 'permissions', className='nav_child'))
         return links
