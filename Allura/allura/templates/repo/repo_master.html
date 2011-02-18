@@ -24,3 +24,13 @@
     {% endif %}
   {% endif %}
 {% endmacro %}
+
+{% macro commit_labels(commit) %}
+  {% set branches, tags = commit.symbolic_ids %}
+  {% for b in branches %}
+    <span style="background: #80ff80; color: black; border-style: solid; border-width: 1px; padding: 2px">{{b}}</span>
+  {% endfor %}
+  {% for t in tags %}
+    <span style="background: #ffff80; color: black; border-style: solid; border-width: 1px; padding: 2px">{{t}}</span>
+  {% endfor %}
+{% endmacro %}
