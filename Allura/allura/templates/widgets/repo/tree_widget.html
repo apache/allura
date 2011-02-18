@@ -24,14 +24,14 @@
    {% endif %}
     {% for dirent in tree.ls() %}
     <tr>
-      <td>
+      <td class="nowrap">
         <a href="{{h.really_unicode(dirent.href)}}">
           <b data-icon="{{dirent.kind == 'DIR' and 'o' or 'n'}}" class="ico {{dirent.kind == 'DIR' and 'folder' or 'table'}}"></b>
           <span>{{h.really_unicode(dirent.name)}}</span>
         </a>
       </td>
-      <td>{{lib.abbr_date(dirent.last_commit.date)}}</td>
-      <td>
+      <td class="nowrap">{{lib.abbr_date(dirent.last_commit.date)}}</td>
+      <td class="nowrap">
         {% if dirent.last_commit.author_url %}
           <a href="{{dirent.last_commit.author_url}}">{{lib.email_gravatar(dirent.last_commit.author_email, title=h.really_unicode(dirent.last_commit.author), size=16)}}</a>
           <a href="{{dirent.last_commit.author_url}}">{{h.really_unicode(dirent.last_commit.author)}}</a>

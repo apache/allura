@@ -367,6 +367,9 @@ td, td img {
   -o-transform: rotate(45deg);
   transform: rotate(45deg);
 }
+.nowrap {
+    white-space: nowrap;
+}
 
 /* 
  * Style elements in the main header and footer areas.

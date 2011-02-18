@@ -626,7 +626,7 @@ class Commit(RepoObject):
     def summary(self):
         message = h.really_unicode(self.message)
         first_line = message.split('\n')[0]
-        return h.text.truncate(first_line, 75)
+        return h.text.truncate(first_line, 50)
 
     def get_path(self, path):
         '''Return the blob on the given path'''
