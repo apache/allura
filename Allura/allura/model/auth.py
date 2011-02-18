@@ -71,6 +71,7 @@ class ApiToken(MappedClass):
     class __mongometa__:
         name='api_token'
         session = main_orm_session
+        unique_indexes = [ 'user_id' ]
 
     _id = FieldProperty(S.ObjectId)
     user_id = ForeignIdProperty('User')

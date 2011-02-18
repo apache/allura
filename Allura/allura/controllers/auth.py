@@ -294,8 +294,8 @@ class PreferencesController(BaseController):
                preferences=None,
                **kw):
         require_authenticated()
-        c.user.set_pref('display_name', display_name)
         if config.get('auth.method', 'local') == 'local':
+            c.user.set_pref('display_name', display_name)
             for i, (old_a, data) in enumerate(zip(c.user.email_addresses, addr or [])):
                 obj = c.user.address_object(old_a)
                 if data.get('delete') or not obj:
@@ -315,10 +315,10 @@ class PreferencesController(BaseController):
                 if data.get('delete') or not obj:
                     del c.user.open_ids[i]
                     if obj: obj.delete()
-        for k,v in preferences.iteritems():
-            if k == 'results_per_page':
-                v = int(v)
-            c.user.set_pref(k, v)
+            for k,v in preferences.iteritems():
+                if k == 'results_per_page':
+                    v = int(v)
+                c.user.set_pref(k, v)
         redirect('.')
         
     @h.vardec
@@ -340,7 +340,7 @@ class PreferencesController(BaseController):
         else:
             tok.secret_key = h.cryptographic_nonce()
         redirect(request.referer)
-
+    
     @expose()
     @require_post()
     def del_api_token(self):
@@ -348,7 +348,7 @@ class PreferencesController(BaseController):
         if tok is None: return
         tok.delete()
         redirect(request.referer)
-
+    
     @expose()
     @require_post()
     def revoke_oauth(self, _id=None):

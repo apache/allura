@@ -19,24 +19,27 @@
   </div>
   {% endif %}
 
-<br style="clear:both"/>
-  <h2>API Token</h2>
-  {% if api_token %}
-    <p>
-      <b>API Key:</b><br/>
-      {{api_token.api_key}}<br/>
-      <b>Secret Key:</b><br/>
-      {{api_token.secret_key}}<br/>
-    </p>
-    <form method="POST" action="del_api_token" class="grid-11">
-      <input type="submit" value="Delete API Token">
-    </form>
-  {% else %}
-    <p>No API token generated</p>
+  {% if tg.config.get('auth.method', 'local') == 'local' %}
+      <br style="clear:both"/>
+      <h2>API Token</h2>
+      {% if api_token %}
+        <p>
+          <b>API Key:</b><br/>
+          {{api_token.api_key}}<br/>
+          <b>Secret Key:</b><br/>
+          {{api_token.secret_key}}<br/>
+        </p>
+        <form method="POST" action="del_api_token" class="grid-11">
+          <input type="submit" value="Delete API Token">
+        </form>
+      {% else %}
+        <p>No API token generated</p>
+      {% endif %}
+      <form method="POST" action="gen_api_token" class="grid-11">
+        <input type="submit" value="(Re)generate API Token">
+      </form>
   {% endif %}
-  <form method="POST" action="gen_api_token" class="grid-11">
-    <input type="submit" value="(Re)generate API Token">
-  </form>
+
   <div style="clear:both"></div>
 
   <h2>Authorized Third-party Applications</h2>
@@ -60,10 +63,6 @@
   <br/>
   
   <form action="update" method="post">
-        <label class="grid-4">Display Name</label>
-        <div class="grid-18">
-          <input type="text" value="{{c.user.display_name}}" name="display_name"/>
-        </div>
         <label class="grid-4">Email Format</label>
         <div class="grid-18">
           <select name="preferences.email_format">
@@ -72,6 +71,7 @@
             <option value="both" {{'selected' if c.user.preferences.email_format == 'both' else ''}}>Combined</option>
           </select>
         </div>
+        {% if tg.config.get('auth.method', 'local') == 'local' %}
         <label class="grid-4">Page Size</label>
         <div class="grid-18">
           <select name="preferences.results_per_page">
@@ -81,6 +81,7 @@
             {% endfor %}
           </select>
         </div>
+        {% endif %}
     
     {% if tg.config.get('auth.method', 'local') == 'local' %}
       {% for a in c.user.email_addresses %}
