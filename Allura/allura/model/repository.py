@@ -86,6 +86,14 @@ class RepositoryImplementation(object):
     def shorthand_for_commit(self, commit):
         return '[%s]' % commit.object_id[:6]
 
+    def symbolics_for_commit(self, commit):
+        '''Return symbolic branch and tag names for a commit.
+        Default generic implementation is provided, subclasses
+        may override if they have more efficient means.'''
+        branches = [h.name for h in self._repo.branches if h.object_id == commit.object_id]
+        tags = [h.name for h in self._repo.repo_tags if h.object_id == commit.object_id]
+        return branches, tags
+
     def url_for_commit(self, commit):
         return '%sci/%s/' % (self._repo.url(), commit.object_id)
 
@@ -156,6 +164,8 @@ class Repository(Artifact):
         return self._impl.open_blob(blob)
     def shorthand_for_commit(self, commit):
         return self._impl.shorthand_for_commit(commit)
+    def symbolics_for_commit(self, commit):
+        return self._impl.symbolics_for_commit(commit)
     def url_for_commit(self, commit):
         return self._impl.url_for_commit(commit)
     def compute_tree(self, commit, path='/'):
@@ -189,6 +199,7 @@ class Repository(Artifact):
         try:
             return self.commit(branch)
         except: # pragma no cover
+            log.exception('Cannot get latest commit for a branch', branch)
             return None
 
     def url(self):
@@ -655,6 +666,10 @@ class Commit(RepoObject):
 
     def shorthand_id(self):
         return self.repo.shorthand_for_commit(self)
+
+    @LazyProperty
+    def symbolic_ids(self):
+        return self.repo.symbolics_for_commit(self)
 
     def url(self):
         return self.repo.url_for_commit(self)
