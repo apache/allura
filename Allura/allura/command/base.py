@@ -58,5 +58,8 @@ class Command(command.Command):
                 self.tools.append((ep.name, ep.load()))
             except ImportError:
                 log.warning('Canot load entry point %s', ep)
+        for ep in iter_entry_points('allura.command_init'):
+            log.info('Running reactor_init for %s', ep.name)
+            ep.load()(conf)
         log.info('Loaded tools')
 
