@@ -29,11 +29,4 @@
             });
         }
     }).disableSelection();
-    $("table.ticket-list").delegate("tr", "click", function(){
-        var link = $(this).find('td a').attr('href');
-        if(link){
-            location.href = link;
-        }
-    });
-
 })();

@@ -26,7 +26,7 @@
               {% if col['name'] == 'ticket_num' %}
                 <td><a href="{{t.url()}}">{{t[col['name']]}}</a></td>
               {% elif col['name'] == 'summary' %}
-                <td>{{t[col['name']]}}</td>
+              <td><a href="{{t.url()}}">{{t[col['name']]}}</a></td>
               {% elif col['name'] == 'status' %}
                 <td class="{{t.open_or_closed}}">{{t.status}}</td>
               {% elif col['name'] == 'assigned_to' %}
