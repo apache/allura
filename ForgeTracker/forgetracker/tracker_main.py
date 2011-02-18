@@ -315,8 +315,8 @@ class RootController(BaseController):
         sortable_custom_fields=c.app.globals.sortable_custom_fields_shown_in_search()
         if not columns:
             columns = [dict(name='ticket_num', sort_name='ticket_num_i', label='Ticket Number', active=True),
-                       dict(name='summary', sort_name='', label='Summary', active=True),
-                       dict(name='_milestone', sort_name='', label='Milestone', active=True),
+                       dict(name='summary', sort_name='snippet_s', label='Summary', active=True),
+                       dict(name='_milestone', sort_name='milestone_s', label='Milestone', active=True),
                        dict(name='status', sort_name='status_s', label='Status', active=True),
                        dict(name='assigned_to', sort_name='assigned_to_s', label='Owner', active=True)]
             for field in sortable_custom_fields:
