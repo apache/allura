@@ -371,20 +371,23 @@ class RootController(BaseController):
                 for new in milestones:
                     for m in fld.milestones:
                         if m.name == new['old_name']:
-                            m.name = new['new_name']
-                            m.description = new['description']
-                            m.due_date = new['due_date']
-                            m.complete = new['complete'] == 'Closed'
-                            if new['old_name'] != new['new_name']:
-                                q = '%s:%s' % (fld.name, new['old_name'])
-                                r = search_artifact(TM.Ticket, q)
-                                ticket_numbers = [match['ticket_num_i'] for match in r.docs]
-                                tickets = TM.Ticket.query.find(dict(
-                                    app_config_id=c.app.config._id,
-                                    ticket_num={'$in':ticket_numbers})).all()
-                                for t in tickets:
-                                    t.custom_fields[field_name] = new['new_name']
-                                update_counts = True
+                            if new['new_name'] == '':
+                                flash('You must name the milestone.','error')
+                            else:
+                                m.name = new['new_name']
+                                m.description = new['description']
+                                m.due_date = new['due_date']
+                                m.complete = new['complete'] == 'Closed'
+                                if new['old_name'] != new['new_name']:
+                                    q = '%s:%s' % (fld.name, new['old_name'])
+                                    r = search_artifact(TM.Ticket, q)
+                                    ticket_numbers = [match['ticket_num_i'] for match in r.docs]
+                                    tickets = TM.Ticket.query.find(dict(
+                                        app_config_id=c.app.config._id,
+                                        ticket_num={'$in':ticket_numbers})).all()
+                                    for t in tickets:
+                                        t.custom_fields[field_name] = new['new_name']
+                                    update_counts = True
                     if new['old_name'] == '' and new['new_name'] != '':
                         fld.milestones.append(dict(
                             name=new['new_name'],

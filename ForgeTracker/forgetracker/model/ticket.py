@@ -93,12 +93,13 @@ class Globals(MappedClass):
         self._milestone_counts = []
         for fld in self.milestone_fields:
             for m in fld.milestones:
-                k = '%s:%s' % (fld.name, m.name)
-                r = search_artifact(Ticket, k, rows=0)
-                hits = r is not None and r.hits or 0
-                q = search_artifact(Ticket, '%s && (%s)' % (k, self.closed_query), rows=0)
-                closed = q is not None and q.hits or 0
-                self._milestone_counts.append({'name':k,'hits':hits,'closed':closed})
+                if m.name:
+                    k = '%s:%s' % (fld.name, m.name)
+                    r = search_artifact(Ticket, k, rows=0)
+                    hits = r is not None and r.hits or 0
+                    q = search_artifact(Ticket, '%s && (%s)' % (k, self.closed_query), rows=0)
+                    closed = q is not None and q.hits or 0
+                    self._milestone_counts.append({'name':k,'hits':hits,'closed':closed})
         self._milestone_counts_expire = \
             self._bin_counts_expire = \
             datetime.utcnow() + timedelta(minutes=60)
