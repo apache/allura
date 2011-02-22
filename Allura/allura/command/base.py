@@ -52,6 +52,7 @@ class Command(command.Command):
             ming.configure(**conf)
         else:
             log = logging.getLogger('allura.command')
+            conf = pylons.config
         self.tools = []
         for ep in iter_entry_points('allura'):
             try:
