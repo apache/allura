@@ -2194,8 +2194,42 @@ nav .ico {
   margin-left: 10px;
 }
 
-.pad p, .pad h1, .pad h2, .pad h3, .pad h4 {
+.pad p, .pad h1, .pad h2, .pad h3, .pad h4, .pad h5, .pad h6 {
   padding: 0 10px 1em;
+  margin-bottom: 0;
+}
+
+.pad h1, .pad h2, .pad h3, .pad h4, .pad h5, .pad h6 {
+  font-weight: bold;
+}
+
+.pad h2.title {
+  font-weight: normal;
+  margin-bottom: 1.5em;
+}
+
+.pad h1 {
+  font-size: 200%;
+}
+
+.pad h2 {
+  font-size: 180%;
+}
+
+.pad h3 {
+  font-size: 160%;
+}
+
+.pad h4 {
+  font-size: 140%;
+}
+
+.pad h5 {
+  font-size: 120%;
+}
+
+.pad h6 {
+  font-size: 100%;
 }
 
 .pad .paginate {
