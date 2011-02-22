@@ -56,7 +56,9 @@
 {% endmacro %}
 
 {% macro abbr_date(start_time) %}
-    <span title="{{start_time.strftime('%a %b %d, %Y %I:%M %p UTC')}}">{{h.ago(start_time)}}</span>
+    <span title="{{start_time.strftime('%a %b %d, %Y %I:%M %p UTC') if start_time else 'unknown'}}">
+      {{h.ago(start_time)}}
+    </span>
 {% endmacro %}
 
 {% macro path_links(parts) %}
