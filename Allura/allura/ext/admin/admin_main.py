@@ -124,7 +124,7 @@ class AdminApp(Application):
         if has_project_access('security')():
             links.append(SitemapEntry('Permissions', admin_url+'permissions/', className='nav_child'))
         links.append(SitemapEntry('Tools', admin_url+'tools', className='nav_child'))
-        if has_project_access('security')():
+        if c.project.is_root and has_project_access('security')():
             links.append(SitemapEntry('Usergroups', admin_url+'groups/', className='nav_child'))
         if len(c.project.neighborhood_invitations):
             links.append(SitemapEntry('Invitation(s)', admin_url+'invitations', className='nav_child'))
