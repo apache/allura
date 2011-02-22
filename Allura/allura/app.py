@@ -4,13 +4,13 @@ from cStringIO import StringIO
 
 from tg import expose, redirect, flash
 from tg.decorators import without_trailing_slash
-from pylons import c, g
+from pylons import c, g, request
 from bson import ObjectId
 
 from ming.orm import session
 
 from allura.lib.helpers import push_config, vardec
-from allura.lib.security import require, has_artifact_access
+from allura.lib.security import require, has_artifact_access, has_project_access
 from allura import model
 from allura.controllers import BaseController
 from allura.lib.decorators import react, require_post
@@ -212,7 +212,7 @@ class Application(object):
     def admin_menu(self):
         admin_url = c.project.url()+'admin/'+self.config.options.mount_point+'/'
         links = []
-        if self.permissions and has_artifact_access('configure', app=self)():
+        if self.permissions and has_project_access('security')():
             links.append(SitemapEntry('Permissions', admin_url + 'permissions', className='nav_child'))
         if len(self.config_options) > 3:
             links.append(SitemapEntry('Options', admin_url + 'options', className='admin_modal'))
@@ -274,7 +274,7 @@ class DefaultAdminController(BaseController):
         from ext.admin.widgets import PermissionCard
         c.card = PermissionCard()
         return dict(app=self.app,
-                    allow_config=has_artifact_access('configure', app=self.app)())
+                    allow_config=has_project_access('security')())
 
     @expose('jinja:app_admin_options.html')
     def options(self):
@@ -322,9 +322,9 @@ class DefaultAdminController(BaseController):
             role_ids = map(ObjectId, group_ids + new_group_ids)
             roles = model.ProjectRole.query.find(dict(
                 _id={'$in':role_ids},
-                project_id=c.project._id))
+                project_id=c.project.root_project._id))
             self.app.config.acl[perm] = [ r._id for r in roles ]
-        redirect('.')
+        redirect(request.referer)
 
     @expose()
     @require_post()

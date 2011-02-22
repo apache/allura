@@ -488,7 +488,7 @@ class PermissionsController(BaseController):
             role_ids = map(ObjectId, group_ids + new_group_ids)
             roles = M.ProjectRole.query.find(dict(
                 _id={'$in':role_ids},
-                project_id=c.project._id))
+                project_id=c.project.root_project._id))
             c.project.acl[perm] = [ r._id for r in roles ]
         g.publish('react', 'forge.project_updated')
         redirect('.')
