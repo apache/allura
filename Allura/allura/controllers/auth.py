@@ -73,7 +73,6 @@ class AuthController(BaseController):
                           prompt='Click below to continue')
 
     @expose()
-    @require_post()
     def login_process_oid(self, **kw):
         oid_obj = process_oid(failure_redirect='.')
         c.user = oid_obj.claimed_by_user()
@@ -84,6 +83,12 @@ class AuthController(BaseController):
                   % c.user.get_pref('display_name'))
             redirect('setup_openid_user')
         redirect(kw.pop('return_to', '/'))
+
+    @expose('jinja:bare_openid.html')
+    def bare_openid(self, url=None):
+        '''Called to notify the user that they must set up a 'real' (with
+        username) account when they have a pure openid account'''
+        return dict(location=url)
 
     @expose('jinja:setup_openid_user.html')
     def setup_openid_user(self):

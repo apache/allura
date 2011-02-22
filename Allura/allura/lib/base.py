@@ -18,22 +18,21 @@ from allura.lib.custom_middleware import ForgeMiddleware
 __all__ = ['WsgiDispatchController']
 
 def wsgi_dispatch(environ):
-        import allura.model as model
-        host = environ['HTTP_HOST'].lower()
-        if host == config['oembed.host']:
-            from allura.controllers.oembed import OEmbedController
-            return OEmbedController()
+    import allura.model as model
+    host = environ['HTTP_HOST'].lower()
+    if host == config['oembed.host']:
+        from allura.controllers.oembed import OEmbedController
+        return OEmbedController()
 
-        neighborhood = model.Neighborhood.query.get(url_prefix='//' + host + '/')
-        if neighborhood:
-            from allura.controllers.project import HostNeighborhoodController
-            return HostNeighborhoodController(neighborhood.name, neighborhood.shortname_prefix)
+    neighborhood = model.Neighborhood.query.get(url_prefix='//' + host + '/')
+    if neighborhood:
+        from allura.controllers.project import HostNeighborhoodController
+        return HostNeighborhoodController(neighborhood.name, neighborhood.shortname_prefix)
 
-        if environ['PATH_INFO'].startswith('/_wsgi_/'):
-            for ep in pkg_resources.iter_entry_points('allura'):
-                App = ep.load()
-                if App.wsgi and App.wsgi.handles(environ): return App.wsgi
-
+    if environ['PATH_INFO'].startswith('/_wsgi_/'):
+        for ep in pkg_resources.iter_entry_points('allura'):
+            App = ep.load()
+            if App.wsgi and App.wsgi.handles(environ): return App.wsgi
         return None
 
 class WsgiDispatchController(TGController):
@@ -51,7 +50,10 @@ class WsgiDispatchController(TGController):
         self._app = ForgeMiddleware(self._app)
 
     def _base_app(self, environ, start_response):
-        self._setup_request()
+        try:
+            self._setup_request()
+        except exc.HTTPException, err:
+            return err(environ, start_response)
         app = self._wsgi_handler(environ)
         if app is None:
             app = lambda e,s: TGController.__call__(self, e, s)
