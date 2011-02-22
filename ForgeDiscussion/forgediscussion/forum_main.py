@@ -42,7 +42,7 @@ class ForgeDiscussionApp(Application):
                      schema.OneOf('ApproveOnceModerated', 'ModerateAll'), 'ApproveOnceModerated')
         ]
     PostClass=DM.ForumPost
-    AttachmentClass=M.DiscussionAttachment
+    AttachmentClass=DM.ForumAttachment
     searchable=True
     tool_label='Discussion'
     default_mount_label='Discussion'

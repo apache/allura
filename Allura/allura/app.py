@@ -227,7 +227,7 @@ class Application(object):
             parent_id = None
         thd = artifact.get_discussion_thread(data)
         # Handle attachments
-        message_id = data['message_id'][0]
+        message_id = data['message_id']
         if data.get('filename'):
             # Special case - the actual post may not have been created yet
             log.info('Saving attachment %s', data['filename'])
@@ -235,7 +235,7 @@ class Application(object):
             self.AttachmentClass.save_attachment(
                 data['filename'], fp,
                 content_type=data.get('content_type', 'application/octet-stream'),
-                discussion_id=self.config.discussion_id,
+                discussion_id=thd.discussion_id,
                 thread_id=thd._id,
                 post_id=message_id,
                 artifact_id=message_id)
@@ -248,7 +248,7 @@ class Application(object):
             post.attach(
                 'alternate', fp,
                 content_type=data.get('content_type', 'application/octet-stream'),
-                discussion_id=self.config.discussion_id,
+                discussion_id=thd.discussion_id,
                 thread_id=thd._id,
                 post_id=message_id)
         else:

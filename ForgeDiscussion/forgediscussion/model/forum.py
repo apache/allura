@@ -81,10 +81,14 @@ class Forum(M.Discussion):
         parent_id = None
         if data is not None:
             parent_id = (data.get('in_reply_to') or [None])[0]
+            message_id = data.get('message_id') or ''
             subject = data['headers'].get('Subject', subject)
         if parent_id is not None:
             parent = self.post_class().query.get(_id=parent_id)
             if parent: return parent.thread
+        if message_id:
+            post = self.post_class().query.get(_id=message_id)
+            if post: return post.thread
         # Otherwise it's a new thread
         return self.thread_class()(discussion_id=self._id,subject=subject)
 

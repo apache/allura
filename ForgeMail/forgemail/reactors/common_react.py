@@ -37,7 +37,7 @@ def received_email(routing_key, data):
     '''
     msg = util.parse_message(data['data'])
     user = util.identify_sender(data['peer'], data['mailfrom'], msg['headers'], msg)
-    log.info('Received email from %s', user)
+    log.info('Received email from %s', user.username)
     # For each of the addrs, determine the project/app and route appropriately
     for addr in data['rcpttos']:
         try:
@@ -51,10 +51,11 @@ def received_email(routing_key, data):
                     log.info('Sending message to audit queue %s', topic)
                     if msg['multipart']:
                         msg_hdrs = msg['headers']
-                        for part in msg['parts'][1:]:
+                        for part in msg['parts']:
+                            if part.get('content_type', '').startswith('multipart/'): continue
                             msg = dict(
                                 headers=dict(msg_hdrs, **part['headers']),
-                                message_id=part['message_id'][0],
+                                message_id=part['message_id'],
                                 in_reply_to=part['in_reply_to'],
                                 references=part['references'],
                                 filename=part['filename'],

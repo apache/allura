@@ -62,7 +62,7 @@ def parse_message(data):
     result = {}
     result['multipart'] = multipart = msg.is_multipart()
     result['headers'] = dict(msg)
-    result['message_id'] = _parse_message_id(msg.get('Message-ID'))
+    result['message_id'] = _parse_message_id(msg.get('Message-ID'))[0]
     result['in_reply_to'] = _parse_message_id(msg.get('In-Reply-To'))
     result['references'] = _parse_message_id(msg.get('References'))
     if multipart:
@@ -70,7 +70,7 @@ def parse_message(data):
         for part in msg.walk():
             dpart = dict(
                 headers=dict(part),
-                message_id=result['message_id'][0],
+                message_id=result['message_id'],
                 in_reply_to=result['in_reply_to'],
                 references=result['references'],
                 content_type=part.get_content_type(),

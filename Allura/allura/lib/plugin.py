@@ -184,7 +184,6 @@ class LdapAuthenticationProvider(AuthenticationProvider):
 
     def set_password(self, user, old_password, new_password):
         try:
-            import pdb; pdb.set_trace()
             dn = 'uid=%s,%s' % (user.username, config['auth.ldap.suffix'])
             con = ldap.initialize(config['auth.ldap.server'])
             con.bind_s(dn, old_password.encode('utf-8'))
