@@ -44,6 +44,7 @@ class RootController(BaseController):
         c.new_topic = self.W.new_topic
         c.new_topic = self.W.new_topic
         c.add_forum = self.W.add_forum
+        c.announcements_table = self.W.announcements_table
         announcements=model.ForumThread.query.find(dict(
                 flags='Announcement')).all()
         forums = model.Forum.query.find(dict(
