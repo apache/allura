@@ -111,23 +111,6 @@ class ThreadHeader(DW.ThreadHeader):
     widgets=dict(DW.ThreadHeader.widgets,
                  moderate_thread=ModerateThread(),
                  announcements_table=AnnouncementsTable())
-    def resources(self):
-        for r in super(ThreadHeader, self).resources(): yield r
-        yield ew.JSScript('''
-        $(window).load(function () {
-            var tag_btn = $('div.actions a.thread_tag');
-            var feed_btn = $('div.actions a.thread_feed');
-            var mod_btn = $('div.actions a.mod_thread_link');
-            var action_holder = $('h2.title small');
-            action_holder.append(tag_btn);
-            tag_btn.show();
-            action_holder.append(feed_btn);
-            feed_btn.show();
-            if(mod_btn){
-                action_holder.append(mod_btn);
-                mod_btn.show();
-            }
-        });''')
 
 class Post(DW.Post):
     show_subject=False

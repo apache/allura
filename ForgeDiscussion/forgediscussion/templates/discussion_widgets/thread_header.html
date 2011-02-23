@@ -1,13 +1,5 @@
 {% import 'jinja_master/lib.html' as lib with context %}
 
-<div class="actions">
-  {% if show_moderate and h.has_artifact_access('moderate', value)() %}
-  <a href="#" title="Moderate" id="mod_thread_link" style="display:none"><b data-icon="{{g.icons['pencil'].char}}" class="ico {{g.icons['pencil'].css}}"></b></a>
-  {% endif %}
-  <a href="#" class="thread_tag" style="display:none" title="Label This"><b data-icon="z" class="ico ico-tag"></b></a>
-  <a href="feed.rss" class="thread_feed" style="display:none" title="Follow This"><b data-icon="f" class="ico ico-feed"></b></a>
-</div>
-
 <div class="grid-5"><label>Forum:</label> <a href="{{value.discussion.url()}}">{{value.discussion.name}}</a></div>
 {% if value.first_post %}
   <div class="grid-5"><label>Creator:</label> <a href="{{value.first_post.author().url()}}">{{value.first_post.author().display_name}}</a></div>

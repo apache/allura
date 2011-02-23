@@ -89,7 +89,7 @@ class ForumController(DiscussionController):
 
 class ForumThreadController(ThreadController):
 
-    @expose('jinja:discussion/thread.html')
+    @expose('jinja:discussionforums/thread.html')
     def index(self, limit=None, page=0, count=0, **kw):
         if self.thread.discussion.deleted and not has_artifact_access('configure', app=c.app)():
             redirect(self.thread.discussion.url()+'deleted')

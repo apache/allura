@@ -1,0 +1,24 @@
+{% extends g.theme.master %}
+
+{% block title %}
+  {{c.project.name}} / {{c.app.config.options.mount_label}} / 
+  {{thread.subject and '%s:%s' % (thread.discussion.name, (thread.subject or '(no subject)')) or thread.discussion.name}}
+{% endblock %}
+
+{% block header %}{{'subject' in thread and thread.subject or '(no subject)'}}{% endblock %}
+
+{% block actions %}
+  {% if show_moderate and h.has_artifact_access('moderate', thread)() %}
+  <a href="#" title="Moderate" id="mod_thread_link"><b data-icon="{{g.icons['pencil'].char}}" class="ico {{g.icons['pencil'].css}}"></b></a>
+  {% endif %}
+  <a href="#" title="Label This" class="thread_tag"><b data-icon="z" class="ico ico-tag"></b></a>
+  <a href="feed.rss" class="thread_feed0" title="Follow This"><b data-icon="{{g.icons['feed'].char}}" class="ico {{g.icons['feed'].css}}"></b></a>
+{% endblock %}
+
+{% block edit_box %}
+  <div class="editbox">{{c.thread_header.display(value=thread, page=page, limit=limit, count=count)}}</div>
+{% endblock %}
+
+{% block content %}
+  {{c.thread.display(value=thread, page=page, limit=limit, count=count)}}
+{% endblock %}
