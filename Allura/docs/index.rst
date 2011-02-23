@@ -8,7 +8,7 @@ Introducing the new *Forge Platform:*
 
 .. toctree::
    :maxdepth: 2
-   
+
    intro
 
 Getting Started
@@ -25,7 +25,7 @@ Writing a PyForge based app
 
 .. toctree::
    :maxdepth: 3
-   
+
    tutorials/wiki-tool
    tools
 
@@ -34,7 +34,7 @@ Inside the Platform Components
 
 .. toctree::
    :maxdepth: 3
-   
+
    platform
    guides/message_bus
    guides/email
@@ -45,7 +45,7 @@ Frequently Asked Questions
 =====================================================================
 .. toctree::
    :maxdepth: 1
-   
+
    faq
 
 Project References
@@ -53,14 +53,12 @@ Project References
 
 .. toctree::
    :maxdepth: 1
-   
+
    online
-   bibleography
-  
+
 Indices and tables
 =====================================================================
 
 * :ref:`genindex`
 * :ref:`modindex`
 * :ref:`search`
-
