@@ -1,7 +1,7 @@
-Creating your first PyForge Tool
+Creating your first Allura Tool
 =====================================================================
 
-Adding your PyForge Tool to a PyForge Install
+Adding your Allura Tool to a Allura Install
 =====================================================================
 
 Writing a Wiki Tool Part 1: Pages

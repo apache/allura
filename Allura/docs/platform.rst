@@ -13,7 +13,7 @@ Platform building blocks
 Before we get into the details of how to extend the Allura platform, perhaps 
 it would be smart to explain some of the big pieces and why there are there. 
 
-We wanted PyForge tools to be fast, we needed them to scale, and we had some
+We wanted Allura tools to be fast, we needed them to scale, and we had some
 complex requirements for data storage and extensibility.  So, we needed a 
 **fast,** flexible, and easy to use data persistence system.  
 
@@ -39,7 +39,7 @@ because we wanted app tools to be able to:
 In spite of the power and flexibility of the Roundup HyperTable 
 implementation, we had some concerns about performance and scalability.
 
-Fortunately several of the PyForge authors (including me) used MongoDB 
+Fortunately several of the Allura authors (including me) used MongoDB 
 in rewriting the download flow of SourceForge.net, and knew that it could 
 handle huge loads (we saturated a 2gb network connection on the server 
 with 6% cpu utilization).
@@ -78,7 +78,7 @@ message, but can do things like send e-mail or push a new kind of event
 onto another queue. 
  
 Nearly everything in Roundup is implemented as either an auditor or a reactor,
-and PyForge definitely steals that idea and runs with it. 
+and Allura definitely steals that idea and runs with it. 
 
 TODO: Finish reactor overview (after reactor code is written).
 
@@ -94,7 +94,7 @@ of any new forge document types that your tool requires.
    :alt: App Tools
    :align: right
 
-When you write PyForge tools, you'll get lots of stuff for free:
+When you write Allura tools, you'll get lots of stuff for free:
 
 * Search-ability of your Artifacts
 * Artifact versioning for accountability and transparency

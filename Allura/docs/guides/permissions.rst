@@ -1,4 +1,4 @@
-Guide to Users, Groups and Permissions in PyForge
+Guide to Users, Groups and Permissions in Allura
 =====================================================================
 
 User/Group model
@@ -19,7 +19,7 @@ Individual artifacts and ACL's
 
 There are also likely to be some permissions that you want to assign
 to particular people or roles for a particular `Artifact` such as 
-a particular bug in the ticket tracker.   PyForge supports this via
+a particular bug in the ticket tracker.   Allura supports this via
 an ACL field on every `Artifact` instance. 
 
 Permission hierarchy
@@ -34,7 +34,7 @@ what permissions are allowed by a higher level project.
 Permission predicates
 ---------------------------------------------------------------------
 
-Predicates are simple functions, several of which are defined in PyForge 
+Predicates are simple functions, several of which are defined in Allura 
 itself, and which can be added by any tool, which return true if
 permission is granted, and false if it is not. 
 

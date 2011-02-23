@@ -20,7 +20,7 @@ Getting Started
    platform_tour
    scm_host
 
-Writing a PyForge based app
+Writing a Allura based app
 =====================================================================
 
 .. toctree::

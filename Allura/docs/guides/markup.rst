@@ -1,9 +1,9 @@
-Guide to the PyForge markup system
+Guide to the Allura markup system
 =====================================================================
 
-Markup transformations in PyForge are implemented as a, surprise surprise, reactor tool.
+Markup transformations in Allura are implemented as a, surprise surprise, reactor tool.
 
-The markup language in PyForge is based on MarkDown (http://daringfireball.net/projects/markdown/)
+The markup language in Allura is based on MarkDown (http://daringfireball.net/projects/markdown/)
 
 Other markup languages could be implemented with a new markup reactor tool...
 

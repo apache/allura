@@ -1,4 +1,4 @@
-Guide to the PyForge event system
+Guide to the Allura event system
 ====================================================================
 
 Our event system is driven by RabbitMQ and a whole message bus framework, 
@@ -38,7 +38,7 @@ Before we get into the details perhaps a few definitions are in order:
 System Overview
 -------------------------------------------------------------
 
-PyForge uses Carrot as the Python library to connect to AMQP 
+Allura uses Carrot as the Python library to connect to AMQP 
 (and possibly STOMP for async browser notifications in the future). 
 We will be using a single *durable*, *topic* exchange 'exchange'.
 
@@ -55,7 +55,7 @@ will be registering one or more queues per app.  Each app defines a list of
 interested in.  Queues will be named according to the app that registers 
 them (a wiki's queues might be wiki_0, wiki_1, etc.).
 
-The PyForge system automatically creates new consumer processes for you, 
+The Allura system automatically creates new consumer processes for you, 
 so you don't have to worry about any of that.  The way it works is basically
 to :
    

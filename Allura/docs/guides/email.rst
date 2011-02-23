@@ -1,4 +1,4 @@
-Guide to email integration in the PyForge
+Guide to email integration in the Allura
 =====================================================================
 
 Email routing
@@ -27,7 +27,7 @@ If you were working with the bug tracker directly on the TurboGears project::
 
     bug.142@turbogears.sf.net
     
-The PyForge platform allows you to setup other message types, such as commit 
+The Allura platform allows you to setup other message types, such as commit 
 messages, to go into amqp with the same routing information, and turn into 
 "messages" just like e-mail. 
 
@@ -56,7 +56,7 @@ message to indicate metadata::
     
     This is the first paragraph of the document.
 
-The format for this syntax was developed in our original PyForge requirements
+The format for this syntax was developed in our original Allura requirements
 doc, and is pretty much exactly the same as what's used by an existing 
 markdown extension (markdown-meta), so with two independent implementations, 
 we decided that it was the "natural" way to report metadata in e-mail message 
@@ -76,17 +76,17 @@ interact with the system via e-mail, assuming you have such permissions.
 Spam
 ---------------------------------------------------------------------
 
-A production deployment of PyForge is likely to have some spam pre-filtering
+A production deployment of Allura is likely to have some spam pre-filtering
 applied as a first layer of spam defense.   The second layer will be some 
 in-app bayesian filtering done inside the Lamson python server that's 
-included in PyForge itself. 
+included in Allura itself. 
 
 We'll build a web UI where user feedback can be turned into data that 
 feeds back to the bayesian filter training.   We will also have to build some 
 level of user moderation into the system, based on what's done at slashdot 
 already.   
 
-Spam prevention technology is a rabbit hole down which the PyForge could go 
+Spam prevention technology is a rabbit hole down which the Allura could go 
 forever, without finding a perfect solution.   The goal for launch is not 
 perfection, but a solid foundation on which future anti-spam measures 
 can be taken.

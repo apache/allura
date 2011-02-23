@@ -1,11 +1,11 @@
 Rather than build yet another forge, we decided to do something new.   We wanted to build a new kind of extensible forge, and a new set of highly integrated forge tools. 
 
-Pyforge is an **open** platform for **open** processes
+Allura is an **open** platform for **open** processes
 ----------------------------------------------------------------------
 
 It's easy to get frustrated with existing development tools.   Too often they are overbearing, complex, and make assumptions that get in your way.  And even if they are open source, it's often difficult to get them to work the way you need them too. 
 
-Which is why we created PyForge.   It's designed to be truly **open**, in many different senses of the word. 
+Which is why we created Allura.   It's designed to be truly **open**, in many different senses of the word. 
 
 It's open in bunch of ways:
  
@@ -17,8 +17,8 @@ It's open in bunch of ways:
 
 We looked at existing forges, but to achieve all those goals, we decided we needed to build something new.
 
-PyForge is designed to support an **ecosystem**
+Allura is designed to support an **ecosystem**
 ------------------------------------------------------------------------
 
-PyForge is at once a **set of tools** to help people collaboratively develop software, and an **open platform** on which innovative new tools be built. 
+Allura is at once a **set of tools** to help people collaboratively develop software, and an **open platform** on which innovative new tools be built. 
 
