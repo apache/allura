@@ -65,7 +65,7 @@ class AnnouncementsTable(DW._ThreadsTable):
     name='announcements'
 
 class _ForumSelector(ew.SingleSelectField):
-    def _options(self):
+    def options(self):
         return [
             ew.Option(label=f.name, py_value=f, html_value=f.shortname)
             for f in c.app.forums ]
@@ -80,7 +80,7 @@ class _ForumSelector(ew.SingleSelectField):
 class ModerateThread(ew.SimpleForm):
     submit_text='Save Changes'
     class fields(ew_core.NameList):
-        forum=_ForumSelector(label='New Forum')
+        discussion=_ForumSelector(label='New Forum')
         flags=ew.CheckboxSet(options=['Sticky', 'Announcement'])
     class buttons(ew_core.NameList):
         delete=ew.SubmitButton(label='Delete Thread')

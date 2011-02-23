@@ -109,7 +109,7 @@ class ForumThreadController(ThreadController):
             url = self.thread.discussion.url()
             self.thread.delete()
             redirect(url)
-        forum = args.pop('forum')
+        forum = args.pop('discussion')
         if forum != self.thread.discussion:
             g.publish('audit', 'Forum.forum_stats.%s' % forum.shortname.replace('/', '.'))
             self.thread.set_forum(forum)
