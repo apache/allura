@@ -22,17 +22,24 @@ class CPA(ming.Document):
 
     @classmethod
     def post(cls, type, obj):
-        doc = cls.make(dict(
+        d = dict(
                 type=type,
                 class_name='%s.%s' % (
                     obj.__class__.__module__,
                     obj.__class__.__name__),
+                project_id=None,
+                project_shortname='',
+                app_config_id=obj.app_config_id,
+                tool_name='',
+                mount_point='',
+                when=datetime.utcnow())
+        if obj.app_config:
+            d.update(
                 project_id=obj.app_config.project_id,
                 project_shortname=obj.app_config.project.shortname,
-                app_config_id=obj.app_config_id,
                 tool_name=obj.app_config.tool_name,
-                mount_point=obj.app_config.options.mount_point,
-                when=datetime.utcnow()))
+                mount_point=obj.app_config.options.mount_point)
+        doc = cls.make(d)
         doc.m.insert()
 
     @classmethod
