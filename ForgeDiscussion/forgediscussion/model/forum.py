@@ -124,6 +124,10 @@ class ForumThread(M.Thread):
     def attachment_class(cls):
         return ForumAttachment
 
+    @property
+    def email_address(self):
+        return self.discussion.email_address
+
     def primary(self, primary_class):
         return self
 

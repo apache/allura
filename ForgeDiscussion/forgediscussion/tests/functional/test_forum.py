@@ -330,6 +330,9 @@ class TestForum(TestController):
         r = self.app.get('/admin/discussion/forums')
         assert 'Message posted' in r
         r = self.app.get('/discussion/testforum/moderate/')
+        n = M.Notification.query.get(text='This is a *test thread*')
+        assert 'noreply' not in n.reply_to_address, n
+        assert 'testforum@discussion.test.p' in n.reply_to_address, n
 
     def test_thread(self):
         thread = self.app.post('/discussion/save_new_topic', params=dict(
