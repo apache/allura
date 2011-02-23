@@ -1,11 +1,13 @@
 import os
 import mimetypes
+from datetime import datetime
 from collections import defaultdict
 
 import pkg_resources
 from tg import expose, redirect, flash, config, validate, request, response
 from tg.decorators import with_trailing_slash, without_trailing_slash
 from webob import exc
+from formencode import validators as fev
 
 from pylons import c, g
 from allura.lib import helpers as h
@@ -52,3 +54,14 @@ class SiteAdminController(object):
         return dict(
             agg_timings=agg_timings,
             stats=stats[:int(limit)])
+
+    @expose('jinja:site_admin_cpa_stats.html')
+    @without_trailing_slash
+    @validate(dict(since=fev.DateConverter(if_empty=datetime(2011,1,1))))
+    def cpa_stats(self, since=None, **kw):
+        with h.push_context('allura'):
+            require(has_project_access('security'))
+        stats = M.CPA.stats(since)
+        if getattr(c, 'validation_exception', None):
+            flash(str(c.validation_exception), 'error')
+        return dict(stats=stats, since=since)

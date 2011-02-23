@@ -1,0 +1,29 @@
+{% set page="cpa_stats" %}
+{% extends 'site_admin.html' %}
+
+{% block content %}
+
+<form method="GET" action="cpa_stats">
+<h1>CPAs since <input name="since" value="{{since.strftime('%m/%d/%Y')}}"></h1>
+</form>
+<table>
+  <thead>
+    <tr>
+      <th>Tool Name
+      <th>Class Name
+      <th>Create
+      <th>Modify
+      <th>Delete
+    </tr>
+  </thead>
+  {% for r in stats %}
+  <tr>
+    <td>{{r.tool_name}}
+    <td>{{r.class_name}}
+    <td>{{r.create}}
+    <td>{{r.modify}}
+    <td>{{r.delete}}
+  </tr>
+  {% endfor %}
+</table>
+{% endblock %}
