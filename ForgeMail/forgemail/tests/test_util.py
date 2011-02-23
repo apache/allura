@@ -10,12 +10,14 @@ from nose.tools import raises, assert_equal
 from ming.orm import ThreadLocalORMSession
 
 from alluratest.controller import setup_basic_test, setup_global_objects
+from allura.lib.utils import ConfigProxy
 
 from forgemail.lib.util import parse_address, parse_message
 from forgemail.lib.exc import AddressException
 
-
-COMMON_SUFFIX = tg.config.get('forgemail.domain', '.sourceforge.net')
+config = ConfigProxy(
+    common_suffix='forgemail.domain',
+    return_path='forgemail.return_path')
 
 class TestReactor(unittest.TestCase):
 
@@ -31,18 +33,18 @@ class TestReactor(unittest.TestCase):
 
     @raises(AddressException)
     def test_parse_address_bad_project(self):
-        parse_address('foo@wiki.unicorns.p' + COMMON_SUFFIX)
+        parse_address('foo@wiki.unicorns.p' + config.common_suffix)
 
     @raises(AddressException)
     def test_parse_address_missing_tool(self):
-        parse_address('foo@test.p' + COMMON_SUFFIX)
+        parse_address('foo@test.p' + config.common_suffix)
 
     @raises(AddressException)
     def test_parse_address_bad_tool(self):
-        parse_address('foo@hammer.test.p' + COMMON_SUFFIX)
+        parse_address('foo@hammer.test.p' + config.common_suffix)
 
     def test_parse_address_good(self):
-        topic, project, app = parse_address('foo@wiki.test.p' + COMMON_SUFFIX)
+        topic, project, app = parse_address('foo@wiki.test.p' + config.common_suffix)
         assert_equal(topic, 'Wiki.msg.foo')
         assert_equal(project.name, 'test')
         assert_equal(app.__class__.__name__, 'ForgeWikiApp')

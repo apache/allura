@@ -259,7 +259,7 @@ class TestForumReactors(TestController):
                         headers=dict(Subject=subject),
                         user_id=self.user_id,
                         payload=body,
-                        message_id=[message_id])
+                        message_id=message_id)
         callback(msg.data, msg)
 
     def _notify(self, post_id, **kw):
