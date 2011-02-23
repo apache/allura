@@ -376,7 +376,6 @@ class Thread(HierWidget):
                         thread_tag.removeClass('active');
                     });
                     submit_button.after(cancel_button);
-                    thread_tag[0].style.display='block';
                     thread_tag.click(function (e) {
                         tag_thread_holder.show();
                         thread_tag.addClass('active');
