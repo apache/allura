@@ -168,7 +168,8 @@ class ThreadController(BaseController):
                     thread=self.thread,
                     page=page,
                     count=count,
-                    limit=limit)
+                    limit=limit,
+                    show_moderate=kw.get('show_moderate'))
 
     @h.vardec
     @expose()

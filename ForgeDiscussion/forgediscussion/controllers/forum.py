@@ -93,7 +93,7 @@ class ForumThreadController(ThreadController):
     def index(self, limit=None, page=0, count=0, **kw):
         if self.thread.discussion.deleted and not has_artifact_access('configure', app=c.app)():
             redirect(self.thread.discussion.url()+'deleted')
-        return super(ForumThreadController, self).index(limit=limit, page=page, count=count, **kw)
+        return super(ForumThreadController, self).index(limit=limit, page=page, count=count, show_moderate=True, **kw)
 
     @h.vardec
     @expose()

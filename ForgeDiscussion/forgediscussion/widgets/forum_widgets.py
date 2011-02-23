@@ -106,8 +106,9 @@ class ForumHeader(DW.DiscussionHeader):
 
 class ThreadHeader(DW.ThreadHeader):
     template='jinja:discussion_widgets/thread_header.html'
-    show_subject=True
-    show_moderate=True
+    defaults=dict(DW.ThreadHeader.defaults,
+                  show_subject=True,
+                  show_moderate=True)
     widgets=dict(DW.ThreadHeader.widgets,
                  moderate_thread=ModerateThread(),
                  announcements_table=AnnouncementsTable())

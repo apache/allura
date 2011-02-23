@@ -227,12 +227,13 @@ class DiscussionHeader(HierWidget):
 
 class ThreadHeader(HierWidget):
     template='jinja:widgets/thread_header.html'
-    params=['value', 'page', 'limit', 'count', 'show_moderate']
-    value=None
-    page=None
-    limit=None
-    count=None
-    show_moderate=False
+    defaults=dict(
+        HierWidget.defaults,
+        value=None,
+        page=None,
+        limit=None,
+        count=None,
+        show_moderate=False)
     widgets=dict(
         page_list=ffw.PageList(),
         page_size=ffw.PageSize(),
