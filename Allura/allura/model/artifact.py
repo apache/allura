@@ -216,6 +216,10 @@ class ArtifactLink(MappedClass):
         return None
 
 class Feed(MappedClass):
+    """
+    Used to generate rss/atom feeds.  This does not need to be extended;
+    all feed items go into the same collection
+    """
     class __mongometa__:
         session = project_orm_session
         name = 'artifact_feed'
@@ -235,6 +239,7 @@ class Feed(MappedClass):
 
     @classmethod
     def post(cls, artifact, title=None, description=None):
+        "Create a Feed item"
         idx = artifact.index()
         if title is None:
             title='%s modified by %s' % (idx['title_s'], c.user.get_pref('display_name'))
@@ -248,6 +253,7 @@ class Feed(MappedClass):
     @classmethod
     def feed(cls, q, feed_type, title, link, description,
              since=None, until=None, offset=None, limit=None):
+        "Produces webhelper.feedgenerator Feed"
         d = dict(title=title, link=h.absurl(link), description=description, language=u'en')
         if feed_type == 'atom':
             feed = FG.Atom1Feed(**d)
@@ -275,6 +281,19 @@ class Feed(MappedClass):
         return feed
 
 class Artifact(MappedClass):
+    """
+    The base class for anything you want to keep track of.
+
+    It will automatically be added to solr (see index() method).  It also
+    gains a discussion thread and can have files attached to it.
+
+    :var tool_version: default's to the app's version
+    :var acl: dict of permission name => [roles]
+    :var labels: list of plain old strings
+    :var references: list of outgoing references to other tickets
+    :var backreferences: dict of incoming references to this artifact, mapped by solr id
+    """
+
     class __mongometa__:
         session = artifact_orm_session
         name='artifact'
@@ -301,7 +320,7 @@ class Artifact(MappedClass):
     tags = FieldProperty([dict(tag=str, count=int)])
     labels = FieldProperty([str])
     references = FieldProperty([ArtifactReferenceType])
-    backreferences = FieldProperty({str:ArtifactReferenceType})
+    backreferences = FieldProperty({str:ArtifactReferenceType}) # keyed by solr id to emulate a set
     app_config = RelationProperty('AppConfig')
 
     @classmethod
@@ -431,6 +450,7 @@ class Artifact(MappedClass):
                 l.remove(project_role_id)
 
     def index_id(self):
+        "Used for solr search indexing"
         id = '%s.%s#%s' % (
             self.__class__.__module__,
             self.__class__.__name__,
@@ -438,6 +458,15 @@ class Artifact(MappedClass):
         return id.replace('.', '/')
 
     def index(self):
+        """
+        Subclasses should override this, providing a dictionary of solr_field => value.
+        These fields & values will be stored by solr.  Subclasses should call the
+        super() index() and then extend it with more fields.  All these fields will be
+        included in the 'text' field (done by search.solarize())
+
+        The _s and _t suffixes, for example, follow solr dynamic field naming pattern.
+        """
+
         project = self.project
         return dict(
             id=self.index_id(),
@@ -456,6 +485,9 @@ class Artifact(MappedClass):
             snippet_s='')
 
     def url(self):
+        """
+        Subclasses should implement this, providing the URL to the artifact
+        """
         raise NotImplementedError, 'url' # pragma no cover
 
     def shorthand_id(self):
@@ -484,6 +516,7 @@ class Artifact(MappedClass):
         return att
 
 class Snapshot(Artifact):
+    """A snapshot of an :class:`Artifact <allura.model.Artifact>`, used in :class:`VersionedArtifact <allura.model.VersionedArtifact>`"""
     class __mongometa__:
         session = artifact_orm_session
         name='artifact_snapshot'
@@ -524,6 +557,10 @@ class Snapshot(Artifact):
         return getattr(self.data, name)
 
 class VersionedArtifact(Artifact):
+    """
+    An :class:`Artifact <allura.model.Artifact>` that has versions.
+    Associated data like attachments and discussion thread are not versioned.
+    """
     class __mongometa__:
         session = artifact_orm_session
         name='versioned_artifact'
@@ -594,6 +631,14 @@ class VersionedArtifact(Artifact):
             return self.mod_date
 
 class Message(Artifact):
+    """
+    A message
+
+    :var _id: an email friendly (e.g. message-id) string id
+    :var slug: slash-delimeted random identifier.  Slashes useful for threaded searching and ordering
+    :var full_slug: string of slash-delimited "timestamp:slug" components.  Useful for sorting by timstamp
+    """
+
     class __mongometa__:
         session = artifact_orm_session
         name='message'
@@ -711,6 +756,7 @@ class Award(Artifact):
         return self.short
 
 class AwardGrant(Artifact):
+    "An :class:`Award <allura.model.Award>` can be bestowed upon a project by a neighborhood"
     class __mongometa__:
         session = main_orm_session
         name='grant'

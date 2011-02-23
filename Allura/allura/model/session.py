@@ -74,6 +74,7 @@ class ArtifactSessionExtension(SessionExtension):
                 self.objects_deleted = [ obj ]
 
     def after_flush(self, obj=None):
+        "Update artifact references, and add/update this artifact to solr"
         if not getattr(self.session, 'disable_artifact_index', False):
             from .artifact import ArtifactLink
             from .stats import CPA
