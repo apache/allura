@@ -94,7 +94,19 @@ class WidgetController(BaseController):
         return '<div class="portlet">%s</div>' % content
 
 class Application(object):
-    'base allura pluggable application'
+    """
+    The base Allura pluggable application
+
+    :var status: the status level of this app.  'production' apps are available to all projects
+    :var bool searchable: toggle if the search box appears in the left menu
+    :var permissions: a list of named permissions used by the app
+    :var sitemap: a list of :class:`SitemapEntries <allura.app.SitemapEntry>` to create an app navigation.
+    :var bool installable: toggle if the app can be installed in a project
+    :var Controller self.root: the root Controller used for the app
+    :var Controller self.api_root: a Controller used for API access at /rest/<neighborhood>/<project>/<app>/
+    :var Controller self.admin: a Controller used in the admin interface
+    """
+
     __version__ = None
     config_options = [
         ConfigOption('mount_point', str, 'app'),
@@ -172,6 +184,7 @@ class Application(object):
 
     @classmethod
     def default_options(cls):
+        ":return: the default config options"
         return dict(
             (co.name, co.default)
             for co in cls.config_options)
@@ -207,9 +220,17 @@ class Application(object):
         self.config.delete()
 
     def sidebar_menu(self):
+        """
+        Apps should override this to provide their menu
+        :return: a list of :class:`SitemapEntries <allura.app.SitemapEntry>`
+        """
         return []
 
     def admin_menu(self):
+        """
+        Apps may override this to provide additional admin menu items
+        :return: a list of :class:`SitemapEntries <allura.app.SitemapEntry>`
+        """
         admin_url = c.project.url()+'admin/'+self.config.options.mount_point+'/'
         links = []
         if self.permissions and has_project_access('security')():

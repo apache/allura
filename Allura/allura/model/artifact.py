@@ -516,7 +516,7 @@ class Artifact(MappedClass):
         return att
 
 class Snapshot(Artifact):
-    """A snapshot of an :class:`Artifact <allura.model.Artifact>`, used in :class:`VersionedArtifact <allura.model.VersionedArtifact>`"""
+    """A snapshot of an :class:`Artifact <allura.model.artifact.Artifact>`, used in :class:`VersionedArtifact <allura.model.artifact.VersionedArtifact>`"""
     class __mongometa__:
         session = artifact_orm_session
         name='artifact_snapshot'
@@ -558,7 +558,7 @@ class Snapshot(Artifact):
 
 class VersionedArtifact(Artifact):
     """
-    An :class:`Artifact <allura.model.Artifact>` that has versions.
+    An :class:`Artifact <allura.model.artifact.Artifact>` that has versions.
     Associated data like attachments and discussion thread are not versioned.
     """
     class __mongometa__:
@@ -756,7 +756,7 @@ class Award(Artifact):
         return self.short
 
 class AwardGrant(Artifact):
-    "An :class:`Award <allura.model.Award>` can be bestowed upon a project by a neighborhood"
+    "An :class:`Award <allura.model.artifact.Award>` can be bestowed upon a project by a neighborhood"
     class __mongometa__:
         session = main_orm_session
         name='grant'

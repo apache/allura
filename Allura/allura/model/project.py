@@ -80,7 +80,7 @@ class ScheduledMessage(MappedClass):
             except: # pragma no cover
                 log.exception('Error when firing %r', obj)
 
-class ProjectFile(File):    
+class ProjectFile(File):
     class __mongometa__:
         session = main_orm_session
 
@@ -261,7 +261,7 @@ class Project(MappedClass):
     @property
     def category(self):
         return ProjectCategory.query.find(dict(_id=self.category_id)).first()
-    
+
     def roleids_with_permission(self, name):
         roles = []
         for p in self.parent_iter():
@@ -329,7 +329,7 @@ class Project(MappedClass):
         for ep in pkg_resources.iter_entry_points('allura', ep_name):
             App = ep.load()
             break
-        else: 
+        else:
             # Try case-insensitive install
             for ep in pkg_resources.iter_entry_points('allura'):
                 if ep.name.lower() == ep_name:
@@ -484,6 +484,14 @@ class Project(MappedClass):
                     project_orm_session.ensure_indexes(mc)
 
 class AppConfig(MappedClass):
+    """
+    Configuration information for an instantiated :class:`Application <allura.app.Application>`
+    in a project
+
+    :var options: an object on which various options are stored.  options.mount_point is the url component for this app instance
+    :var acl: a dict that maps permissions (strings) to lists of roles that have the permission
+    """
+
     class __mongometa__:
         session = project_orm_session
         name='config'
@@ -499,9 +507,12 @@ class AppConfig(MappedClass):
     discussion = RelationProperty('Discussion', via='discussion_id')
 
     # acl[permission] = [ role1, role2, ... ]
-    acl = FieldProperty({str:[S.ObjectId]}) 
+    acl = FieldProperty({str:[S.ObjectId]})
 
     def load(self):
+        """
+        :returns: the related :class:`Application <allura.app.Application>` class
+        """
         try:
             result = self._loaded_ep
         except AttributeError:
@@ -522,7 +533,7 @@ class AppConfig(MappedClass):
     def breadcrumbs(self):
         return self.project.breadcrumbs() + [
             (self.options.mount_point, self.url()) ]
-            
+
     def grant_permission(self, permission, role=None):
         from . import auth
         if role is None: role = c.user
@@ -538,4 +549,3 @@ class AppConfig(MappedClass):
             role = role.project_role()
         if role._id in self.acl[permission]:
             self.acl[permission].remove(role._id)
-

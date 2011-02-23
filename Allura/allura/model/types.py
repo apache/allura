@@ -11,6 +11,7 @@ from allura.lib import helpers as h
 log = logging.getLogger(__name__)
 
 class ArtifactReference(Object):
+    "A pickle-able reference to an :class:`Artifact <allura.model.artifact.Artifact>`"
 
     @LazyProperty
     def cls(self):
@@ -37,6 +38,7 @@ class ArtifactReference(Object):
             return count > 0
 
 class ArtifactReferenceType(S.Object):
+    "A Ming Schema type for :class:`ArtifactReferences <allura.model.types.ArtifactReference>`"
 
     def __init__(self):
         self._base_schema = S.Object(dict(
