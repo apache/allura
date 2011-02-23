@@ -2,10 +2,14 @@ import os
 import random
 import allura
 import Image
-from StringIO import StringIO
 import logging
+from StringIO import StringIO
+from email.mime.text import MIMEText
+from email.mime.image import MIMEImage
+from email.mime.multipart import MIMEMultipart
 
 import mock
+import pkg_resources
 from tg import config
 from pylons import g, c
 from nose.tools import assert_equal
@@ -17,9 +21,107 @@ from allura import model as M
 from allura.command import reactor
 from allura.lib import helpers as h
 
+from forgemail.reactors.common_react import received_email
 from forgediscussion import model as FM
 
 log = logging.getLogger(__name__)
+
+class TestForumEmail(TestController):
+
+    def setUp(self):
+        TestController.setUp(self)
+        self.app.get('/discussion/')
+        r = self.app.get('/admin/discussion/forums')
+        r.forms[1]['add_forum.shortname'] = 'testforum'
+        r.forms[1]['add_forum.name'] = 'Test Forum'
+        r.forms[1].submit()
+        r = self.app.get('/admin/discussion/forums')
+        assert 'testforum' in r
+        self.email_address='Beta@wiki.test.projects.sourceforge.net'
+        test_config = 'test.ini'
+        cmd = reactor.ReactorCommand('reactor')
+        cmd.args = [ test_config ]
+        cmd.options = mock.Mock()
+        cmd.options.dry_run = True
+        cmd.options.proc = 1
+        cmd.command()
+        self.cmd = cmd
+        h.set_context('test', 'discussion')
+        self.forum = FM.Forum.query.get(shortname='testforum')
+        g.mock_amq.setup_handlers()
+
+    def test_simple_email(self):
+        msg = MIMEText('This is a test message')
+        self._post_email(
+            self.email_address,
+            [ self.forum.email_address ],
+            'Test Simple Thread',
+            msg)
+        r = self.app.get('/p/test/discussion/testforum/')
+        assert 'Test Simple Thread' in str(r), r.showbrowser()
+
+    def test_html_email(self):
+        msg = MIMEMultipart(
+            'alternative',
+            _subparts=[
+                MIMEText('This is a test message'),
+                MIMEText('This is a <em>test</em> message', 'html') ])
+        self._post_email(
+            self.email_address,
+            [ self.forum.email_address ],
+            'Test Simple Thread',
+            msg)
+        r = self.app.get('/p/test/discussion/testforum/')
+        assert 'Test Simple Thread' in str(r), r.showbrowser()
+        assert len(r.html.findAll('tr')) == 2, r.showbrowser()
+        href = r.html.findAll('tr')[1].find('a')['href']
+        r = self.app.get(href)
+        assert 'alternate' in str(r), r.showbrowser()
+
+    def test_html_email_with_images(self):
+        msg = MIMEMultipart(
+            _subparts=[
+                MIMEMultipart(
+                    'alternative',
+                    _subparts=[
+                        MIMEText('This is a test message'),
+                        MIMEText('This is a <em>test</em> message', 'html')
+                        ])
+                ])
+        with open(pkg_resources.resource_filename(
+                'forgediscussion', 'tests/data/python-logo.png'), 'rb') as fp:
+            img = MIMEImage(fp.read())
+            img.add_header('Content-Disposition', 'attachment', filename='python-logo.png')
+            msg.attach(img)
+        self._post_email(
+            self.email_address,
+            [ self.forum.email_address ],
+            'Test Simple Thread',
+            msg)
+        r = self.app.get('/p/test/discussion/testforum/')
+        assert 'Test Simple Thread' in str(r), r.showbrowser()
+        assert len(r.html.findAll('tr')) == 2, r.showbrowser()
+        href = r.html.findAll('tr')[1].find('a')['href']
+        r = self.app.get(href)
+        assert 'alternate' in str(r), r.showbrowser()
+        assert 'python-logo.png' in str(r), r.showbrowser()
+
+    def _post_email(self, mailfrom, rcpttos, subject, msg):
+        '''msg is MIME message object'''
+        msg['Message-ID'] = '<' + h.gen_message_id() + '>'
+        msg['From'] = mailfrom
+        msg['To'] = ', '.join(rcpttos)
+        msg['Subject'] = subject
+        c.queued_messages = None
+        g.publish(
+            'audit',
+            'forgemail.received_email',
+            dict(
+                peer='127.0.0.1',
+                mailfrom=mailfrom,
+                rcpttos=rcpttos,
+                data=msg.as_string()))
+        g.mock_amq.handle_all()
 
 class TestForumReactors(TestController):
 

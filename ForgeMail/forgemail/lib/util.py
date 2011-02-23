@@ -12,15 +12,16 @@ from pylons import c
 
 from allura.lib.helpers import push_config, find_project
 from allura import model as M
+from allura.lib.utils import ConfigProxy
 
 from . import exc
 
 log = logging.getLogger(__name__)
 
 RE_MESSAGE_ID = re.compile(r'<(.*)>')
-COMMON_SUFFIX = tg.config.get('forgemail.domain', '.sourceforge.net')
-RETURN_PATH = tg.config.get('forgemail.return_path', 'noreply@sourceforge.net')
-
+config = ConfigProxy(
+    common_suffix='forgemail.domain',
+    return_path='forgemail.return_path')
 
 def Header(text, charset):
     '''Helper to make sure we don't over-encode headers
@@ -36,9 +37,9 @@ def Header(text, charset):
 def parse_address(addr):
     userpart, domain = addr.split('@')
     # remove common domain suffix
-    if not domain.endswith(COMMON_SUFFIX):
+    if not domain.endswith(config.common_suffix):
         raise exc.AddressException, 'Unknown domain: ' + domain
-    domain = domain[:-len(COMMON_SUFFIX)]
+    domain = domain[:-len(config.common_suffix)]
     path = '/'.join(reversed(domain.split('.')))
 
     project, mount_point = find_project('/' + path)
@@ -147,13 +148,13 @@ class SMTPClient(object):
         content = message.as_string()
         try:
             self._client.sendmail(
-                RETURN_PATH,
+                config.return_path,
                 map(_parse_smtp_addr, addrs),
                 content)
         except:
             self._connect()
             self._client.sendmail(
-                RETURN_PATH,
+                config.return_path,
                 map(_parse_smtp_addr, addrs),
                 content)
 
