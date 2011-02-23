@@ -428,10 +428,13 @@ class ModerationController(BaseController):
                 posted = self.PostModel.query.get(slug=p['slug'])
                 if delete:
                     posted.delete()
+                    posted.thread.num_replies -= 1
                 elif spam:
                     posted.status = 'spam'
+                    posted.thread.num_replies -= 1
                 elif approve:
                     posted.status = 'ok'
+                    posted.thread.num_replies += 1
         redirect(request.referer)
 
 class PostRestController(PostController):

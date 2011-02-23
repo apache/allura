@@ -116,6 +116,10 @@ class ForumThread(M.Thread):
     posts = RelationProperty('ForumPost')
     first_post = RelationProperty('ForumPost', via='first_post_id')
 
+    @property
+    def status(self):
+        return self.first_post.status
+
     @classmethod
     def attachment_class(cls):
         return ForumAttachment
