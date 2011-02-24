@@ -73,7 +73,7 @@ class Globals(object):
 
         # Setup RabbitMQ
         if asbool(config.get('amqp.mock')):
-            self.mock_amq = MockAMQ()
+            self.mock_amq = MockAMQ(self)
             self._publish = self.mock_amq.publish
 
         # Setup OEmbed
@@ -398,9 +398,10 @@ class MockSOLR(object):
 
 class MockAMQ(object):
 
-    def __init__(self):
+    def __init__(self, globals):
         self.exchanges = defaultdict(list)
         self.queue_bindings = defaultdict(list)
+        self.globals = globals
 
     def clear(self):
         for k in self.exchanges.keys():
@@ -416,7 +417,7 @@ class MockAMQ(object):
     def pop(self, xn):
         return self.exchanges[xn].pop(0)
 
-    def setup_handlers(self):
+    def setup_handlers(self, paste_registry=None):
         from allura.command.reactor import tool_consumers, ReactorCommand
         from allura.command import base
         self.queue_bindings = defaultdict(list)
@@ -429,6 +430,9 @@ class MockAMQ(object):
             except ImportError:
                 log.warning('Canot load entry point %s', ep)
         self.reactor = ReactorCommand('reactor_setup')
+        if paste_registry:
+            self.reactor.registry = paste_registry
+        self.reactor.globals = self.globals
         self.reactor.parse_args([])
         for name, tool in self.tools:
             for method, xn, qn, keys in tool_consumers(name, tool):

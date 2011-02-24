@@ -11,7 +11,6 @@ from bson import ObjectId
 from carrot.messaging import Consumer, ConsumerSet
 from weberror.errormiddleware import handle_exception
 
-from allura.lib.custom_middleware import MagicalC, environ
 from . import base
 
 
@@ -165,10 +164,7 @@ class ReactorCommand(base.Command):
         def callback(data, msg):
             msg.ack()
             try:
-                # reset pylons.c
-                pylons.c._pop_object()
-                environ.set_environment({})
-                pylons.c._push_object(MagicalC(base.EmptyClass(), environ))
+                self.setup_globals()
                 
                 __traceback_supplement__ = (
                     self.Supplement, pylons.c, data, msg, 'audit')
@@ -213,6 +209,7 @@ class ReactorCommand(base.Command):
             else:
                 ming.orm.ormsession.ThreadLocalORMSession.flush_all()
             finally:
+                self.teardown_globals()
                 ming.orm.ormsession.ThreadLocalORMSession.close_all()
                 
         return callback
@@ -222,10 +219,7 @@ class ReactorCommand(base.Command):
         def callback(data, msg):
             msg.ack()
             try:
-                # reset pylons.c
-                pylons.c._pop_object()
-                environ.set_environment({})
-                pylons.c._push_object(MagicalC(base.EmptyClass(), environ))
+                self.setup_globals()
 
                 __traceback_supplement__ = (
                     self.Supplement, pylons.c, data, msg, 'react')
@@ -267,6 +261,7 @@ class ReactorCommand(base.Command):
                 ming.orm.ormsession.ThreadLocalORMSession.flush_all()
             finally:
                 ming.orm.ormsession.ThreadLocalORMSession.close_all()
+                self.teardown_globals()
         return callback
 
     class Supplement(object):

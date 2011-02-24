@@ -6,11 +6,10 @@ from pkg_resources import iter_entry_points
 import pylons
 from paste.script import command
 from paste.deploy import appconfig
+from paste.registry import Registry
 
 import ming
 from allura.config.environment import load_environment
-from allura.lib.custom_middleware import MagicalC, environ
-from allura.lib import security
 
 class EmptyClass(object): pass
 
@@ -20,37 +19,37 @@ class Command(command.Command):
     usage = 'NAME [<ini file>]'
     group_name = 'Allura'
 
+    @ming.utils.LazyProperty
+    def registry(self):
+        return Registry()
+
+    @ming.utils.LazyProperty
+    def globals(self):
+        import allura.lib.app_globals
+        return allura.lib.app_globals.Globals()
+
     def basic_setup(self):
         global log, M
         if self.args:
+            # Probably being called from the command line - load the config file
             conf = appconfig('config:%s' % self.args[0],relative_to=os.getcwd())
+            # Configure logging
             try:
-                if self.setup_global_config:
-                    logging.config.fileConfig(self.args[0], disable_existing_loggers=False)
-            except Exception:
-                try:
-                    # logging does not understand section#subsection syntax,
-                    # so strip away the #subsection and try again.
-                    logging.config.fileConfig(self.args[0].split('#')[0], disable_existing_loggers=False)
-                except Exception: # pragma no cover
-                    print >> sys.stderr, (
-                        'Could not configure logging with config file %s' % self.args[0])
-            from allura import model
-            M=model
+                # ... logging does not understand section#subsection syntax
+                logging_config = self.args[0].split('#')[0]
+                logging.config.fileConfig(logging_config, disable_existing_loggers=False)
+            except Exception: # pragma no cover
+                print >> sys.stderr, (
+                    'Could not configure logging with config file %s' % self.args[0])
             log = logging.getLogger('allura.command')
             log.info('Initialize reactor with config %r', self.args[0])
-            environ.set_environment({
-                    'allura.credentials':security.Credentials()
-                    })
             load_environment(conf.global_conf, conf.local_conf)
-            try:
-                pylons.c._current_obj()
-            except TypeError:
-                pylons.c._push_object(MagicalC(EmptyClass(), environ))
-            from allura.lib.app_globals import Globals
-            pylons.g._push_object(Globals())
+            self.setup_globals()
+            from allura import model
+            M=model
             ming.configure(**conf)
         else:
+            # Probably being called from another script (websetup, perhaps?)
             log = logging.getLogger('allura.command')
             conf = pylons.config
         self.tools = []
@@ -64,3 +63,13 @@ class Command(command.Command):
             ep.load()(conf)
         log.info('Loaded tools')
 
+    def setup_globals(self):
+        import allura.lib.app_globals
+        self.registry.prepare()
+        self.registry.register(pylons.c, EmptyClass())
+        self.registry.register(pylons.g, self.globals)
+        self.registry.register(allura.credentials, allura.lib.security.Credentials())
+        pylons.c.queued_messages = None
+
+    def teardown_globals(self):
+        self.registry.cleanup()

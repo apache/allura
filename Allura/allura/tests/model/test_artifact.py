@@ -15,8 +15,6 @@ from ming.orm.ormsession import ThreadLocalORMSession
 
 from allura import model as M
 from allura.lib import helpers as h
-from allura.lib.custom_middleware import MagicalC, environ as ENV
-from allura.lib.app_globals import Globals
 from alluratest.controller import setup_basic_test, setup_unit_test
 from forgewiki import model as WM
 

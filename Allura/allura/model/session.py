@@ -8,7 +8,6 @@ from ming.orm.base import state, session
 from ming.orm.ormsession import ThreadLocalORMSession, SessionExtension
 
 from allura.lib import search
-from allura.lib.custom_middleware import environ
 
 log = logging.getLogger(__name__)
 
@@ -20,29 +19,13 @@ class ProjectSession(Session):
     @property
     def db(self):
         try:
-            p = self.project
-            if p.database_uri:
-                scheme, rest = p.database_uri.split('://')
+            if c.project.database_uri:
+                scheme, rest = c.project.database_uri.split('://')
                 host, database = rest.split('/', 1)
                 return ShardedDataStore.get(scheme + '://' + host, database).db
-            return getattr(self.main_session.bind.conn, p.database)
-        except (KeyError, AttributeError), ex:
+            return getattr(self.main_session.bind.conn, c.project.database)
+        except (KeyError, AttributeError, TypeError), ex:
             return None
-
-    @property
-    def project(self):
-        # Our MagicalC makes sure allura.project is set in the environ when
-        # c.project is set
-        p = environ.get('allura.project', None)
-        if p is None:
-            # But if we're not using MagicalC, as in paster shell....
-            try:
-                p = getattr(c, 'project', None)
-            except TypeError:
-                 # running without MagicalC, inside a request (likely EasyWidgets)
-                return None
-        if p is None: return None
-        return p
 
     def _impl(self, cls):
         db = self.db

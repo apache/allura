@@ -23,7 +23,9 @@ from allura.lib.custom_middleware import StatsMiddleware
 from allura.lib.custom_middleware import SSLMiddleware
 from allura.lib.custom_middleware import StaticFilesMiddleware
 from allura.lib.custom_middleware import CSRFMiddleware
+from allura.lib.custom_middleware import LoginRedirectMiddleware
 from allura.lib import patches
+from allura.lib import helpers as h
 
 __all__ = ['make_app']
 
@@ -82,31 +84,54 @@ def _make_core_app(root, global_conf, full_stack=True, **app_conf):
     load_environment(global_conf, app_conf)
 
     app = tg.TGApp()
+    if asbool(config.get('auth.method', 'local')=='sfx'):
+        import sfx.middleware
+        d = h.config_with_prefix(config, 'auth.')
+        d.update(h.config_with_prefix(config, 'sfx.'))
+        app = sfx.middleware.SfxMiddleware(app, d)
+    # Required for pylons
     app = RoutesMiddleware(app, config['routes.map'])
+    # Required for sessions
     app = SessionMiddleware(app, config)
+    # Converts exceptions to HTTP errors, shows traceback in debug mode
     app = tg.error.ErrorHandler(app, global_conf, **config['pylons.errorware'])
+    # Redirect some status codes to /error/document
     if asbool(config['debug']):
         app = StatusCodeRedirect(app, base_config.handle_status_codes)
     else:
         app = StatusCodeRedirect(app, base_config.handle_status_codes + [500])
+    # Redirect 401 to the login page
+    app = LoginRedirectMiddleware(app)
+    # Add instrumentation
     if app_conf.get('stats.sample_rate', '0.25') != '0':
         stats_config = dict(global_conf, **app_conf)
         app = StatsMiddleware(app, stats_config)
+    # Clear cookies when the CSRF field isn't posted
     if not app_conf.get('disable_csrf_protection'):
         app = CSRFMiddleware(app, '_session_id')
+    # Setup the security.credentitals SOP
     app = credentials_middleware(app)
+    # Ensure https for logged in users, http for anonymous ones
     if asbool(app_conf.get('auth.method', 'local')=='sfx'):
         app = SSLMiddleware(app, app_conf.get('no_redirect.pattern'))
+    # Setup resource manager, widget context SOP
     app = ew.WidgetMiddleware(
         app,
         compress=not asbool(global_conf['debug']),
         # compress=True,
         script_name=app_conf.get('ew.script_name', '/_ew_resources/'),
         url_base=app_conf.get('ew.url_base', '/_ew_resources/'))
+    # Make sure that the wsgi.scheme is set appropriately when we
+    # have the funky HTTP_X_SFINC_SSL  environ var
     if asbool(app_conf.get('auth.method', 'local')=='sfx'):
         app = set_scheme_middleware(app)
+    # Handle static files (by tool)
     app = StaticFilesMiddleware(app, app_conf.get('static.script_name'))
+    # Handle setup and flushing of Ming ORM sessions
     app = MingMiddleware(app)
+    # Set up the registry for stacked object proxies (SOPs).
+    #    streaming=true ensures they won't be cleaned up till
+    #    the WSGI application's iterator is exhausted
     app = RegistryManager(app, streaming=True)
     return app
     

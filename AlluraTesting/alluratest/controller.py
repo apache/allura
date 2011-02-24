@@ -7,7 +7,8 @@ import mock
 import beaker.session
 from paste.deploy import loadapp
 from paste.script.appinstall import SetupCommand
-from pylons import c, g, h, url, request, response, session
+from paste.registry import Registry
+from pylons import c, g, url, request, response, session
 import tg
 from webtest import TestApp
 from webob import Request, Response
@@ -17,11 +18,12 @@ import ming.orm
 
 from allura import model as M
 from allura.lib.app_globals import Globals
-from allura.lib.custom_middleware import environ as ENV, MagicalC
+#from allura.lib.custom_middleware import environ as ENV, MagicalC
 from .validation import ValidatingTestApp
 
-
 DFL_APP_NAME = 'main_without_authn'
+
+REGISTRY = Registry()
 
 def get_config_file(config=None):
     if not config:
@@ -39,11 +41,7 @@ def setup_basic_test(config=None, app_name=DFL_APP_NAME):
         conf_dir = tg.config.here
     except AttributeError:
         conf_dir = os.getcwd()
-    environ = {}
     ew.TemplateEngine.initialize({})
-    ew.widget_context.set_up(environ)
-    ew.widget_context.resource_manager = ew.ResourceManager()
-    ENV.set_environment(environ)
     test_file = os.path.join(conf_dir, get_config_file(config))
     cmd = SetupCommand('setup-app')
     cmd.run([test_file])
@@ -58,15 +56,19 @@ def setup_functional_test(config=None, app_name=DFL_APP_NAME):
     return wsgiapp
 
 def setup_unit_test():
-    from allura.lib import helpers
-    g._push_object(Globals())
-    c._push_object(MagicalC(mock.Mock(), ENV))
-    h._push_object(helpers)
-    url._push_object(lambda:None)
+    try:
+        REGISTRY.cleanup()
+    except:
+        pass
+    REGISTRY.prepare()
+    REGISTRY.register(ew.widget_context, ew.core.WidgetContext('http', ew.ResourceManager()))
+    REGISTRY.register(g, Globals())
+    REGISTRY.register(c, mock.Mock())
+    REGISTRY.register(url, lambda:None)
+    REGISTRY.register(request, Request.blank('/', remote_addr='1.1.1.1'))
+    REGISTRY.register(response, Response())
+    REGISTRY.register(session, beaker.session.SessionObject({}))
     c.queued_messages = None
-    request._push_object(Request.blank('/', remote_addr='1.1.1.1'))
-    response._push_object(Response())
-    session._push_object(beaker.session.SessionObject({}))
     ThreadLocalORMSession.close_all()
 
 def setup_global_objects():

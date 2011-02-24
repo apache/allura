@@ -5,7 +5,7 @@ from pylons import g, c
 
 from ming.orm import ThreadLocalORMSession
 
-from alluratest.controller import setup_basic_test, setup_global_objects
+from alluratest.controller import setup_basic_test, setup_global_objects, REGISTRY
 from allura import model as M
 from allura.lib import helpers as h
 from forgewiki import model as WM
@@ -77,7 +77,7 @@ class TestPostNotifications(unittest.TestCase):
         assert not flash_msgs, flash_msgs
 
     def test_delivery(self):
-        g.mock_amq.setup_handlers()
+        g.mock_amq.setup_handlers(REGISTRY)
         self._subscribe()
         self._post_notification()
         g.mock_amq.handle('react')# should deliver msg to mailbox
@@ -86,7 +86,7 @@ class TestPostNotifications(unittest.TestCase):
         assert len(mbox.queue) == 1
 
     def test_email(self):
-        g.mock_amq.setup_handlers()
+        g.mock_amq.setup_handlers(REGISTRY)
         self._subscribe()
         self._post_notification()
         g.mock_amq.handle('react')# should deliver msg to mailbox
@@ -119,14 +119,16 @@ class TestSubscriptionTypes(unittest.TestCase):
         ThreadLocalORMSession.flush_all()
         ThreadLocalORMSession.close_all()
         self.pg = WM.Page.query.get(app_config_id=c.app.config._id)
-        g.mock_amq.setup_handlers()
+        g.mock_amq.setup_handlers(REGISTRY)
         g.mock_amq.clear()
         M.notification.MAILBOX_QUIESCENT=None # disable message combining
 
     def test_direct_sub(self):
         self._subscribe()
-        self._post_notification()
-        self._post_notification()
+        self._post_notification(text='A')
+        self._post_notification(text='B')
+        ThreadLocalORMSession.flush_all()
+        ThreadLocalORMSession.close_all()
         g.mock_amq.handle('react')
         g.mock_amq.handle('react')
         M.Mailbox.fire_ready()

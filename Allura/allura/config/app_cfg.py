@@ -15,19 +15,15 @@ convert them into boolean, for example, you should use the
 import logging
 import pkg_resources
 
-import tg
 from tg.configuration import AppConfig, config
 from paste.deploy.converters import asbool
-from paste.registry import RegistryManager
 from routes import Mapper
 from webhelpers.html import literal
 
 import ew
 
 import allura
-import allura.lib.helpers as h
-from allura.lib import app_globals, custom_middleware
-
+from allura.lib import app_globals
 
 log = logging.getLogger(__name__)
 
@@ -45,21 +41,8 @@ class ForgeConfig(AppConfig):
         # self.handle_status_codes = [ 403, 404 ]
         self.handle_status_codes = [ 403, 404 ]
 
-    def add_error_middleware(self, global_conf, app):
-        app = AppConfig.add_error_middleware(self, global_conf, app)
-        app = custom_middleware.LoginRedirectMiddleware(app)
-        return app
-
     def after_init_config(self):
         config['pylons.strict_c'] = True
-
-    def add_core_middleware(self, app):
-        if asbool(config.get('auth.method', 'local')=='sfx'):
-            import sfx.middleware
-            d = h.config_with_prefix(config, 'auth.')
-            d.update(h.config_with_prefix(config, 'sfx.'))
-            app = sfx.middleware.SfxMiddleware(app, d)
-        return super(ForgeConfig, self).add_core_middleware(app)
 
     def setup_routes(self):
         map = Mapper(directory=config['pylons.paths']['controllers'],

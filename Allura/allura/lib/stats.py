@@ -1,6 +1,7 @@
 from __future__ import with_statement
 from time import time
 from contextlib import contextmanager
+from pylons import request
 
 class StatsRecord(object):
 
@@ -47,11 +48,10 @@ class timing(object):
         self.timer = timer
 
     def __call__(self, func):
-        from allura.lib.custom_middleware import environ
         def inner(*l, **kw):
             try:
-                stats = environ['sf.stats']
-            except KeyError:
+                stats = request.environ['sf.stats']
+            except TypeError:
                 return func(*l, **kw)
             with stats.timing(self.timer):
                 return func(*l, **kw)

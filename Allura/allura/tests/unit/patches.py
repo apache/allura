@@ -1,4 +1,4 @@
-from mock import Mock, patch, patch_object
+from mock import Mock, patch
 from pylons import c
 
 from allura.tests.unit.factories import create_project, create_app_config
@@ -10,7 +10,7 @@ def fake_app_patch(test_case):
     app = Mock()
     app.__version__ = '0'
     app.config = app_config
-    return patch_object(c, 'app', app, create=True)
+    return patch.object(c, 'app', app, create=True)
 
 
 def project_app_loading_patch(test_case):
