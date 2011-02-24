@@ -107,6 +107,7 @@ class ForumFile(M.File):
 class ForumThread(M.Thread):
     class __mongometa__:
         name='forum_thread'
+        indexes = ['flags']
     type_s = 'Thread'
 
     discussion_id = ForeignIdProperty(Forum)

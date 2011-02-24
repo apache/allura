@@ -75,7 +75,8 @@ class ForumController(DiscussionController):
         if self.discussion.deleted and not has_artifact_access('configure', app=c.app)():
             redirect(self.discussion.url()+'deleted')
         limit, page, start = g.handle_paging(limit, page)
-        threads = DM.ForumThread.query.find(dict(discussion_id=self.discussion._id)).sort('mod_date', pymongo.DESCENDING)
+        threads = DM.ForumThread.query.find(dict(discussion_id=self.discussion._id)) \
+                                      .sort([('flags', pymongo.DESCENDING), ('mod_date', pymongo.DESCENDING)])
         return super(ForumController, self).index(threads=threads.skip(start).limit(int(limit)).all(), limit=limit, page=page, count=threads.count(), **kw)
 
     @expose()
