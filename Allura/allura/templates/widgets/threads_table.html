@@ -1,6 +1,6 @@
 {% import 'jinja_master/lib.html' as lib with context %}
 
-<div>
+<div{{ {'id': div_id}|xmlattr }}>
   <table id="forum-list" class="clear">
     <thead> 
       <tr> 

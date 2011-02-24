@@ -352,6 +352,93 @@ class TestForum(TestController):
         assert thread.response.body.count('<div class="row reply_post_form') == 2
         assert thread.response.body.count('<div class="edit_post_form') == 2
 
+    def get_table_rows(self, response, closest_id):
+        tbody = response.html.find('div', {'id': closest_id}).find('tbody')
+        rows = tbody.findAll('tr')
+        return rows
+
+    def check_announcement_table(self, response, topic_name):
+        assert response.html.find(text='Announcements')
+        rows = self.get_table_rows(response, 'announcements')
+        assert_equal(len(rows), 1)
+        cell = rows[0].findAll('td', {'class': 'topic'})
+        assert topic_name in str(cell)
+
+    def test_thread_announcement(self):
+        r = self.app.post('/discussion/save_new_topic', params=dict(
+                subject='AAAA',
+                text='aaa aaa',
+                forum='testforum')).follow()
+        url = r.request.url
+        thread_id = url.rstrip('/').rsplit('/', 1)[-1]
+        thread = FM.ForumThread.query.get(_id=thread_id)
+        r = self.app.post(url + 'moderate', params=dict(
+                flags='Announcement',
+                discussion='testforum'))
+        thread2 = FM.ForumThread.query.get(_id=thread_id)
+        assert_equal(thread2.flags, ['Announcement'])
+
+        # Check that announcements are on front discussion page
+        r = self.app.get('/discussion/')
+        self.check_announcement_table(r, 'AAAA')
+        # Check that announcements are on each forum's page
+        r = self.app.get('/discussion/testforum/')
+        self.check_announcement_table(r, 'AAAA')
+        r = self.app.get('/discussion/testforum/childforum/')
+        self.check_announcement_table(r, 'AAAA')
+
+    def test_thread_sticky(self):
+        r = self.app.post('/discussion/save_new_topic', params=dict(
+                subject='topic1',
+                text='aaa aaa',
+                forum='testforum')).follow()
+        url1 = r.request.url
+        tid1 = url1.rstrip('/').rsplit('/', 1)[-1]
+
+        r = self.app.post('/discussion/save_new_topic', params=dict(
+                subject='topic2',
+                text='aaa aaa',
+                forum='testforum')).follow()
+        url2 = r.request.url
+        tid2 = url2.rstrip('/').rsplit('/', 1)[-1]
+
+        # Check that threads are ordered in reverse creation order
+        r = self.app.get('/discussion/testforum/')
+        rows = self.get_table_rows(r, 'forum_threads')
+        assert_equal(len(rows), 2)
+        assert 'topic2' in str(rows[0])
+        assert 'topic1' in str(rows[1])
+
+        # Make oldest thread Sticky
+        r = self.app.post(url1 + 'moderate', params=dict(
+                flags='Sticky',
+                discussion='testforum'))
+        thread1 = FM.ForumThread.query.get(_id=tid1)
+        assert_equal(thread1.flags, ['Sticky'])
+
+        # Check that Sticky thread is at the top
+        r = self.app.get('/discussion/testforum/')
+        rows = self.get_table_rows(r, 'forum_threads')
+        assert_equal(len(rows), 2)
+        assert 'topic1' in str(rows[0])
+        assert 'topic2' in str(rows[1])
+
+        # Reset Sticky flag
+        r = self.app.post(url1 + 'moderate', params=dict(
+                flags='',
+                discussion='testforum'))
+        thread1 = FM.ForumThread.query.get(_id=tid1)
+        assert_equal(thread1.flags, [])
+
+        # Would check that threads are again in reverse creation order,
+        # but so far we actually sort by mod_date, and resetting a flag
+        # updates it
+        r = self.app.get('/discussion/testforum/')
+        rows = self.get_table_rows(r, 'forum_threads')
+        assert_equal(len(rows), 2)
+        #assert 'topic2' in str(rows[0])
+        #assert 'topic1' in str(rows[1])
+
     def test_sidebar_menu(self):
         r = self.app.get('/discussion/')
         sidebarmenu = str(r.html.find('div',{'id':'sidebar'}))

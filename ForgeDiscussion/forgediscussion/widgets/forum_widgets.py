@@ -46,6 +46,7 @@ class _ThreadsTable(DW._ThreadsTable):
     fields.insert(0, ew.LinkField(
             label='Subject', text="${value['subject']}",
             href="${value['url']()}", show_label=True))
+    defaults=dict(DW._ThreadsTable.defaults, div_id='forum_threads')
 
 class ThreadSubscriptionForm(DW.SubscriptionForm):
     class fields(ew_core.NameList):
@@ -62,6 +63,7 @@ class AnnouncementsTable(DW._ThreadsTable):
     fields.insert(0, ew.LinkField(
             label='Subject', text="${value['subject']}",
             href="${value['url']()}", show_label=True))
+    defaults=dict(DW._ThreadsTable.defaults, div_id='announcements')
     name='announcements'
 
 class _ForumSelector(ew.SingleSelectField):
