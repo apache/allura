@@ -11,6 +11,7 @@ from .forms import ForgeForm
 
 class OAuthApplicationForm(ForgeForm):
     submit_text='Register new applicaiton'
+    style='wide'
     class fields(ew_core.NameList):
         application_name =ew.TextField(label='Application Name',
                                        validator=V.UniqueOAuthApplicationName())

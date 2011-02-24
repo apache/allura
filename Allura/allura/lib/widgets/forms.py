@@ -17,6 +17,7 @@ class ForgeForm(ew.SimpleForm):
     defaults=dict(
         ew.SimpleForm.defaults,
         submit_text='Save',
+        style='standard',
         method='post',
         enctype=None)
 

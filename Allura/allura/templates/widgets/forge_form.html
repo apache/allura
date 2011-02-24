@@ -1,27 +1,31 @@
 <form method="{{method}}"
       {% if enctype %}enctype="{{enctype}}"{% endif %}
       action="{{action}}">
+  {% set extra_width = 0 %}
+  {% if style == 'wide' %}
+    {% set extra_width = 4 %}
+  {% endif %}
   {% if errors and not errors.iteritems and show_errors %}
-  <div class="grid-19"><span {{widget.j2_attrs({'class':error_class})}}>{{errors}}</span></div>
+  <div class="grid-{{19 + extra_width}}"><span {{widget.j2_attrs({'class':error_class})}}>{{errors}}</span></div>
   {% endif %}
   {% for field in widget.fields %}
     {% set ctx=widget.context_for(field) %}
     {% if field.field_type != 'hidden' %}
       {% if ctx.errors and field.show_errors -%}
-      <div class="grid-19"><span {{widget.j2_attrs({'class':error_class})}}>{{ctx.errors}}</span></div>
+      <div class="grid-{{19 + extra_width}}"><span {{widget.j2_attrs({'class':error_class})}}>{{ctx.errors}}</span></div>
       {%- endif %}
       {% if field.show_label and field.label %}
       <label for="{{ctx.id}}" class="grid-4">{{field.label}}:</label>
-      <div class="grid-15">{{field.display(**ctx)}}</div>
+      <div class="grid-{{15 + extra_width}}">{{field.display(**ctx)}}</div>
       {% else %}
-      <div class="grid-19">{{field.display(**ctx)}}</div>
+      <div class="grid-{{19 + extra_width}}">{{field.display(**ctx)}}</div>
       {% endif %}
     {% else %}
       {{field.display(**ctx)}}
     {% endif %}
   {% endfor %}
   <label class="grid-4">&nbsp;</label>
-  <div class="grid-15">
+  <div class="grid-{{15 + extra_width}}">
     {% for b in buttons %}
       {{b.display()}}
     {% endfor %}
