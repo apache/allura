@@ -35,7 +35,11 @@ def received_email(routing_key, data):
     goes to the audit with routing ID
     <tool name>.mail.<topic>
     '''
-    msg = util.parse_message(data['data'])
+    try:
+        msg = util.parse_message(data['data'])
+    except:
+        log.exception('Error parsing email: %r', data)
+        return
     user = util.identify_sender(data['peer'], data['mailfrom'], msg['headers'], msg)
     log.info('Received email from %s', user.username)
     # For each of the addrs, determine the project/app and route appropriately
