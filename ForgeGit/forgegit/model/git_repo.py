@@ -29,7 +29,7 @@ class Repository(M.Repository):
         super(Repository, self).__init__(**kw)
         self._impl = GitImplementation(self)
 
-    def readonly_path(self, username):
+    def readonly_path(self, username=''):
         tpl = string.Template(tg.config.get('scm.host.ro.%s' % self.tool))
         return tpl.substitute(dict(username=username, path=self.url_path+self.name[:-4]))
 
