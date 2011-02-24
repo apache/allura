@@ -2,13 +2,19 @@
 """WSGI middleware initialization for the allura application."""
 import mimetypes
 
+import tg
 import pkg_resources
 from webob import exc
-from tg import redirect
+from tg import config
 from paste.deploy.converters import asbool
+from paste.registry import RegistryManager
+from beaker.middleware import SessionMiddleware
+from routes.middleware import RoutesMiddleware
+from pylons.middleware import StatusCodeRedirect
 
 import ew
 import ming
+from ming.orm.middleware import MingMiddleware
 
 from allura.config.app_cfg import base_config
 from allura.config.environment import load_environment
@@ -53,43 +59,55 @@ def _make_core_app(root, global_conf, full_stack=True, **app_conf):
     
    
     """
+    # Run all the initialization code here
     mimetypes.init(
         [pkg_resources.resource_filename('allura', 'etc/mime.types')]
         + mimetypes.knownfiles)
     patches.apply()
+    # Configure MongoDB
+    ming.configure(**app_conf)
+
+    # Configure EW variable provider
+    ew.render.TemplateEngine.register_variable_provider(get_tg_vars)
     
     # Create base app
     base_config = ForgeConfig(root)
     load_environment = base_config.make_load_environment()
-    make_base_app = base_config.setup_tg_wsgi_app(load_environment)
-    app = make_base_app(global_conf, full_stack=True, **app_conf)
 
-    # Configure MongoDB
-    ming.configure(**app_conf)
+    # Code adapted from tg.configuration, replacing the following lines:
+    #     make_base_app = base_config.setup_tg_wsgi_app(load_environment)
+    #     app = make_base_app(global_conf, full_stack=True, **app_conf)
 
-    # Wrap your base TurboGears 2 application with custom middleware here
-    # app = MingMiddleware(app)
+    # Configure the Pylons environment
+    load_environment(global_conf, app_conf)
+
+    app = tg.TGApp()
+    app = RoutesMiddleware(app, config['routes.map'])
+    app = SessionMiddleware(app, config)
+    app = tg.error.ErrorHandler(app, global_conf, **config['pylons.errorware'])
+    if asbool(config['debug']):
+        app = StatusCodeRedirect(app, base_config.handle_status_codes)
+    else:
+        app = StatusCodeRedirect(app, base_config.handle_status_codes + [500])
     if app_conf.get('stats.sample_rate', '0.25') != '0':
         stats_config = dict(global_conf, **app_conf)
         app = StatsMiddleware(app, stats_config)
-
+    if not app_conf.get('disable_csrf_protection'):
+        app = CSRFMiddleware(app, '_session_id')
+    app = credentials_middleware(app)
     if asbool(app_conf.get('auth.method', 'local')=='sfx'):
         app = SSLMiddleware(app, app_conf.get('no_redirect.pattern'))
-
     app = ew.WidgetMiddleware(
         app,
         compress=not asbool(global_conf['debug']),
         # compress=True,
         script_name=app_conf.get('ew.script_name', '/_ew_resources/'),
         url_base=app_conf.get('ew.url_base', '/_ew_resources/'))
-    ew.render.TemplateEngine.register_variable_provider(get_tg_vars)
-
+    if asbool(app_conf.get('auth.method', 'local')=='sfx'):
+        app = set_scheme_middleware(app)
     app = StaticFilesMiddleware(app, app_conf.get('static.script_name'))
-    app = set_scheme_middleware(app)
-    app = credentials_middleware(app)
-    if not app_conf.get('disable_csrf_protection'):
-        app = CSRFMiddleware(app, '_session_id')
-
+    app = MingMiddleware(app)
+    app = RegistryManager(app, streaming=True)
     return app
     
 def set_scheme_middleware(app):
@@ -101,8 +119,9 @@ def set_scheme_middleware(app):
 
 def credentials_middleware(app):
     def CredentialsMiddleware(environ, start_response):
-        from allura.lib import security
-        environ['allura.credentials'] = security.Credentials()
+        import allura.lib.security
+        registry = environ['paste.registry']
+        registry.register(allura.credentials, allura.lib.security.Credentials())
         return app(environ, start_response)
     return CredentialsMiddleware
 

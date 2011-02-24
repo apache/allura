@@ -15,10 +15,8 @@ class Credentials(object):
 
     @classmethod
     def get(cls):
-        try:
-            return request.environ['allura.credentials']
-        except:
-            return cls()
+        import allura
+        return allura.credentials
 
     def clear(self):
         self.users = {}

@@ -15,8 +15,10 @@ convert them into boolean, for example, you should use the
 import logging
 import pkg_resources
 
+import tg
 from tg.configuration import AppConfig, config
 from paste.deploy.converters import asbool
+from paste.registry import RegistryManager
 from routes import Mapper
 from webhelpers.html import literal
 
