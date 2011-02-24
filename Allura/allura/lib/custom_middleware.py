@@ -119,7 +119,14 @@ class LoginRedirectMiddleware(object):
             self.app, environ, catch_exc_info=True)
         if status[:3] == '401':
             login_url = tg.config.get('auth.login_url', '/auth/')
-            location = tg.url(login_url, dict(return_to=environ['PATH_INFO']))
+            if environ['REQUEST_METHOD'] == 'GET':
+                return_to = environ['PATH_INFO']
+                if environ.get('QUERY_STRING'):
+                    return_to += '?' + environ['QUERY_STRING']
+                location = tg.url(login_url, dict(return_to=return_to))
+            else:
+                # Don't try to re-post; the body has been lost.
+                location = tg.url('/')
             r = exc.HTTPFound(location=location)
             return r(environ, start_response)
         start_response(status, headers, exc_info)
@@ -175,7 +182,7 @@ class SSLMiddleware(object):
         except UnicodeError:
             resp = exc.HTTPNotFound()
         secure = req.environ.get('HTTP_X_SFINC_SSL', 'false') == 'true'
-        srv_path = req.path_url.split('://', 1)[-1]
+        srv_path = req.url.split('://', 1)[-1]
         if req.cookies.get('SFUSER'):
             if not secure:
                 resp = exc.HTTPFound(location='https://' + srv_path)
