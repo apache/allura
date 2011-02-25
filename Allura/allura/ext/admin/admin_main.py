@@ -226,6 +226,7 @@ class ProjectAdminController(BaseController):
         if 'delete_icon' in kw:
             M.ProjectFile.query.remove(dict(project_id=c.project._id, category='icon'))
             h.log_action(log, 'remove project icon').info('')
+            g.publish('react', 'forge.project_updated')
             redirect('.')
         elif 'delete' in kw:
             h.log_action(log, 'delete project').info('')
@@ -368,6 +369,7 @@ class ProjectAdminController(BaseController):
         except forge_exc.ToolError, exc:
             flash('%s: %s' % (exc.__class__.__name__, exc.args[0]),
                   'error')
+        g.publish('react', 'forge.project_updated')
         redirect('tools')
 
     @h.vardec
