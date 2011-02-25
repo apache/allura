@@ -114,7 +114,6 @@ class Application(object):
         ConfigOption('ordinal', int, '0') ]
     status_map = [ 'production', 'beta', 'alpha', 'user' ]
     status='production'
-    templates=None # path to templates
     script_name=None
     root=None  # root controller
     api_root=None
