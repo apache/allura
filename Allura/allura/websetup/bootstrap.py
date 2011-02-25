@@ -167,10 +167,10 @@ def bootstrap(command, conf, vars):
         log.info('Loading test data')
         u_proj = M.Project.query.get(shortname='u/test-admin')
         u_proj.new_subproject('sub1')
-        app = p0.install_app('SVN', 'src')
-        app = p0.install_app('Git', 'src-git')
+        app = p0.install_app('SVN', 'src', 'SVN')
+        app = p0.install_app('Git', 'src-git', 'Git')
         app.config.options['type'] = 'git'
-        app = p0.install_app('Hg', 'src-hg')
+        app = p0.install_app('Hg', 'src-hg', 'Mercurial')
         app.config.options['type'] = 'hg'
         p0.install_app('Wiki', 'wiki')
         p0.install_app('Tickets', 'bugs')
