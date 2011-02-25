@@ -12,7 +12,7 @@ Please read http://pythonpaste.org/webtest/ for more information.
 """
 from urllib import quote
 
-from nose.tools import assert_true
+from nose.tools import assert_true, assert_equal
 
 from allura.tests import TestController
 from allura import model as M
@@ -22,7 +22,7 @@ from ming.orm import session
 class TestRootController(TestController):
     def test_index(self):
         response = self.app.get('/')
-        assert response.html.find('h2',{'class':'dark title'}).contents[0] == 'All Projects'
+        assert_equal(response.html.find('h2',{'class':'dark title'}).contents[0].strip(), 'All Projects')
         projects = response.html.findAll('div',{'class':'border card'})
         assert projects[0].find('a').get('href') == '/adobe/adobe-1/'
         assert projects[0].find('img').get('alt') == 'adobe-1 Logo'
