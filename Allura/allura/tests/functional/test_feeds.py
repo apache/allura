@@ -17,7 +17,6 @@ class TestFeeds(TestController):
             params=variable_encode(dict(
                     ticket_form=dict(
                     ticket_num='',
-                    tags='',
                     labels='',
                     assigned_to='',
                     milestone='',
@@ -31,8 +30,6 @@ class TestFeeds(TestController):
             params=dict(
                 title=title,
                 text="Nothing much",
-                tags='',
-                tags_old='',
                 labels='',
                 labels_old=''),
             status=302)
@@ -50,8 +47,6 @@ class TestFeeds(TestController):
         self.app.post('/wiki/Root/update', params={
                 'title':'Root',
                 'text':'',
-                'tags':'',
-                'tags_old':'',
                 'labels':'',
                 'labels_old':'',
                 'viewable_by-0.id':'all'})
@@ -71,8 +66,6 @@ class TestFeeds(TestController):
                 ticket_num='',
                 labels='',
                 labels_old='',
-                tags='',
-                tags_old='',
                 summary='This is a new ticket',
                 status='unread',
                 milestone='',

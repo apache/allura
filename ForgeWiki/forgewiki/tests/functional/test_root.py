@@ -68,8 +68,6 @@ class TestRootController(TestController):
             params={
                 'title':'TEST',
                 'text':'text1',
-                'tags':'',
-                'tags_old':'',
                 'labels':'',
                 'labels_old':'',
                 'viewable_by-0.id':'all'})
@@ -78,8 +76,6 @@ class TestRootController(TestController):
             params={
                 'title':'TEST',
                 'text':'text2',
-                'tags':'',
-                'tags_old':'',
                 'labels':'',
                 'labels_old':'',
                 'viewable_by-0.id':'all'})
@@ -105,8 +101,6 @@ class TestRootController(TestController):
             params={
                 'title':'TEST',
                 'text':'sometext',
-                'tags':'',
-                'tags_old':'',
                 'labels':'',
                 'labels_old':'',
                 'viewable_by-0.id':'all'})
@@ -122,8 +116,6 @@ class TestRootController(TestController):
             params={
                 'title':'TEST',
                 'text':'sometext',
-                'tags':'',
-                'tags_old':'',
                 'labels':'',
                 'labels_old':'',
                 'viewable_by-0.id':'all'})
@@ -136,8 +128,6 @@ class TestRootController(TestController):
             params={
                 'title':'TEST',
                 'text':'',
-                'tags':'',
-                'tags_old':'',
                 'labels':'',
                 'labels_old':'',
                 'viewable_by-0.id':'all'})
@@ -151,8 +141,6 @@ class TestRootController(TestController):
             params={
                 'title':'TEST',
                 'text':'sometext',
-                'tags':'',
-                'tags_old':'',
                 'labels':'',
                 'labels_old':'',
                 'viewable_by-0.id':'all'})
@@ -166,33 +154,6 @@ class TestRootController(TestController):
             params={
                 'title':'TEST',
                 'text':'sometext',
-                'tags':'',
-                'tags_old':'',
-                'labels':'',
-                'labels_old':'',
-                'viewable_by-0.id':'all'})
-        assert 'TEST' in response
-
-    def test_page_tag_untag(self):
-        self.app.get('/wiki/TEST/')
-        response = self.app.post(
-            '/wiki/TEST/update',
-            params={
-                'title':'TEST',
-                'text':'sometext',
-                'tags':'red,blue',
-                'tags_old':'red,blue',
-                'labels':'',
-                'labels_old':'',
-                'viewable_by-0.id':'all'})
-        assert 'TEST' in response
-        response = self.app.post(
-            '/wiki/TEST/update',
-            params={
-                'title':'TEST',
-                'text':'sometext',
-                'tags':'red',
-                'tags_old':'red',
                 'labels':'',
                 'labels_old':'',
                 'viewable_by-0.id':'all'})
@@ -205,8 +166,6 @@ class TestRootController(TestController):
             params={
                 'title':'TEST',
                 'text':'sometext',
-                'tags':'',
-                'tags_old':'',
                 'labels':'yellow,green',
                 'labels_old':'yellow,green',
                 'viewable_by-0.id':'all'})
@@ -216,8 +175,6 @@ class TestRootController(TestController):
             params={
                 'title':'TEST',
                 'text':'sometext',
-                'tags':'',
-                'tags_old':'',
                 'labels':'yellow',
                 'labels_old':'yellow',
                 'viewable_by-0.id':'all'})
@@ -229,8 +186,6 @@ class TestRootController(TestController):
             params={
                 'title':'TEST',
                 'text':'sometext',
-                'tags':'',
-                'tags_old':'',
                 'labels':'',
                 'labels_old':'',
                 'viewable_by-0.id':'all'})
@@ -245,8 +200,6 @@ class TestRootController(TestController):
             params={
                 'title':'TEST',
                 'text':'sometext',
-                'tags':'',
-                'tags_old':'',
                 'labels':'',
                 'labels_old':'',
                 'viewable_by-0.id':'all'})
@@ -262,8 +215,6 @@ class TestRootController(TestController):
         self.app.post('/wiki/TEST/update', params={
                 'title':'TEST',
                 'text':'sometext',
-                'tags':'',
-                'tags_old':'',
                 'labels':'',
                 'labels_old':'',
                 'viewable_by-0.id':'all'})
@@ -310,24 +261,18 @@ class TestRootController(TestController):
         self.app.post('/wiki/TEST/update', params={
                 'title':'TEST',
                 'text':'sometext',
-                'tags':'',
-                'tags_old':'',
                 'labels':'',
                 'labels_old':'',
                 'viewable_by-0.id':'all'})
         self.app.post('/wiki/aaa/update', params={
                 'title':'aaa',
                 'text':'',
-                'tags':'',
-                'tags_old':'',
                 'labels':'',
                 'labels_old':'',
                 'viewable_by-0.id':'all'})
         self.app.post('/wiki/bbb/update', params={
                 'title':'bbb',
                 'text':'',
-                'tags':'',
-                'tags_old':'',
                 'labels':'',
                 'labels_old':'',
                 'viewable_by-0.id':'all'})
@@ -370,8 +315,6 @@ class TestRootController(TestController):
         self.app.post('/wiki/TEST/update', params={
                 'title':'TEST',
                 'text':'sometext',
-                'tags':'',
-                'tags_old':'',
                 'labels':'',
                 'labels_old':'',
                 'viewable_by-0.id':'all'})
@@ -390,8 +333,6 @@ class TestRootController(TestController):
         self.app.post('/wiki/TEST/update', params={
                 'title':'TEST',
                 'text':'sometext',
-                'tags':'',
-                'tags_old':'',
                 'labels':'',
                 'labels_old':'',
                 'viewable_by-0.id':'all'})
@@ -412,8 +353,6 @@ class TestRootController(TestController):
         self.app.post('/wiki/TEST/update', params={
                 'title':'TEST',
                 'text':'sometext',
-                'tags':'',
-                'tags_old':'',
                 'labels':'',
                 'labels_old':'',
                 'viewable_by-0.id':'all'})
@@ -438,8 +377,6 @@ class TestRootController(TestController):
 * Here is a link to [TEST]
 * Here is a link to [Some page which does not exist]
 ''',
-            'tags':'',
-            'tags_old':'',
             'labels':'',
             'labels_old':'',
             'viewable_by-0.id':'all'}
@@ -472,16 +409,12 @@ class TestRootController(TestController):
         self.app.post('/wiki/aaa/update', params={
                 'title':'aaa',
                 'text':'',
-                'tags':'',
-                'tags_old':'',
                 'labels':'',
                 'labels_old':'',
                 'viewable_by-0.id':'all'})
         self.app.post('/wiki/bbb/update', params={
                 'title':'bbb',
                 'text':'',
-                'tags':'',
-                'tags_old':'',
                 'labels':'',
                 'labels_old':'',
                 'viewable_by-0.id':'all'})

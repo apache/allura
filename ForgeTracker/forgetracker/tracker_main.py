@@ -849,7 +849,6 @@ class TicketController(BaseController):
         require(has_artifact_access('write', self.ticket))
         changes = changelog()
         comment = post_data.pop('comment', None)
-        tags = post_data.pop('tags', None) or []
         labels = post_data.pop('labels', None) or []
         if labels:
             changes['labels'] = self.ticket.labels
@@ -869,7 +868,6 @@ class TicketController(BaseController):
             else:
                 self.ticket.assigned_to_id = None
             changes['assigned_to'] = self.ticket.assigned_to
-        h.tag_artifact(self.ticket, c.user, tags)
 
         # if c.app.globals.milestone_names is None:
         #     c.app.globals.milestone_names = ''

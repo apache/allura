@@ -306,7 +306,7 @@ class Repository(Artifact):
         log.info('... refreshed repository %s.  Found %d new commits',
                  self, len(commit_ids))
         self.status = 'ready'
-        for head in self.heads + self.branches + self.tags:
+        for head in self.heads + self.branches + self.repo_tags:
             ci = self.commit(head.object_id)
             if ci is not None:
                 head.count = ci.count_revisions()

@@ -579,7 +579,6 @@ class PageController(BaseController):
     @expose()
     @require_post()
     def update(self, title=None, text=None,
-               tags=None, tags_old=None,
                labels=None, labels_old=None,
                viewable_by=None,
                new_viewable_by=None,**kw):
@@ -592,8 +591,6 @@ class PageController(BaseController):
             self.page = WM.Page.upsert(self.title)
             self.page.viewable_by = ['all']
         require(has_artifact_access('edit', self.page))
-        if tags: tags = tags.split(',')
-        else: tags = []
         name_conflict = None
         if self.page.title != title:
             name_conflict = WM.Page.query.find(dict(app_config_id=c.app.config._id, title=title, deleted=False)).first()
@@ -609,7 +606,6 @@ class PageController(BaseController):
         else:
             self.page.labels = []
         self.page.commit()
-        h.tag_artifact(self.page, c.user, tags)
         if new_viewable_by:
             if new_viewable_by == 'all':
                 self.page.viewable_by.append('all')
@@ -684,7 +680,7 @@ class RootRestController(RestController):
         if page is None:
             raise exc.HTTPNotFound, title
         require(has_artifact_access('read', page))
-        return dict(title=page.title, text=page.text, tags=page.tags, labels=page.labels)
+        return dict(title=page.title, text=page.text, labels=page.labels)
 
     @h.vardec
     @expose()
@@ -701,9 +697,6 @@ class RootRestController(RestController):
         if 'labels' in post_data:
             page.labels = post_data['labels'].split(',')
         page.commit()
-        if 'tags' in post_data:
-            tags = post_data['tags']
-            h.tag_artifact(page, c.user, tags.split(',') if tags else [])
 
 
 class WikiAdminController(DefaultAdminController):

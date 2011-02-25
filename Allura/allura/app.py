@@ -210,13 +210,6 @@ class Application(object):
                 'project_id':project_id,
                 'app_config_id':self.config._id}):
             d.delete()
-        # Remove all tags referring to this tool
-        q_aref ={
-            'artifact_ref.project_id':project_id,
-            'artifact_ref.mount_point':self.config.options['mount_point']}
-        model.Tag.query.remove(q_aref)
-        model.TagEvent.query.remove(q_aref)
-        model.UserTags.query.remove(q_aref)
         self.config.delete()
 
     def sidebar_menu(self):

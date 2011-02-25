@@ -317,7 +317,7 @@ class Artifact(MappedClass):
         { str: str },
         if_missing=lambda:{c.app.config.tool_name:c.app.__version__})
     acl = FieldProperty({str:[S.ObjectId]})
-    tags = FieldProperty([dict(tag=str, count=int)])
+    tags = FieldProperty(S.Deprecated)
     labels = FieldProperty([str])
     references = FieldProperty([ArtifactReferenceType])
     backreferences = FieldProperty({str:ArtifactReferenceType}) # keyed by solr id to emulate a set
@@ -362,10 +362,6 @@ class Artifact(MappedClass):
         return self
 
     @classmethod
-    def artifacts_tagged_with(cls, tag):
-        return cls.query.find({'tags.tag':tag})
-
-    @classmethod
     def artifacts_labeled_with(cls, label):
         return cls.query.find({'labels':label})
 
@@ -391,27 +387,6 @@ class Artifact(MappedClass):
             return d
         except AttributeError:
             return None
-
-    def add_tags(self, tags):
-        'Update the tags collection to reflect new tags added'
-        cur_tags = dict((t['tag'], t['count']) for t in self.tags)
-        for t in tags:
-            c = cur_tags.get(t, 0)
-            c += 1
-            cur_tags[t] = c
-        self.tags = [ dict(tag=k, count=v) for k,v in cur_tags.iteritems() ]
-
-    def remove_tags(self, tags):
-        'Update the tags collection to reflect tags removed'
-        cur_tags = dict((t['tag'], t['count']) for t in self.tags)
-        for t in tags:
-            c = cur_tags.get(t, 1)
-            c -= 1
-            if c:
-                cur_tags[t] = c
-            else:
-                cur_tags.pop(t, None)
-        self.tags = [ dict(tag=k, count=v) for k,v in cur_tags.iteritems() ]
 
     @property
     def project(self):
@@ -480,7 +455,6 @@ class Artifact(MappedClass):
             is_history_b=False,
             url_s=self.url(),
             type_s=self.type_s,
-            tags_t=' '.join(t['tag'] for t in self.tags),
             labels_t=' '.join(l for l in self.labels),
             snippet_s='')
 

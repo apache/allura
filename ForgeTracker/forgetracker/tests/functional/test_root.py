@@ -97,34 +97,6 @@ class TestFunctionalController(TestController):
         assert '<span class="gd">-2</span>' in r, r.showbrowser()
         assert '<span class="gi">+4</span>' in r, r.showbrowser()
     
-    def test_ticket_tag_untag(self):
-        summary = 'test tagging and untagging a ticket'
-        self.new_ticket(summary=summary)
-        self.app.post('/bugs/1/update_ticket',{
-            'summary':'aaa',
-            'description':'bbb',
-            'status':'ccc',
-            '_milestone':'',
-            'assigned_to':'',
-            'tags':'red,blue',
-            'tags_old':'red,blue',
-            'comment': ''
-        })
-        response = self.app.get('/bugs/1/')
-        assert_true('aaa' in response)
-        self.app.post('/bugs/1/update_ticket',{
-            'summary':'zzz',
-            'description':'bbb',
-            'status':'ccc',
-            '_milestone':'',
-            'assigned_to':'',
-            'tags':'red',
-            'tags_old':'red',
-            'comment': ''
-        })
-        response = self.app.get('/bugs/1/')
-        assert_true('zzz' in response)
-    
     def test_ticket_label_unlabel(self):
         summary = 'test labeling and unlabeling a ticket'
         self.new_ticket(summary=summary)
@@ -231,8 +203,6 @@ class TestFunctionalController(TestController):
         self.app.post('/wiki/aaa/update', params={
                 'title':'aaa',
                 'text':'',
-                'tags':'',
-                'tags_old':'',
                 'labels':'',
                 'labels_old':'',
                 'viewable_by-0.id':'all'})
@@ -301,8 +271,6 @@ class TestFunctionalController(TestController):
             'status':'ccc',
             '_milestone':'',
             'assigned_to':'test-admin',
-            'tags':'',
-            'tags_old':'',
             'labels':'',
             'labels_old':'',
             'comment': ''
@@ -348,8 +316,6 @@ class TestFunctionalController(TestController):
             'status':'ccc',
             '_milestone':'aaa',
             'assigned_to':'',
-            'tags':'',
-            'tags_old':'',
             'labels':'',
             'labels_old':'',
             'custom_fields._number':'',
@@ -362,8 +328,6 @@ class TestFunctionalController(TestController):
             'status':'ccc',
             '_milestone':'aaa',
             'assigned_to':'',
-            'tags':'',
-            'tags_old':'',
             'labels':'',
             'labels_old':'',
             'custom_fields._number':4,
@@ -385,8 +349,6 @@ class TestFunctionalController(TestController):
             'status':'ccc',
             '_milestone':'aaa',
             'assigned_to':'',
-            'tags':'',
-            'tags_old':'',
             'labels':'',
             'labels_old':'',
             'comment': ''
