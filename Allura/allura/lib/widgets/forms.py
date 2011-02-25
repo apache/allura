@@ -124,7 +124,9 @@ class NeighborhoodAddProjectForm(ForgeForm):
                     if ( $(this).attr('checked') ) {
                         var on = this;
                         $scms.each(function(){
-                            (this !== on) && $(this).removeAttr('checked');
+                            if ( this !== on ) {
+                                $(this).removeAttr('checked');
+                            }
                         });
                     }
                 });
