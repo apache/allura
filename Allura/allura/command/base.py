@@ -33,6 +33,11 @@ class Command(command.Command):
         import allura.lib.app_globals
         return allura.lib.app_globals.connect_amqp(self.config)
 
+    @ming.utils.LazyProperty
+    def config(self):
+        import tg
+        return tg.config
+
     def basic_setup(self):
         global log, M
         if self.args:
