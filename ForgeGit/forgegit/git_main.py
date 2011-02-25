@@ -25,8 +25,6 @@ class ForgeGitApp(RepositoryApp):
     '''This is the Git app for PyForge'''
     __version__ = version.__version__
     tool_label='Git'
-    default_mount_label='Git'
-    default_mount_point='git'
     ordinal=2
     forkable=True
     default_branch_name='ref/master'

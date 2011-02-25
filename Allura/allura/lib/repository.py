@@ -29,8 +29,8 @@ class RepositoryApp(Application):
         ConfigOption('cloned_from_repo_id', ObjectId, None)
         ]
     tool_label='Repository'
-    default_mount_label='Source'
-    default_mount_point='src'
+    default_mount_label='Code'
+    default_mount_point='code'
     ordinal=2
     forkable=False
     default_branch_name=None # master or default or some such

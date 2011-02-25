@@ -23,8 +23,6 @@ class ForgeSVNApp(RepositoryApp):
     '''This is the SVN app for PyForge'''
     __version__ = version.__version__
     tool_label='SVN'
-    default_mount_label='SVN'
-    default_mount_point='svn'
     ordinal=4
     forkable=False
     default_branch_name=''

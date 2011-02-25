@@ -26,8 +26,6 @@ class ForgeHgApp(RepositoryApp):
     '''This is the Git app for PyForge'''
     __version__ = version.__version__
     tool_label='Mercurial'
-    default_mount_label='Mercurial'
-    default_mount_point='mercurial'
     ordinal=3
     forkable=True
     default_branch_name='ref/default'

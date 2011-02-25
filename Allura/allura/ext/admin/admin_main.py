@@ -373,18 +373,6 @@ class ProjectAdminController(BaseController):
     @h.vardec
     @expose()
     @require_post()
-    def starter_mounts(self, **kw):
-        require(has_project_access('tool'))
-        for i, tool in enumerate(kw):
-            h.log_action(log, 'install tool').info(
-                'install tool %s', tool,
-                meta=dict(tool_type=tool, mount_point=(tool.lower() or h.nonce()), mount_label=tool))
-            c.project.install_app(tool, (tool.lower() or h.nonce()), mount_label=tool, ordinal=i)
-        redirect('overview')
-
-    @h.vardec
-    @expose()
-    @require_post()
     def update_acl(self, permission=None, role=None, new=None, **kw):
         require(has_project_access('security'))
         if role is None: role = []

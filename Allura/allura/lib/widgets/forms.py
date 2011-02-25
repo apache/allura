@@ -117,6 +117,19 @@ class NeighborhoodAddProjectForm(ForgeForm):
     def resources(self):
         for r in super(NeighborhoodAddProjectForm, self).resources(): yield r
         yield ew.CSSLink('css/add_project.css')
+        yield ew.JSScript('''
+            $(function(){
+                var $scms = $('[name=Git],[name=Hg],[name=SVN]');
+                $scms.change(function(){
+                    if ( $(this).attr('checked') ) {
+                        var on = this;
+                        $scms.each(function(){
+                            (this !== on) && $(this).removeAttr('checked');
+                        });
+                    }
+                });
+            });
+        ''')
 
 
 class NeighborhoodAddProjectValidator(fev.FancyValidator):
