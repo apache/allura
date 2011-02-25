@@ -68,6 +68,9 @@ class TestController(WsgiDispatchController, ProjectController):
             count -= 1
             assert count > 0, 'Timeout waiting for test project to appear'
 
+    def _cleanup_request(self):
+        pass
+
     @expose()
     def _lookup(self, name, *remainder):
         if not h.re_path_portion.match(name):

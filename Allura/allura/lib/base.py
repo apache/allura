@@ -18,6 +18,9 @@ class WsgiDispatchController(TGController):
         '''Responsible for setting all the values we need to be set on pylons.c'''
         raise NotImplementedError, '_setup_request'
 
+    def _cleanup_request(self):
+        raise NotImplementedError, '_cleanup_request'
+
     def __call__(self, environ, start_response):
         host = environ['HTTP_HOST'].lower()
         if host == config['oembed.host']:
@@ -25,8 +28,13 @@ class WsgiDispatchController(TGController):
             return OEmbedController()(environ, start_response)
         try:
             self._setup_request()
+            response = super(WsgiDispatchController, self).__call__(environ, start_response)
+            return self.cleanup_iterator(response)
         except exc.HTTPException, err:
             return err(environ, start_response)
-        return super(WsgiDispatchController, self).__call__(environ, start_response)
+
+    def cleanup_iterator(self, response):
+        for chunk in response: yield chunk
+        self._cleanup_request()
 
 

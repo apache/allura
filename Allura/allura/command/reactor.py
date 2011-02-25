@@ -130,9 +130,10 @@ class ReactorCommand(base.Command):
                     for x in cset.iterconsume():
                         pass
             except Exception:
+                import allura.lib.app_globals
                 base.log.exception('AMQP error, restart in 10s')
-                pylons.g.amqp_reconnect()
                 time.sleep(10)
+                self.carrot_connection = allura.lib.app_globals.connect_amqp(config)
 
     def periodic_main(self):
         base.log.info('Entering periodic reactor')

@@ -30,10 +30,11 @@ from pylons import c, request
 from carrot.connection import BrokerConnection
 from carrot.messaging import Publisher
 from bson import ObjectId
-from paste.deploy.converters import asint, asbool
+from paste.deploy.converters import asbool, asint
 
 import ew as ew_core
 import ew.jinja2_ew as ew
+from ming.utils import LazyProperty
 
 from allura import model as M
 from allura.lib.markdown_extensions import ForgeExtension
@@ -230,37 +231,19 @@ class Globals(object):
         self.resource_manager.register(
             ew.JSScript(text, **kw))
 
-    @property
+    @LazyProperty
     def publisher(self):
-        from .custom_middleware import environ
-        if 'allura.carrot.publisher' not in environ:
-            environ['allura.carrot.publisher'] = dict(
-                audit=Publisher(connection=self.conn, exchange='audit', auto_declare=False),
-                react=Publisher(connection=self.conn, exchange='react', auto_declare=False))
-        return environ['allura.carrot.publisher']
+        return dict(
+            audit=Publisher(connection=self.conn, exchange='audit', auto_declare=False),
+            react=Publisher(connection=self.conn, exchange='react', auto_declare=False))
 
     @property
     def conn(self):
         if asbool(config.get('amqp.mock')):
             return self.mock_amq
-        from .custom_middleware import environ
-        if 'allura.carrot.connection' not in environ:
-            environ['allura.carrot.connection'] = BrokerConnection(
-                hostname=config.get('amqp.hostname', 'localhost'),
-                port=asint(config.get('amqp.port', 5672)),
-                userid=config.get('amqp.userid', 'testuser'),
-                password=config.get('amqp.password', 'testpw'),
-                virtual_host=config.get('amqp.vhost', 'testvhost'))
-        return environ['allura.carrot.connection']
-
-    def amqp_reconnect(self):
-        from .custom_middleware import environ
-        try:
-            self.conn.close()
-        except:
-            log.exception('Error closing amqp connection')
-        del environ['allura.carrot.connection']
-        self.conn
+        else:
+            import allura
+            return allura.carrot_connection
 
     def oid_session(self):
         if 'openid_info' in session:
@@ -476,3 +459,11 @@ class Icon(object):
     def __init__(self, char, css):
         self.char = char
         self.css = css
+
+def connect_amqp(config):
+    return BrokerConnection(
+        hostname=config.get('amqp.hostname', 'localhost'),
+        port=asint(config.get('amqp.port', 5672)),
+        userid=config.get('amqp.userid', 'testuser'),
+        password=config.get('amqp.password', 'testpw'),
+        virtual_host=config.get('amqp.vhost', 'testvhost'))

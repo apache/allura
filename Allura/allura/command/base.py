@@ -28,11 +28,16 @@ class Command(command.Command):
         import allura.lib.app_globals
         return allura.lib.app_globals.Globals()
 
+    @ming.utils.LazyProperty
+    def carrot_connection(self):
+        import allura.lib.app_globals
+        return allura.lib.app_globals.connect_amqp(self.config)
+
     def basic_setup(self):
         global log, M
         if self.args:
             # Probably being called from the command line - load the config file
-            conf = appconfig('config:%s' % self.args[0],relative_to=os.getcwd())
+            self.config = conf = appconfig('config:%s' % self.args[0],relative_to=os.getcwd())
             # Configure logging
             try:
                 # ... logging does not understand section#subsection syntax
@@ -69,6 +74,7 @@ class Command(command.Command):
         self.registry.register(pylons.c, EmptyClass())
         self.registry.register(pylons.g, self.globals)
         self.registry.register(allura.credentials, allura.lib.security.Credentials())
+        self.registry.register(allura.carrot_connection, self.carrot_connection)
         pylons.c.queued_messages = None
 
     def teardown_globals(self):

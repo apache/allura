@@ -69,6 +69,12 @@ class RootController(WsgiDispatchController):
         assert c.user is not None, 'c.user should always be at least User.anonymous()'
         c.queued_messages = []
 
+    def _cleanup_request(self):
+        from allura import carrot_connection
+        for msg in c.queued_messages:
+            g._publish(**msg)
+        carrot_connection.close()
+
     @expose('jinja:project_list.html')
     @with_trailing_slash
     def index(self, **kw):

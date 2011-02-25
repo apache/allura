@@ -4,7 +4,6 @@ import mimetypes
 
 import tg
 import pkg_resources
-from webob import exc
 from tg import config
 from paste.deploy.converters import asbool
 from paste.registry import RegistryManager
@@ -109,8 +108,8 @@ def _make_core_app(root, global_conf, full_stack=True, **app_conf):
     # Clear cookies when the CSRF field isn't posted
     if not app_conf.get('disable_csrf_protection'):
         app = CSRFMiddleware(app, '_session_id')
-    # Setup the security.credentitals SOP
-    app = credentials_middleware(app)
+    # Setup the allura SOPs
+    app = allura_globals_middleware(app)
     # Ensure https for logged in users, http for anonymous ones
     if asbool(app_conf.get('auth.method', 'local')=='sfx'):
         app = SSLMiddleware(app, app_conf.get('no_redirect.pattern'))
@@ -142,13 +141,15 @@ def set_scheme_middleware(app):
         return app(environ, start_response)
     return SchemeMiddleware
 
-def credentials_middleware(app):
-    def CredentialsMiddleware(environ, start_response):
+def allura_globals_middleware(app):
+    def AlluraGlobalsMiddleware(environ, start_response):
         import allura.lib.security
+        import allura.lib.app_globals
         registry = environ['paste.registry']
         registry.register(allura.credentials, allura.lib.security.Credentials())
+        registry.register(allura.carrot_connection, allura.lib.app_globals.connect_amqp(config))
         return app(environ, start_response)
-    return CredentialsMiddleware
+    return AlluraGlobalsMiddleware
 
 def get_tg_vars(context):
     import pylons, tg
