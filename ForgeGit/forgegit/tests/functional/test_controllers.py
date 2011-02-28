@@ -65,7 +65,8 @@ class TestRootController(TestController):
     def test_file(self):
         ci = self._get_ci()
         resp = self.app.get(ci + 'tree/README')
-        assert 'README' in resp, resp.showbrowser()
+        assert 'README' in resp.html.find('h2',{'class':'dark title'}).contents[2]
+        assert 'This is readme' in resp.html.find('div',{'class':'clip grid-19'}).contents[2]
 
     def test_diff(self):
         ci = self._get_ci()
