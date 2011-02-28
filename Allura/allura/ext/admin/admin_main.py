@@ -524,7 +524,7 @@ class GroupsController(BaseController):
             for role in M.ProjectRole.query.find(
                 dict(user_id={'$ne':None}, roles=group._id)):
                 if role.user_id not in user_ids:
-                    role.roles.remove(group._id)
+                    role.roles = [ rid for rid in role.roles if rid != group._id ]
         g.publish('react', 'forge.project_updated')
         redirect('.')
 
