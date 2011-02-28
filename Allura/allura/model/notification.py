@@ -59,12 +59,7 @@ class Notification(MappedClass):
     text=FieldProperty(str)
     link=FieldProperty(str)
     author_id=ForeignIdProperty('User')
-    feed_meta=FieldProperty(dict(
-            link=str,
-            created=S.DateTime(if_missing=datetime.utcnow),
-            unique_id=S.String(if_missing=lambda:h.nonce(40)),
-            author_name=S.String(if_missing=lambda:c.user.get_pref('display_name') if hasattr(c, 'user') else None),
-            author_link=S.String(if_missing=lambda:c.user.url() if hasattr(c, 'user') else None)))
+    feed_meta=FieldProperty(S.Deprecated)
 
     @classmethod
     def post(cls, artifact, topic, **kw):
