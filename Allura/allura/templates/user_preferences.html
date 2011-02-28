@@ -29,13 +29,13 @@
           <b>Secret Key:</b><br/>
           {{api_token.secret_key}}<br/>
         </p>
-        <form method="POST" action="del_api_token" class="grid-11">
+        <form method="POST" action="del_api_token" class="grid-18">
           <input type="submit" value="Delete API Token">
         </form>
       {% else %}
         <p>No API token generated</p>
       {% endif %}
-      <form method="POST" action="gen_api_token" class="grid-11">
+      <form method="POST" action="gen_api_token" class="grid-18">
         <input type="submit" value="(Re)generate API Token">
       </form>
   {% endif %}
@@ -61,7 +61,7 @@
     <p>No subscriptions.</p>
   {% endif %}
   <br/>
-  
+  <div style="clear:both">&nbsp;</div>
   <form action="update" method="post">
         <label class="grid-4">Email Format</label>
         <div class="grid-18">
@@ -87,9 +87,9 @@
       {% for a in c.user.email_addresses %}
         <input name="addr-{{loop.index0}}.ord" value="{{loop.index0}}" type="hidden"/>
       {% endfor %}
-
-        <h3 class="grid-11">Email Addresses</h3>
-        <table class="grid-11">
+      {% if c.user.email_addresses %}
+        <h3 class="grid-18">Email Addresses</h3>
+        <table class="grid-18">
           <tr>
             <th>Primary?</th>
             <th>Address</th>
@@ -116,13 +116,15 @@
           </tr>
           {% endfor %}
         </table>
-        <div class="grid-11">
-        {{lib.text_field('new_addr.addr', 'New Address')}}
+        {% endif %}
+        <div class="grid-18">
+        {{lib.text_field('new_addr.addr', 'New Email Address')}}
         {{lib.submit_button('Claim Address', name='new_addr.claim')}}
         </div>
 
-        <h3 class="grid-11">OpenIDs Claimed</h3>
-        <table class="grid-11">
+        {% if c.user.open_ids %}
+        <h3 class="grid-18">OpenIDs Claimed</h3>
+        <table class="grid-18">
           <tr>
             <th>OpenID</th>
             <th></th>
@@ -135,11 +137,12 @@
           </tr>
           {% endfor %}
         </table>
-        <div class="grid-11">
+        {% endif %}
+        <div class="grid-18">
         <a href="/auth/claim_oid">Claim New OpenID</a>
         </div>
     {% endif %}
-    <div class="grid-11">
+    <div class="grid-18">
     {{lib.submit_button('Save Changes')}}
     </div>
   </form>
