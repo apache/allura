@@ -57,7 +57,6 @@ def migrate_project_database(project, pname, databases):
         for p in M.Project.query.find(dict(database=database)):
             p.database = ''
             p.database_uri = M.Project.default_database_uri(pname)
-        project.ensure_project_indexes()
         session(project).flush()
         if not skip:
             conn.drop_database(database)

@@ -481,11 +481,6 @@ class Project(MappedClass):
             r = ProjectRole.by_name(role_name, self)
             pr.roles.append(r._id)
 
-    def ensure_project_indexes(self):
-            for mc in MappedClass._registry.itervalues():
-                if mc.__mongometa__.session == project_orm_session:
-                    project_orm_session.ensure_indexes(mc)
-
 class AppConfig(MappedClass):
     """
     Configuration information for an instantiated :class:`Application <allura.app.Application>`
