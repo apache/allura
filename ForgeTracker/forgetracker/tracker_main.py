@@ -775,8 +775,6 @@ class TicketController(BaseController):
             c.thread = W.thread
             c.attachment_list = W.attachment_list
             c.subscribe_form = W.ticket_subscribe_form
-            thread = self.ticket.discussion_thread
-            post_count = M.Post.query.find(dict(discussion_id=thread.discussion_id, thread_id=thread._id)).count()
             c.ticket_custom_field = W.ticket_custom_field
             tool_subscribed = M.Mailbox.subscribed()
             if tool_subscribed:
@@ -787,7 +785,7 @@ class TicketController(BaseController):
                         allow_edit=has_artifact_access('write', self.ticket)(),
                         tool_subscribed=tool_subscribed,
                         subscribed=subscribed,
-                        page=page, limit=limit, count=post_count)
+                        page=page, limit=limit, count=self.ticket.discussion_thread.post_count)
         else:
             raise exc.HTTPNotFound, 'Ticket #%s does not exist.' % self.ticket_num
 

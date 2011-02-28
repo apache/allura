@@ -142,6 +142,7 @@ class Thread(Artifact):
         if aref is None: return self.discussion
         return aref.artifact
 
+    # Use wisely - there's .num_replies also
     @property
     def post_count(self):
         return Post.query.find(dict(
