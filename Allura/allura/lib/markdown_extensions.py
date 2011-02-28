@@ -40,6 +40,8 @@ class ForgeExtension(markdown.Extension):
         # Rewrite all relative links that don't start with . to have a '../' prefix
         md.postprocessors['rewrite_relative_links'] = RelativeLinkRewriter(
             make_absolute=self._is_email)
+        # Put a class around markdown content for custom css
+        md.postprocessors['add_custom_class'] = AddCustomClass()
         md.postprocessors['mark_safe'] = MarkAsSafe()
 
     def reset(self):
@@ -219,6 +221,11 @@ class MarkAsSafe(markdown.postprocessors.Postprocessor):
 
     def run(self, text):
         return h.html.literal(text)
+
+class AddCustomClass(markdown.postprocessors.Postprocessor):
+
+    def run(self, text):
+        return '<span class="markdown_content">%s</span>' % text
 
 class RelativeLinkRewriter(markdown.postprocessors.Postprocessor):
 

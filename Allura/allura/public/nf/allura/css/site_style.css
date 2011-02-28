@@ -2208,30 +2208,6 @@ nav .ico {
   margin-bottom: 1.5em;
 }
 
-.pad h1 {
-  font-size: 200%;
-}
-
-.pad h2 {
-  font-size: 180%;
-}
-
-.pad h3 {
-  font-size: 160%;
-}
-
-.pad h4 {
-  font-size: 140%;
-}
-
-.pad h5 {
-  font-size: 120%;
-}
-
-.pad h6 {
-  font-size: 100%;
-}
-
 .pad .paginate {
   margin: 0 0 0 20px;
 }
@@ -2242,6 +2218,30 @@ nav .ico {
 
 .pad .wide {
   width: 750px;
+}
+
+.markdown_content h1 {
+  font-size: 200%;
+}
+
+.markdown_content h2 {
+  font-size: 180%;
+}
+
+.markdown_content h3 {
+  font-size: 160%;
+}
+
+.markdown_content h4 {
+  font-size: 140%;
+}
+
+.markdown_content h5 {
+  font-size: 120%;
+}
+
+.markdown_content h6 {
+  font-size: 100%;
 }
 
 
