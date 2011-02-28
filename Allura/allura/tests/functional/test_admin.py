@@ -290,6 +290,23 @@ class TestProjectAdmin(TestController):
         # Make sure we can open role page for builtin role
         r = self.app.get('/admin/groups/' + developer_id + '/', validate_chunk=True)
 
+    def test_project_multi_groups(self):
+        r = self.app.get('/admin/groups/')
+        user_id = M.User.by_username('test-admin')._id
+        admin_id = r.html.find('input', {'name': 'card-0.id'})['value']
+        for x in range(2):
+            form = r.forms[0]
+            form['card-0.new'].value = 'test-user'
+            r = form.submit().follow()
+        r = self.app.get('/admin/groups/')
+        assert 'test-user' in str(r), r.showbrowser()
+        r = self.app.post('/admin/groups/update', params={
+                'card-0.id':admin_id,
+                'card-0.value':str(user_id)})
+        r = self.app.get('/admin/groups/')
+        assert 'test-user' not in str(r), r.showbrowser()
+
+
     def test_new_group(self):
         r = self.app.get('/admin/groups/new', validate_chunk=True)
         r = self.app.post('/admin/groups/create', params={'name': 'Developer'})
