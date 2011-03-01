@@ -338,7 +338,10 @@ class Project(MappedClass):
             else: # pragma no cover
                 raise exc.HTTPNotFound, ep_name
         if not mount_point:
-            mount_point = App.default_mount_point
+            base_mount_point = mount_point = App.default_mount_point
+            for x in range(10):
+                if self.app_instance(mount_point) is None: break
+                mount_point = base_mount_point + '-%d' % x
         if not h.re_path_portion.match(mount_point):
             raise exceptions.ToolError, 'Mount point "%s" is invalid' % mount_point
         if self.app_instance(mount_point) is not None:
