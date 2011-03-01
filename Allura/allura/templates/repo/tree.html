@@ -27,6 +27,6 @@
 {% set name, text = tree.readme() %}
 {% if name %}
   <h1>Read Me</h1>
-  <pre>{{g.pypeline_markup.render(name, text)|safe}}</pre>
+  {{text|safe}}
 {% endif %}
 {% endblock %}
