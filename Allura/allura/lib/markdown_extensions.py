@@ -225,7 +225,7 @@ class MarkAsSafe(markdown.postprocessors.Postprocessor):
 class AddCustomClass(markdown.postprocessors.Postprocessor):
 
     def run(self, text):
-        return '<span class="markdown_content">%s</span>' % text
+        return '<div class="markdown_content">%s</div>' % text
 
 class RelativeLinkRewriter(markdown.postprocessors.Postprocessor):
 
