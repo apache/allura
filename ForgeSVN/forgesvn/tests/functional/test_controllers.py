@@ -14,7 +14,7 @@ class TestRootController(TestController):
         TestController.setUp(self)
         h.set_context('test', 'src')
         repo_dir = pkg_resources.resource_filename(
-            'forgesvn', 'tests/data')
+            'forgesvn', 'tests/data/')
         c.app.repo.fs_path = repo_dir
         c.app.repo.status = 'ready'
         c.app.repo.name = 'testsvn'
