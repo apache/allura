@@ -19,11 +19,10 @@ class ProjectSession(Session):
     @property
     def db(self):
         try:
-            if c.project.database_uri:
-                scheme, rest = c.project.database_uri.split('://')
-                host, database = rest.split('/', 1)
-                return ShardedDataStore.get(scheme + '://' + host, database).db
-            return getattr(self.main_session.bind.conn, c.project.database)
+            assert c.project.database_uri
+            scheme, rest = c.project.database_uri.split('://')
+            host, database = rest.split('/', 1)
+            return ShardedDataStore.get(scheme + '://' + host, database).db
         except (KeyError, AttributeError, TypeError), ex:
             return None
 

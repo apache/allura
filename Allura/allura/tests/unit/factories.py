@@ -20,7 +20,7 @@ def flush_on_return(fn):
 def create_project(shortname):
     neighborhood = create_neighborhood()
     return Project(shortname=shortname,
-                   database='myproject_db',
+                   database_uri='mim://test/myproject_db',
                    neighborhood_id=neighborhood._id,
                    is_root=True)
 

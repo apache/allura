@@ -17,7 +17,7 @@ def setUp():
     c.project.name = 'Test Project'
     c.project.shortname = 'tp'
     c.project._id = 'testproject/'
-    c.project.database = 'nosetest:project'
+    c.project.database_uri = 'mim://nosetest:project'
     c.project.url = lambda: '/testproject/'
     app_config = mock.Mock()
     app_config._id = None
