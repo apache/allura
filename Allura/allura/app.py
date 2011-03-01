@@ -29,14 +29,6 @@ class ConfigOption(object):
             return self._default()
         return self._default
 
-class WSGIHook(object):
-
-    def handles(self, environ):
-        return False
-
-    def __call__(self, environ, start_response):
-        raise NotImplementedError, '__call__' # pragma no cover
-
 class SitemapEntry(object):
 
     def __init__(self, label, url=None, children=None, className=None, ui_icon=None, small=None):
@@ -120,7 +112,6 @@ class Application(object):
     permissions=[]
     sitemap = [ ]
     installable=True
-    wsgi = WSGIHook()
     widget = WidgetController
     searchable = False
     DiscussionClass = model.Discussion
