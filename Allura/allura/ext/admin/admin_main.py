@@ -197,6 +197,27 @@ class ProjectAdminController(BaseController):
             users=[M.User.query.get(_id=id) for id in c.project.acl.read ])
 
     @without_trailing_slash
+    @expose()
+    def clone(self,
+              repo_type=None, source_url=None,
+              mount_point=None, mount_label=None,
+              **kw):
+        require(has_project_access('tool'))
+        for ep in pkg_resources.iter_entry_points('allura', repo_type):
+            break
+        if ep is None or source_url is None:
+            raise exc.HTTPNotFound
+        h.log_action(log, 'install tool').info(
+            'clone repo from %s', source_url,
+            meta=dict(tool_type=repo_type, mount_point=mount_point, mount_label=mount_label))
+        c.project.install_app(
+            repo_type,
+            mount_point=mount_point,
+            mount_label=mount_label,
+            init_from_url=source_url)
+        redirect('tools')
+
+    @without_trailing_slash
     @expose('jinja:project_permissions.html')
     def groups(self, **kw):
         return dict()

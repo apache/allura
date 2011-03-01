@@ -99,7 +99,7 @@ class SVNImplementation(M.RepositoryImplementation):
         self._setup_special_files()
         self._repo.status = 'ready'
 
-    def clone_from(self, source_path, source_url):
+    def clone_from(self, source_url):
         '''Initialize a repo as a clone of another using svnsync'''
         self.init()
         hook = os.path.join(self._repo.fs_path, 'hooks', 'pre-revprop-change', 'w')

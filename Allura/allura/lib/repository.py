@@ -26,7 +26,8 @@ class RepositoryApp(Application):
         'configure']
     config_options = Application.config_options + [
         ConfigOption('cloned_from_project_id', ObjectId, None),
-        ConfigOption('cloned_from_repo_id', ObjectId, None)
+        ConfigOption('cloned_from_repo_id', ObjectId, None),
+        ConfigOption('init_from_url', str, None)
         ]
     tool_label='Repository'
     default_mount_label='Code'

@@ -170,7 +170,7 @@ class Repository(Artifact):
         self.upstream_repo.name = source_name
         self.upstream_repo.url = source_url
         session(self).flush(self)
-        self._impl.clone_from(source_path, source_url)
+        self._impl.clone_from(source_url)
 
     def log(self, branch='master', offset=0, limit=10):
         return list(self._log(rev=branch, skip=offset, max_count=limit))

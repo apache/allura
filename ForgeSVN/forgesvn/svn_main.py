@@ -27,8 +27,6 @@ class ForgeSVNApp(RepositoryApp):
     ordinal=4
     forkable=False
     default_branch_name=''
-    config_options = Application.config_options + [
-        ConfigOption('init_from_url', str, None) ]
 
     def __init__(self, project, config):
         super(ForgeSVNApp, self).__init__(project, config)

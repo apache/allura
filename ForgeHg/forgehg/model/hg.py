@@ -80,17 +80,17 @@ class HgImplementation(M.RepositoryImplementation):
         self._setup_special_files()
         self._repo.status = 'ready'
 
-    def clone_from(self, source_path, source_url):
+    def clone_from(self, source_url):
         '''Initialize a repo as a clone of another'''
         fullname = self._setup_paths(create_repo_dir=False)
         if os.path.exists(fullname):
             shutil.rmtree(fullname)
         log.info('Initialize %r as a clone of %s',
-                 self._repo, source_path)
+                 self._repo, source_url)
         repo = hg.repository(
             ui.ui(), self._repo.full_fs_path, create=True)
         self.__dict__['_hg'] = repo
-        repo.clone(source_path)
+        repo.clone(source_url)
         self._setup_special_files()
         self._repo.status = 'analyzing'
         session(self._repo).flush()

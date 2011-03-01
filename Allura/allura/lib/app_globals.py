@@ -231,7 +231,7 @@ class Globals(object):
         self.resource_manager.register(
             ew.JSScript(text, **kw))
 
-    @LazyProperty
+    @property
     def publisher(self):
         return dict(
             audit=Publisher(connection=self.conn, exchange='audit', auto_declare=False),
