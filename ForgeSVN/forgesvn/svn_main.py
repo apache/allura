@@ -10,6 +10,7 @@ from ming.orm.ormsession import ThreadLocalORMSession
 
 # Pyforge-specific imports
 from allura.controllers.repository import RepoRootController
+from allura.app import Application, ConfigOption
 from allura.lib.repository import RepositoryApp
 
 # Local imports
@@ -26,6 +27,8 @@ class ForgeSVNApp(RepositoryApp):
     ordinal=4
     forkable=False
     default_branch_name=''
+    config_options = Application.config_options + [
+        ConfigOption('init_from_url', str, None) ]
 
     def __init__(self, project, config):
         super(ForgeSVNApp, self).__init__(project, config)
@@ -46,5 +49,13 @@ class ForgeSVNApp(RepositoryApp):
             tool='svn',
             status='initing')
         ThreadLocalORMSession.flush_all()
-        g.publish('audit', 'repo.init',
-                  dict(repo_name=repo.name, repo_path=repo.fs_path))
+        init_from_url = self.config.options.get('init_from_url')
+        if init_from_url:
+            msg = dict(
+                cloned_from_path=None,
+                cloned_from_name=None,
+                cloned_from_url=init_from_url)
+            g.publish('audit', 'repo.clone', msg)
+        else:
+            g.publish('audit', 'repo.init',
+                      dict(repo_name=repo.name, repo_path=repo.fs_path))

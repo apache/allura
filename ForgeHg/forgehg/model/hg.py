@@ -80,7 +80,7 @@ class HgImplementation(M.RepositoryImplementation):
         self._setup_special_files()
         self._repo.status = 'ready'
 
-    def clone_from(self, source_path):
+    def clone_from(self, source_path, source_url):
         '''Initialize a repo as a clone of another'''
         fullname = self._setup_paths(create_repo_dir=False)
         if os.path.exists(fullname):

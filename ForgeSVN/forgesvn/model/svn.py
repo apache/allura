@@ -99,6 +99,31 @@ class SVNImplementation(M.RepositoryImplementation):
         self._setup_special_files()
         self._repo.status = 'ready'
 
+    def clone_from(self, source_path, source_url):
+        '''Initialize a repo as a clone of another using svnsync'''
+        self.init()
+        hook = os.path.join(self._repo.fs_path, 'hooks', 'pre-revprop-change', 'w')
+        with open(hook) as fp:
+            fp.write('#!/bin/sh\n')
+        os.chmod(hook, 755)
+        log.info('Initialize %r as a clone of %s',
+                 self._repo, source_url)
+        subprocess.call(['svnsync', 'init', self._url(), source_url],
+                        stdin=subprocess.PIPE,
+                        stdout=subprocess.PIPE,
+                        stderr=subprocess.PIPE)
+        subprocess.call(['svnsync', '--non-interactive', 'sync', self._url()],
+                        stdin=subprocess.PIPE,
+                        stdout=subprocess.PIPE,
+                        stderr=subprocess.PIPE)
+        self._repo.status = 'analyzing'
+        session(self._repo).flush()
+        log.info('... %r cloned, analyzing', self._repo)
+        self._repo.refresh()
+        self._repo.status = 'ready'
+        log.info('... %s ready', self._repo)
+        session(self._repo).flush()
+
     def refresh_heads(self):
         info = self._svn.info2(
             self._url,
