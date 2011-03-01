@@ -37,7 +37,7 @@ def test_markdown():
     tgt = 'http://everything2.com/?node=nate+oostendorp'
     url = '/nf/redirect/?path=%s' % quote(tgt)
     s = g.markdown.convert('This is %s' % tgt)
-    assert s == '<span class="markdown_content"><p>This is <a href="%s" rel="nofollow">%s</a></p></span>' % (url, tgt), s
+    assert s == '<div class="markdown_content"><p>This is <a href="%s" rel="nofollow">%s</a></p></div>' % (url, tgt), s
     assert '<a href=' in g.markdown.convert('This is http://sf.net')    
     # assert '<a href=' in g.markdown_wiki.convert('This is a WikiPage')
     # assert '<a href=' not in g.markdown_wiki.convert('This is a WIKIPAGE')
