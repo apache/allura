@@ -18,7 +18,7 @@ class CPA(ming.Document):
         session = main_doc_session
         name='content_production_activities'
         indexes = [
-            'type', 'class_name', 'project_id', 'project_shortname', 'app_config_id', 'when' ]
+            'type', 'class_name', 'project_id', 'project_shortname', 'app_config_id', 'when', 'tool_name' ]
 
     @classmethod
     def post(cls, type, obj):
