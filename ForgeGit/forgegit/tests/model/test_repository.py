@@ -40,6 +40,23 @@ class TestGitRepo(unittest.TestCase):
         repo.init()
         shutil.rmtree(dirname)
 
+    def test_clone(self):
+        repo = GM.Repository(
+            name='testgit.git',
+            fs_path='/tmp/',
+            url_path = '/test/',
+            tool = 'git',
+            status = 'creating')
+        repo_path = pkg_resources.resource_filename(
+            'forgegit', 'tests/data/testgit.git')
+        dirname = os.path.join(repo.fs_path, repo.name)
+        if os.path.exists(dirname):
+            shutil.rmtree(dirname)
+        repo.init()
+        repo._impl.clone_from(repo_path)
+        assert len(repo.log())
+        shutil.rmtree(dirname)
+
     def test_index(self):
         i = self.repo.index()
         assert i['type_s'] == 'Git Repository', i

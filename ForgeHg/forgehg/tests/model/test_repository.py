@@ -40,6 +40,23 @@ class TestHgRepo(unittest.TestCase):
         repo.init()
         shutil.rmtree(dirname)
 
+    def test_clone(self):
+        repo = HM.Repository(
+            name='testrepo.hg',
+            fs_path='/tmp/',
+            url_path = '/test/',
+            tool = 'hg',
+            status = 'creating')
+        repo_path = pkg_resources.resource_filename(
+            'forgehg', 'tests/data/testrepo.hg')
+        dirname = os.path.join(repo.fs_path, repo.name)
+        if os.path.exists(dirname):
+            shutil.rmtree(dirname)
+        repo.init()
+        repo._impl.clone_from(repo_path)
+        assert len(repo.log())
+        shutil.rmtree(dirname)
+
     def test_index(self):
         i = self.repo.index()
         assert i['type_s'] == 'Hg Repository', i

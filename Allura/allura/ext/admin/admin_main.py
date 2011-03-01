@@ -203,6 +203,12 @@ class ProjectAdminController(BaseController):
               mount_point=None, mount_label=None,
               **kw):
         require(has_project_access('tool'))
+        if repo_type is None:
+            return (
+                '<form method="get">'
+                '<input name="repo_type" value="Git">'
+                '<input name="source_url">'
+                '</form>')
         for ep in pkg_resources.iter_entry_points('allura', repo_type):
             break
         if ep is None or source_url is None:

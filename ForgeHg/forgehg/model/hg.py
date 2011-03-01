@@ -87,10 +87,11 @@ class HgImplementation(M.RepositoryImplementation):
             shutil.rmtree(fullname)
         log.info('Initialize %r as a clone of %s',
                  self._repo, source_url)
-        repo = hg.repository(
-            ui.ui(), self._repo.full_fs_path, create=True)
+        src, repo = hg.clone(
+            ui.ui(),
+            source_url,
+            self._repo.full_fs_path)
         self.__dict__['_hg'] = repo
-        repo.clone(source_url)
         self._setup_special_files()
         self._repo.status = 'analyzing'
         session(self._repo).flush()

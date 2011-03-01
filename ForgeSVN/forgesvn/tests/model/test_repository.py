@@ -17,7 +17,7 @@ class TestSVNRepo(unittest.TestCase):
         setup_basic_test()
         setup_global_objects()
         repo_dir = pkg_resources.resource_filename(
-            'forgesvn', 'tests/data')
+            'forgesvn', 'tests/data/')
         self.repo = SM.Repository(
             name='testsvn',
             fs_path=repo_dir,
@@ -39,6 +39,23 @@ class TestSVNRepo(unittest.TestCase):
         if os.path.exists(dirname):
             shutil.rmtree(dirname)
         repo.init()
+        shutil.rmtree(dirname)
+
+    def test_clone(self):
+        repo = SM.Repository(
+            name='testsvn',
+            fs_path='/tmp/',
+            url_path = '/test/',
+            tool = 'svn',
+            status = 'creating')
+        repo_path = pkg_resources.resource_filename(
+            'forgesvn', 'tests/data/testsvn')
+        dirname = os.path.join(repo.fs_path, repo.name)
+        if os.path.exists(dirname):
+            shutil.rmtree(dirname)
+        repo.init()
+        repo._impl.clone_from('file://' + repo_path)
+        assert len(repo.log())
         shutil.rmtree(dirname)
 
     def test_index(self):

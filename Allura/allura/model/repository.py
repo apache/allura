@@ -91,7 +91,7 @@ class RepositoryImplementation(object):
 
     def _setup_paths(self, create_repo_dir=True):
         if not self._repo.fs_path.endswith('/'): self._repo.fs_path += '/'
-        fullname = os.path.join(self._repo.fs_path, self._repo.name)
+        fullname = self._repo.fs_path + self._repo.name
         path = fullname if create_repo_dir else self._repo.fs_path
         try:
             os.makedirs(path)
