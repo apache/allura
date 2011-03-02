@@ -213,7 +213,7 @@ class ImportSupport(object):
             return
         f = urllib2.urlopen(att_dict['url'])
         TM.TicketAttachment.save_attachment(att_dict['filename'], ResettableStream(f),
-                                            ticket_id=ticket_id)
+                                            artifact_id=ticket_id)
         f.close()
 
 
