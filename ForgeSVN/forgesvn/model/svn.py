@@ -102,14 +102,6 @@ class SVNImplementation(M.RepositoryImplementation):
     def clone_from(self, source_url):
         '''Initialize a repo as a clone of another using svnsync'''
         self.init()
-        hook = os.path.join(
-            self._repo.fs_path,
-            self._repo.name,
-            'hooks',
-            'pre-revprop-change')
-        with open(hook, 'w') as fp:
-            fp.write('#!/bin/sh\n')
-        os.chmod(hook, 0755)
         log.info('Initialize %r as a clone of %s',
                  self._repo, source_url)
         p = subprocess.call(['svnsync', 'init', self._url, source_url],
@@ -307,14 +299,18 @@ class SVNImplementation(M.RepositoryImplementation):
                 self._revno(blob.commit.object_id)))
         return StringIO(data)
 
-    def _setup_receive_hook(self):
-        'Set up the hg changegroup hook'
+    def _setup_hooks(self):
+        'Set up the post-commit and pre-revprop-change hooks'
         text = self.post_receive_template.substitute(
             url=tg.config.get('base_url', 'http://localhost:8080')
             + '/auth/refresh_repo' + self._repo.url())
         fn = os.path.join(self._repo.fs_path, self._repo.name, 'hooks', 'post-commit')
         with open(fn, 'wb') as fp:
             fp.write(text)
+        os.chmod(fn, 0755)
+        fn = os.path.join(self._repo.fs_path, self._repo.name, 'hooks', 'pre-revprop-change')
+        with open(fn, 'wb') as fp:
+            fp.write('#!/bin/sh\n')
         os.chmod(fn, 0755)
 
     def _tree_from_log(self, parent_ci, log_entry):

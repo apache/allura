@@ -63,10 +63,10 @@ class RepositoryImplementation(object):
         '''Refresh the data in the commit object 'ci' with data from the repo'''
         raise NotImplementedError, 'refresh_commit'
 
-    def _setup_receive_hook(self): # pragma no cover
+    def _setup_hooks(self): # pragma no cover
         '''Install a hook in the repository that will ping the refresh url for
         the repo'''
-        raise NotImplementedError, '_setup_receive_hook'
+        raise NotImplementedError, '_setup_hooks'
 
     def log(self, object_id, skip, count): # pragma no cover
         '''Return a list of object_ids beginning at the given commit ID and continuing
@@ -107,7 +107,7 @@ class RepositoryImplementation(object):
         with open(magic_file, 'w') as f:
             f.write(self._repo.repo_id)
         os.chmod(magic_file, stat.S_IRUSR|stat.S_IRGRP|stat.S_IROTH)
-        self._setup_receive_hook()
+        self._setup_hooks()
 
 class Repository(Artifact):
     BATCH_SIZE=100

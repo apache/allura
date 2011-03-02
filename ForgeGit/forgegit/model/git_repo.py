@@ -215,7 +215,7 @@ class GitImplementation(M.RepositoryImplementation):
         return _OpenedGitBlob(
             self._object(blob.object_id).data_stream)
 
-    def _setup_receive_hook(self):
+    def _setup_hooks(self):
         'Set up the git post-commit hook'
         text = self.post_receive_template.substitute(
             url=tg.config.get('base_url', 'http://localhost:8080')

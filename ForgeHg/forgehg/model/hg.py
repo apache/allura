@@ -200,7 +200,7 @@ class HgImplementation(M.RepositoryImplementation):
         fctx = self._hg[blob.commit.object_id][blob.path()[1:]]
         return StringIO(fctx.data())
 
-    def _setup_receive_hook(self):
+    def _setup_hooks(self):
         'Set up the hg changegroup hook'
         cp = ConfigParser()
         fn = os.path.join(self._repo.fs_path, self._repo.name, '.hg', 'hgrc')
