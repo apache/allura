@@ -109,14 +109,21 @@ class Notification(MappedClass):
                 in_reply_to=post.parent_id)
         else:
             subject = kwargs.pop('subject', '%s modified by %s' % (
-                    idx['title_s'], c.user.get_pref('display_name') if hasattr(c, 'user') else '(unknown user)'))
+                    idx['title_s'],c.user.get_pref('display_name')))
+            reply_to = '"%s" <%s>' % (idx['title_s'], artifact.email_address)
             d = dict(
-                from_address=c.user.email_addresses[0] if len(c.user.email_addresses) else '%s <%s>' % (
-                                                                idx['title_s'], artifact.email_address),
-                reply_to_address='"%s" <%s>' % (
-                    idx['title_s'], artifact.email_address),
+                from_address=reply_to,
+                reply_to_address=reply_to,
                 subject=subject_prefix + subject,
                 text=kwargs.pop('text', subject))
+            if c.user.get_pref('email_address'):
+                d['from_address'] = '"%s" <%s>' % (
+                    c.user.get_pref('display_name'),
+                    c.user.get_pref('email_address'))
+            elif c.user.email_addresses:
+                d['from_address'] = '"%s" <%s>' % (
+                    c.user.get_pref('display_name'),
+                    c.user.email_addresses[0])
         if not d.get('text'):
             d['text'] = ''
         assert d['reply_to_address'] is not None

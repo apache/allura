@@ -90,13 +90,17 @@ class TestPostNotifications(unittest.TestCase):
         self._subscribe()
         self._post_notification()
         g.mock_amq.handle('react')# should deliver msg to mailbox
+        assert M.Notification.query.get()['from_address'].startswith('"Test Admin" <Beta')
         assert M.Mailbox.query.find().count()==1
         mbox = M.Mailbox.query.get()
         assert len(mbox.queue) == 1
         M.Mailbox.fire_ready()
         assert len(g.mock_amq.exchanges['audit']) == 1
         msg = g.mock_amq.exchanges['audit'][0]['message']
-        assert msg['from'] in str(c.user.email_addresses)
+        for addr in c.user.email_addresses:
+            if addr in msg['from']: break
+        else:
+            assert False, 'From address is wrong: %s' % msg['from']
         assert msg['text'].startswith('WikiPage Home modified by Test Admin')
         assert 'you indicated interest in ' in msg['text']
 
