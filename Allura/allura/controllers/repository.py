@@ -325,7 +325,7 @@ class TreeBrowser(BaseController):
             filename = h.really_unicode(
                 unquote(
                     request.environ['PATH_INFO'].rsplit('/')[-1]))
-            if filename and self._tree.is_blob(filename):
+            if filename and filename in self._tree.object_id_index and self._tree.is_blob(filename):
                 return self.FileBrowserClass(
                     self._commit,
                     self._tree,
