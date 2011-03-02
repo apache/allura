@@ -250,6 +250,12 @@ class GitImplementation(M.RepositoryImplementation):
             binsha += chr(int(e+o, 16))
         return git.Object.new_from_sha(self._git, binsha)
 
+    def symbolics_for_commit(self, commit):
+        branch_heads, tags = super(self.__class__, self).symbolics_for_commit(commit)
+        containing_branches = self._git.git.branch(contains=commit.object_id)
+        containing_branches = [br.strip(' *') for br in containing_branches.split('\n')]
+        return containing_branches, tags
+
 class _OpenedGitBlob(object):
     CHUNK_SIZE=4096
 
