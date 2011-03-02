@@ -61,3 +61,9 @@ class TestProjectHome(TestController):
         r = self.app.get('/p/test/user_search?term=admi', status=200)
         j = json.loads(r.body)
         assert j['users'][0]['id'].startswith('admi')
+
+    def test_user_search_noparam(self):
+        r = self.app.get('/p/test/user_search', status=400)
+
+    def test_user_search_shortparam(self):
+        r = self.app.get('/p/test/user_search?term=ad', status=400)

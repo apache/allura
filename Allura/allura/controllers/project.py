@@ -300,6 +300,8 @@ class ProjectController(object):
 
     @expose('json:')
     def user_search(self,term=''):
+        if len(term) < 3:
+            raise exc.HTTPBadRequest('"term" param must be at least length 3')
         users = M.User.by_display_name(term, substring=True)
         named_roles = RoleCache(
             g.credentials,
