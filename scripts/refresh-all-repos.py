@@ -44,9 +44,9 @@ def main():
             if options.clean:
                 M.LastCommitFor.query.remove(dict(repo_id=c.app.repo._id))
             try:
-                c.app.repo._impl._setup_receive_hook()
+                c.app.repo._impl._setup_hooks()
             except:
-                log.exception('Error setting up receive hook for %r', c.app.repo)
+                log.exception('Error setting up hooks for %r', c.app.repo)
             try:
                 if options.all:
                     log.info('Refreshing ALL commits in %r', c.app.repo)
