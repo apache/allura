@@ -159,8 +159,6 @@ class RepositoryApp(Application):
     @classmethod
     @audit('repo.clone')
     def _clone(cls, routing_key, data):
-        if not c.app.forkable:
-            return cls._init(cls, routing_key, data)
         c.app.repo.init_as_clone(
             data['cloned_from_path'],
             data['cloned_from_name'],

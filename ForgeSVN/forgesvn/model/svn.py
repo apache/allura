@@ -313,42 +313,6 @@ class SVNImplementation(M.RepositoryImplementation):
             fp.write('#!/bin/sh\n')
         os.chmod(fn, 0755)
 
-    def _tree_from_log(self, parent_ci, log_entry):
-        '''Build a fake git-like tree from a parent commit and a log entry'''
-        if parent_ci is None:
-            root = GitLikeTree()
-        else:
-            session(parent_ci).flush() # need to make sure the tree is in mongo first
-            try:
-                parent_ci.tree
-            except:
-                self.refresh_commit(parent_ci, set())
-            root = GitLikeTree.from_tree(parent_ci.tree)
-        for path in log_entry.changed_paths:
-            if path.action == 'D':
-                root.del_blob(h.really_unicode(path.path))
-            else:
-                info = self._svn.info2(
-                    self._url + h.really_unicode(path.path),
-                    revision=log_entry.revision)[0]
-                if info[1].kind == pysvn.node_kind.dir:
-                    if path.get('copyfrom_path') and path.get('copyfrom_revision'):
-                        # Directory copy
-                        src_path = path['copyfrom_path']
-                        src_ci = self._repo.commit(path['copyfrom_revision'].number)
-                        src_tree = src_ci.tree.get_object(*src_path.split('/'))
-                        root.set_tree(path.path, GitLikeTree.from_tree(src_tree))
-                    else:
-                        # Create empty directory
-                        root.set_tree(path.path, GitLikeTree())
-                else:
-                    data = 'blob\n%s\n%s' % (
-                        log_entry.revision.number,
-                        path.path)
-                    oid = sha1(data).hexdigest()
-                    root.set_blob(h.really_unicode(path.path), oid)
-        return root
-
     def _revno(self, oid):
         return int(oid.split(':')[1])
 

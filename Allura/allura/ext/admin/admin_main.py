@@ -208,6 +208,7 @@ class ProjectAdminController(BaseController):
                 '<form method="get">'
                 '<input name="repo_type" value="Git">'
                 '<input name="source_url">'
+                '<input type="submit">'
                 '</form>')
         for ep in pkg_resources.iter_entry_points('allura', repo_type):
             break
