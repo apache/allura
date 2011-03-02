@@ -58,6 +58,7 @@ class Command(command.Command):
             from allura import model
             M=model
             ming.configure(**conf)
+            pylons.c.user = M.User.anonymous()
         else:
             # Probably being called from another script (websetup, perhaps?)
             log = logging.getLogger('allura.command')
