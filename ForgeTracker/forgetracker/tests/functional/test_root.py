@@ -48,13 +48,6 @@ class TestFunctionalController(TestController):
         assert_true(summary in ticket_view)
         assert 'class="artifact_subscribe' in ticket_view
 
-    def test_ticket_subscription(self):
-        summary = 'test subscription'
-        ticket_view = self.new_ticket(summary=summary)
-        self.app.get('/bugs/1/'+ticket_view.html.find('a',{'class':'artifact_subscribe'})['href'])
-        subscribed_view = self.app.get('/bugs/1/')
-        # import pdb; pdb.set_trace()
-
     def test_new_with_milestone(self):
         ticket_view = self.new_ticket(summary='test new with milestone', **{'_milestone':'1.0'})
         assert 'Milestone' in ticket_view
