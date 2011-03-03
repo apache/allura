@@ -348,6 +348,21 @@ class Repository(Artifact):
         with self.push_upstream_context():
             return MergeRequest.query.find(q).count()
 
+    def get_last_commit(self, obj):
+        lc = LastCommitFor.query.get(
+            repo_id=self._id, object_id=obj.object_id)
+        if lc is None:
+            return dict(
+                author=None,
+                author_email=None,
+                author_url=None,
+                date=None,
+                id=None,
+                href=None,
+                shortlink=None,
+                summary=None)
+        return lc.last_commit
+
 class MergeRequest(VersionedArtifact):
     statuses=['open', 'merged', 'rejected']
     class __mongometa__:
@@ -517,19 +532,7 @@ class RepoObject(MappedClass):
 
     def get_last_commit(self, repo=None):
         if repo is None: repo = pylons.c.app.repo
-        lc = LastCommitFor.query.get(
-            repo_id=repo._id, object_id=self.object_id)
-        if lc is None:
-            return dict(
-                author=None,
-                author_email=None,
-                author_url=None,
-                date=None,
-                id=None,
-                href=None,
-                shortlink=None,
-                summary=None)
-        return lc.last_commit
+        return repo.get_last_commit(self)
 
     def __repr__(self):
         return '<%s %s>' % (

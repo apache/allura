@@ -63,6 +63,33 @@ class Repository(M.Repository):
         if not self.heads: return None
         return self._impl.commit(self.heads[0].object_id)
 
+    def get_last_commit(self, obj):
+        lc, isnew = M.LastCommitFor.upsert(repo_id=self._id, object_id=obj.object_id)
+        if not isnew: return lc.last_commit
+        try:
+            info = self._svn.info2(
+                self._url + obj.path(),
+                revision=self._impl._revision(obj.commit.object_id),
+                depth=pysvn.depth.empty)[0][1]
+            lc.last_commit.author = lc.last_commit.author_email = info.last_changed_author
+            lc.last_commit.date = datetime.utcfromtimestamp(info.last_changed_date)
+            lc.last_commit.id = self._oid(info.last_changed_rev.number)
+            lc.last_commit.href = '%s%d/' % (self._repo.url(), info.last_changed_rev.number)
+            lc.last_commit.shortlink = '[r%d]' % info.last_changed_rev.number
+            lc.last_commit.summary = ''
+            return lc.last_commit
+        except:
+            log.exception('Cannot get last commit for %s', obj)
+            return dict(
+                author=None,
+                author_email=None,
+                author_url=None,
+                date=None,
+                id=None,
+                href=None,
+                shortlink=None,
+                summary=None)
+
 class SVNImplementation(M.RepositoryImplementation):
     post_receive_template = string.Template(
         '#!/bin/bash\n'
@@ -181,9 +208,7 @@ class SVNImplementation(M.RepositoryImplementation):
     def refresh_commit(self, ci, seen_object_ids):
         log.info('Refresh %r %r', ci, self._repo)
         revno = self._revno(ci.object_id)
-        rev = pysvn.Revision(
-            pysvn.opt_revision_kind.number,
-            revno)
+        rev = self._revision(ci.object_id)
         log_entry = self._svn.log(
             self._url,
             revision_start=rev,
@@ -224,13 +249,11 @@ class SVNImplementation(M.RepositoryImplementation):
         if not isnew: return tree_id
         log.debug('Computing tree for %s: %s',
                  self._revno(commit.object_id), tree_path)
-        revno = self._revno(commit.object_id)
+        rev = self._revision(commit.object_id)
         try:
             infos = self._svn.info2(
                 self._url + tree_path,
-                revision=pysvn.Revision(
-                    pysvn.opt_revision_kind.number,
-                    revno),
+                revision=rev,
                 depth=pysvn.depth.immediates)
         except pysvn.ClientError:
             tree.object_ids = []
@@ -294,9 +317,7 @@ class SVNImplementation(M.RepositoryImplementation):
     def open_blob(self, blob):
         data = self._svn.cat(
             self._url + blob.path(),
-            revision=pysvn.Revision(
-                pysvn.opt_revision_kind.number,
-                self._revno(blob.commit.object_id)))
+            revision=self._revision(blob.commit.object_id))
         return StringIO(data)
 
     def _setup_hooks(self):
@@ -315,6 +336,11 @@ class SVNImplementation(M.RepositoryImplementation):
 
     def _revno(self, oid):
         return int(oid.split(':')[1])
+
+    def _revision(self, oid):
+        return pysvn.Revision(
+            pysvn.opt_revision_kind.number,
+            self._revno(oid))
 
     def _oid(self, revno):
         return '%s:%s' % (self._repo._id, revno)
