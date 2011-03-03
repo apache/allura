@@ -5,30 +5,30 @@
 <table>
   <thead>
     <tr>
-      <th>Url
-      <th>Ming
-      <th>Mongo
-      <th>Render
-      <th>Template
-      <th>Total Time
+      <th>Url</th>
+      <th>Ming</th>
+      <th>Mongo</th>
+      <th>Render</th>
+      <th>Template</th>
+      <th>Total Time</th>
     </tr>
     <tr>
-      <th>Mean
-        <td>{{agg_timings.ming}}
-        <td>{{agg_timings.mongo}}
-        <td>{{agg_timings.render}}
-        <td>{{agg_timings.template}}
-        <td>{{agg_timings.total}}
+      <th>Mean</th>
+        <td>{{agg_timings.ming}}</td>
+        <td>{{agg_timings.mongo}}</td>
+        <td>{{agg_timings.render}}</td>
+        <td>{{agg_timings.template}}</td>
+        <td>{{agg_timings.total}}</td>
     </tr>
   </thead>
   {% for url,timers in stats %}
   <tr>
-    <td>{{url}}
-    <td>{{timers.get('ming')}}
-    <td>{{timers.get('mongo')}}
-    <td>{{timers.get('render')}}
-    <td>{{timers.get('template')}}
-    <td>{{timers.get('total')}}
+    <td>{{url}}</td>
+    <td>{{timers.get('ming')}}</td>
+    <td>{{timers.get('mongo')}}</td>
+    <td>{{timers.get('render')}}</td>
+    <td>{{timers.get('template')}}</td>
+    <td>{{timers.get('total')}}</td>
   </tr>
   {% endfor %}
 </table>

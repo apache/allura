@@ -4,10 +4,10 @@
 <h2>Neighborhood Stats</h2>
 <table>
   <thead>
-    <tr><th>Name<th>Projects<th>Configured</tr>
+    <tr><th>Name</th><th>Projects</th><th>Configured</th></tr>
   </thead>
   {% for name, count, count_configured in neighborhoods %}
-  <tr><td>{{name}}<td>{{count}}<td>{{count_configured}}</tr>
+  <tr><td>{{name}}</td><td>{{count}}</td><td>{{count_configured}}</td></tr>
   {% endfor %}
 </table>
 {% endblock %}
