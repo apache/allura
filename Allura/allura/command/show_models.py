@@ -1,11 +1,7 @@
 import sys
-import time
 from collections import defaultdict
 
-import tg
-import pymongo
 from pylons import c
-from paste.deploy.converters import asint
 
 from ming.orm import MappedClass, mapper, ThreadLocalORMSession, session, state
 
@@ -33,16 +29,20 @@ class ReindexCommand(base.Command):
     parser = base.Command.standard_parser(verbose=True)
     parser.add_option('-p', '--project', dest='project',  default=None,
                       help='project to reindex')
+    parser.add_option('-n', '--neighborhood', dest='neighborhood', default=None,
+                      help='neighborhood to reindex (e.g. p)')
 
     def command(self):
         from allura import model as M
         self.basic_setup()
         graph = build_model_inheritance_graph()
-        # Clear shortlinks
-        if self.options.project is None:
-            projects = M.Project.query.find()
-        else:
+        if self.options.project:
             projects = [ M.Project.query.get(shortname=self.options.project) ]
+        elif self.options.neighborhood:
+            neighborhood_id = M.Neighborhood.query.get(url_prefix='/%s/' % self.options.neighborhood)._id
+            projects = M.Project.query.find(dict(neighborhood_id=neighborhood_id))
+        else:
+            projects = M.Project.query.find()
         for p in projects:
             base.log.info('Reindex project %s', p.shortname)
             c.project = p
