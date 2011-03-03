@@ -47,7 +47,11 @@ class RepoRootController(BaseController):
     @expose()
     def refresh(self):
         g.publish('audit', 'repo.refresh')
-        return '%r refresh queued.\n' % c.app.repo
+        if request.referer:
+            flash('Repository is being refreshed')
+            redirect(request.referer)
+        else:
+            return '%r refresh queued.\n' % c.app.repo
 
     @with_trailing_slash
     @expose('jinja:repo/fork.html')
