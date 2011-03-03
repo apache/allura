@@ -8,9 +8,10 @@ import logging
 import ming
 import pylons
 from bson import ObjectId
-from carrot.messaging import Consumer, ConsumerSet
+import kombu
 from weberror.errormiddleware import handle_exception
 
+from allura.lib import utils
 from . import base
 
 
@@ -42,38 +43,14 @@ class ReactorSetupCommand(base.Command):
 
     def command(self):
         self.basic_setup()
-        self.backend = pylons.g.conn.create_backend()
-        self.reset()
+        pylons.g.amq_conn.declare_exchanges()
         for name, tool in self.tools:
             self.configure_tool(name, tool)
 
-    def reset(self):
-        'Tear down all queues and bindings'
-        be = self.backend
-        ch = self.backend.channel
-        try:
-            ch.exchange_delete('audit')
-        except: # pragma no cover
-            base.log.warning('Error deleting audit exchange')
-            self.backend = be = pylons.g.conn.create_backend()
-            ch = self.backend.channel
-        try:
-            ch.exchange_delete('react')
-        except: # pragma no cover
-            base.log.warning('Error deleting react exchange')
-            self.backend = be = pylons.g.conn.create_backend()
-            ch = self.backend.channel
-        be.exchange_declare('audit', 'topic', True, False)
-        be.exchange_declare('react', 'topic', True, False)
-
     def configure_tool(self, name, tool):
         base.log.info('Configuring tool %s:%s', name, tool)
-        be = self.backend
         for method, xn, qn, keys in tool_consumers(name, tool):
-            if not be.queue_exists(qn):
-                be.queue_declare(qn, True, False, False, True)
-            for k in keys:
-                be.queue_bind(exchange=xn, queue=qn, routing_key=k)
+            pylons.g.amq_conn.declare_queue(xn, qn, keys)
             base.log.info('... %s %s %r', xn, qn, keys)
 
 class ReactorCommand(base.Command):
@@ -114,26 +91,27 @@ class ReactorCommand(base.Command):
 
     def multi_worker_main(self, configs):
         while True:
-            try:
-                base.log.info('Entering multiqueue worker process')
-                cset = ConsumerSet(pylons.g.conn)
-                for config in configs:
-                    c = Consumer(connection=pylons.g.conn, queue=config['qn'])
-                    if config['xn'] == 'audit':
-                        c.register_callback(self.route_audit(config['tool_name'], config['method']))
-                    else:
-                        c.register_callback(self.route_react(config['tool_name'], config['method']))
-                    cset.add_consumer(c)
-                if self.options.dry_run: return
-                else: # pragma no cover
-                    base.log.info('Ready to handle messages')
-                    for x in cset.iterconsume():
-                        pass
-            except Exception:
-                import allura.lib.app_globals
-                base.log.exception('AMQP error, restart in 10s')
-                time.sleep(10)
-                self.carrot_connection = allura.lib.app_globals.connect_amqp(config)
+            with pylons.g.amq_conn.channel() as channel:
+                try:
+                    exchanges = dict(
+                        audit=kombu.Exchange('audit', type='topic', channel=channel),
+                        react=kombu.Exchange('react', type='topic', channel=channel))
+                    for config in configs:
+                        q = kombu.Queue(config['qn'], exchanges[config['xn']], channel=channel)
+                        consumer = kombu.Consumer(channel,q, auto_declare=False)
+                        if config['xn'] == 'audit':
+                            consumer.register_callback(
+                                self.route_audit(config['tool_name'], config['method']))
+                        elif config['xn'] == 'react':
+                            consumer.register_callback(
+                                self.route_react(config['tool_name'], config['method']))
+                        consumer.consume()
+                    if self.options.dry_run: return
+                    while True:
+                        channel.connection.drain_events()
+                except:
+                    base.log.exception('AMQP error, restart in 10s')
+                    time.sleep(10)
 
     def periodic_main(self):
         base.log.info('Entering periodic reactor')
@@ -162,11 +140,12 @@ class ReactorCommand(base.Command):
 
     def route_audit(self, tool_name, method):
         'Auditors only respond to their particluar mount point'
+        log = logging.getLogger('allura.queue.audit')
         def callback(data, msg):
             msg.ack()
+            log.info('received msg for %s', msg.delivery_info['routing_key'])
             try:
                 self.setup_globals()
-                
                 __traceback_supplement__ = (
                     self.Supplement, pylons.c, data, msg, 'audit')
                 if 'project_id' in data:
@@ -217,8 +196,10 @@ class ReactorCommand(base.Command):
 
     def route_react(self, tool_name, method):
         'All tool instances respond to the react exchange'
+        log = logging.getLogger('allura.queue.react')
         def callback(data, msg):
             msg.ack()
+            log.info('received msg for %s', msg.delivery_info['routing_key'])
             try:
                 self.setup_globals()
 
@@ -331,7 +312,7 @@ def tool_consumers(name, tool):
             i += 1
             yield method, 'react', qn, list(deco.react_keys)
 
-def debug(): # pragma no cover
+def debug(*a,**kw): # pragma no cover
     from IPython.ipapi import make_session; make_session()
     from IPython.Debugger import Pdb
     base.log.info('Entering debugger')
@@ -340,3 +321,5 @@ def debug(): # pragma no cover
     p.setup(sys._getframe(), None)
     p.cmdloop()
     p.forget()
+
+#sys.excepthook =debug

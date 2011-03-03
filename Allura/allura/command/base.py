@@ -29,11 +29,6 @@ class Command(command.Command):
         return allura.lib.app_globals.Globals()
 
     @ming.utils.LazyProperty
-    def carrot_connection(self):
-        import allura.lib.app_globals
-        return allura.lib.app_globals.connect_amqp(self.config)
-
-    @ming.utils.LazyProperty
     def config(self):
         import tg
         return tg.config
@@ -80,7 +75,6 @@ class Command(command.Command):
         self.registry.register(pylons.c, EmptyClass())
         self.registry.register(pylons.g, self.globals)
         self.registry.register(allura.credentials, allura.lib.security.Credentials())
-        self.registry.register(allura.carrot_connection, self.carrot_connection)
         pylons.c.queued_messages = None
 
     def teardown_globals(self):

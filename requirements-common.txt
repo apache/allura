@@ -5,8 +5,6 @@ Babel==0.9.4
 Beaker==1.5.3
 BeautifulSoup==3.1.0.1
 billiard==0.2.3
-carrot==0.10.3
-celery==1.0.2
 chardet==1.0.1
 Creoleparser==0.7.3
 datadiff==1.1.2
@@ -23,7 +21,7 @@ importlib==1.0.2
 ipython==0.10
 iso8601==0.1.4
 Jinja2==2.3.1
-lamson==1.0pre11
+kombu==1.0.4
 lockfile==0.8
 Mako==0.3.2
 Markdown==2.0.3

@@ -17,7 +17,6 @@ def setup_schema(command, conf, vars):
     REGISTRY.prepare()
     REGISTRY.register(pylons.c, EmptyClass())
     REGISTRY.register(allura.credentials, allura.lib.security.Credentials())
-    REGISTRY.register(allura.carrot_connection, allura.lib.app_globals.connect_amqp(conf))
     ming.configure(**conf)
     from allura import model
     # Nothing to do

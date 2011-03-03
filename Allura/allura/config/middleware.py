@@ -147,7 +147,6 @@ def allura_globals_middleware(app):
         import allura.lib.app_globals
         registry = environ['paste.registry']
         registry.register(allura.credentials, allura.lib.security.Credentials())
-        registry.register(allura.carrot_connection, allura.lib.app_globals.connect_amqp(config))
         return app(environ, start_response)
     return AlluraGlobalsMiddleware
 

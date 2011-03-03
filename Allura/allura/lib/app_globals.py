@@ -27,14 +27,11 @@ import pygments.formatters
 import pygments.util
 from tg import config, session
 from pylons import c, request
-from carrot.connection import BrokerConnection
-from carrot.messaging import Publisher
 from bson import ObjectId
 from paste.deploy.converters import asbool, asint
 
 import ew as ew_core
 import ew.jinja2_ew as ew
-from ming.utils import LazyProperty
 
 from allura import model as M
 from allura.lib.markdown_extensions import ForgeExtension
@@ -43,6 +40,7 @@ from allura.lib import gravatar, plugin
 from allura.lib import helpers as h
 from allura.lib.widgets import analytics
 from allura.lib.security import Credentials
+from allura.lib.async import Connection
 
 log = logging.getLogger(__name__)
 
@@ -74,8 +72,15 @@ class Globals(object):
 
         # Setup RabbitMQ
         if asbool(config.get('amqp.mock')):
-            self.mock_amq = MockAMQ(self)
+            self.amq_conn = MockAMQ(self)
             self._publish = self.mock_amq.publish
+        else:
+            self.amq_conn = Connection(
+                hostname=config.get('amqp.hostname', 'localhost'),
+                port=asint(config.get('amqp.port', 5672)),
+                userid=config.get('amqp.userid', 'testuser'),
+                password=config.get('amqp.password', 'testpw'),
+                vhost=config.get('amqp.vhost', 'testvhost'))
 
         # Setup OEmbed
         cp = RawConfigParser()
@@ -231,20 +236,6 @@ class Globals(object):
         self.resource_manager.register(
             ew.JSScript(text, **kw))
 
-    @property
-    def publisher(self):
-        return dict(
-            audit=Publisher(connection=self.conn, exchange='audit', auto_declare=False),
-            react=Publisher(connection=self.conn, exchange='react', auto_declare=False))
-
-    @property
-    def conn(self):
-        if asbool(config.get('amqp.mock')):
-            return self.mock_amq
-        else:
-            import allura
-            return allura.carrot_connection
-
     def oid_session(self):
         if 'openid_info' in session:
             return session['openid_info']
@@ -293,29 +284,21 @@ class Globals(object):
         if app:
             message.setdefault('mount_point', app.config.options.mount_point)
         if user:
-            if user._id is None:
-                message.setdefault('user_id',  None)
-            else:
-                message.setdefault('user_id',  user._id)
-        # Make message safe for serialization
-        if kw.get('serializer', 'json') in ('json', 'yaml'):
-            for k, v in message.items():
-                if isinstance(v, ObjectId):
-                    message[k] = str(v)
+            message.setdefault('user_id',  user._id)
         if getattr(c, 'queued_messages', None) is not None:
-            c.queued_messages.append(dict(
-                    xn=xn,
-                    message=message,
-                    routing_key=key,
-                    **kw))
+            c.queued_messages[xn].append((key, message, kw))
         else:
-            self._publish(xn, message, routing_key=key, **kw)
+            self._publish(xn, key, message, **kw)
 
-    def _publish(self, xn, message, routing_key, **kw):
+    def send_all_messages(self):
+        for xn, messages in c.queued_messages.items():
+            self.amq_conn.publish(xn, messages)
+        c.queued_messages = defaultdict(list)
+
+    def _publish(self, xn, routing_key, message, **kw):
         try:
-            self.publisher[xn].send(message, routing_key=routing_key, **kw)
+            self.amq_conn.publish(xn, [(routing_key, message, kw)])
         except socket.error: # pragma no cover
-            return
             log.exception('''Failure publishing message:
 xn         : %r
 routing_key: %r
@@ -461,9 +444,4 @@ class Icon(object):
         self.css = css
 
 def connect_amqp(config):
-    return BrokerConnection(
-        hostname=config.get('amqp.hostname', 'localhost'),
-        port=asint(config.get('amqp.port', 5672)),
-        userid=config.get('amqp.userid', 'testuser'),
-        password=config.get('amqp.password', 'testpw'),
-        virtual_host=config.get('amqp.vhost', 'testvhost'))
+    return

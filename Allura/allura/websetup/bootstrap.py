@@ -4,6 +4,7 @@ import os
 import sys
 import logging
 import shutil
+from collections import defaultdict
 from datetime import datetime
 
 import tg
@@ -57,7 +58,7 @@ def bootstrap(command, conf, vars):
     conf['auth.method'] = conf['registration.method'] = 'local'
     # Clean up all old stuff
     ThreadLocalORMSession.close_all()
-    c.queued_messages = []
+    c.queued_messages = defaultdict(list)
     c.user = c.project = c.app = None
     database=conf.get('db_prefix', '') + 'project:test'
     g._push_object(allura.lib.app_globals.Globals())
@@ -189,8 +190,7 @@ def bootstrap(command, conf, vars):
         # app = p0.install_app('SVN', 'src')
         # app = p0.install_app('Git', 'src-git')
         ThreadLocalORMSession.flush_all()
-        for msg in c.queued_messages:
-            g._publish(**msg)
+        g.send_all_messages()
         ThreadLocalORMSession.flush_all()
         ThreadLocalORMSession.close_all()
 

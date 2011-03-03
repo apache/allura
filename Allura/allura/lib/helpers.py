@@ -28,6 +28,7 @@ from webhelpers import date, feedgenerator, html, number, misc, text
 from allura.lib import exceptions as exc
 # Reimport to make available to templates
 from .security import has_neighborhood_access, has_project_access, has_artifact_access
+from .utils import exceptionless
 
 re_path_portion = re.compile(r'^[a-z][-a-z0-9]{2,}$')
 
@@ -417,27 +418,6 @@ def twophase_transaction(*engines):
         for txn in to_rollback:
             txn.rollback()
         raise
-
-class exceptionless(object):
-    '''Decorator making the decorated function return 'error_result' on any
-    exceptions rather than propagating exceptions up the stack
-    '''
-
-    def __init__(self, error_result, log=None):
-        self.error_result = error_result
-        self.log = log
-
-    def __call__(self, fun):
-        fname = 'exceptionless(%s)' % fun.__name__
-        def inner(*args, **kwargs):
-            try:
-                return fun(*args, **kwargs)
-            except:
-                if self.log:
-                    self.log.exception('Error calling %s', fname)
-                return self.error_result
-        inner.__name__ = fname
-        return inner
 
 class log_action(object):
     extra_proto = dict(
