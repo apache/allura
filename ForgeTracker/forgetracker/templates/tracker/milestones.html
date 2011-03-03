@@ -12,10 +12,10 @@
   <table>
     <thead>
       <tr>
-        <th>&nbsp; &nbsp;Name</th>
-        <th>&nbsp; &nbsp;Summary</th>
-        <th>&nbsp; &nbsp;Status</th>
-        <th>&nbsp; &nbsp;Due Date</th>
+        <th>Name</th>
+        <th>Summary</th>
+        <th>Status</th>
+        <th>Due Date</th>
         <th>Progress</th>
         <th style="width:20px;">&nbsp;</th>
       </tr>
@@ -25,11 +25,10 @@
       <tr class="{{loop.index0%2 and 'even' or ''}}">
         <td class="view">
           <input type="hidden" name="milestones-{{loop.index0}}.old_name" value="{{m.name}}">
-          &nbsp; &nbsp;
           <strong><a href="{{c.app.url}}milestone/{{m.name}}/">{{m.name}}</a></strong></td>
-        <td class="view">&nbsp; &nbsp;{{m.description}}</td>
-        <td class="view {{m.complete and 'closed' or 'open'}}">&nbsp; &nbsp;{{m.complete and 'Closed' or 'Open'}}</td>
-        <td class="view">&nbsp; &nbsp;{{m.due_date or 'N/A'}}</td>
+        <td class="view">{{h.text.truncate(m.description,60)}}</td>
+        <td class="view {{m.complete and 'closed' or 'open'}}">{{m.complete and 'Closed' or 'Open'}}</td>
+        <td class="view">{{m.due_date or 'N/A'}}</td>
         <td class="edit" style="display:none">
           <input type="text" name="milestones-{{loop.index0}}.new_name" value="{{m.name}}">
         </td>

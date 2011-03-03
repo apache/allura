@@ -28,7 +28,7 @@
 
 {% block content %}
   {% if milestone.description %}
-    {{milestone.description}}
+    <p>{{milestone.description}}</p>
   {% endif %}
   {{c.ticket_search_results.display(solr_error=solr_error,
     count=count,
