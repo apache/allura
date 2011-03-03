@@ -2,14 +2,15 @@ import os
 import shutil
 import unittest
 import pkg_resources
+from nose.tools import assert_equals
 
 from pylons import c, g
-
 from ming.orm import ThreadLocalORMSession
 
 from alluratest.controller import setup_basic_test, setup_global_objects
 from allura.lib import helpers as h
 from forgesvn import model as SM
+
 
 class TestSVNApp(unittest.TestCase):
 
@@ -21,8 +22,8 @@ class TestSVNApp(unittest.TestCase):
         ThreadLocalORMSession.close_all()
 
     def test_admin_menu(self):
-        assert len(c.app.admin_menu()) == 2
-        assert c.app.admin_menu()[0].label == 'Viewable Files'
+        assert_equals(len(c.app.admin_menu()), 3)
+        assert_equals(c.app.admin_menu()[0].label, 'Viewable Files')
 
     def test_uninstall(self):
         c.app.uninstall(c.project)

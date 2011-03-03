@@ -1,11 +1,12 @@
 import unittest
+from nose.tools import assert_equals
 
 from pylons import c, g
-
 from ming.orm import ThreadLocalORMSession
 
 from alluratest.controller import setup_basic_test, setup_global_objects
 from allura.lib import helpers as h
+
 
 class TestHgApp(unittest.TestCase):
 
@@ -17,7 +18,7 @@ class TestHgApp(unittest.TestCase):
         ThreadLocalORMSession.close_all()
 
     def test_admin_menu(self):
-        assert len(c.app.admin_menu()) == 2
+        assert_equals(len(c.app.admin_menu()), 3)
 
     def test_uninstall(self):
         c.app.uninstall(c.project)
