@@ -240,11 +240,9 @@ class ProjectAdminController(BaseController):
     @require_post()
     @validate(validators=dict(
             name=UnicodeString(),
-            short_description=UnicodeString(),
-            description=UnicodeString()))
+            short_description=UnicodeString()))
     def update(self, name=None,
                short_description=None,
-               description=None,
                icon=None,
                screenshot=None,
                category=None,
@@ -270,9 +268,6 @@ class ProjectAdminController(BaseController):
         if short_description != c.project.short_description:
             h.log_action(log, 'change project short description').info('')
             c.project.short_description = short_description
-        if description != c.project.description:
-            h.log_action(log, 'change project description').info('')
-            c.project.description = description
         category = category and ObjectId(category) or None
         if category != c.project.category_id:
             h.log_action(log, 'change project category').info('')

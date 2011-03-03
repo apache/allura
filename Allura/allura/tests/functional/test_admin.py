@@ -20,12 +20,11 @@ class TestProjectAdmin(TestController):
 
     def test_admin_controller(self):
         self.app.get('/admin/')
+        self.app.post('/admin/update_homepage', {'description': 'A long description ?'})
         self.app.post('/admin/update', params=dict(
                 name='Test Project',
                 shortname='test',
                 short_description=u'\u00bf A Test Project ?'.encode('utf-8'),
-                description=u'''\u00bf
-                A long description ?'''.encode('utf-8'),
                 labels='aaa,bbb'))
         r = self.app.get('/admin/overview')
         assert 'A Test Project ?' in r
@@ -195,8 +194,7 @@ class TestProjectAdmin(TestController):
         self.app.post('/admin/update', params=dict(
                 name='Test Project',
                 shortname='test',
-                short_description='A Test Project',
-                description='A long description'),
+                short_description='A Test Project'),
                 upload_files=[upload])
         r = self.app.get('/p/test/icon')
         image = Image.open(StringIO.StringIO(r.body))
@@ -212,8 +210,7 @@ class TestProjectAdmin(TestController):
         self.app.post('/admin/update', params=dict(
                 name='Test Project',
                 shortname='test',
-                short_description='A Test Project',
-                description='A long description'),
+                short_description='A Test Project'),
                 upload_files=[upload])
         project = M.Project.query.find({'shortname':'test'}).first()
         filename = project.get_screenshots()[0].filename
@@ -234,7 +231,6 @@ class TestProjectAdmin(TestController):
                 name='Test Project',
                 shortname='test',
                 short_description='A Test Project',
-                description='A long description',
                 delete='on'))
         r = self.app.get('/p/test/admin/overview')
         assert 'This project has been deleted and is not visible to non-admin users' in r
@@ -244,7 +240,6 @@ class TestProjectAdmin(TestController):
                 name='Test Project',
                 shortname='test',
                 short_description='A Test Project',
-                description='A long description',
                 undelete='on'))
         r = self.app.get('/p/test/admin/overview')
         assert 'This project has been deleted and is not visible to non-admin users' not in r
