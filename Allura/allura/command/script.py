@@ -7,7 +7,7 @@ from allura.lib import helpers as h
 class ScriptCommand(base.Command):
     min_args=2
     max_args=None
-    usage = 'NAME <ini file> <script> ...'
+    usage = '<ini file> <script> ...'
     summary = 'Run a script as if it were being run at the paster shell prompt'
     parser = base.Command.standard_parser(verbose=True)
 
@@ -21,7 +21,7 @@ class ScriptCommand(base.Command):
 class SetToolAccessCommand(base.Command):
     min_args=3
     max_args=None
-    usage = 'NAME <ini file> <project_shortname> <access_level>...'
+    usage = '<ini file> <project_shortname> <access_level>...'
     summary = ('Set the tool statuses that are permitted to be installed on a'
                ' given project')
     parser = base.Command.standard_parser(verbose=True)

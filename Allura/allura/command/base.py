@@ -16,7 +16,7 @@ class EmptyClass(object): pass
 class Command(command.Command):
     min_args = 0
     max_args = 1
-    usage = 'NAME [<ini file>]'
+    usage = '[<ini file>]'
     group_name = 'Allura'
 
     @ming.utils.LazyProperty

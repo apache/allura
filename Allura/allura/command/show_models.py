@@ -14,7 +14,7 @@ from . import base
 class ShowModelsCommand(base.Command):
     min_args=1
     max_args=1
-    usage = 'NAME <ini file>'
+    usage = '<ini file>'
     summary = 'Show the inheritance graph of all Ming models'
     parser = base.Command.standard_parser(verbose=True)
 
@@ -28,7 +28,7 @@ class ShowModelsCommand(base.Command):
 class ReindexCommand(base.Command):
     min_args=0
     max_args=1
-    usage = 'NAME <ini file>'
+    usage = '<ini file>'
     summary = 'Reindex and re-shortlink all artifacts'
     parser = base.Command.standard_parser(verbose=True)
     parser.add_option('-p', '--project', dest='project',  default=None,
@@ -57,7 +57,7 @@ class ReindexCommand(base.Command):
 class EnsureIndexCommand(base.Command):
     min_args=0
     max_args=1
-    usage = 'NAME [<ini file>]'
+    usage = '[<ini file>]'
     summary = 'Run ensure_index on all mongo objects'
     parser = base.Command.standard_parser(verbose=True)
 
@@ -176,4 +176,3 @@ def pm(etype, value, tb): # pragma no cover
         sys.stderr.write('Entering post-mortem PDB shell\n')
         traceback.print_exception(etype, value, tb)
         pdb.post_mortem(tb)
-
