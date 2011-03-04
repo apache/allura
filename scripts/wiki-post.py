@@ -7,6 +7,7 @@ import os
 import urllib
 from urllib2 import urlopen, HTTPError
 from urlparse import urlparse, urljoin
+import urllib
 from optparse import OptionParser
 from ConfigParser import ConfigParser
 
@@ -59,6 +60,8 @@ class Signer(object):
         self.api_key = api_key
 
     def __call__(self, path, params):
+        if self.api_key is None:
+            return params
         params.append(('api_key', self.api_key))
         params.append(('api_timestamp', datetime.utcnow().isoformat()))
         message = path + '?' + urlencode(sorted(params))
@@ -72,6 +75,7 @@ def main():
     op.add_option('-c', '--config', metavar='CONFIG')
     op.add_option('-a', '--api-key', metavar='KEY')
     op.add_option('-s', '--secret-key', metavar='KEY')
+    op.add_option('', '--anon', action='store_true')
     op.add_option('-u', '--url', metavar='URL')
     (options, args) = op.parse_args()
 
@@ -92,13 +96,16 @@ def main():
     config = ConfigParser()
     config.read([str(os.path.expanduser('~/.forge-api.ini')), str(options.config)])
 
-    api_key = options.api_key or config.get('keys', 'api-key')
-    secret_key = options.secret_key or config.get('keys', 'secret-key')
-    # print an error message if no keys are found
+    api_key = None
+    secret_key = None
+    if not options.anon:
+        api_key = options.api_key or config.get('keys', 'api-key')
+        secret_key = options.secret_key or config.get('keys', 'secret-key')
 
     url = options.url or config.get('wiki', 'url')
     if pagename_given:
-        url = urljoin(url, pagename)
+        url = urljoin(url, urllib.quote(pagename))
+    print url
 
     sign = Signer(secret_key, api_key)
     params = [('text', markdown)] if method=='PUT' else []
