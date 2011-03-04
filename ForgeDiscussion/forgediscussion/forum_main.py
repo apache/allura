@@ -259,9 +259,9 @@ class ForumAdminController(DefaultAdminController):
             description=new_forum['description']
         f = DM.Forum(app_config_id=self.app.config._id,
                         parent_id=parent_id,
-                        name=new_forum['name'],
-                        shortname=shortname,
-                        description=description)
+                        name=h.really_unicode(new_forum['name']).encode('utf-8'),
+                        shortname=h.really_unicode(shortname).encode('utf-8'),
+                        description=h.really_unicode(description).encode('utf-8'))
         if 'icon' in new_forum and new_forum['icon'] is not None and new_forum['icon'] != '':
             self.save_forum_icon(f, new_forum['icon'])
         return f

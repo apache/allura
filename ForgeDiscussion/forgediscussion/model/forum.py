@@ -9,6 +9,7 @@ from ming.orm.property import FieldProperty, RelationProperty, ForeignIdProperty
 
 from allura import model as M
 from allura.lib import utils
+from allura.lib import helpers as h
 
 config = utils.ConfigProxy(
     common_suffix='forgemail.domain')
@@ -67,7 +68,7 @@ class Forum(M.Discussion):
         return l + [(self.name, self.url())]
 
     def url(self):
-        return urllib.quote(self.app.url + self.shortname + '/')
+        return urllib.quote(h.really_unicode(self.app.url + self.shortname + '/').encode('utf-8'))
 
     def delete(self):
         # Delete the subforums

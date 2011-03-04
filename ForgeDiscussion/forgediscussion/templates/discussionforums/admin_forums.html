@@ -31,21 +31,21 @@
         </td>
         <td>
           <div class="editable viewing">
-            <span class="viewer"><a href="{{forum.url()}}">{{forum.name}}</a></span>
+            <span class="viewer"><a href="{{forum.url()}}">{{h.really_unicode(forum.name)}}</a></span>
             <span class="editor">
-              {{lib.text_field('forum-%s.name' % loop.index0, 'Forum Title', forum.name)}}
+              {{lib.text_field('forum-%s.name' % loop.index0, 'Forum Title', h.really_unicode(forum.name))}}
             </span>
           </div>
           <div class="editable viewing">
-            <span class="viewer">{{forum.shortname}}</span>
+            <span class="viewer">{{h.really_unicode(forum.shortname)}}</span>
             <span class="editor">
-              {{lib.text_field('forum-%s.shortname' % loop.index0, 'Forum Short Name', forum.shortname)}}
+              {{lib.text_field('forum-%s.shortname' % loop.index0, 'Forum Short Name', h.really_unicode(forum.shortname))}}
             </span>
           </div>
           <div class="editable viewing">
             <div class="viewer">{{g.markdown.convert(forum.description)|safe}}</div>
             <span class="editor multiline">
-              {{lib.text_area('forum-%s.description' % loop.index0, 'Description', forum.description)}}
+              {{lib.text_area('forum-%s.description' % loop.index0, 'Description', h.really_unicode(forum.description))}}
             </span>
           </div>
           {% if forum.subforums %}

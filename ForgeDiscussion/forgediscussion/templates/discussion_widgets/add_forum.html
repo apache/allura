@@ -9,7 +9,7 @@
     <label class="grid-4">Parent Forum:</label>
     <div class="grid-15"><select name="add_forum.parent">
     <option value="">None</option>
-    {% for f in app.forums %}<option value="{{f._id}}">{{f.name}}</option>{% endfor %}
+    {% for f in app.forums %}<option value="{{f._id}}">{{h.really_unicode(f.name)}}</option>{% endfor %}
     </select></div>
     <label class="grid-4">Description:</label>
     <div class="grid-15"><textarea name="add_forum.description" style="height:50px;">{{value and value['description']}}</textarea></div>

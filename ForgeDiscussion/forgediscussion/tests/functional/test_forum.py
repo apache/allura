@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import os
 import random
 import allura
@@ -293,6 +294,14 @@ class TestForum(TestController):
         r.forms[1].submit()
         r = self.app.get('/admin/discussion/forums')
         assert 'childforum' in r
+
+    def test_unicode_name(self):
+        r = self.app.get('/admin/discussion/forums')
+        r.forms[1]['add_forum.shortname'] = u'téstforum'.encode('utf-8')
+        r.forms[1]['add_forum.name'] = u'Tést Forum'.encode('utf-8')
+        r.forms[1].submit()
+        r = self.app.get('/admin/discussion/forums')
+        assert u'téstforum'.encode('utf-8') in r
 
     def test_forum_search(self):
         r = self.app.get('/discussion/search')
