@@ -1,6 +1,7 @@
+import logging
 import os
 import mimetypes
-from datetime import datetime
+from datetime import datetime, timedelta
 from collections import defaultdict
 
 import pkg_resources
@@ -8,11 +9,15 @@ from tg import expose, redirect, flash, config, validate, request, response
 from tg.decorators import with_trailing_slash, without_trailing_slash
 from webob import exc
 from formencode import validators as fev
-
+from ming.orm import session
 from pylons import c, g
+
 from allura.lib import helpers as h
 from allura.lib.security import require, has_project_access
 from allura import model as M
+
+
+log = logging.getLogger(__name__)
 
 class SiteAdminController(object):
 
@@ -65,3 +70,45 @@ class SiteAdminController(object):
         if getattr(c, 'validation_exception', None):
             flash(str(c.validation_exception), 'error')
         return dict(stats=stats, since=since)
+
+    @expose('jinja:site_admin_api_tickets.html')
+    def api_tickets(self, **data):
+        import json
+        import dateutil.parser
+        if request.method == 'POST':
+            log.info('api_tickets: %s', data)
+            ok = True
+            for_user = M.User.by_username(data['for_user'])
+            if not for_user:
+                ok = False
+                flash('User not found')
+            caps = None
+            try:
+                caps = json.loads(data['caps'])
+            except ValueError:
+                ok = False
+                flash('JSON format error')
+            if type(caps) is not type({}):
+                ok = False
+                flash('Capabilities must be a JSON dictionary, mapping capability name to optional discriminator(s) (or "")')
+            try:
+                expires = dateutil.parser.parse(data['expires'])
+            except ValueError:
+                ok = False
+                flash('Date format error')
+            if ok:
+                tok = None
+                try:
+                    tok = M.ApiTicket(user_id=for_user._id, capabilities=caps, expires=expires)
+                    session(tok).flush()
+                    log.info('New token: %s', tok)
+                    flash('API Ticket created')
+                except:
+                    log.exception('Could not create API ticket:')
+                    flash('Error creating API ticket')
+        elif request.method == 'GET':
+            data = {'expires': datetime.utcnow() + timedelta(days=1)}
+
+        data['token_list'] = M.ApiTicket.query.find(dict(expires={'$ne': None})).all()
+        log.info(data['token_list'])
+        return data
