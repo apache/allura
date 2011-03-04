@@ -7,6 +7,7 @@ from nose.tools import with_setup
 from pylons import c, g, request
 from webob import Request
 
+from pymongo.errors import OperationFailure, DuplicateKeyError
 from ming.orm.ormsession import ThreadLocalORMSession
 
 import allura.model.auth
@@ -107,3 +108,18 @@ def test_default_project_roles():
     assert 'Member' in roles.keys(), roles.keys()
     assert roles['Developer']._id in roles['Admin'].roles
     assert roles['Member']._id in roles['Developer'].roles
+
+@with_setup(setUp)
+def test_dup_api_token():
+    from ming.orm import session
+    u = M.User.register(dict(username='nosetest-user'))
+    ThreadLocalORMSession.flush_all()
+    tok = M.ApiToken(user_id=u._id, capabilities={'no': '1'})
+    session(tok).flush()
+    tok2 = M.ApiToken(user_id=u._id, capabilities={'no': '2'})
+    try:
+        session(tok2).flush()
+        assert False, "Entry with duplicate unique key was inserted"
+    except DuplicateKeyError:
+        pass
+    assert len(M.ApiToken.query.find().all()) == 1, "Duplicate entries with unique key found"
