@@ -26,14 +26,19 @@ class RestController(object):
         'Based on request.params or oauth, authenticate the request'
         if 'oauth_token' in request.params:
             return self.oauth._authenticate()
-        if 'api_key' not in request.params:
-            return None
-        api_key = request.params.get('api_key')
-        api_token = M.ApiToken.query.get(api_key=api_key)
-        if api_token is not None and api_token.authenticate_request(request.path, request.params):
-            return api_token
+        elif 'api_key' in request.params:
+            api_key = request.params.get('api_key')
+            token = M.ApiTicket.get(api_key)
+            if not token:
+                token = M.ApiToken.get(api_key)
+            else:
+                log.info('Authenticated with API ticket')
+            if token is not None and token.authenticate_request(request.path, request.params):
+                return token
+            else:
+                raise exc.HTTPForbidden
         else:
-            raise exc.HTTPForbidden
+            return None
 
     @expose()
     def _lookup(self, name, *remainder):

@@ -67,28 +67,13 @@ def urlencode(params):
     return urllib.urlencode([i for i in generate_smart_str(params)])
 
 
-class ApiToken(MappedClass):
-    class __mongometa__:
-        name='api_token'
-        session = main_orm_session
-        unique_indexes = [ 'user_id' ]
-
-    _id = FieldProperty(S.ObjectId)
-    user_id = ForeignIdProperty('User')
-    api_key = FieldProperty(str, if_missing=lambda:h.nonce(20))
-    secret_key = FieldProperty(str, if_missing=h.cryptographic_nonce)
-    expires = FieldProperty(datetime, if_missing=None)
-    capabilities = FieldProperty({str:str})
-
-    user = RelationProperty('User')
+class ApiAuthMixIn(object):
 
     def authenticate_request(self, path, params):
         try:
             # Validate timestamp
             timestamp = iso8601.parse_date(params['api_timestamp'])
             timestamp_utc = timestamp.replace(tzinfo=None) - timestamp.utcoffset()
-            if self.expires and datetime.utcnow() > self.expires:
-                return False
             if abs(datetime.utcnow() - timestamp_utc) > timedelta(minutes=10):
                 return False
             # Validate signature
@@ -115,6 +100,57 @@ class ApiToken(MappedClass):
             digest = hmac.new(self.secret_key, string_to_sign, hashlib.sha256)
             params.append(('api_signature', digest.hexdigest()))
         return params
+
+    def get_capability(self, key):
+        return None
+
+
+class ApiToken(MappedClass, ApiAuthMixIn):
+    class __mongometa__:
+        name='api_token'
+        session = main_orm_session
+        unique_indexes = [ 'user_id' ]
+
+    _id = FieldProperty(S.ObjectId)
+    user_id = ForeignIdProperty('User')
+    api_key = FieldProperty(str, if_missing=lambda:h.nonce(20))
+    secret_key = FieldProperty(str, if_missing=h.cryptographic_nonce)
+
+    user = RelationProperty('User')
+
+    @classmethod
+    def get(cls, api_key):
+        return cls.query.get(api_key=api_key)
+
+
+class ApiTicket(MappedClass, ApiAuthMixIn):
+    class __mongometa__:
+        name='api_ticket'
+        session = main_orm_session
+    PREFIX = 'tck'
+
+    _id = FieldProperty(S.ObjectId)
+    user_id = ForeignIdProperty('User')
+    api_ticket = FieldProperty(str, if_missing=lambda: ApiTicket.PREFIX + h.nonce(20))
+    secret_key = FieldProperty(str, if_missing=h.cryptographic_nonce)
+    expires = FieldProperty(datetime, if_missing=None)
+    capabilities = FieldProperty({str:str})
+
+    user = RelationProperty('User')
+
+    @classmethod
+    def get(cls, api_ticket):
+        if not api_ticket.startswith(cls.PREFIX):
+            return None
+        return cls.query.get(api_ticket=api_ticket)
+
+    def authenticate_request(self, path, params):
+        if self.expires and datetime.utcnow() > self.expires:
+            return False
+        return ApiAuthMixIn.authenticate_request(self, path, params)
+
+    def get_capability(self, key):
+        return self.capabilities.get(key)
 
 class EmailAddress(MappedClass):
     re_format = re.compile('^.* <(.*)>$')

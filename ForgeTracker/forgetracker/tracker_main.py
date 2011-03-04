@@ -1026,7 +1026,7 @@ class RootRestController(BaseController):
     @expose('json:')
     def perform_import(self, doc=None, options=None, **post_data):
         require(has_project_access('tool'))
-        if c.api_token.capabilities.get('import') != c.project.shortname:
+        if c.api_token.get_capability('import') != c.project.shortname:
             raise exc.HTTPForbidden(detail='Import is not allowed')
 
         migrator = ImportSupport()
