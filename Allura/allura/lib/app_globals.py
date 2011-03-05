@@ -5,7 +5,6 @@
 __all__ = ['Globals']
 import logging
 import socket
-import re
 import cgi
 import json
 import shlex
@@ -16,7 +15,6 @@ from collections import defaultdict
 
 import pkg_resources
 
-import mock
 import pysolr
 import oembed
 import markdown
@@ -27,7 +25,6 @@ import pygments.formatters
 import pygments.util
 from tg import config, session
 from pylons import c, request
-from bson import ObjectId
 from paste.deploy.converters import asbool, asint
 
 import ew as ew_core
@@ -40,7 +37,7 @@ from allura.lib import gravatar, plugin
 from allura.lib import helpers as h
 from allura.lib.widgets import analytics
 from allura.lib.security import Credentials
-from allura.lib.async import Connection
+from allura.lib.async import Connection, MockAMQ
 
 log = logging.getLogger(__name__)
 
@@ -72,8 +69,8 @@ class Globals(object):
 
         # Setup RabbitMQ
         if asbool(config.get('amqp.mock')):
-            self.amq_conn = MockAMQ(self)
-            self._publish = self.mock_amq.publish
+            self.amq_conn = self.mock_amq = MockAMQ(self)
+            self._publish = self.amq_conn.publish
         else:
             self.amq_conn = Connection(
                 hostname=config.get('amqp.hostname', 'localhost'),
@@ -361,82 +358,6 @@ class MockSOLR(object):
 
     def delete(self, *args, **kwargs):
         pass
-
-class MockAMQ(object):
-
-    def __init__(self, globals):
-        self.exchanges = defaultdict(list)
-        self.queue_bindings = defaultdict(list)
-        self.globals = globals
-
-    def clear(self):
-        for k in self.exchanges.keys():
-            self.exchanges[k][:] = []
-
-    def create_backend(self):
-        return mock.Mock()
-
-    def publish(self, xn, message, routing_key, **kw):
-        self.exchanges[xn].append(
-            dict(routing_key=routing_key, message=message, kw=kw))
-
-    def pop(self, xn):
-        return self.exchanges[xn].pop(0)
-
-    def setup_handlers(self, paste_registry=None):
-        from allura.command.reactor import tool_consumers, ReactorCommand
-        from allura.command import base
-        self.queue_bindings = defaultdict(list)
-        base.log = logging.getLogger('allura.command')
-        base.M = M
-        self.tools = []
-        for ep in pkg_resources.iter_entry_points('allura'):
-            try:
-                self.tools.append((ep.name, ep.load()))
-            except ImportError:
-                log.warning('Canot load entry point %s', ep)
-        self.reactor = ReactorCommand('reactor_setup')
-        if paste_registry:
-            self.reactor.registry = paste_registry
-        self.reactor.globals = self.globals
-        self.reactor.parse_args([])
-        for name, tool in self.tools:
-            for method, xn, qn, keys in tool_consumers(name, tool):
-                for k in keys:
-                    self.queue_bindings[xn].append(
-                        dict(key=k, tool_name=name, method=method))
-            # self.setup_tool(name, tool)
-
-    def handle(self, xn):
-        msg = self.pop(xn)
-        for handler in self.queue_bindings[xn]:
-            if self._route_matches(handler['key'], msg['routing_key']):
-                self._route(xn, msg, handler['tool_name'], handler['method'])
-
-    def handle_all(self):
-        for xn, messages in self.exchanges.items():
-            while messages:
-                self.handle(xn)
-
-    def _route(self, xn, msg, tool_name, method):
-        import mock
-        if xn == 'audit':
-            callback = self.reactor.route_audit(tool_name, method)
-        else:
-            callback = self.reactor.route_react(tool_name, method)
-        data = msg['message']
-        message = mock.Mock()
-        message.delivery_info = dict(
-            routing_key=msg['routing_key'])
-        message.ack = lambda:None
-        return callback(data, message)
-
-    def _route_matches(self, pattern, key):
-        re_pattern = (pattern
-                      .replace('.', r'\.')
-                      .replace('*', r'(?:\w+)')
-                      .replace('#', r'(?:\w+)(?:\.\w+)*'))
-        return re.match(re_pattern+'$', key)
 
 class Icon(object):
     def __init__(self, char, css):

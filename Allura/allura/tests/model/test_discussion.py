@@ -17,19 +17,17 @@ from allura import model as M
 from allura.lib.app_globals import Globals
 from allura.lib import helpers as h
 from allura.tests import TestController
+from alluratest.controller import setup_global_objects
 
 def setUp():
     controller = TestController()
     controller.setUp()
     controller.app.get('/wiki/Home/')
-    g._push_object(Globals())
-    c._push_object(mock.Mock())
-    request._push_object(Request.blank('/'))
+    setup_global_objects()
     ThreadLocalORMSession.close_all()
     h.set_context('test', 'wiki')
     ThreadLocalORMSession.flush_all()
     ThreadLocalORMSession.close_all()
-    c.user = M.User.query.get(username='test-admin')
 
 
 def tearDown():

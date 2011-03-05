@@ -90,6 +90,7 @@ class ReactorCommand(base.Command):
                 base.log.info('=== Mark ===')
 
     def multi_worker_main(self, configs):
+        if self.options.dry_run: return
         while True:
             with pylons.g.amq_conn.channel() as channel:
                 try:
@@ -106,7 +107,6 @@ class ReactorCommand(base.Command):
                             consumer.register_callback(
                                 self.route_react(config['tool_name'], config['method']))
                         consumer.consume()
-                    if self.options.dry_run: return
                     while True:
                         channel.connection.drain_events()
                 except:
