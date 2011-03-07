@@ -19,8 +19,6 @@ setup(
         "TurboGears2 >= 2.1a1",
         "PasteScript",
         "Babel >= 0.9.4",
-        "Lamson",
-        "Carrot",
         "pymongo >= 1.7",
         "pysolr",
         "repoze.what-quickstart",
