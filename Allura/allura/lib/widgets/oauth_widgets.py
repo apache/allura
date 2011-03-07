@@ -10,7 +10,7 @@ from .form_fields import AutoResizeTextarea
 from .forms import ForgeForm
 
 class OAuthApplicationForm(ForgeForm):
-    submit_text='Register new applicaiton'
+    submit_text='Register new application'
     style='wide'
     class fields(ew_core.NameList):
         application_name =ew.TextField(label='Application Name',
