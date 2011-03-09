@@ -124,6 +124,17 @@ class TestReactor(unittest.TestCase):
         assert args[0] == 'noreply@sourceforge.net'
         assert '"Rick Copeland" <test@example.com>' in args[2]
 
+    def test_bad_user(self):
+        addr = 'test@example.com'
+        common_react.send_email(None, {
+                'from':addr,
+                'reply_to':addr,
+                'destinations':[None],
+                'message_id':'test@example.com',
+                'subject':'Test message',
+                'text':'Test message'})
+        assert not self.sendmail.called
+
     def test_user_unicode(self):
         u = M.User.by_username('test-admin')
         u.set_pref('display_name', u'Rick Copéland')

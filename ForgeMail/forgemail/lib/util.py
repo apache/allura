@@ -23,7 +23,7 @@ RE_MESSAGE_ID = re.compile(r'<(.*)>')
 config = ConfigProxy(
     common_suffix='forgemail.domain',
     return_path='forgemail.return_path')
-EMAIL_VALIDATOR=fev.Email()
+EMAIL_VALIDATOR=fev.Email(not_empty=True)
 
 def Header(text, charset):
     '''Helper to make sure we don't over-encode headers
@@ -127,7 +127,7 @@ def _parse_smtp_addr(addr):
     if '@' in addr: return addr
     return 'noreply@in.sf.net'
 
-def _isvalid(addr):
+def isvalid(addr):
     '''return True if addr is a (possibly) valid email address, false
     otherwise'''
     try:
@@ -158,7 +158,7 @@ class SMTPClient(object):
             message['In-Reply-To'] = Header(in_reply_to, charset)
         content = message.as_string()
         smtp_addrs = map(_parse_smtp_addr, addrs)
-        smtp_addrs = [ a for a in smtp_addrs if _isvalid(a) ]
+        smtp_addrs = [ a for a in smtp_addrs if isvalid(a) ]
         if not smtp_addrs:
             log.warning('No valid addrs in %s, so not sending mail', addrs)
             return

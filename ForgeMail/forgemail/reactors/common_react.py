@@ -92,12 +92,16 @@ def send_email(routing_key, data):
             fromaddr = user.email_address_header()
     # Divide addresses based on preferred email formats
     for addr in data['destinations']:
-        if '@' in addr:
+        if util.isvalid(addr):
             addrs_plain.append(addr)
         else:
-            user = M.User.query.get(_id=ObjectId(addr))
-            if not user:
-                log.warning('Cannot find user with ID %s', addr)
+            try:
+                user = M.User.query.get(_id=ObjectId(addr))
+                if not user:
+                    log.warning('Cannot find user with ID %s', addr)
+                    continue
+            except:
+                log.exception('Error looking up user with ID %r')
                 continue
             addr = user.email_address_header()
             if not addr and user.email_addresses:
