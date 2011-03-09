@@ -95,10 +95,6 @@ class ImportSupport(object):
     ATTACHMENT_SIZE_LIMIT = 1024*1024
 
     def __init__(self):
-        # At first the idea to use Ticket introspection comes,
-        # but it contains various internal fields, so we'd need
-        # to define somethig explicitly anyway.
-        #
         # Map JSON interchange format fields to Ticket fields
         # key is JSON's field name, value is:
         #   None - drop
@@ -112,7 +108,7 @@ class ImportSupport(object):
             'date_updated': ('mod_date', self.parse_date),
             'description': True,
             'id': None,
-            'keywords': ('labels', lambda s: s.split()), # default way of handling, see below
+            'keywords': ('labels', lambda s: s.split()), # default way of handling, see below for overrides
             'status': True,
             'submitter': ('reported_by_id', self.get_user_id),
             'summary': True,
@@ -121,7 +117,7 @@ class ImportSupport(object):
         self.warnings = []
         self.errors = []
         self.options = {}
-        
+
 
     def init_options(self, options_json):
         self.options = json.loads(options_json)
@@ -158,7 +154,6 @@ class ImportSupport(object):
         if 'custom_fields' not in ticket:
             ticket['custom_fields'] = {}
         ticket['custom_fields'][field] = value
-
 
     #
     # Object convertors
@@ -228,9 +223,9 @@ class ImportSupport(object):
             for c in a['comments']:
                 users.add(c['submitter'])
         return users
-                
+
     def find_unknown_users(self, users):
-        unknown  = set()
+        unknown = set()
         for u in users:
             if u and not u in self.options['user_map'] and not M.User.by_username(u):
                 unknown.add(u)
