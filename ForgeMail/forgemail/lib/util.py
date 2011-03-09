@@ -8,6 +8,7 @@ from email import header
 
 import tg
 from paste.deploy.converters import asbool, asint
+from formencode import validators as fev
 from pylons import c
 
 from allura.lib.helpers import push_config, find_project
@@ -22,6 +23,7 @@ RE_MESSAGE_ID = re.compile(r'<(.*)>')
 config = ConfigProxy(
     common_suffix='forgemail.domain',
     return_path='forgemail.return_path')
+EMAIL_VALIDATOR=fev.Email()
 
 def Header(text, charset):
     '''Helper to make sure we don't over-encode headers
@@ -125,6 +127,15 @@ def _parse_smtp_addr(addr):
     if '@' in addr: return addr
     return 'noreply@in.sf.net'
 
+def _isvalid(addr):
+    '''return True if addr is a (possibly) valid email address, false
+    otherwise'''
+    try:
+        EMAIL_VALIDATOR.to_python(addr, None)
+        return True
+    except fev.Invalid:
+        return False
+
 class SMTPClient(object):
 
     def __init__(self):
@@ -146,16 +157,21 @@ class SMTPClient(object):
             in_reply_to = ','.join(('<' + irt + '>') for irt in in_reply_to)
             message['In-Reply-To'] = Header(in_reply_to, charset)
         content = message.as_string()
+        smtp_addrs = map(_parse_smtp_addr, addrs)
+        smtp_addrs = [ a for a in smtp_addrs if _isvalid(a) ]
+        if not smtp_addrs:
+            log.warning('No valid addrs in %s, so not sending mail', addrs)
+            return
         try:
             self._client.sendmail(
                 config.return_path,
-                map(_parse_smtp_addr, addrs),
+                smtp_addrs,
                 content)
         except:
             self._connect()
             self._client.sendmail(
                 config.return_path,
-                map(_parse_smtp_addr, addrs),
+                smtp_addrs,
                 content)
 
     def _connect(self):

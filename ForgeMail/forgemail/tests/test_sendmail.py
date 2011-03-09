@@ -39,6 +39,17 @@ class TestSendmail(unittest.TestCase):
             encode_email_part('Test message', 'text/plain'))
         assert self.mail._client.sendmail.called
 
+    def test_bad_addr(self):
+        self.mail.sendmail(
+            ['@example.com'],
+            'test@example.com',
+            'test@example.com',
+            'Subject',
+            'message_id@example.com',
+            None,
+            encode_email_part('Test message', 'text/plain'))
+        assert not self.mail._client.sendmail.called
+
     def test_user(self):
         u = M.User.by_username('test-admin')
         u.set_pref('display_name', u'Rick Copeland')
