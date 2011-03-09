@@ -19,6 +19,7 @@ Getting Started
 
    platform_tour
    scm_host
+   migration
 
 Writing a Allura based app
 =====================================================================
