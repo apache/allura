@@ -67,14 +67,14 @@ class Repository(M.Repository):
         lc, isnew = M.LastCommitFor.upsert(repo_id=self._id, object_id=obj.object_id)
         if not isnew: return lc.last_commit
         try:
-            info = self._svn.info2(
-                self._url + obj.path(),
+            info = self._impl._svn.info2(
+                self._impl._url + obj.path(),
                 revision=self._impl._revision(obj.commit.object_id),
                 depth=pysvn.depth.empty)[0][1]
             lc.last_commit.author = lc.last_commit.author_email = info.last_changed_author
             lc.last_commit.date = datetime.utcfromtimestamp(info.last_changed_date)
-            lc.last_commit.id = self._oid(info.last_changed_rev.number)
-            lc.last_commit.href = '%s%d/' % (self._repo.url(), info.last_changed_rev.number)
+            lc.last_commit.id = self._impl._oid(info.last_changed_rev.number)
+            lc.last_commit.href = '%s%d/' % (self.url(), info.last_changed_rev.number)
             lc.last_commit.shortlink = '[r%d]' % info.last_changed_rev.number
             lc.last_commit.summary = ''
             return lc.last_commit
@@ -273,21 +273,6 @@ class SVNImplementation(M.RepositoryImplementation):
         tree.object_ids = [
             Object(object_id=oid, name=name)
             for name, oid in gl_tree.blobs.iteritems() ]
-        # Save last commit info
-        log.debug('Save commit info for %d paths', len(infos))
-        for i, (path, info) in enumerate(infos):
-            if i==0:
-                oid = tree_id
-            else:
-                oid = gl_tree.get_blob(path)
-            lc, isnew = M.LastCommitFor.upsert(repo_id=self._repo._id, object_id=oid)
-            if not isnew: continue
-            lc.last_commit.author = lc.last_commit.author_email = info.last_changed_author
-            lc.last_commit.date = datetime.utcfromtimestamp(info.last_changed_date)
-            lc.last_commit.id = self._oid(info.last_changed_rev.number)
-            lc.last_commit.href = '%s%d/' % (self._repo.url(), info.last_changed_rev.number)
-            lc.last_commit.shortlink = '[r%d]' % info.last_changed_rev.number
-            lc.last_commit.summary = ''
         session(tree).flush(tree)
         return tree_id
 
