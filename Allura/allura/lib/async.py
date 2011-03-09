@@ -7,6 +7,8 @@ import mock
 import kombu
 import pkg_resources
 
+log = logging.getLogger(__name__)
+
 class Connection(object):
 
     def __init__(self, hostname, port, userid, password, vhost):
@@ -27,7 +29,8 @@ class Connection(object):
         try:
             yield ch
         finally:
-            ch.release()
+            if ch.is_open: ch.release()
+            else: log.info('ch is not open, not returning to pool')
 
     @contextmanager
     def producer(self, xn):
@@ -35,7 +38,7 @@ class Connection(object):
             prod = kombu.Producer(ch, self._exchanges[xn], auto_declare=False)
             yield prod
 
-    def declare_exchanges(self):
+    def clear_exchanges(self):
         try:
             with self.channel() as ch:
                 ch.exchange_delete('audit')
@@ -46,8 +49,12 @@ class Connection(object):
                 ch.exchange_delete('react')
         except:
             pass
+
+    def declare_exchanges(self):
+        self.clear_exchanges()
         with self.channel() as ch:
             ch.exchange_declare('audit', 'topic', durable=True, auto_delete=False)
+        with self.channel() as ch:
             ch.exchange_declare('react', 'topic', durable=True, auto_delete=False)
 
     def declare_queue(self, xn, qn, keys):
@@ -58,7 +65,8 @@ class Connection(object):
             pass
         with self.channel() as ch:
             ch.queue_declare(qn, durable=True, auto_delete=False)
-            for k in keys:
+        for k in keys:
+            with self.channel() as ch:
                 ch.queue_bind(qn, xn, k)
 
     def publish(self, xn, key_msgs):

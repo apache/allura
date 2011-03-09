@@ -50,8 +50,8 @@ class ReactorSetupCommand(base.Command):
     def configure_tool(self, name, tool):
         base.log.info('Configuring tool %s:%s', name, tool)
         for method, xn, qn, keys in tool_consumers(name, tool):
-            pylons.g.amq_conn.declare_queue(xn, qn, keys)
             base.log.info('... %s %s %r', xn, qn, keys)
+            pylons.g.amq_conn.declare_queue(xn, qn, keys)
 
 class ReactorCommand(base.Command):
 
@@ -322,4 +322,4 @@ def debug(*a,**kw): # pragma no cover
     p.cmdloop()
     p.forget()
 
-#sys.excepthook =debug
+# sys.excepthook =debug
