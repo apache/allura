@@ -12,20 +12,30 @@ log = logging.getLogger(__name__)
 class Connection(object):
 
     def __init__(self, hostname, port, userid, password, vhost):
-        self._conn = kombu.BrokerConnection(
+        self._conn_proto = kombu.BrokerConnection(
             hostname=hostname,
             port=port,
             userid=userid,
             password=password,
             virtual_host=vhost)
-        self._channel_pool = self._conn.ChannelPool(preload=2, limit=None)
+        self._connection_pool = self._conn_proto.Pool(preload=1, limit=None)
         self._exchanges = dict(
             audit=kombu.Exchange('audit'),
             react=kombu.Exchange('react'))
+        self.reset()
+
+    def reset(self):
+        self._conn = self._connection_pool.acquire()
+        self._channel_pool = self._conn.ChannelPool(preload=2, limit=10)
 
     @contextmanager
     def channel(self):
-        ch = self._channel_pool.acquire()
+        try:
+            ch = self._channel_pool.acquire()
+        except kombu.exceptions.ChannelLimitExceeded:
+            log.info('Channel pool exhausted, opening a new connection')
+            self.reset()
+            ch = self._channel_pool.acquire()
         try:
             yield ch
         finally:
