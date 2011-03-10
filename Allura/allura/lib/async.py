@@ -18,7 +18,7 @@ class Connection(object):
             userid=userid,
             password=password,
             virtual_host=vhost)
-        self._channel_pool = self._conn.ChannelPool(limit=10)
+        self._channel_pool = self._conn.ChannelPool(preload=2, limit=None)
         self._exchanges = dict(
             audit=kombu.Exchange('audit'),
             react=kombu.Exchange('react'))
