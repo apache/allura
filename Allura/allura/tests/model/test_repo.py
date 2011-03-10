@@ -145,6 +145,12 @@ class TestRepo(_TestWithRepo):
         self.repo._impl.refresh_heads = mock.Mock(side_effect=set_heads)
         self.repo.refresh()
         ci.compute_diffs.assert_called_with()
+        ThreadLocalORMSession.flush_all()
+        notifications = M.Notification.query.find().all()
+        for n in notifications:
+            if '100 new commits' in n.subject: break
+        else:
+            assert False, 'Did not find notification'
 
     def test_push_upstream_context(self):
         self.repo.init_as_clone('srcpath', 'srcname', '/p/test/svn/')

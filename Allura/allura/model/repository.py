@@ -282,14 +282,25 @@ class Repository(Artifact):
                     ci.summary,config.common_prefix,ci.url()))
             item.author_link = ci.author_url
             item.author_name = ci.authored.name
-            commit_msgs.append('%s <%s%s>' % (
-                    ci.summary,config.common_prefix,ci.url()))
+            commit_msgs.append('%s by %s <%s%s>' % (
+                    ci.summary, ci.committed.name, config.common_prefix,ci.url()))
         if not all_commits:
+            if len(commit_msgs) > 1:
+                subject = '%d new commits to %s %s' % (
+                    len(commit_msgs), self.app.project.name, self.app.config.options.mount_label)
+                text='\n'.join(commit_msgs)
+            else:
+                subject = '%s committed to %s %s: %s' % (
+                    ci.committed.name,
+                    self.app.project.name,
+                    self.app.config.options.mount_label,
+                    ci.summary)
+                text = ci.message
             Notification.post(
                 artifact=self,
                 topic='metadata',
-                subject='New commit to %s %s' % (self.app.project.name,self.app.config.options.mount_label),
-                text='\n'.join(commit_msgs))
+                subject=subject,
+                text=text)
         log.info('...... flushing %d commits (%d total)',
                  i % self.BATCH_SIZE, i)
         sess.flush()
@@ -539,7 +550,11 @@ class RepoObject(MappedClass):
             self.__class__.__name__, self.object_id)
 
     def index_id(self):
-        return repr(self)
+        app_config = self.repo.app_config
+        return '%s %s in %s %s' % (
+            self.type, self.object_id,
+            app_config.project.name,
+            app_config.options.mount_label)
 
     def set_context(self, context): # pragma no cover
         '''Set ephemeral (unsaved) attributes based on a context object'''
