@@ -284,7 +284,7 @@ class Repository(Artifact):
             item.author_name = ci.authored.name
             commit_msgs.append('%s by %s <%s%s>' % (
                     ci.summary, ci.committed.name, config.common_prefix,ci.url()))
-        if not all_commits:
+        if commit_msgs and not all_commits:
             if len(commit_msgs) > 1:
                 subject = '%d new commits to %s %s' % (
                     len(commit_msgs), self.app.project.name, self.app.config.options.mount_label)

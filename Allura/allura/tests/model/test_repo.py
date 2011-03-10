@@ -231,7 +231,7 @@ class TestRepoObject(_TestWithRepoAndCommit):
         assert obj.get_last_commit()['id'] is None
 
     def test_artifact_methods(self):
-        assert self.ci.index_id() == '<Commit foo>', self.ci.index_id()
+        assert self.ci.index_id() == 'commit foo in test Code', self.ci.index_id()
         assert self.ci.primary() is self.ci, self.ci.primary()
 
 class TestLogCache(_TestWithRepo):
