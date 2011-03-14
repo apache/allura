@@ -1,3 +1,4 @@
+import time
 import logging
 import socket
 import asyncore
@@ -33,10 +34,17 @@ class IRCBotCommand(allura.command.Command):
     def command(self):
         self.basic_setup()
         base.log.info('IRCBot starting up...')
-        IRCBot(
-            tg.config.get('forgechat.host', 'irc.freenode.net'),
-            asint(tg.config.get('forgechat.port', '6667')))
-        asyncore.loop()
+        while True:
+            try:
+                IRCBot(
+                    tg.config.get('forgechat.host', 'irc.freenode.net'),
+                    asint(tg.config.get('forgechat.port', '6667')))
+                asyncore.loop()
+            except Exception:
+                base.log.exception('Error in ircbot asyncore.loop(), restart in 5s')
+                time.sleep(5)
+
+
 
 class IRCBot(asynchat.async_chat):
     TIME_BETWEEN_CONFIGS=timedelta(minutes=1)
