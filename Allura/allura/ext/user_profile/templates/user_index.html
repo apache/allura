@@ -5,51 +5,59 @@
 {% block header %}{{c.project.homepage_title}}{% endblock %}
 
 {% block extra_css %}
-    <link rel="stylesheet" type="text/css" 
-          href="{{g.app_static('css/user_profile.css')}}"/>
+  <link rel="stylesheet" type="text/css"
+        href="{{g.app_static('css/user_profile.css')}}"/>
 {% endblock %}
 
+{% block head %}
+  <link rel="alternate" type="application/rss+xml" title="RSS" href="feed.rss">
+  <link rel="alternate" type="application/atom+xml" title="Atom" href="feed.atom">
+{% endblock %}
+
+{% block actions %}
+  <a href="{{c.app.url}}feed.rss" title="Follow"><b data-icon="{{g.icons['feed'].char}}" class="ico {{g.icons['feed'].css}}"></b></a>
+{% endblock %}
 
 {% block content %}
-          {% if user.preferences.email_address %}
-            <p>{{lib.gravatar(user)}}</p>
-          {% endif %}
-          {{c.project.description_html|safe}}
-          <div class="project-list grid-18">
-            <b>Projects</b>
-            <ul>
-              {% for p in user.my_projects() %}
-              <li>
-                  <a class="project-name" href="{{p.url()}}">{{p.name}}</a>
-              </li>
-              {% endfor %}
-            </ul>
-          </div>
-          {% if c.user.username == user.username %}
-              <div class="address-list grid-18">
-                <b>Email Addresses</b>
-                <ul>
-                  {% for email in user.email_addresses %}
-                  <li>
-                      {{lib.email_gravatar(email, size=24)}}
-                      {% if email == user.preferences.email_address %}
-                        <span class="prime email-address">{{email}}</span>
-                      {% else %}
-                        <span class="email-address">{{email}}</span>
-                      {% endif %}
-                  </li>
-                  {% endfor %}
-                </ul>
-              </div>
-              <div class="openid-list grid-18">
-                <b>OpenIDs</b>
-                <ul>
-                  {% for openid in user.open_ids %}
-                  <li>
-                      <span class="openid">{{openid}}</span>
-                  </li>
-                  {% endfor %}
-                </ul>
-              </div>
-          {% endif %}
+  {% if user.preferences.email_address %}
+    <p>{{lib.gravatar(user)}}</p>
+  {% endif %}
+  {{c.project.description_html|safe}}
+  <div class="project-list grid-18">
+    <b>Projects</b>
+    <ul>
+      {% for p in user.my_projects() %}
+      <li>
+          <a class="project-name" href="{{p.url()}}">{{p.name}}</a>
+      </li>
+      {% endfor %}
+    </ul>
+  </div>
+  {% if c.user.username == user.username %}
+      <div class="address-list grid-18">
+        <b>Email Addresses</b>
+        <ul>
+          {% for email in user.email_addresses %}
+          <li>
+              {{lib.email_gravatar(email, size=24)}}
+              {% if email == user.preferences.email_address %}
+                <span class="prime email-address">{{email}}</span>
+              {% else %}
+                <span class="email-address">{{email}}</span>
+              {% endif %}
+          </li>
+          {% endfor %}
+        </ul>
+      </div>
+      <div class="openid-list grid-18">
+        <b>OpenIDs</b>
+        <ul>
+          {% for openid in user.open_ids %}
+          <li>
+              <span class="openid">{{openid}}</span>
+          </li>
+          {% endfor %}
+        </ul>
+      </div>
+  {% endif %}
 {% endblock %}

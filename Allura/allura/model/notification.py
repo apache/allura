@@ -19,6 +19,7 @@ Notifications are also available for use in feeds
 import logging
 from datetime import datetime, timedelta
 from collections import defaultdict
+from webhelpers import feedgenerator as FG
 
 from pylons import c, g
 from tg import config
@@ -50,6 +51,7 @@ class Notification(MappedClass):
     app_config_id = ForeignIdProperty('AppConfig', if_missing=lambda:c.app.config._id)
     artifact_reference = FieldProperty(ArtifactReferenceType)
     topic = FieldProperty(str)
+    unique_id = FieldProperty(str, if_missing=lambda:h.nonce(40))
 
     # Notification Content
     in_reply_to=FieldProperty(str)
@@ -60,6 +62,10 @@ class Notification(MappedClass):
     link=FieldProperty(str)
     author_id=ForeignIdProperty('User')
     feed_meta=FieldProperty(S.Deprecated)
+    pubdate = FieldProperty(datetime, if_missing=datetime.utcnow)
+
+    def author(self):
+        return User.query.get(_id=self.author_id) or User.anonymous()
 
     @classmethod
     def post(cls, artifact, topic, **kw):
@@ -106,7 +112,9 @@ class Notification(MappedClass):
                     subject_prefix, getattr(artifact, 'email_address', 'noreply@in.sf.net')),
                 subject=subject_prefix + subject,
                 text=post.text,
-                in_reply_to=post.parent_id)
+                in_reply_to=post.parent_id,
+                author_id=author._id,
+                pubdate=datetime.utcnow())
         else:
             subject = kwargs.pop('subject', '%s modified by %s' % (
                     idx['title_s'],c.user.get_pref('display_name')))
@@ -115,7 +123,9 @@ class Notification(MappedClass):
                 from_address=reply_to,
                 reply_to_address=reply_to,
                 subject=subject_prefix + subject,
-                text=kwargs.pop('text', subject))
+                text=kwargs.pop('text', subject),
+                author_id=c.user._id,
+                pubdate=datetime.utcnow())
             if c.user.get_pref('email_address'):
                 d['from_address'] = '"%s" <%s>' % (
                     c.user.get_pref('display_name'),
@@ -132,6 +142,36 @@ class Notification(MappedClass):
                 link=kwargs.pop('link', artifact.url()),
                 **d)
         return n
+
+    @classmethod
+    def feed(cls, q, feed_type, title, link, description,
+             since=None, until=None, offset=None, limit=None):
+        """Produces webhelper.feedgenerator Feed"""
+        d = dict(title=title, link=h.absurl(link), description=description, language=u'en')
+        if feed_type == 'atom':
+            feed = FG.Atom1Feed(**d)
+        elif feed_type == 'rss':
+            feed = FG.Rss201rev2Feed(**d)
+        query = defaultdict(dict)
+        query.update(q)
+        if since is not None:
+            query['pubdate']['$gte'] = since
+        if until is not None:
+            query['pubdate']['$lte'] = until
+        cur = cls.query.find(query)
+        cur = cur.sort('pubdate', pymongo.DESCENDING)
+        if limit is None: limit = 10
+        query = cur.limit(limit)
+        if offset is not None: query = cur.offset(offset)
+        for r in cur:
+            feed.add_item(title=r.subject,
+                          link=h.absurl(r.link.encode('utf-8')),
+                          pubdate=r.pubdate,
+                          description=r.text,
+                          unique_id=r.unique_id,
+                          author_name=r.author().display_name,
+                          author_link=h.absurl(r.author().url()))
+        return feed
 
     def footer(self):
         prefix = config.get('forgemail.url', 'https://sourceforge.net')

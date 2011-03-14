@@ -4,18 +4,20 @@ import logging
 from pprint import pformat
 
 from pylons import c, g
+from formencode import validators
 import pkg_resources
 from pylons import c, request
-from tg import expose, redirect, flash
+from tg import expose, redirect, flash, validate, response
 from webob import exc
 
 
 from allura import version
 from allura.app import Application, WidgetController, ConfigOption, SitemapEntry
 from allura.lib import helpers as h
+from allura.lib.helpers import DateTimeConverter
 from allura.ext.project_home import model as M
 from allura.lib.security import require, has_project_access, has_artifact_access
-from allura.model import User, ArtifactLink
+from allura.model import User, ArtifactLink, Feed, Notification
 from allura.controllers import BaseController
 from allura.lib.decorators import require_post
 
@@ -90,6 +92,31 @@ class UserProfileController(BaseController):
         username = c.project.shortname.split('/')[1]
         user = User.by_username(username)
         return dict(user=user)
+
+    @expose()
+    @validate(dict(
+            since=DateTimeConverter(if_empty=None),
+            until=DateTimeConverter(if_empty=None),
+            page=validators.Int(if_empty=None),
+            limit=validators.Int(if_empty=None)))
+    def feed(self, since=None, until=None, page=None, limit=None):
+        username = c.project.shortname.split('/')[1]
+        user = User.by_username(username)
+        if request.environ['PATH_INFO'].endswith('.atom'):
+            feed_type = 'atom'
+        else:
+            feed_type = 'rss'
+        title = 'Recent posts by %s' % user.display_name
+        feed = Notification.feed(
+            {'author_id':user._id},
+            feed_type,
+            title,
+            c.project.url(),
+            title,
+            since, until, page, limit)
+        response.headers['Content-Type'] = ''
+        response.content_type = 'application/xml'
+        return feed.writeString('utf-8')
 
     @h.vardec
     @expose()
