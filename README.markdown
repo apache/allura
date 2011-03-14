@@ -46,7 +46,6 @@ Now that that's out of the way, we'll go ahead and install TurboGears.
 
     (anvil)~$ easy_install pylons==0.9.7
     (anvil)~$ easy_install -i http://www.turbogears.org/2.1/downloads/2.1b2/index/ tg.devtools==2.1b2 TurboGears2==2.1b2
-    (anvil)~$ easy_install http://httplib2.googlecode.com/files/httplib2-0.6.0.tar.gz
 
 
 ## Installing the Forge code and dependencies

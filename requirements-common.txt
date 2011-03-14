@@ -10,9 +10,13 @@ datadiff==1.1.2
 decorator==3.1.2
 docutils==0.6
 EasyWidgets==0.2dev-20110314
+elementtree==1.2.7-20070827-preview
+feedparser==5.0.1
 FormEncode==1.2.2
 Genshi==0.5.1
 gitdb==0.5.1
+httplib2==0.6.0
+importlib==1.0.2
 ipython==0.10
 iso8601==0.1.4
 Jinja2==2.3.1
