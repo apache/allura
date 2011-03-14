@@ -288,7 +288,7 @@ class Repository(Artifact):
             if len(commit_msgs) > 1:
                 subject = '%d new commits to %s %s' % (
                     len(commit_msgs), self.app.project.name, self.app.config.options.mount_label)
-                text='\n'.join(commit_msgs)
+                text='\n\n'.join(commit_msgs)
             else:
                 subject = '%s committed to %s %s: %s' % (
                     ci.committed.name,
