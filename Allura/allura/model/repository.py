@@ -206,7 +206,8 @@ class Repository(Artifact):
         result = Artifact.index(self)
         result.update(
             name_s=self.name,
-            type_s=self.type_s)
+            type_s=self.type_s,
+            title_s='Repository %s %s' % (self.project.name, self.name))
         return result
 
     @property

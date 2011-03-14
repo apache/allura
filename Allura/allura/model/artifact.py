@@ -439,7 +439,10 @@ class Artifact(MappedClass):
         super() index() and then extend it with more fields.  All these fields will be
         included in the 'text' field (done by search.solarize())
 
-        The _s and _t suffixes, for example, follow solr dynamic field naming pattern.
+        The _s and _t suffixes, for example, follow solr dynamic field naming
+        pattern.
+        You probably want to override at least title_s and text to have
+        meaningful search results and email senders.
         """
 
         project = self.project
