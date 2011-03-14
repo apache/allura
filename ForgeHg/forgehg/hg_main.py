@@ -58,7 +58,7 @@ class ForgeHgApp(RepositoryApp):
                 msg = dict(
                     cloned_from_path=cloned_from.full_fs_path,
                     cloned_from_name=cloned_from.app.config.script_name(),
-                    cloned_from_url=cloned_from.app.url)
+                    cloned_from_url=cloned_from.full_fs_path)
             g.publish('audit', 'repo.clone', msg)
         elif init_from_url:
             msg = dict(
