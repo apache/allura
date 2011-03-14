@@ -1,5 +1,6 @@
 import logging
 import urllib
+from datetime import datetime
 
 import pymongo
 from pylons import c, g
@@ -13,6 +14,7 @@ from allura.lib.security import require, has_artifact_access
 from .artifact import Artifact, VersionedArtifact, Snapshot, Message, Feed
 from .attachments import BaseAttachment
 from .types import ArtifactReference, ArtifactReferenceType
+from .auth import User
 
 log = logging.getLogger(__name__)
 
@@ -312,6 +314,9 @@ class Post(Message, VersionedArtifact):
     status = FieldProperty(schema.OneOf('ok', 'pending', 'spam', if_missing='pending'))
     flagged_by = FieldProperty([schema.ObjectId])
     flags = FieldProperty(int, if_missing=0)
+    last_edit_date = FieldProperty(datetime, if_missing=None)
+    last_edit_by_id = ForeignIdProperty(User)
+    edit_count = FieldProperty(int, if_missing=0)
 
     thread = RelationProperty(Thread)
     discussion = RelationProperty(Discussion)
@@ -369,6 +374,9 @@ class Post(Message, VersionedArtifact):
     def attachments(self):
         return self.attachment_class().query.find(dict(
             post_id=self._id, type='attachment'))
+
+    def last_edit_by(self):
+        return User.query.get(_id=self.last_edit_by_id) or User.anonymous()
 
     def primary(self, primary_class=None):
         return self.thread.primary(primary_class)

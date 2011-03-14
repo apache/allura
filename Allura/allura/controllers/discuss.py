@@ -280,6 +280,9 @@ class PostController(BaseController):
                     setattr(self.post, k, v)
                 except AttributeError:
                     continue
+            self.post.edit_count = self.post.edit_count + 1
+            self.post.last_edit_date = datetime.utcnow()
+            self.post.last_edit_by_id = c.user._id
             redirect(request.referer)
         elif request.method=='GET':
             if version is not None:

@@ -75,6 +75,15 @@ class TestDiscuss(TestController):
         self.app.post(permalinks[1]+'moderate', params=dict(delete='delete'))
         self.app.post(permalinks[0]+'moderate', params=dict(spam='spam'))
 
+    def test_edit_post(self):
+        r = self._make_post('This is a post')
+        post_link = str(r.html.find('div',{'class':'edit_post_form reply'}).find('form')['action'])
+        assert 'This is a post' in str(r.html.find('div',{'class':'display_post'}))
+        assert 'Last edit:' not in str(r.html.find('div',{'class':'display_post'}))
+        r = self.app.post(post_link, {'text':'zzz'}).follow()
+        assert 'zzz' in str(r.html.find('div',{'class':'display_post'}))
+        assert 'Last edit: Test Admin less than 1 minute ago' in str(r.html.find('div',{'class':'display_post'}))
+
 class TestAttachment(TestController):
 
     def setUp(self):
