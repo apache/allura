@@ -11,6 +11,7 @@
 {% endblock %}
 
 {% block actions %}
+  <a href="{{tg.url(c.app.url+'search_feed/', dict(q=q, limit=limit, sort=sort))}}" title="Feed"><b data-icon="{{g.icons['feed'].char}}" class="ico {{g.icons['feed'].css}}"></b></a>
 {% if allow_edit and count != 0 %}
   <a href="{{tg.url(c.app.url+'edit/', dict(q=q, limit=limit, sort=sort))}}" title="Bulk Edit"><b data-icon="{{g.icons['pencil'].char}}" class="ico {{g.icons['pencil'].css}}"></b></a>
 {% endif %}

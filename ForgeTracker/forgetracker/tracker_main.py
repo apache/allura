@@ -12,6 +12,7 @@ from tg.decorators import with_trailing_slash, without_trailing_slash
 from pylons import g, c, request, response
 from formencode import validators
 from bson import ObjectId
+from webhelpers import feedgenerator as FG
 
 from ming.orm.ormsession import ThreadLocalORMSession
 
@@ -41,6 +42,14 @@ from forgetracker.widgets.admin_custom_fields import TrackerFieldAdmin, TrackerF
 from forgetracker.import_support import ImportSupport
 
 log = logging.getLogger(__name__)
+
+search_validators = dict(
+    q=validators.UnicodeString(if_empty=None),
+    history=validators.StringBool(if_empty=False),
+    project=validators.StringBool(if_empty=False),
+    limit=validators.Int(if_invalid=None),
+    page=validators.Int(if_empty=0),
+    sort=validators.UnicodeString(if_empty=None))
 
 class W:
     thread=w.Thread(
@@ -402,13 +411,7 @@ class RootController(BaseController):
     @with_trailing_slash
     @h.vardec
     @expose('jinja:forgetracker:templates/tracker/search.html')
-    @validate(validators=dict(
-            q=validators.UnicodeString(if_empty=None),
-            history=validators.StringBool(if_empty=False),
-            project=validators.StringBool(if_empty=False),
-            limit=validators.Int(if_invalid=None),
-            page=validators.Int(if_empty=0),
-            sort=validators.UnicodeString(if_empty=None)))
+    @validate(validators=search_validators)
     def search(self, q=None, query=None, project=None, columns=None, page=0, sort=None, **kw):
         require(has_artifact_access('read'))
         if query and not q:
@@ -420,6 +423,32 @@ class RootController(BaseController):
         result['allow_edit'] = has_artifact_access('write')()
         c.ticket_search_results = W.ticket_search_results
         return result
+
+    @with_trailing_slash
+    @h.vardec
+    @expose()
+    @validate(validators=search_validators)
+    def search_feed(self, q=None, query=None, project=None, columns=None, page=0, sort=None, **kw):
+        require(has_artifact_access('read'))
+        if query and not q:
+            q = query
+        result = self.paged_query(q, page=page, sort=sort, columns=columns, **kw)
+        response.headers['Content-Type'] = ''
+        response.content_type = 'application/xml'
+        d = dict(title='Ticket search results', link=c.app.url, description='You searched for %s' % q, language=u'en')
+        if request.environ['PATH_INFO'].endswith('.atom'):
+            feed = FG.Atom1Feed(**d)
+        else:
+            feed = FG.Rss201rev2Feed(**d)
+        for t in result['tickets']:
+            feed.add_item(title=t.summary,
+                          link=h.absurl(t.url().encode('utf-8')),
+                          pubdate=t.mod_date,
+                          description=t.description,
+                          unique_id=str(t._id),
+                          author_name=t.reported_by.display_name,
+                          author_link=h.absurl(t.reported_by.url()))
+        return feed.writeString('utf-8')
 
     @expose()
     def _lookup(self, ticket_num, *remainder):
