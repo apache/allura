@@ -200,7 +200,7 @@ class RepoAdminController(DefaultAdminController):
         redirect('extensions')
 
     @without_trailing_slash
-    @expose('jinja:repo/admin_extensions.html')
+    @expose('jinja:allura:templates/repo/admin_extensions.html')
     def extensions(self, **kw):
         return dict(app=self.app,
                     allow_config=True,

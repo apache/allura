@@ -329,7 +329,7 @@ class RootController(BaseController):
 
     @with_trailing_slash
     @h.vardec
-    @expose('jinja:tracker/index.html')
+    @expose('jinja:forgetracker:templates/tracker/index.html')
     def index(self, limit=250, columns=None, page=0, sort='ticket_num_i desc', **kw):
         require(has_artifact_access('read'))
         result = self.paged_query(c.app.globals.not_closed_query, sort=sort,
@@ -341,7 +341,7 @@ class RootController(BaseController):
         return result
 
     @without_trailing_slash
-    @expose('jinja:tracker/milestones.html')
+    @expose('jinja:forgetracker:templates/tracker/milestones.html')
     def milestones(self, **kw):
         require(has_artifact_access('configure'))
         milestones = []
@@ -401,7 +401,7 @@ class RootController(BaseController):
 
     @with_trailing_slash
     @h.vardec
-    @expose('jinja:tracker/search.html')
+    @expose('jinja:forgetracker:templates/tracker/search.html')
     @validate(validators=dict(
             q=validators.UnicodeString(if_empty=None),
             history=validators.StringBool(if_empty=False),
@@ -431,19 +431,19 @@ class RootController(BaseController):
             raise exc.HTTPNotFound
 
     @with_trailing_slash
-    @expose('jinja:tracker/new_ticket.html')
+    @expose('jinja:forgetracker:templates/tracker/new_ticket.html')
     def new(self, super_id=None, **kw):
         require(has_artifact_access('write'))
         c.ticket_form = W.ticket_form
         return dict(action=c.app.config.url()+'save_ticket',
                     super_id=super_id)
 
-    @expose('jinja:markdown_syntax.html')
+    @expose('jinja:allura:templates/markdown_syntax.html')
     def markdown_syntax(self):
         'Static page explaining markdown.'
         return dict()
 
-    @expose('jinja:tracker/help.html')
+    @expose('jinja:forgetracker:templates/tracker/help.html')
     def help(self):
         'Static help page.'
         return dict()
@@ -496,7 +496,7 @@ class RootController(BaseController):
         redirect(str(ticket.ticket_num)+'/')
 
     @with_trailing_slash
-    @expose('jinja:tracker/mass_edit.html')
+    @expose('jinja:forgetracker:templates/tracker/mass_edit.html')
     @validate(dict(q=validators.UnicodeString(if_empty=None),
                    limit=validators.Int(if_empty=10),
                    page=validators.Int(if_empty=0),
@@ -574,7 +574,7 @@ class RootController(BaseController):
         return M.Post.query.find(q).count()
 
     @with_trailing_slash
-    @expose('jinja:tracker/stats.html')
+    @expose('jinja:forgetracker:templates/tracker/stats.html')
     def stats(self):
         require(has_artifact_access('read'))
         globals = c.app.globals
@@ -632,21 +632,21 @@ class BinController(BaseController):
             self.app = app
 
     @with_trailing_slash
-    @expose('jinja:tracker/bin.html')
+    @expose('jinja:forgetracker:templates/tracker/bin.html')
     def index(self, **kw):
         require(has_artifact_access('save_searches', app=self.app))
         count = len(self.app.bins)
         return dict(bins=self.app.bins, count=count, app=self.app)
 
     @with_trailing_slash
-    @expose('jinja:tracker/bin.html')
+    @expose('jinja:forgetracker:templates/tracker/bin.html')
     def bins(self):
         require(has_artifact_access('save_searches', app=self.app))
         count = len(self.app.bins)
         return dict(bins=self.app.bins, count=count, app=self.app)
 
     @with_trailing_slash
-    @expose('jinja:tracker/new_bin.html')
+    @expose('jinja:forgetracker:templates/tracker/new_bin.html')
     def newbin(self, q=None, **kw):
         require(has_artifact_access('save_searches', app=self.app))
         c.bin_form = W.bin_form
@@ -764,7 +764,7 @@ class TicketController(BaseController):
         setattr(self, 'feed.rss', self.feed)
 
     @with_trailing_slash
-    @expose('jinja:tracker/ticket.html')
+    @expose('jinja:forgetracker:templates/tracker/ticket.html')
     @validate(dict(
             page=validators.Int(if_empty=0),
             limit=validators.Int(if_empty=10)))
@@ -954,7 +954,7 @@ class TrackerAdminController(DefaultAdminController):
         redirect('permissions')
 
     @without_trailing_slash
-    @expose('jinja:tracker/admin_fields.html')
+    @expose('jinja:forgetracker:templates/tracker/admin_fields.html')
     def fields(self, **kw):
         allow_config=has_artifact_access('configure', app=self.app)()
         if allow_config:
@@ -1084,7 +1084,7 @@ class MilestoneController(BaseController):
 
     @with_trailing_slash
     @h.vardec
-    @expose('jinja:tracker/milestone.html')
+    @expose('jinja:forgetracker:templates/tracker/milestone.html')
     @validate(validators=dict(
             limit=validators.Int(if_invalid=None),
             page=validators.Int(if_empty=0),

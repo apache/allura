@@ -1,4 +1,4 @@
-{% import 'jinja_master/lib.html' as lib with context %}
+{% import 'allura:templates/jinja_master/lib.html' as lib with context %}
 <form method="POST" action="{{action}}" enctype="multipart/form-data">
   {{widget.display_field_by_name('ticket_num')|safe}}
   {{widget.display_field_by_name('super_id')|safe}}

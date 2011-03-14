@@ -22,7 +22,7 @@ class EditPostForm(NewPostForm):
         delete = ew.SubmitButton()
 
 class ViewPostForm(ew_core.Widget):
-    template='jinja:blog_widgets/view_post.html'
+    template='jinja:forgeblog:templates/blog_widgets/view_post.html'
     defaults=dict(
         ew_core.Widget.defaults,
         value=None,
@@ -36,7 +36,7 @@ class ViewPostForm(ew_core.Widget):
         return kw
 
 class PreviewPostForm(ew_core.Widget):
-    template='jinja:blog_widgets/preview_post.html'
+    template='jinja:forgeblog:templates/blog_widgets/preview_post.html'
     defaults=dict(
         ew_core.Widget.defaults,
         value=None)

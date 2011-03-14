@@ -9,7 +9,7 @@ import ew.jinja2_ew as ew
 from forgetracker import model
 
 class TicketCustomFields(ew.CompoundField):
-    template='jinja:tracker_widgets/ticket_custom_fields.html'
+    template='jinja:forgetracker:templates/tracker_widgets/ticket_custom_fields.html'
 
     @property
     def fields(self):
@@ -66,7 +66,7 @@ class GenericTicketForm(ew.SimpleForm):
         return ew_core.NameList(fields)
 
 class TicketForm(GenericTicketForm):
-    template='jinja:tracker_widgets/ticket_form.html'
+    template='jinja:forgetracker:templates/tracker_widgets/ticket_form.html'
     @property
     def fields(self):
         fields = ew_core.NameList(super(TicketForm, self).fields)

@@ -23,7 +23,7 @@ class LabelList(fev.UnicodeString):
         return value
 
 class LabelEdit(ew.InputField):
-    template='jinja:widgets/label_edit.html'
+    template='jinja:allura:templates/widgets/label_edit.html'
     validator = LabelList()
     defaults=dict(
         ew.InputField.defaults,
@@ -48,7 +48,7 @@ class LabelEdit(ew.InputField):
         ''')
 
 class ProjectUserSelect(ew.InputField):
-    template='jinja:widgets/project_user_select.html'
+    template='jinja:allura:templates/widgets/project_user_select.html'
     defaults=dict(
         ew.InputField.defaults,
         name=None,
@@ -85,14 +85,14 @@ class ProjectUserSelect(ew.InputField):
           });''' % c.project.url())
 
 class AttachmentList(ew_core.Widget):
-    template='jinja:widgets/attachment_list.html'
+    template='jinja:allura:templates/widgets/attachment_list.html'
     defaults=dict(
         ew_core.Widget.defaults,
         attachments=None,
         edit_mode=None)
 
 class AttachmentAdd(ew_core.Widget):
-    template='jinja:widgets/attachment_add.html'
+    template='jinja:allura:templates/widgets/attachment_add.html'
     defaults=dict(
         ew_core.Widget.defaults,
         action=None,
@@ -124,7 +124,7 @@ class AutoResizeTextarea(ew.TextArea):
         ''')
 
 class MarkdownEdit(AutoResizeTextarea):
-    template='jinja:widgets/markdown_edit.html'
+    template='jinja:allura:templates/widgets/markdown_edit.html'
     validator = fev.UnicodeString()
     defaults=dict(
         AutoResizeTextarea.defaults,
@@ -142,7 +142,7 @@ class MarkdownEdit(AutoResizeTextarea):
         yield ew.CSSLink('css/markitup_sf.css')
 
 class PageList(ew_core.Widget):
-    template='jinja:widgets/page_list.html'
+    template='jinja:allura:templates/widgets/page_list.html'
     defaults=dict(
         ew_core.Widget.defaults,
         name=None,
@@ -160,7 +160,7 @@ class PageList(ew_core.Widget):
         return url_params
 
 class PageSize(ew_core.Widget):
-    template='jinja:widgets/page_size.html'
+    template='jinja:allura:templates/widgets/page_size.html'
     defaults=dict(
         ew_core.Widget.defaults,
         limit=None,
@@ -182,7 +182,7 @@ class PageSize(ew_core.Widget):
                 this.form.submit();});''')
 
 class FileChooser(ew.InputField):
-    template='jinja:widgets/file_chooser.html'
+    template='jinja:allura:templates/widgets/file_chooser.html'
     validator=fev.FieldStorageUploadConverter()
     defaults=dict(
         ew.InputField.defaults,
@@ -309,7 +309,7 @@ class FieldCluster(ew.CompoundField):
 
 class AdminField(ew.InputField):
     '''Field with the correct layout/etc for an admin page'''
-    template='jinja:widgets/admin_field.html'
+    template='jinja:allura:templates/widgets/admin_field.html'
     defaults=dict(
         ew.InputField.defaults,
         field=None,
@@ -326,7 +326,7 @@ class AdminField(ew.InputField):
             yield r
 
 class Lightbox(ew_core.Widget):
-    template='jinja:widgets/lightbox.html'
+    template='jinja:allura:templates/widgets/lightbox.html'
     defaults=dict(
         name=None,
         trigger=None,

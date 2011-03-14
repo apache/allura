@@ -72,7 +72,7 @@ class RootController(WsgiDispatchController):
     def _cleanup_request(self):
         g.send_all_messages()
 
-    @expose('jinja:project_list.html')
+    @expose('jinja:allura:templates/project_list.html')
     @with_trailing_slash
     def index(self, **kw):
         """Handle the front-page."""

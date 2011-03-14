@@ -88,11 +88,6 @@ class TestController(WsgiDispatchController, ProjectController):
                 raise exc.HTTPNotFound, name
         c.app = app
         return app.root, remainder
-    # 
-    # @expose('jinja:project_index.html')
-    # def index(self, **kw):
-    #     require(has_project_access('read'))
-    #     return dict()
 
     def __call__(self, environ, start_response):
         c.app = None

@@ -73,7 +73,7 @@ class RootController(BaseController):
     def _check_security(self):
         require(has_artifact_access('read'))
 
-    @expose('jinja:link/index.html')
+    @expose('jinja:forgelink:templates/link/index.html')
     def index(self, **kw):
         url = c.app.config.options.get('url')
         if url:

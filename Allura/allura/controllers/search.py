@@ -16,7 +16,7 @@ class W:
 
 class SearchController(BaseController):
 
-    @expose('jinja:search_index.html')
+    @expose('jinja:allura:templates/search_index.html')
     @validate(dict(q=V.UnicodeString(),
                    history=V.StringBool(if_empty=False)))
     @with_trailing_slash
@@ -96,7 +96,7 @@ class ProjectBrowseController(BaseController):
     def _lookup(self, category_name, *remainder):
         return ProjectBrowseController(category_name=category_name, parent_category=self.category), remainder
 
-    @expose('jinja:project_list.html')
+    @expose('jinja:allura:templates/project_list.html')
     @without_trailing_slash
     def index(self, **kw):
         c.project_summary = W.project_summary

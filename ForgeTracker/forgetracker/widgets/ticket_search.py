@@ -4,7 +4,7 @@ import ew.jinja2_ew as ew
 from allura.lib.widgets import form_fields as ffw
 
 class TicketSearchResults(ew_core.SimpleForm):
-    template='jinja:tracker_widgets/ticket_search_results.html'
+    template='jinja:forgetracker:templates/tracker_widgets/ticket_search_results.html'
     defaults=dict(
         ew_core.SimpleForm.defaults,
         solr_error=None,
@@ -29,7 +29,7 @@ class TicketSearchResults(ew_core.SimpleForm):
             yield r
 
 class MassEdit(ew_core.Widget):
-    template='jinja:tracker_widgets/mass_edit.html'
+    template='jinja:forgetracker:templates/tracker_widgets/mass_edit.html'
     defaults=dict(
         ew_core.Widget.defaults,
         count=None,
@@ -43,7 +43,7 @@ class MassEdit(ew_core.Widget):
         yield ew.JSLink('tracker_js/ticket-list.js')
 
 class MassEditForm(ew_core.Widget):
-    template='jinja:tracker_widgets/mass_edit_form.html'
+    template='jinja:forgetracker:templates/tracker_widgets/mass_edit_form.html'
     defaults=dict(
         ew_core.Widget.defaults,
         globals=None,

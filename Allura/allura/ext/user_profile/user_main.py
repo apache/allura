@@ -70,13 +70,13 @@ class UserProfileController(BaseController):
         require(has_project_access('read'),
                 'Read access required')
 
-    @expose('jinja:user_index.html')
+    @expose('jinja:allura.ext.user_profile:templates/user_index.html')
     def index(self, **kw):
         username = c.project.shortname.split('/')[1]
         user = User.by_username(username)
         return dict(user=user)
     # This will be fully implemented in a future iteration
-    # @expose('jinja:user_subscriptions.html')
+    # @expose('jinja:allura.ext.user_profile:templates/user_subscriptions.html')
     # def subscriptions(self):
     #     username = c.project.shortname.split('/')[1]
     #     user = User.by_username(username)
@@ -87,7 +87,7 @@ class UserProfileController(BaseController):
     #             print r.docs
     #     return dict(user=user)
 
-    @expose('jinja:user_dashboard_configuration.html')
+    @expose('jinja:allura.ext.user_profile:templates/user_dashboard_configuration.html')
     def configuration(self):
         username = c.project.shortname.split('/')[1]
         user = User.by_username(username)

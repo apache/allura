@@ -315,11 +315,11 @@ class ProjectRegistrationProvider(object):
         return None
 
 class ThemeProvider(object):
-    master_template = 'jinja_master/master.html'
-    jinja_macros = 'jinja_master/theme_macros.html'
-    nav_menu = 'jinja_master/nav_menu.html'
-    top_nav = 'jinja_master/top_nav.html'
-    sidebar_menu = 'jinja_master/sidebar_menu.html'
+    master_template = 'allura:templates/jinja_master/master.html'
+    jinja_macros = 'allura:templates/jinja_master/theme_macros.html'
+    nav_menu = 'allura:templates/jinja_master/nav_menu.html'
+    top_nav = 'allura:templates/jinja_master/top_nav.html'
+    sidebar_menu = 'allura:templates/jinja_master/sidebar_menu.html'
     base_css = ('css/site_style.css', 'allura')
     theme_css = ['css/allura.css']
     icons = {

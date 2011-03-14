@@ -8,7 +8,7 @@ from allura.lib.widgets import forms as ff
 from allura.lib.widgets import form_fields as ffw
 
 class SCMLogWidget(ew_core.Widget):
-    template='jinja:widgets/repo/log.html'
+    template='jinja:allura:templates/widgets/repo/log.html'
     defaults=dict(
         ew_core.Widget.defaults,
         value=None,
@@ -27,7 +27,7 @@ class SCMLogWidget(ew_core.Widget):
                 yield r
 
 class SCMRevisionWidget(ew_core.Widget):
-    template='jinja:widgets/repo/revision.html'
+    template='jinja:allura:templates/widgets/repo/revision.html'
     defaults=dict(
         ew_core.Widget.defaults,
         value=None,
@@ -35,7 +35,7 @@ class SCMRevisionWidget(ew_core.Widget):
         next=ew_core.NoDefault)
 
 class SCMTreeWidget(ew_core.Widget):
-    template='jinja:widgets/repo/tree_widget.html'
+    template='jinja:allura:templates/widgets/repo/tree_widget.html'
     defaults=dict(
         ew_core.Widget.defaults,
         tree=None,

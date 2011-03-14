@@ -32,7 +32,7 @@ class SubscriptionForm(ew.SimpleForm):
         subscriptions=_SubscriptionTable()
 
 class SubscribeForm(ew.SimpleForm):
-    template='jinja:widgets/subscribe.html'
+    template='jinja:allura:templates/widgets/subscribe.html'
     defaults=dict(
         ew.SimpleForm.defaults,
         thing='tool',

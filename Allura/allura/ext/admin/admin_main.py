@@ -45,11 +45,11 @@ class AdminWidgets(WidgetController):
 
     def __init__(self, app): pass
 
-    @expose('jinja:widgets/users.html')
+    @expose('jinja:allura.ext.admin:templates/widgets/users.html')
     def users(self):
         return dict(project_users=c.project.users())
 
-    @expose('jinja:widgets/tool_status.html')
+    @expose('jinja:allura.ext.admin:templates/widgets/tool_status.html')
     def tool_status(self):
         'Display # of ArtifactLinks for each (mounted) tool'
         links = defaultdict(list)
@@ -150,17 +150,17 @@ class ProjectAdminController(BaseController):
         self.groups = GroupsController()
 
     @with_trailing_slash
-    @expose('jinja:project_admin.html')
+    @expose('jinja:allura.ext.admin:templates/project_admin.html')
     def index(self, **kw):
         return dict()
 
     @without_trailing_slash
-    @expose('jinja:project_invitations.html')
+    @expose('jinja:allura.ext.admin:templates/project_invitations.html')
     def invitations(self):
         return dict()
 
     @without_trailing_slash
-    @expose('jinja:project_overview.html')
+    @expose('jinja:allura.ext.admin:templates/project_overview.html')
     def overview(self, **kw):
         c.markdown_editor = W.markdown_editor
         c.label_edit = W.label_edit
@@ -168,13 +168,13 @@ class ProjectAdminController(BaseController):
         return dict(categories=categories)
 
     @without_trailing_slash
-    @expose('jinja:project_homepage.html')
+    @expose('jinja:allura.ext.admin:templates/project_homepage.html')
     def homepage(self, **kw):
         c.markdown_editor = W.markdown_editor
         return dict()
 
     @without_trailing_slash
-    @expose('jinja:project_tools.html')
+    @expose('jinja:allura.ext.admin:templates/project_tools.html')
     def tools(self, **kw):
         c.markdown_editor = W.markdown_editor
         c.label_edit = W.label_edit
@@ -225,7 +225,7 @@ class ProjectAdminController(BaseController):
         redirect('tools')
 
     @without_trailing_slash
-    @expose('jinja:project_permissions.html')
+    @expose('jinja:allura.ext.admin:templates/project_permissions.html')
     def groups(self, **kw):
         return dict()
 
@@ -480,7 +480,7 @@ class PermissionsController(BaseController):
                 'Security access required')
 
     @with_trailing_slash
-    @expose('jinja:project_permissions.html')
+    @expose('jinja:allura.ext.admin:templates/project_permissions.html')
     def index(self, **kw):
         c.card = W.permission_card
         return dict(permissions=c.project.acl)
@@ -513,7 +513,7 @@ class GroupsController(BaseController):
                 'Security access required')
 
     @with_trailing_slash
-    @expose('jinja:project_groups.html')
+    @expose('jinja:allura.ext.admin:templates/project_groups.html')
     def index(self, **kw):
         c.admin_modal = W.admin_modal
         c.card = W.group_card
@@ -552,7 +552,7 @@ class GroupsController(BaseController):
         redirect('.')
 
     @without_trailing_slash
-    @expose('jinja:project_group.html')
+    @expose('jinja:allura.ext.admin:templates/project_group.html')
     def new(self):
         c.form = W.new_group_settings
         return dict(
@@ -582,7 +582,7 @@ class GroupController(BaseController):
         self._group = M.ProjectRole.query.get(_id=ObjectId(name))
 
     @with_trailing_slash
-    @expose('jinja:project_group.html')
+    @expose('jinja:allura.ext.admin:templates/project_group.html')
     def index(self):
         if self._group.name in ('Admin', 'Developer', 'Member'):
             show_settings = False

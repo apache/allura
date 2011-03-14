@@ -131,7 +131,7 @@ class RootController(BaseController):
         setattr(self, 'feed.rss', self.feed)
         self._discuss = AppDiscussionController()
 
-    @expose('jinja:blog/index.html')
+    @expose('jinja:forgeblog:templates/blog/index.html')
     @with_trailing_slash
     def index(self, **kw):
         if has_artifact_access('write', None)():
@@ -144,7 +144,7 @@ class RootController(BaseController):
         c.form = W.preview_post_form
         return dict(posts=posts)
 
-    @expose('jinja:blog/search.html')
+    @expose('jinja:forgeblog:templates/blog/search.html')
     @validate(dict(q=validators.UnicodeString(if_empty=None),
                    history=validators.StringBool(if_empty=False)))
     def search(self, q=None, history=None, **kw):
@@ -164,7 +164,7 @@ class RootController(BaseController):
             if results: count=results.hits
         return dict(q=q, history=history, results=results or [], count=count)
 
-    @expose('jinja:blog/edit_post.html')
+    @expose('jinja:forgeblog:templates/blog/edit_post.html')
     @without_trailing_slash
     def new(self, **kw):
         require(has_artifact_access('write', None))
@@ -234,7 +234,7 @@ class PostController(BaseController):
         setattr(self, 'feed.atom', self.feed)
         setattr(self, 'feed.rss', self.feed)
 
-    @expose('jinja:blog/post.html')
+    @expose('jinja:forgeblog:templates/blog/post.html')
     @with_trailing_slash
     def index(self, **kw):
         c.form = W.view_post_form
@@ -245,7 +245,7 @@ class PostController(BaseController):
         base_post = self.post
         return dict(post=post, base_post=base_post)
 
-    @expose('jinja:blog/edit_post.html')
+    @expose('jinja:forgeblog:templates/blog/edit_post.html')
     @without_trailing_slash
     def edit(self, **kw):
         require(has_artifact_access('write', None))
@@ -256,14 +256,14 @@ class PostController(BaseController):
         return dict(post=self.post)
 
     @without_trailing_slash
-    @expose('jinja:blog/post_history.html')
+    @expose('jinja:forgeblog:templates/blog/post_history.html')
     def history(self):
         require(has_artifact_access('read', self.post))
         posts = self.post.history()
         return dict(title=self.post.title, posts=posts)
 
     @without_trailing_slash
-    @expose('jinja:blog/post_diff.html')
+    @expose('jinja:forgeblog:templates/blog/post_diff.html')
     def diff(self, v1, v2):
         require(has_artifact_access('read', self.post))
         p1 = self._get_version(int(v1))

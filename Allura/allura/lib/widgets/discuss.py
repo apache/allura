@@ -25,13 +25,13 @@ class ModerateThread(ew.SimpleForm):
         delete=ew.SubmitButton(label='Delete Thread')
 
 class ModeratePost(ew.SimpleForm):
-    template='jinja:widgets/moderate_post.html'
+    template='jinja:allura:templates/widgets/moderate_post.html'
     defaults=dict(
         ew.SimpleForm.defaults,
         submit_text=None)
 
 class FlagPost(ew.SimpleForm):
-    template='jinja:widgets/flag_post.html'
+    template='jinja:allura:templates/widgets/flag_post.html'
     defaults=dict(
         ew.SimpleForm.defaults,
         submit_text=None)
@@ -50,7 +50,7 @@ class AttachPost(ff.ForgeForm):
         return fields
 
 class ModeratePosts(ew.SimpleForm):
-    template='jinja:widgets/moderate_posts.html'
+    template='jinja:allura:templates/widgets/moderate_posts.html'
     defaults=dict(
         ew.SimpleForm.defaults,
         submit_text=None)
@@ -112,7 +112,7 @@ class TagPost(ff.ForgeForm):
         for r in ffw.LabelEdit(name='labels').resources(): yield r
 
 class EditPost(ff.ForgeForm):
-    template='jinja:widgets/edit_post.html'
+    template='jinja:allura:templates/widgets/edit_post.html'
     defaults=dict(
         ff.ForgeForm.defaults,
         show_subject=False,
@@ -154,14 +154,14 @@ class EditPost(ff.ForgeForm):
          });''')
 
 class NewTopicPost(EditPost):
-    template='jinja:widgets/new_topic_post.html'
+    template='jinja:allura:templates/widgets/new_topic_post.html'
     defaults=dict(
         EditPost.defaults,
         show_subject = True,
         forums=None)
 
 class _ThreadsTable(ew.TableField):
-    template='jinja:widgets/threads_table.html'
+    template='jinja:allura:templates/widgets/threads_table.html'
     class hidden_fields(ew_core.NameList):
         _id=ew.HiddenField(validator=V.Ming(M.Thread))
     class fields(ew_core.NameList):
@@ -174,7 +174,7 @@ class _ThreadsTable(ew.TableField):
             href="${value['url']()}", show_label=True))
 
 class SubscriptionForm(ew.SimpleForm):
-    template='jinja:widgets/subscription_form.html'
+    template='jinja:allura:templates/widgets/subscription_form.html'
     value=None
     threads=None
     show_subject=False
@@ -213,20 +213,20 @@ class HierWidget(ew_core.Widget):
                 yield r
 
 class Attachment(ew_core.Widget):
-    template='jinja:widgets/attachment.html'
+    template='jinja:allura:templates/widgets/attachment.html'
     params=['value', 'post']
     value=None
     post=None
 
 class DiscussionHeader(HierWidget):
-    template='jinja:widgets/discussion_header.html'
+    template='jinja:allura:templates/widgets/discussion_header.html'
     params=['value']
     value=None
     widgets=dict(
         edit_post=EditPost(submit_text='New Thread'))
 
 class ThreadHeader(HierWidget):
-    template='jinja:widgets/thread_header.html'
+    template='jinja:allura:templates/widgets/thread_header.html'
     defaults=dict(
         HierWidget.defaults,
         value=None,
@@ -241,7 +241,7 @@ class ThreadHeader(HierWidget):
         tag_post=TagPost())
 
 class Post(HierWidget):
-    template='jinja:widgets/post_widget.html'
+    template='jinja:allura:templates/widgets/post_widget.html'
     defaults=dict(
         HierWidget.defaults,
         value=None,
@@ -318,7 +318,7 @@ class Post(HierWidget):
         ''')
 
 class PostThread(ew_core.Widget):
-    template='jinja:widgets/post_thread.html'
+    template='jinja:allura:templates/widgets/post_thread.html'
     defaults=dict(
         ew_core.Widget.defaults,
         value=None,
@@ -331,7 +331,7 @@ class PostThread(ew_core.Widget):
         children=None)
 
 class Thread(HierWidget):
-    template='jinja:widgets/thread_widget.html'
+    template='jinja:allura:templates/widgets/thread_widget.html'
     name='thread'
     defaults=dict(
         HierWidget.defaults,
@@ -403,7 +403,7 @@ class Thread(HierWidget):
         ''')
 
 class Discussion(HierWidget):
-    template='jinja:widgets/discussion.html'
+    template='jinja:allura:templates/widgets/discussion.html'
     defaults=dict(
         HierWidget.defaults,
         value=None,

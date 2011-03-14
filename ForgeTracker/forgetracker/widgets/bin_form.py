@@ -6,7 +6,7 @@ from forgetracker import model
 from formencode import validators as fev
 
 class BinForm(ew.SimpleForm):
-    template='jinja:tracker_widgets/bin_form.html'
+    template='jinja:forgetracker:templates/tracker_widgets/bin_form.html'
     defaults=dict(
         ew.SimpleForm.defaults,
         submit_text = "Save Bin")

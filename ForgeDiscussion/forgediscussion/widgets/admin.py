@@ -30,7 +30,7 @@ class OptionsAdmin(ff.AdminForm):
         return fields
 
 class AddForum(ff.AdminForm):
-    template = 'jinja:discussion_widgets/add_forum.html'
+    template = 'jinja:forgediscussion:templates/discussion_widgets/add_forum.html'
     defaults=dict(
         ff.ForgeForm.defaults,
         name="add_forum",
@@ -56,7 +56,7 @@ class AddForum(ff.AdminForm):
         return fields
 
 class AddForumShort(AddForum):
-    template = 'jinja:discussion_widgets/add_forum_short.html'
+    template = 'jinja:forgediscussion:templates/discussion_widgets/add_forum_short.html'
 
 class UniqueForumShortnameValidator(fev.FancyValidator):
 

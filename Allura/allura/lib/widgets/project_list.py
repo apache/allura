@@ -2,7 +2,7 @@ import ew as ew_core
 import ew.jinja2_ew as ew
 
 class ProjectSummary(ew_core.Widget):
-    template='jinja:widgets/project_summary.html'
+    template='jinja:allura:templates/widgets/project_summary.html'
     defaults=dict(
         ew_core.Widget.defaults,
         value=None)
@@ -29,7 +29,7 @@ class ProjectSummary(ew_core.Widget):
         ''')
 
 class ProjectList(ew_core.Widget):
-    template='jinja:widgets/project_list_widget.html'
+    template='jinja:allura:templates/widgets/project_list_widget.html'
     defaults=dict(
         ew_core.Widget.defaults,
         projects=[],

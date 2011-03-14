@@ -116,7 +116,7 @@ class OAuthNegotiator(object):
         log.info('Saving new request token with key: %s', req_token.api_key)
         return req_token.to_string()
 
-    @expose('jinja:oauth_authorize.html')
+    @expose('jinja:allura:templates/oauth_authorize.html')
     def authorize(self, oauth_token=None):
         security.require_authenticated()
         rtok = M.OAuthRequestToken.query.get(api_key=oauth_token)
@@ -128,7 +128,7 @@ class OAuthNegotiator(object):
             oauth_token=oauth_token,
             consumer=rtok.consumer_token)
         
-    @expose('jinja:oauth_authorize_ok.html')
+    @expose('jinja:allura:templates/oauth_authorize_ok.html')
     def do_authorize(self, yes=None, no=None, oauth_token=None):
         security.require_authenticated()
         rtok = M.OAuthRequestToken.query.get(api_key=oauth_token)

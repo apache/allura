@@ -11,7 +11,7 @@ from allura.lib.widgets import form_fields as ffw
 from forgediscussion import model as M
 
 class _ForumSummary(ew_core.Widget):
-    template='jinja:discussion_widgets/forum_summary.html'
+    template='jinja:forgediscussion:templates/discussion_widgets/forum_summary.html'
     defaults=dict(
         ew_core.Widget.defaults,
         name=None,
@@ -101,13 +101,13 @@ class PromoteToThread(ew.SimpleForm):
         ew.SubmitButton(name='promote', label='Promote to thread')]
 
 class ForumHeader(DW.DiscussionHeader):
-    template='jinja:discussion_widgets/forum_header.html'
+    template='jinja:forgediscussion:templates/discussion_widgets/forum_header.html'
     widgets=dict(DW.DiscussionHeader.widgets,
                  announcements_table=AnnouncementsTable(),
                  forum_subscription_form=ForumSubscriptionForm())
 
 class ThreadHeader(DW.ThreadHeader):
-    template='jinja:discussion_widgets/thread_header.html'
+    template='jinja:forgediscussion:templates/discussion_widgets/thread_header.html'
     defaults=dict(DW.ThreadHeader.defaults,
                   show_subject=True,
                   show_moderate=True)

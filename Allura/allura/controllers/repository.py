@@ -4,7 +4,8 @@ from urllib import quote, unquote
 
 from pylons import c, g, request, response
 from webob import exc
-from tg import redirect, expose, override_template, flash, url, validate
+import tg
+from tg import redirect, expose, flash, url, validate
 from tg.decorators import with_trailing_slash, without_trailing_slash
 from formencode import validators
 
@@ -54,7 +55,7 @@ class RepoRootController(BaseController):
             return '%r refresh queued.\n' % c.app.repo
 
     @with_trailing_slash
-    @expose('jinja:repo/fork.html')
+    @expose('jinja:allura:templates/repo/fork.html')
     def fork(self, to_name=None, project_name=None):
         security.require_authenticated()
         if not c.app.forkable: raise exc.HTTPNotFound
@@ -110,7 +111,7 @@ class RepoRootController(BaseController):
             target_branches=target_branches)
 
     @without_trailing_slash
-    @expose('jinja:repo/request_merge.html')
+    @expose('jinja:allura:templates/repo/request_merge.html')
     def request_merge(self, branch=None):
         c.form = self.mr_widget
         if branch is None:
@@ -167,7 +168,7 @@ class RepoRootController(BaseController):
 class MergeRequestsController(object):
     mr_filter=SCMMergeRequestFilterWidget()
 
-    @expose('jinja:repo/merge_requests.html')
+    @expose('jinja:allura:templates/repo/merge_requests.html')
     @validate(mr_filter)
     def index(self, status=None):
         status = status or ['open']
@@ -193,7 +194,7 @@ class MergeRequestController(object):
             request_number=int(num))
         if self.req is None: raise exc.HTTPNotFound
 
-    @expose('jinja:repo/merge_request.html')
+    @expose('jinja:allura:templates/repo/merge_request.html')
     def index(self, page=0, limit=250):
         c.thread = self.thread_widget
         c.log_widget = self.log_widget
@@ -246,7 +247,7 @@ class BranchBrowser(BaseController):
     def _check_security(self):
         security.require(security.has_artifact_access('read', c.app.repo))
 
-    @expose('jinja:repo/tags.html')
+    @expose('jinja:allura:templates/repo/tags.html')
     @with_trailing_slash
     def tags(self, **kw):
         return dict(tags=c.app.repo.repo_tags)
@@ -269,7 +270,7 @@ class CommitBrowser(BaseController):
             raise exc.HTTPNotFound
         self.tree = self.TreeBrowserClass(self._commit, tree=self._commit.tree)
 
-    @expose('jinja:repo/commit.html')
+    @expose('jinja:allura:templates/repo/commit.html')
     def index(self):
         c.revision_widget = self.revision_widget
         result = dict(commit=self._commit)
@@ -277,7 +278,7 @@ class CommitBrowser(BaseController):
             result.update(self._commit.context())
         return result
 
-    @expose('jinja:repo/log.html')
+    @expose('jinja:allura:templates/repo/log.html')
     @with_trailing_slash
     def log(self, limit=None, page=0, count=0, **kw):
         limit, page, start = g.handle_paging(limit, page)
@@ -306,7 +307,7 @@ class TreeBrowser(BaseController):
         self._path = path
         self._parent = parent
 
-    @expose('jinja:repo/tree.html')
+    @expose('jinja:allura:templates/repo/tree.html')
     @with_trailing_slash
     def index(self, **kw):
         c.tree_widget = self.tree_widget
@@ -349,12 +350,12 @@ class FileBrowser(BaseController):
         self._filename = filename
         self._blob = self._tree.get_blob(filename)
 
-    @expose('jinja:repo/file.html')
+    @expose('jinja:allura:templates/repo/file.html')
     def index(self, **kw):
         if kw.pop('format', 'html') == 'raw':
             return self.raw()
         elif 'diff' in kw:
-            override_template(self.index, 'jinja:repo/diff.html')
+            tg.decorators.override_template(self.index, 'jinja:allura:templates/repo/diff.html')
             return self.diff(kw['diff'])
         else:
             force_display = 'force' in kw

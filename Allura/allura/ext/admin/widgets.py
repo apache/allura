@@ -9,7 +9,7 @@ from allura.lib import security
 from allura.lib.widgets import forms as ff
 
 class CardField(ew_core.Widget):
-    template = 'jinja:admin_widgets/card_field.html'
+    template = 'jinja:allura.ext.admin:templates/admin_widgets/card_field.html'
     defaults = dict(
         ew_core.Widget.defaults,
         id=None,

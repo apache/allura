@@ -1,7 +1,7 @@
 import ew
 
 class Include(ew.Widget):
-    template='jinja:widgets/include.html'
+    template='jinja:allura:templates/widgets/include.html'
     params=['artifact', 'attrs']
     artifact=None
     attrs = {

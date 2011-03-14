@@ -21,7 +21,7 @@ log = logging.getLogger(__name__)
 
 class SiteAdminController(object):
 
-    @expose('jinja:site_admin_index.html')
+    @expose('jinja:allura:templates/site_admin_index.html')
     @with_trailing_slash
     def index(self):
         with h.push_context('allura'):
@@ -34,7 +34,7 @@ class SiteAdminController(object):
         neighborhoods.sort(key=lambda t:(-t[2], -t[1]))
         return dict(neighborhoods=neighborhoods)
 
-    @expose('jinja:site_admin_stats.html')
+    @expose('jinja:allura:templates/site_admin_stats.html')
     @without_trailing_slash
     def stats(self, limit=25):
         with h.push_context('allura'):
@@ -60,7 +60,7 @@ class SiteAdminController(object):
             agg_timings=agg_timings,
             stats=stats[:int(limit)])
 
-    @expose('jinja:site_admin_cpa_stats.html')
+    @expose('jinja:allura:templates/site_admin_cpa_stats.html')
     @without_trailing_slash
     @validate(dict(since=fev.DateConverter(if_empty=datetime(2011,1,1))))
     def cpa_stats(self, since=None, **kw):

@@ -39,7 +39,7 @@ class RootController(BaseController):
         require(has_artifact_access('read'))
 
     @with_trailing_slash
-    @expose('jinja:discussionforums/index.html')
+    @expose('jinja:forgediscussion:templates/discussionforums/index.html')
     def index(self, new_forum=False, **kw):
         c.new_topic = self.W.new_topic
         c.new_topic = self.W.new_topic
@@ -60,7 +60,7 @@ class RootController(BaseController):
                     hide_forum=(not new_forum))
 
     @with_trailing_slash
-    @expose('jinja:discussionforums/create_topic.html')
+    @expose('jinja:forgediscussion:templates/discussionforums/create_topic.html')
     def create_topic(self, new_forum=False, **kw):
         c.new_topic = self.W.new_topic
         forums = model.Forum.query.find(dict(
@@ -87,7 +87,7 @@ class RootController(BaseController):
         redirect(thd.url())
 
     @with_trailing_slash
-    @expose('jinja:discussionforums/search.html')
+    @expose('jinja:forgediscussion:templates/discussionforums/search.html')
     @validate(dict(q=validators.UnicodeString(if_empty=None),
                    history=validators.StringBool(if_empty=False),
                    project=validators.StringBool(if_empty=False)))
@@ -109,12 +109,12 @@ class RootController(BaseController):
             if results: count=results.hits
         return dict(q=q, history=history, results=results or [], count=count)
 
-    @expose('jinja:markdown_syntax.html')
+    @expose('jinja:allura:templates/markdown_syntax.html')
     def markdown_syntax(self):
         'Static page explaining markdown.'
         return dict()
 
-    @expose('jinja:discussionforums/help.html')
+    @expose('jinja:forgediscussion:templates/discussionforums/help.html')
     def help(self):
         'Static help page.'
         return dict()

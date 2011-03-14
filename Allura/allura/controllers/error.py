@@ -8,7 +8,7 @@ __all__ = ['ErrorController']
 
 class ErrorController(object):
 
-    @expose('jinja:error.html')
+    @expose('jinja:allura:templates/error.html')
     def document(self, *args, **kwargs):
         """Render the error document"""
         resp = request.environ.get('pylons.original_response')

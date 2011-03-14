@@ -63,7 +63,7 @@ class DiscussionController(BaseController):
         if not hasattr(self, 'moderate'):
             self.moderate = ModerationController(self)
 
-    @expose('jinja:discussion/index.html')
+    @expose('jinja:allura:templates/discussion/index.html')
     def index(self, threads=None, limit=None, page=0, count=0, **kw):
         c.discussion = self.W.discussion
         if threads is None:
@@ -156,7 +156,7 @@ class ThreadController(BaseController):
         id=unquote(id)
         return self.PostController(self._discussion_controller, self.thread, id), remainder
 
-    @expose('jinja:discussion/thread.html')
+    @expose('jinja:allura:templates/discussion/thread.html')
     def index(self, limit=None, page=0, count=0, **kw):
         c.thread = self.W.thread
         c.thread_header = self.W.thread_header
@@ -261,7 +261,7 @@ class PostController(BaseController):
             redirect('..')
 
     @h.vardec
-    @expose('jinja:discussion/post.html')
+    @expose('jinja:allura:templates/discussion/post.html')
     @validate(pass_validator)
     def index(self, version=None, **kw):
         c.post = self.W.post
@@ -389,7 +389,7 @@ class ModerationController(BaseController):
         return self._discussion_controller.discussion
 
     @h.vardec
-    @expose('jinja:discussion/moderate.html')
+    @expose('jinja:allura:templates/discussion/moderate.html')
     @validate(pass_validator)
     def index(self, **kw):
         kw = WidgetConfig.post_filter.validate(kw, None)

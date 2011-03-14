@@ -48,7 +48,7 @@ class AuthController(BaseController):
         self.prefs = PreferencesController()
         self.oauth = OAuth()
 
-    @expose('jinja:login.html')
+    @expose('jinja:allura:templates/login.html')
     @with_trailing_slash
     def index(self, *args, **kwargs):
         orig_request = request.environ.get('pylons.original_request', None)
@@ -60,7 +60,7 @@ class AuthController(BaseController):
             return_to = request.referer
         return dict(oid_providers=OID_PROVIDERS, return_to=return_to)
 
-    @expose('jinja:custom_login.html')
+    @expose('jinja:allura:templates/custom_login.html')
     def login_verify_oid(self, provider, username, return_to=None):
         if provider:
             oid_url = string.Template(provider).safe_substitute(
@@ -84,17 +84,17 @@ class AuthController(BaseController):
             redirect('setup_openid_user')
         redirect(kw.pop('return_to', '/'))
 
-    @expose('jinja:bare_openid.html')
+    @expose('jinja:allura:templates/bare_openid.html')
     def bare_openid(self, url=None):
         '''Called to notify the user that they must set up a 'real' (with
         username) account when they have a pure openid account'''
         return dict(location=url)
 
-    @expose('jinja:setup_openid_user.html')
+    @expose('jinja:allura:templates/setup_openid_user.html')
     def setup_openid_user(self):
         return dict()
 
-    @expose('jinja:create_account.html')
+    @expose('jinja:allura:templates/create_account.html')
     def create_account(self, **kw):
         c.form = F.registration_form
         return dict()
@@ -147,11 +147,11 @@ class AuthController(BaseController):
         flash('Your username has been set to %s.' % username)
         redirect('/')
 
-    @expose('jinja:claim_openid.html')
+    @expose('jinja:allura:templates/claim_openid.html')
     def claim_oid(self):
         return dict(oid_providers=OID_PROVIDERS)
 
-    @expose('jinja:custom_login.html')
+    @expose('jinja:allura:templates/custom_login.html')
     def claim_verify_oid(self, provider, username):
         if provider:
             oid_url = string.Template(provider).safe_substitute(
@@ -251,7 +251,7 @@ class AuthController(BaseController):
 class PreferencesController(BaseController):
 
     @with_trailing_slash
-    @expose('jinja:user_preferences.html')
+    @expose('jinja:allura:templates/user_preferences.html')
     def index(self, **kw):
         require_authenticated()
         c.form = F.subscription_form
@@ -390,7 +390,7 @@ class PreferencesController(BaseController):
 
 class OAuth(BaseController):
 
-    @expose('jinja:oauth_applications.html')
+    @expose('jinja:allura:templates/oauth_applications.html')
     def index(self, **kw):
         c.form = F.oauth_application_form
         return dict(apps=M.OAuthConsumerToken.for_user(c.user))

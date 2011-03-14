@@ -1,4 +1,4 @@
-{% import 'jinja_master/lib.html' as lib with context %}
+{% import 'allura:templates/jinja_master/lib.html' as lib with context %}
 
 <div class="grid-5"><label>Forum:</label> <a href="{{value.discussion.url()}}">{{value.discussion.name}}</a></div>
 {% if value.first_post %}

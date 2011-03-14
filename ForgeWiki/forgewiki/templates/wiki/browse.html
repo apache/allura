@@ -1,5 +1,5 @@
-{% extends 'wiki/master.html' %}
-{% from 'jinja_master/lib.html' import abbr_date with context %}
+{% extends 'forgewiki:templates/wiki/master.html' %}
+{% from 'allura:templates/jinja_master/lib.html' import abbr_date with context %}
 
 {% block title %}{{c.project.name}} / {{c.app.config.options.mount_label}} / Browse Pages{% endblock %}
 

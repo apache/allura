@@ -97,7 +97,7 @@ class NeighborhoodController(object):
             redirect(project.url())
         return ProjectController(), remainder
 
-    @expose('jinja:neighborhood_project_list.html')
+    @expose('jinja:allura:templates/neighborhood_project_list.html')
     @with_trailing_slash
     def index(self, sort='alpha', limit=25, page=0, **kw):
         if self.neighborhood.redirect:
@@ -133,7 +133,7 @@ class NeighborhoodController(object):
                     sort=sort,
                     limit=limit, page=page, count=count)
 
-    @expose('jinja:neighborhood_add_project.html')
+    @expose('jinja:allura:templates/neighborhood_add_project.html')
     def add_project(self, **form_data):
         require(has_neighborhood_access('create', self.neighborhood), 'Create access required')
         c.add_project = W.add_project
@@ -183,7 +183,7 @@ class NeighborhoodProjectBrowseController(ProjectBrowseController):
         category_name=unquote(category_name)
         return NeighborhoodProjectBrowseController(neighborhood=self.neighborhood, category_name=category_name, parent_category=self.category), remainder
 
-    @expose('jinja:neighborhood_project_list.html')
+    @expose('jinja:allura:templates/neighborhood_project_list.html')
     @without_trailing_slash
     def index(self, sort='alpha', limit=25, page=0, **kw):
         c.project_summary = W.project_summary
@@ -253,7 +253,7 @@ class ProjectController(object):
         else:
             redirect(c.project.app_configs[0].options.mount_point + '/')
 
-    @expose('jinja:project_sitemap.html')
+    @expose('jinja:allura:templates/project_sitemap.html')
     @without_trailing_slash
     def sitemap(self): # pragma no cover
         raise NotImplementedError, 'sitemap'
@@ -390,20 +390,20 @@ class NeighborhoodAdminController(object):
         redirect('overview')
 
     @without_trailing_slash
-    @expose('jinja:neighborhood_admin_overview.html')
+    @expose('jinja:allura:templates/neighborhood_admin_overview.html')
     def overview(self):
         self.set_nav()
         c.markdown_editor = W.markdown_editor
         return dict(neighborhood=self.neighborhood)
 
     @without_trailing_slash
-    @expose('jinja:neighborhood_admin_permissions.html')
+    @expose('jinja:allura:templates/neighborhood_admin_permissions.html')
     def permissions(self):
         self.set_nav()
         return dict(neighborhood=self.neighborhood)
 
     @without_trailing_slash
-    @expose('jinja:neighborhood_admin_accolades.html')
+    @expose('jinja:allura:templates/neighborhood_admin_accolades.html')
     def accolades(self):
         self.set_nav()
         psort = [(n, M.Project.query.find(dict(neighborhood_id=n._id, deleted=False, shortname={'$ne': '--init--'})).sort('shortname').all())
@@ -475,7 +475,7 @@ class NeighborhoodModerateController(object):
         require(has_neighborhood_access('moderate', self.neighborhood),
                 'Moderator access required')
 
-    @expose('jinja:neighborhood_moderate.html')
+    @expose('jinja:allura:templates/neighborhood_moderate.html')
     def index(self, **kw):
         return dict(neighborhood=self.neighborhood)
 
@@ -527,17 +527,17 @@ class NeighborhoodAwardsController(object):
         if neighborhood is not None:
             self.neighborhood = neighborhood
 
-    @expose('jinja:awards.html')
+    @expose('jinja:allura:templates/awards.html')
     def index(self, **kw):
         awards = M.Award.query.find(dict(created_by_neighborhood_id=self.neighborhood._id))
         count = len(awards)
         return dict(awards=awards or [], count=count)
 
-    @expose('jinja:award_not_found.html')
+    @expose('jinja:allura:templates/award_not_found.html')
     def not_found(self, **kw):
         return dict()
 
-    @expose('jinja:grants.html')
+    @expose('jinja:allura:templates/grants.html')
     def grants(self, **kw):
         grants = M.AwardGrant.query.find(dict(granted_by_neighborhood_id=self.neighborhood._id))
         count=0
@@ -586,14 +586,14 @@ class AwardController(object):
             self.award = M.Award.query.get(short=self.short)
 
     @with_trailing_slash
-    @expose('jinja:award.html')
+    @expose('jinja:allura:templates/award.html')
     def index(self, **kw):
         if self.award is not None:
             return dict(award=self.award)
         else:
             redirect('not_found')
 
-    @expose('jinja:award_not_found.html')
+    @expose('jinja:allura:templates/award_not_found.html')
     def not_found(self, **kw):
         return dict()
 
@@ -643,14 +643,14 @@ class GrantController(object):
                 granted_to_project_id=self.project._id)
 
     @with_trailing_slash
-    @expose('jinja:grant.html')
+    @expose('jinja:allura:templates/grant.html')
     def index(self, **kw):
         if self.grant is not None:
             return dict(grant=self.grant)
         else:
             redirect('not_found')
 
-    @expose('jinja:award_not_found.html')
+    @expose('jinja:allura:templates/award_not_found.html')
     def not_found(self, **kw):
         return dict()
 

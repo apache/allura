@@ -272,7 +272,7 @@ class DefaultAdminController(BaseController):
     def index(self, **kw):
         return redirect('permissions')
 
-    @expose('jinja:app_admin_permissions.html')
+    @expose('jinja:allura:templates/app_admin_permissions.html')
     @without_trailing_slash
     def permissions(self):
         from ext.admin.widgets import PermissionCard
@@ -280,7 +280,7 @@ class DefaultAdminController(BaseController):
         return dict(app=self.app,
                     allow_config=has_project_access('security')())
 
-    @expose('jinja:app_admin_options.html')
+    @expose('jinja:allura:templates/app_admin_options.html')
     def options(self):
         return dict(app=self.app,
                     allow_config=has_artifact_access('configure', app=self.app)())

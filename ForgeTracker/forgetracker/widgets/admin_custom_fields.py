@@ -39,7 +39,7 @@ class MilestonesAdmin(ffw.SortableTable):
         yield ew.CSSScript('''div.state-field table{ width: 700px; }''')
 
 class CustomFieldAdminDetail(ffw.StateField):
-    template='jinja:tracker_widgets/custom_field_admin_detail.html'
+    template='jinja:forgetracker:templates/tracker_widgets/custom_field_admin_detail.html'
     defaults=dict(
         ffw.StateField.defaults,
         selector=ffw.AdminField(field=ew.SingleSelectField(
@@ -63,7 +63,7 @@ class CustomFieldAdminDetail(ffw.StateField):
             ))
 
 class CustomFieldAdmin(ew.CompoundField):
-    template='jinja:tracker_widgets/custom_field_admin.html'
+    template='jinja:forgetracker:templates/tracker_widgets/custom_field_admin.html'
 
     def resources(self):
         for r in super(CustomFieldAdmin, self).resources():
@@ -97,10 +97,10 @@ class TrackerFieldAdmin(f.ForgeForm):
             yield rr
 
 class CustomFieldDisplay(ew.CompoundField):
-    template='jinja:tracker_widgets/custom_field_display.html'
+    template='jinja:forgetracker:templates/tracker_widgets/custom_field_display.html'
 
 class CustomFieldsDisplay(ew.RepeatedField):
-    template='jinja:tracker_widgets/custom_fields_display.html'
+    template='jinja:forgetracker:templates/tracker_widgets/custom_fields_display.html'
 
 class TrackerFieldDisplay(f.ForgeForm):
     class fields(ew_core.NameList):

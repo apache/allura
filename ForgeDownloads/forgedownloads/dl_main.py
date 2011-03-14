@@ -101,7 +101,7 @@ class DownloadAdminController(DefaultAdminController):
     def index(self, **kw):
         redirect('options')
 
-    @expose('jinja:downloads/admin_options.html')
+    @expose('jinja:forgedownloads:templates/downloads/admin_options.html')
     def options(self):
         return dict(app=self.app,
                     allow_config=has_artifact_access('configure', app=self.app)())

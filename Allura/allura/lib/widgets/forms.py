@@ -13,7 +13,7 @@ import ew.jinja2_ew as ew
 log = logging.getLogger(__name__)
 
 class ForgeForm(ew.SimpleForm):
-    template='jinja:widgets/forge_form.html'
+    template='jinja:allura:templates/widgets/forge_form.html'
     defaults=dict(
         ew.SimpleForm.defaults,
         submit_text='Save',
@@ -84,10 +84,10 @@ class RegistrationForm(ForgeForm):
 
 
 class AdminForm(ForgeForm):
-    template='jinja:widgets/admin_form.html'
+    template='jinja:allura:templates/widgets/admin_form.html'
 
 class NeighborhoodAddProjectForm(ForgeForm):
-    template='jinja:widgets/neighborhood_add_project.html'
+    template='jinja:allura:templates/widgets/neighborhood_add_project.html'
     defaults=dict(
         ForgeForm.defaults,
         method='post',

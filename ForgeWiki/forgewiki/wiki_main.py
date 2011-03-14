@@ -263,7 +263,7 @@ class RootController(BaseController):
         redirect(title + '/')
 
     @with_trailing_slash
-    @expose('jinja:wiki/search.html')
+    @expose('jinja:forgewiki:templates/wiki/search.html')
     @validate(dict(q=validators.UnicodeString(if_empty=None),
                    history=validators.StringBool(if_empty=False),
                    project=validators.StringBool(if_empty=False)))
@@ -286,7 +286,7 @@ class RootController(BaseController):
         return dict(q=q, history=history, results=results or [], count=count)
 
     @with_trailing_slash
-    @expose('jinja:wiki/browse.html')
+    @expose('jinja:forgewiki:templates/wiki/browse.html')
     @validate(dict(sort=validators.UnicodeString(if_empty='alpha'),
                    show_deleted=validators.StringBool(if_empty=False),
                    page=validators.Int(if_empty=0),
@@ -329,7 +329,7 @@ class RootController(BaseController):
                     limit=limit, count=count, page=pagenum)
 
     @with_trailing_slash
-    @expose('jinja:wiki/browse_tags.html')
+    @expose('jinja:forgewiki:templates/wiki/browse_tags.html')
     @validate(dict(sort=validators.UnicodeString(if_empty='alpha'),
                    page=validators.Int(if_empty=0),
                    limit=validators.Int(if_empty=None)))
@@ -352,13 +352,13 @@ class RootController(BaseController):
         return dict(labels=page_tags, limit=limit, count=count, page=pagenum)
 
     @with_trailing_slash
-    @expose('jinja:markdown_syntax.html')
+    @expose('jinja:allura:templates/markdown_syntax.html')
     def markdown_syntax(self):
         'Display a page about how to use markdown.'
         return dict(example=MARKDOWN_EXAMPLE)
 
     @with_trailing_slash
-    @expose('jinja:wiki/help.html')
+    @expose('jinja:forgewiki:templates/wiki/help.html')
     def wiki_help(self):
         'Display a help page about using the wiki.'
         return dict()
@@ -421,7 +421,7 @@ class PageController(BaseController):
         redirect(url)
 
     @with_trailing_slash
-    @expose('jinja:wiki/page_view.html')
+    @expose('jinja:forgewiki:templates/wiki/page_view.html')
     @validate(dict(version=validators.Int(if_empty=None),
                    deleted=validators.StringBool(if_empty=False)))
     def index(self, version=None, deleted=False, **kw):
@@ -455,7 +455,7 @@ class PageController(BaseController):
             hide_left_bar=hide_left_bar, show_right_bar=c.app.show_right_bar)
 
     @without_trailing_slash
-    @expose('jinja:wiki/page_edit.html')
+    @expose('jinja:forgewiki:templates/wiki/page_edit.html')
     def edit(self):
         page_exists = self.page
         if page_exists:
@@ -496,7 +496,7 @@ class PageController(BaseController):
         redirect('./edit')
 
     @without_trailing_slash
-    @expose('jinja:wiki/page_history.html')
+    @expose('jinja:forgewiki:templates/wiki/page_history.html')
     @validate(dict(page=validators.Int(if_empty=0),
                    limit=validators.Int(if_empty=None)))
     def history(self, page=0, limit=None):
@@ -514,7 +514,7 @@ class PageController(BaseController):
                     limit=limit, count=count, page=pagenum)
 
     @without_trailing_slash
-    @expose('jinja:wiki/page_diff.html')
+    @expose('jinja:forgewiki:templates/wiki/page_diff.html')
     @validate(dict(
             v1=validators.Int(),
             v2=validators.Int()))
@@ -709,14 +709,14 @@ class WikiAdminController(DefaultAdminController):
         redirect('home')
 
     @without_trailing_slash
-    @expose('jinja:wiki/admin_home.html')
+    @expose('jinja:forgewiki:templates/wiki/admin_home.html')
     def home(self):
         return dict(app=self.app,
                     home=self.app.root_page_name,
                     allow_config=has_artifact_access('configure', app=self.app)())
 
     @without_trailing_slash
-    @expose('jinja:wiki/admin_options.html')
+    @expose('jinja:forgewiki:templates/wiki/admin_options.html')
     def options(self):
         return dict(app=self.app,
                     allow_config=has_artifact_access('configure', app=self.app)())
