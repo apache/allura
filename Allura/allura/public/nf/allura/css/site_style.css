@@ -2938,3 +2938,29 @@ h1.title .viewer:hover {
 #forge_wiki_browse tr.deleted a {
   color: red;
 }
+
+
+.scm-branch-label, .scm-tag-label {
+  -moz-border-radius: 4px;
+  -webkit-border-radius: 4px;
+  -o-border-radius: 4px;
+  -ms-border-radius: 4px;
+  -khtml-border-radius: 4px;
+  border-radius: 4px;
+  display: inline-block;
+  -moz-box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4) inset,0 1px 0 rgba(255, 255, 255, 0.9);
+  -webkit-box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4) inset,0 1px 0 rgba(255, 255, 255, 0.9);
+  -o-box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4) inset,0 1px 0 rgba(255, 255, 255, 0.9);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4) inset,0 1px 0 rgba(255, 255, 255, 0.9);
+  border: medium none;
+  display: inline;
+  padding: 3px;
+  background: #0099cc;
+  font-size: 80%;
+  text-shadow: none;
+}
+
+
+.scm-tag-label {
+  background: #006699;
+}
