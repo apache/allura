@@ -136,7 +136,7 @@ class TestSubscriptionTypes(unittest.TestCase):
         g.mock_amq.handle('react')
         g.mock_amq.handle('react')
         M.Mailbox.fire_ready()
-        assert len(g.mock_amq.exchanges['audit']) == 2, g.mock_amq.exchanges
+        assert len(g.mock_amq.exchanges['audit']) == 1, g.mock_amq.exchanges
 
     def test_digest_sub(self):
         self._subscribe('digest')
