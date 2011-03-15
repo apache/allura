@@ -30,6 +30,7 @@ if [ "$TEST_MODULES"  == "" ]; then
     Allura \
     ForgeBlog \
     ForgeLink \
+    ForgeChat \
     ForgeDiscussion \
     ForgeGit \
     ForgeHg \
