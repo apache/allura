@@ -98,8 +98,8 @@ class MockAMQ(object):
         self.globals = globals
 
     def clear(self):
-        for k in self.exchanges.keys():
-            self.exchanges[k][:] = []
+        for k,v in self.exchanges.iteritems():
+            v[:] = []
 
     def create_backend(self):
         return mock.Mock()

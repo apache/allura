@@ -6,7 +6,7 @@ import allura
 from nose.tools import assert_true, assert_false, eq_, assert_equal
 from formencode.variabledecode import variable_encode
 
-from alluratest.controller import TestController
+from alluratest.controller import TestController, REGISTRY
 from forgewiki import model as wm
 from forgetracker import model as tm
 
@@ -473,13 +473,16 @@ class TestFunctionalController(TestController):
 #       response = self.app.get('/p/test/bugs/')
 #       assert '[#3] test third ticket' in response
 
-#   def test_search(self):
-#       self.new_ticket(summary='test first ticket')
-#       self.new_ticket(summary='test second ticket')
-#       self.new_ticket(summary='test third ticket')
-#       response = self.app.get('/p/test/bugs/search/?q=!status%3Aclosed')
-#       assert '3 results' in response
-#       assert '[#3] test third ticket' in response
+    def test_search(self):
+        from pylons import g
+        g.amq_conn.setup_handlers(REGISTRY)
+        self.new_ticket(summary='test first ticket')
+        self.new_ticket(summary='test second ticket')
+        self.new_ticket(summary='test third ticket')
+        g.amq_conn.handle_all()
+        response = self.app.get('/p/test/bugs/search/?q=test')
+        assert '3 results' in response, response.showbrowser()
+        assert 'test third ticket' in response, response.showbrowser()
 
     def test_touch(self):
         self.new_ticket(summary='test touch')

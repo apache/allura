@@ -18,14 +18,15 @@ import pkg_resources
 import pysolr
 import oembed
 import markdown
-from pypeline.markup import markup as pypeline_markup
 import pygments
 import pygments.lexers
 import pygments.formatters
 import pygments.util
+import webob.exc
 from tg import config, session
 from pylons import c, request
 from paste.deploy.converters import asbool, asint
+from pypeline.markup import markup as pypeline_markup
 
 import ew as ew_core
 import ew.jinja2_ew as ew
@@ -48,9 +49,11 @@ class Globals(object):
     is available during requests via the 'app_globals' variable.
 
     """
+    __shared_state = {}
 
     def __init__(self):
-        """Do nothing, by default."""
+        self.__dict__ = self.__shared_state
+        if self.__shared_state: return
         self.allura_templates = pkg_resources.resource_filename('allura', 'templates')
 
         # Setup SOLR
@@ -288,8 +291,21 @@ class Globals(object):
             self._publish(xn, key, message, **kw)
 
     def send_all_messages(self):
+        max_tries = 3
         for xn, messages in c.queued_messages.items():
-            self.amq_conn.publish(xn, messages)
+            for tryno in range(max_tries):
+                try:
+                    self.amq_conn.publish(xn, messages)
+                    break
+                except Exception:
+                    log.warning(
+                        'Exception sending message to amqp (try #%d)',
+                        tryno, exc_info=True)
+                    self.amq_conn.reset()
+            else:
+                log.error('Giving up sending messages, reset connection & 500')
+                self.amq_conn.reset()
+                raise webob.exc.HTTPInternalServerError()
         c.queued_messages = defaultdict(list)
 
     def _publish(self, xn, routing_key, message, **kw):
@@ -324,6 +340,10 @@ class MockSOLR(object):
         def hits(self):
             return len(self)
 
+        @property
+        def docs(self):
+            return self
+
     def __init__(self):
         self.db = {}
 
@@ -333,6 +353,8 @@ class MockSOLR(object):
             self.db[o['id']] = o
 
     def search(self, q, fq=None, **kw):
+        if isinstance(q, unicode):
+            q = q.encode('latin-1')
         # Parse query
         preds = []
         q_parts = shlex.split(q)

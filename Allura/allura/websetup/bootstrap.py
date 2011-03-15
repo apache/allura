@@ -20,6 +20,7 @@ from ming.orm.ormsession import ThreadLocalORMSession
 import allura
 from allura.lib import plugin
 from allura import model as M
+from allura.websetup import schema
 from allura.command import EnsureIndexCommand
 
 log = logging.getLogger(__name__)
@@ -61,7 +62,6 @@ def bootstrap(command, conf, vars):
     c.queued_messages = defaultdict(list)
     c.user = c.project = c.app = None
     database=conf.get('db_prefix', '') + 'project:test'
-    g._push_object(allura.lib.app_globals.Globals())
     wipe_database()
     try:
         g.solr.delete(q='*:*')
@@ -193,7 +193,6 @@ def bootstrap(command, conf, vars):
         g.send_all_messages()
         ThreadLocalORMSession.flush_all()
         ThreadLocalORMSession.close_all()
-
 
 def wipe_database():
     conn = M.main_doc_session.bind.conn

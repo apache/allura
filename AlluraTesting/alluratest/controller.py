@@ -7,7 +7,6 @@ import mock
 import beaker.session
 from paste.deploy import loadapp
 from paste.script.appinstall import SetupCommand
-from paste.registry import Registry
 from pylons import c, g, url, request, response, session
 import tg
 from webtest import TestApp
@@ -18,12 +17,11 @@ import ming.orm
 
 from allura import model as M
 from allura.lib.app_globals import Globals
+from allura.websetup.schema import REGISTRY
 #from allura.lib.custom_middleware import environ as ENV, MagicalC
 from .validation import ValidatingTestApp
 
 DFL_APP_NAME = 'main_without_authn'
-
-REGISTRY = Registry()
 
 def get_config_file(config=None):
     if not config:
