@@ -199,7 +199,7 @@ please visit the following URL:
                 'message_id':'',
                 'subject':'Email address verification',
                 'text':text})
-    
+
 class OpenId(MappedClass):
     class __mongometa__:
         name='openid'
@@ -420,6 +420,16 @@ class OldProjectRole(MappedClass):
         unique_indexes = [ ('user_id', 'project_id', 'name') ]
 
 class ProjectRole(MappedClass):
+    """
+    Per-project roles, called "Groups" in the UI.
+    This can be a proxy for a single user.  It can also inherit roles.
+
+    :var user_id: used if this role is for a single user
+    :var project_id:
+    :var name:
+    :var roles: a list of other ProjectRole objectids
+    """
+
     class __mongometa__:
         session = main_orm_session
         name='project_role'
@@ -428,9 +438,9 @@ class ProjectRole(MappedClass):
             ('user_id',),
             ('project_id',)
             ]
-    
+
     _id = FieldProperty(S.ObjectId)
-    user_id = ForeignIdProperty('User', if_missing=None) # if role is a user
+    user_id = ForeignIdProperty('User', if_missing=None)
     project_id = ForeignIdProperty('Project', if_missing=None)
     name = FieldProperty(str)
     roles = FieldProperty([S.ObjectId])

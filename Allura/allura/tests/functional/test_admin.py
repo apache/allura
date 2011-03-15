@@ -320,9 +320,18 @@ class TestProjectAdmin(TestController):
         assert 'RoleNew1' not in r
         assert 'rleNew2' in r
 
+        # add test-user to role
+        rleNew2_id = r.html.find(text='rleNew2').findPrevious('input', {'type': 'hidden'})['value']
+        r = self.app.post('/admin/groups/update', params={
+                'card-1.id': rleNew2_id,
+                'card-1.new': 'test-user'})
+
         r = self.app.post('/admin/groups/' + str(role_id) + '/update', params={'_id': role_id, 'name': 'rleNew2', 'delete': 'delete'})
         assert 'deleted' in self.webflash(r)
-        r = self.app.get('/admin/groups/')
+        r = self.app.get('/admin/groups/', status=200)
         roles = [t.string for t in r.html.findAll('h3')]
         assert 'RoleNew1' not in roles
         assert 'rleNew2' not in roles
+
+        # make sure can still access homepage after one of user's roles were deleted
+        self.app.get('/p/test/home/', extra_environ=dict(username='test-user'), status=200)

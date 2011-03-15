@@ -146,8 +146,9 @@ class RoleCache(object):
                 if rid in visited: continue
                 yield role
                 pr_index = self.cred.project_roles(role.project_id).index
-                to_visit += [
-                    (i, pr_index[i]) for i in pr_index[rid].roles ]
+                for i in pr_index[rid].roles:
+                    if i in pr_index:
+                        to_visit.append((i, pr_index[i]))
         return RoleCache(self.cred, _iter())
 
     @LazyProperty
@@ -217,4 +218,3 @@ def require_authenticated():
     from allura import model as M
     if c.user == M.User.anonymous():
         raise exc.HTTPUnauthorized()
-
