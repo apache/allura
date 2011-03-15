@@ -9,6 +9,7 @@ from ming.utils import LazyProperty
 from ming.orm.ormsession import ThreadLocalORMSession
 
 # Pyforge-specific imports
+import allura.task
 from allura.lib import helpers as h
 from allura import model as M
 from allura.controllers.repository import RepoRootController, RefsController, CommitsController
@@ -59,14 +60,13 @@ class ForgeHgApp(RepositoryApp):
                     cloned_from_path=cloned_from.full_fs_path,
                     cloned_from_name=cloned_from.app.config.script_name(),
                     cloned_from_url=cloned_from.full_fs_path)
-            g.publish('audit', 'repo.clone', msg)
+            allura.task.repo_clone.post(msg)
         elif init_from_url:
             msg = dict(
                 cloned_from_path=None,
                 cloned_from_name=None,
                 cloned_from_url=init_from_url)
-            g.publish('audit', 'repo.clone', msg)
+            allura.task.repo_clone.post(msg)
         else:
-            g.publish('audit', 'repo.init',
-                      dict(repo_name=repo.name, repo_path=repo.fs_path))
+            allura.task.repo_init.post(msg)
 

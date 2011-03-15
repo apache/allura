@@ -57,6 +57,7 @@ setup(
     entry_points="""
     [paste.app_factory]
     main = allura.config.middleware:make_app
+    task = allura.config.middleware:make_task_app
     tool_test = allura.config.middleware:make_tool_test_app
 
     [paste.app_install]
@@ -88,6 +89,7 @@ setup(
     [paste.paster_command]
     reactor_setup = allura.command:ReactorSetupCommand
     reactor = allura.command:ReactorCommand
+    taskd = allura.command.taskd:TaskdCommand
     sendmsg = allura.command:SendMessageCommand
     models = allura.command:ShowModelsCommand
     reindex = allura.command:ReindexCommand

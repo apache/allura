@@ -34,10 +34,8 @@ make_base_app = base_config.setup_tg_wsgi_app(load_environment)
 
 
 def make_app(global_conf, full_stack=True, **app_conf):
-    return _make_core_app('root', global_conf, full_stack, **app_conf)
-
-def make_tool_test_app(global_conf, full_stack=True, **app_conf):
-    return _make_core_app('test', global_conf, full_stack, **app_conf)
+    root = app_conf.get('override_root', 'root')
+    return _make_core_app(root, global_conf, full_stack, **app_conf)
 
 def _make_core_app(root, global_conf, full_stack=True, **app_conf):
     """

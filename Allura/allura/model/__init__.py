@@ -16,6 +16,7 @@ from .repository import LogCache, LastCommitFor, MergeRequest
 from .stats import Stats, CPA
 from .import_batch import ImportBatch
 from .oauth import OAuthToken, OAuthConsumerToken, OAuthRequestToken, OAuthAccessToken
+from .monq_model import MonQTask
 
 from .types import ArtifactReference, ArtifactReferenceType
 

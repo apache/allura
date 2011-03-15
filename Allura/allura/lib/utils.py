@@ -5,6 +5,7 @@ from logging.handlers import WatchedFileHandler
 import tg
 from pylons import response
 from paste.httpheaders import CACHE_CONTROL, EXPIRES
+
 from ming.utils import LazyProperty
 
 class exceptionless(object):
@@ -106,4 +107,11 @@ class StatsHandler(WatchedFileHandler):
             if v is not None)
         record.exc_info = None # Never put tracebacks in the rtstats log
         WatchedFileHandler.emit(self, record)
-    
+
+def task(func):
+    '''Decorator to add some methods to task functions'''
+    def post(*args, **kwargs):
+        from allura import model as M
+        return M.MonQTask.post(func, *args, **kwargs)
+    func.post = post
+    return func

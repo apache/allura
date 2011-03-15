@@ -9,6 +9,7 @@ from ming.utils import LazyProperty
 from ming.orm.ormsession import ThreadLocalORMSession
 
 # Pyforge-specific imports
+import allura.task
 from allura.controllers.repository import RepoRootController
 from allura.app import Application, ConfigOption
 from allura.lib.repository import RepositoryApp
@@ -53,7 +54,6 @@ class ForgeSVNApp(RepositoryApp):
                 cloned_from_path=None,
                 cloned_from_name=None,
                 cloned_from_url=init_from_url)
-            g.publish('audit', 'repo.clone', msg)
+            allura.task.repo_clone.post(msg)
         else:
-            g.publish('audit', 'repo.init',
-                      dict(repo_name=repo.name, repo_path=repo.fs_path))
+            allura.task.repo_init.post(msg)

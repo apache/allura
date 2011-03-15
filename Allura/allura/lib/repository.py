@@ -7,6 +7,7 @@ from tg import expose, redirect, url
 from tg.decorators import with_trailing_slash, without_trailing_slash
 from bson import ObjectId
 
+import allura.task
 from allura import version
 from allura.lib import helpers as h
 from allura import model as M
@@ -145,7 +146,7 @@ class RepositoryApp(Application):
             admin=c.project.roleids_with_permission('tool'))
 
     def uninstall(self, project):
-        g.publish('audit', 'repo.uninstall', dict(project_id=project._id))
+        allura.task.repo_uninstall.post()
 
     @classmethod
     @audit('repo.init')

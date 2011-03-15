@@ -11,6 +11,7 @@ from formencode import validators
 
 from ming.orm import ThreadLocalORMSession, session
 
+import allura.task
 from allura.lib import patience
 from allura.lib import security
 from allura.lib import helpers as h
@@ -47,7 +48,7 @@ class RepoRootController(BaseController):
 
     @expose()
     def refresh(self):
-        g.publish('audit', 'repo.refresh')
+        allura.task.repo_refresh.post()
         if request.referer:
             flash('Repository is being refreshed')
             redirect(request.referer)

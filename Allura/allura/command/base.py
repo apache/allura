@@ -1,6 +1,7 @@
 import os
 import sys
 import logging
+from multiprocessing import Process
 from pkg_resources import iter_entry_points
 
 import pylons
@@ -79,3 +80,22 @@ class Command(command.Command):
 
     def teardown_globals(self):
         self.registry.cleanup()
+
+class RestartableProcess(object):
+
+    def __init__(self, log, *args, **kwargs):
+        self._log = log
+        self._args, self._kwargs = args, kwargs
+        self.reinit()
+
+    def reinit(self):
+        self._process = Process(*self._args, **self._kwargs)
+
+    def check(self):
+        if not self.is_alive():
+            self._log.error('Process %d has died, restarting', self.pid)
+            self.reinit()
+            self.start()
+
+    def __getattr__(self, name):
+        return getattr(self._process, name)

@@ -27,6 +27,11 @@ class Connection(object):
     def reset(self):
         self._conn = self._connection_pool.acquire()
         self._channel_pool = self._conn.ChannelPool(preload=2, limit=10)
+        self.queue = self._conn.SimpleQueue('task')
+
+    @property
+    def connection(self):
+        return self._conn
 
     @contextmanager
     def channel(self):
@@ -93,6 +98,7 @@ class Connection(object):
 class MockAMQ(object):
 
     def __init__(self, globals):
+        assert False
         self.exchanges = defaultdict(list)
         self.queue_bindings = defaultdict(list)
         self.globals = globals
