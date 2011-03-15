@@ -123,6 +123,7 @@ class TestForumEmail(TestController):
                 rcpttos=rcpttos,
                 data=msg.as_string()))
         g.mock_amq.handle_all()
+        g.mock_amq.handle_all()
 
 class TestForumReactors(TestController):
 
