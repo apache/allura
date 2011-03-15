@@ -423,6 +423,7 @@ class Mailbox(MappedClass):
 
     def fire(self, now):
         notifications = Notification.query.find(dict(_id={'$in':self.queue}))
+        notifications = notifications.all()
         if self.type == 'direct':
             ngroups = defaultdict(list)
             for n in notifications:

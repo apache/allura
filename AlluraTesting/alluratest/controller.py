@@ -16,6 +16,7 @@ from ming.orm import ThreadLocalORMSession
 import ming.orm
 
 from allura import model as M
+import allura.lib.security
 from allura.lib.app_globals import Globals
 from allura.websetup.schema import REGISTRY
 #from allura.lib.custom_middleware import environ as ENV, MagicalC
@@ -55,7 +56,8 @@ def setup_functional_test(config=None, app_name=DFL_APP_NAME):
 
 def setup_unit_test():
     try:
-        REGISTRY.cleanup()
+        while True:
+            REGISTRY.cleanup()
     except:
         pass
     REGISTRY.prepare()
@@ -66,6 +68,7 @@ def setup_unit_test():
     REGISTRY.register(request, Request.blank('/', remote_addr='1.1.1.1'))
     REGISTRY.register(response, Response())
     REGISTRY.register(session, beaker.session.SessionObject({}))
+    REGISTRY.register(allura.credentials, allura.lib.security.Credentials())
     c.queued_messages = None
     ThreadLocalORMSession.close_all()
 

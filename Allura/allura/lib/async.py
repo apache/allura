@@ -141,16 +141,19 @@ class MockAMQ(object):
                     self.queue_bindings[xn].append(
                         dict(key=k, tool_name=name, method=method))
 
-    def handle(self, xn):
-        msg = self.pop(xn)
+    def handle(self, xn, msg=None):
+        if msg is None:
+            msg = self.pop(xn)
         for handler in self.queue_bindings[xn]:
             if self._route_matches(handler['key'], msg['routing_key']):
                 self._route(xn, msg, handler['tool_name'], handler['method'])
 
     def handle_all(self):
         for xn, messages in self.exchanges.items():
-            while messages:
-                self.handle(xn)
+            messages = list(messages)
+            self.exchanges[xn][:] = []
+            for msg in messages:
+                self.handle(xn, msg)
 
     def _route(self, xn, msg, tool_name, method):
         if xn == 'audit':
