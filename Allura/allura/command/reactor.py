@@ -92,6 +92,7 @@ class ReactorCommand(base.Command):
     def multi_worker_main(self, configs):
         if self.options.dry_run: return
         while True:
+            pylons.g.amq_conn.reset()
             with pylons.g.amq_conn.channel() as channel:
                 try:
                     exchanges = dict(
