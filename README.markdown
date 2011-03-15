@@ -145,6 +145,7 @@ This shouldn't take too long, but it will start the reactor server doing tons of
     (anvil)~/src/forge/Allura$ nohup paster serve --reload development.ini > ~/logs/tg.log &
 
 And now you should be able to visit the server running on your [local machine](http://localhost:8080/).
+You can log in with username test-admin, test-user or root.  They all have password "foo".
 
 
 ## Next Steps
