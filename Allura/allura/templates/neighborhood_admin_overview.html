@@ -15,9 +15,9 @@
 {% block content %}
   <form method="POST" action="update" enctype="multipart/form-data">
     <label class="grid-4">Name</label>
-    <div class="grid-14"><input name="name" value="{{neighborhood.name}}"></div>
+    <div class="grid-14"><input type="text" name="name" value="{{neighborhood.name}}"></div>
     <label class="grid-4">Redirect</label>
-    <div class="grid-14"><input name="redirect" value="{{neighborhood.redirect}}"/></div>
+    <div class="grid-14"><input type="text" name="redirect" value="{{neighborhood.redirect}}"/></div>
     <label class="grid-4">Home Content (HTML)</label>
     <div class="grid-14">{{c.markdown_editor.display(name='homepage', value=neighborhood.homepage)}}</div>
     <label class="grid-4">Allow Browsing</label>
