@@ -29,7 +29,7 @@ class TestRootController(TestController):
         assert 'git://' in resp
 
     def test_index_empty(self):
-        self.app.get('/Git/')
+        self.app.get('/git/')
 
     def test_log(self):
         resp = self.app.get('/src-git/ref/master:/log/')
