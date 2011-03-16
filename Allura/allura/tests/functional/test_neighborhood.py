@@ -27,6 +27,9 @@ class TestNeighborhood(TestController):
 
     def test_admin(self):
         r = self.app.get('/adobe/_admin/', extra_environ=dict(username='root'))
+        r = self.app.get('/adobe/_admin/overview', extra_environ=dict(username='root'))
+        r = self.app.get('/adobe/_admin/permissions', extra_environ=dict(username='root'))
+        r = self.app.get('/adobe/_admin/accolades', extra_environ=dict(username='root'))
         r = self.app.post('/adobe/_admin/update_acl',
                           params={'permission':'moderate',
                                   'new.add':'on',
