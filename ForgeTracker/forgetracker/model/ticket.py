@@ -51,7 +51,7 @@ class Globals(MappedClass):
             update={'$inc': { 'last_ticket_num': 1}},
             new=True)
         session(cls).expunge(g)
-        return g.last_ticket_num+1
+        return g.last_ticket_num
 
     @property
     def all_status_names(self):
