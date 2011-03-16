@@ -26,6 +26,9 @@ class TestRootController(TestController):
         resp = self.app.get('/src-hg/').follow().follow()
         assert 'hg clone http://' in resp, resp
 
+    def test_index_empty(self):
+        self.app.get('/test-app-hg/')
+
     def _get_ci(self):
         resp = self.app.get('/src-hg/').follow().follow()
         for tag in resp.html.findAll('a'):

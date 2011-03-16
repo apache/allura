@@ -28,6 +28,9 @@ class TestRootController(TestController):
         resp = self.app.get('/src-git/').follow().follow()
         assert 'git://' in resp
 
+    def test_index_empty(self):
+        self.app.get('/Git/')
+
     def test_log(self):
         resp = self.app.get('/src-git/ref/master:/log/')
 

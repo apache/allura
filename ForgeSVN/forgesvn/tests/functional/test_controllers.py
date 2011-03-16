@@ -27,6 +27,9 @@ class TestRootController(TestController):
         assert 'svn checkout' in resp
         assert '[r4]' in resp, resp.showbrowser()
 
+    def test_index_empty(self):
+        self.app.get('/svn/')
+
     def test_feed(self):
         assert 'Remove hello.txt' in self.app.get('/src/feed')
 

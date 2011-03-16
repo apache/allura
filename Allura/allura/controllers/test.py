@@ -82,7 +82,11 @@ class TestController(WsgiDispatchController, ProjectController):
             return ProjectController(), remainder
         app = c.project.app_instance(name)
         if app is None:
-            c.project.install_app(name, name)
+            prefix = 'test-app-'
+            ep_name = name
+            if name.startswith('test-app-'):
+                ep_name = name[len(prefix):]
+            c.project.install_app(ep_name, name)
             app = c.project.app_instance(name)
             if app is None:
                 raise exc.HTTPNotFound, name
