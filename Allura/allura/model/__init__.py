@@ -2,10 +2,12 @@
 """The application's model objects"""
 
 from .session import ProjectSession
+
 from .neighborhood import Neighborhood, NeighborhoodFile
 from .project import Project, ProjectCategory, ProjectFile, AppConfig, SearchConfig, ScheduledMessage
+from .index import ArtifactReference, Shortlink, IndexOp
+from .artifact import Artifact, Message, VersionedArtifact, Snapshot, Feed, AwardFile, Award, AwardGrant
 from .discuss import Discussion, Thread, PostHistory, Post, DiscussionAttachment
-from .artifact import Artifact, Message, VersionedArtifact, Snapshot, ArtifactLink, Feed, AwardFile, Award, AwardGrant
 from .attachments import BaseAttachment
 from .auth import AuthGlobals, User, ProjectRole, OpenId, EmailAddress, ApiToken, ApiTicket, OldProjectRole
 from .openid_model import OpenIdStore, OpenIdAssociation, OpenIdNonce

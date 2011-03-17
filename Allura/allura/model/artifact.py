@@ -1,284 +1,28 @@
-import re
-import os
 import logging
 import urllib
 import cPickle as pickle
 from collections import defaultdict
-from time import sleep
 from datetime import datetime
-import Image
 
 import bson
 import pymongo
-from pylons import c, g, request
-from ming import Document, Session, Field
+from pylons import c, request
 from ming import schema as S
-from ming import orm
-from ming.orm import mapper, state, session
-from ming.orm.mapped_class import MappedClass, MappedClassMeta
+from ming.orm import state, session
+from ming.orm.mapped_class import MappedClass
 from ming.orm.property import FieldProperty, ForeignIdProperty, RelationProperty
 from ming.utils import LazyProperty
-from pymongo.errors import OperationFailure
 from webhelpers import feedgenerator as FG
 
 from allura.lib import helpers as h
-from .session import ProjectSession
 from .session import main_doc_session, main_orm_session
 from .session import project_doc_session, project_orm_session
 from .session import artifact_orm_session
-from .types import ArtifactReference, ArtifactReferenceType
+from .index import ArtifactReference
 
 from filesystem import File
 
 log = logging.getLogger(__name__)
-
-class ArtifactLink(MappedClass):
-    class __mongometa__:
-        session = project_orm_session
-        name='artifact_link'
-        indexes = [
-            ('link', 'project_id') ]
-
-    core_re = r'''(\[
-            (?:(?P<project_id>.*?):)?      # optional project ID
-            (?:(?P<app_id>.*?):)?      # optional tool ID
-            (?P<artifact_id>.*)             # artifact ID
-    \])'''
-
-    re_link_1 = re.compile(r'\s' + core_re, re.VERBOSE)
-    re_link_2 = re.compile(r'^' +  core_re, re.VERBOSE)
-
-    _id = FieldProperty(str)
-    link = FieldProperty(str)
-    project_id = ForeignIdProperty('Project')
-    tool_name = FieldProperty(str)
-    mount_point = FieldProperty(str)
-    url = FieldProperty(str)
-    artifact_reference = FieldProperty(ArtifactReferenceType)
-
-    @classmethod
-    def add(cls, artifact):
-        aid = artifact.index_id()
-        entry = cls.query.get(_id=aid)
-        if isinstance(artifact, Artifact):
-            kw = dict(
-                link=artifact.shorthand_id(),
-                project_id=artifact.project_id,
-                tool_name=artifact.app_config.tool_name,
-                mount_point=artifact.app_config.options.mount_point,
-                url=artifact.url(),
-                artifact_reference = artifact.dump_ref())
-        else:
-            kw = dict(
-                link=artifact.shorthand_id(),
-                artifact_reference = artifact.dump_ref())
-        if entry is None:
-            entry = cls(_id=aid, **kw)
-        for k,v in kw.iteritems():
-            setattr(entry, k, v)
-
-    @classmethod
-    def remove(cls, artifact):
-        mapper(cls).remove(dict(_id=artifact.index_id()))
-
-    @classmethod
-    def _parse_link(cls, s):
-        s = s.strip()
-        if s.startswith('['):
-            s = s[1:]
-        if s.endswith(']'):
-            s = s[:-1]
-        parts = s.split(':')
-        if len(parts) == 3:
-            return dict(
-                project=parts[0],
-                app=parts[1],
-                artifact=parts[2])
-        elif len(parts) == 2:
-            return dict(
-                project=None,
-                app=parts[0],
-                artifact=parts[1])
-        elif len(parts) == 1:
-            return dict(
-                project=None,
-                app=None,
-                artifact=parts[0])
-        else:
-            return None
-
-
-    @classmethod
-    def lookup_links(cls, links):
-        # Parse all the links
-        parsed_links = dict(
-            (link, cls._parse_link(link))
-            for link in links)
-        # Categorize links by the artifact (shortlink)
-        links_by_artifact=  defaultdict(list)
-        for link, parsed in parsed_links.iteritems():
-            links_by_artifact[parsed['artifact']].append(link)
-        # Classify potential matches by the artifact (shortlink)
-        potential_matches_by_artifact = defaultdict(list)
-        for al in cls.query.find(dict(
-                link={'$in':links_by_artifact.keys()})):
-            potential_matches_by_artifact[al.link].append(al)
-        # Lookup all projects in this hierarchy
-        projects_by_shortname = dict(
-            (p.shortname, p) for p in c.project.project_hierarchy)
-        result = dict((link, None) for link in links)
-        for link, pl in parsed_links.iteritems():
-            potential_matches = potential_matches_by_artifact[pl['artifact']]
-            if not potential_matches: continue
-            # Determine projects to search for this shortlink
-            if pl['project'] is None:
-                if c.project:
-                    project_ids = [p._id for p in c.project.parent_iter()]
-                else:
-                    continue
-            else:
-                if pl['project'].startswith('/'):
-                    shortname = pl['project'][1:]
-                elif c.project:
-                    shortname = os.path.join(c.project.shortname, pl['project'])
-                    shortname = os.path.normpath(shortname)
-                else:
-                    shortname = pl['project']
-                p = projects_by_shortname.get(shortname)
-                if p is None: continue
-                project_ids = [p._id]
-            # Determine if there are any matches
-            for pid in project_ids:
-                potential_pid_matches = [
-                    m for m in potential_matches if m.project_id == pid ]
-                match = None
-                for m in potential_pid_matches:
-                    if pl['app'] in (None, m.mount_point):
-                        match = m
-                        break
-                if match:
-                    result[link] = match
-                    break
-                for m in potential_pid_matches:
-                    if pl['app'] == m.tool_name:
-                        result[link] = match
-                        break
-        return result
-
-    @classmethod
-    def lookup(cls, link):
-        from .project import Project
-        #
-        # Parse the link syntax
-        #
-        m = cls.re_link_1.match(link)
-        if m is None: m = cls.re_link_2.match(link)
-        if m is None: return None
-        groups = m.groupdict()
-        project_id = groups.get('project_id', None)
-        app_id = groups.get('app_id', None)
-        artifact_id = groups.get('artifact_id', None)
-        if app_id is None:
-            app_id = project_id
-            project_id = None
-
-        #
-        # Find the projects to search
-        #
-        if project_id is None:
-            if c.project:
-                projects = list(c.project.parent_iter())
-            else:
-                return None
-        elif project_id.startswith('/'):
-            projects = Project.query.find(dict(shortname=project_id[1:], deleted=False)).all()
-        else:
-            if c.project:
-                project_id = os.path.normpath(
-                    os.path.join('/' + c.project.shortname, project_id))
-            else:
-                project_id = '/' + project_id
-            projects = Project.query.find(dict(shortname=project_id[1:], deleted=False)).all()
-        if not projects: return None
-        #
-        # Actually search the projects
-        #
-        with h.push_config(c, project=projects[0]):
-            for p in projects:
-                links = [
-                    l for l in cls.query.find(dict(project_id=p._id, link=artifact_id))
-                    if ArtifactReference(l.artifact_reference).artifact ]
-                for l in links:
-                    if app_id is None: return l
-                    if app_id == l.mount_point: return l
-                for l in links:
-                    if app_id == l.tool_name: return l
-        return None
-
-class Feed(MappedClass):
-    """
-    Used to generate rss/atom feeds.  This does not need to be extended;
-    all feed items go into the same collection
-    """
-    class __mongometa__:
-        session = project_orm_session
-        name = 'artifact_feed'
-        indexes = [
-            'pubdate',
-            ('artifact_ref.project_id', 'artifact_ref.mount_point') ]
-
-    _id = FieldProperty(S.ObjectId)
-    artifact_reference = FieldProperty(ArtifactReferenceType)
-    title=FieldProperty(str)
-    link=FieldProperty(str)
-    pubdate = FieldProperty(datetime, if_missing=datetime.utcnow)
-    description = FieldProperty(str)
-    unique_id = FieldProperty(str, if_missing=lambda:h.nonce(40))
-    author_name = FieldProperty(str, if_missing=lambda:c.user.get_pref('display_name') if hasattr(c, 'user') else None)
-    author_link = FieldProperty(str, if_missing=lambda:c.user.url() if hasattr(c, 'user') else None)
-
-    @classmethod
-    def post(cls, artifact, title=None, description=None):
-        "Create a Feed item"
-        idx = artifact.index()
-        if title is None:
-            title='%s modified by %s' % (idx['title_s'], c.user.get_pref('display_name'))
-        if description is None: description = title
-        item = cls(artifact_reference=artifact.dump_ref(),
-                   title=title,
-                   description=description,
-                   link=artifact.url())
-        return item
-
-    @classmethod
-    def feed(cls, q, feed_type, title, link, description,
-             since=None, until=None, offset=None, limit=None):
-        "Produces webhelper.feedgenerator Feed"
-        d = dict(title=title, link=h.absurl(link), description=description, language=u'en')
-        if feed_type == 'atom':
-            feed = FG.Atom1Feed(**d)
-        elif feed_type == 'rss':
-            feed = FG.Rss201rev2Feed(**d)
-        query = defaultdict(dict)
-        query.update(q)
-        if since is not None:
-            query['pubdate']['$gte'] = since
-        if until is not None:
-            query['pubdate']['$lte'] = until
-        cur = cls.query.find(query)
-        cur = cur.sort('pubdate', pymongo.DESCENDING)
-        if limit is None: limit = 10
-        query = cur.limit(limit)
-        if offset is not None: query = cur.offset(offset)
-        for r in cur:
-            feed.add_item(title=r.title,
-                          link=h.absurl(r.link.encode('utf-8')),
-                          pubdate=r.pubdate,
-                          description=r.description,
-                          unique_id=r.unique_id,
-                          author_name=r.author_name,
-                          author_link=h.absurl(r.author_link))
-        return feed
 
 class Artifact(MappedClass):
     """
@@ -319,8 +63,8 @@ class Artifact(MappedClass):
     acl = FieldProperty({str:[S.ObjectId]})
     tags = FieldProperty(S.Deprecated)
     labels = FieldProperty([str])
-    references = FieldProperty([ArtifactReferenceType])
-    backreferences = FieldProperty({str:ArtifactReferenceType}) # keyed by solr id to emulate a set
+    references = FieldProperty(S.Deprecated)
+    backreferences = FieldProperty(S.Deprecated)
     app_config = RelationProperty('AppConfig')
 
     @classmethod
@@ -335,6 +79,19 @@ class Artifact(MappedClass):
                 actual = f
                 q = q.replace(base+':', actual+':')
         return q
+
+    @LazyProperty
+    def ref(self):
+        return ArtifactReference.from_artifact(self)
+
+    @LazyProperty
+    def refs(self):
+        return self.ref.references
+
+    @LazyProperty
+    def backrefs(self):
+        q = ArtifactReference.query.find(dict(references=self))
+        return [ aref._id for aref in q ]
 
     def subscribe(self, user=None, topic=None, type='direct', n=1, unit='day'):
         from allura.model import Mailbox
@@ -779,3 +536,68 @@ class AwardGrant(Artifact):
             return self.award.short
         else:
             return None
+
+class Feed(MappedClass):
+    """
+    Used to generate rss/atom feeds.  This does not need to be extended;
+    all feed items go into the same collection
+    """
+    class __mongometa__:
+        session = project_orm_session
+        name = 'artifact_feed'
+        indexes = [
+            'pubdate',
+            ('artifact_ref.project_id', 'artifact_ref.mount_point') ]
+
+    _id = FieldProperty(S.ObjectId)
+    ref_id = ForeignIdProperty('ArtifactReference')
+    title=FieldProperty(str)
+    link=FieldProperty(str)
+    pubdate = FieldProperty(datetime, if_missing=datetime.utcnow)
+    description = FieldProperty(str)
+    unique_id = FieldProperty(str, if_missing=lambda:h.nonce(40))
+    author_name = FieldProperty(str, if_missing=lambda:c.user.get_pref('display_name') if hasattr(c, 'user') else None)
+    author_link = FieldProperty(str, if_missing=lambda:c.user.url() if hasattr(c, 'user') else None)
+
+    @classmethod
+    def post(cls, artifact, title=None, description=None):
+        "Create a Feed item"
+        idx = artifact.index()
+        if title is None:
+            title='%s modified by %s' % (idx['title_s'], c.user.get_pref('display_name'))
+        if description is None: description = title
+        item = cls(artifact_reference=artifact.dump_ref(),
+                   title=title,
+                   description=description,
+                   link=artifact.url())
+        return item
+
+    @classmethod
+    def feed(cls, q, feed_type, title, link, description,
+             since=None, until=None, offset=None, limit=None):
+        "Produces webhelper.feedgenerator Feed"
+        d = dict(title=title, link=h.absurl(link), description=description, language=u'en')
+        if feed_type == 'atom':
+            feed = FG.Atom1Feed(**d)
+        elif feed_type == 'rss':
+            feed = FG.Rss201rev2Feed(**d)
+        query = defaultdict(dict)
+        query.update(q)
+        if since is not None:
+            query['pubdate']['$gte'] = since
+        if until is not None:
+            query['pubdate']['$lte'] = until
+        cur = cls.query.find(query)
+        cur = cur.sort('pubdate', pymongo.DESCENDING)
+        if limit is None: limit = 10
+        query = cur.limit(limit)
+        if offset is not None: query = cur.offset(offset)
+        for r in cur:
+            feed.add_item(title=r.title,
+                          link=h.absurl(r.link.encode('utf-8')),
+                          pubdate=r.pubdate,
+                          description=r.description,
+                          unique_id=r.unique_id,
+                          author_name=r.author_name,
+                          author_link=h.absurl(r.author_link))
+        return feed

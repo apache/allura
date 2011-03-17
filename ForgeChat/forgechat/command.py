@@ -44,8 +44,6 @@ class IRCBotCommand(allura.command.Command):
                 base.log.exception('Error in ircbot asyncore.loop(), restart in 5s')
                 time.sleep(5)
 
-
-
 class IRCBot(asynchat.async_chat):
     TIME_BETWEEN_CONFIGS=timedelta(minutes=1)
 
@@ -164,3 +162,4 @@ class IRCBot(asynchat.async_chat):
             channel=rcpt,
             text=text)
         ThreadLocalORMSession.flush_all()
+        ThreadLocalORMSession.close_all()

@@ -60,18 +60,12 @@ class ArtifactSessionExtension(SessionExtension):
         if not getattr(self.session, 'disable_artifact_index', False):
             from .artifact import ArtifactLink
             from .stats import CPA
-            if self.objects_deleted:
-                search.remove_artifacts(self.objects_deleted)
-                for obj in self.objects_deleted:
-                    ArtifactLink.remove(obj)
-            to_update = self.objects_added + self.objects_modified
-            if to_update:
-                search.add_artifacts(to_update)
-                for obj in to_update:
-                    try:
-                        ArtifactLink.add(obj)
-                    except:
-                        log.exception('Error adding ArtifactLink for %s', obj)
+            from .index import IndexOp, ArtifactReference
+            for obj in self.objects_deleted:
+                IndexOp.del_op(obj)
+            for obj in self.objects_added + self.objects_modified:
+                ArtifactReference.from_artifact(obj)
+                IndexOp.add_op(obj)
                 session(ArtifactLink).flush()
             for obj in self.objects_added:
                 CPA.post('create', obj)

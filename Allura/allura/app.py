@@ -227,23 +227,23 @@ class Application(object):
         '''Handle incoming email msgs addressed to this tool'''
         pass
 
-    def message_auditor(self, routing_key, data, artifact, **kw):
+    def handle_artifact_message(self, artifact, message):
         # Find ancestor comment
-        in_reply_to = data.get('in_reply_to', [])
+        in_reply_to = message.get('in_reply_to', [])
         if in_reply_to:
             parent_id = in_reply_to[0]
         else:
             parent_id = None
-        thd = artifact.get_discussion_thread(data)
+        thd = artifact.get_discussion_thread(message)
         # Handle attachments
-        message_id = data['message_id']
-        if data.get('filename'):
+        message_id = message['message_id']
+        if message.get('filename'):
             # Special case - the actual post may not have been created yet
-            log.info('Saving attachment %s', data['filename'])
-            fp = StringIO(data['payload'])
+            log.info('Saving attachment %s', message['filename'])
+            fp = StringIO(message['payload'])
             self.AttachmentClass.save_attachment(
-                data['filename'], fp,
-                content_type=data.get('content_type', 'application/octet-stream'),
+                message['filename'], fp,
+                content_type=message.get('content_type', 'application/octet-stream'),
                 discussion_id=thd.discussion_id,
                 thread_id=thd._id,
                 post_id=message_id,
@@ -253,20 +253,19 @@ class Application(object):
         post = self.PostClass.query.get(_id=message_id)
         if post:
             log.info('Existing message_id %s found - saving this as text attachment' % message_id)
-            fp = StringIO(data['payload'])
+            fp = StringIO(message['payload'])
             post.attach(
                 'alternate', fp,
-                content_type=data.get('content_type', 'application/octet-stream'),
+                content_type=message.get('content_type', 'application/octet-stream'),
                 discussion_id=thd.discussion_id,
                 thread_id=thd._id,
                 post_id=message_id)
         else:
+            text=message['payload'] or '--no text body--',
             post = thd.post(
-                text=data['payload'] or '--no text body--',
                 message_id=message_id,
                 parent_id=parent_id,
-                **kw)
-
+                text=text)
 
 class DefaultAdminController(BaseController):
 

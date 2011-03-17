@@ -66,53 +66,17 @@ class ForgeDiscussionApp(Application):
                                app_config_id=self.config._id)
         return has_artifact_access('post', f, user=user)()
 
-    @audit('Discussion.msg.#')
-    def message_auditor(self, routing_key, data):
+    def handle_message(self, topic, message):
         log.info('Auditing data from %s (%s)',
-                 routing_key, self.config.options.mount_point)
-        log.info('Headers are: %s', data['headers'])
-        try:
-            shortname = routing_key.split('.', 2)[-1]
-            f = DM.Forum.query.get(shortname=shortname.replace('.', '/'),
-                                   app_config_id=self.config._id)
-        except:
-            log.exception('Error looking up forum: %s', routing_key)
+                 topic, self.config.options.mount_point)
+        log.info('Headers are: %s', message['headers'])
+        shortname=topic.replace('.', '/')
+        forum = DM.Forum.query.get(
+            shortname=shortname, app_config_id=self.config._id)
+        if forum is None:
+            log.error("Error looking up forum: %r", shortname)
             return
-        if f is None:
-            log.error("Can't find forum %s (routing key was %s)",
-                          shortname, routing_key)
-            return
-        super(ForgeDiscussionApp, self).message_auditor(
-            routing_key, data, f, subject=data['headers'].get('Subject', '[No Subject]'))
-
-    @audit('Discussion.forum_stats.#')
-    def forum_stats_auditor(self, routing_key, data):
-        try:
-            shortname = routing_key.split('.', 2)[-1]
-            f = DM.Forum.query.get(shortname=shortname.replace('.', '/'),
-                                   app_config_id=self.config._id)
-        except:
-            log.exception('Error looking up forum: %s', routing_key)
-            return
-        if f is None:
-            log.error("Can't find forum %s (routing key was %s)",
-                          shortname, routing_key)
-            return
-        f.update_stats()
-
-    @audit('Discussion.thread_stats.#')
-    def thread_stats_auditor(self, routing_key, data):
-        try:
-            thread_id = routing_key.split('.', 2)[-1]
-            thread = DM.ForumThread.query.find(_id=thread_id)
-        except:
-            log.exception('Error looking up forum: %s', routing_key)
-            return
-        if thread is None:
-            log.error("Can't find thread %s (routing key was %s)",
-                      thread_id, routing_key)
-            return
-        thread.update_stats()
+        self.handle_artifact_message(forum, message)
 
     @property
     @h.exceptionless([], log)
