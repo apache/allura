@@ -6,7 +6,7 @@ from ming.utils import LazyProperty
 from ming.orm.ormsession import ThreadLocalORMSession
 
 # Pyforge-specific imports
-import allura.tasks
+import allura.tasks.repo_tasks
 from allura.controllers.repository import RepoRootController
 from allura.lib.repository import RepositoryApp
 

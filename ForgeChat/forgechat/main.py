@@ -15,7 +15,7 @@ from formencode import validators
 from allura.app import Application, ConfigOption, SitemapEntry, DefaultAdminController
 from allura.lib import helpers as h
 from allura.lib.search import search
-from allura.lib.decorators import audit, react, require_post
+from allura.lib.decorators import require_post
 from allura.lib.security import require, has_artifact_access
 from allura.model import ProjectRole
 from allura.controllers import BaseController

@@ -1,12 +1,43 @@
 import sys
 import json
 import logging
+from collections import defaultdict
 from urllib import unquote
 from tg.decorators import before_validate
 from tg import request, redirect
 
-import webob
 from webob import exc
+
+def task(func):
+    '''Decorator to add some methods to task functions'''
+    def post(*args, **kwargs):
+        from allura import model as M
+        return M.MonQTask.post(func, args, kwargs)
+    func.post = post
+    return func
+
+class event_handler(object):
+    '''Decorator to register event handlers'''
+    listeners = defaultdict(set)
+
+    def __init__(self, *topics):
+        self.topics = topics
+
+    def __call__(self, func):
+        for t in self.topics:
+            self.listeners[t].add(func)
+        return func
+
+    @classmethod
+    def fire_event(cls, topic, *args, **kwargs):
+        for t in cls.listeners[topic]:
+            try:
+                t(topic, *args, **kwargs)
+            except:
+                log = logging.getLogger(__name__)
+                log.exception(
+                    'Event %s(%s, *%r,**%r)',
+                    t, topic, args, kwargs)
 
 class require_post(object):
 
@@ -22,41 +53,6 @@ class require_post(object):
         before_validate(check_method)(func)
         return func
 
-class ConsumerDecoration(object):
-
-    def __init__(self, func):
-        self.func = func
-        self.audit_keys = set()
-        self.react_keys = set()
-
-    @classmethod
-    def get_decoration(cls, func, create=True):
-        if create and not hasattr(func, 'consumer_decoration'):
-            func.consumer_decoration = cls(func)
-        return getattr(func, 'consumer_decoration', None)
-
-class audit(object):
-
-    def __init__(self, *binding_keys):
-        self.binding_keys = binding_keys
-
-    def __call__(self, func):
-        deco = ConsumerDecoration.get_decoration(func)
-        for bk in self.binding_keys:
-            deco.audit_keys.add(bk)
-        return func
-
-class react(object):
-
-    def __init__(self, *binding_keys):
-        self.binding_keys = binding_keys
-
-    def __call__(self, func):
-        deco = ConsumerDecoration.get_decoration(func)
-        for bk in self.binding_keys:
-            deco.react_keys.add(bk)
-        return func
-        
 class log_action(object): # pragma no cover
 
     def __init__(self,
@@ -93,10 +89,10 @@ class log_action(object): # pragma no cover
         try:
             try:
                 result = self._func(*args, **kwargs)
-            except webob.exc.HTTPServerError:
+            except exc.HTTPServerError:
                 raise
-            except webob.exc.HTTPException, exc:
-                result = exc
+            except exc.HTTPException, e:
+                result = e
             args = self._args
             kwargs = self._kwargs
             extra = kwargs.setdefault('extra', {})
@@ -117,7 +113,6 @@ class log_action(object): # pragma no cover
     def _make_extra(self, result=None):
         '''Create a dict of extra items to be added to a log record
         '''
-        from pylons import request
         extra = self._extra_proto.copy()
         # Save the client IP address
         client_ip = request.headers.get('X_FORWARDED_FOR', request.remote_addr)
@@ -147,3 +142,24 @@ class log_action(object): # pragma no cover
                 pass
         extra['referer_link'] = referer_link
         return extra
+
+class exceptionless(object):
+    '''Decorator making the decorated function return 'error_result' on any
+    exceptions rather than propagating exceptions up the stack
+    '''
+
+    def __init__(self, error_result, log=None):
+        self.error_result = error_result
+        self.log = log
+
+    def __call__(self, fun):
+        fname = 'exceptionless(%s)' % fun.__name__
+        def inner(*args, **kwargs):
+            try:
+                return fun(*args, **kwargs)
+            except:
+                if self.log:
+                    self.log.exception('Error calling %s', fname)
+                return self.error_result
+        inner.__name__ = fname
+        return inner

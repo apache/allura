@@ -4,7 +4,7 @@
 from .session import ProjectSession
 
 from .neighborhood import Neighborhood, NeighborhoodFile
-from .project import Project, ProjectCategory, ProjectFile, AppConfig, SearchConfig, ScheduledMessage
+from .project import Project, ProjectCategory, ProjectFile, AppConfig, ScheduledMessage
 from .index import ArtifactReference, Shortlink, IndexOp
 from .artifact import Artifact, Message, VersionedArtifact, Snapshot, Feed, AwardFile, Award, AwardGrant
 from .discuss import Discussion, Thread, PostHistory, Post, DiscussionAttachment
@@ -19,8 +19,6 @@ from .stats import Stats, CPA
 from .import_batch import ImportBatch
 from .oauth import OAuthToken, OAuthConsumerToken, OAuthRequestToken, OAuthAccessToken
 from .monq_model import MonQTask
-
-from .types import ArtifactReference, ArtifactReferenceType
 
 from .session import main_doc_session, main_orm_session
 from .session import project_doc_session, project_orm_session

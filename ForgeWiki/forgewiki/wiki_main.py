@@ -18,7 +18,7 @@ from allura import model as M
 from allura.lib import helpers as h
 from allura.app import Application, SitemapEntry, DefaultAdminController
 from allura.lib.search import search
-from allura.lib.decorators import audit, react, require_post
+from allura.lib.decorators import require_post
 from allura.lib.security import require, has_artifact_access
 from allura.controllers import AppDiscussionController, BaseController
 from allura.controllers import attachments as ac
@@ -74,33 +74,15 @@ class ForgeWikiApp(Application):
     def has_access(self, user, topic):
         return has_artifact_access('post', user=user)
 
-    @audit('Wiki.msg.#')
-    def message_auditor(self, routing_key, data):
-        log.info('Auditing data from %s (%s)',
-                 routing_key, self.config.options.mount_point)
-        log.info('Headers are: %s', data['headers'])
+    def handle_message(self, topic, message):
+        log.info('Message from %s (%s)',
+                 topic, self.config.options.mount_point)
+        log.info('Headers are: %s', message['headers'])
         try:
-            title = routing_key.split('.')[-1]
-            p = WM.Page.upsert(title)
+            page = WM.Page.upsert(topic)
         except:
-            log.info('Audit applies to page Root.')
-            p = WM.Page.upsert('Root')
-        super(ForgeWikiApp, self).message_auditor(routing_key, data, p)
-
-    @react('Wiki.#')
-    def reactor(self, routing_key, data):
-        log.info('Reacting to data from %s (%s)',
-                 routing_key, self.config.options.mount_point)
-
-    @audit('forgewiki.reply')
-    def audit_reply(self, routing_key, data):
-        log.info('Auditing reply from %s (%s)',
-                 routing_key, self.config.options.mount_point)
-        # 'data' should be a dictionary which includes:
-        # destinations, text, from, subject, message_id
-        data['destinations'] = 'devnull@localhost'
-        g.publish('audit', 'forgemail.send_email',
-            data, serializer='yaml')
+            log.exception('Error getting artifact %s', topic)
+        self.handle_artifact_message(page, message)
 
     @property
     def root_page_name(self):

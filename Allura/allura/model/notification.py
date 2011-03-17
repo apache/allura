@@ -28,11 +28,9 @@ import pymongo
 from ming import schema as S
 from ming.orm import MappedClass, FieldProperty, ForeignIdProperty, RelationProperty, session
 
-import allura.tasks
 from allura.lib import helpers as h
 
 from .session import main_orm_session, project_orm_session
-from .types import ArtifactReferenceType
 from .auth import User
 
 
@@ -50,7 +48,7 @@ class Notification(MappedClass):
     # Classify notifications
     project_id = ForeignIdProperty('Project', if_missing=lambda:c.project._id)
     app_config_id = ForeignIdProperty('AppConfig', if_missing=lambda:c.app.config._id)
-    artifact_reference = FieldProperty(ArtifactReferenceType)
+    ref_id = ForeignIdProperty('ArtifactReference')
     topic = FieldProperty(str)
     unique_id = FieldProperty(str, if_missing=lambda:h.nonce(40))
 
@@ -65,18 +63,18 @@ class Notification(MappedClass):
     feed_meta=FieldProperty(S.Deprecated)
     pubdate = FieldProperty(datetime, if_missing=datetime.utcnow)
 
+    ref = RelationProperty('ArtifactReference')
+
     def author(self):
         return User.query.get(_id=self.author_id) or User.anonymous()
 
     @classmethod
     def post(cls, artifact, topic, **kw):
         '''Create a notification and  send the notify message'''
+        import allura.tasks.notification_tasks
         n = cls._make_notification(artifact, topic, **kw)
-        idx = artifact.index()
-        g.publish('react', 'forgemail.notify', dict(
-                notification_id=n._id,
-                artifact_index_id=idx['id'],
-                topic=topic))
+        allura.tasks.notification_tasks.notify.post(
+            n._id, artifact.index_id(), topic)
         return n
 
     @classmethod
@@ -138,7 +136,7 @@ class Notification(MappedClass):
         if not d.get('text'):
             d['text'] = ''
         assert d['reply_to_address'] is not None
-        n = cls(artifact_reference=artifact.dump_ref(),
+        n = cls(ref_id=artifact.index_id(),
                 topic=topic,
                 link=kwargs.pop('link', artifact.url()),
                 **d)

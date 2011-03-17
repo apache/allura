@@ -73,9 +73,6 @@ def bootstrap(command, conf, vars):
             c.project = M.Project.query.get(shortname='test')
             return
     log.info('Initializing search')
-    M.SearchConfig(last_commit = datetime.utcnow(),
-                   pending_commit = 0)
-    g.publish('audit', 'search.check_commit', {})
 
     log.info('Registering initial users & neighborhoods')
     anonymous = M.User(_id=None,

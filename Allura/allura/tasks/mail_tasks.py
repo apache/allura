@@ -5,7 +5,7 @@ from bson import ObjectId
 
 from allura import model as M
 from allura.lib import helpers as h
-from allura.lib.utils import task
+from allura.lib.decorators import task
 from allura.lib import mail_util
 from allura.lib import exceptions as exc
 
@@ -23,8 +23,7 @@ def route_email(
     '''Route messages according to their destination:
 
     <topic>@<mount_point>.<subproj2>.<subproj1>.<project>.projects.sourceforge.net
-    goes to the audit with routing ID
-    <tool name>.mail.<topic>
+    gets send to handle_message(topic, message)
     '''
     try:
         msg = mail_util.parse_message(data)
@@ -53,13 +52,9 @@ def route_email(
                                 filename=part['filename'],
                                 content_type=part['content_type'],
                                 payload=part['payload'])
-                            handle_message.post(
-                                topic=userpart,
-                                message=msg)
+                            handle_message.post(userpart, msg)
                     else:
-                        handle_message.post(
-                            topic=userpart,
-                            message=msg)
+                        handle_message.post(userpart, msg)
         except exc.MailError, e:
             log.error('Error routing email to %s: %s', addr, e)
         except:

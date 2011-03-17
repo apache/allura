@@ -13,7 +13,7 @@ from allura.lib.helpers import push_config, vardec
 from allura.lib.security import require, has_artifact_access, has_project_access
 from allura import model
 from allura.controllers import BaseController
-from allura.lib.decorators import react, require_post
+from allura.lib.decorators import require_post, event_handler
 
 log = logging.getLogger(__name__)
 
@@ -126,7 +126,6 @@ class Application(object):
         32:'allura/images/admin_32.png',
         48:'allura/images/admin_48.png'
     }
-    event_listeners={}
 
     def __init__(self, project, app_config_object):
         self.project = project
@@ -159,11 +158,6 @@ class Application(object):
     def is_visible_to(self, user):
         '''Whether the user can view the app.'''
         return has_artifact_access('read', app=self)(user=user)
-
-    @react('forge.project_updated')
-    def subscribe_new_admin(self, routing_key, doc):
-        if str(c.project._id) == doc['project_id']:
-            self.subscribe_admins()
 
     def subscribe_admins(self):
         for uid in g.credentials.userids_with_named_role(self.project._id, 'Admin'):
@@ -293,7 +287,9 @@ class DefaultAdminController(BaseController):
     @require_post()
     def configure(self, **kw):
         with push_config(c, app=self.app):
-            require(has_artifact_access('configure', app=self.app), 'Must have configure permission')
+            require(
+                has_artifact_access('configure', app=self.app),
+                'Must have configure permission')
             is_admin = self.app.config.tool_name == 'admin'
             if kw.pop('delete', False):
                 if is_admin:
@@ -340,3 +336,7 @@ class DefaultAdminController(BaseController):
         require(has_artifact_access('configure', app=self.app))
         self.app.config.acl[permission].remove(ObjectId(role))
         redirect('permissions')
+
+@event_handler('project_updated')
+def subscribe_admins():
+    c.app.subscribe_admins()

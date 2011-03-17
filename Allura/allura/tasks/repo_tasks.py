@@ -3,7 +3,7 @@ import shutil
 from pylons import c
 
 from allura import model as M
-from allura.lib.utils import task
+from allura.lib.decorators import task
 from allura.lib.repository import RepositoryApp
 
 @task

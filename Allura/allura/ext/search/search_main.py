@@ -1,24 +1,14 @@
-import difflib
 import logging
-import time
-from datetime import datetime, timedelta
-from pprint import pformat
 
 import pkg_resources
-import pysolr
-from pylons import c, g, request
-from tg import expose, redirect, validate
+from pylons import c
+from tg import expose, validate
 from tg.decorators import with_trailing_slash
 from formencode import validators as V
 
-from allura.app import Application, ConfigOption, SitemapEntry
+from allura.app import Application
 from allura import version
-from allura.model import ProjectRole, SearchConfig, ScheduledMessage, Project
-from allura.lib.security import require, has_artifact_access
-from allura.lib.decorators import audit, react
 from allura.lib import search
-from allura.lib import helpers as h
-from allura import model as M
 from allura.controllers import BaseController
 
 log = logging.getLogger(__name__)
@@ -35,74 +25,6 @@ class SearchApp(Application):
         Application.__init__(self, project, config)
         self.root = SearchController()
         self.templates = pkg_resources.resource_filename('allura.ext.search', 'templates')
-
-    @classmethod
-    @react('artifacts_altered')
-    def add_artifacts(cls, routing_key, doc):
-        log.info('Adding %d artifacts', len(doc['artifacts']))
-        M.session.artifact_orm_session._get().skip_mod_date = True
-        M.session.artifact_orm_session._get().disable_artifact_index = True
-        obj = SearchConfig.query.find().first()
-        obj.pending_commit += len(doc['artifacts'])
-        artifacts = [ ref.artifact for ref in doc['artifacts'] if ref.artifact ]
-        artifacts = ((a, search.solarize(a)) for a in artifacts)
-        artifacts = [ (a, s) for a,s in artifacts if s is not None ]
-
-        # Add to solr
-        try:
-            g.solr.add([ s for a,s in artifacts])
-        except:
-            log.exception('Error adding to solr')
-            time.sleep(5)
-            g.publish('react', 'artifacts_altered',
-                      dict(artifacts=[ a.dump_ref() for a,s in artifacts]),
-                      serializer='pickle')
-            return
-        # Add backreferences
-        for a, s in artifacts:
-            if isinstance(a, M.Snapshot): continue
-            c.app = c.project.app_instance(a.app_config)
-            aref = a.dump_ref()
-            references = list(search.find_shortlinks(s['text']))
-            a.references = [ r.artifact_reference for r in references ]
-            for r in references:
-                a = M.ArtifactReference(r.artifact_reference).artifact
-                if a is None: continue
-                a.backreferences[s['id']] =aref
-
-    @classmethod
-    @react('artifacts_removed')
-    def del_artifacts(cls, routing_key, doc):
-        log.info('Removing %d artifacts', len(doc['artifacts']))
-        obj = SearchConfig.query.find().first()
-        obj.pending_commit += len(doc['artifacts'])
-        artifacts = ( ref.artifact for ref in doc['artifacts'] if ref is not None and ref.artifact is not None )
-        artifacts = ((a, search.solarize(a)) for a in artifacts)
-        artifacts = [ (a, s) for a,s in artifacts if s is not None ]
-        # Add to solr
-        g.solr.delete([ s for a,s in artifacts])
-        # Add backreferences
-        for a, s in artifacts:
-            c.app = c.project.app_instance(a.app_config)
-            for r in search.find_shortlinks(s['text']):
-                a = M.ArtifactReference(r.artifact_reference).artifact
-                if a is None: continue
-                del a.backreferences[s['id']]
-        M.session.artifact_orm_session._get().disable_artifact_index = True
-
-    @classmethod
-    @audit('search.check_commit')
-    def check_commit(cls, routing_key, doc):
-        obj = SearchConfig.query.find().first()
-        now = datetime.utcnow()
-        if obj.needs_commit():
-            obj.last_commit = now
-            obj.pending_commit = 0
-            g.solr.commit()
-        ScheduledMessage(
-            when=now+timedelta(seconds=60),
-            exchange='audit',
-            routing_key='search.check_commit')
 
     def sidebar_menu(self): # pragma no cover
         return [ ]

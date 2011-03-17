@@ -73,7 +73,6 @@ class Globals(object):
         # Setup RabbitMQ
         if asbool(config.get('amqp.mock')):
             self.amq_conn = self.mock_amq = MockAMQ(self)
-            self._publish = self.amq_conn.publish
         else:
             self.amq_conn = Connection(
                 hostname=config.get('amqp.hostname', 'localhost'),
@@ -274,50 +273,6 @@ class Globals(object):
     def set_app(self, name):
         c.app = c.project.app_instance(name)
 
-    def publish(self, xn, key, message=None, **kw):
-        project = getattr(c, 'project', None)
-        app = getattr(c, 'app', None)
-        user = getattr(c, 'user', None)
-        if message is None: message = {}
-        if project:
-            message.setdefault('project_id', project._id)
-        if app:
-            message.setdefault('mount_point', app.config.options.mount_point)
-        if user:
-            message.setdefault('user_id',  user._id)
-        if getattr(c, 'queued_messages', None) is not None:
-            c.queued_messages[xn].append((key, message, kw))
-        else:
-            self._publish(xn, key, message, **kw)
-
-    def send_all_messages(self):
-        max_tries = 3
-        for xn, messages in c.queued_messages.items():
-            for tryno in range(max_tries):
-                try:
-                    self.amq_conn.publish(xn, messages)
-                    break
-                except Exception:
-                    log.warning(
-                        'Exception sending message to amqp (try #%d)',
-                        tryno, exc_info=True)
-                    self.amq_conn.reset()
-            else:
-                log.error('Giving up sending messages, reset connection & 500')
-                self.amq_conn.reset()
-                raise webob.exc.HTTPInternalServerError()
-        c.queued_messages = defaultdict(list)
-
-    def _publish(self, xn, routing_key, message, **kw):
-        try:
-            self.amq_conn.publish(xn, [(routing_key, message, kw)])
-        except socket.error: # pragma no cover
-            log.exception('''Failure publishing message:
-xn         : %r
-routing_key: %r
-data       : %r
-''', xn, routing_key, message)
-
     def url(self, base, **kw):
         params = urlencode(kw)
         if params:
@@ -351,6 +306,9 @@ class MockSOLR(object):
         for o in objects:
             o['text'] = ''.join(o['text'])
             self.db[o['id']] = o
+
+    def commit(self):
+        pass
 
     def search(self, q, fq=None, **kw):
         if isinstance(q, unicode):

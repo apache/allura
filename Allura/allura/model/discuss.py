@@ -13,7 +13,6 @@ from allura.lib import helpers as h
 from allura.lib.security import require, has_artifact_access
 from .artifact import Artifact, VersionedArtifact, Snapshot, Message, Feed
 from .attachments import BaseAttachment
-from .types import ArtifactReference, ArtifactReferenceType
 from .auth import User
 
 log = logging.getLogger(__name__)
@@ -107,7 +106,7 @@ class Thread(Artifact):
     _id=FieldProperty(str, if_missing=lambda:h.nonce(8))
     discussion_id = ForeignIdProperty(Discussion)
     artifact_id = FieldProperty(None)
-    artifact_reference = FieldProperty(ArtifactReferenceType)
+    ref_id = ForeignIdProperty('ArtifactReference')
     subject = FieldProperty(str, if_missing='')
     num_replies = FieldProperty(int, if_missing=0)
     num_views = FieldProperty(int, if_missing=0)
@@ -117,6 +116,7 @@ class Thread(Artifact):
     discussion = RelationProperty(Discussion)
     posts = RelationProperty('Post', via='thread_id')
     first_post = RelationProperty('Post', via='first_post_id')
+    ref = RelationProperty('ArtifactReference')
 
     def __json__(self):
         return dict(

@@ -10,27 +10,6 @@ from paste.httpheaders import CACHE_CONTROL, EXPIRES
 
 from ming.utils import LazyProperty
 
-class exceptionless(object):
-    '''Decorator making the decorated function return 'error_result' on any
-    exceptions rather than propagating exceptions up the stack
-    '''
-
-    def __init__(self, error_result, log=None):
-        self.error_result = error_result
-        self.log = log
-
-    def __call__(self, fun):
-        fname = 'exceptionless(%s)' % fun.__name__
-        def inner(*args, **kwargs):
-            try:
-                return fun(*args, **kwargs)
-            except:
-                if self.log:
-                    self.log.exception('Error calling %s', fname)
-                return self.error_result
-        inner.__name__ = fname
-        return inner
-
 def cache_forever():
     headers = [
         (k,v) for k,v in response.headers.items()
@@ -109,23 +88,3 @@ class StatsHandler(WatchedFileHandler):
             if v is not None)
         record.exc_info = None # Never put tracebacks in the rtstats log
         WatchedFileHandler.emit(self, record)
-
-def task(func):
-    '''Decorator to add some methods to task functions'''
-    def post(*args, **kwargs):
-        from allura import model as M
-        return M.MonQTask.post(func, *args, **kwargs)
-    func.post = post
-    return func
-
-_event_listeners = None
-def event_listeners(event_type):
-    global _event_listeners
-    if _event_listeners is None:
-        l = defaultdict(list)
-        for ep in iter_entry_points('allura'):
-            tool = ep.load()
-            for name, listeners in tool.event_listeners:
-                _event_listeners[name] += listeners
-        _event_listeners = l
-    return _event_listeners[event_type]

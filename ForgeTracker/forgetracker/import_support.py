@@ -22,7 +22,6 @@ from allura import model as M
 from allura.lib import helpers as h
 from allura.app import Application, SitemapEntry, DefaultAdminController
 from allura.lib.search import search_artifact
-from allura.lib.decorators import audit, react
 from allura.lib.security import require, has_artifact_access
 from allura.lib import widgets as w
 from allura.lib.widgets import form_fields as ffw

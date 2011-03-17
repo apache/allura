@@ -5,6 +5,7 @@ from cPickle import dumps, loads
 from datetime import datetime
 from collections import defaultdict
 
+import bson
 import pymongo
 from pylons import c, g
 
@@ -32,28 +33,27 @@ class ArtifactReference(MappedClass):
         indexes = [ 'references' ]
 
     _id = FieldProperty(str)
-    artifact_reference = S.Object(dict(
+    artifact_reference = FieldProperty(S.Object(dict(
             cls=S.Binary,
             project_id=S.ObjectId,
             app_config_id=S.ObjectId,
-            artifact_id=S.Anything(if_missing=None)))
+            artifact_id=S.Anything(if_missing=None))))
     references = FieldProperty([str])
 
     @classmethod
     def from_artifact(cls, artifact):
         '''Upsert logic to generate an ArtifactReference object from an artifact'''
-        cls = dumps(artifact.__class__)
         obj = cls.query.get(_id=artifact.index_id())
         if obj is not None: return obj
         try:
             obj = cls(
                 _id=artifact.index_id(),
                 artifact_reference=dict(
-                    cls=dumps(artifact.__class__),
+                    cls=bson.Binary(dumps(artifact.__class__)),
                     project_id=artifact.app_config.project_id,
                     app_config_id=artifact.app_config._id,
                     artifact_id=artifact._id))
-            session(obj).flush_now(obj)
+            session(obj).flush(obj)
             return obj
         except pymongo.errors.DuplicateKeyError: # pragma no cover
             session(obj).expunge(obj)
@@ -64,7 +64,7 @@ class ArtifactReference(MappedClass):
         '''Look up the artifact referenced'''
         aref = self.artifact_reference
         try:
-            cls = loads(str(aref.artifact_type))
+            cls = loads(str(aref.cls))
             with h.push_context(aref.project_id):
                 return cls.query.get(_id=aref.artifact_id)
         except:
@@ -87,7 +87,7 @@ class Shortlink(MappedClass):
 
     # Relation Properties
     project = RelationProperty('Project')
-    app_confit = RelationProperty('AppConfig')
+    app_config = RelationProperty('AppConfig')
     ref = RelationProperty('ArtifactReference')
 
     # Regexes used to find shortlinks
@@ -100,9 +100,12 @@ class Shortlink(MappedClass):
     re_link_2 = re.compile(r'^' +  _core_re, re.VERBOSE)
 
     def __repr__(self):
-        return '[%s:%s:%s]' % (
-            self.project.shortname,
-            self.app_config.options.mount_point)
+        with h.push_context(self.project_id):
+            return '[%s:%s:%s] -> %s' % (
+                self.project.shortname,
+                self.app_config.options.mount_point,
+                self.link,
+                self.ref_id)
 
     @classmethod
     def lookup(cls, link):
@@ -110,11 +113,19 @@ class Shortlink(MappedClass):
 
     @classmethod
     def from_artifact(cls, a):
-        return cls(
-            ref_id = a.index_id(),
-            project_id = a.app_config.project_id,
-            app_config_id = a.app_config._id,
-            link = a.shorthand_id())
+        result = cls.query.get(ref_id=a.index_id())
+        if result is None:
+            try:
+                result = cls(
+                    ref_id = a.index_id(),
+                    project_id = a.app_config.project_id,
+                    app_config_id = a.app_config._id,
+                    link = a.shorthand_id())
+                session(result).flush(result)
+            except pymongo.errors.DuplicateKeyError: # pragma no cover
+                session(result).expunge(result)
+                result = cls.query.get(ref_id=a.index_id())
+        return result
 
     @classmethod
     def from_links(cls, *links):
@@ -131,10 +142,10 @@ class Shortlink(MappedClass):
         result = {}
         matches_by_artifact = dict(
             (link, list(matches))
-            for link, matches in groupby(q, keyfunc=lambda s:s.link))
+            for link, matches in groupby(q, key=lambda s:s.link))
         result = {}
         for link, d in parsed_links.iteritems():
-            matches = matches_by_artifact[d['artifact']]
+            matches = matches_by_artifact.get(d['artifact'], [])
             matches = (
                 m for m in matches
                 if m.project.shortname == d['project'] )
@@ -185,7 +196,7 @@ class IndexOp(MappedClass):
     '''
     class __mongometa__:
         session = main_orm_session
-        name = 'monq_task'
+        name = 'index_op'
         indexes = [
            [ ('worker', ming.ASCENDING),
              ('ref_id', ming.ASCENDING),
@@ -245,10 +256,11 @@ class IndexOp(MappedClass):
         artifact (which is what you actually want).
         '''
         q = (cls
+             .query
              .find(dict(worker=worker))
              .sort('ref_id')
              .sort('timestamp', ming.DESCENDING))
-        for ref_id, ops in groupby(q, keyfunc=lambda o: o.ref_id):
+        for ref_id, ops in groupby(q, key=lambda o: o.ref_id):
             yield ops.next()
 
     def __call__(self):
@@ -256,12 +268,13 @@ class IndexOp(MappedClass):
         try:
             if self.op == 'add':
                 artifact = self.ref.artifact
-                s = solarize(artifact)
-                if s is not None: g.solr.add([s])
-                if not isinstance(artifact, Snapshot):
-                    self.ref.references = [
-                        link.ref_id for link in find_shortlinks(s['text']) ]
                 Shortlink.from_artifact(artifact)
+                s = solarize(artifact)
+                if s is not None:
+                    g.solr.add([s])
+                    if not isinstance(artifact, Snapshot):
+                        self.ref.references = [
+                            link.ref_id for link in find_shortlinks(s['text']) ]
             else:
                 g.solr.delete(id=self.ref_id)
                 ArtifactReference.query.remove(dict(_id=self.ref_id))

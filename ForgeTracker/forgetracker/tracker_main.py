@@ -21,7 +21,7 @@ from allura import model as M
 from allura.lib import helpers as h
 from allura.app import Application, SitemapEntry, DefaultAdminController
 from allura.lib.search import search_artifact
-from allura.lib.decorators import audit, react, require_post
+from allura.lib.decorators import require_post
 from allura.lib.security import require, has_artifact_access, has_project_access
 from allura.lib import widgets as w
 from allura.lib import validators as V
@@ -97,26 +97,16 @@ class ForgeTrackerApp(Application):
     def has_access(self, user, topic):
         return has_artifact_access('post', user=user)
 
-    @audit('Tickets.msg.#')
-    def message_auditor(self, routing_key, data):
-        log.info('Auditing data from %s (%s)',
-                 routing_key, self.config.options.mount_point)
-        log.info('Headers are: %s', data['headers'])
+    def handle_message(self, topic, message):
+        log.info('Message from %s (%s)',
+                 topic, self.config.options.mount_point)
+        log.info('Headers are: %s', message['headers'])
         try:
-            ticket_num = routing_key.split('.')[-1]
-            t = TM.Ticket.query.get(ticket_num=int(ticket_num))
+            ticket = TM.Ticket.query.find(
+                dict(ticket_num=int(topic))).one()
         except:
-            log.exception('Unexpected error routing tkt msg: %s', routing_key)
-            return
-        if t is None:
-            log.error("Can't find ticket %s (routing key was %s)",
-                      ticket_num, routing_key)
-        super(ForgeTrackerApp, self).message_auditor(routing_key, data, t)
-
-    @react('Tickets.#')
-    def reactor(self, routing_key, data):
-        log.info('Reacting to data from %s (%s)',
-                 routing_key, self.config.options.mount_point)
+            log.exception('Error getting ticket %s', topic)
+        self.handle_artifact_message(ticket, message)
 
     @property
     @h.exceptionless([], log)

@@ -133,18 +133,6 @@ class Artifact(MappedClass):
         else:
             return 'mailto:%s' % self.email_address
 
-    def dump_ref(self):
-        '''Return a pickle-serializable reference to an artifact'''
-        try:
-            d = ArtifactReference(dict(
-                    project_id=self.app_config.project._id,
-                    mount_point=self.app_config.options.mount_point,
-                    artifact_type=bson.Binary(pickle.dumps(self.__class__)),
-                    artifact_id=self._id))
-            return d
-        except AttributeError:
-            return None
-
     @property
     def project(self):
         return self.app_config.project
@@ -237,7 +225,7 @@ class Artifact(MappedClass):
         '''Return the discussion thread for this artifact (possibly made more
         specific by the message_data)'''
         from .discuss import Thread
-        return Thread.query.get(artifact_reference=self.dump_ref())
+        return Thread.query.get(ref_id=self.index_id())
 
     @LazyProperty
     def discussion_thread(self):
@@ -566,7 +554,7 @@ class Feed(MappedClass):
         if title is None:
             title='%s modified by %s' % (idx['title_s'], c.user.get_pref('display_name'))
         if description is None: description = title
-        item = cls(artifact_reference=artifact.dump_ref(),
+        item = cls(ref_id=artifact.index_id(),
                    title=title,
                    description=description,
                    link=artifact.url())

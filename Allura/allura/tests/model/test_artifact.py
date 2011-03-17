@@ -10,6 +10,7 @@ from nose.tools import assert_raises
 from nose import with_setup
 
 from ming.orm.ormsession import ThreadLocalORMSession
+from ming.orm import session
 
 from allura import model as M
 from allura.lib import helpers as h
@@ -75,13 +76,17 @@ def test_artifactlink():
             link=pg.shorthand_id()))
     assert q.count() == 0
     ThreadLocalORMSession.flush_all()
+    M.MonQTask.run_ready()
+    ThreadLocalORMSession.flush_all()
     assert q.count() == 1
     assert M.Shortlink.lookup('[TestPage2]')
     assert M.Shortlink.lookup('[wiki:TestPage2]')
-    assert not M.Shortlink.lookup('[Wiki:TestPage2]')
     assert M.Shortlink.lookup('[test:wiki:TestPage2]')
+    assert not M.Shortlink.lookup('[Wiki:TestPage2]')
     assert not M.Shortlink.lookup('[TestPage2_no_such_page]')
     pg.delete()
+    ThreadLocalORMSession.flush_all()
+    M.MonQTask.run_ready()
     ThreadLocalORMSession.flush_all()
     assert q.count() == 0
 

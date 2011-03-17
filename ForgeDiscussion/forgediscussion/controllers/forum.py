@@ -15,6 +15,7 @@ from allura.lib.widgets import discuss as DW
 
 from forgediscussion import model as DM
 from forgediscussion import widgets as FW
+from forgediscussion import tasks
 
 log = logging.getLogger(__name__)
 
@@ -105,14 +106,14 @@ class ForumThreadController(ThreadController):
         if self.thread.discussion.deleted and not has_artifact_access('configure', app=c.app)():
             redirect(self.thread.discussion.url()+'deleted')
         args = self.W.moderate_thread.validate(kw, None)
-        g.publish('audit', 'Forum.forum_stats.%s' % self.thread.discussion.shortname.replace('/', '.'))
+        tasks.calc_forum_stats.post(self.thread.discussion.shortname)
         if args.pop('delete', None):
             url = self.thread.discussion.url()
             self.thread.delete()
             redirect(url)
         forum = args.pop('discussion')
         if forum != self.thread.discussion:
-            g.publish('audit', 'Forum.forum_stats.%s' % forum.shortname.replace('/', '.'))
+            tasks.calc_forum_stats.post(forum.shortname)
             self.thread.set_forum(forum)
         self.thread.flags = args.pop('flags', [])
         redirect(self.thread.url())
@@ -133,12 +134,12 @@ class ForumPostController(PostController):
         if self.thread.discussion.deleted and not has_artifact_access('configure', app=c.app)():
             redirect(self.thread.discussion.url()+'deleted')
         args = self.W.moderate_post.validate(kw, None)
-        g.publish('audit', 'Forum.thread_stats.%s' % self.post.thread._id)
-        g.publish('audit', 'Forum.forum_stats.%s' % self.post.discussion.shortname.replace('/', '.'))
+        tasks.calc_thread_stats.post(self.post.thread._id)
+        tasks.calc_forum_stats(self.post.discussion.shortname)
         if args.pop('promote', None):
             self.post.subject = args['subject']
             new_thread = self.post.promote()
-            g.publish('audit', 'Forum.thread_stats.%s' % new_thread._id)
+            tasks.calc_thread_stats.post(new_thread._id)
             redirect(request.referer)
         super(ForumPostController, self).moderate(**kw)
 

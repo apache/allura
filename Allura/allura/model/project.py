@@ -28,21 +28,6 @@ from filesystem import File
 
 log = logging.getLogger(__name__)
 
-class SearchConfig(MappedClass):
-    class __mongometa__:
-        session = main_orm_session
-        name='search_config'
-
-    _id = FieldProperty(S.ObjectId)
-    last_commit = FieldProperty(datetime, if_missing=datetime.min)
-    pending_commit = FieldProperty(int, if_missing=0)
-
-    def needs_commit(self):
-        now = datetime.utcnow()
-        elapsed = now - self.last_commit
-        td_threshold = timedelta(seconds=60)
-        return elapsed > td_threshold and self.pending_commit
-
 class ScheduledMessage(MappedClass):
     class __mongometa__:
         session = main_orm_session

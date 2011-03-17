@@ -14,7 +14,7 @@ from webob import exc
 from allura.app import Application, ConfigOption, SitemapEntry
 from allura.lib import helpers as h
 from allura.lib.search import search
-from allura.lib.decorators import audit, react, require_post
+from allura.lib.decorators import require_post
 from allura.lib.security import require, has_artifact_access
 from allura.lib import widgets as w
 from allura.lib.widgets.subscriptions import SubscribeForm
@@ -63,16 +63,6 @@ class ForgeBlogApp(Application):
     def __init__(self, project, config):
         Application.__init__(self, project, config)
         self.root = RootController()
-
-    @audit('blog.#')
-    def auditor(self, routing_key, data):
-        log.info('Auditing data from %s (%s)',
-                 routing_key, self.config.options.mount_point)
-
-    @react('blog.#')
-    def reactor(self, routing_key, data):
-        log.info('Reacting to data from %s (%s)',
-                 routing_key, self.config.options.mount_point)
 
     @property
     @h.exceptionless([], log)

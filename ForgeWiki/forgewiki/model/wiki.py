@@ -138,9 +138,6 @@ class Page(VersionedArtifact):
     def upsert(cls, title, version=None):
         """Update page with `title` or insert new page with that name"""
         if version is None:
-            q = dict(
-                project_id=context.project._id,
-                title=title)
             #Check for existing page object    
             obj = cls.query.get(
                 app_config_id=context.app.config._id,
@@ -150,8 +147,8 @@ class Page(VersionedArtifact):
                     title=title,
                     app_config_id=context.app.config._id,
                     )
-                t = Thread(discussion_id=obj.app_config.discussion_id,
-                           artifact_reference=obj.dump_ref())
+                Thread(discussion_id=obj.app_config.discussion_id,
+                           ref_id=obj.index_id())
             return obj
         else:
             pg = cls.upsert(title)

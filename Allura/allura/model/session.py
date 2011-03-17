@@ -55,6 +55,7 @@ class ArtifactSessionExtension(SessionExtension):
 
     def after_flush(self, obj=None):
         "Update artifact references, and add/update this artifact to solr"
+        import allura.tasks.index_tasks
         if not getattr(self.session, 'disable_artifact_index', False):
             from .stats import CPA
             from .index import IndexOp, ArtifactReference
@@ -63,7 +64,11 @@ class ArtifactSessionExtension(SessionExtension):
             for obj in self.objects_added + self.objects_modified:
                 ArtifactReference.from_artifact(obj)
                 IndexOp.add_op(obj)
+            if (self.objects_added
+                or self.objects_modified
+                or self.objects_deleted):
                 session(ArtifactReference).flush()
+                allura.tasks.index_tasks.index.post()
             for obj in self.objects_added:
                 CPA.post('create', obj)
             for obj in self.objects_modified:

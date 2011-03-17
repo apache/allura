@@ -16,7 +16,7 @@ from ming import schema
 from allura import model as M
 from allura.app import Application, ConfigOption, SitemapEntry, DefaultAdminController
 from allura.lib import helpers as h
-from allura.lib.decorators import audit, react, require_post
+from allura.lib.decorators import require_post
 from allura.lib.security import require, has_artifact_access
 
 # Local imports
@@ -67,7 +67,7 @@ class ForgeDiscussionApp(Application):
         return has_artifact_access('post', f, user=user)()
 
     def handle_message(self, topic, message):
-        log.info('Auditing data from %s (%s)',
+        log.info('Message from %s (%s)',
                  topic, self.config.options.mount_point)
         log.info('Headers are: %s', message['headers'])
         shortname=topic.replace('.', '/')

@@ -8,7 +8,7 @@ from ming.utils import LazyProperty
 from ming.orm.ormsession import ThreadLocalORMSession
 
 # Pyforge-specific imports
-import allura.tasks
+import allura.tasks.repo_tasks
 from allura.lib import helpers as h
 from allura import model as M
 from allura.controllers.repository import RepoRootController, RefsController, CommitsController
@@ -67,4 +67,4 @@ class ForgeGitApp(RepositoryApp):
                 cloned_from_url=init_from_url)
             allura.tasks.repo_tasks.clone.post(msg)
         else:
-            allura.task.repo_tasks.init.post()
+            allura.tasks.repo_tasks.init.post()

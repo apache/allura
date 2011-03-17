@@ -87,10 +87,7 @@ setup(
     pyforge = allura.migrations
 
     [paste.paster_command]
-    reactor_setup = allura.command:ReactorSetupCommand
-    reactor = allura.command:ReactorCommand
     taskd = allura.command.taskd:TaskdCommand
-    sendmsg = allura.command:SendMessageCommand
     models = allura.command:ShowModelsCommand
     reindex = allura.command:ReindexCommand
     ensure_index = allura.command:EnsureIndexCommand
