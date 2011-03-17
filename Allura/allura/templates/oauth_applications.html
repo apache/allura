@@ -3,7 +3,7 @@
 
 {% block title %}{{c.user.username}} / Applications {% endblock %}
 
-{% block header %}Applications registered for {{c.user.username}}{% endblock %}
+{% block header %}OAuth applications registered for {{c.user.username}}{% endblock %}
 
 {% block content %}
 {% for token in apps %}
@@ -19,6 +19,6 @@
 </form>
 <br style="clear:both"/>
 {% endfor %}
-<h2>Register a new application</h2>
+<h2>Register a new OAuth application</h2>
 {{ c.form.display() }}
 {% endblock %}

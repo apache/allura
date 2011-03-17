@@ -46,7 +46,7 @@ class AuthController(BaseController):
 
     def __init__(self):
         self.prefs = PreferencesController()
-        self.oauth = OAuth()
+        self.oauth = OAuthController()
 
     @expose('jinja:allura:templates/login.html')
     @with_trailing_slash
@@ -388,8 +388,9 @@ class PreferencesController(BaseController):
         flash('Key uploaded')
         redirect('.')
 
-class OAuth(BaseController):
+class OAuthController(BaseController):
 
+    @with_trailing_slash
     @expose('jinja:allura:templates/oauth_applications.html')
     def index(self, **kw):
         c.form = F.oauth_application_form
@@ -400,7 +401,7 @@ class OAuth(BaseController):
     @validate(F.oauth_application_form, error_handler=index)
     def register(self, application_name=None, application_description=None, **kw):
         M.OAuthConsumerToken(name=application_name, description=application_description)
-        flash('Application registered')
+        flash('OAuth Application registered')
         redirect('.')
 
     @expose()
