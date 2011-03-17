@@ -51,12 +51,13 @@ class AdminWidgets(WidgetController):
 
     @expose('jinja:allura.ext.admin:templates/widgets/tool_status.html')
     def tool_status(self):
-        'Display # of ArtifactLinks for each (mounted) tool'
+        'Display # of Shortlinks for each (mounted) tool'
         links = defaultdict(list)
         for ac in c.project.app_configs:
             mp = ac.options.mount_point
-            q = M.ArtifactLink.query.find(dict(project_id=c.project._id,
-                                               mount_point=mp))
+            q = M.Shortlink.query.find(dict(
+                project_id=c.project._id,
+                app_config_id = ac._id))
             ct = q.count()
             if 0 < ct < 10:
                 links[mp] = q.all()

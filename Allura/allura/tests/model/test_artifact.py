@@ -5,11 +5,9 @@ Model tests for artifact
 import re
 from datetime import datetime
 
-from pylons import c, g, request
+from pylons import c
 from nose.tools import assert_raises
 from nose import with_setup
-import mock
-import webob
 
 from ming.orm.ormsession import ThreadLocalORMSession
 
@@ -36,7 +34,7 @@ def setUp():
     Checkmessage.query.remove({})
     WM.Page.query.remove({})
     WM.PageHistory.query.remove({})
-    M.ArtifactLink.query.remove({})
+    M.Shortlink.query.remove({})
     c.user = M.User.query.get(username='test-admin')
     Checkmessage.project = c.project
     Checkmessage.app_config = c.app.config
@@ -71,19 +69,18 @@ def test_artifact():
 @with_setup(setUp, tearDown)
 def test_artifactlink():
     pg = WM.Page(title='TestPage2')
-    q = M.ArtifactLink.query.find(dict(
+    q = M.Shortlink.query.find(dict(
             project_id=c.project._id,
-            mount_point='wiki',
+            app_config_id=c.app.config._id,
             link=pg.shorthand_id()))
     assert q.count() == 0
     ThreadLocalORMSession.flush_all()
     assert q.count() == 1
-    assert M.ArtifactLink.lookup('[TestPage2]')
-    assert M.ArtifactLink.lookup('[wiki:TestPage2]')
-    assert M.ArtifactLink.lookup('[Wiki:TestPage2]')
-    assert M.ArtifactLink.lookup('[/test:wiki:TestPage2]')
-    assert M.ArtifactLink.lookup('[../test:wiki:TestPage2]')
-    assert not M.ArtifactLink.lookup('[TestPage2_no_such_page]')
+    assert M.Shortlink.lookup('[TestPage2]')
+    assert M.Shortlink.lookup('[wiki:TestPage2]')
+    assert not M.Shortlink.lookup('[Wiki:TestPage2]')
+    assert M.Shortlink.lookup('[test:wiki:TestPage2]')
+    assert not M.Shortlink.lookup('[TestPage2_no_such_page]')
     pg.delete()
     ThreadLocalORMSession.flush_all()
     assert q.count() == 0

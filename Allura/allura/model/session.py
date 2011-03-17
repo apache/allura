@@ -7,8 +7,6 @@ from ming.datastore import ShardedDataStore
 from ming.orm.base import state, session
 from ming.orm.ormsession import ThreadLocalORMSession, SessionExtension
 
-from allura.lib import search
-
 log = logging.getLogger(__name__)
 
 class ProjectSession(Session):
@@ -58,7 +56,6 @@ class ArtifactSessionExtension(SessionExtension):
     def after_flush(self, obj=None):
         "Update artifact references, and add/update this artifact to solr"
         if not getattr(self.session, 'disable_artifact_index', False):
-            from .artifact import ArtifactLink
             from .stats import CPA
             from .index import IndexOp, ArtifactReference
             for obj in self.objects_deleted:
@@ -66,7 +63,7 @@ class ArtifactSessionExtension(SessionExtension):
             for obj in self.objects_added + self.objects_modified:
                 ArtifactReference.from_artifact(obj)
                 IndexOp.add_op(obj)
-                session(ArtifactLink).flush()
+                session(ArtifactReference).flush()
             for obj in self.objects_added:
                 CPA.post('create', obj)
             for obj in self.objects_modified:

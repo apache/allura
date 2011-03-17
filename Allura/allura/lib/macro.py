@@ -2,7 +2,6 @@ import cgi
 import shlex
 import logging
 
-import ew
 import pymongo
 from pylons import c, g, request
 
@@ -65,10 +64,9 @@ def include(ref=None, **kw):
     from allura import model as M
     from allura.lib.widgets.macros import Include
     if ref is None: return '[-include-]'
-    link = M.ArtifactLink.lookup('[' + ref + ']')
+    link = M.Shortlink.lookup(ref)
     if not link: return '[[include %s]]' % ref
-    aref = M.ArtifactReference(link.artifact_reference)
-    artifact = aref.artifact
+    artifact = link.ref.artifact
     if artifact is None: return '[[include %s]]' % ref
     included = request.environ.setdefault('allura.macro.included', set())
     if artifact in included:

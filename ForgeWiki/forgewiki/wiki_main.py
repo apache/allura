@@ -477,7 +477,7 @@ class PageController(BaseController):
     @require_post()
     def delete(self):
         require(has_artifact_access('delete', self.page))
-        M.ArtifactLink.remove(self.page)
+        M.Shortlink.query.remove(ref_id=self.page.index_id())
         self.page.deleted = True
         suffix = " {dt.hour}:{dt.minute}:{dt.second} {dt.day}-{dt.month}-{dt.year}".format(dt=datetime.utcnow())
         self.page.title += suffix
@@ -492,7 +492,7 @@ class PageController(BaseController):
             raise exc.HTTPNotFound
         require(has_artifact_access('delete', self.page))
         self.page.deleted = False
-        M.ArtifactLink.add(self.page)
+        M.Shortlink.from_artifact(self.page)
         redirect('./edit')
 
     @without_trailing_slash

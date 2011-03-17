@@ -105,6 +105,10 @@ class Shortlink(MappedClass):
             self.app_config.options.mount_point)
 
     @classmethod
+    def lookup(cls, link):
+        return cls.from_links(link)[link]
+
+    @classmethod
     def from_artifact(cls, a):
         return cls(
             ref_id = a.index_id(),

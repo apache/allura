@@ -39,20 +39,23 @@ class ReindexCommand(base.Command):
         if self.options.project:
             projects = [ M.Project.query.get(shortname=self.options.project) ]
         elif self.options.neighborhood:
-            neighborhood_id = M.Neighborhood.query.get(url_prefix='/%s/' % self.options.neighborhood)._id
+            neighborhood_id = M.Neighborhood.query.get(
+                url_prefix='/%s/' % self.options.neighborhood)._id
             projects = M.Project.query.find(dict(neighborhood_id=neighborhood_id))
         else:
             projects = M.Project.query.find()
         for p in projects:
             base.log.info('Reindex project %s', p.shortname)
             c.project = p
-            M.ArtifactLink.query.remove({})
-            for _, acls in dfs(M.Artifact, graph):
-                base.log.info('  %s', acls)
-                for a in acls.query.find():
-                    state(a).soil()
-                session(acls).flush()
-                session(acls).clear()
+            M.ArtifactReference.query.remove({})
+            M.Shortlink.query.remove({})
+            M.IndexOp.query.remove({})
+            for _, a_cls in dfs(M.Artifact, graph):
+                base.log.info('  %s', a_cls)
+                for a in a_cls.query.find():
+                    M.IndexOp.add_op(a)
+                session(M.IndexOp).flush()
+                session(a_cls).clear()
 
 class EnsureIndexCommand(base.Command):
     min_args=0

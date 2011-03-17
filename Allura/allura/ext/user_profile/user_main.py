@@ -1,23 +1,19 @@
 import os
-import difflib
 import logging
 from pprint import pformat
 
-from pylons import c, g
-from formencode import validators
 import pkg_resources
 from pylons import c, request
-from tg import expose, redirect, flash, validate, response
-from webob import exc
-
+from formencode import validators
+from tg import expose, redirect, validate, response
 
 from allura import version
-from allura.app import Application, WidgetController, ConfigOption, SitemapEntry
+from allura.app import Application, WidgetController, SitemapEntry
 from allura.lib import helpers as h
 from allura.lib.helpers import DateTimeConverter
 from allura.ext.project_home import model as M
 from allura.lib.security import require, has_project_access, has_artifact_access
-from allura.model import User, ArtifactLink, Feed, Notification
+from allura.model import User, Notification
 from allura.controllers import BaseController
 from allura.lib.decorators import require_post
 

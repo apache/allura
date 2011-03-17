@@ -113,8 +113,8 @@ class ForgeProcessor(object):
         from allura import model as M
         if self.stash['artifact'] or self.stash['link']:
             try:
-                self.alinks = M.ArtifactLink.lookup_links(self.stash['artifact'])
-                self.alinks.update(M.ArtifactLink.lookup_links(self.stash['link']))
+                self.alinks = M.Shortlink.from_links(*self.stash['artifact'])
+                self.alinks.update(M.Shortlink.from_links(*self.stash['link']))
             except:
                 self.alinks = {}
         self.stash['artifact'] = map(self._expand_alink, self.stash['artifact'])
