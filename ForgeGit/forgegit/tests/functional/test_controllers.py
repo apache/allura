@@ -89,3 +89,9 @@ class TestRootController(TestController):
         email = 'noreply@%s%s' % (domain, common_suffix)
         assert email in notification['reply_to_address']
 
+    def test_file_force_display(self):
+        ci = self._get_ci()
+        resp = self.app.get(ci + 'tree/README?force=True')
+        content = str(resp.html.find('div',{'class':'clip grid-19'}))
+        assert '<pre>This is readme' in content, content
+        assert '</pre>' in content, content

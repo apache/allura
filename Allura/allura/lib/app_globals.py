@@ -189,7 +189,7 @@ class Globals(object):
                 # no highlighting, but we should escape, encode, and wrap it in a <pre>
                 text = h.really_unicode(text)
                 text = cgi.escape(text)
-                return u'<pre>' + text + u'</pre>'
+                return h.html.literal(u'<pre>' + text + u'</pre>')
         else:
             lexer = pygments.lexers.get_lexer_by_name(lexer, encoding='chardet')
         return h.html.literal(pygments.highlight(text, lexer, formatter))
@@ -221,7 +221,7 @@ class Globals(object):
 
     def register_forge_js(self, href, **kw):
         self.resource_manager.register(ew.JSLink('allura/' + href, **kw))
-        
+
     def register_app_css(self, href, **kw):
         app = kw.pop('app', c.app)
         self.resource_manager.register(
@@ -243,18 +243,18 @@ class Globals(object):
             session['openid_info'] = result = {}
             session.save()
             return result
-        
+
     def forge_static(self, resource):
         base = config['static.url_base']
         if base.startswith(':'):
             base = request.scheme + base
         return base + resource
-        
+
     def theme_static(self, resource):
         if isinstance(resource,tuple):
             theme_name = resource[1]
             resource = resource[0]
-        else:    
+        else:
             theme_name = config.get('theme', 'allura')
         base = config['static.url_base']
         if base.startswith(':'):
