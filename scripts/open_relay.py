@@ -6,7 +6,6 @@ import smtplib
 import asyncore
 from ConfigParser import ConfigParser
 
-
 log = logging.getLogger(__name__)
 
 def main():
@@ -20,7 +19,7 @@ def main():
     password = cp.get('open_relay', 'password')
     smtp_client = MailClient(host,
                              port,
-                             ssl, tls, 
+                             ssl, tls,
                              username, password)
     MailServer(('0.0.0.0', 8826), None,
                smtp_client=smtp_client)

@@ -34,7 +34,6 @@ if [ "$TEST_MODULES"  == "" ]; then
     ForgeDiscussion \
     ForgeGit \
     ForgeHg \
-    ForgeMail \
     ForgeSVN \
     ForgeTracker \
     ForgeWiki \

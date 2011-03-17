@@ -2,13 +2,13 @@
 import logging
 
 # Non-stdlib imports
-from pylons import c, g
+from pylons import c
 
 from ming.utils import LazyProperty
 from ming.orm.ormsession import ThreadLocalORMSession
 
 # Pyforge-specific imports
-import allura.task
+import allura.tasks
 from allura.lib import helpers as h
 from allura import model as M
 from allura.controllers.repository import RepoRootController, RefsController, CommitsController
@@ -59,12 +59,12 @@ class ForgeGitApp(RepositoryApp):
                     cloned_from_path=cloned_from.full_fs_path,
                     cloned_from_name=cloned_from.app.config.script_name(),
                     cloned_from_url=cloned_from.full_fs_path)
-            allura.task.repo_clone.post(msg)
+            allura.tasks.repo_tasks.clone.post(msg)
         elif init_from_url:
             msg = dict(
                 cloned_from_path=None,
                 cloned_from_name=None,
                 cloned_from_url=init_from_url)
-            allura.task.repo_clone.post(msg)
+            allura.tasks.repo_tasks.clone.post(msg)
         else:
-            allura.task.repo_init.post()
+            allura.task.repo_tasks.init.post()

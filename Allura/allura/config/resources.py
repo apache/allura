@@ -21,4 +21,4 @@ def register_ew_resources(manager):
                     os.path.join('nf', ep.name)))
         except ImportError:
             log.warning('Cannot import entry point %s', ep)
-            continue
+            raise

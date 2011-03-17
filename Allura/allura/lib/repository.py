@@ -7,12 +7,12 @@ from tg import expose, redirect, url
 from tg.decorators import with_trailing_slash, without_trailing_slash
 from bson import ObjectId
 
-import allura.task
+import allura.tasks
 from allura import version
 from allura.lib import helpers as h
 from allura import model as M
 from allura.lib import security
-from allura.lib.decorators import audit, require_post
+from allura.lib.decorators import require_post
 from allura.app import Application, SitemapEntry, DefaultAdminController, ConfigOption
 
 log = logging.getLogger(__name__)
@@ -146,45 +146,7 @@ class RepositoryApp(Application):
             admin=c.project.roleids_with_permission('tool'))
 
     def uninstall(self, project):
-        allura.task.repo_uninstall.post()
-
-    @classmethod
-    @audit('repo.init')
-    def _init(cls, routing_key, data):
-        c.app.repo.init()
-        M.Notification.post_user(
-            c.user, c.app.repo, 'created',
-            text='Repository %s/%s created' % (
-                c.project.shortname, c.app.config.options.mount_point))
-
-    @classmethod
-    @audit('repo.clone')
-    def _clone(cls, routing_key, data):
-        c.app.repo.init_as_clone(
-            data['cloned_from_path'],
-            data['cloned_from_name'],
-            data['cloned_from_url'])
-        M.Notification.post_user(
-            c.user, c.app.repo, 'created',
-            text='Repository %s/%s created' % (
-                c.project.shortname, c.app.config.options.mount_point))
-
-    @classmethod
-    @audit('repo.refresh')
-    def _refresh(cls, routing_key, data):
-        c.app.repo.refresh()
-
-    @classmethod
-    @audit('repo.uninstall')
-    def _uninstall(cls, routing_key, data):
-        "Remove all the tool's artifacts and the physical repository"
-        repo = c.app.repo
-        if repo is not None:
-            shutil.rmtree(repo.full_fs_path, ignore_errors=True)
-            repo.delete()
-        M.MergeRequest.query.remove(dict(
-                app_config_id=c.app.config._id))
-        super(RepositoryApp, c.app).uninstall(project=c.project)
+        allura.tasks.repo_tasks.uninstall.post()
 
 class RepoAdminController(DefaultAdminController):
 

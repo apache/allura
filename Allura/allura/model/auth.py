@@ -17,9 +17,10 @@ from ming import schema as S
 from ming.orm import session, state, MappedClass
 from ming.orm import FieldProperty, RelationProperty, ForeignIdProperty
 
+import allura.tasks
 from allura.lib import helpers as h
 from allura.lib import plugin
-from allura.lib import security
+
 from .session import main_orm_session
 from .session import project_orm_session
 
@@ -192,13 +193,13 @@ please visit the following URL:
     %s
 ''' % (self._id, self.claimed_by_user().username, g.url('/auth/verify_addr', a=self.nonce))
         log.info('Verification email:\n%s', text)
-        g.publish('audit', 'forgemail.send_email', {
-                'destinations':[self._id],
-                'from':self._id,
-                'reply_to':'',
-                'message_id':'',
-                'subject':'Email address verification',
-                'text':text})
+        allura.tasks.mail_tasks.sendmail.post(
+            destinations=[self._id],
+            fromaddr=self._id,
+            reply_to='',
+            subject='Email address verification',
+            message_id=h.gen_message_id(),
+            text=text)
 
 class OpenId(MappedClass):
     class __mongometa__:

@@ -40,7 +40,7 @@ setup(
         "oauth2 == 1.2.0",
         ],
     setup_requires=["PasteScript >= 1.7"],
-    paster_plugins=['PasteScript', 'Pylons', 'TurboGears2', 'tg.devtools', 'ForgeMail', 'Ming'],
+    paster_plugins=['PasteScript', 'Pylons', 'TurboGears2', 'tg.devtools', 'Ming'],
     packages=find_packages(exclude=['ez_setup']),
     include_package_data=True,
     test_suite='nose.collector',
@@ -96,6 +96,7 @@ setup(
     ensure_index = allura.command:EnsureIndexCommand
     script = allura.command:ScriptCommand
     set-tool-access = allura.command:SetToolAccessCommand
+    smtp_server=allura.command:SMTPServerCommand
     
     [easy_widgets.resources]
     ew_resources=allura.config.resources:register_ew_resources

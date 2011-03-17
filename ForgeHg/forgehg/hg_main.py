@@ -2,14 +2,13 @@
 import logging
 
 # Non-stdlib imports
-import pkg_resources
-from pylons import c, g
+from pylons import c
 
 from ming.utils import LazyProperty
 from ming.orm.ormsession import ThreadLocalORMSession
 
 # Pyforge-specific imports
-import allura.task
+import allura.tasks
 from allura.lib import helpers as h
 from allura import model as M
 from allura.controllers.repository import RepoRootController, RefsController, CommitsController
@@ -45,7 +44,7 @@ class ForgeHgApp(RepositoryApp):
     def install(self, project):
         '''Create repo object for this tool'''
         super(ForgeHgApp, self).install(project)
-        repo = HM.Repository(
+        HM.Repository(
             name=self.config.options.mount_point,
             tool='hg',
             status='initing')
@@ -56,17 +55,15 @@ class ForgeHgApp(RepositoryApp):
         if cloned_from_project_id is not None:
             with h.push_config(c, project=M.Project.query.get(_id=cloned_from_project_id)):
                 cloned_from = HM.Repository.query.get(_id=cloned_from_repo_id)
-                msg = dict(
+                allura.tasks.repo_tasks.clone.post(
                     cloned_from_path=cloned_from.full_fs_path,
                     cloned_from_name=cloned_from.app.config.script_name(),
                     cloned_from_url=cloned_from.full_fs_path)
-            allura.task.repo_clone.post(msg)
         elif init_from_url:
-            msg = dict(
+            allura.tasks.repo_tasks.clone.post(
                 cloned_from_path=None,
                 cloned_from_name=None,
                 cloned_from_url=init_from_url)
-            allura.task.repo_clone.post(msg)
         else:
-            allura.task.repo_init.post(msg)
+            allura.tasks.repo_tasks.init.post()
 

@@ -43,7 +43,6 @@ def parse_address(addr):
         raise exc.AddressException, 'Unknown domain: ' + domain
     domain = domain[:-len(config.common_suffix)]
     path = '/'.join(reversed(domain.split('.')))
-
     project, mount_point = find_project('/' + path)
     if project is None:
         raise exc.AddressException, 'Unknown project: ' + domain
@@ -53,8 +52,7 @@ def parse_address(addr):
         app = project.app_instance(mount_point[0])
         if not app:
             raise exc.AddressException, 'Unknown tool: ' + domain
-        topic = '%s.msg.%s' % (app.config.tool_name, userpart)
-    return topic, project, app
+    return userpart, project, app
 
 def parse_message(data):
     # Parse the email to its constituent parts

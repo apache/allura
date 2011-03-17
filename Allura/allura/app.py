@@ -223,6 +223,10 @@ class Application(object):
             links.append(SitemapEntry('Options', admin_url + 'options', className='admin_modal'))
         return links
 
+    def handle_message(self, topic, message):
+        '''Handle incoming email msgs addressed to this tool'''
+        pass
+
     def message_auditor(self, routing_key, data, artifact, **kw):
         # Find ancestor comment
         in_reply_to = data.get('in_reply_to', [])

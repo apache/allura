@@ -28,6 +28,7 @@ import pymongo
 from ming import schema as S
 from ming.orm import MappedClass, FieldProperty, ForeignIdProperty, RelationProperty, session
 
+import allura.tasks
 from allura.lib import helpers as h
 
 from .session import main_orm_session, project_orm_session
@@ -185,15 +186,14 @@ To unsubscribe from further messages, please visit <%s/auth/prefs/>
 ''' % (prefix, self.link, prefix)
 
     def send_direct(self, user_id):
-        g.publish('audit', 'forgemail.send_email', {
-                'destinations':[str(user_id)],
-                'from':self.from_address,
-                'reply_to':self.reply_to_address,
-                'subject':self.subject,
-                'message_id':self._id,
-                'in_reply_to':self.in_reply_to,
-                'text':(self.text or '') + self.footer()},
-                  serializer='pickle')
+        allura.tasks.mail_task.sendmail.post(
+            destinations=[str(user_id)],
+            fromaddr=self.address,
+            reply_to=self.reply_to_address,
+            subject=self.subject,
+            message_id=self._id,
+            in_reply_to=self.in_reply_to,
+            text=(self.text or '') + self.footer())
 
     @classmethod
     def send_digest(self, user_id, from_address, subject, notifications,
@@ -210,14 +210,13 @@ To unsubscribe from further messages, please visit <%s/auth/prefs/>
             text.append(n.text or '-no text-')
         text.append(n.footer())
         text = '\n'.join(text)
-        g.publish('audit', 'forgemail.send_email', {
-                'destinations':[str(user_id)],
-                'from':from_address,
-                'reply_to':reply_to_address,
-                'subject':subject,
-                'message_id':h.gen_message_id(),
-                'text':text},
-                  serializer='pickle')
+        allura.tasks.mail_task.sendmail.post(
+            destinations=[str(user_id)],
+            fromaddr=from_address,
+            reply_to=reply_to_address,
+            subject=subject,
+            message_id=h.gen_message_id(),
+            text=text)
 
     @classmethod
     def send_summary(self, user_id, from_address, subject, notifications):
@@ -231,14 +230,13 @@ To unsubscribe from further messages, please visit <%s/auth/prefs/>
             text.append(h.text.truncate(n.text or '-no text-', 128))
         text.append(n.footer())
         text = '\n'.join(text)
-        g.publish('audit', 'forgemail.send_email', {
-                'destinations':[str(user_id)],
-                'from':from_address,
-                'reply_to':from_address,
-                'subject':subject,
-                'message_id':h.gen_message_id(),
-                'text':text},
-                  serializer='pickle')
+        allura.tasks.mail_task.sendmail.post(
+            destinations=[str(user_id)],
+            fromaddr=from_address,
+            reply_to=from_address,
+            subject=subject,
+            message_id=h.gen_message_id(),
+            text=text)
 
 class Mailbox(MappedClass):
     class __mongometa__:

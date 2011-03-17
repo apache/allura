@@ -136,7 +136,7 @@ class MonQTask(MappedClass):
                 c.app = c.project.app_instance(app_config)
             if self.context.user_id:
                 c.user = M.User.query.get(_id=self.context.user_id)
-            self.result = func(self.data)
+            self.result = func(**self.data)
             self.state = 'complete'
             return self.result
         except Exception:

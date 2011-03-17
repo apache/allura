@@ -3,16 +3,11 @@ import shutil
 from pylons import c
 
 from allura import model as M
-from allura.lib.utils import task, event_listeners
+from allura.lib.utils import task
 from allura.lib.repository import RepositoryApp
 
 @task
-def event(data):
-    for e in event_listeners(data['event_type']):
-        e()
-
-@task
-def repo_init(data):
+def init(**kwargs):
     c.app.repo.init()
     M.Notification.post_user(
         c.user, c.app.repo, 'created',
@@ -20,22 +15,25 @@ def repo_init(data):
             c.project.shortname, c.app.config.options.mount_point))
 
 @task
-def repo_clone(data):
+def clone(
+    cloned_from_path,
+    cloned_from_name,
+    cloned_from_url):
     c.app.repo.init_as_clone(
-        data['cloned_from_path'],
-        data['cloned_from_name'],
-        data['cloned_from_url'])
+        cloned_from_path,
+        cloned_from_name,
+        cloned_from_url)
     M.Notification.post_user(
         c.user, c.app.repo, 'created',
         text='Repository %s/%s created' % (
             c.project.shortname, c.app.config.options.mount_point))
 
 @task
-def repo_refresh(data):
+def refresh(**kwargs):
     c.app.repo.refresh()
 
 @task
-def repo_uninstall(data):
+def uninstall(**kwargs):
     repo = c.app.repo
     if repo is not None:
         shutil.rmtree(repo.full_fs_path, ignore_errors=True)

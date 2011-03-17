@@ -1,21 +1,15 @@
 import smtpd
 import asyncore
-import email.feedparser
-from pprint import pformat
 
 import tg
-import pylons
 from paste.script import command
 
-import allura.command
-from allura.lib.helpers import find_project
+import allura.tasks
 from allura.command import base
 
 from paste.deploy.converters import asint
 
-M = None
-
-class SMTPServerCommand(allura.command.Command):
+class SMTPServerCommand(base.Command):
     min_args=1
     max_args=1
     usage = '<ini file>'
@@ -26,13 +20,10 @@ class SMTPServerCommand(allura.command.Command):
                             ' and/or tool'))
 
     def command(self):
-        global M
         self.basic_setup()
-        from allura import model
-        M = model
-        server = MailServer((tg.config.get('forgemail.host', '0.0.0.0'),
-                             asint(tg.config.get('forgemail.port', 8825))),
-                            None)
+        MailServer((tg.config.get('forgemail.host', '0.0.0.0'),
+                    asint(tg.config.get('forgemail.port', 8825))),
+                   None)
         asyncore.loop()
 
 class MailServer(smtpd.SMTPServer):
@@ -40,8 +31,6 @@ class MailServer(smtpd.SMTPServer):
     def process_message(self, peer, mailfrom, rcpttos, data):
         base.log.info('Msg Received from %s for %s', mailfrom, rcpttos)
         base.log.info(' (%d bytes)', len(data))
-        pylons.g.publish('audit', 'forgemail.received_email',
-                         dict(peer=peer, mailfrom=mailfrom,
-                              rcpttos=rcpttos, data=data),
-                         serializer='pickle')
+        allura.tasks.mail_tasks.route_email(
+            peer=peer, mailfrom=mailfrom, rcpttos=rcpttos, data=data)
         base.log.info('Msg passed along')

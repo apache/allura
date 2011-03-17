@@ -2,16 +2,12 @@
 import logging
 
 # Non-stdlib imports
-import pkg_resources
-from pylons import g
-
 from ming.utils import LazyProperty
 from ming.orm.ormsession import ThreadLocalORMSession
 
 # Pyforge-specific imports
-import allura.task
+import allura.tasks
 from allura.controllers.repository import RepoRootController
-from allura.app import Application, ConfigOption
 from allura.lib.repository import RepositoryApp
 
 # Local imports
@@ -43,17 +39,16 @@ class ForgeSVNApp(RepositoryApp):
     def install(self, project):
         '''Create repo object for this tool'''
         super(ForgeSVNApp, self).install(project)
-        repo = SM.Repository(
+        SM.Repository(
             name=self.config.options.mount_point,
             tool='svn',
             status='initing')
         ThreadLocalORMSession.flush_all()
         init_from_url = self.config.options.get('init_from_url')
         if init_from_url:
-            msg = dict(
+            allura.tasks.repo_tasks.clone.post(
                 cloned_from_path=None,
                 cloned_from_name=None,
                 cloned_from_url=init_from_url)
-            allura.task.repo_clone.post(msg)
         else:
-            allura.task.repo_init.post(msg)
+            allura.tasks.repo_tasks.init.post()
