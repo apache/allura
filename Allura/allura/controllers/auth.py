@@ -393,6 +393,7 @@ class OAuthController(BaseController):
     @with_trailing_slash
     @expose('jinja:allura:templates/oauth_applications.html')
     def index(self, **kw):
+        require_authenticated()
         c.form = F.oauth_application_form
         return dict(apps=M.OAuthConsumerToken.for_user(c.user))
 
@@ -400,6 +401,7 @@ class OAuthController(BaseController):
     @require_post()
     @validate(F.oauth_application_form, error_handler=index)
     def register(self, application_name=None, application_description=None, **kw):
+        require_authenticated()
         M.OAuthConsumerToken(name=application_name, description=application_description)
         flash('OAuth Application registered')
         redirect('.')
@@ -407,6 +409,7 @@ class OAuthController(BaseController):
     @expose()
     @require_post()
     def delete(self, id=None):
+        require_authenticated()
         app = M.OAuthConsumerToken.query.get(_id=bson.ObjectId(id))
         if app is None:
             flash('Invalid app ID', 'error')
