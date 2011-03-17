@@ -39,7 +39,7 @@ class TaskdCommand(base.Command):
         from allura import model as M
         name = '%s pid %s' % (os.uname()[1], os.getpid())
         if self.options.dry_run: return
-        wsgi_app = loadapp('config:%s' % self.args[0],relative_to=os.getcwd())
+        wsgi_app = loadapp('config:%s#task' % self.args[0],relative_to=os.getcwd())
         def start_response(status, headers, exc_info=None):
             pass
         while True:

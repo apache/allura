@@ -126,6 +126,7 @@ class Application(object):
         32:'allura/images/admin_32.png',
         48:'allura/images/admin_48.png'
     }
+    event_listeners={}
 
     def __init__(self, project, app_config_object):
         self.project = project

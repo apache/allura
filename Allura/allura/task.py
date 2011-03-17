@@ -3,8 +3,13 @@ import shutil
 from pylons import c
 
 from allura import model as M
-from allura.lib.utils import task
+from allura.lib.utils import task, event_listeners
 from allura.lib.repository import RepositoryApp
+
+@task
+def event(data):
+    for e in event_listeners(data['event_type']):
+        e()
 
 @task
 def repo_init(data):

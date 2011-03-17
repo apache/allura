@@ -1,9 +1,11 @@
 import mimetypes
 import logging
+from collections import defaultdict
 from logging.handlers import WatchedFileHandler
 
 import tg
 from pylons import response
+from pkg_resources import iter_entry_points
 from paste.httpheaders import CACHE_CONTROL, EXPIRES
 
 from ming.utils import LazyProperty
@@ -115,3 +117,15 @@ def task(func):
         return M.MonQTask.post(func, *args, **kwargs)
     func.post = post
     return func
+
+_event_listeners = None
+def event_listeners(event_type):
+    global _event_listeners
+    if _event_listeners is None:
+        l = defaultdict(list)
+        for ep in iter_entry_points('allura'):
+            tool = ep.load()
+            for name, listeners in tool.event_listeners:
+                _event_listeners[name] += listeners
+        _event_listeners = l
+    return _event_listeners[event_type]
