@@ -1,94 +1,71 @@
 Platform Architecture overview
 ===================================
 
-I'm told that the reason you build a platform is to "reduce the marginal cost 
-of developing applications."  Sounds good.   Well, actually it sounds a bit 
-dry.  But it's about right, we want to make creating new online development 
-tools faster, easier, and more fun, which I guess is the "reduce the marginal 
+I'm told that the reason you build a platform is to "reduce the marginal cost
+of developing applications."  Sounds good.   Well, actually it sounds a bit
+dry.  But it's about right, we want to make creating new online development
+tools faster, easier, and more fun, which I guess is the "reduce the marginal
 cost" thing.
 
 Platform building blocks
 ---------------------------------------------------------------------
 
-Before we get into the details of how to extend the Allura platform, perhaps 
-it would be smart to explain some of the big pieces and why there are there. 
+Before we get into the details of how to extend the Allura platform, perhaps
+it would be smart to explain some of the big pieces and why they are there.
 
 We wanted Allura tools to be fast, we needed them to scale, and we had some
-complex requirements for data storage and extensibility.  So, we needed a 
-**fast,** flexible, and easy to use data persistence system.  
+complex requirements for data storage and extensibility.  So, we needed a
+**fast,** flexible, and easy to use data persistence system.
 
-We were very impressed by the general message architecture of Roundup, but we 
-wanted to extend it from just email messages to include scm commits, and we 
-added a message bus (RabbitMQ which we'll talk about in a second), to make 
-it fast. 
+We were very impressed by the general message architecture of Roundup, but we
+wanted to extend it from just email messages to include scm commits, and we
+added a message bus (RabbitMQ which we'll talk about in a second), to make
+it fast.
 
 .. image:: _static/images/messages.png
    :alt: Message Architecture
-   
-We were also impressed by the flexibility of Roundup's Hypertable system in 
-allowing for ad-hock ticket schema additions. 
 
-It definitely seemed like something we wanted in a next generation forge, 
+We were also impressed by the flexibility of Roundup's Hypertable system in
+allowing for ad-hock ticket schema additions.
+
+It definitely seemed like something we wanted in a next generation forge,
 because we wanted app tools to be able to:
 
-* create and version their own document types, 
-* extend existing document structures, 
-* and to mange document revisions, access control lists, and other 
-  platform level data.  
+* create and version their own document types,
+* extend existing document structures,
+* and to mange document revisions, access control lists, and other
+  platform level data.
 
-In spite of the power and flexibility of the Roundup HyperTable 
+In spite of the power and flexibility of the Roundup HyperTable
 implementation, we had some concerns about performance and scalability.
 
-Fortunately several of the Allura authors (including me) used MongoDB 
-in rewriting the download flow of SourceForge.net, and knew that it could 
-handle huge loads (we saturated a 2gb network connection on the server 
+Fortunately several of the Allura authors used MongoDB
+in rewriting the download flow of SourceForge.net, and knew that it could
+handle huge loads (we saturated a 2gb network connection on the server
 with 6% cpu utilization).
 
-We also knew that MongoDB's flexible replication system would allow us 
-to build the forge in such a way that we could easily provide a 
-package of all project data to developers concerned about lock-in. 
+We also knew that MongoDB's flexible replication system would allow us
+to build the forge in such a way that we could easily provide a
+package of all project data to developers concerned about lock-in.
 
-Not only that but Rick Copeland had built a couple of custom Object 
-*Non*-Relational Mappers (ONRMs?) before, including one for MongoDB, 
-and he whipped up Ming, which backed on MongoDB and gave us exactly 
-what we needed. 
+Not only that but Rick Copeland had built a couple of custom Object
+*Non*-Relational Mappers (ONRMs?) before, including one for MongoDB,
+and he whipped up Ming, which backed on MongoDB and gave us exactly
+what we needed.
 
-As I mentioned before we also needed a fast, flexible message bus and queuing 
-system. RabbitMQ was (lightning) fast, (shockingly) flexible, but not supper 
-easy to use. Fortunately we didn't have to roll our own wrapper here, as 
-the Python community already whipped up Carrot, and Celery, which made 
-working with the RabbitMQ based AMQP bus a LOT easer. 
-
-
-Pluggable Event Listeners
----------------------------------------------------------------------
-
-Have we mentioned Roundup already?   Because here's another idea we stole 
-from them: 
-
-**Auditors** and **reactors**
-
-**Auditors** are hooks that get called when events/messages come in, 
-they can modify the message before it is persisted to the document 
-store (via MongoDB).   
-
-Once the message is saved to the document store, it is then queued up for another 
-set of hooks -- **reactors** -- that are not allowed to change the
-message, but can do things like send e-mail or push a new kind of event 
-onto another queue. 
- 
-Nearly everything in Roundup is implemented as either an auditor or a reactor,
-and Allura definitely steals that idea and runs with it. 
-
-TODO: Finish reactor overview (after reactor code is written).
+As I mentioned before we also needed a fast, flexible message bus and queuing
+system. RabbitMQ was (lightning) fast, (shockingly) flexible, but not super
+easy to use. Fortunately we didn't have to roll our own wrapper here, as
+the Python community already whipped up Carrot, and Celery, which made
+working with the RabbitMQ based AMQP bus a LOT easer.
 
 
 Application Tools
 ---------------------------------------------------------------------
 
-Writing a tool for the new forge is as simple as defining a few controllers
-to handle particular URL's, templates to render pages, and defining the schemas 
-of any new forge document types that your tool requires.
+Writing a tool for Allura is as simple as defining a few controllers
+to handle particular URL's, templates to render pages, and defining the schemas
+of any Allura document types that your tool requires.
 
 .. image:: _static/images/tools.png
    :alt: App Tools
@@ -119,8 +96,6 @@ The most basic app tool consists of a few things:
 Users/groups and Permissions
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-In order to facilitate more open processes, where more users can contribute 
--- while still protecting data -- documents can easily be "versioned", and 
+In order to facilitate more open processes, where more users can contribute
+-- while still protecting data -- documents can easily be "versioned", and
 the platform provides tools to manage versioned documents for you.
-
-

@@ -16,10 +16,10 @@ Writing a wiki Tool Part 3: Revisions
 Testing your Tool
 ===========================
 
-Testing the controllers and models of a new Forge tool is fairly
+Testing the controllers and models of an Allura tool is fairly
 straightforward.  Generally, you should follow the example of tests in the
 `allura/tests/functional` directory for controller tests and
-`allura.tests.model` for model tests.  For functional tests, the Forge platform
+`allura.tests.model` for model tests.  For functional tests, the Allura platform
 provides a convenient "test harness" :class:`allura.controllers.test.TestController` controller
 class which is used as the application root for the
 :class:`allura.tests.TestController` class.
@@ -47,7 +47,7 @@ The framework used to generate the WSGI environment for testing your tools is
 provided by the `WebTest <http://pythonpaste.org/webtest/>`_ module, where you can
 find further documentation for the `.get()` and `.post()` methods.
 
-Testing new Forge models is also straightforward, though it usually requires
+Testing Allura models is also straightforward, though it usually requires
 setting the pylons context object `c` before your test.  An example of this
 technique follows::
 

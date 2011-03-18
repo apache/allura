@@ -3,7 +3,7 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Introducing the new *Forge Platform:*
+Introducing the *Allura* Platform:
 =====================================================================
 
 .. toctree::
@@ -28,7 +28,6 @@ Writing a Allura based app
    :maxdepth: 3
 
    tutorials/wiki-tool
-   tools
 
 Inside the Platform Components
 =====================================================================
@@ -39,7 +38,6 @@ Inside the Platform Components
    platform
    guides/message_bus
    guides/email
-   guides/markup
    guides/permissions
 
 Frequently Asked Questions
