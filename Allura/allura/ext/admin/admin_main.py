@@ -142,8 +142,8 @@ class AdminApp(Application):
 class ProjectAdminController(BaseController):
 
     def _check_security(self):
-        require(has_project_access('read'),
-                'Read access required')
+        require(has_project_access('tool'),
+                'Tool access required')
 
     def __init__(self):
         self.permissions = PermissionsController()
