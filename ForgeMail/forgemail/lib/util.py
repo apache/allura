@@ -104,7 +104,7 @@ def encode_email_part(content, content_type):
     try:
         return MIMEText(content.encode('iso-8859-1'), content_type, 'iso-8859-1')
     except:
-        return MIMEText(content.encode('latin-1'), content_type, 'utf-8')
+        return MIMEText(content.encode('utf-8'), content_type, 'utf-8')
 
 def make_multipart_message(*parts):
     msg = MIMEMultipart('related')

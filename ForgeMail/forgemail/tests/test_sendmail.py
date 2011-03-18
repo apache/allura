@@ -106,6 +106,24 @@ class TestReactor(unittest.TestCase):
                 'text':'Test message'})
         assert self.sendmail.called
         args, kwargs =  self.sendmail.call_args
+        (from_addr, ids, msg) = args
+        assert 'Content-Type: text/plain; charset="iso-8859-1"\n' in msg, msg
+        assert 'Subject: =?iso-8859-1?q?Test?= =?iso-8859-1?q?message?=\n' in msg, msg
+
+    def test_send_mail_unicode(self):
+        addr = 'test@example.com'
+        common_react.send_email(None, {
+                'from':addr,
+                'reply_to':addr,
+                'destinations':[addr],
+                'message_id':'test@example.com',
+                'subject': u'Test ◎ message',
+                'text': u'Test ⌘ message'})
+        assert self.sendmail.called
+        args, kwargs =  self.sendmail.call_args
+        (from_addr, ids, msg) = args
+        assert 'Content-Type: text/plain; charset="utf-8"\n' in msg, msg
+        assert 'Subject: Test =?utf-8?b?4peO?= message\n' in msg, msg
 
     def test_user(self):
         u = M.User.by_username('test-admin')
