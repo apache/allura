@@ -248,7 +248,6 @@ class ProjectRegistrationProvider(object):
         '''Register a new project in the neighborhood.  The given user will
         become the project's superuser.  If no user is specified, c.user is used.
         '''
-        import allura.tasks.event_tasks
         from allura import model as M
         assert h.re_path_portion.match(shortname.replace('/', '')), \
             'Invalid project shortname'
@@ -277,12 +276,11 @@ class ProjectRegistrationProvider(object):
         with h.push_config(c, project=p, user=user):
             # have to add user to context, since this may occur inside auth code
             # for user-project reg, and c.user isn't set yet
-            allura.tasks.event_tasks.event.post('project_created')
+            g.post_event('project-created')
         return p
 
     def register_subproject(self, project, name, user, install_apps):
         from allura import model as M
-        import allura.tasks.event_tasks
         assert h.re_path_portion.match(name), 'Invalid subproject shortname'
         shortname = project.shortname + '/' + name
         sp = M.Project(
@@ -299,7 +297,7 @@ class ProjectRegistrationProvider(object):
                 sp.install_app('home', 'home')
                 sp.install_app('admin', 'admin')
                 sp.install_app('search', 'search')
-            allura.tasks.event_tasks.event.post('project_created')
+            g.post_event('project-created')
         return sp
 
     def delete_project(self, project, user):

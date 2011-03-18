@@ -40,40 +40,6 @@ def solarize(obj):
     return doc
 
 @try_solr
-def add_artifacts(obj_iter):
-    artifact_iterator = ( o.dump_ref() for o in obj_iter)
-    while True:
-        artifacts = list(islice(artifact_iterator, 1000))
-        for aref in artifacts:
-            aname = pickle.loads(aref.artifact_type).__name__
-            h.log_action(log, 'upsert artifact').info(
-                'upsert artifact %s', aname,
-                meta=dict(
-                    type=aname,
-                    id=aref.artifact_id))
-        if not artifacts: break
-        g.publish('react', 'artifacts_altered',
-                  dict(artifacts=artifacts),
-                  serializer='pickle')
-
-@try_solr
-def remove_artifacts(obj_iter):
-    artifact_iterator = ( o.dump_ref() for o in obj_iter)
-    while True:
-        artifacts = list(islice(artifact_iterator, 1000))
-        for aref in artifacts:
-            aname = pickle.loads(aref.artifact_type).__name__
-            h.log_action(log, 'delete artifact').info(
-                'delete artifact %s', aname,
-                meta=dict(
-                    type=aname,
-                    id=aref.artifact_id))
-        if not artifacts: break
-        g.publish('react', 'artifacts_removed',
-                  dict(artifacts=artifacts),
-                  serializer='pickle')
-
-@try_solr
 def search(q,**kw):
     return g.solr.search(q, **kw)
 

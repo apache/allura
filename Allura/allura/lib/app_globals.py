@@ -31,6 +31,7 @@ from pypeline.markup import markup as pypeline_markup
 import ew as ew_core
 import ew.jinja2_ew as ew
 
+import allura.tasks.event_tasks
 from allura import model as M
 from allura.lib.markdown_extensions import ForgeExtension
 
@@ -140,6 +141,9 @@ class Globals(object):
             perm_tool = Icon('x', 'ico-config'),
             perm_security = Icon('(', 'ico-lock'),
         )
+
+    def post_event(topic, *args, **kwargs):
+        allura.tasks.event_tasks.post(topic, *args, **kwargs)
 
     @property
     def credentials(self):

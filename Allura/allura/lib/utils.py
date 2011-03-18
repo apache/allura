@@ -5,7 +5,6 @@ from logging.handlers import WatchedFileHandler
 
 import tg
 from pylons import response
-from pkg_resources import iter_entry_points
 from paste.httpheaders import CACHE_CONTROL, EXPIRES
 
 from ming.utils import LazyProperty

@@ -3,7 +3,6 @@ import logging
 from pylons import c, g
 from bson import ObjectId
 
-from allura import model as M
 from allura.lib import helpers as h
 from allura.lib.decorators import task
 from allura.lib import mail_util
@@ -69,7 +68,7 @@ def sendmail(
     subject,
     message_id,
     in_reply_to=None):
-
+    from allura import model as M
     addrs_plain = []
     addrs_html = []
     addrs_multi = []

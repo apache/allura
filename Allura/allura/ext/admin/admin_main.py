@@ -12,9 +12,7 @@ from webob import exc
 from bson import ObjectId
 from formencode.validators import UnicodeString
 
-import allura
 from allura.app import Application, WidgetController, DefaultAdminController, SitemapEntry
-from allura.lib.security import has_artifact_access
 from allura.lib import helpers as h
 from allura import version
 from allura import model as M
@@ -253,7 +251,7 @@ class ProjectAdminController(BaseController):
         if 'delete_icon' in kw:
             M.ProjectFile.query.remove(dict(project_id=c.project._id, category='icon'))
             h.log_action(log, 'remove project icon').info('')
-            allura.tasks.event_tasks.post('project_updated')
+            g.post_event('project_updated')
             redirect('.')
         elif 'delete' in kw:
             h.log_action(log, 'delete project').info('')
@@ -294,7 +292,7 @@ class ProjectAdminController(BaseController):
                 original_meta=dict(project_id=c.project._id,category='screenshot'),
                 square=True, thumbnail_size=(150,150),
                 thumbnail_meta=dict(project_id=c.project._id,category='screenshot_thumb'))
-        allura.tasks.event_tasks.post('project_updated')
+        g.post_event('project_updated')
         redirect('overview')
 
     @expose()
@@ -308,7 +306,7 @@ class ProjectAdminController(BaseController):
         if homepage_title != c.project.homepage_title:
             h.log_action(log, 'change project homepage title').info('')
             c.project.homepage_title = homepage_title
-        allura.tasks.event_tasks.post('project_updated')
+        g.post_event('project_updated')
         redirect('homepage')
 
     @expose()
@@ -393,7 +391,7 @@ class ProjectAdminController(BaseController):
         except forge_exc.ToolError, exc:
             flash('%s: %s' % (exc.__class__.__name__, exc.args[0]),
                   'error')
-        allura.tasks.event_tasks.post('project_updated')
+        g.post_event('project_updated')
         redirect('tools')
 
     @h.vardec
@@ -415,7 +413,7 @@ class ProjectAdminController(BaseController):
                     redirect('.')
                 role = user.project_role()
                 c.project.acl[permission].append(role._id)
-        allura.tasks.event_tasks.post('project_updated')
+        g.post_event('project_updated')
         redirect('permissions')
 
     @h.vardec
@@ -438,7 +436,7 @@ class ProjectAdminController(BaseController):
                     role.roles.remove(ObjectId(str(sr['id'])))
         if new and new.get('add'):
             M.ProjectRole.upsert(name=new['name'], project_id=c.project.root_project._id)
-        allura.tasks.event_tasks.post('project_updated')
+        g.post_event('project_updated')
         redirect('roles')
 
     @h.vardec
@@ -471,7 +469,7 @@ class ProjectAdminController(BaseController):
                     h.log_action(log, 'remove_user_from_role').info(
                         '%s from %s', u['id'], r['id'],
                         meta=dict(user_role=u['id'], role=r['id']))
-        allura.tasks.event_tasks.post('project_updated')
+        g.post_event('project_updated')
         redirect('perms')
 
 class PermissionsController(BaseController):
@@ -504,7 +502,7 @@ class PermissionsController(BaseController):
                 _id={'$in':role_ids},
                 project_id=c.project.root_project._id))
             c.project.acl[perm] = [ r._id for r in roles ]
-        allura.tasks.event_tasks.post('project_updated')
+        g.post_event('project_updated')
         redirect('.')
 
 class GroupsController(BaseController):
@@ -549,7 +547,7 @@ class GroupsController(BaseController):
                 dict(user_id={'$ne':None}, roles=group._id)):
                 if role.user_id not in user_ids:
                     role.roles = [ rid for rid in role.roles if rid != group._id ]
-        allura.tasks.event_tasks.post('project_updated')
+        g.post_event('project_updated')
         redirect('.')
 
     @without_trailing_slash
@@ -570,7 +568,7 @@ class GroupsController(BaseController):
             flash('%s already exists' % name, 'error')
         else:
             M.ProjectRole(project_id=c.project._id, name=name)
-        allura.tasks.event_tasks.post('project_updated')
+        g.post_event('project_updated')
         redirect('.')
 
     @expose()

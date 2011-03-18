@@ -2,12 +2,12 @@ import shutil
 
 from pylons import c
 
-from allura import model as M
 from allura.lib.decorators import task
 from allura.lib.repository import RepositoryApp
 
 @task
 def init(**kwargs):
+    from allura import model as M
     c.app.repo.init()
     M.Notification.post_user(
         c.user, c.app.repo, 'created',
@@ -19,6 +19,7 @@ def clone(
     cloned_from_path,
     cloned_from_name,
     cloned_from_url):
+    from allura import model as M
     c.app.repo.init_as_clone(
         cloned_from_path,
         cloned_from_name,
@@ -34,6 +35,7 @@ def refresh(**kwargs):
 
 @task
 def uninstall(**kwargs):
+    from allura import model as M
     repo = c.app.repo
     if repo is not None:
         shutil.rmtree(repo.full_fs_path, ignore_errors=True)

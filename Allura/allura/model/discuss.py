@@ -9,6 +9,7 @@ from ming import schema
 from ming.orm.base import session
 from ming.orm.property import FieldProperty, RelationProperty, ForeignIdProperty
 
+import allura.tasks
 from allura.lib import helpers as h
 from allura.lib.security import require, has_artifact_access
 from .artifact import Artifact, VersionedArtifact, Snapshot, Message, Feed
@@ -414,14 +415,14 @@ class Post(Message, VersionedArtifact):
         self.status = 'ok'
         if self.parent_id is None:
             thd = self.thread_class().query.get(_id=self.thread_id)
-            g.publish('react', 'Discussion.new_thread', dict(thread_id=thd._id))
+            g.post_event('discussion.new_thread', thd._id)
         self.give_access('moderate', user=self.author())
         self.commit()
         author = self.author()
         if (c.app.config.options.get('PostingPolicy') == 'ApproveOnceModerated'
             and author._id != None):
             c.app.config.grant_permission('unmoderated_post', author)
-        g.publish('react', 'Discussion.new_post', dict(post_id=self._id))
+        g.post_event('discussion.new_post', thd._id, self._id)
         artifact = self.thread.artifact or self.thread
         Notification.post(artifact, 'message', post=self)
         session(self).flush()
@@ -430,8 +431,7 @@ class Post(Message, VersionedArtifact):
 
     def spam(self):
         self.status = 'spam'
-        g.publish('react', 'spam', dict(artifact_reference=self.dump_ref()),
-                  serializer='pickle')
+        g.post_event('spam', self.index_id())
 
 class DiscussionAttachment(BaseAttachment):
     DiscussionClass=Discussion

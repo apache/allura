@@ -4,13 +4,13 @@ from contextlib import contextmanager
 
 from pylons import g
 
-from allura import model as M
 from allura.lib.decorators import task
 
 log = logging.getLogger(__name__)
 
 @task
 def index():
+    from allura import model as M
     '''index all the artifacts that have changed since the last index() call'''
     worker = '%s pid %s' % (os.uname()[1], os.getpid())
     with _indexing_disabled(M.session.artifact_orm_session._get()):
