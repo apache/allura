@@ -10,7 +10,6 @@ from ming.orm.ormsession import ThreadLocalORMSession
 from allura import model as M
 from allura.lib import search
 from allura.lib import helpers as h
-from allura.command import reactor
 from allura.ext.search import search_main
 from allura.lib.app_globals import Globals
 
@@ -62,10 +61,3 @@ def test_searchapp():
     assert len(a.references) == 1
     assert len(a.backreferences) == 0
 
-def test_check_commit():
-    # TODO: just coverage so far
-    M.SearchConfig.query.remove()
-    M.SearchConfig(last_commit = datetime.utcnow() - timedelta(days=1),
-                   pending_commit = 1)
-    g.publish('audit', 'search.check_commit', {})
-    g.mock_amq.handle_all()

@@ -29,6 +29,7 @@ from ming import schema as S
 from ming.orm import MappedClass, FieldProperty, ForeignIdProperty, RelationProperty, session
 
 from allura.lib import helpers as h
+import allura.tasks.mail_tasks
 
 from .session import main_orm_session, project_orm_session
 from .auth import User
@@ -184,9 +185,9 @@ To unsubscribe from further messages, please visit <%s/auth/prefs/>
 ''' % (prefix, self.link, prefix)
 
     def send_direct(self, user_id):
-        allura.tasks.mail_task.sendmail.post(
+        allura.tasks.mail_tasks.sendmail.post(
             destinations=[str(user_id)],
-            fromaddr=self.address,
+            fromaddr=self.from_address,
             reply_to=self.reply_to_address,
             subject=self.subject,
             message_id=self._id,
@@ -208,7 +209,7 @@ To unsubscribe from further messages, please visit <%s/auth/prefs/>
             text.append(n.text or '-no text-')
         text.append(n.footer())
         text = '\n'.join(text)
-        allura.tasks.mail_task.sendmail.post(
+        allura.tasks.mail_tasks.sendmail.post(
             destinations=[str(user_id)],
             fromaddr=from_address,
             reply_to=reply_to_address,
@@ -228,7 +229,7 @@ To unsubscribe from further messages, please visit <%s/auth/prefs/>
             text.append(h.text.truncate(n.text or '-no text-', 128))
         text.append(n.footer())
         text = '\n'.join(text)
-        allura.tasks.mail_task.sendmail.post(
+        allura.tasks.mail_tasks.sendmail.post(
             destinations=[str(user_id)],
             fromaddr=from_address,
             reply_to=from_address,

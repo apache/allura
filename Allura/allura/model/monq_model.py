@@ -45,7 +45,7 @@ class MonQTask(MappedClass):
             app_config_id=S.ObjectId,
             user_id=S.ObjectId))
     args = FieldProperty([])
-    kwargs = FieldProperty({})
+    kwargs = FieldProperty({None:None})
     result = FieldProperty(None, if_missing=None)
 
     def __repr__(self):
@@ -65,6 +65,8 @@ class MonQTask(MappedClass):
              task_name=None,
              result_type='forget',
              priority=10):
+        if args is None: args = ()
+        if kwargs is None: kwargs = {}
         if task_name is None:
             task_name = '%s.%s' % (
                 function.__module__,
@@ -130,9 +132,11 @@ class MonQTask(MappedClass):
     @classmethod
     def run_ready(cls, worker=None):
         '''Run all the tasks that are currently ready'''
-        for task in cls.query.find(dict(state='ready')).all():
+        i=0
+        for i, task in enumerate(cls.query.find(dict(state='ready')).all()):
             task.process = worker
             task()
+        return i
 
     def __call__(self):
         from allura import model as M
@@ -156,6 +160,7 @@ class MonQTask(MappedClass):
             log.exception('%r', self)
             self.state = 'error'
             self.result = traceback.format_exc()
+            raise
         finally:
             c.project = old_cproject
             c.app = old_capp
@@ -167,3 +172,8 @@ class MonQTask(MappedClass):
             self.query.find(dict(_id=self._id), refresh=True).first()
             print self.state,
         return self.result
+
+    @classmethod
+    def list(cls, state='ready'):
+        for t in cls.query.find(dict(state=state)):
+            print t

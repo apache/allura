@@ -17,7 +17,7 @@ from ming import schema as S
 from ming.orm import session, state, MappedClass
 from ming.orm import FieldProperty, RelationProperty, ForeignIdProperty
 
-import allura.tasks
+import allura.tasks.mail_tasks
 from allura.lib import helpers as h
 from allura.lib import plugin
 

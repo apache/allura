@@ -352,7 +352,7 @@ class Ticket(VersionedArtifact):
             subject = 'Ticket #%s created by %s (%s): %s' % (
                 self.ticket_num, c.user.get_pref('display_name'), c.user.username, self.summary)
             Thread(discussion_id=self.app_config.discussion_id,
-                   artifact_reference=self.dump_ref())
+                   ref_id=self.index_id())
             Notification.post(artifact=self, topic='metadata', text=description, subject=subject)
         Feed.post(self, description)
 

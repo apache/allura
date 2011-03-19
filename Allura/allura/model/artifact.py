@@ -90,7 +90,7 @@ class Artifact(MappedClass):
 
     @LazyProperty
     def backrefs(self):
-        q = ArtifactReference.query.find(dict(references=self))
+        q = ArtifactReference.query.find(dict(references=self.index_id()))
         return [ aref._id for aref in q ]
 
     def subscribe(self, user=None, topic=None, type='direct', n=1, unit='day'):

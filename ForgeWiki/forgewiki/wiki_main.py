@@ -147,8 +147,8 @@ class ForgeWikiApp(Application):
         links = [SitemapEntry('Create Page', c.app.url, ui_icon=g.icons['plus'], className='add_wiki_page'),
                  SitemapEntry('')]
         if page:
-            for aref in page.references+page.backreferences.values():
-                artifact = M.ArtifactReference(aref).artifact
+            for aref in page.refs+page.backrefs:
+                artifact = M.ArtifactReference.query(_id=aref).artifact
                 if artifact is None: continue
                 if isinstance(artifact, WM.Page) and artifact.url() not in related_urls:
                     related_urls.append(artifact.url())

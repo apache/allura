@@ -58,17 +58,18 @@ class ArtifactSessionExtension(SessionExtension):
         import allura.tasks.index_tasks
         if not getattr(self.session, 'disable_artifact_index', False):
             from .stats import CPA
-            from .index import IndexOp, ArtifactReference
-            for obj in self.objects_deleted:
-                IndexOp.del_op(obj)
-            for obj in self.objects_added + self.objects_modified:
+            from .index import ArtifactReference
+            from .session import main_orm_session
+            # Ensure artifact references exist for new objects
+            for obj in self.objects_added:
                 ArtifactReference.from_artifact(obj)
-                IndexOp.add_op(obj)
-            if (self.objects_added
-                or self.objects_modified
-                or self.objects_deleted):
-                session(ArtifactReference).flush()
-                allura.tasks.index_tasks.index.post()
+            # Post delete and add indexing operations
+            allura.tasks.index_tasks.del_artifacts.post(
+                [ obj.index_id() for obj in self.objects_deleted ])
+            allura.tasks.index_tasks.add_artifacts.post(
+                [ obj.index_id() for obj in self.objects_added + self.objects_modified ])
+            # Flush tasks
+            main_orm_session.flush()
             for obj in self.objects_added:
                 CPA.post('create', obj)
             for obj in self.objects_modified:

@@ -1,4 +1,3 @@
-import os
 import logging
 from contextlib import contextmanager
 
@@ -9,22 +8,31 @@ from allura.lib.decorators import task
 log = logging.getLogger(__name__)
 
 @task
-def index():
+def add_artifacts(ref_ids):
+    '''Add the referenced artifacts to SOLR and shortlinks'''
     from allura import model as M
-    '''index all the artifacts that have changed since the last index() call'''
-    worker = '%s pid %s' % (os.uname()[1], os.getpid())
+    from allura.lib.search import find_shortlinks, solarize
     with _indexing_disabled(M.session.artifact_orm_session._get()):
-        M.IndexOp.lock_ops(worker)
-        for i, op in enumerate(M.IndexOp.find_ops(worker)):
-            op()
-        log.info('Executed %d index ops', i)
-        if i: g.solr.commit()
-        M.IndexOp.remove_ops(worker)
+        for ref_id in ref_ids:
+            try:
+                ref = M.ArtifactReference.query.get(_id=ref_id)
+                artifact = ref.artifact
+                M.Shortlink.from_artifact(artifact)
+                s = solarize(artifact)
+                if s is not None:
+                    g.solr.add([s])
+                if not isinstance(artifact, M.Snapshot):
+                    ref.references = [
+                        link.ref_id for link in find_shortlinks(s['text']) ]
+            except:
+                log.exception('Error indexing %r', ref_id)
 
-def sinfo(s):
-    return 'DIA,SMD=%s,%s' % (
-        s.disable_artifact_index,
-        s.skip_mod_date)
+def del_artifacts(ref_ids):
+    from allura import model as M
+    for ref_id in ref_ids:
+        g.solr.delete(id=ref_id)
+    M.ArtifactReference.query.remove(dict(_id={'$in':ref_ids}))
+    M.Shortlink.query.remove(dict(_id={'$in':ref_ids}))
 
 @contextmanager
 def _indexing_disabled(session):

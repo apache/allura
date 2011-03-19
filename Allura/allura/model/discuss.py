@@ -141,9 +141,8 @@ class Thread(Artifact):
 
     @property
     def artifact(self):
-        aref = ArtifactReference(self.artifact_reference)
-        if aref is None: return self.discussion
-        return aref.artifact
+        if self.ref is None: return self.discussion
+        return self.ref.artifact
 
     # Use wisely - there's .num_replies also
     @property
@@ -152,10 +151,9 @@ class Thread(Artifact):
                 discussion_id=self.discussion_id,
                 thread_id=self._id)).count()
 
-    def primary(self, primary_class=None):
-        result = primary_class.query.get(_id=self.artifact_reference.artifact_id)
-        if result is None: return self
-        return result
+    def primary(self):
+        if self.ref is None: return self
+        return self.ref.artifact
 
     def add_post(self, **kw):
         """Helper function to avoid code duplication."""
@@ -169,9 +167,8 @@ class Thread(Artifact):
 
     def post(self, text, message_id=None, parent_id=None, timestamp=None, **kw):
         require(has_artifact_access('post', self))
-        if self.artifact_reference.artifact_id is not None:
-            if self.artifact:
-                self.artifact.subscribe()
+        if self.ref_id and self.artifact:
+            self.artifact.subscribe()
         if message_id is None: message_id = h.gen_message_id()
         parent = parent_id and self.post_class().query.get(_id=parent_id)
         slug, full_slug = self.post_class().make_slugs(parent, timestamp)
@@ -422,7 +419,7 @@ class Post(Message, VersionedArtifact):
         if (c.app.config.options.get('PostingPolicy') == 'ApproveOnceModerated'
             and author._id != None):
             c.app.config.grant_permission('unmoderated_post', author)
-        g.post_event('discussion.new_post', thd._id, self._id)
+        g.post_event('discussion.new_post', self.thread_id, self._id)
         artifact = self.thread.artifact or self.thread
         Notification.post(artifact, 'message', post=self)
         session(self).flush()

@@ -19,12 +19,6 @@ def setUp():
     setup_basic_test()
     setup_global_objects()
 
-def test_search_config():
-    "just make sure needs_commit doesn't throw an exception"
-    assert M.SearchConfig.query.find().count() == 1
-    cfg = M.SearchConfig.query.find().one()
-    cfg.needs_commit()
-
 def test_scheduled_messages():
     sm = M.ScheduledMessage(_id=None, when=datetime.utcnow(), exchange='audit', routing_key='test.none')
     ThreadLocalORMSession.flush_all()

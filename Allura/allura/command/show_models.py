@@ -5,6 +5,7 @@ from pylons import c
 
 from ming.orm import MappedClass, mapper, ThreadLocalORMSession, session, state
 
+import allura.tasks.index_tasks
 from . import base
 
 class ShowModelsCommand(base.Command):
@@ -47,15 +48,13 @@ class ReindexCommand(base.Command):
         for p in projects:
             base.log.info('Reindex project %s', p.shortname)
             c.project = p
-            M.ArtifactReference.query.remove({})
-            M.Shortlink.query.remove({})
-            M.IndexOp.query.remove({})
             for _, a_cls in dfs(M.Artifact, graph):
                 base.log.info('  %s', a_cls)
-                for a in a_cls.query.find():
-                    M.IndexOp.add_op(a)
-                session(M.IndexOp).flush()
-                session(a_cls).clear()
+                ref_ids = [ a.index_id() for a in a_cls.query.find() ]
+                allura.tasks.index_tasks.add_artifacts(ref_ids)
+                M.main_orm_session.flush()
+                M.main_orm_session.clear()
+                M.artifact_orm_session.clear()
 
 class EnsureIndexCommand(base.Command):
     min_args=0

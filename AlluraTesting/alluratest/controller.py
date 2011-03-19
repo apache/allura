@@ -44,6 +44,8 @@ def setup_basic_test(config=None, app_name=DFL_APP_NAME):
     test_file = os.path.join(conf_dir, get_config_file(config))
     cmd = SetupCommand('setup-app')
     cmd.run([test_file])
+    while M.MonQTask.run_ready('setup'):
+        ThreadLocalORMSession.flush_all()
 
 def setup_functional_test(config=None, app_name=DFL_APP_NAME):
     '''Create clean environment for running tests.  Also return WSGI test app'''

@@ -10,14 +10,15 @@ def setUp():
     setup_basic_test()
     ThreadLocalORMSession.close_all()
     setup_global_objects()
+    M.MonQTask.query.remove({})
 
 @with_setup(setUp)
 def test_basic_task():
     task = M.MonQTask.post(
-        pprint.pformat, dict(a=5, b=6))
-    print 'Created task', task
+        pprint.pformat, (dict(a=5, b=6),))
     ThreadLocalORMSession.flush_all()
     ThreadLocalORMSession.close_all()
     task = M.MonQTask.get()
-    print 'Popped task', task
-    print task()
+    assert task
+    task()
+    assert task.result == "{'a': 5, 'b': 6}", task.result

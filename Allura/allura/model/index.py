@@ -16,7 +16,6 @@ from ming.orm import MappedClass, session
 from ming.orm import FieldProperty, ForeignIdProperty, RelationProperty
 
 from allura.lib import helpers as h
-from allura.lib.search import find_shortlinks, solarize
 
 from .session import main_orm_session
 
@@ -84,6 +83,7 @@ class Shortlink(MappedClass):
     project_id = ForeignIdProperty('Project')
     app_config_id = ForeignIdProperty('AppConfig')
     link = FieldProperty(str)
+    url = FieldProperty(str)
 
     # Relation Properties
     project = RelationProperty('Project')
@@ -119,12 +119,13 @@ class Shortlink(MappedClass):
                 result = cls(
                     ref_id = a.index_id(),
                     project_id = a.app_config.project_id,
-                    app_config_id = a.app_config._id,
-                    link = a.shorthand_id())
+                    app_config_id = a.app_config._id)
                 session(result).flush(result)
             except pymongo.errors.DuplicateKeyError: # pragma no cover
                 session(result).expunge(result)
                 result = cls.query.get(ref_id=a.index_id())
+        result.link = a.shorthand_id()
+        result.url = a.url()
         return result
 
     @classmethod
@@ -191,95 +192,3 @@ class Shortlink(MappedClass):
         else:
             return None
 
-class IndexOp(MappedClass):
-    '''Queued operations for offline indexing.
-    '''
-    class __mongometa__:
-        session = main_orm_session
-        name = 'index_op'
-        indexes = [
-           [ ('worker', ming.ASCENDING),
-             ('ref_id', ming.ASCENDING),
-             ('timestamp', ming.DESCENDING),
-             ],
-           ]
-
-    _id = FieldProperty(S.ObjectId)
-    op = FieldProperty(S.OneOf('add', 'del'))
-    worker = FieldProperty(str, if_missing=None)
-    ref_id = ForeignIdProperty('ArtifactReference')
-    timestamp = FieldProperty(datetime, if_missing=datetime.utcnow)
-
-    ref = RelationProperty('ArtifactReference')
-
-    def __repr__(self):
-        return '<%s %s (%s) @%s>' % (
-            self.op, self.ref_id, self.worker, self.timestamp.isoformat())
-
-    @classmethod
-    def add_op(cls, artifact):
-        return cls(op='add', ref_id=artifact.index_id())
-
-    @classmethod
-    def del_op(cls, artifact):
-        return cls(op='del', ref_id=artifact.index_id())
-
-    @classmethod
-    def lock_ops(cls, worker):
-        '''Lock all the outstanding indexops to the given worker'''
-        cls.query.update(
-            dict(worker=None),
-            {'$set': dict(worker=worker)},
-            multi=True)
-
-    @classmethod
-    def remove_ops(cls, worker):
-        '''Remove all the ops locked by the given worker'''
-        cls.query.remove(dict(worker=worker))
-
-    @classmethod
-    def unlock_ops(cls, worker):
-        '''Unlock all the outstanding indexops to the given worker
-
-        Generally only used if the worker dies.
-        '''
-        cls.query.update(
-            dict(worker=worker),
-            {'$set': dict(worker=None)},
-            multi=True)
-
-    @classmethod
-    def find_ops(cls, worker):
-        '''Return the most relevant ops locked by worker
-
-        This method will only return the most recent op for a particular
-        artifact (which is what you actually want).
-        '''
-        q = (cls
-             .query
-             .find(dict(worker=worker))
-             .sort('ref_id')
-             .sort('timestamp', ming.DESCENDING))
-        for ref_id, ops in groupby(q, key=lambda o: o.ref_id):
-            yield ops.next()
-
-    def __call__(self):
-        from allura.model.artifact import Snapshot
-        try:
-            if self.op == 'add':
-                artifact = self.ref.artifact
-                Shortlink.from_artifact(artifact)
-                s = solarize(artifact)
-                if s is not None:
-                    g.solr.add([s])
-                    if not isinstance(artifact, Snapshot):
-                        self.ref.references = [
-                            link.ref_id for link in find_shortlinks(s['text']) ]
-            else:
-                g.solr.delete(id=self.ref_id)
-                ArtifactReference.query.remove(dict(_id=self.ref_id))
-                Shortlink.query.remove(dict(ref_id=self.ref_id))
-        except:
-            log.exception('Error with %r', self)
-            self.worker = 'ERROR'
-            session(self).flush(self)

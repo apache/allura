@@ -142,8 +142,8 @@ class Globals(object):
             perm_security = Icon('(', 'ico-lock'),
         )
 
-    def post_event(topic, *args, **kwargs):
-        allura.tasks.event_tasks.post(topic, *args, **kwargs)
+    def post_event(self, topic, *args, **kwargs):
+        allura.tasks.event_tasks.event.post(topic, *args, **kwargs)
 
     @property
     def credentials(self):

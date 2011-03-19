@@ -12,10 +12,8 @@ from formencode import validators as fev
 from pylons import c
 
 from allura.lib.helpers import push_config, find_project
-from allura import model as M
 from allura.lib.utils import ConfigProxy
-
-from . import exc
+from allura.lib import exceptions as exc
 
 log = logging.getLogger(__name__)
 
@@ -89,6 +87,7 @@ def parse_message(data):
     return result
 
 def identify_sender(peer, email_address, headers, msg):
+    from allura import model as M
     # Dumb ID -- just look for email address claimed by a particular user
     addr = M.EmailAddress.query.get(_id=M.EmailAddress.canonical(email_address))
     if addr and addr.claimed_by_user_id:

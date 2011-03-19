@@ -12,9 +12,8 @@ from ming.orm import ThreadLocalORMSession
 from alluratest.controller import setup_basic_test, setup_global_objects
 from allura.lib.utils import ConfigProxy
 
-from forgemail.lib.util import parse_address, parse_message
-from forgemail.lib.exc import AddressException
-from forgemail.reactors.common_react import received_email
+from allura.lib.mail_util import parse_address, parse_message
+from allura.lib.exceptions import AddressException
 
 config = ConfigProxy(
     common_suffix='forgemail.domain',
@@ -46,7 +45,7 @@ class TestReactor(unittest.TestCase):
 
     def test_parse_address_good(self):
         topic, project, app = parse_address('foo@wiki.test.p' + config.common_suffix)
-        assert_equal(topic, 'Wiki.msg.foo')
+        assert_equal(topic, 'foo')
         assert_equal(project.name, 'test')
         assert_equal(app.__class__.__name__, 'ForgeWikiApp')
 

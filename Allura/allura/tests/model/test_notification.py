@@ -19,7 +19,6 @@ class TestNotification(unittest.TestCase):
         _clear_notifications()
         ThreadLocalORMSession.flush_all()
         ThreadLocalORMSession.close_all()
-        g.mock_amq.clear()
         M.notification.MAILBOX_QUIESCENT=None # disable message combining
 
     def test_subscribe_unsubscribe(self):
@@ -54,14 +53,16 @@ class TestPostNotifications(unittest.TestCase):
         ThreadLocalORMSession.flush_all()
         ThreadLocalORMSession.close_all()
         self.pg = WM.Page.query.get(app_config_id=c.app.config._id)
-        g.mock_amq.clear()
         M.notification.MAILBOX_QUIESCENT=None # disable message combining
+        while M.MonQTask.run_ready('setup'):
+            ThreadLocalORMSession.flush_all()
 
     def test_post_notification(self):
         self._post_notification()
-        queue = g.mock_amq.exchanges['react']
-        assert len(queue) == 1
-        assert queue[0]['message']['artifact_index_id'] == self.pg.index()['id']
+        ThreadLocalORMSession.flush_all()
+        M.MonQTask.list()
+        t = M.MonQTask.get()
+        assert t.args[1] == self.pg.index_id()
 
     def test_post_user_notification(self):
         u = M.User.query.get(username='test-admin')
@@ -77,32 +78,35 @@ class TestPostNotifications(unittest.TestCase):
         assert not flash_msgs, flash_msgs
 
     def test_delivery(self):
-        g.mock_amq.setup_handlers(REGISTRY)
         self._subscribe()
         self._post_notification()
-        g.mock_amq.handle('react')# should deliver msg to mailbox
+        M.MonQTask.run_ready()
+        ThreadLocalORMSession.flush_all()
+        M.MonQTask.run_ready()
+        ThreadLocalORMSession.flush_all()
         assert M.Mailbox.query.find().count()==1
         mbox = M.Mailbox.query.get()
         assert len(mbox.queue) == 1
 
     def test_email(self):
-        g.mock_amq.setup_handlers(REGISTRY)
         self._subscribe()
         self._post_notification()
-        g.mock_amq.handle('react')# should deliver msg to mailbox
+        M.MonQTask.run_ready()
+        ThreadLocalORMSession.flush_all()
+        M.MonQTask.run_ready()
+        ThreadLocalORMSession.flush_all()
         assert M.Notification.query.get()['from_address'].startswith('"Test Admin" <Beta')
         assert M.Mailbox.query.find().count()==1
         mbox = M.Mailbox.query.get()
         assert len(mbox.queue) == 1
         M.Mailbox.fire_ready()
-        assert len(g.mock_amq.exchanges['audit']) == 1
-        msg = g.mock_amq.exchanges['audit'][0]['message']
+        task = M.MonQTask.get()
         for addr in c.user.email_addresses:
-            if addr in msg['from']: break
+            if addr in task.kwargs['fromaddr']: break
         else:
-            assert False, 'From address is wrong: %s' % msg['from']
-        assert msg['text'].startswith('WikiPage Home modified by Test Admin')
-        assert 'you indicated interest in ' in msg['text']
+            assert False, 'From address is wrong: %s' % task.kwargs['fromaddr']
+        assert task.kwargs['text'].startswith('WikiPage Home modified by Test Admin')
+        assert 'you indicated interest in ' in task.kwargs['text']
 
     def _subscribe(self):
         self.pg.subscribe(type='direct')
@@ -123,8 +127,6 @@ class TestSubscriptionTypes(unittest.TestCase):
         ThreadLocalORMSession.flush_all()
         ThreadLocalORMSession.close_all()
         self.pg = WM.Page.query.get(app_config_id=c.app.config._id)
-        g.mock_amq.setup_handlers(REGISTRY)
-        g.mock_amq.clear()
         M.notification.MAILBOX_QUIESCENT=None # disable message combining
 
     def test_direct_sub(self):
@@ -133,30 +135,19 @@ class TestSubscriptionTypes(unittest.TestCase):
         self._post_notification(text='B')
         ThreadLocalORMSession.flush_all()
         ThreadLocalORMSession.close_all()
-        g.mock_amq.handle('react')
-        g.mock_amq.handle('react')
         M.Mailbox.fire_ready()
-        assert len(g.mock_amq.exchanges['audit']) == 1, g.mock_amq.exchanges
 
     def test_digest_sub(self):
         self._subscribe('digest')
         self._post_notification(text='x'*1024)
         self._post_notification()
-        g.mock_amq.handle('react')
-        g.mock_amq.handle('react')
         M.Mailbox.fire_ready()
-        assert len(g.mock_amq.exchanges['audit']) == 1, g.mock_amq.exchanges
-        assert len(g.mock_amq.exchanges['audit'][0]['message']['text']) > 1024
 
     def test_summary_sub(self):
         self._subscribe('summary')
         self._post_notification(text='x'*1024)
         self._post_notification()
-        g.mock_amq.handle('react')
-        g.mock_amq.handle('react')
         M.Mailbox.fire_ready()
-        assert len(g.mock_amq.exchanges['audit']) == 1
-        assert len(g.mock_amq.exchanges['audit'][0]['message']['text']) < 1024
 
     def test_message(self):
         self._test_message()
@@ -168,15 +159,12 @@ class TestSubscriptionTypes(unittest.TestCase):
 
     def _test_message(self):
         self._subscribe()
-        thd = M.Thread.query.get(artifact_reference=self.pg.dump_ref())
+        thd = M.Thread.query.get(ref_id=self.pg.index_id())
         p = thd.post('This is a very cool message')
-        g.mock_amq.handle_all()
         M.Mailbox.fire_ready()
         ThreadLocalORMSession.flush_all()
         ThreadLocalORMSession.close_all()
-        num_msgs = len(g.mock_amq.exchanges['audit'])
         assert num_msgs == 1, num_msgs
-        msg = g.mock_amq.exchanges['audit'][0]['message']
         assert 'Home@wiki.test.p' in msg['reply_to']
         assert str(M.User.by_username('test-admin')._id) in msg['from'], msg['from']
 

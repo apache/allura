@@ -8,7 +8,7 @@ from tg.decorators import with_trailing_slash, without_trailing_slash
 from pylons import c, g, request, response
 from webob import exc as wexc
 
-import allura.task
+import allura.tasks.repo_tasks
 from allura import model as M
 from allura.lib import validators as V
 from allura.lib.oid_helper import verify_oid, process_oid
@@ -202,7 +202,7 @@ class AuthController(BaseController):
         h.set_context(project.shortname, rest[0])
         if c.app is None or not getattr(c.app, 'repo'):
             return 'Cannot find repo at %s' % repo_path
-        allura.task.repo_refresh.post()
+        allura.tasks.repo_tasks.repo_refresh.post()
         return '%r refresh queued.\n' % c.app.repo
 
     @expose('json:')
