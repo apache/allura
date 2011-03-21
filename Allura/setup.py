@@ -63,9 +63,6 @@ setup(
     main = pylons.util:PylonsInstaller
     tool_test = pylons.util:PylonsInstaller
 
-    [paste.paster_create_template]
-    forgeapp=allura.pastetemplate:ForgeAppTemplate
-
     [allura]
     profile = allura.ext.user_profile:UserProfileApp
     admin = allura.ext.admin:AdminApp
