@@ -199,8 +199,7 @@ class RootController(BaseController):
             feed_type = 'rss'
         title = 'Recent changes to %s' % c.app.config.options.mount_point
         feed = M.Feed.feed(
-            {'artifact_reference.mount_point':c.app.config.options.mount_point,
-             'artifact_reference.project_id':c.project._id},
+            dict(project_id=c.project._id, app_config_id=c.app.config._id),
             feed_type,
             title,
             c.app.url,
@@ -310,7 +309,7 @@ class PostController(BaseController):
         else:
             feed_type = 'rss'
         feed = M.Feed.feed(
-            {'artifact_reference':self.post.index_id()},
+            dict(ref_id=self.post.index_id()),
             feed_type,
             'Recent changes to %s' % self.post.title,
             self.post.url(),

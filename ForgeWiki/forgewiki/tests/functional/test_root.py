@@ -4,15 +4,13 @@ import allura
 
 from nose.tools import assert_true
 
-from alluratest.controller import TestController
-from forgewiki import model
-
-# These are needed for faking reactor actions
-import mock
-from allura.lib import helpers as h
-from allura.command import reactor
-from allura.ext.search import search_main
 from ming.orm.ormsession import ThreadLocalORMSession
+
+from allura import model as M
+from allura.lib import helpers as h
+from alluratest.controller import TestController
+
+from forgewiki import model
 
 #---------x---------x---------x---------x---------x---------x---------x
 # RootController methods exposed:
@@ -277,32 +275,13 @@ class TestRootController(TestController):
                 'labels_old':'',
                 'viewable_by-0.id':'all'})
         
-        # Fake out updating the pages since reactor doesn't work with tests
-        app = search_main.SearchApp
-        cmd = reactor.ReactorCommand('reactor')
-        cmd.args = [ 'test.ini' ]
-        cmd.options = mock.Mock()
-        cmd.options.dry_run = True
-        cmd.options.proc = 1
-        configs = cmd.command()
-        add_artifacts = cmd.route_audit('search', app.add_artifacts)
-        del_artifacts = cmd.route_audit('search', app.del_artifacts)
-        msg = mock.Mock()
-        msg.ack = lambda:None
-        msg.delivery_info = dict(routing_key='search.add_artifacts')
         h.set_context('test', 'wiki')
         a = model.Page.query.find(dict(title='aaa')).first()
         a.text = '\n[TEST]\n'
-        msg.data = dict(project_id=a.project_id,
-                        mount_point=a.app_config.options.mount_point,
-                        artifacts=[a.dump_ref()])
-        add_artifacts(msg.data, msg)
         b = model.Page.query.find(dict(title='TEST')).first()
         b.text = '\n[bbb]\n'
-        msg.data = dict(project_id=b.project_id,
-                        mount_point=b.app_config.options.mount_point,
-                        artifacts=[b.dump_ref()])
-        add_artifacts(msg.data, msg)
+        ThreadLocalORMSession.flush_all()
+        M.MonQTask.run_ready()
         ThreadLocalORMSession.flush_all()
         ThreadLocalORMSession.close_all()
         

@@ -1,7 +1,7 @@
 import unittest
 from nose.tools import assert_equals
 
-from pylons import c, g
+from pylons import c
 from ming.orm import ThreadLocalORMSession
 
 from alluratest.controller import setup_basic_test, setup_global_objects
@@ -22,8 +22,9 @@ class TestHgApp(unittest.TestCase):
 
     def test_uninstall(self):
         c.app.uninstall(c.project)
-        assert g.mock_amq.pop('audit')
-        g.mock_amq.setup_handlers()
-        c.app.uninstall(c.project)
-        g.mock_amq.handle_all()
+        from allura import model as M
+        M.main_orm_session.flush()
+        task = M.MonQTask.get()
+        assert task.task_name == 'allura.tasks.repo_tasks.uninstall', task.task_name
+        task()
 

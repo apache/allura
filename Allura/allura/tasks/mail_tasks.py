@@ -13,16 +13,12 @@ log = logging.getLogger(__name__)
 smtp_client = mail_util.SMTPClient()
 
 @task
-def handle_message(topic, message):
-    c.app.handle_message(topic, message)
-
-@task
 def route_email(
     peer, mailfrom, rcpttos, data):
     '''Route messages according to their destination:
 
     <topic>@<mount_point>.<subproj2>.<subproj1>.<project>.projects.sourceforge.net
-    gets send to handle_message(topic, message)
+    gets sent to c.app.handle_message(topic, message)
     '''
     try:
         msg = mail_util.parse_message(data)
@@ -51,9 +47,9 @@ def route_email(
                                 filename=part['filename'],
                                 content_type=part['content_type'],
                                 payload=part['payload'])
-                            handle_message.post(userpart, msg)
+                            c.app.handle_message(userpart, msg)
                     else:
-                        handle_message.post(userpart, msg)
+                        c.app.handle_message(userpart, msg)
         except exc.MailError, e:
             log.error('Error routing email to %s: %s', addr, e)
         except:

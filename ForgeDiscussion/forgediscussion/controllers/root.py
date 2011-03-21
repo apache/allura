@@ -163,16 +163,8 @@ class RootController(BaseController):
             feed_type = 'rss'
         title = 'Recent posts to %s' % c.app.config.options.mount_label
 
-        forums = model.Forum.query.find(dict(
-                        app_config_id=c.app.config._id,
-                        parent_id=None)).all()
-        threads = []
-        for forum in forums:
-            threads += model.ForumThread.query.find(dict(
-                            discussion_id=forum._id)).sort('mod_date', pymongo.DESCENDING).limit(6).all()
-
         feed = Feed.feed(
-            {'artifact_reference':{'$in': [t.index_id() for t in threads]}},
+            dict(project_id=c.project._id, app_config_id=c.app.config._id),
             feed_type,
             title,
             c.app.url,

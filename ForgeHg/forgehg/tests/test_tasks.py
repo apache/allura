@@ -6,8 +6,7 @@ from ming.orm import ThreadLocalORMSession
 
 from alluratest.controller import setup_basic_test, setup_global_objects
 from allura.lib import helpers as h
-
-from forgehg.reactors import reactors as R
+from allura.tasks import repo_tasks
 
 class TestHgReactors(unittest.TestCase):
 
@@ -19,5 +18,7 @@ class TestHgReactors(unittest.TestCase):
         ThreadLocalORMSession.close_all()
 
     def test_init(self):
-        R.init('scm.hg.init', {})
+        repo_tasks.init()
 
+    def test_refresh_commit(self):
+        repo_tasks.refresh()

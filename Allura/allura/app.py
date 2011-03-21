@@ -255,11 +255,12 @@ class Application(object):
                 thread_id=thd._id,
                 post_id=message_id)
         else:
-            text=message['payload'] or '--no text body--',
+            text=message['payload'] or '--no text body--'
             post = thd.post(
                 message_id=message_id,
                 parent_id=parent_id,
-                text=text)
+                text=text,
+                subject=message['headers'].get('Subject', 'no subject'))
 
 class DefaultAdminController(BaseController):
 

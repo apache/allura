@@ -147,8 +147,10 @@ class ForgeWikiApp(Application):
         links = [SitemapEntry('Create Page', c.app.url, ui_icon=g.icons['plus'], className='add_wiki_page'),
                  SitemapEntry('')]
         if page:
-            for aref in page.refs+page.backrefs:
-                artifact = M.ArtifactReference.query(_id=aref).artifact
+            for ref_id in page.refs+page.backrefs:
+                ref = M.ArtifactReference.query.get(_id=ref_id)
+                if ref is None: continue
+                artifact = ref.artifact
                 if artifact is None: continue
                 if isinstance(artifact, WM.Page) and artifact.url() not in related_urls:
                     related_urls.append(artifact.url())
@@ -359,8 +361,7 @@ class RootController(BaseController):
             feed_type = 'rss'
         title = 'Recent changes to %s' % c.app.config.options.mount_point
         feed = M.Feed.feed(
-            {'artifact_reference.mount_point':c.app.config.options.mount_point,
-             'artifact_reference.project_id':c.project._id},
+            dict(project_id=c.project._id,app_config_id=c.app.config._id),
             feed_type,
             title,
             c.app.url,
@@ -459,7 +460,7 @@ class PageController(BaseController):
     @require_post()
     def delete(self):
         require(has_artifact_access('delete', self.page))
-        M.Shortlink.query.remove(ref_id=self.page.index_id())
+        M.Shortlink.query.remove(dict(ref_id=self.page.index_id()))
         self.page.deleted = True
         suffix = " {dt.hour}:{dt.minute}:{dt.second} {dt.day}-{dt.month}-{dt.year}".format(dt=datetime.utcnow())
         self.page.title += suffix
@@ -532,7 +533,7 @@ class PageController(BaseController):
         else:
             feed_type = 'rss'
         feed = M.Feed.feed(
-            {'artifact_reference':self.page.index_id()},
+            {'ref_id':self.page.index_id()},
             feed_type,
             'Recent changes to %s' % self.page.title,
             self.page.url(),

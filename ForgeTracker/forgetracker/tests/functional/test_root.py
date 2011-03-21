@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-import os, urllib
+import os
 import Image, StringIO
 import allura
 
@@ -7,14 +7,12 @@ from nose.tools import assert_true, assert_false, eq_, assert_equal
 from formencode.variabledecode import variable_encode
 
 from alluratest.controller import TestController, REGISTRY
+from allura import model as M
 from forgewiki import model as wm
 from forgetracker import model as tm
 
 # These are needed for faking reactor actions
-import mock
 from allura.lib import helpers as h
-from allura.command import reactor
-from allura.ext.search import search_main
 from ming.orm.ormsession import ThreadLocalORMSession
 
 class TestMilestones(TestController):
@@ -207,35 +205,21 @@ class TestFunctionalController(TestController):
                 'labels_old':'',
                 'viewable_by-0.id':'all'})
         self.new_ticket(summary='bbb')
-        
-        # Fake out updating the pages since reactor doesn't work with tests
-        app = search_main.SearchApp
-        cmd = reactor.ReactorCommand('reactor')
-        cmd.args = [ 'test.ini' ]
-        cmd.options = mock.Mock()
-        cmd.options.dry_run = True
-        cmd.options.proc = 1
-        configs = cmd.command()
-        add_artifacts = cmd.route_audit('search', app.add_artifacts)
-        del_artifacts = cmd.route_audit('search', app.del_artifacts)
-        msg = mock.Mock()
-        msg.ack = lambda:None
-        msg.delivery_info = dict(routing_key='search.add_artifacts')
+        ThreadLocalORMSession.flush_all()
+        M.MonQTask.run_ready()
+        ThreadLocalORMSession.flush_all()
+
         h.set_context('test', 'wiki')
         a = wm.Page.query.find(dict(title='aaa')).first()
         a.text = '\n[bugs:#1]\n'
-        msg.data = dict(project_id=a.project_id,
-                        mount_point=a.app_config.options.mount_point,
-                        artifacts=[a.index_id()])
-        add_artifacts(msg.data, msg)
+        ThreadLocalORMSession.flush_all()
+        M.MonQTask.run_ready()
+        ThreadLocalORMSession.flush_all()
         b = tm.Ticket.query.find(dict(ticket_num=2)).first()
         b.description = '\n[#1]\n'
-        msg.data = dict(project_id=b.project_id,
-                        mount_point=b.app_config.options.mount_point,
-                        artifacts=[b.index_id()])
-        add_artifacts(msg.data, msg)
         ThreadLocalORMSession.flush_all()
-        ThreadLocalORMSession.close_all()
+        M.MonQTask.run_ready()
+        ThreadLocalORMSession.flush_all()
         
         response = self.app.get('/p/test/bugs/1/')
         assert 'Related Pages' in response
@@ -474,12 +458,12 @@ class TestFunctionalController(TestController):
 #       assert '[#3] test third ticket' in response
 
     def test_search(self):
-        from pylons import g
-        g.amq_conn.setup_handlers(REGISTRY)
         self.new_ticket(summary='test first ticket')
         self.new_ticket(summary='test second ticket')
         self.new_ticket(summary='test third ticket')
-        g.amq_conn.handle_all()
+        ThreadLocalORMSession.flush_all()
+        M.MonQTask.run_ready()
+        ThreadLocalORMSession.flush_all()
         response = self.app.get('/p/test/bugs/search/?q=test')
         assert '3 results' in response, response.showbrowser()
         assert 'test third ticket' in response, response.showbrowser()

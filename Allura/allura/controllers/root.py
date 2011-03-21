@@ -67,10 +67,9 @@ class RootController(WsgiDispatchController):
         c.project = c.app = None
         c.user = plugin.AuthenticationProvider.get(request).authenticate_request()
         assert c.user is not None, 'c.user should always be at least User.anonymous()'
-        c.queued_messages = defaultdict(list)
 
     def _cleanup_request(self):
-        g.send_all_messages()
+        pass
 
     @expose('jinja:allura:templates/project_list.html')
     @with_trailing_slash

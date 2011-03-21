@@ -67,7 +67,7 @@ def parse_message(data):
     if result['message_id'] == []:
         result['message_id'] = h.gen_message_id()
     else:
-        result['message_id'] == result['message_id'][0]
+        result['message_id'] = result['message_id'][0]
     if multipart:
         result['parts'] = []
         for part in msg.walk():

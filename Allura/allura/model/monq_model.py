@@ -1,3 +1,4 @@
+import sys
 import time
 import traceback
 import logging
@@ -6,13 +7,11 @@ from datetime import datetime
 
 import bson
 import pymongo
-from pylons import c
+from pylons import c, g
 
 import ming
 from ming import schema as S
 from ming.orm import session, MappedClass, FieldProperty
-
-from allura.lib import helpers as h
 
 from .session import main_orm_session
 
@@ -92,6 +91,8 @@ class MonQTask(MappedClass):
             process=None,
             result=None,
             context=context)
+        session(obj).flush(obj)
+        g.amq_conn.queue.put('')
         return obj
 
     @classmethod
@@ -141,9 +142,9 @@ class MonQTask(MappedClass):
     def __call__(self):
         from allura import model as M
         log.info('%r', self)
-        old_cproject = c.project
-        old_capp = c.app
-        old_cuser = c.user
+        old_cproject = getattr(c, 'project', None)
+        old_capp = getattr(c, 'app', None)
+        old_cuser = getattr(c, 'user', None)
         try:
             func = loads(self.function)
             if self.context.project_id:
@@ -162,6 +163,7 @@ class MonQTask(MappedClass):
             self.result = traceback.format_exc()
             raise
         finally:
+            session(self).flush(self)
             c.project = old_cproject
             c.app = old_capp
             c.user = old_cuser
@@ -170,10 +172,9 @@ class MonQTask(MappedClass):
         while self.state not in ('complete', 'error'):
             time.sleep(poll_interval)
             self.query.find(dict(_id=self._id), refresh=True).first()
-            print self.state,
         return self.result
 
     @classmethod
     def list(cls, state='ready'):
         for t in cls.query.find(dict(state=state)):
-            print t
+            sys.stdout.write('%r\n' % t)

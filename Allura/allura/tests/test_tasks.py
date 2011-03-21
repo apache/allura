@@ -81,11 +81,6 @@ class TestMailTasks(unittest.TestCase):
         setup_basic_test()
         setup_global_objects()
 
-    def test_handle_message(self):
-        with mock.patch.object(c.app, 'handle_message') as f:
-            mail_tasks.handle_message('Topic1', {})
-            f.assert_called_with('Topic1', {})
-
     def test_send_email(self):
         c.user = M.User.by_username('test-admin')
         with mock.patch.object(mail_tasks.smtp_client, 'sendmail') as f:
@@ -108,7 +103,8 @@ class TestMailTasks(unittest.TestCase):
 
     def test_receive_email_ok(self):
         c.user = M.User.by_username('test-admin')
-        with mock.patch.object(mail_tasks.handle_message, 'post') as f:
+        import forgewiki
+        with mock.patch.object(forgewiki.wiki_main.ForgeWikiApp, 'handle_message') as f:
             mail_tasks.route_email(
                 '0.0.0.0', c.user.email_addresses[0],
                 ['Page@wiki.test.p.in.sf.net'],
@@ -118,7 +114,8 @@ class TestMailTasks(unittest.TestCase):
             assert len(args) == 2
 
     def test_receive_email_anon(self):
-        with mock.patch.object(mail_tasks.handle_message, 'post') as f:
+        import forgewiki
+        with mock.patch.object(forgewiki.wiki_main.ForgeWikiApp, 'handle_message') as f:
             mail_tasks.route_email(
                 '0.0.0.0', 'nobody@nowhere.com',
                 ['Page@wiki.test.p.in.sf.net'],

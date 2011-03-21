@@ -27,8 +27,8 @@ class TestSVNApp(unittest.TestCase):
 
     def test_uninstall(self):
         c.app.uninstall(c.project)
-        assert g.mock_amq.pop('audit')
-        g.mock_amq.setup_handlers()
-        c.app.uninstall(c.project)
-        g.mock_amq.handle_all()
-
+        from allura import model as M
+        M.main_orm_session.flush()
+        task = M.MonQTask.get()
+        assert task.task_name == 'allura.tasks.repo_tasks.uninstall', task.task_name
+        task()

@@ -541,6 +541,8 @@ class Feed(MappedClass):
 
     _id = FieldProperty(S.ObjectId)
     ref_id = ForeignIdProperty('ArtifactReference')
+    project_id = ForeignIdProperty('Project')
+    app_config_id = ForeignIdProperty('AppConfig')
     title=FieldProperty(str)
     link=FieldProperty(str)
     pubdate = FieldProperty(datetime, if_missing=datetime.utcnow)
@@ -548,6 +550,8 @@ class Feed(MappedClass):
     unique_id = FieldProperty(str, if_missing=lambda:h.nonce(40))
     author_name = FieldProperty(str, if_missing=lambda:c.user.get_pref('display_name') if hasattr(c, 'user') else None)
     author_link = FieldProperty(str, if_missing=lambda:c.user.url() if hasattr(c, 'user') else None)
+    artifact_reference = FieldProperty(S.Deprecated)
+
 
     @classmethod
     def post(cls, artifact, title=None, description=None):
@@ -556,10 +560,13 @@ class Feed(MappedClass):
         if title is None:
             title='%s modified by %s' % (idx['title_s'], c.user.get_pref('display_name'))
         if description is None: description = title
-        item = cls(ref_id=artifact.index_id(),
-                   title=title,
-                   description=description,
-                   link=artifact.url())
+        item = cls(
+            ref_id=artifact.index_id(),
+            project_id=artifact.app_config.project_id,
+            app_config_id=artifact.app_config_id,
+            title=title,
+            description=description,
+            link=artifact.url())
         return item
 
     @classmethod

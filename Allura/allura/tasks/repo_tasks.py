@@ -1,4 +1,5 @@
 import shutil
+import logging
 
 from pylons import c
 
@@ -43,3 +44,8 @@ def uninstall(**kwargs):
     M.MergeRequest.query.remove(dict(
             app_config_id=c.app.config._id))
     super(RepositoryApp, c.app).uninstall(c.project)
+
+@task
+def nop():
+    log = logging.getLogger(__name__)
+    log.info('nop')

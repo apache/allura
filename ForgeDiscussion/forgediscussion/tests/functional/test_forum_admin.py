@@ -1,20 +1,10 @@
 import os
-import random
 import allura
 import Image
 from StringIO import StringIO
 import logging
 
-import mock
-from tg import config
-from pylons import g, c
-from nose.tools import assert_equal
-
-from ming.orm.ormsession import ThreadLocalORMSession
-
 from alluratest.controller import TestController
-from allura import model as M
-from allura.command import reactor
 from allura.lib import helpers as h
 
 from forgediscussion import model as FM

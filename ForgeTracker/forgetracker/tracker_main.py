@@ -161,8 +161,10 @@ class ForgeTrackerApp(Application):
             links.append(SitemapEntry('Moderate', discussion.url() + 'moderate', ui_icon=g.icons['pencil'],
                 small = pending_mod_count))
         if ticket:
-            for aref in ticket.references+ticket.backreferences.values():
-                artifact = M.ArtifactReference(aref).artifact
+            for ref_id in ticket.refs+ticket.backrefs:
+                ref = M.ArtifactReference.query.get(_id=ref_id)
+                if ref is None: continue
+                artifact = ref.artifact
                 if artifact is None: continue
                 artifact = artifact.primary(TM.Ticket)
                 if artifact.url() not in related_urls:
@@ -482,8 +484,7 @@ class RootController(BaseController):
             feed_type = 'rss'
         title = 'Recent changes to %s' % c.app.config.options.mount_point
         feed = M.Feed.feed(
-            {'artifact_reference.mount_point':c.app.config.options.mount_point,
-             'artifact_reference.project_id':c.project._id},
+            dict(project_id=c.project._id,app_config_id=c.app.config._id),
             feed_type,
             title,
             c.app.url,

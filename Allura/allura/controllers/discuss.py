@@ -99,7 +99,7 @@ class DiscussionController(BaseController):
             feed_type = 'rss'
         title = 'Recent posts to %s' % self.discussion.name
         feed = M.Feed.feed(
-            {'artifact_reference':{'$in': [t.index_id() for t in self.discussion.threads]}},
+            dict(ref_id={'$in': [t.index_id() for t in self.discussion.threads]}),
             feed_type,
             title,
             self.discussion.url(),
@@ -223,7 +223,7 @@ class ThreadController(BaseController):
             feed_type = 'rss'
         title = 'Recent posts to %s' % (self.thread.subject or '(no subject)')
         feed = M.Feed.feed(
-            {'artifact_reference':self.thread.index_id()},
+            dict(ref_id=self.thread.index_id()),
             feed_type,
             title,
             self.thread.url(),

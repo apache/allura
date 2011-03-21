@@ -1,15 +1,14 @@
 #-*- python -*-
 import logging
-import Image
-import pymongo
+import urllib
+
 
 # Non-stdlib imports
-import pkg_resources
+import pymongo
 from pylons import g, c, request
 from tg import expose, redirect, flash, url, validate
-from tg.decorators import with_trailing_slash, without_trailing_slash
+from tg.decorators import with_trailing_slash
 from bson import ObjectId
-from ming.orm.base import session
 from ming import schema
 
 # Pyforge-specific imports
@@ -70,7 +69,7 @@ class ForgeDiscussionApp(Application):
         log.info('Message from %s (%s)',
                  topic, self.config.options.mount_point)
         log.info('Headers are: %s', message['headers'])
-        shortname=topic.replace('.', '/')
+        shortname=urllib.unquote_plus(topic.replace('.', '/'))
         forum = DM.Forum.query.get(
             shortname=shortname, app_config_id=self.config._id)
         if forum is None:

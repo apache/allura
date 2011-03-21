@@ -21,6 +21,8 @@ class TestRootController(TestController):
         c.app.repo.refresh()
         ThreadLocalORMSession.flush_all()
         ThreadLocalORMSession.close_all()
+        h.set_context('test', 'src-hg')
+        c.app.repo.refresh()
 
     def test_index(self):
         resp = self.app.get('/src-hg/').follow().follow()

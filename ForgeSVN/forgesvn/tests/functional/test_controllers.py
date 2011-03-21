@@ -18,9 +18,13 @@ class TestRootController(TestController):
         c.app.repo.fs_path = repo_dir
         c.app.repo.status = 'ready'
         c.app.repo.name = 'testsvn'
+        ThreadLocalORMSession.flush_all()
+        ThreadLocalORMSession.close_all()
+        h.set_context('test', 'src')
         c.app.repo.refresh()
         ThreadLocalORMSession.flush_all()
         ThreadLocalORMSession.close_all()
+        h.set_context('test', 'src')
 
     def test_index(self):
         resp = self.app.get('/src/').follow()
@@ -31,7 +35,8 @@ class TestRootController(TestController):
         self.app.get('/svn/')
 
     def test_feed(self):
-        assert 'Remove hello.txt' in self.app.get('/src/feed')
+        r = self.app.get('/src/feed.rss')
+        assert 'Remove hello.txt' in str(r), r
 
     def test_commit(self):
         resp = self.app.get('/src/3/tree/')

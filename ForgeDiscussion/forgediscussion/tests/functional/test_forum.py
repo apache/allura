@@ -1,28 +1,19 @@
 # -*- coding: utf-8 -*-
-import os
 import random
-import allura
-import Image
 import logging
-from StringIO import StringIO
 from email.mime.text import MIMEText
 from email.mime.image import MIMEImage
 from email.mime.multipart import MIMEMultipart
 
-import mock
 import pkg_resources
-from tg import config
 from pylons import g, c
 from nose.tools import assert_equal
 
-from ming.orm.ormsession import ThreadLocalORMSession
-
-from alluratest.controller import TestController
 from allura import model as M
-from allura.command import reactor
+from allura.tasks import mail_tasks
+from alluratest.controller import TestController
 from allura.lib import helpers as h
 
-from forgemail.reactors.common_react import received_email
 from forgediscussion import model as FM
 
 log = logging.getLogger(__name__)
@@ -39,17 +30,8 @@ class TestForumEmail(TestController):
         r = self.app.get('/admin/discussion/forums')
         assert 'testforum' in r
         self.email_address='Beta@wiki.test.projects.sourceforge.net'
-        test_config = 'test.ini'
-        cmd = reactor.ReactorCommand('reactor')
-        cmd.args = [ test_config ]
-        cmd.options = mock.Mock()
-        cmd.options.dry_run = True
-        cmd.options.proc = 1
-        cmd.command()
-        self.cmd = cmd
         h.set_context('test', 'discussion')
         self.forum = FM.Forum.query.get(shortname='testforum')
-        g.mock_amq.setup_handlers()
 
     def test_simple_email(self):
         msg = MIMEText('This is a test message')
@@ -113,19 +95,14 @@ class TestForumEmail(TestController):
         msg['From'] = mailfrom
         msg['To'] = ', '.join(rcpttos)
         msg['Subject'] = subject
-        c.queued_messages = None
-        g.publish(
-            'audit',
-            'forgemail.received_email',
-            dict(
-                peer='127.0.0.1',
-                mailfrom=mailfrom,
-                rcpttos=rcpttos,
-                data=msg.as_string()))
-        g.mock_amq.handle_all()
-        g.mock_amq.handle_all()
+        mail_tasks.route_email(
+            peer='127.0.0.1',
+            mailfrom=mailfrom,
+            rcpttos=rcpttos,
+            data=msg.as_string())
+        M.artifact_orm_session.flush()
 
-class TestForumReactors(TestController):
+class TestForumAsync(TestController):
 
     def setUp(self):
         TestController.setUp(self)
@@ -141,16 +118,6 @@ class TestForumReactors(TestController):
         r.forms[1].submit()
         r = self.app.get('/admin/discussion/forums')
         assert 'Test Forum 1' in r
-        conf_dir = getattr(config, 'here', os.getcwd())
-        test_config = 'test.ini'
-        test_file = os.path.join(conf_dir, test_config)
-        cmd = reactor.ReactorCommand('reactor')
-        cmd.args = [ test_config ]
-        cmd.options = mock.Mock()
-        cmd.options.dry_run = True
-        cmd.options.proc = 1
-        configs = cmd.command()
-        self.cmd = cmd
         h.set_context('test', 'discussion')
         self.user_id = M.User.query.get(username='root')._id
 
@@ -159,29 +126,20 @@ class TestForumReactors(TestController):
         assert True == c.app.has_access(M.User.query.get(username='root'), 'test')
 
     def test_post(self):
-        self._post('discussion.msg.test forum', 'Test Thread', 'Nothing here')
+        self._post('testforum', 'Test Thread', 'Nothing here')
 
     def test_bad_post(self):
         self._post('Forumtest', 'Test Thread', 'Nothing here')
 
-    # def test_notify(self):
-    #     self._post('discussion.msg.test', 'Test Thread', 'Nothing here',
-    #                message_id='test_notify@sf.net')
-    #     self._post('discussion.msg.test', 'Test Reply', 'Nothing here, either',
-    #                message_id='test_notify1@sf.net',
-    #                in_reply_to=[ 'test_notify@sf.net' ])
-    #     self._notify('test_notify@sf.net')
-    #     self._notify('test_notify1@sf.net')
-
     def test_reply(self):
-        self._post('discussion.msg.testforum', 'Test Thread', 'Nothing here',
+        self._post('testforum', 'Test Thread', 'Nothing here',
                    message_id='test_reply@sf.net')
         assert_equal(FM.ForumThread.query.find().count(), 1)
         assert_equal(FM.ForumPost.query.find().count(), 1)
         assert_equal(FM.ForumThread.query.get().num_replies, 1)
         assert_equal(FM.ForumThread.query.get().first_post_id, 'test_reply@sf.net')
 
-        self._post('discussion.msg.testforum', 'Test Reply', 'Nothing here, either',
+        self._post('testforum', 'Test Reply', 'Nothing here, either',
                    message_id='test_reply1@sf.net',
                    in_reply_to=[ 'test_reply@sf.net' ])
         assert_equal(FM.ForumThread.query.find().count(), 1)
@@ -189,24 +147,24 @@ class TestForumReactors(TestController):
         assert_equal(FM.ForumThread.query.get().first_post_id, 'test_reply@sf.net')
 
     def test_attach(self):
-        self._post('discussion.msg.testforum', 'Attachment Thread', 'This is a text file',
+        self._post('testforum', 'Attachment Thread', 'This is a text file',
                    message_id='test.attach.100@sf.net',
                    filename='test.txt',
                    content_type='text/plain')
-        self._post('discussion.msg.testforum', 'Test Thread', 'Nothing here',
+        self._post('testforum', 'Test Thread', 'Nothing here',
                    message_id='test.attach.100@sf.net')
-        self._post('discussion.msg.testforum', 'Attachment Thread', 'This is a text file',
+        self._post('testforum', 'Attachment Thread', 'This is a text file',
                    message_id='test.attach.100@sf.net',
                    content_type='text/plain')
 
     def test_threads(self):
-        self._post('discussion.msg.testforum', 'Test', 'test')
+        self._post('testforum', 'Test', 'test')
         thd = FM.ForumThread.query.find().first()
         url = str('/discussion/testforum/thread/%s/' % thd._id)
         self.app.get(url)
 
     def test_posts(self):
-        self._post('discussion.msg.testforum', 'Test', 'test')
+        self._post('testforum', 'Test', 'test')
         thd = FM.ForumThread.query.find().first()
         thd_url = str('/discussion/testforum/thread/%s/' % thd._id)
         r = self.app.get(thd_url)
@@ -218,7 +176,7 @@ class TestForumReactors(TestController):
         r = self.app.get(url, params=dict(version=1))
         r = self.app.post(url + 'reply',
                           params=dict(subject='Reply', text='text'))
-        self._post('discussion.msg.testforum', 'Test Reply', 'Nothing here, either',
+        self._post('testforum', 'Test Reply', 'Nothing here, either',
                    message_id='test_posts@sf.net',
                    in_reply_to=[ p._id ])
         reply = FM.ForumPost.query.get(subject='Test Reply')
@@ -250,30 +208,17 @@ class TestForumReactors(TestController):
                           params=dict(subject='', delete='on'))
 
     def _post(self, topic, subject, body, **kw):
-        callback = self.cmd.route_audit(topic, c.app.message_auditor)
-        msg = mock.Mock()
-        msg.ack = lambda:None
-        msg.delivery_info = dict(routing_key=topic)
         message_id = kw.pop('message_id', '%s@test.com' % random.random())
-        msg.data = dict(kw,
-                        project_id=c.project._id,
-                        mount_point='discussion',
-                        headers=dict(Subject=subject),
-                        user_id=self.user_id,
-                        payload=body,
-                        message_id=message_id)
-        callback(msg.data, msg)
-
-    def _notify(self, post_id, **kw):
-        callback = self.cmd.route_react('discussion.new_post', c.app.notify_subscribers)
-        msg = mock.Mock()
-        msg.ack = lambda:None
-        msg.delivery_info = dict(routing_key='discussion.new_post')
-        msg.data = dict(kw,
-                        project_id=c.project._id,
-                        mount_point='discussion',
-                        post_id=post_id)
-        callback(msg.data, msg)
+        c.app.handle_message(
+            topic,
+            dict(kw,
+                 project_id=c.project._id,
+                 mount_point='discussion',
+                 headers=dict(Subject=subject),
+                 user_id=self.user_id,
+                 payload=body,
+                 message_id=message_id))
+        M.artifact_orm_session.flush()
 
 class TestForum(TestController):
 

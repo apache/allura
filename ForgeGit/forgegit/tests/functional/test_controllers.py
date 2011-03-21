@@ -1,5 +1,3 @@
-import os
-
 import tg
 import pkg_resources
 from pylons import c
@@ -20,6 +18,9 @@ class TestRootController(TestController):
         c.app.repo.fs_path = repo_dir
         c.app.repo.status = 'ready'
         c.app.repo.name = 'testgit.git'
+        ThreadLocalORMSession.flush_all()
+        ThreadLocalORMSession.close_all()
+        h.set_context('test', 'src-git')
         c.app.repo.refresh()
         ThreadLocalORMSession.flush_all()
         ThreadLocalORMSession.close_all()

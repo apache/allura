@@ -274,7 +274,7 @@ class ProjectController(object):
             feed_type = 'rss'
         title = 'Recent changes to Project %s' % c.project.name
         feed = M.Feed.feed(
-            {'artifact_reference.project_id':c.project._id},
+            dict(project_id=c.project._id),
             feed_type,
             title,
             c.project.url(),
