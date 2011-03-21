@@ -401,7 +401,8 @@ class Mailbox(MappedClass):
             mbox = mbox.query.find_and_modify(
                 query=dict(_id=mbox._id),
                 update={'$set': dict(
-                        queue=[])})
+                        queue=[])},
+                new=False)
             mbox.fire(now)
         for mbox in cls.query.find(q_digest):
             next_scheduled = now
@@ -415,7 +416,8 @@ class Mailbox(MappedClass):
                 query=dict(_id=mbox._id),
                 update={'$set': dict(
                         next_scheduled=next_scheduled,
-                        queue=[])})
+                        queue=[])},
+                new=False)
             mbox.fire(now)
 
     def fire(self, now):

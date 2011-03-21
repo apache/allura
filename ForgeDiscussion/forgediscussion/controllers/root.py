@@ -172,7 +172,7 @@ class RootController(BaseController):
                             discussion_id=forum._id)).sort('mod_date', pymongo.DESCENDING).limit(6).all()
 
         feed = Feed.feed(
-            {'artifact_reference':{'$in': [t.dump_ref() for t in threads]}},
+            {'artifact_reference':{'$in': [t.index_id() for t in threads]}},
             feed_type,
             title,
             c.app.url,

@@ -824,7 +824,7 @@ class TicketController(BaseController):
         title = 'Recent changes to %d: %s' % (
             self.ticket.ticket_num, self.ticket.summary)
         feed = M.Feed.feed(
-            {'artifact_reference':self.ticket.dump_ref()},
+            {'ref_id':self.ticket.index_id()},
             feed_type,
             title,
             self.ticket.url(),

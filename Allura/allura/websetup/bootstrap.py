@@ -187,7 +187,6 @@ def bootstrap(command, conf, vars):
         # app = p0.install_app('SVN', 'src')
         # app = p0.install_app('Git', 'src-git')
         ThreadLocalORMSession.flush_all()
-        g.send_all_messages()
         ThreadLocalORMSession.flush_all()
         ThreadLocalORMSession.close_all()
 

@@ -532,7 +532,7 @@ class PageController(BaseController):
         else:
             feed_type = 'rss'
         feed = M.Feed.feed(
-            {'artifact_reference':self.page.dump_ref()},
+            {'artifact_reference':self.page.index_id()},
             feed_type,
             'Recent changes to %s' % self.page.title,
             self.page.url(),

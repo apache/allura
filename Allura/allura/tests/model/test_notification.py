@@ -160,13 +160,19 @@ class TestSubscriptionTypes(unittest.TestCase):
     def _test_message(self):
         self._subscribe()
         thd = M.Thread.query.get(ref_id=self.pg.index_id())
-        p = thd.post('This is a very cool message')
+        thd.post('This is a very cool message')
+        M.MonQTask.run_ready()
+        ThreadLocalORMSession.flush_all()
         M.Mailbox.fire_ready()
         ThreadLocalORMSession.flush_all()
         ThreadLocalORMSession.close_all()
-        assert num_msgs == 1, num_msgs
-        assert 'Home@wiki.test.p' in msg['reply_to']
-        assert str(M.User.by_username('test-admin')._id) in msg['from'], msg['from']
+        msg = M.MonQTask.query.get(
+                task_name='allura.tasks.mail_tasks.sendmail',
+                state='ready')
+        assert msg is not None
+        assert 'Home@wiki.test.p' in msg.kwargs['reply_to']
+        u = M.User.by_username('test-admin')
+        assert str(u._id) in msg.kwargs['fromaddr'], msg.kwargs['fromaddr']
 
     def _clear_subscriptions(self):
         M.Mailbox.query.remove({})

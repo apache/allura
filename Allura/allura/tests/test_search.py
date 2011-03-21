@@ -45,7 +45,7 @@ def test_searchapp():
     g.mock_amq.setup_handlers()
     g.publish('react', 'artifacts_altered', dict(project_id=a.project_id,
                     mount_point=a.app_config.options.mount_point,
-                    artifacts=[a.dump_ref()]))
+                    artifacts=[a.index_id()]))
     g.mock_amq.handle_all()
     a = WM.Page.query.find().first()
     assert len(a.references) == 1
@@ -55,7 +55,7 @@ def test_searchapp():
     g.mock_amq.handle_all()
     g.publish('react', 'artifacts_removed', dict(project_id=a.project_id,
                     mount_point=a.app_config.options.mount_point,
-                    artifacts=[a.dump_ref()]))
+                    artifacts=[a.inde_id()]))
     g.mock_amq.handle_all()
     a = WM.Page.query.find().first()
     assert len(a.references) == 1

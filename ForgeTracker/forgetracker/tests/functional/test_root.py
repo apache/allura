@@ -226,13 +226,13 @@ class TestFunctionalController(TestController):
         a.text = '\n[bugs:#1]\n'
         msg.data = dict(project_id=a.project_id,
                         mount_point=a.app_config.options.mount_point,
-                        artifacts=[a.dump_ref()])
+                        artifacts=[a.index_id()])
         add_artifacts(msg.data, msg)
         b = tm.Ticket.query.find(dict(ticket_num=2)).first()
         b.description = '\n[#1]\n'
         msg.data = dict(project_id=b.project_id,
                         mount_point=b.app_config.options.mount_point,
-                        artifacts=[b.dump_ref()])
+                        artifacts=[b.index_id()])
         add_artifacts(msg.data, msg)
         ThreadLocalORMSession.flush_all()
         ThreadLocalORMSession.close_all()

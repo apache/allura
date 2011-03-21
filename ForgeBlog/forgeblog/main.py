@@ -180,7 +180,7 @@ class RootController(BaseController):
         post.make_slug()
         post.commit()
         M.Thread(discussion_id=post.app_config.discussion_id,
-               artifact_reference=post.dump_ref(),
+               ref_id=post.index_id(),
                subject='%s discussion' % post.title)
         redirect(post.url())
 
@@ -310,7 +310,7 @@ class PostController(BaseController):
         else:
             feed_type = 'rss'
         feed = M.Feed.feed(
-            {'artifact_reference':self.post.dump_ref()},
+            {'artifact_reference':self.post.index_id()},
             feed_type,
             'Recent changes to %s' % self.post.title,
             self.post.url(),

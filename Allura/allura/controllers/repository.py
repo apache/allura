@@ -135,7 +135,7 @@ class RepoRootController(BaseController):
                 description=kw['description'])
             t = M.Thread(
                 discussion_id=c.app.config.discussion_id,
-                artifact_reference=mr.dump_ref(),
+                artifact_reference=mr.index_id(),
                 subject='Discussion for Merge Request #:%s: %s' % (
                     mr.request_number, mr.summary))
             session(t).flush()

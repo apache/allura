@@ -27,6 +27,7 @@ def add_artifacts(ref_ids):
             except:
                 log.exception('Error indexing %r', ref_id)
 
+@task
 def del_artifacts(ref_ids):
     from allura import model as M
     for ref_id in ref_ids:
