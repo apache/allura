@@ -10,6 +10,7 @@ def fake_app_patch(test_case):
     app = Mock()
     app.__version__ = '0'
     app.config = app_config
+    app.url = '/-app-/'
     return patch_object(c, 'app', app, create=True)
 
 

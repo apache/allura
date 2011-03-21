@@ -180,8 +180,11 @@ class EmailAddress(MappedClass):
         mo = cls.re_format.match(addr)
         if mo:
             addr = mo.group(1)
-        user, domain = addr.split('@')
-        return '%s@%s' % (user, domain.lower())
+        if '@' in addr:
+            user, domain = addr.split('@')
+            return '%s@%s' % (user, domain.lower())
+        else:
+            return 'nobody@example.com'
 
     def send_verification_link(self):
         self.nonce = sha256(os.urandom(10)).hexdigest()

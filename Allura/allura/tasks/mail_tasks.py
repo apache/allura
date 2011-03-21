@@ -26,13 +26,13 @@ def route_email(
     '''
     try:
         msg = mail_util.parse_message(data)
-    except:
+    except: # pragma no cover
         log.exception('Parse Error: (%r,%r,%r)', peer, mailfrom, rcpttos)
         return
-    c.user = mail_util.identify_sender(data['peer'], data['mailfrom'], msg['headers'], msg)
+    c.user = mail_util.identify_sender(peer, mailfrom, msg['headers'], msg)
     log.info('Received email from %s', c.user.username)
     # For each of the addrs, determine the project/app and route appropriately
-    for addr in data['rcpttos']:
+    for addr in rcpttos:
         try:
             userpart, project, app = mail_util.parse_address(addr)
             with h.push_config(c, project=project, app=app):

@@ -170,7 +170,9 @@ class Artifact(MappedClass):
                 l.remove(project_role_id)
 
     def index_id(self):
-        "Used for solr search indexing"
+        '''Globally unique artifact identifier.  Used for
+        SOLR ID, shortlinks, and maybe elsewhere
+        '''
         id = '%s.%s#%s' % (
             self.__class__.__module__,
             self.__class__.__name__,

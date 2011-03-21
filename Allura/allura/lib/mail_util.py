@@ -11,9 +11,9 @@ from paste.deploy.converters import asbool, asint
 from formencode import validators as fev
 from pylons import c
 
-from allura.lib.helpers import push_config, find_project
 from allura.lib.utils import ConfigProxy
 from allura.lib import exceptions as exc
+from allura.lib import helpers as h
 
 log = logging.getLogger(__name__)
 
@@ -29,10 +29,10 @@ def Header(text, charset):
     (gmail barfs with encoded email addresses.)'''
     if isinstance(text, header.Header):
         return text
-    h = header.Header('', charset)
+    hdr = header.Header('', charset)
     for word in text.split(' '):
-        h.append(word)
-    return h
+        hdr.append(word)
+    return hdr
 
 def parse_address(addr):
     userpart, domain = addr.split('@')
@@ -41,12 +41,12 @@ def parse_address(addr):
         raise exc.AddressException, 'Unknown domain: ' + domain
     domain = domain[:-len(config.common_suffix)]
     path = '/'.join(reversed(domain.split('.')))
-    project, mount_point = find_project('/' + path)
+    project, mount_point = h.find_project('/' + path)
     if project is None:
         raise exc.AddressException, 'Unknown project: ' + domain
     if len(mount_point) != 1:
         raise exc.AddressException, 'Unknown tool: ' + domain
-    with push_config(c, project=project):
+    with h.push_config(c, project=project):
         app = project.app_instance(mount_point[0])
         if not app:
             raise exc.AddressException, 'Unknown tool: ' + domain
@@ -61,9 +61,13 @@ def parse_message(data):
     result = {}
     result['multipart'] = multipart = msg.is_multipart()
     result['headers'] = dict(msg)
-    result['message_id'] = _parse_message_id(msg.get('Message-ID'))[0]
+    result['message_id'] = _parse_message_id(msg.get('Message-ID'))
     result['in_reply_to'] = _parse_message_id(msg.get('In-Reply-To'))
     result['references'] = _parse_message_id(msg.get('References'))
+    if result['message_id'] == []:
+        result['message_id'] = h.gen_message_id()
+    else:
+        result['message_id'] == result['message_id'][0]
     if multipart:
         result['parts'] = []
         for part in msg.walk():
@@ -92,7 +96,7 @@ def identify_sender(peer, email_address, headers, msg):
     addr = M.EmailAddress.query.get(_id=M.EmailAddress.canonical(email_address))
     if addr and addr.claimed_by_user_id:
         return addr.claimed_by_user()
-    addr = M.EmailAddress.query.get(_id=M.EmailAddress.canonical(headers.get('From')))
+    addr = M.EmailAddress.query.get(_id=M.EmailAddress.canonical(headers.get('From', '')))
     if addr and addr.claimed_by_user_id:
         return addr.claimed_by_user()
     return M.User.anonymous()

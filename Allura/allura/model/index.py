@@ -75,7 +75,10 @@ class Shortlink(MappedClass):
     class __mongometa__:
         session = main_orm_session
         name = 'shortlink'
-        indexes = [ ('link', 'project_id', 'app_config_id') ]
+        indexes = [
+            ('link', 'project_id', 'app_config_id'),
+            ('ref_id',),
+            ]
 
     # Stored properties
     _id = FieldProperty(S.ObjectId)
@@ -174,6 +177,9 @@ class Shortlink(MappedClass):
         if s.endswith(']'):
             s = s[:-1]
         parts = s.split(':')
+        p_shortname = None
+        if hasattr(c, 'project'):
+            p_shortname = getattr(c.project, 'shortname', None)
         if len(parts) == 3:
             return dict(
                 project=parts[0],
@@ -181,12 +187,12 @@ class Shortlink(MappedClass):
                 artifact=parts[2])
         elif len(parts) == 2:
             return dict(
-                project=c.project.shortname,
+                project=p_shortname,
                 app=parts[0],
                 artifact=parts[1])
         elif len(parts) == 1:
             return dict(
-                project=c.project.shortname,
+                project=p_shortname,
                 app=None,
                 artifact=parts[0])
         else:

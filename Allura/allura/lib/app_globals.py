@@ -341,7 +341,13 @@ class MockSOLR(object):
         return result
 
     def delete(self, *args, **kwargs):
-        pass
+        if kwargs.get('q', None) == '*:*':
+            self.db = {}
+        elif kwargs.get('id', None):
+            del self.db[kwargs['id']]
+        elif kwargs.get('q', None):
+            for doc in self.search(kwargs['q']):
+                self.delete(id=doc['id'])
 
 class Icon(object):
     def __init__(self, char, css):

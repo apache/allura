@@ -58,11 +58,13 @@ class ArtifactSessionExtension(SessionExtension):
         import allura.tasks.index_tasks
         if not getattr(self.session, 'disable_artifact_index', False):
             from .stats import CPA
-            from .index import ArtifactReference
+            from .index import ArtifactReference, Shortlink
             from .session import main_orm_session
-            # Ensure artifact references exist for new objects
+            # Ensure artifact references & shortlinks exist for new objects
             for obj in self.objects_added:
                 ArtifactReference.from_artifact(obj)
+            for obj in self.objects_added + self.objects_modified:
+                Shortlink.from_artifact(obj)
             # Post delete and add indexing operations
             if self.objects_deleted:
                 allura.tasks.index_tasks.del_artifacts.post(

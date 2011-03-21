@@ -17,7 +17,6 @@ def add_artifacts(ref_ids):
             try:
                 ref = M.ArtifactReference.query.get(_id=ref_id)
                 artifact = ref.artifact
-                M.Shortlink.from_artifact(artifact)
                 s = solarize(artifact)
                 if s is not None:
                     g.solr.add([s])
@@ -33,7 +32,7 @@ def del_artifacts(ref_ids):
     for ref_id in ref_ids:
         g.solr.delete(id=ref_id)
     M.ArtifactReference.query.remove(dict(_id={'$in':ref_ids}))
-    M.Shortlink.query.remove(dict(_id={'$in':ref_ids}))
+    M.Shortlink.query.remove(dict(ref_id={'$in':ref_ids}))
 
 @contextmanager
 def _indexing_disabled(session):

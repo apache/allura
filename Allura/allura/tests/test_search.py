@@ -10,7 +10,7 @@ from ming.orm.ormsession import ThreadLocalORMSession
 from allura import model as M
 from allura.lib import search
 from allura.lib import helpers as h
-from allura.ext.search import search_main
+from allura.lib.tasks import index_tasks
 from allura.lib.app_globals import Globals
 
 from forgewiki import model as WM

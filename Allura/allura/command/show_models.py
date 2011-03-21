@@ -50,7 +50,7 @@ class ReindexCommand(base.Command):
             c.project = p
             for _, a_cls in dfs(M.Artifact, graph):
                 base.log.info('  %s', a_cls)
-                ref_ids = [ a.index_id() for a in a_cls.query.find() ]
+                ref_ids = [ a.ref_id() for a in a_cls.query.find() ]
                 allura.tasks.index_tasks.add_artifacts(ref_ids)
                 M.main_orm_session.flush()
                 M.main_orm_session.clear()

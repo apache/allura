@@ -14,6 +14,7 @@ from allura.lib.utils import ConfigProxy
 
 from allura.lib.mail_util import parse_address, parse_message
 from allura.lib.exceptions import AddressException
+from allura.tasks.mail_tasks import received_email
 
 config = ConfigProxy(
     common_suffix='forgemail.domain',
