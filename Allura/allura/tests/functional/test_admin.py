@@ -173,7 +173,7 @@ class TestProjectAdmin(TestController):
             'Downloads' ]
         if sfx:
             expected_tools += [
-            'Mailing List (alpha)',
+            'Mailing Lists',
             'VHOST (alpha)',
             'MySQL Databases (alpha)',
             'Project Web Outgoing Email (alpha)',
@@ -182,7 +182,7 @@ class TestProjectAdmin(TestController):
             'Chat (alpha)',
             'Blog (alpha)',
             'Subproject']
-        assert strings == expected_tools
+        assert strings == expected_tools, strings
 
     def test_project_icon(self):
         file_name = 'neo-icon-set-454545-256x350.png'
