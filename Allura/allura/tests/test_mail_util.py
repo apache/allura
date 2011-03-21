@@ -14,7 +14,7 @@ from allura.lib.utils import ConfigProxy
 
 from allura.lib.mail_util import parse_address, parse_message
 from allura.lib.exceptions import AddressException
-from allura.tasks.mail_tasks import received_email
+from allura.tasks.mail_tasks import route_email
 
 config = ConfigProxy(
     common_suffix='forgemail.domain',
@@ -90,6 +90,3 @@ class TestReactor(unittest.TestCase):
             if part['payload'] is None: continue
             assert isinstance(part['payload'], unicode)
 
-    def test_malformed_email_no_exception(self):
-        msg = MIMEText('Bad email, no Message-ID')
-        received_email('', msg.as_string())
