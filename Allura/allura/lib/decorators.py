@@ -28,17 +28,6 @@ class event_handler(object):
             self.listeners[t].add(func)
         return func
 
-    @classmethod
-    def fire_event(cls, topic, *args, **kwargs):
-        for t in cls.listeners[topic]:
-            try:
-                t(topic, *args, **kwargs)
-            except:
-                log = logging.getLogger(__name__)
-                log.exception(
-                    'Event %s(%s, *%r,**%r)',
-                    t, topic, args, kwargs)
-
 class require_post(object):
 
     def __init__(self, redir=None):

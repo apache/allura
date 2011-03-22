@@ -339,5 +339,5 @@ class DefaultAdminController(BaseController):
         redirect('permissions')
 
 @event_handler('project_updated')
-def subscribe_admins():
+def subscribe_admins(topic):
     c.app.subscribe_admins()
