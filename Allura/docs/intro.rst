@@ -11,9 +11,9 @@ It's open in bunch of ways:
  
 * It's a combination of tools available under *Free* or *Open Source* licenses. 
 * It's designed around a plugin architecture, and anybody willing to contribute a tool can play.
-* It's being hosted publicly, and is build through contributions of individuals and companies who want to promote Open Source development.   
+* It's being hosted publicly, and is built through contributions of individuals and companies who want to promote Open Source development.
 * It's designed to provide a structure around which welcoming (open) communities can grow. 
-* It's core tools are designed around inclusive development processes.
+* Its core tools are designed around inclusive development processes.
 
 We looked at existing forges, but to achieve all those goals, we decided we needed to build something new.
 
