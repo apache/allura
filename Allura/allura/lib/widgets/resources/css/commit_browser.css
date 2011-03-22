@@ -1,0 +1,16 @@
+#graph_holder{
+    height:305px;
+    overflow:auto;
+    overflow-x:hidden;
+    position:relative;
+    margin-bottom:1em;
+}
+#commit_highlighter, #commit_graph{
+    position:absolute;
+    top:0;
+    left:0;
+    z-index:0;
+}
+#commit_graph{
+    z-index: 1;
+}

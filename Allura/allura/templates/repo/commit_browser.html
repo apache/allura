@@ -1,0 +1,23 @@
+{% extends 'allura:templates/repo/repo_master.html' %}
+{% set graph_x_space = 10 %}
+{% set graph_y_space = 20 %}
+{% set point_offset = 5 %}
+
+{% block title %}
+  {{c.project.name}} / {{c.app.config.options.mount_label}} / Browse Commits
+{% endblock %}
+
+{% block header -%}
+  Browse Commits
+{%- endblock %}
+
+{% block content %}
+  {{ clone_info(c.app.repo) }}
+  {% if status == 'too_many_commits' %}
+    <p>The commit browser is currently only available for projects with less than 5,000 commits.</p>
+  {% elif status == 'not_ready' %}
+    <p>You must wait for the repository to be fully analyzed.</p>
+  {% else %}
+    {{ c.commit_browser_widget.display(built_tree=built_tree,max_row=max_row,next_column=next_column) }}
+  {% endif %}
+{% endblock %}

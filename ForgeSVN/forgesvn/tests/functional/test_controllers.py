@@ -34,6 +34,13 @@ class TestRootController(TestController):
     def test_index_empty(self):
         self.app.get('/svn/')
 
+    def test_commit_browser(self):
+        resp = self.app.get('/src/commit_browser')
+        commit_script = resp.html.findAll('script')[1].contents[0]
+        assert "var max_row = 5;" in commit_script
+        assert "var next_column = 1;" in commit_script
+        assert '{"column": 0, "series": 0, "url": "/p/test/src/1/", "parents": [], "message": "Create readme", "row": 4}' in commit_script
+
     def test_feed(self):
         r = self.app.get('/src/feed.rss')
         assert 'Remove hello.txt' in str(r), r

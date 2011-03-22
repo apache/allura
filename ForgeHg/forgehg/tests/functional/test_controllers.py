@@ -31,6 +31,13 @@ class TestRootController(TestController):
     def test_index_empty(self):
         self.app.get('/test-app-hg/')
 
+    def test_commit_browser(self):
+        resp = self.app.get('/src-hg/commit_browser')
+        commit_script = resp.html.findAll('script')[1].contents[0]
+        assert "var max_row = 5;" in commit_script
+        assert "var next_column = 1;" in commit_script
+        assert '{"column": 0, "series": 0, "url": "/p/test/src-hg/ci/0000000000000000000000000000000000000000/", "parents": [], "message": "", "row": 4}' in commit_script
+
     def _get_ci(self):
         resp = self.app.get('/src-hg/').follow().follow()
         for tag in resp.html.findAll('a'):

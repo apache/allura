@@ -1,4 +1,5 @@
 import os
+import json
 import logging
 from urllib import quote, unquote
 
@@ -20,7 +21,7 @@ from allura.lib.decorators import require_post
 from allura.controllers import AppDiscussionController
 from allura.lib.widgets.repo import SCMLogWidget, SCMRevisionWidget, SCMTreeWidget
 from allura.lib.widgets.repo import SCMMergeRequestWidget, SCMMergeRequestFilterWidget
-from allura.lib.widgets.repo import SCMMergeRequestDisposeWidget
+from allura.lib.widgets.repo import SCMMergeRequestDisposeWidget, SCMCommitBrowserWidget
 from allura import model as M
 
 from .base import BaseController
@@ -34,6 +35,7 @@ def on_import():
 
 class RepoRootController(BaseController):
     _discuss = AppDiscussionController()
+    commit_browser_widget=SCMCommitBrowserWidget()
 
     def _check_security(self):
         security.require(security.has_artifact_access('read'))
@@ -165,6 +167,51 @@ class RepoRootController(BaseController):
         response.content_type = 'application/xml'
         return feed.writeString('utf-8')
 
+    @without_trailing_slash
+    @expose('jinja:allura:templates/repo/commit_browser.html')
+    def commit_browser(self):
+        if not c.app.repo or c.app.repo.status != 'ready':
+            return dict(status='not_ready')
+        for b in c.app.repo.branches:
+            if b.count > 5000:
+                return dict(status='too_many_commits')
+        c.commit_browser_widget = self.commit_browser_widget
+        all_commits = c.app.repo._impl.new_commits(all_commits=True)
+        sorted_commits = dict()
+        next_column = 0
+        series = 0
+        free_cols = set()
+        for i, commit in enumerate(reversed(all_commits)):
+            c_obj = M.Commit.query.get(object_id=commit)
+            c_obj.repo = c.app.repo
+            if commit not in sorted_commits:
+                col = next_column
+                if len(free_cols):
+                    col = free_cols.pop()
+                else:
+                    next_column = next_column + 1
+                sorted_commits[commit] = dict(column=col,series=series)
+                series = series + 1
+            sorted_commits[commit]['row'] = i
+            sorted_commits[commit]['parents'] = []
+            sorted_commits[commit]['message'] = c_obj.summary
+            sorted_commits[commit]['url'] = c_obj.url()
+            for j, parent in enumerate(c_obj.parent_ids):
+                sorted_commits[commit]['parents'].append(parent)
+                parent_already_mapped = parent in sorted_commits and sorted_commits[parent]['column'] > sorted_commits[commit]['column']
+                if (parent not in sorted_commits or parent_already_mapped) and j==0:
+                    # this parent is the branch point for a different column, so make that column available for re-use
+                    if parent_already_mapped:
+                        free_cols.add(sorted_commits[parent]['column'])
+                    sorted_commits[parent] = dict(column=sorted_commits[commit]['column'],series=sorted_commits[commit]['series'])
+                # this parent is the branch point for this column, so make this column available for re-use
+                elif parent in sorted_commits and sorted_commits[parent]['column'] < sorted_commits[commit]['column']:
+                    free_cols.add(sorted_commits[commit]['column'])
+        return dict(built_tree=json.dumps(sorted_commits),
+                    next_column=next_column,
+                    max_row=len(all_commits),
+                    status='ready')
+
 class MergeRequestsController(object):
     mr_filter=SCMMergeRequestFilterWidget()
 
@@ -272,6 +319,14 @@ class CommitBrowser(BaseController):
 
     @expose('jinja:allura:templates/repo/commit.html')
     def index(self):
+        c.revision_widget = self.revision_widget
+        result = dict(commit=self._commit)
+        if self._commit:
+            result.update(self._commit.context())
+        return result
+
+    @expose('jinja:allura:templates/repo/commit_basic.html')
+    def basic(self):
         c.revision_widget = self.revision_widget
         result = dict(commit=self._commit)
         if self._commit:

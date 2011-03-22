@@ -75,3 +75,15 @@ class SCMMergeRequestDisposeWidget(ff.ForgeForm):
         status=ew.SingleSelectField(
             label='Change Status',
             options=M.MergeRequest.statuses)
+
+class SCMCommitBrowserWidget(ew_core.Widget):
+    template='jinja:allura:templates/widgets/repo/commit_browser.html'
+    defaults=dict(
+        ew_core.Widget.defaults,
+        built_tree=None,
+        max_row=0,
+        next_column=0)
+
+    def resources(self):
+        yield ew.JSLink('js/commit_browser.js')
+        yield ew.CSSLink('css/commit_browser.css')

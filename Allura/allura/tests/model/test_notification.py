@@ -138,13 +138,13 @@ class TestSubscriptionTypes(unittest.TestCase):
         M.Mailbox.fire_ready()
 
     def test_digest_sub(self):
-        self._subscribe('digest')
+        self._subscribe(type='digest')
         self._post_notification(text='x'*1024)
         self._post_notification()
         M.Mailbox.fire_ready()
 
     def test_summary_sub(self):
-        self._subscribe('summary')
+        self._subscribe(type='summary')
         self._post_notification(text='x'*1024)
         self._post_notification()
         M.Mailbox.fire_ready()
