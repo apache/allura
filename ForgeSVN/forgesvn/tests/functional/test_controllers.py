@@ -46,7 +46,8 @@ class TestRootController(TestController):
     def test_file(self):
         resp = self.app.get('/src/1/tree/README')
         assert 'README' in resp.html.find('h2',{'class':'dark title'}).contents[2]
-        assert 'This is readme' in resp.html.find('div',{'class':'clip grid-19'}).contents[2]
+        content = str(resp.html.find('div',{'class':'clip grid-19'}))
+        assert 'This is readme' in content, content
 
     def test_invalid_file(self):
         resp = self.app.get('/src/1/tree/READMEz', status=404)
