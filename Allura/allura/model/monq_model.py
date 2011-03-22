@@ -105,7 +105,7 @@ class MonQTask(MappedClass):
                 ('time_queue', ming.ASCENDING)]
         while True:
             try:
-                return cls.query.find_and_modify(
+                obj = cls.query.find_and_modify(
                     query=dict(state=state),
                     update={
                         '$set': dict(
@@ -114,10 +114,13 @@ class MonQTask(MappedClass):
                         },
                     new=True,
                     sort=sort)
-            except pymongo.errors.OperationFailure:
-                if waitfunc is None:
-                    return None
-                waitfunc()
+                if obj is not None: return obj
+            except pymongo.errors.OperationFailure, exc:
+                if 'No matching object found' not in exc.args[0]:
+                    raise
+            if waitfunc is None:
+                return None
+            waitfunc()
 
     @classmethod
     def timeout_tasks(cls, older_than):
