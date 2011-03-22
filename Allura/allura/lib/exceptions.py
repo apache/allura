@@ -11,3 +11,12 @@ class CompoundError(ForgeError):
             self.__class__.__name__,
             '\n'.join(map(repr, self.args)),
             self.__class__.__name__)
+    def format_error(self):
+        import traceback
+        parts = [ '<%s>\n' % self.__class__.__name__ ]
+        for tp,val,tb in self.args:
+            for line in traceback.format_exception(tp,val,tb):
+                parts.append('    ' + line)
+        parts.append('</%s>\n' % self.__class__.__name__ )
+        return ''.join(parts)
+                

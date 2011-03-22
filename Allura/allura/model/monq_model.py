@@ -160,10 +160,13 @@ class MonQTask(MappedClass):
             self.result = func(*self.args, **self.kwargs)
             self.state = 'complete'
             return self.result
-        except Exception:
+        except Exception, exc:
             log.exception('%r', self)
             self.state = 'error'
-            self.result = traceback.format_exc()
+            if hasattr(exc, 'format_error'):
+                self.result = exc.format_error()
+            else:
+                self.result = traceback.format_exc()
             raise
         finally:
             self.time_stop = datetime.utcnow()

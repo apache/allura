@@ -18,3 +18,4 @@ def event(event_type, *args, **kwargs):
             exceptions.append(sys.exc_info())
     if exceptions:
         raise CompoundError(*exceptions)
+

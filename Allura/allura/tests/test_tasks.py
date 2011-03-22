@@ -1,5 +1,6 @@
-import unittest
+import sys
 import shutil
+import unittest
 
 import mock
 from pylons import c, g
@@ -10,12 +11,13 @@ from alluratest.controller import setup_basic_test, setup_global_objects
 
 from allura import model as M
 from allura.lib import helpers as h
+from allura.lib.exceptions import CompoundError
 from allura.tasks import event_tasks
 from allura.tasks import index_tasks
 from allura.tasks import mail_tasks
 from allura.tasks import notification_tasks
 from allura.tasks import repo_tasks
-from allura.lib.decorators import event_handler
+from allura.lib.decorators import event_handler, task
 
 class TestEventTasks(unittest.TestCase):
 
@@ -25,6 +27,17 @@ class TestEventTasks(unittest.TestCase):
     def test_fire_event(self):
         event_tasks.event('my_event', self, 1, 2, a=5)
         assert self.called_with == [((1,2), {'a':5}) ], self.called_with
+
+    def test_compound_error(self):
+        '''test_compound_exception -- make sure our multi-exception return works
+        OK
+        '''
+        setup_basic_test()
+        setup_global_objects()
+        t = raise_exc.post()
+        self.assertRaises(CompoundError, t)
+        for x in range(10):
+            assert ('assert %d' % x) in t.result
 
 class TestIndexTasks(unittest.TestCase):
 
@@ -174,6 +187,16 @@ class TestRepoTasks(unittest.TestCase):
 def _my_event(event_type, testcase, *args, **kwargs):
     testcase.called_with.append((args, kwargs))
 
+@task
+def raise_exc():
+    errs = []
+    for x in range(10):
+        try:
+            assert False, 'assert %d' % x
+        except:
+            errs.append(sys.exc_info())
+    raise CompoundError(*errs)
+    
 class _TestArtifact(M.Artifact):
     _shorthand_id = FieldProperty(str)
     text = FieldProperty(str)
