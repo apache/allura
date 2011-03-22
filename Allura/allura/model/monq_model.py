@@ -2,14 +2,13 @@ import sys
 import time
 import traceback
 import logging
-from cPickle import dumps, loads
 from datetime import datetime
 
-import bson
 import pymongo
 from pylons import c, g
 
 import ming
+from ming.utils import LazyProperty
 from ming import schema as S
 from ming.orm import session, MappedClass, FieldProperty
 
@@ -39,7 +38,6 @@ class MonQTask(MappedClass):
     time_stop = FieldProperty(datetime, if_missing=None)
 
     task_name = FieldProperty(str)
-    function = FieldProperty(S.Binary)
     process = FieldProperty(str)
     context = FieldProperty(dict(
             project_id=S.ObjectId,
@@ -58,20 +56,24 @@ class MonQTask(MappedClass):
             self.task_name,
             self.process)
 
+    @LazyProperty
+    def function(self):
+        smod, sfunc = self.task_name.rsplit('.', 1)
+        cur = __import__(smod, fromlist=[sfunc])
+        return getattr(cur, sfunc)
+
     @classmethod
     def post(cls,
              function,
              args=None,
              kwargs=None,
-             task_name=None,
              result_type='forget',
              priority=10):
         if args is None: args = ()
         if kwargs is None: kwargs = {}
-        if task_name is None:
-            task_name = '%s.%s' % (
-                function.__module__,
-                function.__name__)
+        task_name = '%s.%s' % (
+            function.__module__,
+            function.__name__)
         context = dict(
             project_id=None,
             app_config_id=None,
@@ -87,7 +89,6 @@ class MonQTask(MappedClass):
             priority=priority,
             result_type=result_type,
             task_name=task_name,
-            function=bson.Binary(dumps(function)),
             args=args,
             kwargs=kwargs,
             process=None,
@@ -149,7 +150,7 @@ class MonQTask(MappedClass):
         old_capp = getattr(c, 'app', None)
         old_cuser = getattr(c, 'user', None)
         try:
-            func = loads(self.function)
+            func = self.function
             if self.context.project_id:
                 c.project = M.Project.query.get(_id=self.context.project_id)
             if self.context.app_config_id:
