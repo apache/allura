@@ -100,19 +100,20 @@ class Thread(Artifact):
         name='thread'
         indexes = [
             ('artifact_id',),
-            ('artifact_reference',),
+            ('ref_id',),
             ]
     type_s = 'Thread'
 
     _id=FieldProperty(str, if_missing=lambda:h.nonce(8))
     discussion_id = ForeignIdProperty(Discussion)
-    artifact_id = FieldProperty(None)
     ref_id = ForeignIdProperty('ArtifactReference')
     subject = FieldProperty(str, if_missing='')
     num_replies = FieldProperty(int, if_missing=0)
     num_views = FieldProperty(int, if_missing=0)
     subscriptions = FieldProperty({str:bool})
     first_post_id = ForeignIdProperty('Post')
+    artifact_reference = FieldProperty(schema.Deprecated)
+    artifact_id = FieldProperty(schema.Deprecated)
 
     discussion = RelationProperty(Discussion)
     posts = RelationProperty('Post', via='thread_id')
