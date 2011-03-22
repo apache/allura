@@ -8,6 +8,6 @@ class TaskController(object):
 
     def __call__(self, environ, start_response):
         task = environ['task']
-        result = task()
+        result = task(restore_context=False)
         start_response('200 OK', [])
         return [ result ]

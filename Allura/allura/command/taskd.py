@@ -53,12 +53,9 @@ class TaskdCommand(base.Command):
             try:
                 while True:
                     task = M.MonQTask.get(process=name, waitfunc=waitfunc)
-                    base.log.info('Got task %r', task)
                     # Build the (fake) request
                     r = Request.blank('/--%s--/' % task.task_name, dict(task=task))
                     list(wsgi_app(r.environ, start_response))
-                    ming.orm.ormsession.ThreadLocalORMSession.flush_all()
-                    ming.orm.ormsession.ThreadLocalORMSession.close_all()
             except Exception:
                 base.log.exception('Taskd, restart in 10s')
                 time.sleep(10)

@@ -140,7 +140,7 @@ class MonQTask(MappedClass):
             task()
         return i
 
-    def __call__(self):
+    def __call__(self, restore_context=True):
         from allura import model as M
         self.time_start = datetime.utcnow()
         session(self).flush(self)
@@ -165,15 +165,17 @@ class MonQTask(MappedClass):
             self.state = 'error'
             if hasattr(exc, 'format_error'):
                 self.result = exc.format_error()
+                log.error(self.result)
             else:
                 self.result = traceback.format_exc()
             raise
         finally:
             self.time_stop = datetime.utcnow()
             session(self).flush(self)
-            c.project = old_cproject
-            c.app = old_capp
-            c.user = old_cuser
+            if restore_context:
+                c.project = old_cproject
+                c.app = old_capp
+                c.user = old_cuser
 
     def join(self, poll_interval=0.1):
         while self.state not in ('complete', 'error'):

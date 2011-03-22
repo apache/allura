@@ -44,6 +44,8 @@ def uninstall(**kwargs):
     M.MergeRequest.query.remove(dict(
             app_config_id=c.app.config._id))
     super(RepositoryApp, c.app).uninstall(c.project)
+    from ming.orm import ThreadLocalORMSession
+    ThreadLocalORMSession.flush_all()
 
 @task
 def nop():

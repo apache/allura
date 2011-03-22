@@ -1,9 +1,11 @@
+import sys
 import logging
 from contextlib import contextmanager
 
-from pylons import g
+from pylons import g, c
 
 from allura.lib.decorators import task
+from allura.lib.exceptions import CompoundError
 
 log = logging.getLogger(__name__)
 
@@ -12,6 +14,7 @@ def add_artifacts(ref_ids):
     '''Add the referenced artifacts to SOLR and shortlinks'''
     from allura import model as M
     from allura.lib.search import find_shortlinks, solarize
+    exceptions = []
     with _indexing_disabled(M.session.artifact_orm_session._get()):
         for ref_id in ref_ids:
             try:
@@ -24,7 +27,9 @@ def add_artifacts(ref_ids):
                     ref.references = [
                         link.ref_id for link in find_shortlinks(s['text']) ]
             except Exception:
-                log.error('Error indexing %r', ref_id)
+                exceptions.append(sys.exc_info())
+    if exceptions:
+        raise CompoundError(*exceptions)
 
 @task
 def del_artifacts(ref_ids):
