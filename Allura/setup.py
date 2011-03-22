@@ -88,6 +88,7 @@ setup(
 
     [paste.paster_command]
     taskd = allura.command.taskd:TaskdCommand
+    task = allura.command.taskd:TaskCommand
     models = allura.command:ShowModelsCommand
     reindex = allura.command:ReindexCommand
     ensure_index = allura.command:EnsureIndexCommand

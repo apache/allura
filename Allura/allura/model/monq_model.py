@@ -26,15 +26,17 @@ class MonQTask(MappedClass):
         indexes = [
            [ ('state', ming.ASCENDING),
              ('priority', ming.DESCENDING),
-             ('timestamp', ming.ASCENDING) ],
-           ['state', 'timestamp'],
+             ('time_queue', ming.ASCENDING) ],
+           ['state', 'time_queue'],
            ]
 
     _id = FieldProperty(S.ObjectId)
     state = FieldProperty(S.OneOf(*states))
     priority = FieldProperty(int)
     result_type = FieldProperty(S.OneOf(*result_types))
-    timestamp = FieldProperty(datetime, if_missing=datetime.utcnow)
+    time_queue = FieldProperty(datetime, if_missing=datetime.utcnow)
+    time_start = FieldProperty(datetime, if_missing=None)
+    time_stop = FieldProperty(datetime, if_missing=None)
 
     task_name = FieldProperty(str)
     function = FieldProperty(S.Binary)
@@ -99,7 +101,7 @@ class MonQTask(MappedClass):
     def get(cls, process='worker', state='ready', waitfunc=None):
         sort = [
                 ('priority', ming.DESCENDING),
-                ('timestamp', ming.ASCENDING)]
+                ('time_queue', ming.ASCENDING)]
         while True:
             try:
                 return cls.query.find_and_modify(
@@ -117,10 +119,9 @@ class MonQTask(MappedClass):
                 waitfunc()
 
     @classmethod
-    def timeout_tasks(cls, older_than=None):
+    def timeout_tasks(cls, older_than):
         spec = dict(state='busy')
-        if older_than:
-            spec['timestamp'] = {'$lt':older_than}
+        spec['time_start'] = {'$lt':older_than}
         cls.query.update(spec, {'$set': dict(state='ready')}, multi=True)
 
     @classmethod
@@ -141,6 +142,8 @@ class MonQTask(MappedClass):
 
     def __call__(self):
         from allura import model as M
+        self.time_start = datetime.utcnow()
+        session(self).flush(self)
         log.info('%r', self)
         old_cproject = getattr(c, 'project', None)
         old_capp = getattr(c, 'app', None)
@@ -163,6 +166,7 @@ class MonQTask(MappedClass):
             self.result = traceback.format_exc()
             raise
         finally:
+            self.time_stop = datetime.utcnow()
             session(self).flush(self)
             c.project = old_cproject
             c.app = old_capp

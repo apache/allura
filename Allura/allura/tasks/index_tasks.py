@@ -23,8 +23,8 @@ def add_artifacts(ref_ids):
                 if not isinstance(artifact, M.Snapshot):
                     ref.references = [
                         link.ref_id for link in find_shortlinks(s['text']) ]
-            except:
-                log.exception('Error indexing %r', ref_id)
+            except Exception:
+                log.error('Error indexing %r', ref_id)
 
 @task
 def del_artifacts(ref_ids):
@@ -34,6 +34,10 @@ def del_artifacts(ref_ids):
     M.ArtifactReference.query.remove(dict(_id={'$in':ref_ids}))
     M.Shortlink.query.remove(dict(ref_id={'$in':ref_ids}))
 
+@task
+def commit():
+    g.solr.commit()
+
 @contextmanager
 def _indexing_disabled(session):
     session.disable_artifact_index = session.skip_mod_date = True
@@ -41,3 +45,4 @@ def _indexing_disabled(session):
         yield session
     finally:
         session.disable_artifact_index = session.skip_mod_date = False
+

@@ -45,16 +45,22 @@ class ReindexCommand(base.Command):
             projects = M.Project.query.find(dict(neighborhood_id=neighborhood_id))
         else:
             projects = M.Project.query.find()
+        seen_dbs = set()
         for p in projects:
+            if p.database_uri in seen_dbs: continue
+            seen_dbs.add(p.database_uri)
             base.log.info('Reindex project %s', p.shortname)
             c.project = p
             for _, a_cls in dfs(M.Artifact, graph):
                 base.log.info('  %s', a_cls)
-                ref_ids = [ a.ref_id() for a in a_cls.query.find() ]
+                ref_ids = []
+                for a in a_cls.query.find():
+                    M.ArtifactReference.from_artifact(a)
+                    ref_ids.append(a.index_id())
+                M.artifact_orm_session.clear()
                 allura.tasks.index_tasks.add_artifacts(ref_ids)
                 M.main_orm_session.flush()
                 M.main_orm_session.clear()
-                M.artifact_orm_session.clear()
 
 class EnsureIndexCommand(base.Command):
     min_args=0
