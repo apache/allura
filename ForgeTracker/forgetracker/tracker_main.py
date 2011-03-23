@@ -166,7 +166,7 @@ class ForgeTrackerApp(Application):
                 if ref is None: continue
                 artifact = ref.artifact
                 if artifact is None: continue
-                artifact = artifact.primary(TM.Ticket)
+                artifact = artifact.primary()
                 if artifact.url() not in related_urls:
                     related_urls.append(artifact.url())
                     title = '%s: %s' % (artifact.type_s, artifact.shorthand_id())

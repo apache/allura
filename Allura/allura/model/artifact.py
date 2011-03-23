@@ -63,8 +63,8 @@ class Artifact(MappedClass):
     acl = FieldProperty({str:[S.ObjectId]})
     tags = FieldProperty(S.Deprecated)
     labels = FieldProperty([str])
-    references = FieldProperty(S.Deprecated)
-    backreferences = FieldProperty(S.Deprecated)
+    references = FieldProperty(None)
+    backreferences = FieldProperty(None)
     app_config = RelationProperty('AppConfig')
 
     @classmethod
@@ -112,7 +112,7 @@ class Artifact(MappedClass):
             app_config_id=self.app_config._id,
             artifact_index_id=self.index_id())
 
-    def primary(self, primary_class):
+    def primary(self):
         '''If an artifact is a "secondary" artifact (discussion of a ticket, for
         instance), return the artifact that is the "primary".
         '''
@@ -550,7 +550,7 @@ class Feed(MappedClass):
     unique_id = FieldProperty(str, if_missing=lambda:h.nonce(40))
     author_name = FieldProperty(str, if_missing=lambda:c.user.get_pref('display_name') if hasattr(c, 'user') else None)
     author_link = FieldProperty(str, if_missing=lambda:c.user.url() if hasattr(c, 'user') else None)
-    artifact_reference = FieldProperty(S.Deprecated)
+    artifact_reference = FieldProperty(None)
 
 
     @classmethod

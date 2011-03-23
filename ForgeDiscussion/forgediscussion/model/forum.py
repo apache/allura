@@ -133,7 +133,7 @@ class ForumThread(M.Thread):
     def email_address(self):
         return self.discussion.email_address
 
-    def primary(self, primary_class):
+    def primary(self):
         return self
 
     def post(self, subject, text, message_id=None, parent_id=None, **kw):
@@ -181,7 +181,7 @@ class ForumPost(M.Post):
     def email_address(self):
         return self.discussion.email_address
 
-    def primary(self, primary_class):
+    def primary(self):
         return self
 
     def promote(self):

@@ -62,7 +62,7 @@ class Notification(MappedClass):
     link=FieldProperty(str)
     author_id=ForeignIdProperty('User')
     feed_meta=FieldProperty(S.Deprecated)
-    artifact_reference = FieldProperty(S.Deprecated)
+    artifact_reference = FieldProperty(None)
     pubdate = FieldProperty(datetime, if_missing=datetime.utcnow)
 
     ref = RelationProperty('ArtifactReference')

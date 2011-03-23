@@ -116,7 +116,6 @@ class ForgeProcessor(object):
                 self.alinks = M.Shortlink.from_links(*self.stash['artifact'])
                 self.alinks.update(M.Shortlink.from_links(*self.stash['link']))
             except:
-                import pdb; pdb.set_trace()
                 self.alinks = {}
         self.stash['artifact'] = map(self._expand_alink, self.stash['artifact'])
         self.stash['link'] = map(self._expand_link, self.stash['link'])

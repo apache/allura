@@ -112,8 +112,8 @@ class Thread(Artifact):
     num_views = FieldProperty(int, if_missing=0)
     subscriptions = FieldProperty({str:bool})
     first_post_id = ForeignIdProperty('Post')
-    artifact_reference = FieldProperty(schema.Deprecated)
-    artifact_id = FieldProperty(schema.Deprecated)
+    artifact_reference = FieldProperty(None)
+    artifact_id = FieldProperty(None)
 
     discussion = RelationProperty(Discussion)
     posts = RelationProperty('Post', via='thread_id')
@@ -377,8 +377,8 @@ class Post(Message, VersionedArtifact):
     def last_edit_by(self):
         return User.query.get(_id=self.last_edit_by_id) or User.anonymous()
 
-    def primary(self, primary_class=None):
-        return self.thread.primary(primary_class)
+    def primary(self):
+        return self.thread.primary()
 
     def summary(self):
         return '<a href="%s">%s</a> %s' % (
