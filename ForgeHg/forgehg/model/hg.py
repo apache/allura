@@ -45,6 +45,10 @@ class Repository(M.Repository):
         rw_path = self.readwrite_path(c.user.username)
         return 'hg clone %s %s' % (rw_path, c.project.shortname.replace('/','.'))
 
+    def readwrite_https_command(self):
+        rw_https_path = self.readwrite_https_path(c.user.username)
+        return 'hg clone %s %s' % (rw_https_path, c.project.shortname.replace('/','.'))
+
     def merge_command(self, merge_request):
         '''Return the command to merge a given commit into a given target branch'''
         return 'hg checkout %s;\nhg pull -r %s hg://%s; hg merge %s' % (

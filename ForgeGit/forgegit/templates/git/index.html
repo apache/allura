@@ -10,24 +10,8 @@
 
 {% block header %}{{c.app.config.options.mount_label}}{% endblock %}
 
-{% macro https_instructions(repo) %}
-  {% if repo %}
-    {% if h.has_artifact_access('write')() %}
-    <p>The repository is also available via HTTPS for those who are unable to use the SSH or git methods due to firewall restrictions.  HTTP is slower and requires more bandwidth than any other access method.</p>
-    <label for="rw_https" class="grid-3">Read / write</label>
-    <div class="grid-16">
-      <input id="rw_https" style="width:40em;" readonly type="text"
-             class="selectText"
-             value="{{repo.readwrite_clone_command().replace('ssh://','https://')}}"/>
-    </div>
-    <br style="clear:both;"/>
-    {% endif %}
-  {% endif %}
-{% endmacro %}
-
 {% block content %}
   {{ clone_info(c.app.repo) }}
-  {{ https_instructions(c.app.repo) }}
   {% if log %}
     <h2>Recent Commits{% if branch %} on {{branch}}{% endif %}</h2>
     {{c.log_widget.display(value=log, show_paging=False,

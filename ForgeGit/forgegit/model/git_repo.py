@@ -37,6 +37,10 @@ class Repository(M.Repository):
         tpl = string.Template(tg.config.get('scm.host.rw.%s' % self.tool))
         return tpl.substitute(dict(username=username, path=self.url_path+self.name[:-4]))
 
+    def readwrite_https_path(self, username):
+        tpl = string.Template(tg.config.get('scm.host.https.%s' % self.tool))
+        return tpl.substitute(dict(username=username, path=self.url_path+self.name[:-4]))
+
     def readonly_clone_command(self):
         ro_path = self.readonly_path(c.user.username)
         if ro_path:
@@ -47,6 +51,10 @@ class Repository(M.Repository):
     def readwrite_clone_command(self):
         rw_path = self.readwrite_path(c.user.username)
         return 'git clone %s %s' % (rw_path, c.project.shortname.replace('/','.'))
+
+    def readwrite_https_command(self):
+        rw_https_path = self.readwrite_https_path(c.user.username)
+        return 'git clone %s %s' % (rw_https_path, c.project.shortname.replace('/','.'))
 
     def merge_command(self, merge_request):
         '''Return the command to merge a given commit to a given target branch'''

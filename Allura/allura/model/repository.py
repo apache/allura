@@ -233,6 +233,10 @@ class Repository(Artifact):
         tpl = string.Template(tg.config.get('scm.host.rw.%s' % self.tool))
         return tpl.substitute(dict(username=username, path=self.url_path+self.name))
 
+    def readwrite_https_path(self, username):
+        tpl = string.Template(tg.config.get('scm.host.https.%s' % self.tool))
+        return tpl.substitute(dict(username=username, path=self.url_path+self.name))
+
     def merge_requests_by_statuses(self, *statuses):
         return MergeRequest.query.find(dict(
                 app_config_id=self.app.config._id,

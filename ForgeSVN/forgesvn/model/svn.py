@@ -45,6 +45,10 @@ class Repository(M.Repository):
         rw_path = self.readwrite_path(c.user.username)
         return 'svn checkout %s %s' % (rw_path, c.project.shortname.replace('/','.'))
 
+    def readwrite_https_command(self):
+        rw_https_path = self.readwrite_https_path(c.user.username)
+        return 'svn checkout %s %s' % (rw_https_path, c.project.shortname.replace('/','.'))
+
     def _log(self, rev, skip, max_count):
         ci = self.commit(rev)
         if ci is None: return []

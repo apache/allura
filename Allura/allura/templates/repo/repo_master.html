@@ -20,6 +20,13 @@
              class="selectText"
              value="{{repo.readwrite_clone_command()}}"/>
     </div>
+    <p>The repository is also available via HTTPS for those who are unable to use the above methods due to firewall restrictions.  HTTPS is slower and requires more bandwidth than any other access method.</p>
+    <label for="rw_https" class="grid-3">Read / write</label>
+    <div class="grid-16">
+      <input id="rw_https" style="width:40em;" readonly type="text"
+             class="selectText"
+             value="{{repo.readwrite_https_command()}}"/>
+    </div>
     <br style="clear:both;"/>
     {% endif %}
   {% endif %}
