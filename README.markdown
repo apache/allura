@@ -119,13 +119,12 @@ We'll need to setup some development users and privileges.
     (anvil)~$ sudo rabbitmqctl set_permissions -p testvhost testuser ""  ".*" ".*"
 
 
-### Forge "reactor" processing
+### Forge task processing
 
-Responds to RabbitMQ messages.  We'll need to perform some setup operations before we can start it.
+Responds to asynchronous task requests.
 
     (anvil)~$ cd ~/src/forge/Allura
-    (anvil)~/src/forge/Allura$ paster reactor_setup development.ini
-    (anvil)~/src/forge/Allura$ nohup paster reactor development.ini > ~/logs/reactor.log &
+    (anvil)~/src/forge/Allura$ nohup paster taskd development.ini > ~/logs/taskd.log &
 
 
 ### Forge SMTP for inbound mail
@@ -141,7 +140,7 @@ In order to initialize the Forge database, you'll need to run the following:
 
     (anvil)~/src/forge/Allura$ paster setup-app development.ini
 
-This shouldn't take too long, but it will start the reactor server doing tons of stuff in the background.  It should complete in 5-6 minutes.  Once this is done, you can start the application server.
+This shouldn't take too long, but it will start the taskd server doing tons of stuff in the background.  It should complete in 5-6 minutes.  Once this is done, you can start the application server.
 
     (anvil)~/src/forge/Allura$ nohup paster serve --reload development.ini > ~/logs/tg.log &
 
