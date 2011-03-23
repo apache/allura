@@ -23,7 +23,7 @@ You'll also need additional development packages in order to compile some of the
 
     ~$ sudo apt-get install default-jdk python-dev libssl-dev libldap2-dev libsasl2-dev
 
-And finally our document-oriented database, MongoDB, and our messaging server, RabbitMQ.
+And finally our document-oriented database, MongoDB, and our messaging server, RabbitMQ.  Note that RabbitMQ is optional, but will make messages flow faster through our asynchronous processors.  By default, rabbitmq is disabled in development.ini.
 
     ~$ sudo apt-get install mongodb rabbitmq-server
 
@@ -110,7 +110,7 @@ We have a custom config ready for use.
     (anvil)~/src/apache-solr-1.4.0/example/$ nohup java -Dsolr.solr.home=$(cd;pwd)/src/forge/solr_config -jar start.jar > ~/logs/solr.log &
 
 
-### RabbitMQ message queue
+### RabbitMQ message queue (optional)
 
 We'll need to setup some development users and privileges.
 
