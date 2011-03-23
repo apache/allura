@@ -92,7 +92,6 @@ class ProjectCategory(MappedClass):
         return self.query.find(dict(parent_id=self._id)).all()
 
 class Project(MappedClass):
-    SHARD_LENGTH=1
     class __mongometa__:
         session = main_orm_session
         name='project'
@@ -139,8 +138,7 @@ class Project(MappedClass):
     def default_database_uri(cls, shortname):
         base = config.get('ming.project.master')
         db = config.get('ming.project.database')
-        shard = ''.join(ch.lower() for ch in shortname if ch.isalpha())[-cls.SHARD_LENGTH:]
-        return base + '/' + db + '-' + shard
+        return base + '/' + db
 
     @LazyProperty
     def allowed_tool_status(self):
