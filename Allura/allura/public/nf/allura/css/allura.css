@@ -123,3 +123,37 @@ b.ico.ico-feed { background-position: -16px -176px; }
 #top_nav .ui-icon-tool-chat {
   background-image: url("../images/chat_32.png");
 }
+
+.big_icon.ui-icon-tool-home {
+  background-image: url("../images/home_48.png");
+}
+.big_icon.ui-icon-tool-Wiki {
+  background-image: url("../images/wiki_48.png");
+}
+.big_icon.ui-icon-tool-Git, .big_icon.ui-icon-tool-SVN, .big_icon.ui-icon-tool-Hg {
+  background-image: url("../images/code_48.png");
+}
+.big_icon.ui-icon-tool-Stats {
+  background-image: url("../images/stats_48.png");
+}
+.big_icon.ui-icon-tool-admin, .big_icon.ui-icon-admin {
+  background-image: url("../images/admin_48.png");
+}
+.big_icon.ui-icon-tool-Discussion {
+  background-image: url("../images/forums_48.png");
+}
+.big_icon.ui-icon-tool-Tickets {
+  background-image: url("../images/tickets_48.png");
+}
+.big_icon.ui-icon-tool-Downloads {
+  background-image: url("../images/downloads_48.png");
+}
+.big_icon.ui-icon-tool-Link {
+  background-image: url("../images/ext_48.png");
+}
+.big_icon.ui-icon-tool-blog {
+  background-image: url("../images/blog_48.png");
+}
+.big_icon.ui-icon-tool-chat {
+  background-image: url("../images/chat_48.png");
+}
