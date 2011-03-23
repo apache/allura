@@ -276,7 +276,7 @@ class ProjectRegistrationProvider(object):
         with h.push_config(c, project=p, user=user):
             # have to add user to context, since this may occur inside auth code
             # for user-project reg, and c.user isn't set yet
-            g.post_event('project-created')
+            g.post_event('project_created')
         return p
 
     def register_subproject(self, project, name, user, install_apps):
@@ -297,7 +297,7 @@ class ProjectRegistrationProvider(object):
                 sp.install_app('home', 'home')
                 sp.install_app('admin', 'admin')
                 sp.install_app('search', 'search')
-            g.post_event('project-created')
+            g.post_event('project_created')
         return sp
 
     def delete_project(self, project, user):
