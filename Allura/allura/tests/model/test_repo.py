@@ -118,6 +118,10 @@ class TestRepo(_TestWithRepo):
             self.repo.readwrite_path('nobody')
             == 'svn+ssh://nobody@localhost:8022/scm-repo/p/test/test1'),\
             self.repo.readwrite_path('nobody')
+        assert (
+            self.repo.readwrite_https_path('nobody')
+            == 'https://nobody@localhost:8022/scm-repo/p/test/test1'),\
+            self.repo.readwrite_https_path('nobody')
 
     def test_merge_request(self):
         M.MergeRequest.upsert(app_config_id=c.app.config._id, status='open')
