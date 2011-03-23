@@ -120,7 +120,10 @@ class ForumThread(M.Thread):
 
     @property
     def status(self):
-        return self.first_post.status
+        if self.first_post:
+            return self.first_post.status
+        else:
+            return 'ok'
 
     @classmethod
     def attachment_class(cls):
