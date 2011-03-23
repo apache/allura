@@ -413,7 +413,7 @@ class User(MappedClass):
 
     def email_address_header(self):
         h = header.Header()
-        h.append(u'"%s"' % self.get_pref('display_name'))
+        h.append(u'"%s" ' % self.get_pref('display_name'))
         h.append(u'<%s>' % self.get_pref('email_address'))
         return h
 

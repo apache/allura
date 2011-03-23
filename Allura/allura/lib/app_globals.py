@@ -72,15 +72,18 @@ class Globals(object):
         self.logout_url = config.get('auth.logout_url', '/auth/logout')
 
         # Setup RabbitMQ
-        if asbool(config.get('amqp.mock')):
-            self.amq_conn = self.mock_amq = MockAMQ(self)
+        if asbool(config.get('amqp.enabled', 'true')):
+            if asbool(config.get('amqp.mock')):
+                self.amq_conn = self.mock_amq = MockAMQ(self)
+            else:
+                self.amq_conn = Connection(
+                    hostname=config.get('amqp.hostname', 'localhost'),
+                    port=asint(config.get('amqp.port', 5672)),
+                    userid=config.get('amqp.userid', 'testuser'),
+                    password=config.get('amqp.password', 'testpw'),
+                    vhost=config.get('amqp.vhost', 'testvhost'))
         else:
-            self.amq_conn = Connection(
-                hostname=config.get('amqp.hostname', 'localhost'),
-                port=asint(config.get('amqp.port', 5672)),
-                userid=config.get('amqp.userid', 'testuser'),
-                password=config.get('amqp.password', 'testpw'),
-                vhost=config.get('amqp.vhost', 'testvhost'))
+            self.amq_conn = None
 
         # Setup OEmbed
         cp = RawConfigParser()

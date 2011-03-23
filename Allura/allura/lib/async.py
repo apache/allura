@@ -1,13 +1,12 @@
 import logging
 from Queue import Queue
 
-import kombu
-
 log = logging.getLogger(__name__)
 
 class Connection(object):
 
     def __init__(self, hostname, port, userid, password, vhost):
+        import kombu
         self._conn_proto = kombu.BrokerConnection(
             hostname=hostname,
             port=port,

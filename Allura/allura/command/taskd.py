@@ -4,7 +4,6 @@ import Queue
 from datetime import datetime, timedelta
 
 import pylons
-import ming.orm
 from paste.deploy import loadapp
 from webob import Request
 
@@ -43,13 +42,20 @@ class TaskdCommand(base.Command):
         wsgi_app = loadapp('config:%s#task' % self.args[0],relative_to=os.getcwd())
         def start_response(status, headers, exc_info=None):
             pass
+        def waitfunc_amqp():
+            try:
+                return pylons.g.amq_conn.queue.get(timeout=10)
+            except Queue.Empty:
+                return None
+        def waitfunc_noq():
+            time.sleep(10)
+        if pylons.g.amq_conn:
+            waitfunc = waitfunc_amqp
+        else:
+            waitfunc = waitfunc_noq
         while True:
-            pylons.g.amq_conn.reset()
-            def waitfunc():
-                try:
-                    return pylons.g.amq_conn.queue.get(timeout=10)
-                except Queue.Empty:
-                    return None
+            if pylons.g.amq_conn:
+                pylons.g.amq_conn.reset()
             try:
                 while True:
                     task = M.MonQTask.get(process=name, waitfunc=waitfunc)

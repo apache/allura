@@ -161,7 +161,8 @@ class SMTPClient(object):
         smtp_addrs = map(_parse_smtp_addr, addrs)
         smtp_addrs = [ a for a in smtp_addrs if isvalid(a) ]
         if not smtp_addrs:
-            log.warning('No valid addrs in %s, so not sending mail', addrs)
+            log.warning('No valid addrs in %s, so not sending mail',
+                        map(unicode, addrs))
             return
         try:
             self._client.sendmail(
