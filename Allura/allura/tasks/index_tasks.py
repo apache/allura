@@ -2,7 +2,7 @@ import sys
 import logging
 from contextlib import contextmanager
 
-from pylons import g, c
+from pylons import g
 
 from allura.lib.decorators import task
 from allura.lib.exceptions import CompoundError
@@ -21,11 +21,11 @@ def add_artifacts(ref_ids):
                 ref = M.ArtifactReference.query.get(_id=ref_id)
                 artifact = ref.artifact
                 s = solarize(artifact)
-                if s is not None:
-                    g.solr.add([s])
-                if not isinstance(artifact, M.Snapshot):
-                    ref.references = [
-                        link.ref_id for link in find_shortlinks(s['text']) ]
+                if s is None: continue
+                g.solr.add([s])
+                if isinstance(artifact, M.Snapshot): continue
+                ref.references = [
+                    link.ref_id for link in find_shortlinks(s['text']) ]
             except Exception:
                 exceptions.append(sys.exc_info())
     if exceptions:
