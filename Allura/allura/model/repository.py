@@ -653,6 +653,9 @@ class Commit(RepoObject):
         if self.tree_id is None:
             self.tree_id = self.repo.compute_tree(self)
         t = Tree.query.get(object_id=self.tree_id)
+        if t is None:
+            self.tree_id = self.repo.compute_tree(self)
+            t = Tree.query.get(object_id=self.tree_id)
         if t is not None: t.set_context(self)
         return t
 
