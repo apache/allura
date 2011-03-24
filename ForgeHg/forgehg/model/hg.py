@@ -242,4 +242,9 @@ class HgImplementation(M.RepositoryImplementation):
         for name, oid in obj.blobs.iteritems():
             blob, isnew = M.Blob.upsert(oid)
 
+    def symbolics_for_commit(self, commit):
+        branch_heads, tags = super(self.__class__, self).symbolics_for_commit(commit)
+        ctx = self._hg[commit.object_id]
+        return [ctx.branch()], tags
+
 MappedClass.compile_all()
