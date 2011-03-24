@@ -58,8 +58,9 @@ class Credentials(object):
         return bool(set(role_ids)  & user_roles.reaching_ids_set)
 
     def users_with_named_role(self, project_id, name):
+        """ returns in sorted order """
         roles = self.project_roles(project_id)
-        return RoleCache(self, roles.find(name=name)).users_that_reach
+        return sorted(RoleCache(self, roles.find(name=name)).users_that_reach, key=lambda u:u.username)
 
     def userids_with_named_role(self, project_id, name):
         roles = self.project_roles(project_id)
