@@ -13,7 +13,9 @@
 
 {% block content %}
   {{ clone_info(c.app.repo) }}
-  {% if status == 'too_many_commits' %}
+  {% if status == 'no_commits' %}
+    <p>No commits to display.</p>
+  {% elif status == 'too_many_commits' %}
     <p>The commit browser is currently only available for projects with less than 5,000 commits.</p>
   {% elif status == 'not_ready' %}
     <p>You must wait for the repository to be fully analyzed.</p>

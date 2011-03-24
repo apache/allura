@@ -172,9 +172,10 @@ class RepoRootController(BaseController):
     def commit_browser(self):
         if not c.app.repo or c.app.repo.status != 'ready':
             return dict(status='not_ready')
-        for b in c.app.repo.branches:
-            if b.count > 5000:
-                return dict(status='too_many_commits')
+        if c.app.repo.count() > 5000:
+            return dict(status='too_many_commits')
+        elif c.app.repo.count() == 0:
+            return dict(status='no_commits')
         c.commit_browser_widget = self.commit_browser_widget
         all_commits = c.app.repo._impl.new_commits(all_commits=True)
         sorted_commits = dict()
