@@ -120,7 +120,7 @@ class Globals(MappedClass):
 
     def invalidate_bin_counts(self):
         '''Expire it just a bit in the future to allow data to propagate through
-        the search reactors
+        the search task
         '''
         self._bin_counts_expire = datetime.utcnow() + timedelta(seconds=5)
         self._milestone_counts_expire = datetime.utcnow() + timedelta(seconds=5)

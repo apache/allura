@@ -19,11 +19,6 @@ def setUp():
     setup_basic_test()
     setup_global_objects()
 
-def test_scheduled_messages():
-    sm = M.ScheduledMessage(_id=None, when=datetime.utcnow(), exchange='audit', routing_key='test.none')
-    ThreadLocalORMSession.flush_all()
-    M.ScheduledMessage.fire_when_ready()
-
 @with_setup(setUp)
 def test_project():
     assert type(c.project.sidebar_menu()) == list

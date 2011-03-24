@@ -48,7 +48,7 @@ class Command(command.Command):
                 print >> sys.stderr, (
                     'Could not configure logging with config file %s' % self.args[0])
             log = logging.getLogger('allura.command')
-            log.info('Initialize reactor with config %r', self.args[0])
+            log.info('Initialize command with config %r', self.args[0])
             load_environment(conf.global_conf, conf.local_conf)
             self.setup_globals()
             from allura import model
@@ -66,7 +66,7 @@ class Command(command.Command):
             except ImportError:
                 log.warning('Canot load entry point %s', ep)
         for ep in iter_entry_points('allura.command_init'):
-            log.info('Running reactor_init for %s', ep.name)
+            log.info('Running command_init for %s', ep.name)
             ep.load()(conf)
         log.info('Loaded tools')
 

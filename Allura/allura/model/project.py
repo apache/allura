@@ -28,43 +28,6 @@ from filesystem import File
 
 log = logging.getLogger(__name__)
 
-class ScheduledMessage(MappedClass):
-    class __mongometa__:
-        session = main_orm_session
-        name='scheduled_message'
-        indexes = [
-            'nonce',
-            'when' ]
-
-    _id = FieldProperty(S.ObjectId)
-    when = FieldProperty(datetime)
-    exchange = FieldProperty(str)
-    routing_key = FieldProperty(str)
-    data = FieldProperty(None)
-    nonce = FieldProperty(S.ObjectId, if_missing=None)
-
-    @classmethod
-    def fire_when_ready(cls):
-        now = datetime.utcnow()
-        # Lock the objects to fire
-        nonce = ObjectId()
-        m = mapper(cls)
-        session(cls).impl.update_partial(
-            m.doc_cls,
-            {'when' : { '$lt':now},
-             'nonce': None },
-            {'$set': {'nonce':nonce}},
-            upsert=False)
-        # Actually fire
-        for obj in cls.query.find(dict(nonce=nonce)):
-            log.info('Firing scheduled message to %s:%s',
-                     obj.exchange, obj.routing_key)
-            try:
-                g.publish(obj.exchange, obj.routing_key, getattr(obj, 'data', None))
-                obj.delete()
-            except: # pragma no cover
-                log.exception('Error when firing %r', obj)
-
 class ProjectFile(File):
     class __mongometa__:
         session = main_orm_session

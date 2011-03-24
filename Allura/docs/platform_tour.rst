@@ -10,7 +10,7 @@ robust and open platform.  Some of the services provided by the platform include
 - Indexing and search
 - Authentication and Authorization
 - Email integration (every tool application gets its own email address)
-- Asynchronous processing via RabbitMQ
+- Asynchronous processing with background tasks and events
 - `Markdown <http://daringfireball.net/projects/markdown/>`_ markup formatting
 - Simple autolinking between different artifacts in the forge
 - Attachment handling
@@ -148,76 +148,35 @@ Asynchronous Processing
 -----------------------------------------
 
 Much of the actual functionality of Allura comes from code that runs
-*outside* the context of a web request, in the `reactor` server (invoked by
-running `paster reactor development.ini`.  Asynchronous processing is performed
-by two types of functions, *auditors* and *reactors*, differentiated as follows:
+*outside* the context of a web request, in the `taskd` server (invoked by
+running `paster taskd development.ini`.  Asynchronous processing is performed
+by two types of functions, *tasks* and *events*, differentiated as follows:
 
-Auditor
-    Auditors listen to queues on the `audit` exchange.
-    Messages sent to an auditor queue are interpreted *imperatively* ("do this").
-    Auditor-type messages should specify a project ID `project_id`, an
-    application mount point `mount_point`, and a user ID `user_id`, which will be
-    used by the platform to set the context before calling the registered
-    callback, and all of which reference the *recipient* of the message.  An
-    auditor callback function is called *once* for each message received on its queue.
-Reactor
-    Reactors listen to queues on the `react` exchange.
-    Messages sent to a reactor queue are interpreted in an *advisory* manner
-    ("this was done").  Reactor-type messages should specify a project ID
-    `project_id` and a user ID `user_id`, which will be
-    used by the platform to set the context before calling the registered
-    callback, and all of which reference the *source* of the message.  If the
-    reactor callback is an instance method, it will be called once for each
-    instance of the tool that exists for the given project for each message
-    received on its queue.  If it is a class method, it will be called once for
-    each message received on its queue.  For instance, the Tracker tool may be
-    configured to react to SCM commit messages in order to generate links between
-    SCM commits and Tracker tickets.  *All tracker instances* in a project will
-    be notified of SCM commits in such a case.
+Task
+    Tasks are module-level global functions.  They are annotated with the `@task`
+    decorator and are invoked with the `.post` method.  For instance, to schedule
+    a task  `foobar` to execute in the `taskd` context, you would write::
 
-In order to create a callback function for an auditor or a reactor, simply add a
-method to the tool application class that is decorated either with the `@audit`
-or the `@react` decorator.  For instance, the discussion tool defines a reactor on
-the `Forum.new_post` message::
+       @task
+       def foobar(a,b,c=5): ...
+       
+       foobar.post(9,1,c=15)
 
-    @react('Forum.new_post')
-    def notify_subscribers(self, routing_key, data):
-        ....
+Event
+    Events are intended for "fan-out" types of events.  Events have a string
+    name, and are  "listened" for by using the `@event_handler` decorator.  The
+    `g.post_event()` helper is provided to run the event handlers for a
+    particular event in the `taskd` context.  Multiple event handlers can be
+    registered for each event::
 
-If there are a large number of reactors, you can define them in a separate module
-and use the `mixin_reactors()` method as in the SCM tool::
+        @event_handler('event_name')
+        def handler1(topic, *args, **kwargs): ...
 
-    from .reactors import reactors
-    ...
-    class ForgeGitApp(Application):
-        ...
-    mixin_reactors(ForgeGitApp, reactors)
+        @event_handler('event_name')
+        def handler2(topic, *args, **kwargs): ...
 
-.. sidebar:: Updating auditors and reactors
+        g.post_event('event_name', 1,2,3, a=5)
 
-   If you add, remove, or change the routing key of any auditor or reactor,
-   chances are that you'll need to re-configure the rabbitmq server to handle the
-   queue changes.  To do this, you need simply to run the following command::
-
-       $ paster reactor_setup development.ini
-
-   This will tear down all the queues and recreate them based on the code that
-   currently exists.
-
-In order to actually *send* a message to either the `audit` or `react` exchange,
-a helper method is provided in the pylons global object `g`:
-
-.. method:: allura.lib.app_globals.AppGlobals.publish(xn, key, message=None, **kw)
-   :noindex:
-
-   Used to send messages to the named exchange.  This method will automatically
-   set the message attributes `project_id`, `mount_point`, and `user_id` based on
-   the current context.
-
-   :param xn: exchange name (either "audit" or "react")
-   :param key: routing key (e.g. "Forum.new_post")
-   :param message: optional dictionary with message content
-   :param kw: optional keyword arguments which are passed through to the `carrot.Publisher`
 
 Email Integration
 -----------------------------------------
@@ -231,8 +190,8 @@ pylons context attributes `c.project` and `c.app` are set, and the application i
 queried to determine whether the identified user has authority to send an email
 to the given app/topic combination by calling `c.app.has_access(user, topic)`.
 If the user has access, the message is decomposed into its component parts (if a
-multipart MIME-encoded message) and one `audit` message is generated for each
-part with the following fields:
+multipart MIME-encoded message) and `c.app.handle_message(topic, message)` is
+called for each part with the following components to the `msg` dict:
 
 headers
   The actual headers parsed from the body of the message
@@ -253,21 +212,24 @@ content_type
   The MIME content_type of the message part
 payload
   The actual content of the message part
-user_id
-  The ID of the user who sent the message
-
-Once the message is generated, it is sent to the `audit` exchange with the
-routing key <Tool Type>.<topic>.  For instance, a message to comment on a Wiki
-page might have the routing key `Wiki.MainPage`.
 
 The Allura platform also provides full support for *sending* email without
 worrying about the specifics of SMTP or sendmail handling.  In order to send an
-email, a tool needs simply to send an `audit` message with the routing key
-`forgemail.send_email` and the following fields:
+email, simply post a task for `allura.tasks.mail_tasks.sendmail` with the
+following arguments:
 
-from
+fromaddr
   Return address on the message (usually the topic@tool_name that generated
   it)
+destinations
+  List of email addresses and/or :class:`bson.ObjectId` s for
+  :class:`allura.model.auth.User` objects
+text
+  Markdown-formatted body of the message (If the user has requested html or
+  combined text+html messages in their preferences, the Markdown will be so
+  rendered.  Otherwise a plain text message will be sent.)
+reply_to
+  Address to which replies should be sent
 subject
   Subject of the message
 message_id
@@ -276,10 +238,3 @@ message_id
 in_reply_to (optional)
   Value to put in the `In-Reply-To` header (the `parent_id` field of a
   :class:`allura.model.artifact.Message` is suitable for this)
-destinations
-  List of email addresses and/or :class:`bson.ObjectId` s for
-  :class:`allura.model.auth.User` objects
-text
-  Markdown-formatted body of the message (If the user has requested html or
-  combined text+html messages in their preferences, the Markdown will be so
-  rendered.  Otherwise a plain text message will be sent.)

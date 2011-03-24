@@ -4,7 +4,7 @@
 from .session import ProjectSession
 
 from .neighborhood import Neighborhood, NeighborhoodFile
-from .project import Project, ProjectCategory, ProjectFile, AppConfig, ScheduledMessage
+from .project import Project, ProjectCategory, ProjectFile, AppConfig
 from .index import ArtifactReference, Shortlink
 from .artifact import Artifact, Message, VersionedArtifact, Snapshot, Feed, AwardFile, Award, AwardGrant
 from .discuss import Discussion, Thread, PostHistory, Post, DiscussionAttachment

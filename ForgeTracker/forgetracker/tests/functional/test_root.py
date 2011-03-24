@@ -11,7 +11,6 @@ from allura import model as M
 from forgewiki import model as wm
 from forgetracker import model as tm
 
-# These are needed for faking reactor actions
 from allura.lib import helpers as h
 from ming.orm.ormsession import ThreadLocalORMSession
 

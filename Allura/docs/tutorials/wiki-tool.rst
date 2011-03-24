@@ -64,6 +64,7 @@ technique follows::
         g.set_app('hello')
         c.user = M.User.query.get(username='test-admin')
 
-Testing the reactors/auditors is similar to testing models.  Generally, you will
-simply want to call your callback methods directly rather than setting up a full mocking
-infrastructure for the messaging system provided by RabbitMQ.
+Testing the tasks and events is  similar to testing models.  Generally, you will
+simply want to call your `@task` and `@event_handler` methods directly rather
+than setting up a full mocking infrastructure, though it is possible to use the
+MonQTask model in the allura model if you wish to do more functional/integration testing.

@@ -16,7 +16,7 @@ class TaskdCommand(base.Command):
     parser.add_option('-p', '--proc', dest='proc', type='int', default=1,
                       help='number of worker processes to spawn')
     parser.add_option('--dry_run', dest='dry_run', action='store_true', default=False,
-                      help="get ready to run the reactor, but don't actually run it")
+                      help="get ready to run the task daemon, but don't actually run it")
 
     def command(self):
         self.basic_setup()

@@ -142,18 +142,6 @@ def sharded_path(name, num_parts=2):
         for i in range(num_parts) ]
     return '/'.join(parts)
 
-def mixin_reactors(cls, module, prefix=None):
-    'attach the reactor-decorated functions in module to the given class'
-    from .decorators import ConsumerDecoration
-    if prefix is None: prefix = module.__name__ + '.'
-    for name in dir(module):
-        value = getattr(module, name)
-        try:
-            if ConsumerDecoration.get_decoration(value, False):
-                setattr(cls, prefix + name, staticmethod(value))
-        except TypeError:
-            pass
-
 def set_context(project_shortname, mount_point=None, app_config_id=None):
     from allura import model
     p = model.Project.query.get(shortname=project_shortname)
