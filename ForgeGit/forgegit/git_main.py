@@ -61,10 +61,9 @@ class ForgeGitApp(RepositoryApp):
                     cloned_from_url=cloned_from.full_fs_path)
             allura.tasks.repo_tasks.clone.post(msg)
         elif init_from_url:
-            msg = dict(
+            allura.tasks.repo_tasks.clone.post(
                 cloned_from_path=None,
                 cloned_from_name=None,
                 cloned_from_url=init_from_url)
-            allura.tasks.repo_tasks.clone.post(msg)
         else:
             allura.tasks.repo_tasks.init.post()
