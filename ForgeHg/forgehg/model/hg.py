@@ -91,10 +91,11 @@ class HgImplementation(M.RepositoryImplementation):
             shutil.rmtree(fullname)
         log.info('Initialize %r as a clone of %s',
                  self._repo, source_url)
+        # !$ hg doesn't like unicode as urls
         src, repo = hg.clone(
             ui.ui(),
-            source_url,
-            self._repo.full_fs_path)
+            source_url.encode('utf-8'), 
+            self._repo.full_fs_path.encode('utf-8'))
         self.__dict__['_hg'] = repo
         self._setup_special_files()
         self._repo.status = 'analyzing'
