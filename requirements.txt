@@ -1,3 +1,5 @@
+# requirements for the SF instance
+
 amqplib==0.6.1
 kombu==1.0.4
 coverage==3.5a1

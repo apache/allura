@@ -62,6 +62,8 @@ Although the application setup.py files define a number of dependencies, the `re
     (anvil)~/src/forge$ easy_install pip
     (anvil)~/src/forge$ pip install -r requirements-dev.txt
 
+If you want to use RabbitMQ for faster message processing (optional), also pip install 'amqplib' and 'kombu'.
+
 And now to setup each of the Forge applications for development.  Because there are quite a few (at last count 15), we'll use a simple shell loop to set them up.
 
     for APP in Allura* Forge* NoWarnings pyforge
