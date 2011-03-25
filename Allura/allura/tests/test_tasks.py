@@ -96,7 +96,7 @@ class TestMailTasks(unittest.TestCase):
 
     def test_send_email(self):
         c.user = M.User.by_username('test-admin')
-        with mock.patch.object(mail_tasks.smtp_client, 'sendmail') as f:
+        with mock.patch_object(mail_tasks.smtp_client, 'sendmail') as f:
             mail_tasks.sendmail(
                 str(c.user._id),
                 [ str(c.user._id) ],
@@ -117,7 +117,7 @@ class TestMailTasks(unittest.TestCase):
     def test_receive_email_ok(self):
         c.user = M.User.by_username('test-admin')
         import forgewiki
-        with mock.patch.object(forgewiki.wiki_main.ForgeWikiApp, 'handle_message') as f:
+        with mock.patch_object(forgewiki.wiki_main.ForgeWikiApp, 'handle_message') as f:
             mail_tasks.route_email(
                 '0.0.0.0', c.user.email_addresses[0],
                 ['Page@wiki.test.p.in.sf.net'],
@@ -128,7 +128,7 @@ class TestMailTasks(unittest.TestCase):
 
     def test_receive_email_anon(self):
         import forgewiki
-        with mock.patch.object(forgewiki.wiki_main.ForgeWikiApp, 'handle_message') as f:
+        with mock.patch_object(forgewiki.wiki_main.ForgeWikiApp, 'handle_message') as f:
             mail_tasks.route_email(
                 '0.0.0.0', 'nobody@nowhere.com',
                 ['Page@wiki.test.p.in.sf.net'],
@@ -144,8 +144,8 @@ class TestNotificationTasks(unittest.TestCase):
         setup_global_objects()
 
     def test_delivers_messages(self):
-        with mock.patch.object(M.Mailbox, 'deliver') as deliver:
-            with mock.patch.object(M.Mailbox, 'fire_ready') as fire_ready:
+        with mock.patch_object(M.Mailbox, 'deliver') as deliver:
+            with mock.patch_object(M.Mailbox, 'fire_ready') as fire_ready:
                 notification_tasks.notify('42', '52', 'none')
                 assert deliver.called_with('42', '52', 'none')
                 assert fire_ready.called_with()
@@ -159,7 +159,7 @@ class TestRepoTasks(unittest.TestCase):
 
     def test_init(self):
         ns = M.Notification.query.find().count()
-        with mock.patch.object(c.app.repo, 'init') as f:
+        with mock.patch_object(c.app.repo, 'init') as f:
             repo_tasks.init()
             M.main_orm_session.flush()
             assert f.called_with()
@@ -167,19 +167,19 @@ class TestRepoTasks(unittest.TestCase):
 
     def test_clone(self):
         ns = M.Notification.query.find().count()
-        with mock.patch.object(c.app.repo, 'init_as_clone') as f:
+        with mock.patch_object(c.app.repo, 'init_as_clone') as f:
             repo_tasks.clone('foo', 'bar', 'baz')
             M.main_orm_session.flush()
             f.assert_called_with('foo', 'bar', 'baz')
             assert ns + 1 == M.Notification.query.find().count()
 
     def test_refresh(self):
-        with mock.patch.object(c.app.repo, 'refresh') as f:
+        with mock.patch_object(c.app.repo, 'refresh') as f:
             repo_tasks.refresh()
             f.assert_called_with()
 
     def test_uninstall(self):
-        with mock.patch.object(shutil, 'rmtree') as f:
+        with mock.patch_object(shutil, 'rmtree') as f:
             repo_tasks.uninstall()
             f.assert_called_with('/tmp/svn/p/test/src', ignore_errors=True)
 

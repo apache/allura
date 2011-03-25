@@ -91,7 +91,6 @@ class TestPostNotifications(unittest.TestCase):
     def test_email(self):
         self._subscribe()
         self._post_notification()
-        M.MonQTask.run_ready()
         ThreadLocalORMSession.flush_all()
         M.MonQTask.run_ready()
         ThreadLocalORMSession.flush_all()
