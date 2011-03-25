@@ -155,13 +155,13 @@ class MonQTask(MappedClass):
         old_cuser = getattr(c, 'user', None)
         try:
             func = self.function
-            if self.context.project_id:
-                c.project = M.Project.query.get(_id=self.context.project_id)
-            if self.context.app_config_id:
-                app_config = M.AppConfig.query.get(_id=self.context.app_config_id)
+            c.project = M.Project.query.get(_id=self.context.project_id)
+            app_config = M.AppConfig.query.get(_id=self.context.app_config_id)
+            if app_config:
                 c.app = c.project.app_instance(app_config)
-            if self.context.user_id:
-                c.user = M.User.query.get(_id=self.context.user_id)
+            else:
+                c.app = None
+            c.user = M.User.query.get(_id=self.context.user_id)
             self.result = func(*self.args, **self.kwargs)
             self.state = 'complete'
             return self.result
