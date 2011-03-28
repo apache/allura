@@ -156,11 +156,11 @@ class MonQTask(MappedClass):
         try:
             func = self.function
             c.project = M.Project.query.get(_id=self.context.project_id)
-            app_config = M.AppConfig.query.get(_id=self.context.app_config_id)
-            if app_config:
-                c.app = c.project.app_instance(app_config)
-            else:
-                c.app = None
+            c.app = None
+            if c.project:
+                app_config = M.AppConfig.query.get(_id=self.context.app_config_id)
+                if app_config:
+                    c.app = c.project.app_instance(app_config)
             c.user = M.User.query.get(_id=self.context.user_id)
             self.result = func(*self.args, **self.kwargs)
             self.state = 'complete'
