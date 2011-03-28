@@ -93,7 +93,8 @@ class ApiAuthMixIn(object):
             if k == 'api_key': has_api_key = True
             if k == 'api_timestamp': has_api_timestamp = True
             if k == 'api_signature': has_api_signature = True
-        if not has_api_key: params.append(('api_key', self.api_key))
+        if not has_api_key:
+            params.append(('api_key', self.api_key))
         if not has_api_timestamp:
             params.append(('api_timestamp', datetime.utcnow().isoformat()))
         if not has_api_signature:
@@ -132,7 +133,7 @@ class ApiTicket(MappedClass, ApiAuthMixIn):
 
     _id = FieldProperty(S.ObjectId)
     user_id = ForeignIdProperty('User')
-    api_ticket = FieldProperty(str, if_missing=lambda: ApiTicket.PREFIX + h.nonce(20))
+    api_key = FieldProperty(str, if_missing=lambda: ApiTicket.PREFIX + h.nonce(20))
     secret_key = FieldProperty(str, if_missing=h.cryptographic_nonce)
     expires = FieldProperty(datetime, if_missing=None)
     capabilities = FieldProperty({str:str})
@@ -143,7 +144,7 @@ class ApiTicket(MappedClass, ApiAuthMixIn):
     def get(cls, api_ticket):
         if not api_ticket.startswith(cls.PREFIX):
             return None
-        return cls.query.get(api_ticket=api_ticket)
+        return cls.query.get(api_key=api_ticket)
 
     def authenticate_request(self, path, params):
         if self.expires and datetime.utcnow() > self.expires:

@@ -290,7 +290,7 @@ Unknown users: %s''' % unknown_users)
             user_id=c.user._id,
             project_id=c.project._id,
             app_config_id=c.app.config._id,
-            api_key=c.api_token.api_ticket,
+            api_key=c.api_token.api_key,
             description='Tracker import')
         log.info('Import id: %s', self.import_batch._id)
 

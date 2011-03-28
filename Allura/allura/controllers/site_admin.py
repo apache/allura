@@ -71,7 +71,7 @@ class SiteAdminController(object):
             flash(str(c.validation_exception), 'error')
         return dict(stats=stats, since=since)
 
-    @expose('jinja:site_admin_api_tickets.html')
+    @expose('jinja:allura:templates/site_admin_api_tickets.html')
     def api_tickets(self, **data):
         import json
         import dateutil.parser
