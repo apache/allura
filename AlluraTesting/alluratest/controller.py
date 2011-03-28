@@ -107,9 +107,12 @@ class TestRestApiBase(TestController):
         super(TestRestApiBase, self).setUp()
         setup_global_objects()
 #        h.set_context('test', 'home')
-        user = M.User.query.get(username='test-admin')
-        self.token = M.ApiToken(user_id=user._id)
+        self.user = M.User.query.get(username='test-admin')
+        self.token = M.ApiToken(user_id=self.user._id)
         ming.orm.session(self.token).flush()
+
+    def set_api_token(self, token):
+        self.token = token
 
     def api_post(self, path, api_key=None, api_timestamp=None, api_signature=None,
                  wrap_args=None, **params):
