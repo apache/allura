@@ -61,7 +61,12 @@ class TestFunctionalController(TestController):
     def test_two_trackers(self):
         summary = 'test two trackers'
         ticket_view = self.new_ticket('/doc-bugs/', summary=summary)
+        ThreadLocalORMSession.flush_all()
+        M.MonQTask.run_ready()
+        ThreadLocalORMSession.flush_all()
         assert_true(summary in ticket_view)
+        index_view = self.app.get('/doc-bugs/')
+        assert_true(summary in index_view)
         index_view = self.app.get('/bugs/')
         assert_false(summary in index_view)
     
@@ -449,12 +454,15 @@ class TestFunctionalController(TestController):
         assert success.findAll('form')[1].get('action') == '/p/test/bugs/1/update_ticket_from_widget'
         assert success.find('input', {'name':'ticket_form.summary'})['value'] == new_summary
 
-#   def test_home(self):
-#       self.new_ticket(summary='test first ticket')
-#       self.new_ticket(summary='test second ticket')
-#       self.new_ticket(summary='test third ticket')
-#       response = self.app.get('/p/test/bugs/')
-#       assert '[#3] test third ticket' in response
+    def test_home(self):
+        self.new_ticket(summary='test first ticket')
+        self.new_ticket(summary='test second ticket')
+        self.new_ticket(summary='test third ticket')
+        ThreadLocalORMSession.flush_all()
+        M.MonQTask.run_ready()
+        ThreadLocalORMSession.flush_all()
+        response = self.app.get('/p/test/bugs/')
+        assert 'test third ticket' in response
 
     def test_search(self):
         self.new_ticket(summary='test first ticket')

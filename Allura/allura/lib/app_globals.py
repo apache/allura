@@ -325,6 +325,8 @@ class MockSOLR(object):
         q_parts = shlex.split(q)
         if fq: q_parts += fq
         for part in q_parts:
+            if part == '&&':
+                continue
             if ':' in part:
                 field, value = part.split(':', 1)
                 preds.append((field, value))
@@ -333,11 +335,15 @@ class MockSOLR(object):
         result = self.MockHits()
         for obj in self.db.values():
             for field, value in preds:
+                neg = False
+                if field[0] == '!':
+                    neg = True
+                    field = field[1:]
                 if field == 'text' or field.endswith('_t'):
-                    if value not in str(obj.get(field, '')):
+                    if (value not in str(obj.get(field, ''))) ^ neg:
                         break
                 else:
-                    if value != str(obj.get(field, '')):
+                    if (value != str(obj.get(field, ''))) ^ neg:
                         break
             else:
                 result.append(obj)
