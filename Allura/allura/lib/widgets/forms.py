@@ -91,17 +91,18 @@ class NeighborhoodAddProjectForm(ForgeForm):
     defaults=dict(
         ForgeForm.defaults,
         method='post',
-        submit_text='Start')
+        submit_text='Start',
+        neighborhood=None)
 
     @property
     def fields(self):
         fields = [
-            ew.InputField(name='project_unixname', label='', field_type='text',
+            ew.InputField(name='project_name', label='Project Name'),
+            ew.InputField(name='project_unixname', label='Short Name', field_type='text',
                           validator=formencode.All(
                             fev.String(not_empty=True),
                             fev.Regex(r'^[A-z][-A-z0-9]{2,}$', messages={'invalid':'Please use only letters, numbers, and dash characters.'}),
                             NeighborhoodAddProjectValidator())),
-            ew.HiddenField(name='project_name', label='Project Name'),
             ew.HiddenField(name='project_description', label='Public Description'),
             ew.HiddenField(name='neighborhood', label='Neighborhood'),
             ew.Checkbox(name="Wiki", label="", attrs={'class':'unlabeled'}),
@@ -121,6 +122,22 @@ class NeighborhoodAddProjectForm(ForgeForm):
         yield ew.JSScript('''
             $(function(){
                 var $scms = $('[name=Git],[name=Hg],[name=SVN]');
+                var $suggest_btn = $('#suggest_project_name');
+                var $name_avail_message = $('#name_availablity');
+                var $name_input = $('input[name="project_name"]');
+                var $unixname_input = $('input[name="project_unixname"]');
+                var handle_name_taken = function(name_taken){
+                    if(name_taken){
+                        $name_avail_message.html('This name is taken.');
+                        $name_avail_message.removeClass('success');
+                        $name_avail_message.addClass('error');
+                    }
+                    else{
+                        $name_avail_message.html('This name is available.');
+                        $name_avail_message.removeClass('error');
+                        $name_avail_message.addClass('success');
+                    }
+                };
                 $scms.change(function(){
                     if ( $(this).attr('checked') ) {
                         var on = this;
@@ -131,6 +148,24 @@ class NeighborhoodAddProjectForm(ForgeForm):
                         });
                     }
                 });
+                $suggest_btn.click(function(){
+                    $.getJSON('suggest_name',{'project_name':$name_input.val()},function(result){
+                        $unixname_input.val(result.suggested_name);
+                        handle_name_taken(result.name_taken);
+                    });
+                });
+                $unixname_input.change(function(){
+                    $.getJSON('check_name',{'project_name':$unixname_input.val()},function(result){
+                        if(!result.allowed){
+                            $name_avail_message.html('Name must contain only letters, numbers, and dashes. It may only begin with a letter.');
+                            $name_avail_message.removeClass('success');
+                            $name_avail_message.addClass('error');
+                        }
+                        else{
+                            handle_name_taken(result.name_taken);
+                        }
+                    });
+                })
             });
         ''')
 

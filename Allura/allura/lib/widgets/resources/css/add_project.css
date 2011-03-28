@@ -5,21 +5,15 @@ div.content {
 div.content div.row > div.column {
     width: 100%
 }
-div.welcome { margin: 2em 0; }
-div.welcome span, div.welcome input {
-    position: relative;
-    left: 4em;
-}
+div.welcome { margin: 2em 0; overflow: auto; }
 div.welcome input {
-    width: 65%;
+    width: 95%;
     line-height: 20px;
     font-size: 18px;
     -webkit-border-radius: 5px;
     -moz-border-radius: 5px;
 }
 div.welcome .error {
-    position: relative;
-    left: 4em;
     width: 75%;
 }
 #start {

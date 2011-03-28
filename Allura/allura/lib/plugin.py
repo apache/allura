@@ -213,6 +213,13 @@ class ProjectRegistrationProvider(object):
         for ep in pkg_resources.iter_entry_points('allura.project_registration', method):
             return ep.load()()
 
+    def name_taken(self, project_name):
+        from allura import model as M
+        p = M.Project.query.get(shortname=project_name)
+        if p:
+            return True
+        return False
+
     def register_neighborhood_project(self, neighborhood, users):
         from allura import model as M
         shortname='--init--'

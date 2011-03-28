@@ -134,6 +134,7 @@ class NeighborhoodController(object):
                     limit=limit, page=page, count=count)
 
     @expose('jinja:allura:templates/neighborhood_add_project.html')
+    @without_trailing_slash
     def add_project(self, **form_data):
         require(has_neighborhood_access('create', self.neighborhood), 'Create access required')
         c.add_project = W.add_project
@@ -141,6 +142,18 @@ class NeighborhoodController(object):
             form_data.setdefault(checkbox, True)
         form_data['neighborhood'] = self.neighborhood.name
         return dict(neighborhood=self.neighborhood, form_data=form_data)
+
+    @expose('json:')
+    def suggest_name(self, project_name=None):
+        new_name = re.sub("[^A-Za-z0-9]", "", project_name).lower()
+        name_taken = plugin.ProjectRegistrationProvider.get().name_taken(new_name)
+        return dict(suggested_name=new_name, name_taken=name_taken)
+
+    @expose('json:')
+    def check_name(self, project_name=None):
+        allowed = not not h.re_path_portion.match(project_name)
+        name_taken = plugin.ProjectRegistrationProvider.get().name_taken(project_name)
+        return dict(allowed=allowed, name_taken=name_taken)
 
     @h.vardec
     @expose()

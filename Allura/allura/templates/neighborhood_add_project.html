@@ -6,5 +6,5 @@
 {% block header %}Create a Project{% endblock %}
 
 {% block content %}
-          {{c.add_project.display(action=neighborhood.url()+'register',value=form_data)}}
+          {{c.add_project.display(action=neighborhood.url()+'register',value=form_data,neighborhood=neighborhood)}}
 {% endblock %}
