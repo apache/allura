@@ -213,11 +213,19 @@ class SVNImplementation(M.RepositoryImplementation):
         log.info('Refresh %r %r', ci, self._repo)
         revno = self._revno(ci.object_id)
         rev = self._revision(ci.object_id)
-        log_entry = self._svn.log(
-            self._url,
-            revision_start=rev,
-            limit=1,
-            discover_changed_paths=True)[0]
+        try:
+            log_entry = self._svn.log(
+                self._url,
+                revision_start=rev,
+                limit=1,
+                discover_changed_paths=True)[0]
+        except pysvn.ClientError:
+            log.info('ClientError processing %r %r, treating as empty', ci, self._repo, exc_info=True)
+            log_entry = {
+                date: '',
+                message: '',
+                changed_paths: []
+            }
         # Save commit metadata
         ci.committed = Object(
             name=log_entry.get('author', '--none--'),
