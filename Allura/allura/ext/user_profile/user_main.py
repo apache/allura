@@ -3,7 +3,7 @@ import logging
 from pprint import pformat
 
 import pkg_resources
-from pylons import c, request
+from tg import c, request
 from formencode import validators
 from tg import expose, redirect, validate, response
 

@@ -1,6 +1,6 @@
 import logging
 
-from pylons import c, g
+from tg import c, g
 from bson import ObjectId
 
 from allura.lib import helpers as h

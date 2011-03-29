@@ -1,7 +1,7 @@
 import os
 from cStringIO import StringIO
 
-import pylons
+import tg
 import Image
 from gridfs import GridFS
 
@@ -88,10 +88,10 @@ class File(MappedClass):
     def serve(self, embed=True):
         '''Sets the response headers and serves as a wsgi iter'''
         fp = self.rfile()
-        pylons.response.headers['Content-Type'] = ''
-        pylons.response.content_type = fp.content_type.encode('utf-8')
+        tg.response.headers['Content-Type'] = ''
+        tg.response.content_type = fp.content_type.encode('utf-8')
         if not embed:
-            pylons.response.headers.add(
+            tg.response.headers.add(
                 'Content-Disposition',
                 'attachment;filename=%s' % self.filename)
         return iter(fp)

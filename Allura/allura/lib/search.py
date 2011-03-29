@@ -5,7 +5,7 @@ from pprint import pformat
 from itertools import islice, chain
 
 import markdown
-from pylons import c,g
+from tg import c,g
 import pysolr
 
 from . import helpers as h

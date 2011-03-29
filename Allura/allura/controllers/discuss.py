@@ -1,9 +1,9 @@
 from urllib import unquote
 from datetime import datetime
 
-from tg import expose, redirect, validate, request, response, flash
-from tg.decorators import before_validate, with_trailing_slash, without_trailing_slash
-from pylons import g, c
+from tg import expose, redirect, validate, request, response
+from tg.decorators import without_trailing_slash
+from tg import g, c
 from formencode import validators
 from webob import exc
 

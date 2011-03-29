@@ -1,6 +1,6 @@
 import sys
 from ming.orm import session
-from pylons import c
+from tg import c
 from . import base
 from allura.lib import helpers as h
 

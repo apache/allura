@@ -10,7 +10,7 @@ from hashlib import sha256
 import iso8601
 import pymongo
 import oauth2 as oauth
-from pylons import c, g, request
+from tg import c, g, request
 
 from ming import schema as S
 from ming.orm.ormsession import ThreadLocalORMSession

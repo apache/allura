@@ -8,10 +8,8 @@ import mimetypes
 from logging.handlers import WatchedFileHandler
 
 import tg
-import pylons
 from formencode import Invalid
 from tg.decorators import before_validate
-from pylons import response, c
 from paste.httpheaders import CACHE_CONTROL, EXPIRES
 from webhelpers.html import literal
 
@@ -20,16 +18,16 @@ from ming.utils import LazyProperty
 
 def cache_forever():
     headers = [
-        (k,v) for k,v in response.headers.items()
+        (k,v) for k,v in tg.response.headers.items()
         if k.lower() not in ('pragma', 'cache-control') ]
     delta = CACHE_CONTROL.apply(
         headers,
         public=True,
         max_age=60*60*24*365)
     EXPIRES.update(headers, delta=delta)
-    response.headers.pop('cache-control', None)
-    response.headers.pop('pragma', None)
-    response.headers.update(headers)
+    tg.response.headers.pop('cache-control', None)
+    tg.response.headers.pop('pragma', None)
+    tg.response.headers.update(headers)
 
 class memoize_on_request(object):
 
@@ -41,7 +39,7 @@ class memoize_on_request(object):
 
     def __call__(self, func):
         def wrapper(*args, **kwargs):
-            cache = c.memoize_cache
+            cache = tg.c.memoize_cache
             if self.include_func_in_key:
                 key = (func, self.key, args, tuple(kwargs.iteritems()))
             else:
@@ -143,7 +141,7 @@ class AntiSpam(object):
     def __init__(self, request=None, num_honey=2):
         self.num_honey = num_honey
         if request is None:
-            self.request = pylons.request
+            self.request = tg.request
             self.timestamp = int(time.time())
             self.spinner = self.make_spinner()
             self.timestamp_text = str(self.timestamp)
@@ -237,12 +235,12 @@ class AntiSpam(object):
         except (TypeError, AttributeError), err:
             client_ip = '127.0.0.1'
         plain = '%d:%s:%s' % (
-            timestamp, client_ip, pylons.config.get('spinner_secret', 'abcdef'))
+            timestamp, client_ip, tg.config.get('spinner_secret', 'abcdef'))
         return hashlib.sha1(plain).digest()
 
     @classmethod
     def validate_request(cls, request=None, now=None):
-        if request is None: request = pylons.request
+        if request is None: request = tg.request
         params = dict(request.params)
         params.pop('timestamp', None)
         params.pop('spinner', None)

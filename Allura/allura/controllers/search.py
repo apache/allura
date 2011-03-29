@@ -1,7 +1,7 @@
-from tg import expose, redirect, flash, config, validate, request
+from tg import expose, redirect, config, validate, request
 from tg.decorators import with_trailing_slash, without_trailing_slash
 from formencode import validators as V
-from pylons import c
+from tg import c
 from webob import exc
 import pymongo
 

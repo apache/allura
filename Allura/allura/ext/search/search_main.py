@@ -1,7 +1,7 @@
 import logging
 
 import pkg_resources
-from pylons import c
+from tg import c
 from tg import expose, validate
 from tg.decorators import with_trailing_slash
 from formencode import validators as V

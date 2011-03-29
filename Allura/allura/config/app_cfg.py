@@ -12,6 +12,7 @@ convert them into boolean, for example, you should use the
     setting = asbool(global_conf.get('the_setting'))
  
 """
+import pdb; pdb.set_trace()
 import logging
 import pkg_resources
 

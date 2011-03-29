@@ -6,10 +6,10 @@ from datetime import datetime
 
 # Non-stdlib imports
 import pkg_resources
-from tg import expose, validate, redirect, response, flash
+from tg import expose, validate, redirect, response
 from tg.decorators import with_trailing_slash, without_trailing_slash
 from tg.controllers import RestController
-from pylons import g, c, request
+from tg import g, c, request
 from formencode import validators
 from webob import exc
 

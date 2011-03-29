@@ -2,7 +2,7 @@ import sys
 import logging
 from contextlib import contextmanager
 
-from pylons import g
+from tg import g
 
 from allura.lib.decorators import task
 from allura.lib.exceptions import CompoundError

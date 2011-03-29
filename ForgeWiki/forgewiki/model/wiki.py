@@ -1,5 +1,4 @@
-from pylons import g #g is a namespace for globally accessable app helpers
-from pylons import c as context
+from tg import c, g
 
 from ming import schema
 from ming.orm.mapped_class import MappedClass
@@ -23,7 +22,7 @@ class Globals(MappedClass):
 
     type_s = 'WikiGlobals'
     _id = FieldProperty(schema.ObjectId)
-    app_config_id = ForeignIdProperty('AppConfig', if_missing=lambda:context.app.config._id)
+    app_config_id = ForeignIdProperty('AppConfig', if_missing=lambda:c.app.config._id)
     root = FieldProperty(str)
 
 
@@ -91,14 +90,14 @@ class Page(VersionedArtifact):
             description = '<pre>' + diff + '</pre>'
             if v1.title != v2.title:
                 subject = '%s renamed page %s to %s' % (
-                    context.user.username, v2.title, v1.title)
+                    c.user.username, v2.title, v1.title)
             else:
                 subject = '%s modified page %s' % (
-                    context.user.username, self.title)
+                    c.user.username, self.title)
         else:
             description = self.text
             subject = '%s created page %s' % (
-                context.user.username, self.title)
+                c.user.username, self.title)
         Feed.post(self, description)
         Notification.post(
             artifact=self, topic='metadata', text=description, subject=subject)
@@ -140,12 +139,12 @@ class Page(VersionedArtifact):
         if version is None:
             #Check for existing page object    
             obj = cls.query.get(
-                app_config_id=context.app.config._id,
+                app_config_id=c.app.config._id,
                 title=title)
             if obj is None:
                 obj = cls(
                     title=title,
-                    app_config_id=context.app.config._id,
+                    app_config_id=c.app.config._id,
                     )
                 Thread(discussion_id=obj.app_config.discussion_id,
                            ref_id=obj.index_id())

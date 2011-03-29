@@ -3,8 +3,8 @@ import json
 import logging
 from collections import defaultdict
 from urllib import unquote
-from tg.decorators import before_validate
 from tg import request, redirect
+from tg.decorators import before_validate
 
 from webob import exc
 
@@ -34,7 +34,7 @@ class require_post(object):
         self.redir = redir
 
     def __call__(self, func):
-        def check_method(remainder, params):
+        def check_method(params):
             if request.method != 'POST':
                 if self.redir is not None:
                     redirect(self.redir)

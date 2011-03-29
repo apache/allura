@@ -2,7 +2,7 @@ import logging
 from datetime import datetime, timedelta
 
 from tg import config
-from pylons import c, g, request
+from tg import c, g, request
 import pkg_resources
 from webob import exc
 from bson import ObjectId

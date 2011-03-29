@@ -1,7 +1,7 @@
 import shutil
 import logging
 
-from pylons import c
+from tg import c
 
 from allura.lib.decorators import task
 from allura.lib.repository import RepositoryApp

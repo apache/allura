@@ -9,7 +9,7 @@ from email import header
 import tg
 from paste.deploy.converters import asbool, asint
 from formencode import validators as fev
-from pylons import c
+from tg import c
 
 from allura.lib.utils import ConfigProxy
 from allura.lib import exceptions as exc

@@ -4,13 +4,12 @@ import logging
 from multiprocessing import Process
 from pkg_resources import iter_entry_points
 
-import pylons
+import tg
 from paste.script import command
 from paste.deploy import appconfig
 from paste.registry import Registry
 
 import ming
-from allura.config.environment import load_environment
 
 class EmptyClass(object): pass
 
@@ -31,7 +30,6 @@ class Command(command.Command):
 
     @ming.utils.LazyProperty
     def config(self):
-        import tg
         return tg.config
 
     def basic_setup(self):
@@ -48,17 +46,16 @@ class Command(command.Command):
                 print >> sys.stderr, (
                     'Could not configure logging with config file %s' % self.args[0])
             log = logging.getLogger('allura.command')
-            log.info('Initialize command with config %r', self.args[0])
-            load_environment(conf.global_conf, conf.local_conf)
+            log.info('Initialize reactor with config %r', self.args[0])
             self.setup_globals()
             from allura import model
             M=model
             ming.configure(**conf)
-            pylons.c.user = M.User.anonymous()
+            tg.c.user = M.User.anonymous()
         else:
             # Probably being called from another script (websetup, perhaps?)
             log = logging.getLogger('allura.command')
-            conf = pylons.config
+            conf = tg.config
         self.tools = []
         for ep in iter_entry_points('allura'):
             try:
@@ -73,10 +70,11 @@ class Command(command.Command):
     def setup_globals(self):
         import allura.lib.app_globals
         self.registry.prepare()
-        self.registry.register(pylons.c, EmptyClass())
-        self.registry.register(pylons.g, self.globals)
+        self.registry.register(tg.config, self.config)
+        self.registry.register(tg.g, self.globals)
+        self.registry.register(tg.c, EmptyClass())
         self.registry.register(allura.credentials, allura.lib.security.Credentials())
-        pylons.c.queued_messages = None
+        tg.c.queued_messages = None
 
     def teardown_globals(self):
         self.registry.cleanup()

@@ -11,7 +11,7 @@ class ErrorController(object):
     @expose('jinja:allura:templates/error.html')
     def document(self, *args, **kwargs):
         """Render the error document"""
-        resp = request.environ.get('pylons.original_response')
+        resp = request.environ.get('tg.original_response')
         code = -1
         if resp:
             code = resp.status_int

@@ -2,9 +2,8 @@ import logging
 from urllib import basejoin
 from cStringIO import StringIO
 
-from tg import expose, redirect, flash
+from tg import c, g, expose, redirect, request
 from tg.decorators import without_trailing_slash
-from pylons import c, g, request
 from bson import ObjectId
 
 from ming.orm import session
@@ -315,7 +314,7 @@ class DefaultAdminController(BaseController):
             is_admin = self.app.config.tool_name == 'admin'
             if kw.pop('delete', False):
                 if is_admin:
-                    flash('Cannot delete the admin tool, sorry....')
+                    request.flash('Cannot delete the admin tool, sorry....')
                     redirect('.')
                 c.project.uninstall_app(self.app.config.options.mount_point)
                 redirect('..')

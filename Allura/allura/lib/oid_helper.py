@@ -1,7 +1,7 @@
 import logging
 
-from pylons import g, request
-from tg import flash, redirect, session, config
+from tg import g, request
+from tg import redirect, session, config
 from openid.consumer import consumer
 from allura import model as M
 

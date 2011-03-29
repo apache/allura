@@ -141,12 +141,18 @@ def set_scheme_middleware(app):
 
 def allura_globals_middleware(app):
     def AlluraGlobalsMiddleware(environ, start_response):
-        import allura.lib.security
-        import allura.lib.app_globals
+        from allura import credentials
+        from allura.lib import security, app_globals
+        from tg import tg_globals
         registry = environ['paste.registry']
-        registry.register(allura.credentials, allura.lib.security.Credentials())
+        registry.register(credentials, security.Credentials())
+        registry.register(tg_globals.environ, environ)
+        registry.register(tg_globals.c, EmptyClass())
+        registry.register(tg_globals.g, app_globals.Globals())
         return app(environ, start_response)
     return AlluraGlobalsMiddleware
+
+class EmptyClass(object): pass
 
 def get_tg_vars(context):
     import pylons, tg

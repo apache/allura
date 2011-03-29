@@ -5,13 +5,14 @@ from datetime import datetime, timedelta
 from collections import defaultdict
 
 import pkg_resources
-from tg import expose, redirect, flash, config, validate, request, response
+from tg import expose, redirect, config, validate, request, response
 from tg.decorators import with_trailing_slash, without_trailing_slash
 from webob import exc
 from formencode import validators as fev
 from ming.orm import session
 import pymongo
 from pylons import c, g
+from tg import c, g
 
 from allura.lib import helpers as h
 from allura.lib.security import require_access

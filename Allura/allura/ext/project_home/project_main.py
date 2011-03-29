@@ -3,8 +3,8 @@ import logging
 from pprint import pformat
 
 import pkg_resources
-from pylons import c, request
-from tg import expose, redirect, flash
+from tg import c, request
+from tg import expose, redirect
 from tg.decorators import with_trailing_slash
 from webob import exc
 

@@ -1,3 +1,5 @@
+from tg import expose, environ
+
 class TaskController(object):
     '''WSGI app providing web-like RPC
 
@@ -6,8 +8,11 @@ class TaskController(object):
     when executing celery tasks.
     '''
 
-    def __call__(self, environ, start_response):
+    @expose()
+    def index(self):
         task = environ['task']
         result = task(restore_context=False)
-        start_response('200 OK', [])
         return [ result ]
+
+    def _lookup(self, name):
+        return self

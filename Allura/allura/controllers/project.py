@@ -5,9 +5,9 @@ from itertools import chain, islice
 
 import pkg_resources
 import Image
-from tg import expose, flash, redirect, validate, request, response
+from tg import expose, redirect, validate, request, response
 from tg.decorators import with_trailing_slash, without_trailing_slash
-from pylons import c, g
+from tg import c, g
 from paste.httpheaders import CACHE_CONTROL
 from webob import exc
 from bson import ObjectId

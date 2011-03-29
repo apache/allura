@@ -6,9 +6,8 @@ from contextlib import contextmanager
 
 from tg import config
 from tg.decorators import Decoration
-from tg.render import render
 import chardet
-from pylons import c, g, request
+from tg import c, g, request
 from pymongo.errors import OperationFailure
 
 from ming import schema

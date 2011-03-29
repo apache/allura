@@ -1,0 +1,1 @@
+class RestController(object): pass

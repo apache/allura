@@ -4,9 +4,9 @@ import logging, string, os
 from collections import defaultdict
 
 import pkg_resources
-from tg import expose, flash, redirect, session, config, response, request
+from tg import expose, redirect, session, config, response, request
 from tg.decorators import with_trailing_slash, without_trailing_slash
-from pylons import c, g, cache
+from tg import c, g
 
 import ew
 import ming

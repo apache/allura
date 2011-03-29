@@ -23,7 +23,7 @@ import pygments.formatters
 import pygments.util
 import webob.exc
 from tg import config, session
-from pylons import c, request
+from tg import c, request
 from paste.deploy.converters import asbool, asint
 from pypeline.markup import markup as pypeline_markup
 

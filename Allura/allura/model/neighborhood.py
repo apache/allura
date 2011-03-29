@@ -4,7 +4,7 @@ from ming import schema as S
 from ming.orm import MappedClass
 from ming.orm import FieldProperty, RelationProperty, ForeignIdProperty
 
-from pylons import request, c
+from tg import request, c
 
 from allura.lib import plugin
 

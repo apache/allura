@@ -4,8 +4,8 @@ import logging
 
 import oauth2 as oauth
 from webob import exc
-from tg import expose, flash, redirect
-from pylons import c, request
+from tg import expose, redirect
+from tg import c, request
 
 from ming.orm import session
 from ming.utils import LazyProperty

@@ -3,7 +3,7 @@ import time
 import Queue
 from datetime import datetime, timedelta
 
-import pylons
+import tg
 from paste.deploy import loadapp
 from paste.deploy.converters import asint
 from webob import Request
@@ -41,23 +41,24 @@ class TaskdCommand(base.Command):
         name = '%s pid %s' % (os.uname()[1], os.getpid())
         if self.options.dry_run: return
         wsgi_app = loadapp('config:%s#task' % self.args[0],relative_to=os.getcwd())
-        poll_interval = asint(pylons.config.get('monq.poll_interval', 10))
         def start_response(status, headers, exc_info=None):
             pass
         def waitfunc_amqp():
+            poll_interval = asint(self.config.get('monq.poll_interval', 10))
             try:
-                return pylons.g.amq_conn.queue.get(timeout=poll_interval)
+                return tg.g.amq_conn.queue.get(timeout=poll_interval)
             except Queue.Empty:
                 return None
         def waitfunc_noq():
+            poll_interval = asint(self.config.get('monq.poll_interval', 10))
             time.sleep(poll_interval)
-        if pylons.g.amq_conn:
+        if self.globals.amq_conn:
             waitfunc = waitfunc_amqp
         else:
             waitfunc = waitfunc_noq
         while True:
-            if pylons.g.amq_conn:
-                pylons.g.amq_conn.reset()
+            if self.globals.amq_conn:
+                tg.g.amq_conn.reset()
             try:
                 while True:
                     task = M.MonQTask.get(process=name, waitfunc=waitfunc)

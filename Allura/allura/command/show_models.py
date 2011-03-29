@@ -1,7 +1,7 @@
 import sys
 from collections import defaultdict
 
-from pylons import c, g
+from tg import c, g
 
 from ming.orm import MappedClass, mapper
 

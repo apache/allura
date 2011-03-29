@@ -5,7 +5,7 @@ import logging
 from datetime import datetime
 
 import pymongo
-from pylons import c, g
+from tg import c, g
 
 import ming
 from ming.utils import LazyProperty

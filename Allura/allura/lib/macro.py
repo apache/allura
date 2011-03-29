@@ -3,7 +3,7 @@ import shlex
 import logging
 
 import pymongo
-from pylons import c, g, request
+from tg import c, g, request
 
 from . import helpers as h
 

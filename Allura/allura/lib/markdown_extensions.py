@@ -9,7 +9,7 @@ from ConfigParser import RawConfigParser
 from pprint import pformat
 
 from tg import config
-from pylons import c, g, request
+from tg import c, g, request
 from BeautifulSoup import BeautifulSoup
 
 import markdown

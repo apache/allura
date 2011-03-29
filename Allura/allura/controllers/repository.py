@@ -3,10 +3,10 @@ import json
 import logging
 from urllib import quote, unquote
 
-from pylons import c, g, request, response
+from tg import c, g, request, response
 from webob import exc
 import tg
-from tg import redirect, expose, flash, url, validate
+from tg import redirect, expose, url, validate
 from tg.decorators import with_trailing_slash, without_trailing_slash
 from formencode import validators
 

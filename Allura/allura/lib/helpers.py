@@ -18,7 +18,7 @@ from dateutil.parser import parse
 from bson import ObjectId
 from pymongo.errors import InvalidId
 from contextlib import contextmanager
-from pylons import c, response, request
+from tg import c, response, request
 from tg.decorators import before_validate
 from formencode.variabledecode import variable_decode
 import formencode

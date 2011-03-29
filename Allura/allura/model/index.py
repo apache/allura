@@ -7,7 +7,7 @@ from collections import defaultdict
 
 import bson
 import pymongo
-from pylons import c, g
+from tg import c, g
 
 import ming
 from ming import schema as S

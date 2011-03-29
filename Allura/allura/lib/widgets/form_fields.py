@@ -1,4 +1,4 @@
-from pylons import c
+from tg import c
 from tg import request
 from urllib import urlencode
 import json

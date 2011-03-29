@@ -1,7 +1,7 @@
 from __future__ import with_statement
 from time import time
 from contextlib import contextmanager
-from pylons import request
+from tg import request
 
 class StatsRecord(object):
 

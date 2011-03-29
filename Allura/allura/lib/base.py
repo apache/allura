@@ -1,11 +1,11 @@
 # -*- coding: utf-8 -*-
 """The base Controller API."""
 from webob import exc
-from tg import TGController, config
+from tg import config
 
 __all__ = ['WsgiDispatchController']
 
-class WsgiDispatchController(TGController):
+class WsgiDispatchController(object):
     """
     Base class for the controllers in the application.
 
@@ -15,7 +15,7 @@ class WsgiDispatchController(TGController):
     """
 
     def _setup_request(self):
-        '''Responsible for setting all the values we need to be set on pylons.c'''
+        '''Responsible for setting all the values we need to be set on tg.c'''
         raise NotImplementedError, '_setup_request'
 
     def _cleanup_request(self):

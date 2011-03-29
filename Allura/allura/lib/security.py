@@ -4,7 +4,7 @@ This module provides the security predicates used in decorating various models.
 import logging
 from collections import defaultdict
 
-from pylons import c, request
+from tg import c, request
 from webob import exc
 from itertools import chain
 from ming.utils import LazyProperty

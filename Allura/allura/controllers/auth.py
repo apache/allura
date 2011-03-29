@@ -2,9 +2,9 @@ import logging, string, os
 from urllib import urlencode
 
 import bson
-from tg import expose, session, flash, redirect, validate, config
-from tg.decorators import with_trailing_slash
-from pylons import c, g, request, response
+from tg import expose, session, redirect, validate, config
+from tg.decorators import with_trailing_slash, without_trailing_slash
+from tg import c, g, request, response
 from webob import exc as wexc
 
 import allura.tasks.repo_tasks
@@ -52,7 +52,7 @@ class AuthController(BaseController):
     @expose('jinja:allura:templates/login.html')
     @with_trailing_slash
     def index(self, *args, **kwargs):
-        orig_request = request.environ.get('pylons.original_request', None)
+        orig_request = request.environ.get('tg.original_request', None)
         if 'return_to' in kwargs:
             return_to = kwargs.pop('return_to')
         elif orig_request:

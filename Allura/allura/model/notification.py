@@ -21,7 +21,7 @@ from datetime import datetime, timedelta
 from collections import defaultdict
 from webhelpers import feedgenerator as FG
 
-from pylons import c, g
+from tg import c, g
 from tg import config
 import pymongo
 import jinja2

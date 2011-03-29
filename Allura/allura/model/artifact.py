@@ -5,7 +5,7 @@ from datetime import datetime
 
 import bson
 import pymongo
-from pylons import c, request
+from tg import c, request
 from ming import schema as S
 from ming.orm import state, session
 from ming.orm.mapped_class import MappedClass

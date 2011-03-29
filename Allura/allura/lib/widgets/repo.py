@@ -1,4 +1,4 @@
-import pylons
+import tg
 
 import ew as ew_core
 import ew.jinja2_ew as ew

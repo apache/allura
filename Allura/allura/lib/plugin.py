@@ -14,12 +14,12 @@ from datetime import datetime
 import ldap
 from ldap import modlist
 import pkg_resources
-from tg import config, flash
-from pylons import g, c
+from tg import config
+from tg import g, c, session
 from webob import exc
 
 from ming.utils import LazyProperty
-from ming.orm import state
+from ming.orm import state, session
 from ming.orm import ThreadLocalORMSession
 
 from allura.lib import helpers as h
@@ -58,13 +58,9 @@ class AuthenticationProvider(object):
             result = cls._loaded_ep = ep.load()
         return result(request)
 
-    @LazyProperty
-    def session(self):
-        return self.request.environ['beaker.session']
-
     def authenticate_request(self):
         from allura import model as M
-        user = M.User.query.get(_id=self.session.get('userid', None))
+        user = M.User.query.get(_id=session.get('userid', None))
         if user is None:
             return M.User.anonymous()
         return user
@@ -90,8 +86,7 @@ class AuthenticationProvider(object):
     def login(self, user=None):
         try:
             if user is None: user = self._login()
-            self.session['userid'] = user._id
-            self.session.save()
+            session['userid'] = user._id
             return user
         except exc.HTTPUnauthorized:
             self.logout()

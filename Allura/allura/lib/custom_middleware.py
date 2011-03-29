@@ -6,13 +6,11 @@ from threading import local
 from random import random
 
 import tg
-import pylons
 import pkg_resources
 import markdown
+from tg.util import call_wsgi_application
 from paste import fileapp
 from paste.deploy.converters import asbool
-from pylons.util import call_wsgi_application
-from tg.controllers import DecoratedController
 from webob import exc, Request
 
 from allura.lib.stats import timing, StatsRecord

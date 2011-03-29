@@ -6,8 +6,8 @@ import Image
 from bson import ObjectId
 
 import pkg_resources
-from pylons import c, g, request
-from tg import expose, redirect, flash, validate
+from tg import c, g, request
+from tg import expose, redirect, validate
 from tg.decorators import with_trailing_slash, without_trailing_slash
 from webob import exc
 from bson import ObjectId
@@ -353,15 +353,15 @@ class ProjectAdminController(BaseController):
         if not nid:
             n = M.Neighborhood.query.get(name='Projects')
             c.project.neighborhood_id = n._id
-            flash('Joined %s' % n.name)
+            request.flash('Joined %s' % n.name)
             redirect(c.project.url() + 'admin/')
         nid = ObjectId(str(nid))
         if nid not in c.project.neighborhood_invitations:
-            flash('No invitation to that neighborhood', 'error')
+            request.flash('No invitation to that neighborhood', 'error')
             redirect('.')
         c.project.neighborhood_id = nid
         n = M.Neighborhood.query.get(_id=nid)
-        flash('Joined %s' % n.name)
+        request.flash('Joined %s' % n.name)
         redirect('invitations')
 
     @h.vardec
@@ -426,7 +426,7 @@ class ProjectAdminController(BaseController):
                         meta=dict(tool_type=ep_name, mount_point=mount_point, mount_label=new['mount_label']))
                     c.project.install_app(ep_name, mount_point, mount_label=new['mount_label'], ordinal=new['ordinal'])
         except forge_exc.ToolError, exc:
-            flash('%s: %s' % (exc.__class__.__name__, exc.args[0]),
+            request.flash('%s: %s' % (exc.__class__.__name__, exc.args[0]),
                   'error')
         g.post_event('project_updated')
         redirect('tools')
@@ -506,7 +506,7 @@ class GroupsController(BaseController):
             for username in new_users:
                 user = M.User.by_username(username)
                 if not user:
-                    flash('User %s not found' % pr['new'], 'error')
+                    request.flash('User %s not found' % pr['new'], 'error')
                     redirect('.')
                 user.project_role().roles.append(group._id)
             # Handle users removed from groups
@@ -533,7 +533,7 @@ class GroupsController(BaseController):
     @h.vardec
     def create(self, name=None, **kw):
         if M.ProjectRole.by_name(name):
-            flash('%s already exists' % name, 'error')
+            request.flash('%s already exists' % name, 'error')
         else:
             M.ProjectRole(project_id=c.project._id, name=name)
         g.post_event('project_updated')
@@ -570,14 +570,14 @@ class GroupController(BaseController):
     def update(self, _id=None, delete=None, name=None, **kw):
         pr = M.ProjectRole.by_name(name)
         if pr and pr._id != _id._id:
-            flash('%s already exists' % name, 'error')
+            request.flash('%s already exists' % name, 'error')
             redirect('..')
         if delete:
             _id.delete()
-            flash('%s deleted' % name)
+            request.flash('%s deleted' % name)
             redirect('..')
         _id.name = name
-        flash('%s updated' % name)
+        request.flash('%s updated' % name)
         redirect('..')
 
 class AdminAppAdminController(DefaultAdminController):

@@ -2,7 +2,7 @@ import logging
 from datetime import datetime
 
 import pymongo
-from pylons import c, g
+from tg import c, g
 
 from ming import schema
 from ming.orm.base import session

@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """Fallback controller."""
 
-from pylons.controllers.util import abort
+from tg.controllers.util import abort
 
 from allura.lib.base import WsgiDispatchController
 
