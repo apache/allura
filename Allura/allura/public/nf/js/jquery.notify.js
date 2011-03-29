@@ -42,7 +42,6 @@
             if ($msg.length) {
                 $msg.prepend(o.closeIcon);
                 $msg.click(function(e) {
-                    e.preventDefault();
                     closer(this, o);
                 });
                 $msg.removeClass(o.newClass).addClass(o.activeClass);
