@@ -90,8 +90,8 @@ class RepositoryImplementation(object):
         '''Return symbolic branch and tag names for a commit.
         Default generic implementation is provided, subclasses
         may override if they have more efficient means.'''
-        branches = [h.name for h in self._repo.branches if h.object_id == commit.object_id]
-        tags = [h.name for h in self._repo.repo_tags if h.object_id == commit.object_id]
+        branches = [b.name for b in self._repo.branches if b.object_id == commit.object_id]
+        tags = [t.name for t in self._repo.repo_tags if t.object_id == commit.object_id]
         return branches, tags
 
     def url_for_commit(self, commit):

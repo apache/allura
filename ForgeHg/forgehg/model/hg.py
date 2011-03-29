@@ -1,16 +1,13 @@
 import os
 import re
 import shutil
-import string
 import logging
 from binascii import b2a_hex
-from hashlib import sha1
 from datetime import datetime
 from cStringIO import StringIO
 from ConfigParser import ConfigParser
 
 import tg
-from pylons import c
 os.environ['HGRCPATH'] = '' # disable loading .hgrc
 from mercurial import ui, hg
 

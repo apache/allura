@@ -8,9 +8,7 @@ from cStringIO import StringIO
 from datetime import datetime
 
 import tg
-import pymongo
 import pysvn
-from pylons import c
 
 from ming.base import Object
 from ming.orm import MappedClass, FieldProperty, session

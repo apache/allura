@@ -1,13 +1,13 @@
 import os
 import unittest
 from itertools import count
-from datetime import timedelta, datetime
+from datetime import datetime
 
 import mock
-from pylons import g, c
+from pylons import c
 import tg
 import ming
-from ming.orm import session, state, ThreadLocalORMSession
+from ming.orm import session, ThreadLocalORMSession
 
 from alluratest.controller import setup_basic_test, setup_global_objects
 from allura import model as M

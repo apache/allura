@@ -6,7 +6,6 @@ from datetime import datetime
 
 import tg
 import git
-from pylons import c
 
 from ming.base import Object
 from ming.orm import MappedClass, session
@@ -103,7 +102,7 @@ class GitImplementation(M.RepositoryImplementation):
             try:
                 impl = self._git.rev_parse(str(rev) + '^0')
                 result = M.Commit.query.get(object_id=impl.hexsha)
-            except Exception, e:
+            except Exception:
                 url = ''
                 try:
                     from tg import request
