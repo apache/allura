@@ -221,11 +221,7 @@ class SVNImplementation(M.RepositoryImplementation):
                 discover_changed_paths=True)[0]
         except pysvn.ClientError:
             log.info('ClientError processing %r %r, treating as empty', ci, self._repo, exc_info=True)
-            log_entry = {
-                date: '',
-                message: '',
-                changed_paths: []
-            }
+            log_entry = Object(date='', message='', changed_paths=[])
         # Save commit metadata
         ci.committed = Object(
             name=log_entry.get('author', '--none--'),
