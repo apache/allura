@@ -161,7 +161,7 @@ class TestProjectAdmin(TestController):
     def test_tool_list(self):
         r = self.app.get('/admin/tools')
         new_ep_opts = r.html.findAll('a',{'class':"install_trig"})
-        strings = [ ' '.join(opt.find('span').string.strip().split()) for opt in new_ep_opts ]
+        tool_strings = [ ' '.join(opt.find('span').string.strip().split()) for opt in new_ep_opts ]
         expected_tools = [
             'External Link',
             'Git',
@@ -170,19 +170,12 @@ class TestProjectAdmin(TestController):
             'Wiki',
             'Tickets',
             'Discussion',
-            'Downloads' ]
-        if sfx:
-            expected_tools += [
-            'Mailing Lists',
-            'VHOST (alpha)',
-            'MySQL Databases (alpha)',
-            'Project Web Outgoing Email (alpha)',
-            'Classic Hosted Apps (alpha)' ]
-        expected_tools += [
             'Chat (alpha)',
             'Blog (alpha)',
             'Subproject']
-        assert strings == expected_tools, strings
+        # check using sets, because their may be more tools installed by default
+        # that we don't know about
+        assert len(set(expected_tools) - set(tool_strings)) == 0, tool_strings
 
     def test_project_icon(self):
         file_name = 'neo-icon-set-454545-256x350.png'
