@@ -29,32 +29,11 @@ class Repository(M.Repository):
         super(Repository, self).__init__(**kw)
         self._impl = GitImplementation(self)
 
-    def readonly_path(self, username=''):
-        tpl = string.Template(tg.config.get('scm.host.ro.%s' % self.tool))
-        return tpl.substitute(dict(username=username, path=self.url_path+self.name[:-4]))
+    def suggested_clone_dest_path(self):
+        return super(Repository, self).suggested_clone_dest_path()[:-4]
 
-    def readwrite_path(self, username):
-        tpl = string.Template(tg.config.get('scm.host.rw.%s' % self.tool))
-        return tpl.substitute(dict(username=username, path=self.url_path+self.name[:-4]))
-
-    def readwrite_https_path(self, username):
-        tpl = string.Template(tg.config.get('scm.host.https.%s' % self.tool))
-        return tpl.substitute(dict(username=username, path=self.url_path+self.name[:-4]))
-
-    def readonly_clone_command(self):
-        ro_path = self.readonly_path(c.user.username)
-        if ro_path:
-            return 'git clone %s %s' % (ro_path, c.project.shortname.replace('/','.'))
-        else:
-            return None
-
-    def readwrite_clone_command(self):
-        rw_path = self.readwrite_path(c.user.username)
-        return 'git clone %s %s' % (rw_path, c.project.shortname.replace('/','.'))
-
-    def readwrite_https_command(self):
-        rw_https_path = self.readwrite_https_path(c.user.username)
-        return 'git clone %s %s' % (rw_https_path, c.project.shortname.replace('/','.'))
+    def clone_url(self, category, username=''):
+        return super(Repository, self).clone_url(category, username)[:-4]
 
     def merge_command(self, merge_request):
         '''Return the command to merge a given commit to a given target branch'''

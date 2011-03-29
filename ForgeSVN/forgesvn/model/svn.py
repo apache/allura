@@ -34,21 +34,6 @@ class Repository(M.Repository):
         super(Repository, self).__init__(**kw)
         self._impl = SVNImplementation(self)
 
-    def readonly_clone_command(self):
-        ro_path = self.readonly_path(c.user.username)
-        if ro_path:
-            return 'svn checkout %s %s' % (ro_path, c.project.shortname.replace('/','.'))
-        else:
-            return None
-
-    def readwrite_clone_command(self):
-        rw_path = self.readwrite_path(c.user.username)
-        return 'svn checkout %s %s' % (rw_path, c.project.shortname.replace('/','.'))
-
-    def readwrite_https_command(self):
-        rw_https_path = self.readwrite_https_path(c.user.username)
-        return 'svn checkout %s %s' % (rw_https_path, c.project.shortname.replace('/','.'))
-
     def _log(self, rev, skip, max_count):
         ci = self.commit(rev)
         if ci is None: return []

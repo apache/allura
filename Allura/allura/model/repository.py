@@ -225,17 +225,27 @@ class Repository(Artifact):
     def full_fs_path(self):
         return os.path.join(self.fs_path, self.name)
 
-    def readonly_path(self, username=''):
-        tpl = string.Template(tg.config.get('scm.host.ro.%s' % self.tool))
+    def suggested_clone_dest_path(self):
+        return '%s-%s' % (pylons.c.project.shortname.replace('/', '-'), self.name)
+
+    def clone_url(self, category, username=''):
+        '''Return a URL string suitable for copy/paste that describes _this_ repo,
+           e.g., for use in a clone/checkout command
+        '''
+        tpl = string.Template(tg.config.get('scm.host.%s.%s' % (category, self.tool)))
         return tpl.substitute(dict(username=username, path=self.url_path+self.name))
 
-    def readwrite_path(self, username):
-        tpl = string.Template(tg.config.get('scm.host.rw.%s' % self.tool))
-        return tpl.substitute(dict(username=username, path=self.url_path+self.name))
-
-    def readwrite_https_path(self, username):
-        tpl = string.Template(tg.config.get('scm.host.https.%s' % self.tool))
-        return tpl.substitute(dict(username=username, path=self.url_path+self.name))
+    def clone_command(self, category, username=''):
+        '''Return a string suitable for copy/paste that would clone this repo locally
+           category is one of 'ro' (read-only), 'rw' (read/write), or 'https' (read/write via https)
+        '''
+        if not username and pylons.c.user not in (None, User.anonymous()):
+            username = pylons.c.user.username
+        tpl = string.Template(tg.config.get('scm.clone.%s.%s' % (category, self.tool)) or
+                              tg.config.get('scm.clone.%s' % self.tool))
+        return tpl.substitute(dict(username=username,
+                                   source_url=self.clone_url(category, username),
+                                   dest_path=self.suggested_clone_dest_path()))
 
     def merge_requests_by_statuses(self, *statuses):
         return MergeRequest.query.find(dict(
@@ -431,8 +441,9 @@ class MergeRequest(VersionedArtifact):
     @LazyProperty
     def downstream_repo_url(self):
         with self.push_downstream_context():
-            return pylons.c.app.repo.readonly_path(
-                pylons.c.user.username)
+            return pylons.c.app.repo.clone_url(
+                category='ro',
+                username=pylons.c.user.username)
 
     def push_downstream_context(self):
         return h.push_context(self.downstream.project_id, self.downstream.mount_point)
