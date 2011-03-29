@@ -163,7 +163,9 @@ class NeighborhoodController(object):
         require(has_neighborhood_access('create', self.neighborhood), 'Create access required')
         project_description = h.really_unicode(project_description or '').encode('utf-8')
         project_name = h.really_unicode(project_name or '').encode('utf-8')
-        c.project = M.Project.query.find({'shortname':project_unixname,'neighborhood_id':self.neighborhood._id}).first()
+        project_unixname = h.really_unicode(project_unixname or '').encode('utf-8').lower()
+        neighborhood = M.Neighborhood.query.get(name=neighborhood)
+        c.project = neighborhood.register_project(project_unixname)
         if project_name:
             c.project.name = project_name
         if project_description:

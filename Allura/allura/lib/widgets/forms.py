@@ -2,6 +2,7 @@ import logging
 import  ming.orm.ormsession
 from allura.lib import helpers as h
 from allura.lib import exceptions as forge_exc
+from allura.lib import plugin
 from allura import model as M
 
 from formencode import validators as fev
@@ -101,8 +102,9 @@ class NeighborhoodAddProjectForm(ForgeForm):
             ew.InputField(name='project_unixname', label='Short Name', field_type='text',
                           validator=formencode.All(
                             fev.String(not_empty=True),
+                            fev.MaxLength(16),
                             fev.Regex(r'^[A-z][-A-z0-9]{2,}$', messages={'invalid':'Please use only letters, numbers, and dash characters.'}),
-                            NeighborhoodAddProjectValidator())),
+                            NeighborhoodProjectTakenValidator())),
             ew.HiddenField(name='project_description', label='Public Description'),
             ew.HiddenField(name='neighborhood', label='Neighborhood'),
             ew.Checkbox(name="Wiki", label="", attrs={'class':'unlabeled'}),
@@ -128,7 +130,7 @@ class NeighborhoodAddProjectForm(ForgeForm):
                 var $unixname_input = $('input[name="project_unixname"]');
                 var handle_name_taken = function(name_taken){
                     if(name_taken){
-                        $name_avail_message.html('This name is taken.');
+                        $name_avail_message.html('This project name is taken.');
                         $name_avail_message.removeClass('success');
                         $name_avail_message.addClass('error');
                     }
@@ -137,6 +139,8 @@ class NeighborhoodAddProjectForm(ForgeForm):
                         $name_avail_message.removeClass('error');
                         $name_avail_message.addClass('success');
                     }
+                    $('div.error').hide();
+                    $name_avail_message.show();
                 };
                 $scms.change(function(){
                     if ( $(this).attr('checked') ) {
@@ -160,6 +164,8 @@ class NeighborhoodAddProjectForm(ForgeForm):
                             $name_avail_message.html('Name must contain only letters, numbers, and dashes. It may only begin with a letter.');
                             $name_avail_message.removeClass('success');
                             $name_avail_message.addClass('error');
+                            $('div.error').hide();
+                            $name_avail_message.show();
                         }
                         else{
                             handle_name_taken(result.name_taken);
@@ -170,20 +176,12 @@ class NeighborhoodAddProjectForm(ForgeForm):
         ''')
 
 
-class NeighborhoodAddProjectValidator(fev.FancyValidator):
+class NeighborhoodProjectTakenValidator(fev.FancyValidator):
 
     def _to_python(self, value, state):
-        try:
-            value = h.really_unicode(value or '').encode('utf-8').lower()
-            neighborhood = M.Neighborhood.query.get(name=state.full_dict['neighborhood'])
-            neighborhood.register_project(value)
-            return value
-        except forge_exc.ProjectConflict:
-            ming.orm.ormsession.ThreadLocalORMSession.close_all()
-            raise formencode.Invalid('A project already exists with that name, please choose another.',
-                                     value, state)
-        except Exception, ex:
-            log.exception('Unexpected error creating project')
-            ming.orm.ormsession.ThreadLocalORMSession.close_all()
-            raise formencode.Invalid(str(ex), value, state)
+        value = h.really_unicode(value or '').encode('utf-8').lower()
+        if plugin.ProjectRegistrationProvider.get().name_taken(value):
+            raise formencode.Invalid('This project name is taken.',
+                value, state)
+        return value
 

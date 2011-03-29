@@ -5,7 +5,7 @@
         <div class="grid-8">{{widget.display_field_by_idx(0)|safe}}</div>
         <div class="grid-6">&nbsp;</div>
         <div class="grid-9" style="text-align: right">URL: http://{{c.environ['HTTP_HOST']}}{{neighborhood.url()}}</div>
-        <div class="grid-8">{{widget.display_field_by_idx(1)|safe}}<br><div id="name_availablity"></div></div>
+        <div class="grid-8">{{widget.display_field_by_idx(1)|safe}}<br><div id="name_availablity" style="display:none"></div></div>
         <div class="grid-4"><input type="button" value="Suggest" id="suggest_project_name"></div>
         {{widget.display_field_by_idx(3)|safe}}
     </div>
