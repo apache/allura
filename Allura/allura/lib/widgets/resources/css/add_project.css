@@ -1,4 +1,7 @@
 #nav_menu { display: none; }
+#suggest_project_name{
+    font-size: .8em;
+}
 div.content {
     font-family: Helvetica;
 }
@@ -15,6 +18,12 @@ div.welcome input {
 }
 div.welcome .error {
     width: 75%;
+}
+div.welcome div.grid-9{
+    padding-top: 5px;
+}
+div.welcome div.grid-3{
+    padding-top: 2px;
 }
 #start {
     display: inline-block;

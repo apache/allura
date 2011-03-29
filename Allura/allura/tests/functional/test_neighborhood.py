@@ -121,24 +121,46 @@ class TestNeighborhood(TestController):
     def test_register(self):
         r = self.app.get('/adobe/register', status=405)
         r = self.app.post('/adobe/register',
-                          params=dict(project_unixname='', project_name='', project_description='', neighborhood='Adobe'),
+                          params=dict(project_unixname='', project_name='Nothing', project_description='', neighborhood='Adobe'),
                           extra_environ=dict(username='root'))
         assert r.html.find('div',{'class':'error'}).string == 'Please enter a value'
         r = self.app.post('/adobe/register',
-                          params=dict(project_unixname='mymoz', project_name='', project_description='', neighborhood='Adobe'),
+                          params=dict(project_unixname='mymoz', project_name='My Moz', project_description='', neighborhood='Adobe'),
                           extra_environ=dict(username='*anonymous'),
                           status=302)
         r = self.app.post('/adobe/register',
-                          params=dict(project_unixname='foo.mymoz', project_name='', project_description='', neighborhood='Adobe'),
+                          params=dict(project_unixname='foo.mymoz', project_name='My Moz', project_description='', neighborhood='Adobe'),
                           extra_environ=dict(username='root'))
-        assert r.html.find('div',{'class':'error'}).string == 'Invalid project shortname'
+        assert r.html.find('div',{'class':'error'}).string == 'Please use only letters, numbers, and dash characters.'
         r = self.app.post('/p/register',
-                          params=dict(project_unixname='test', project_name='', project_description='', neighborhood='Adobe'),
+                          params=dict(project_unixname='test', project_name='Tester', project_description='', neighborhood='Adobe'),
                           extra_environ=dict(username='root'))
-        assert r.html.find('div',{'class':'error'}).string == 'A project already exists with that name, please choose another.'
+        assert r.html.find('div',{'class':'error'}).string == 'This project name is taken.'
         r = self.app.post('/adobe/register',
-                          params=dict(project_unixname='mymoz', project_name='', project_description='', neighborhood='Adobe'),
+                          params=dict(project_unixname='mymoz', project_name='My Moz', project_description='', neighborhood='Adobe'),
                           extra_environ=dict(username='root'))
+
+    def test_name_suggest(self):
+        r = self.app.get('/p/suggest_name?project_name=My+Moz')
+        assert r.json['suggested_name'] == 'mymoz'
+        assert r.json['name_taken'] == False
+        r = self.app.get('/p/suggest_name?project_name=Te%st!')
+        assert r.json['suggested_name'] == 'test'
+        assert r.json['name_taken'] == True
+
+    def test_name_check(self):
+        r = self.app.get('/p/check_name?project_name=My+Moz')
+        assert r.json['allowed'] == False
+        assert r.json['name_taken'] == False
+        r = self.app.get('/p/check_name?project_name=Te%st!')
+        assert r.json['allowed'] == False
+        assert r.json['name_taken'] == False
+        r = self.app.get('/p/check_name?project_name=mymoz')
+        assert r.json['allowed'] == True
+        assert r.json['name_taken'] == False
+        r = self.app.get('/p/check_name?project_name=test')
+        assert r.json['allowed'] == True
+        assert r.json['name_taken'] == True
 
     def test_neighborhood_project(self):
         r = self.app.get('/adobe/test/home/', status=302)

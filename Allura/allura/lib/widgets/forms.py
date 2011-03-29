@@ -98,7 +98,7 @@ class NeighborhoodAddProjectForm(ForgeForm):
     @property
     def fields(self):
         fields = [
-            ew.InputField(name='project_name', label='Project Name'),
+            ew.InputField(name='project_name', label='Project Name', field_type='text'),
             ew.InputField(name='project_unixname', label='Short Name', field_type='text',
                           validator=formencode.All(
                             fev.String(not_empty=True),
@@ -171,7 +171,7 @@ class NeighborhoodAddProjectForm(ForgeForm):
                             handle_name_taken(result.name_taken);
                         }
                     });
-                })
+                });
             });
         ''')
 
