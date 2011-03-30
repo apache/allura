@@ -1,0 +1,60 @@
+{
+  "class": "PROJECT", 
+  "trackers": {
+    "default": {
+      "artifacts": [
+        {
+          "assigned_to": "hinojosa4", 
+          "attachments": [
+            {
+              "by": "ma_boehm", 
+              "date": "2009-04-13T08:49:52Z", 
+              "description": "Shows the display error", 
+              "filename": "SF%20display%20error.JPG", 
+              "size": 184728, 
+              "url": "http://sourceforge.net/apps/trac/sourceforge/raw-attachment/ticket/204/SF%20display%20error.JPG"
+            }
+          ], 
+          "cc": "ma_boehm", 
+          "class": "ARTIFACT", 
+          "comments": [
+            {
+              "class": "COMMENT", 
+              "comment": "  * **attachment** set to _SF display error.JPG_\n\nShows the display error\n\n", 
+              "date": "2009-04-13T08:49:52Z", 
+              "submitter": "ma_boehm"
+            }, 
+            {
+              "class": "COMMENT", 
+              "comment": "  * **owner** set to _hinojosa_\n\n  * **status** changed from _new_ to _assigned_\n\nHi,\n\nI'm investigating this. I need to fire up my system with this browser.\n\nIf you need anything else, please post a response to this request.\n\nCheers!,\n\nDaniel Hinojosa - Sr. Manager, [SourceForge][1].net Support\n\nP.S., Be sure to monitor our Site Status page,\n[https://sourceforge.net/sitestatus][2].\n\n   [1]: http://sourceforge.net/apps/trac/sourceforge/wiki/SourceForge\n\n   [2]: https://sourceforge.net/sitestatus\n\n", 
+              "date": "2009-04-13T15:46:18Z", 
+              "submitter": "hinojosa"
+            }, 
+            {
+              "class": "COMMENT", 
+              "comment": "  * **keywords** _ENGR_ added; _IE_ _7,_ _Internet_ _Explorer_ removed\n\n  * **status** changed from _assigned_ to _accepted_\n\n  * **summary** changed from _Public Info page not displayed properly_ to\n_ENGR: Public Info page not displayed properly_\n\nHi again,\n\nI have reproduced this on Vista/ IE7. We are also seeing this on XP/IE7. I\nhave engaged the engineering team on this issue.\n\nI'll update this item when I have news.\n\n", 
+              "date": "2009-04-13T18:53:52Z", 
+              "submitter": "hinojosa"
+            }, 
+            {
+              "class": "COMMENT", 
+              "comment": "  * **status** changed from _accepted_ to _closed_\n\n  * **resolution** set to _fixed_\n\nHello,\n\nThis issue is should be resolved with the site redesign.\n\nRegards, Chris Tsai, SourceForge.net Support\n\n", 
+              "date": "2009-07-20T15:44:32Z", 
+              "submitter": "ctsai"
+            }
+          ], 
+          "date": "2009-04-13T08:49:13Z", 
+          "date_updated": "2009-07-20T15:44:32Z", 
+          "description": "This problem occurs with IE 7, Windows Vista:\r\nOn the project's public info page (for example:\r\nhttps://sourceforge.net/project/admin/public_info.php?group_id=258655), the text boxes next to \"Descriptive Name\" and \"Project Description\" are not aligned properly; see the screenshot attached. ", 
+          "id": 204, 
+          "keywords": "ENGR", 
+          "private": false, 
+          "resolution": "fixed", 
+          "status": "open", 
+          "submitter": "ma_boehm", 
+          "summary": "ENGR: Public Info page not displayed properly"
+        }
+      ]
+    }
+  }
+}
