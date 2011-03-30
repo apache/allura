@@ -1041,7 +1041,7 @@ class RootRestController(BaseController):
             return status
         except Exception, e:
             log.exception(e)
-            return dict(status=False, errors=[str(e)])
+            return dict(status=False, errors=[repr(e)])
 
     @expose('json:')
     def perform_import(self, doc=None, options=None, **post_data):
