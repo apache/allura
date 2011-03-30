@@ -55,7 +55,11 @@ class ReindexCommand(base.Command):
                 base.log.info('  %s', a_cls)
                 ref_ids = []
                 for a in a_cls.query.find():
-                    M.ArtifactReference.from_artifact(a)
+                    try:
+                        M.ArtifactReference.from_artifact(a)
+                    except:
+                        self.log.exception('Making ArtifactReference from %s', a)
+                        continue
                     ref_ids.append(a.index_id())
                 M.artifact_orm_session.clear()
                 allura.tasks.index_tasks.add_artifacts(ref_ids)
