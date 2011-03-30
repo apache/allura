@@ -62,7 +62,7 @@
         <a href="" class="reply_post btn"><b data-icon="{{g.icons['reply'].char}}" class="ico {{g.icons['reply'].css}}"></b>Reply</a>
         <div style="clear:both">
           <a href="{{tg.url(url.current(),dict(page=page,limit=limit))}}#{{value.slug}}" class="little_link shortlink"><span>Link</span></a><br/>
-          <a href="" class="edit_post little_link"><span>Edit</span></a><br/>
+          {% if c.user != c.user.anonymous() %}<a href="" class="edit_post little_link"><span>Edit</span></a><br/>{% endif %}
           {% if h.has_artifact_access('moderate', value)() %}
             {{widgets.moderate_post.display(value=value, action=value.url()+'moderate')}}
           {% endif %}
