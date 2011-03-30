@@ -131,7 +131,7 @@ class TestNeighborhood(TestController):
         r = self.app.post('/adobe/register',
                           params=dict(project_unixname='foo.mymoz', project_name='My Moz', project_description='', neighborhood='Adobe'),
                           extra_environ=dict(username='root'))
-        assert r.html.find('div',{'class':'error'}).string == 'Please use only letters, numbers, and dash characters.'
+        assert r.html.find('div',{'class':'error'}).string == 'Please use only letters, numbers, and dashes 3-15 characters long.'
         r = self.app.post('/p/register',
                           params=dict(project_unixname='test', project_name='Tester', project_description='', neighborhood='Adobe'),
                           extra_environ=dict(username='root'))
@@ -143,24 +143,20 @@ class TestNeighborhood(TestController):
     def test_name_suggest(self):
         r = self.app.get('/p/suggest_name?project_name=My+Moz')
         assert r.json['suggested_name'] == 'mymoz'
-        assert r.json['name_taken'] == False
+        assert r.json['message'] == False
         r = self.app.get('/p/suggest_name?project_name=Te%st!')
         assert r.json['suggested_name'] == 'test'
-        assert r.json['name_taken'] == True
+        assert r.json['message'] == 'This project name is taken.'
 
     def test_name_check(self):
         r = self.app.get('/p/check_name?project_name=My+Moz')
-        assert r.json['allowed'] == False
-        assert r.json['name_taken'] == False
+        assert r.json['message'] == 'Please use only letters, numbers, and dashes 3-15 characters long.'
         r = self.app.get('/p/check_name?project_name=Te%st!')
-        assert r.json['allowed'] == False
-        assert r.json['name_taken'] == False
+        assert r.json['message'] == 'Please use only letters, numbers, and dashes 3-15 characters long.'
         r = self.app.get('/p/check_name?project_name=mymoz')
-        assert r.json['allowed'] == True
-        assert r.json['name_taken'] == False
+        assert r.json['message'] == False
         r = self.app.get('/p/check_name?project_name=test')
-        assert r.json['allowed'] == True
-        assert r.json['name_taken'] == True
+        assert r.json['message'] == 'This project name is taken.'
 
     def test_neighborhood_project(self):
         r = self.app.get('/adobe/test/home/', status=302)

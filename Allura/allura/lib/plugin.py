@@ -217,8 +217,20 @@ class ProjectRegistrationProvider(object):
         from allura import model as M
         p = M.Project.query.get(shortname=project_name)
         if p:
-            return True
+            return 'This project name is taken.'
+        for check in self.extra_name_checks():
+            if re.match(str(check[1]),project_name) is not None:
+                return check[0]
         return False
+
+    def extra_name_checks(self):
+        '''This should be a list or iterator containing tuples.
+        The first tiem in the tuple should be an error message and the
+        second should be a regex. If the user attempts to register a
+        project with a name that matches the regex, the field will
+        be marked invalid with the message displayed to the user.
+        '''
+        return []
 
     def register_neighborhood_project(self, neighborhood, users):
         from allura import model as M

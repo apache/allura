@@ -1,4 +1,5 @@
 import logging
+import re
 import  ming.orm.ormsession
 from allura.lib import helpers as h
 from allura.lib import exceptions as forge_exc
@@ -102,8 +103,9 @@ class NeighborhoodAddProjectForm(ForgeForm):
             ew.InputField(name='project_unixname', label='Short Name', field_type='text',
                           validator=formencode.All(
                             fev.String(not_empty=True),
-                            fev.MaxLength(16),
-                            fev.Regex(r'^[A-z][-A-z0-9]{2,}$', messages={'invalid':'Please use only letters, numbers, and dash characters.'}),
+                            fev.MinLength(3),
+                            fev.MaxLength(15),
+                            fev.Regex(r'^[A-z][-A-z0-9]{2,}$', messages={'invalid':'Please use only letters, numbers, and dashes 3-15 characters long.'}),
                             NeighborhoodProjectTakenValidator())),
             ew.HiddenField(name='project_description', label='Public Description'),
             ew.HiddenField(name='neighborhood', label='Neighborhood'),
@@ -128,9 +130,9 @@ class NeighborhoodAddProjectForm(ForgeForm):
                 var $name_avail_message = $('#name_availablity');
                 var $name_input = $('input[name="project_name"]');
                 var $unixname_input = $('input[name="project_unixname"]');
-                var handle_name_taken = function(name_taken){
-                    if(name_taken){
-                        $name_avail_message.html('This project name is taken.');
+                var handle_name_taken = function(message){
+                    if(message){
+                        $name_avail_message.html(message);
                         $name_avail_message.removeClass('success');
                         $name_avail_message.addClass('error');
                     }
@@ -155,21 +157,12 @@ class NeighborhoodAddProjectForm(ForgeForm):
                 $suggest_btn.click(function(){
                     $.getJSON('suggest_name',{'project_name':$name_input.val()},function(result){
                         $unixname_input.val(result.suggested_name);
-                        handle_name_taken(result.name_taken);
+                        handle_name_taken(result.message);
                     });
                 });
                 $unixname_input.change(function(){
                     $.getJSON('check_name',{'project_name':$unixname_input.val()},function(result){
-                        if(!result.allowed){
-                            $name_avail_message.html('Name must contain only letters, numbers, and dashes. It may only begin with a letter.');
-                            $name_avail_message.removeClass('success');
-                            $name_avail_message.addClass('error');
-                            $('div.error').hide();
-                            $name_avail_message.show();
-                        }
-                        else{
-                            handle_name_taken(result.name_taken);
-                        }
+                        handle_name_taken(result.message);
                     });
                 });
             });
@@ -180,8 +173,8 @@ class NeighborhoodProjectTakenValidator(fev.FancyValidator):
 
     def _to_python(self, value, state):
         value = h.really_unicode(value or '').encode('utf-8').lower()
-        if plugin.ProjectRegistrationProvider.get().name_taken(value):
-            raise formencode.Invalid('This project name is taken.',
-                value, state)
+        message = plugin.ProjectRegistrationProvider.get().name_taken(value)
+        if message:
+            raise formencode.Invalid(message, value, state)
         return value
 
