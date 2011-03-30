@@ -10,7 +10,7 @@ from datetime import datetime
 from collections import defaultdict
 
 import tg
-import pylons
+from pylons import c,g
 import pymongo.errors
 
 from ming import schema as S
@@ -143,9 +143,9 @@ class Repository(Artifact):
                 repos_root = tg.config.get('scm.repos.root', '/')
                 kw['fs_path'] = os.path.join(repos_root,
                     kw['tool'],
-                    pylons.c.project.url()[1:])
+                    c.project.url()[1:])
             if 'url_path' not in kw:
-                kw['url_path'] = pylons.c.project.url()
+                kw['url_path'] = c.project.url()
         super(Repository, self).__init__(**kw)
 
     def __repr__(self): # pragma no cover
@@ -226,7 +226,7 @@ class Repository(Artifact):
         return os.path.join(self.fs_path, self.name)
 
     def suggested_clone_dest_path(self):
-        return '%s-%s' % (pylons.c.project.shortname.replace('/', '-'), self.name)
+        return '%s-%s' % (c.project.shortname.replace('/', '-'), self.name)
 
     def clone_url(self, category, username=''):
         '''Return a URL string suitable for copy/paste that describes _this_ repo,
@@ -239,8 +239,8 @@ class Repository(Artifact):
         '''Return a string suitable for copy/paste that would clone this repo locally
            category is one of 'ro' (read-only), 'rw' (read/write), or 'https' (read/write via https)
         '''
-        if not username and pylons.c.user not in (None, User.anonymous()):
-            username = pylons.c.user.username
+        if not username and c.user not in (None, User.anonymous()):
+            username = c.user.username
         tpl = string.Template(tg.config.get('scm.clone.%s.%s' % (category, self.tool)) or
                               tg.config.get('scm.clone.%s' % self.tool))
         return tpl.substitute(dict(username=username,
@@ -415,7 +415,7 @@ class MergeRequest(VersionedArtifact):
             mount_point=str,
             commit_id=str))
     target_branch=FieldProperty(str)
-    creator_id=FieldProperty(S.ObjectId, if_missing=lambda:pylons.c.user._id)
+    creator_id=FieldProperty(S.ObjectId, if_missing=lambda:c.user._id)
     created=FieldProperty(datetime, if_missing=datetime.utcnow)
     summary=FieldProperty(str)
     description=FieldProperty(str)
@@ -436,14 +436,14 @@ class MergeRequest(VersionedArtifact):
     @LazyProperty
     def downstream_url(self):
         with self.push_downstream_context():
-            return pylons.c.app.url
+            return c.app.url
 
     @LazyProperty
     def downstream_repo_url(self):
         with self.push_downstream_context():
-            return pylons.c.app.repo.clone_url(
+            return c.app.repo.clone_url(
                 category='ro',
-                username=pylons.c.user.username)
+                username=c.user.username)
 
     def push_downstream_context(self):
         return h.push_context(self.downstream.project_id, self.downstream.mount_point)
@@ -463,13 +463,13 @@ class MergeRequest(VersionedArtifact):
             result.append(ci)
             next += ci.parent_ids
         with self.push_downstream_context():
-            for ci in result: ci.set_context(pylons.c.app.repo)
+            for ci in result: ci.set_context(c.app.repo)
         return result
 
     @classmethod
     def upsert(cls, **kw):
         num = cls.query.find(dict(
-                app_config_id=pylons.c.app.config._id)).count()+1
+                app_config_id=c.app.config._id)).count()+1
         while True:
             try:
                 r = cls(request_number=num, **kw)
@@ -554,7 +554,7 @@ class RepoObject(MappedClass):
     def set_last_commit(self, ci, repo=None):
         '''Update the last_commit_for object based on the passed in commit &
         repo'''
-        if repo is None: repo = pylons.c.app.repo
+        if repo is None: repo = c.app.repo
         lc, isnew = LastCommitFor.upsert(repo_id=repo._id, object_id=self.object_id)
         if isnew:
             lc.last_commit.author = ci.authored.name
@@ -569,7 +569,7 @@ class RepoObject(MappedClass):
         return lc, isnew
 
     def get_last_commit(self, repo=None):
-        if repo is None: repo = pylons.c.app.repo
+        if repo is None: repo = c.app.repo
         return repo.get_last_commit(self)
 
     def __repr__(self):
@@ -870,9 +870,9 @@ class Tree(RepoObject):
         if text == '':
             text = '<p><em>Empty File</em></p>'
         else:
-            renderer = pylons.g.pypeline_markup.renderer(name)
+            renderer = g.pypeline_markup.renderer(name)
             if renderer[1]:
-                text = pylons.g.pypeline_markup.render(name,text)
+                text = g.pypeline_markup.render(name,text)
             else:
                 text = '<pre>%s</pre>' % text
         return (name, text)
