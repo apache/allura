@@ -5,8 +5,8 @@ from itertools import islice
 
 # Non-stdlib imports
 import pymongo
-from pylons import g, c, request
-from tg import expose, redirect, flash, url, validate
+from tg import g, c, request
+from tg import expose, redirect, url, validate, session
 from tg.decorators import with_trailing_slash
 from bson import ObjectId
 from ming import schema
@@ -264,14 +264,14 @@ class ForumAdminController(DefaultAdminController):
                 forum.deleted=False
             else:
                 if '.' in f['shortname'] or '/' in f['shortname'] or ' ' in f['shortname']:
-                    flash('Shortname cannot contain space . or /', 'error')
+                    session.flash('Shortname cannot contain space . or /', 'error')
                     redirect('.')
                 forum.name = f['name']
                 forum.shortname = f['shortname']
                 forum.description = f['description']
                 if 'icon' in f and f['icon'] is not None and f['icon'] != '':
                     self.save_forum_icon(forum, f['icon'])
-        flash('Forums updated')
+        session.flash('Forums updated')
         redirect(request.referrer)
 
     @h.vardec

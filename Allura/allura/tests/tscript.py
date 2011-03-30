@@ -1,11 +1,6 @@
-import sys
 import logging
 
-from tg import config
-from pylons import c
-
 from allura import model as M
-from allura.lib import helpers as h
 
 log = logging.getLogger(__name__)
 

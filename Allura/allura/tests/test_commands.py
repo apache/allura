@@ -1,7 +1,5 @@
-import mock
 from nose.tools import assert_raises
 from datadiff.tools import assert_equal
-import pylons
 
 from alluratest.controller import setup_basic_test, setup_global_objects
 from allura.command import script

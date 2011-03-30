@@ -1,7 +1,7 @@
 import re
 import unittest
 
-from pylons import c, g
+from tg import c, g
 import mock
 from ming.base import Object
 

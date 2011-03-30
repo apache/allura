@@ -1,7 +1,7 @@
 import unittest
 from datetime import timedelta
 
-from pylons import g, c
+from tg import g, c
 
 from ming.orm import ThreadLocalORMSession
 

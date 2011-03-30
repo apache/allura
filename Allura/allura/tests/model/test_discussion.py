@@ -6,7 +6,7 @@ from cStringIO import StringIO
 import time
 from datetime import datetime
 
-from pylons import c, g, request, response
+from tg import c, g, request, response
 from nose.tools import assert_raises, assert_equals, with_setup
 import mock
 

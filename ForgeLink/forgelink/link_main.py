@@ -2,9 +2,7 @@
 import logging
 
 # Non-stdlib imports
-import pkg_resources
-from tg import expose, validate, redirect, response, flash
-from pylons import g, c, request
+from tg import c, session, expose, redirect
 
 # Pyforge-specific imports
 from allura.app import Application, ConfigOption, SitemapEntry, DefaultAdminController
@@ -86,5 +84,5 @@ class LinkAdminController(DefaultAdminController):
 
     @expose()
     def index(self, **kw):
-        flash('External link URL updated.')
+        session.flash('External link URL updated.')
         redirect(c.project.url()+'admin/tools')

@@ -1,4 +1,4 @@
-from pylons import g, c
+from tg import g, c
 import os
 import allura
 

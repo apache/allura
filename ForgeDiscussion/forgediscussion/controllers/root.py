@@ -3,13 +3,11 @@ import logging
 import pymongo
 from urllib import urlencode, unquote
 
-from tg import expose, validate, redirect, flash, response
+from tg import expose, validate, redirect, response
 from tg.decorators import with_trailing_slash
-from pylons import g, c, request
+from tg import g, c, request, session
 from formencode import validators
 from webob import exc
-
-from ming.orm.base import session
 
 from allura.app import Application, ConfigOption, SitemapEntry, DefaultAdminController
 from allura.lib.security import require_access, has_access, require_authenticated
@@ -81,13 +79,13 @@ class RootController(BaseController):
             app_config_id=c.app.config._id,
             shortname=forum)
         if discussion.deleted and not has_access(c.app, 'configure')():
-            flash('This forum has been removed.')
+            session.flash('This forum has been removed.')
             redirect(request.referrer)
         require_access(discussion, 'post')
         thd = discussion.get_discussion_thread(dict(
                 headers=dict(Subject=subject)))
-        post = thd.post(subject, text)
-        flash('Message posted')
+        thd.post(subject, text)
+        session.flash('Message posted')
         redirect(thd.url())
 
     @with_trailing_slash

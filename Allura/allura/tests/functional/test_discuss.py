@@ -1,4 +1,4 @@
-from pylons import g
+from tg import g
 from formencode.variabledecode import variable_encode
 
 from allura.tests import TestController
@@ -80,7 +80,8 @@ class TestDiscuss(TestController):
         post_link = str(r.html.find('div',{'class':'edit_post_form reply'}).find('form')['action'])
         assert 'This is a post' in str(r.html.find('div',{'class':'display_post'}))
         assert 'Last edit:' not in str(r.html.find('div',{'class':'display_post'}))
-        r = self.app.post(post_link, {'text':'zzz'}).follow()
+        r = self.app.post(post_link, {'text':'zzz'})
+        r = r.follow()
         assert 'zzz' in str(r.html.find('div',{'class':'display_post'}))
         assert 'Last edit: Test Admin less than 1 minute ago' in str(r.html.find('div',{'class':'display_post'}))
                 

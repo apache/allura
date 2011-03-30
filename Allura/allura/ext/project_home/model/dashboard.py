@@ -69,12 +69,9 @@ def render_widget(mount_point, widget_name):
     with push_config(c, app=app):
         result = method()
     if isinstance(result, dict):
-        deco = Decoration.get_decoration(method)
-        content_type, engine, template, exclude_names = \
-            deco.lookup_template_engine(request)
-        template_vars = dict((k,v) for k,v in result.iteritems()
-                             if k not in exclude_names)
-        return render(template_vars, engine, template)
+        deco = Decoration.get(method)
+        template_vars = dict((k,v) for k,v in result.iteritems())
+        return deco.do_render_response(template_vars)
     return result
 
 MappedClass.compile_all()

@@ -4,9 +4,9 @@ from datetime import datetime
 
 # Non-stdlib imports
 import pkg_resources
-from tg import expose, validate, redirect, flash
+from tg import expose, validate, redirect, session
 from tg.decorators import with_trailing_slash, without_trailing_slash
-from pylons import g, c, request, response
+from tg import g, c, request, response
 from formencode import validators
 from webob import exc
 
@@ -271,7 +271,7 @@ class PostController(BaseController):
         require_access(self.post, 'write')
         if delete:
             self.post.delete()
-            flash('Post deleted', 'info')
+            session.flash('Post deleted', 'info')
             redirect(c.app.url)
         for k,v in kw.iteritems():
             setattr(self.post, k, v)

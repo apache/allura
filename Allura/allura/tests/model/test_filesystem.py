@@ -3,7 +3,7 @@ import os
 from unittest import TestCase
 from cStringIO import StringIO
 
-from pylons import response
+from tg import response
 from ming.orm import MappedClass, session
 
 

@@ -1,5 +1,5 @@
 from nose.tools import assert_raises
-from pylons import c
+from tg import c
 
 from allura.lib.helpers import set_context
 from allura.lib.exceptions import NoSuchProjectError

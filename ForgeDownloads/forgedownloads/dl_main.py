@@ -2,10 +2,8 @@
 import logging
 
 # Non-stdlib imports
-import pkg_resources
-from tg import expose, validate, redirect, response, config, flash
+from tg import expose, redirect, c, session
 from tg.decorators import with_trailing_slash, without_trailing_slash
-from pylons import g, c, request
 
 # Pyforge-specific imports
 from allura.app import Application, ConfigOption, SitemapEntry, DefaultAdminController
@@ -116,5 +114,5 @@ class DownloadAdminController(DefaultAdminController):
         if bool(show_download_button) != c.project.show_download_button:
             h.log_action(log, 'update project download button').info('')
             c.project.show_download_button = bool(show_download_button)
-        flash('Download options updated')
+        session.flash('Download options updated')
         redirect(c.project.url()+'admin/tools')

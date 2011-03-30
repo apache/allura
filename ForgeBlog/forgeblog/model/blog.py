@@ -2,7 +2,7 @@ from time import sleep
 from datetime import datetime
 from random import randint
 
-from pylons import c, g
+from tg import c, g
 from pymongo.errors import OperationFailure, DuplicateKeyError
 
 from ming import schema

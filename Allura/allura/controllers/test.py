@@ -55,17 +55,11 @@ class TestController(WsgiDispatchController, ProjectController):
         super(TestController, self).__init__()
 
     def _setup_request(self):
-        # This code fixes a race condition in our tests
+        c.app = None
+        c.user = plugin.AuthenticationProvider.get(request).by_username(
+            request.environ.get('username', 'test-admin'))
         c.project = M.Project.query.get(shortname='test')
         c.memoize_cache = {}
-        count = 20
-        while c.project is None:
-            import sys, time
-            time.sleep(0.5)
-            log.warning('Project "test" not found, retrying...')
-            c.project = M.Project.query.get(shortname='test')
-            count -= 1
-            assert count > 0, 'Timeout waiting for test project to appear'
 
     def _cleanup_request(self):
         pass
@@ -91,13 +85,6 @@ class TestController(WsgiDispatchController, ProjectController):
                 raise exc.HTTPNotFound, name
         c.app = app
         return app.root, remainder
-
-    def __call__(self, environ, start_response):
-        c.app = None
-        c.project = M.Project.query.get(shortname='test')
-        c.user = plugin.AuthenticationProvider.get(request).by_username(
-            environ.get('username', 'test-admin'))
-        return WsgiDispatchController.__call__(self, environ, start_response)
 
 class DispatchTest(object):
 

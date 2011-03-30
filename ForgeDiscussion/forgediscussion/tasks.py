@@ -1,6 +1,6 @@
 import logging
 
-from pylons import c
+from tg import c
 from allura.lib.decorators import task
 
 log = logging.getLogger(__name__)

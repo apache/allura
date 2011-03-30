@@ -6,7 +6,7 @@ from datetime import datetime
 
 # Non-stdlib imports
 import pkg_resources
-from tg import expose, validate, redirect, response
+from tg import expose, validate, redirect, response, session
 from tg.decorators import with_trailing_slash, without_trailing_slash
 from tg.controllers import RestController
 from tg import g, c, request
@@ -538,7 +538,7 @@ class PageController(BaseController):
                viewable_by=None,
                new_viewable_by=None,**kw):
         if not title:
-            flash('You must provide a title for the page.','error')
+            session.flash('You must provide a title for the page.','error')
             redirect('edit')
         if not self.page:
             # the page doesn't exist yet, so create it
@@ -550,7 +550,7 @@ class PageController(BaseController):
         if self.page.title != title:
             name_conflict = WM.Page.query.find(dict(app_config_id=c.app.config._id, title=title, deleted=False)).first()
             if name_conflict:
-                flash('There is already a page named "%s".' % title, 'error')
+                session.flash('There is already a page named "%s".' % title, 'error')
             else:
                 if self.page.title == c.app.root_page_name:
                     WM.Globals.query.get(app_config_id=c.app.config._id).root = title
@@ -690,7 +690,7 @@ class WikiAdminController(DefaultAdminController):
         else:
             globals = WM.Globals(app_config_id=self.app.config._id, root=new_home)
         self.app.upsert_root(new_home)
-        flash('Home updated')
+        session.flash('Home updated')
         redirect(c.project.url()+self.app.config.options.mount_point+'/'+new_home+'/')
 
     @without_trailing_slash
@@ -706,5 +706,5 @@ class WikiAdminController(DefaultAdminController):
         self.app.config.options['show_discussion'] = show_discussion
         self.app.config.options['show_left_bar'] = show_left_bar
         self.app.config.options['show_right_bar'] = show_right_bar
-        flash('Wiki options updated')
+        session.flash('Wiki options updated')
         redirect(c.project.url()+'admin/tools')

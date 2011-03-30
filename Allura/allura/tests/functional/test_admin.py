@@ -3,7 +3,7 @@ import pkg_resources
 import Image, StringIO
 
 from nose.tools import assert_equals, assert_true
-from pylons import g, c
+from tg import g, c
 
 from ming.orm.ormsession import ThreadLocalORMSession
 
@@ -270,7 +270,8 @@ class TestProjectAdmin(TestController):
         for x in range(2):
             form = r.forms[0]
             form['card-0.new'].value = 'test-user'
-            r = form.submit().follow()
+            r = form.submit()
+            r = r.follow()
         r = self.app.get('/admin/groups/')
         assert 'test-user' in str(r), r.showbrowser()
         r = self.app.post('/admin/groups/update', params={

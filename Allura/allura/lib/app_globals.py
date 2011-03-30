@@ -155,7 +155,6 @@ class Globals(object):
         if limit:
             if c.user in (None, M.User.anonymous()):
                 session['results_per_page'] = int(limit)
-                session.save()
             else:
                 c.user.set_pref('results_per_page', int(limit))
         else:
@@ -246,7 +245,6 @@ class Globals(object):
             return session['openid_info']
         else:
             session['openid_info'] = result = {}
-            session.save()
             return result
 
     def forge_static(self, resource):

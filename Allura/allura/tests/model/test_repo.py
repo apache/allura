@@ -4,7 +4,7 @@ from itertools import count
 from datetime import datetime
 
 import mock
-from pylons import c
+from tg import g, c
 import tg
 import ming
 from ming.orm import session, ThreadLocalORMSession

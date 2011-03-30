@@ -5,7 +5,7 @@ from itertools import chain, islice
 
 import pkg_resources
 import Image
-from tg import expose, redirect, validate, request, response
+from tg import expose, redirect, validate, request, response, session
 from tg.decorators import with_trailing_slash, without_trailing_slash
 from tg import c, g
 from paste.httpheaders import CACHE_CONTROL
@@ -171,7 +171,7 @@ class NeighborhoodController(object):
         for i, tool in enumerate(kw):
             if kw[tool]:
                 c.project.install_app(tool, ordinal=i)
-        flash('Welcome to the SourceForge Beta System! '
+        session.flash('Welcome to the SourceForge Beta System! '
               'To get started, fill out some information about your project.')
         redirect(c.project.script_name + 'admin/overview')
 
@@ -333,10 +333,7 @@ class ScreenshotsController(object):
 
     @expose()
     def _lookup(self, filename, *args):
-        if args:
-            filename=unquote(filename)
-        else:
-            filename = unquote(request.path.rsplit('/', 1)[-1])
+        filename = unquote(filename)
         return ScreenshotController(filename), args
 
 class ScreenshotController(object):
@@ -464,23 +461,23 @@ class NeighborhoodModerateController(object):
     def invite(self, pid, invite=None, uninvite=None):
         p = M.Project.query.get(shortname=pid, deleted=False)
         if p is None:
-            flash("Can't find %s" % pid, 'error')
+            session.flash("Can't find %s" % pid, 'error')
             redirect('.')
         if p.neighborhood == self.neighborhood:
-            flash("%s is already in the neighborhood" % pid, 'error')
+            session.flash("%s is already in the neighborhood" % pid, 'error')
             redirect('.')
         if invite:
             if self.neighborhood._id in p.neighborhood_invitations:
-                flash("%s is already invited" % pid, 'warning')
+                session.flash("%s is already invited" % pid, 'warning')
                 redirect('.')
             p.neighborhood_invitations.append(self.neighborhood._id)
-            flash('%s invited' % pid)
+            session.flash('%s invited' % pid)
         elif uninvite:
             if self.neighborhood._id not in p.neighborhood_invitations:
-                flash("%s is already uninvited" % pid, 'warning')
+                session.flash("%s is already uninvited" % pid, 'warning')
                 redirect('.')
             p.neighborhood_invitations.remove(self.neighborhood._id)
-            flash('%s uninvited' % pid)
+            session.flash('%s uninvited' % pid)
         redirect('.')
 
     @expose()
@@ -488,17 +485,17 @@ class NeighborhoodModerateController(object):
     def evict(self, pid):
         p = M.Project.query.get(shortname=pid, neighborhood_id=self.neighborhood._id, deleted=False)
         if p is None:
-            flash("Cannot evict  %s; it's not in the neighborhood"
+            session.flash("Cannot evict  %s; it's not in the neighborhood"
                   % pid, 'error')
             redirect('.')
         if not p.is_root:
-            flash("Cannot evict %s; it's a subproject" % pid, 'error')
+            session.flash("Cannot evict %s; it's a subproject" % pid, 'error')
             redirect('.')
         n = M.Neighborhood.query.get(name='Projects')
         p.neighborhood_id = n._id
         if self.neighborhood._id in p.neighborhood_invitations:
             p.neighborhood_invitations.remove(self.neighborhood._id)
-        flash('%s evicted to Projects' % pid)
+        session.flash('%s evicted to Projects' % pid)
         redirect('.')
 
 class NeighborhoodAwardsController(object):

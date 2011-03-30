@@ -314,7 +314,7 @@ class DefaultAdminController(BaseController):
             is_admin = self.app.config.tool_name == 'admin'
             if kw.pop('delete', False):
                 if is_admin:
-                    request.flash('Cannot delete the admin tool, sorry....')
+                    request.session.flash('Cannot delete the admin tool, sorry....')
                     redirect('.')
                 c.project.uninstall_app(self.app.config.options.mount_point)
                 redirect('..')

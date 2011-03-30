@@ -1,5 +1,5 @@
 import json
-from pylons import g
+from tg import g
 from formencode.variabledecode import variable_encode
 
 from ming.orm.ormsession import ThreadLocalORMSession

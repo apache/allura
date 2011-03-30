@@ -6,6 +6,7 @@ from datetime import datetime
 
 import tg
 import git
+from tg import c
 
 from ming.base import Object
 from ming.orm import MappedClass, session

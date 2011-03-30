@@ -3,14 +3,15 @@ import json
 import logging
 from urllib import quote, unquote
 
-from tg import c, g, request, response
+from tg import c, g, request, response, session
 from webob import exc
 import tg
 from tg import redirect, expose, url, validate
 from tg.decorators import with_trailing_slash, without_trailing_slash
 from formencode import validators
 
-from ming.orm import ThreadLocalORMSession, session
+from ming.orm import ThreadLocalORMSession
+from ming.orm import session as ormsession
 
 import allura.tasks
 from allura.lib import patience
@@ -52,7 +53,7 @@ class RepoRootController(BaseController):
     def refresh(self):
         allura.tasks.repo_tasks.refresh.post()
         if request.referer:
-            flash('Repository is being refreshed')
+            session.flash('Repository is being refreshed')
             redirect(request.referer)
         else:
             return '%r refresh queued.\n' % c.app.repo
@@ -97,7 +98,7 @@ class RepoRootController(BaseController):
                 except exc.HTTPRedirection:
                     raise
                 except Exception, ex:
-                    flash(str(ex), 'error')
+                    session.flash(str(ex), 'error')
                     redirect(request.referer)
 
     @property
@@ -140,7 +141,7 @@ class RepoRootController(BaseController):
                 artifact_reference=mr.index_id(),
                 subject='Discussion for Merge Request #:%s: %s' % (
                     mr.request_number, mr.summary))
-            session(t).flush()
+            ormsession(t).flush()
             redirect(mr.url())
 
     @without_trailing_slash

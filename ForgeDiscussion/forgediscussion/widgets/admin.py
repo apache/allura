@@ -1,4 +1,4 @@
-from pylons import c
+from tg import c
 from formencode import validators as fev
 from formencode import All
 import formencode

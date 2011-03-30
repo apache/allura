@@ -3,9 +3,11 @@
 import types
 import urllib
 
+import tg
 import pkg_resources
 import pyramid.response
 from webob import exc
+from formencode import Invalid
 
 from decorators import Decoration
 
@@ -44,16 +46,16 @@ class Resource(object):
 
     def __init__(self, controller):
         self._controller = controller
+        sec = getattr(controller, '_check_security', lambda:None)
+        sec()
 
     def __getitem__(self, name):
+        name = name.encode('utf-8')
         try:
             remainder = []
-            if name.startswith('_'):
+            next = getattr(self._controller, name, None)
+            if next is None:
                 next, remainder = self._controller._lookup(name)
-            else:
-                next = getattr(self._controller, name, None)
-                if next is None:
-                    next, remainder = self._controller._lookup(name)
             assert not remainder, 'Weird _lookup not supported'
             return Resource(next)
         except exc.HTTPNotFound:
@@ -71,15 +73,31 @@ def tg_view(context, request):
     deco, func = context.get_deco()
     try:
         if not deco or not deco.exposed: raise exc.HTTPNotFound()
-        deco.execute_controller(func, request)
+        try:
+            # Validate params
+            params = deco.do_validate_params(request.params.mixed())
+            result = func(**params)
+        except Invalid, inv:
+            tg.c.validation_exception = inv
+            eh = deco.error_handler
+            if eh:
+                result = eh(func.im_self, **request.params)
+                deco = Decoration.get(deco.error_handler, False)
+            else:
+                result = func(**request.params)
+        tg_globals.response.app_iter = deco.do_render_response(result)
     except exc.WSGIHTTPException, err:
         registry = request.environ['paste.registry']
-        registry.register(tg_globals.response, err)
+        response = request.get_response(err)
+        registry.register(tg_globals.response, response)
     return tg_globals.response
 
-def redirect(location, *args, **kwargs):
-    raise exc.HTTPFound(location=location)
-    assert False
+def error_view(context, request):
+    return context
+
+def redirect(*args, **kwargs):
+    found = exc.HTTPFound(location=url(*args, **kwargs))
+    raise found.exception
 
 def smart_str(s, encoding='utf-8', strings_only=False, errors='strict'):
     """
@@ -127,9 +145,13 @@ def urlencode(params):
     """
     return urllib.urlencode([i for i in generate_smart_str(params)])
 
-def url(base_url, params=None):
+def url(base_url=None, params=None):
+    if base_url is None: base_url = '/'
     if params is None: params = {}
+    if hasattr(base_url, '__iter__' ) and not isinstance(base_url, basestring):
+        base_url = '/'.join(base_url)
+    if base_url.startswith('/'):
+        base_url = tg.request.environ['SCRIPT_NAME'] + base_url
     if params:
         return '?'.join((base_url, urlencode(params)))
-    else:
-        return base_url
+    return base_url

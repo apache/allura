@@ -3,7 +3,7 @@ import shutil
 import unittest
 
 import mock
-from pylons import c, g
+from tg import c, g
 
 from ming.orm import FieldProperty
 

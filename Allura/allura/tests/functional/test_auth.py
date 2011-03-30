@@ -4,7 +4,7 @@ from ming.orm.ormsession import ThreadLocalORMSession
 
 
 def unentity(s):
-    return s.replace('&quot;', '"')
+    return s.replace('&#34;', '"')
 
 class TestAuth(TestController):
 
@@ -113,7 +113,7 @@ class TestAuth(TestController):
         r = self.app.get('/auth/create_account')
         assert 'Create an Account' in r
         r = self.app.post('/auth/save_new', params=dict(username='aaa',pw='123'))
-        assert 'Enter a value 8 characters long or more' in r
+        assert 'Enter a value 8 characters long or more' in str(r)
         r = self.app.post(
             '/auth/save_new',
             params=dict(

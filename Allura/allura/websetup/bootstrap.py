@@ -166,11 +166,11 @@ def bootstrap(command, conf, vars):
         app.config.options['type'] = 'git'
         app = p0.install_app('Hg', 'src-hg', 'Mercurial')
         app.config.options['type'] = 'hg'
-        # p0.install_app('Wiki', 'wiki')
-        # p0.install_app('Tickets', 'bugs')
-        # p0.install_app('Tickets', 'doc-bugs')
-        # p0.install_app('Discussion', 'discussion')
-        # p0.install_app('Link', 'link')
+        p0.install_app('Wiki', 'wiki')
+        p0.install_app('Tickets', 'bugs')
+        p0.install_app('Tickets', 'doc-bugs')
+        p0.install_app('Discussion', 'discussion')
+        p0.install_app('Link', 'link')
         ThreadLocalORMSession.flush_all()
         ThreadLocalORMSession.close_all()
         if asbool(conf.get('cache_test_data')):
@@ -178,10 +178,10 @@ def bootstrap(command, conf, vars):
     else: # pragma no cover
         p0.add_user(u_admin, ['Admin'])
         p0.install_app('Wiki', 'wiki')
-        # p0.install_app('Tickets', 'bugs')
-        # p0.install_app('Discussion', 'discussion')
-        # app = p0.install_app('SVN', 'src')
-        # app = p0.install_app('Git', 'src-git')
+        p0.install_app('Tickets', 'bugs')
+        p0.install_app('Discussion', 'discussion')
+        app = p0.install_app('SVN', 'src')
+        app = p0.install_app('Git', 'src-git')
         ThreadLocalORMSession.flush_all()
         ThreadLocalORMSession.flush_all()
         ThreadLocalORMSession.close_all()

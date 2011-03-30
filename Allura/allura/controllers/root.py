@@ -1,20 +1,14 @@
 # -*- coding: utf-8 -*-
 """Main Controller"""
-import logging, string, os
-from collections import defaultdict
+import logging
 
-import pkg_resources
-from tg import expose, redirect, session, config, response, request
+from tg import expose, request
 from tg.decorators import with_trailing_slash, without_trailing_slash
-from tg import c, g
+from tg import c
 
-import ew
-import ming
 
-import allura
 from allura.app import SitemapEntry
 from allura.lib.base import WsgiDispatchController
-from allura.lib import helpers as h
 from allura.lib import plugin
 from allura.controllers.error import ErrorController
 from allura import model as M
@@ -23,7 +17,6 @@ from .auth import AuthController
 from .search import SearchController, ProjectBrowseController
 from .static import NewForgeController
 from .site_admin import SiteAdminController
-from .project import NeighborhoodController, HostNeighborhoodController
 from .rest import RestController
 
 __all__ = ['RootController']

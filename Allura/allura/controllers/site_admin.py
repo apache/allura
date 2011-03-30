@@ -5,13 +5,12 @@ from datetime import datetime, timedelta
 from collections import defaultdict
 
 import pkg_resources
-from tg import expose, redirect, config, validate, request, response
+from tg import expose, redirect, config, validate, request, response, session
 from tg.decorators import with_trailing_slash, without_trailing_slash
 from webob import exc
 from formencode import validators as fev
-from ming.orm import session
 import pymongo
-from pylons import c, g
+from ming.orm import session as ormsession
 from tg import c, g
 
 from allura.lib import helpers as h
@@ -68,7 +67,7 @@ class SiteAdminController(object):
     def cpa_stats(self, since=None, **kw):
         stats = M.CPA.stats(since)
         if getattr(c, 'validation_exception', None):
-            flash(str(c.validation_exception), 'error')
+            session.flash(str(c.validation_exception), 'error')
         return dict(stats=stats, since=since)
 
     @expose('jinja:allura:templates/site_admin_api_tickets.html')
@@ -81,31 +80,31 @@ class SiteAdminController(object):
             for_user = M.User.by_username(data['for_user'])
             if not for_user:
                 ok = False
-                flash('User not found')
+                session.flash('User not found')
             caps = None
             try:
                 caps = json.loads(data['caps'])
             except ValueError:
                 ok = False
-                flash('JSON format error')
+                session.flash('JSON format error')
             if type(caps) is not type({}):
                 ok = False
-                flash('Capabilities must be a JSON dictionary, mapping capability name to optional discriminator(s) (or "")')
+                session.flash('Capabilities must be a JSON dictionary, mapping capability name to optional discriminator(s) (or "")')
             try:
                 expires = dateutil.parser.parse(data['expires'])
             except ValueError:
                 ok = False
-                flash('Date format error')
+                session.flash('Date format error')
             if ok:
                 tok = None
                 try:
                     tok = M.ApiTicket(user_id=for_user._id, capabilities=caps, expires=expires)
-                    session(tok).flush()
+                    ormsession(tok).flush()
                     log.info('New token: %s', tok)
-                    flash('API Ticket created')
+                    session.flash('API Ticket created')
                 except:
                     log.exception('Could not create API ticket:')
-                    flash('Error creating API ticket')
+                    session.flash('Error creating API ticket')
         elif request.method == 'GET':
             data = {'expires': datetime.utcnow() + timedelta(days=2)}
 

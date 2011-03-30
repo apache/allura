@@ -3,7 +3,7 @@ import pymongo
 
 from tg import expose, validate, redirect
 from tg import request, response
-from pylons import g, c
+from tg import g, c
 from webob import exc
 
 from allura.lib import helpers as h

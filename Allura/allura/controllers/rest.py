@@ -5,9 +5,9 @@ import logging
 import oauth2 as oauth
 from webob import exc
 from tg import expose, redirect
-from tg import c, request
+from tg import c, request, session
 
-from ming.orm import session
+from ming.orm import session as ormsession
 from ming.utils import LazyProperty
 
 from allura import model as M
@@ -113,7 +113,7 @@ class OAuthNegotiator(object):
             consumer_token_id=consumer_token._id,
             callback=req.get('oauth_callback', 'oob')
             )
-        session(req_token).flush()
+        ormsession(req_token).flush()
         log.info('Saving new request token with key: %s', req_token.api_key)
         return req_token.to_string()
 
@@ -135,7 +135,7 @@ class OAuthNegotiator(object):
         rtok = M.OAuthRequestToken.query.get(api_key=oauth_token)
         if no:
             rtok.delete()
-            flash('%s NOT AUTHORIZED' % rtok.consumer_token.name, 'error')
+            session.flash('%s NOT AUTHORIZED' % rtok.consumer_token.name, 'error')
             redirect('/auth/oauth/')
         if rtok.callback == 'oob':
             rtok.validation_pin = h.nonce(6)

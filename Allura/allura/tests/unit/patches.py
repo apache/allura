@@ -1,5 +1,5 @@
 from mock import Mock, patch, patch_object
-from pylons import c
+from tg import c
 
 from allura.tests.unit.factories import create_project, create_app_config
 

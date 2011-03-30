@@ -5,7 +5,7 @@ from datetime import datetime
 from cStringIO import StringIO
 
 # Non-stdlib imports
-from pylons import c
+from tg import c
 
 from ming.orm.ormsession import ThreadLocalORMSession
 

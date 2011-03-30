@@ -7,9 +7,9 @@ from webob import exc
 
 # Non-stdlib imports
 import pkg_resources
-from tg import expose, validate, redirect, flash
+from tg import expose, validate, redirect, session
 from tg.decorators import with_trailing_slash, without_trailing_slash
-from pylons import g, c, request, response
+from tg import g, c, request, response
 from formencode import validators
 from bson import ObjectId
 from webhelpers import feedgenerator as FG
@@ -363,7 +363,7 @@ class RootController(BaseController):
                     for m in fld.milestones:
                         if m.name == new['old_name']:
                             if new['new_name'] == '':
-                                flash('You must name the milestone.','error')
+                                session.flash('You must name the milestone.','error')
                             else:
                                 m.name = new['new_name']
                                 m.description = new['description']
@@ -826,7 +826,7 @@ class TicketController(BaseController):
     @h.vardec
     def update_ticket(self, **post_data):
         if not post_data.get('summary'):
-            flash('You must provide a Name','error')
+            session.flash('You must provide a Name','error')
             redirect('.')
         c.app.globals.invalidate_bin_counts()
         if 'labels' in post_data:
@@ -983,7 +983,7 @@ class TrackerAdminController(DefaultAdminController):
             field['name'] = '_' + '_'.join([w for w in NONALNUM_RE.split(field['label'].lower()) if w])
             field['label'] = field['label'].title()
         self.app.globals.custom_fields=custom_fields
-        flash('Fields updated')
+        session.flash('Fields updated')
         redirect(request.referer)
 
 class RootRestController(BaseController):

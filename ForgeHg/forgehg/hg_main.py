@@ -2,7 +2,7 @@
 import logging
 
 # Non-stdlib imports
-from pylons import c
+from tg import c
 
 from ming.utils import LazyProperty
 from ming.orm.ormsession import ThreadLocalORMSession

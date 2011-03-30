@@ -7,7 +7,7 @@ from urllib import quote
 from tg import config
 from paste.deploy import loadapp
 from paste.script.appinstall import SetupCommand
-from pylons import c, g, session, request
+from tg import c, g, session, request
 
 from alluratest.controller import setup_basic_test, setup_global_objects
 

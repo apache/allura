@@ -2,6 +2,7 @@ import string
 import mimetypes
 
 import pkg_resources
+from webob import exc
 from webhelpers import html
 from paste.deploy.converters import asbool
 from paste.registry import RegistryManager
@@ -44,9 +45,10 @@ def main(global_config, **settings):
             secret=settings['session.secret'],
             cookie_name=settings['session.key']))
     config.add_view(
-        'tg.shim.tg_view',
+        tg.shim.tg_view,
         context='tg.shim.Resource',
         renderer='allura:templates/mytemplate.pt')
+    config.add_view(tg.shim.error_view, context=exc.WSGIHTTPException)
     app = config.make_wsgi_app()
 
     if asbool(conf.get('auth.method', 'local')=='sfx'):
@@ -111,7 +113,7 @@ def set_scheme_middleware(app):
     return SchemeMiddleware
 
 def get_tg_vars(context):
-    from tg.tg_globals import c, g, request, response, config
+    from tg import c, g, request, response, config, url
     from urllib import quote, quote_plus
     context.setdefault('g', g)
     context.setdefault('c', c)
@@ -119,23 +121,34 @@ def get_tg_vars(context):
     context.setdefault('request', request)
     context.setdefault('response', response)
     context.setdefault('config', config)
-    context.setdefault('tg', dict(
-            quote=quote,
-            quote_plus=quote_plus,
-            flash_obj=FlashObj(request.session)))
+    tg = dict(
+        url=url,
+        quote=quote,
+        quote_plus=quote_plus,
+        config=config,
+        flash_obj=FlashObj(request))
+    context.setdefault('tg', tg)
 
 class FlashObj(object):
     full_template = string.Template('<div id="$container_id">$parts</div>')
     part_template = string.Template('<div class="$queue">$message</div>')
-    def __init__(self, impl):
-        self.impl = impl
+    def __init__(self, request):
+        try:
+            self.impl = request.session
+        except AttributeError:
+            self.impl = None
     def render(self, container_id, use_js=False):
-        parts = []
+        if self.impl is None: return ''
+        parts = ''
         for queue in ('error', 'warning', ''):
             messages = [ html.escape(msg) for msg in self.impl.pop_flash(queue) ]
-            parts += [ self.part_template.substitute(locals()) for message in messages ]
+            parts += '\n'.join(
+                self.part_template.substitute(queue=queue, message=message)
+                for message in messages)
         if parts:
-            return self.full_template.substitute(locals())
+            return self.full_template.substitute(
+                container_id=container_id,
+                parts=parts)
         else:
             return ''
 

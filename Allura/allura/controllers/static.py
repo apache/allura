@@ -1,13 +1,7 @@
-import os
-import mimetypes
-import pkg_resources
-from tg import expose, redirect, config, validate, request, response
+from tg import expose, redirect
 from tg.decorators import with_trailing_slash, without_trailing_slash
-from webob import exc
 
-from tg import c, g
-from allura.lib import helpers as h
-from allura import model as M
+from tg import g
 
 class NewForgeController(object):
 

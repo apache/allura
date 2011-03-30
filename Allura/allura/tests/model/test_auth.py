@@ -4,7 +4,7 @@ Model tests for auth
 """
 import mock
 from nose.tools import with_setup
-from pylons import c, g, request
+from tg import c, g, request
 from webob import Request
 
 from pymongo.errors import OperationFailure, DuplicateKeyError

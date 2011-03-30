@@ -1,6 +1,5 @@
-from tg import expose, redirect
+from tg import expose, redirect, c
 from tg.decorators import with_trailing_slash
-from pylons import c
 
 from allura.controllers import repository
 

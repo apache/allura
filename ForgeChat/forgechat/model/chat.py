@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from pylons import g
+from tg import g
 
 from ming import schema as S
 from ming.orm import MappedClass, FieldProperty

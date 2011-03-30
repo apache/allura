@@ -81,7 +81,7 @@ class AuthController(BaseController):
         session['userid'] = c.user._id
         session.save()
         if not c.user.username:
-            flash('Please choose a user name for SourceForge, %s.'
+            session.flash('Please choose a user name for SourceForge, %s.'
                   % c.user.get_pref('display_name'))
             redirect('setup_openid_user')
         redirect(kw.pop('return_to', '/'))
@@ -110,7 +110,7 @@ class AuthController(BaseController):
                  display_name=display_name,
                  password=pw))
         plugin.AuthenticationProvider.get(request).login(user)
-        flash('User "%s" registered' % user.get_pref('display_name'))
+        session.flash('User "%s" registered' % user.get_pref('display_name'))
         redirect('/')
 
     @expose()
@@ -118,9 +118,9 @@ class AuthController(BaseController):
         addr = M.EmailAddress.query.get(_id=a)
         if addr:
             addr.send_verification_link()
-            flash('Verification link sent')
+            session.flash('Verification link sent')
         else:
-            flash('No such address', 'error')
+            session.flash('No such address', 'error')
         redirect(request.referer)
 
     @expose()
@@ -128,9 +128,9 @@ class AuthController(BaseController):
         addr = M.EmailAddress.query.get(nonce=a)
         if addr:
             addr.confirmed = True
-            flash('Email address confirmed')
+            session.flash('Email address confirmed')
         else:
-            flash('Unknown verification link', 'error')
+            session.flash('Unknown verification link', 'error')
         redirect('/')
 
     @expose()
@@ -138,7 +138,7 @@ class AuthController(BaseController):
     def do_setup_openid_user(self, username=None, display_name=None):
         u = M.User.by_username(username)
         if u and username != c.user.username:
-            flash('That username is already taken.  Please choose another.',
+            session.flash('That username is already taken.  Please choose another.',
                   'error')
             redirect('setup_openid_user')
         c.user.username = username
@@ -146,7 +146,7 @@ class AuthController(BaseController):
         if u is None:
             n = M.Neighborhood.query.get(name='Users')
             n.register_project('u/' + username)
-        flash('Your username has been set to %s.' % username)
+        session.flash('Your username has been set to %s.' % username)
         redirect('/')
 
     @expose('jinja:allura:templates/claim_openid.html')
@@ -171,7 +171,7 @@ class AuthController(BaseController):
         oid_obj = process_oid(failure_redirect='claim_oid')
         if c.user:
             c.user.claim_openid(oid_obj._id)
-            flash('Claimed %s' % oid_obj._id)
+            session.flash('Claimed %s' % oid_obj._id)
         redirect('/auth/prefs/')
 
     @expose()
@@ -309,7 +309,7 @@ class PreferencesController(BaseController):
             c.user.set_pref('email_address', primary_addr)
             if new_addr.get('claim'):
                 if M.EmailAddress.query.get(_id=new_addr['addr'], confirmed=True):
-                    flash('Email address already claimed', 'error')
+                    session.flash('Email address already claimed', 'error')
                 else:
                     c.user.email_addresses.append(new_addr['addr'])
                     em = M.EmailAddress.upsert(new_addr['addr'])
@@ -359,13 +359,13 @@ class PreferencesController(BaseController):
     def revoke_oauth(self, _id=None):
         tok = M.OAuthAccessToken.query.get(_id=bson.ObjectId(_id))
         if tok is None:
-            flash('Invalid app ID', 'error')
+            session.flash('Invalid app ID', 'error')
             redirect('.')
         if tok.user_id != c.user._id:
-            flash('Invalid app ID', 'error')
+            session.flash('Invalid app ID', 'error')
             redirect('.')
         tok.delete()
-        flash('Application access revoked')
+        session.flash('Application access revoked')
         redirect('.')
 
     @expose()
@@ -377,9 +377,9 @@ class PreferencesController(BaseController):
         try:
             ap.set_password(c.user, kw['oldpw'], kw['pw'])
         except wexc.HTTPUnauthorized:
-            flash('Incorrect password', 'error')
+            session.flash('Incorrect password', 'error')
             redirect('.')
-        flash('Password changed')
+        session.flash('Password changed')
         redirect('.')
 
     @expose()
@@ -389,8 +389,8 @@ class PreferencesController(BaseController):
         try:
             ap.upload_sshkey(c.user.username, key)
         except AssertionError, ae:
-            flash('Error uploading key: %s' % ae, 'error')
-        flash('Key uploaded')
+            session.flash('Error uploading key: %s' % ae, 'error')
+        session.flash('Key uploaded')
         redirect('.')
 
 class OAuthController(BaseController):
@@ -408,7 +408,7 @@ class OAuthController(BaseController):
     def register(self, application_name=None, application_description=None, **kw):
         require_authenticated()
         M.OAuthConsumerToken(name=application_name, description=application_description)
-        flash('OAuth Application registered')
+        session.flash('OAuth Application registered')
         redirect('.')
 
     @expose()
@@ -417,11 +417,11 @@ class OAuthController(BaseController):
         require_authenticated()
         app = M.OAuthConsumerToken.query.get(_id=bson.ObjectId(id))
         if app is None:
-            flash('Invalid app ID', 'error')
+            session.flash('Invalid app ID', 'error')
             redirect('.')
         if app.user_id != c.user._id:
-            flash('Invalid app ID', 'error')
+            session.flash('Invalid app ID', 'error')
             redirect('.')
         app.delete()
-        flash('Application deleted')
+        session.flash('Application deleted')
         redirect('.')

@@ -1,7 +1,7 @@
 from os import path, environ
 
 from tg import config
-from pylons import c, g
+from tg import c, g
 from paste.deploy import loadapp
 from paste.script.appinstall import SetupCommand
 from nose.tools import eq_, assert_equals

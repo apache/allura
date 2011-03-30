@@ -93,8 +93,7 @@ class AuthenticationProvider(object):
             raise
 
     def logout(self):
-        self.session['userid'] = None
-        self.session.save()
+        session['userid'] = None
 
     def by_username(self, username):
         '''

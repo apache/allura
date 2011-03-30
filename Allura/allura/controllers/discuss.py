@@ -1,7 +1,7 @@
 from urllib import unquote
 from datetime import datetime
 
-from tg import expose, redirect, validate, request, response
+from tg import expose, redirect, validate, request, response, session
 from tg.decorators import without_trailing_slash
 from tg import g, c
 from formencode import validators
@@ -178,7 +178,7 @@ class ThreadController(BaseController):
         require_access(self.thread, 'post')
         kw = self.W.edit_post.to_python(kw, None)
         if not kw['text']:
-            flash('Your post was not saved. You must provide content.', 'error')
+            session.flash('Your post was not saved. You must provide content.', 'error')
             redirect(request.referer)
         file_info = kw.pop('file_info', None)
         p = self.thread.add_post(**kw)
@@ -190,7 +190,7 @@ class ThreadController(BaseController):
                 discussion_id=p.discussion_id)
         if self.thread.artifact:
             self.thread.artifact.mod_date = datetime.utcnow()
-        flash('Message posted')
+        session.flash('Message posted')
         redirect(request.referer)
 
     @expose()
@@ -205,7 +205,7 @@ class ThreadController(BaseController):
     def flag_as_spam(self, **kw):
         require_access(self.thread, 'moderate')
         self.thread.first_post.status='spam'
-        flash('Thread flagged as spam.')
+        session.flash('Thread flagged as spam.')
         redirect(request.referer)
 
     @without_trailing_slash
@@ -282,7 +282,7 @@ class PostController(BaseController):
             self.post.edit_count = self.post.edit_count + 1
             self.post.last_edit_date = datetime.utcnow()
             self.post.last_edit_by_id = c.user._id
-            redirect(request.referer)
+            redirect(request.referer or '.')
         elif request.method=='GET':
             if version is not None:
                 HC = self.post.__mongometa__.history_class
@@ -313,7 +313,7 @@ class PostController(BaseController):
         kw = self.W.edit_post.to_python(kw, None)
         self.thread.post(parent_id=self.post._id, **kw)
         self.thread.num_replies += 1
-        redirect(request.referer)
+        redirect(request.referer or '.')
 
     @h.vardec
     @expose()
@@ -327,7 +327,7 @@ class PostController(BaseController):
         elif kw.pop('spam', None):
             self.post.status = 'spam'
             self.thread.update_stats()
-        redirect(request.referer)
+        redirect(request.referer or '.')
 
     @h.vardec
     @expose()
@@ -338,7 +338,7 @@ class PostController(BaseController):
         if c.user._id not in self.post.flagged_by:
             self.post.flagged_by.append(c.user._id)
             self.post.flags += 1
-        redirect(request.referer)
+        redirect(request.referer or '.')
 
     @h.vardec
     @expose()
