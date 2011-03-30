@@ -658,7 +658,7 @@ class BinController(BaseController):
         c.bin_form = W.bin_form
         return dict(q=q or '', bin=bin or '', modelname='Bin', page='New Bin', globals=self.app.globals)
 
-    @with_trailing_slash
+    @without_trailing_slash
     @h.vardec
     @expose()
     @require_post()

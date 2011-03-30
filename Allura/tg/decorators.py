@@ -23,6 +23,7 @@ def override_template(func, template):
 def without_trailing_slash(func):
     from tg import redirect
     def _check_path(params):
+        if request.method != 'GET': return
         if request.path.endswith('/'):
             redirect(request.url.replace(request.path, request.path[:-1], 1))
     before_validate(_check_path)(func)
@@ -31,6 +32,7 @@ def without_trailing_slash(func):
 def with_trailing_slash(func):
     from tg import redirect
     def _check_path(params):
+        if request.method != 'GET': return
         if not request.path.endswith('/'):
             redirect(request.url.replace(request.path, request.path + '/', 1))
     before_validate(_check_path)(func)

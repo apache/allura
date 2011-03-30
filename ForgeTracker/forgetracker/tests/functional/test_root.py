@@ -536,7 +536,8 @@ class TestFunctionalController(TestController):
             'summary': 'This is not too long.',
             'terms': 'aaa',
             'old_summary': '',
-            'sort': ''}).follow()
+            'sort': ''})
+        r = r.follow()
         r = self.app.get('/bugs/')
         assert sidebar_contains(r, 'This is not too long.')
         r = self.app.post('/admin/bugs/bins/save_bin',{

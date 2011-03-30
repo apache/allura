@@ -16,9 +16,7 @@ class AttachmentsController(BaseController):
     @expose()
     def _lookup(self, filename=None, *args):
         if filename:
-            if not args:
-                filename = request.path.rsplit('/', 1)[-1]
-            filename=unquote(filename)
+            filename = unicode(filename, 'utf-8')
             return self.AttachmentControllerClass(filename, self.artifact), args
         else:
             raise exc.HTTPNotFound

@@ -43,8 +43,8 @@ class TestRootController(TestController):
 
     def test_root_new_search(self):
         self.app.get('/wiki/TEST/')
-        response = self.app.get('/wiki/search?q=TEST')
-        assert 'Search wiki: TEST' in response
+        response = self.app.get('/wiki/search/?q=TEST')
+        assert 'Search wiki: TEST' in response, response.showbrowser()
 
     def test_page_index(self):
         response = self.app.get('/wiki/TEST/')
