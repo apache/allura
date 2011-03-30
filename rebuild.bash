@@ -1,4 +1,4 @@
-for APP in Allura* *Forge* NoWarnings pyforge
+for APP in Allura* *Forge* NoWarnings
 do
 	echo "# installing $APP dependencies"
 	pushd $APP
