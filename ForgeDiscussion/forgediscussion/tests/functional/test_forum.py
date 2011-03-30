@@ -303,9 +303,9 @@ class TestForum(TestController):
         # beautiful soup is getting some unicode error here - test without it
         assert thread.html.findAll('div',{'class':'display_post'})[0].find('p').string == 'aaa'
         assert thread.html.findAll('div',{'class':'display_post'})[1].find('p').string == 'bbb'
-        assert thread.response.body.count('<div class="promote_to_thread_form') == 1
-        assert thread.response.body.count('<div class="row reply_post_form') == 2
-        assert thread.response.body.count('<div class="edit_post_form') == 2
+        assert thread.body.count('<div class="promote_to_thread_form') == 1
+        assert thread.body.count('<div class="row reply_post_form') == 2
+        assert thread.body.count('<div class="edit_post_form') == 2
 
     def get_table_rows(self, response, closest_id):
         tbody = response.html.find('div', {'id': closest_id}).find('tbody')

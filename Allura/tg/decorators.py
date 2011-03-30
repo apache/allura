@@ -16,7 +16,9 @@ class _tg_deco(object):
 class expose(_tg_deco): pass
 class validate(_tg_deco): pass
 class before_validate(_tg_deco): pass
-class override_template(_tg_deco): pass
+
+def override_template(func, template):
+    c.override_template = template
 
 def without_trailing_slash(func):
     from tg import redirect
@@ -54,6 +56,7 @@ class Decoration(object):
 
     def expose(self, template=None, content_type=None):
         self.exposed = True
+        assert not self._templates, 'Multiple @expose not supported in shim'
         if template or content_type:
             self._templates[content_type] = template
 
@@ -86,24 +89,32 @@ class Decoration(object):
         return params
 
     def do_render_response(self, result):
-        if len(self._templates) == 1:
-            ct, tname = self._templates.items()[0]
-            if ct is not None:
-                response.content_type = ct
-            if tname in ('json', 'json:'):
-                engine, tname = 'json', 'json'
-                response.content_type = 'application/json'
-            else:
-                engine, tname = tname.split(':', 1)
-            f = ew.render.File(tname, engine)
-            rendered_result = f(result)
-        elif self._templates:
+        tname = self._lookup_template()
+        if tname in ('json', 'json:'):
+            engine, tname = 'json', 'json'
+            response.content_type = 'application/json'
+        elif tname is None:
+            return self._make_iter(result)
+        else:
+            engine, tname = tname.split(':', 1)
+        f = ew.render.File(tname, engine)
+        return self._make_iter(f(result))
+
+    def _lookup_template(self):
+        tpl = getattr(c, 'override_template', None)
+        if tpl is not None: return tpl
+        if len(self._templates) > 1:
             assert False, 'Multiple @expose not supported in shim'
+        if not self._templates: return None
+        ct, tname = self._templates.items()[0]
+        if ct is not None:
+            response.content_type = ct
+        return tname
+
+    def _make_iter(self, result):
+        if isinstance(result, unicode):
+            return [ result.encode('utf-8') ]
+        elif isinstance(result, str):
+            return [ result ]
         else:
-            rendered_result = result
-        if isinstance(rendered_result, unicode):
-            return [ rendered_result.encode('utf-8') ]
-        elif isinstance(rendered_result, str):
-            return [ rendered_result ]
-        else:
-            return rendered_result
+            return result

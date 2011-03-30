@@ -9,9 +9,11 @@ from paste.registry import RegistryManager
 from pyramid.config import Configurator
 from pyramid.session import UnencryptedCookieSessionFactoryConfig
 
-import tg.error
 import ew
 import ming
+import tg.view
+import tg.error
+import tg.traversal
 from ming.orm.middleware import MingMiddleware
 from tg.shim import RootFactory
 
@@ -45,10 +47,11 @@ def main(global_config, **settings):
             secret=settings['session.secret'],
             cookie_name=settings['session.key']))
     config.add_view(
-        tg.shim.tg_view,
-        context='tg.shim.Resource',
-        renderer='allura:templates/mytemplate.pt')
-    config.add_view(tg.shim.error_view, context=exc.WSGIHTTPException)
+        tg.view.tg_view,
+        context=tg.traversal.Resource)
+    config.add_view(
+        tg.view.error_view,
+        context=exc.WSGIHTTPException)
     app = config.make_wsgi_app()
 
     if asbool(conf.get('auth.method', 'local')=='sfx'):
