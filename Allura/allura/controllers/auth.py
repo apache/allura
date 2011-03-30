@@ -1,10 +1,9 @@
 import logging, string, os
 from urllib import urlencode
-from pprint import pformat
 
 import bson
 from tg import expose, session, flash, redirect, validate, config
-from tg.decorators import with_trailing_slash, without_trailing_slash
+from tg.decorators import with_trailing_slash
 from pylons import c, g, request, response
 from webob import exc as wexc
 
@@ -184,7 +183,7 @@ class AuthController(BaseController):
     @expose()
     @require_post()
     def do_login(self, return_to=None, **kw):
-        user = plugin.AuthenticationProvider.get(request).login()
+        plugin.AuthenticationProvider.get(request).login()
         if return_to and return_to != request.url:
             redirect(return_to)
         redirect('/')
