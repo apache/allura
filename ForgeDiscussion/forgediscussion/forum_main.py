@@ -126,6 +126,7 @@ class ForgeDiscussionApp(Application):
                 l.append(SitemapEntry('Create Topic', c.app.url + 'create_topic', ui_icon=g.icons['plus']))
             if has_artifact_access('configure', app=c.app)():
                 l.append(SitemapEntry('Add Forum', url(c.app.url,dict(new_forum=True)), ui_icon=g.icons['conversation']))
+                l.append(SitemapEntry('Admin Forums', c.project.url()+'admin/'+self.config.options.mount_point+'/forums', ui_icon=g.icons['pencil']))
             if moderate_link:
                 l.append(moderate_link)
             # if we are in a thread, provide placeholder links to use in js
