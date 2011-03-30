@@ -202,7 +202,7 @@ class AuthController(BaseController):
         h.set_context(project.shortname, rest[0])
         if c.app is None or not getattr(c.app, 'repo'):
             return 'Cannot find repo at %s' % repo_path
-        allura.tasks.repo_tasks.repo_refresh.post()
+        allura.tasks.repo_tasks.refresh.post()
         return '%r refresh queued.\n' % c.app.repo
 
     @expose('json:')
