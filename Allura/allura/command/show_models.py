@@ -58,7 +58,7 @@ class ReindexCommand(base.Command):
                     try:
                         M.ArtifactReference.from_artifact(a)
                     except:
-                        self.log.exception('Making ArtifactReference from %s', a)
+                        base.log.exception('Making ArtifactReference from %s', a)
                         continue
                     ref_ids.append(a.index_id())
                 M.artifact_orm_session.clear()
