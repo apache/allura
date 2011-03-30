@@ -3,6 +3,7 @@ from formencode import schema
 import ew.render
 
 from .tg_globals import c, request, response
+from .util import moved
 
 class _tg_deco(object):
     def __init__(self, *args, **kwargs):
@@ -21,20 +22,18 @@ def override_template(func, template):
     c.override_template = template
 
 def without_trailing_slash(func):
-    from tg import redirect
     def _check_path(params):
         if request.method != 'GET': return
         if request.path.endswith('/'):
-            redirect(request.url.replace(request.path, request.path[:-1], 1))
+            moved(request.url.replace(request.path, request.path[:-1], 1))
     before_validate(_check_path)(func)
     return func
 
 def with_trailing_slash(func):
-    from tg import redirect
     def _check_path(params):
         if request.method != 'GET': return
         if not request.path.endswith('/'):
-            redirect(request.url.replace(request.path, request.path + '/', 1))
+            moved(request.url.replace(request.path, request.path + '/', 1))
     before_validate(_check_path)(func)
     return func
 

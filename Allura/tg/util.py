@@ -43,6 +43,10 @@ def redirect(*args, **kwargs):
     found = exc.HTTPFound(location=url(*args, **kwargs))
     raise found.exception
 
+def moved(*args, **kwargs):
+    moved = exc.HTTPMovedPermanently(location=url(*args, **kwargs))
+    raise moved.exception
+
 def smart_str(s, encoding='utf-8', strings_only=False, errors='strict'):
     """
     Returns a bytestring version of 's', encoded as specified in 'encoding'.
