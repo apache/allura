@@ -6,12 +6,13 @@ import urllib
 import tg
 import pkg_resources
 import pyramid.response
-from webob import exc
 from formencode import Invalid
+from webob import exc
 
 from decorators import Decoration
 
 from . import tg_globals
+from .traversal import Resource
 
 __all__ = [ 'redirect', 'url' ]
 
@@ -41,33 +42,6 @@ class RootFactory(object):
         finally:
             if hasattr(root_obj, '_cleanup_request'):
                 root_obj._cleanup_request()
-
-class Resource(object):
-
-    def __init__(self, controller):
-        self._controller = controller
-        sec = getattr(controller, '_check_security', lambda:None)
-        sec()
-
-    def __getitem__(self, name):
-        name = name.encode('utf-8')
-        try:
-            remainder = []
-            next = getattr(self._controller, name, None)
-            if next is None:
-                next, remainder = self._controller._lookup(name)
-            assert not remainder, 'Weird _lookup not supported'
-            return Resource(next)
-        except exc.HTTPNotFound:
-            return None
-
-    def get_deco(self):
-        func = self._controller
-        deco = Decoration.get(func, False)
-        if deco is None:
-            func = getattr(func, 'index', None)
-            deco = Decoration.get(func, False)
-        return deco, func
 
 def tg_view(context, request):
     deco, func = context.get_deco()

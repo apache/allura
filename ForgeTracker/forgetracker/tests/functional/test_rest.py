@@ -1,11 +1,7 @@
-from pylons import c
-from ming.orm import session
+from tg import c
 
-from allura import model as M
 from allura.lib import helpers as h
-from alluratest.controller import TestController, TestRestApiBase
-from forgetracker import model as TM
-
+from alluratest.controller import TestRestApiBase
 
 class TestTrackerApiBase(TestRestApiBase):
 

@@ -1,7 +1,7 @@
 from ming.orm.ormsession import ThreadLocalORMSession
 from ming.base import Object
 
-from pylons import c
+from tg import c
 
 from forgetracker.tests.unit import TrackerTestWithModel
 from forgetracker.widgets import ticket_form

@@ -1,7 +1,7 @@
 import unittest
 from nose.tools import assert_equals
 
-from pylons import c, g
+from tg import c
 from ming.orm import ThreadLocalORMSession
 
 from alluratest.controller import setup_basic_test, setup_global_objects

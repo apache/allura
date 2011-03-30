@@ -1,7 +1,5 @@
 import unittest
 
-from pylons import c, g
-
 from ming.orm import ThreadLocalORMSession
 
 from alluratest.controller import setup_basic_test, setup_global_objects

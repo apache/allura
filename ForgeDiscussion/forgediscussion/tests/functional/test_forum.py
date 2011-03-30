@@ -6,7 +6,7 @@ from email.mime.image import MIMEImage
 from email.mime.multipart import MIMEMultipart
 
 import pkg_resources
-from pylons import g, c
+from tg import c
 from nose.tools import assert_equal
 
 from allura import model as M

@@ -3,8 +3,6 @@ import shutil
 import unittest
 import pkg_resources
 
-from pylons import c
-
 from ming.orm import ThreadLocalORMSession
 
 from alluratest.controller import setup_basic_test, setup_global_objects

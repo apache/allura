@@ -1,7 +1,5 @@
-import os
-
 import pkg_resources
-from pylons import c
+from tg import c
 from ming.orm import ThreadLocalORMSession
 
 from allura.lib import helpers as h

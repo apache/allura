@@ -50,6 +50,8 @@ def test_pyflakes():
 
     if error:
         raise Exception('pyflakes failure, see stdout')
+    if run(find_py + " | grep -v '/migrations/' | xargs pyflakes | grep -v '" + "' | grep -v '".join(skips) + "'") != 1:
+        raise Exception('pyflakes failure')
 
 def test_no_now():
     if run(find_py + " | xargs grep '\.now(' ") not in [1,123]:

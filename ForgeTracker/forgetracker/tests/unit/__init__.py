@@ -1,4 +1,4 @@
-from pylons import c
+from tg import c
 from ming.orm.ormsession import ThreadLocalORMSession
 
 from allura.websetup import bootstrap

@@ -1,6 +1,6 @@
 from forgetracker.model import Globals
 from forgetracker.tests.unit import TrackerTestWithModel
-from pylons import c
+from tg import c
 from allura.lib import helpers as h
 
 from ming.orm.ormsession import ThreadLocalORMSession

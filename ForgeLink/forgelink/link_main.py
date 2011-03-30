@@ -2,7 +2,8 @@
 import logging
 
 # Non-stdlib imports
-from tg import c, session, expose, redirect
+from tg import expose, redirect
+from tg import c, session
 
 # Pyforge-specific imports
 from allura.app import Application, ConfigOption, SitemapEntry, DefaultAdminController

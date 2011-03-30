@@ -3,7 +3,7 @@ from ming.orm.ormsession import session
 
 from allura.lib import helpers as h
 from allura.model import User
-from pylons import c
+from tg import c
 from forgetracker.tests.unit import TrackerTestWithModel
 from forgetracker.model import Ticket, Globals
 from forgetracker import tracker_main

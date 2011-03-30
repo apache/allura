@@ -1,7 +1,7 @@
 from mock import patch
 from ming.orm.ormsession import ThreadLocalORMSession
 
-from pylons import c
+from tg import c
 
 from forgetracker.tests.unit import TrackerTestWithModel
 from forgetracker.widgets import ticket_form

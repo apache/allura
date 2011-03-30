@@ -56,8 +56,8 @@ class TestRootController(TestController):
         # two revisions are shown
         assert '2 by Test Admin' in response
         assert '1 by Test Admin' in response
-        self.app.get('/blog/2010/08/my-post?version=1')
-        self.app.get('/blog/2010/08/my-post?version=foo', status=404)
+        self.app.get('/blog/2010/08/my-post/?version=1')
+        self.app.get('/blog/2010/08/my-post/?version=foo', status=404)
 
     def test_post_diff(self):
         self._post()

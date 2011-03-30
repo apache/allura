@@ -1,15 +1,11 @@
-import os
-import shutil
 import unittest
-import pkg_resources
 from nose.tools import assert_equals
 
-from pylons import c, g
+from tg import c
 from ming.orm import ThreadLocalORMSession
 
 from alluratest.controller import setup_basic_test, setup_global_objects
 from allura.lib import helpers as h
-from forgesvn import model as SM
 
 
 class TestSVNApp(unittest.TestCase):
