@@ -22,7 +22,7 @@ Commit <a href="{{commit.url()}}">{{commit.shorthand_id()}}</a> {{commit_labels(
     {% for diff in commit.diffs.added %}
     <tr>
       <td>add</td>
-      <td><a href="./tree{{h.really_unicode(diff)}}">{{h.really_unicode(diff)}}</a></td>
+      <td><a href="{{commit.url()}}tree{{h.really_unicode(diff)}}">{{h.really_unicode(diff)}}</a></td>
     </tr>
     {% endfor %}{% for diff in commit.diffs.removed %}
     <tr>
@@ -33,8 +33,8 @@ Commit <a href="{{commit.url()}}">{{commit.shorthand_id()}}</a> {{commit_labels(
     <tr>
       <td>change</td>
       <td>
-        <a href="./tree{{h.really_unicode(diff)}}">{{h.really_unicode(diff)}}</a>
-        <a href="./tree{{h.really_unicode(diff)}}?diff={{prev[0].object_id}}">(diff)</a>
+        <a href="{{commit.url()}}tree{{h.really_unicode(diff)}}">{{h.really_unicode(diff)}}</a>
+        <a href="{{commit.url()}}tree{{h.really_unicode(diff)}}?diff={{prev[0].object_id}}">(diff)</a>
       </td>
     </tr>
     {% endfor %}{% for diff in commit.diffs.copied %}
@@ -43,7 +43,7 @@ Commit <a href="{{commit.url()}}">{{commit.shorthand_id()}}</a> {{commit_labels(
       <td>
         <a href="{{prev[0].url()}}tree{{h.really_unicode(diff.old)}}">{{h.really_unicode(diff.old)}}</a>
         <br/>to<br/>
-        <a href="./tree{{h.really_unicode(diff.new)}}">{{h.really_unicode(diff.new)}}</a>
+        <a href="{{commit.url()}}tree{{h.really_unicode(diff.new)}}">{{h.really_unicode(diff.new)}}</a>
       </td>
     </tr>
     {% endfor %}
