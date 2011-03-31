@@ -6,6 +6,7 @@ from pylons import c
 from ming.orm import MappedClass, mapper, ThreadLocalORMSession, session, state
 
 import allura.tasks.index_tasks
+from allura.lib.exceptions import CompoundError
 from . import base
 
 class ShowModelsCommand(base.Command):
@@ -62,7 +63,11 @@ class ReindexCommand(base.Command):
                         continue
                     ref_ids.append(a.index_id())
                 M.artifact_orm_session.clear()
-                allura.tasks.index_tasks.add_artifacts(ref_ids)
+                try:
+                    allura.tasks.index_tasks.add_artifacts(ref_ids)
+                except CompoundError, err:
+                    base.log.exception('Error indexing artifacts:\n%r', err)
+                    base.log.error('%s', err.format_error())
                 M.main_orm_session.flush()
                 M.main_orm_session.clear()
 
