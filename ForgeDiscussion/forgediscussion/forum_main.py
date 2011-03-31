@@ -1,7 +1,7 @@
 #-*- python -*-
 import logging
 import urllib
-
+from itertools import islice
 
 # Non-stdlib imports
 import pymongo
@@ -131,15 +131,33 @@ class ForgeDiscussionApp(Application):
                 l.append(moderate_link)
             # if we are in a thread, provide placeholder links to use in js
             if '/thread/' in request.url:
-                l.append(SitemapEntry('Mark as Spam', 'flag_as_spam', ui_icon=g.icons['flag'], className='sidebar_thread_spam'))
-            recent_topics = [ SitemapEntry(h.text.truncate(thread.subject, 72), thread.url(), className='nav_child',
-                                small=thread.num_replies)
-                   for thread in DM.ForumThread.query.find(dict(app_config_id=self.config._id)).sort('mod_date', pymongo.DESCENDING).limit(3)
-                   if ((not thread.discussion.deleted or has_artifact_access('configure', app=c.app)()) and thread.status == 'ok') ]
-            if len(recent_topics):
+                l.append(SitemapEntry(
+                        'Mark as Spam', 'flag_as_spam',
+                        ui_icon=g.icons['flag'], className='sidebar_thread_spam'))
+            # Get most recently-posted-to-threads across all discussions in this app
+            recent_threads = (
+                thread for thread in (
+                    DM.ForumThread.query.find(
+                        dict(app_config_id=self.config._id))
+                    .sort([
+                            ('last_post_date', pymongo.DESCENDING),
+                            ('mod_date', pymongo.DESCENDING)])
+                    ))
+            recent_threads = (
+                t for t in recent_threads 
+                if (has_artifact_access('configure') or not thread.discussion.deleted) )
+            recent_threads = ( t for t in recent_threads if t.status == 'ok' )
+            # Limit to 3 threads
+            recent_threads = list(islice(recent_threads, 3))
+            # Add to sitemap
+            if recent_threads:
                 l.append(SitemapEntry('Recent Topics'))
-                l += recent_topics
-            if len(forum_links):
+                l += [
+                    SitemapEntry(
+                        h.text.truncate(thread.subject, 72), thread.url(),
+                        className='nav_child', small=thread.num_replies)
+                    for thread in recent_threads ]
+            if forum_links:
                 l.append(SitemapEntry('Forums'))
                 l = l + forum_links
             l.append(SitemapEntry('Help'))

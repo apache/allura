@@ -100,6 +100,9 @@ class Thread(Artifact):
         indexes = [
             ('artifact_id',),
             ('ref_id',),
+            (('app_config_id', pymongo.ASCENDING),
+             ('last_post_date', pymongo.DESCENDING),
+             ('mod_date', pymongo.DESCENDING)) ,
             ]
     type_s = 'Thread'
 
@@ -113,6 +116,7 @@ class Thread(Artifact):
     first_post_id = ForeignIdProperty('Post')
     artifact_reference = FieldProperty(None)
     artifact_id = FieldProperty(None)
+    last_post_date = FieldProperty(datetime, if_missing=datetime(1970,1,1))
 
     discussion = RelationProperty(Discussion)
     posts = RelationProperty('Post', via='thread_id')
@@ -428,6 +432,9 @@ class Post(Message, VersionedArtifact):
         artifact = self.thread.artifact or self.thread
         Notification.post(artifact, 'message', post=self)
         session(self).flush()
+        self.thread.last_post_date = max(
+            self.thread.last_post_date,
+            self.mod_date)
         self.thread.update_stats()
         self.discussion.update_stats()
 
