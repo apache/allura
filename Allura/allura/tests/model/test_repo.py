@@ -204,7 +204,7 @@ class TestMergeRequest(_TestWithRepoAndCommit):
         assert mr.creator_name == u.get_pref('display_name')
         assert mr.creator_url == u.url()
         assert mr.downstream_url == '/p/test/test2/'
-        assert mr.downstream_repo_url == 'http://svn.localhost/p/test/test2'
+        assert mr.downstream_repo_url == 'http://svn.localhost/p/test/test2/trunk'
         assert mr.commits == [ self._make_commit('foo')[0] ]
 
 class TestLastCommitFor(_TestWithRepoAndCommit):
