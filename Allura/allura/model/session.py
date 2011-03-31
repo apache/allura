@@ -61,19 +61,19 @@ class ArtifactSessionExtension(SessionExtension):
             from .index import ArtifactReference, Shortlink
             from .session import main_orm_session
             # Ensure artifact references & shortlinks exist for new objects
-            for obj in self.objects_added:
+            arefs = [
                 ArtifactReference.from_artifact(obj)
+                for obj in self.objects_added + self.objects_modified ]
             for obj in self.objects_added + self.objects_modified:
                 Shortlink.from_artifact(obj)
+            # Flush shortlinks
+            main_orm_session.flush()
             # Post delete and add indexing operations
             if self.objects_deleted:
                 allura.tasks.index_tasks.del_artifacts.post(
                     [ obj.index_id() for obj in self.objects_deleted ])
-            if self.objects_added or self.objects_modified:
-                allura.tasks.index_tasks.add_artifacts.post(
-                    [ obj.index_id() for obj in self.objects_added + self.objects_modified ])
-            # Flush tasks
-            main_orm_session.flush()
+            if arefs:
+                allura.tasks.index_tasks.add_artifacts.post([ aref._id for aref in arefs ])
             for obj in self.objects_added:
                 CPA.post('create', obj)
             for obj in self.objects_modified:
