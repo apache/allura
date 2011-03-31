@@ -87,3 +87,15 @@ class StatsHandler(WatchedFileHandler):
             if v is not None)
         record.exc_info = None # Never put tracebacks in the rtstats log
         WatchedFileHandler.emit(self, record)
+
+def chunked_iterator(query, pagesize=1024):
+    page = 0
+    while True:
+        results = (
+            query
+            .skip(pagesize*page)
+            .limit(pagesize)
+            .all())
+        if not results: break
+        yield results
+        page += 1

@@ -7,6 +7,7 @@ from ming.orm import MappedClass, mapper, ThreadLocalORMSession, session, state
 
 import allura.tasks.index_tasks
 from allura.lib.exceptions import CompoundError
+from allura.lib import utils
 from . import base
 
 class ShowModelsCommand(base.Command):
@@ -39,37 +40,38 @@ class ReindexCommand(base.Command):
         self.basic_setup()
         graph = build_model_inheritance_graph()
         if self.options.project:
-            projects = [ M.Project.query.get(shortname=self.options.project) ]
+            q_project = M.Project.query.find(dict(shortname=self.options.project))
         elif self.options.neighborhood:
             neighborhood_id = M.Neighborhood.query.get(
                 url_prefix='/%s/' % self.options.neighborhood)._id
-            projects = M.Project.query.find(dict(neighborhood_id=neighborhood_id))
+            q_project = M.Project.query.find(dict(neighborhood_id=neighborhood_id))
         else:
-            projects = M.Project.query.find()
+            q_project = M.Project.query.find()
         seen_dbs = set()
-        for p in projects:
-            if p.database_uri in seen_dbs: continue
-            seen_dbs.add(p.database_uri)
-            base.log.info('Reindex project %s', p.shortname)
-            c.project = p
-            for _, a_cls in dfs(M.Artifact, graph):
-                base.log.info('  %s', a_cls)
-                ref_ids = []
-                for a in a_cls.query.find():
+        for projects in utils.chunked_iterator(q_project):
+            for p in projects:
+                if p.database_uri in seen_dbs: continue
+                seen_dbs.add(p.database_uri)
+                base.log.info('Reindex project %s', p.shortname)
+                c.project = p
+                for _, a_cls in dfs(M.Artifact, graph):
+                    base.log.info('  %s', a_cls)
+                    ref_ids = []
+                    for a in a_cls.query.find():
+                        try:
+                            M.ArtifactReference.from_artifact(a)
+                        except:
+                            base.log.exception('Making ArtifactReference from %s', a)
+                            continue
+                        ref_ids.append(a.index_id())
+                    M.artifact_orm_session.clear()
                     try:
-                        M.ArtifactReference.from_artifact(a)
-                    except:
-                        base.log.exception('Making ArtifactReference from %s', a)
-                        continue
-                    ref_ids.append(a.index_id())
-                M.artifact_orm_session.clear()
-                try:
-                    allura.tasks.index_tasks.add_artifacts(ref_ids)
-                except CompoundError, err:
-                    base.log.exception('Error indexing artifacts:\n%r', err)
-                    base.log.error('%s', err.format_error())
-                M.main_orm_session.flush()
-                M.main_orm_session.clear()
+                        allura.tasks.index_tasks.add_artifacts(ref_ids)
+                    except CompoundError, err:
+                        base.log.exception('Error indexing artifacts:\n%r', err)
+                        base.log.error('%s', err.format_error())
+                    M.main_orm_session.flush()
+                    M.main_orm_session.clear()
 
 class EnsureIndexCommand(base.Command):
     min_args=0
