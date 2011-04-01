@@ -325,7 +325,7 @@ class TestFunctionalController(TestController):
 
     def test_milestone_names(self):
         self.app.post('/admin/bugs/set_custom_fields', {
-            'milestone_names': 'aaa bbb ccc',
+            'milestone_names': 'aaaé  bbb ccc',
             'open_status_names': 'aa bb',
             'closed_status_names': 'cc',
             'custom_fields': {}
@@ -335,7 +335,7 @@ class TestFunctionalController(TestController):
             'summary':'zzz',
             'description':'bbb',
             'status':'ccc',
-            '_milestone':'aaa',
+            '_milestone':'aaaé',
             'assigned_to':'',
             'labels':'',
             'labels_old':'',
@@ -343,8 +343,38 @@ class TestFunctionalController(TestController):
         })
         ticket_view = self.app.get('/p/test/bugs/1/')
         assert 'Milestone' in ticket_view
-        assert 'aaa' in ticket_view
-        assert '<li><strong>summary</strong>: test milestone names --&gt; zzz' in ticket_view
+        assert 'aaaé' in ticket_view
+
+    def test_milestone_rename(self):
+        self.new_ticket(summary='test milestone rename')
+        self.app.post('/bugs/1/update_ticket',{
+            'summary':'test milestone rename',
+            'description':'',
+            'status':'',
+            '_milestone':'1.0',
+            'assigned_to':'',
+            'labels':'',
+            'labels_old':'',
+            'comment': ''
+        })
+        ThreadLocalORMSession.flush_all()
+        M.MonQTask.run_ready()
+        ThreadLocalORMSession.flush_all()
+        ticket_view = self.app.get('/p/test/bugs/1/')
+        assert 'Milestone' in ticket_view
+        assert '1.0' in ticket_view
+        assert 'zzzé' not in ticket_view
+        r = self.app.post('/bugs/update_milestones',{
+            'field_name':'_milestone',
+            'milestones-0.old_name':'1.0',
+            'milestones-0.new_name':'zzzé',
+            'milestones-0.description':'',
+            'milestones-0.complete':'Open',
+            'milestones-0.due_date':''
+        })
+        ticket_view = self.app.get('/p/test/bugs/1/')
+        assert '1.0' not in ticket_view
+        assert 'zzzé' in ticket_view
 
     def test_subtickets(self):
         # create two tickets
