@@ -87,21 +87,32 @@ if __name__ == '__main__':
     import_options['user_map'] = user_map
 
     cli = AlluraRestClient(options.base_url, options.api_key, options.secret_key)
+
+    existing_tickets = cli.call('/rest/p/' + options.project + '/' + options.tracker + '/')['tickets']
+    if len(existing_tickets) > 0:
+        print "Warning: importing into non-empty tracker, some checks below may be bogus"
+
     doc_txt = open(args[0]).read()
     doc = json.loads(doc_txt)
-    print "Importing %d tickets" % len(doc['trackers']['default']['artifacts'])
-    res = cli.call(url, doc=doc_txt, options=json.dumps(import_options))
-    print "Import result:", res
-    assert res['status']
-    assert not res['errors']
+    tickets_in = doc['trackers']['default']['artifacts']
+    doc['trackers']['default']['artifacts'] = []
+    print "Importing %d tickets" % len(tickets_in)
 
-    tickets = cli.call('/rest/p/' + options.project + '/' + options.tracker + '/')['tickets']
-    print "Fetched back ticket list of size:", len(tickets)
-    assert len(tickets) == len(doc['trackers']['default']['artifacts'])
+    cnt = 0
+    for ticket_in in tickets_in:
+        cnt += 1
+        doc['trackers']['default']['artifacts'] = [ticket_in]
+        res = cli.call(url, doc=json.dumps(doc), options=json.dumps(import_options))
+        print "Imported ticket id %s (%d of %d), result: %s" % (ticket_in['id'], cnt, len(tickets_in), res)
+        assert res['status']
+        assert not res['errors']
 
-    for ticket_in in doc['trackers']['default']['artifacts']:
         ticket_out = cli.call('/rest/p/' + options.project + '/' + options.tracker + '/' + str(ticket_in['id']) + '/')
         ticket_out = ticket_out['ticket']
         verify_ticket(ticket_in, ticket_out)
-    print "Verified %d tickets" % len(tickets)
+        print "Verified ticket"
 
+    print "Import complete, counting tickets in tracker"
+    tickets_out = cli.call('/rest/p/' + options.project + '/' + options.tracker + '/')['tickets']
+    print "Fetched back ticket list of size:", len(tickets_out)
+    assert len(tickets_out) - len(existing_tickets) == len(tickets_in)
