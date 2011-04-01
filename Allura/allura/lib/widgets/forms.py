@@ -1,6 +1,7 @@
 import logging
 import re
 import  ming.orm.ormsession
+from pylons import g
 from allura.lib import helpers as h
 from allura.lib import exceptions as forge_exc
 from allura.lib import plugin
@@ -15,6 +16,7 @@ import ew.jinja2_ew as ew
 log = logging.getLogger(__name__)
 
 class ForgeForm(ew.SimpleForm):
+    antispam=False
     template='jinja:allura:templates/widgets/forge_form.html'
     defaults=dict(
         ew.SimpleForm.defaults,
@@ -22,6 +24,12 @@ class ForgeForm(ew.SimpleForm):
         style='standard',
         method='post',
         enctype=None)
+
+    def context_for(self, field):
+        ctx = super(ForgeForm, self).context_for(field)
+        if self.antispam:
+            ctx['rendered_name'] = g.antispam.enc(ctx['name'])
+        return ctx
 
     def display_field_by_idx(self, idx, ignore_errors=False):
         field = self.fields[idx]
@@ -90,6 +98,7 @@ class AdminForm(ForgeForm):
 
 class NeighborhoodAddProjectForm(ForgeForm):
     template='jinja:allura:templates/widgets/neighborhood_add_project.html'
+    antispam=True
     defaults=dict(
         ForgeForm.defaults,
         method='post',
@@ -123,13 +132,16 @@ class NeighborhoodAddProjectForm(ForgeForm):
     def resources(self):
         for r in super(NeighborhoodAddProjectForm, self).resources(): yield r
         yield ew.CSSLink('css/add_project.css')
+        project_name = g.antispam.enc('project_name')
+        project_unixname = g.antispam.enc('project_unixname')
+
         yield ew.JSScript('''
             $(function(){
                 var $scms = $('[name=Git],[name=Hg],[name=SVN]');
                 var $suggest_btn = $('#suggest_project_name');
                 var $name_avail_message = $('#name_availablity');
-                var $name_input = $('input[name="project_name"]');
-                var $unixname_input = $('input[name="project_unixname"]');
+                var $name_input = $('input[name="%(project_name)s"]');
+                var $unixname_input = $('input[name="%(project_unixname)s"]');
                 var handle_name_taken = function(message){
                     if(message){
                         $name_avail_message.html(message);
@@ -166,7 +178,7 @@ class NeighborhoodAddProjectForm(ForgeForm):
                     });
                 });
             });
-        ''')
+        ''' % dict(project_name=project_name, project_unixname=project_unixname))
 
 
 class NeighborhoodProjectTakenValidator(fev.FancyValidator):

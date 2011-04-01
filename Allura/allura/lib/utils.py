@@ -241,10 +241,11 @@ class AntiSpam(object):
     @classmethod
     def validate(cls, error_msg):
         '''Controller decorator to raise Invalid errors if bot protection is engaged'''
-        def hook(remainder, params):
+        def antispam_hook(remainder, params):
             '''Converts various errors in validate_request to a single Invalid message'''
             try:
                 params.update(cls.validate_request())
             except (ValueError, TypeError, binascii.Error):
                 raise Invalid(error_msg, params, None)
-        return before_validate(hook)
+        return before_validate(antispam_hook)
+

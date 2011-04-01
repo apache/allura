@@ -43,7 +43,7 @@ log = logging.getLogger(__name__)
 class W:
     markdown_editor = ffw.MarkdownEdit()
     project_summary = plw.ProjectSummary()
-    add_project = forms.NeighborhoodAddProjectForm()
+    add_project = forms.NeighborhoodAddProjectForm(antispam=True)
     page_list = ffw.PageList()
     page_size = ffw.PageSize()
 
@@ -162,6 +162,7 @@ class NeighborhoodController(object):
     @expose()
     @require_post()
     @validate(W.add_project, error_handler=add_project)
+    @utils.AntiSpam.validate('Spambot protection engaged')
     def register(self, project_unixname=None, project_description=None, project_name=None, neighborhood=None, **kw):
         require(has_neighborhood_access('create', self.neighborhood), 'Create access required')
         project_description = h.really_unicode(project_description or '').encode('utf-8')

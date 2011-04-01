@@ -30,4 +30,6 @@
       {{b.display()}}
     {% endfor %}
   </div>
+  {% if widget.antispam %}{% for fld in g.antispam.extra_fields() %}
+  {{fld}}{% endfor %}{% endif %}
 </form>

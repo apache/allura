@@ -68,4 +68,6 @@
     <div class="inner-row">
         <input type="submit" value="Start" id="start">
     </div>
+  {% if widget.antispam %}{% for fld in g.antispam.extra_fields() %}
+  {{fld}}{% endfor %}{% endif %}
 </form>
