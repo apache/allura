@@ -35,7 +35,7 @@ import allura.tasks.event_tasks
 from allura import model as M
 from allura.lib.markdown_extensions import ForgeExtension
 
-from allura.lib import gravatar, plugin
+from allura.lib import gravatar, plugin, utils
 from allura.lib import helpers as h
 from allura.lib.widgets import analytics
 from allura.lib.security import Credentials
@@ -147,6 +147,13 @@ class Globals(object):
 
     def post_event(self, topic, *args, **kwargs):
         allura.tasks.event_tasks.event.post(topic, *args, **kwargs)
+
+    @property
+    def antispam(self):
+        a = request.environ.get('allura.antispam')
+        if a is None:
+            a = request.environ['allura.antispam'] = utils.AntiSpam()
+        return a
 
     @property
     def credentials(self):
