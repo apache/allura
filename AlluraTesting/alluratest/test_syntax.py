@@ -22,8 +22,21 @@ def test_pyflakes():
         'redefinition of unused',
         'assigned to but never used',
     ]
-    if run(find_py + " | grep -v '/migrations/' | xargs pyflakes | grep -v '" + "' | grep -v '".join(skips) + "'") != 1:
-        raise Exception('pyflakes failure')
+    cmd = find_py + " | grep -v '/migrations/' | xargs pyflakes"
+    print 'Not skipping anything via grep:'
+    print cmd
+    print
+    run(cmd)
+
+    print
+    print 'Skipping some stuff via grep:'
+    cmd += " | grep -v '" + "' | grep -v '".join(skips) + "'"
+    print cmd
+    print
+
+    retval = run(cmd)
+    if retval != 1:
+        raise Exception('pyflakes failure, returned %s' % retval)
 
 def test_no_now():
     if run(find_py + " | xargs grep '\.now(' ") not in [1,123]:
