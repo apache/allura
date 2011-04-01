@@ -31,6 +31,16 @@ from allura.lib.decorators import exceptionless
 from .security import has_neighborhood_access, has_project_access, has_artifact_access
 
 re_path_portion = re.compile(r'^[a-z][-a-z0-9]{2,}$')
+re_clean_vardec_key = re.compile(r'''\A
+( # first part
+\w+# name...
+(-\d+)?# with optional -digits suffix
+)
+(\. # next part(s)
+\w+# name...
+(-\d+)?# with optional -digits suffix
+)+
+\Z''', re.VERBOSE)
 
 def monkeypatch(*objs):
     def patchem(func):
@@ -189,10 +199,12 @@ def encode_keys(d):
         for k,v in d.iteritems())
 
 def vardec(fun):
-    def hook(remainder, params):
-        new_params = variable_decode(params)
+    def vardec_hook(remainder, params):
+        new_params = variable_decode(dict(
+                (k,v) for k,v in params.items()
+                if re_clean_vardec_key.match(k)))
         params.update(new_params)
-    before_validate(hook)(fun)
+    before_validate(vardec_hook)(fun)
     return fun
 
 def nonce(length=4):
