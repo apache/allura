@@ -5,9 +5,26 @@ import unittest
 import pylons
 from webob import Request
 
+from ming.orm import state
 from alluratest.controller import setup_unit_test
 
 from allura.lib import utils
+
+class TestChunkedIterator(unittest.TestCase):
+
+    def setUp(self):
+        from allura import model as M
+        setup_unit_test()
+        for i in range(10):
+            p = M.Project(shortname='pp%d' % i)
+            M.session.main_orm_session.insert_now(p, state(p))
+        M.session.project_orm_session.clear()
+
+    def test_can_iterate(self):
+        from allura import model as M
+        chunks = [
+            chunk for chunk in utils.chunked_find(M.Project, {}, 2) ]
+        assert len(chunks) > 1, chunks
 
 class TestAntispam(unittest.TestCase):
 

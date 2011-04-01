@@ -44,11 +44,11 @@ class ReindexCommand(base.Command):
         elif self.options.neighborhood:
             neighborhood_id = M.Neighborhood.query.get(
                 url_prefix='/%s/' % self.options.neighborhood)._id
-            q_project = M.Project.query.find(dict(neighborhood_id=neighborhood_id))
+            q_project = dict(neighborhood_id=neighborhood_id)
         else:
-            q_project = M.Project.query.find()
+            q_project = {}
         seen_dbs = set()
-        for projects in utils.chunked_iterator(q_project):
+        for projects in utils.chunked_find(M.Project, q_project):
             for p in projects:
                 if p.database_uri in seen_dbs: continue
                 seen_dbs.add(p.database_uri)
