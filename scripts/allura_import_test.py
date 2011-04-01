@@ -1,13 +1,10 @@
 import sys
-import urllib
-import urllib2
-import urlparse
-import hmac
-import hashlib
 import json
 from optparse import OptionParser
 from pprint import pprint
 from datetime import datetime
+
+from allura_api import AlluraApiClient
 
 
 def parse_options():
@@ -34,37 +31,9 @@ Integration test for tracker import. How to use:
     return optparser, options, args
 
 
-class AlluraRestClient(object):
-
-    def __init__(self, base_url, api_key, secret_key):
-        self.base_url = base_url
-        self.api_key = api_key
-        self.secret_key = secret_key
-
-    def sign(self, path, params):
-        params.append(('api_key', self.api_key))
-        params.append(('api_timestamp', datetime.utcnow().isoformat()))
-        message = path + '?' + urllib.urlencode(sorted(params))
-        digest = hmac.new(self.secret_key, message, hashlib.sha256).hexdigest()
-        params.append(('api_signature', digest))
-        return params
-
-    def call(self, url, **params):
-        url = urlparse.urljoin(options.base_url, url)
-        params = self.sign(urlparse.urlparse(url).path, params.items())
-
-        try:
-            result = urllib2.urlopen(url, urllib.urlencode(params))
-            resp = result.read()
-            return json.loads(resp)
-        except urllib2.HTTPError, e:
-            if options.verbose:
-                error_content = e.read()
-                e.msg += '. Error response:\n' + error_content
-            raise e
-
 def time_normalize(t):
     return t.replace('T', ' ').replace('Z', '')
+
 
 def verify_ticket(ticket_in, ticket_out):
     assert ticket_out['summary'] == ticket_in['summary']
@@ -86,7 +55,7 @@ if __name__ == '__main__':
     user_map = {}
     import_options['user_map'] = user_map
 
-    cli = AlluraRestClient(options.base_url, options.api_key, options.secret_key)
+    cli = AlluraApiClient(options.base_url, options.api_key, options.secret_key, options.verbose)
 
     existing_tickets = cli.call('/rest/p/' + options.project + '/' + options.tracker + '/')['tickets']
     if len(existing_tickets) > 0:
