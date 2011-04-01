@@ -9,12 +9,14 @@ from optparse import OptionParser
 from pprint import pprint
 from datetime import datetime
 
+from allura_api import AlluraApiClient
+
 
 def parse_options():
     optparser = OptionParser(usage='''%prog [options] <JSON dump>
 
 Import project data dump in JSON format into an Allura project.''')
-    optparser.add_option('-a', '--api-key', dest='api_key', help='API key')
+    optparser.add_option('-a', '--api-ticket', dest='api_key', help='API ticket')
     optparser.add_option('-s', '--secret-key', dest='secret_key', help='Secret key')
     optparser.add_option('-p', '--project', dest='project', help='Project to import to')
     optparser.add_option('-t', '--tracker', dest='tracker', help='Tracker to import to')
@@ -33,42 +35,8 @@ Import project data dump in JSON format into an Allura project.''')
     return optparser, options, args
 
 
-class AlluraRestClient(object):
-
-    def __init__(self, base_url, api_key, secret_key):
-        self.base_url = base_url
-        self.api_key = api_key
-        self.secret_key = secret_key
-        
-    def sign(self, path, params):
-        params.append(('api_key', self.api_key))
-        params.append(('api_timestamp', datetime.utcnow().isoformat()))
-        message = path + '?' + urllib.urlencode(sorted(params))
-        digest = hmac.new(self.secret_key, message, hashlib.sha256).hexdigest()
-        params.append(('api_signature', digest))
-        return params
-
-    def call(self, url, **params):
-        url = urlparse.urljoin(options.base_url, url)
-        params = self.sign(urlparse.urlparse(url).path, params.items())
-
-        try:
-            result = urllib2.urlopen(url, urllib.urlencode(params))
-            return result.read()
-        except urllib2.HTTPError, e:
-            if options.verbose:
-                error_content = e.read()
-                e.msg += '. Error response:\n' + error_content
-            raise e
-
-    
 if __name__ == '__main__':
     optparser, options, args = parse_options()
-    url = '/rest/p/' + options.project + '/' + options.tracker
-    if options.validate:
-        url += '/validate_import'
-    else:
-        url += '/perform_import'
 
     import_options = {}
     for s in options.import_opts:
@@ -95,5 +63,28 @@ if __name__ == '__main__':
 
     import_options['user_map'] = user_map
 
-    cli = AlluraRestClient(options.base_url, options.api_key, options.secret_key)
-    print cli.call(url, doc=open(args[0]).read(), options=json.dumps(import_options))
+    cli = AlluraApiClient(options.base_url, options.api_key, options.secret_key, options.verbose)
+    url = '/rest/p/' + options.project + '/' + options.tracker
+    doc_txt = open(args[0]).read()
+    if options.validate:
+        url += '/validate_import'
+        print cli.call(url, doc=doc_txt, options=json.dumps(import_options))
+    else:
+        url += '/perform_import'
+
+        doc = json.loads(doc_txt)
+        tickets_in = doc['trackers']['default']['artifacts']
+        doc['trackers']['default']['artifacts'] = []
+        if options.verbose:
+            print "Importing %d tickets" % len(tickets_in)
+
+        cnt = 0
+        for ticket_in in tickets_in:
+            cnt += 1
+            doc['trackers']['default']['artifacts'] = [ticket_in]
+            res = cli.call(url, doc=json.dumps(doc), options=json.dumps(import_options))
+            assert res['status'] and not res['errors']
+            if res['warnings']:
+                print "Imported ticket id %s, warnings: %s" % (ticket_in['id'], res['warnings'])
+            else:
+                print "Imported ticket id %s" % (ticket_in['id'])
