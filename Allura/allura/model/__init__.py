@@ -16,7 +16,6 @@ from .notification import Notification, Mailbox
 from .repository import Repository, RepositoryImplementation, RepoObject, Commit, Tree, Blob
 from .repository import LogCache, LastCommitFor, MergeRequest
 from .stats import Stats, CPA
-from .import_batch import ImportBatch
 from .oauth import OAuthToken, OAuthConsumerToken, OAuthRequestToken, OAuthAccessToken
 from .monq_model import MonQTask
 
