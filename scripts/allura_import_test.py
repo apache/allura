@@ -40,9 +40,9 @@ def verify_ticket(ticket_in, ticket_out):
     assert ticket_out['description'] == ticket_in['description']
     assert ticket_out['created_date'] == time_normalize(ticket_in['date'])
     assert ticket_out['status'] == ticket_in['status']
-    assert ticket_out['custom_fields']['_cc'] == ticket_in['cc']
-    assert ticket_out['custom_fields']['_private'] == ticket_in['private']
-    assert ticket_out['custom_fields']['_resolution'] == ticket_in['resolution']
+    for key in ('cc', 'private', 'resolution', 'milestone', 'component', 'version', 'type', 'severity', 'priority'):
+        if key in ticket_in:
+            assert ticket_out['custom_fields']['_' + key] == ticket_in[key]
 
 
 if __name__ == '__main__':
@@ -52,7 +52,7 @@ if __name__ == '__main__':
 
     import_options = {}
 
-    user_map = {}
+    user_map = {'kevin': 'test-admin'}
     import_options['user_map'] = user_map
 
     cli = AlluraApiClient(options.base_url, options.api_key, options.secret_key, options.verbose)
@@ -67,14 +67,17 @@ if __name__ == '__main__':
     doc['trackers']['default']['artifacts'] = []
     print "Importing %d tickets" % len(tickets_in)
 
+    errors = []
     cnt = 0
     for ticket_in in tickets_in:
         cnt += 1
         doc['trackers']['default']['artifacts'] = [ticket_in]
         res = cli.call(url, doc=json.dumps(doc), options=json.dumps(import_options))
         print "Imported ticket id %s (%d of %d), result: %s" % (ticket_in['id'], cnt, len(tickets_in), res)
-        assert res['status']
-        assert not res['errors']
+        if not res['status'] or res['errors']:
+            errors.append((ticket_in['id'], res))
+            print "Error import ticket %d: %s" % (ticket_in['id'], res)
+            continue
 
         ticket_out = cli.call('/rest/p/' + options.project + '/' + options.tracker + '/' + str(ticket_in['id']) + '/')
         ticket_out = ticket_out['ticket']
@@ -85,3 +88,8 @@ if __name__ == '__main__':
     tickets_out = cli.call('/rest/p/' + options.project + '/' + options.tracker + '/')['tickets']
     print "Fetched back ticket list of size:", len(tickets_out)
     assert len(tickets_out) - len(existing_tickets) == len(tickets_in)
+
+    if errors:
+        print "There were %d errors during import:" % len(errors)
+        for e in errors:
+            print e
