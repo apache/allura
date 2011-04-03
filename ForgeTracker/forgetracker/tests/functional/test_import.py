@@ -81,7 +81,7 @@ class TestImportController(TestRestApiBase):#TestController):
         doc_json = json.loads(doc_text)
         ticket_json = doc_json['trackers']['default']['artifacts'][0]
         r = self.api_post('/rest/p/test/bugs/perform_import',
-            doc=doc_text, options='{}')
+            doc=doc_text, options='{"user_map": {"hinojosa4": "test-admin", "ma_boehm": "test-user"}}')
         assert r.json['status']
         assert r.json['errors'] == []
 
@@ -96,6 +96,8 @@ class TestImportController(TestRestApiBase):#TestController):
 
         r = self.app.get('/rest/p/test/bugs/204/')
         self.verify_ticket(r.json['ticket'], ticket_json)
+        assert r.json['ticket']["reported_by"] == "test-user"
+        assert r.json['ticket']["assigned_to"] == "test-admin"
 
         r = self.app.get('/rest/p/test/bugs/')
         assert len(r.json['tickets']) == 1
