@@ -1048,6 +1048,7 @@ class RootRestController(BaseController):
     def perform_import(self, doc=None, options=None, **post_data):
         require(has_project_access('tool'))
         if c.api_token.get_capability('import') != c.project.shortname:
+            log.error('Import capability is not enabled for %s', c.project.shortname)
             raise exc.HTTPForbidden(detail='Import is not allowed')
 
         migrator = ImportSupport()

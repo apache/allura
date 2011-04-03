@@ -310,7 +310,10 @@ Unknown users: %s''' % unknown_users)
             for c_entry in comments:
                 self.make_comment(t.discussion_thread, c_entry)
             for a_entry in attachments:
-                self.make_attachment(a['id'], t._id, a_entry)
+                try:
+                    self.make_attachment(a['id'], t._id, a_entry)
+                except Exception, e:
+                    self.warnings.append('Could not import attachment, skipped: %s' % e)
             log.info('Imported ticket: %d', t.ticket_num)
 
         return {'status': True, 'errors': self.errors, 'warnings': self.warnings}

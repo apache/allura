@@ -32,10 +32,11 @@ class RestController(object):
             if not token:
                 token = M.ApiToken.get(api_key)
             else:
-                log.info('Authenticated with API ticket')
+                log.info('Authenticating with API ticket')
             if token is not None and token.authenticate_request(request.path, request.params):
                 return token
             else:
+                log.info('API authentication failure')
                 raise exc.HTTPForbidden
         else:
             return None
