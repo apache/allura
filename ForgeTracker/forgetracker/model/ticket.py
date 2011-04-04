@@ -3,6 +3,7 @@ import logging
 import urllib
 
 import bson
+from pymongo.errors import OperationFailure
 from pylons import c
 
 from ming import schema
@@ -230,8 +231,12 @@ class Ticket(VersionedArtifact):
             try:
                 session(ticket).flush(ticket)
                 return ticket
-            except:
-                session(ticket).expunge(ticket)
+            except OperationFailure, err:
+                if 'duplicate' in err.args[0]:
+                    log.warning('Try to create duplicate ticket %s', ticket.url())
+                    session(ticket).expunge(ticket)
+                    continue
+                raise
 
     def index(self):
         result = VersionedArtifact.index(self)
