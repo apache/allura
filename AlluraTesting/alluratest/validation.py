@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*- 
+# -*- coding: utf-8 -*-
 """
 Functions to syntax-validate output content
 """
@@ -25,6 +25,7 @@ from nose.tools import ok_, assert_true, assert_false
 from poster.encode import multipart_encode
 from poster.streaminghttp import register_openers
 
+from allura.lib import utils
 
 ENABLE_CONTENT_VALIDATION = False
 # By default we want to run only validations which are fast,
@@ -105,9 +106,9 @@ def validate_html(html_or_response):
             html = html_or_response.body
         else:
             html = html_or_response
-            
+
         html = html.lstrip()
-                    
+
         if html.startswith('<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"'):
             return validate_xhtml(html)
         elif html.startswith('<!DOCTYPE html>'):
@@ -123,18 +124,18 @@ def validate_xhtml(html):
                        '<form> lacks "action" attribute',
                        'replacing invalid character code',
                        'discarding invalid character code',
-                       '<a> proprietary attribute "alt"', # event RSS feed generated this 
+                       '<a> proprietary attribute "alt"', # event RSS feed generated this
                        '<table> lacks "summary" attribute',
-                       
-                       # parser appears to get mightily confused 
-                       # see also http://sourceforge.net/tracker/?func=detail&atid=390963&aid=1986717&group_id=27659 
+
+                       # parser appears to get mightily confused
+                       # see also http://sourceforge.net/tracker/?func=detail&atid=390963&aid=1986717&group_id=27659
                        '<span> anchor "login_openid" already defined',
         )
 
         doc_tidied, errors = tidy_document(html)
         if errors:
             lines = html.split('\n')
-            #print html 
+            #print html
             errors_prettified = ""
             for e in errors.split('\n'):
                 if not e:
@@ -158,17 +159,17 @@ def validate_xhtml(html):
                         errors_prettified += "%s: %s\n" % (line_num+offset, lines[line_num+offset-1])
                     except IndexError as e:
                         pass
-                #print lines[line_num-1] 
+                #print lines[line_num-1]
                 errors_prettified += "\n"
             assert_false(errors_prettified, "HTML Tidy errors:\n" + errors_prettified)
 
 def validate_xhtml_chunk(html):
         """ When you don't have a html & body tags - this adds it"""
-        html = '''<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"> 
-        <html xmlns="http://www.w3.org/1999/xhtml"> 
-        <head><title></title></head> 
-        <body> 
-        %s 
+        html = '''<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+        <html xmlns="http://www.w3.org/1999/xhtml">
+        <head><title></title></head>
+        <body>
+        %s
         </body></html>''' % html
         return validate_xhtml(html)
 
@@ -205,9 +206,9 @@ def validate_html5(html_or_response):
                 if count == 0:
                     sys.stderr.write('WARNING: ' + resp + '\n')
                     break
-        
+
         resp = resp.replace('“','"').replace('”','"').replace('–','-')
-        
+
         ignored_errors = [
             'Required attributes missing on element "object"',
             'Stray end tag "embed".',
@@ -221,8 +222,8 @@ def validate_html5(html_or_response):
             fname = dump_to_file('html5-', html)
             message = resp.decode('ascii','ignore')
             report_validation_error('html5', fname, message)
-                
-        
+
+
 def validate_html5_chunk(html):
         """ When you don't have a html & body tags - this adds it"""
         # WebTest doesn't like HTML fragments without doctype,
@@ -232,11 +233,11 @@ def validate_html5_chunk(html):
         if html.startswith(doctype):
             html = html[len(doctype):]
 
-        html = '''<!DOCTYPE html> 
-        <html> 
-        <head><title></title></head> 
-        <body> 
-        %s 
+        html = '''<!DOCTYPE html>
+        <html>
+        <head><title></title></head>
+        <body>
+        %s
         </body></html>''' % html
         return validate_html5(html)
 
@@ -266,7 +267,24 @@ def validate_page(html_or_response):
     if Config.instance().validation_enabled('js'):
         validate_js(html_or_response)
 
-class ValidatingTestApp(TestApp):
+
+class AntiSpamTestApp(TestApp):
+
+    def post(self, *args, **kwargs):
+        if kwargs.pop('antispam', False):
+            antispam = utils.AntiSpam()
+            params = {
+                'timestamp': antispam.timestamp_text,
+                'spinner': antispam.spinner_text,
+                antispam.enc('honey0'): '',
+                antispam.enc('honey1'): '',
+            }
+            for k, v in kwargs['params'].iteritems():
+                params[antispam.enc(k)] = v
+            kwargs['params'] = params
+        return super(AntiSpamTestApp, self).post(*args, **kwargs)
+
+class ValidatingTestApp(AntiSpamTestApp):
 
     # Subclasses may set this to True to skip validation altogether
     validate_skip = False
@@ -310,14 +328,14 @@ class ValidatingTestApp(TestApp):
 
     def get(self, *args, **kw):
         val_params, kw = self._get_validation_params(kw)
-        resp = TestApp.get(self, *args, **kw)
-        if not self.validate_skip and not val_params['validate_skip']: 
+        resp = super(ValidatingTestApp, self).get(*args, **kw)
+        if not self.validate_skip and not val_params['validate_skip']:
             self._validate(resp, 'get', val_params)
         return resp
 
     def post(self, *args, **kw):
         val_params, kw = self._get_validation_params(kw)
-        resp = TestApp.post(self, *args, **kw)
-        if not self.validate_skip and not val_params['validate_skip']: 
+        resp = super(ValidatingTestApp, self).post(*args, **kw)
+        if not self.validate_skip and not val_params['validate_skip']:
             self._validate(resp, 'post', val_params)
         return resp

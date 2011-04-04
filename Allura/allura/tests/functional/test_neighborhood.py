@@ -122,22 +122,27 @@ class TestNeighborhood(TestController):
         r = self.app.get('/adobe/register', status=405)
         r = self.app.post('/adobe/register',
                           params=dict(project_unixname='', project_name='Nothing', project_description='', neighborhood='Adobe'),
+                          antispam=True,
                           extra_environ=dict(username='root'))
         assert r.html.find('div',{'class':'error'}).string == 'Please enter a value'
         r = self.app.post('/adobe/register',
                           params=dict(project_unixname='mymoz', project_name='My Moz', project_description='', neighborhood='Adobe'),
+                          antispam=True,
                           extra_environ=dict(username='*anonymous'),
                           status=302)
         r = self.app.post('/adobe/register',
                           params=dict(project_unixname='foo.mymoz', project_name='My Moz', project_description='', neighborhood='Adobe'),
+                          antispam=True,
                           extra_environ=dict(username='root'))
         assert r.html.find('div',{'class':'error'}).string == 'Please use only letters, numbers, and dashes 3-15 characters long.'
         r = self.app.post('/p/register',
                           params=dict(project_unixname='test', project_name='Tester', project_description='', neighborhood='Adobe'),
+                          antispam=True,
                           extra_environ=dict(username='root'))
         assert r.html.find('div',{'class':'error'}).string == 'This project name is taken.'
         r = self.app.post('/adobe/register',
                           params=dict(project_unixname='mymoz', project_name='My Moz', project_description='', neighborhood='Adobe'),
+                          antispam=True,
                           extra_environ=dict(username='root'))
 
     def test_name_suggest(self):
