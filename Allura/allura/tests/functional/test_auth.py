@@ -131,6 +131,11 @@ class TestAuth(TestController):
                 pw2='12345678',
                 display_name='Test Me'))
         assert 'That username is already taken. Please choose another.' in r
+        r = self.app.get('/auth/logout')
+        r = self.app.post(
+            '/auth/do_login',
+            params=dict(username='aaa', password='12345678'),
+            status=302)
 
     def test_one_project_role(self):
         """Make sure when a user goes to a new project only one project role is created.
