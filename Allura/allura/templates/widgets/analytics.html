@@ -2,6 +2,9 @@
   
   var _gaq = _gaq || [];
   _gaq.push(['_setAccount', '{{account}}']);
+{% if c.app and c.app.config %}
+  _gaq.push(['_setCustomVar', 1, 'Tool', c.app.config.tool_name, 3])
+{% endif %}
   _gaq.push(['_trackPageview']);
 
   (function() {
