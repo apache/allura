@@ -1,5 +1,4 @@
 import logging
-import urllib
 from datetime import datetime
 
 import pymongo
@@ -387,7 +386,7 @@ class Post(Message, VersionedArtifact):
 
     def url(self):
         if self.thread:
-            return self.thread.url() + urllib.quote(self.slug) + '/'
+            return self.thread.url() + h.urlquote(self.slug) + '/'
         else: # pragma no cover
             return None
 
@@ -469,8 +468,8 @@ class DiscussionAttachment(BaseAttachment):
 
     def url(self):
         if self.post_id:
-            return self.post.url() + 'attachment/' + urllib.quote(self.filename)
+            return self.post.url() + 'attachment/' + h.urlquote(self.filename)
         elif self.thread_id:
-            return self.thread.url() + 'attachment/' + urllib.quote(self.filename)
+            return self.thread.url() + 'attachment/' + h.urlquote(self.filename)
         else:
-            return self.discussion.url() + 'attachment/' + urllib.quote(self.filename)
+            return self.discussion.url() + 'attachment/' + h.urlquote(self.filename)

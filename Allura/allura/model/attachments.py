@@ -1,5 +1,3 @@
-import urllib
-
 from pylons import c
 from ming.orm import FieldProperty
 from ming import schema as S
@@ -30,7 +28,7 @@ class BaseAttachment(File):
         return self.ArtifactType.query.get(_id=self.artifact_id)
 
     def url(self):
-        return self.artifact.url() + 'attachment/' + urllib.quote(self.filename)
+        return self.artifact.url() + 'attachment/' + h.urlquote(self.filename)
 
     def is_embedded(self):
         from pylons import request

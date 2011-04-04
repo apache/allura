@@ -1,4 +1,3 @@
-import urllib
 import re
 from itertools import chain
 
@@ -68,7 +67,7 @@ class Forum(M.Discussion):
         return l + [(self.name, self.url())]
 
     def url(self):
-        return urllib.quote(h.really_unicode(self.app.url + self.shortname + '/').encode('utf-8'))
+        return h.urlquote(self.app.url + self.shortname + '/')
 
     def delete(self):
         # Delete the subforums

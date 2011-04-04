@@ -62,6 +62,6 @@
   {% endif %}
   {{widget.fields['page_list'].display(limit=limit, page=page, count=count)}}
   <script type="text/javascript">
-    var q="{{query and h.urllib.quote_plus(query) or ''}}", count={{count}}, limit={{limit}}, page={{page}}, sort="{{sort}}";
+    var q="{{query and h.urlquoteplus(query) or ''}}", count={{count}}, limit={{limit}}, page={{page}}, sort="{{sort}}";
   </script>
 </div>
