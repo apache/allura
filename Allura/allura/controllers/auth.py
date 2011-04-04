@@ -15,7 +15,7 @@ from allura.lib.security import require_authenticated, has_artifact_access
 from allura.lib import helpers as h
 from allura.lib import plugin
 from allura.lib.decorators import require_post
-from allura.lib.widgets import SubscriptionForm, OAuthApplicationForm, OAuthRevocationForm
+from allura.lib.widgets import SubscriptionForm, OAuthApplicationForm, OAuthRevocationForm, LoginForm
 from allura.lib.widgets import forms
 from allura.lib import exceptions as exc
 from allura.controllers import BaseController
@@ -37,6 +37,7 @@ OID_PROVIDERS=[
     ('AOL', 'http://openid.aol.com/${username}/') ]
 
 class F(object):
+    login_form = LoginForm()
     subscription_form=SubscriptionForm()
     registration_form = forms.RegistrationForm(action='/auth/save_new')
     oauth_application_form = OAuthApplicationForm(action='register')
@@ -58,6 +59,7 @@ class AuthController(BaseController):
             return_to = orig_request.url
         else:
             return_to = request.referer
+        c.form = F.login_form
         return dict(oid_providers=OID_PROVIDERS, return_to=return_to)
 
     @expose('jinja:allura:templates/custom_login.html')
@@ -182,8 +184,8 @@ class AuthController(BaseController):
 
     @expose()
     @require_post()
+    @validate(F.login_form, error_handler=index)
     def do_login(self, return_to=None, **kw):
-        plugin.AuthenticationProvider.get(request).login()
         if return_to and return_to != request.url:
             redirect(return_to)
         redirect('/')

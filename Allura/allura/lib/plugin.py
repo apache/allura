@@ -14,7 +14,7 @@ from datetime import datetime
 import ldap
 from ldap import modlist
 import pkg_resources
-from tg import config
+from tg import config, flash
 from pylons import g, c
 from webob import exc
 
@@ -90,7 +90,10 @@ class LocalAuthenticationProvider(AuthenticationProvider):
 
     def register_user(self, user_doc):
         from allura import model as M
-        return M.User(**user_doc)
+        u = M.User(**user_doc)
+        if 'password' in user_doc:
+            u.set_password(user_doc['password'])
+        return u
 
     def _login(self):
         user = self.by_username(self.request.params['username'])

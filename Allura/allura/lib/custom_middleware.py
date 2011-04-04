@@ -85,7 +85,7 @@ class LoginRedirectMiddleware(object):
                 location = tg.url(login_url, dict(return_to=return_to))
             else:
                 # Don't try to re-post; the body has been lost.
-                location = tg.url('/')
+                location = tg.url(login_url)
             r = exc.HTTPFound(location=location)
             return r(environ, start_response)
         start_response(status, headers, exc_info)

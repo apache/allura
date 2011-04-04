@@ -6,18 +6,10 @@
 {% block header %}Login{% endblock %}
 
 {% block content %}
-        <div id="loginform">
-          <form action="/auth/do_login" method="post" class="loginfields">
-            <input type="hidden" name="return_to" value="{{return_to}}"/>
-            <h2><span>Password Login</span></h2>
-            <label for="username" class="grid-4">Username:</label>
-            <div class="grid-18"><input type="text" id="username" name="username"/></div>
-            <label for="password" class="grid-4">Password:</label>
-            <div class="grid-18"><input type="password" id="password" name="password"/></div>
-            <label class="grid-4">&nbsp;</label>
-            <div class="grid-18"><input type="submit" id="submit" value="Login"/></div>
-          </form>
-        </div>
+<div id="loginform">
+  <h2><span>Password Login</span></h2>
+  {{ c.form.display(action='./do_login', value=dict(return_to=return_to)) }}
+</div>
 
         <div class="clear">&nbsp;</div>
         
