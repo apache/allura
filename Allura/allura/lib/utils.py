@@ -115,7 +115,7 @@ class AntiSpam(object):
     honey_field_template=string.Template('''<p class="$honey_class">
     <label for="$fld_id">You seem to have CSS turned off.
         Please don't fill out this field.</label><br>
-    <input id="$fld_id" name="$fld_name"><br></p>''')
+    <input id="$fld_id" name="$fld_name" type="text"><br></p>''')
 
     def __init__(self, request=None, num_honey=2):
         self.num_honey = num_honey
@@ -249,4 +249,3 @@ class AntiSpam(object):
             except (ValueError, TypeError, binascii.Error):
                 raise Invalid(error_msg, params, None)
         return before_validate(antispam_hook)
-
