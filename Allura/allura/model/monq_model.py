@@ -116,8 +116,11 @@ class MonQTask(MappedClass):
             result=None,
             context=context)
         session(obj).flush(obj)
-        if g.amq_conn:
-            g.amq_conn.queue.put('')
+        try:
+            if g.amq_conn:
+                g.amq_conn.queue.put('')
+        except:
+            log.warning('Error putting to amq_conn', exc_info=True)
         return obj
 
     @classmethod
