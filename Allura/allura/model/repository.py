@@ -1130,9 +1130,9 @@ class GitLikeTree(object):
         for part in dirpath:
             cur = cur.trees[part]
         if filename in cur.trees:
-            cur.trees.pop(filename, None)
+            cur.trees.pop(h.really_unicode(filename).encode('utf-8'), None)
         else:
-            cur.blobs.pop(filename, None)
+            cur.blobs.pop(h.really_unicode(filename).encode('utf-8'), None)
 
     def hex(self):
         '''Compute a recursive sha1 hash on the tree'''
@@ -1142,14 +1142,12 @@ class GitLikeTree(object):
         return self._hex
 
     def __unicode__(self):
-        lines = [('t %s %s' % (t.hex(), name))
+        lines = ['t %s %s' % (t.hex(), name)
                   for name, t in self.trees.iteritems() ]
-        lines += [('b %s %s' % (oid, name))
+        lines += ['b %s %s' % (oid, name)
                   for name, oid in self.blobs.iteritems() ]
-        return u'\n'.join(sorted(lines))
-
-    def __repr__(self):
-        return unicode(self).encode('utf-8')
+        output = h.really_unicode('\n'.join(sorted(lines))).encode('utf-8')
+        return output
 
 def topological_sort(graph):
     '''Return the topological sort of a graph.
