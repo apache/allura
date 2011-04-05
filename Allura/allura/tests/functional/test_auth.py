@@ -24,11 +24,11 @@ class TestAuth(TestController):
         r = self.app.post('/auth/do_login', params=dict(
                 username='test-user', password='foo'))
         r = self.app.post('/auth/do_login', params=dict(
-                username='test-user', password='food'),
-                         status=302)
+                username='test-user', password='food'))
+        assert 'Invalid login' in str(r), r.showbrowser()
         r = self.app.post('/auth/do_login', params=dict(
-                username='test-usera', password='foo'),
-                         status=302)
+                username='test-usera', password='foo'))
+        assert 'Invalid login' in str(r), r.showbrowser()
 
     def test_prefs(self):
          r = self.app.get('/auth/prefs/')
