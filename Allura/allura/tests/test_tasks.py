@@ -68,7 +68,7 @@ class TestIndexTasks(unittest.TestCase):
     def test_del_artifacts(self):
         old_shortlinks = M.Shortlink.query.find().count()
         old_solr_size = len(g.solr.db)
-        artifacts = [ _TestArtifact() for x in range(5) ]
+        artifacts = [ _TestArtifact(_shorthand_id='ta_%s' % x) for x in range(5) ]
         M.artifact_orm_session.flush()
         arefs = [ M.ArtifactReference.from_artifact(a) for a in artifacts ]
         ref_ids = [ r._id for r in arefs ]
