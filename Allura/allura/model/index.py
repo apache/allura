@@ -129,6 +129,9 @@ class Shortlink(MappedClass):
                 result = cls.query.get(ref_id=a.index_id())
         result.link = a.shorthand_id()
         result.url = a.url()
+        if result.link is None:
+            result.delete()
+            return None
         return result
 
     @classmethod

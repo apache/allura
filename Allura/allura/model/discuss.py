@@ -285,7 +285,11 @@ class PostHistory(Snapshot):
         return self.post_class().query.get(_id=self.artifact_id)
 
     def shorthand_id(self):
-        return '%s#%s' % (self.original().shorthand_id(), self.version)
+        original = self.original()
+        if original:
+            return '%s#%s' % (original.shorthand_id(), self.version)
+        else:
+            return None
 
     def url(self):
         if self.original():
