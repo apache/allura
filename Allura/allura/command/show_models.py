@@ -1,7 +1,7 @@
 import sys
 from collections import defaultdict
 
-from pylons import c
+from pylons import c, g
 
 from ming.orm import MappedClass, mapper, ThreadLocalORMSession, session, state
 
@@ -40,24 +40,28 @@ class ReindexCommand(base.Command):
         self.basic_setup()
         graph = build_model_inheritance_graph()
         if self.options.project:
-            q_project = M.Project.query.find(dict(shortname=self.options.project))
+            q_project = dict(shortname=self.options.project)
         elif self.options.neighborhood:
             neighborhood_id = M.Neighborhood.query.get(
                 url_prefix='/%s/' % self.options.neighborhood)._id
             q_project = dict(neighborhood_id=neighborhood_id)
         else:
             q_project = {}
-        seen_dbs = set()
         for projects in utils.chunked_find(M.Project, q_project):
             for p in projects:
-                if p.database_uri in seen_dbs: continue
-                seen_dbs.add(p.database_uri)
-                base.log.info('Reindex project %s', p.shortname)
                 c.project = p
+                base.log.info('Reindex project %s', p.shortname)
+                # Clear index for this project
+                g.solr.delete(q='project_id_s:%s' % p._id)
+                M.ArtifactReference.query.remove({'artifact_reference.project_id':p._id})
+                M.Shortlink.query.remove({'project_id':p._id})
+                app_config_ids = [ ac._id for ac in p.app_configs ]
+                # Traverse the inheritance graph, finding all artifacts that
+                # belong to this project
                 for _, a_cls in dfs(M.Artifact, graph):
                     base.log.info('  %s', a_cls)
                     ref_ids = []
-                    for a in a_cls.query.find():
+                    for a in a_cls.query.find(dict(app_config_id={'$in': app_config_ids})):
                         try:
                             M.ArtifactReference.from_artifact(a)
                         except:
