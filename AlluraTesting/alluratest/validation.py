@@ -24,6 +24,7 @@ from tidylib import tidy_document
 from nose.tools import ok_, assert_true, assert_false
 from poster.encode import multipart_encode
 from poster.streaminghttp import register_openers
+from ming.utils import LazyProperty
 
 from allura.lib import utils
 
@@ -48,17 +49,17 @@ class Config(object):
             cls._instance = cls()
         return cls._instance
 
-    @property
+    @LazyProperty
     def test_ini(self):
         if not self.ini_config:
             from . import controller
             import ConfigParser
-            conf = ConfigParser.ConfigParser({'validate_html5': 'false', 'validate_js': 'true'})
+            conf = ConfigParser.ConfigParser({'validate_html5': 'false', 'validate_inlinejs': 'false'})
             conf.read(controller.get_config_file())
             self.ini_config = conf
         return self.ini_config
 
-    @property
+    @LazyProperty
     def hostname(self):
         if os.path.exists('/etc/soghost'):
             with open('/etc/soghost') as fp:
@@ -264,7 +265,7 @@ def validate_js(html_or_response):
 def validate_page(html_or_response):
     if Config.instance().validation_enabled('html5'):
         validate_html(html_or_response)
-    if Config.instance().validation_enabled('js'):
+    if Config.instance().validation_enabled('inlinejs'):
         validate_js(html_or_response)
 
 
