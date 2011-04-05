@@ -27,6 +27,7 @@ def add_artifacts(ref_ids):
                 ref.references = [
                     link.ref_id for link in find_shortlinks(s['text']) ]
             except Exception:
+                log.error('Error indexing artifact %s', ref_id)
                 exceptions.append(sys.exc_info())
     if exceptions:
         raise CompoundError(*exceptions)
