@@ -42,7 +42,7 @@
           </select>
         </td>
         <td class="edit" style="display:none">
-          {{c.date_field.display(value=m.due_date, name='milestones-%s.due_date' % loop.index0)}}
+          {{c.date_field.display(value=m.due_date)}}
         </td>
         <td>{{m.closed}} / {{m.total}}</td>
         <td style="width:20px;"><a href="#" title="Edit" class="edit_milestone"><b data-icon="{{g.icons['pencil'].char}}" class="ico {{g.icons['pencil'].css}}"></b></a></td>
@@ -91,6 +91,12 @@
       var $new_row = $('tr.new_milestone', $form);
       var $add_button = $('a.add_milestone', $form);
       var $save_controls = $('div.save_controls', $form);
+      var $date_inputs = $('input.ui-date-field');
+      $date_inputs.each(function(){
+        var $input = $(this);
+        var row_name = $input.closest('tr').find('input').attr('name').split('.')[0];
+        $input.attr('name',row_name+'.due_date');
+      });
       $('a.add_milestone').click(function(){
         $save_controls.show();
         $add_button.hide();

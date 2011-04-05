@@ -376,6 +376,21 @@ class TestFunctionalController(TestController):
         assert '1.0' not in ticket_view
         assert 'zzzé' in ticket_view
 
+    def test_milestone_close(self):
+        self.new_ticket(summary='test milestone close')
+        r = self.app.get('/bugs/milestones')
+        assert 'view closed' not in r
+        r = self.app.post('/bugs/update_milestones',{
+            'field_name':'_milestone',
+            'milestones-0.old_name':'1.0',
+            'milestones-0.new_name':'1.0',
+            'milestones-0.description':'',
+            'milestones-0.complete':'Closed',
+            'milestones-0.due_date':''
+        })
+        r = self.app.get('/bugs/milestones')
+        assert 'view closed' in r
+
     def test_subtickets(self):
         # create two tickets
         self.new_ticket(summary='test superticket')
