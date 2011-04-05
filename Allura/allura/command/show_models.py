@@ -61,13 +61,16 @@ class ReindexCommand(base.Command):
                 for _, a_cls in dfs(M.Artifact, graph):
                     base.log.info('  %s', a_cls)
                     ref_ids = []
+                    # Create artifact references and shortlinks
                     for a in a_cls.query.find(dict(app_config_id={'$in': app_config_ids})):
                         try:
                             M.ArtifactReference.from_artifact(a)
+                            M.Shortlink.from_artifact(a)
                         except:
-                            base.log.exception('Making ArtifactReference from %s', a)
+                            base.log.exception('Making ArtifactReference/Shortlink from %s', a)
                             continue
                         ref_ids.append(a.index_id())
+                    M.main_orm_session.flush()
                     M.artifact_orm_session.clear()
                     try:
                         allura.tasks.index_tasks.add_artifacts(ref_ids)
