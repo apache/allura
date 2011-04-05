@@ -260,7 +260,12 @@ class Snapshot(Artifact):
 
     def index(self):
         result = Artifact.index(self)
-        result.update(self.original().index())
+        original = self.original()
+        if original:
+            original_index = original.index()
+            result.update(original_index)
+            result['title_s'] = 'Version %d of %s' % (
+                    self.version, original_index['title_s'])
         result.update(
             id=self.index_id(),
             version_i=self.version,

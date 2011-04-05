@@ -288,13 +288,14 @@ class PostHistory(Snapshot):
         return '%s#%s' % (self.original().shorthand_id(), self.version)
 
     def url(self):
-        return self.original().url() + '?version=%d' % self.version
+        if self.original():
+            return self.original().url() + '?version=%d' % self.version
+        else:
+            return None
 
     def index(self):
         result = Snapshot.index(self)
         result.update(
-            title_s='Version %d of %s' % (
-                self.version,self.original().subject),
             type_s='Post Snapshot',
             text=self.data.text)
         return result
