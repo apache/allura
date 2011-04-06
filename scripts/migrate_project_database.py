@@ -18,48 +18,39 @@ def main():
         shortnames = sys.argv[1:]
     else:
         shortnames = [ p.shortname for p in M.Project.query.find(dict(is_root=True)) ]
-    databases = set(M.session.main_doc_session.db.connection.database_names())
+    M.main_orm_session.clear()
     for pname in shortnames:
         # This needs to be a .find() instead of a .get() because of the
         # __init__ projects, which have the same shortname but exist in
         # multiple neighborhoods.
         for project in M.Project.query.find(dict(shortname=pname)):
-            migrate_project_database(project, pname, databases)
+            migrate_project_database(project)
 
-def migrate_project_database(project, pname, databases):
+def migrate_project_database(project):
     c.project = project
-    target_uri = M.Project.default_database_uri(pname)
+    target_uri = M.Project.default_database_uri(project.shortname)
     target_db = target_uri.rsplit('/')[-1]
     if project is None:
-        log.fatal('Project %s not found', pname)
-        print 'Project %s not found' % pname
+        log.fatal('Project %s not found', project.shortname)
         return 2
-    if project.database_uri is not None:
-        log.fatal('Project %s is already migrated to %s', pname, project.database_uri)
-        print 'Project %s already migrated to %s' % (pname, project.database_uri)
+    if project.database_uri == target_uri:
+        log.info('Project %s is already migrated to %s', project.shortname, project.database_uri)
         return 2
-    M.ProjectRole.query.update(dict(project_id=None), dict({'$set':dict(project_id=c.project._id)}), multi=True)
     conn = M.session.main_doc_session.db.connection
     host = '%s:%s' % (conn.host, conn.port)
     dirname = os.tempnam()
     try:
-        if c.project.database not in databases:
-            skip=True
-            log.warning('No db for %s, so not migrating data', pname)
-        else:
-            skip=False
-            log.info('Backing up %s to %s', pname, dirname)
-            assert 0 == os.system('%s --host %s --db %s -o %s' % (
-                    MONGO_DUMP, host, project.database, dirname))
-            assert 0 == os.system('%s --host %s --db %s %s/%s ' % (
-                    MONGO_RESTORE, host, target_db, dirname, project.database))
-        database = project.database
-        for p in M.Project.query.find(dict(database=database)):
-            p.database = ''
-            p.database_uri = M.Project.default_database_uri(pname)
+        log.info('Backing up %s to %s', project.shortname, dirname)
+        db_uri = project.database_uri
+        db = db_uri.rsplit('/')[-1]
+        assert 0 == os.system('%s --host %s --db %s -o %s' % (
+                MONGO_DUMP, host, db, dirname))
+        assert 0 == os.system('%s --host %s --db %s %s/%s ' % (
+                MONGO_RESTORE, host, target_db, dirname, db))
+        for p in M.Project.query.find(dict(database_uri=db_uri)):
+            p.database_uri = M.Project.default_database_uri(project.shortname)
         session(project).flush()
-        if not skip:
-            conn.drop_database(database)
+        conn.drop_database(db)
     finally:
         if os.path.exists(dirname):
             shutil.rmtree(dirname)
