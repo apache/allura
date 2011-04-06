@@ -52,7 +52,8 @@ class Repository(M.Repository):
 
     def get_last_commit(self, obj):
         lc, isnew = M.LastCommitFor.upsert(repo_id=self._id, object_id=obj.object_id)
-        if not isnew: return lc.last_commit
+        if not isnew and lc.last_commit.id:
+            return lc.last_commit
         try:
             info = self._impl._svn.info2(
                 self._impl._url + obj.path(),
