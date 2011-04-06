@@ -40,7 +40,10 @@ class TestRootController(TestController):
         assert '{"column": 0, "series": 0, "url": "/p/test/src-git/ci/df30427c488aeab84b2352bdf88a3b19223f9d7a/", "parents": ["6a45885ae7347f1cac5103b0050cc1be6a1496c8"], "message": "Add README", "row": 1}' in commit_script
 
     def test_log(self):
-        resp = self.app.get('/src-git/ref/master:/log/')
+        resp = self.app.get('/src-git/ref/master~/log/')
+
+    def test_tags(self):
+        resp = self.app.get('/src-git/ref/master~/tags/')
 
     def _get_ci(self):
         r = self.app.get('/src-git/ref/master:/')
