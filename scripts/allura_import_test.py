@@ -3,8 +3,9 @@ import json
 from optparse import OptionParser
 from pprint import pprint
 from datetime import datetime
+import logging
 
-from allura_api import AlluraApiClient
+from allura_import_api import AlluraImportApiClient
 
 
 def parse_options():
@@ -46,6 +47,7 @@ def verify_ticket(ticket_in, ticket_out):
 
 
 if __name__ == '__main__':
+    logging.basicConfig()
     optparser, options, args = parse_options()
     url = '/rest/p/' + options.project + '/' + options.tracker
     url += '/perform_import'
@@ -55,7 +57,7 @@ if __name__ == '__main__':
     user_map = {'kevin': 'test-admin'}
     import_options['user_map'] = user_map
 
-    cli = AlluraApiClient(options.base_url, options.api_key, options.secret_key, options.verbose)
+    cli = AlluraImportApiClient(options.base_url, options.api_key, options.secret_key, options.verbose)
 
     existing_tickets = cli.call('/rest/p/' + options.project + '/' + options.tracker + '/')['tickets']
     if len(existing_tickets) > 0:
@@ -68,9 +70,7 @@ if __name__ == '__main__':
     print "Importing %d tickets" % len(tickets_in)
 
     errors = []
-    cnt = 0
-    for ticket_in in tickets_in:
-        cnt += 1
+    for cnt, ticket_in in enumerate(tickets_in):
         doc['trackers']['default']['artifacts'] = [ticket_in]
         res = cli.call(url, doc=json.dumps(doc), options=json.dumps(import_options))
         print "Imported ticket id %s (%d of %d), result: %s" % (ticket_in['id'], cnt, len(tickets_in), res)

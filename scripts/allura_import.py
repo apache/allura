@@ -9,7 +9,7 @@ from optparse import OptionParser
 from pprint import pprint
 from datetime import datetime
 
-from allura_api import AlluraApiClient
+from allura_import_api import AlluraImportApiClient
 
 
 def parse_options():
@@ -63,7 +63,7 @@ if __name__ == '__main__':
 
     import_options['user_map'] = user_map
 
-    cli = AlluraApiClient(options.base_url, options.api_key, options.secret_key, options.verbose)
+    cli = AlluraImportApiClient(options.base_url, options.api_key, options.secret_key, options.verbose)
     url = '/rest/p/' + options.project + '/' + options.tracker
     doc_txt = open(args[0]).read()
     if options.validate:

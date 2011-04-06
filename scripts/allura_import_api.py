@@ -5,10 +5,13 @@ import urlparse
 import hmac
 import hashlib
 import json
+import logging
 from datetime import datetime
 
 
-class AlluraApiClient(object):
+log = logging.getLogger('import')
+
+class AlluraImportApiClient(object):
 
     def __init__(self, base_url, api_key, secret_key, verbose=False, retry=True):
         self.base_url = base_url
@@ -41,5 +44,6 @@ class AlluraApiClient(object):
                 raise e
             except (urllib2.URLError, IOError):
                 if self.retry:
+                    log.exception('Error making API request, will retry')
                     continue
                 raise
