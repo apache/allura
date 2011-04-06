@@ -5,6 +5,15 @@ from allura.tests import TestController
 
 class TestSiteAdmin(TestController):
 
+    def test_access(self):
+        r = self.app.get('/nf/admin/', extra_environ=dict(
+                username='test-user'), status=403)
+
+        r = self.app.get('/nf/admin/', extra_environ=dict(
+                username='*anonymous'), status=302)
+        r = r.follow()
+        assert 'Login' in r
+
     def test_home(self):
         r = self.app.get('/nf/admin/', extra_environ=dict(
                 username='root'))
@@ -14,6 +23,8 @@ class TestSiteAdmin(TestController):
         assert cells[0].contents[0] == 'Users'
 
     def test_performance(self):
+        r = self.app.get('/nf/admin/stats', extra_environ=dict(
+                username='test-user'), status=403)
         r = self.app.get('/nf/admin/stats', extra_environ=dict(
                 username='root'))
         assert 'Forge Site Admin' in r.html.find('h2',{'class':'dark title'}).contents[0]
@@ -28,6 +39,8 @@ class TestSiteAdmin(TestController):
 
     def test_cpa(self):
         r = self.app.get('/nf/admin/cpa_stats', extra_environ=dict(
+                username='test-user'), status=403)
+        r = self.app.get('/nf/admin/cpa_stats', extra_environ=dict(
                 username='root'))
         assert 'Forge Site Admin' in r.html.find('h2',{'class':'dark title'}).contents[0]
         stats_table = r.html.find('table')
@@ -37,3 +50,7 @@ class TestSiteAdmin(TestController):
         assert headers[2].contents[0] == 'Create'
         assert headers[3].contents[0] == 'Modify'
         assert headers[4].contents[0] == 'Delete'
+
+    def test_tickets_access(self):
+        r = self.app.get('/nf/admin/api_tickets', extra_environ=dict(
+                username='test-user'), status=403)

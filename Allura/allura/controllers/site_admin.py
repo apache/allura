@@ -21,11 +21,13 @@ log = logging.getLogger(__name__)
 
 class SiteAdminController(object):
 
+    def _check_security(self):
+        with h.push_context('allura'):
+            require(has_project_access('security'))
+
     @expose('jinja:allura:templates/site_admin_index.html')
     @with_trailing_slash
     def index(self):
-        with h.push_context('allura'):
-            require(has_project_access('security'))
         neighborhoods = []
         for n in M.Neighborhood.query.find():
             project_count = M.Project.query.find(dict(neighborhood_id=n._id)).count()
@@ -37,8 +39,6 @@ class SiteAdminController(object):
     @expose('jinja:allura:templates/site_admin_stats.html')
     @without_trailing_slash
     def stats(self, limit=25):
-        with h.push_context('allura'):
-            require(has_project_access('security'))
         stats = defaultdict(lambda:defaultdict(list))
         agg_timings = defaultdict(list)
         for doc in M.Stats.m.find():
@@ -64,8 +64,6 @@ class SiteAdminController(object):
     @without_trailing_slash
     @validate(dict(since=fev.DateConverter(if_empty=datetime(2011,1,1))))
     def cpa_stats(self, since=None, **kw):
-        with h.push_context('allura'):
-            require(has_project_access('security'))
         stats = M.CPA.stats(since)
         if getattr(c, 'validation_exception', None):
             flash(str(c.validation_exception), 'error')
