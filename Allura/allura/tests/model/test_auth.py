@@ -64,7 +64,7 @@ def test_openid():
 def test_user():
     assert c.user.url() .endswith('/u/test-admin/')
     assert c.user.script_name .endswith('/u/test-admin/')
-    assert len(list(c.user.my_projects())) == 2, [ p.shortname for p in c.user.my_projects() ]
+    assert len(list(c.user.my_projects())) == 3, [ p.shortname for p in c.user.my_projects() ]
     assert M.User.anonymous().project_role().name == '*anonymous'
     u = M.User.register(dict(
             username='nosetest-user'))
@@ -99,15 +99,16 @@ def test_default_project_roles():
         for pr in M.ProjectRole.query.find(dict(
                 project_id=c.project._id)).all()
         if pr.name)
-    # There're 2 users assigned to project, represented by
-    # relational (vs named) ProjectRole's
-    assert len(roles) == M.ProjectRole.query.find(dict(
-        project_id=c.project._id)).count() - 2
     assert 'Admin' in roles.keys(), roles.keys()
     assert 'Developer' in roles.keys(), roles.keys()
     assert 'Member' in roles.keys(), roles.keys()
     assert roles['Developer']._id in roles['Admin'].roles
     assert roles['Member']._id in roles['Developer'].roles
+
+    # There're 1 user assigned to project, represented by
+    # relational (vs named) ProjectRole's
+    assert len(roles) == M.ProjectRole.query.find(dict(
+        project_id=c.project._id)).count() - 1
 
 @with_setup(setUp)
 def test_dup_api_token():

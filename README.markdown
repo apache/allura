@@ -147,7 +147,8 @@ This shouldn't take too long, but it will start the taskd server doing tons of s
     (anvil)~/src/forge/Allura$ nohup paster serve --reload development.ini > ~/logs/tg.log &
 
 And now you should be able to visit the server running on your [local machine](http://localhost:8080/).
-You can log in with username test-admin, test-user or root.  They all have password "foo".
+You can log in with username admin1, test-user or root.  They all have password "foo".  (For more details
+on the default data, see bootstrap.py)
 
 
 ## Next Steps

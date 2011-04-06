@@ -44,6 +44,8 @@ def setup_basic_test(config=None, app_name=DFL_APP_NAME):
     test_file = os.path.join(conf_dir, get_config_file(config))
     cmd = SetupCommand('setup-app')
     cmd.run([test_file])
+
+    # run all tasks, e.g. indexing from bootstrap operations
     while M.MonQTask.run_ready('setup'):
         ThreadLocalORMSession.flush_all()
 
@@ -82,7 +84,7 @@ def setup_global_objects():
 
 
 class TestController(object):
-    
+
     application_under_test = 'main'
     validate_skip = False
 
@@ -91,7 +93,7 @@ class TestController(object):
         self.app = ValidatingTestApp(setup_functional_test(app_name=self.application_under_test))
         if self.validate_skip:
             self.app.validate_skip = self.validate_skip
-    
+
     def tearDown(self):
         """Method called by nose after running each test"""
         pass

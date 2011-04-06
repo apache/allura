@@ -15,7 +15,8 @@ class TestNeighborhood(TestController):
         assert r.location.endswith('/adobe/home/Home/')
         r = r.follow()
         assert 'Welcome' in str(r), str(r)
-        r = self.app.get('/adobe/admin/', status=403)
+        r = self.app.get('/adobe/admin/', extra_environ=dict(username='test-user'),
+                         status=403)
 
     def test_redirect(self):
         r = self.app.post('/adobe/_admin/update',

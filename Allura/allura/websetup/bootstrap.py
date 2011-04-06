@@ -57,6 +57,7 @@ def bootstrap(command, conf, vars):
     tg.config['auth.method'] = tg.config['registration.method'] = 'local'
     assert tg.config['auth.method'] == 'local'
     conf['auth.method'] = conf['registration.method'] = 'local'
+
     # Clean up all old stuff
     ThreadLocalORMSession.close_all()
     c.queued_messages = defaultdict(list)
@@ -74,7 +75,7 @@ def bootstrap(command, conf, vars):
             return
     log.info('Initializing search')
 
-    log.info('Registering initial users & neighborhoods')
+    log.info('Registering root user & default neighborhoods')
     anonymous = M.User(_id=None,
                        username='*anonymous',
                        display_name='Anonymous Coward')
@@ -105,36 +106,7 @@ def bootstrap(command, conf, vars):
     file_name = 'adobe_icon.png'
     file_path = os.path.join(allura.__path__[0],'public','nf','images',file_name)
     M.NeighborhoodFile.from_path(file_path, neighborhood_id=n_adobe._id)
-    log.info('Registering "regular users" (non-root)')
-    u_adobe = M.User.register(dict(username='adobe-admin',
-                                   display_name='Adobe Admin'))
-    u0 = M.User.register(dict(username='test-admin',
-                              display_name='Test Admin'))
-    u1 = M.User.register(dict(username='test-user',
-                              display_name='Test User'))
-    u2 = M.User.register(dict(username='test-user2',
-                              display_name='Test User 2'))
-    u_admin1 = M.User.register(dict(username='admin1',
-                                    display_name='Admin 1'))
-    n_adobe.acl['admin'].append(u_adobe._id)
-    # Admin1 is almost root, with admin access for Users and Projects neighborhoods
-    n_projects.acl['admin'].append(u_admin1._id)
-    n_users.acl['admin'].append(u_admin1._id)
-    # Ming doesn't detect substructural changes in newly created objects (vs loaded from DB)
-    state(n_adobe).status = 'dirty'
-    state(n_projects).status = 'dirty'
-    state(n_users).status = 'dirty'
-    # TODO: Hope that Ming can be improved to at least avoid stuff below
-    session(n_adobe).flush(n_adobe)
-    session(n_projects).flush(n_projects)
-    session(n_users).flush(n_users)
 
-    u_adobe.set_password('foo')
-    u0.set_password('foo')
-    u1.set_password('foo')
-    u2.set_password('foo')
-    u_admin1.set_password('foo')
-    u0.claim_address('Beta@wiki.test.projects.sourceforge.net')
 
     log.info('Creating basic project categories')
     cat1 = M.ProjectCategory(name='clustering', label='Clustering')
@@ -149,22 +121,52 @@ def bootstrap(command, conf, vars):
     cat3_1 = M.ProjectCategory(name='front_ends', label='Front-Ends', parent_id=cat3._id)
     cat3_2 = M.ProjectCategory(name='engines_servers', label='Engines/Servers', parent_id=cat3._id)
 
-    log.info('Registering initial projects')
-    p_adobe1 = n_adobe.register_project('adobe-1', u_adobe)
-    p_adobe2 = n_adobe.register_project('adobe-2', u_adobe)
-    p_allura = n_projects.register_project('allura', u_admin1)
-    p0 = n_projects.register_project('test', u0)
+    log.info('Registering "regular users" (non-root) and default projects')
+    # since this runs a lot for tests, separate test and default users and
+    # do the minimal needed
+    if asbool(conf.get('load_test_data')):
+        u_admin = M.User.register(dict(username='test-admin',
+                                  display_name='Test Admin'))
+        u_admin.set_password('foo')
+        u_admin.claim_address('Beta@wiki.test.projects.sourceforge.net')
+        u_admin_adobe = u_admin
+    else:
+        u_admin = M.User.register(dict(username='admin1',
+                                        display_name='Admin 1'))
+        u_admin.set_password('foo')
+        u_admin_adobe = M.User.register(dict(username='adobe-admin',
+                                   display_name='Adobe Admin'))
+        u_admin_adobe.set_password('foo')
+        # Admin1 is almost root, with admin access for Users and Projects neighborhoods
+        n_projects.acl['admin'].append(u_admin._id)
+        n_users.acl['admin'].append(u_admin._id)
+
+        p_allura = n_projects.register_project('allura', u_admin)
+    u1 = M.User.register(dict(username='test-user',
+                              display_name='Test User'))
+    u1.set_password('foo')
+    p_adobe1 = n_adobe.register_project('adobe-1', u_admin_adobe)
+    n_adobe.acl['admin'].append(u_admin_adobe._id)
+    p0 = n_projects.register_project('test', u_admin)
     p0._extra_tool_status = [ 'alpha', 'beta' ]
+    # Ming doesn't detect substructural changes in newly created objects (vs loaded from DB)
+    state(n_adobe).status = 'dirty'
+    state(n_projects).status = 'dirty'
+    state(n_users).status = 'dirty'
+    # TODO: Hope that Ming can be improved to at least avoid stuff below
+    session(n_adobe).flush(n_adobe)
+    session(n_projects).flush(n_projects)
+    session(n_users).flush(n_users)
+
+
+    log.info('Registering initial apps')
 
     c.project = p0
-    c.user = u0
-    p0.add_user(u_admin1, ['Admin'])
+    c.user = u_admin
     p1 = p0.new_subproject('sub1')
     ThreadLocalORMSession.flush_all()
     if asbool(conf.get('load_test_data')):
-        log.info('Loading test data')
         u_proj = M.Project.query.get(shortname='u/test-admin')
-        u_proj.new_subproject('sub1')
         app = p0.install_app('SVN', 'src', 'SVN')
         app = p0.install_app('Git', 'src-git', 'Git')
         app.config.options['type'] = 'git'
@@ -180,7 +182,7 @@ def bootstrap(command, conf, vars):
         if asbool(conf.get('cache_test_data')):
             cache_test_data()
     else: # pragma no cover
-        log.info('Loading some large data')
+        p0.add_user(u_admin, ['Admin'])
         p0.install_app('Wiki', 'wiki')
         p0.install_app('Tickets', 'bugs')
         p0.install_app('Discussion', 'discussion')

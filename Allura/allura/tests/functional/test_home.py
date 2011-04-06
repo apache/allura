@@ -53,14 +53,19 @@ class TestProjectHome(TestController):
         assert r0 != r1
 
     def test_user_subproject_home_not_profile(self):
+        u_proj = M.Project.query.get(shortname='u/test-admin')
+        u_proj.new_subproject('sub1')
+        from ming.orm.ormsession import ThreadLocalORMSession
+        ThreadLocalORMSession.flush_all()
+
         r = self.app.get('/u/test-admin/sub1/')
         assert r.location.endswith('home/'), r.location
         r.follow()
 
     def test_user_search(self):
-        r = self.app.get('/p/test/user_search?term=admi', status=200)
+        r = self.app.get('/p/test/user_search?term=test', status=200)
         j = json.loads(r.body)
-        assert j['users'][0]['id'].startswith('admi')
+        assert j['users'][0]['id'].startswith('test')
 
     def test_user_search_noparam(self):
         r = self.app.get('/p/test/user_search', status=400)

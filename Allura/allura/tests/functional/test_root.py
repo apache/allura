@@ -20,6 +20,15 @@ from ming.orm import session
 
 
 class TestRootController(TestController):
+
+    def setUp(self):
+        super(TestRootController, self).setUp()
+        n_adobe = M.Neighborhood.query.get(name='Adobe')
+        assert n_adobe
+        u_admin = M.User.query.get(username='test-admin')
+        assert u_admin
+        p_adobe2 = n_adobe.register_project('adobe-2', u_admin)
+
     def test_index(self):
         response = self.app.get('/')
         assert_equal(response.html.find('h2',{'class':'dark title'}).contents[0].strip(), 'All Projects')

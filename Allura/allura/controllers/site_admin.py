@@ -23,7 +23,7 @@ log = logging.getLogger(__name__)
 class SiteAdminController(object):
 
     def _check_security(self):
-        with h.push_context('allura'):
+        with h.push_context(config.get('site_admin_project', 'allura')):
             require(has_project_access('security'))
 
     @expose('jinja:allura:templates/site_admin_index.html')
