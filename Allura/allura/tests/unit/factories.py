@@ -47,6 +47,7 @@ def create_post(slug):
     author = create_user()
     return Post(slug=slug,
                 thread_id=thread._id,
+                full_slug='%s:%s' % (thread._id,slug),
                 discussion_id=discussion._id,
                 author_id=author._id)
 

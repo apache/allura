@@ -429,7 +429,7 @@ class ModerationController(BaseController):
     def save_moderation(self, post=None, delete=None, spam=None, approve=None, **kw):
         for p in post:
             if 'checked' in p:
-                posted = self.PostModel.query.get(slug=p['slug'])
+                posted = self.PostModel.query.get(full_slug=p['full_slug'])
                 if delete:
                     posted.delete()
                     posted.thread.num_replies -= 1

@@ -24,7 +24,7 @@
       {% for post in value.posts %}
         <tr>
           <td>
-            <input type="hidden" name="post-{{loop.index0}}.slug" value="{{post.slug}}"/>
+            <input type="hidden" name="post-{{loop.index0}}.full_slug" value="{{post.full_slug}}"/>
             <input type="checkbox" name="post-{{loop.index0}}.checked"/>
           </td>
           <td>{{post.timestamp}}</td>

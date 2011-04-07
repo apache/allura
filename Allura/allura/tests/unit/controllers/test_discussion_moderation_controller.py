@@ -33,7 +33,7 @@ class TestWhenModerating(WithDatabase):
         assert self.get_post() is None
 
     def moderate_post(self, **kwargs):
-        self.controller.save_moderation(post=[dict(checked=True, slug='mypost')],
+        self.controller.save_moderation(post=[dict(checked=True, full_slug=self.get_post().full_slug)],
                                  **kwargs)
         ThreadLocalORMSession.flush_all()
 
