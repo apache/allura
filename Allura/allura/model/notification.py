@@ -24,6 +24,7 @@ from webhelpers import feedgenerator as FG
 from pylons import c, g
 from tg import config
 import pymongo
+import jinja2
 
 from ming import schema as S
 from ming.orm import MappedClass, FieldProperty, ForeignIdProperty, RelationProperty, session
@@ -66,6 +67,9 @@ class Notification(MappedClass):
     pubdate = FieldProperty(datetime, if_missing=datetime.utcnow)
 
     ref = RelationProperty('ArtifactReference')
+
+    view = jinja2.Environment(
+            loader=jinja2.PackageLoader('allura', 'templates'))
 
     def author(self):
         return User.query.get(_id=self.author_id) or User.anonymous()
@@ -137,6 +141,16 @@ class Notification(MappedClass):
                     c.user.email_addresses[0])
         if not d.get('text'):
             d['text'] = ''
+        try:
+            ''' Add addional text to the notification e-mail based on the artifact type '''
+            template = cls.view.get_template('mail/' + artifact.type_s + '.txt')
+            d['text'] += template.render(dict(ticket=artifact))
+        except Exception, e:
+            ''' Catch any errors loading or rendering the template,
+            but the notification still gets sent if there is an error
+            '''
+            log.error('Error rendering notification template %s: %s' % (artifact.type_s, e))
+
         assert d['reply_to_address'] is not None
         n = cls(ref_id=artifact.index_id(),
                 topic=topic,
@@ -175,15 +189,10 @@ class Notification(MappedClass):
         return feed
 
     def footer(self):
-        prefix = config.get('forgemail.url', 'https://sourceforge.net')
-        return '''
-
----
-
-Sent from sourceforge.net because you indicated interest in <%s%s>
-
-To unsubscribe from further messages, please visit <%s/auth/prefs/>
-''' % (prefix, self.link, prefix)
+        template = self.view.get_template('mail/footer.txt')
+        return template.render(dict(
+            notification=self,
+            prefix=config.get('forgemail.url', 'https://sourceforge.net')))
 
     def send_direct(self, user_id):
         allura.tasks.mail_tasks.sendmail.post(
