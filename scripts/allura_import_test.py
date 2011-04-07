@@ -45,49 +45,55 @@ def verify_ticket(ticket_in, ticket_out):
         if key in ticket_in:
             assert ticket_out['custom_fields']['_' + key] == ticket_in[key]
 
-
-if __name__ == '__main__':
-    logging.basicConfig()
-    optparser, options, args = parse_options()
-    url = '/rest/p/' + options.project + '/' + options.tracker
-    url += '/perform_import'
-
+def run_test(file_name, base_url, api_ticket, secret_key, project, tracker, limit=None, verbose=False):
     import_options = {}
-
-    user_map = {'kevin': 'test-admin'}
+    user_map = {}
     import_options['user_map'] = user_map
+    url = '/rest/p/' + project + '/' + tracker + '/perform_import'
 
-    cli = AlluraImportApiClient(options.base_url, options.api_key, options.secret_key, options.verbose)
-
-    existing_tickets = cli.call('/rest/p/' + options.project + '/' + options.tracker + '/')['tickets']
+    cli = AlluraImportApiClient(base_url, api_ticket, secret_key, verbose)
+    existing_tickets = cli.call('/rest/p/' + project + '/' + tracker + '/')['tickets']
     if len(existing_tickets) > 0:
         print "Warning: importing into non-empty tracker, some checks below may be bogus"
 
-    doc_txt = open(args[0]).read()
+    doc_txt = open(file_name).read()
     doc = json.loads(doc_txt)
     tickets_in = doc['trackers']['default']['artifacts']
     doc['trackers']['default']['artifacts'] = []
-    print "Importing %d tickets" % len(tickets_in)
+    if not limit:
+        limit = len(tickets_in)
+    print "Importing %d tickets" % limit
 
     errors = []
-    for cnt, ticket_in in enumerate(tickets_in):
+    for cnt, ticket_in in enumerate(tickets_in, start=1):
+        if cnt > limit:
+            break
         doc['trackers']['default']['artifacts'] = [ticket_in]
         res = cli.call(url, doc=json.dumps(doc), options=json.dumps(import_options))
-        print "Imported ticket id %s (%d of %d), result: %s" % (ticket_in['id'], cnt, len(tickets_in), res)
+        print "Imported ticket id %s (%d of %d), result: %s" % (ticket_in['id'], cnt, limit, res)
         if not res['status'] or res['errors']:
             errors.append((ticket_in['id'], res))
             print "Error import ticket %d: %s" % (ticket_in['id'], res)
             continue
 
-        ticket_out = cli.call('/rest/p/' + options.project + '/' + options.tracker + '/' + str(ticket_in['id']) + '/')
+        ticket_out = cli.call('/rest/p/' + project + '/' + tracker + '/' + str(ticket_in['id']) + '/')
         ticket_out = ticket_out['ticket']
         verify_ticket(ticket_in, ticket_out)
         print "Verified ticket"
 
     print "Import complete, counting tickets in tracker"
-    tickets_out = cli.call('/rest/p/' + options.project + '/' + options.tracker + '/')['tickets']
+    tickets_out = cli.call('/rest/p/' + project + '/' + tracker + '/')['tickets']
     print "Fetched back ticket list of size:", len(tickets_out)
-    assert len(tickets_out) - len(existing_tickets) == len(tickets_in)
+    assert len(tickets_out) - len(existing_tickets) == limit
+    return errors
+
+
+if __name__ == '__main__':
+    logging.basicConfig()
+    optparser, options, args = parse_options()
+
+    errors = run_test(args[0], options.base_url, options.api_key, options.secret_key,
+                      options.project, options.tracker, options.verbose)
 
     if errors:
         print "There were %d errors during import:" % len(errors)
