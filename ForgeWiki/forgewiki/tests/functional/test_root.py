@@ -130,6 +130,8 @@ class TestRootController(TestController):
                 'labels_old':'',
                 'viewable_by-0.id':'all'})
         response = self.app.post('/wiki/TEST/revert', params=dict(version='1'))
+        assert '.' in response.json['location']
+        response = self.app.get('/wiki/TEST/')
         assert 'TEST' in response
 
     def test_page_revert_with_text(self):
@@ -143,6 +145,8 @@ class TestRootController(TestController):
                 'labels_old':'',
                 'viewable_by-0.id':'all'})
         response = self.app.post('/wiki/TEST/revert', params=dict(version='1'))
+        assert '.' in response.json['location']
+        response = self.app.get('/wiki/TEST/')
         assert 'TEST' in response
 
     def test_page_update(self):
