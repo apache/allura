@@ -10,6 +10,7 @@ from tg.decorators import with_trailing_slash, without_trailing_slash
 from webob import exc
 from formencode import validators as fev
 from ming.orm import session
+import pymongo
 from pylons import c, g
 
 from allura.lib import helpers as h
@@ -107,6 +108,6 @@ class SiteAdminController(object):
         elif request.method == 'GET':
             data = {'expires': datetime.utcnow() + timedelta(days=1)}
 
-        data['token_list'] = M.ApiTicket.query.find(dict(expires={'$ne': None})).all()
+        data['token_list'] = M.ApiTicket.query.find().sort('mod_date', pymongo.DESCENDING).all()
         log.info(data['token_list'])
         return data

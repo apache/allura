@@ -137,6 +137,7 @@ class ApiTicket(MappedClass, ApiAuthMixIn):
     secret_key = FieldProperty(str, if_missing=h.cryptographic_nonce)
     expires = FieldProperty(datetime, if_missing=None)
     capabilities = FieldProperty({str:str})
+    mod_date = FieldProperty(datetime, if_missing=datetime.utcnow)
 
     user = RelationProperty('User')
 
