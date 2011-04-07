@@ -102,8 +102,9 @@ class ForgeTrackerApp(Application):
                  topic, self.config.options.mount_point)
         log.info('Headers are: %s', message['headers'])
         try:
-            ticket = TM.Ticket.query.find(
-                dict(ticket_num=int(topic))).one()
+            ticket = TM.Ticket.query.get(
+                app_config_id=self.config._id,
+                ticket_num=int(topic))
         except:
             log.exception('Error getting ticket %s', topic)
         self.handle_artifact_message(ticket, message)
