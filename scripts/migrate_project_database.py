@@ -30,9 +30,6 @@ def migrate_project_database(project):
     c.project = project
     target_uri = M.Project.default_database_uri(project.shortname)
     target_db = target_uri.rsplit('/')[-1]
-    if project is None:
-        log.fatal('Project %s not found', project.shortname)
-        return 2
     if project.database_uri == target_uri:
         log.info('Project %s is already migrated to %s', project.shortname, project.database_uri)
         return 2
