@@ -34,7 +34,7 @@ class SiteAdminController(object):
             project_count = M.Project.query.find(dict(neighborhood_id=n._id)).count()
             configured_count = M.Project.query.find(dict(neighborhood_id=n._id, database_configured=True)).count()
             neighborhoods.append((n.name, project_count, configured_count))
-        neighborhoods.sort(key=lambda t:(-t[2], -t[1]))
+        neighborhoods.sort(key=lambda n:n[0])
         return dict(neighborhoods=neighborhoods)
 
     @expose('jinja:allura:templates/site_admin_stats.html')
