@@ -15,7 +15,7 @@
 {% block actions %}
   <a href="." title="View Page"><b data-icon="{{g.icons['search'].char}}" class="ico {{g.icons['search'].css}}" title="View Page"></b></a>
   {% if page_exists and has_artifact_access('delete', page)() %}
-    <a href="./delete" title="Delete"><b data-icon="{{g.icons['delete'].char}}" class="ico {{g.icons['delete'].css}}" title="Delete"></b></a>
+    <a class="post-link" href="./delete" title="Delete"><b data-icon="{{g.icons['delete'].char}}" class="ico {{g.icons['delete'].css}}" title="Delete"></b></a>
   {% endif %}
 {% endblock %}
 

@@ -27,7 +27,7 @@
     {% endif %}
     <a href="history" title="History"><b data-icon="{{g.icons['history'].char}}" class="ico {{g.icons['history'].css}}" title="History"></b></a>
   {% elif has_artifact_access('delete', page)() %}
-    <a href="undelete" title="Undelete"><b data-icon="{{g.icons['undelete'].char}}" class="ico {{g.icons['undelete'].css}}" title="Undelete"></b></a>
+    <a class="post-link" href="undelete" title="Undelete"><b data-icon="{{g.icons['undelete'].char}}" class="ico {{g.icons['undelete'].css}}" title="Undelete"></b></a>
   {% endif %}
   {% if c.user and c.user != c.user.anonymous() %}
     {{c.subscribe_form.display(value=subscribed, action='subscribe', style='icon')}}

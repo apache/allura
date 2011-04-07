@@ -456,7 +456,7 @@ class PageController(BaseController):
         return dict(page=self.page, page_exists=page_exists, has_artifact_access=has_artifact_access)
 
     @without_trailing_slash
-    @expose()
+    @expose('json')
     @require_post()
     def delete(self):
         require(has_artifact_access('delete', self.page))
@@ -464,10 +464,10 @@ class PageController(BaseController):
         self.page.deleted = True
         suffix = " {dt.hour}:{dt.minute}:{dt.second} {dt.day}-{dt.month}-{dt.year}".format(dt=datetime.utcnow())
         self.page.title += suffix
-        redirect('../'+self.page.title+'/?deleted=True')
+        return dict(location='../'+self.page.title+'/?deleted=True')
 
     @without_trailing_slash
-    @expose()
+    @expose('json')
     @require_post()
     def undelete(self):
         self.page = WM.Page.query.get(app_config_id=c.app.config._id, title=self.title, deleted=True)
@@ -476,7 +476,7 @@ class PageController(BaseController):
         require(has_artifact_access('delete', self.page))
         self.page.deleted = False
         M.Shortlink.from_artifact(self.page)
-        redirect('./edit')
+        return dict(location='./edit')
 
     @without_trailing_slash
     @expose('jinja:forgewiki:templates/wiki/page_history.html')
@@ -544,7 +544,7 @@ class PageController(BaseController):
         return feed.writeString('utf-8')
 
     @without_trailing_slash
-    @expose()
+    @expose('json')
     @require_post()
     @validate(dict(version=validators.Int(if_empty=1)))
     def revert(self, version):
@@ -555,7 +555,7 @@ class PageController(BaseController):
         if orig:
             self.page.text = orig.text
         self.page.commit()
-        redirect('.')
+        return dict(location='.')
 
     @without_trailing_slash
     @h.vardec
