@@ -114,9 +114,9 @@ class Thread(Artifact):
     num_views = FieldProperty(int, if_missing=0)
     subscriptions = FieldProperty({str:bool})
     first_post_id = ForeignIdProperty('Post')
-    artifact_reference = FieldProperty(None)
-    artifact_id = FieldProperty(None)
     last_post_date = FieldProperty(datetime, if_missing=datetime(1970,1,1))
+    artifact_reference = FieldProperty(schema.Deprecated)
+    artifact_id = FieldProperty(schema.Deprecated)
 
     discussion = RelationProperty(Discussion)
     posts = RelationProperty('Post', via='thread_id')

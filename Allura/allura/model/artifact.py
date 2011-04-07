@@ -62,8 +62,8 @@ class Artifact(MappedClass):
     acl = FieldProperty({str:[S.ObjectId]})
     tags = FieldProperty(S.Deprecated)
     labels = FieldProperty([str])
-    references = FieldProperty(None)
-    backreferences = FieldProperty(None)
+    references = FieldProperty(S.Deprecated)
+    backreferences = FieldProperty(S.Deprecated)
     app_config = RelationProperty('AppConfig')
 
     @classmethod
@@ -554,7 +554,7 @@ class Feed(MappedClass):
     unique_id = FieldProperty(str, if_missing=lambda:h.nonce(40))
     author_name = FieldProperty(str, if_missing=lambda:c.user.get_pref('display_name') if hasattr(c, 'user') else None)
     author_link = FieldProperty(str, if_missing=lambda:c.user.url() if hasattr(c, 'user') else None)
-    artifact_reference = FieldProperty(None)
+    artifact_reference = FieldProperty(S.Deprecated)
 
 
     @classmethod
