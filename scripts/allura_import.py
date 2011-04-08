@@ -69,31 +69,34 @@ if __name__ == '__main__':
     doc_txt = open(args[0]).read()
     if options.validate:
         url += '/validate_import'
-        print cli.call(url, doc=doc_txt, options=json.dumps(import_options))
     else:
         url += '/perform_import'
 
-        existing_map = {}
-        if options.cont:
-            existing_tickets = cli.call('/rest/p/' + options.project + '/' + options.tracker + '/')['tickets']
-            for t in existing_tickets:
-                existing_map[t['ticket_num']] = t['summary']
+    existing_map = {}
+    if options.cont:
+        existing_tickets = cli.call('/rest/p/' + options.project + '/' + options.tracker + '/')['tickets']
+        for t in existing_tickets:
+            existing_map[t['ticket_num']] = t['summary']
 
-        doc = json.loads(doc_txt)
-        tickets_in = doc['trackers']['default']['artifacts']
-        doc['trackers']['default']['artifacts'] = []
-        if options.verbose:
-            print "Importing %d tickets" % len(tickets_in)
+    doc = json.loads(doc_txt)
+    tickets_in = doc['trackers']['default']['artifacts']
+    doc['trackers']['default']['artifacts'] = []
+    if options.verbose:
+        print "Processing %d tickets" % len(tickets_in)
 
-        for cnt, ticket_in in enumerate(tickets_in):
+    for cnt, ticket_in in enumerate(tickets_in):
             if ticket_in['id'] in existing_map:
                 if options.verbose:
-                    print 'Ticket %d already exists, skipping' % ticket_in['id']
+                    print 'Ticket id %d already exists, skipping' % ticket_in['id']
                 continue
             doc['trackers']['default']['artifacts'] = [ticket_in]
             res = cli.call(url, doc=json.dumps(doc), options=json.dumps(import_options))
             assert res['status'] and not res['errors']
-            if res['warnings']:
-                print "Imported ticket id %s, warnings: %s" % (ticket_in['id'], res['warnings'])
+            if options.validate:
+                if res['warnings']:
+                    print "Ticket id %s warnings: %s" % (ticket_in['id'], res['warnings'])
             else:
-                print "Imported ticket id %s" % (ticket_in['id'])
+                if res['warnings']:
+                    print "Imported ticket id %s, warnings: %s" % (ticket_in['id'], res['warnings'])
+                else:
+                    print "Imported ticket id %s" % (ticket_in['id'])
