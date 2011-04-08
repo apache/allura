@@ -435,7 +435,7 @@ class PageController(BaseController):
             cur=cur, prev=prev, next=next,
             subscribed=M.Mailbox.subscribed(artifact=self.page),
             has_artifact_access=has_artifact_access, h=h,
-            hide_left_bar=hide_left_bar, show_right_bar=c.app.show_right_bar)
+            hide_left_bar=hide_left_bar, show_meta=c.app.show_right_bar)
 
     @without_trailing_slash
     @expose('jinja:forgewiki:templates/wiki/page_edit.html')

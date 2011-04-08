@@ -1,6 +1,10 @@
 {% extends g.theme.master %}
 {% do g.register_app_css('css/wiki.css', compress=False) %}
 
+{% block edit_box %}
+  {% if show_meta %}{% block wiki_meta %}{% endblock %}{% endif %}
+{% endblock %}
+
 {% block content %}
   {% block wiki_content %}content here{% endblock %}
   <div id="create_wiki_page_holder" title="Create New Page" style="display:none">

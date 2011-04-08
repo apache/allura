@@ -9,6 +9,7 @@ b.ico {
     text-indent: -99999px;
     overflow: hidden;
     background-repeat: no-repeat;
+    vertical-align: middle;
 }
 h2.dark b.ico {background-image: url('../images/neo-icon-set-ffffff-256x350.png');}
 

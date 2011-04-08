@@ -39,10 +39,11 @@
 {{page.html_text}}
 {% endblock %}
 
-{% block right_content %}
+{% block wiki_meta %}
+<div class="editbox">
   {% if page.labels %}
-  <div>
-    Labels:
+  <div class="grid-9">
+    <label class="simple">Labels: </label>
     {% for label in page.labels %}
       {% if label != '' %}
         <span><a href="{{c.app.url}}search/?q=labels_t:{{label}}">{{label}} ({{page.artifacts_labeled_with(label).count()}})</a></span>
@@ -50,8 +51,8 @@
     {% endfor %}
   </div>
   {% endif %}
-  <div class="gravatar sm">
-    Authors:
+  <div class="grid-9 gravatar sm">
+    <label class="simple">Authors: </label>
     {% for author in page.authors() %}
       <a href="{{author.url()}}">
         {{lib.gravatar(author, size=16)}}
@@ -59,7 +60,7 @@
     {% endfor %}
   </div>
   {% if page.attachments %}
-  <div>
+  <div class="grid-18">
     <strong>Attachments</strong>
   </div>
   {% endif %}
@@ -79,6 +80,7 @@
     </div>
     {% endif %}
   {% endfor %}
+</div>
 {% endblock %}
 
 {% block after_content %}

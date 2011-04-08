@@ -332,7 +332,7 @@ class TestRootController(TestController):
         wiki_page3 = self.app.get('/wiki/TEST/')
         assert wiki_page3.html.find('ul',{'class':'sidebarmenu'})
 
-    def test_show_right_bar(self):
+    def test_show_metadata(self):
         self.app.post('/wiki/TEST/update', params={
                 'title':'TEST',
                 'text':'sometext',
@@ -340,7 +340,7 @@ class TestRootController(TestController):
                 'labels_old':'',
                 'viewable_by-0.id':'all'})
         wiki_page = self.app.get('/wiki/TEST/')
-        assert wiki_page.html.find('div',{'id':'sidebar-right'})
+        assert wiki_page.html.find('div',{'class':'editbox'})
         options_admin = self.app.get('/admin/wiki/options', validate_chunk=True)
         assert options_admin.form['show_right_bar'].checked
         options_admin.form['show_right_bar'].checked = False
@@ -348,7 +348,7 @@ class TestRootController(TestController):
         options_admin2 = self.app.get('/admin/wiki/options', validate_chunk=True)
         assert not options_admin2.form['show_right_bar'].checked
         wiki_page2 = self.app.get('/wiki/TEST/')
-        assert not wiki_page2.html.find('div',{'id':'sidebar-right'})
+        assert not wiki_page2.html.find('div',{'class':'editbox'})
 
     def test_page_links_are_colored(self):
         self.app.get('/wiki/TEST/')
