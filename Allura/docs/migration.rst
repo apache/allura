@@ -41,15 +41,15 @@ If, during import, some user does not exist, corresponding field in a ticket wil
 be set to Nobody/Anonymous.
 
 It oftentimes not possible or plausible to ensure that all submitting users have
-account on SourceForge, but it is usually more important to make sure that
-assigned-to users do have. Assigned-to users are usually more closed set, like
-members of your project, so it's good idea to ask them to register SF.net account
+account on the forge, but it is usually more important to make sure that
+assigned-to users do. Assigned-to users are usually a smaller set, like
+members of your project, so it's good idea to ask them to register an account
 before performing import.
 
-Another common issue is that username in original tracker and in SF.net do not
-match. Import service provides ability to specify user mapping to overcome this.
+Another common issue is that username in original tracker and in the forge do not
+match. The import service provides the ability to specify user mapping to overcome this.
 For example, you can specify that user "john" as appearing in JSON should be
-translated to "john2" in SF.net. Mapping should be prepared in the form of JSON
+translated to "john2" in the forge. Mapping should be prepared in the form of JSON
 dictionary, e.g. ``{"john": "john2"}``.
 
 Other issue is extra ticket fields appearing in the original tracker. Allura
