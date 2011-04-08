@@ -106,7 +106,7 @@ class SiteAdminController(object):
                     log.exception('Could not create API ticket:')
                     flash('Error creating API ticket')
         elif request.method == 'GET':
-            data = {'expires': datetime.utcnow() + timedelta(days=1)}
+            data = {'expires': datetime.utcnow() + timedelta(days=2)}
 
         data['token_list'] = M.ApiTicket.query.find().sort('mod_date', pymongo.DESCENDING).all()
         log.info(data['token_list'])
