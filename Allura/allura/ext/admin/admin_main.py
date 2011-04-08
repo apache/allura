@@ -110,6 +110,7 @@ class AdminApp(Application):
         if c.project.shortname == '--init--':
             admin_url = c.project.neighborhood.url()+'_admin/'
             links = links + [
+                     SitemapEntry('Neighborhood'),
                      SitemapEntry('Overview', admin_url+'overview', className='nav_child'),
                      SitemapEntry('Permissions', admin_url+'permissions', className='nav_child'),
                      SitemapEntry('Awards', admin_url+'accolades', className='nav_child')]
