@@ -8,10 +8,10 @@ At this time, tracker/ticket import is available. The migration procedure is as 
    (http://home.gna.org/forgeplucker/forge-ontology.html).
 2. Prepare a tracker in Allura project for import.
 3. Validate import data.
-4. Request Import API Ticket.
+4. Request/Generate Import API Ticket.
 5. Perform actual migration.
 
-Subsection below discuss each step in more detail.
+Subsections below discuss each step in more detail.
 
 Exporting data
 --------------
@@ -77,17 +77,33 @@ To run it in the validation mode::
    --user-map=users.json \
    --validate import.json
 
+
+Getting Import API ticket
+-------------------------
+To perform actual import, you should request an Import API ticket from site
+administrator. For user-facing documentation for SourceForge.net, please refer
+to the corresponding section at https://sourceforge.net/p/forge/documentation/ToC/ .
+
+Below are described site admin's step to generate an API ticket on user's request.
+
+Visit /nf/admin/ link of the site for Site Admin pages. Select "API Tickets" from
+left navigation menu. There will be a form to generate a new ticket and a list of
+existing API tickets (most recently generated first) below it. To create a ticket,
+fill in following information:
+
+* Username - all actions performed using the ticket will be tied to this account.
+* Capabilities (JSON) - all API tickets must have capabilities (represented with
+  JSON dictionary) set. For import, this should be ``{"import": <projectname>}``,
+  e.g. ``{"import": "test"}``. For multiple projects, several tickets must be created.
+* Expiration date - All API tickets are time-limited, with default active duration
+  of 48 hours, all actions using the ticket must be performed within this timeframe.
+
+Once a ticket is generated (will be shown topmost in the list), API ticket and secret
+key values must be passed securely to the requesting user.
+
+
 Performing actual import
 ------------------------
-To perform actual import, you should request an import API ticket. This is done
-via the usual support channel for SourceForge.net, please refer to site
-documentation. You should submit a ticket with details of the project you want
-to import to, and description of why and from what source you want to perform
-migration. After due diligence check, support admins will issue an API ticket/
-secret pair. This pair can be used the same way as API key/secret key. But unlike
-API key, the ticket has expiration date, and is usually valid for use only within
-24-48 hours.
-
 The same script ``allura_import.py``, is used for actual import, you just should
 omit ``--validation`` option and use API ticket/secret pair::
 
