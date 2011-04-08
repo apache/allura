@@ -77,8 +77,9 @@ class HgImplementation(M.RepositoryImplementation):
         # !$ hg doesn't like unicode as urls
         src, repo = hg.clone(
             ui.ui(),
-            source_url.encode('utf-8'), 
-            self._repo.full_fs_path.encode('utf-8'))
+            source_url.encode('utf-8'),
+            self._repo.full_fs_path.encode('utf-8'),
+            update=False)
         self.__dict__['_hg'] = repo
         self._setup_special_files()
         self._repo.status = 'analyzing'
