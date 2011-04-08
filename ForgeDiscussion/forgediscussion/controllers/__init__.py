@@ -1,1 +1,1 @@
-from root import RootController
+from root import RootController, RootRestController

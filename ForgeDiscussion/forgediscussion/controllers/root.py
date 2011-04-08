@@ -1,3 +1,4 @@
+import json
 import logging
 import pymongo
 from urllib import urlencode, unquote
@@ -19,6 +20,7 @@ from allura.lib.decorators import require_post
 from allura.controllers import BaseController
 
 from .forum import ForumController
+from forgediscussion import import_support
 from forgediscussion import model
 from forgediscussion import widgets as FW
 from allura.lib.widgets import discuss as DW
@@ -173,3 +175,38 @@ class RootController(BaseController):
         response.headers['Content-Type'] = ''
         response.content_type = 'application/xml'
         return feed.writeString('utf-8')
+
+class RootRestController(BaseController):
+
+    @expose('json:')
+    def validate_import(self, doc=None, username_mapping=None, **kw):
+        require(has_artifact_access('admin'))
+        if username_mapping is None: username_mapping = {}
+        try:
+            doc = json.loads(doc)
+            warnings, doc = import_support.validate_import(doc, username_mapping)
+            return dict(warnings=warnings, errors=[])
+        except Exception, e:
+            raise
+            log.exception(e)
+            return dict(status=False, errors=[repr(e)])
+
+    @expose('json:')
+    def perform_import(
+        self, doc=None, username_mapping=None, default_username=None, create_users=False,
+        **kw):
+        require(has_project_access('tool'))
+        if username_mapping is None: username_mapping = '{}'
+        if c.api_token.get_capability('import') != c.project.shortname:
+            log.error('Import capability is not enabled for %s', c.project.shortname)
+            raise exc.HTTPForbidden(detail='Import is not allowed')
+        try:
+            doc = json.loads(doc)
+            username_mapping = json.loads(username_mapping)
+            warnings = import_support.perform_import(
+                doc, username_mapping, default_username, create_users)
+            return dict(warnings=warnings, errors=[])
+        except Exception, e:
+            raise
+            log.exception(e)
+            return dict(status=False, errors=[str(e)])

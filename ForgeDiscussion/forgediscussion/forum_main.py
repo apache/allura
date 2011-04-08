@@ -21,7 +21,7 @@ from allura.lib.security import require, has_artifact_access
 # Local imports
 from forgediscussion import model as DM
 from forgediscussion import version
-from .controllers import RootController
+from .controllers import RootController, RootRestController
 
 from widgets.admin import OptionsAdmin, AddForum
 
@@ -56,6 +56,7 @@ class ForgeDiscussionApp(Application):
     def __init__(self, project, config):
         Application.__init__(self, project, config)
         self.root = RootController()
+        self.api_root = RootRestController()
         self.admin = ForumAdminController(self)
         self.default_forum_preferences = dict(
             subscriptions={})
