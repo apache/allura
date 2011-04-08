@@ -1,0 +1,33 @@
+#!/usr/bin/python
+
+import shlex
+import subprocess
+import sys
+
+def main():
+    upstream = 'master'
+    if len(sys.argv) > 1:
+        upstream = sys.argv[1]
+    branches = git('branch', '-a', '--no-merged', upstream)
+    branches = [ line[2:] for line in branches ]
+    for branch in branches:
+        commits = ''.join(git('cherry', upstream, branch, strip_eol=False))
+        if commits.find('+') != -1:
+            print branch
+
+def git(*args, **kw):
+    if len(args)==1 and isinstance(args[0], basestring):
+        argv = shlex.split(args[0])
+    else:
+        argv = list(args)
+    if argv[0] != 'git':
+        argv.insert(0, 'git')
+    p = subprocess.Popen(argv, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+    rc = p.wait()
+    output = p.stdout.readlines()
+    if kw.get('strip_eol', True):
+        output = [ line[:-1] for line in output ]
+    return output
+
+if __name__ == '__main__':
+    main()
