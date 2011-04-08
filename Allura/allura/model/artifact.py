@@ -65,6 +65,8 @@ class Artifact(MappedClass):
     references = FieldProperty(S.Deprecated)
     backreferences = FieldProperty(S.Deprecated)
     app_config = RelationProperty('AppConfig')
+    # Not null if artifact originated from external import, then API ticket id
+    import_id = FieldProperty(str, if_missing=None)
 
     @classmethod
     def attachment_class(cls):
@@ -295,8 +297,6 @@ class VersionedArtifact(Artifact):
         history_class = Snapshot
 
     version = FieldProperty(S.Int, if_missing=0)
-    # Not null if artifact originated from external import, then API ticket id
-    import_id = FieldProperty(str, if_missing=None)
 
     def commit(self):
         '''Save off a snapshot of the artifact and increment the version #'''

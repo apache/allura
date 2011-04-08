@@ -1,43 +1,19 @@
 #-*- python -*-
 import logging
-import json, urllib, re
-from datetime import datetime, timedelta
-from urllib import urlencode
-from webob import exc
+import json
+from datetime import datetime
 from cStringIO import StringIO
 
 # Non-stdlib imports
-import pkg_resources
-from tg import expose, validate, redirect, flash
-from tg.decorators import with_trailing_slash, without_trailing_slash
-from pylons import g, c, request, response
-from formencode import validators
-from bson import ObjectId
+from pylons import c
 
 from ming.orm.ormsession import ThreadLocalORMSession
-from ming.orm import session, state
 
 # Pyforge-specific imports
 from allura import model as M
-from allura.lib import helpers as h
-from allura.app import Application, SitemapEntry, DefaultAdminController
-from allura.lib.search import search_artifact
-from allura.lib.security import require, has_artifact_access
-from allura.lib import widgets as w
-from allura.lib.widgets import form_fields as ffw
-from allura.lib.widgets.subscriptions import SubscribeForm
-from allura.controllers import AppDiscussionController, AppDiscussionRestController
-from allura.controllers import attachments as ac
-from allura.controllers import BaseController
 
 # Local imports
 from forgetracker import model as TM
-from forgetracker import version
-
-from forgetracker.widgets.ticket_form import TicketForm, TicketCustomField
-from forgetracker.widgets.bin_form import BinForm
-from forgetracker.widgets.ticket_search import TicketSearchResults, MassEdit, MassEditForm
-from forgetracker.widgets.admin_custom_fields import TrackerFieldAdmin, TrackerFieldDisplay
 
 log = logging.getLogger(__name__)
 
@@ -160,19 +136,18 @@ class ImportSupport(object):
     def make_artifact(self, ticket_dict):
         remapped = {}
         for f, v in ticket_dict.iteritems():
-            if f in self.FIELD_MAP:
-                transform = self.FIELD_MAP[f]
-                if transform is None:
-                    continue
-                elif transform is True:
-                    remapped[f] = v
-                elif callable(transform):
-                    transform(remapped, f, v)
-                else:
-                    new_f, conv = transform
-                    remapped[new_f] = conv(v)
-            else:
+            transform = self.FIELD_MAP.get(f, ())
+            if transform is None:
+                continue
+            elif transform is True:
+                remapped[f] = v
+            elif callable(transform):
+                transform(remapped, f, v)
+            elif transform is ():
                 self.custom(remapped, f, v)
+            else:
+                new_f, conv = transform
+                remapped[new_f] = conv(v)
 
         ticket_num = ticket_dict['id']
         existing_ticket = TM.Ticket.query.get(app_config_id=c.app.config._id,
@@ -296,14 +271,8 @@ option user_map to avoid losing username information. Unknown users: %s''' % unk
         
         M.session.artifact_orm_session._get().skip_mod_date = True
         for a in artifacts:
-            comments = []
-            attachments = []
-            if 'comments' in a:
-                comments = a['comments']
-                del a['comments']
-            if 'attachments' in a:
-                attachments = a['attachments']
-                del a['attachments']
+            comments = a.pop('comments', [])
+            attachments = a.pop('attachments', [])
 #            log.info(a)
             t = self.make_artifact(a)
             for c_entry in comments:
