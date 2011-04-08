@@ -24,6 +24,7 @@ Import project data dump in JSON format into an Allura project.''')
     optparser.add_option('-o', dest='import_opts', default=[], action='append', help='Specify import option(s)', metavar='opt=val')
     optparser.add_option('--user-map', dest='user_map_file', help='Map original users to SF.net users', metavar='JSON_FILE')
     optparser.add_option('--validate', dest='validate', action='store_true', help='Validate import data')
+    optparser.add_option('-c', '--continue', dest='cont', action='store_true', help='Continue import (skip existing tickets)')
     optparser.add_option('-v', '--verbose', dest='verbose', action='store_true', help='Verbose operation')
     options, args = optparser.parse_args()
     if len(args) != 1:
@@ -72,15 +73,23 @@ if __name__ == '__main__':
     else:
         url += '/perform_import'
 
+        existing_map = {}
+        if options.cont:
+            existing_tickets = cli.call('/rest/p/' + options.project + '/' + options.tracker + '/')['tickets']
+            for t in existing_tickets:
+                existing_map[t['ticket_num']] = t['summary']
+
         doc = json.loads(doc_txt)
         tickets_in = doc['trackers']['default']['artifacts']
         doc['trackers']['default']['artifacts'] = []
         if options.verbose:
             print "Importing %d tickets" % len(tickets_in)
 
-        cnt = 0
-        for ticket_in in tickets_in:
-            cnt += 1
+        for cnt, ticket_in in enumerate(tickets_in):
+            if ticket_in['id'] in existing_map:
+                if options.verbose:
+                    print 'Ticket %d already exists, skipping' % ticket_in['id']
+                continue
             doc['trackers']['default']['artifacts'] = [ticket_in]
             res = cli.call(url, doc=json.dumps(doc), options=json.dumps(import_options))
             assert res['status'] and not res['errors']
