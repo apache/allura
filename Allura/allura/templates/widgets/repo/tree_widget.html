@@ -25,7 +25,7 @@
     {% for dirent in tree.ls() %}
     <tr>
       <td class="nowrap">
-        <a href="{{h.really_unicode(dirent.href)}}">
+        <a href="{{h.urlquote(dirent.href)}}">
           <b data-icon="{{dirent.kind == 'DIR' and 'o' or 'n'}}" class="ico {{dirent.kind == 'DIR' and 'folder' or 'table'}}"></b>
           <span>{{h.really_unicode(dirent.name)}}</span>
         </a>

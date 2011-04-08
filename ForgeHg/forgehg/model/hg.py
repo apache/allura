@@ -16,6 +16,7 @@ from ming.orm import MappedClass, session
 from ming.utils import LazyProperty
 
 from allura import model as M
+from allura.lib import helpers as h
 from allura.model.repository import topological_sort, GitLikeTree
 
 log = logging.getLogger(__name__)
@@ -184,7 +185,7 @@ class HgImplementation(M.RepositoryImplementation):
         return result, [ p.hex() for p in candidates ]
 
     def open_blob(self, blob):
-        fctx = self._hg[blob.commit.object_id][blob.path()[1:]]
+        fctx = self._hg[blob.commit.object_id][h.really_unicode(blob.path()).encode('utf-8')[1:]]
         return StringIO(fctx.data())
 
     def _setup_hooks(self):

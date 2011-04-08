@@ -269,12 +269,12 @@ class SVNImplementation(M.RepositoryImplementation):
         return tree_id
 
     def _tree_oid(self, commit_id, path):
-        data = 'tree\n%s\n%s' % (commit_id, path)
-        return sha1(data).hexdigest()
+        data = 'tree\n%s\n%s' % (commit_id, h.really_unicode(path))
+        return sha1(data.encode('utf-8')).hexdigest()
 
     def _blob_oid(self, commit_id, path):
-        data = 'blob\n%s\n%s' % (commit_id, path)
-        return sha1(data).hexdigest()
+        data = 'blob\n%s\n%s' % (commit_id, h.really_unicode(path))
+        return sha1(data.encode('utf-8')).hexdigest()
 
     def log(self, object_id, skip, count):
         revno = self._revno(object_id)
