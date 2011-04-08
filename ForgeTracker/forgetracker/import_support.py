@@ -270,9 +270,8 @@ class ImportSupport(object):
         unknown_users = sorted(list(unknown_users))
         if unknown_users:
             self.warnings.append('''Document references unknown users. You should provide 
-option user_map, or at least option create_user_stubs to avoid losing username information.
-Unknown users: %s''' % unknown_users)
-            
+option user_map to avoid losing username information. Unknown users: %s''' % unknown_users)
+
         return {'status': True, 'errors': self.errors, 'warnings': self.warnings}
 
     def perform_import(self, doc, options, **post_data):
