@@ -126,9 +126,13 @@ Or you can use a [shortcut][] reference, which links the text
 </pre></div>
 
 <h2>Artifact Links</h2>
-<p>Any existing forge resource can be linked with surrounding square brackets ie [mypage].</p>
+<p>Any existing forge resource can be linked with surrounding square brackets ie [MyPage] or [#123].</p>
 
-<p>Links to resources in other tools can be explicitly referenced by adding a tool identifier prefix to the link.  So for instance `[developerwiki:MyTechnicalPage]` and `[userwiki:MySimplePage]` can refer to wiki pages in a `developerwiki` instance.  You can also link to tickets with `[tickets:123]` assuming there's a 123 ticket in a ForgeTracker instance mounted at `tickets`.   The same is true for forums, or any of the other tools you have installed.   You can even link to tickets in a subproject with `[subproject.tickets:123]`.</p>
+<p>Links to resources in other tools can be explicitly referenced by adding a tool identifier prefix to the link.
+So for instance `[developerwiki:MyPage]` can refer to a wiki page in a `developerwiki` instance.
+You can also link to tickets with `[tickets:#123]` assuming there's a 123 ticket in a Tracker instance mounted at `tickets`.
+The same is true for forums, or any of the other tools you have installed.
+You can even link to tickets in a subproject with `[subproject.tickets:#123]`.</p>
 
 <h2>Text</h2>
 <div class="codehilite"><pre>Use * or _ to emphasize things:
@@ -219,6 +223,8 @@ Make sure you have a blank line above the dashes, though, or else:
 you will get a header
 ---
 </pre></div>
+
+
 <h2>Images</h2>
 <div class="codehilite"><pre>To include an image, just put a "!" in front of a text link:
 
@@ -230,6 +236,11 @@ image.
 You can also use a title if you want, like this:
 
 ![tiny arrow](http://greg.vario.us/img/extlink.png "tiny arrow")
+
+To reference an attached image, just use the img macro.  You can add more attributes:
+
+[[img src=attached-image.jpg alt=foobar width=20%]]
+
 </pre></div>
 
 <h2>Escapes</h2>
@@ -273,6 +284,12 @@ You can also use a title if you want, like this:
 ~~~~~~
 &lt;a href="#">My code&lt;/a>
 ~~~~~~
+</pre></div>
+
+<h2>Includes</h2>
+<p>You can embed another wiki page directly:</p>
+<div class="codehilite"><pre>
+[[include ref=SamplePage]]
 </pre></div>
 
 <h2>HTML</h2>
