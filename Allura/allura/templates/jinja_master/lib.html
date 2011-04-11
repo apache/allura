@@ -92,14 +92,14 @@
 
 {% macro markdown_syntax() %}
 <h1>Markdown Syntax Guide</h1>
-<p>The Allura code uses markdown syntax everywhere to allow you to create rich<br>text markup, and extends markdown in several ways to allow for quick linking<br>to other artifacts in your project. </p><p>Markdown was created with one goal in mind: </p>
-<blockquote>
-<p>Markdown is intended to be as easy-to-read and easy-to-write as is feasible.</p>
-</blockquote>
-<p>But the most important goal was to make it readable in its raw plain text <br>format. </p><h2>Links</h2>
+<p>The Allura code uses markdown syntax everywhere to allow you to create rich<br>text markup, and extends markdown in several ways to allow for quick linking<br>to other artifacts in your project. </p>
+<p>Markdown was created to be easy to read, easy to write, and still readable in plain text format.</p>
 
-<div class="codehilite"><pre>For a URL or email, just write it like this:
+<h2>Links</h2>
 
+<p>Most URLs will automatically be turned into links.  To be explicit, just write it like this:</p>
+
+<div class="codehilite"><pre>
 &lt;http://someurl&gt;
 
 &lt;somebbob@example.com&gt;
@@ -133,6 +133,13 @@ So for instance `[developerwiki:MyPage]` can refer to a wiki page in a `develope
 You can also link to tickets with `[tickets:#123]` assuming there's a 123 ticket in a Tracker instance mounted at `tickets`.
 The same is true for forums, or any of the other tools you have installed.
 You can even link to tickets in a subproject with `[subproject.tickets:#123]`.</p>
+
+<div class="codehilite"><pre>
+[MyPage]
+[developerwiki:MyPage]
+[#123]
+[tickets:#123]
+</pre></div>
 
 <h2>Text</h2>
 <div class="codehilite"><pre>Use * or _ to emphasize things:
@@ -226,21 +233,19 @@ you will get a header
 
 
 <h2>Images</h2>
-<div class="codehilite"><pre>To include an image, just put a "!" in front of a text link:
-
+<p>To include an image, just put a "!" in front of a text link:</p>
+<div class="codehilite"><pre>
 ![alternate text](http://someurl/image.gif)
-
-The "alternate text" will show up if the browser can't load the
-image.
-
-You can also use a title if you want, like this:
-
+</pre></div>
+<p>The "alternate text" will show up if the browser can't load the
+image.</p>
+<p>You can also use a title if you want, like this:</p>
+<div class="codehilite"><pre>
 ![tiny arrow](http://greg.vario.us/img/extlink.png "tiny arrow")
-
-To reference an attached image, just use the img macro.  You can add more attributes:
-
+</pre></div>
+<p>To reference an attached image, just use the img macro.  You can add more attributes:</p>
+<div class="codehilite"><pre>
 [[img src=attached-image.jpg alt=foobar width=20%]]
-
 </pre></div>
 
 <h2>Escapes</h2>
@@ -249,7 +254,19 @@ To reference an attached image, just use the img macro.  You can add more attrib
 * this shows the asterisks: \*a happy day\*
 </pre></div>
 <p>The backslashes will disappear and leave the asterisks.</p>
-<p>You can do the same with any of the characters that have a special meaning<br>for Markdown.</p><h2>More Headers</h2>
+<p>You can do the same with any of the characters that have a special meaning<br>for Markdown.</p>
+<p>HTML tags may need to be escaped.  &lt;b&gt; will be interpreted as a bold tag.  Entity codes will be used.
+&lt;foobar&gt; isn't allowed and will be dropped, so you probably want to escape it:</p>
+<div class="codehilite"><pre>
+&lt;b&gt;this will be bold&lt;/b&gt;
+you should escape &amp;lt;unknown&amp;gt; tags
+&amp;copy; special entities work
+&amp;amp;&amp;copy; if you want to escape it
+</pre></div>
+<p>Individual ampersands (&amp;) and less-than signs (&lt;) are fine, they will be shown as expected.</p>
+
+
+<h2>More Headers</h2>
 <div class="codehilite"><pre>More ways of doing headers:
 
 # this is a huge header #
@@ -278,7 +295,7 @@ To reference an attached image, just use the img macro.  You can add more attrib
 # Code goes here ...
 </pre></div>
 
-<p>You can also designate a code block by surrounding it with lines of tildes. The type of code highlighting to apply will be inferred based on the code within.</p>
+<p>You can also designate a code block by surrounding it with lines of tildes. The type of code highlighting to apply will be inferred based on the code within, or you can specify like above.</p>
 
 <div class="codehilite"><pre>
 ~~~~~~
@@ -292,9 +309,6 @@ To reference an attached image, just use the img macro.  You can add more attrib
 [[include ref=SamplePage]]
 </pre></div>
 
-<h2>HTML</h2>
-<p>Don't worry about special characters which need to be escaped in html. </p>
-<p>You can write an ampersand &amp; a less-than sign, and they show up expected:  3 &lt; 4.</p>
 <h2>Thanks</h2>
 <p>Thanks to John Gruber and Aaron Swartz for creating Markdown.</p>
 <p>
