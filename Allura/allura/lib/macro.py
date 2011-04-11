@@ -63,21 +63,24 @@ def projects(category=None, display_mode='grid', sort='last_updated'):
 def include(ref=None, **kw):
     from allura import model as M
     from allura.lib.widgets.macros import Include
-    if ref is None: return '[-include-]'
+    if ref is None:
+        return '[-include-]'
     link = M.Shortlink.lookup(ref)
-    if not link: return '[[include %s]]' % ref
+    if not link:
+        return '[[include %s (not found)]]' % ref
     artifact = link.ref.artifact
-    if artifact is None: return '[[include %s]]' % ref
+    if artifact is None:
+        return '[[include (artifact not found)]]' % ref
     included = request.environ.setdefault('allura.macro.included', set())
     if artifact in included:
-        return '[-...-]'
+        return '[[include %s (already included)]' % ref
     else:
         included.add(artifact)
     sb = Include()
     g.resource_manager.register(sb)
     response = sb.display(artifact=artifact, attrs=kw)
     return response
-    
+
 @macro
 def img(src=None, **kw):
     attrs = ('%s="%s"' % t for t in kw.iteritems())
