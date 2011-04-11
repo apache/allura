@@ -1,15 +1,17 @@
-{% set ul_active = False %}
+{% set ul_active = [] %}
 {% macro sidebar_item(s) -%}
   {% if s.url %}
-    {% if not ul_active %}
+    {% if not ul_active[-1] %}
       <ul class="sidebarmenu">
+      {% do ul_active.append(True) %}
     {% endif %}
     <li{% if request.url.find(s.url,-s.url.__len__()) != -1 %} class="active"{% endif %}>
       <a href="{{s.url}}"{% if s.className %} class="{{s.className or ''}}"{% endif %}>{% if s.ui_icon %}<b data-icon="{{s.ui_icon.char}}" class="ico {{s.ui_icon.css}}"></b> {% endif %}<span{% if s.small != None %} class="has_small"{% endif %}>{{h.really_unicode(s.label)}}</span>{% if s.small != None %}<small>{{s.small}}</small>{% endif %}</a>
     </li>
   {% else %}
-    {% if ul_active %}
+    {% if ul_active[-1] %}
       </ul>
+      {% do ul_active.append(False) %}
     {% endif %}
     {% if s.label %}
       <h3 class="{{s.className or ''}}">{% if s.ui_icon %}<b data-icon="{{s.ui_icon.char}}" class="ico {{s.ui_icon.css}}"></b>{% endif %}{{s.label}}</h3>
@@ -28,31 +30,19 @@
     {% if c.custom_sidebar_menu %}
       {% for s in c.custom_sidebar_menu %}
         {{sidebar_item(s)}}
-        {% if s.url %}
-          {% set ul_active = True %}
-        {% else %}
-          {% set ul_active = False %}
-        {% endif %}
       {% endfor %}
     {% endif %}
     {% if c.app %}
       {% for s in c.app.sidebar_menu() %}
         {{sidebar_item(s)}}
-        {% if s.url %}
-          {% set ul_active = True %}
-        {% else %}
-          {% set ul_active = False %}
-        {% endif %}
       {% endfor %}
     {% elif c.project %}
       {% for s in c.project.sidebar_menu() %}
         {{sidebar_item(s)}}
-        {% if s.url %}
-          {% set ul_active = True %}
-        {% else %}
-          {% set ul_active = False %}
-        {% endif %}
       {% endfor %}
     {% endif %}
-    </ul>
+    {% if ul_active[-1] %}
+      </ul>
+      {% do ul_active.append(False) %}
+    {% endif %}
 </div>
