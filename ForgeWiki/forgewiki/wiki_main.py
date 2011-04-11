@@ -168,7 +168,6 @@ class ForgeWikiApp(Application):
             links.append(SitemapEntry('Moderate', discussion.url() + 'moderate', ui_icon=g.icons['pencil'],
                 small = pending_mod_count))
         links = links + [SitemapEntry(''),
-            SitemapEntry('Wiki Help',c.app.url+'wiki_help/', className='nav_child'),
             SitemapEntry('Markdown Syntax',c.app.url+'markdown_syntax/', className='nav_child')
         ]
         return links
@@ -340,12 +339,6 @@ class RootController(BaseController):
     def markdown_syntax(self):
         'Display a page about how to use markdown.'
         return dict(example=MARKDOWN_EXAMPLE)
-
-    @with_trailing_slash
-    @expose('jinja:forgewiki:templates/wiki/help.html')
-    def wiki_help(self):
-        'Display a help page about using the wiki.'
-        return dict()
 
     @without_trailing_slash
     @expose()

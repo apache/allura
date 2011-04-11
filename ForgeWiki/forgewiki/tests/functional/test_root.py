@@ -29,10 +29,6 @@ class TestRootController(TestController):
         response = self.app.get('/wiki/markdown_syntax/')
         assert 'Markdown Syntax' in response
 
-    def test_root_wiki_help(self):
-        response = self.app.get('/wiki/wiki_help/')
-        assert 'Wiki Help' in response
-
     def test_root_browse_tags(self):
         response = self.app.get('/wiki/browse_tags/')
         assert 'Browse Labels' in response

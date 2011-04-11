@@ -63,6 +63,7 @@ class ReindexCommand(base.Command):
                     ref_ids = []
                     # Create artifact references and shortlinks
                     for a in a_cls.query.find(dict(app_config_id={'$in': app_config_ids})):
+                        base.log.info('      %s', a.shorthand_id())
                         try:
                             M.ArtifactReference.from_artifact(a)
                             M.Shortlink.from_artifact(a)
