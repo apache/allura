@@ -29,6 +29,9 @@ def add_artifacts(ref_ids):
             except Exception:
                 log.error('Error indexing artifact %s', ref_id)
                 exceptions.append(sys.exc_info())
+
+    if len(exceptions) == 1:
+        raise exceptions[0][0], exceptions[0][1], exceptions[0][2]
     if exceptions:
         raise CompoundError(*exceptions)
 
@@ -51,4 +54,3 @@ def _indexing_disabled(session):
         yield session
     finally:
         session.disable_artifact_index = session.skip_mod_date = False
-
