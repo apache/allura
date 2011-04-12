@@ -40,6 +40,7 @@ class TestRootController(TestController):
         response = self.app.get('/blog/2010/08/my-post/')
         assert 'Nothing to see here' in response
         self.app.get('/blog/2010/08/no-my-post', status=404)
+        self.app.get('/blog/')
 
     def test_post_edit(self):
         self._post()
