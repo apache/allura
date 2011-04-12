@@ -10,7 +10,7 @@ from allura.lib.exceptions import CompoundError
 log = logging.getLogger(__name__)
 
 @task
-def add_artifacts(ref_ids):
+def add_artifacts(ref_ids, update_solr=True, update_refs=True):
     '''Add the referenced artifacts to SOLR and shortlinks'''
     from allura import model as M
     from allura.lib.search import find_shortlinks, solarize
@@ -21,11 +21,15 @@ def add_artifacts(ref_ids):
                 ref = M.ArtifactReference.query.get(_id=ref_id)
                 artifact = ref.artifact
                 s = solarize(artifact)
-                if s is None: continue
-                g.solr.add([s])
-                if isinstance(artifact, M.Snapshot): continue
-                ref.references = [
-                    link.ref_id for link in find_shortlinks(s['text']) ]
+                if s is None:
+                    continue
+                if update_solr:
+                    g.solr.add([s])
+                if update_refs:
+                    if isinstance(artifact, M.Snapshot):
+                        continue
+                    ref.references = [
+                        link.ref_id for link in find_shortlinks(s['text']) ]
             except Exception:
                 log.error('Error indexing artifact %s', ref_id)
                 exceptions.append(sys.exc_info())

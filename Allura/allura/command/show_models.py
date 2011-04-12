@@ -3,7 +3,7 @@ from collections import defaultdict
 
 from pylons import c, g
 
-from ming.orm import MappedClass, mapper, ThreadLocalORMSession, session, state
+from ming.orm import MappedClass, mapper
 
 import allura.tasks.index_tasks
 from allura.lib.exceptions import CompoundError
@@ -35,6 +35,11 @@ class ReindexCommand(base.Command):
     parser.add_option('-n', '--neighborhood', dest='neighborhood', default=None,
                       help='neighborhood to reindex (e.g. p)')
 
+    parser.add_option('--solr', action='store_true', dest='solr',
+                      help='Solr needs artifact references to already exist.')
+    parser.add_option('--refs', action='store_true', dest='refs',
+                      help='Update artifact references and shortlinks')
+
     def command(self):
         from allura import model as M
         self.basic_setup()
@@ -47,14 +52,21 @@ class ReindexCommand(base.Command):
             q_project = dict(neighborhood_id=neighborhood_id)
         else:
             q_project = {}
+
+        # if none specified, do all
+        if not self.options.solr and not self.options.refs:
+            self.options.solr = self.options.refs = True
+
         for projects in utils.chunked_find(M.Project, q_project):
             for p in projects:
                 c.project = p
                 base.log.info('Reindex project %s', p.shortname)
                 # Clear index for this project
-                g.solr.delete(q='project_id_s:%s' % p._id)
-                M.ArtifactReference.query.remove({'artifact_reference.project_id':p._id})
-                M.Shortlink.query.remove({'project_id':p._id})
+                if self.options.solr:
+                    g.solr.delete(q='project_id_s:%s' % p._id)
+                if self.options.refs:
+                    M.ArtifactReference.query.remove({'artifact_reference.project_id':p._id})
+                    M.Shortlink.query.remove({'project_id':p._id})
                 app_config_ids = [ ac._id for ac in p.app_configs ]
                 # Traverse the inheritance graph, finding all artifacts that
                 # belong to this project
@@ -63,18 +75,22 @@ class ReindexCommand(base.Command):
                     ref_ids = []
                     # Create artifact references and shortlinks
                     for a in a_cls.query.find(dict(app_config_id={'$in': app_config_ids})):
-                        base.log.info('      %s', a.shorthand_id())
-                        try:
-                            M.ArtifactReference.from_artifact(a)
-                            M.Shortlink.from_artifact(a)
-                        except:
-                            base.log.exception('Making ArtifactReference/Shortlink from %s', a)
-                            continue
+                        if self.options.verbose:
+                            base.log.info('      %s', a.shorthand_id())
+                        if self.options.refs:
+                            try:
+                                M.ArtifactReference.from_artifact(a)
+                                M.Shortlink.from_artifact(a)
+                            except:
+                                base.log.exception('Making ArtifactReference/Shortlink from %s', a)
+                                continue
                         ref_ids.append(a.index_id())
                     M.main_orm_session.flush()
                     M.artifact_orm_session.clear()
                     try:
-                        allura.tasks.index_tasks.add_artifacts(ref_ids)
+                        allura.tasks.index_tasks.add_artifacts(ref_ids,
+                                                               update_solr=self.options.solr,
+                                                               update_refs=self.options.refs)
                     except CompoundError, err:
                         base.log.exception('Error indexing artifacts:\n%r', err)
                         base.log.error('%s', err.format_error())
@@ -173,10 +189,6 @@ def dump_cls(depth, cls):
         if hasattr(p, 'field_type'):
             s += ' (%s)' % p.field_type
         yield s
-
-def dump(root, graph):
-    for depth, cls in dfs(MappedClass, graph):
-        indent = ' '*4*depth
 
 def dfs(root, graph, depth=0):
     yield depth, root
