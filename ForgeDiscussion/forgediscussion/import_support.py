@@ -121,7 +121,7 @@ class TimeStamp(S.FancySchemaItem):
             value = int(value)
         except TypeError:
             raise S.Invalid('%s is not int()-able' % value, value, None)
-        value = datetime.fromtimestamp(value)
+        value = datetime.utcfromtimestamp(value)
         return value
 
 def create_user(json_username):
