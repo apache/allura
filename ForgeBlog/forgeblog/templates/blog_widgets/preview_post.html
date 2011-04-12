@@ -1,4 +1,4 @@
-{% from 'jinja_master/lib.html' import abbr_date with context %}
+{% from 'allura:templates/jinja_master/lib.html' import abbr_date with context %}
 <div>
   <h3><a href="{{value.url()}}">{{value.title}}</a></h3>
   <em class="grid-19">Posted {{abbr_date(value.timestamp)}}</em>
