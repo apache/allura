@@ -14,16 +14,6 @@
 
 {% block content %}
   {{ clone_info(c.app.repo) }}
-  {% if (not a.has_html_view and not a.has_image_view) or (not b.has_html_view and not b.has_image_view) %}
-    <p>{{a.name}} cannot be displayed in your browser.
-    You may, however, <a href="?format=raw">download this file</a> instead.</p>
-  {% endif %}
-  {% if a.has_html_view and b.has_html_view %}
-  <div class="clip grid-19">
-    <h3><span class="ico-l"><b data-icon="{{g.icons['table'].char}}" class="ico {{g.icons['table'].css}}"></b> {{h.really_unicode(a.filename) or h.html.literal('&nbsp;')}}</span></h3>
-    {{g.highlight(diff, lexer='diff')}}
-  </div>
-  {% endif %}
   {% if a.has_image_view and b.has_image_view %}
   <div class="grid-19">
     <img src="{{a.url()}}?format=raw"
@@ -32,6 +22,11 @@
     <img src="{{b.url()}}?format=raw"
          alt="{{h.text.truncate(b._commit._id, 10)}}"
          title="{{h.text.truncate(b._commit._id, 10)}}"/>
+  </div>
+  {% else %}
+  <div class="clip grid-19">
+    <h3><span class="ico-l"><b data-icon="{{g.icons['table'].char}}" class="ico {{g.icons['table'].css}}"></b> {{h.really_unicode(a.filename) or h.html.literal('&nbsp;')}}</span></h3>
+    {{g.highlight(diff, lexer='diff')}}
   </div>
   {% endif %}
 {% endblock %}
