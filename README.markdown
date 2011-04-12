@@ -66,7 +66,7 @@ If you want to use RabbitMQ for faster message processing (optional), also pip i
 
 And now to setup each of the Forge applications for development.  Because there are quite a few (at last count 15), we'll use a simple shell loop to set them up.
 
-    for APP in Allura* Forge* NoWarnings pyforge
+    for APP in Allura* Forge* NoWarnings
     do
         pushd $APP
         python setup.py develop
