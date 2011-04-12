@@ -66,9 +66,9 @@ class FencedCodeProcessor(markdown.preprocessors.Preprocessor):
 class ForgeProcessor(object):
     alink_pattern = r'(?<!\[)\[([^\]\[]*)\]'
     macro_pattern = r'\[(\[([^\]\[]*)\])\]'
-    placeholder_prefix = '\x02jgimwge'
-    placeholder = '%s:%%s:%%.4d\x03' % placeholder_prefix
-    placeholder_re = re.compile('%s:(\\w+):(\\d+)\x03' % placeholder_prefix)
+    placeholder_prefix = '#jgimwge'
+    placeholder = '%s:%%s:%%.4d#khjhhj' % placeholder_prefix
+    placeholder_re = re.compile('%s:(\\w+):(\\d+)#khjhhj' % placeholder_prefix)
 
     def __init__(self, use_wiki = False, markdown=None):
         self.markdown = markdown

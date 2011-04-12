@@ -148,7 +148,7 @@ class TestFunctionalController(TestController):
         }, upload_files=[upload]).follow()
         assert file_name in ticket_editor, ticket_editor.showbrowser()
         req = self.app.get('/bugs/1/')
-        file_link = req.html.findAll('form')[1].findAll('a')[6]
+        file_link = req.html.findAll('form')[1].findAll('a')[-4]
         assert_equal(file_link.string, file_name)
         self.app.post(str(file_link['href']),{
             'delete':'True'
@@ -164,7 +164,7 @@ class TestFunctionalController(TestController):
         ticket_editor = self.app.post('/bugs/1/update_ticket',{
             'summary':'zzz'
         }, upload_files=[upload]).follow()
-        download = self.app.get(str(ticket_editor.html.findAll('form')[1].findAll('a')[7]['href']))
+        download = self.app.get(str(ticket_editor.html.findAll('form')[1].findAll('a')[-4]['href']))
         assert_equal(download.body, file_data)
 
     def test_new_image_attachment_content(self):
