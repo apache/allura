@@ -5,30 +5,50 @@
     <link rel="alternate" type="application/atom+xml" title="Atom" href="{{c.app.url}}feed.atom"/>
 {% endblock %}
 
+{% block extra_js %}
+<script type="text/javascript">(function() {
+  $('#access_urls .btn').click(function(evt){
+    evt.preventDefault();
+    var parent = $(this).parents('.btn-bar');
+    $(parent).find('input').val($(this).attr('data-url'));
+    $(parent).find('span').text($(this).attr('title')+' access');
+    $(this).parent().children('.btn').removeClass('active');
+    $(this).addClass('active');
+  });
+  $('#access_urls .btn').first().click();
+}());
+</script>
+{% endblock %}
+
 {% macro clone_info(repo) %}
   {% if repo %}
-    <label for="ro" class="grid-3">Read-only</label>
-    <div class="grid-16">
-      <input id="ro" style="width:40em;" readonly type="text"
+    <div id="access_urls" class="btn-bar grid-19">
+      <div class="btn-set{% if not h.has_artifact_access('write')() %} duo{% endif %}">
+        {% if h.has_artifact_access('write')() %}
+        <a class="btn" data-url="{{repo.clone_command('rw')}}" title="Read/Write">
+          RW
+        </a>
+        <a class="btn" data-url="{{repo.clone_command('ro')}}" title="Read Only">
+          RO
+        </a>
+        <a class="btn" data-url="{{repo.clone_command('https')}}" title="HTTP">
+          HTTP
+        </a>
+        {% else %}
+        <a class="btn" data-url="{{repo.clone_command('ro')}}" title="Read Only">
+          RO
+        </a>
+        <a class="btn" data-url="{{repo.clone_command('https_anon')}}" title="HTTP">
+          HTTP
+        </a>
+        {% endif %}
+      </div>
+      <span></span>
+      <input id="access_url" readonly type="text"
              class="selectText"
-             value="{{repo.clone_command('ro')}}"/>
+             value=""/>
     </div>
-    {% if h.has_artifact_access('write')() %}
-    <label for="rw" class="grid-3">Read / write</label>
-    <div class="grid-16">
-      <input id="rw" style="width:40em;" readonly type="text"
-             class="selectText"
-             value="{{repo.clone_command('rw')}}"/>
-    </div>
-    <p>The repository is also available via HTTPS for those who are unable to use the above methods due to firewall restrictions.  HTTPS is slower and requires more bandwidth than any other access method.</p>
-    <label for="rw_https" class="grid-3">Read / write</label>
-    <div class="grid-16">
-      <input id="rw_https" style="width:40em;" readonly type="text"
-             class="selectText"
-             value="{{repo.clone_command('https')}}"/>
-    </div>
-    <br style="clear:both;"/>
-    {% endif %}
+    <hr />
   {% endif %}
 {% endmacro %}
 

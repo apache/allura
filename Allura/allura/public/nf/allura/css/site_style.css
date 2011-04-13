@@ -2964,3 +2964,13 @@ h1.title .viewer:hover {
 .scm-tag-label {
   background: #006699;
 }
+
+#access_urls span {
+  width: 9em;
+  text-align: right;
+  display: inline-block;
+}
+
+#access_urls input {
+  width: 35em;
+}
