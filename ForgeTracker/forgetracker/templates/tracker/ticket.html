@@ -172,11 +172,6 @@
             });
             return false;
           });
-
-          // Allow the ticket metadata links to function without turning on edit mode
-          $('.editbox a, #ticket_content a').click(function (event) {
-            event.stopPropagation();
-          });
         });
     </script>
   {% endif %}
