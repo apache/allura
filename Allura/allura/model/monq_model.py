@@ -67,13 +67,27 @@ class MonQTask(MappedClass):
     result = FieldProperty(None, if_missing=None)
 
     def __repr__(self):
-        return '<%s %s (%s) P:%d %s %s>' % (
+        from allura import model as M
+        c.project = M.Project.query.get(_id=self.context.project_id)
+        c.app = None
+        if c.project:
+            app_config = M.AppConfig.query.get(_id=self.context.app_config_id)
+            if app_config:
+                c.app = c.project.app_instance(app_config)
+        c.user = M.User.query.get(_id=self.context.user_id)
+        project_url = c.project and c.project.url() or None
+        app_mount = c.app and c.app.config.options.mount_point or None
+        username = c.user and c.user.username or None
+        return '<%s %s (%s) P:%d %s %s project:%s app:%s user:%s>' % (
             self.__class__.__name__,
             self._id,
             self.state,
             self.priority,
             self.task_name,
-            self.process)
+            self.process,
+            project_url,
+            app_mount,
+            username)
 
     @LazyProperty
     def function(self):
