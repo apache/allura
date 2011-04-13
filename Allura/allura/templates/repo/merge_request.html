@@ -27,7 +27,7 @@ Merge Request #{{req.request_number}}: {{req.summary}} ({{req.status}})
   {{ c.log_widget.display(value=req.commits) }}
   <div class="grid-19"><a href="#discussion_holder">Discuss</a></div>
   
-  {% if h.has_artifact_access('write')() %}
+  {% if h.has_access(c.app, 'write')() %}
      <p>To merge the commits, please execute the following commands in your working
        copy: </p>
      <div class="grid-19"><textarea

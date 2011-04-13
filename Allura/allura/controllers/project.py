@@ -25,7 +25,7 @@ from allura.lib import helpers as h
 from allura.lib import utils
 from allura.lib.decorators import require_post
 from allura.controllers.error import ErrorController
-from allura.lib.security import require, has_project_access, has_neighborhood_access
+from allura.lib.security import require_access, has_access
 from allura.lib.security import RoleCache
 from allura.lib.widgets import form_fields as ffw
 from allura.lib.widgets import forms as forms
@@ -60,8 +60,7 @@ class NeighborhoodController(object):
         self._moderate = NeighborhoodModerateController(self.neighborhood)
 
     def _check_security(self):
-        require(has_neighborhood_access('read', self.neighborhood),
-                'Read access required')
+        require_access(self.neighborhood, 'read')
 
     @expose()
     def _lookup(self, pname, *remainder):
@@ -73,14 +72,8 @@ class NeighborhoodController(object):
             project = M.Project.query.get(
                 shortname='--init--',
                 neighborhood_id=self.neighborhood._id)
-            if not project:
-                # Go ahead and register it
-                project_reg = plugin.ProjectRegistrationProvider.get()
-                users = M.User.query.find(dict(_id={'$in':self.neighborhood.acl.admin})).all()
-                project = project_reg.register_neighborhood_project(self.neighborhood, users)
-            if project:
-                c.project = project
-                return ProjectController()._lookup(pname, *remainder)
+            c.project = project
+            return ProjectController()._lookup(pname, *remainder)
         if project.database_configured == False:
             if remainder == ('user_icon',):
                 redirect(g.forge_static('images/user.png'))
@@ -91,7 +84,7 @@ class NeighborhoodController(object):
             else:
                 raise exc.HTTPNotFound, pname
         c.project = project
-        if project is None or (project.deleted and not has_project_access('update')()):
+        if project is None or (project.deleted and not has_access(c.project, 'update')()):
             raise exc.HTTPNotFound, pname
         if project.neighborhood.name != self.neighborhood_name:
             redirect(project.url())
@@ -136,7 +129,7 @@ class NeighborhoodController(object):
     @expose('jinja:allura:templates/neighborhood_add_project.html')
     @without_trailing_slash
     def add_project(self, **form_data):
-        require(has_neighborhood_access('create', self.neighborhood), 'Create access required')
+        require_access(self.neighborhood, 'create')
         c.add_project = W.add_project
         for checkbox in ['Wiki','Git','Tickets','Downloads','Discussion']:
             form_data.setdefault(checkbox, True)
@@ -164,7 +157,7 @@ class NeighborhoodController(object):
     @utils.AntiSpam.validate('Spambot protection engaged')
     @require_post()
     def register(self, project_unixname=None, project_description=None, project_name=None, neighborhood=None, **kw):
-        require(has_neighborhood_access('create', self.neighborhood), 'Create access required')
+        require_access(self.neighborhood, 'create')
         project_description = h.really_unicode(project_description or '').encode('utf-8')
         project_name = h.really_unicode(project_name or '').encode('utf-8')
         project_unixname = h.really_unicode(project_unixname or '').encode('utf-8').lower()
@@ -175,7 +168,6 @@ class NeighborhoodController(object):
         if project_description:
             c.project.short_description = project_description
         ming.orm.ormsession.ThreadLocalORMSession.flush_all()
-        # require(has_project_access('tool'))
         for i, tool in enumerate(kw):
             if kw[tool]:
                 c.project.install_app(tool, ordinal=i)
@@ -259,8 +251,7 @@ class ProjectController(object):
         return app.root, remainder
 
     def _check_security(self):
-        require(has_project_access('read'),
-                'Read access required')
+        require_access(c.project, 'read')
 
     @expose()
     @with_trailing_slash
@@ -276,8 +267,6 @@ class ProjectController(object):
     @without_trailing_slash
     def sitemap(self): # pragma no cover
         raise NotImplementedError, 'sitemap'
-        require(has_project_access('read'))
-        return dict()
 
     @without_trailing_slash
     @expose()
@@ -388,8 +377,7 @@ class NeighborhoodAdminController(object):
         self.awards = NeighborhoodAwardsController(self.neighborhood)
 
     def _check_security(self):
-        require(has_neighborhood_access('admin', self.neighborhood),
-                'Admin access required')
+        require_access(self.neighborhood, 'admin')
 
     def set_nav(self):
         project = M.Project.query.find({'shortname':'--init--','neighborhood_id':self.neighborhood._id}).first()
@@ -400,7 +388,6 @@ class NeighborhoodAdminController(object):
             admin_url = self.neighborhood.url()+'_admin/'
             c.custom_sidebar_menu = [
                      SitemapEntry('Overview', admin_url+'overview', className='nav_child'),
-                     SitemapEntry('Permissions', admin_url+'permissions', className='nav_child'),
                      SitemapEntry('Awards', admin_url+'accolades', className='nav_child')]
 
     @with_trailing_slash
@@ -460,39 +447,13 @@ class NeighborhoodAdminController(object):
                 thumbnail_meta=dict(neighborhood_id=self.neighborhood._id))
         redirect('overview')
 
-    @h.vardec
-    @expose()
-    @require_post()
-    def update_acl(self, permission=None, user=None, new=None, **kw):
-        if user is None: user = []
-        for u in user:
-            if u.get('delete'):
-                if u['id']:
-                    self.neighborhood.acl[permission].remove(ObjectId(str(u['id'])))
-                else:
-                    self.neighborhood.acl[permission].remove(None)
-        if new.get('add'):
-            if new['username'] == '*authenticated':
-                self.neighborhood.acl[permission] = []
-            elif new['username'] == '*anonymous':
-                self.neighborhood.acl[permission] = [ None ]
-            else:
-                u = M.User.by_username(new['username'])
-                if u is None:
-                    flash('Cannot find user "%s"' % new['username'], 'error')
-                    redirect(request.referer)
-                else:
-                    self.neighborhood.acl[permission].append(u._id)
-        redirect('permissions')
-
 class NeighborhoodModerateController(object):
 
     def __init__(self, neighborhood):
         self.neighborhood = neighborhood
 
     def _check_security(self):
-        require(has_neighborhood_access('moderate', self.neighborhood),
-                'Moderator access required')
+        require_access(self.neighborhood, 'admin')
 
     @expose('jinja:allura:templates/neighborhood_moderate.html')
     def index(self, **kw):

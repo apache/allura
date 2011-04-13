@@ -11,7 +11,7 @@ import tg
 import pylons
 from formencode import Invalid
 from tg.decorators import before_validate
-from pylons import response
+from pylons import response, c
 from paste.httpheaders import CACHE_CONTROL, EXPIRES
 from webhelpers.html import literal
 
@@ -30,6 +30,29 @@ def cache_forever():
     response.headers.pop('cache-control', None)
     response.headers.pop('pragma', None)
     response.headers.update(headers)
+
+class memoize_on_request(object):
+
+    def __init__(self, *key, **kwargs):
+        self.key = key
+        self.include_func_in_key = kwargs.pop(
+            'include_func_in_key', False)
+        assert not kwargs, 'Extra args'
+
+    def __call__(self, func):
+        def wrapper(*args, **kwargs):
+            cache = c.memoize_cache
+            if self.include_func_in_key:
+                key = (func, self.key, args, tuple(kwargs.iteritems()))
+            else:
+                key = (self.key, args, tuple(kwargs.iteritems()))
+            if key in cache:
+                result = cache[key]
+            else:
+                result = cache[key] = func(*args, **kwargs)
+            return result
+        wrapper.__name__ = 'wrap(%s)' % func.__name__
+        return wrapper
 
 def guess_mime_type(filename):
     '''Guess MIME type based on filename.

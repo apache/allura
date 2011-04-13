@@ -8,7 +8,7 @@
   <a href="feed" class="follow" title="Follow"><b data-icon="{{g.icons['feed'].char}}" class="ico {{g.icons['feed'].css}}"></b></a>
 {% endblock %}
 
-{% if h.has_artifact_access('configure', app=c.app)() and (not hide_forum) %}
+{% if h.has_access(c.app, 'configure')() and (not hide_forum) %}
   {% block edit_box %}
     <div id="add_forum_form"{% if hide_forum %} style="display:none"{% endif %} class="editbox">
       {{c.add_forum.display(method='POST',action=c.project.url()+'admin/'+c.app.config.options.mount_point+'/add_forum',app=c.app, value=add_forum)}}
@@ -23,7 +23,7 @@
   {% endif %}
   {% set visible=0 %}
   {% for forum in forums %}
-    {% if not forum.deleted or h.has_artifact_access('configure', app=c.app)() %}
+    {% if not forum.deleted or h.has_access(c.app, 'configure')() %}
       <div class="discussion_forum grid-9">
         <strong class="forum_name">{{forum.name}}:</strong>
         <br>{{forum.description}}<br>&nbsp;<br>
@@ -47,7 +47,7 @@
 {% endblock %}
 
 {% block extra_js %}
-  {% if h.has_artifact_access('configure', app=c.app)() %}
+  {% if h.has_access(c.app, 'configure')() %}
     <script type="text/javascript">
       $(function() {
         $("#add_forum").click(function(){

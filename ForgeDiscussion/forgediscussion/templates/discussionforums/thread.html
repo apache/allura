@@ -8,7 +8,7 @@
 {% block header %}{{'subject' in thread and thread.subject or '(no subject)'}}{% endblock %}
 
 {% block actions %}
-  {% if show_moderate and h.has_artifact_access('moderate', thread)() %}
+  {% if show_moderate and h.has_access(thread, 'moderate')() %}
   <a href="#" title="Moderate" id="mod_thread_link"><b data-icon="{{g.icons['pencil'].char}}" class="ico {{g.icons['pencil'].css}}"></b></a>
   {% endif %}
   <a href="#" title="Label This" class="thread_tag"><b data-icon="z" class="ico ico-tag"></b></a>

@@ -6,7 +6,7 @@
     {% set old_project = c.project %}
     {% for project in projects %}
       {% do g.set_project(project.shortname) %}
-      {% if h.has_project_access('read', project)() %}
+      {% if h.has_access(project, 'read')() %}
         {{project_summary.display(value=project)}}
       {% endif %}
     {% endfor %}

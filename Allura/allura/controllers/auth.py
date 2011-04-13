@@ -11,7 +11,7 @@ import allura.tasks.repo_tasks
 from allura import model as M
 from allura.lib import validators as V
 from allura.lib.oid_helper import verify_oid, process_oid
-from allura.lib.security import require_authenticated, has_artifact_access
+from allura.lib.security import require_authenticated, has_access
 from allura.lib import helpers as h
 from allura.lib import plugin
 from allura.lib.decorators import require_post
@@ -246,9 +246,9 @@ class AuthController(BaseController):
             log.info("Can't find repo at %s on repo_path %s",
                      mount_point, repo_path)
             return disallow
-        return dict(allow_read=has_artifact_access('read')(user=user),
-                    allow_write=has_artifact_access('write')(user=user),
-                    allow_create=has_artifact_access('create')(user=user))
+        return dict(allow_read=has_access(c.app, 'read')(user=user),
+                    allow_write=has_access(c.app, 'write')(user=user),
+                    allow_create=has_access(c.app, 'create')(user=user))
 
 class PreferencesController(BaseController):
 

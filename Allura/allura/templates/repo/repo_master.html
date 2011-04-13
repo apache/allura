@@ -24,8 +24,8 @@
   {% if repo %}
     <div id="access_urls" class="btn-bar grid-19">
       <div class="btn-set{% if not h.has_artifact_access('write')() %} duo{% endif %}">
-        {% if h.has_artifact_access('write')() %}
-        <a href="#" class="btn" data-url="{{repo.clone_command('rw')}}" title="Read/Write">
+        {% if h.has_access(c.app, 'write')() %}
+        <a class="btn" data-url="{{repo.clone_command('rw')}}" title="Read/Write">
           RW
         </a>
         <a href="#" class="btn" data-url="{{repo.clone_command('ro')}}" title="Read Only">

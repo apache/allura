@@ -1,12 +1,17 @@
 """
 This module provides the security predicates used in decorating various models.
 """
+import logging
 from collections import defaultdict
 
 from pylons import c, request
 from webob import exc
 from itertools import chain
 from ming.utils import LazyProperty
+
+from allura.lib import utils
+
+log = logging.getLogger(__name__)
 
 class Credentials(object):
     '''
@@ -171,68 +176,51 @@ class RoleCache(object):
     def reaching_ids_set(self):
         return set(self.reaching_ids)
 
-def has_neighborhood_access(access_type, neighborhood, user=None):
-    '''
-    :param str access_type: permission name
-    :param Neighborhood neighborhood:
-    :param User user: a specific user, else the current user
-    :returns: _another function_ which returns True if has access
-    '''
+def has_access(obj, permission, user=None, project=None):
     from allura import model as M
-    def result(user=user):
-        if user is None: user = c.user
-        acl = neighborhood.acl[access_type]
-        anon = M.User.anonymous()
-        if not acl: return user != anon
-        for u in acl:
-            if u == anon._id or u == user._id: return True
-        return False
-    return result
-
-def has_project_access(access_type, project=None, user=None):
-    '''
-    :param str access_type: permission name
-    :param Project project: a specific project, else the current project
-    :param User user: a specific user, else the current user
-    :returns: _another function_ which returns True if has access.  Neighborhood admin access will always result in True
-    '''
-    def result(project=project, user=user):
-        if project is None: project = c.project
-        if user is None: user = c.user
-        assert user, 'c.user should always be at least M.User.anonymous()'
-        cred = Credentials.get()
-        for proj in project.parent_iter():
-            acl = set(proj.acl.get(access_type, []))
-            if cred.user_has_any_role(user._id, project.root_project._id, acl): return True
-        if has_neighborhood_access('admin', project.neighborhood, user)():
-            return True
-        return False
-    return result
-
-def has_artifact_access(access_type, obj=None, user=None, app=None):
-    '''
-    Check for artifact- or application-level access
-
-    :param str access_type: permission name
-    :param Artifact obj: if None, application access is checked
-    :param Project project: a specific project, else the current project
-    :param Application app: a specific user, else the current user
-    :returns: _another function_ which returns True if has access.  Neighborhood admin access will always result in True
-    '''
-    def result(user=user, app=app):
-        if user is None: user = c.user
-        if app is None: app = c.app
-        project_id = app.project.root_project._id
-        assert user, 'c.user should always be at least M.User.anonymous()'
-        cred = Credentials.get()
-        acl = set(app.config.acl.get(access_type, []))
-        if obj is not None:
-            acl |= set(obj.acl.get(access_type, []))
-        if cred.user_has_any_role(user._id, project_id, acl): return True
-        if has_neighborhood_access('admin', app.project.neighborhood, user)():
-            return True
-        return False
-    return result
+    @utils.memoize_on_request(
+        'has_access', obj, permission,
+        include_func_in_key=False)
+    def predicate(obj=obj, user=user, project=project, roles=None):
+        if roles is None:
+            if user is None: user = c.user
+            assert user, 'c.user should always be at least M.User.anonymous()'
+            cred = Credentials.get()
+            if project is None:
+                if isinstance(obj, M.Neighborhood):
+                    project = M.Project.query.get(
+                        neighborhood_id=obj._id,
+                        shortname='--init--')
+                elif isinstance(obj, M.Project):
+                    project = obj.root_project
+                else:
+                    if project is None: project = c.project.root_project
+            roles = cred.user_roles(user_id=user._id, project_id=project._id).reaching_ids
+        chainable_roles = []
+        for rid in roles:
+            for ace in obj.acl:
+                if M.ACE.match(ace, rid, permission):
+                    if ace.access == M.ACE.ALLOW:
+                        # access is allowed
+                        # log.info('%s: True', txt)
+                        return True
+                    else:
+                        # access is denied for this role
+                        break
+            else:
+                # access neither allowed or denied, may chain to parent context
+                chainable_roles.append(rid)
+        parent = obj.parent_security_context()
+        if parent and chainable_roles:
+            result = has_access(parent, permission, user=user, project=project)(
+                roles=tuple(chainable_roles))
+        elif not isinstance(obj, M.Neighborhood):
+            result = has_access(project.neighborhood, 'admin', user=user)()
+        else:
+            result = False
+        # log.info('%s: %s', txt, result)
+        return result
+    return predicate
 
 def require(predicate, message=None):
     '''
@@ -255,6 +243,10 @@ def require(predicate, message=None):
     else:
         raise exc.HTTPUnauthorized()
 
+def require_access(obj, permission, **kwargs):
+    predicate = has_access(obj, permission, **kwargs)
+    return require(predicate, message='%s access required' % permission.capitalize())
+
 def require_authenticated():
     '''
     :raises: HTTPUnauthorized if current user is anonymous
@@ -262,3 +254,17 @@ def require_authenticated():
     from allura import model as M
     if c.user == M.User.anonymous():
         raise exc.HTTPUnauthorized()
+
+def simple_grant(acl, role_id, permission):
+    from allura.model.types import ACE
+    for ace in acl:
+        if ace.role_id == role_id and ace.permission == permission: return
+    acl.append(ACE.allow(role_id, permission))
+
+def simple_revoke(acl, role_id, permission):
+    remove = []
+    for i, ace in enumerate(acl):
+        if ace.role_id == role_id and ace.permission == permission:
+            remove.append(i)
+    for i in reversed(remove):
+        acl.pop(i)

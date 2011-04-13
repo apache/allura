@@ -38,7 +38,7 @@ class RepoRootController(BaseController):
     commit_browser_widget=SCMCommitBrowserWidget()
 
     def _check_security(self):
-        security.require(security.has_artifact_access('read'))
+        security.require(security.has_access(c.app, 'read'))
 
     @with_trailing_slash
     @expose()
@@ -87,7 +87,7 @@ class RepoRootController(BaseController):
             else:
                 if not to_project.database_configured:
                     to_project.configure_project(is_user_project=True)
-                security.require(security.has_project_access('tool', to_project))
+                security.require(security.has_access(to_project, 'admin'))
                 try:
                     to_project.install_app(
                         from_repo.tool_name, to_name,
@@ -258,7 +258,7 @@ class MergeRequestController(object):
     @validate(mr_dispose_form)
     def save(self, status=None):
         security.require(
-            security.has_artifact_access('write', self.req), 'Write access required')
+            security.has_access(self.req, 'write'), 'Write access required')
         self.req.status = status
         redirect('.')
 
@@ -293,7 +293,7 @@ class BranchBrowser(BaseController):
         self._branch = branch
 
     def _check_security(self):
-        security.require(security.has_artifact_access('read', c.app.repo))
+        security.require(security.has_access(c.app.repo, 'read'))
 
     @expose('jinja:allura:templates/repo/tags.html')
     @with_trailing_slash

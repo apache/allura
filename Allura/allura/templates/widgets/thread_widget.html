@@ -17,7 +17,7 @@
             </ul>
             {% endfor %}
           {% endif %}
-        {% if h.has_artifact_access('moderate', value)() %}
+        {% if h.has_access(value, 'moderate')() %}
           <div id="allow_moderate"></div>
         {% endif %}
       </div>
@@ -31,7 +31,7 @@
     </div>
   </div>
 </div>
-{% if h.has_artifact_access('post', value)() %}
+{% if h.has_access(value, 'post')() %}
   <div id="new_post_holder">
     <span id="add_comment"></span>
     <div class="row reply">

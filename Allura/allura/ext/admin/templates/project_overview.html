@@ -8,38 +8,6 @@
         {% if c.project.deleted %}
           <div class="notice">This project has been deleted and is not visible to non-admin users</div>
         {% endif %}
-        {% if not h.has_project_access('update')() %}
-          <div class="grid-9">
-            <label>Name:</label>
-            {{c.project.name}}
-          </div>
-          <div class="grid-9">
-            <label>Category:</label>
-            {{c.project.category and c.project.category.label or 'Uncategorized'}}
-          </div>
-          <div class="grid-9">
-            <label>Unixname:</label>
-            {{c.project.shortname}}
-          </div>
-          <div class="grid-9">
-            <label>Labels:</label>
-            {{c.project.labels and ', '.join(c.project.labels) or "No Labels"}}
-          </div>
-          <div class="grid-9">
-            <label>Summary:</label>
-            <br>
-            <pre>{{c.project.short_description}}</pre>
-          </div>
-          <div class="grid-9">
-            <label>Icon:</label>
-            <br>
-            {% if c.project.icon %}
-              <img src="{{c.project.url()}}icon"/>
-            {% else %}
-              <span>No icon has been created.</span>
-            {% endif %}
-          </div>
-        {% else %} {# has_project_access('update') #}
           <form method="POST" action="update" enctype="multipart/form-data">
             <div class="grid-9">
               <label for="name">Name:</label>
@@ -110,7 +78,6 @@ These can be used to search for similar projects.")}}
               <input type="submit" value="Undelete Project" name="undelete" class="fright">
             {% endif %}
           </form>
-        {% endif %}
 {% endblock %}
 
 {% block extra_js %}

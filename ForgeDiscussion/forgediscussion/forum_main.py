@@ -16,7 +16,7 @@ from allura import model as M
 from allura.app import Application, ConfigOption, SitemapEntry, DefaultAdminController
 from allura.lib import helpers as h
 from allura.lib.decorators import require_post
-from allura.lib.security import require, has_artifact_access
+from allura.lib.security import require_access, has_access
 
 # Local imports
 from forgediscussion import model as DM
@@ -64,7 +64,7 @@ class ForgeDiscussionApp(Application):
     def has_access(self, user, topic):
         f = DM.Forum.query.get(shortname=topic.replace('.', '/'),
                                app_config_id=self.config._id)
-        return has_artifact_access('post', f, user=user)()
+        return has_access(f, 'post', user=user)()
 
     def handle_message(self, topic, message):
         log.info('Message from %s (%s)',
@@ -103,9 +103,9 @@ class ForgeDiscussionApp(Application):
     def admin_menu(self):
         admin_url = c.project.url()+'admin/'+self.config.options.mount_point+'/'
         links = super(ForgeDiscussionApp, self).admin_menu()
-        if has_artifact_access('configure', app=self)():
+        if has_access(self, 'configure')():
             links.append(SitemapEntry('Forums', admin_url + 'forums'))
-        if self.permissions and has_artifact_access('configure', app=self)():
+        if self.permissions and has_access(self, 'configure')():
             links.append(SitemapEntry('Permissions', admin_url + 'permissions', className='nav_child'))
         return links
 
@@ -119,13 +119,13 @@ class ForgeDiscussionApp(Application):
                             parent_id=None)).all()
             if forums:
                 for f in forums:
-                    if f.url() in request.url and h.has_artifact_access('moderate', f)():
+                    if f.url() in request.url and h.has_access(f, 'moderate')():
                         moderate_link = SitemapEntry('Moderate', "%smoderate/" % f.url(), ui_icon=g.icons['pencil'],
                         small = DM.ForumPost.query.find({'discussion_id':f._id, 'status':{'$ne': 'ok'}}).count())
                     forum_links.append(SitemapEntry(f.name, f.url(), className='nav_child'))
-            if has_artifact_access('post', app=c.app)():
+            if has_access(c.app, 'post')():
                 l.append(SitemapEntry('Create Topic', c.app.url + 'create_topic', ui_icon=g.icons['plus']))
-            if has_artifact_access('configure', app=c.app)():
+            if has_access(c.app, 'configure')():
                 l.append(SitemapEntry('Add Forum', url(c.app.url,dict(new_forum=True)), ui_icon=g.icons['conversation']))
                 l.append(SitemapEntry('Admin Forums', c.project.url()+'admin/'+self.config.options.mount_point+'/forums', ui_icon=g.icons['pencil']))
             if moderate_link:
@@ -146,7 +146,7 @@ class ForgeDiscussionApp(Application):
                     ))
             recent_threads = (
                 t for t in recent_threads 
-                if not t.discussion.deleted )
+                if (has_access(t, 'configure') or not thread.discussion.deleted) )
             recent_threads = ( t for t in recent_threads if t.status == 'ok' )
             # Limit to 3 threads
             recent_threads = list(islice(recent_threads, 3))
@@ -174,16 +174,19 @@ class ForgeDiscussionApp(Application):
         # Don't call super install here, as that sets up discussion for a tool
 
         # Setup permissions
+        role_admin = M.ProjectRole.by_name('Admin')._id
         role_developer = M.ProjectRole.by_name('Developer')._id
         role_auth = M.ProjectRole.by_name('*authenticated')._id
         role_anon = M.ProjectRole.by_name('*anonymous')._id
-        self.config.acl.update(
-            configure=c.project.roleids_with_permission('tool'),
-            read=c.project.roleids_with_permission('read'),
-            unmoderated_post=[role_auth],
-            post=[role_anon],
-            moderate=[role_developer],
-            admin=c.project.roleids_with_permission('tool'))
+        self.config.acl = [
+            M.ACE.allow(role_anon, 'read'),
+            M.ACE.allow(role_anon, 'post'),
+            M.ACE.allow(role_auth, 'unmoderated_post'),
+            M.ACE.allow(role_developer, 'write'),
+            M.ACE.allow(role_developer, 'moderate'),
+            M.ACE.allow(role_admin, 'configure'),
+            M.ACE.allow(role_admin, 'admin'),
+            ]
 
         self.admin.create_forum(new_forum=dict(
             shortname='general',
@@ -202,7 +205,7 @@ class ForgeDiscussionApp(Application):
 class ForumAdminController(DefaultAdminController):
 
     def _check_security(self):
-        require(has_artifact_access('admin', app=self.app), 'Admin access required')
+        require_access(self.app, 'admin')
 
     @with_trailing_slash
     def index(self, **kw):
@@ -220,7 +223,7 @@ class ForumAdminController(DefaultAdminController):
     def forums(self, add_forum=None, **kw):
         c.add_forum = W.add_forum
         return dict(app=self.app,
-                    allow_config=has_artifact_access('configure', app=self.app)())
+                    allow_config=has_access(self.app, 'configure')())
 
     def save_forum_icon(self, forum, icon):
         if forum.icon: forum.icon.delete()

@@ -16,8 +16,8 @@ from allura.app import Application, ConfigOption, SitemapEntry, DefaultAdminCont
 from allura.lib import helpers as h
 from allura.lib.search import search
 from allura.lib.decorators import require_post
-from allura.lib.security import require, has_artifact_access
-from allura.model import ProjectRole
+from allura.lib.security import require_access
+from allura import model as M
 from allura.controllers import BaseController
 
 # Local imports
@@ -79,12 +79,12 @@ class ForgeChatApp(Application):
     def install(self, project):
         'Set up any default permissions and roles here'
         super(ForgeChatApp, self).install(project)
-
-        # Give the installing user all the permissions
-        pr = c.user.project_role()
-        for perm in self.permissions:
-              self.config.acl[perm] = [ pr._id ]
-        self.config.acl['read'].append(ProjectRole.anonymous()._id)
+        role_admin = M.ProjectRole.by_name('Admin')._id
+        role_anon = M.ProjectRole.anonymous()._id
+        self.config.acl = [
+            M.ACE.allow(role_anon, 'read'),
+            M.ACE.allow(role_admin, 'configure'),
+            ]
         CM.ChatChannel(
             project_id=self.config.project_id,
             app_config_id=self.config._id,
@@ -107,8 +107,7 @@ class AdminController(DefaultAdminController):
     @require_post()
     def configure(self, channel=None):
         with h.push_config(c, app=self.app):
-            require(has_artifact_access('configure', app=self.app),
-                    'Must have configure permission')
+            require_access(self.app, 'configure')
             chan = CM.ChatChannel.query.get(
                 project_id=self.app.config.project_id,
                 app_config_id=self.app.config._id)

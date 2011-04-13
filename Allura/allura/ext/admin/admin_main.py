@@ -17,7 +17,7 @@ from allura.app import Application, WidgetController, DefaultAdminController, Si
 from allura.lib import helpers as h
 from allura import version
 from allura import model as M
-from allura.lib.security import require, has_project_access
+from allura.lib.security import has_access, require_access
 from allura.lib.widgets import form_fields as ffw
 from allura.lib import exceptions as forge_exc
 from allura.lib import plugin
@@ -91,7 +91,7 @@ class AdminApp(Application):
 
     def is_visible_to(self, user):
         '''Whether the user can view the app.'''
-        return has_project_access('create')(user=user)
+        return has_access(c.project, 'create')(user=user)
 
     @staticmethod
     def installable_tools_for(project):
@@ -116,7 +116,6 @@ class AdminApp(Application):
             links = links + [
                      SitemapEntry('Neighborhood'),
                      SitemapEntry('Overview', admin_url+'overview', className='nav_child'),
-                     SitemapEntry('Permissions', admin_url+'permissions', className='nav_child'),
                      SitemapEntry('Awards', admin_url+'accolades', className='nav_child')]
         admin_url = c.project.url()+'admin/'
         if len(links):
@@ -126,10 +125,10 @@ class AdminApp(Application):
             SitemapEntry('Homepage', admin_url+'homepage', className='nav_child'),
             SitemapEntry('Screenshots', admin_url+'screenshots', className='nav_child')
             ]
-        if has_project_access('security')():
+        if has_access(c.project, 'admin')():
             links.append(SitemapEntry('Permissions', admin_url+'permissions/', className='nav_child'))
         links.append(SitemapEntry('Tools', admin_url+'tools', className='nav_child'))
-        if c.project.is_root and has_project_access('security')():
+        if c.project.is_root and has_access(c.project, 'admin')():
             links.append(SitemapEntry('Usergroups', admin_url+'groups/', className='nav_child'))
         if len(c.project.neighborhood_invitations):
             links.append(SitemapEntry('Invitation(s)', admin_url+'invitations', className='nav_child'))
@@ -147,8 +146,7 @@ class AdminApp(Application):
 class ProjectAdminController(BaseController):
 
     def _check_security(self):
-        require(has_project_access('tool'),
-                'Tool access required')
+        require_access(c.project, 'admin')
 
     def __init__(self):
         self.permissions = PermissionsController()
@@ -205,8 +203,7 @@ class ProjectAdminController(BaseController):
             mounts=mounts,
             installable_tools=AdminApp.installable_tools_for(c.project),
             roles=M.ProjectRole.query.find(dict(project_id=c.project.root_project._id)).sort('_id').all(),
-            categories=M.ProjectCategory.query.find(dict(parent_id=None)).sort('label').all(),
-            users=[M.User.query.get(_id=id) for id in c.project.acl.read ])
+            categories=M.ProjectCategory.query.find(dict(parent_id=None)).sort('label').all())
 
     @without_trailing_slash
     @expose()
@@ -214,7 +211,7 @@ class ProjectAdminController(BaseController):
               repo_type=None, source_url=None,
               mount_point=None, mount_label=None,
               **kw):
-        require(has_project_access('tool'))
+        require_access(c.project, 'admin')
         if repo_type is None:
             return (
                 '<form method="get">'
@@ -258,7 +255,7 @@ class ProjectAdminController(BaseController):
                icon=None,
                category=None,
                **kw):
-        require(has_project_access('update'), 'Update access required')
+        require_access(c.project, 'update')
 
         if 'delete_icon' in kw:
             M.ProjectFile.query.remove(dict(project_id=c.project._id, category='icon'))
@@ -304,7 +301,7 @@ class ProjectAdminController(BaseController):
     @require_post()
     @validate(validators=dict(description=UnicodeString()))
     def update_homepage(self, description=None, homepage_title=None, **kw):
-        require(has_project_access('update'), 'Update access required')
+        require_access(c.project, 'update')
         if description != c.project.description:
             h.log_action(log, 'change project description').info('')
             c.project.description = description
@@ -352,7 +349,7 @@ class ProjectAdminController(BaseController):
     @expose()
     @require_post()
     def join_neighborhood(self, nid):
-        require(has_project_access('update'), 'Update access required')
+        require_access(c.project, 'admin')
         if not nid:
             n = M.Neighborhood.query.get(name='Projects')
             c.project.neighborhood_id = n._id
@@ -388,7 +385,7 @@ class ProjectAdminController(BaseController):
         if tool is None: tool = []
         for sp in subproject:
             if sp.get('delete'):
-                require(has_project_access('delete'), 'Delete access required')
+                require_access(c.project, 'admin')
                 h.log_action(log, 'delete subproject').info(
                     'delete subproject %s', sp['shortname'],
                     meta=dict(name=sp['shortname']))
@@ -400,7 +397,7 @@ class ProjectAdminController(BaseController):
                 p.ordinal = int(sp['ordinal'])
         for p in tool:
             if p.get('delete'):
-                require(has_project_access('tool'), 'Delete access required')
+                require_access(c.project, 'admin')
                 h.log_action(log, 'uninstall tool').info(
                     'uninstall tool %s', p['mount_point'],
                     meta=dict(mount_point=p['mount_point']))
@@ -413,7 +410,7 @@ class ProjectAdminController(BaseController):
             if new and new.get('install'):
                 ep_name = new.get('ep_name', None)
                 if not ep_name:
-                    require(has_project_access('create'))
+                    require_access(c.project, 'create')
                     mount_point = new['mount_point'].lower() or h.nonce()
                     h.log_action(log, 'create subproject').info(
                         'create subproject %s', mount_point,
@@ -422,7 +419,7 @@ class ProjectAdminController(BaseController):
                     sp.name = new['mount_label']
                     sp.ordinal = int(new['ordinal'])
                 else:
-                    require(has_project_access('tool'))
+                    require_access(c.project, 'admin')
                     mount_point = new['mount_point'].lower() or ep_name.lower()
                     h.log_action(log, 'install tool').info(
                         'install tool %s', mount_point,
@@ -434,101 +431,27 @@ class ProjectAdminController(BaseController):
         g.post_event('project_updated')
         redirect('tools')
 
-    @h.vardec
-    @expose()
-    @require_post()
-    def update_acl(self, permission=None, role=None, new=None, **kw):
-        require(has_project_access('security'))
-        if role is None: role = []
-        for r in role:
-            if r.get('delete'):
-                c.project.acl[permission].remove(ObjectId(str(r['id'])))
-        if new.get('add'):
-            if new['id']:
-                c.project.acl[permission].append(ObjectId(str(new['id'])))
-            else:
-                user = M.User.by_username(new['username'])
-                if user is None:
-                    flash('No user %s' % new['username'], 'error')
-                    redirect('.')
-                role = user.project_role()
-                c.project.acl[permission].append(role._id)
-        g.post_event('project_updated')
-        redirect('permissions')
-
-    @h.vardec
-    @expose()
-    @require_post()
-    def update_roles(self, role=None, new=None, **kw):
-        require(has_project_access('security'))
-        if role is None: role = []
-        for r in role:
-            if r.get('delete'):
-                role = M.ProjectRole.query.get(_id=ObjectId(str(r['id'])))
-                if not role.special:
-                    role.delete()
-            if r.get('new', {}).get('add'):
-                role = M.ProjectRole.query.get(_id=ObjectId(str(r['id'])))
-                role.roles.append(ObjectId(str(r['new']['id'])))
-            for sr in r.get('subroles', []):
-                if sr.get('delete'):
-                    role = M.ProjectRole.query.get(_id=ObjectId(str(r['id'])))
-                    role.roles.remove(ObjectId(str(sr['id'])))
-        if new and new.get('add'):
-            M.ProjectRole.upsert(name=new['name'], project_id=c.project.root_project._id)
-        g.post_event('project_updated')
-        redirect('roles')
-
-    @h.vardec
-    @expose()
-    @require_post()
-    def update_user_roles(self, role=None, new=None, **kw):
-        require(has_project_access('security'))
-        if role is None: role = []
-        for r in role:
-            if r.get('new', {}).get('add'):
-                username = unicode(r['new']['id'])
-                try:
-                    user = M.User.by_username(username)
-                except AssertionError:
-                    user = None
-                if user:
-                    ur = user.project_role()
-                    if ObjectId(str(r['id'])) not in ur.roles:
-                        ur.roles.append(ObjectId(str(r['id'])))
-                        h.log_action(log, 'add_user_to_role').info(
-                            '%s to %s', user.username, r['id'],
-                            meta=dict(user=user.username, role=r['id']))
-                else:
-                    flash('No user %s' % username, 'error')
-            for u in r.get('users', []):
-                if u.get('delete'):
-                    user = M.User.query.get(_id=ObjectId(u['id']))
-                    ur = M.ProjectRole.by_user(user)
-                    ur.roles = [ rid for rid in ur.roles if str(rid) != r['id'] ]
-                    h.log_action(log, 'remove_user_from_role').info(
-                        '%s from %s', u['id'], r['id'],
-                        meta=dict(user_role=u['id'], role=r['id']))
-        g.post_event('project_updated')
-        redirect('perms')
-
 class PermissionsController(BaseController):
 
     def _check_security(self):
-        require(has_project_access('security'),
-                'Security access required')
+        require_access(c.project, 'admin')
 
     @with_trailing_slash
     @expose('jinja:allura.ext.admin:templates/project_permissions.html')
     def index(self, **kw):
         c.card = W.permission_card
-        return dict(permissions=c.project.acl)
+        permissions = defaultdict(list)
+        for ace in c.project.acl:
+            if ace.access == M.ACE.ALLOW:
+                permissions[ace.permission].append(ace.role_id)
+        return dict(permissions=permissions)
 
     @without_trailing_slash
     @expose()
     @h.vardec
     @require_post()
     def update(self, card=None, **kw):
+        c.project.acl = []
         for args in card:
             perm = args['id']
             new_group_ids = args.get('new', [])
@@ -538,18 +461,14 @@ class PermissionsController(BaseController):
             if isinstance(group_ids, basestring):
                 group_ids = [ group_ids ]
             role_ids = map(ObjectId, group_ids + new_group_ids)
-            roles = M.ProjectRole.query.find(dict(
-                _id={'$in':role_ids},
-                project_id=c.project.root_project._id))
-            c.project.acl[perm] = [ r._id for r in roles ]
+            c.project.acl += [ M.ACE.allow(r._id, perm) for r in role_ids ]
         g.post_event('project_updated')
         redirect('.')
 
 class GroupsController(BaseController):
 
     def _check_security(self):
-        require(has_project_access('security'),
-                'Security access required')
+        require_access(c.project, 'admin')
 
     @with_trailing_slash
     @expose('jinja:allura.ext.admin:templates/project_groups.html')

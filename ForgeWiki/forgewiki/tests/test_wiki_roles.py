@@ -2,6 +2,7 @@ from pylons import c, g
 
 from alluratest.controller import setup_basic_test, setup_global_objects
 from allura import model as M
+from allura import security
 
 def setUp():
     setup_basic_test()
@@ -9,17 +10,18 @@ def setUp():
     g.set_app('wiki')
 
 def test_role_assignments():
-    role_developer = M.ProjectRole.by_name('Developer')._id
-    role_auth = M.ProjectRole.by_name('*authenticated')._id
-    role_anon = M.ProjectRole.by_name('*anonymous')._id
-    assert c.app.config.acl['configure'] == c.project.acl['tool']
-    assert c.app.config.acl['read'] == c.project.acl['read']
-    assert c.app.config.acl['create'] == [role_auth]
-    assert c.app.config.acl['edit'] == [role_auth]
-    assert c.app.config.acl['delete'] == [role_developer]
-    assert c.app.config.acl['edit_page_permissions'] == c.project.acl['tool']
-    assert c.app.config.acl['unmoderated_post'] == [role_auth]
-    assert c.app.config.acl['post'] == [role_anon]
-    assert c.app.config.acl['moderate'] == [role_developer]
-    assert c.app.config.acl['admin'] == c.project.acl['tool']
-    
+    admin = M.User.by_username('test-admin')
+    user = M.User.by_username('test-user')
+    anon = M.User.anonymous()
+    def check_access(perm):
+        pred = security.has_access(c.app, perm)
+        return pred(user=admin), pred(user=user), pred(user=anon)
+    assert check_access('configure') == (True, False, False)
+    assert check_access('read') == (True, True, True)
+    assert check_access('create') == (True, True, False)
+    assert check_access('edit') == (True, True, False)
+    assert check_access('delete') == (True, False, False)
+    assert check_access('unmoderated_post') == (True, True, False)
+    assert check_access('post') == (True, True, True)
+    assert check_access('moderate') == (True, False, False)
+    assert check_access('admin') == (True, False, False)

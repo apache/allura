@@ -8,9 +8,9 @@ from ming import schema
 from ming.orm.base import session
 from ming.orm.property import FieldProperty, RelationProperty, ForeignIdProperty
 
-import allura.tasks
 from allura.lib import helpers as h
-from allura.lib.security import require, has_artifact_access
+from allura.lib import security
+from allura.lib.security import require_access, has_access
 from .artifact import Artifact, VersionedArtifact, Snapshot, Message, Feed
 from .attachments import BaseAttachment
 from .auth import User
@@ -170,7 +170,7 @@ class Thread(Artifact):
         return p
 
     def post(self, text, message_id=None, parent_id=None, timestamp=None, **kw):
-        require(has_artifact_access('post', self))
+        require_access(self, 'post')
         if self.ref_id and self.artifact:
             self.artifact.subscribe()
         if message_id is None: message_id = h.gen_message_id()
@@ -187,7 +187,7 @@ class Thread(Artifact):
         if timestamp is not None: kwargs['timestamp'] = timestamp
         if message_id is not None: kwargs['_id'] = message_id
         post = self.post_class()(**kwargs)
-        if has_artifact_access('unmoderated_post')():
+        if has_access(self, 'unmoderated_post')():
             log.info('Auto-approving message from %s', c.user.username)
             post.approve()
         return post
@@ -422,12 +422,14 @@ class Post(Message, VersionedArtifact):
         if self.parent_id is None:
             thd = self.thread_class().query.get(_id=self.thread_id)
             g.post_event('discussion.new_thread', thd._id)
-        self.give_access('moderate', user=self.author())
-        self.commit()
         author = self.author()
+        security.simple_grant(
+            self.acl, author.project_role()._id, 'moderate')
+        self.commit()
         if (c.app.config.options.get('PostingPolicy') == 'ApproveOnceModerated'
             and author._id != None):
-            c.app.config.grant_permission('unmoderated_post', author)
+            security.simple_grant(
+                self.acl, author.project_role()._id, 'unmoderated_post')
         g.post_event('discussion.new_post', self.thread_id, self._id)
         artifact = self.thread.artifact or self.thread
         Notification.post(artifact, 'message', post=self)

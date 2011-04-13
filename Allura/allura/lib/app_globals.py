@@ -133,7 +133,7 @@ class Globals(object):
             perm_create = Icon('e', 'ico-config'),
             perm_delete = Icon('-', 'ico-minuscirc'),
             perm_tool = Icon('x', 'ico-config'),
-            perm_security = Icon('(', 'ico-lock'),
+            perm_admin = Icon('(', 'ico-lock'),
         )
 
     def post_event(self, topic, *args, **kwargs):

@@ -14,7 +14,7 @@ import pymongo
 from pylons import c, g
 
 from allura.lib import helpers as h
-from allura.lib.security import require, has_project_access
+from allura.lib.security import require_access
 from allura import model as M
 
 
@@ -24,7 +24,7 @@ class SiteAdminController(object):
 
     def _check_security(self):
         with h.push_context(config.get('site_admin_project', 'allura')):
-            require(has_project_access('security'))
+            require_access(c.project, 'admin')
 
     @expose('jinja:allura:templates/site_admin_index.html')
     @with_trailing_slash

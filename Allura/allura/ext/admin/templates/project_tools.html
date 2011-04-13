@@ -8,7 +8,6 @@
 {% block header %}Tools{% endblock %}
 
 {% block content %}
-{% if h.has_project_access('tool')() %}
   <h3>Click to install</h3>
   <div class="nested-grid-container">
     {% for tool in installable_tools %}
@@ -41,7 +40,6 @@
     </div>
   </form>
   {{c.install_modal.display(content='<h1>Install <span id="install_tool_label">Tool</span></h1>')}}
-{% endif %}
 
 <h3>Installed tools</h3>
 <p>
@@ -71,7 +69,7 @@
                                name="tool-{{loop.index0}}.mount_point"
                                value="{{mount['ac'].options.mount_point}}"/>
                         <input name="tool-{{loop.index0}}.delete" type="hidden" value="Delete"/>
-                        {% if h.has_project_access('tool')() and mount['ac'].load().installable %}
+                        {% if mount['ac'].load().installable %}
                           <a href="#" class="mount_delete">Delete</a>
                         {% endif %}
                       </form>
@@ -96,9 +94,7 @@
                                  name="subproject-{{loop.index0}}.shortname"
                                  value="{{mount['sub'].shortname}}"/>
                           <input name="subproject-{{loop.index0}}.delete" type="hidden" value="Delete"/>
-                          {% if h.has_project_access('tool')() %}
-                            <a href="#" class="mount_delete">Delete</a>
-                          {% endif %}
+                          <a href="#" class="mount_delete">Delete</a>
                       </form>
                     </li>
                 </ul>

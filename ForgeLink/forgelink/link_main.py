@@ -9,8 +9,8 @@ from pylons import g, c, request
 # Pyforge-specific imports
 from allura.app import Application, ConfigOption, SitemapEntry, DefaultAdminController
 from allura.lib import helpers as h
-from allura.lib.security import require, has_artifact_access
-from allura.model import ProjectRole
+from allura.lib.security import require_access
+from allura import model as M
 from allura.controllers import BaseController
 
 # Local imports
@@ -59,10 +59,12 @@ class ForgeLinkApp(Application):
         self.config.options['project_name'] = project.name
         super(ForgeLinkApp, self).install(project)
         # Setup permissions
-        role_anon = ProjectRole.anonymous()._id
-        self.config.acl.update(
-            configure=c.project.acl['tool'],
-            read=[role_anon])
+        role_admin = M.ProjectRole.by_name('Admin')._id
+        role_anon = M.ProjectRole.anonymous()._id
+        self.config.acl = [
+            M.ACE.allow(role_anon, 'read'),
+            M.ACE.allow(role_admin, 'configure'),
+            ]
 
     def uninstall(self, project):
         "Remove all the tool's artifacts from the database"
@@ -71,7 +73,7 @@ class ForgeLinkApp(Application):
 class RootController(BaseController):
 
     def _check_security(self):
-        require(has_artifact_access('read'))
+        require_access('read', c.app)
 
     @expose('jinja:forgelink:templates/link/index.html')
     def index(self, **kw):

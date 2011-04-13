@@ -8,9 +8,6 @@
   {% if c.project.deleted %}
     <div class="notice">This project has been deleted and is not visible to non-admin users</div>
   {% endif %}
-  {% if not h.has_project_access('update')() %}
-      {{c.project.description_html|safe}}
-  {% else %} {# has_project_access('update') #}
     <form method="POST" action="update_homepage" enctype="multipart/form-data">
         <label class="grid-19" for="homepage_title">Title: </label>
         <div class="grid-19">
@@ -22,7 +19,6 @@
         <hr class="grid-19" style="margin-top: 1em; margin-bottom: 1em">
         <div class="grid-19"><input type="submit" value="Save"></div>
     </form>
-  {% endif %}
 {% endblock %}
 
 {% block extra_js %}

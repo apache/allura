@@ -5,7 +5,7 @@
   {% if value.state != 'published' %}
     <em class="grid-19">({{value.state}})</em>
   {% endif %}
-  {% if h.has_artifact_access('write', value)() %}
+  {% if h.has_access(value, 'write')() %}
     <div class="grid-19"><a href="{{value.url()}}edit">Edit</a></div>
   {% endif %}
   <div class="grid-19">

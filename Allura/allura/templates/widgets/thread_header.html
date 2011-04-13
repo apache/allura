@@ -14,7 +14,7 @@
     </div>
   </div>
   {% endif %}
-  {% if show_moderate and h.has_artifact_access('moderate', value)() %}
+  {% if show_moderate and h.has_access(value, 'moderate')() %}
   <div class="title-pane closed">
     <span class="title">Moderate thread</span>
     <div class="content">

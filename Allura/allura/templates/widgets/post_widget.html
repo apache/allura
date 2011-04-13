@@ -24,12 +24,12 @@
             <br><small>Last edit: {{value.last_edit_by().display_name}} {{h.ago(value.last_edit_date)}}</small>
           {% endif %}
         </div>
-        {% if h.has_artifact_access('post', value.thread)() %}
+        {% if h.has_access(value.thread, 'post')() %}
         <div class="edit_post_form reply" style="display:none">
             {{widgets.edit_post.display(value=value, submit_text='Save', action=value.url())}}
         </div>
         {% endif %}
-        {% if h.has_artifact_access('moderate', value)() %}
+        {% if h.has_access(value, 'moderate')() %}
         <div class="add_attachment_form" style="display:none; clear: both; overflow: auto;">
             {{widgets.attach_post.display(value=value, action=value.url() + 'attach')}}
         </div>
@@ -64,10 +64,10 @@
         <div style="clear:both">
           <a href="{{tg.url(url.current(),dict(page=page,limit=limit))}}#{{value.slug}}" class="little_link shortlink"><span>Link</span></a><br/>
           {% if c.user != c.user.anonymous() %}<a href="" class="edit_post little_link"><span>Edit</span></a><br/>{% endif %}
-          {% if h.has_artifact_access('moderate', value)() %}
+          {% if h.has_access(value, 'moderate')() %}
             {{widgets.moderate_post.display(value=value, action=value.url()+'moderate')}}
           {% endif %}
-          {% if h.has_artifact_access('post', value.thread)() %}
+          {% if h.has_access(value.thread, 'post')() %}
             <a href="#" class="add_attachment little_link"><span>Attach</span></a>
           {% endif %}
         </div>
@@ -81,7 +81,7 @@
     </div>
     <ul>
       <li>
-        {% if h.has_artifact_access('post', value.thread)() %}
+        {% if h.has_access(value.thread, 'post')() %}
         <div class="row reply_post_form" style="display:none">
           <div class="reply">
             <div class="grid-2 tcenter">
@@ -106,7 +106,7 @@
     </ul>
   </div>
 
-  {% if h.has_artifact_access('moderate', value.thread)() and 'promote_to_thread' in widgets and not supress_promote %}
+  {% if h.has_access(value.thread, 'moderate')() and 'promote_to_thread' in widgets and not supress_promote %}
   <div class="promote_to_thread_form push-{{3+indent}} span-{{16-indent}} last clear" style="display:none">
     {{widgets.promote_to_thread.display(value=value, action=value.url()+'moderate')}}
   </div>

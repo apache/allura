@@ -4,7 +4,7 @@ from webob import exc
 from tg import expose, request, response, redirect
 from ming.utils import LazyProperty
 
-from allura.lib.security import require, has_artifact_access
+from allura.lib.security import require, has_access, require_access
 from .base import BaseController
 
 class AttachmentsController(BaseController):
@@ -28,7 +28,7 @@ class AttachmentController(BaseController):
     edit_perm = 'edit'
 
     def _check_security(self):
-        require(has_artifact_access('read', self.artifact))
+        require_access(self.artifact, 'read')
 
     def __init__(self, filename, artifact):
         self.filename = filename
@@ -55,7 +55,7 @@ class AttachmentController(BaseController):
     @expose()
     def index(self, delete=False, embed=True, **kw):
         if request.method == 'POST':
-            require(has_artifact_access(self.edit_perm, self.artifact))
+            require_access(self.artifact, self.edit_perm)
             if delete:
                 self.attachment.delete()
                 try:

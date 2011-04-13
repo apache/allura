@@ -64,6 +64,7 @@ class RootController(WsgiDispatchController):
 
     def _setup_request(self):
         c.project = c.app = None
+        c.memoize_cache = {}
         c.user = plugin.AuthenticationProvider.get(request).authenticate_request()
         assert c.user is not None, 'c.user should always be at least User.anonymous()'
 

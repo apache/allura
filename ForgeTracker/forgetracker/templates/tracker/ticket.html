@@ -130,7 +130,7 @@
 {% endblock %}
 
 {% block extra_js %}
-  {% if h.has_artifact_access('write', ticket)() %}
+  {% if h.has_access(ticket, 'write')() %}
     <script type="text/javascript">
         $(document).ready(function () {
           // show/hide form

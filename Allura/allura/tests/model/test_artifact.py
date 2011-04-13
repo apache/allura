@@ -14,6 +14,7 @@ from ming.orm import session
 
 from allura import model as M
 from allura.lib import helpers as h
+from allura.lib import security
 from alluratest.controller import setup_basic_test, setup_unit_test
 from forgewiki import model as WM
 
@@ -51,11 +52,11 @@ def test_artifact():
     assert pg.app.config == c.app.config
     assert pg.app_config == c.app.config
     u = M.User.query.get(username='test-user')
-    pg.give_access('delete', user=u)
+    pg.acl.append(M.ACE.allow(u.project_role()._id, 'delete'))
     ThreadLocalORMSession.flush_all()
-    assert u.project_role()._id in pg.acl['delete']
-    pg.revoke_access('delete', user=u)
-    assert u.project_role()._id not in pg.acl['delete']
+    assert security.has_access(pg, 'delete')(user=u)
+    pg.acl.pop()
+    assert not security.has_access(pg, 'delete')(user=u)
     idx = pg.index()
     assert 'title_s' in idx
     assert 'url_s' in idx

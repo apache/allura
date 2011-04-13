@@ -61,7 +61,7 @@ class RepositoryApp(Application):
         links.append(SitemapEntry('Refresh Repository',
                                   c.project.url() + self.config.options.mount_point + '/refresh',
                                   className='nav_child'))
-        if self.permissions and security.has_artifact_access('configure', app=self)():
+        if self.permissions and security.has_access(self, 'configure')():
             links.append(SitemapEntry('Permissions', admin_url + 'permissions', className='nav_child'))
         return links
 
@@ -132,18 +132,20 @@ class RepositoryApp(Application):
     def install(self, project):
         self.config.options['project_name'] = project.name
         super(RepositoryApp, self).install(project)
+        role_admin = M.ProjectRole.by_name('Admin')._id
         role_developer = M.ProjectRole.by_name('Developer')._id
         role_auth = M.ProjectRole.authenticated()._id
         role_anon = M.ProjectRole.anonymous()._id
-        self.config.acl.update(
-            configure=c.project.roleids_with_permission('tool'),
-            read=c.project.roleids_with_permission('read'),
-            create=[role_developer],
-            write=[role_developer],
-            unmoderated_post=[role_auth],
-            post=[role_anon],
-            moderate=[role_developer],
-            admin=c.project.roleids_with_permission('tool'))
+        self.config.acl = [
+            M.ACE.allow(role_anon, 'read'),
+            M.ACE.allow(role_anon, 'post'),
+            M.ACE.allow(role_auth, 'unmoderated_post'),
+            M.ACE.allow(role_developer, 'create'),
+            M.ACE.allow(role_developer, 'write'),
+            M.ACE.allow(role_developer, 'moderate'),
+            M.ACE.allow(role_admin, 'configure'),
+            M.ACE.allow(role_admin, 'admin'),
+            ]
 
     def uninstall(self, project):
         allura.tasks.repo_tasks.uninstall.post()
@@ -155,7 +157,7 @@ class RepoAdminController(DefaultAdminController):
         self.repo = app.repo
 
     def _check_security(self):
-        security.require(security.has_artifact_access('configure', app=self.app))
+        security.require_access(self.app, 'configure')
 
     @with_trailing_slash
     @expose()

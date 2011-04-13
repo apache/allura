@@ -5,7 +5,7 @@
 {% block header %}{{post.title}}{% endblock %}
 
 {% block actions %}
-  {% if h.has_artifact_access('write', post)() %}
+  {% if h.has_access(post, 'write')() %}
     <a href="edit" title="Edit"><b data-icon="{{g.icons['pencil'].char}}" class="ico {{g.icons['pencil'].css}}"></b></a>
   {% endif %}
   <a href="history" title="History"><b data-icon="{{g.icons['history'].char}}" class="ico {{g.icons['history'].css}}"></b></a>

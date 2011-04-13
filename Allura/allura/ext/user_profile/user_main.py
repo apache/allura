@@ -12,8 +12,8 @@ from allura.app import Application, WidgetController, SitemapEntry
 from allura.lib import helpers as h
 from allura.lib.helpers import DateTimeConverter
 from allura.ext.project_home import model as M
-from allura.lib.security import require, has_project_access, has_artifact_access
-from allura.model import User, Notification
+from allura.lib.security import require, has_access, require_access
+from allura.model import User, Notification, ACE
 from allura.controllers import BaseController
 from allura.lib.decorators import require_post
 
@@ -41,7 +41,6 @@ class UserProfileApp(Application):
     @property
     @h.exceptionless([], log)
     def sitemap(self):
-        menu_id = 'User'
         return []
 
     @h.exceptionless([], log)
@@ -54,8 +53,9 @@ class UserProfileApp(Application):
     def install(self, project):
         pr = c.user.project_role()
         if pr:
-            for perm in self.permissions:
-                self.config.acl[perm] = [ pr._id ]
+            self.config.acl = [
+                ACE.allow(pr._id, perm)
+                for perm in self.permissions ]
 
     def uninstall(self, project): # pragma no cover
         raise NotImplementedError, "uninstall"
@@ -63,8 +63,7 @@ class UserProfileApp(Application):
 class UserProfileController(BaseController):
 
     def _check_security(self):
-        require(has_project_access('read'),
-                'Read access required')
+        require_access(c.project, 'read')
 
     @expose('jinja:allura.ext.user_profile:templates/user_index.html')
     def index(self, **kw):
@@ -118,7 +117,7 @@ class UserProfileController(BaseController):
     @expose()
     @require_post()
     def update_configuration(self, divs=None, layout_class=None, new_div=None, **kw):
-        require(has_project_access('update'), 'Update access required')
+        require_access(c.project, 'update')
         config = M.PortalConfig.current()
         config.layout_class = layout_class
         # Handle updated and deleted divs
@@ -183,6 +182,6 @@ class UserProfileController(BaseController):
             log.info("Can't find repo at %s on repo_path %s",
                      mount_point, repo_path)
             return disallow
-        return dict(allow_read=has_artifact_access('read')(user=user),
-                    allow_write=has_artifact_access('write')(user=user),
-                    allow_create=has_artifact_access('create')(user=user))
+        return dict(allow_read=has_access(c.app, 'read')(user=user),
+                    allow_write=has_access(c.app, 'write')(user=user),
+                    allow_create=has_access(c.app, 'create')(user=user))

@@ -81,19 +81,10 @@ def bootstrap(command, conf, vars):
                        display_name='Anonymous Coward')
     root = create_user('Root')
 
-    n_projects = M.Neighborhood(name='Projects',
-                             url_prefix='/p/',
-                             acl=dict(read=[None], create=[],
-                                      moderate=[root._id], admin=[root._id]))
-    n_users = M.Neighborhood(name='Users',
-                             url_prefix='/u/',
-                             shortname_prefix='u/',
-                             acl=dict(read=[None], create=[],
-                                      moderate=[root._id], admin=[root._id]))
-    n_adobe = M.Neighborhood(name='Adobe',
-                             url_prefix='/adobe/',
-                             acl=dict(read=[None], create=[],
-                                      moderate=[root._id], admin=[root._id]))
+    n_projects = M.Neighborhood(name='Projects', url_prefix='/p/')
+    n_users = M.Neighborhood(name='Users', url_prefix='/u/',
+                             shortname_prefix='u/')
+    n_adobe = M.Neighborhood(name='Adobe', url_prefix='/adobe/')
     assert tg.config['auth.method'] == 'local'
     project_reg = plugin.ProjectRegistrationProvider.get()
     p_projects = project_reg.register_neighborhood_project(n_projects, [root])
@@ -138,15 +129,18 @@ def bootstrap(command, conf, vars):
                                    display_name='Adobe Admin'))
         u_admin_adobe.set_password('foo')
         # Admin1 is almost root, with admin access for Users and Projects neighborhoods
-        n_projects.acl['admin'].append(u_admin._id)
-        n_users.acl['admin'].append(u_admin._id)
+        p_projects.acl.append(
+            M.ACE.allow(u_admin.project_role(project=p_projects), 'admin'))
+        p_users.acl.append(
+            M.ACE.allow(u_admin.project_role(project=p_projects), 'admin'))
 
         p_allura = n_projects.register_project('allura', u_admin)
     u1 = M.User.register(dict(username='test-user',
                               display_name='Test User'))
     u1.set_password('foo')
     p_adobe1 = n_adobe.register_project('adobe-1', u_admin_adobe)
-    n_adobe.acl['admin'].append(u_admin_adobe._id)
+    p_adobe.acl.append(
+        M.ACE.allow(u_admin_adobe.project_role(p_adobe)._id, 'admin'))
     p0 = n_projects.register_project('test', u_admin)
     p0._extra_tool_status = [ 'alpha', 'beta' ]
     # Ming doesn't detect substructural changes in newly created objects (vs loaded from DB)

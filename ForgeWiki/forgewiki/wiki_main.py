@@ -19,7 +19,7 @@ from allura.lib import helpers as h
 from allura.app import Application, SitemapEntry, DefaultAdminController
 from allura.lib.search import search
 from allura.lib.decorators import require_post
-from allura.lib.security import require, has_artifact_access
+from allura.lib.security import require_access, has_access
 from allura.controllers import AppDiscussionController, BaseController
 from allura.controllers import attachments as ac
 from allura.lib import widgets as w
@@ -51,7 +51,7 @@ class W:
 class ForgeWikiApp(Application):
     '''This is the Wiki app for PyForge'''
     __version__ = version.__version__
-    permissions = [ 'configure', 'read', 'create', 'edit', 'delete', 'edit_page_permissions',
+    permissions = [ 'configure', 'read', 'create', 'edit', 'delete',
                     'unmoderated_post', 'post', 'moderate', 'admin']
     searchable=True
     tool_label='Wiki'
@@ -72,7 +72,7 @@ class ForgeWikiApp(Application):
         self.admin = WikiAdminController(self)
 
     def has_access(self, user, topic):
-        return has_artifact_access('post', user=user)
+        return has_access(c.app, 'post')(user=user)
 
     def handle_message(self, topic, message):
         log.info('Message from %s (%s)',
@@ -131,7 +131,7 @@ class ForgeWikiApp(Application):
         admin_url = c.project.url()+'admin/'+self.config.options.mount_point+'/'
         links = [SitemapEntry('Set Home', admin_url + 'home', className='admin_modal'),
                  SitemapEntry('Options', admin_url + 'options', className='admin_modal')]
-        if self.permissions and has_artifact_access('configure', app=self)():
+        if self.permissions and has_access(self, 'configure')():
             links.append(SitemapEntry('Permissions', admin_url + 'permissions', className='nav_child'))
         return links
 
@@ -150,7 +150,7 @@ class ForgeWikiApp(Application):
             SitemapEntry('Browse Labels',c.app.url+'browse_tags/')]
         discussion = c.app.config.discussion
         pending_mod_count = M.Post.query.find({'discussion_id':discussion._id, 'status':'pending'}).count()
-        if pending_mod_count and h.has_artifact_access('moderate', discussion)():
+        if pending_mod_count and h.has_access(discussion, 'moderate')():
             links.append(SitemapEntry('Moderate', discussion.url() + 'moderate', ui_icon=g.icons['pencil'],
                 small = pending_mod_count))
         links = links + [SitemapEntry(''),
@@ -164,20 +164,22 @@ class ForgeWikiApp(Application):
         self.config.options['show_right_bar'] = True
         super(ForgeWikiApp, self).install(project)
         # Setup permissions
+        role_admin = M.ProjectRole.by_name('Admin')._id
         role_developer = M.ProjectRole.by_name('Developer')._id
         role_auth = M.ProjectRole.by_name('*authenticated')._id
         role_anon = M.ProjectRole.by_name('*anonymous')._id
-        self.config.acl.update(
-            configure=c.project.roleids_with_permission('tool'),
-            read=c.project.roleids_with_permission('read'),
-            create=[role_auth],
-            edit=[role_auth],
-            delete=[role_developer],
-            edit_page_permissions=c.project.roleids_with_permission('tool'),
-            unmoderated_post=[role_auth],
-            post=[role_anon],
-            moderate=[role_developer],
-            admin=c.project.roleids_with_permission('tool'))
+        self.config.acl = [
+            M.ACE.allow(role_anon, 'read'),
+            M.ACE.allow(role_anon, 'post'),
+            M.ACE.allow(role_auth, 'unmoderated_post'),
+            M.ACE.allow(role_auth, 'create'),
+            M.ACE.allow(role_auth, 'edit'),
+            M.ACE.allow(role_developer, 'delete'),
+            M.ACE.allow(role_developer, 'moderate'),
+            M.ACE.allow(role_developer, 'save_searches'),
+            M.ACE.allow(role_admin, 'configure'),
+            M.ACE.allow(role_admin, 'admin'),
+            ]
         root_page_name = self.default_root_page_name
         WM.Globals(app_config_id=c.app.config._id, root=root_page_name)
         self.upsert_root(root_page_name)
@@ -214,7 +216,7 @@ class RootController(BaseController):
         self._discuss = AppDiscussionController()
 
     def _check_security(self):
-        require(has_artifact_access('read'))
+        require_access(c.app, 'read')
 
     @with_trailing_slash
     @expose()
@@ -269,7 +271,7 @@ class RootController(BaseController):
         pages = []
         uv_pages = []
         criteria = dict(app_config_id=c.app.config._id)
-        can_delete = has_artifact_access('delete')()
+        can_delete = has_access(c.app, 'delete')()
         show_deleted = show_deleted and can_delete
         if not can_delete:
             criteria['deleted'] = False
@@ -355,12 +357,20 @@ class PageController(BaseController):
     def __init__(self, title):
         self.title = h.really_unicode(title)
         self.page = WM.Page.query.get(
-            app_config_id=c.app.config._id, title=self.title, deleted=False)
-        if self.page:
+            app_config_id=c.app.config._id, title=self.title)
+        if self.page is not None:
             self.attachment = WikiAttachmentsController(self.page)
         c.create_page_lightbox = W.create_page_lightbox
         setattr(self, 'feed.atom', self.feed)
         setattr(self, 'feed.rss', self.feed)
+
+    def _check_security(self):
+        if self.page:
+            require_access(self.page, 'read')
+            if self.page.deleted:
+                require_access(self.page, 'delete')
+        else:
+            require_access(c.app, 'create')
 
     def fake_page(self):
         return dict(
@@ -384,17 +394,10 @@ class PageController(BaseController):
 
     @with_trailing_slash
     @expose('jinja:forgewiki:templates/wiki/page_view.html')
-    @validate(dict(version=validators.Int(if_empty=None),
-                   deleted=validators.StringBool(if_empty=False)))
-    def index(self, version=None, deleted=False, **kw):
-        if deleted:
-            self.page = WM.Page.query.get(app_config_id=c.app.config._id, title=self.title, deleted=True)
-            if not self.page:
-                raise exc.HTTPNotFound
-            require(has_artifact_access('delete', self.page)) # deleted pages can only be viewed by those with 'delete' permission
-        elif not self.page:
+    @validate(dict(version=validators.Int(if_empty=None)))
+    def index(self, version=None, **kw):
+        if not self.page:
             redirect(c.app.url+self.title+'/edit')
-        require(has_artifact_access('read', self.page))
         c.thread = W.thread
         c.attachment_list = W.attachment_list
         c.subscribe_form = W.page_subscribe_form
@@ -408,37 +411,34 @@ class PageController(BaseController):
         if cur > 1: prev = cur-1
         else: prev = None
         next = cur+1
-        hide_left_bar = not (c.app.show_left_bar or has_artifact_access('edit', app=c.app)())
+        hide_left_bar = not (c.app.show_left_bar or has_access(self.page, 'edit')())
         return dict(
             page=page,
             cur=cur, prev=prev, next=next,
             subscribed=M.Mailbox.subscribed(artifact=self.page),
-            has_artifact_access=has_artifact_access, h=h,
             hide_left_bar=hide_left_bar, show_meta=c.app.show_right_bar)
 
     @without_trailing_slash
     @expose('jinja:forgewiki:templates/wiki/page_edit.html')
     def edit(self):
         page_exists = self.page
-        if page_exists:
-            require(has_artifact_access('edit', self.page))
-            if 'all' not in self.page.viewable_by and c.user.username not in self.page.viewable_by:
-                raise exc.HTTPForbidden(detail="You may not view this page.")
+        if self.page:
+            require_access(self.page, 'edit')
+            page = self.page
         else:
-            require(has_artifact_access('create'))
-            self.page = self.fake_page()
+            page = self.fake_page()
         c.markdown_editor = W.markdown_editor
         c.user_select = ffw.ProjectUserSelect()
         c.attachment_add = W.attachment_add
         c.attachment_list = W.attachment_list
         c.label_edit = W.label_edit
-        return dict(page=self.page, page_exists=page_exists, has_artifact_access=has_artifact_access)
+        return dict(page=page, page_exists=page_exists)
 
     @without_trailing_slash
     @expose('json')
     @require_post()
     def delete(self):
-        require(has_artifact_access('delete', self.page))
+        require_access(self.page, 'delete')
         M.Shortlink.query.remove(dict(ref_id=self.page.index_id()))
         self.page.deleted = True
         suffix = " {dt.hour}:{dt.minute}:{dt.second} {dt.day}-{dt.month}-{dt.year}".format(dt=datetime.utcnow())
@@ -449,10 +449,7 @@ class PageController(BaseController):
     @expose('json')
     @require_post()
     def undelete(self):
-        self.page = WM.Page.query.get(app_config_id=c.app.config._id, title=self.title, deleted=True)
-        if not self.page:
-            raise exc.HTTPNotFound
-        require(has_artifact_access('delete', self.page))
+        require_access(self.page, 'delete')
         self.page.deleted = False
         M.Shortlink.from_artifact(self.page)
         return dict(location='./edit')
@@ -464,7 +461,6 @@ class PageController(BaseController):
     def history(self, page=0, limit=None):
         if not self.page:
             raise exc.HTTPNotFound
-        require(has_artifact_access('read', self.page))
         c.page_list = W.page_list
         c.page_size = W.page_size
         limit, pagenum, start = g.handle_paging(limit, page, default=25)
@@ -472,7 +468,7 @@ class PageController(BaseController):
         pages = self.page.history()
         count = pages.count()
         pages = pages.skip(start).limit(int(limit))
-        return dict(title=self.title, pages=pages, has_artifact_access=has_artifact_access,
+        return dict(title=self.title, pages=pages,
                     limit=limit, count=count, page=pagenum)
 
     @without_trailing_slash
@@ -483,7 +479,6 @@ class PageController(BaseController):
     def diff(self, v1, v2, **kw):
         if not self.page:
             raise exc.HTTPNotFound
-        require(has_artifact_access('read', self.page))
         p1 = self.get_version(v1)
         p2 = self.get_version(v2)
         result = h.diff_text(p1.text, p2.text)
@@ -494,7 +489,6 @@ class PageController(BaseController):
     def raw(self):
         if not self.page:
             raise exc.HTTPNotFound
-        require(has_artifact_access('read', self.page))
         return pformat(self.page)
 
     @without_trailing_slash
@@ -529,7 +523,7 @@ class PageController(BaseController):
     def revert(self, version):
         if not self.page:
             raise exc.HTTPNotFound
-        require(has_artifact_access('edit', self.page))
+        require_access(self.page, 'edit')
         orig = self.get_version(version)
         if orig:
             self.page.text = orig.text
@@ -549,10 +543,10 @@ class PageController(BaseController):
             redirect('edit')
         if not self.page:
             # the page doesn't exist yet, so create it
-            require(has_artifact_access('create'))
             self.page = WM.Page.upsert(self.title)
             self.page.viewable_by = ['all']
-        require(has_artifact_access('edit', self.page))
+        else:
+            require_access(self.page, 'edit')
         name_conflict = None
         if self.page.title != title:
             name_conflict = WM.Page.query.find(dict(app_config_id=c.app.config._id, title=title, deleted=False)).first()
@@ -592,7 +586,7 @@ class PageController(BaseController):
     def attach(self, file_info=None):
         if not self.page:
             raise exc.HTTPNotFound
-        require(has_artifact_access('edit', self.page))
+        require_access(self.page, 'edit')
         if hasattr(file_info, 'file'):
             self.page.attach(file_info.filename, file_info.file, content_type=file_info.type)
         redirect(request.referer)
@@ -602,7 +596,6 @@ class PageController(BaseController):
     def subscribe(self, subscribe=None, unsubscribe=None):
         if not self.page:
             raise exc.HTTPNotFound
-        require(has_artifact_access('read'))
         if subscribe:
             self.page.subscribe(type='direct')
         elif unsubscribe:
@@ -632,7 +625,7 @@ class RootRestController(RestController):
         page_titles = []
         pages = WM.Page.query.find(dict(app_config_id=c.app.config._id, deleted=False))
         for page in pages:
-            if has_artifact_access('read', page)():
+            if has_access(page, 'read')():
                 page_titles.append(page.title)
         return dict(pages=page_titles)
 
@@ -641,20 +634,22 @@ class RootRestController(RestController):
         page = WM.Page.query.get(app_config_id=c.app.config._id, title=title, deleted=False)
         if page is None:
             raise exc.HTTPNotFound, title
-        require(has_artifact_access('read', page))
+        require_access(page, 'read')
         return dict(title=page.title, text=page.text, labels=page.labels)
 
     @h.vardec
     @expose()
     @require_post()
     def post(self, title, **post_data):
-        exists = WM.Page.query.find(dict(app_config_id=c.app.config._id, title=title, deleted=False)).first()
-        if not exists:
-            require(has_artifact_access('create'))
-        page = WM.Page.upsert(title)
-        if not exists:
-            page.viewable_by = ['all']
-        require(has_artifact_access('edit', page))
+        page = WM.Page.query.get(
+            app_config_id=c.app.config._id,
+            title=title,
+            deleted=False)
+        if not page:
+            require_access(c.app, 'create')
+            page = WM.Page.upsert(title)
+        else:
+            require_access(page, 'edit')
         page.text = post_data['text']
         if 'labels' in post_data:
             page.labels = post_data['labels'].split(',')
@@ -666,6 +661,9 @@ class WikiAdminController(DefaultAdminController):
     def __init__(self, app):
         self.app = app
 
+    def _check_security(self):
+        require_access(self.app, 'configure')
+
     @with_trailing_slash
     def index(self, **kw):
         redirect('home')
@@ -675,19 +673,18 @@ class WikiAdminController(DefaultAdminController):
     def home(self):
         return dict(app=self.app,
                     home=self.app.root_page_name,
-                    allow_config=has_artifact_access('configure', app=self.app)())
+                    allow_config=has_access(self.app, 'configure')())
 
     @without_trailing_slash
     @expose('jinja:forgewiki:templates/wiki/admin_options.html')
     def options(self):
         return dict(app=self.app,
-                    allow_config=has_artifact_access('configure', app=self.app)())
+                    allow_config=has_access(self.app, 'configure')())
 
     @without_trailing_slash
     @expose()
     @require_post()
     def set_home(self, new_home):
-        require(has_artifact_access('configure', app=self.app))
         globals = WM.Globals.query.get(app_config_id=self.app.config._id)
         if globals is not None:
             globals.root = new_home
@@ -701,7 +698,6 @@ class WikiAdminController(DefaultAdminController):
     @expose()
     @require_post()
     def set_options(self, show_discussion=False, show_left_bar=False, show_right_bar=False):
-        require(has_artifact_access('configure', app=self.app))
         if show_discussion:
             show_discussion = True
         if show_left_bar:

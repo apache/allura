@@ -14,10 +14,12 @@ from ming.utils import LazyProperty
 from webhelpers import feedgenerator as FG
 
 from allura.lib import helpers as h
+from allura.lib import security
 from .session import main_doc_session, main_orm_session
 from .session import project_doc_session, project_orm_session
 from .session import artifact_orm_session
 from .index import ArtifactReference
+from .types import ACL, ACE
 
 from filesystem import File
 
@@ -59,7 +61,7 @@ class Artifact(MappedClass):
         S.Object,
         { str: str },
         if_missing=lambda:{c.app.config.tool_name:c.app.__version__})
-    acl = FieldProperty({str:[S.ObjectId]})
+    acl = FieldProperty(ACL)
     tags = FieldProperty(S.Deprecated)
     labels = FieldProperty([str])
     references = FieldProperty(S.Deprecated)
@@ -67,6 +69,9 @@ class Artifact(MappedClass):
     app_config = RelationProperty('AppConfig')
     # Not null if artifact originated from external import, then API ticket id
     import_id = FieldProperty(str, if_missing=None)
+
+    def parent_security_context(self):
+        return self.app_config
 
     @classmethod
     def attachment_class(cls):
@@ -159,28 +164,7 @@ class Artifact(MappedClass):
         if getattr(c, 'app', None) and c.app.config._id == self.app_config._id:
             return c.app
         else:
-            ac = self.app_config
             return self.app_config.load()(self.project, self.app_config)
-
-    def give_access(self, *access_types, **kw):
-        user = kw.pop('user', c.user)
-        project = kw.pop('project', c.project)
-        with h.push_config(c, project=project):
-            project_role_id = user.project_role()._id
-        for at in access_types:
-            l = self.acl.setdefault(at, [])
-            if project_role_id not in l:
-                l.append(project_role_id)
-
-    def revoke_access(self, *access_types, **kw):
-        user = kw.pop('user', c.user)
-        project = kw.pop('project', c.project)
-        with h.push_config(c, project=project):
-            project_role_id = user.project_role()._id
-        for at in access_types:
-            l = self.acl.setdefault(at, [])
-            if project_role_id in l:
-                l.remove(project_role_id)
 
     def index_id(self):
         '''Globally unique artifact identifier.  Used for

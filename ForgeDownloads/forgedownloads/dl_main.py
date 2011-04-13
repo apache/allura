@@ -10,9 +10,9 @@ from pylons import g, c, request
 # Pyforge-specific imports
 from allura.app import Application, ConfigOption, SitemapEntry, DefaultAdminController
 from allura.lib import helpers as h
-from allura.lib.security import require, has_artifact_access
+from allura.lib.security import has_access, require_access
 from allura.lib.decorators import require_post
-from allura.model import ProjectRole
+from allura import model as M
 from allura.controllers import BaseController
 
 # Local imports
@@ -55,19 +55,21 @@ class ForgeDownloadsApp(Application):
     def admin_menu(self):
         admin_url = c.project.url()+'admin/'+self.config.options.mount_point+'/'
         links = super(ForgeDownloadsApp, self).admin_menu()
-        if has_artifact_access('configure', app=self)():
+        if has_access(self, 'configure')():
             links.append(SitemapEntry('Options', admin_url + 'options', className='admin_modal'))
         return links
 
     def install(self, project):
         'Set up any default permissions and roles here'
         super(ForgeDownloadsApp, self).install(project)
-        # Setup permissions
-        role_anon = ProjectRole.anonymous()._id
         c.project.show_download_button = True
-        self.config.acl.update(
-            configure=c.project.acl['tool'],
-            read=[role_anon])
+        # Setup permissions
+        role_admin = M.ProjectRole.by_name('Admin')._id
+        role_anon = M.ProjectRole.anonymous()._id
+        self.config.acl = [
+            M.ACE.allow(role_anon, 'read'),
+            M.ACE.allow(role_admin, 'configure'),
+            ]
 
     def uninstall(self, project):
         "Remove all the tool's artifacts from the database"
@@ -95,7 +97,7 @@ class RootController(BaseController):
 class DownloadAdminController(DefaultAdminController):
 
     def _check_security(self):
-        require(has_artifact_access('configure', app=self.app), 'Requires permission to "configure"')
+        require_access(self.app, 'configure')
 
     @with_trailing_slash
     def index(self, **kw):
@@ -104,7 +106,7 @@ class DownloadAdminController(DefaultAdminController):
     @expose('jinja:forgedownloads:templates/downloads/admin_options.html')
     def options(self):
         return dict(app=self.app,
-                    allow_config=has_artifact_access('configure', app=self.app)())
+                    allow_config=has_access(self.app, 'configure')())
 
     @h.vardec
     @expose()

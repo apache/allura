@@ -11,7 +11,7 @@
     You are not allowed to edit permissions for {{app.config.options.mount_point}}.
   {% else %}
     <form method="POST" action="update">
-      {% for row in app.config.acl|dictsort|batch(4) %}
+      {% for row in permissions|dictsort|batch(4) %}
       {% set i0=loop.index0  %}
       <div class="fourcol">
         {% for name, ids in row %}

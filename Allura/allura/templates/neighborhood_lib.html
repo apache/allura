@@ -2,8 +2,6 @@
       xmlns:xi="http://www.w3.org/2001/XInclude"
       py:strip="">
 
-  <?python from allura.lib.security import has_neighborhood_access ?>
-
   <py:def function="nav_menu()">
     <div id="nav_menu_missing" py:if="not neighborhood"/>
     <py:if test="neighborhood">
@@ -27,11 +25,11 @@
 				  <li class="${request.url.rfind(neighborhood.url(),-len(neighborhood.url())) != -1 and 'active' or ''}">
             <a href="${neighborhood.url()}" class="ico-l"><b class="ui-icon ui-icon-home"></b> <span>Home</span></a>
           </li>
-					<li py:if="has_neighborhood_access('admin', neighborhood)()"
+					<li py:if="h.has_access(neighborhood, 'admin')()"
 					    class="${neighborhood.url()+'_admin' in request.url and 'active' or ''}">
               <a href="${neighborhood.url()}_admin/" class="ico-l"><b class="ui-icon ui-icon-gear"></b> <span>Admin</span></a>
 					</li>
-					<li py:if="has_neighborhood_access('moderate', neighborhood)()"
+					<li py:if="has_access(neighborhood, 'admin')()"
 					    class="${neighborhood.url()+'_moderate' in request.url and 'active' or ''}">
               <a href="${neighborhood.url()}_moderate/" class="ico-l"><b class="ui-icon ui-icon-gear"></b> <span>Moderate</span></a>
 					</li>

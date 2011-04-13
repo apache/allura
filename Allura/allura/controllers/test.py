@@ -14,7 +14,7 @@ import  ming.orm.ormsession
 
 import allura
 from allura.lib.base import WsgiDispatchController
-from allura.lib.security import require, require_authenticated, has_project_access, has_artifact_access
+from allura.lib.security import require, require_authenticated, require_access, has_access
 from allura.lib import helpers as h
 from allura.lib import plugin
 from allura import model as M
@@ -57,6 +57,7 @@ class TestController(WsgiDispatchController, ProjectController):
     def _setup_request(self):
         # This code fixes a race condition in our tests
         c.project = M.Project.query.get(shortname='test')
+        c.memoize_cache = {}
         count = 20
         while c.project is None:
             import sys, time
@@ -148,12 +149,12 @@ class SecurityTest(object):
 
     @expose()
     def needs_project_access_fail(self):
-        require(has_project_access('no_such_permission'))
+        require_access(c.project, 'no_such_permission')
         return ''
 
     @expose()
     def needs_project_access_ok(self):
-        pred = has_project_access('read')
+        pred = has_access(c.project, 'read')
         if not pred():
             log.info('Inside needs_project_access, c.user = %s' % c.user)
         require(pred)
@@ -161,11 +162,11 @@ class SecurityTest(object):
 
     @expose()
     def needs_artifact_access_fail(self):
-        require(has_artifact_access('no_such_permission', self.page))
+        require_access(self.page, 'no_such_permission')
         return ''
 
     @expose()
     def needs_artifact_access_ok(self):
-        require(has_artifact_access('read', self.page))
+        require_access(self.page, 'read')
         return ''
 

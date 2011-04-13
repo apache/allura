@@ -23,6 +23,7 @@ from .session import main_orm_session
 from .session import project_doc_session, project_orm_session
 from .neighborhood import Neighborhood
 from .auth import ProjectRole
+from .types import ACL, ACE
 
 from filesystem import File
 
@@ -78,14 +79,8 @@ class Project(MappedClass):
     database=FieldProperty(S.Deprecated)
     database_uri=FieldProperty(str)
     is_root=FieldProperty(bool)
-    acl = FieldProperty({
-            'create':[S.ObjectId],    # create subproject
-            'read':[S.ObjectId],      # read project
-            'update':[S.ObjectId],    # update project metadata
-            'delete':[S.ObjectId],    # delete project, subprojects
-            'tool':[S.ObjectId],    # install/delete/configure tools
-            'security':[S.ObjectId],  # update ACL, roles
-            })
+    acl = FieldProperty(ACL(permissions=[
+                'read', 'update', 'admin', 'create']))
     neighborhood_invitations=FieldProperty([S.ObjectId])
     neighborhood = RelationProperty(Neighborhood)
     app_configs = RelationProperty('AppConfig')
@@ -97,6 +92,9 @@ class Project(MappedClass):
     ordinal = FieldProperty(int, if_missing=0)
     database_configured = FieldProperty(bool, if_missing=True)
     _extra_tool_status = FieldProperty([str])
+
+    def parent_security_context(self):
+        return self.parent_project
 
     @classmethod
     def default_database_uri(cls, shortname):
@@ -213,14 +211,12 @@ class Project(MappedClass):
         return ProjectCategory.query.find(dict(_id=self.category_id)).first()
 
     def roleids_with_permission(self, name):
-        roles = []
+        roles = set()
         for p in self.parent_iter():
-            for roleid in p.acl[name]:
-                roles.append(roleid)
-        for roleid in self.acl[name]:
-            if roleid not in roles:
-                roles.append(roleid)
-        return roles
+            for ace in p.acl:
+                if ace.permission == name and ace.access == ACE.alllow:
+                    roles.add(ace.role_id)
+        return list(roles)
 
     def sitemap(self):
         from allura.app import SitemapEntry
@@ -309,8 +305,7 @@ class Project(MappedClass):
         cfg = AppConfig(
             project_id=self._id,
             tool_name=ep.name,
-            options=options,
-            acl=dict((p,[]) for p in App.permissions))
+            options=options)
         app = App(self, cfg)
         with h.push_config(c, project=self, app=app):
             session(cfg).flush()
@@ -408,13 +403,14 @@ class Project(MappedClass):
             # Setup subroles
             role_admin.roles = [ role_developer._id ]
             role_developer.roles = [ role_member._id ]
-            self.acl['create'] = [ role_admin._id ]
-            self.acl['read'] = [ role_admin._id, role_developer._id, role_member._id,
-                              role_anon._id ]
-            self.acl['update'] = [ role_admin._id ]
-            self.acl['delete'] = [ role_admin._id ]
-            self.acl['tool'] = [ role_admin._id ]
-            self.acl['security'] = [ role_admin._id ]
+            self.acl = [
+                ACE.allow(role_admin._id, 'create'),
+                ACE.allow(role_admin._id, 'update'),
+                ACE.allow(role_admin._id, 'admin'),
+                ACE.allow(role_admin._id, 'read'),
+                ACE.allow(role_developer._id, 'read'),
+                ACE.allow(role_member._id, 'read'),
+                ACE.allow(role_anon._id, 'read')]
             for user in users:
                 pr = user.project_role()
                 pr.roles = [ role_admin._id, role_developer._id, role_member._id ]
@@ -454,8 +450,10 @@ class AppConfig(MappedClass):
     project = RelationProperty(Project, via='project_id')
     discussion = RelationProperty('Discussion', via='discussion_id')
 
-    # acl[permission] = [ role1, role2, ... ]
-    acl = FieldProperty({str:[S.ObjectId]})
+    acl = FieldProperty(ACL())
+
+    def parent_security_context(self):
+        return None
 
     def load(self):
         """
@@ -481,19 +479,3 @@ class AppConfig(MappedClass):
     def breadcrumbs(self):
         return self.project.breadcrumbs() + [
             (self.options.mount_point, self.url()) ]
-
-    def grant_permission(self, permission, role=None):
-        from . import auth
-        if role is None: role = c.user
-        if not isinstance(role, auth.ProjectRole):
-            role = role.project_role()
-        if role._id not in self.acl[permission]:
-            self.acl[permission].append(role._id)
-
-    def revoke_permission(self, permission, role=None):
-        from . import auth
-        if role is None: role = c.user
-        if not isinstance(role, auth.ProjectRole):
-            role = role.project_role()
-        if role._id in self.acl[permission]:
-            self.acl[permission].remove(role._id)

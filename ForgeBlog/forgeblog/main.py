@@ -15,7 +15,7 @@ from allura.app import Application, ConfigOption, SitemapEntry
 from allura.lib import helpers as h
 from allura.lib.search import search
 from allura.lib.decorators import require_post
-from allura.lib.security import require, has_artifact_access
+from allura.lib.security import has_access, require_access
 from allura.lib import widgets as w
 from allura.lib.widgets.subscriptions import SubscribeForm
 from allura.lib.widgets import form_fields as ffw
@@ -79,14 +79,14 @@ class ForgeBlogApp(Application):
             SitemapEntry('Home', base),
             SitemapEntry('Search', base + 'search'),
             ]
-        if has_artifact_access('write')():
+        if has_access(self, 'write')():
             links += [ SitemapEntry('New Post', base + 'new') ]
         return links
 
     def admin_menu(self):
         admin_url = c.project.url()+'admin/'+self.config.options.mount_point+'/'
         links = []
-        if self.permissions and has_artifact_access('configure', app=self)():
+        if self.permissions and has_access(self, 'configure', app=self)():
             links.append(SitemapEntry('Permissions', admin_url + 'permissions', className='nav_child'))
         return links
 
@@ -95,17 +95,19 @@ class ForgeBlogApp(Application):
         super(ForgeBlogApp, self).install(project)
 
         # Setup permissions
+        role_admin = M.ProjectRole.by_name('Admin')._id
         role_developer = M.ProjectRole.by_name('Developer')._id
         role_auth = M.ProjectRole.by_name('*authenticated')._id
         role_anon = M.ProjectRole.by_name('*anonymous')._id
-        self.config.acl.update(
-            configure=c.project.roleids_with_permission('tool'),
-            read=c.project.roleids_with_permission('read'),
-            write=[role_developer],
-            unmoderated_post=[role_auth],
-            post=[role_anon],
-            moderate=[role_developer],
-            admin=c.project.roleids_with_permission('tool'))
+        self.config.acl = [
+            M.ACE.allow(role_anon, 'read'),
+            M.ACE.allow(role_anon, 'post'),
+            M.ACE.allow(role_auth, 'unmoderated_post'),
+            M.ACE.allow(role_developer, 'write'),
+            M.ACE.allow(role_developer, 'moderate'),
+            M.ACE.allow(role_admin, 'configure'),
+            M.ACE.allow(role_admin, 'admin'),
+            ]
 
     def uninstall(self, project):
         "Remove all the tool's artifacts from the database"
@@ -124,7 +126,7 @@ class RootController(BaseController):
     @expose('jinja:forgeblog:templates/blog/index.html')
     @with_trailing_slash
     def index(self, **kw):
-        if has_artifact_access('write', None)():
+        if has_access(c.app, 'write')():
             posts = BM.BlogPost.query.find(dict(
                     app_config_id=c.app.config._id)).sort('-timestamp')
         else:
@@ -157,7 +159,7 @@ class RootController(BaseController):
     @expose('jinja:forgeblog:templates/blog/edit_post.html')
     @without_trailing_slash
     def new(self, **kw):
-        require(has_artifact_access('write', None))
+        require_access(c.app, 'write')
         now = datetime.utcnow()
         post = dict(
             title='Please enter a title',
@@ -173,7 +175,7 @@ class RootController(BaseController):
     @validate(form=W.edit_post_form, error_handler=new)
     @without_trailing_slash
     def save(self, **kw):
-        require(has_artifact_access('write', None))
+        require_access(c.app, 'write')
         post = BM.BlogPost()
         for k,v in kw.iteritems():
             setattr(post, k, v)
@@ -223,6 +225,9 @@ class PostController(BaseController):
         setattr(self, 'feed.atom', self.feed)
         setattr(self, 'feed.rss', self.feed)
 
+    def _check_security(self):
+        require_access(self.post, 'read')
+
     @expose('jinja:forgeblog:templates/blog/post.html')
     @with_trailing_slash
     def index(self, **kw):
@@ -237,7 +242,7 @@ class PostController(BaseController):
     @expose('jinja:forgeblog:templates/blog/edit_post.html')
     @without_trailing_slash
     def edit(self, **kw):
-        require(has_artifact_access('write', None))
+        require_access(self.post, 'write')
         c.form = W.edit_post_form
         c.attachment_add = W.attachment_add
         c.attachment_list = W.attachment_list
@@ -247,14 +252,12 @@ class PostController(BaseController):
     @without_trailing_slash
     @expose('jinja:forgeblog:templates/blog/post_history.html')
     def history(self):
-        require(has_artifact_access('read', self.post))
         posts = self.post.history()
         return dict(title=self.post.title, posts=posts)
 
     @without_trailing_slash
     @expose('jinja:forgeblog:templates/blog/post_diff.html')
     def diff(self, v1, v2):
-        require(has_artifact_access('read', self.post))
         p1 = self._get_version(int(v1))
         p2 = self._get_version(int(v2))
         result = h.diff_text(p1.text, p2.text)
@@ -265,7 +268,7 @@ class PostController(BaseController):
     @validate(form=W.edit_post_form, error_handler=edit)
     @without_trailing_slash
     def save(self, delete=None, **kw):
-        require(has_artifact_access('write', None))
+        require_access(self.post, 'write')
         if delete:
             self.post.delete()
             flash('Post deleted', 'info')
@@ -279,7 +282,7 @@ class PostController(BaseController):
     @require_post()
     @expose()
     def revert(self, version):
-        require(has_artifact_access('write', self.post))
+        require_access(self.post, 'write')
         orig = self._get_version(version)
         if orig:
             self.post.text = orig.text
@@ -289,7 +292,6 @@ class PostController(BaseController):
     @expose()
     @validate(W.subscribe_form)
     def subscribe(self, subscribe=None, unsubscribe=None):
-        require(has_artifact_access('read'))
         if subscribe:
             self.post.subscribe(type='direct')
         elif unsubscribe:

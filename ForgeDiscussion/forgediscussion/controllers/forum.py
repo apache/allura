@@ -8,7 +8,7 @@ from webob import exc
 
 from allura.lib import helpers as h
 from allura import model as M
-from allura.lib.security import require, has_artifact_access
+from allura.lib.security import has_access, require_access
 from allura.lib.decorators import require_post
 from allura.controllers import DiscussionController, ThreadController, PostController, ModerationController
 from allura.lib.widgets import discuss as DW
@@ -51,7 +51,7 @@ class ForumController(DiscussionController):
     W=WidgetConfig
 
     def _check_security(self):
-        require(has_artifact_access('read', self.discussion))
+        require_access(self.discussion, 'read')
 
     def __init__(self, forum_id):
         self.ThreadController = ForumThreadController
@@ -73,7 +73,7 @@ class ForumController(DiscussionController):
 
     @expose('jinja:allura:templates/discussion/index.html')
     def index(self, threads=None, limit=None, page=0, count=0, **kw):
-        if self.discussion.deleted and not has_artifact_access('configure', app=c.app)():
+        if self.discussion.deleted and not has_access(c.app, 'configure')():
             redirect(self.discussion.url()+'deleted')
         limit, page, start = g.handle_paging(limit, page)
         threads = DM.ForumThread.query.find(dict(discussion_id=self.discussion._id)) \
@@ -93,7 +93,7 @@ class ForumThreadController(ThreadController):
 
     @expose('jinja:forgediscussion:templates/discussionforums/thread.html')
     def index(self, limit=None, page=0, count=0, **kw):
-        if self.thread.discussion.deleted and not has_artifact_access('configure', app=c.app)():
+        if self.thread.discussion.deleted and not has_access(c.app, 'configure')():
             redirect(self.thread.discussion.url()+'deleted')
         return super(ForumThreadController, self).index(limit=limit, page=page, count=count, show_moderate=True, **kw)
 
@@ -102,8 +102,8 @@ class ForumThreadController(ThreadController):
     @require_post()
     @validate(pass_validator, index)
     def moderate(self, **kw):
-        require(has_artifact_access('moderate', self.thread))
-        if self.thread.discussion.deleted and not has_artifact_access('configure', app=c.app)():
+        require_access(self.thread, 'moderate')
+        if self.thread.discussion.deleted and not has_access(c.app, 'configure')():
             redirect(self.thread.discussion.url()+'deleted')
         args = self.W.moderate_thread.validate(kw, None)
         tasks.calc_forum_stats.post(self.thread.discussion.shortname)
@@ -122,7 +122,7 @@ class ForumPostController(PostController):
 
     @expose('jinja:allura:templates/discussion/post.html')
     def index(self, **kw):
-        if self.thread.discussion.deleted and not has_artifact_access('configure', app=c.app)():
+        if self.thread.discussion.deleted and not has_access(c.app, 'configure')():
             redirect(self.thread.discussion.url()+'deleted')
         return super(ForumPostController, self).index(**kw)
 
@@ -130,8 +130,8 @@ class ForumPostController(PostController):
     @require_post()
     @validate(pass_validator, error_handler=index)
     def moderate(self, **kw):
-        require(has_artifact_access('moderate', self.post.thread))
-        if self.thread.discussion.deleted and not has_artifact_access('configure', app=c.app)():
+        require_access(self.post.thread, 'moderate')
+        if self.thread.discussion.deleted and not has_access(c.app, 'configure')():
             redirect(self.thread.discussion.url()+'deleted')
         args = self.W.moderate_post.validate(kw, None)
         tasks.calc_thread_stats.post(self.post.thread._id)

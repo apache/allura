@@ -15,7 +15,7 @@ from allura.lib import helpers as h
 from allura.controllers import BaseController
 from allura.ext.project_home import model as M
 from allura import model
-from allura.lib.security import require, has_project_access
+from allura.lib.security import require, require_access
 from allura.lib.decorators import require_post
 from allura.lib.widgets.project_list import ProjectScreenshots
 
@@ -71,9 +71,10 @@ class ProjectHomeApp(Application):
 
     def install(self, project):
         pr = c.user.project_role()
-        if pr: 
-            for perm in self.permissions:
-                self.config.acl[perm] = [ pr._id ]
+        if pr:
+            self.config.acl = [
+                model.ACE.allow(pr._id, perm)
+                for perm in self.permissions ]
 
     def uninstall(self, project): # pragma no cover
         raise NotImplementedError, "uninstall"
@@ -81,8 +82,7 @@ class ProjectHomeApp(Application):
 class ProjectHomeController(BaseController):
 
     def _check_security(self):
-        require(has_project_access('read'),
-                'Read access required')
+        require_access(c.project, 'read')
 
     @with_trailing_slash
     @expose('jinja:allura.ext.project_home:templates/project_index.html')
@@ -112,7 +112,7 @@ class ProjectHomeController(BaseController):
     @expose()
     @require_post()
     def update_configuration(self, divs=None, layout_class=None, new_div=None, **kw):
-        require(has_project_access('update'), 'Update access required')
+        require_access(c.project, 'update')
         config = M.PortalConfig.current()
         config.layout_class = layout_class
         # Handle updated and deleted divs
@@ -143,8 +143,7 @@ class ProjectHomeController(BaseController):
 class RootRestController(BaseController):
 
     def _check_security(self):
-        require(has_project_access('read'),
-                'Read access required')
+        require_access(c.project, 'read')
 
     @expose('json:')
     def index(self, **kwargs):

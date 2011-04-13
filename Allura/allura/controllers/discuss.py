@@ -15,7 +15,7 @@ from base import BaseController
 from allura.lib import utils
 from allura.lib import helpers as h
 from allura.lib.decorators import require_post
-from allura.lib.security import require, has_artifact_access
+from allura.lib.security import require, has_access, require_access
 from allura.lib.helpers import DateTimeConverter
 
 from allura.lib.widgets import discuss as DW
@@ -143,7 +143,7 @@ class ThreadController(BaseController):
     AttachmentController=h.attrproxy('_discussion_controller', 'AttachmentController')
 
     def _check_security(self):
-        require(has_artifact_access('read', self.thread))
+        require_access(self.thread, 'read')
 
     def __init__(self, discussion_controller, thread_id):
         self._discussion_controller = discussion_controller
@@ -175,7 +175,7 @@ class ThreadController(BaseController):
     @require_post()
     @validate(pass_validator, error_handler=index)
     def post(self, **kw):
-        require(has_artifact_access('post', self.thread))
+        require_access(self.thread, 'post', self.thread)
         kw = self.W.edit_post.to_python(kw, None)
         if not kw['text']:
             flash('Your post was not saved. You must provide content.', 'error')
@@ -196,14 +196,14 @@ class ThreadController(BaseController):
     @expose()
     @require_post()
     def tag(self, labels, **kw):
-        require(has_artifact_access('post', self.thread))
+        require_access(self.thread, 'post')
         self.thread.labels = labels.split(',')
         redirect(request.referer)
 
     @expose()
     @require_post()
     def flag_as_spam(self, **kw):
-        require(has_artifact_access('moderate', self.thread))
+        require_access(self.thread, 'moderate')
         self.thread.first_post.status='spam'
         flash('Thread flagged as spam.')
         redirect(request.referer)
@@ -241,7 +241,7 @@ class PostController(BaseController):
     AttachmentController=h.attrproxy('_discussion_controller', 'AttachmentController')
 
     def _check_security(self):
-        require(has_artifact_access('read', self.post))
+        require_access(self.post, 'read')
 
     def __init__(self, discussion_controller, thread, slug):
         self._discussion_controller = discussion_controller
@@ -265,7 +265,7 @@ class PostController(BaseController):
     def index(self, version=None, **kw):
         c.post = self.W.post
         if request.method == 'POST':
-            require(has_artifact_access('moderate', self.post))
+            require_access(self.post, 'moderate')
             post_fields = self.W.edit_post.to_python(kw, None)
             file_info = post_fields.pop('file_info', None)
             if hasattr(file_info, 'file'):
@@ -309,7 +309,7 @@ class PostController(BaseController):
     @validate(pass_validator, error_handler=index)
     @require_post(redir='.')
     def reply(self, **kw):
-        require(has_artifact_access('post', self.thread))
+        require_access(self.thread, 'post')
         kw = self.W.edit_post.to_python(kw, None)
         self.thread.post(parent_id=self.post._id, **kw)
         self.thread.num_replies += 1
@@ -320,7 +320,7 @@ class PostController(BaseController):
     @require_post()
     @validate(pass_validator, error_handler=index)
     def moderate(self, **kw):
-        require(has_artifact_access('moderate', self.post.thread))
+        require_access(self.post.thread, 'moderate')
         if kw.pop('delete', None):
             self.post.delete()
             self.thread.update_stats()
@@ -344,7 +344,7 @@ class PostController(BaseController):
     @expose()
     @require_post()
     def attach(self, file_info=None):
-        require(has_artifact_access('moderate', self.post))
+        require_access(self.post, 'moderate')
         if hasattr(file_info, 'file'):
             mime_type = file_info.type
             # If mime type was not passed or bogus, guess it
@@ -382,7 +382,7 @@ class ModerationController(BaseController):
 
 
     def _check_security(self):
-        require(has_artifact_access('moderate', self.discussion))
+        require_access(self.discussion, 'moderate')
 
     def __init__(self, discussion_controller):
         self._discussion_controller = discussion_controller
@@ -452,7 +452,7 @@ class PostRestController(PostController):
     @require_post()
     @validate(pass_validator, error_handler=h.json_validation_error)
     def reply(self, **kw):
-        require(has_artifact_access('post', self.thread))
+        require_access(self.thread, 'post')
         kw = self.W.edit_post.to_python(kw, None)
         post = self.thread.post(parent_id=self.post._id, **kw)
         self.thread.num_replies += 1
@@ -469,7 +469,7 @@ class ThreadRestController(ThreadController):
     @require_post()
     @validate(pass_validator, error_handler=h.json_validation_error)
     def new(self, **kw):
-        require(has_artifact_access('post', self.thread))
+        require_access(self.thread, 'post')
         kw = self.W.edit_post.to_python(kw, None)
         p = self.thread.add_post(**kw)
         redirect(p.slug + '/')

@@ -33,7 +33,7 @@
           <td><input name="v1" type="radio" value="{{p.version}}"/></td>
           <td><input name="v2" type="radio" value="{{p.version}}"/></td>
           <td class="tright">
-            {% if i != 0 and has_artifact_access('edit', p)() %}
+            {% if i != 0 and has_access(p, 'edit')() %}
               <a class="post-link" href="./revert?version={{p.version}}"><b data-icon="{{g.icons['fork'].char}}" class="ico {{g.icons['fork'].css}}" title="Revert to version {{p.version}}"></b></a>
             {% endif %}
             <a href="./?version={{p.version}}"><b data-icon="{{g.icons['search'].char}}" class="ico {{g.icons['search'].css}}" title="View Revision"></b></a>

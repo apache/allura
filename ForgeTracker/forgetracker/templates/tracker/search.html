@@ -17,7 +17,7 @@
 {% endif %}
 {% endblock %}
 
-{% if q and h.has_artifact_access('save_searches')() %}
+{% if q and h.has_access(c.app, 'save_searches')() %}
   {% block edit_box %}
     <div class="editbox" style="display:none">
       {{c.bin_form.display(
@@ -34,7 +34,7 @@
   <input type="text" name="q" value="{{q}}" style="width: 525px; float: left; margin-right: .5em">
   <input type="submit" value="Search"/>
 </form>
-{% if q and h.has_artifact_access('save_searches')() %}
+{% if q and h.has_access(c.app, 'save_searches')() %}
   <input type="button" value="Save Search" id="save_search"/>
 {% endif %}
 </div>
@@ -51,7 +51,7 @@
 {% endblock %}
 
 {% block extra_js %}
-  {% if q and h.has_artifact_access('save_searches')() %}
+  {% if q and h.has_access(c.app, 'save_searches')() %}
     <script type="text/javascript">
       $('#save_search').click(function(){
         $('div.editbox').show();

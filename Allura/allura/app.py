@@ -1,4 +1,5 @@
 import logging
+from collections import defaultdict
 from urllib import basejoin
 from cStringIO import StringIO
 
@@ -10,7 +11,7 @@ from bson import ObjectId
 from ming.orm import session
 
 from allura.lib.helpers import push_config, vardec
-from allura.lib.security import require, has_artifact_access, has_project_access
+from allura.lib.security import require, has_access, require_access
 from allura import model
 from allura.controllers import BaseController
 from allura.lib.decorators import require_post, event_handler
@@ -138,6 +139,13 @@ class Application(object):
         self.admin = DefaultAdminController(self)
         self.url = self.config.url()
 
+    @property
+    def acl(self):
+        return self.config.acl
+
+    def parent_security_context(self):
+        return self.config.parent_security_context()
+
     @classmethod
     def status_int(self):
         return self.status_map.index(self.status)
@@ -162,7 +170,7 @@ class Application(object):
 
     def is_visible_to(self, user):
         '''Whether the user can view the app.'''
-        return has_artifact_access('read', app=self)(user=user)
+        return has_access(self, 'read')(user=user)
 
     def subscribe_admins(self):
         for uid in g.credentials.userids_with_named_role(self.project._id, 'Admin'):
@@ -216,7 +224,7 @@ class Application(object):
         """
         admin_url = c.project.url()+'admin/'+self.config.options.mount_point+'/'
         links = []
-        if self.permissions and has_project_access('security')():
+        if self.permissions and has_access(c.project, 'admin')():
             links.append(SitemapEntry('Permissions', admin_url + 'permissions', className='nav_child'))
         if len(self.config_options) > 3:
             links.append(SitemapEntry('Options', admin_url + 'options', className='admin_modal'))
@@ -281,21 +289,26 @@ class DefaultAdminController(BaseController):
     def permissions(self):
         from ext.admin.widgets import PermissionCard
         c.card = PermissionCard()
-        return dict(app=self.app,
-                    allow_config=has_project_access('security')())
+        permissions = defaultdict(list)
+        for ace in c.app.config.acl:
+            if ace.access == model.ACE.ALLOW:
+                permissions[ace.permission].append(ace.role_id)
+        return dict(
+            app=self.app,
+            allow_config=has_access(c.project, 'admin')(),
+            permissions=permissions)
 
     @expose('jinja:allura:templates/app_admin_options.html')
     def options(self):
-        return dict(app=self.app,
-                    allow_config=has_artifact_access('configure', app=self.app)())
+        return dict(
+            app=self.app,
+            allow_config=has_access(self.app, 'configure')())
 
     @expose()
     @require_post()
     def configure(self, **kw):
         with push_config(c, app=self.app):
-            require(
-                has_artifact_access('configure', app=self.app),
-                'Must have configure permission')
+            require_access(self.app, 'configure')
             is_admin = self.app.config.tool_name == 'admin'
             if kw.pop('delete', False):
                 if is_admin:
@@ -321,6 +334,7 @@ class DefaultAdminController(BaseController):
     @vardec
     @require_post()
     def update(self, card=None, **kw):
+        self.app.config.acl = []
         for args in card:
             perm = args['id']
             new_group_ids = args.get('new', [])
@@ -330,18 +344,9 @@ class DefaultAdminController(BaseController):
             if isinstance(group_ids, basestring):
                 group_ids = [ group_ids ]
             role_ids = map(ObjectId, group_ids + new_group_ids)
-            roles = model.ProjectRole.query.find(dict(
-                _id={'$in':role_ids},
-                project_id=c.project.root_project._id))
-            self.app.config.acl[perm] = [ r._id for r in roles ]
+            self.app.config.acl += [
+                model.ACE.allow(r._id, perm) for r in role_ids]
         redirect(request.referer)
-
-    @expose()
-    @require_post()
-    def del_perm(self, permission=None, role=None):
-        require(has_artifact_access('configure', app=self.app))
-        self.app.config.acl[permission].remove(ObjectId(role))
-        redirect('permissions')
 
 @event_handler('project_updated')
 def subscribe_admins(topic):

@@ -12,7 +12,7 @@ from webob import exc
 from ming.orm.base import session
 
 from allura.app import Application, ConfigOption, SitemapEntry, DefaultAdminController
-from allura.lib.security import require, has_artifact_access, has_project_access, require_authenticated
+from allura.lib.security import require_access, has_access, require_authenticated
 from allura.model import ProjectRole, Feed
 from allura.lib.search import search
 from allura.lib import helpers as h
@@ -38,7 +38,7 @@ class RootController(BaseController):
         add_forum=AddForumShort()
 
     def _check_security(self):
-        require(has_artifact_access('read'))
+        require_access(c.app, 'read')
 
     @with_trailing_slash
     @expose('jinja:forgediscussion:templates/discussionforums/index.html')
@@ -80,10 +80,10 @@ class RootController(BaseController):
         discussion = model.Forum.query.get(
             app_config_id=c.app.config._id,
             shortname=forum)
-        if discussion.deleted and not has_artifact_access('configure', app=c.app)():
+        if discussion.deleted and not has_access(c.app, 'configure')():
             flash('This forum has been removed.')
             redirect(request.referrer)
-        require(has_artifact_access('post', discussion))
+        require_access(discussion, 'post')
         thd = discussion.get_discussion_thread(dict(
                 headers=dict(Subject=subject)))
         post = thd.post(subject, text)
@@ -182,7 +182,7 @@ class RootRestController(BaseController):
 
     @expose('json:')
     def validate_import(self, doc=None, username_mapping=None, **kw):
-        require(has_artifact_access('admin'))
+        require_access('admin', c.project)
         if username_mapping is None: username_mapping = {}
         try:
             doc = json.loads(doc)
@@ -197,7 +197,7 @@ class RootRestController(BaseController):
     def perform_import(
         self, doc=None, username_mapping=None, default_username=None, create_users=False,
         **kw):
-        require(has_project_access('tool'))
+        require_access('admin', c.project)
         if username_mapping is None: username_mapping = '{}'
         if c.api_token.get_capability('import') != c.project.shortname:
             log.error('Import capability is not enabled for %s', c.project.shortname)
