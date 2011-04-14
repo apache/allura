@@ -306,7 +306,11 @@ class LineOrientedTreeProcessor(markdown.treeprocessors.Treeprocessor):
             try:
                 new_node = markdown.etree.fromstring(new_text)
             except SyntaxError:
-                new_node = markdown.etree.fromstring(unicode(BeautifulSoup(new_text)))
+                try:
+                    new_node = markdown.etree.fromstring(unicode(BeautifulSoup(new_text)))
+                except:
+                    log.exception('Error adding <br> tags: new text is %s', new_text)
+                    pass
             node.clear()
             node.text = new_node.text
             node[:] = list(new_node)
