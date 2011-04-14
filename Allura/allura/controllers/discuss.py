@@ -175,7 +175,7 @@ class ThreadController(BaseController):
     @require_post()
     @validate(pass_validator, error_handler=index)
     def post(self, **kw):
-        require_access(self.thread, 'post', self.thread)
+        require_access(self.thread, 'post')
         kw = self.W.edit_post.to_python(kw, None)
         if not kw['text']:
             flash('Your post was not saved. You must provide content.', 'error')

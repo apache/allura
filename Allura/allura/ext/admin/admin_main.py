@@ -440,20 +440,17 @@ class PermissionsController(BaseController):
     @expose('jinja:allura.ext.admin:templates/project_permissions.html')
     def index(self, **kw):
         c.card = W.permission_card
-        permissions = defaultdict(list)
-        for ace in c.project.acl:
-            if ace.access == M.ACE.ALLOW:
-                permissions[ace.permission].append(ace.role_id)
-        return dict(permissions=permissions)
+        return dict(permissions=self._index_permissions())
 
     @without_trailing_slash
     @expose()
     @h.vardec
     @require_post()
     def update(self, card=None, **kw):
-        c.project.acl = []
+        permissions = self._index_permissions()
         for args in card:
             perm = args['id']
+            permissions[perm] = []
             new_group_ids = args.get('new', [])
             group_ids = args.get('value', [])
             if isinstance(new_group_ids, basestring):
@@ -461,9 +458,20 @@ class PermissionsController(BaseController):
             if isinstance(group_ids, basestring):
                 group_ids = [ group_ids ]
             role_ids = map(ObjectId, group_ids + new_group_ids)
-            c.project.acl += [ M.ACE.allow(r._id, perm) for r in role_ids ]
+            permissions[perm] = role_ids
+        c.project.acl = []
+        for perm, role_ids in permissions.iteritems():
+            c.project.acl += [
+                M.ACE.allow(rid, perm) for rid in role_ids ]
         g.post_event('project_updated')
         redirect('.')
+
+    def _index_permissions(self):
+        permissions = defaultdict(list)
+        for ace in c.project.acl:
+            if ace.access == M.ACE.ALLOW:
+                permissions[ace.permission].append(ace.role_id)
+        return permissions
 
 class GroupsController(BaseController):
 

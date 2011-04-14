@@ -768,7 +768,8 @@ class TicketController(BaseController):
         setattr(self, 'feed.rss', self.feed)
 
     def _check_security(self):
-        require_access(self.ticket, 'read')
+        if self.ticket is not None:
+            require_access(self.ticket, 'read')
 
     @with_trailing_slash
     @expose('jinja:forgetracker:templates/tracker/ticket.html')
@@ -991,7 +992,7 @@ class RootRestController(BaseController):
         self._discuss = AppDiscussionRestController()
 
     def _check_security(self):
-        reuire_access(c.app, 'read')
+        require_access(c.app, 'read')
 
     @expose('json:')
     def index(self, **kw):

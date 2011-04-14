@@ -24,9 +24,3 @@ class TestSecurity(TestController):
         self.app.get('/security/test-admin/needs_artifact_access_fail', status=403)
         self.app.get('/security/test-admin/needs_artifact_access_ok', status=200)
 
-class TestACL(TestCase):
-
-    def setUp(self):
-        setup_basic_test()
-        setup_unit_test()
-

@@ -14,7 +14,7 @@
 
 {% block actions %}
   <a href="." title="View Page"><b data-icon="{{g.icons['search'].char}}" class="ico {{g.icons['search'].css}}" title="View Page"></b></a>
-  {% if page_exists and has_access(page, 'delete')() %}
+  {% if page_exists and h.has_access(page, 'delete')() %}
     <a class="post-link" href="./delete" title="Delete"><b data-icon="{{g.icons['delete'].char}}" class="ico {{g.icons['delete'].css}}" title="Delete"></b></a>
   {% endif %}
 {% endblock %}
@@ -39,8 +39,8 @@
 	</div>
 </form>
 <div class="grid-19">
-  {{c.attachment_list.display(attachments=page.attachments, edit_mode=page_exists and has_access(page, 'edit')())}}
-  {% if page_exists and has_access(page, 'edit')() %}
+  {{c.attachment_list.display(attachments=page.attachments, edit_mode=page_exists and h.has_access(page, 'edit')())}}
+  {% if page_exists and h.has_access(page, 'edit')() %}
     {{c.attachment_add.display(action=page.url() + 'attach', name='file_info')}}
   {% endif %}
 </div>

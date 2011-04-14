@@ -73,7 +73,7 @@ class ForgeLinkApp(Application):
 class RootController(BaseController):
 
     def _check_security(self):
-        require_access('read', c.app)
+        require_access(c.app, 'read')
 
     @expose('jinja:forgelink:templates/link/index.html')
     def index(self, **kw):

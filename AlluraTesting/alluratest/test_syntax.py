@@ -37,9 +37,10 @@ def test_pyflakes():
     # run pyflakes in batches, so it doesn't take tons of memory
     error = False
     all_files = [f for f in find_stdout.split('\n')
-                 if '/migrations/' not in f]
+                 if '/migrations/' not in f and f.strip()]
     for files in grouper(20, all_files, fillvalue=''):
         cmd = "pyflakes " + ' '.join(files) + " | grep -v '" + "' | grep -v '".join(skips) + "'"
+        print 'Command was: %s' % cmd
         retval = run(cmd)
         if retval != 1:
             print

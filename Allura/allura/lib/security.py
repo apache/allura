@@ -178,9 +178,9 @@ class RoleCache(object):
 
 def has_access(obj, permission, user=None, project=None):
     from allura import model as M
-    @utils.memoize_on_request(
-        'has_access', obj, permission,
-        include_func_in_key=False)
+    # @utils.memoize_on_request(
+    #     'has_access', obj, permission,
+    #     include_func_in_key=False)
     def predicate(obj=obj, user=user, project=project, roles=None):
         if roles is None:
             if user is None: user = c.user
@@ -191,10 +191,13 @@ def has_access(obj, permission, user=None, project=None):
                     project = M.Project.query.get(
                         neighborhood_id=obj._id,
                         shortname='--init--')
+                    if project is None:
+                        log.error('Neighborhood project missing for %s', obj)
+                        return False
                 elif isinstance(obj, M.Project):
                     project = obj.root_project
                 else:
-                    if project is None: project = c.project.root_project
+                    project = c.project.root_project
             roles = cred.user_roles(user_id=user._id, project_id=project._id).reaching_ids
         chainable_roles = []
         for rid in roles:

@@ -182,7 +182,7 @@ class RootRestController(BaseController):
 
     @expose('json:')
     def validate_import(self, doc=None, username_mapping=None, **kw):
-        require_access('admin', c.project)
+        require_access(c.project, 'admin')
         if username_mapping is None: username_mapping = {}
         try:
             doc = json.loads(doc)
@@ -197,7 +197,7 @@ class RootRestController(BaseController):
     def perform_import(
         self, doc=None, username_mapping=None, default_username=None, create_users=False,
         **kw):
-        require_access('admin', c.project)
+        require_access(c.project, 'admin')
         if username_mapping is None: username_mapping = '{}'
         if c.api_token.get_capability('import') != c.project.shortname:
             log.error('Import capability is not enabled for %s', c.project.shortname)

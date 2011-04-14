@@ -12,9 +12,11 @@ from nose import with_setup
 from ming.orm.ormsession import ThreadLocalORMSession
 from ming.orm import session
 
+import allura
 from allura import model as M
 from allura.lib import helpers as h
 from allura.lib import security
+from allura.websetup.schema import REGISTRY
 from alluratest.controller import setup_basic_test, setup_unit_test
 from forgewiki import model as WM
 
@@ -52,10 +54,17 @@ def test_artifact():
     assert pg.app.config == c.app.config
     assert pg.app_config == c.app.config
     u = M.User.query.get(username='test-user')
-    pg.acl.append(M.ACE.allow(u.project_role()._id, 'delete'))
+    pr = u.project_role()
     ThreadLocalORMSession.flush_all()
+    REGISTRY.register(allura.credentials, allura.lib.security.Credentials())
+    assert not security.has_access(pg, 'delete')(user=u)
+    pg.acl.append(M.ACE.allow(pr._id, 'delete'))
+    ThreadLocalORMSession.flush_all()
+    c.memoize_cache = {}
     assert security.has_access(pg, 'delete')(user=u)
     pg.acl.pop()
+    ThreadLocalORMSession.flush_all()
+    c.memoize_cache = {}
     assert not security.has_access(pg, 'delete')(user=u)
     idx = pg.index()
     assert 'title_s' in idx

@@ -134,8 +134,8 @@ class SecurityTest(object):
 
     def __init__(self):
         from forgewiki import model as WM
-        self.page = WM.Page.query.get(title='Home')
         c.app = c.project.app_instance('wiki')
+        self.page = WM.Page.query.get(app_config_id=c.app.config._id, title='Home')
 
     @expose()
     def forbidden(self):

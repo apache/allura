@@ -2,7 +2,7 @@ from pylons import c, g
 
 from alluratest.controller import setup_basic_test, setup_global_objects
 from allura import model as M
-from allura import security
+from allura.lib import security
 
 def setUp():
     setup_basic_test()

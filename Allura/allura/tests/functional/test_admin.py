@@ -109,55 +109,6 @@ class TestProjectAdmin(TestController):
                 'new.ep_name':'',
                 })
 
-        # Update ACL
-        h.set_context('test', 'wiki')
-        role = M.User.anonymous().project_role()
-        self.app.post('/admin/update_acl', params={
-                'permission':'tool',
-                'new.add':'on',
-                'new.id':str(role._id)})
-        self.app.post('/admin/update_acl', params={
-                'new.id':'',
-                'permission':'tool',
-                'role-0.delete':'on',
-                'role-0.id':str(role._id)})
-        self.app.post('/admin/update_acl', params={
-                'permission':'tool',
-                'new.add':'on',
-                'new.id':'',
-                'new.username':'test-user'})
-        self.app.post('/admin/update_acl', params={
-                'permission':'tool',
-                'new.add':'on',
-                'new.id':'',
-                'new.username':'no_such_user'})
-        # Update project roles
-        self.app.post('/admin/update_roles', params={
-                'new.add':'on',
-                'new.name':'test_role'})
-        role1 = M.ProjectRole.by_name('test_role')
-        self.app.post('/admin/update_roles', params={
-                'role-0.id':str(role1._id),
-                'role-0.new.add':'on',
-                'role-0.new.id':str(role._id),
-                'new.name':''})
-        self.app.post('/admin/update_roles', params={
-                'role-0.id':str(role1._id),
-                'role-0.new.id':'',
-                'role-0.subroles-0.delete':'on',
-                'role-0.subroles-0.id':str(role._id),
-                'new.name':''})
-        self.app.post('/admin/update_roles', params={
-                'role-0.id':str(role1._id),
-                'role-0.new.id':'',
-                'role-0.delete':'on',
-                'new.name':''})
-        # Create a role when there are no existing roles
-        self.app.post('/admin/update_roles', params={
-                'new.add':'on',
-                'new.name':'test_role',
-                'role-0.id':str(role1._id)})
-
     def test_tool_list(self):
         r = self.app.get('/admin/tools')
         new_ep_opts = r.html.findAll('a',{'class':"install_trig"})
@@ -271,7 +222,7 @@ class TestProjectAdmin(TestController):
         r = self.app.post('/admin/permissions/update', params={
                 'card-0.new': opt_developer['value'],
                 'card-0.value': opt_admin['value'],
-                'card-0.id': 'create'})
+                'card-0.id': 'admin'})
         r = self.app.get('/admin/permissions/')
         assigned_ids = [t['value'] for t in r.html.findAll('input', {'name': 'card-0.value'})]
         assert len(assigned_ids) == 2
