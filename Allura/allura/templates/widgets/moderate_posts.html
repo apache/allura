@@ -18,6 +18,7 @@
         <th>Subject</th>
         <th>Text</th>
         <th>Attachments</th>
+        {% if c.app.config.tool_name != 'Discussion' %}<th>Artifact</th>{% endif %}
       </tr>
     </thead>
     <tbody>
@@ -27,14 +28,15 @@
             <input type="hidden" name="post-{{loop.index0}}.full_slug" value="{{post.full_slug}}"/>
             <input type="checkbox" name="post-{{loop.index0}}.checked"/>
           </td>
-          <td>{{post.timestamp}}</td>
+          <td>{{h.ago(post.timestamp)}}</td>
           <td>{{post.status}}</td>
           <td>{{post.flags}}</td>
           {% set author = post.author() %}
           <td>{{author.display_name}} ({{author.username}})</td>
           <td>{{post.thread.subject or '(no subject)'}}</td>
-          <td>{{h.text.truncate(post.text)}}</td>
+          <td>{{h.text.truncate(post.text,200)}}</td>
           <td>{{post.attachments|length}}</td>
+          {% if c.app.config.tool_name != 'Discussion' %}<td><a href="{{post.thread.artifact.url()}}">[{{post.thread.artifact.shorthand_id()}}]</a></td>{% endif %}
         </tr>
       {% endfor %}
     </tbody>
