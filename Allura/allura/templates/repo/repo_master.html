@@ -25,20 +25,20 @@
     <div id="access_urls" class="btn-bar grid-19">
       <div class="btn-set{% if not h.has_artifact_access('write')() %} duo{% endif %}">
         {% if h.has_artifact_access('write')() %}
-        <a class="btn" data-url="{{repo.clone_command('rw')}}" title="Read/Write">
+        <a href="#" class="btn" data-url="{{repo.clone_command('rw')}}" title="Read/Write">
           RW
         </a>
-        <a class="btn" data-url="{{repo.clone_command('ro')}}" title="Read Only">
+        <a href="#" class="btn" data-url="{{repo.clone_command('ro')}}" title="Read Only">
           RO
         </a>
-        <a class="btn" data-url="{{repo.clone_command('https')}}" title="HTTP">
+        <a href="#" class="btn" data-url="{{repo.clone_command('https')}}" title="HTTP">
           HTTP
         </a>
         {% else %}
-        <a class="btn" data-url="{{repo.clone_command('ro')}}" title="Read Only">
+        <a href="#" class="btn" data-url="{{repo.clone_command('ro')}}" title="Read Only">
           RO
         </a>
-        <a class="btn" data-url="{{repo.clone_command('https_anon')}}" title="HTTP">
+        <a href="#" class="btn" data-url="{{repo.clone_command('https_anon')}}" title="HTTP">
           HTTP
         </a>
         {% endif %}
@@ -48,7 +48,7 @@
              class="selectText"
              value=""/>
     </div>
-    <hr />
+    <hr>
   {% endif %}
 {% endmacro %}
 
