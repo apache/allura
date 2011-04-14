@@ -44,12 +44,12 @@ def purge_project(project):
             # Purge the things directly related to the project
             cls.query.remove(
                 dict(project_id=project._id),
-                multiple=True)
+            )
         elif 'app_config_id' in mapper(cls).property_index:
             # ... and the things related to its apps
             cls.query.remove(
                 dict(app_config_id={'$in':app_config_ids}),
-                multiple=True)
+            )
         else:
             # Don't dump other things
             continue
