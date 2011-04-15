@@ -413,13 +413,12 @@ class Project(MappedClass):
             role_admin.roles = [ role_developer._id ]
             role_developer.roles = [ role_member._id ]
             self.acl = [
-                ACE.allow(role_admin._id, 'create'),
-                ACE.allow(role_admin._id, 'update'),
-                ACE.allow(role_admin._id, 'admin'),
-                ACE.allow(role_admin._id, 'read'),
                 ACE.allow(role_developer._id, 'read'),
                 ACE.allow(role_member._id, 'read'),
                 ACE.allow(role_anon._id, 'read')]
+            self.acl += [
+                M.ACE.allow(role_admin._id, perm)
+                for perm in self.permissions ]
             for user in users:
                 pr = user.project_role()
                 pr.roles = [ role_admin._id, role_developer._id, role_member._id ]

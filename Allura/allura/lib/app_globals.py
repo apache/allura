@@ -131,6 +131,7 @@ class Globals(object):
             perm_read = Icon('E', 'ico-focus'),
             perm_update = Icon('0', 'ico-sync'),
             perm_create = Icon('e', 'ico-config'),
+            perm_register = Icon('e', 'ico-config'),
             perm_delete = Icon('-', 'ico-minuscirc'),
             perm_tool = Icon('x', 'ico-config'),
             perm_admin = Icon('(', 'ico-lock'),

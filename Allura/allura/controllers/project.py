@@ -111,7 +111,7 @@ class NeighborhoodController(object):
         projects = pq.skip(start).limit(int(limit)).all()
         categories = M.ProjectCategory.query.find({'parent_id':None}).sort('name').all()
         c.custom_sidebar_menu = []
-        if self.neighborhood.name == 'Projects':
+        if h.has_access(self.neighborhood, 'register')():
             c.custom_sidebar_menu += [
                 SitemapEntry('Add a Project', self.neighborhood.url()+'add_project', ui_icon=g.icons['plus']),
                 SitemapEntry('')
