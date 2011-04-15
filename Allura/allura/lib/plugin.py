@@ -19,7 +19,7 @@ from pylons import g, c
 from webob import exc
 
 from ming.utils import LazyProperty
-from ming.orm import session
+from ming.orm import state
 from ming.orm import ThreadLocalORMSession
 
 from allura.lib import helpers as h
@@ -325,6 +325,7 @@ class ProjectRegistrationProvider(object):
         if allow_register:
             role_auth = M.ProjectRole.authenticated(p)
             security.simple_grant(p.acl, role_auth._id, 'register')
+            state(p).soil()
         return p
 
     def register_project(self, neighborhood, shortname, user, user_project):

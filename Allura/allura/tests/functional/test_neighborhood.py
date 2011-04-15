@@ -185,7 +185,11 @@ class TestNeighborhood(TestController):
     def test_add_a_project_link(self):
         r = self.app.get('/p/')
         assert 'Add a Project' in r
-        r = self.app.get('/u/')
+        r = self.app.get('/u/', extra_environ=dict(username='test-user'))
         assert 'Add a Project' not in r
-        r = self.app.get('/adobe/')
+        r = self.app.get('/adobe/', extra_environ=dict(username='test-user'))
         assert 'Add a Project' not in r
+        r = self.app.get('/u/', extra_environ=dict(username='root'))
+        assert 'Add a Project' in r
+        r = self.app.get('/adobe/', extra_environ=dict(username='root'))
+        assert 'Add a Project' in r
