@@ -303,6 +303,7 @@ class LineOrientedTreeProcessor(markdown.treeprocessors.Treeprocessor):
             new_text = (text
                         .replace('<br>', '<br/>')
                         .replace('\n', '<br/>'))
+            new_node = None
             try:
                 new_node = markdown.etree.fromstring(new_text)
             except SyntaxError:
@@ -311,9 +312,10 @@ class LineOrientedTreeProcessor(markdown.treeprocessors.Treeprocessor):
                 except:
                     log.exception('Error adding <br> tags: new text is %s', new_text)
                     pass
-            node.clear()
-            node.text = new_node.text
-            node[:] = list(new_node)
+            if new_node:
+                node.clear()
+                node.text = new_node.text
+                node[:] = list(new_node)
         return root
 
 class AutolinkPattern(markdown.inlinepatterns.LinkPattern):
