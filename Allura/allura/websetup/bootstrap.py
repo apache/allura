@@ -87,7 +87,7 @@ def bootstrap(command, conf, vars):
     n_adobe = M.Neighborhood(name='Adobe', url_prefix='/adobe/')
     assert tg.config['auth.method'] == 'local'
     project_reg = plugin.ProjectRegistrationProvider.get()
-    p_projects = project_reg.register_neighborhood_project(n_projects, [root])
+    p_projects = project_reg.register_neighborhood_project(n_projects, [root], allow_register=True)
     p_users = project_reg.register_neighborhood_project(n_users, [root])
     p_adobe = project_reg.register_neighborhood_project(n_adobe, [root])
     ThreadLocalORMSession.flush_all()

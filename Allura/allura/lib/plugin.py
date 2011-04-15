@@ -23,6 +23,7 @@ from ming.orm import session
 from ming.orm import ThreadLocalORMSession
 
 from allura.lib import helpers as h
+from allura.lib import security
 from allura.lib import exceptions as forge_exc
 
 log = logging.getLogger(__name__)
@@ -292,7 +293,7 @@ class ProjectRegistrationProvider(object):
         '''
         return []
 
-    def register_neighborhood_project(self, neighborhood, users):
+    def register_neighborhood_project(self, neighborhood, users, allow_register=False):
         from allura import model as M
         shortname='--init--'
         p = M.Project.query.get(
@@ -321,6 +322,9 @@ class ProjectRegistrationProvider(object):
             ThreadLocalORMSession.close_all()
             log.exception('Error registering project %s' % p)
             raise
+        if allow_register:
+            role_auth = M.ProjectRole.authenticated(p)
+            security.simple_grant(p.acl, role_auth._id, 'register')
         return p
 
     def register_project(self, neighborhood, shortname, user, user_project):
