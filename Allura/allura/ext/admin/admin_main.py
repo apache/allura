@@ -467,7 +467,8 @@ class PermissionsController(BaseController):
         redirect('.')
 
     def _index_permissions(self):
-        permissions = defaultdict(list)
+        permissions = dict(
+            (p,[]) for p in c.project.permissions)
         for ace in c.project.acl:
             if ace.access == M.ACE.ALLOW:
                 permissions[ace.permission].append(ace.role_id)

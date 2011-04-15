@@ -57,6 +57,8 @@ class ProjectCategory(MappedClass):
         return self.query.find(dict(parent_id=self._id)).all()
 
 class Project(MappedClass):
+    permissions=[
+        'read', 'update', 'admin', 'create']
     class __mongometa__:
         session = main_orm_session
         name='project'
@@ -79,8 +81,7 @@ class Project(MappedClass):
     database=FieldProperty(S.Deprecated)
     database_uri=FieldProperty(str)
     is_root=FieldProperty(bool)
-    acl = FieldProperty(ACL(permissions=[
-                'read', 'update', 'admin', 'create']))
+    acl = FieldProperty(ACL(permissions=permissions))
     neighborhood_invitations=FieldProperty([S.ObjectId])
     neighborhood = RelationProperty(Neighborhood)
     app_configs = RelationProperty('AppConfig')
