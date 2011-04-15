@@ -488,13 +488,15 @@ class ProjectRole(MappedClass):
     @classmethod
     def by_name(cls, name, project=None):
         if project is None: project = c.project
+        if hasattr(project, 'root_project'):
+            project = project.root_project
+        if hasattr(project, '_id'):
+            project_id = project._id
+        else:
+            project_id = project
         role = cls.query.get(
             name=name,
-            project_id=project.root_project._id)
-        if role is None:
-            role = cls.query.get(
-                name=name,
-                project_id={'$exists':False})
+            project_id=project_id)
         return role
 
     @classmethod

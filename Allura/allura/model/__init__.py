@@ -1,8 +1,6 @@
 # -*- coding: utf-8 -*-
 """The application's model objects"""
 
-from .session import ProjectSession
-
 from .neighborhood import Neighborhood, NeighborhoodFile
 from .project import Project, ProjectCategory, ProjectFile, AppConfig
 from .index import ArtifactReference, Shortlink

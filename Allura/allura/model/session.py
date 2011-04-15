@@ -1,35 +1,10 @@
 import logging
 
-from pylons import c
-
 from ming import Session
-from ming.datastore import ShardedDataStore
-from ming.orm.base import state, session
+from ming.orm.base import state
 from ming.orm.ormsession import ThreadLocalORMSession, SessionExtension
 
 log = logging.getLogger(__name__)
-
-class ProjectSession(Session):
-
-    def __init__(self, main_session):
-        self.main_session = main_session
-
-    @property
-    def db(self):
-        try:
-            assert c.project.database_uri
-            scheme, rest = c.project.database_uri.split('://')
-            host, database = rest.split('/', 1)
-            return ShardedDataStore.get(scheme + '://' + host, database).db
-        except (KeyError, AttributeError, TypeError), ex:
-            return None
-
-    def _impl(self, cls):
-        db = self.db
-        if db:
-            return db[cls.__mongometa__.name]
-        else: # pragma no cover
-            return None
 
 class ArtifactSessionExtension(SessionExtension):
 
@@ -85,7 +60,7 @@ class ArtifactSessionExtension(SessionExtension):
         self.objects_deleted = []
 
 main_doc_session = Session.by_name('main')
-project_doc_session = ProjectSession(main_doc_session)
+project_doc_session = Session.by_name('project')
 main_orm_session = ThreadLocalORMSession(main_doc_session)
 project_orm_session = ThreadLocalORMSession(project_doc_session)
 artifact_orm_session = ThreadLocalORMSession(

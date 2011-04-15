@@ -129,7 +129,7 @@ class NeighborhoodController(object):
     @expose('jinja:allura:templates/neighborhood_add_project.html')
     @without_trailing_slash
     def add_project(self, **form_data):
-        require_access(self.neighborhood, 'create')
+        require_access(self.neighborhood, 'register')
         c.add_project = W.add_project
         for checkbox in ['Wiki','Git','Tickets','Downloads','Discussion']:
             form_data.setdefault(checkbox, True)
@@ -157,7 +157,7 @@ class NeighborhoodController(object):
     @utils.AntiSpam.validate('Spambot protection engaged')
     @require_post()
     def register(self, project_unixname=None, project_description=None, project_name=None, neighborhood=None, **kw):
-        require_access(self.neighborhood, 'create')
+        require_access(self.neighborhood, 'register')
         project_description = h.really_unicode(project_description or '').encode('utf-8')
         project_name = h.really_unicode(project_name or '').encode('utf-8')
         project_unixname = h.really_unicode(project_unixname or '').encode('utf-8').lower()
