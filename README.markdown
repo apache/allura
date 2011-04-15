@@ -104,12 +104,12 @@ Generally set up with its own directory, we'll use ~/var/mongodata to keep our i
 We have a custom config ready for use.
 
     (anvil)~$ cd ~/src
-    (anvil)~/src$ wget http://apache.mirrors.tds.net/lucene/solr/1.4.0/apache-solr-1.4.0.tgz
-    (anvil)~/src$ tar xf apache-solr-1.4.0.tgz
-    (anvil)~/src$ cd apache-solr-1.4.0/example/
-    (anvil)~/src/apache-solr-1.4.0/example/$ mkdir -p ~/src/forge/solr_config/conf
-    (anvil)~/src/apache-solr-1.4.0/example/$ cp solr/conf/solrconfig.xml ~/src/forge/solr_config/conf/
-    (anvil)~/src/apache-solr-1.4.0/example/$ nohup java -Dsolr.solr.home=$(cd;pwd)/src/forge/solr_config -jar start.jar > ~/logs/solr.log &
+    (anvil)~/src$ wget http://apache.mirrors.tds.net/lucene/solr/1.4.1/apache-solr-1.4.1.tgz
+    (anvil)~/src$ tar xf apache-solr-1.4.1.tgz
+    (anvil)~/src$ cd apache-solr-1.4.1/example/
+    (anvil)~/src/apache-solr-1.4.1/example/$ mkdir -p ~/src/forge/solr_config/conf
+    (anvil)~/src/apache-solr-1.4.1/example/$ cp solr/conf/solrconfig.xml ~/src/forge/solr_config/conf/
+    (anvil)~/src/apache-solr-1.4.1/example/$ nohup java -Dsolr.solr.home=$(cd;pwd)/src/forge/solr_config -jar start.jar > ~/logs/solr.log &
 
 
 ### RabbitMQ message queue (optional)
