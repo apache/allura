@@ -31,10 +31,14 @@ class LabelEdit(ew.InputField):
         value=None,
         className='',
         show_label=True,
-        placeholder=None)
+        placeholder=None,
+        _value_is_list=None)
 
     def from_python(self, value, state=None):
         return value
+
+    def _value_is_list(self,value):
+        return isinstance(value,list)
 
     def resources(self):
         yield ew.JSLink('js/jquery.tag.editor.js')

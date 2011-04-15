@@ -1,3 +1,3 @@
 <div>
-  <input id="{{id}}" name="{{name}}" type="text" value="{{value and ','.join(value) or ''}}" class="label_edit {{className}}"{% if placeholder %} placeholder="{{placeholder}}"{% endif %}>
+  <input id="{{id}}" name="{{name}}" type="text" value="{% if value %}{% if _value_is_list(value) %}{{','.join(value)}}{% else %}{{value}}{% endif %}{% endif %}" class="label_edit {{className}}"{% if placeholder %} placeholder="{{placeholder}}"{% endif %}>
 </div>

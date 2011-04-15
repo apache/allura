@@ -460,8 +460,10 @@ class TestFunctionalController(TestController):
         response = self.app.get('/bugs/new/')
         assert not response.html.find('div', {'class':'error'})
         form = response.forms[1]
+        form['ticket_form.labels'] = 'foo'
         # try submitting with no summary set and check for error message
         error_form = form.submit()
+        assert error_form.forms[1]['ticket_form.labels'].value == 'foo'
         error_message = error_form.html.find('div', {'class':'error'})
         assert error_message
         assert (error_message.string == 'You must provide a Title' or \
