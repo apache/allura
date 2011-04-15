@@ -57,8 +57,8 @@ class ProjectCategory(MappedClass):
         return self.query.find(dict(parent_id=self._id)).all()
 
 class Project(MappedClass):
-    permissions=[
-        'read', 'update', 'admin', 'create']
+    _perms_base = [ 'read', 'update', 'admin', 'create']
+    _perms_init = _perms_base + [ 'register' ]
     class __mongometa__:
         session = main_orm_session
         name='project'
@@ -81,7 +81,7 @@ class Project(MappedClass):
     database=FieldProperty(S.Deprecated)
     database_uri=FieldProperty(str)
     is_root=FieldProperty(bool)
-    acl = FieldProperty(ACL(permissions=permissions))
+    acl = FieldProperty(ACL(permissions=_perms_init))
     neighborhood_invitations=FieldProperty([S.ObjectId])
     neighborhood = RelationProperty(Neighborhood)
     app_configs = RelationProperty('AppConfig')
@@ -93,6 +93,14 @@ class Project(MappedClass):
     ordinal = FieldProperty(int, if_missing=0)
     database_configured = FieldProperty(bool, if_missing=True)
     _extra_tool_status = FieldProperty([str])
+
+    @property
+    def permissions(self):
+        if self.shortname == '--init--':
+            return self._perms_init
+        else:
+            return self._perms_base
+
 
     def parent_security_context(self):
         return self.parent_project
