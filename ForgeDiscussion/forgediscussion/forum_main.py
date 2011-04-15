@@ -146,7 +146,7 @@ class ForgeDiscussionApp(Application):
                     ))
             recent_threads = (
                 t for t in recent_threads 
-                if (has_artifact_access('configure') or not thread.discussion.deleted) )
+                if not t.discussion.deleted )
             recent_threads = ( t for t in recent_threads if t.status == 'ok' )
             # Limit to 3 threads
             recent_threads = list(islice(recent_threads, 3))
