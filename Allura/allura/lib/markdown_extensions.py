@@ -12,7 +12,6 @@ from tg import config
 from pylons import c, g, request
 from BeautifulSoup import BeautifulSoup
 
-import oembed
 import markdown
 import feedparser
 
@@ -81,7 +80,6 @@ class ForgeProcessor(object):
         self.reset()
         self.artifact_re = re.compile(r'((.*?):)?((.*?):)?(.+)')
         self.macro_re = re.compile(self.alink_pattern)
-        self.oembed_re = re.compile('embed#(.*)')
 
     def install(self):
         for k,v in self.inline_patterns.iteritems():
@@ -94,7 +92,6 @@ class ForgeProcessor(object):
         if self.macro_re.match(raw):
             stash = 'macro'
             raw = raw[1:-1] # strip off the enclosing []
-        elif self.oembed_re.match(raw): stash = 'oembed'
         elif self.artifact_re.match(raw): stash = 'artifact'
         else: return raw
         return self._store(stash, raw)
@@ -120,13 +117,11 @@ class ForgeProcessor(object):
         self.stash['artifact'] = map(self._expand_alink, self.stash['artifact'])
         self.stash['link'] = map(self._expand_link, self.stash['link'])
         self.stash['macro'] = map(macro.parse, self.stash['macro'])
-        self.stash['oembed'] = map(self._expand_oembed, self.stash['oembed'])
 
     def reset(self):
         self.stash = dict(
             artifact=[],
             macro=[],
-            oembed=[],
             link=[])
         self.alinks = {}
         self.compiled = False
@@ -148,36 +143,6 @@ class ForgeProcessor(object):
             return 'notfound'
         else:
             return ''
-
-    def _expand_oembed(self, link):
-        href = link.split('#', 1)[-1]
-        try:
-            if href.startswith('('):
-                size, href = href.split(')')
-                size = size[1:]
-                width,height = size.split(',')
-            else:
-                width = height = None
-            response = g.oembed_consumer.embed(href)
-            data = response.getData()
-            log.info('Got response:\n%s', pformat(data))
-            if width is None: width = data.get('width', '100%')
-            if height is None: height = data.get('height', '300')
-            return self._render_iframe(href, width, height)
-        except oembed.OEmbedNoEndpoint:
-            result = '<a href="%s">(cannot be embedded - no endpoint)' % href
-            return result
-        except Exception, ve:
-            result = '<a href="%s">(cannot be embedded (%s))' % (href, ve)
-            return result
-
-    def _render_iframe(self, href, width, height):
-        return ('<iframe src=http://%s?href=%s" '
-                'width="%s" '
-                'height="%s">OEMBED</iframe>' % (
-                config['oembed.host'], quote(href),
-                width,
-                height))
 
 class ForgeInlinePattern(markdown.inlinepatterns.Pattern):
 

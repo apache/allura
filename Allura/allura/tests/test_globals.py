@@ -64,33 +64,4 @@ Some text in a regular paragraph
 def foo(): pass
 ~~~~''')
 
-def _disabled_test_oembed():
-    g.set_project('test')
-    g.set_app('wiki')
-    urls = [
-        'http://www.youtube.com/watch?v=LGRycUpBLS4',
-        'http://www.flickr.com/photos/wizardbt/2584979382/',
-        'http://www.viddler.com/explore/cdevroe/videos/424/',
-        'http://qik.com/qiknews',
-        'http://qik.com/video/49565',
-        'http://revision3.com/diggnation/2008-04-17xsanned/',
-        'http://www.hulu.com/watch/20807/late-night-with-conan-obrein-wed-may-21-2008',
-        # 'http://www.vimeo.com/757219', # vimeo's stuff is broken
-        # 'http://www.amazon.com/Essential-SQLAlchemy-Rick-Copeland/dp/0596516142/',
-        'http://www.polleverywhere.com/multiple_choice_polls/LTIwNzM1NTczNTE',
-        'http://my.opera.com/cstrep/albums/show.dml?id=504322',
-        # 'http://www.clearspring.com/widgets/480fbb38b51cb736',
-        'http://twitter.com/mai_co_jp/statuses/822499364',
-        ]
-    for url in urls:
-        result = g.markdown.convert('[embed#%s]' % url)
-        assert ('cannot be embedded' not in result or 'HTTP Error' in result)
-    for url in urls:
-        result = g.markdown.convert('[embed#(100%%,400)%s]' % url)
-        assert ('cannot be embedded' not in result or 'HTTP Error' in result)
-    s = g.markdown.convert(
-        '[embed#http://www.amazon.com/Essential-SQLAlchemy-Rick-Copeland/dp/0596516142/]')
-    assert 'cannot be embedded' in s, s
-    assert 'cannot be embedded' in g.markdown.convert(
-        '[embed#http://www.clearspring.com/widgets/480fbb38b51cb736]')
 

@@ -25,7 +25,6 @@ from .static import NewForgeController
 from .search import SearchController
 from .error import ErrorController
 from .rest import RestController
-from .oembed import OEmbedController
 
 __all__ = ['RootController']
 
@@ -43,7 +42,6 @@ class TestController(WsgiDispatchController, ProjectController):
     def __init__(self):
         setattr(self, 'feed.rss', self.feed)
         setattr(self, 'feed.atom', self.feed)
-        self.oembed = OEmbedController()
         for n in M.Neighborhood.query.find():
             if n.url_prefix.startswith('//'): continue
             n.bind_controller(self)

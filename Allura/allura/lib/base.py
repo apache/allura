@@ -22,10 +22,6 @@ class WsgiDispatchController(TGController):
         raise NotImplementedError, '_cleanup_request'
 
     def __call__(self, environ, start_response):
-        host = environ['HTTP_HOST'].lower()
-        if host == config['oembed.host']:
-            from allura.controllers.oembed import OEmbedController
-            return OEmbedController()(environ, start_response)
         try:
             self._setup_request()
             response = super(WsgiDispatchController, self).__call__(environ, start_response)

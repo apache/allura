@@ -24,7 +24,6 @@ from .search import SearchController, ProjectBrowseController
 from .static import NewForgeController
 from .site_admin import SiteAdminController
 from .project import NeighborhoodController, HostNeighborhoodController
-from .oembed import OEmbedController
 from .rest import RestController
 
 __all__ = ['RootController']

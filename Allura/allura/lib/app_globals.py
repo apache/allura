@@ -16,7 +16,6 @@ from collections import defaultdict
 import pkg_resources
 
 import pysolr
-import oembed
 import markdown
 import pygments
 import pygments.lexers
@@ -84,14 +83,6 @@ class Globals(object):
                     vhost=config.get('amqp.vhost', 'testvhost'))
         else:
             self.amq_conn = None
-
-        # Setup OEmbed
-        cp = RawConfigParser()
-        cp.read(config['oembed.config'])
-        self.oembed_consumer = consumer = oembed.OEmbedConsumer()
-        for endpoint in cp.sections():
-            values = [ v for k,v in cp.items(endpoint) ]
-            consumer.addEndpoint(oembed.OEmbedEndpoint(endpoint, values))
 
         # Setup Gravatar
         self.gravatar = gravatar.url

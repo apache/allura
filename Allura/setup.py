@@ -31,7 +31,6 @@ setup(
         "python-dateutil >= 1.4.1",
         "WebOb == 0.9.8",
         "WebTest == 1.2",
-        "python-oembed >= 0.1.1",
         "EasyWidgets >= 0.1.1",
         "PIL >= 1.1.7",
         "iso8601",
