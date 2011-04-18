@@ -296,6 +296,9 @@ class PreferencesController(BaseController):
                preferences=None,
                **kw):
         require_authenticated()
+        if display_name is None:
+            flash("Display Name cannot be empty.",'error')
+            redirect('.')
         if config.get('auth.method', 'local') == 'local':
             c.user.set_pref('display_name', display_name)
             for i, (old_a, data) in enumerate(zip(c.user.email_addresses, addr or [])):

@@ -63,6 +63,10 @@
   <br/>
   <div style="clear:both">&nbsp;</div>
   <form action="update" method="post">
+        <label class="grid-4">Display Name</label>
+        <div class="grid-18">
+          <input name="preferences.display_name" value="{{c.user.display_name}}">
+        </div>
         <label class="grid-4">Email Format</label>
         <div class="grid-18">
           <select name="preferences.email_format">
