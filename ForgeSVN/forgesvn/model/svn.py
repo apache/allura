@@ -248,8 +248,10 @@ class SVNImplementation(M.RepositoryImplementation):
                 revision=rev,
                 depth=pysvn.depth.immediates)
         except pysvn.ClientError:
-            tree.object_ids = []
-            return tree_id
+            log.exception('Error computing tree for %s: %s(%s)',
+                          self._repo, commit, tree_path)
+            tree.delete()
+            return None
         gl_tree = GitLikeTree()
         log.debug('Compute tree for %d paths', len(infos))
         for path, info in infos[1:]:

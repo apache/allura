@@ -663,6 +663,8 @@ class Commit(RepoObject):
     def tree(self):
         if self.tree_id is None:
             self.tree_id = self.repo.compute_tree(self)
+        if self.tree_id is None:
+            return None
         t = Tree.query.get(object_id=self.tree_id)
         if t is None:
             self.tree_id = self.repo.compute_tree(self)
