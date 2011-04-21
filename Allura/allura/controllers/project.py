@@ -321,7 +321,7 @@ class ProjectController(object):
     def user_search(self,term=''):
         if len(term) < 3:
             raise exc.HTTPBadRequest('"term" param must be at least length 3')
-        users = M.User.by_display_name(term, substring=True)
+        users = M.User.by_display_name(term)
         named_roles = RoleCache(
             g.credentials,
             g.credentials.project_roles(project_id=c.project.root_project._id).named)

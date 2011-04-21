@@ -319,8 +319,8 @@ class User(MappedClass):
         return plugin.AuthenticationProvider.get(request).by_username(name)
 
     @classmethod
-    def by_display_name(cls, name, substring=True):
-        return plugin.UserPreferencesProvider.get().find_by_display_name(name, substring)
+    def by_display_name(cls, name):
+        return plugin.UserPreferencesProvider.get().find_by_display_name(name)
 
     def get_tool_data(self, tool, key, default=None):
         return self.tool_data.get(tool, {}).get(key, None)

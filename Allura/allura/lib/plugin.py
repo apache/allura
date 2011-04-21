@@ -28,12 +28,23 @@ from allura.lib import exceptions as forge_exc
 log = logging.getLogger(__name__)
 
 class AuthenticationProvider(object):
+    '''
+    An interface to provide authentication services for Allura.
+
+    To use a new provider, expose an entry point in setup.py:
+
+        [allura.auth]
+        myprovider = foo.bar.MyAuthProvider
+
+    Then in your .ini file, set auth.method=myprovider
+    '''
 
     def __init__(self, request):
         self.request = request
 
     @classmethod
     def get(cls, request):
+        '''returns the AuthenticationProvider instance for this request'''
         try:
             result = cls._loaded_ep
         except AttributeError:
@@ -58,9 +69,21 @@ class AuthenticationProvider(object):
         return user
 
     def register_user(self, user_doc):
+        '''
+        Register a user.
+
+        :param user_doc: a dict with 'username' and 'display_name'.  Optionally 'password' and others
+        :rtype: :class:`User <allura.model.auth.User>`
+        '''
         raise NotImplementedError, 'register_user'
 
     def _login(self):
+        '''
+        Authorize a user, usually using self.request.params['username'] and ['password']
+
+        :rtype: :class:`User <allura.model.auth.User>`
+        :raises: HTTPUnauthorized if user not found, or credentials are not valid
+        '''
         raise NotImplementedError, '_login'
 
     def login(self, user=None):
@@ -78,15 +101,37 @@ class AuthenticationProvider(object):
         self.session.save()
 
     def by_username(self, username):
+        '''
+        Find a user by username.
+
+        :rtype: :class:`User <allura.model.auth.User>` or None
+        '''
         raise NotImplementedError, 'by_username'
 
     def set_password(self, user, old_password, new_password):
+        '''
+        Set a user's password.
+
+        :param user: a :class:`User <allura.model.auth.User>`
+        :rtype: None
+        :raises: HTTPUnauthorized if old_password is not valid
+        '''
         raise NotImplementedError, 'set_password'
 
     def upload_sshkey(self, username, pubkey):
+        '''
+        Upload an SSH Key.  Providers do not necessarily need to implement this.
+
+        :rtype: None
+        :raises: AssertionError with user message, upon any error
+        '''
         raise NotImplemented, 'upload_sshkey'
 
 class LocalAuthenticationProvider(AuthenticationProvider):
+    '''
+    Stores user passwords on the User model, in mongo.  Uses per-user salt and
+    SHA-256 encryption.
+    '''
 
     def register_user(self, user_doc):
         from allura import model as M
@@ -209,6 +254,18 @@ class LdapAuthenticationProvider(AuthenticationProvider):
         return user
 
 class ProjectRegistrationProvider(object):
+    '''
+    Project registration services for Allura.  This is a full implementation
+    and the default.  Extend this class with your own if you need to add more
+    functionality.
+
+    To use a new provider, expose an entry point in setup.py:
+
+        [allura.project_registration]
+        myprovider = foo.bar.MyAuthProvider
+
+    Then in your .ini file, set registration.method=myprovider
+    '''
 
     @classmethod
     def get(cls):
@@ -338,6 +395,26 @@ class ProjectRegistrationProvider(object):
         return None
 
 class ThemeProvider(object):
+    '''
+    Theme information for Allura.  This is a full implementation
+    and the default.  Extend this class with your own if you need to add more
+    functionality.
+
+    To use a new provider, expose an entry point in setup.py:
+
+        [allura.theme]
+        myprovider = foo.bar.MyThemeProvider
+
+    Then in your .ini file, set theme=mytheme
+
+    The variables referencing jinja template files can be changed to point at your
+    own jinja templates.  Use the standard templates as a reference, you should
+    provide matching macros and block names.
+
+    :var base_css: tuple of (css-resource, theme-name), or just a string css-resource
+    :var icons: a dictionary of sized icons for each tool
+    '''
+
     master_template = 'allura:templates/jinja_master/master.html'
     jinja_macros = 'allura:templates/jinja_master/theme_macros.html'
     nav_menu = 'allura:templates/jinja_master/nav_menu.html'
@@ -355,11 +432,17 @@ class ThemeProvider(object):
 
     @LazyProperty
     def password_change_form(self):
+        '''
+        :return: None, or an easywidgets Form to render on the user preferences page
+        '''
         from allura.lib.widgets.forms import PasswordChangeForm
         return PasswordChangeForm(action='/auth/prefs/change_password')
 
     @LazyProperty
     def upload_key_form(self):
+        '''
+        :return: None, or an easywidgets Form to render on the user preferences page
+        '''
         from allura.lib.widgets.forms import UploadKeyForm
         return UploadKeyForm(action='/auth/prefs/upload_sshkey')
 
@@ -394,6 +477,16 @@ class LocalProjectRegistrationProvider(ProjectRegistrationProvider):
     pass
 
 class UserPreferencesProvider(object):
+    '''
+    An interface for user preferences, like display_name and email_address
+
+    To use a new provider, expose an entry point in setup.py:
+
+        [allura.user_prefs]
+        myprefs = foo.bar.MyUserPrefProvider
+
+    Then in your .ini file, set user_prefs_storage.method=myprefs
+    '''
 
     @classmethod
     def get(cls):
@@ -402,15 +495,33 @@ class UserPreferencesProvider(object):
             return ep.load()()
 
     def get_pref(self, user, pref_name):
+        '''
+        :param user: a :class:`User <allura.model.auth.User>`
+        :param str pref_name:
+        :return: pref_value
+        :raises: AttributeError if pref_name not found
+        '''
         raise NotImplementedError, 'get_pref'
 
     def save_pref(self, user, pref_name, pref_value):
+        '''
+        :param user: a :class:`User <allura.model.auth.User>`
+        :param str pref_name:
+        :param pref_value:
+        '''
         raise NotImplementedError, 'set_pref'
 
-    def find_by_display_name(self, name, substring=True):
+    def find_by_display_name(self, name):
+        '''
+        :rtype: list of :class:`Users <allura.model.auth.User>`
+        '''
         raise NotImplementedError, 'find_by_display_name'
 
 class LocalUserPreferencesProvider(UserPreferencesProvider):
+    '''
+    The default UserPreferencesProvider, storing preferences on the User object
+    in mongo.
+    '''
 
     def get_pref(self, user, pref_name):
         if pref_name in user.preferences:
@@ -424,10 +535,8 @@ class LocalUserPreferencesProvider(UserPreferencesProvider):
         else:
             setattr(user, pref_name, pref_value)
 
-    def find_by_display_name(self, name, substring=True):
+    def find_by_display_name(self, name):
         from allura import model as M
-        if not substring:
-            raise NotImplementedError, 'non-substring'
         name_regex = re.compile('(?i)%s' % re.escape(name))
         users = M.User.query.find(dict(
                 display_name=name_regex)).sort('username').all()
