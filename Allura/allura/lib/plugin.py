@@ -34,7 +34,7 @@ class AuthenticationProvider(object):
     To use a new provider, expose an entry point in setup.py:
 
         [allura.auth]
-        myprovider = foo.bar.MyAuthProvider
+        myprovider = foo.bar:MyAuthProvider
 
     Then in your .ini file, set auth.method=myprovider
     '''
@@ -262,7 +262,7 @@ class ProjectRegistrationProvider(object):
     To use a new provider, expose an entry point in setup.py:
 
         [allura.project_registration]
-        myprovider = foo.bar.MyAuthProvider
+        myprovider = foo.bar:MyAuthProvider
 
     Then in your .ini file, set registration.method=myprovider
     '''
@@ -403,7 +403,7 @@ class ThemeProvider(object):
     To use a new provider, expose an entry point in setup.py:
 
         [allura.theme]
-        myprovider = foo.bar.MyThemeProvider
+        myprovider = foo.bar:MyThemeProvider
 
     Then in your .ini file, set theme=mytheme
 
@@ -483,7 +483,7 @@ class UserPreferencesProvider(object):
     To use a new provider, expose an entry point in setup.py:
 
         [allura.user_prefs]
-        myprefs = foo.bar.MyUserPrefProvider
+        myprefs = foo.bar:MyUserPrefProvider
 
     Then in your .ini file, set user_prefs_storage.method=myprefs
     '''
