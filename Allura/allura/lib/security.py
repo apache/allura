@@ -9,20 +9,28 @@ from itertools import chain
 from ming.utils import LazyProperty
 
 class Credentials(object):
+    '''
+    Role graph logic & caching
+    '''
 
     def __init__(self):
         self.clear()
 
     @classmethod
     def get(cls):
+        'get the global Credentials instance'
         import allura
         return allura.credentials
 
     def clear(self):
+        'clear cache'
         self.users = {}
         self.projects = {}
 
     def project_roles(self, project_id):
+        '''
+        :returns: a RoleCache of ProjectRoles for project_id
+        '''
         from allura import model as M
         roles = self.projects.get(project_id)
         if roles is None:
@@ -31,6 +39,9 @@ class Credentials(object):
         return roles
 
     def user_roles(self, user_id, project_id=None):
+        '''
+        :returns: a RoleCache of ProjectRoles for given user_id and project_id, *anonymous and *authenticated checked as appropriate
+        '''
         from allura import model as M
         roles = self.users.get((user_id, project_id))
         if roles is None:
@@ -161,6 +172,12 @@ class RoleCache(object):
         return set(self.reaching_ids)
 
 def has_neighborhood_access(access_type, neighborhood, user=None):
+    '''
+    :param str access_type: permission name
+    :param Neighborhood neighborhood:
+    :param User user: a specific user, else the current user
+    :returns: _another function_ which returns True if has access
+    '''
     from allura import model as M
     def result(user=user):
         if user is None: user = c.user
@@ -173,6 +190,12 @@ def has_neighborhood_access(access_type, neighborhood, user=None):
     return result
 
 def has_project_access(access_type, project=None, user=None):
+    '''
+    :param str access_type: permission name
+    :param Project project: a specific project, else the current project
+    :param User user: a specific user, else the current user
+    :returns: _another function_ which returns True if has access.  Neighborhood admin access will always result in True
+    '''
     def result(project=project, user=user):
         if project is None: project = c.project
         if user is None: user = c.user
@@ -187,6 +210,15 @@ def has_project_access(access_type, project=None, user=None):
     return result
 
 def has_artifact_access(access_type, obj=None, user=None, app=None):
+    '''
+    Check for artifact- or application-level access
+
+    :param str access_type: permission name
+    :param Artifact obj: if None, application access is checked
+    :param Project project: a specific project, else the current project
+    :param Application app: a specific user, else the current user
+    :returns: _another function_ which returns True if has access.  Neighborhood admin access will always result in True
+    '''
     def result(user=user, app=app):
         if user is None: user = c.user
         if app is None: app = c.app
@@ -203,6 +235,14 @@ def has_artifact_access(access_type, obj=None, user=None, app=None):
     return result
 
 def require(predicate, message=None):
+    '''
+    Example: require(has_artifact_access('read'))
+
+    :param callable predicate: truth function to call
+    :param str message: message to show upon failure
+    :raises: HTTPForbidden or HTTPUnauthorized
+    '''
+
     from allura import model as M
     if predicate(): return
     if not message:
@@ -216,6 +256,9 @@ def require(predicate, message=None):
         raise exc.HTTPUnauthorized()
 
 def require_authenticated():
+    '''
+    :raises: HTTPUnauthorized if current user is anonymous
+    '''
     from allura import model as M
     if c.user == M.User.anonymous():
         raise exc.HTTPUnauthorized()

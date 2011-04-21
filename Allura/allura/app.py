@@ -89,6 +89,11 @@ class Application(object):
     """
     The base Allura pluggable application
 
+    After extending this, expose the app by adding an entry point in your setup.py:
+
+        [allura]
+        myapp = foo.bar.baz:MyAppClass
+
     :var status: the status level of this app.  'production' apps are available to all projects
     :var bool searchable: toggle if the search box appears in the left menu
     :var permissions: a list of named permissions used by the app

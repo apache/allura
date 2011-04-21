@@ -180,6 +180,9 @@ class Project(MappedClass):
         return self.query.get(_id=self.parent_id)
 
     def private_project_of(self):
+        '''
+        If this is a user-project, return the User, else None
+        '''
         user = None
         if self.shortname.startswith('u/'):
             from .auth import User
