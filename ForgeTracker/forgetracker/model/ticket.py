@@ -350,12 +350,8 @@ class Ticket(VersionedArtifact):
             self.subscribe()
             if self.assigned_to_id:
                 self.subscribe(user=User.query.get(_id=self.assigned_to_id))
-            changes = ['Ticket %s has been created: %s' % (
-                    self.ticket_num, self.summary),
-                       'Created By: %s (%s)' % (c.user.get_pref('display_name'), c.user.username)]
-            description = '\n'.join(changes)
-            subject = 'Ticket #%s created by %s (%s): %s' % (
-                self.ticket_num, c.user.get_pref('display_name'), c.user.username, self.summary)
+            description = ''
+            subject = self.email_subject
             Thread(discussion_id=self.app_config.discussion_id,
                    ref_id=self.index_id())
             Notification.post(artifact=self, topic='metadata', text=description, subject=subject)

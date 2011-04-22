@@ -9,8 +9,8 @@
     **Labels:** {% for label in ticket.labels %}{{label}} {% else %}None{% endfor %}  
 {% endif -%}
 **Created:** {{ticket.created_date.strftime('%a %b %d, %Y %I:%M %p UTC')}} by {{ticket.reported_by.display_name}}  
-{% if ticket.mod_date != ticket.created_date -%}
-    **Updated:** {{ticket.mod_date.strftime('%a %b %d, %Y %I:%M %p UTC')}}  
+{% if (ticket.mod_date - ticket.created_date).days >= 0 -%}
+    **Last Updated:** {{ticket.mod_date.strftime('%a %b %d, %Y %I:%M %p UTC')}}
 {% endif -%}
 **Owner:** {{ticket.assigned_to_name()}}
 
