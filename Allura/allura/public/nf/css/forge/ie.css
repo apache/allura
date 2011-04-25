@@ -1,5 +1,0 @@
-	.sfdl {height: 56px; width: 187px; background: url(images/sf-dl-lg.png) no-repeat; border: none;}
-	.sfdls {height: 50px; width: 152px; background: url(images/sf-dl-sm.png) no-repeat; border: none;}
-	.sfdl p, .sfdls p {background: none; border: none;}
-
-	.sfdl p.hide, .sfdls p.hide {display: none !important;}

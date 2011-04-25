@@ -2974,3 +2974,10 @@ h1.title .viewer:hover {
 #access_urls input {
   width: 32em;
 }
+
+/* IE-specific styles */
+.ie7 .sfdl, .ie8 .sfdl {height: 56px; width: 187px; background: url(images/sf-dl-lg.png) no-repeat; border: none;}
+.ie7 .sfdls, .ie8 .sfdls {height: 50px; width: 152px; background: url(images/sf-dl-sm.png) no-repeat; border: none;}
+.ie7 .sfdl p, .ie7 .sfdls p, .ie8 .sfdl p, .ie8 .sfdls p {background: none; border: none;}
+.ie7 .sfdl p.hide, .ie7 .sfdls p.hide, .ie8 .sfdl p.hide, .ie8 .sfdls p.hide {display: none !important;}
+.ie7 .sfdl p.hide, .ie7 .sfdls p.hide, .ie8 .sfdl p.hide, .ie8 .sfdls p.hide, .ie9 .sfdl p.hide, .ie9 .sfdls p.hide {display: none !important;}

@@ -10,7 +10,12 @@
 {% do g.register_forge_js('js/allura-base.js') %}
 {% do g.register_forge_css('css/forge/hilite.css') %}
 {% do g.resource_manager.register_widgets(c) %}
-<html xmlns="http://www.w3.org/1999/xhtml">
+{# paulirish.com/2008/conditional-stylesheets-vs-css-hacks-answer-neither/ #}
+<!--[if lt IE 7 ]> <html lang="en" class="no-js ie6"> <![endif]-->
+<!--[if IE 7 ]>    <html lang="en" class="no-js ie7"> <![endif]-->
+<!--[if IE 8 ]>    <html lang="en" class="no-js ie8"> <![endif]-->
+<!--[if IE 9 ]>    <html lang="en" class="no-js ie9"> <![endif]-->
+<!--[if (gt IE 9)|!(IE)]>--> <html lang="en" class="no-js"> <!--<![endif]-->
   <head>
     <meta content="text/html; charset=UTF-8" http-equiv="content-type"/>
     <title>{% block title %}Your title goes here{% endblock %}</title>
@@ -46,15 +51,6 @@
 
     {% block head %}
     {% endblock %}
-<!--[if lt IE 9]>
-                <link rel="stylesheet" href="/nf/css/forge/ie.css" type="text/css" charset="utf-8" />
-<![endif]-->
-<!--[if IE]>
-                <style type="text/css">
-                        .sfdl p.hide, .sfdls p.hide {display: none !important;}
-                </style>
-<![endif]-->
-
 {% if g.production_mode %}{{g.analytics.display()}}{% endif %}
   </head>
 
