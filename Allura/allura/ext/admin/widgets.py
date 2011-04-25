@@ -99,3 +99,16 @@ class NewGroupSettings(ff.AdminForm):
     submit_text='Save'
     class fields(ew_core.NameList):
         name = ew.InputField(label='Name')
+
+class ScreenshotAdmin(ff.AdminForm):
+    defaults=dict(
+        ff.AdminForm.defaults,
+        enctype='multipart/form-data')
+
+    @property
+    def fields(self):
+        fields = [
+            ew.InputField(name='screenshot', field_type='file', label='New Screenshot'),
+            ew.InputField(name='caption', label='Caption')
+        ]
+        return fields

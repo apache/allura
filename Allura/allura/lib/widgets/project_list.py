@@ -39,3 +39,10 @@ class ProjectList(ew_core.Widget):
     def resources(self):
         for r in self.project_summary.resources():
             yield r
+
+class ProjectScreenshots(ew_core.Widget):
+    template='jinja:allura:templates/widgets/project_screenshots.html'
+    defaults=dict(
+        ew_core.Widget.defaults,
+        project=None,
+        edit=False)

@@ -200,10 +200,8 @@ class TestProjectAdmin(TestController):
         upload = ('screenshot', file_name, file_data)
 
         self.app.get('/admin/')
-        self.app.post('/admin/update', params=dict(
-                name='Test Project',
-                shortname='test',
-                short_description='A Test Project'),
+        self.app.post('/admin/add_screenshot', params=dict(
+                caption='test me'),
                 upload_files=[upload])
         project = M.Project.query.find({'shortname':'test'}).first()
         filename = project.get_screenshots()[0].filename
@@ -214,6 +212,20 @@ class TestProjectAdmin(TestController):
         r = self.app.get('/p/test/screenshot/'+filename+'/thumb')
         thumb = Image.open(StringIO.StringIO(r.body))
         assert thumb.size == (150,150)
+        r = self.app.get('/p/test/home/')
+        assert '/p/test/screenshot/'+filename in r
+        assert 'test me' in r
+        # test edit
+        req = self.app.get('/admin/screenshots')
+        req.forms[0]['caption'].value = 'aaa'
+        req.forms[0].submit()
+        r = self.app.get('/p/test/home/')
+        assert 'aaa' in r
+        # test delete
+        req = self.app.get('/admin/screenshots')
+        req.forms[1].submit()
+        r = self.app.get('/p/test/home/')
+        assert 'aaa' not in r
 
     def test_project_delete_undelete(self):
         r = self.app.get('/p/test/admin/overview')

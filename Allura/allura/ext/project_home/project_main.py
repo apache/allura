@@ -17,8 +17,12 @@ from allura.ext.project_home import model as M
 from allura import model
 from allura.lib.security import require, has_project_access
 from allura.lib.decorators import require_post
+from allura.lib.widgets.project_list import ProjectScreenshots
 
 log = logging.getLogger(__name__)
+
+class W:
+    screenshot_list = ProjectScreenshots()
 
 class ProjectWidgets(WidgetController):
     widgets=['welcome']
@@ -84,6 +88,7 @@ class ProjectHomeController(BaseController):
     @expose('jinja:allura.ext.project_home:templates/project_index.html')
     def index(self, **kw):
         config = M.PortalConfig.current()
+        c.screenshot_list = W.screenshot_list
         return dict(
             layout_class=config.layout_class,
             layout=config.rendered_layout())

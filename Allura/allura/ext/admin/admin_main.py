@@ -3,6 +3,7 @@ import logging
 from pprint import pformat
 from collections import defaultdict
 import Image
+from bson import ObjectId
 
 import pkg_resources
 from pylons import c, g, request
@@ -24,6 +25,7 @@ from allura.controllers import BaseController
 from allura.lib.decorators import require_post
 
 from . import widgets as aw
+from allura.lib.widgets.project_list import ProjectScreenshots
 
 log = logging.getLogger(__name__)
 
@@ -37,6 +39,8 @@ class W:
     permission_card = aw.PermissionCard()
     group_settings = aw.GroupSettings()
     new_group_settings = aw.NewGroupSettings()
+    screenshot_admin = aw.ScreenshotAdmin()
+    screenshot_list = ProjectScreenshots()
 
 class AdminWidgets(WidgetController):
     widgets=['users', 'tool_status']
@@ -119,7 +123,8 @@ class AdminApp(Application):
             links.append(SitemapEntry('Project'))
         links += [
             SitemapEntry('Summary', admin_url+'overview', className='nav_child'),
-            SitemapEntry('Homepage', admin_url+'homepage', className='nav_child')
+            SitemapEntry('Homepage', admin_url+'homepage', className='nav_child'),
+            SitemapEntry('Screenshots', admin_url+'screenshots', className='nav_child')
             ]
         if has_project_access('security')():
             links.append(SitemapEntry('Permissions', admin_url+'permissions/', className='nav_child'))
@@ -171,6 +176,13 @@ class ProjectAdminController(BaseController):
     @expose('jinja:allura.ext.admin:templates/project_homepage.html')
     def homepage(self, **kw):
         c.markdown_editor = W.markdown_editor
+        return dict()
+
+    @without_trailing_slash
+    @expose('jinja:allura.ext.admin:templates/project_screenshots.html')
+    def screenshots(self, **kw):
+        c.screenshot_admin = W.screenshot_admin
+        c.screenshot_list = W.screenshot_list
         return dict()
 
     @without_trailing_slash
@@ -244,7 +256,6 @@ class ProjectAdminController(BaseController):
     def update(self, name=None,
                short_description=None,
                icon=None,
-               screenshot=None,
                category=None,
                **kw):
         require(has_project_access('update'), 'Update access required')
@@ -286,13 +297,6 @@ class ProjectAdminController(BaseController):
                 icon.filename, icon.file, content_type=icon.type,
                 square=True, thumbnail_size=(48,48),
                 thumbnail_meta=dict(project_id=c.project._id,category='icon'))
-        if screenshot is not None and screenshot != '':
-            M.ProjectFile.save_image(
-                screenshot.filename, screenshot.file, content_type=screenshot.type,
-                save_original=True,
-                original_meta=dict(project_id=c.project._id,category='screenshot'),
-                square=True, thumbnail_size=(150,150),
-                thumbnail_meta=dict(project_id=c.project._id,category='screenshot_thumb'))
         g.post_event('project_updated')
         redirect('overview')
 
@@ -309,6 +313,38 @@ class ProjectAdminController(BaseController):
             c.project.homepage_title = homepage_title
         g.post_event('project_updated')
         redirect('homepage')
+
+    @expose()
+    @require_post()
+    @validate(W.screenshot_admin)
+    def add_screenshot(self, screenshot=None, caption=None, **kw):
+        if len(c.project.get_screenshots()) >= 6:
+            flash('You may not have more than 6 screenshots per project.','error')
+        elif screenshot is not None and screenshot != '':
+            M.ProjectFile.save_image(
+                screenshot.filename, screenshot.file, content_type=screenshot.type,
+                save_original=True,
+                original_meta=dict(project_id=c.project._id,category='screenshot',caption=caption),
+                square=True, thumbnail_size=(150,150),
+                thumbnail_meta=dict(project_id=c.project._id,category='screenshot_thumb'))
+            g.post_event('project_updated')
+        redirect('screenshots')
+
+    @expose()
+    @require_post()
+    def delete_screenshot(self, id=None, **kw):
+        if id is not None and id != '':
+            M.ProjectFile.query.remove(dict(project_id=c.project._id, _id=ObjectId(id)))
+            g.post_event('project_updated')
+        redirect('screenshots')
+
+    @expose()
+    @require_post()
+    def edit_screenshot(self, id=None, caption=None, **kw):
+        if id is not None and id != '':
+            M.ProjectFile.query.get(project_id=c.project._id, _id=ObjectId(id)).caption=caption
+            g.post_event('project_updated')
+        redirect('screenshots')
 
     @expose()
     @require_post()

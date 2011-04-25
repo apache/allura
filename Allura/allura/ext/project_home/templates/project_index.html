@@ -15,51 +15,52 @@
 
 
 {% block content %}
-          {{c.project.description_html|safe}}
-          <div class="{{layout_class}}">
-            {% for div in layout %}
-            <div class="{{div.name}}">
-              {% for w in div.content %}{{w|safe}}{% endfor %}
-            </div>
-            {% endfor %}
-          </div>
+  {{c.project.description_html|safe}}
+  <div class="{{layout_class}}">
+    {% for div in layout %}
+    <div class="{{div.name}}">
+      {% for w in div.content %}{{w|safe}}{% endfor %}
+    </div>
+    {% endfor %}
+  </div>
+  {{c.screenshot_list.display(project=c.project)}}
 {% endblock %}
 
 {% block right_content %}
-          {% if c.project.show_download_button %}
-            <div id="download-button" style="margin-bottom: 1em;"></div>
-          {% endif %}
+  {% if c.project.show_download_button %}
+    <div id="download-button" style="margin-bottom: 1em;"></div>
+  {% endif %}
 
-          {% if c.project.accolades %}
-            <div class="listed">
-              <b>Awards:</b>
-              {% for accolade in c.project.accolades %}
-              <a href="{{accolade.award.longurl()}}" title="{{accolade.award.full}}">
-                <small class="badge {{accolade.award.short}}">{{accolade.award.short}}</small>
-              </a>
-              {% else %}
-                <span>No Awards</span>
-              {% endfor %}
-            </div>
-          {% endif %}
-          
-          {% if c.project.labels and not (c.project.labels|length == 1 and c.project.labels[0]=='') %}
-          <div class="listed">
-            <b>Labels:</b>
-            {% for label in c.project.labels %}
-              <span class="ui-corner-all tag">{{label}} </span>
-            {% endfor %}
-          </div>
-          {% endif %}
-          
-          <div class="listed last gravatar sm">
-            <b>Developers:</b>
-            {% for u in c.project.users() %}
-            <a href="{{u.url()}}">
-              {{lib.gravatar(u, size=24)}}
-            </a>
-            {% endfor %}
-          </div>
+  {% if c.project.accolades %}
+    <div class="listed">
+      <b>Awards:</b>
+      {% for accolade in c.project.accolades %}
+      <a href="{{accolade.award.longurl()}}" title="{{accolade.award.full}}">
+        <small class="badge {{accolade.award.short}}">{{accolade.award.short}}</small>
+      </a>
+      {% else %}
+        <span>No Awards</span>
+      {% endfor %}
+    </div>
+  {% endif %}
+
+  {% if c.project.labels and not (c.project.labels|length == 1 and c.project.labels[0]=='') %}
+  <div class="listed">
+    <b>Labels:</b>
+    {% for label in c.project.labels %}
+      <span class="ui-corner-all tag">{{label}} </span>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  <div class="listed last gravatar sm">
+    <b>Developers:</b>
+    {% for u in c.project.users() %}
+    <a href="{{u.url()}}">
+      {{lib.gravatar(u, size=24)}}
+    </a>
+    {% endfor %}
+  </div>
 {% endblock %}
 
 {% block extra_js %}

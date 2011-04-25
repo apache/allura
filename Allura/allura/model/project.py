@@ -34,6 +34,7 @@ class ProjectFile(File):
 
     project_id=FieldProperty(S.ObjectId)
     category=FieldProperty(str)
+    caption=FieldProperty(str)
 
 class ProjectCategory(MappedClass):
     class __mongometa__:

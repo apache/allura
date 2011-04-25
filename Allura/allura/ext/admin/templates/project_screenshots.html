@@ -1,0 +1,19 @@
+{% extends g.theme.master %}
+
+{% block title %}{{c.project.name}} / Screenshots{% endblock %}
+
+{% block header %}Project Screenshots{% endblock %}
+
+{% block content %}
+  {% if c.project.deleted %}
+    <div class="notice">This project has been deleted and is not visible to non-admin users</div>
+  {% endif %}
+  {{c.screenshot_list.display(edit=h.has_project_access,project=c.project)}}
+  {% if h.has_project_access('update')() %}
+    {% if c.project.get_screenshots().__len__() < 6 %}
+      {{c.screenshot_admin.display(action="add_screenshot")}}
+    {% else %}
+      <p>You may not have more than 6 screenshots.</p>
+    {% endif %}
+  {% endif %}
+{% endblock %}

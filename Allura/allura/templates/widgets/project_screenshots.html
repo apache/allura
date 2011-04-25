@@ -1,0 +1,23 @@
+{% for ss in project.get_screenshots() %}
+  <div class="grid-6" style="text-align: center">
+    <a href="{{project.url()}}screenshot/{{ss.filename}}"><img src="{{project.url()}}screenshot/{{ss.filename}}/thumb"></a>
+    {% if not edit %}
+    <br>
+    {{ss.caption}}
+    {% endif %}
+  </div>
+  {% if edit %}
+  <div class="grid-12" style="margin-top:50px; min-height: 110px">
+    <form action="edit_screenshot" method="post">
+      <input type="hidden" value="{{ss._id}}" name="id">
+      <input type="text" value="{{ss.caption}}" name="caption"><br>
+      <input type="submit" value="Save Changes">
+    </form>
+    <form action="delete_screenshot" method="post">
+      <input type="hidden" value="{{ss._id}}" name="id">
+      <input type="submit" value="Delete">
+    </form>
+  </div>
+  {% endif %}
+{% endfor %}
+<div style="clear:both">&nbsp;</div>
