@@ -523,7 +523,9 @@ class RepoObject(MappedClass):
         polymorphic_identity=None
         indexes = [
             ('parent_ids',),
-            ('repo_id','type')
+            ('repo_id','type'),
+            ('type', 'object_ids.object_id'),
+            ('type', 'tree_id'),
             ]
         unique_indexes = [ 'object_id' ]
 
