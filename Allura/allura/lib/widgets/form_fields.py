@@ -124,7 +124,9 @@ class AutoResizeTextarea(ew.TextArea):
     def resources(self):
         yield ew.JSLink('js/jquery.elastic.js')
         yield onready('''
-            $('textarea.auto_resize').elastic().change();
+            $('textarea.auto_resize').elastic().focus(function(){
+                $(this).keyup();
+            });
         ''')
 
 class MarkdownEdit(AutoResizeTextarea):

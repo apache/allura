@@ -122,9 +122,9 @@ class EditPost(ff.ForgeForm):
     @property
     def fields(self):
         fields = []
-        fields.append(ffw.AutoResizeTextarea(
+        fields.append(ffw.MarkdownEdit(
             name='text',
-            attrs={'style':'min-height:7em; width:97%'}))
+            attrs={'style':'height:7em; width:97%'}))
         fields.append(ew.HiddenField(name='forum', if_missing=None))
         if ew_core.widget_context.widget:
             # we are being displayed
@@ -139,7 +139,7 @@ class EditPost(ff.ForgeForm):
 
     def resources(self):
         for r in ew.TextField(name='subject').resources(): yield r
-        for r in ffw.AutoResizeTextarea(name='text').resources(): yield r
+        for r in ffw.MarkdownEdit(name='text').resources(): yield r
         yield ew.JSScript('''$(document).ready(function () {
             $("a.attachment_form_add_button").click(function(evt){
                 $(this).hide();

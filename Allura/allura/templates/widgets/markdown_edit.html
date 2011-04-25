@@ -4,7 +4,7 @@
   <a href="#" class="markdown_edit btn" style="display:none" title="Edit"><b data-icon="{{g.icons['pencil'].char}}" class="ico {{g.icons['pencil'].css}}"></b> Edit</a>
   <a href="#" class="markdown_help btn" title="Help"><b data-icon="{{g.icons['help'].char}}" class="ico {{g.icons['help'].css}}"></b> Help</a>
   <div style="clear:both"></div>
-  <textarea id="{{id or name}}" name="{{name}}" class="auto_resize">{{value or ''}}</textarea>
+  <textarea id="{{id or name}}" name="{{name}}" class="auto_resize" {{widget.j2_attrs(attrs)}}>{{value or ''}}</textarea>
   <div class="markdown_preview" style="display:none"></div>
   <div class="modal markdown_help" style="display:none">
     <b data-icon="{{g.icons['close'].char}}" class="ico {{g.icons['close'].css}} close"></b>

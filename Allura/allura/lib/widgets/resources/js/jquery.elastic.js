@@ -75,7 +75,14 @@
 
 					var twinContent = $twin.html();
 					
-					if(textareaContent+'&nbsp;' != twinContent){
+					// if the width is zero, this element was probably hidden during init - fix that and force height update
+					var update_from_width = false;
+					if($twin.width() == 0){
+						update_from_width = true;
+						$twin.width($textarea.width());
+					}
+					
+					if(textareaContent+'&nbsp;' != twinContent || update_from_width){
 					
 						// Add an extra white space so new rows are added when you are at the end of a row.
 						$twin.html(textareaContent+'&nbsp;');
