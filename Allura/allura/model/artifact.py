@@ -71,6 +71,8 @@ class Artifact(MappedClass):
     import_id = FieldProperty(str, if_missing=None)
 
     def parent_security_context(self):
+        '''ACL processing should continue at the  AppConfig object. This lets
+        AppConfigs provide a 'default' ACL for all artifacts in the tool.'''
         return self.app_config
 
     @classmethod

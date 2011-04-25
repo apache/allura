@@ -101,8 +101,8 @@ class Project(MappedClass):
         else:
             return self._perms_base
 
-
     def parent_security_context(self):
+        '''ACL processing should proceed up the project hierarchy.'''
         return self.parent_project
 
     @classmethod
@@ -461,6 +461,7 @@ class AppConfig(MappedClass):
     acl = FieldProperty(ACL())
 
     def parent_security_context(self):
+        '''ACL processing should terminate at the AppConfig'''
         return None
 
     def load(self):

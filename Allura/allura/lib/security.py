@@ -177,10 +177,32 @@ class RoleCache(object):
         return set(self.reaching_ids)
 
 def has_access(obj, permission, user=None, project=None):
+    '''Return whether the given user has the permission name on the giqven object.
+
+    - First, all the roles for a user in the given project context are computed.
+
+    - Next, for each role, the given object's ACL is examined linearly. If an ACE
+      is found which matches the permission and user, and that ACE ALLOWs access,
+      then the function returns True and access is permitted. If the ACE DENYs
+      access, then that role is removed from further consideration.
+
+    - If the obj is not a Neighborhood and the given user has then 'admin'
+      permission on the current neighborhood, then the function returns True and
+      access is allowed.
+
+    - If none of the ACEs on the object ALLOW access, and there are no more roles
+      to be considered, then the function returns False and access is denied.
+
+    - Processing continues using the remaining roles and the
+      obj.parent_security_context(). If the parent_security_context is None, then
+      the function returns False and access is denied.
+
+   The effect of this processing is that if *any* role for the user is ALLOWed
+   access via a linear traversal of the ACLs, then access is allowed. All of the
+   users roles must either be explicitly DENYed or processing terminate with no
+   matches to DENY access top the resource.
+    '''
     from allura import model as M
-    # @utils.memoize_on_request(
-    #     'has_access', obj, permission,
-    #     include_func_in_key=False)
     def predicate(obj=obj, user=user, project=project, roles=None):
         if roles is None:
             if user is None: user = c.user
