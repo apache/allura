@@ -136,8 +136,6 @@ class ForgeWikiApp(Application):
         return links
 
     def sidebar_menu(self):
-        related_pages = []
-        related_urls = []
         try:
             page = request.path_info.split(self.url)[-1].split('/')[-2]
             page = h.really_unicode(page)
@@ -146,18 +144,6 @@ class ForgeWikiApp(Application):
             page = None
         links = [SitemapEntry('Create Page', c.app.url, ui_icon=g.icons['plus'], className='add_wiki_page'),
                  SitemapEntry('')]
-        if page:
-            for ref_id in page.refs+page.backrefs:
-                ref = M.ArtifactReference.query.get(_id=ref_id)
-                if ref is None: continue
-                artifact = ref.artifact
-                if artifact is None: continue
-                if isinstance(artifact, WM.Page) and artifact.url() not in related_urls:
-                    related_urls.append(artifact.url())
-                    related_pages.append(SitemapEntry(artifact.title, artifact.url(), className='nav_child'))
-        if len(related_pages):
-            links.append(SitemapEntry('Related Pages'))
-            links = links + related_pages
         links = links + [
             SitemapEntry('Wiki Home',c.app.url),
             SitemapEntry('Browse Pages',c.app.url+'browse_pages/'),

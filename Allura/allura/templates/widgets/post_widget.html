@@ -19,6 +19,7 @@
             <b>{{value.subject or '(no subject)'}}<br/></b>
           {% endif %}
           {{g.markdown.convert(value.text)|safe}}&nbsp;
+          {{lib.related_artifacts(value)}}
           {% if value.edit_count %}
             <br><small>Last edit: {{value.last_edit_by().display_name}} {{h.ago(value.last_edit_date)}}</small>
           {% endif %}

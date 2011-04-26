@@ -126,9 +126,7 @@ class ForgeTrackerApp(Application):
         return links
 
     def sidebar_menu(self):
-        related_artifacts = []
         search_bins = []
-        related_urls = []
         milestones = []
         ticket = request.path_info.split(self.url)[-1].split('/')[0]
         for bin in self.bins:
@@ -162,16 +160,6 @@ class ForgeTrackerApp(Application):
             links.append(SitemapEntry('Moderate', discussion.url() + 'moderate', ui_icon=g.icons['pencil'],
                 small = pending_mod_count))
         if ticket:
-            for ref_id in ticket.refs+ticket.backrefs:
-                ref = M.ArtifactReference.query.get(_id=ref_id)
-                if ref is None: continue
-                artifact = ref.artifact
-                if artifact is None: continue
-                artifact = artifact.primary()
-                if artifact.url() not in related_urls:
-                    related_urls.append(artifact.url())
-                    title = '%s: %s' % (artifact.type_s, artifact.shorthand_id())
-                    related_artifacts.append(SitemapEntry(title, artifact.url(), className='nav_child'))
             if ticket.super_id:
                 links.append(SitemapEntry('Supertask'))
                 super = TM.Ticket.query.get(_id=ticket.super_id, app_config_id=c.app.config._id)
@@ -188,9 +176,6 @@ class ForgeTrackerApp(Application):
         if len(search_bins):
             links.append(SitemapEntry('Searches'))
             links = links + search_bins
-        if len(related_artifacts):
-            links.append(SitemapEntry('Related Pages'))
-            links = links + related_artifacts
         links.append(SitemapEntry('Help'))
         links.append(SitemapEntry('Ticket Help', self.config.url() + 'help', className='nav_child'))
         links.append(SitemapEntry('Markdown Syntax', self.config.url() + 'markdown_syntax', className='nav_child'))

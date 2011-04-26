@@ -2626,6 +2626,10 @@ div.attachment_thumb .file_type span {
   padding: 0;
 }
 
+.discussion-post h4, #new_post_holder h4 {
+  padding-left: 0;
+}
+
 
 #comment .row .options {
   position: relative;

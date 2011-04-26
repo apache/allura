@@ -194,11 +194,10 @@ class TestFunctionalController(TestController):
         assert 'Create Ticket' in response
         assert 'Related Pages' not in response
 
-    def test_sidebar_ticket_page(self):
+    def test_related_artifacts(self):
         summary = 'test sidebar logic for a ticket page'
         self.new_ticket(summary=summary)
         response = self.app.get('/p/test/bugs/1/')
-        assert 'Create Ticket' in response
         assert 'Related Pages' not in response
         self.app.post('/wiki/aaa/update', params={
                 'title':'aaa',
@@ -224,7 +223,7 @@ class TestFunctionalController(TestController):
         ThreadLocalORMSession.flush_all()
 
         response = self.app.get('/p/test/bugs/1/')
-        assert 'Related Pages' in response
+        assert 'Related' in response
         assert 'Wiki: aaa' in response
         assert 'Ticket: #2' in response
 

@@ -94,6 +94,18 @@ class Artifact(MappedClass):
         q = ArtifactReference.query.find(dict(references=self.index_id()))
         return [ aref._id for aref in q ]
 
+    def related_artifacts(self):
+        related_artifacts = []
+        for ref_id in self.refs+self.backrefs:
+            ref = ArtifactReference.query.get(_id=ref_id)
+            if ref is None: continue
+            artifact = ref.artifact
+            if artifact is None: continue
+            artifact = artifact.primary()
+            if artifact not in related_artifacts:
+                related_artifacts.append(artifact)
+        return related_artifacts
+
     def subscribe(self, user=None, topic=None, type='direct', n=1, unit='day'):
         from allura.model import Mailbox
         if user is None: user = c.user

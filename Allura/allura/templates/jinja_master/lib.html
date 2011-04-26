@@ -1,3 +1,15 @@
+{% macro related_artifacts(artifact) -%}
+  {% set related_artifacts = artifact.related_artifacts() %}
+  {% if related_artifacts %}
+    <h4>Related</h4>
+    <p>
+    {% for related in artifact.related_artifacts() %}
+      <a href="{{related.url()}}">{{related.type_s}}: {{related.shorthand_id()}}</a><br>
+    {% endfor %}
+    </p>
+  {% endif %}
+{%- endmacro %}
+
 {% macro gravatar(user, size, className) -%}
   {% set display_name = h.really_unicode(user.display_name) %}
   {% if user.icon_url() %}

@@ -121,6 +121,7 @@
 {% endblock %}
 
 {% block after_content %}
+  {{lib.related_artifacts(ticket)}}
   <div id="discussion_holder">
     <h2>Discussion</h2>
     {% set thread=ticket.discussion_thread %}

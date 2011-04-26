@@ -252,10 +252,10 @@ class TestRootController(TestController):
         assert 'Edit this page' not in response
         assert 'Related Pages' not in response
 
-    def test_sidebar_dynamic_page(self):
+    def test_related_links(self):
         response = self.app.get('/wiki/TEST/').follow()
         assert 'Edit TEST' in response
-        assert 'Related Pages' not in response
+        assert 'Related' not in response
         self.app.post('/wiki/TEST/update', params={
                 'title':'TEST',
                 'text':'sometext',
@@ -286,7 +286,7 @@ class TestRootController(TestController):
         ThreadLocalORMSession.close_all()
         
         response = self.app.get('/wiki/TEST/')
-        assert 'Related Pages' in response
+        assert 'Related' in response
         assert 'aaa' in response
         assert 'bbb' in response
 
