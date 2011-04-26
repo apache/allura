@@ -318,6 +318,7 @@ class ProjectAdminController(BaseController):
     @require_post()
     @validate(W.screenshot_admin)
     def add_screenshot(self, screenshot=None, caption=None, **kw):
+        require(has_project_access('update'), 'Update access required')
         if len(c.project.get_screenshots()) >= 6:
             flash('You may not have more than 6 screenshots per project.','error')
         elif screenshot is not None and screenshot != '':
@@ -333,6 +334,7 @@ class ProjectAdminController(BaseController):
     @expose()
     @require_post()
     def delete_screenshot(self, id=None, **kw):
+        require(has_project_access('update'), 'Update access required')
         if id is not None and id != '':
             M.ProjectFile.query.remove(dict(project_id=c.project._id, _id=ObjectId(id)))
             g.post_event('project_updated')
@@ -341,6 +343,7 @@ class ProjectAdminController(BaseController):
     @expose()
     @require_post()
     def edit_screenshot(self, id=None, caption=None, **kw):
+        require(has_project_access('update'), 'Update access required')
         if id is not None and id != '':
             M.ProjectFile.query.get(project_id=c.project._id, _id=ObjectId(id)).caption=caption
             g.post_event('project_updated')
