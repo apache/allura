@@ -1088,6 +1088,9 @@ class MilestoneController(BaseController):
         self.field = fld
         self.milestone = m
         self.query = '%s:%s' % (fld.name, m.name)
+        self.mongo_query = {
+            'custom_fields.%s' % fld.name: m.name }
+            
 
     @with_trailing_slash
     @h.vardec
@@ -1098,9 +1101,11 @@ class MilestoneController(BaseController):
             sort=validators.UnicodeString(if_empty=None)))
     def index(self, q=None, project=None, columns=None, page=0, query=None, sort=None, **kw):
         require(has_artifact_access('read'))
-        result = self.root.paged_query(self.query, page=page, sort=sort, columns=columns, **kw)
+        result = TM.Ticket.paged_query(
+            self.mongo_query, page=page, sort=sort, columns=columns, **kw)
         result['allow_edit'] = has_artifact_access('write')()
         d = c.app.globals.milestone_count('%s:%s' % (self.field.name, self.milestone.name))
+        result.pop('q')
         result.update(
             field=self.field,
             milestone=self.milestone,

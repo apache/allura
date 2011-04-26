@@ -1,10 +1,12 @@
-from datetime import datetime, timedelta
 import logging
 import urllib
+import json
+from datetime import datetime, timedelta
 
 import bson
+import pymongo
 from pymongo.errors import OperationFailure
-from pylons import c
+from pylons import c, g
 
 from ming import schema
 from ming.utils import LazyProperty
@@ -13,8 +15,8 @@ from ming.orm import FieldProperty, ForeignIdProperty, RelationProperty
 
 from allura.model import Artifact, VersionedArtifact, Snapshot, project_orm_session, BaseAttachment
 from allura.model import User, Feed, Thread, Notification
-from allura.lib import helpers as h
 from allura.lib import patience
+from allura.lib import security
 from allura.lib.search import search_artifact
 from allura.lib import utils
 
@@ -47,12 +49,12 @@ class Globals(MappedClass):
 
     @classmethod
     def next_ticket_num(cls):
-        g = cls.query.find_and_modify(
+        gbl = cls.query.find_and_modify(
             query=dict(app_config_id=c.app.config._id),
             update={'$inc': { 'last_ticket_num': 1}},
             new=True)
-        session(cls).expunge(g)
-        return g.last_ticket_num
+        session(cls).expunge(gbl)
+        return gbl.last_ticket_num
 
     @property
     def all_status_names(self):
@@ -74,6 +76,11 @@ class Globals(MappedClass):
     def not_closed_query(self):
         return ' && '.join(['!status:'+name for name in self.set_of_closed_status_names])
 
+    @property
+    def not_closed_mongo_query(self):
+        return dict(
+            status={'$in': self.open_status_names})
+    
     @property
     def closed_query(self):
         return ' or '.join(['status:'+name for name in self.set_of_closed_status_names])
@@ -196,7 +203,8 @@ class Ticket(VersionedArtifact):
         history_class = TicketHistory
         indexes = [
             'ticket_num',
-            'app_config_id'
+            'app_config_id',
+            ('app_config_id', 'custom_fields._milestone'),
             ]
         unique_indexes = [
             ('app_config_id', 'ticket_num'),
@@ -507,6 +515,39 @@ class Ticket(VersionedArtifact):
             milestone=self.milestone,
             status=self.status,
             custom_fields=self.custom_fields)
+
+    @classmethod
+    def paged_query(cls, query, limit=None, page=0, sort=None, columns=None, **kw):
+        """Query tickets, sorting and paginating the result."""
+        limit, page, start = g.handle_paging(limit, page, default=25)
+        count = cls.query.find(query).count()
+        q = cls.query.find(dict(query, app_config_id=c.app.config._id))
+        q = q.sort('ticket_num')
+        if sort:
+            field, direction = sort.split()
+            direction = dict(
+                asc=pymongo.ASCENDING,
+                desc=pymongo.DESCENDING)[direction]
+            q = q.sort(field, direction)
+        q = q.skip(start)
+        q = q.limit(limit)
+        tickets = [ t for t in q if security.has_artifact_access('read', t)() ]
+        sortable_custom_fields=c.app.globals.sortable_custom_fields_shown_in_search()
+        if not columns:
+            columns = [dict(name='ticket_num', sort_name='ticket_num', label='Ticket Number', active=True),
+                       dict(name='summary', sort_name='summary', label='Summary', active=True),
+                       dict(name='_milestone', sort_name='custom_fields._milestone', label='Milestone', active=True),
+                       dict(name='status', sort_name='status', label='Status', active=True),
+                       dict(name='assigned_to', sort_name='assigned_to_username', label='Owner', active=True)]
+            for field in sortable_custom_fields:
+                columns.append(
+                    dict(name=field['name'], sort_name=field['name'], label=field['label'], active=True))
+        return dict(
+            tickets=tickets,
+            sortable_custom_fields=sortable_custom_fields,
+            columns=columns,
+            count=count, q=json.dumps(query), limit=limit, page=page, sort=sort,
+            **kw)
 
 class TicketAttachment(BaseAttachment):
     thumbnail_size = (100, 100)

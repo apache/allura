@@ -1,7 +1,7 @@
 <div>
   {% if solr_error %}<p>{{solr_error}}</p>{% endif %}
   {{widget.fields['page_size'].display(page=page, count=count, limit=limit)}}
-  {% if count != 0 and query %}
+  {% if count %}
     <table class="ticket-list">
       <thead>
         <tr>
