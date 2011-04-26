@@ -423,3 +423,6 @@ class TestForum(TestController):
                 text='text')).follow()
         sidebarmenu = str(r.html.find('div',{'id':'sidebar'}))
         assert 'This will be truncated because it is too long to show in the sidebar ...' in sidebarmenu
+
+    def test_feed(self):
+        r = self.app.get('/discussion/general/feed', status=200)

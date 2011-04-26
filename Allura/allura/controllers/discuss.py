@@ -86,7 +86,6 @@ class DiscussionController(BaseController):
 
     @without_trailing_slash
     @expose()
-    @require_post()
     @validate(dict(
             since=DateTimeConverter(if_empty=None),
             until=DateTimeConverter(if_empty=None),
