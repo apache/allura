@@ -109,6 +109,6 @@ class ScreenshotAdmin(ff.AdminForm):
     def fields(self):
         fields = [
             ew.InputField(name='screenshot', field_type='file', label='New Screenshot'),
-            ew.InputField(name='caption', label='Caption')
+            ew.InputField(name='caption', field_type="text", label='Caption')
         ]
         return fields
