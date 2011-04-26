@@ -8,7 +8,7 @@
   <div class="markdown_preview" style="display:none"></div>
   <div class="modal markdown_help" style="display:none">
     <b data-icon="{{g.icons['close'].char}}" class="ico {{g.icons['close'].css}} close"></b>
-    {{lib.markdown_syntax()}}
+    {{lib.markdown_syntax(id=(id or name))}}
   </div>
   <input type="hidden" class="markdown_project" value="{{c.project.shortname}}">
   <input type="hidden" class="markdown_app" value="{{c.app.config.options.mount_point}}">

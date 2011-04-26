@@ -90,31 +90,31 @@
   {% endfor %}
 {% endmacro %}
 
-{% macro markdown_syntax() %}
+{% macro markdown_syntax(id='') %}
 <h1>Markdown Syntax Guide</h1>
 
 <p>The Allura code uses markdown syntax everywhere to allow you to create rich<br>text markup, and extends markdown in several ways to allow for quick linking<br>to other artifacts in your project. </p>
 <p>Markdown was created to be easy to read, easy to write, and still readable in plain text format.</p>
 
 <ul>
-    <li><a href="#md_ex_links">Links</a></li>
-    <li><a href="#md_ex_reflinks">Reference Links</a></li>
-    <li><a href="#md_ex_artlinks">Artifact Links</a></li>
-    <li><a href="#md_ex_text">Text</a></li>
-    <li><a href="#md_ex_bq">Blockquotes</a></li>
-    <li><a href="#md_ex_pre">Preformatted Text</a></li>
-    <li><a href="#md_ex_lists">Lists</a></li>
-    <li><a href="#md_ex_headers">Headers</a></li>
-    <li><a href="#md_ex_hr">Horizontal Rules</a></li>
-    <li><a href="#md_ex_img">Images</a></li>
-    <li><a href="#md_ex_escapes">Escapes</a></li>
-    <li><a href="#md_ex_moreheaders">More Headers</a></li>
-    <li><a href="#md_ex_code">Code Highlighting</a></li>
-    <li><a href="#md_ex_includes">Includes</a></li>
-    <li><a href="#md_ex_thanks">Thanks</a></li>
+    <li><a href="#md_ex_links{{id}}">Links</a></li>
+    <li><a href="#md_ex_reflinks{{id}}">Reference Links</a></li>
+    <li><a href="#md_ex_artlinks{{id}}">Artifact Links</a></li>
+    <li><a href="#md_ex_text{{id}}">Text</a></li>
+    <li><a href="#md_ex_bq{{id}}">Blockquotes</a></li>
+    <li><a href="#md_ex_pre{{id}}">Preformatted Text</a></li>
+    <li><a href="#md_ex_lists{{id}}">Lists</a></li>
+    <li><a href="#md_ex_headers{{id}}">Headers</a></li>
+    <li><a href="#md_ex_hr{{id}}">Horizontal Rules</a></li>
+    <li><a href="#md_ex_img{{id}}">Images</a></li>
+    <li><a href="#md_ex_escapes{{id}}">Escapes</a></li>
+    <li><a href="#md_ex_moreheaders{{id}}">More Headers</a></li>
+    <li><a href="#md_ex_code{{id}}">Code Highlighting</a></li>
+    <li><a href="#md_ex_includes{{id}}">Includes</a></li>
+    <li><a href="#md_ex_thanks{{id}}">Thanks</a></li>
 </ul>
 
-<h2 id="md_ex_links">Links</h2>
+<h2 id="md_ex_links{{id}}">Links</h2>
 
 <p>Most URLs will automatically be turned into links.  To be explicit, just write it like this:</p>
 
@@ -128,7 +128,7 @@ To use text for the link, write it [like this](http://someurl).
 You can add a *title* (which shows up under the cursor),
 [like this](http://someurl "this title shows up when you hover").
 </pre></div>
-<h2 id="md_ex_reflinks">Reference Links</h2>
+<h2 id="md_ex_reflinks{{id}}">Reference Links</h2>
 <div class="codehilite"><pre>You can also put the [link URL][1] below the current paragraph
 like [this][2].
 
@@ -144,7 +144,7 @@ Or you can use a [shortcut][] reference, which links the text
    [shortcut]: http://goes/with/the/link/name/text
 </pre></div>
 
-<h2 id="md_ex_artlinks">Artifact Links</h2>
+<h2 id="md_ex_artlinks{{id}}">Artifact Links</h2>
 <p>Any existing forge resource can be linked with surrounding square brackets ie [MyPage] or [#123].</p>
 
 <p>Links to resources in other tools can be explicitly referenced by adding a tool identifier prefix to the link.
@@ -160,7 +160,7 @@ You can even link to tickets in a subproject with `[subproject.tickets:#123]`.</
 [tickets:#123]
 </pre></div>
 
-<h2 id="md_ex_text">Text</h2>
+<h2 id="md_ex_text{{id}}">Text</h2>
 <div class="codehilite"><pre>Use * or _ to emphasize things:
 
 *this is in italic*  and _so is this_
@@ -177,7 +177,7 @@ will all end up
 in the same paragraph.
 </pre></div>
 
-<h2 id="md_ex_bq">Blockquotes</h2>
+<h2 id="md_ex_bq{{id}}">Blockquotes</h2>
 <div class="codehilite"><pre>&gt; Use the &gt; character in front of a line, *just like in email*.
 &gt; Use it if you're quoting a person, a song or whatever.
 
@@ -189,7 +189,7 @@ part of the blockquote, even without the &gt; character in front.
 To end the blockquote, just put a blank line before the following
 paragraph.
 </pre></div>
-<h2 id="md_ex_pre">Preformatted Text</h2>
+<h2 id="md_ex_pre{{id}}">Preformatted Text</h2>
 <div class="codehilite"><pre>If you want some text to show up exactly as you write it, without
 Markdown doing anything to it, just indent every line by at least 4
 spaces (or 1 tab).
@@ -205,7 +205,7 @@ inside a normal pargraph.  `This won't be *italic* or **bold**
 at all.`
 
 </pre></div>
-<h2 id="md_ex_lists">Lists</h2>
+<h2 id="md_ex_lists{{id}}">Lists</h2>
 <div class="codehilite"><pre>* an asterisk starts an unordered list
 * and this is another item in the list
 + or you can also use the + character
@@ -221,7 +221,7 @@ To start an ordered list, write this:
         1. keep indenting for more sub lists
     * here i'm back to the second level
 </pre></div>
-<h2 id="md_ex_headers">Headers</h2>
+<h2 id="md_ex_headers{{id}}">Headers</h2>
 <div class="codehilite"><pre>This is a huge header
 ==================
 
@@ -231,7 +231,7 @@ this is a smaller header
 Just put 1 or more dashes or equals signs (--- or ===) below the
 title.
 </pre></div>
-<h2 id="md_ex_hr">Horizontal Rule</h2>
+<h2 id="md_ex_hr{{id}}">Horizontal Rule</h2>
 <div class="codehilite"><pre>just put three or more *'s or -'s on a line:
 
 ----------------
@@ -251,7 +251,7 @@ you will get a header
 </pre></div>
 
 
-<h2 id="md_ex_img">Images</h2>
+<h2 id="md_ex_img{{id}}">Images</h2>
 <p>To include an image, just put a "!" in front of a text link:</p>
 <div class="codehilite"><pre>
 ![alternate text](http://someurl/image.gif)
@@ -267,7 +267,7 @@ image.</p>
 [[img src=attached-image.jpg alt=foobar width=20%]]
 </pre></div>
 
-<h2 id="md_ex_escapes">Escapes</h2>
+<h2 id="md_ex_escapes{{id}}">Escapes</h2>
 <p>What if you want to just show asterisks, not italics?</p>
 <div class="codehilite"><pre>* this shows up in italics: *a happy day*
 * this shows the asterisks: \*a happy day\*
@@ -285,7 +285,7 @@ you should escape &amp;lt;unknown&amp;gt; tags
 <p>Individual ampersands (&amp;) and less-than signs (&lt;) are fine, they will be shown as expected.</p>
 
 
-<h2 id="md_ex_moreheaders">More Headers</h2>
+<h2 id="md_ex_moreheaders{{id}}">More Headers</h2>
 <div class="codehilite"><pre>More ways of doing headers:
 
 # this is a huge header #
@@ -297,7 +297,7 @@ you should escape &amp;lt;unknown&amp;gt; tags
 </pre></div>
 <p>You can use up to 6 <code>#</code> characters at the beginning of the line.</p>
 
-<h2 id="md_ex_code">Code Highlighting</h2>
+<h2 id="md_ex_code{{id}}">Code Highlighting</h2>
 <p>The Code highlighting used in the newforge is based on (http://www.freewisdom.org/projects/python-markdown/CodeHilite). It  follows the same syntax as regular Markdown code blocks, except that there are two ways to tell the highlighter what language to use for the code block.</p>
 
 <p>If the first line of the codeblock contains a shebang, the language is derived from that and line numbers are used.</p>
@@ -322,13 +322,13 @@ you should escape &amp;lt;unknown&amp;gt; tags
 ~~~~~~
 </pre></div>
 
-<h2 id="md_ex_includes">Includes</h2>
+<h2 id="md_ex_includes{{id}}">Includes</h2>
 <p>You can embed another wiki page directly:</p>
 <div class="codehilite"><pre>
 [[include ref=SamplePage]]
 </pre></div>
 
-<h2 id="md_ex_thanks">Thanks</h2>
+<h2 id="md_ex_thanks{{id}}">Thanks</h2>
 <p>Thanks to John Gruber and Aaron Swartz for creating Markdown.</p>
 <p>
 This page is based on some examples from Greg Schueler, <a href="mailto:greg@vario.us">greg@vario.us</a>
