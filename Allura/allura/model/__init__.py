@@ -12,7 +12,7 @@ from .openid_model import OpenIdStore, OpenIdAssociation, OpenIdNonce
 from .filesystem import File
 from .notification import Notification, Mailbox
 from .repository import Repository, RepositoryImplementation, RepoObject, Commit, Tree, Blob
-from .repository import LogCache, LastCommitFor, MergeRequest
+from .repository import LogCache, LastCommitFor, MergeRequest, GitLikeTree
 from .stats import Stats, CPA
 from .oauth import OAuthToken, OAuthConsumerToken, OAuthRequestToken, OAuthAccessToken
 from .monq_model import MonQTask

@@ -4,6 +4,7 @@ from itertools import count
 from datetime import datetime
 
 import mock
+from nose.tools import assert_equal
 from pylons import c
 import tg
 import ming
@@ -60,7 +61,7 @@ class _TestWithRepo(_Test):
             ci.tree_id = 't_' + object_id
             ci.tree = self._make_tree(ci.tree_id, **tree_parts)
         return ci, isnew
-        
+
 class _TestWithRepoAndCommit(_TestWithRepo):
     def setUp(self):
         super(_TestWithRepoAndCommit, self).setUp()
@@ -249,7 +250,7 @@ class TestCommit(_TestWithRepo):
     def setUp(self):
         super(TestCommit, self).setUp()
         self.ci, isnew = self._make_commit(
-            'foo', 
+            'foo',
             a=dict(
                 a=dict(
                     a='',
@@ -279,7 +280,7 @@ class TestCommit(_TestWithRepo):
         b = self.ci.get_path('a/a/a')
         assert isinstance(b, M.Blob)
         assert self.ci.get_path('a/a') is None
-        
+
     def test_log(self):
         commits = self.ci.log(0, 100)
         assert commits[0].object_id == 'foo'
@@ -306,7 +307,7 @@ class TestCommit(_TestWithRepo):
                 == ci.diffs.added
                 == [])
         ci, isnew = self._make_commit(
-            'baz', 
+            'baz',
             b=dict(
                 a=dict(
                     a='',
@@ -320,7 +321,33 @@ class TestCommit(_TestWithRepo):
         assert (ci.diffs.copied
                 == ci.diffs.changed
                 == [])
-    
+
     def test_context(self):
         self.ci.context()
 
+class TestGitLikeTree(object):
+
+    def test_set_blob(self):
+        tree = M.GitLikeTree()
+        tree.set_blob('/dir/dir2/file', 'file-oid')
+
+        assert_equal(tree.blobs, {})
+        assert_equal(tree.get_tree('dir').blobs, {})
+        assert_equal(tree.get_tree('dir').get_tree('dir2').blobs, {'file': 'file-oid'})
+
+    def test_hex(self):
+        tree = M.GitLikeTree()
+        tree.set_blob('/dir/dir2/file', 'file-oid')
+        hex = tree.hex()
+
+        # check the reprs. In case hex (below) fails, this'll be useful
+        assert_equal(repr(tree.get_tree('dir').get_tree('dir2')), 'b file-oid file')
+        assert_equal(repr(tree), 't 96af1772ecce1e6044e6925e595d9373ffcd2615 dir')
+        # the hex() value shouldn't change, it's an important key
+        assert_equal(hex, '4abba29a43411b9b7cecc1a74f0b27920554350d')
+
+        # another one should be the same
+        tree2 = M.GitLikeTree()
+        tree2.set_blob('/dir/dir2/file', 'file-oid')
+        hex2 = tree2.hex()
+        assert_equal(hex, hex2)

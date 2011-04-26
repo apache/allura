@@ -774,6 +774,11 @@ class Commit(RepoObject):
         return self.repo.commit_context(self)
 
 class Tree(RepoObject):
+    '''
+    A representation of files & directories.  E.g. what is present at a single commit
+
+    :var object_ids: dict(object_id: name)  Set by _refresh_tree in the scm implementation
+    '''
     class __mongometa__:
         polymorphic_identity='tree'
     type_s = 'Tree'
@@ -1076,35 +1081,17 @@ class DiffObject(object):
             return '<change %s>' % (self.a_path)
 
 class GitLikeTree(object):
-    '''A tree node similar to that which is used in git'''
+    '''
+    A tree node similar to that which is used in git
+
+    :var dict blobs: files at this level of the tree.  name => oid
+    :var dict trees: subtrees (child dirs).  name => GitLikeTree
+    '''
 
     def __init__(self):
         self.blobs = {}  # blobs[name] = oid
         self.trees = defaultdict(GitLikeTree) #trees[name] = GitLikeTree()
         self._hex = None
-
-    @classmethod
-    def from_tree(cls, tree):
-        self = GitLikeTree()
-        for x in tree.object_ids:
-            obj = tree[x.name]
-            if isinstance(obj, Tree):
-                self.trees[x.name] = GitLikeTree.from_tree(obj)
-            else:
-                self.blobs[x.name] = x.object_id
-        return self
-
-    def set_tree(self, path, tree, replace=False):
-        if path.startswith('/'): path = path[1:]
-        path_parts = path.split('/')
-        dirpath, last = path_parts[:-1], path_parts[-1]
-        cur = self
-        for part in dirpath:
-            cur = cur.trees[part]
-        if replace:
-            cur.trees[last] = tree
-        else:
-            cur.trees.setdefault(last, tree)
 
     def get_tree(self, path):
         if path.startswith('/'): path = path[1:]
@@ -1132,31 +1119,33 @@ class GitLikeTree(object):
             cur = cur.trees[part]
         cur.blobs[filename] = oid
 
-    def del_blob(self, path):
-        if path.startswith('/'): path = path[1:]
-        path_parts = path.split('/')
-        dirpath, filename = path_parts[:-1], path_parts[-1]
-        cur = self
-        for part in dirpath:
-            cur = cur.trees[part]
-        if filename in cur.trees:
-            cur.trees.pop(h.really_unicode(filename).encode('utf-8'), None)
-        else:
-            cur.blobs.pop(h.really_unicode(filename).encode('utf-8'), None)
-
     def hex(self):
         '''Compute a recursive sha1 hash on the tree'''
+        # dependent on __repr__ below
         if self._hex is None:
             sha_obj = sha1('tree\n' + repr(self))
             self._hex = sha_obj.hexdigest()
         return self._hex
 
-    def __unicode__(self):
+    def __repr__(self):
+        # this can't change, is used in hex() above
         lines = ['t %s %s' % (t.hex(), name)
                   for name, t in self.trees.iteritems() ]
         lines += ['b %s %s' % (oid, name)
                   for name, oid in self.blobs.iteritems() ]
-        output = h.really_unicode('\n'.join(sorted(lines))).encode('utf-8')
+        return h.really_unicode('\n'.join(sorted(lines))).encode('utf-8')
+
+    def __unicode__(self):
+        return self.pretty_tree(recurse=False)
+
+    def pretty_tree(self, indent=0, recurse=True, show_id=True):
+        '''For debugging, show a nice tree representation'''
+        lines = [' '*indent + 't %s %s' %
+                 (name, '\n'+t.unicode_full_tree(indent+2, show_id=show_id) if recurse else t.hex())
+                  for name, t in sorted(self.trees.iteritems()) ]
+        lines += [' '*indent + 'b %s %s' % (name, oid if show_id else '')
+                  for name, oid in sorted(self.blobs.iteritems()) ]
+        output = h.really_unicode('\n'.join(lines)).encode('utf-8')
         return output
 
 def topological_sort(graph):
