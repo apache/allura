@@ -67,8 +67,15 @@ b.ico.ico-feed { background-position: -16px -176px; }
   background-repeat: no-repeat;
 }
 
+/* TODO: Move to forge-classic per PT#53 */
 .ui-icon-tool-Downloads {
   background-image: url("../images/downloads_24.png");
+  background-repeat: no-repeat;
+}
+
+/* TODO: Move to forge-classic per PT#53 */
+.ui-icon-tool-Summary {
+  background-image: url("../images/blog_24.png");
   background-repeat: no-repeat;
 }
 
