@@ -240,7 +240,14 @@ class Artifact(MappedClass):
         '''Return the discussion thread for this artifact (possibly made more
         specific by the message_data)'''
         from .discuss import Thread
-        return Thread.query.get(ref_id=self.index_id())
+        t = Thread.query.get(ref_id=self.index_id())
+        if t is None:
+            idx = self.index()
+            t = Thread(
+                discussion_id=self.app_config.discussion_id,
+                ref_id=idx['id'],
+                subject='%s discussion' % idx['title_s'])
+        return t
 
     @LazyProperty
     def discussion_thread(self):
