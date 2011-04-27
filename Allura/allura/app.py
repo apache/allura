@@ -344,7 +344,7 @@ class DefaultAdminController(BaseController):
                 group_ids = [ group_ids ]
             role_ids = map(ObjectId, group_ids + new_group_ids)
             self.app.config.acl += [
-                model.ACE.allow(r._id, perm) for r in role_ids]
+                model.ACE.allow(r, perm) for r in role_ids]
         redirect(request.referer)
 
 @event_handler('project_updated')
