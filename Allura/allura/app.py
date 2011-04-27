@@ -1,5 +1,4 @@
 import logging
-from collections import defaultdict
 from urllib import basejoin
 from cStringIO import StringIO
 
@@ -289,8 +288,8 @@ class DefaultAdminController(BaseController):
     def permissions(self):
         from ext.admin.widgets import PermissionCard
         c.card = PermissionCard()
-        permissions = defaultdict(list)
-        for ace in c.app.config.acl:
+        permissions = dict((p, []) for p in self.app.permissions)
+        for ace in self.app.config.acl:
             if ace.access == model.ACE.ALLOW:
                 permissions[ace.permission].append(ace.role_id)
         return dict(

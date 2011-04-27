@@ -176,7 +176,6 @@ class ForgeWikiApp(Application):
             M.ACE.allow(role_auth, 'edit'),
             M.ACE.allow(role_developer, 'delete'),
             M.ACE.allow(role_developer, 'moderate'),
-            M.ACE.allow(role_developer, 'save_searches'),
             M.ACE.allow(role_admin, 'configure'),
             M.ACE.allow(role_admin, 'admin'),
             ]

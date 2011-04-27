@@ -1,4 +1,5 @@
 import os, allura
+import pkg_resources
 import Image, StringIO
 
 from nose.tools import assert_equals, assert_true
@@ -108,6 +109,27 @@ class TestProjectAdmin(TestController):
                 'tool-0.mount_point':'test-tool',
                 'new.ep_name':'',
                 })
+
+    def test_tool_permissions(self):
+        self.app.get('/admin/')
+        for i, ep in enumerate(pkg_resources.iter_entry_points('allura')):
+            app = ep.load()
+            if not app.installable: continue
+            tool = ep.name
+            self.app.post('/admin/update_mounts', params={
+                    'new.install':'install',
+                    'new.ep_name':tool,
+                    'new.ordinal':i,
+                    'new.mount_point':'test-%d' % i,
+                    'new.mount_label':tool })
+            r = self.app.get('/admin/test-%d/permissions' % i)
+            cards = [
+                tag for tag in r.html.findAll('input')
+                if (
+                    tag.get('type') == 'hidden' and
+                    tag['name'].startswith('card-') and
+                    tag['name'].endswith('.id')) ]
+            assert len(cards) == len(app.permissions), cards
 
     def test_tool_list(self):
         r = self.app.get('/admin/tools')

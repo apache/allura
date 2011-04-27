@@ -182,7 +182,6 @@ class ForgeDiscussionApp(Application):
             M.ACE.allow(role_anon, 'read'),
             M.ACE.allow(role_anon, 'post'),
             M.ACE.allow(role_auth, 'unmoderated_post'),
-            M.ACE.allow(role_developer, 'write'),
             M.ACE.allow(role_developer, 'moderate'),
             M.ACE.allow(role_admin, 'configure'),
             M.ACE.allow(role_admin, 'admin'),
