@@ -25,6 +25,7 @@ from allura.controllers import attachments as ac
 from allura.lib import widgets as w
 from allura.lib.widgets import form_fields as ffw
 from allura.lib.widgets.subscriptions import SubscribeForm
+from allura.lib.widgets.search import SearchResults
 
 # Local imports
 from forgewiki import model as WM
@@ -46,6 +47,7 @@ class W:
     page_subscribe_form = SubscribeForm(thing='page')
     page_list = ffw.PageList()
     page_size = ffw.PageSize()
+    search_results = SearchResults()
 
 
 class ForgeWikiApp(Application):
@@ -237,23 +239,26 @@ class RootController(BaseController):
     @validate(dict(q=validators.UnicodeString(if_empty=None),
                    history=validators.StringBool(if_empty=False),
                    project=validators.StringBool(if_empty=False)))
-    def search(self, q=None, history=None, project=None, **kw):
+    def search(self, q=None, history=None, project=None, limit=None, page=0, **kw):
         'local wiki search'
         if project:
             redirect(c.project.url() + 'search?' + urlencode(dict(q=q, history=history)))
         results = []
         count=0
+        limit, page, start = g.handle_paging(limit, page, default=25)
         if not q:
             q = ''
         else:
             results = search(
-                q,
+                q, rows=limit, start=start,
                 fq=[
                     'is_history_b:%s' % history,
                     'project_id_s:%s' % c.project._id,
                     'mount_point_s:%s'% c.app.config.options.mount_point ])
             if results: count=results.hits
-        return dict(q=q, history=history, results=results or [], count=count)
+        c.search_results = W.search_results
+        return dict(q=q, history=history, results=results or [],
+                    count=count, limit=limit, page=page)
 
     @with_trailing_slash
     @expose('jinja:forgewiki:templates/wiki/browse.html')

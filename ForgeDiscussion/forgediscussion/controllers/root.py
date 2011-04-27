@@ -24,6 +24,7 @@ from forgediscussion import import_support
 from forgediscussion import model
 from forgediscussion import widgets as FW
 from allura.lib.widgets import discuss as DW
+from allura.lib.widgets.search import SearchResults
 
 from forgediscussion.widgets.admin import AddForumShort
 
@@ -36,6 +37,7 @@ class RootController(BaseController):
         new_topic=DW.NewTopicPost(submit_text='Save')
         announcements_table=FW.AnnouncementsTable()
         add_forum=AddForumShort()
+        search_results = SearchResults()
 
     def _check_security(self):
         require_access(c.app, 'read')
@@ -94,24 +96,29 @@ class RootController(BaseController):
     @expose('jinja:forgediscussion:templates/discussionforums/search.html')
     @validate(dict(q=validators.UnicodeString(if_empty=None),
                    history=validators.StringBool(if_empty=False),
-                   project=validators.StringBool(if_empty=False)))
-    def search(self, q=None, history=False, project=False, **kw):
+                   project=validators.StringBool(if_empty=False),
+                   limit=validators.Int(if_empty=None),
+                   page=validators.Int(if_empty=0)))
+    def search(self, q=None, history=False, project=False, limit=None, page=0, **kw):
         'local tool search'
         if project:
             redirect(c.project.url() + 'search?' + urlencode(dict(q=q, history=history)))
         results = []
         count=0
+        limit, page, start = g.handle_paging(limit, page, default=25)
         if not q:
             q = ''
         else:
             results = search(
-                q,
+                q, rows=limit, start=start,
                 fq=[
                     'is_history_b:%s' % history,
                     'project_id_s:%s' % c.project._id,
                     'mount_point_s:%s'% c.app.config.options.mount_point ])
             if results: count=results.hits
-        return dict(q=q, history=history, results=results or [], count=count)
+        c.search_results = self.W.search_results
+        return dict(q=q, history=history, results=results or [],
+                    count=count, limit=limit, page=page)
 
     @expose('jinja:allura:templates/markdown_syntax.html')
     def markdown_syntax(self):

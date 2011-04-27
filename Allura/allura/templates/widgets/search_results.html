@@ -1,0 +1,29 @@
+<form method="GET" action=".">
+  <div class="grid-19">
+    <input type="text" name="q" value="{{q}}" class="defaultText" title="Search App"/>
+  </div>
+  <div class="grid-19">
+    <input type="submit" value="Search App">
+    <input type="submit" name="project" value="Search Entire Project">
+  </div>
+  <div class="grid-19">
+    Search history? <input type="checkbox" name="history"{% if history %} checked="checked"{% endif %}/>
+  </div>
+</form>
+<div style="clear:both">&nbsp;</div>
+<div class="grid-19">
+  {{widget.fields['page_list'].display(limit=limit, page=page, count=count)}}
+</div>
+{% for doc in results %}
+  <div class="grid-19">
+    <a href="{{doc['url_s']}}">{{doc.title_s}}</a><br>
+    {% if doc.get('snippet') %}
+      <p>{{doc.snippet}}</p>
+    {% endif %}
+  </div>
+  <hr>
+{% endfor %}
+<div class="grid-19" style="clear:both">
+  {{widget.fields['page_list'].display(limit=limit, page=page, count=count)}}
+  {{widget.fields['page_size'].display(limit=limit, count=count)}}
+</div>
