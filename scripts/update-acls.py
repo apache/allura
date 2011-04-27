@@ -2,6 +2,7 @@ import sys
 import logging
 from pprint import pformat
 
+from pylons import c
 from ming.orm import ThreadLocalORMSession
 
 from allura import model as M
@@ -17,6 +18,7 @@ def main():
         TEST = True
         assert len(sys.argv) == 2
         assert sys.argv[1] == 'test'
+    c.project = M.Project.query.get()
     # Update project acls
     log.info('====================================')
     log.info('Update project ACLs')
@@ -60,6 +62,7 @@ def update_project_acl(project_doc):
     '''Convert the old dict-style ACL to a list of ALLOW ACEs. Also move the
     security,tool,delete perms to 'admin'
     '''
+    project_role = M.project_doc_session.db.project_role
     if not isinstance(project_doc['acl'], dict):
         log.warning('Project %s is already updated', project_doc['shortname'])
         return
@@ -74,6 +77,7 @@ def update_project_acl(project_doc):
     for perm, role_ids in sorted(project_doc['acl'].iteritems()):
         perm = perm_map[perm]
         for rid in role_ids:
+            if project_role.find(dict(_id=rid)).count() == 0: continue
             _grant(new_acl, perm, rid)
     if TEST:
         log.info('--- update %s\n%s\n%s\n---',
@@ -145,7 +149,12 @@ def _format_ace(ace):
 
 def _format_role(rid):
     role = M.ProjectRole.query.get(_id=rid)
-    return role.name or role.user.username
+    if role:
+        if role.name:
+            return role.name
+        if role.user:
+            return role.user.username
+    return '--invalid--'
 
 def _format_acd(acd):
     return dict(
