@@ -11,11 +11,6 @@ import pysolr
 from . import helpers as h
 from .markdown_extensions import ForgeExtension
 
-# from allura.tasks.search import AddArtifacts, DelArtifacts
-
-# re_SHORTLINK = re.compile(ForgeExtension.core_artifact_link)
-re_SOLR_ERROR = re.compile(r'<pre>(org.apache.lucene[^:]+: )?(?P<text>[^<]+)</pre>')
-
 log = getLogger(__name__)
 
 def try_solr(func):
@@ -63,13 +58,7 @@ def search_artifact(atype, q, history=False, rows=10, **kw):
     try:
         return g.solr.search(q, fq=fq, rows=rows, **kw)
     except pysolr.SolrError, e:
-        log.info("Solr error: %s", e)
-        m = re_SOLR_ERROR.search(e.message)
-        if m:
-            text = m.group('text')
-        else:
-            text = "syntax error?"
-        raise ValueError(text)
+        raise ValueError('Error running search query: %s' % e.message)
 
 def find_shortlinks(text):
     md = markdown.Markdown(
@@ -78,4 +67,3 @@ def find_shortlinks(text):
     md.convert(text)
     link_index = md.postprocessors['forge'].parent.alinks
     return [ link for link in link_index.itervalues() if link is not None]
-
