@@ -5,6 +5,11 @@
 {% block header %}ForgeChat Search{% endblock %}
 
 {% block content %}
+  <p>
+    {{ c.project.name }} / {{c.app.config.options.mount_label }} is
+    hosted on FreeNode IRC channel
+    <a href="http://webchat.freenode.net/?channels=allura">#allura</a>
+  </p>
   <form method="GET" action="search" class="grid-19">
     <input type="text" name="q" value="{{q}}"/><br/>
     Search history? <input type="checkbox" name="history" {% if history %}checked="checked"{% endif %}/><br/>

@@ -5,6 +5,11 @@
 {% block header %}{{c.project.name}} / {{c.app.config.options.mount_label}}{% endblock %}
 
 {% block content %}
+  <p>
+    {{ c.project.name }} / {{c.app.config.options.mount_label }} is
+    hosted on FreeNode IRC channel
+    <a href="http://webchat.freenode.net/?channels=allura">#allura</a>
+  </p>
   <h2>Log for {{day.strftime('%Y-%m-%d')}}</h2>
   <div class="grid-19">
     <a href="{{prev}}">Earlier</a>...

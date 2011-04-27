@@ -46,6 +46,7 @@ class ForgeChatApp(Application):
 
     def __init__(self, project, config):
         Application.__init__(self, project, config)
+        self.channel = CM.ChatChannel.query.get(app_config_id=config._id)
         self.root = RootController()
         self.admin = AdminController(self)
 
