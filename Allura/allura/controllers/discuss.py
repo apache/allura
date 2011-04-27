@@ -296,6 +296,7 @@ class PostController(BaseController):
                     thread=self.post.thread,
                     reply_subject=self.post.reply_subject,
                     attachments=self.post.attachments,
+                    related_artifacts=self.post.related_artifacts
                     )
             else:
                 post=self.post
