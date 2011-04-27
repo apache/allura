@@ -291,7 +291,11 @@ class DefaultAdminController(BaseController):
         permissions = dict((p, []) for p in self.app.permissions)
         for ace in self.app.config.acl:
             if ace.access == model.ACE.ALLOW:
-                permissions[ace.permission].append(ace.role_id)
+                try:
+                    permissions[ace.permission].append(ace.role_id)
+                except KeyError:
+                    # old, unknown permission
+                    pass
         return dict(
             app=self.app,
             allow_config=has_access(c.project, 'admin')(),
