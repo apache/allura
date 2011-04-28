@@ -19,6 +19,8 @@ def add_artifacts(ref_ids, update_solr=True, update_refs=True):
         for ref_id in ref_ids:
             try:
                 ref = M.ArtifactReference.query.get(_id=ref_id)
+                if ref is None:
+                    continue
                 artifact = ref.artifact
                 s = solarize(artifact)
                 if s is None:
