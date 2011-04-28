@@ -985,6 +985,7 @@ class TrackerAdminController(DefaultAdminController):
     @require_post()
     @h.vardec
     def set_custom_fields(self, **post_data):
+        import pdb; pdb.set_trace()
         self.app.globals.open_status_names=post_data['open_status_names']
         self.app.globals.closed_status_names=post_data['closed_status_names']
         custom_fields = post_data.get('custom_fields', [])
