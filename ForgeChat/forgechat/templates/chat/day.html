@@ -1,15 +1,12 @@
 {% extends g.theme.master %}
+{% import "forgechat:templates/chat/chat_lib.html" as clib %}
 
 {% block title %}{{c.project.name}} / {{c.app.config.options.mount_label}}{% endblock %}
 
 {% block header %}{{c.project.name}} / {{c.app.config.options.mount_label}}{% endblock %}
 
 {% block content %}
-  <p>
-    {{ c.project.name }} / {{c.app.config.options.mount_label }} is
-    hosted on FreeNode IRC channel
-    <a href="http://webchat.freenode.net/?channels={{c.app.channel.channel}}">#{{c.app.channel.channel}}</a>
-  </p>
+  {{ clib.checkout_info(c.app) }}
   <h2>Log for {{day.strftime('%Y-%m-%d')}}</h2>
   <div class="grid-19">
     <a href="{{prev}}">Earlier</a>...

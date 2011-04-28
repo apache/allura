@@ -1,0 +1,13 @@
+{% macro checkout_info(app) %}
+  {% if app.channel.channel %}
+  <p>
+    {{ app.project.name }} / {{app.config.options.mount_label }} is
+    hosted on FreeNode IRC channel
+    <a href="http://webchat.freenode.net/?channels={{app.channel.channel}}">#{{app.channel.channel}}</a>
+  </p>
+  {% else %}
+  <p>
+    No channel has been set for this chat tool. 
+  </p>
+  {% endif %}
+{% endmacro %}
