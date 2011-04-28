@@ -8,7 +8,7 @@
   <p>
     {{ c.project.name }} / {{c.app.config.options.mount_label }} is
     hosted on FreeNode IRC channel
-    <a href="http://webchat.freenode.net/?channels=allura">#allura</a>
+    <a href="http://webchat.freenode.net/?channels={{c.app.channel.channel}}">#{{c.app.channel.channel}}</a>
   </p>
   <h2>Log for {{day.strftime('%Y-%m-%d')}}</h2>
   <div class="grid-19">
