@@ -84,6 +84,10 @@ def update_project_acl(project_doc):
 
 def update_neighborhood_acl(neighborhood_doc, init_doc):
     '''Convert nbhd admins users to --init-- project admins'''
+    if 'acl' not in neighborhood_doc:
+        log.warning('Neighborhood %s is already updated' % neighborhood_doc['name'])
+        return
+
     if TEST: log.info('Update nbhd %s', neighborhood_doc['name'])
     if 'acl' not in neighborhood_doc:
         log.warning('Neighborhood %s already updated', neighborhood_doc['name'])
@@ -112,6 +116,10 @@ def update_neighborhood_acl(neighborhood_doc, init_doc):
 
 def simple_acl_update(doc):
     '''Update dict-style to list-style ACL'''
+    if not isinstance(doc['acl'], dict):
+        log.warning('Already upgraded %s' % doc)
+        return
+
     new_acl = []
     for perm, role_ids in sorted(doc['acl'].iteritems()):
         for rid in role_ids:
