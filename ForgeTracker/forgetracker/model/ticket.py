@@ -216,7 +216,7 @@ class Ticket(VersionedArtifact):
 
     super_id = FieldProperty(schema.ObjectId, if_missing=None)
     sub_ids = FieldProperty([schema.ObjectId], if_missing=None)
-    ticket_num = FieldProperty(int)
+    ticket_num = FieldProperty(int, required=True)
     summary = FieldProperty(str)
     description = FieldProperty(str, if_missing='')
     reported_by_id = ForeignIdProperty(User, if_missing=lambda:c.user._id)
