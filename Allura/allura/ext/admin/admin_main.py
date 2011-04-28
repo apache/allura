@@ -4,10 +4,12 @@ from pprint import pformat
 from collections import defaultdict
 import Image
 from bson import ObjectId
+from datetime import datetime
 
 import pkg_resources
 from pylons import c, g, request
-from tg import expose, redirect, flash, validate
+from paste.deploy.converters import asbool
+from tg import expose, redirect, flash, validate, config
 from tg.decorators import with_trailing_slash, without_trailing_slash
 from webob import exc
 from bson import ObjectId
@@ -121,7 +123,7 @@ class AdminApp(Application):
         if len(links):
             links.append(SitemapEntry('Project'))
         links += [
-            SitemapEntry('Summary', admin_url+'overview', className='nav_child'),
+            SitemapEntry('Metadata', admin_url+'overview', className='nav_child'),
             SitemapEntry('Homepage', admin_url+'homepage', className='nav_child'),
             SitemapEntry('Screenshots', admin_url+'screenshots', className='nav_child')
             ]
@@ -168,7 +170,8 @@ class ProjectAdminController(BaseController):
         c.markdown_editor = W.markdown_editor
         c.label_edit = W.label_edit
         categories = M.ProjectCategory.query.find(dict(parent_id=None)).sort('label').all()
-        return dict(categories=categories)
+        show_export_control = asbool(config.get('show_export_control', False))
+        return dict(categories=categories,show_export_control=show_export_control)
 
     @without_trailing_slash
     @expose('jinja:allura.ext.admin:templates/project_homepage.html')
@@ -254,22 +257,32 @@ class ProjectAdminController(BaseController):
                short_description=None,
                icon=None,
                category=None,
+               external_homepage='',
+               support_page='',
+               support_page_url='',
+               removal='',
+               moved_to_url='',
+               export_controlled=False,
                **kw):
         require_access(c.project, 'update')
 
+        if removal != c.project.removal:
+            h.log_action(log, 'change project removal status').info('')
+            c.project.removal = removal
+            c.project.removal_changed_date = datetime.utcnow()
         if 'delete_icon' in kw:
             M.ProjectFile.query.remove(dict(project_id=c.project._id, category='icon'))
             h.log_action(log, 'remove project icon').info('')
             g.post_event('project_updated')
-            redirect('.')
+            redirect('overview')
         elif 'delete' in kw:
             h.log_action(log, 'delete project').info('')
             plugin.ProjectRegistrationProvider.get().delete_project(c.project, c.user)
-            redirect('.')
+            redirect('overview')
         elif 'undelete' in kw:
             h.log_action(log, 'undelete project').info('')
             plugin.ProjectRegistrationProvider.get().undelete_project(c.project, c.user)
-            redirect('.')
+            redirect('overview')
         if name != c.project.name:
             h.log_action(log, 'change project name').info('')
             c.project.name = name
@@ -280,12 +293,21 @@ class ProjectAdminController(BaseController):
         if category != c.project.category_id:
             h.log_action(log, 'change project category').info('')
             c.project.category_id = category
-        labels = kw.pop('labels', None)
-        if labels is not None:
-            labels = labels.split(',')
-            if labels != c.project.labels:
-                h.log_action(log, 'update project labels').info('')
-                c.project.labels = labels
+        if external_homepage != c.project.external_homepage:
+            h.log_action(log, 'change external home page').info('')
+            c.project.external_homepage = external_homepage
+        if support_page != c.project.support_page:
+            h.log_action(log, 'change project support page').info('')
+            c.project.support_page = support_page
+        if support_page_url != c.project.support_page_url:
+            h.log_action(log, 'change project support page url').info('')
+            c.project.support_page_url = support_page_url
+        if moved_to_url != c.project.moved_to_url:
+            h.log_action(log, 'change project moved to url').info('')
+            c.project.moved_to_url = moved_to_url
+        if export_controlled != c.project.export_controlled:
+            h.log_action(log, 'change project export controlled status').info('')
+            c.project.export_controlled = not not export_controlled
 
         if icon is not None and icon != '':
             if c.project.icon:

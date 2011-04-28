@@ -1,6 +1,6 @@
 {% extends g.theme.master %}
 
-{% block title %}{{c.project.name}} / Overview{% endblock %}
+{% block title %}{{c.project.name}} / Metadata{% endblock %}
 
 {% block header %}Project Admin{% endblock %}
 
@@ -8,52 +8,54 @@
         {% if c.project.deleted %}
           <div class="notice">This project has been deleted and is not visible to non-admin users</div>
         {% endif %}
-          <form method="POST" action="update" enctype="multipart/form-data">
+          <form method="POST" action="update" enctype="multipart/form-data" id="metadata_form">
             <div class="grid-9">
               <label for="name">Name:</label>
               <br>
               <input type="text" name="name" id="name" value="{{c.project.name}}"
                      title="This is the publicly viewable name of the project, and will appear on project listings.
 It should be what you want to see as the project title in search listing.">
-            </div>
-            <div class="grid-9">
-              <label for="category">Category:</label>
-              <br>
-              <select name="category" id="category" title="This will determine which pages the project will appear under in the SourceForge Directory.">
-                <option value="">Uncategorized</option>
-                {% for cat in categories %}
-                  <option value="{{cat._id}}" {% if c.project.category and c.project.category._id == cat._id %}selected="selected"{% endif%}>{{cat.label}}</option>
-                  {% for subcat in cat.subcategories %}
-                    <option value="{{subcat._id}}" {% if c.project.category and c.project.category._id == subcat._id %}selected="selected"{% endif %}>-- {{subcat.label}}</option>
-                  {% endfor %}
-                {% endfor %}
-              </select>
-            </div>
-            <div style="clear: both"></div>
-            <div class="grid-9">
+
               <label>Unixname:</label>
               <br>
               <input type="text" disabled="disabled" value="{{c.project.shortname}}">
-            </div>
-            <div class="grid-9">
-              <label for="labels">Labels:</label>
+
+              <label for="external_homepage">Homepage:</label>
               <br>
-              {{c.label_edit.display(name='labels', value=c.project.labels, id='labels',
-                     title="Free-form labels to describe your project.
-These can be used to search for similar projects.")}}
-            </div>
-            <div class="grid-9">
+              <input name="external_homepage" id="external_homepage" type="text" value="{{c.project.external_homepage}}">
+
               <label for="short_description_textarea">Summary:</label>
               <br>
               <textarea name="short_description" id="short_description_textarea" style="height: 100px;"
                         title="Add a short one or two sentence summary for your project.">{{c.project.short_description}}</textarea>
+
+              <div style="clear:both">&nbsp;</div>
+              <label for="support_page">Support Page:</label>
+              <br>
+              <input name="support_page" type="radio" value=""{% if c.project.support_page == '' %} checked{% endif %} id="support_page_none">
+              <label for="support_page_none">None</label><br>
+              {% for ac in c.project.app_configs %}
+                {% if ac.tool_name == 'Wiki' or ac.tool_name == 'Tickets' %}
+                  <input name="support_page" type="radio" value="{{ac.options.mount_point}}" id="support_page_{{ac.options.mount_point}}"
+                         {% if c.project.support_page == ac.options.mount_point %} checked{% endif %}>
+                  <label for="support_page_{{ac.options.mount_point}}">{{ac.options.mount_label}}</label><br>
+                {% endif %}
+              {% endfor %}
+              <input name="support_page" type="radio" value="_url" id="support_page_url_cb"
+                     {% if c.project.support_page == '_url' %} checked{% endif %}>
+              <label for="support_page_url_cb">URL: </label>
+              <input type="text" name="support_page_url" value="{{c.project.support_page_url}}" style="width: 70%">
             </div>
             <div class="grid-9">
+
               <label for="icon">Icon:</label>
               <br>
               <div class="editable viewing">
                 {% if c.project.icon %}
-                  <div class="viewer"><img src="{{c.project.url()}}/icon"/></div>
+                  <div class="viewer" style="overflow: auto">
+                    <img src="{{c.project.url()}}/icon" style="float:left; margin-right: 1em;">
+                    <input type="submit" name="delete_icon" value="Delete Icon" style="margin-top: 10px;">
+                  </div>
                 {% else %}
                   <div class="viewer">
                     No icon has been created.{% if c.project.private_project_of() %} A gravatar image associated with your primary email
@@ -61,22 +63,42 @@ These can be used to search for similar projects.")}}
                   </div>
                 {% endif %}
                 <div class="editor">{{lib.file_field('icon', '')}}</div>
-              </div>  
-              {% if c.project.icon %}
-                  <div>
-                      <input type="submit" name="delete_icon" value="Delete Icon">
-                  </div>
+              </div>
+              <div style="clear:both">&nbsp;</div>
+
+              <label for="removal">Removal:</label>
+              <br>
+              <input name="removal" type="radio" value="" id="removal_active_cb"
+                     {% if c.project.removal == '' %} checked{% endif %}>
+              <label for="removal_active_cb">Active Project</label>
+              <br>
+              <input name="removal" type="radio" value="moved" id="removal_moved_cb"
+                     {% if c.project.removal == 'moved' %} checked{% endif %}>
+              <label for="removal_moved_cb">Moved Project to: </label>
+              <input type="text" name="moved_to_url" value="{{c.project.moved_to_url}}" style="width: 50%">
+              <br>
+              <input name="removal" type="radio" value="abandoned" id="removal_abandoned_cb"
+                     {% if c.project.removal == 'abandoned' %} checked{% endif %}>
+              <label for="removal_abandoned_cb">Abandoned Project</label>
+              <br>
+              <input name="removal" type="radio" value="deleted" id="removal_delete_cb"
+                     {% if c.project.removal == 'deleted' %} checked{% endif %}>
+              <label for="removal_delete_cb">Delete{% if c.project.removal == 'deleted' %}d{% endif %} Project</label>
+
+              {% if show_export_control %}
+                <div style="clear:both">&nbsp;</div>
+                <label for="export_controlled">Export Control:</label>
+                <br>
+                <input name="export_controlled" type="radio" value=""
+                       {% if c.project.export_controlled == False %} checked{% endif %}> This project does NOT incorporate, access, call upon, or otherwise use encryption of any kind, including, but not limited to, open source algorithms and/or calls to encryption in the operating system or underlying platform.<br>
+                <input name="export_controlled" type="radio" value="True"
+                       {% if c.project.export_controlled == True %} checked{% endif %}> This project DOES incorporate, access, call upon or otherwise use encryption. Posting of open source encryption is controlled under U.S. Export Control Classification Number "ECCN" 5D002 and must be simultaneously reported by email to the U.S. government. You are responsible for submitting this email report to the U.S. government in accordance with procedures described in: <a href="http://www.bis.doc.gov/encryption/PubAvailEncSourceCodeNotify.html" target="_blank">http://www.bis.doc.gov/encryption/PubAvailEncSourceCodeNotify.html</a> and Section 740.13(e) of the Export Administration Regulations ("EAR") 15 C.F.R. Parts 730-772.
               {% endif %}
             </div>
             <hr class="grid-19" style="margin-top: 1em; margin-bottom: 1em;">
             <div class="grid-15">
               <input type="submit" value="Save">
             </div>
-            {% if not c.project.deleted %}
-              <input type="submit" value="Delete Project" name="delete" class="fright">
-            {% elif config.get('auth.method', 'local') != 'sfx' %}
-              <input type="submit" value="Undelete Project" name="undelete" class="fright">
-            {% endif %}
           </form>
 {% endblock %}
 
@@ -84,7 +106,60 @@ These can be used to search for similar projects.")}}
   <script type="text/javascript" src="{{g.forge_static('js/jquery.maxlength-min.js')}}"></script>
   <script type="text/javascript">
     $(document).ready(function () {
+      var $metadata_form = $('#metadata_form');
+      var $removal_original = $('input[name=removal]:checked');
+      var $removal_delete_cb = $('#removal_delete_cb');
+      var currently_deleted = $removal_delete_cb.is(':checked');
+      var $support_page_url_cb = $('#support_page_url_cb');
+      var $removal_moved_cb = $('#removal_moved_cb');
+      var $support_page_url = $('input[name=support_page_url]');
+      var $moved_to_url = $('input[name=moved_to_url]');
+      var update_url = function(check_cb, url_input){
+        if(check_cb.is(':checked')){
+          url_input.attr('disabled', false);
+        }
+        else{
+          url_input.attr('disabled', true);
+          url_input.val('');
+        }
+      };
+
+      // manage url input state for support page and removal
+      update_url($support_page_url_cb, $support_page_url);
+      update_url($removal_moved_cb, $moved_to_url);
       $('#short_description_textarea').maxlength({maxCharacters: 250});
+      $('input[name=support_page]').change(function(){
+        update_url($support_page_url_cb, $support_page_url);
+      });
+      $('input[name=removal]').change(function(){
+        update_url($removal_moved_cb, $moved_to_url);
+        // confirmation for delete
+        if($(this).val()=='deleted' && !currently_deleted){
+          if(confirm('Are you sure you want to delete this project?')){
+            $metadata_form.append('<input type="hidden" name="delete" value="true">');
+            $('#metadata_form').submit();
+          }
+          else{
+            $removal_original.attr('checked', true);
+          }
+        }
+        {% if config.get('auth.method', 'local') == 'sfx' %}
+        else if($(this).val()!='deleted' && currently_deleted){
+          alert('You may not undelete a project that has already been deleted.');
+          $removal_original.attr('checked', true);
+        }
+        {% else %}
+        else if($(this).val()!='deleted' && currently_deleted){
+          if(confirm('Are you sure you want to undelete this project?')){
+            $metadata_form.append('<input type="hidden" name="undelete" value="true">');
+            $('#metadata_form').submit();
+          }
+          else{
+            $removal_original.attr('checked', true);
+          }
+        }
+        {% endif %}
+      });
     });
   </script>
 {% endblock %}
@@ -93,6 +168,9 @@ These can be used to search for similar projects.")}}
   <style type="text/css">
     .grid-9 input[type="text"], .grid-9 select, .grid-9 textarea{
       width: 95%
+    }
+    .grid-9 input[type="radio"]{
+       vertical-align: middle
     }
   </style>
 {% endblock %}
