@@ -1100,10 +1100,10 @@ class MilestoneController(BaseController):
             page=validators.Int(if_empty=0),
             sort=validators.UnicodeString(if_empty=None)))
     def index(self, q=None, project=None, columns=None, page=0, query=None, sort=None, **kw):
-        require(has_access('read'))
+        require(has_access(c.app, 'read'))
         result = TM.Ticket.paged_query(
             self.mongo_query, page=page, sort=sort, columns=columns, **kw)
-        result['allow_edit'] = has_access('write')()
+        result['allow_edit'] = has_access(c.app, 'write')()
         d = c.app.globals.milestone_count('%s:%s' % (self.field.name, self.milestone.name))
         result.pop('q')
         result.update(

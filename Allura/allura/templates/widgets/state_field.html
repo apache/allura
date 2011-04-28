@@ -3,7 +3,7 @@
      xmlns:xi="http://www.w3.org/2001/XInclude"
      class="$container_cls">
   <py:with vars="ctx=widget.context_for(selector)">
-    <py:if test="selector.show_label"><label for="$ctx.name">$selector.label</label><br/></py:if>
+    <py:if test="selector.show_label"><label for="$ctx.id">$selector.label</label><br/></py:if>
     <py:if test="ctx.errors and selector.show_errors"><span class="$error_class">$ctx.errors</span><br/></py:if>
     ${selector.display(css_class=selector_cls, **ctx)}
   </py:with>

@@ -529,13 +529,15 @@ class Ticket(VersionedArtifact):
         q = q.sort('ticket_num')
         if sort:
             field, direction = sort.split()
+            if field.startswith('_'):
+                field = 'custom_fields.' + field
             direction = dict(
                 asc=pymongo.ASCENDING,
                 desc=pymongo.DESCENDING)[direction]
             q = q.sort(field, direction)
         q = q.skip(start)
         q = q.limit(limit)
-        tickets = [ t for t in q if security.has_artifact_access('read', t)() ]
+        tickets = [ t for t in q if security.has_access(t, 'read')() ]
         sortable_custom_fields=c.app.globals.sortable_custom_fields_shown_in_search()
         if not columns:
             columns = [dict(name='ticket_num', sort_name='ticket_num', label='Ticket Number', active=True),
