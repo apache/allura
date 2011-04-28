@@ -18,7 +18,6 @@ def test_role_assignments():
         return pred(user=admin), pred(user=user), pred(user=anon)
     assert check_access('configure') == (True, False, False)
     assert check_access('read') == (True, True, True)
-    assert check_access('write') == (True, False, False)
     assert check_access('unmoderated_post') == (True, True, False)
     assert check_access('post') == (True, True, True)
     assert check_access('moderate') == (True, False, False)
