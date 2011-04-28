@@ -96,6 +96,7 @@ class ReindexCommand(base.Command):
                         base.log.error('%s', err.format_error())
                     M.main_orm_session.flush()
                     M.main_orm_session.clear()
+        base.log.info('Reindex done')
 
 class EnsureIndexCommand(base.Command):
     min_args=0
