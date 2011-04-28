@@ -564,6 +564,20 @@ class TestFunctionalController(TestController):
         assert sidebar_contains(r, 'New')
         assert not sidebar_contains(r, 'Original')
 
+    def test_discussion_paging(self):
+        summary = 'test discussion paging'
+        ticket_view = self.new_ticket(summary=summary).follow()
+        for f in ticket_view.html.findAll('form'):
+            if f.get('action', '').endswith('/post'):
+                break
+        post_content = 'ticket discussion post content'
+        params = dict(text=post_content)
+        r = self.app.post(f['action'].encode('utf-8'), params=params,
+                          headers={'Referer': '/bugs/1/'.encode("utf-8")})
+        r = self.app.get('/bugs/1/', dict(page=-1))
+        assert_true(summary in r)
+        r = self.app.get('/bugs/1/', dict(page=1))
+        assert_true(post_content in r)
 
 def sidebar_contains(response, text):
     sidebar_menu = response.html.find('div', attrs={'id': 'sidebar'})

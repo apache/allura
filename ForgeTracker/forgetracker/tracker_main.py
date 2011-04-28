@@ -788,11 +788,19 @@ class TicketController(BaseController):
                 subscribed = False
             else:
                 subscribed = M.Mailbox.subscribed(artifact=self.ticket)
+
+            # Constrain page to be no greater than the maximum possible page, 
+            # based on post_count and limit
+            limit = max(int(limit), 1)
+            post_count = self.ticket.discussion_thread.post_count
+            max_page = (post_count / limit) + (1 if post_count % limit else 0)
+            max_page = max(0, max_page - 1) # zero-based pages
+            page = min(max(page, 0), max_page) # keep page between 0 and max_page
             return dict(ticket=self.ticket, globals=c.app.globals,
                         allow_edit=has_access(self.ticket, 'write')(),
                         tool_subscribed=tool_subscribed,
                         subscribed=subscribed,
-                        page=page, limit=limit, count=self.ticket.discussion_thread.post_count)
+                        page=page, limit=limit, count=post_count)
         else:
             raise exc.HTTPNotFound, 'Ticket #%s does not exist.' % self.ticket_num
 
