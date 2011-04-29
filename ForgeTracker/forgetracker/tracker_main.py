@@ -1,6 +1,6 @@
 #-*- python -*-
 import logging
-import json, urllib, re
+import re
 from datetime import datetime, timedelta
 from urllib import urlencode
 from webob import exc
@@ -322,9 +322,10 @@ class RootController(BaseController):
     @with_trailing_slash
     @h.vardec
     @expose('jinja:forgetracker:templates/tracker/index.html')
-    def index(self, limit=250, columns=None, page=0, sort='ticket_num_i desc', **kw):
-        result = self.paged_query(c.app.globals.not_closed_query, sort=sort,
-                                  limit=int(limit), columns=columns, page=page)
+    def index(self, limit=250, columns=None, page=0, sort='ticket_num desc', **kw):
+        result = TM.Ticket.paged_query(c.app.globals.not_closed_mongo_query,
+                                        sort=sort, limit=int(limit),
+                                        columns=columns, page=page, **kw)
         c.subscribe_form = W.subscribe_form
         result['subscribed'] = M.Mailbox.subscribed()
         result['allow_edit'] = has_access(c.app, 'write')()
@@ -489,7 +490,7 @@ class RootController(BaseController):
         # if c.app.globals.milestone_names is None:
         #     c.app.globals.milestone_names = ''
         ticket_num = ticket_form.pop('ticket_num', None)
-        comment = ticket_form.pop('comment', None)
+        ticket_form.pop('comment', None) # W.ticket_form gives us this, but we don't set any comment during ticket creation
         if ticket_num:
             ticket = TM.Ticket.query.get(
                 app_config_id=c.app.config._id,
