@@ -12,6 +12,8 @@ from paste.registry import Registry
 import ming
 from allura.config.environment import load_environment
 
+log = None
+
 class EmptyClass(object): pass
 
 class Command(command.Command):

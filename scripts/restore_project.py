@@ -3,6 +3,7 @@ import sys
 import struct
 import logging
 
+from ming.schema import Invalid
 from ming.orm import state, session, mapper, MappedClass
 from ming.orm.base import instrument, DocumentTracker
 
@@ -36,27 +37,37 @@ def restore_project(dirname, new_shortname, new_unix_group_name):
     project.set_tool_data('sfx', unix_group_name=new_unix_group_name)
     project.deleted = False
     c.project = project
-    for name, cls in MappedClass._registry.iteritems():
-        if session(cls) is None: continue
-        m = mapper(cls)
-        sess = session(cls).impl
-        fname = os.path.join(dirname, '%s.bson' % (cls.__mongometa__.name))
-        if not os.path.exists(fname): continue
-        if ('project_id' not in m.property_index
-            and 'app_config_id' not in m.property_index): continue
-        with open(fname, 'rb') as fp:
-            num_objects = 0
-            while True:
-                doc = _read_bson(fp)
-                if doc is None: break
-                num_objects += 1
-                sess.insert(m.doc_cls(doc))
-        log.info('%s: loaded %s objects from %s',
-                 name, num_objects, fname)
+    conn = M.main_doc_session.db.connection
+    repo_collections = get_repo_collections()
+    for dbname in os.listdir(dirname):
+        if dbname.endswith('.bson'): continue
+        for fname in os.listdir(os.path.join(dirname, dbname)):
+            cname = os.path.splitext(fname)[0]
+            collection = conn[dbname][cname]
+            with open(os.path.join(dirname, dbname, fname), 'rb') as fp:
+                num_objects = 0
+                while True:
+                    doc = _read_bson(fp)
+                    if doc is None: break
+                    if cname in repo_collections:
+                        cls = repo_collections[cname]
+                        doc['fs_path'] = cls.default_fs_path(project, doc['tool'])
+                        doc['url_path'] = cls.default_url_path(project, doc['tool'])
+                    collection.insert(doc)
+                    num_objects += 1
+                log.info('%s: loaded %s objects from %s',
+                         dbname, num_objects, fname)
     session(project).flush()
     reindex= ReindexCommand('reindex')
     reindex.run(['--project', new_shortname])
     return 0
+
+def get_repo_collections():
+    res = {}
+    for name, cls in MappedClass._registry.iteritems():
+        cname = cls.__mongometa__.name
+        if issubclass(cls, M.Repository): res[cname] = cls
+    return res
 
 def _read_bson(fp):
     slen = fp.read(4)

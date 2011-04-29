@@ -140,13 +140,19 @@ class Repository(Artifact):
     def __init__(self, **kw):
         if 'name' in kw and 'tool' in kw:
             if 'fs_path' not in kw:
-                repos_root = tg.config.get('scm.repos.root', '/')
-                kw['fs_path'] = os.path.join(repos_root,
-                    kw['tool'],
-                    c.project.url()[1:])
+                kw['fs_path'] = self.default_fs_path(c.project, kw['tool'])
             if 'url_path' not in kw:
-                kw['url_path'] = c.project.url()
+                kw['url_path'] = self.default_url_path(c.project, kw['tool'])
         super(Repository, self).__init__(**kw)
+
+    @classmethod
+    def default_fs_path(cls, project, tool):
+        repos_root = tg.config.get('scm.repos.root', '/')
+        return os.path.join(repos_root, tool, project.url()[1:])
+
+    @classmethod
+    def default_url_path(cls, project, tool):
+        return project.url()
 
     def __repr__(self): # pragma no cover
         return '<%s %s>' % (

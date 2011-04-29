@@ -47,7 +47,20 @@ def dump_project(project, dirname):
     c.project = project
     app_config_ids = [
         ac._id for ac in M.AppConfig.query.find(dict(project_id=c.project._id)) ]
+    visited_collections = {}
     for name, cls in MappedClass._registry.iteritems():
+        cname = cls.__mongometa__.name
+        sess = cls.__mongometa__.session
+        if sess is None:
+            log.info('Skipping %s which has no session', cls)
+            continue
+        dbname = sess.impl.db.name
+        fqname = cname + '/' + dbname
+        if fqname in visited_collections:
+            log.info('Skipping %s (already dumped collection %s in %s)',
+                     cls, fqname, visited_collections[fqname])
+            continue
+        visited_collections[fqname] = cls
         if 'project_id' in mapper(cls).property_index:
             # Dump the things directly related to the project
             oq = cls.query.find(dict(project_id=project._id))
@@ -59,8 +72,11 @@ def dump_project(project, dirname):
             continue
         num_objs = oq.count()
         if num_objs == 0: continue
+        if not os.path.exists(os.path.join(dirname, dbname)):
+            os.mkdir(os.path.join(dirname, dbname))
         fname = os.path.join(
             dirname,
+            dbname,
             '%s.bson' % (cls.__mongometa__.name))
         log.info('%s: dumping %s objects to %s',
                  name, num_objs, fname)
