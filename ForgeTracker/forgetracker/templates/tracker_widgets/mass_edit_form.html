@@ -66,6 +66,7 @@
     {% endfor %}
     <div class="grid-16">
       <input type="button" onclick="update_tickets()" value="Save"/>
-      <a href="{{tg.url(c.app.url+'search/', dict(q=query, limit=limit, sort=sort))}}" class="btn link">Cancel</a>
+      <a href="{{cancel_href}}" class="btn link">Cancel</a>
+      <!-- tg.url(c.app.url+'search/', dict(q=query, limit=limit, sort=sort))}}" class="btn link">Cancel</a>-->
     </div>
 </form>

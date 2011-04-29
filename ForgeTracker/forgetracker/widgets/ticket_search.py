@@ -1,3 +1,7 @@
+import tg
+
+from pylons import c
+
 import ew as ew_core
 import ew.jinja2_ew as ew
 
@@ -47,7 +51,10 @@ class MassEditForm(ew_core.Widget):
     defaults=dict(
         ew_core.Widget.defaults,
         globals=None,
-        query=None)
+        query=None,
+        cancel_href=None,
+        limit=None,
+        sort=None)
 
     def resources(self):
         yield ew.JSLink('tracker_js/mass-edit.js')

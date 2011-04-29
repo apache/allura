@@ -7,7 +7,7 @@ from webob import exc
 
 # Non-stdlib imports
 import pkg_resources
-from tg import expose, validate, redirect, flash
+from tg import expose, validate, redirect, flash, url
 from tg.decorators import with_trailing_slash, without_trailing_slash
 from pylons import g, c, request, response
 from formencode import validators
@@ -510,12 +510,15 @@ class RootController(BaseController):
                    limit=validators.Int(if_empty=10),
                    page=validators.Int(if_empty=0),
                    sort=validators.UnicodeString(if_empty='ticket_num_i asc')))
-    def edit(self, q=None, sort=None, **kw):
+    def edit(self, q=None, limit=None, page=None, sort=None, **kw):
         require_access(c.app, 'write')
         result = self.paged_query(q, sort=sort, **kw)
         # if c.app.globals.milestone_names is None:
         #     c.app.globals.milestone_names = ''
         result['globals'] = c.app.globals
+        result['cancel_href'] = url(
+            c.app.url + 'search/',
+            dict(q=q, limit=limit, sort=sort))
         c.user_select = ffw.ProjectUserSelect()
         c.mass_edit = W.mass_edit
         c.mass_edit_form = W.mass_edit_form
@@ -1109,7 +1112,7 @@ class MilestoneController(BaseController):
             limit=validators.Int(if_invalid=None),
             page=validators.Int(if_empty=0),
             sort=validators.UnicodeString(if_empty=None)))
-    def index(self, q=None, project=None, columns=None, page=0, query=None, sort=None, **kw):
+    def index(self, q=None, columns=None, page=0, query=None, sort=None, **kw):
         require(has_access(c.app, 'read'))
         result = TM.Ticket.paged_query(
             self.mongo_query, page=page, sort=sort, columns=columns, **kw)
@@ -1124,3 +1127,60 @@ class MilestoneController(BaseController):
         c.ticket_search_results = W.ticket_search_results
         c.auto_resize_textarea = W.auto_resize_textarea
         return result
+
+    @with_trailing_slash
+    @expose('jinja:forgetracker:templates/tracker/mass_edit.html')
+    @validate(dict(q=validators.UnicodeString(if_empty=None),
+                   limit=validators.Int(if_empty=10),
+                   page=validators.Int(if_empty=0),
+                   sort=validators.UnicodeString(if_empty='ticket_num_i asc')))
+    def edit(self, q=None, limit=None, page=None, sort=None, columns=None, **kw):
+        require_access(c.app, 'write')
+        result = TM.Ticket.paged_query(
+            self.mongo_query, page=page, sort=sort, columns=columns, **kw)
+        # if c.app.globals.milestone_names is None:
+        #     c.app.globals.milestone_names = ''
+        result.pop('q')
+        result['globals'] = c.app.globals
+        result['cancel_href'] = '..'
+        c.user_select = ffw.ProjectUserSelect()
+        c.mass_edit = W.mass_edit
+        c.mass_edit_form = W.mass_edit_form
+        return result
+
+    @expose()
+    @require_post()
+    def update_tickets(self, **post_data):
+        c.app.globals.invalidate_bin_counts()
+        tickets = TM.Ticket.query.find(dict(
+                _id={'$in':[ObjectId(id) for id in post_data['selected'].split(',')]},
+                app_config_id=c.app.config._id)).all()
+        for ticket in tickets:
+            require_access(ticket, 'write')
+
+        fields = set(['status'])
+        values = {}
+        for k in fields:
+            v = post_data.get(k)
+            if v: values[k] = v
+        assigned_to = post_data.get('assigned_to')
+        if assigned_to == '-':
+            values['assigned_to_id'] = None
+        elif assigned_to is not None:
+            user = c.project.user_in_project(assigned_to)
+            if user:
+                values['assigned_to_id'] = user._id
+
+        custom_fields = set([cf.name for cf in c.app.globals.custom_fields or[]])
+        custom_values = {}
+        for k in custom_fields:
+            v = post_data.get(k)
+            if v: custom_values[k] = v
+
+        for ticket in tickets:
+            for k, v in values.iteritems():
+                setattr(ticket, k, v)
+            for k, v in custom_values.iteritems():
+                ticket.custom_fields[k] = v
+
+        ThreadLocalORMSession.flush_all()
