@@ -57,11 +57,12 @@ class TestRestUpdateTicket(TestTrackerApiBase):
     def test_update_ticket(self):
         args = dict(self.ticket_args, summary='test update ticket', labels='',
                     assigned_to=self.ticket_args['assigned_to_id'] or '')
-        for bad_key in ('assigned_to_id', 'created_date', 'reported_by', 'reported_by_id', 'super_id', 'sub_ids', '_id'):
+        for bad_key in ('ticket_num', 'assigned_to_id', 'created_date', 'reported_by', 'reported_by_id', 'super_id', 'sub_ids', '_id'):
             del args[bad_key]
         ticket_view = self.api_post('/rest/p/test/bugs/1/save', wrap_args='ticket_form', **h.encode_keys(args))
         assert ticket_view.status_int == 200, ticket_view.showbrowser()
         json = ticket_view.json['ticket']
+        assert int(json['ticket_num']) == 1
         assert json['summary'] == 'test update ticket', json
 
 class TestRestDiscussion(TestTrackerApiBase):

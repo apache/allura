@@ -1013,7 +1013,6 @@ class RootRestController(BaseController):
             app_config_id=c.app.config._id,
             custom_fields=dict(),
             ticket_num=c.app.globals.next_ticket_num())
-        ticket_form.pop('ticket_num', None)
         ticket.update(ticket_form)
         redirect(str(ticket.ticket_num)+'/')
 

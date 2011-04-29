@@ -448,6 +448,10 @@ class Ticket(VersionedArtifact):
 
     def update(self,ticket_form):
         self.globals.invalidate_bin_counts()
+
+        # update is not allowed to change the ticket_num
+        ticket_form.pop('ticket_num', None)
+
         labels = (ticket_form.pop('labels', None) or '')
         if labels == ['']:
             labels = []
