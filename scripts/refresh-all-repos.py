@@ -12,13 +12,16 @@ log = logging.getLogger(__name__)
 PAGESIZE=1024
 
 def main():
-    parser = optparse.OptionParser()
+    parser = optparse.OptionParser(usage="%prog -- [options] [someproject/code [proj/mount ...]]")
     parser.add_option(
         '--clean', action='store_true', dest='clean', default=False,
         help='remove all RepoObjects before refresh')
     parser.add_option(
         '--all', action='store_true', dest='all', default=False,
         help='refresh all commits (not just the ones that are new')
+    parser.add_option(
+        '--notify', action='store_true', dest='notify', default=False,
+        help='send email notifications of new commits')
     options, args = parser.parse_args()
     if args:
         projects = defaultdict(list)
@@ -55,7 +58,7 @@ def main():
                         log.info('Refreshing ALL commits in %r', c.app.repo)
                     else:
                         log.info('Refreshing NEW commits in %r', c.app.repo)
-                    c.app.repo.refresh(options.all)
+                    c.app.repo.refresh(options.all, notify=options.notify)
                 except:
                     log.exception('Error refreshing %r', c.app.repo)
         ThreadLocalORMSession.flush_all()
@@ -72,7 +75,7 @@ def chunked_project_iterator(q_project):
         if not results: break
         yield results
         page += 1
-    
+
 
 if __name__ == '__main__':
     main()

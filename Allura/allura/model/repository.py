@@ -278,7 +278,7 @@ class Repository(Artifact):
                 content_type, encoding = 'application/octet-stream', None
         return content_type, encoding
 
-    def refresh(self, all_commits=False):
+    def refresh(self, all_commits=False, notify=True):
         '''Find any new commits in the repository and update'''
         self._impl.refresh_heads()
         self.status = 'analyzing'
@@ -307,16 +307,17 @@ class Repository(Artifact):
                          self.BATCH_SIZE, (i+1))
                 sess.flush()
                 sess.clear()
-            item = Feed.post(
-                self,
-                title='New commit',
-                description='%s<br><a href="%s%s">View Changes</a>' % (
-                    ci.summary,config.common_prefix,ci.url()))
-            item.author_link = ci.author_url
-            item.author_name = ci.authored.name
-            commit_msgs.append('%s by %s <%s%s>' % (
-                    ci.summary, ci.committed.name, config.common_prefix,ci.url()))
-        if commit_msgs and not all_commits:
+            if notify:
+                item = Feed.post(
+                    self,
+                    title='New commit',
+                    description='%s<br><a href="%s%s">View Changes</a>' % (
+                        ci.summary,config.common_prefix,ci.url()))
+                item.author_link = ci.author_url
+                item.author_name = ci.authored.name
+                commit_msgs.append('%s by %s <%s%s>' % (
+                        ci.summary, ci.committed.name, config.common_prefix,ci.url()))
+        if commit_msgs:
             if len(commit_msgs) > 1:
                 subject = '%d new commits to %s %s' % (
                     len(commit_msgs), self.app.project.name, self.app.config.options.mount_label)
