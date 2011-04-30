@@ -199,7 +199,7 @@ def encode_keys(d):
         for k,v in d.iteritems())
 
 def vardec(fun):
-    def vardec_hook(remainder, params):
+    def vardec_hook(params):
         new_params = variable_decode(dict(
                 (k,v) for k,v in params.items()
                 if re_clean_vardec_key.match(k)))

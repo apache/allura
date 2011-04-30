@@ -4,7 +4,9 @@ from ming.orm.ormsession import ThreadLocalORMSession
 
 
 def unentity(s):
-    return s.replace('&#34;', '"')
+    s = s.replace('&#34;', '"')
+    s = s.replace('&quot;', '"')
+    return s
 
 class TestAuth(TestController):
 

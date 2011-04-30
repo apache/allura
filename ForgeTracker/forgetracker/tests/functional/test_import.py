@@ -4,13 +4,13 @@ from datetime import datetime, timedelta
 from nose.tools import assert_equal
 
 import ming
-from pylons import c, g
+from tg import g
 
 from allura import model as M
-from alluratest.controller import TestController, TestRestApiBase
+from alluratest.controller import TestRestApiBase
 
 
-class TestImportController(TestRestApiBase):#TestController):
+class TestImportController(TestRestApiBase):
 
     def new_ticket(self, mount_point='/bugs/', **kw):
         response = self.app.get(mount_point + 'new/')

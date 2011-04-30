@@ -2,7 +2,7 @@ import ew as ew_core
 import ew.jinja2_ew as ew
 from ew.core import validator
 
-from pylons import request
+from tg import request
 from formencode import Invalid
 from webob import exc
 

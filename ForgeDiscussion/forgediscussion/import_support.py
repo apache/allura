@@ -5,7 +5,7 @@ from datetime import datetime
 from ming import schema as S
 from ming.orm import ThreadLocalORMSession, session
 
-from pylons import c
+from tg import c
 
 from allura import model as M
 

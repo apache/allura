@@ -48,11 +48,11 @@ provided by the `WebTest <http://pythonpaste.org/webtest/>`_ module, where you c
 find further documentation for the `.get()` and `.post()` methods.
 
 Testing Allura models is also straightforward, though it usually requires
-setting the pylons context object `c` before your test.  An example of this
+setting the context object `c` before your test.  An example of this
 technique follows::
 
     import mock
-    from pylons import c, g
+    from tg import c, g
 
     from allura.lib.app_globals import Globals
     from allura import model as M

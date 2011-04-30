@@ -102,22 +102,20 @@ class TestController(object):
         """Method called by nose after running each test"""
         pass
 
-    def _deserialize(self, serialized):
-        pickled = base64.standard_b64decode(serialized[40:])
+    def _deserialize(self, signed_serialized):
+        serialized = signed_serialized[40:]
+        pickled = base64.standard_b64decode(serialized)
         return pickle.loads(pickled)
 
     def webflash(self, response):
         "Extract webflash content from response."
         serialized = response.cookies_set.get('allura', '')
-        try:
-            session = self._deserialize(serialized)[2]
-            response = [
-                (k, v) for k,v in session.iteritems()
-                if k.startswith('_f_') ]
-            return repr(response)
-        except:
-            return ''
-
+        if not serialized: return ''
+        session = self._deserialize(serialized)[2]
+        response = [
+            (k, v) for k,v in session.iteritems()
+            if k.startswith('_f_') ]
+        return repr(response)
 
 class TestRestApiBase(TestController):
 

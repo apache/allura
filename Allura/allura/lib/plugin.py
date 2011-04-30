@@ -19,7 +19,7 @@ from tg import g, c, session
 from webob import exc
 
 from ming.utils import LazyProperty
-from ming.orm import state, session
+from ming.orm import state
 from ming.orm import ThreadLocalORMSession
 
 from allura.lib import helpers as h

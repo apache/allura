@@ -1,7 +1,7 @@
 import logging
 import re
 import  ming.orm.ormsession
-from pylons import g
+from tg import g
 from allura.lib import helpers as h
 from allura.lib import exceptions as forge_exc
 from allura.lib import plugin

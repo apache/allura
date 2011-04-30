@@ -2,7 +2,6 @@ from pprint import pprint
 from datetime import datetime, timedelta
 import json
 
-from pylons import c
 from ming.orm import session
 
 from allura import model as M

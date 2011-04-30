@@ -4,13 +4,12 @@ from datetime import datetime, timedelta
 from nose.tools import assert_equal
 
 import ming
-from pylons import c, g
 
 from allura import model as M
-from alluratest.controller import TestController, TestRestApiBase
+from alluratest.controller import TestRestApiBase
 
 
-class TestImportController(TestRestApiBase):#TestController):
+class TestImportController(TestRestApiBase):
 
     def setUp(self):
         super(TestImportController, self).setUp()

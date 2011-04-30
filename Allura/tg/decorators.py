@@ -83,10 +83,8 @@ class Decoration(object):
             state = type('state', (), {})
             if hasattr(self._validators, 'to_python'):
                 params = self._validators.to_python(params, state)
-            elif hasattr(self._validators, 'validate'):
+            if hasattr(self._validators, 'validate'):
                 params = self._validators.validate(params, state)
-            else:
-                assert False, 'unknown validator type: %r' % self._validators
         return params
 
     def do_render_response(self, result):

@@ -2,7 +2,7 @@
 import time
 import unittest
 
-import pylons
+from tg import request
 from webob import Request
 
 from ming.orm import state
@@ -30,7 +30,7 @@ class TestAntispam(unittest.TestCase):
 
     def setUp(self):
         setup_unit_test()
-        pylons.request.remote_addr = '127.0.0.1'
+        request.remote_addr = '127.0.0.1'
         self.a = utils.AntiSpam()
 
     def test_generate_fields(self):

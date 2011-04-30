@@ -39,7 +39,7 @@ Discussion
 The Context Object
 ---------------------------------------------------
 
-The Pylons "context" object `c` has several properties which are automatically
+The "context" object `c` has several properties which are automatically
 set for each request:
 
 project
@@ -186,7 +186,7 @@ are of the form
 <topic>@<mount_point>[.<subproject>]*.<subproject>.projects.sourceforge.net.
 When a message is received on such an email address, the address is parsed and
 the sending user is identified (if possible).  Based on the parsed address, the
-pylons context attributes `c.project` and `c.app` are set, and the application is
+context attributes `c.project` and `c.app` are set, and the application is
 queried to determine whether the identified user has authority to send an email
 to the given app/topic combination by calling `c.app.has_access(user, topic)`.
 If the user has access, the message is decomposed into its component parts (if a
