@@ -130,9 +130,9 @@ def bootstrap(command, conf, vars):
         u_admin_adobe.set_password('foo')
         # Admin1 is almost root, with admin access for Users and Projects neighborhoods
         p_projects.acl.append(
-            M.ACE.allow(u_admin.project_role(project=p_projects), 'admin'))
+            M.ACE.allow(u_admin.project_role(project=p_projects)._id, 'admin'))
         p_users.acl.append(
-            M.ACE.allow(u_admin.project_role(project=p_projects), 'admin'))
+            M.ACE.allow(u_admin.project_role(project=p_projects)._id, 'admin'))
 
         p_allura = n_projects.register_project('allura', u_admin)
     u1 = M.User.register(dict(username='test-user',
@@ -143,14 +143,13 @@ def bootstrap(command, conf, vars):
         M.ACE.allow(u_admin_adobe.project_role(p_adobe)._id, 'admin'))
     p0 = n_projects.register_project('test', u_admin)
     p0._extra_tool_status = [ 'alpha', 'beta' ]
-    # Ming doesn't detect substructural changes in newly created objects (vs loaded from DB)
-    state(n_adobe).status = 'dirty'
-    state(n_projects).status = 'dirty'
-    state(n_users).status = 'dirty'
-    # TODO: Hope that Ming can be improved to at least avoid stuff below
-    session(n_adobe).flush(n_adobe)
-    session(n_projects).flush(n_projects)
-    session(n_users).flush(n_users)
+
+    sess = session(n_adobe) # all the sessions are the same
+    for x in (n_adobe, n_projects, n_users, p_projects, p_users, p_adobe):
+        # Ming doesn't detect substructural changes in newly created objects (vs loaded from DB)
+        state(x).status = 'dirty'
+        # TODO: Hope that Ming can be improved to at least avoid stuff below
+        sess.flush(x)
 
 
     log.info('Registering initial apps')
