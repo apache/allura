@@ -441,7 +441,9 @@ class MergeRequest(VersionedArtifact):
     @LazyProperty
     def downstream_repo_url(self):
         with self.push_downstream_context():
-            return c.app.url
+            return c.app.repo.clone_url(
+                category='ro',
+                username=c.user.username)
 
     def push_downstream_context(self):
         return h.push_context(self.downstream.project_id, self.downstream.mount_point)

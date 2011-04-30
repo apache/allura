@@ -76,15 +76,16 @@ class Decoration(object):
         self._before_validate.append(func)
 
     def do_validate_params(self, params):
-        # An object used by FormEncode to get translator function
         for hook in self._before_validate:
             hook(params)
         if self._validators:
             state = type('state', (), {})
-            if hasattr(self._validators, 'to_python'):
+            if isinstance(self._validators, schema.Schema):
                 params = self._validators.to_python(params, state)
-            if hasattr(self._validators, 'validate'):
+            elif hasattr(self._validators, 'validate'):
                 params = self._validators.validate(params, state)
+            else:
+                assert False, 'Invalid validator: %s' % self._validators
         return params
 
     def do_render_response(self, result):
