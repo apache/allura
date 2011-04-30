@@ -48,6 +48,7 @@ class IRCBot(asynchat.async_chat):
     TIME_BETWEEN_CONFIGS=timedelta(minutes=1)
 
     def __init__(self, host, port, nick='sfbot'):
+        import pdb; pdb.set_trace()
         self.logger = logging.getLogger(__name__)
         self.host = host
         self.port = port
