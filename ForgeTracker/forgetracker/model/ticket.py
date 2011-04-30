@@ -6,7 +6,7 @@ from datetime import datetime, timedelta
 import bson
 import pymongo
 from pymongo.errors import OperationFailure
-from tg import c
+from tg import c, g
 
 from ming import schema
 from ming.utils import LazyProperty

@@ -1,4 +1,4 @@
-'''Code to support pylons-style traversal on top of TG-style _lookup'''
+'''Code to support tg-style traversal on top of TG-style _lookup'''
 from decorators import Decoration
 
 class Resource(object):

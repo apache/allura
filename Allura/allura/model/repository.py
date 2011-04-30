@@ -11,6 +11,7 @@ from collections import defaultdict
 
 import tg
 import pymongo.errors
+from tg import c
 
 from ming import schema as S
 from ming.utils import LazyProperty

@@ -6,7 +6,7 @@ import Image
 from bson import ObjectId
 
 import pkg_resources
-from tg import c, g, request
+from tg import c, g, request, session
 from tg import expose, redirect, validate
 from tg.decorators import with_trailing_slash, without_trailing_slash
 from webob import exc
@@ -317,7 +317,7 @@ class ProjectAdminController(BaseController):
     def add_screenshot(self, screenshot=None, caption=None, **kw):
         require_access(c.project, 'update')
         if len(c.project.get_screenshots()) >= 6:
-            flash('You may not have more than 6 screenshots per project.','error')
+            session.flash('You may not have more than 6 screenshots per project.','error')
         elif screenshot is not None and screenshot != '':
             M.ProjectFile.save_image(
                 screenshot.filename, screenshot.file, content_type=screenshot.type,

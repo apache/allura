@@ -297,7 +297,7 @@ class PreferencesController(BaseController):
                **kw):
         require_authenticated()
         if display_name is None:
-            flash("Display Name cannot be empty.",'error')
+            session.flash("Display Name cannot be empty.",'error')
             redirect('.')
         if config.get('auth.method', 'local') == 'local':
             c.user.set_pref('display_name', display_name)
