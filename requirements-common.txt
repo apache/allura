@@ -8,7 +8,7 @@ BeautifulSoup==3.1.0.1
 chardet==1.0.1
 Creoleparser==0.7.3
 datadiff==1.1.2
-decorator==3.1.2
+decorator==3.3.1
 docutils==0.6
 EasyWidgets==0.2dev-20110404
 feedparser==5.0.1
