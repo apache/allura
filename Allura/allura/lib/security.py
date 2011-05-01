@@ -177,7 +177,7 @@ class RoleCache(object):
         return set(self.reaching_ids)
 
 def has_access(obj, permission, user=None, project=None):
-    '''Return whether the given user has the permission name on the giqven object.
+    '''Return whether the given user has the permission name on the given object.
 
     - First, all the roles for a user in the given project context are computed.
 
@@ -249,7 +249,7 @@ def has_access(obj, permission, user=None, project=None):
 
 def require(predicate, message=None):
     '''
-    Example: require(has_artifact_access('read'))
+    Example: require(has_access(c.app, 'read'))
 
     :param callable predicate: truth function to call
     :param str message: message to show upon failure
