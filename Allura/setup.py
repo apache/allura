@@ -8,28 +8,7 @@ except ImportError:
 
 from allura.version import __version__
 
-requires = [
-    'pyramid',
-    'WebError',
-    "Markdown >= 2.0.3",
-    "python-oembed >= 0.1.1",
-    "EasyWidgets >= 0.1.1",
-    "PIL >= 1.1.7",
-    "iso8601",
-    "chardet == 1.0.1",
-    "feedparser >= 5.0.1",
-    "oauth2 == 1.2.0",
-    "pysolr",
-    "pymongo >= 1.7",
-    "Pygments >= 1.1.1",
-    "python-openid >= 2.2.4",
-    "python-ldap == 2.3.9",
-    "python-dateutil >= 1.4.1",
-    "Jinja2",
-    "Genshi",
-    "BeautifulSoup",
-    "pypeline",
-    ]
+requires = [ ]
 
 setup(
     name='Allura',

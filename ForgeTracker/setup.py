@@ -20,7 +20,6 @@ setup(name='ForgeTracker',
       install_requires=[
           # -*- Extra requirements: -*-
           'Allura',
-          'tw.forms',
       ],
       entry_points="""
       # -*- Entry points: -*-
