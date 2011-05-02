@@ -1,9 +1,9 @@
 from pylons import c
-from tg import request
-from urllib import urlencode
+from tg import request, url
 import json
 
 from formencode import validators as fev
+from webhelpers import paginate
 
 import ew as ew_core
 import ew.jinja2_ew as ew
@@ -61,9 +61,9 @@ class ProjectUserSelect(ew.InputField):
         className=None)
 
     def __init__(self, **kw):
-      super(ProjectUserSelect, self).__init__(**kw)
-      if not isinstance(self.value, list):
-          self.value=[self.value]
+        super(ProjectUserSelect, self).__init__(**kw)
+        if not isinstance(self.value, list):
+            self.value=[self.value]
 
     def from_python(self, value, state=None):
         return value
@@ -156,7 +156,20 @@ class PageList(ew_core.Widget):
         count=0,
         page=0,
         show_label=False)
+
+    def paginator(self, count, page, limit, zero_based_pages=True):
+        page_offset = 1 if zero_based_pages else 0
+        limit = 10 if limit is None else limit
+        def page_url(page):
+            params = request.GET.copy()
+            params['page'] = page - page_offset
+            return url(request.path, params)
+        return paginate.Page(range(count), page + page_offset, int(limit),
+                             url=page_url)
     
+    def resources(self):
+        yield ew.CSSLink('css/page_list.css')
+
     @property
     def url_params(self, **kw):
         url_params = dict()

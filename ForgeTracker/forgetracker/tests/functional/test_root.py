@@ -578,6 +578,14 @@ class TestFunctionalController(TestController):
         assert_true(summary in r)
         r = self.app.get('/bugs/1/', dict(page=1))
         assert_true(post_content in r)
+        # no pager if just one page
+        assert_false('Page 1 of 1' in r)
+        # add some more posts and check for pager
+        for i in range(2):
+            r = self.app.post(f['action'].encode('utf-8'), params=params,
+                  headers={'Referer': '/bugs/1/'.encode("utf-8")})
+        r = self.app.get('/bugs/1/', dict(page=1, limit=2))
+        assert_true('Page 2 of 2' in r)
 
 def sidebar_contains(response, text):
     sidebar_menu = response.html.find('div', attrs={'id': 'sidebar'})
