@@ -65,16 +65,16 @@ def main():
     log.info('====================================')
     log.info('Update appconfig ACLs')
     for ac in q_app_config:
-        simple_acl_update(ac)
+        simple_acl_update(ac, 'app_config')
         if not options.test: c_app_config.save(ac)
         # Update artifact acls
         log.info('====================================')
-        log.info('Update artifact ACLs')
+        log.info('Update artifact ACLs for %s', ac['_id'])
         for _, a_cls in dfs(M.Artifact, graph):
             c_artifact = project_db[a_cls.__mongometa__.name]
             for a in c_artifact.find(dict(app_config_id=ac['_id'])):
                 empty_acl = not a['acl']
-                simple_acl_update(a)
+                simple_acl_update(a, a_cls.__mongometa__.name)
                 if not options.test and not empty_acl: c_artifact.save(a)
 
 def update_project_acl(project_doc):
@@ -121,14 +121,14 @@ def update_neighborhood_acl(neighborhood_doc, init_doc):
         u = c_user.find(_id=uid).next()
         if options.test: log.info('... grant nbhd admin to: %s', u['username'])
         role =  _project_role(init_doc['_id'], user_id=uid)
-        if r_admin not in role['roles']:
-            role['roles'].append(r_admin)
-    _grant(new_acl, 'read', r_anon)
-    _grant(new_acl, 'admin', r_admin)
-    _grant(new_acl, 'register', r_admin)
+        if r_admin['_id'] not in role['roles']:
+            role['roles'].append(r_admin['_id'])
+    _grant(new_acl, 'read', r_anon['_id'])
+    _grant(new_acl, 'admin', r_admin['_id'])
+    _grant(new_acl, 'register', r_admin['_id'])
     if acl['create'] == [ ]:
         if options.test: log.info('grant register to auth')
-        _grant(new_acl, 'register', r_auth)
+        _grant(new_acl, 'register', r_auth['_id'])
     del neighborhood_doc['acl']
     if options.test:
         log.info('--- new init acl:\n%s\n%s\n---',
@@ -152,10 +152,10 @@ def _project_role(project_id, name=None, user_id=None):
     return doc
                                  
 
-def simple_acl_update(doc):
+def simple_acl_update(doc, collection_name):
     '''Update dict-style to list-style ACL'''
     if not isinstance(doc['acl'], dict):
-        log.warning('Already upgraded %s' % doc)
+        log.warning('Already upgraded %s: %s', collection_name, doc)
         return
 
     new_acl = []
@@ -163,7 +163,8 @@ def simple_acl_update(doc):
         for rid in role_ids:
             _grant(new_acl, perm, rid)
     if options.test and doc['acl']:
-        log.info('--- update\n%s\n%s\n---',
+        log.info('--- update %s %s\n%s\n%s\n---',
+                 collection_name, doc['_id'],
                  pformat(_format_acd(doc['acl'])),
                  pformat(map(_format_ace, new_acl)))
     doc['acl'] = new_acl
