@@ -19,7 +19,7 @@ class WithUserAndBugsApp(TrackerTestWithModel):
 class TestWhenSearchingWithCustomFields(WithUserAndBugsApp):
     def setUp(self):
         super(TestWhenSearchingWithCustomFields, self).setUp()
-        with search_returning_colors_are_wrong_ticket():
+        with solr_search_returning_colors_are_wrong_ticket():
             self.response = tracker_main.RootController().search(q='friends')
 
     def test_that_sortable_custom_fields_are_present(self):
@@ -35,7 +35,7 @@ class TestWhenSearchingWithCustomFields(WithUserAndBugsApp):
 class TestWhenLoadingFrontPage(WithUserAndBugsApp):
     def setUp(self):
         super(TestWhenLoadingFrontPage, self).setUp()
-        with search_returning_colors_are_wrong_ticket():
+        with mongo_search_returning_colors_are_wrong_ticket():
             self.response = tracker_main.RootController().index()
 
     def test_that_recent_tickets_are_shown(self):
@@ -43,13 +43,20 @@ class TestWhenLoadingFrontPage(WithUserAndBugsApp):
         assert tickets[0].summary == 'colors are wrong'
 
 
-def search_returning_colors_are_wrong_ticket():
+def solr_search_returning_colors_are_wrong_ticket():
     ticket = create_colors_are_wrong_ticket()
     search_artifact = Mock()
     matches = Mock()
     matches.docs = [dict(ticket_num_i=ticket.ticket_num)]
     search_artifact.return_value = matches
     return patch('forgetracker.tracker_main.search_artifact', search_artifact)
+
+def mongo_search_returning_colors_are_wrong_ticket():
+    ticket = create_colors_are_wrong_ticket()
+    tickets = [ ticket ]
+    paged_query = Mock()
+    paged_query.return_value = dict(tickets=tickets)
+    return patch('forgetracker.tracker_main.TM.Ticket.paged_query', paged_query)
 
 
 def create_colors_are_wrong_ticket():
