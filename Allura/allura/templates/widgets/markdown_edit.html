@@ -6,6 +6,8 @@
   <div style="clear:both"></div>
   <textarea id="{{id or name}}" name="{{name}}" class="auto_resize" {{widget.j2_attrs(attrs)}}>{{value or ''}}</textarea>
   <div class="markdown_preview" style="display:none"></div>
+  <a href="#" class="markdown_preview btn" title="Preview"><b data-icon="{{g.icons['search'].char}}" class="ico {{g.icons['search'].css}}"></b> Preview</a>
+  <a href="#" class="markdown_edit btn" style="display:none" title="Edit"><b data-icon="{{g.icons['pencil'].char}}" class="ico {{g.icons['pencil'].css}}"></b> Edit</a>
   <div class="modal markdown_help" style="display:none">
     <b data-icon="{{g.icons['close'].char}}" class="ico {{g.icons['close'].css}} close"></b>
     {{lib.markdown_syntax(id=(id or name))}}
