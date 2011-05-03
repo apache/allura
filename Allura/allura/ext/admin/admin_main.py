@@ -77,9 +77,9 @@ class AdminApp(Application):
     _installable_tools = None
     tool_label = 'admin'
     icons={
-        24:'allura/images/admin_24.png',
-        32:'allura/images/admin_32.png',
-        48:'allura/images/admin_48.png'
+        24:'images/admin_24.png',
+        32:'images/admin_32.png',
+        48:'images/admin_48.png'
     }
 
     def __init__(self, project, config):

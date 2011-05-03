@@ -39,9 +39,9 @@ class ForgeChatApp(Application):
         ConfigOption('channel', str, ''),
         ]
     icons={
-        24:'allura/images/chat_24.png',
-        32:'allura/images/chat_32.png',
-        48:'allura/images/chat_48.png'
+        24:'images/chat_24.png',
+        32:'images/chat_32.png',
+        48:'images/chat_48.png'
     }
 
     def __init__(self, project, config):

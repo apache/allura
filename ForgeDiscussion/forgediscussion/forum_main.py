@@ -48,9 +48,9 @@ class ForgeDiscussionApp(Application):
     default_mount_point='discussion'
     ordinal=7
     icons={
-        24:'allura/images/forums_24.png',
-        32:'allura/images/forums_32.png',
-        48:'allura/images/forums_48.png'
+        24:'images/forums_24.png',
+        32:'images/forums_32.png',
+        48:'images/forums_48.png'
     }
 
     def __init__(self, project, config):

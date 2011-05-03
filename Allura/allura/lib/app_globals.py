@@ -238,18 +238,18 @@ class Globals(object):
             ew.JSLink('tool/%s/%s' % (app.config.tool_name, href), **kw))
 
     def register_theme_css(self, href, **kw):
-        theme_name = config.get('theme', 'allura')
-        self.resource_manager.register(
-            ew.CSSLink('theme/%s/%s' % (theme_name, href), **kw))
+        self.resource_manager.register(ew.CSSLink(self.theme_href(href), **kw))
 
     def register_theme_js(self, href, **kw):
-        theme_name = config.get('theme', 'allura')
-        self.resource_manager.register(
-            ew.JSLink('theme/%s/%s' % (theme_name, href), **kw))
+        self.resource_manager.register(ew.JSLink(self.theme_href(href), **kw))
 
     def register_js_snippet(self, text, **kw):
-        self.resource_manager.register(
-            ew.JSScript(text, **kw))
+        self.resource_manager.register(ew.JSScript(text, **kw))
+
+    def theme_href(self, href):
+        theme_name = config.get('theme', 'allura')
+        return self.resource_manager.absurl(
+            'theme/%s/%s' % (theme_name, href))
 
     def oid_session(self):
         if 'openid_info' in session:
@@ -264,17 +264,6 @@ class Globals(object):
         if base.startswith(':'):
             base = request.scheme + base
         return base + resource
-
-    def theme_static(self, resource):
-        if isinstance(resource,tuple):
-            theme_name = resource[1]
-            resource = resource[0]
-        else:
-            theme_name = config.get('theme', 'allura')
-        base = config['static.url_base']
-        if base.startswith(':'):
-            base = request.scheme + base
-        return base + theme_name + '/' + resource
 
     def app_static(self, resource, app=None):
         base = config['static.url_base']

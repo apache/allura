@@ -32,9 +32,9 @@ class ForgeDownloadsApp(Application):
     default_mount_point='downloads'
     ordinal=8
     icons={
-        24:'allura/images/downloads_24.png',
-        32:'allura/images/downloads_32.png',
-        48:'allura/images/downloads_48.png'
+        24:'images/downloads_24.png',
+        32:'images/downloads_32.png',
+        48:'images/downloads_48.png'
     }
 
     def __init__(self, project, config):

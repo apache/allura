@@ -127,9 +127,9 @@ class Application(object):
     default_mount_point='tool'
     ordinal=0
     icons={
-        24:'allura/images/admin_24.png',
-        32:'allura/images/admin_32.png',
-        48:'allura/images/admin_48.png'
+        24:'images/admin_24.png',
+        32:'images/admin_32.png',
+        48:'images/admin_48.png'
     }
 
     def __init__(self, project, app_config_object):
@@ -160,7 +160,7 @@ class Application(object):
         '''
         resource = self.icons.get(size)
         if resource:
-            return g.forge_static(resource)
+            return g.theme_href(resource)
         return ''
 
     def has_access(self, user, topic):

@@ -55,9 +55,9 @@ class ForgeBlogApp(Application):
     config_options = Application.config_options
     show_discussion=True
     icons={
-        24:'allura/images/blog_24.png',
-        32:'allura/images/blog_32.png',
-        48:'allura/images/blog_48.png'
+        24:'images/blog_24.png',
+        32:'images/blog_32.png',
+        48:'images/blog_48.png'
     }
 
     def __init__(self, project, config):

@@ -32,9 +32,9 @@ class ForgeLinkApp(Application):
     default_mount_point='link'
     ordinal=1
     icons={
-        24:'allura/images/ext_24.png',
-        32:'allura/images/ext_32.png',
-        48:'allura/images/ext_48.png'
+        24:'images/ext_24.png',
+        32:'images/ext_32.png',
+        48:'images/ext_48.png'
     }
 
     def __init__(self, project, config):

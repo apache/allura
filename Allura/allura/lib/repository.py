@@ -38,9 +38,9 @@ class RepositoryApp(Application):
     default_branch_name=None # master or default or some such
     repo=None # override with a property in child class
     icons={
-        24:'allura/images/code_24.png',
-        32:'allura/images/code_32.png',
-        48:'allura/images/code_48.png'
+        24:'images/code_24.png',
+        32:'images/code_32.png',
+        48:'images/code_48.png'
     }
 
     def __init__(self, project, config):
