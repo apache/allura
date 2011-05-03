@@ -16,7 +16,7 @@ from ming.orm import session, ThreadLocalORMSession
 import allura
 from allura.command import base
 from allura.lib import helpers as h
-from allura.lib import search
+from allura.lib import search, security
 from allura import model as M
 
 from forgechat import model as CM
@@ -144,10 +144,11 @@ class IRCBot(asynchat.async_chat):
 
     def handle_shortlink(self, lnk, sender, rcpt):
         art = lnk.ref.artifact
-        index = art.index()
-        text = index['snippet_s'] or index['title_s']
-        url = urljoin(tg.config.get('base_url', 'http://sourceforge.net'), index['url_s'])
-        self.notice(rcpt, '[%s] - [%s](%s)' % (lnk.link, text,url))
+        if security.has_access(art, 'read', user=M.User.anonymous())():
+            index = art.index()
+            text = index['snippet_s'] or index['title_s']
+            url = urljoin(tg.config.get('base_url', 'http://sourceforge.net'), index['url_s'])
+            self.notice(rcpt, '[%s] - [%s](%s)' % (lnk.link, text,url))
 
     def log_channel(self, sender, cmd, rcpt, rest):
         if cmd not in ('NOTICE', 'PRIVMSG'):
