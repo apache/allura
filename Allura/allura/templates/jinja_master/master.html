@@ -9,6 +9,7 @@
 {% do g.register_forge_js('js/pb.transformie.min.js') %}
 {% do g.register_forge_js('js/allura-base.js') %}
 {% do g.register_forge_css('css/forge/hilite.css') %}
+{% do g.theme.require() %}
 {% do g.resource_manager.register_widgets(c) %}
 {# paulirish.com/2008/conditional-stylesheets-vs-css-hacks-answer-neither/ #}
 <!--[if lt IE 7 ]> <html lang="en" class="no-js ie6"> <![endif]-->
@@ -32,10 +33,6 @@
       {{ blob }}
     {% endfor %}
     {% endif %}
-    <link rel="stylesheet" type="text/css" media="screen" href="{{g.theme_static(g.theme['base_css'])}}" />
-    {% for t in g.theme['theme_css'] %}
-      <link rel="stylesheet" type="text/css" media="screen" href="{{g.theme_static(t)}}" />
-    {% endfor %}
       
     {% if c.project and c.project.neighborhood.css %}
       <style type="text/css">

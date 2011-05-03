@@ -416,7 +416,6 @@ class ThemeProvider(object):
     own jinja templates.  Use the standard templates as a reference, you should
     provide matching macros and block names.
 
-    :var base_css: tuple of (css-resource, theme-name), or just a string css-resource
     :var icons: a dictionary of sized icons for each tool
     '''
 
@@ -425,8 +424,6 @@ class ThemeProvider(object):
     nav_menu = 'allura:templates/jinja_master/nav_menu.html'
     top_nav = 'allura:templates/jinja_master/top_nav.html'
     sidebar_menu = 'allura:templates/jinja_master/sidebar_menu.html'
-    base_css = ('css/site_style.css', 'allura')
-    theme_css = ['css/allura.css']
     icons = {
         'subproject': {
             24: 'images/ext_24.png',
@@ -434,6 +431,10 @@ class ThemeProvider(object):
             48: 'images/ext_48.png'
         }
     }
+
+    def require(self):
+        g.register_theme_css('css/site_style.css')
+        g.register_theme_css('css/allura.css')
 
     @LazyProperty
     def password_change_form(self):
