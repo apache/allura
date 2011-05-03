@@ -217,7 +217,7 @@ class TestRootController(TestController):
                 'labels_old':'',
                 'viewable_by-0.id':'all'})
         file_name = 'neo-icon-set-454545-256x350.png'
-        file_path = os.path.join(allura.__path__[0],'lib','nf','allura','images',file_name)
+        file_path = os.path.join(allura.__path__[0],'nf','allura','images',file_name)
         file_data = file(file_path).read()
         upload = ('file_info', file_name, file_data)
         self.app.post('/wiki/TEST/attach', upload_files=[upload])

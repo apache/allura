@@ -24,11 +24,8 @@ def register_ew_resources(manager):
             raise
     for ep in pkg_resources.iter_entry_points('allura.theme'):
         try:
-            manager.register_directory(
-                'theme/%s' % ep.name,
-                pkg_resources.resource_filename(
-                    ep.module_name,
-                    os.path.join('nf', ep.name)))
+            theme = ep.load()
+            theme.register_ew_resources(manager, ep.name)
         except ImportError:
             log.warning('Cannot import entry point %s', ep)
             raise

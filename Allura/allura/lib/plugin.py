@@ -436,6 +436,14 @@ class ThemeProvider(object):
         g.register_theme_css('css/site_style.css')
         g.register_theme_css('css/allura.css')
 
+    @classmethod
+    def register_ew_resources(cls, manager, name):
+        manager.register_directory(
+            'theme/%s' % name,
+            pkg_resources.resource_filename(
+                'allura', 
+                os.path.join('nf', name)))
+
     @LazyProperty
     def password_change_form(self):
         '''
