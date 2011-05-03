@@ -109,6 +109,7 @@ def update_neighborhood_acl(neighborhood_doc, init_doc):
     if options.test: log.info('Update nbhd %s', neighborhood_doc['name'])
     if 'acl' not in neighborhood_doc:
         log.warning('Neighborhood %s already updated', neighborhood_doc['name'])
+        return
     p = Object(init_doc)
     p.root_project=p
     r_anon = _project_role(init_doc['_id'], '*anonymous')
@@ -118,7 +119,7 @@ def update_neighborhood_acl(neighborhood_doc, init_doc):
     new_acl = list(init_doc['acl'])
     assert acl['read'] == [None] # nbhd should be public
     for uid in acl['admin'] + acl['moderate']:
-        u = c_user.find(_id=uid).next()
+        u = c_user.find(dict(_id=uid)).next()
         if options.test: log.info('... grant nbhd admin to: %s', u['username'])
         role =  _project_role(init_doc['_id'], user_id=uid)
         if r_admin['_id'] not in role['roles']:
