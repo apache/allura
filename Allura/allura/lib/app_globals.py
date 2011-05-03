@@ -237,6 +237,16 @@ class Globals(object):
         self.resource_manager.register(
             ew.JSLink('tool/%s/%s' % (app.config.tool_name, href), **kw))
 
+    def register_theme_css(self, href, **kw):
+        theme_name = config.get('theme', 'allura')
+        self.resource_manager.register(
+            ew.CSSLink('theme/%s/%s' % (theme_name, href), **kw))
+
+    def register_theme_js(self, href, **kw):
+        theme_name = config.get('theme', 'allura')
+        self.resource_manager.register(
+            ew.JSLink('theme/%s/%s' % (theme_name, href), **kw))
+
     def register_js_snippet(self, text, **kw):
         self.resource_manager.register(
             ew.JSScript(text, **kw))
