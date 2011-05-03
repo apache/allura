@@ -57,11 +57,6 @@
     {% endfor %}
     {{theme_macros.header(c.user.username, c.user._id, c.user.display_name, g.login_url, '/auth/logout')}}
     {% set flash = tg.flash_obj.render('flash', use_js=False) %}
-    {% if flash %}
-      <div style="display:none">
-        {{flash | safe}}
-      </div>
-    {% endif %}
     <section id="page-body" class="{{g.document_class(neighborhood)}}">
 		<div class="grid-24">
         {% block nav_menu %}
@@ -130,5 +125,8 @@
       {{ c.project.neighborhood.site_specific_html | safe }}
     {% endif %}
     {{theme_macros.custom_js()}}
+    {% if flash %}
+    <script type="text/javascript">{{flash | safe}}</script>
+    {% endif %}
   </body>
 </html>

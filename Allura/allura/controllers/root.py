@@ -6,6 +6,7 @@ from collections import defaultdict
 import pkg_resources
 from tg import expose, flash, redirect, session, config, response, request
 from tg.decorators import with_trailing_slash, without_trailing_slash
+from tg.flash import TGFlash
 from pylons import c, g, cache
 
 import ew
@@ -29,6 +30,8 @@ from .rest import RestController
 __all__ = ['RootController']
 
 log = logging.getLogger(__name__)
+
+TGFlash.static_template = '''$('#messages').notify('%(message)s', {status: '%(status)s'});'''
 
 class W:
     project_summary = plw.ProjectSummary()
