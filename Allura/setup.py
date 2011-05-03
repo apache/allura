@@ -94,6 +94,7 @@ setup(
     script = allura.command:ScriptCommand
     set-tool-access = allura.command:SetToolAccessCommand
     smtp_server=allura.command:SMTPServerCommand
+    create-neighborhood = allura.command:CreateNeighborhoodCommand
     
     [easy_widgets.resources]
     ew_resources=allura.config.resources:register_ew_resources
