@@ -8,13 +8,35 @@ except ImportError:
 
 from allura.version import __version__
 
+PROJECT_DESCRIPTION='''
+Allura is an open source implementation of a software "forge", a web site
+that manages source code repositories, bug reports, discussions, mailing
+lists, wiki pages, blogs and more for any number of individual projects.
+'''
 setup(
     name='Allura',
     version=__version__,
-    description='',
+    description='Base distribution of the Allura development platform',
+    long_description=PROJECT_DESCRIPTION,
     author='SourceForge Team',
-    author_email='allura@geek.net',
-    url='http://sourceforge.net/p/',
+    author_email='develop@discussion.allura.p.re.sf.net',
+    url='http://sourceforge.net/p/allura',
+    keywords='sourceforge allura turbogears pylons jinja2 mongodb rabbitmq',
+    license='Apache License, http://www.apache.org/licenses/LICENSE-2.0',
+    platforms=[
+        'Linux',
+        'MacOS X',
+        ],
+    classifiers=[
+        'Development Status :: 4 - Beta',
+        'Environment :: Web Environment',
+        'Framework :: Pylons',
+        'Framework :: TurboGears',
+        'Intended Audience :: Developers',
+        'Programming Language :: Python :: 2.6',
+        'Topic :: Internet :: WWW/HTTP :: WSGI :: Application',
+        'License :: OSI Approved :: Apache Software License',
+        ],
     install_requires=[
         "TurboGears2 >= 2.1a1",
         "PasteScript",
