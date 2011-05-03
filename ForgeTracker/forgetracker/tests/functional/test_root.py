@@ -170,7 +170,7 @@ class TestFunctionalController(TestController):
     def test_new_image_attachment_content(self):
         h.set_context('test', 'bugs')
         file_name = 'neo-icon-set-454545-256x350.png'
-        file_path = os.path.join(allura.__path__[0],'public','nf','allura','images',file_name)
+        file_path = os.path.join(allura.__path__[0],'lib','nf','allura','images',file_name)
         file_data = file(file_path).read()
         upload = ('attachment', file_name, file_data)
         self.new_ticket(summary='test new attachment')
