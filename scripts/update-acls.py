@@ -120,10 +120,13 @@ def update_neighborhood_acl(neighborhood_doc, init_doc):
     assert acl['read'] == [None] # nbhd should be public
     for uid in acl['admin'] + acl['moderate']:
         u = c_user.find(dict(_id=uid)).next()
-        if options.test: log.info('... grant nbhd admin to: %s', u['username'])
+        if options.test:
+            log.info('... grant nbhd admin to: %s', u['username'])
+            continue
         role =  _project_role(init_doc['_id'], user_id=uid)
         if r_admin['_id'] not in role['roles']:
             role['roles'].append(r_admin['_id'])
+            c_project_role.save(role)
     _grant(new_acl, 'read', r_anon['_id'])
     _grant(new_acl, 'admin', r_admin['_id'])
     _grant(new_acl, 'register', r_admin['_id'])
