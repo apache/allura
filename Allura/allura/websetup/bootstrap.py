@@ -98,6 +98,11 @@ def bootstrap(command, conf, vars):
     file_path = os.path.join(allura.__path__[0],'public','nf','images',file_name)
     M.NeighborhoodFile.from_path(file_path, neighborhood_id=n_adobe._id)
 
+    # Add some test users
+    for unum in range(10):
+        u = M.User.register(dict(username='test-user-%d' % unum,
+                                  display_name='Test User %d' % unum))
+        u.set_password('foo')
 
     log.info('Creating basic project categories')
     cat1 = M.ProjectCategory(name='clustering', label='Clustering')
