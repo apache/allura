@@ -528,7 +528,7 @@ class GroupsController(BaseController):
             for username in new_users:
                 user = M.User.by_username(username)
                 if not user:
-                    flash('User %s not found' % pr['new'], 'error')
+                    flash('User %s not found' % username, 'error')
                     redirect('.')
                 user.project_role().roles.append(group._id)
             # Handle users removed from groups
