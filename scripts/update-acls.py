@@ -16,19 +16,19 @@ optparser = OptionParser(usage='allurapaste script <ini file> -- %prog [options]
 optparser.add_option('-t', '--test',  dest='test', action='store_true')
 
 main_db = M.main_doc_session.db
-project_db = M.project_doc_session.db
-
 c_neighborhood =  main_db.neighborhood
-c_user = main_db.user
 c_project =  main_db.project
+c_user = main_db.user
 c_project_role = main_db.project_role
+c.project = Object(
+    database_uri=c_project.find().next()['database_uri'])
+
+project_db = M.project_doc_session.db
 c_app_config = project_db.config
 
 def main():
     global options
     options, neighborhoods = optparser.parse_args()
-    c.project = Object(
-        database_uri=c_project.find().next()['database_uri'])
     if neighborhoods:
         log.info('Updating neighborhoods: %s', neighborhoods)
         q_neighborhoods = list(c_neighborhood.find(dict(name={'$in': neighborhoods })))
