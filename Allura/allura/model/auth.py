@@ -383,7 +383,11 @@ class User(MappedClass):
 
     def private_project(self):
         from .project import Project
-        return Project.query.get(shortname='u/%s' % self.username, deleted=False)
+        try:
+            return Project.query.get(shortname='u/%s' % self.username, deleted=False)
+        except S.Invalid:
+            log.exception('Error retrieving private_project for %s', self.username)
+            return None
 
     @property
     def script_name(self):
