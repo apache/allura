@@ -323,6 +323,7 @@ class RootController(BaseController):
     @h.vardec
     @expose('jinja:forgetracker:templates/tracker/index.html')
     def index(self, limit=250, columns=None, page=0, sort='ticket_num desc', **kw):
+        kw.pop('q', None) # it's just our original query mangled and sent back to us
         result = TM.Ticket.paged_query(c.app.globals.not_closed_mongo_query,
                                         sort=sort, limit=int(limit),
                                         columns=columns, page=page, **kw)
