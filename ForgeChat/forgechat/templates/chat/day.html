@@ -12,10 +12,23 @@
     <a href="{{prev}}">Earlier</a>...
     <a href="{{next}}">Later</a>
   </div>
+  <div style='clear:both'></div>
   <ul style='list-style:none'>
     {% for msg in messages %}
     <li id="{{msg._id}}">
-      {{msg.html_text|safe}}
+      <div style='float:left'>
+        <div style='float:left'>
+          <div
+            style='float:left;width:6em;overflow:hidden;font-weight:bold'>
+            {{msg.timestamp_hour}}
+          </div>
+          <div style='margin-left:6.5em;width:6em;overflow:hidden'>
+            {{msg.sender_short}}
+          </div>
+        </div>
+        <div style='margin-left:13em'>{{msg.text}}</div>
+      </div>
+      <div style='clear:both'></div>
     </li>
     {% endfor %}
   </ul>
