@@ -524,8 +524,8 @@ class Ticket(VersionedArtifact):
     def paged_query(cls, query, limit=None, page=0, sort=None, columns=None, **kw):
         """Query tickets, sorting and paginating the result."""
         limit, page, start = g.handle_paging(limit, page, default=25)
-        count = cls.query.find(query).count()
         q = cls.query.find(dict(query, app_config_id=c.app.config._id))
+        count = q.count()
         q = q.sort('ticket_num')
         if sort:
             field, direction = sort.split()
