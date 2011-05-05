@@ -8,7 +8,7 @@ import tg
 import git
 
 from ming.base import Object
-from ming.orm import Mapper, session
+from ming.orm import Mapper, session, mapper
 from ming.utils import LazyProperty
 
 from allura.lib import helpers as h
@@ -115,20 +115,23 @@ class GitImplementation(M.RepositoryImplementation):
         return result
 
     def new_commits(self, all_commits=False):
-        graph = {}
+        PAGESIZE=1024
+        commit_ids = [ (ci.hexsha, ci) for ci in self._git.iter_commits(topo_order=True) ]
+        if all_commits: return commit_ids
+        result = []
+        commit_doc = mapper(M.Commit).doc_cls
+        sess = M.main_doc_session
+        for i in xrange(0, len(commit_ids), PAGESIZE):
+            chunk = commit_ids[i:i+PAGESIZE]
+            found_commit_ids = set(
+                ci.object_id for ci in sess.find(
+                    commit_doc, object_id={'$in': chunk},
+                    fields=['_id', 'object_id']))
+            result += [ (oid, ci) for (oid, ci) in chunk if oid not in found_commit_ids ]
+        return result
 
-        to_visit = [ self._git.commit(rev=hd.object_id) for hd in self._repo.heads ]
-        while to_visit:
-            obj = to_visit.pop()
-            if obj.hexsha in graph: continue
-            if not all_commits:
-                # Look up the object
-                if M.Commit.query.find(dict(object_id=obj.hexsha)).count():
-                    graph[obj.hexsha] = set() # mark as parentless
-                    continue
-            graph[obj.hexsha] = set(p.hexsha for p in obj.parents)
-            to_visit += obj.parents
-        return list(topological_sort(graph))
+    def commit_parents(self, ci):
+        return [ (p_ci.hexsha, p_ci) for p_ci in ci.parents ]
 
     def commit_context(self, commit):
         prev_ids = commit.parent_ids
