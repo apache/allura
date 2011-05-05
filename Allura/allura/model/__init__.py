@@ -11,7 +11,7 @@ from .auth import AuthGlobals, User, ProjectRole, OpenId, EmailAddress, ApiToken
 from .openid_model import OpenIdStore, OpenIdAssociation, OpenIdNonce
 from .filesystem import File
 from .notification import Notification, Mailbox
-from .repository import Repository, RepositoryImplementation, RepoObject, Commit, Tree, Blob, CommitAncestor
+from .repository import Repository, RepositoryImplementation, RepoObject, Commit, Tree, Blob, CommitAncestor, Manifest
 from .repository import LogCache, LastCommitFor, MergeRequest, GitLikeTree
 from .stats import Stats
 from .oauth import OAuthToken, OAuthConsumerToken, OAuthRequestToken, OAuthAccessToken
@@ -21,6 +21,8 @@ from .types import ACE, ACL, EVERYONE, ALL_PERMISSIONS, DENY_ALL
 from .session import main_doc_session, main_orm_session
 from .session import project_doc_session, project_orm_session
 from .session import artifact_orm_session, repository_orm_session
+
+import repo
 
 from ming.orm import Mapper
 Mapper.compile_all()
