@@ -1,8 +1,11 @@
 import sys
+import os.path
+import cProfile
 from ming.orm import session
 from pylons import c
 from . import base
 from allura.lib import helpers as h
+from allura.lib import utils
 
 class ScriptCommand(base.Command):
     min_args=2
@@ -10,13 +13,23 @@ class ScriptCommand(base.Command):
     usage = '<ini file> <script> ...'
     summary = 'Run a script as if it were being run at the paster shell prompt'
     parser = base.Command.standard_parser(verbose=True)
+    parser.add_option('--profile', action='store_true', dest='profile',
+                      help='Dump profiling data to <script>.profile')
+    parser.add_option('--pdb', action='store_true', dest='pdb',
+                      help='Drop to a debugger on error')
 
     def command(self):
         self.basic_setup()
+        if self.options.pdb:
+            base.log.info('Installing exception hook')
+            sys.excepthook = utils.postmortem_hook
         with open(self.args[1]) as fp:
             ns = dict(__name__='__main__')
             sys.argv = self.args[1:]
-            exec fp in ns
+            if self.options.profile:
+                cProfile.run(fp, '%s.profile' % os.path.basename(self.args[1]))
+            else:
+                exec fp in ns
 
 class SetToolAccessCommand(base.Command):
     min_args=3
