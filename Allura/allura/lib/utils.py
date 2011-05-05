@@ -272,3 +272,16 @@ class AntiSpam(object):
             except (ValueError, TypeError, binascii.Error):
                 raise Invalid(error_msg, params, None)
         return before_validate(antispam_hook)
+
+class TruthyCallable(object):
+    '''
+    Wraps a callable to make it truthy in a boolean context.
+
+    Assumes the callable returns a truthy value and can be called with no args.
+    '''
+    def __init__(self, callable):
+        self.callable = callable
+    def __call__(self, *args, **kw):
+        return self.callable(*args, **kw)
+    def __nonzero__(self):
+        return self.callable()

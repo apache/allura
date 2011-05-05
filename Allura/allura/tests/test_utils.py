@@ -82,3 +82,18 @@ class TestAntispam(unittest.TestCase):
         encrypted_form['spinner'] = self.a.spinner_text
         encrypted_form['timestamp'] = self.a.timestamp_text
         return encrypted_form
+
+class TestTruthyCallable(unittest.TestCase):
+    def test_everything(self):
+        def wrapper_func(bool_flag):
+            def predicate(bool_flag=bool_flag):
+                return bool_flag
+            return utils.TruthyCallable(predicate)
+        true_predicate = wrapper_func(True)
+        false_predicate = wrapper_func(False)
+        assert true_predicate(True) == True
+        assert false_predicate(False) == False
+        assert true_predicate() == True
+        assert false_predicate() == False
+        assert bool(true_predicate) == True
+        assert bool(false_predicate) == False

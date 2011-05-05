@@ -9,7 +9,7 @@ from webob import exc
 from itertools import chain
 from ming.utils import LazyProperty
 
-from allura.lib import utils
+from allura.lib.utils import TruthyCallable
 
 log = logging.getLogger(__name__)
 
@@ -186,7 +186,7 @@ def has_access(obj, permission, user=None, project=None):
       then the function returns True and access is permitted. If the ACE DENYs
       access, then that role is removed from further consideration.
 
-    - If the obj is not a Neighborhood and the given user has then 'admin'
+    - If the obj is not a Neighborhood and the given user has the 'admin'
       permission on the current neighborhood, then the function returns True and
       access is allowed.
 
@@ -197,10 +197,10 @@ def has_access(obj, permission, user=None, project=None):
       obj.parent_security_context(). If the parent_security_context is None, then
       the function returns False and access is denied.
 
-   The effect of this processing is that if *any* role for the user is ALLOWed
-   access via a linear traversal of the ACLs, then access is allowed. All of the
-   users roles must either be explicitly DENYed or processing terminate with no
-   matches to DENY access top the resource.
+    The effect of this processing is that if *any* role for the user is ALLOWed
+    access via a linear traversal of the ACLs, then access is allowed. All of the
+    users roles must either be explicitly DENYed or processing terminate with no
+    matches to DENY access to the resource.
     '''
     from allura import model as M
     def predicate(obj=obj, user=user, project=project, roles=None):
@@ -245,7 +245,7 @@ def has_access(obj, permission, user=None, project=None):
             result = False
         # log.info('%s: %s', txt, result)
         return result
-    return predicate
+    return TruthyCallable(predicate)
 
 def require(predicate, message=None):
     '''
