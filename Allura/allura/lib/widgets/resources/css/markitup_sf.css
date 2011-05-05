@@ -1,6 +1,7 @@
 .markdown_edit textarea{
     height: 200px;
     width: 95%;
+    font-family: Courier;
 }
 .markdown_edit .btn{
     margin: 5px 5px 5px 0;
