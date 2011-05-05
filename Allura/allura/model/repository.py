@@ -18,14 +18,13 @@ from ming.utils import LazyProperty
 from ming.orm import FieldProperty, session, Mapper
 from ming.orm.declarative import MappedClass
 
-
 from allura.lib.patience import SequenceMatcher
 from allura.lib import helpers as h
 from allura.lib import utils
 
 from .artifact import Artifact, VersionedArtifact, Feed
 from .auth import User
-from .session import repository_orm_session, project_orm_session
+from .session import repository_orm_session, project_orm_session, main_doc_session
 from .notification import Notification
 
 log = logging.getLogger(__name__)
@@ -49,9 +48,17 @@ class RepositoryImplementation(object):
         raise NotImplementedError, 'commit'
 
     def new_commits(self, all_commits=False): # pragma no cover
-        '''Return any commit object_ids in the native repo that are not (yet) stored
-        in the database in topological order (parents first)'''
-        raise NotImplementedError, 'commit'
+        '''Return a list of (oid, commit) in topological order (heads first).
+
+        "commit" is a repo-native object, NOT a Commit object.
+        If all_commits is False, only return commits not already indexed.
+        '''
+        raise NotImplementedError, 'new_commits'
+
+    def commit_parents(self, commit):
+        '''Return a list of (oid, commit) for the parents of the given (native)
+        commit'''
+        raise NotImplementedError, 'commit_parents'
 
     def commit_context(self, object_id): # pragma no cover
         '''Returns {'prev':Commit, 'next':Commit}'''
@@ -281,6 +288,42 @@ class Repository(Artifact):
                 content_type, encoding = 'application/octet-stream', None
         return content_type, encoding
 
+    def refresh_ancestor_graph(self, commits):
+        '''Make sure the CommitAncestor collection is up-to-date based on
+        the given list of (oid, native_commit) commits
+        '''
+        PAGESIZE = 1024
+        ca_doc = mapper(CommitAncestor).doc_cls
+        sess = main_doc_session
+        ancestor_cache = {} # ancestor_cache[oid] = [ a_oid0, a_oid1...]
+        def _ancestors(oid, ci, indent=''):
+            if oid in ancestor_cache:
+                return ancestor_cache[oid]
+            stored_ancestors = []
+            for ca in sess.find(ca_doc, dict(object_id=oid)):
+                stored_ancestors.extend(ca.ancestor_ids)
+            if stored_ancestors:
+                # Ancestors already stored in MongoDB
+                ancestor_cache[oid] = stored_ancestors
+                return stored_ancestors
+            ancestor_ids = set()
+            for p_oid, p_ci in self._impl.commit_parents(ci):
+                ancestor_ids.add(p_oid)
+                ancestor_ids.update(_ancestors(p_oid, p_ci, indent + '    '))
+            result = ancestor_cache[oid] = list(ancestor_ids)
+            for i in xrange(0, len(result), PAGESIZE):
+                sess.insert(ca_doc(
+                        dict(
+                            object_id=oid,
+                            ancestor_ids=result[i:i+PAGESIZE])))
+
+        # Compute graph in chunks to save memory
+        for i, (oid, ci) in enumerate(reversed(commits)):
+            _ancestors(oid, ci)
+            if i and i % PAGESIZE == 0:
+                log.info('=== Clear ancestor cache === ')
+                ancestor_cache = {}
+
     def refresh(self, all_commits=False, notify=True):
         '''Find any new commits in the repository and update'''
         self._impl.refresh_heads()
@@ -288,8 +331,12 @@ class Repository(Artifact):
         session(self).flush()
         sess = session(Commit)
         log.info('Refreshing repository %s', self)
-        commit_ids = self._impl.new_commits(all_commits)
-        log.info('... %d new commits', len(commit_ids))
+        commits = self._impl.new_commits(all_commits)
+        log.info('... %d new commits', len(commits))
+        self.refresh_ancestor_graph(commits)
+
+
+        return
         # Refresh history
         i=0
         seen_object_ids = set()
@@ -622,6 +669,23 @@ class LogCache(RepoObject):
         if not lc.object_ids:
             lc.object_ids, lc.candidates = repo._impl.log(object_id, 0, 50)
         return lc
+
+class CommitAncestor(MappedClass):
+    class __mongometa__:
+        session = repository_orm_session
+        name='commit_ancestor'
+        indexes = [
+            ('object_id'), ('ancestor_id') ]
+
+    _id = FieldProperty(S.ObjectId)
+    object_id = FieldProperty(str)
+    ancestor_ids = FieldProperty([str])
+
+    @LazyProperty
+    def ancestor(self):
+        ci = Commit.query.get(object_id=self.ancestor_id)
+        if ci is None: return ci
+        ci.set_context(self.repo)
 
 class Commit(RepoObject):
     class __mongometa__:

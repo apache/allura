@@ -11,7 +11,7 @@ from .auth import AuthGlobals, User, ProjectRole, OpenId, EmailAddress, ApiToken
 from .openid_model import OpenIdStore, OpenIdAssociation, OpenIdNonce
 from .filesystem import File
 from .notification import Notification, Mailbox
-from .repository import Repository, RepositoryImplementation, RepoObject, Commit, Tree, Blob
+from .repository import Repository, RepositoryImplementation, RepoObject, Commit, Tree, Blob, CommitAncestor
 from .repository import LogCache, LastCommitFor, MergeRequest, GitLikeTree
 from .stats import Stats
 from .oauth import OAuthToken, OAuthConsumerToken, OAuthRequestToken, OAuthAccessToken
