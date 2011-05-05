@@ -4,6 +4,7 @@ $(window).load(function() {
         $('div.markdown_edit').each(function(){
             var $container = $(this);
             var $textarea = $('textarea', $container);
+            $textarea.tabby({tabString : "    "});
             var $preview = $('a.markdown_preview', $container);
             var $edit = $('a.markdown_edit', $container);
             var $help = $('a.markdown_help', $container);

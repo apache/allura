@@ -144,6 +144,7 @@ class MarkdownEdit(AutoResizeTextarea):
     def resources(self):
         for r in super(MarkdownEdit, self).resources(): yield r
         yield ew.JSLink('js/jquery.lightbox_me.js')
+        yield ew.JSLink('js/jquery.textarea.js')
         yield ew.JSLink('js/sf_markitup.js')
         yield ew.CSSLink('css/markitup_sf.css')
 
