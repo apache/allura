@@ -405,6 +405,9 @@ class Post(Message, VersionedArtifact):
         else: # pragma no cover
             return None
 
+    def link_text(self):
+        return self.subject
+
     def reply_subject(self):
         if self.subject and self.subject.lower().startswith('re:'):
             return self.subject

@@ -4,7 +4,7 @@
     <h4>Related</h4>
     <p>
     {% for related in artifact.related_artifacts() %}
-      <a href="{{related.url()}}">{{related.type_s}}: {{related.shorthand_id()}}</a><br>
+      <a href="{{related.url()}}">{{related.type_s}}: {{related.link_text()}}</a><br>
     {% endfor %}
     </p>
   {% endif %}

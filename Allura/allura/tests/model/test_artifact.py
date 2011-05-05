@@ -76,6 +76,7 @@ def test_artifact():
     assert idx['id'] == pg.index_id()
     assert 'text' in idx
     assert 'TestPage' in pg.shorthand_id()
+    assert pg.link_text() == pg.shorthand_id()
 
 @with_setup(setUp, tearDown)
 def test_artifactlink():

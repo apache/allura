@@ -222,6 +222,15 @@ class Artifact(MappedClass):
         '''
         return str(self._id) # pragma no cover
 
+    def link_text(self):
+        '''The link text that will be used when a shortlink to this artifact
+        is expanded into an <a></a> tag.
+
+        By default this method returns shorthand_id(). Subclasses should
+        override this method to provide more descriptive link text.
+        '''
+        return self.shorthand_id()
+
     def get_discussion_thread(self, data=None):
         '''Return the discussion thread for this artifact (possibly made more
         specific by the message_data)'''
