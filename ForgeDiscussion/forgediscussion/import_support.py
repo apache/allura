@@ -146,7 +146,6 @@ def create_post(discussion_id, thread_id, json_post):
         discussion_id=discussion_id,
         timestamp=json_post.date,
         author_id=json_post.poster_user._id,
-        subject=json_post.subject,
         text=json_post.body,
         status='ok')
     if json_post.is_followup_to not in ('0', '-1'):

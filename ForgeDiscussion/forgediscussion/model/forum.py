@@ -137,8 +137,6 @@ class ForumThread(M.Thread):
 
     def post(self, subject, text, message_id=None, parent_id=None, **kw):
         post = super(ForumThread, self).post(text, message_id=message_id, parent_id=parent_id)
-        if subject:
-            post.subject = subject
         if not self.first_post_id:
             self.first_post_id = post._id
             self.num_replies = 1
@@ -165,7 +163,6 @@ class ForumPost(M.Post):
         history_class = ForumPostHistory
     type_s = 'Post'
 
-    subject = FieldProperty(str)
     discussion_id = ForeignIdProperty(Forum)
     thread_id = ForeignIdProperty(ForumThread)
 

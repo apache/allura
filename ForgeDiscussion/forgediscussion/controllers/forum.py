@@ -137,7 +137,6 @@ class ForumPostController(PostController):
         tasks.calc_thread_stats.post(self.post.thread._id)
         tasks.calc_forum_stats(self.post.discussion.shortname)
         if args.pop('promote', None):
-            self.post.subject = args['subject']
             new_thread = self.post.promote()
             tasks.calc_thread_stats.post(new_thread._id)
             redirect(request.referer)

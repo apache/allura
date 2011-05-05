@@ -179,7 +179,7 @@ class TestForumAsync(TestController):
         self._post('testforum', 'Test Reply', 'Nothing here, either',
                    message_id='test_posts@sf.net',
                    in_reply_to=[ p._id ])
-        reply = FM.ForumPost.query.get(subject='Test Reply')
+        reply = FM.ForumPost.query.get(_id='test_posts@sf.net')
         r = self.app.get(thd_url + reply.slug + '/')
         # Check attachments
         r = self.app.post(url + 'attach',
