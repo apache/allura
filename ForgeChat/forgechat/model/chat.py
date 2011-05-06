@@ -54,14 +54,6 @@ class ChatMessage(M.Artifact):
         return str(self._id) # pragma no cover
 
     @property
-    def html_text(self):
-        text = '**%s** *%s* &mdash; %s' % (
-            self.timestamp_hour,
-            self.sender_short,
-            self.text)
-        return g.markdown.convert(text)
-
-    @property
     def sender_short(self):
         return self.sender.split('!')[0]
 

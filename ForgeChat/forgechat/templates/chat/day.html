@@ -26,7 +26,7 @@
             {{msg.sender_short}}
           </div>
         </div>
-        <div style='margin-left:13em'>{{msg.html_text|safe}}</div>
+        <div style='margin-left:13em'>{{g.markdown.convert(msg.text) | safe}}</div>
       </div>
       <div style='clear:both'></div>
     </li>
