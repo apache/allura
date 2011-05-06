@@ -21,7 +21,7 @@ def main():
     for fp in forum_posts:
         try:
             s = fp['subject']
-            if test or s:
+            if test:
                 log.info('... would remove subject "%s" from %s', s, fp['_id'])
             else:
                 log.info('... removing subject "%s" from %s', s, fp['_id'])
