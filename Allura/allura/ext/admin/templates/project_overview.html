@@ -30,7 +30,7 @@ It should be what you want to see as the project title in search listing.">
                         title="Add a short one or two sentence summary for your project.">{{c.project.short_description}}</textarea>
 
               <div style="clear:both">&nbsp;</div>
-              <label for="support_page">Support Page:</label>
+              Support Page:
               <br>
               <input name="support_page" type="radio" value=""{% if c.project.support_page == '' %} checked{% endif %} id="support_page_none">
               <label for="support_page_none">None</label><br>
@@ -66,7 +66,7 @@ It should be what you want to see as the project title in search listing.">
               </div>
               <div style="clear:both">&nbsp;</div>
 
-              <label for="removal">Removal:</label>
+              Removal:
               <br>
               <input name="removal" type="radio" value="" id="removal_active_cb"
                      {% if c.project.removal == '' %} checked{% endif %}>
