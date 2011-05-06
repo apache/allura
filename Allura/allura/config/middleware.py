@@ -117,7 +117,8 @@ def _make_core_app(root, global_conf, full_stack=True, **app_conf):
         compress=not asbool(global_conf['debug']),
         # compress=True,
         script_name=app_conf.get('ew.script_name', '/_ew_resources/'),
-        url_base=app_conf.get('ew.url_base', '/_ew_resources/'))
+        url_base=app_conf.get('ew.url_base', '/_ew_resources/'),
+        extra_headers=eval(app_conf.get('ew.extra_headers', 'None')))
     # Make sure that the wsgi.scheme is set appropriately when we
     # have the funky HTTP_X_SFINC_SSL  environ var
     if asbool(app_conf.get('auth.method', 'local')=='sfx'):
