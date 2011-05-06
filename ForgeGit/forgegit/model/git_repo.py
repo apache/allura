@@ -252,15 +252,22 @@ class _OpenedGitBlob(object):
         return self._stream.read()
 
     def __iter__(self):
+        '''
+        Yields one line at a time, reading from the stream
+        '''
         buffer = ''
         while True:
-            # Replenish buffer
+            # Replenish buffer until we have a line break
             while '\n' not in buffer:
                 chars = self._stream.read(self.CHUNK_SIZE)
                 if not chars: break
                 buffer += chars
             if not buffer: break
             eol = buffer.find('\n')
+            if eol == -1:
+                # end without \n
+                yield buffer
+                break
             yield buffer[:eol+1]
             buffer = buffer[eol+1:]
 
