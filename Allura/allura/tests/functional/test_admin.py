@@ -226,6 +226,23 @@ class TestProjectAdmin(TestController):
         assert r.html.find('input',{'name':'removal','value':''}).has_key('checked')
         assert not r.html.find('input',{'name':'removal','value':'deleted'}).has_key('checked')
 
+    def test_add_remove_trove_cat(self):
+        r = self.app.get('/admin/trove')
+        assert 'No Database Environment categories have been selected.' in r
+        assert '<span class="trove_fullpath">Database Environment :: Database API</span>' not in r
+        # add a cat
+        form = r.forms[0]
+        form['new_trove'].value = '499'
+        r = form.submit().follow()
+        # make sure it worked
+        assert 'No Database Environment categories have been selected.' not in r
+        assert '<span class="trove_fullpath">Database Environment :: Database API</span>' in r
+        # delete the cat
+        r = r.forms[0].submit().follow()
+        # make sure it worked
+        assert 'No Database Environment categories have been selected.' in r
+        assert '<span class="trove_fullpath">Database Environment :: Database API</span>' not in r
+
     def test_project_homepage(self):
         r = self.app.get('/admin/homepage')
         assert 'Awesome description' not in r

@@ -56,6 +56,27 @@ class ProjectCategory(MappedClass):
     def subcategories(self):
         return self.query.find(dict(parent_id=self._id)).all()
 
+class TroveCategory(MappedClass):
+    class __mongometa__:
+        session = main_orm_session
+        name='trove_category'
+        indexes = [ 'trove_cat_id', 'trove_parent_id' ]
+
+    _id=FieldProperty(S.ObjectId)
+    trove_cat_id = FieldProperty(int, if_missing=None)
+    trove_parent_id = FieldProperty(int, if_missing=None)
+    shortname = FieldProperty(str, if_missing='')
+    fullname = FieldProperty(str, if_missing='')
+    fullpath = FieldProperty(str, if_missing='')
+
+    @property
+    def parent_category(self):
+        return self.query.get(trove_cat_id=self.trove_parent_id)
+
+    @property
+    def subcategories(self):
+        return self.query.find(dict(trove_parent_id=self.trove_cat_id)).sort('fullname').all()
+
 class Project(MappedClass):
     _perms_base = [ 'read', 'update', 'admin', 'create']
     _perms_init = _perms_base + [ 'register' ]
@@ -100,6 +121,15 @@ class Project(MappedClass):
     ordinal = FieldProperty(int, if_missing=0)
     database_configured = FieldProperty(bool, if_missing=True)
     _extra_tool_status = FieldProperty([str])
+    trove_root_database=FieldProperty([S.ObjectId])
+    trove_developmentstatus=FieldProperty([S.ObjectId])
+    trove_audience=FieldProperty([S.ObjectId])
+    trove_license=FieldProperty([S.ObjectId])
+    trove_os=FieldProperty([S.ObjectId])
+    trove_language=FieldProperty([S.ObjectId])
+    trove_topic=FieldProperty([S.ObjectId])
+    trove_natlanguage=FieldProperty([S.ObjectId])
+    trove_environment=FieldProperty([S.ObjectId])
 
     @property
     def permissions(self):
@@ -137,6 +167,9 @@ class Project(MappedClass):
                 SitemapEntry(p.name or p.script_name, p.script_name)
                 for p in sps ]
         return result
+
+    def troves_by_type(self, trove_type):
+        return TroveCategory.query.find({'_id':{'$in':getattr(self,'trove_%s' % trove_type)}}).all()
 
     def get_tool_data(self, tool, key, default=None):
         return self.tool_data.get(tool, {}).get(key, None)

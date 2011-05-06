@@ -117,6 +117,7 @@ setup(
     set-tool-access = allura.command:SetToolAccessCommand
     smtp_server=allura.command:SMTPServerCommand
     create-neighborhood = allura.command:CreateNeighborhoodCommand
+    create-trove-categories = allura.command:CreateTroveCategoriesCommand
     
     [easy_widgets.resources]
     ew_resources=allura.config.resources:register_ew_resources

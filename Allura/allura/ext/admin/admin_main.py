@@ -128,7 +128,8 @@ class AdminApp(Application):
         links += [
             SitemapEntry('Metadata', admin_url+'overview', className='nav_child'),
             SitemapEntry('Homepage', admin_url+'homepage', className='nav_child'),
-            SitemapEntry('Screenshots', admin_url+'screenshots', className='nav_child')
+            SitemapEntry('Screenshots', admin_url+'screenshots', className='nav_child'),
+            SitemapEntry('Categorization', admin_url+'trove', className='nav_child')
             ]
         if has_access(c.project, 'admin')():
             links.append(SitemapEntry('Permissions', admin_url+'permissions/', className='nav_child'))
@@ -188,6 +189,14 @@ class ProjectAdminController(BaseController):
         c.screenshot_admin = W.screenshot_admin
         c.screenshot_list = W.screenshot_list
         return dict()
+
+    @without_trailing_slash
+    @expose('jinja:allura.ext.admin:templates/project_trove.html')
+    def trove(self):
+        base_troves = M.TroveCategory.query.find(dict(trove_parent_id=0)).sort('fullname').all()
+        topic_trove = M.TroveCategory.query.get(trove_parent_id=0,shortname='topic')
+        license_trove = M.TroveCategory.query.get(trove_parent_id=0,shortname='license')
+        return dict(base_troves=base_troves,license_trove=license_trove,topic_trove=topic_trove)
 
     @without_trailing_slash
     @expose('jinja:allura.ext.admin:templates/project_tools.html')
@@ -335,6 +344,55 @@ class ProjectAdminController(BaseController):
             c.project.homepage_title = homepage_title
         g.post_event('project_updated')
         redirect('homepage')
+
+    @expose('json:')
+    def get_trove_children(self, trove_id, **kw):
+        cats = M.TroveCategory.query.find(dict(trove_parent_id=int(trove_id))).all()
+        return dict(cats = [dict(id=c.trove_cat_id,label=c.fullname) for c in cats])
+
+    def _add_trove(self, type, new_trove):
+        current_troves = getattr(c.project,'trove_%s'%type)
+        trove_obj = M.TroveCategory.query.get(trove_cat_id=int(new_trove))
+        error_msg = None
+        if type in ['license','audience','developmentstatus','language'] and len(current_troves) >= 6:
+            error_msg = 'You may not have more than 6 of this category.'
+        elif type in ['topic'] and len(current_troves) >= 3:
+            error_msg = 'You may not have more than 3 of this category.'
+        elif trove_obj is not None:
+            if trove_obj._id not in current_troves:
+                current_troves.append(trove_obj._id)
+                g.post_event('project_updated')
+            else:
+                error_msg = 'This category has already been assigned to the project.'
+        return (trove_obj, error_msg)
+
+    @expose('json:')
+    @require_post()
+    def add_trove_js(self, type, new_trove, **kw):
+        require_access(c.project, 'update')
+        trove_obj, error_msg = self._add_trove(type, new_trove)
+        return dict(trove_full_path = trove_obj.fullpath, trove_cat_id = trove_obj.trove_cat_id, error_msg=error_msg)
+        redirect('trove')
+
+    @expose()
+    @require_post()
+    def add_trove(self, type, new_trove, **kw):
+        require_access(c.project, 'update')
+        trove_obj, error_msg = self._add_trove(type, new_trove)
+        if error_msg:
+            flash(error_msg,'error')
+        redirect('trove')
+
+    @expose()
+    @require_post()
+    def delete_trove(self, type, trove, **kw):
+        require_access(c.project, 'update')
+        trove_obj = M.TroveCategory.query.get(trove_cat_id=int(trove))
+        current_troves = getattr(c.project,'trove_%s'%type)
+        if trove_obj is not None and trove_obj._id in current_troves:
+            current_troves.remove(trove_obj._id)
+            g.post_event('project_updated')
+        redirect('trove')
 
     @expose()
     @require_post()

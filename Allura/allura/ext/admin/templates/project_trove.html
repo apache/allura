@@ -1,0 +1,145 @@
+{% extends g.theme.master %}
+
+{% block title %}{{c.project.name}} / Categorization{% endblock %}
+
+{% block header %}Project Categorization{% endblock %}
+
+{% macro show_trove_base_cat(base) %}
+  <h3>{{base.fullname}}</h3>
+  <div id="trove_existing_{{base.shortname}}" class="trove_existing grid-19">
+  {% for cat in c.project.troves_by_type(base.shortname) %}
+    <div style="clear: both">
+      <span class="trove_fullpath">{{cat.fullpath}}</span>
+      <form action="delete_trove" method="post" class="trove_deleter">
+        <input type="hidden" name="type" value="{{base.shortname}}">
+        <input type="hidden" name="trove" value="{{cat.trove_cat_id}}">
+        <input type="submit" value="Delete">
+      </form>
+    </div>
+  {% else %}
+    <span class="empty_msg">No {{base.fullname}} categories have been selected.</span>
+  {% endfor %}
+  </div>
+  <div class="grid-19 trove_add_container">
+    <form action="add_trove" method="post" class="trove_adder">
+      <input type="hidden" name="type" value="{{base.shortname}}">
+      <label for="new_trove_{{base.shortname}}">Add a new {{base.fullname}} category:</label>
+      <br>
+      <select name="new_trove" id="new_trove_{{base.shortname}}">
+        {% for cat in base.subcategories %}
+          <option value="{{cat.trove_cat_id}}">{{cat.fullname}}</option>
+        {% endfor %}
+      </select>
+      <br>
+      <input type="submit" value="Add">
+    </form>
+  </div>
+{% endmacro %}
+
+{% block content %}
+  {% if c.project.deleted %}
+    <div class="notice">This project has been deleted and is not visible to non-admin users</div>
+  {% endif %}
+  {{show_trove_base_cat(topic_trove)}}
+  {{show_trove_base_cat(license_trove)}}
+  {% for base in base_troves if base.shortname != 'topic' and base.shortname != 'license' %}
+    {{show_trove_base_cat(base)}}
+  {% endfor %}
+{% endblock %}
+
+{% block extra_js %}
+  <script type="text/javascript">
+    $(document).ready(function () {
+      var session_id = $('input[name=_session_id]').val();
+      var del_btn = '<a href="#" class="del_btn" title="Delete"><b data-icon="{{g.icons["delete"].char}}" class="ico {{g.icons["delete"].css}}"></b></a>';
+      var find_sub_cats = function(trove_field){
+        var val = trove_field.val();
+        trove_field.nextAll().remove();
+        trove_field.parent().append('<br><input type="submit" value="Add">');
+        if(val){
+          $.get('get_trove_children',{'trove_id':val},function(resp){
+            if(resp.cats && resp.cats.length){
+              var num_subs = trove_field.parent().find('select').length;
+              var new_select = $('<select style="margin-left:'+1*num_subs+'em"></select>');
+              trove_field.after(new_select);
+              new_select.before('<br>');
+              for(var i=0,len=resp.cats.length;i<len;++i){
+                new_select.append('<option value="'+resp.cats[i].id+'">'+resp.cats[i].label+'</option>');
+              }
+              find_sub_cats(new_select);
+            }
+          });
+        }
+      };
+
+      $('form.trove_adder select').each(function(){
+        find_sub_cats($(this));
+      });
+      $('form.trove_adder').submit(function(evt){
+        evt.preventDefault();
+        var $this = $(this);
+        var type = $this.find('input[name=type]').val();
+        var new_id = $this.find('select').last().val();
+        $.post('add_trove_js',{
+          _session_id:session_id,
+          type:type,
+          new_trove:new_id},function(resp){
+            if(resp.error_msg){
+              $('#messages').notify(resp.error_msg, {
+                  title: 'Error',
+                  status: 'error'
+              });
+            }
+            else{
+              $('#trove_existing_'+type).find('span.empty_msg').remove();
+              $('#trove_existing_'+type).prepend('<div><span class="trove_fullpath">'+resp.trove_full_path+'</span> <form class="trove_deleter"><input type="hidden" name="type" value="'+type+'"><input type="hidden" name="trove" value="'+new_id+'">'+del_btn+'</form></div>');
+            }
+        });
+      }).delegate("select", "change", function(){
+        find_sub_cats($(this));
+      });
+      $('form.trove_deleter').each(function(){
+        $(this).find('input[type="submit"]').remove();
+        $(this).append($(del_btn));
+      });
+      $('div.trove_existing').delegate("a.del_btn", "click", function(evt){
+        evt.preventDefault();
+        var $form = $(this).closest('form');
+        var type = $form.find('input[name="type"]').val();
+        $.post('delete_trove',{
+          _session_id:session_id,
+          type:type,
+          trove:$form.find('input[name="trove"]').val()},function(){
+            $form.closest('div').remove();
+            var holder = $('#trove_existing_'+type);
+            if(!holder.find('div').length){
+              holder.append('<span class="empty_msg">No categories have been selected.</span>')
+            }
+        });
+      });
+    });
+  </script>
+{% endblock %}
+
+{% block extra_css %}
+  <style type="text/css">
+    .trove_deleter{
+      display:inline;
+    }
+    .trove_deleter input[type="submit"]{
+      float:none;
+    }
+    .trove_fullpath{
+      vertical-align:middle;
+    }
+    .trove_existing{
+      margin-bottom: 1em;
+    }
+    .trove_add_container{
+      margin-bottom: 1em;
+      padding-bottom: 1em;
+      border: 0 solid #ccc;
+      border-width: 0 0 1px 0;
+    }
+  </style>
+{% endblock %}

@@ -22,6 +22,7 @@ from allura.lib import plugin
 from allura import model as M
 from allura.websetup import schema
 from allura.command import EnsureIndexCommand
+from allura.command import CreateTroveCategoriesCommand
 
 log = logging.getLogger(__name__)
 
@@ -186,6 +187,7 @@ def bootstrap(command, conf, vars):
 def wipe_database():
     conn = M.main_doc_session.bind.conn
     flyway = MigrateCommand('flyway')
+    create_trove_categories = CreateTroveCategoriesCommand('create_trove_categories')
     index = EnsureIndexCommand('ensure_index')
     if isinstance(conn, mim.Connection):
         clear_all_database_tables()
@@ -205,7 +207,9 @@ def wipe_database():
                     pass
         # Run flyway
         flyway.run(['--force', '-u', 'mongodb://%s:%s/' % (conn.host, conn.port)])
+    create_trove_categories.run([])
     index.run([])
+
 
 
 def clear_all_database_tables():
