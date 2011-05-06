@@ -58,10 +58,12 @@ div.tool {
     width: 30%;
     padding: 0 1em 3em 0;
 }
-div.tool img {
-    position: absolute;
+div.tool .big_icon {
+    height: 50px;
     left: -64px;
+    position: absolute;
     top: 0;
+    width: 50px;
 }
 div.tool input.unlabeled {
     position: absolute;
