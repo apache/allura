@@ -57,10 +57,8 @@ def main():
                     break
                 break
             break
-        try:
-            print news.service.getNewsPostList(s, p)
-        except WebFault as e:
-            print 'error getting news %s' % e
+
+        print news.service.getNewsPostList(s, p.id)
         break
 
 if __name__ == '__main__':
