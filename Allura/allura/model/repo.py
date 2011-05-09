@@ -18,6 +18,7 @@ class Commit(Document):
     authored = Field(User)
     message = Field(str)
     parent_ids = Field([str])
+    child_ids = Field([str])
 
 class Tree(Document):
     class __mongometa__:
@@ -44,6 +45,4 @@ class DiffInfo(Document):
         session = main_doc_session
 
     _id = Field(str)
-    added=Field([str])
-    removed=Field([str])
-    copied=Field([str])
+    differences = Field([dict(name=str, lhs_id=str, rhs_id=str)])
