@@ -9,7 +9,9 @@ class Commit(Document):
     class __mongometa__:
         name = 'repo_ci'
         session = main_doc_session
-        indexes = ('parent_ids')
+        indexes = [
+            ('parent_ids',),
+            ('child_ids',) ]
     User = dict(name=str, email=str, date=datetime)
 
     _id = Field(str)
@@ -19,6 +21,21 @@ class Commit(Document):
     message = Field(str)
     parent_ids = Field([str])
     child_ids = Field([str])
+
+    def __repr__(self):
+        return '%s %s' % (
+            self._id[:7], self.summary)
+
+    @property
+    def summary(self):
+        if self.message:
+            summary = []
+            for line in self.message.splitlines():
+                line = line.rstrip()
+                if line: summary.append(line)
+                else: return ' '.join(summary)
+            return ' '.join(summary)
+        return ''
 
 class Tree(Document):
     class __mongometa__:
@@ -46,3 +63,25 @@ class DiffInfo(Document):
 
     _id = Field(str)
     differences = Field([dict(name=str, lhs_id=str, rhs_id=str)])
+
+class BasicBlock(Document):
+    class __mongometa__:
+        name = 'repo_basic_block'
+        session = main_doc_session
+        indexes = [
+            ('commit_ids',),
+            ('score') ]
+
+    _id = Field(str)
+    parent_commit_ids = Field([str])
+    commit_ids = Field([str])
+    commit_times = Field([datetime])
+    score = Field(int)
+
+    def __repr__(self):
+        return '%s: (P %s, T %s..%s (%d commits))' % (
+            self._id[:6],
+            [ oid[:6] for oid in self.parent_commit_ids ],
+            self.commit_ids[0][:6],
+            self.commit_ids[-1][:6],
+            len(self.commit_ids))
