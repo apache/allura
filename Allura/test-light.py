@@ -1,6 +1,7 @@
 import sys
 import logging
-from itertools import chain
+from collections import defaultdict
+from itertools import chain, izip
 from datetime import datetime
 
 from pylons import c
@@ -13,6 +14,17 @@ from allura.lib import utils
 
 log = logging.getLogger(__name__)
 
+QSIZE=100
+
+def dolog():
+    h.set_context('test', 'code')
+    repo = c.app.repo._impl._git
+    oid = repo.commit(repo.heads[0]).hexsha
+    log.info('start')
+    for i, ci in enumerate(commitlog(oid)):
+        print repr(ci)
+    log.info('done')
+
 def main():
     if len(sys.argv) > 1:
         h.set_context('test')
@@ -22,6 +34,7 @@ def main():
     M.repo.Tree.m.remove({})
     M.repo.Trees.m.remove({})
     M.repo.DiffInfo.m.remove({})
+    M.repo.BasicBlock.m.remove({})
     repo = c.app.repo._impl._git
 
     # Get all commits
@@ -35,6 +48,7 @@ def main():
 
     # Skip commits that are already in the DB
     commit_ids = unknown_commit_ids(all_commit_ids)
+    # commit_ids = commit_ids[:500]
     log.info('Refreshing %d commits', len(commit_ids))
 
     # Refresh commits
@@ -47,6 +61,7 @@ def main():
     # Refresh child references
     seen = set()
     parents = set()
+
     for i, oid in enumerate(commit_ids):
         ci = M.repo.Commit.m.get(_id=oid)
         refresh_children(ci)
@@ -56,11 +71,22 @@ def main():
             log.info('Refresh child (a) info %d: %s', (i+1), ci._id)
     for j, oid in enumerate(parents-seen):
         ci = M.repo.Commit.m.get(_id=oid)
-        parents.update(ci.parent_ids)
+        if ci is None: continue
+        refresh_children(ci)
         if (i + j + 1) % 100 == 0:
             log.info('Refresh child (b) info %d: %s', (i + j + 1), ci._id)
 
     # Refresh basic blocks
+    bbb = BasicBlockBuilder(commit_ids)
+    bbb.run()
+
+    # Verify the log
+    log.info('Logging via basic blocks')
+    with open('log.txt', 'w') as fp:
+        for i, ci in enumerate(commitlog(commit_ids[0])):
+            print >> fp, repr(ci)
+            log.info('%r', ci)
+    log.info('... done (%d commits from %s)', i, commit_ids[0])
 
     # Refresh trees
     cache = {}
@@ -110,9 +136,70 @@ def refresh_commit_info(ci, seen):
     return True
 
 def refresh_children(ci):
+    '''
+    TODO: make sure we remove basic blocks created by previous refreshes when
+    there are extra children added.
+    '''
     M.repo.Commit.m.update_partial(
         dict(_id={'$in': ci.parent_ids}),
         {'$addToSet': dict(child_ids=ci._id)})
+
+class BasicBlockBuilder(object):
+
+    def __init__(self, commit_ids):
+        self.commit_ids = commit_ids
+        self.block_index = {} # by commit ID
+        self.blocks = {}          # by block ID
+        self.reasons = {}        # reasons to stop merging blocks
+
+    def run(self):
+        for oids in utils.chunked_iter(self.commit_ids, QSIZE):
+            oids = list(oids)
+            commits = list(M.repo.Commit.m.find(dict(_id={'$in':oids})))
+            for ci in commits:
+                if ci._id in self.block_index: continue
+                self.block_index[ci._id] = ci._id
+                self.blocks[ci._id] = M.repo.BasicBlock(dict(
+                        _id=ci._id,
+                        parent_commit_ids=ci.parent_ids,
+                        commit_ids=[ci._id],
+                        commit_times=[ci.authored.date]))
+            self.merge_blocks()
+        log.info('%d basic blocks', len(self.blocks))
+        for bid, bb in sorted(self.blocks.items()):
+            log.info('%32s: %r', self.reasons.get(bid, 'none'), bb)
+        for bb in self.blocks.itervalues():
+            bb.score = len(bb.commit_ids)
+            bb.m.save()
+        return self.blocks
+
+    def merge_blocks(self):
+        while True:
+            for bid, bb in self.blocks.iteritems():
+                if len(bb.parent_commit_ids) != 1:
+                    self.reasons[bid] = '%d parents' % len(bb.parent_commit_ids)
+                    continue
+                p_oid = bb.parent_commit_ids[0]
+                p_bid = self.block_index.get(p_oid)
+                if p_bid is None:
+                    self.reasons[bid] = 'parent commit not found'
+                    continue
+                p_bb = self.blocks.get(p_bid)
+                if p_bb is None:
+                    self.reasons[bid] = 'parent block not found'
+                    continue
+                if p_bb.commit_ids[0] != p_oid:
+                    self.reasons[bid] = 'parent does not start with parent commit'
+                    continue
+                bb.commit_ids += p_bb.commit_ids
+                bb.commit_times += p_bb.commit_times
+                bb.parent_commit_ids = p_bb.parent_commit_ids
+                for oid in p_bb.commit_ids:
+                    self.block_index[oid] = bid
+                break
+            else:
+                break
+            del self.blocks[p_bid]
 
 def refresh_tree(t, seen):
     if t.binsha in seen: return
@@ -148,7 +235,6 @@ def trees(id, cache):
             yield x
 
 def unknown_commit_ids(all_commit_ids):
-    QSIZE=100
     result = []
     for chunk in utils.chunked_iter(all_commit_ids, QSIZE):
         q = M.repo.Commit.m.find(_id={'$in':chunk})
@@ -188,6 +274,73 @@ def compute_diffs(tree_cache, rhs_ci, lhs_ci=None):
     di.m.save()
     return tree_cache
 
+def commitlog(commit_id, skip=0, limit=sys.maxint):
+
+    seen = set()
+    def _visit(commit_id):
+        if commit_id in seen: return
+        bb = M.repo.BasicBlock.m.find(
+            dict(commit_ids=commit_id)).sort('score', -1).first()
+        if bb is None: return
+        index = False
+        for pos, (oid, time) in enumerate(izip(bb.commit_ids, bb.commit_times)):
+            if oid == commit_id: index = True
+            elif not index: continue
+            seen.add(oid)
+            ci_times[oid] = time
+            if pos+1 < len(bb.commit_ids):
+                ci_parents[oid] = [ bb.commit_ids[pos+1] ]
+            else:
+                ci_parents[oid] = bb.parent_commit_ids
+        for oid in bb.parent_commit_ids:
+            _visit(oid)
+
+    def _gen_ids(commit_id, skip, limit):
+        # Traverse the graph in topo order, yielding commit IDs
+        commits = set([commit_id])
+        new_parent = None
+        while commits and limit:
+            # next commit is latest commit that's valid to log
+            if new_parent in commits:
+                ci = new_parent
+            else:
+                ci = max(commits, key=lambda ci:ci_times[ci])
+            commits.remove(ci)
+            if skip:
+                skip -= 1
+                continue
+            else:
+                limit -= 1
+            yield ci
+            # remove this commit from its parents children and add any childless
+            # parents to the 'ready set'
+            new_parent = None
+            for oid in ci_parents[ci]:
+                children = ci_children[oid]
+                children.discard(ci)
+                if not children:
+                    commits.add(oid)
+                    new_parent = oid
+
+    # Load all the blocks to build a commit graph
+    ci_times = {}
+    ci_parents = {}
+    ci_children = defaultdict(set)
+    log.info('Build commit graph')
+    _visit(commit_id)
+    for oid, parents in ci_parents.iteritems():
+        for ci_parent in parents:
+            ci_children[ci_parent].add(oid)
+
+    # Convert oids to commit objects
+    log.info('Traverse commit graph')
+    for oids in utils.chunked_iter(_gen_ids(commit_id, skip, limit), QSIZE):
+        oids = list(oids)
+        index = dict(
+            (ci._id, ci) for ci in M.repo.Commit.m.find(dict(_id={'$in': oids})))
+        for oid in oids:
+            yield index[oid]
+
 def _diff_trees(lhs, rhs, index, *path):
     def _fq(name):
         return '/'.join(reversed(
@@ -226,3 +379,4 @@ def _diff_trees(lhs, rhs, index, *path):
 
 if __name__ == '__main__':
     main()
+    # dolog()
