@@ -123,6 +123,7 @@
     <li><a href="#md_ex_moreheaders{{id}}">More Headers</a></li>
     <li><a href="#md_ex_code{{id}}">Code Highlighting</a></li>
     <li><a href="#md_ex_includes{{id}}">Includes</a></li>
+    <li><a href="#md_ex_neighborhood_notes{{id}}">Neighborhood Notifications</a></li>
     <li><a href="#md_ex_thanks{{id}}">Thanks</a></li>
 </ul>
 
@@ -338,6 +339,12 @@ you should escape &amp;lt;unknown&amp;gt; tags
 <p>You can embed another wiki page directly:</p>
 <div class="codehilite"><pre>
 [[include ref=SamplePage]]
+</pre></div>
+
+<h2 id="md_ex_neighborhood_notes{{id}}">Neighborhood Notifications</h2>
+<p>You can list updates from all projects in a neighborhood by tool type. Max_number (default is 5) and sort (default is pubdate) are optional:</p>
+<div class="codehilite"><pre>
+[[neighborhood_feeds tool_name=Wiki max_number=10 sort=pubdate]]
 </pre></div>
 
 <h2 id="md_ex_thanks{{id}}">Thanks</h2>

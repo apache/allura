@@ -54,6 +54,15 @@ class parse(object):
         else:
             return None
 
+@macro
+def neighborhood_feeds(tool_name, max_number=5, sort='pubdate'):
+    from allura import model as M
+    feed = M.Notification.query.find(dict(tool_name=tool_name,neighborhood_id=c.project.neighborhood._id)).sort(sort, pymongo.DESCENDING).limit(int(max_number)).all()
+    output = ''
+    for item in feed:
+        output += '<div class="neighborhood_feed_entry"><h3><a href="%s">%s</a> %s</h3><p>%s</p></div>' % (item.link,item.subject,h.ago(item.pubdate),item.text)
+    return output
+
 @macro('neighborhood-wiki')
 def projects(category=None, display_mode='grid', sort='last_updated'):
     from allura.lib.widgets.project_list import ProjectList

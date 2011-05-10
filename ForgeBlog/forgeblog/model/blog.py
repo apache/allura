@@ -140,19 +140,26 @@ class BlogPost(M.VersionedArtifact):
                     'v%d' % v1.version,
                     'v%d' % v2.version))
             description = diff
-            if v1.title != v2.title:
-                subject = '%s renamed page %s to %s' % (
+            if v1.state != 'published' and v2.state == 'published':
+                M.Feed.post(self, self.title, self.text)
+                description = self.text
+                subject = '%s created post %s' % (
+                    c.user.username, self.title)
+            elif v1.title != v2.title:
+                subject = '%s renamed post %s to %s' % (
                     c.user.username, v2.title, v1.title)
             else:
-                subject = '%s modified page %s' % (
+                subject = '%s modified post %s' % (
                     c.user.username, self.title)
         else:
             description = self.text
-            subject = '%s created page %s' % (
+            subject = '%s created post %s' % (
                 c.user.username, self.title)
-        M.Feed.post(self, description)
-        M.Notification.post(
-            artifact=self, topic='metadata', text=description, subject=subject)
+            if self.state == 'published':
+                M.Feed.post(self, self.title, self.text)
+        if self.state == 'published':
+            M.Notification.post(
+                artifact=self, topic='metadata', text=description, subject=subject)
 
 class Attachment(M.BaseAttachment):
     ArtifactClass=BlogPost

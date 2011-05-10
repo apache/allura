@@ -45,12 +45,15 @@ class Notification(MappedClass):
     class __mongometa__:
         session = main_orm_session
         name = 'notification'
+        indexes = [ ('neighborhood_id', 'tool_name', 'pubdate') ]
 
     _id = FieldProperty(str, if_missing=h.gen_message_id)
 
     # Classify notifications
+    neighborhood_id = ForeignIdProperty('Neighborhood', if_missing=lambda:c.project.neighborhood._id)
     project_id = ForeignIdProperty('Project', if_missing=lambda:c.project._id)
     app_config_id = ForeignIdProperty('AppConfig', if_missing=lambda:c.app.config._id)
+    tool_name = FieldProperty(str, if_missing=lambda:c.app.config.tool_name)
     ref_id = ForeignIdProperty('ArtifactReference')
     topic = FieldProperty(str)
     unique_id = FieldProperty(str, if_missing=lambda:h.nonce(40))

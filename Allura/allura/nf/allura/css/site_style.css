@@ -2979,6 +2979,10 @@ h1.title .viewer:hover {
   width: 32em;
 }
 
+.neighborhood_feed_entry h3{
+    font-size: 1.1em;
+}
+
 /* IE-specific styles */
 .ie7 .sfdl, .ie8 .sfdl {height: 56px; width: 187px; background: url(images/sf-dl-lg.png) no-repeat; border: none;}
 .ie7 .sfdls, .ie8 .sfdls {height: 50px; width: 152px; background: url(images/sf-dl-sm.png) no-repeat; border: none;}
