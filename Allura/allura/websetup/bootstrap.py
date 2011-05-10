@@ -120,27 +120,20 @@ def bootstrap(command, conf, vars):
                                   display_name='Test Admin'))
         u_admin.set_password('foo')
         u_admin.claim_address('Beta@wiki.test.projects.sourceforge.net')
-        u_admin_adobe = u_admin
     else:
         u_admin = M.User.register(dict(username='admin1',
                                         display_name='Admin 1'))
         u_admin.set_password('foo')
-        u_admin_adobe = M.User.register(dict(username='adobe-admin',
-                                   display_name='Adobe Admin'))
-        u_admin_adobe.set_password('foo')
         # Admin1 is almost root, with admin access for Users and Projects neighborhoods
-        p_projects.acl.append(
-            M.ACE.allow(u_admin.project_role(project=p_projects)._id, 'admin'))
-        p_users.acl.append(
-            M.ACE.allow(u_admin.project_role(project=p_projects)._id, 'admin'))
+        p_projects.add_user(u_admin, ['Admin'])
+        p_users.add_user(u_admin, ['Admin'])
 
         p_allura = n_projects.register_project('allura', u_admin)
     u1 = M.User.register(dict(username='test-user',
                               display_name='Test User'))
     u1.set_password('foo')
-    p_adobe1 = n_adobe.register_project('adobe-1', u_admin_adobe)
-    p_adobe.acl.append(
-        M.ACE.allow(u_admin_adobe.project_role(p_adobe)._id, 'admin'))
+    p_adobe1 = n_adobe.register_project('adobe-1', u_admin)
+    p_adobe.add_user(u_admin, ['Admin'])
     p0 = n_projects.register_project('test', u_admin)
     p0._extra_tool_status = [ 'alpha', 'beta' ]
 
