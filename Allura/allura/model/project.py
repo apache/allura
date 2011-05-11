@@ -331,6 +331,8 @@ class Project(MappedClass):
     def uninstall_app(self, mount_point):
         app = self.app_instance(mount_point)
         if app is None: return
+        if self.support_page == app.config.options.mount_point:
+            self.support_page = ''
         with h.push_config(c, project=self, app=app):
             app.uninstall(self)
 

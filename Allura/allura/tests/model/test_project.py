@@ -40,9 +40,13 @@ def test_project():
     except:
         pass
     c.project.install_app('Wiki', 'hello-test-mount-point')
+    c.project.support_page = 'hello-test-mount-point'
     ThreadLocalORMSession.flush_all()
     c.project.uninstall_app('hello-test-mount-point')
     ThreadLocalORMSession.flush_all()
+    # Make sure the project support page is reset if the tool it was pointing
+    # to is uninstalled.
+    assert c.project.support_page == ''
     app_config = c.project.app_config('hello')
     app_inst = c.project.app_instance(app_config)
     app_inst = c.project.app_instance('hello')

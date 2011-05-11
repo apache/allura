@@ -35,7 +35,7 @@ It should be what you want to see as the project title in search listing.">
               <input name="support_page" type="radio" value=""{% if c.project.support_page == '' %} checked{% endif %} id="support_page_none">
               <label for="support_page_none">None</label><br>
               {% for ac in c.project.app_configs %}
-                {% if ac.tool_name == 'Wiki' or ac.tool_name == 'Tickets' %}
+                {% if ac.tool_name in ['Wiki', 'Tickets', 'Discussion'] %}
                   <input name="support_page" type="radio" value="{{ac.options.mount_point}}" id="support_page_{{ac.options.mount_point}}"
                          {% if c.project.support_page == ac.options.mount_point %} checked{% endif %}>
                   <label for="support_page_{{ac.options.mount_point}}">{{ac.options.mount_label}}</label><br>
