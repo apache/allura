@@ -11,7 +11,8 @@ class Commit(Document):
         session = main_doc_session
         indexes = [
             ('parent_ids',),
-            ('child_ids',) ]
+            ('child_ids',),
+            ('repo_ids',)]
     User = dict(name=str, email=str, date=datetime)
 
     _id = Field(str)
@@ -21,6 +22,7 @@ class Commit(Document):
     message = Field(str)
     parent_ids = Field([str])
     child_ids = Field([str])
+    repo_ids = Field([S.ObjectId()])
 
     def __repr__(self):
         return '%s %s' % (
@@ -46,7 +48,7 @@ class Tree(Document):
     _id = Field(str)
     tree_ids = Field([dict(name=str, id=str)])
     blob_ids = Field([dict(name=str, id=str)])
-    other_ids = Field([dict(name=str, id=str, type=str)])
+    other_ids = Field([dict(name=str, id=str, type=ObjType)])
 
 class Trees(Document):
     class __mongometa__:
