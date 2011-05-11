@@ -5,6 +5,7 @@ from itertools import chain, izip
 from datetime import datetime
 
 from pylons import c
+from pymongo.errors import DuplicateKeyError
 
 from ming.base import Object
 
@@ -58,6 +59,12 @@ def main():
         if (i+1) % 100 == 0:
             log.info('Refresh commit info %d: %s', (i+1), oid)
 
+    #############################################
+    # Everything below here is repo-agnostic
+    #############################################
+
+    refresh_repo(commit_ids, c.app.repo._id)
+
     # Refresh child references
     seen = set()
     parents = set()
@@ -79,14 +86,13 @@ def main():
     # Refresh basic blocks
     bbb = BasicBlockBuilder(commit_ids)
     bbb.run()
+    bbb.cleanup()
 
     # Verify the log
     log.info('Logging via basic blocks')
-    with open('log.txt', 'w') as fp:
-        for i, ci in enumerate(commitlog(commit_ids[0])):
-            print >> fp, repr(ci)
-            log.info('%r', ci)
-    log.info('... done (%d commits from %s)', i, commit_ids[0])
+    for i, ci in enumerate(commitlog(commit_ids[0], skip=2000, limit=50)):
+        pass
+    log.info('... done (%d commits from %s)', i+1, commit_ids[0])
 
     # Refresh trees
     cache = {}
@@ -115,34 +121,45 @@ def refresh_commit_trees(ci, cache):
     return new_cache
 
 def refresh_commit_info(ci, seen):
-    ci_doc = M.repo.Commit(dict(
-            _id=ci.hexsha,
-            tree_id=ci.tree.hexsha,
-            committed = Object(
-                name=h.really_unicode(ci.committer.name),
-                email=h.really_unicode(ci.committer.email),
-                date=datetime.utcfromtimestamp(
-                    ci.committed_date-ci.committer_tz_offset)),
-            authored = Object(
-                name=h.really_unicode(ci.author.name),
-                email=h.really_unicode(ci.author.email),
-                date=datetime.utcfromtimestamp(
-                    ci.authored_date-ci.author_tz_offset)),
-            message=h.really_unicode(ci.message or ''),
-            child_ids=[],
-            parent_ids = [ p.hexsha for p in ci.parents ]))
+    if M.repo.Commit.m.find(dict(_id=ci.hexsha)).count() != 0:
+        return
+    try:
+        ci_doc = M.repo.Commit(dict(
+                _id=ci.hexsha,
+                tree_id=ci.tree.hexsha,
+                committed = Object(
+                    name=h.really_unicode(ci.committer.name),
+                    email=h.really_unicode(ci.committer.email),
+                    date=datetime.utcfromtimestamp(
+                        ci.committed_date-ci.committer_tz_offset)),
+                authored = Object(
+                    name=h.really_unicode(ci.author.name),
+                    email=h.really_unicode(ci.author.email),
+                    date=datetime.utcfromtimestamp(
+                        ci.authored_date-ci.author_tz_offset)),
+                message=h.really_unicode(ci.message or ''),
+                child_ids=[],
+                parent_ids = [ p.hexsha for p in ci.parents ]))
+        ci_doc.m.insert(safe=True)
+    except DuplicateKeyError:
+        return
     refresh_tree(ci.tree, seen)
-    ci_doc.m.save(safe=False)
-    return True
+
+def refresh_repo(commit_ids, repo_id):
+    for oids in utils.chunked_iter(commit_ids, QSIZE):
+        oids = list(oids)
+        M.repo.Commit.m.update_partial(
+            dict(
+                _id={'$in': oids},
+                repo_ids={'$ne': repo_id}),
+            {'$addToSet': dict(repo_ids=repo_id)},
+            multi=True)
 
 def refresh_children(ci):
-    '''
-    TODO: make sure we remove basic blocks created by previous refreshes when
-    there are extra children added.
-    '''
     M.repo.Commit.m.update_partial(
         dict(_id={'$in': ci.parent_ids}),
-        {'$addToSet': dict(child_ids=ci._id)})
+        {'$addToSet': dict(child_ids=ci._id)},
+        multi=True)
 
 class BasicBlockBuilder(object):
 
@@ -172,6 +189,33 @@ class BasicBlockBuilder(object):
             bb.score = len(bb.commit_ids)
             bb.m.save()
         return self.blocks
+
+    def _all_blocks(self):
+        blocks = {}
+        for oids in utils.chunked_iter(self.commit_ids, QSIZE):
+            oids = list(oids)
+            for bb in M.repo.BasicBlock.m.find(dict(commit_ids={'$in': oids})):
+                blocks[bb._id] = bb
+        seen_bids = set()
+        blocks = blocks.values()
+        while blocks:
+            bb = blocks.pop()
+            if bb._id in seen_bids: continue
+            seen_bids.add(bb._id)
+            yield bb
+            for bb in M.repo.BasicBlock.m.find(
+                dict(commit_ids={'$in':bb.parent_commit_ids})):
+                blocks.append(bb)
+
+    def cleanup(self):
+        '''Delete non-maximal basic blocks'''
+        for bb1 in self._all_blocks():
+            for bb2 in M.repo.BasicBlock.m.find(dict(
+                    commit_ids=bb1.commit_ids[0])):
+                if bb2._id == bb1._id: continue
+                log.info('... delete %r (part of %r)', bb2, bb1)
+                import pdb; pdb.set_trace()
+                bb2.m.delete()
 
     def merge_blocks(self):
         while True:
