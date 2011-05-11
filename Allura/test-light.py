@@ -186,7 +186,6 @@ class BasicBlockBuilder(object):
         for bid, bb in sorted(self.blocks.items()):
             log.info('%32s: %r', self.reasons.get(bid, 'none'), bb)
         for bb in self.blocks.itervalues():
-            bb.score = len(bb.commit_ids)
             bb.m.save()
         return self.blocks
 
@@ -323,8 +322,7 @@ def commitlog(commit_id, skip=0, limit=sys.maxint):
     seen = set()
     def _visit(commit_id):
         if commit_id in seen: return
-        bb = M.repo.BasicBlock.m.find(
-            dict(commit_ids=commit_id)).sort('score', -1).first()
+        bb = M.repo.BasicBlock.m.get(commit_ids=commit_id)
         if bb is None: return
         index = False
         for pos, (oid, time) in enumerate(izip(bb.commit_ids, bb.commit_times)):

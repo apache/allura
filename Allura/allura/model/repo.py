@@ -71,14 +71,12 @@ class BasicBlock(Document):
         name = 'repo_basic_block'
         session = main_doc_session
         indexes = [
-            ('commit_ids',),
-            ('score') ]
+            ('commit_ids',) ]
 
     _id = Field(str)
     parent_commit_ids = Field([str])
     commit_ids = Field([str])
     commit_times = Field([datetime])
-    score = Field(int)
 
     def __repr__(self):
         return '%s: (P %s, T %s..%s (%d commits))' % (
