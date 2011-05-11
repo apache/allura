@@ -35,6 +35,7 @@ def main():
     M.repo.Tree.m.remove({})
     M.repo.Trees.m.remove({})
     M.repo.DiffInfo.m.remove({})
+    M.repo.LastCommit.m.remove({})
     M.repo.BasicBlock.m.remove({})
     repo = c.app.repo._impl._git
 
@@ -70,15 +71,17 @@ def main():
     parents = set()
 
     for i, oid in enumerate(commit_ids):
-        ci = M.repo.Commit.m.get(_id=oid)
+        ci = M.repo.Commit.m.find(dict(_id=oid), validate=False).next()
         refresh_children(ci)
         seen.add(ci._id)
         parents.update(ci.parent_ids)
         if (i+1) % 100 == 0:
             log.info('Refresh child (a) info %d: %s', (i+1), ci._id)
     for j, oid in enumerate(parents-seen):
-        ci = M.repo.Commit.m.get(_id=oid)
-        if ci is None: continue
+        try:
+            ci = M.repo.Commit.m.find(dict(_id=oid), validate=False).next()
+        except StopIteration:
+            continue
         refresh_children(ci)
         if (i + j + 1) % 100 == 0:
             log.info('Refresh child (b) info %d: %s', (i + j + 1), ci._id)
@@ -90,14 +93,14 @@ def main():
 
     # Verify the log
     log.info('Logging via basic blocks')
-    for i, ci in enumerate(commitlog(commit_ids[0], skip=2000, limit=50)):
+    for i, ci in enumerate(commitlog(commit_ids[0])):
         pass
     log.info('... done (%d commits from %s)', i+1, commit_ids[0])
 
     # Refresh trees
     cache = {}
     for i, oid in enumerate(commit_ids):
-        ci = M.repo.Commit.m.get(_id=oid)
+        ci = M.repo.Commit.m.find(dict(_id=oid), validate=False).next()
         cache = refresh_commit_trees(ci, cache)
         if (i+1) % 100 == 0:
             log.info('Refresh commit trees %d: %s', (i+1), ci._id)
@@ -105,8 +108,8 @@ def main():
     # Compute diffs
     cache = {}
     for i, oid in enumerate(commit_ids):
-        ci = M.repo.Commit.m.get(_id=oid)
-        compute_diffs(cache, ci)
+        ci = M.repo.Commit.m.find(dict(_id=oid), validate=False).next()
+        compute_diffs(c.app.repo._id, cache, ci)
         if (i+1) % 100 == 0:
             log.info('Compute diffs %d: %s', (i+1), ci._id)
 
@@ -122,7 +125,7 @@ def refresh_commit_trees(ci, cache):
 
 def refresh_commit_info(ci, seen):
     if M.repo.Commit.m.find(dict(_id=ci.hexsha)).count() != 0:
-        return
+        return False
     try:
         ci_doc = M.repo.Commit(dict(
                 _id=ci.hexsha,
@@ -142,8 +145,9 @@ def refresh_commit_info(ci, seen):
                 parent_ids = [ p.hexsha for p in ci.parents ]))
         ci_doc.m.insert(safe=True)
     except DuplicateKeyError:
-        return
+        return False
     refresh_tree(ci.tree, seen)
+    return True
 
 def refresh_repo(commit_ids, repo_id):
     for oids in utils.chunked_iter(commit_ids, QSIZE):
@@ -285,10 +289,20 @@ def unknown_commit_ids(all_commit_ids):
         result += [ oid for oid in chunk if oid not in known_commit_ids ]
     return result
 
-def compute_diffs(tree_cache, rhs_ci, lhs_ci=None):
+def compute_diffs(repo_id, tree_cache, rhs_ci):
+    def _walk_tree(tree, tree_index):
+        for x in tree.blob_ids: yield x.id
+        for x in tree.other_ids: yield x.id
+        for x in tree.tree_ids:
+            yield x.id
+            for xx in _walk_tree(tree_index[x.id], tree_index):
+                yield xx
+
     rhs_tree_ids = M.repo.Trees.m.get(_id=rhs_ci._id).tree_ids
-    if lhs_ci is None and rhs_ci.parent_ids:
+    if rhs_ci.parent_ids:
         lhs_ci = M.repo.Commit.m.get(_id=rhs_ci.parent_ids[0])
+    else:
+        lhs_ci = None
     if lhs_ci is not None:
         lhs_tree_ids = M.repo.Trees.m.get(_id=lhs_ci._id).tree_ids
     else:
@@ -308,9 +322,17 @@ def compute_diffs(tree_cache, rhs_ci, lhs_ci=None):
         lhs_tree = Object(_id=None, tree_ids=[], blob_ids=[], other_ids=[])
     else:
         lhs_tree = tree_index[lhs_ci.tree_id]
-    differences = [
-        dict(name=name, lhs_id=lhs_id, rhs_id=rhs_id)
-        for name, lhs_id, rhs_id in _diff_trees(lhs_tree, rhs_tree, tree_index) ]
+    differences = []
+    for name, lhs_id, rhs_id in _diff_trees(lhs_tree, rhs_tree, tree_index):
+        differences.append(
+            dict(name=name, lhs_id=lhs_id, rhs_id=rhs_id))
+        # Set last commit info
+        if rhs_id is not None:
+            M.repo.LastCommit.set_last_commit(repo_id, rhs_id, rhs_ci)
+        rhs_tree = tree_index.get(rhs_id, None)
+        if rhs_tree is not None:
+            for oid in _walk_tree(rhs_tree, tree_index):
+                M.repo.LastCommit.set_last_commit(repo_id, oid, rhs_ci)
     di = M.repo.DiffInfo(dict(
             _id=rhs_ci._id,
             differences=differences))

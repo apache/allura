@@ -3,7 +3,7 @@ from datetime import datetime
 from ming import Document, Field
 from ming import schema as S
 
-from .session import main_doc_session
+from .session import main_doc_session, project_doc_session
 
 class Commit(Document):
     class __mongometa__:
@@ -39,6 +39,16 @@ class Commit(Document):
             return ' '.join(summary)
         return ''
 
+    def url(self):
+        return ''
+
+    def shorthand_id(self):
+        return ''
+
+    @property
+    def author_url(self):
+        return ''
+
 class Tree(Document):
     class __mongometa__:
         name = 'repo_tree'
@@ -49,6 +59,45 @@ class Tree(Document):
     tree_ids = Field([dict(name=str, id=str)])
     blob_ids = Field([dict(name=str, id=str)])
     other_ids = Field([dict(name=str, id=str, type=ObjType)])
+
+class LastCommit(Document):
+    class __mongometa__:
+        name = 'repo_last_commit'
+        session = project_doc_session
+        indexes = [
+            ( 'repo_id', 'object_id'),
+            ]
+
+    _id = Field(str)
+    repo_id=Field(S.ObjectId())
+    object_id=Field(str)
+    commit_info = Field(dict(
+        id=str,
+        date=datetime,
+        author=str,
+        author_email=str,
+        author_url=str,
+        href=str,
+        shortlink=str,
+        summary=str))
+
+    @classmethod
+    def set_last_commit(cls, repo_id, oid, commit):
+        lc = cls(dict(
+                _id='%s:%s' % (repo_id, oid),
+                repo_id=repo_id,
+                object_id=oid,
+                commit_info=dict(
+                    id=commit._id,
+                    author=commit.authored.name,
+                    author_email=commit.authored.email,
+                    author_url=commit.author_url,
+                    date=commit.authored.date,
+                    href=commit.url(),
+                    shortlink=commit.shorthand_id(),
+                    summary=commit.summary)))
+        lc.m.save(safe=False)
+        return lc
 
 class Trees(Document):
     class __mongometa__:
