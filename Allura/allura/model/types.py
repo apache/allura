@@ -1,6 +1,8 @@
 from ming.base import Object
 from ming import schema as S
 
+EVERYONE, ALL_PERMISSIONS = None, '*'
+
 class ACE(S.Object):
     '''ACE - access control entry'''
     ALLOW, DENY = 'ALLOW', 'DENY'
@@ -33,11 +35,13 @@ class ACE(S.Object):
     @classmethod
     def match(cls, ace, role_id, permission):
         return (
-            ace.role_id == role_id
-            and ace.permission in (permission, '*'))
+            ace.role_id in (role_id, EVERYONE)
+            and ace.permission in (permission, ALL_PERMISSIONS))
 
 class ACL(S.Array):
 
     def __init__(self, permissions=None, **kwargs):
         super(ACL, self).__init__(
             field_type=ACE(permissions), **kwargs)
+
+DENY_ALL = ACE.deny(EVERYONE, ALL_PERMISSIONS)

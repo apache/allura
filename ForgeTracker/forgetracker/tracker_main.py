@@ -272,7 +272,6 @@ class RootController(BaseController):
         limit=-1 is NOT recognized as 'all'.  500 is a reasonable limit.
         """
 
-        
         limit, page, start = g.handle_paging(limit, page, default=25)
         count = 0
         tickets = []
@@ -291,7 +290,6 @@ class RootController(BaseController):
             solr_error = e.args[0]
             matches = []
         if matches:
-            count = matches.hits
             # ticket_numbers is in sorted order
             ticket_numbers = [match['ticket_num_i'] for match in matches.docs]
             # but query, unfortunately, returns results in arbitrary order
@@ -301,9 +299,10 @@ class RootController(BaseController):
             for t in query:
                 ticket_for_num[t.ticket_num] = t
             # and pull them out in the order given by ticket_numbers
-            tickets = [ ticket_for_num[tn] for tn in ticket_numbers if tn in ticket_for_num ]
-            if not has_access(c.app, 'read')():
-                tickets = [ t for t in tickets if has_access(t, 'read')() ]
+            tickets = [ticket_for_num[tn] for tn in ticket_numbers \
+                       if tn in ticket_for_num \
+                       and has_access(ticket_for_num[tn], 'read')]
+            count = len(tickets)
         sortable_custom_fields=c.app.globals.sortable_custom_fields_shown_in_search()
         if not columns:
             columns = [dict(name='ticket_num', sort_name='ticket_num_i', label='Ticket Number', active=True),
@@ -886,6 +885,7 @@ class TicketController(BaseController):
             else:
                 self.ticket.assigned_to_id = None
             changes['assigned_to'] = self.ticket.assigned_to
+        self.ticket.private = post_data.get('private', False)
 
         # if c.app.globals.milestone_names is None:
         #     c.app.globals.milestone_names = ''

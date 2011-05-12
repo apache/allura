@@ -15,7 +15,8 @@ from ming.orm import FieldProperty, ForeignIdProperty, RelationProperty
 from ming.orm.declarative import MappedClass
 
 from allura.model import Artifact, VersionedArtifact, Snapshot, project_orm_session, BaseAttachment
-from allura.model import User, Feed, Thread, Notification
+from allura.model import User, Feed, Thread, Notification, ProjectRole
+from allura.model import ACE, ALL_PERMISSIONS, DENY_ALL
 from allura.lib import patience
 from allura.lib import security
 from allura.lib.search import search_artifact
@@ -323,6 +324,21 @@ class Ticket(VersionedArtifact):
     def open_or_closed(self):
         return 'closed' if self.status in c.app.globals.set_of_closed_status_names else 'open'
 
+    def _get_private(self):
+        return bool(self.acl)
+
+    def _set_private(self, bool_flag):
+        if bool_flag:
+            role_developer = ProjectRole.by_name('Developer')._id
+            role_creator = self.reported_by.project_role()._id
+            self.acl = [
+                ACE.allow(role_developer, ALL_PERMISSIONS),
+                ACE.allow(role_creator, ALL_PERMISSIONS),
+                DENY_ALL]
+        else:
+            self.acl = []
+    private = property(_get_private, _set_private)
+
     def commit(self):
         VersionedArtifact.commit(self)
         if self.version > 1:
@@ -526,7 +542,6 @@ class Ticket(VersionedArtifact):
         """Query tickets, sorting and paginating the result."""
         limit, page, start = g.handle_paging(limit, page, default=25)
         q = cls.query.find(dict(query, app_config_id=c.app.config._id))
-        count = q.count()
         q = q.sort('ticket_num')
         if sort:
             field, direction = sort.split()
@@ -539,6 +554,7 @@ class Ticket(VersionedArtifact):
         q = q.skip(start)
         q = q.limit(limit)
         tickets = [ t for t in q if security.has_access(t, 'read')() ]
+        count = len(tickets)
         sortable_custom_fields=c.app.globals.sortable_custom_fields_shown_in_search()
         if not columns:
             columns = [dict(name='ticket_num', sort_name='ticket_num', label='Ticket Number', active=True),

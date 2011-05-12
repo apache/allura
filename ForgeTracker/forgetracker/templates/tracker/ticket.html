@@ -42,7 +42,7 @@
         <label class="simple">Status: </label>
         <span class="{{ticket.open_or_closed}}">{{ticket.status}}</span>
       </div>
-      <div class="grid-4 ticket-assigned-to">
+      <div class="grid-5 ticket-assigned-to">
         <label class="simple">Owner: </label>
         {% if ticket.assigned_to_id %}
           <a href="{{ticket.assigned_to.url()}}">{{ticket.assigned_to_name()}}</a>
@@ -86,9 +86,13 @@
       <label class="simple">Created:</label>
       {{abbr_date(ticket.created_date)}}
     </div>
-    <div class="grid-8">
+    <div class="grid-5">
       <label class="simple">Creator:</label>
       <a href="{{ticket.reported_by.url()}}">{{ticket.reported_by.display_name}}</a>
+    </div>
+    <div class="grid-4">
+      <label class="simple">Private:</label>
+      {{'Yes' if ticket.private else 'No'}}
     </div>
   </div>
 </div>

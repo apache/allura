@@ -56,6 +56,35 @@ class TestFunctionalController(TestController):
         response = form.submit().follow()
         assert 'Test Admin' in response
 
+    def test_private_ticket(self):
+        ticket_view = self.new_ticket(summary='Public Ticket').follow()
+        assert_true('<label class="simple">Private:</label> No' in ticket_view)
+        ticket_view = self.new_ticket(summary='Private Ticket',
+                                      private=True).follow()
+        assert_true('<label class="simple">Private:</label> Yes' in ticket_view)
+        M.MonQTask.run_ready()
+        # Creator sees private ticket on list page...
+        index_response = self.app.get('/p/test/bugs/')
+        assert '2 results' in index_response
+        assert 'Public Ticket' in index_response
+        assert 'Private Ticket' in index_response
+        # ...and in search results.
+        search_response = self.app.get('/p/test/bugs/search/?q=ticket')
+        assert '2 results' in search_response
+        assert 'Private Ticket' in search_response
+        # Unauthorized user doesn't see private ticket on list page...
+        env = dict(username='*anonymous')
+        r = self.app.get('/p/test/bugs/', extra_environ=env)
+        assert '1 results' in r
+        assert 'Private Ticket' not in r
+        # ...or in search results...
+        r = self.app.get('/p/test/bugs/search/?q=ticket', extra_environ=env)
+        assert '1 results' in r
+        assert 'Private Ticket' not in r
+        # ...and can't get to the private ticket directly.
+        r = self.app.get(ticket_view.request.url, extra_environ=env)
+        assert 'Private Ticket' not in r
+
     def test_two_trackers(self):
         summary = 'test two trackers'
         ticket_view = self.new_ticket('/doc-bugs/', summary=summary).follow()
@@ -243,13 +272,13 @@ class TestFunctionalController(TestController):
         summary = 'test default assignment'
         self.new_ticket(summary=summary)
         response = self.app.get('/p/test/bugs/1/')
-        assert 'nobody' in str(response.html.find('div', {'class': 'grid-4 ticket-assigned-to'}))
+        assert 'nobody' in str(response.html.find('div', {'class': 'grid-5 ticket-assigned-to'}))
 
     def test_assign_ticket(self):
         summary = 'test assign ticket'
         self.new_ticket(summary=summary)
         response = self.app.get('/p/test/bugs/1/')
-        assert 'nobody' in str(response.html.find('div', {'class': 'grid-4 ticket-assigned-to'}))
+        assert 'nobody' in str(response.html.find('div', {'class': 'grid-5 ticket-assigned-to'}))
         response = self.app.post('/bugs/1/update_ticket',{
             'summary':'zzz',
             'description':'bbb',
@@ -260,7 +289,7 @@ class TestFunctionalController(TestController):
             'labels_old':'',
             'comment': ''
         }).follow()
-        assert 'test-admin' in str(response.html.find('div', {'class': 'grid-4 ticket-assigned-to'}))
+        assert 'test-admin' in str(response.html.find('div', {'class': 'grid-5 ticket-assigned-to'}))
         assert '<li><strong>summary</strong>: test assign ticket --&gt; zzz' in response
         assert '<li><strong>status</strong>: open --&gt; ccc' in response
 

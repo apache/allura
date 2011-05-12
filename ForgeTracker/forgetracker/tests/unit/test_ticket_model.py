@@ -26,3 +26,52 @@ class TestTicketModel(TrackerTestWithModel):
             pass
         else:
             raise AssertionError('Expected schema.Invalid to be thrown')
+
+    def test_private_ticket(self):
+        from pylons import c
+        from allura.model import ProjectRole, User
+        from allura.model import ACE, ALL_PERMISSIONS, DENY_ALL
+        from allura.lib.security import Credentials, has_access
+        from allura.websetup import bootstrap
+
+        admin = c.user
+        creator = bootstrap.create_user('Not a Project Admin')
+        developer = bootstrap.create_user('Project Developer')
+        observer = bootstrap.create_user('Random Non-Project User')
+        anon = User(_id=None, username='*anonymous',
+                    display_name='Anonymous Coward')
+        t = Ticket(summary='my ticket', ticket_num=3, reported_by_id=creator._id)
+
+        assert creator == t.reported_by
+        role_admin = ProjectRole.by_name('Admin')._id
+        role_developer = ProjectRole.by_name('Developer')._id
+        role_creator = t.reported_by.project_role()._id
+        developer.project_role().roles.append(role_developer)
+        cred = Credentials.get().clear()
+
+        t.private = True
+        assert t.acl == [ACE.allow(role_developer, ALL_PERMISSIONS),
+                         ACE.allow(role_creator, ALL_PERMISSIONS),
+                         DENY_ALL]
+        assert has_access(t, 'read', user=admin)()
+        assert has_access(t, 'write', user=admin)()
+        assert has_access(t, 'read', user=creator)()
+        assert has_access(t, 'write', user=creator)()
+        assert has_access(t, 'read', user=developer)()
+        assert has_access(t, 'write', user=developer)()
+        assert not has_access(t, 'read', user=observer)()
+        assert not has_access(t, 'write', user=observer)()
+        assert not has_access(t, 'read', user=anon)()
+        assert not has_access(t, 'write', user=anon)()
+
+        t.private = False
+        assert t.acl == []
+        assert has_access(t, 'read', user=admin)()
+        assert has_access(t, 'write', user=admin)()
+        assert has_access(t, 'read', user=developer)()
+        assert has_access(t, 'write', user=developer)()
+        assert has_access(t, 'read', user=creator)()
+        assert has_access(t, 'unmoderated_post', user=creator)()
+        assert not has_access(t, 'write', user=creator)()
+        assert has_access(t, 'read', user=observer)()
+        assert has_access(t, 'read', user=anon)()

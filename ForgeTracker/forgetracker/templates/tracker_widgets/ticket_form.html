@@ -25,10 +25,13 @@
     {{widget.display_field_by_name('custom_fields', ignore_errors=True)}}
   {% endif %}
   <div style="clear:both">&nbsp;</div>
-  <div class="grid-18">
+  <div class="grid-12">
     <label class="cr">Labels:</label>
     {{widget.display_field_by_name('labels')|safe}}
   </div>
+  <div class="grid-6">
+  	{{widget.display_field_by_name('private')}}
+  </div>  
   <div style="clear:both">&nbsp;</div>
   <div class="grid-6">
     <label class="simple">Updated:</label>
