@@ -229,9 +229,15 @@ def get_files(project):
 
     for pkg in frs.service.getPackageList(s, project.id).dataRows:
         pkg_path = handle_path(pkg, '')
+        pkg_details = frs.service.getPackageData(s, pkg.id) # download count
+        save(json.dumps(dict(pkg_details), default=str),
+             project, 'frs', pkg_path+'_details.json')
 
         for rel in frs.service.getReleaseList(s, pkg.id).dataRows:
             rel_path = handle_path(rel, pkg_path)
+            rel_details = frs.service.getReleaseData(s, rel.id) # download count
+            save(json.dumps(dict(rel_details), default=str),
+                 project, 'frs', rel_path+'_details.json')
 
             for file in frs.service.getFrsFileList(s, rel.id).dataRows:
                 details = frs.service.getFrsFileData(s, file.id)
