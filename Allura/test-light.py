@@ -3,60 +3,49 @@ import logging
 from collections import defaultdict
 from itertools import chain, izip
 from datetime import datetime
+from cPickle import dumps
 
+import bson
 from pylons import c
 from pymongo.errors import DuplicateKeyError
 
 from ming.base import Object
 
-from allura import model as M
 from allura.lib import helpers as h
 from allura.lib import utils
+from allura.model.repo import CommitDoc, TreeDoc, TreesDoc, DiffInfoDoc
+from allura.model.repo import LastCommitDoc, CommitRunDoc
+from allura.model.repo import Commit
+from allura.model.index import ArtifactReferenceDoc, ShortlinkDoc
 
 log = logging.getLogger(__name__)
 
 QSIZE=100
-
-def dolog():
-    h.set_context('test', 'code')
-    repo = c.app.repo._impl._git
-    oid = repo.commit(repo.heads[0]).hexsha
-    log.info('start')
-    for i, ci in enumerate(commitlog(oid)):
-        print repr(ci)
-    log.info('done')
 
 def main():
     if len(sys.argv) > 1:
         h.set_context('test')
         c.project.install_app('Git', 'code', 'Code', init_from_url='/home/rick446/src/forge')
     h.set_context('test', 'code')
-    M.repo.Commit.m.remove({})
-    M.repo.Tree.m.remove({})
-    M.repo.Trees.m.remove({})
-    M.repo.DiffInfo.m.remove({})
-    M.repo.LastCommit.m.remove({})
-    M.repo.BasicBlock.m.remove({})
-    repo = c.app.repo._impl._git
+    CommitDoc.m.remove({})
+    TreeDoc.m.remove({})
+    TreesDoc.m.remove({})
+    DiffInfoDoc.m.remove({})
+    LastCommitDoc.m.remove({})
+    CommitRunDoc.m.remove({})
 
-    # Get all commits
-    seen = set()
-    all_commit_ids = []
-    for head in repo.heads:
-        for ci in repo.iter_commits(head, topo_order=True):
-            if ci.binsha in seen: continue
-            seen.add(ci.binsha)
-            all_commit_ids.append(ci.hexsha)
+    # Get all commits (repo-specific)
+    all_commit_ids = list(c.app.repo.all_commit_ids())
 
-    # Skip commits that are already in the DB
+    # Skip commits that are already in the DB (repo-agnostic)
     commit_ids = unknown_commit_ids(all_commit_ids)
     # commit_ids = commit_ids[:500]
     log.info('Refreshing %d commits', len(commit_ids))
 
-    # Refresh commits
+    # Refresh commits (repo-specific)
+    seen = set()
     for i, oid in enumerate(commit_ids):
-        ci = repo.rev_parse(oid)
-        refresh_commit_info(ci, seen)
+        c.app.repo.refresh_commit_info(oid, seen)
         if (i+1) % 100 == 0:
             log.info('Refresh commit info %d: %s', (i+1), oid)
 
@@ -64,14 +53,14 @@ def main():
     # Everything below here is repo-agnostic
     #############################################
 
-    refresh_repo(commit_ids, c.app.repo._id)
+    refresh_repo(commit_ids, c.app.repo)
 
     # Refresh child references
     seen = set()
     parents = set()
 
     for i, oid in enumerate(commit_ids):
-        ci = M.repo.Commit.m.find(dict(_id=oid), validate=False).next()
+        ci = CommitDoc.m.find(dict(_id=oid), validate=False).next()
         refresh_children(ci)
         seen.add(ci._id)
         parents.update(ci.parent_ids)
@@ -79,28 +68,22 @@ def main():
             log.info('Refresh child (a) info %d: %s', (i+1), ci._id)
     for j, oid in enumerate(parents-seen):
         try:
-            ci = M.repo.Commit.m.find(dict(_id=oid), validate=False).next()
+            ci = CommitDoc.m.find(dict(_id=oid), validate=False).next()
         except StopIteration:
             continue
         refresh_children(ci)
         if (i + j + 1) % 100 == 0:
             log.info('Refresh child (b) info %d: %s', (i + j + 1), ci._id)
 
-    # Refresh basic blocks
-    bbb = BasicBlockBuilder(commit_ids)
-    bbb.run()
-    bbb.cleanup()
-
-    # Verify the log
-    log.info('Logging via basic blocks')
-    for i, ci in enumerate(commitlog(commit_ids[0])):
-        pass
-    log.info('... done (%d commits from %s)', i+1, commit_ids[0])
+    # Refresh commit runs
+    rb = CommitRunBuilder(commit_ids)
+    rb.run()
+    rb.cleanup()
 
     # Refresh trees
     cache = {}
     for i, oid in enumerate(commit_ids):
-        ci = M.repo.Commit.m.find(dict(_id=oid), validate=False).next()
+        ci = CommitDoc.m.find(dict(_id=oid), validate=False).next()
         cache = refresh_commit_trees(ci, cache)
         if (i+1) % 100 == 0:
             log.info('Refresh commit trees %d: %s', (i+1), ci._id)
@@ -108,13 +91,13 @@ def main():
     # Compute diffs
     cache = {}
     for i, oid in enumerate(commit_ids):
-        ci = M.repo.Commit.m.find(dict(_id=oid), validate=False).next()
+        ci = CommitDoc.m.find(dict(_id=oid), validate=False).next()
         compute_diffs(c.app.repo._id, cache, ci)
         if (i+1) % 100 == 0:
             log.info('Compute diffs %d: %s', (i+1), ci._id)
 
 def refresh_commit_trees(ci, cache):
-    trees_doc = M.repo.Trees(dict(
+    trees_doc = TreesDoc(dict(
             _id=ci._id,
             tree_ids = list(trees(ci.tree_id, cache))))
     trees_doc.m.save(safe=False)
@@ -124,10 +107,10 @@ def refresh_commit_trees(ci, cache):
     return new_cache
 
 def refresh_commit_info(ci, seen):
-    if M.repo.Commit.m.find(dict(_id=ci.hexsha)).count() != 0:
+    if CommitDoc.m.find(dict(_id=ci.hexsha)).count() != 0:
         return False
     try:
-        ci_doc = M.repo.Commit(dict(
+        ci_doc = CommitDoc(dict(
                 _id=ci.hexsha,
                 tree_id=ci.tree.hexsha,
                 committed = Object(
@@ -149,109 +132,128 @@ def refresh_commit_info(ci, seen):
     refresh_tree(ci.tree, seen)
     return True
 
-def refresh_repo(commit_ids, repo_id):
+def refresh_repo(commit_ids, repo):
     for oids in utils.chunked_iter(commit_ids, QSIZE):
         oids = list(oids)
-        M.repo.Commit.m.update_partial(
+        # Create shortlinks and artifactrefs
+        for oid in oids:
+            index_id = 'allura.model.repo.Commit#' + oid
+            ref = ArtifactReferenceDoc(dict(
+                    _id=index_id,
+                    artifact_reference=dict(
+                        cls=dumps(Commit),
+                        project_id=repo.app.config.project_id,
+                    app_config_id=repo.app.config._id,
+                        artifact_id=oid),
+                    references=[]))
+            link = ShortlinkDoc(dict(
+                    _id=bson.ObjectId(),
+                    ref_id=index_id,
+                    project_id=repo.app.config.project_id,
+                    app_config_id=repo.app.config._id,
+                    link=repo.shorthand_for_commit(oid),
+                    url=repo.url() + 'ci/' + oid + '/'))
+            ref.m.save(safe=False, validate=False)
+            link.m.save(safe=False, validate=False)
+        CommitDoc.m.update_partial(
             dict(
                 _id={'$in': oids},
-                repo_ids={'$ne': repo_id}),
-            {'$addToSet': dict(repo_ids=repo_id)},
+                repo_ids={'$ne': repo._id}),
+            {'$addToSet': dict(repo_ids=repo._id)},
             multi=True)
 
 def refresh_children(ci):
-    M.repo.Commit.m.update_partial(
+    CommitDoc.m.update_partial(
         dict(_id={'$in': ci.parent_ids}),
         {'$addToSet': dict(child_ids=ci._id)},
         multi=True)
 
-class BasicBlockBuilder(object):
+class CommitRunBuilder(object):
 
     def __init__(self, commit_ids):
         self.commit_ids = commit_ids
-        self.block_index = {} # by commit ID
-        self.blocks = {}          # by block ID
-        self.reasons = {}        # reasons to stop merging blocks
+        self.run_index = {} # by commit ID
+        self.runs = {}          # by run ID
+        self.reasons = {}    # reasons to stop merging runs
 
     def run(self):
         for oids in utils.chunked_iter(self.commit_ids, QSIZE):
             oids = list(oids)
-            commits = list(M.repo.Commit.m.find(dict(_id={'$in':oids})))
+            commits = list(CommitDoc.m.find(dict(_id={'$in':oids})))
             for ci in commits:
-                if ci._id in self.block_index: continue
-                self.block_index[ci._id] = ci._id
-                self.blocks[ci._id] = M.repo.BasicBlock(dict(
+                if ci._id in self.run_index: continue
+                self.run_index[ci._id] = ci._id
+                self.runs[ci._id] = CommitRunDoc(dict(
                         _id=ci._id,
                         parent_commit_ids=ci.parent_ids,
                         commit_ids=[ci._id],
                         commit_times=[ci.authored.date]))
-            self.merge_blocks()
-        log.info('%d basic blocks', len(self.blocks))
-        for bid, bb in sorted(self.blocks.items()):
-            log.info('%32s: %r', self.reasons.get(bid, 'none'), bb)
-        for bb in self.blocks.itervalues():
-            bb.m.save()
-        return self.blocks
+            self.merge_runs()
+        log.info('%d runs', len(self.runs))
+        for rid, run in sorted(self.runs.items()):
+            log.info('%32s: %r', self.reasons.get(rid, 'none'), run._id)
+        for run in self.runs.itervalues():
+            run.m.save()
+        return self.runs
 
-    def _all_blocks(self):
-        blocks = {}
+    def _all_runs(self):
+        runs = {}
         for oids in utils.chunked_iter(self.commit_ids, QSIZE):
             oids = list(oids)
-            for bb in M.repo.BasicBlock.m.find(dict(commit_ids={'$in': oids})):
-                blocks[bb._id] = bb
-        seen_bids = set()
-        blocks = blocks.values()
-        while blocks:
-            bb = blocks.pop()
-            if bb._id in seen_bids: continue
-            seen_bids.add(bb._id)
-            yield bb
-            for bb in M.repo.BasicBlock.m.find(
-                dict(commit_ids={'$in':bb.parent_commit_ids})):
-                blocks.append(bb)
+            for run in CommitRunDoc.m.find(dict(commit_ids={'$in': oids})):
+                runs[run._id] = run
+        seen_run_ids = set()
+        runs = runs.values()
+        while runs:
+            run = runs.pop()
+            if run._id in seen_run_ids: continue
+            seen_run_ids.add(run._id)
+            yield run
+            for run in CommitRunDoc.m.find(
+                dict(commit_ids={'$in':run.parent_commit_ids})):
+                runs.append(run)
 
     def cleanup(self):
-        '''Delete non-maximal basic blocks'''
-        for bb1 in self._all_blocks():
-            for bb2 in M.repo.BasicBlock.m.find(dict(
-                    commit_ids=bb1.commit_ids[0])):
-                if bb2._id == bb1._id: continue
-                log.info('... delete %r (part of %r)', bb2, bb1)
-                import pdb; pdb.set_trace()
-                bb2.m.delete()
+        '''Delete non-maximal runs'''
+        for run1 in self._all_runs():
+            for run2 in CommitRunDoc.m.find(dict(
+                    commit_ids=run1.commit_ids[0])):
+                if run1._id == run2._id: continue
+                log.info('... delete %r (part of %r)', run2, run1)
+                run2.m.delete()
 
-    def merge_blocks(self):
+    def merge_runs(self):
         while True:
-            for bid, bb in self.blocks.iteritems():
-                if len(bb.parent_commit_ids) != 1:
-                    self.reasons[bid] = '%d parents' % len(bb.parent_commit_ids)
+            for run_id, run in self.runs.iteritems():
+                if len(run.parent_commit_ids) != 1:
+                    self.reasons[run_id] = '%d parents' % len(run.parent_commit_ids)
                     continue
-                p_oid = bb.parent_commit_ids[0]
-                p_bid = self.block_index.get(p_oid)
-                if p_bid is None:
-                    self.reasons[bid] = 'parent commit not found'
+                p_oid = run.parent_commit_ids[0]
+                p_run_id = self.run_index.get(p_oid)
+                if p_run_id is None:
+                    self.reasons[run_id] = 'parent commit not found'
                     continue
-                p_bb = self.blocks.get(p_bid)
-                if p_bb is None:
-                    self.reasons[bid] = 'parent block not found'
+                p_run = self.runs.get(p_run_id)
+                if p_run is None:
+                    self.reasons[run_id] = 'parent run not found'
                     continue
-                if p_bb.commit_ids[0] != p_oid:
-                    self.reasons[bid] = 'parent does not start with parent commit'
+                if p_run.commit_ids[0] != p_oid:
+                    self.reasons[run_id] = 'parent does not start with parent commit'
                     continue
-                bb.commit_ids += p_bb.commit_ids
-                bb.commit_times += p_bb.commit_times
-                bb.parent_commit_ids = p_bb.parent_commit_ids
-                for oid in p_bb.commit_ids:
-                    self.block_index[oid] = bid
+                run.commit_ids += p_run.commit_ids
+                run.commit_times += p_run.commit_times
+                run.parent_commit_ids = p_run.parent_commit_ids
+                for oid in p_run.commit_ids:
+                    self.run_index[oid] = run_id
                 break
             else:
                 break
-            del self.blocks[p_bid]
+            del self.runs[p_run_id]
 
 def refresh_tree(t, seen):
     if t.binsha in seen: return
     seen.add(t.binsha)
-    doc = M.repo.Tree(dict(
+    doc = TreeDoc(dict(
             _id=t.hexsha,
             tree_ids=[],
             blob_ids=[],
@@ -274,7 +276,7 @@ def trees(id, cache):
     yield id
     entries = cache.get(id, None)
     if entries is None:
-        t = M.repo.Tree.m.get(_id=id)
+        t = TreeDoc.m.get(_id=id)
         entries = [ o.id for o in t.tree_ids ]
         cache[id] = entries
     for i in entries:
@@ -284,7 +286,7 @@ def trees(id, cache):
 def unknown_commit_ids(all_commit_ids):
     result = []
     for chunk in utils.chunked_iter(all_commit_ids, QSIZE):
-        q = M.repo.Commit.m.find(_id={'$in':chunk})
+        q = CommitDoc.m.find(_id={'$in':chunk})
         known_commit_ids = set(ci._id for ci in q)
         result += [ oid for oid in chunk if oid not in known_commit_ids ]
     return result
@@ -298,20 +300,20 @@ def compute_diffs(repo_id, tree_cache, rhs_ci):
             for xx in _walk_tree(tree_index[x.id], tree_index):
                 yield xx
 
-    rhs_tree_ids = M.repo.Trees.m.get(_id=rhs_ci._id).tree_ids
+    rhs_tree_ids = TreesDoc.m.get(_id=rhs_ci._id).tree_ids
     if rhs_ci.parent_ids:
-        lhs_ci = M.repo.Commit.m.get(_id=rhs_ci.parent_ids[0])
+        lhs_ci = CommitDoc.m.get(_id=rhs_ci.parent_ids[0])
     else:
         lhs_ci = None
     if lhs_ci is not None:
-        lhs_tree_ids = M.repo.Trees.m.get(_id=lhs_ci._id).tree_ids
+        lhs_tree_ids = TreesDoc.m.get(_id=lhs_ci._id).tree_ids
     else:
         lhs_tree_ids = []
     new_tree_ids = [
         tid for tid in chain(lhs_tree_ids, rhs_tree_ids)
         if tid not in tree_cache ]
     tree_index = dict(
-        (t._id, t) for t in M.repo.Tree.m.find(dict(_id={'$in': new_tree_ids}),validate=False))
+        (t._id, t) for t in TreeDoc.m.find(dict(_id={'$in': new_tree_ids}),validate=False))
     tree_index.update(tree_cache)
     rhs_tree_ids_set = set(rhs_tree_ids)
     tree_cache.clear()
@@ -328,82 +330,16 @@ def compute_diffs(repo_id, tree_cache, rhs_ci):
             dict(name=name, lhs_id=lhs_id, rhs_id=rhs_id))
         # Set last commit info
         if rhs_id is not None:
-            M.repo.LastCommit.set_last_commit(repo_id, rhs_id, rhs_ci)
+            _set_last_commit(repo_id, rhs_id, rhs_ci)
         rhs_tree = tree_index.get(rhs_id, None)
         if rhs_tree is not None:
             for oid in _walk_tree(rhs_tree, tree_index):
-                M.repo.LastCommit.set_last_commit(repo_id, oid, rhs_ci)
-    di = M.repo.DiffInfo(dict(
+                _set_last_commit(repo_id, oid, rhs_ci)
+    di = DiffInfoDoc(dict(
             _id=rhs_ci._id,
             differences=differences))
     di.m.save()
     return tree_cache
-
-def commitlog(commit_id, skip=0, limit=sys.maxint):
-
-    seen = set()
-    def _visit(commit_id):
-        if commit_id in seen: return
-        bb = M.repo.BasicBlock.m.get(commit_ids=commit_id)
-        if bb is None: return
-        index = False
-        for pos, (oid, time) in enumerate(izip(bb.commit_ids, bb.commit_times)):
-            if oid == commit_id: index = True
-            elif not index: continue
-            seen.add(oid)
-            ci_times[oid] = time
-            if pos+1 < len(bb.commit_ids):
-                ci_parents[oid] = [ bb.commit_ids[pos+1] ]
-            else:
-                ci_parents[oid] = bb.parent_commit_ids
-        for oid in bb.parent_commit_ids:
-            _visit(oid)
-
-    def _gen_ids(commit_id, skip, limit):
-        # Traverse the graph in topo order, yielding commit IDs
-        commits = set([commit_id])
-        new_parent = None
-        while commits and limit:
-            # next commit is latest commit that's valid to log
-            if new_parent in commits:
-                ci = new_parent
-            else:
-                ci = max(commits, key=lambda ci:ci_times[ci])
-            commits.remove(ci)
-            if skip:
-                skip -= 1
-                continue
-            else:
-                limit -= 1
-            yield ci
-            # remove this commit from its parents children and add any childless
-            # parents to the 'ready set'
-            new_parent = None
-            for oid in ci_parents[ci]:
-                children = ci_children[oid]
-                children.discard(ci)
-                if not children:
-                    commits.add(oid)
-                    new_parent = oid
-
-    # Load all the blocks to build a commit graph
-    ci_times = {}
-    ci_parents = {}
-    ci_children = defaultdict(set)
-    log.info('Build commit graph')
-    _visit(commit_id)
-    for oid, parents in ci_parents.iteritems():
-        for ci_parent in parents:
-            ci_children[ci_parent].add(oid)
-
-    # Convert oids to commit objects
-    log.info('Traverse commit graph')
-    for oids in utils.chunked_iter(_gen_ids(commit_id, skip, limit), QSIZE):
-        oids = list(oids)
-        index = dict(
-            (ci._id, ci) for ci in M.repo.Commit.m.find(dict(_id={'$in': oids})))
-        for oid in oids:
-            yield index[oid]
 
 def _diff_trees(lhs, rhs, index, *path):
     def _fq(name):
@@ -440,6 +376,24 @@ def _diff_trees(lhs, rhs, index, *path):
             yield (_fq(o.name), o.id, rhs_id)
     for name, id in rhs_blob_ids.items():
         yield (_fq(name), None, id)
+
+def _set_last_commit(repo_id, oid, commit):
+    lc = LastCommitDoc(dict(
+            _id='%s:%s' % (repo_id, oid),
+            repo_id=repo_id,
+            object_id=oid,
+            commit_info=dict(
+                id=commit._id,
+                author=commit.authored.name,
+                author_email=commit.authored.email,
+                date=commit.authored.date,
+                # author_url=commit.author_url,
+                # href=commit.url(),
+                # shortlink=commit.shorthand_id(),
+                # summary=commit.summary
+                )))
+    lc.m.save(safe=False)
+    return lc
 
 if __name__ == '__main__':
     main()

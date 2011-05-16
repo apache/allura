@@ -117,6 +117,14 @@ class GitImplementation(M.RepositoryImplementation):
         result.set_context(self._repo)
         return result
 
+    def all_commit_ids(self):
+        seen = set()
+        for head in self._git.heads:
+            for ci in self._git.iter_commits(head, topo_order=True):
+                if ci.binsha in seen: continue
+                seen.add(ci.binsha)
+                yield ci.hexsha
+
     def new_commits(self, all_commits=False):
         commits = list(self._git.iter_commits(topo_order=True))
         if all_commits: return commits
@@ -183,6 +191,57 @@ class GitImplementation(M.RepositoryImplementation):
         root_entry = self._repo.refresh_context.object_cache[native_ci.tree]
         self._build_manifest(native_ci)
         self.refresh_tree(root_entry)
+
+    def refresh_commit_info(self, oid, seen):
+        from allura.model.repo import CommitDoc
+        if CommitDoc.m.find(dict(_id=oid)).count():
+            return False
+        try:
+            ci = self._git.rev_parse(oid)
+            ci_doc = CommitDoc(dict(
+                    _id=ci.hexsha,
+                    tree_id=ci.tree.hexsha,
+                    committed = Object(
+                        name=h.really_unicode(ci.committer.name),
+                        email=h.really_unicode(ci.committer.email),
+                        date=datetime.utcfromtimestamp(
+                            ci.committed_date-ci.committer_tz_offset)),
+                    authored = Object(
+                        name=h.really_unicode(ci.author.name),
+                        email=h.really_unicode(ci.author.email),
+                        date=datetime.utcfromtimestamp(
+                            ci.authored_date-ci.author_tz_offset)),
+                    message=h.really_unicode(ci.message or ''),
+                    child_ids=[],
+                    parent_ids = [ p.hexsha for p in ci.parents ]))
+            ci_doc.m.insert(safe=True)
+        except DuplicateKeyError:
+            return False
+        self.refresh_tree_info(ci.tree, seen)
+        return True
+
+    def refresh_tree_info(self, tree, seen):
+        from allura.model.repo import TreeDoc
+        if tree.binsha in seen: return
+        seen.add(tree.binsha)
+        doc = TreeDoc(dict(
+                _id=tree.hexsha,
+                tree_ids=[],
+                blob_ids=[],
+                other_ids=[]))
+        for o in tree:
+            obj = Object(
+                name=h.really_unicode(o.name),
+                id=o.hexsha)
+            if o.type == 'tree':
+                self.refresh_tree_info(o, seen)
+                doc.tree_ids.append(obj)
+            elif o.type == 'blob':
+                doc.blob_ids.append(obj)
+            else:
+                obj.type = o.type
+                doc.other_ids.append(obj)
+        doc.m.save(safe=False)
 
     def _build_manifest(self, native_ci):
         '''Build the manifest for this commit (mapof all paths to trees/blobs)
