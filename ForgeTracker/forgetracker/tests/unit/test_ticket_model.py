@@ -19,9 +19,8 @@ class TestTicketModel(TrackerTestWithModel):
         Ticket(summary='my ticket')
 
     def test_ticket_num_required2(self):
-        t = Ticket(summary='my ticket', ticket_num=3)
         try:
-            t.ticket_num = None
+            Ticket(summary='my ticket')
         except schema.Invalid:
             pass
         else:
