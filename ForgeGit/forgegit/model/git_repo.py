@@ -142,9 +142,6 @@ class GitImplementation(M.RepositoryImplementation):
             to_visit += obj.parents
         return list(topological_sort(graph))
 
-    def commit_parents(self, ci):
-        return ci.parents
-
     def commit_context(self, commit):
         prev_ids = commit.parent_ids
         prev = M.Commit.query.find(dict(
@@ -243,9 +240,6 @@ class GitImplementation(M.RepositoryImplementation):
                 doc.other_ids.append(obj)
         doc.m.save(safe=False)
 
-    def object_id(self, obj):
-        return obj.hexsha
-
     def log(self, object_id, skip, count):
         obj = self._git.commit(object_id)
         candidates = [ obj ]
@@ -305,15 +299,6 @@ class GitImplementation(M.RepositoryImplementation):
             if o.binsha in seen_object_ids: continue
             blob, isnew = M.Blob.upsert(o.hexsha)
             seen_object_ids.add(o.binsha)
-
-    def generate_shortlinks(self, ci):
-        for link in ci.object_id, ci.object_id[:6]:
-            M.Shortlink(
-                ref_id=None,
-                project_id=ci.project_id,
-                app_config_id=ci.app_config_id,
-                link=link,
-                url=ci.url)
 
     def _object(self, oid):
         evens = oid[::2]

@@ -36,6 +36,12 @@ def main():
     if options.clean:
         log.info('Removing all repository objects')
         M.repository.RepoObject.query.remove()
+        M.repo.CommitDoc.m.remove({})
+        M.repo.TreeDoc.m.remove({})
+        M.repo.TreesDoc.m.remove({})
+        M.repo.DiffInfoDoc.m.remove({})
+        M.repo.LastCommitDoc.m.remove({})
+        M.repo.CommitRunDoc.m.remove({})
     for chunk in chunked_project_iterator(q_project):
         for p in chunk:
             c.project = p
