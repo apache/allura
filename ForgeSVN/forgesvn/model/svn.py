@@ -94,8 +94,8 @@ class SVNImplementation(M.RepositoryImplementation):
     def _url(self):
         return 'file://%s%s' % (self._repo.fs_path, self._repo.name)
 
-    def shorthand_for_commit(self, commit):
-        return '[r%d]' % self._revno(commit.object_id)
+    def shorthand_for_commit(self, oid):
+        return '[r%d]' % self._revno(oid)
 
     def url_for_commit(self, commit):
         return '%s%d/' % (
