@@ -3,7 +3,8 @@ from collections import defaultdict
 
 from pylons import c, g
 
-from ming.orm import MappedClass, mapper
+from ming.orm import mapper, Mapper
+from ming.orm.declarative import MappedClass
 
 import allura.tasks.index_tasks
 from allura.lib.exceptions import CompoundError
@@ -109,28 +110,27 @@ class EnsureIndexCommand(base.Command):
         from allura import model as M
         self.basic_setup()
         # Collect indexes by collection name
-        main_indexes = defaultdict(lambda: ([], []))
-        project_indexes = defaultdict(lambda: ([], []))
+        main_indexes = defaultdict(list)
+        project_indexes = defaultdict(list)
         base.log.info('Collecting indexes...')
-        for name, cls in MappedClass._registry.iteritems():
-            cname = cls.__mongometa__.name
+        for m in Mapper.all_mappers():
+            mgr = m.collection.m
+            cname = mgr.collection_name
+            cls = m.mapped_class
             if cname is None:
                 base.log.info('... skipping abstract class %s', cls)
                 continue
             base.log.info('... for class %s', cls)
-            indexes = getattr(cls.__mongometa__, 'indexes', []) or []
-            uindexes = getattr(cls.__mongometa__, 'unique_indexes', []) or []
             if cls.__mongometa__.session in (
                 M.main_orm_session, M.repository_orm_session):
                 idx = main_indexes[cname]
             else:
                 idx = project_indexes[cname]
-            idx[0].extend(indexes)
-            idx[1].extend(uindexes)
+            idx.extend(mgr.indexes)
         base.log.info('Updating indexes for main DB')
         db = M.main_doc_session.db
-        for name, (indexes, uindexes) in main_indexes.iteritems():
-            self._update_indexes(db[name], indexes, uindexes)
+        for name, indexes in main_indexes.iteritems():
+            self._update_indexes(db[name], indexes)
         base.log.info('Updating indexes for project DBs')
         projects = M.Project.query.find().all()
         configured_dbs = set()
@@ -141,14 +141,20 @@ class EnsureIndexCommand(base.Command):
             c.project = p
             db = M.project_doc_session.db
             base.log.info('... DB: %s', db)
-            for name, (indexes, uindexes) in project_indexes.iteritems():
-                self._update_indexes(db[name], indexes, uindexes)
+            for name, indexes in project_indexes.iteritems():
+                self._update_indexes(db[name], indexes)
 
-    def _update_indexes(self, collection, indexes, uindexes):
-        indexes = set(map(tuple, indexes))
-        uindexes = set(map(tuple, uindexes))
+    def _update_indexes(self, collection, indexes):
         prev_indexes = {}
         prev_uindexes = {}
+        uindexes = dict(
+            (tuple(i.index_spec), i)
+            for i in indexes
+            if i.unique)
+        indexes = dict(
+            (tuple(i.index_spec), i)
+            for i in indexes
+            if not i.unique)
         for iname, fields in collection.index_information().iteritems():
             if iname == '_id_': continue
             if fields.get('unique'):
@@ -165,15 +171,15 @@ class EnsureIndexCommand(base.Command):
                 base.log.info('...... drop index %s:%s', collection.name, iname)
                 collection.drop_index(iname)
         # Ensure all indexes
-        for idx in map(list, indexes):
-            base.log.info('...... ensure index %s:%s', collection.name, idx)
-            collection.ensure_index(idx, background=True)
-        for idx in map(list, uindexes):
-            base.log.info('...... ensure unique index %s:%s', collection.name, idx)
-            collection.ensure_index(idx, background=True, unique=True)
+        for name, idx in uindexes.iteritems():
+            base.log.info('...... ensure %s:%s', collection.name, idx)
+            collection.ensure_index(idx.index_spec, background=True, unique=True)
+        for name, idx in indexes.iteritems():
+            base.log.info('...... ensure %s:%s', collection.name, idx)
+            collection.ensure_index(idx.index_spec, background=True)
 
 def build_model_inheritance_graph():
-    graph = dict((c, ([], [])) for c in MappedClass._registry.itervalues())
+    graph = dict((m.mapped_class, ([], [])) for m in Mapper.all_mappers())
     for cls, (parents, children)  in graph.iteritems():
         for b in cls.__bases__:
             if b not in graph: continue

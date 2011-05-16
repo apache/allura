@@ -12,8 +12,9 @@ from pylons import c, g
 import ming
 from ming import schema as S
 from ming.utils import LazyProperty
-from ming.orm import MappedClass, session
+from ming.orm import session
 from ming.orm import FieldProperty, ForeignIdProperty, RelationProperty
+from ming.orm.declarative import MappedClass
 
 from allura.lib import helpers as h
 

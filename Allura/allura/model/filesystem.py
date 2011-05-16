@@ -6,9 +6,8 @@ import Image
 from gridfs import GridFS
 
 from ming import schema
-from ming.orm.base import session
-from ming.orm.property import FieldProperty
-from ming.orm.mapped_class import MappedClass
+from ming.orm import session, FieldProperty
+from ming.orm.declarative import MappedClass
 
 from .session import project_orm_session
 from allura.lib import utils

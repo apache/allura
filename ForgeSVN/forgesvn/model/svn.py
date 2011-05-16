@@ -11,7 +11,7 @@ import tg
 import pysvn
 
 from ming.base import Object
-from ming.orm import MappedClass, FieldProperty, session
+from ming.orm import Mapper, FieldProperty, session
 from ming.utils import LazyProperty
 
 from allura import model as M
@@ -28,9 +28,9 @@ class Repository(M.Repository):
         name='svn-repository'
     branches = FieldProperty([dict(name=str,object_id=str)])
 
-    def __init__(self, **kw):
-        super(Repository, self).__init__(**kw)
-        self._impl = SVNImplementation(self)
+    @LazyProperty
+    def _impl(self):
+        return SVNImplementation(self)
 
     def _log(self, rev, skip, max_count):
         ci = self.commit(rev)
@@ -324,4 +324,4 @@ class SVNImplementation(M.RepositoryImplementation):
     def _oid(self, revno):
         return '%s:%s' % (self._repo._id, revno)
 
-MappedClass.compile_all()
+Mapper.compile_all()

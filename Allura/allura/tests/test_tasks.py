@@ -5,7 +5,7 @@ import unittest
 import mock
 from pylons import c, g
 
-from ming.orm import FieldProperty
+from ming.orm import FieldProperty, Mapper
 
 from alluratest.controller import setup_basic_test, setup_global_objects
 
@@ -207,4 +207,5 @@ class _TestArtifact(M.Artifact):
         return dict(
             super(_TestArtifact, self).index(),
             text=self.text)
-M.MappedClass.compile_all()
+
+Mapper.compile_all()

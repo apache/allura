@@ -21,4 +21,4 @@ def test_basic_task():
     task = M.MonQTask.get()
     assert task
     task()
-    assert task.result == "{'a': 5, 'b': 6}", task.result
+    assert task.result == "I{'a': 5, 'b': 6}", task.result

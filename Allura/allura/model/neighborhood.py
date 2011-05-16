@@ -1,8 +1,8 @@
 import logging
 
 from ming import schema as S
-from ming.orm import MappedClass
-from ming.orm import FieldProperty, RelationProperty, ForeignIdProperty
+from ming.orm import FieldProperty, RelationProperty
+from ming.orm.declarative import MappedClass
 
 from pylons import request, c
 

@@ -1,23 +1,15 @@
-import os
-import shutil
 import logging
-from datetime import datetime
-from contextlib import contextmanager
 
-from tg import config
 from tg.decorators import Decoration
 from tg.render import render
-import chardet
-from pylons import c, g, request
-from pymongo.errors import OperationFailure
+from pylons import c, request
 
 from ming import schema
-from ming.orm.base import state, session, mapper
-from ming.orm.mapped_class import MappedClass
-from ming.orm.property import FieldProperty, RelationProperty, ForeignIdProperty
+from ming.orm import Mapper
+from ming.orm import FieldProperty, ForeignIdProperty
 
 from allura.lib.helpers import push_config
-from allura.model import Project, Artifact, AppConfig
+from allura.model import Artifact
 
 log = logging.getLogger(__name__)
 
@@ -78,4 +70,4 @@ def render_widget(mount_point, widget_name):
         return render(template_vars, engine, template)
     return result
 
-MappedClass.compile_all()
+Mapper.compile_all()

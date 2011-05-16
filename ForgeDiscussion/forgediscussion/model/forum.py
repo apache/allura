@@ -3,8 +3,7 @@ from itertools import chain
 
 from ming import schema
 from ming.utils import LazyProperty
-from ming.orm.mapped_class import MappedClass
-from ming.orm.property import FieldProperty, RelationProperty, ForeignIdProperty
+from ming.orm import FieldProperty, RelationProperty, ForeignIdProperty, Mapper
 
 from allura import model as M
 from allura.lib import utils
@@ -233,4 +232,4 @@ class ForumAttachment(M.DiscussionAttachment):
         polymorphic_identity='ForumAttachment'
     attachment_type=FieldProperty(str, if_missing='ForumAttachment')
 
-MappedClass.compile_all()
+Mapper.compile_all()

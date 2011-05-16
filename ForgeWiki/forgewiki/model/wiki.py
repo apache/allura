@@ -2,8 +2,8 @@ from pylons import g #g is a namespace for globally accessable app helpers
 from pylons import c as context
 
 from ming import schema
-from ming.orm.mapped_class import MappedClass
-from ming.orm.property import FieldProperty, ForeignIdProperty
+from ming.orm import FieldProperty, ForeignIdProperty, Mapper
+from ming.orm.declarative import MappedClass
 
 from allura.model import VersionedArtifact, Snapshot, Feed, Thread, Post, User, BaseAttachment
 from allura.model import Notification, project_orm_session
@@ -190,4 +190,4 @@ class WikiAttachment(BaseAttachment):
         polymorphic_identity='WikiAttachment'
     attachment_type=FieldProperty(str, if_missing='WikiAttachment')
 
-MappedClass.compile_all()
+Mapper.compile_all()

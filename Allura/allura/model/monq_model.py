@@ -10,7 +10,8 @@ from pylons import c, g
 import ming
 from ming.utils import LazyProperty
 from ming import schema as S
-from ming.orm import session, MappedClass, FieldProperty
+from ming.orm import session, FieldProperty
+from ming.orm.declarative import MappedClass
 
 from .session import main_orm_session
 
@@ -42,11 +43,16 @@ class MonQTask(MappedClass):
         session = main_orm_session
         name = 'monq_task'
         indexes = [
-           [ ('state', ming.ASCENDING),
-             ('priority', ming.DESCENDING),
-             ('time_queue', ming.ASCENDING) ],
-           ['state', 'time_queue'],
-           ]
+            [
+                ('state', ming.ASCENDING),
+                ('priority', ming.DESCENDING),
+                ('time_queue', ming.ASCENDING)
+                ],
+            [
+                'state',
+                'time_queue'
+                ],
+            ]
 
     _id = FieldProperty(S.ObjectId)
     state = FieldProperty(S.OneOf(*states))

@@ -15,7 +15,9 @@ import pymongo.errors
 
 from ming import schema as S
 from ming.utils import LazyProperty
-from ming.orm import MappedClass, FieldProperty, session
+from ming.orm import FieldProperty, session, Mapper
+from ming.orm.declarative import MappedClass
+
 
 from allura.lib.patience import SequenceMatcher
 from allura.lib import helpers as h
@@ -643,10 +645,8 @@ class Commit(RepoObject):
      # All repos that potentially reference this commit
     repositories=FieldProperty([S.ObjectId])
 
-    def __init__(self, **kw):
-        super(Commit, self).__init__(**kw)
-        # Ephemeral attrs
-        self.repo = None
+    # Ephemeral attrs
+    repo=None
 
     def set_context(self, repo):
         self.repo = repo
@@ -787,13 +787,11 @@ class Tree(RepoObject):
     type = FieldProperty(str, if_missing='tree')
     object_ids = FieldProperty([dict(object_id=str,name=str)])
 
-    def __init__(self, **kw):
-        super(Tree, self).__init__(**kw)
-        # Ephemeral attrs
-        self.repo = None
-        self.commit = None
-        self.parent = None
-        self.name = None
+    # Ephemeral attrs
+    repo=None
+    commit=None
+    parent=None
+    name=None
 
     def compute_hash(self):
         '''Compute a hash based on the contents of the tree.  Note that this
@@ -953,13 +951,11 @@ class Blob(RepoObject):
 
     type = FieldProperty(str, if_missing='blob')
 
-    def __init__(self, **kw):
-        super(Blob, self).__init__(**kw)
-        # Ephemeral attrs
-        self.repo = None
-        self.commit = None
-        self.tree = None
-        self.name = None
+    # Ephemeral attrs
+    repo=None
+    commit=None
+    tree=None
+    name=None
 
     def set_context(self, tree, name):
         self.repo = tree.repo
@@ -1179,4 +1175,4 @@ def topological_sort(graph):
                 roots.append(child)
     assert not graph, 'Cycle detected'
 
-MappedClass.compile_all()
+Mapper.compile_all()

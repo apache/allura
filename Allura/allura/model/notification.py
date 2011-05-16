@@ -27,7 +27,8 @@ import pymongo
 import jinja2
 
 from ming import schema as S
-from ming.orm import MappedClass, FieldProperty, ForeignIdProperty, RelationProperty, session
+from ming.orm import FieldProperty, ForeignIdProperty, RelationProperty, session
+from ming.orm.declarative import MappedClass
 
 from allura.lib import helpers as h
 import allura.tasks.mail_tasks
@@ -270,7 +271,7 @@ class Mailbox(MappedClass):
 
     # Subscription type
     is_flash = FieldProperty(bool, if_missing=False)
-    type = FieldProperty(S.OneOf, 'direct', 'digest', 'summary', 'flash')
+    type = FieldProperty(S.OneOf('direct', 'digest', 'summary', 'flash'))
     frequency = FieldProperty(dict(
             n=int,unit=S.OneOf('day', 'week', 'month')))
     next_scheduled = FieldProperty(datetime, if_missing=datetime.utcnow)
@@ -386,7 +387,6 @@ class Mailbox(MappedClass):
             }
         for mbox in cls.query.find(d):
             mbox.query.update(
-                dict(_id=mbox._id),
                 {'$push':dict(queue=nid),
                  '$set':dict(last_modified=datetime.utcnow())})
             # Make sure the mbox doesn't stick around to be flush()ed
@@ -408,7 +408,7 @@ class Mailbox(MappedClass):
             type={'$in': ['digest', 'summary']},
             next_scheduled={'$lt':now})
         for mbox in cls.query.find(q_direct):
-            mbox = mbox.query.find_and_modify(
+            mbox = cls.query.find_and_modify(
                 query=dict(_id=mbox._id),
                 update={'$set': dict(
                         queue=[])},
@@ -422,7 +422,7 @@ class Mailbox(MappedClass):
                 next_scheduled += timedelta(days=7 * mbox.frequency.n)
             elif mbox.frequency.unit == 'month':
                 next_scheduled += timedelta(days=30 * mbox.frequency.n)
-            mbox = mbox.query.find_and_modify(
+            mbox = cls.query.find_and_modify(
                 query=dict(_id=mbox._id),
                 update={'$set': dict(
                         next_scheduled=next_scheduled,

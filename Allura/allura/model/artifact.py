@@ -8,8 +8,8 @@ import pymongo
 from pylons import c, request
 from ming import schema as S
 from ming.orm import state, session
-from ming.orm.mapped_class import MappedClass
-from ming.orm.property import FieldProperty, ForeignIdProperty, RelationProperty
+from ming.orm import FieldProperty, ForeignIdProperty, RelationProperty
+from ming.orm.declarative import MappedClass
 from ming.utils import LazyProperty
 from webhelpers import feedgenerator as FG
 
@@ -58,7 +58,6 @@ class Artifact(MappedClass):
     app_config_id = ForeignIdProperty('AppConfig', if_missing=lambda:c.app.config._id)
     plugin_verson = FieldProperty(S.Deprecated)
     tool_version = FieldProperty(
-        S.Object,
         { str: str },
         if_missing=lambda:{c.app.config.tool_name:c.app.__version__})
     acl = FieldProperty(ACL)
@@ -332,7 +331,7 @@ class VersionedArtifact(Artifact):
                 display_name=c.user.get_pref('display_name'),
                 logged_ip=ip_address),
             timestamp=datetime.utcnow(),
-            data=state(self).document.deinstrumented_clone())
+            data=state(self).clone())
         ss = self.__mongometa__.history_class(**data)
         session(ss).insert_now(ss, state(ss))
         log.info('Snapshot version %s of %s',

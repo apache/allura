@@ -1,24 +1,13 @@
-import os
-import re
 import logging
-import urllib
-import hmac
-import hashlib
-from datetime import timedelta, datetime
-from hashlib import sha256
 
-import iso8601
-import pymongo
 import oauth2 as oauth
-from pylons import c, g, request
+from pylons import c, g
 
 from ming import schema as S
-from ming.orm.ormsession import ThreadLocalORMSession
-from ming.orm import session, state, MappedClass
 from ming.orm import FieldProperty, RelationProperty, ForeignIdProperty
+from ming.orm.declarative import MappedClass
 
 from allura.lib import helpers as h
-from allura.lib import plugin
 from .session import main_doc_session, main_orm_session
 from .session import project_doc_session, project_orm_session
 

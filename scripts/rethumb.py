@@ -7,7 +7,7 @@ import tg
 from pylons import c
 from paste.deploy.converters import asint
 
-from ming.orm import MappedClass, mapper, ThreadLocalORMSession, session, state
+from ming.orm import mapper, ThreadLocalORMSession, session, state, Mapper
 from allura.command import base
 import forgetracker.model
 
@@ -58,9 +58,11 @@ class RethumbCommand(base.Command):
         existing_thumbs = 0
         base.log.info('Collecting application attachment classes')
         package_model_map = {}
-        for name, cls in MappedClass._registry.iteritems():
+        for m in Mapper.all_mappers():
+            sess = m.session
+            cls = m.mapped_class
             if issubclass(cls, M.BaseAttachment):
-                if cls.__mongometa__.session is M.project_orm_session:
+                if sess is M.project_orm_session:
                     package = cls.__module__.split('.', 1)[0]
                     l = package_model_map.get(package, [])
                     l.append(cls)

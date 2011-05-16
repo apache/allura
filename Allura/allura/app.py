@@ -7,7 +7,7 @@ from tg.decorators import without_trailing_slash
 from pylons import c, g, request
 from bson import ObjectId
 
-from ming.orm import session
+from ming.orm import session, state
 
 from allura.lib.helpers import push_config, vardec
 from allura.lib.security import require, has_access, require_access

@@ -14,8 +14,9 @@ import pymongo
 from pylons import c, g, request
 
 from ming import schema as S
-from ming.orm import session, state, MappedClass
+from ming.orm import session, state
 from ming.orm import FieldProperty, RelationProperty, ForeignIdProperty
+from ming.orm.declarative import MappedClass
 
 import allura.tasks.mail_tasks
 from allura.lib import helpers as h

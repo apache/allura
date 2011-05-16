@@ -12,7 +12,7 @@ os.environ['HGRCPATH'] = '' # disable loading .hgrc
 from mercurial import ui, hg
 
 from ming.base import Object
-from ming.orm import MappedClass, session
+from ming.orm import Mapper, session
 from ming.utils import LazyProperty
 
 from allura import model as M
@@ -28,9 +28,9 @@ class Repository(M.Repository):
     class __mongometa__:
         name='hg-repository'
 
-    def __init__(self, **kw):
-        super(Repository, self).__init__(**kw)
-        self._impl = HgImplementation(self)
+    @LazyProperty
+    def _impl(self):
+        return HgImplementation(self)
 
     def merge_command(self, merge_request):
         '''Return the command to merge a given commit into a given target branch'''
@@ -232,4 +232,4 @@ class HgImplementation(M.RepositoryImplementation):
         ctx = self._hg[commit.object_id]
         return [ctx.branch()], tags
 
-MappedClass.compile_all()
+Mapper.compile_all()

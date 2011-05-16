@@ -229,7 +229,7 @@ class TestRepoObject(_TestWithRepoAndCommit):
     def test_get_last_commit(self):
         obj, isnew = M.RepoObject.upsert('foo1')
         lc, isnew = obj.set_last_commit(self.ci)
-        assert lc.last_commit is obj.get_last_commit()
+        assert lc.last_commit == obj.get_last_commit()
 
     def test_get_last_commit_missing(self):
         obj, isnew = M.RepoObject.upsert('foo1')

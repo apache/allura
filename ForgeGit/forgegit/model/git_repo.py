@@ -8,7 +8,7 @@ import tg
 import git
 
 from ming.base import Object
-from ming.orm import MappedClass, session
+from ming.orm import Mapper, session
 from ming.utils import LazyProperty
 
 from allura.lib import helpers as h
@@ -24,9 +24,9 @@ class Repository(M.Repository):
     class __mongometa__:
         name='git-repository'
 
-    def __init__(self, **kw):
-        super(Repository, self).__init__(**kw)
-        self._impl = GitImplementation(self)
+    @LazyProperty
+    def _impl(self):
+        return GitImplementation(self)
 
     def suggested_clone_dest_path(self):
         return super(Repository, self).suggested_clone_dest_path()[:-4]
@@ -274,4 +274,4 @@ class _OpenedGitBlob(object):
     def close(self):
         pass
 
-MappedClass.compile_all()
+Mapper.compile_all()

@@ -10,9 +10,9 @@ from bson import ObjectId
 from ming import schema as S
 from ming.utils import LazyProperty
 from ming.orm import ThreadLocalORMSession
-from ming.orm.base import mapper, session, state
-from ming.orm.mapped_class import MappedClass
-from ming.orm.property import FieldProperty, RelationProperty, ForeignIdProperty
+from ming.orm import session, state
+from ming.orm import FieldProperty, RelationProperty, ForeignIdProperty
+from ming.orm.declarative import MappedClass
 
 from allura.lib import helpers as h
 from allura.lib import plugin

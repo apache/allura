@@ -1,12 +1,11 @@
-from time import sleep
 from datetime import datetime
 from random import randint
 
 from pylons import c, g
-from pymongo.errors import OperationFailure, DuplicateKeyError
+from pymongo.errors import DuplicateKeyError
 
 from ming import schema
-from ming.orm import FieldProperty, MappedClass, session, state
+from ming.orm import FieldProperty, Mapper, session, state
 from allura import model as M
 from allura.lib import helpers as h
 from allura.lib import utils
@@ -162,4 +161,4 @@ class Attachment(M.BaseAttachment):
     attachment_type=FieldProperty(str, if_missing='BlogAttachment')
 
 
-MappedClass.compile_all()
+Mapper.compile_all()

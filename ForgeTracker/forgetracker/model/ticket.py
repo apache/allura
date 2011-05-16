@@ -10,8 +10,9 @@ from pylons import c, g
 
 from ming import schema
 from ming.utils import LazyProperty
-from ming.orm import MappedClass, session
+from ming.orm import Mapper, session
 from ming.orm import FieldProperty, ForeignIdProperty, RelationProperty
+from ming.orm.declarative import MappedClass
 
 from allura.model import Artifact, VersionedArtifact, Snapshot, project_orm_session, BaseAttachment
 from allura.model import User, Feed, Thread, Notification
@@ -562,4 +563,4 @@ class TicketAttachment(BaseAttachment):
         polymorphic_identity='TicketAttachment'
     attachment_type=FieldProperty(str, if_missing='TicketAttachment')
 
-MappedClass.compile_all()
+Mapper.compile_all()

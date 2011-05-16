@@ -6,7 +6,7 @@ import logging
 from pylons import c
 from bson import BSON
 
-from ming.orm import MappedClass, state, mapper
+from ming.orm import Mapper, state, mapper
 
 from allura import model as M
 
@@ -48,9 +48,10 @@ def dump_project(project, dirname):
     app_config_ids = [
         ac._id for ac in M.AppConfig.query.find(dict(project_id=c.project._id)) ]
     visited_collections = {}
-    for name, cls in MappedClass._registry.iteritems():
-        cname = cls.__mongometa__.name
-        sess = cls.__mongometa__.session
+    for m in Mapper.all_mappers():
+        cls = m.mapped_class
+        cname = cls.name
+        sess = m.session
         if sess is None:
             log.info('Skipping %s which has no session', cls)
             continue

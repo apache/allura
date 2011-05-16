@@ -10,7 +10,7 @@ from nose.tools import assert_raises
 from nose import with_setup
 
 from ming.orm.ormsession import ThreadLocalORMSession
-from ming.orm import session
+from ming.orm import Mapper
 
 import allura
 from allura import model as M
@@ -29,7 +29,7 @@ class Checkmessage(M.Message):
         super(Checkmessage, self).__init__(**kw)
         if self.slug is not None and self.full_slug is None:
             self.full_slug = datetime.utcnow().strftime('%Y%m%d%H%M%S') + ':' + self.slug
-Checkmessage.compile_all()
+Mapper.compile_all()
 
 def setUp():
     setup_basic_test()

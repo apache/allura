@@ -1,9 +1,9 @@
 from datetime import datetime
 
-from pylons import g
-
 from ming import schema as S
-from ming.orm import MappedClass, FieldProperty
+from ming.orm import FieldProperty, Mapper
+from ming.orm.declarative import MappedClass
+
 from allura import model as M
 
 class ChatChannel(MappedClass):
@@ -17,7 +17,7 @@ class ChatChannel(MappedClass):
     project_id = FieldProperty(S.ObjectId)
     app_config_id = FieldProperty(S.ObjectId)
     channel = FieldProperty(str)
-
+    
 class ChatMessage(M.Artifact):
     class __mongometa__:
         name='chat_message'
@@ -61,4 +61,4 @@ class ChatMessage(M.Artifact):
     def timestamp_hour(self):
         return self.timestamp.strftime('%H:%M:%S')
 
-MappedClass.compile_all()
+Mapper.compile_all()

@@ -4,7 +4,7 @@ from unittest import TestCase
 from cStringIO import StringIO
 
 from pylons import response
-from ming.orm import MappedClass, session
+from ming.orm import session, Mapper
 
 
 from allura import model as M
@@ -14,7 +14,7 @@ from alluratest.controller import setup_unit_test
 class File(M.File):
     class __mongometa__:
         session = M.session.main_orm_session
-MappedClass.compile_all()
+Mapper.compile_all()
 
 class TestFile(TestCase):
 

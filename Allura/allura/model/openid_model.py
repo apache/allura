@@ -5,9 +5,8 @@ from datetime import datetime, timedelta
 from openid.store import nonce
 from openid.association import Association
 
-from ming import Document, Session, Field
-from ming.orm.mapped_class import MappedClass
-from ming.orm.property import FieldProperty
+from ming.orm import FieldProperty
+from ming.orm.declarative import MappedClass
 from .session import main_doc_session, main_orm_session
 from .session import project_doc_session, project_orm_session
 
