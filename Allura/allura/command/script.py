@@ -1,11 +1,15 @@
 import sys
 import os.path
 import cProfile
-from ming.orm import session
+
 from pylons import c
-from . import base
+import pylons
+import webob
+
+from ming.orm import session
 from allura.lib import helpers as h
 from allura.lib import utils
+from . import base
 
 class ScriptCommand(base.Command):
     min_args=2
@@ -20,6 +24,9 @@ class ScriptCommand(base.Command):
 
     def command(self):
         self.basic_setup()
+        request = webob.Request.blank('--script--', environ={
+                'paste.registry':self.registry})
+        self.registry.register(pylons.request, request)
         if self.options.pdb:
             base.log.info('Installing exception hook')
             sys.excepthook = utils.postmortem_hook

@@ -10,6 +10,7 @@ from datetime import datetime
 from collections import defaultdict
 
 import tg
+from paste.deploy.converters import asbool
 from pylons import c,g, request
 import pymongo.errors
 
@@ -28,6 +29,7 @@ from .artifact import Artifact, VersionedArtifact, Feed
 from .auth import User
 from .session import repository_orm_session, project_orm_session, main_doc_session
 from .notification import Notification
+from .repo_refresh import refresh_repo
 
 log = logging.getLogger(__name__)
 config = utils.ConfigProxy(
@@ -80,10 +82,6 @@ class RepositoryImplementation(object):
         '''Refresh the data in the commit with id oid'''
         raise NotImplementedError, 'refresh_commit_info'
 
-    def object_id(self, obj): # pragma no cover
-        '''Return the object_id for the given native object'''
-        raise NotImplementedError, 'object_id'
-
     def _setup_hooks(self): # pragma no cover
         '''Install a hook in the repository that will ping the refresh url for
         the repo'''
@@ -105,7 +103,7 @@ class RepositoryImplementation(object):
         raise NotImplementedError, 'open_blob'
 
     def shorthand_for_commit(self, oid):
-        return '[%s]' % oid
+        return '[%s]' % oid[:6]
 
     def symbolics_for_commit(self, commit):
         '''Return symbolic branch and tag names for a commit.
@@ -306,6 +304,8 @@ class Repository(Artifact):
 
     def refresh(self, all_commits=False, notify=True):
         '''Find any new commits in the repository and update'''
+        if asbool(tg.config.get('scm.new_refresh')):
+            refresh_repo(self, all_commits, notify)
         self._impl.refresh_heads()
         self.status = 'analyzing'
         session(self).flush()
@@ -316,6 +316,7 @@ class Repository(Artifact):
         # Refresh history
         seen_object_ids = set()
         commit_msgs = []
+        i=0
         for i, oid in enumerate(commit_ids):
             if len(seen_object_ids) > 10000: # pragma no cover
                 log.info('... flushing seen object cache')
@@ -387,6 +388,7 @@ class Repository(Artifact):
         sess = session(Commit)
         # Compute diffs on all commits
         log.info('... computing diffs')
+        i=0
         for i, oid in enumerate(commit_ids):
             ci = self._impl.commit(oid)
             ci.tree.set_last_commit(ci, self)

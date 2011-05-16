@@ -9,6 +9,7 @@ from datetime import datetime
 
 import tg
 import pysvn
+from pymongo.errors import DuplicateKeyError
 
 from ming.base import Object
 from ming.orm import Mapper, FieldProperty, session
@@ -162,6 +163,10 @@ class SVNImplementation(M.RepositoryImplementation):
         result.set_context(self._repo)
         return result
 
+    def all_commit_ids(self):
+        head_revno = self._revno(self._repo.heads[0].object_id)
+        return map(self._oid, range(1, head_revno+1))
+
     def new_commits(self, all_commits=False):
         head_revno = self._revno(self._repo.heads[0].object_id)
         oids = [ self._oid(revno) for revno in range(1, head_revno+1) ]
@@ -233,6 +238,41 @@ class SVNImplementation(M.RepositoryImplementation):
                         new=h.really_unicode(path.path)))
                 continue
             lst[path.action].append(h.really_unicode(path.path))
+
+    def refresh_commit_info(self, oid, seen_object_ids):
+        from alllura.model.repo import CommitDoc
+        if CommitDoc.m.find(dict(_id=oid)).count():
+            return False
+        try:
+            log.info('Refresh %r %r', oid, self._repo)
+            revno = self._revno(oid)
+            rev = self._revision(oid)
+            try:
+                log_entry = self._svn.log(
+                    self._url,
+                    revision_start=rev,
+                    limit=1,
+                    discover_changed_paths=True)[0]
+            except pysvn.ClientError:
+                log.info('ClientError processing %r %r, treating as empty', oid, self._repo, exc_info=True)
+                log_entry = Object(date='', message='', changed_paths=[])
+            user = Object(
+                name=log_entry.get('author', '--none--'),
+                email='',
+                date=datetime.utcfromtimestamp(log_entry.date))
+            ci_doc = CommitDoc(dict(
+                    _id=oid,
+                    tree_id=None,
+                    committed=user,
+                    authored=user,
+                    message=log.entry.message,
+                    parent_ids=[],
+                    child_ids=[]))
+            if revno > 1:
+                ci_doc.parent_ids = [ self._oid(revno-1) ]
+            ci_doc.m.insert(safe=True)
+        except DuplicateKeyError:
+            return False
 
     def compute_tree(self, commit, tree_path='/'):
         tree_path = tree_path[:-1]

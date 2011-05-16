@@ -5,7 +5,6 @@ from multiprocessing import Process
 from pkg_resources import iter_entry_points
 
 import pylons
-import webob
 from paste.script import command
 from paste.deploy import appconfig
 from paste.registry import Registry
@@ -70,13 +69,10 @@ class Command(command.Command):
 
     def setup_globals(self):
         import allura.lib.app_globals
-        request = webob.Request.blank('--script--', environ={
-                'paste.registry':self.registry})
         self.registry.prepare()
         self.registry.register(pylons.c, EmptyClass())
         self.registry.register(pylons.g, self.globals)
         self.registry.register(allura.credentials, allura.lib.security.Credentials())
-        self.registry.register(pylons.request, request)
         pylons.c.queued_messages = None
 
     def teardown_globals(self):
