@@ -11,7 +11,6 @@ from collections import defaultdict
 
 import tg
 from pylons import c,g, request
-from paste.registry import StackedObjectProxy
 import pymongo.errors
 
 from ming import schema as S
@@ -73,20 +72,13 @@ class RepositoryImplementation(object):
         '''Sets repository metadata such as heads, tags, and branches'''
         raise NotImplementedError, 'refresh_heads'
 
-    def refresh_commit(self, ci, native_ci): # pragma no cover
+    def refresh_commit(self, ci, seen_object_ids): # pragma no cover
         '''Refresh the data in the commit object 'ci' with data from the repo'''
         raise NotImplementedError, 'refresh_commit'
 
     def refresh_commit_info(self, oid): # pragma no cover
         '''Refresh the data in the commit with id oid'''
         raise NotImplementedError, 'refresh_commit_info'
-
-    def refresh_tree(self, tree): # pragma no cover
-        '''Refresh the data in the tree object 'tree' with data from the repo'''
-        raise NotImplementedError, 'refresh_tree'
-
-    def generate_shortlinks(self, ci): # pragma no cover
-        raise NotImplementedError, 'generate_shortlinks'
 
     def object_id(self, obj): # pragma no cover
         '''Return the object_id for the given native object'''
@@ -166,7 +158,6 @@ class Repository(Artifact):
     branches = FieldProperty([dict(name=str,object_id=str, count=int)])
     repo_tags = FieldProperty([dict(name=str,object_id=str, count=int)])
     upstream_repo = FieldProperty(dict(name=str,url=str))
-    refresh_context = StackedObjectProxy(name='refresh_context')
 
     def __init__(self, **kw):
         if 'name' in kw and 'tool' in kw:
@@ -203,8 +194,8 @@ class Repository(Artifact):
         return self._impl.commit_context(commit)
     def open_blob(self, blob):
         return self._impl.open_blob(blob)
-    def shorthand_for_commit(self, commit):
-        return self._impl.shorthand_for_commit(commit)
+    def shorthand_for_commit(self, oid):
+        return self._impl.shorthand_for_commit(oid)
     def symbolics_for_commit(self, commit):
         return self._impl.symbolics_for_commit(commit)
     def url_for_commit(self, commit):
@@ -313,69 +304,28 @@ class Repository(Artifact):
                 content_type, encoding = 'application/octet-stream', None
         return content_type, encoding
 
-    def refresh_ancestor_graph(self, commits):
-        '''Make sure the CommitAncestor collection is up-to-date based on
-        the given list of native commits
-        '''
-        ca_doc = mapper(CommitAncestor).doc_cls
-        sess = main_doc_session
-        ancestor_cache = {} # ancestor_cache[oid] = [ a_oid0, a_oid1...]
-        def _ancestors(ci, oid=None):
-            if oid is None: oid = self._impl.object_id(ci)
-            if oid in ancestor_cache:
-                return ancestor_cache[oid]
-            stored_ancestors = []
-            for ca in sess.find(ca_doc, dict(object_id=oid)):
-                stored_ancestors.extend(ca.ancestor_ids)
-            if stored_ancestors:
-                # Ancestors already stored in MongoDB
-                ancestor_cache[oid] = stored_ancestors
-                return stored_ancestors
-            ancestor_ids = set()
-            for p_ci in self._impl.commit_parents(ci):
-                p_oid = self._impl.object_id(p_ci)
-                ancestor_ids.add(p_oid)
-                ancestor_ids.update(_ancestors(p_ci, p_oid))
-            result = ancestor_cache[oid] = list(ancestor_ids)
-            for chunk in utils.chunked_iter(result, self.BATCH_SIZE):
-                sess.insert(ca_doc(
-                        dict(object_id=oid, ancestor_ids=list(chunk))))
-
-        # Compute graph in chunks to save memory
-        for i, ci in enumerate(reversed(commits)):
-            _ancestors(ci)
-            if (i+1) % (10 * self.BATCH_SIZE) == 0:
-                log.info('Computed ancestors for %d commits', i+1)
-                ancestor_cache = {}
-        log.info('Computed ancestors for %d commits', i+1)
-
     def refresh(self, all_commits=False, notify=True):
         '''Find any new commits in the repository and update'''
-        request.environ['paste.registry'].register(
-            self.refresh_context,
-            Object(
-                seen_oids=set(),
-                max_manifest_size=self.BATCH_SIZE))
         self._impl.refresh_heads()
         self.status = 'analyzing'
         session(self).flush()
         sess = session(Commit)
         log.info('Refreshing repository %s', self)
-        commits = self._impl.new_commits(all_commits)
-        log.info('... %d new commits', len(commits))
-        # self.refresh_ancestor_graph(commits)
+        commit_ids = self._impl.new_commits(all_commits)
+        log.info('... %d new commits', len(commit_ids))
         # Refresh history
+        seen_object_ids = set()
         commit_msgs = []
-        for i, n_ci in enumerate(commits):
-            oid = self._impl.object_id(n_ci)
-            if oid in self.refresh_context.seen_oids: continue
-            self.refresh_context.seen_oids.add(oid)
+        for i, oid in enumerate(commit_ids):
+            if len(seen_object_ids) > 10000: # pragma no cover
+                log.info('... flushing seen object cache')
+                seen_object_ids = set()
             ci, isnew = Commit.upsert(oid)
-            ci.set_context(self)
             if not isnew and not all_commits:
                 sess.expunge(ci)
                 continue
-            self._impl.refresh_commit(ci, n_ci)
+            ci.set_context(self)
+            self._impl.refresh_commit(ci, seen_object_ids)
             if (i+1) % self.BATCH_SIZE == 0:
                 log.info('...... flushing %d commits (%d total)',
                          self.BATCH_SIZE, (i+1))
@@ -413,52 +363,31 @@ class Repository(Artifact):
                  (i+1) % self.BATCH_SIZE, i+1)
         sess.flush()
         sess.clear()
-        # Find all commits that don't know they're in this repo. Mark them as
-        # being in this repo and add their shorlinks
-        ca_doc = mapper(CommitAncestor).doc_cls
-        ci_doc = mapper(Commit).doc_cls
-        visited_cis = set()
-        for ancestor in main_doc_session.find(
-            ca_doc,
-            dict(object_id={'$in':[hd.object_id for hd in self.heads]})):
-            ancestor_ids = [
-                oid for oid in ancestor.ancestor_ids
-                if oid not in visited_cis ]
-            visited_cis.update(ancestor_ids)
-            for ignorant_ci in main_doc_session.find(
-                ci_doc,
-                dict(
-                    object_id={'$in': ancestor_ids},
-                    repositories={'$ne': self._id }),
-                fields=['_id', 'object_id']):
-                ignorant_ci.repositories.append(self._id)
-                main_doc_session.update_partial(
-                    ci_doc, dict(_id=ignorant_ci._id),
-                    {'$set': dict(repositories=ignorant_ci.repositories) })
-                ignorant_ci.update(
-                    project_id=c.project._id,
-                    app_config_id=c.app.config._id,
-                    url=self.url_for_commit(ignorant_ci))
-                self._impl.generate_shortlinks(ignorant_ci)
+        # Mark all commits in this repo as being in this repo
+        all_commit_ids = self._impl.new_commits(True)
+        Commit.query.update(
+            dict(
+                object_id={'$in':all_commit_ids},
+                repositories={'$ne':self._id}),
+            {'$push':dict(repositories=self._id)},
+            upsert=False, multi=True)
         self.compute_diffs()
         log.info('... refreshed repository %s.  Found %d new commits',
-                 self, len(commits))
+                 self, len(commit_ids))
         self.status = 'ready'
         for head in self.heads + self.branches + self.repo_tags:
             ci = self.commit(head.object_id)
             if ci is not None:
                 head.count = ci.count_revisions()
         session(self).flush()
-        return len(commits)
+        return len(commit_ids)
 
     def compute_diffs(self):
-        commits = self._impl.new_commits(all_commits=True)
+        commit_ids = self._impl.new_commits(all_commits=True)
         sess = session(Commit)
         # Compute diffs on all commits
         log.info('... computing diffs')
-        i=0
-        for i, n_ci in enumerate(reversed(commits)):
-            oid = self._impl.object_id(n_ci)
+        for i, oid in enumerate(commit_ids):
             ci = self._impl.commit(oid)
             ci.tree.set_last_commit(ci, self)
             if not ci.diffs_computed:
@@ -714,48 +643,6 @@ class LogCache(RepoObject):
             lc.object_ids, lc.candidates = repo._impl.log(object_id, 0, 50)
         return lc
 
-class CommitAncestor(MappedClass):
-    class __mongometa__:
-        session = repository_orm_session
-        name='commit_ancestor'
-        indexes = [
-            ('object_id'), ('ancestor_ids') ]
-
-    _id = FieldProperty(S.ObjectId)
-    object_id = FieldProperty(str)
-    ancestor_ids = FieldProperty([str])
-
-class Manifest(MappedClass):
-    BATCH_SIZE=5000
-    class __mongometa__:
-        session = repository_orm_session
-        name='manifest'
-        indexes = [ ('object_id') ]
-
-    _id = FieldProperty(S.ObjectId)
-    object_id = FieldProperty(str)
-    object_ids = FieldProperty([
-            dict(object_id=str, name=str)])
-    _cache = LRUCache(BATCH_SIZE, 30)
-
-    @classmethod
-    def get(cls, oid):
-        result = cls._cache.get(
-            oid,
-            lambda: cls.query.find(dict(object_id=oid)).all())
-        if not result:
-            cls._cache.evict(oid)
-        return result
-
-    @classmethod
-    def from_iter(cls, oid, iterable):
-        cls.query.remove(dict(object_id=oid))
-        result = [
-            cls(object_id=oid, object_ids=list(chunk))
-            for chunk in utils.chunked_iter(iterable, cls.BATCH_SIZE) ]
-        cls._cache.set(oid, result)
-        return result
-
 class Commit(RepoObject):
     class __mongometa__:
         polymorphic_identity='commit'
@@ -833,7 +720,7 @@ class Commit(RepoObject):
         return self.tree.get_blob(path_parts[-1], path_parts[:-1])
 
     def shorthand_id(self):
-        return self.repo.shorthand_for_commit(self)
+        return self.repo.shorthand_for_commit(self.object_id)
 
     @LazyProperty
     def symbolic_ids(self):

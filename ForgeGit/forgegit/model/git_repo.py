@@ -16,6 +16,7 @@ from ming.utils import LazyProperty
 
 from allura.lib import helpers as h
 from allura.lib import utils
+from allura.model.repository import topological_sort
 from allura import model as M
 
 log = logging.getLogger(__name__)
@@ -126,20 +127,20 @@ class GitImplementation(M.RepositoryImplementation):
                 yield ci.hexsha
 
     def new_commits(self, all_commits=False):
-        commits = list(self._git.iter_commits(topo_order=True))
-        if all_commits: return commits
-        result = []
-        commit_doc = mapper(M.Commit).doc_cls
-        sess = M.main_doc_session
-        # Chunk our new commits so our queries don't get too big/slow
-        for chunk in utils.chunked_iter(commits, self._repo.BATCH_SIZE):
-            chunk = list(chunk)
-            found_commit_ids = set(
-                ci.object_id for ci in sess.find(
-                    commit_doc, object_id={'$in': chunk},
-                    fields=['_id', 'object_id']))
-            result += [ ci for ci in chunk if ci.hexsha not in found_commit_ids ]
-        return result
+        graph = {}
+
+        to_visit = [ self._git.commit(rev=hd.object_id) for hd in self._repo.heads ]
+        while to_visit:
+            obj = to_visit.pop()
+            if obj.hexsha in graph: continue
+            if not all_commits:
+                # Look up the object
+                if M.Commit.query.find(dict(object_id=obj.hexsha)).count():
+                    graph[obj.hexsha] = set() # mark as parentless
+                    continue
+            graph[obj.hexsha] = set(p.hexsha for p in obj.parents)
+            to_visit += obj.parents
+        return list(topological_sort(graph))
 
     def commit_parents(self, ci):
         return ci.parents
@@ -156,7 +157,6 @@ class GitImplementation(M.RepositoryImplementation):
         return dict(prev=prev, next=next)
 
     def refresh_heads(self):
-        self._repo.refresh_context.object_cache = ObjectCache()
         self._repo.heads = [
             Object(name=head.name, object_id=head.commit.hexsha)
             for head in self._git.heads
@@ -171,26 +171,26 @@ class GitImplementation(M.RepositoryImplementation):
             if tag.is_valid() ]
         session(self._repo).flush()
 
-    def refresh_commit(self, ci, native_ci):
-        ci.tree_id = native_ci.tree.hexsha
-        log.info('Refresh commit %s', native_ci)
+    def refresh_commit(self, ci, seen_object_ids):
+        obj = self._git.commit(ci.object_id)
+        ci.tree_id = obj.tree.hexsha
         # Save commit metadata
         ci.committed = Object(
-            name=h.really_unicode(native_ci.committer.name),
-            email=h.really_unicode(native_ci.committer.email),
-            date=datetime.utcfromtimestamp(
-                native_ci.committed_date))
+            name=h.really_unicode(obj.committer.name),
+            email=h.really_unicode(obj.committer.email),
+            date=datetime.utcfromtimestamp(obj.committed_date))
         ci.authored=Object(
-            name=h.really_unicode(native_ci.author.name),
-            email=h.really_unicode(native_ci.author.email),
-            date=datetime.utcfromtimestamp(native_ci.authored_date))
-        ci.message=h.really_unicode(native_ci.message or '')
-        ci.parent_ids=[ p.hexsha for p in native_ci.parents ]
-        if ci.tree_id in self._repo.refresh_context.seen_oids: return
-        self._repo.refresh_context.seen_oids.add(native_ci.tree.hexsha)
-        root_entry = self._repo.refresh_context.object_cache[native_ci.tree]
-        self._build_manifest(native_ci)
-        self.refresh_tree(root_entry)
+            name=h.really_unicode(obj.author.name),
+            email=h.really_unicode(obj.author.email),
+            date=datetime.utcfromtimestamp(obj.authored_date))
+        ci.message=h.really_unicode(obj.message or '')
+        ci.parent_ids=[ p.hexsha for p in obj.parents ]
+        # Save commit tree
+        tree, isnew = M.Tree.upsert(obj.tree.hexsha)
+        seen_object_ids.add(obj.tree.binsha)
+        if isnew:
+            tree.set_context(ci)
+            self._refresh_tree(tree, obj.tree, seen_object_ids)
 
     def refresh_commit_info(self, oid, seen):
         from allura.model.repo import CommitDoc
@@ -243,43 +243,26 @@ class GitImplementation(M.RepositoryImplementation):
                 doc.other_ids.append(obj)
         doc.m.save(safe=False)
 
-    def _build_manifest(self, native_ci):
-        '''Build the manifest for this commit (mapof all paths to trees/blobs)
-
-        Along the way, also build & save the Manifests for sub-trees
-        '''
-        cache = self._repo.refresh_context.object_cache
-        maxsize = int(self._repo.refresh_context.max_manifest_size * 1.1)
-        cache.trim(maxsize)
-        log.info('Cache has %d/%d items', len(cache), maxsize)
-        def _object_ids(name, obj, entry=None):
-            '''Iterate over dict(name, oid) object ids that are part of obj'''
-            if entry is None:
-                entry = cache[obj]
-            if entry.entries is None:
-                yield Object(name=name or '/', object_id=obj.hexsha)
-            else:
-                yield Object(name=name or '/', object_id=obj.hexsha)
-                for e_name, e in entry.entries:
-                    for x in _object_ids(name + '/' + e_name, e.obj, e):
-                        yield x
-        result =M.Manifest.from_iter(
-            native_ci.hexsha,
-            _object_ids('', native_ci.tree))
-        manifest_size = sum(len(m.object_ids) for m in result)
-        self._repo.refresh_context.max_manifest_size = max(
-            self._repo.refresh_context.max_manifest_size, manifest_size)
-        return result
-
     def object_id(self, obj):
         return obj.hexsha
 
     def log(self, object_id, skip, count):
-        return list(self._git.iter_commits(
-                object_id,
-                skip=skip,
-                max_count=count,
-                topo_order=True))
+        obj = self._git.commit(object_id)
+        candidates = [ obj ]
+        result = []
+        seen = set()
+        while count and candidates:
+            candidates.sort(key=lambda c:c.committed_date)
+            obj = candidates.pop(-1)
+            if obj.hexsha in seen: continue
+            seen.add(obj.hexsha)
+            if skip == 0:
+                result.append(obj.hexsha)
+                count -= 1
+            else:
+                skip -= 1
+            candidates += obj.parents
+        return result, [ p.hexsha for p in candidates ]
 
     def open_blob(self, blob):
         return _OpenedGitBlob(
@@ -295,29 +278,33 @@ class GitImplementation(M.RepositoryImplementation):
             fp.write(text)
         os.chmod(fn, 0755)
 
-    def refresh_tree(self, entry):
-        tree_doc_cls = mapper(M.Tree).doc_cls
-        blob_doc_cls = mapper(M.Tree).doc_cls
-        tree = tree_doc_cls(dict(
-            type='tree',
-            object_id=entry.oid,
-            object_ids=[]))
-        try:
-            M.main_doc_session.insert(tree)
-        except DuplicateKeyError:
-            return
+    def _refresh_tree(self, tree, obj, seen_object_ids):
         tree.object_ids = [
-            Object(name=name, object_id=e.oid)
-            for (name, e) in entry.entries ]
-        M.main_doc_session.save(tree)
-        for name, e in entry.entries:
-            if e.oid in self._repo.refresh_context.seen_oids: continue
-            self._repo.refresh_context.seen_oids.add(e.oid)
-            if e.entries is None:
-                M.main_doc_session.insert(blob_doc_cls(dict(
-                            type='blob', object_id=e.oid)))
-            else:
-                self.refresh_tree(e)
+            Object(object_id=o.hexsha, name=o.name)
+            for o in obj
+            if o.type in ('blob', 'tree') ] # submodules poorly supported by GitPython
+        for o in obj.trees:
+            if o.binsha in seen_object_ids: continue
+            subtree, isnew = M.Tree.upsert(o.hexsha)
+            seen_object_ids.add(o.binsha)
+            if isnew:
+                subtree.set_context(tree, o.name)
+                self._refresh_tree(subtree, o, seen_object_ids)
+        for o in obj.blobs:
+            if o.binsha in seen_object_ids: continue
+            blob, isnew = M.Blob.upsert(o.hexsha)
+            seen_object_ids.add(o.binsha)
+        for o in obj.trees:
+            if o.binsha in seen_object_ids: continue
+            subtree, isnew = M.Tree.upsert(o.hexsha)
+            seen_object_ids.add(o.binsha)
+            if isnew:
+                subtree.set_context(tree, o.name)
+                self._refresh_tree(subtree, o, seen_object_ids)
+        for o in obj.blobs:
+            if o.binsha in seen_object_ids: continue
+            blob, isnew = M.Blob.upsert(o.hexsha)
+            seen_object_ids.add(o.binsha)
 
     def generate_shortlinks(self, ci):
         for link in ci.object_id, ci.object_id[:6]:
@@ -373,36 +360,5 @@ class _OpenedGitBlob(object):
 
     def close(self):
         pass
-
-class ObjectCache(object):
-    Entry = namedtuple('Entry', 'oid obj entries')
-
-    def __init__(self):
-        self._data = {}
-
-    def __getitem__(self, obj):
-        if obj.hexsha in self._data:
-            return self._data[obj.hexsha]
-        if obj.type == 'blob':
-            r = self._data[obj.hexsha] = self.Entry(
-                oid=obj.hexsha, obj=obj, entries=None)
-            return r
-        elif obj.type == 'tree':
-            r = self._data[obj.hexsha] = self.Entry(
-                oid=obj.hexsha,
-                obj=obj,
-                entries=[ (o.name, self[o]) for o in obj ])
-            return r
-
-    def __len__(self):
-        return len(self._data)
-
-    def by_oid(self, oid):
-        return self._data[oid]
-
-    def trim(self, maxsize):
-        if len(self._data) > maxsize:
-            self._data = dict(random.sample(self._data.items(), int(maxsize * 0.5)))
-
 
 Mapper.compile_all()

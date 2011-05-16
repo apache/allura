@@ -20,7 +20,6 @@ def setUp(self):
 
 def test_script():
     cmd = script.ScriptCommand('script')
-    cmd.args = [ test_config, 'allura/tests/tscript.py' ]
+    cmd.run([test_config, 'allura/tests/tscript.py' ])
     cmd.command()
-    cmd.args = [ test_config, 'allura/tests/tscript_error.py' ]
-    assert_raises(ValueError, cmd.command)
+    assert_raises(ValueError, cmd.run, [test_config, 'allura/tests/tscript_error.py' ])
