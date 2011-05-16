@@ -1,3 +1,5 @@
+import json
+
 from allura.tests import TestController
 from allura import model as M
 from ming.orm.ormsession import ThreadLocalORMSession
@@ -14,12 +16,10 @@ class TestAuth(TestController):
         r = self.app.post('/auth/send_verification_link', params=dict(a='Beta@wiki.test.projects.sourceforge.net'))
         ThreadLocalORMSession.flush_all()
         r = self.app.get('/auth/verify_addr', params=dict(a='foo'))
-        r = self.app.get(r.location)
-        assert 'class="error"' in r
+        assert json.loads(self.webflash(r))['status'] == 'error', self.webflash(r)
         ea = M.EmailAddress.query.find().first()
         r = self.app.get('/auth/verify_addr', params=dict(a=ea.nonce))
-        r = self.app.get(r.location)
-        assert 'class="error"' not in r
+        assert json.loads(self.webflash(r))['status'] == 'ok', self.webflash(r)
         r = self.app.get('/auth/logout')
         r = self.app.post('/auth/do_login', params=dict(
                 username='test-user', password='foo'))
@@ -60,8 +60,6 @@ class TestAuth(TestController):
                  'new_addr.claim':'Claim Address',
                  'primary_addr':'Beta@wiki.test.projects.sourceforge.net',
                  'preferences.email_format':'plain'})
-         r = self.app.get('/auth/prefs/')
-         assert 'class="error"' in r
 
     def test_api_key(self):
          r = self.app.get('/auth/prefs/')
@@ -89,8 +87,7 @@ class TestAuth(TestController):
         result = self.app.get('/auth/login_verify_oid', params=dict(
                 provider='http://www.google.com/accounts/', username='rick446@usa.net'),
                               status=302)
-        result = self.app.get(result.location)
-        assert 'class="error"' in result.body
+        assert json.loads(self.webflash(result))['status'] == 'error', self.webflash(result)
         result = self.app.get('/auth/login_verify_oid', params=dict(
                 provider='', username='http://blog.pythonisito.com'))
         assert result.status_int == 302
