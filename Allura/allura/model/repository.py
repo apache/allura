@@ -49,6 +49,9 @@ class RepositoryImplementation(object):
     def commit(self, revision): # pragma no cover
         raise NotImplementedError, 'commit'
 
+    def all_commit_ids(self): # pragma no cover
+        raise NotImplementedError, 'all_commit_ids'
+
     def new_commits(self, all_commits=False): # pragma no cover
         '''Return a list of native commits in topological order (heads first).
 
@@ -73,6 +76,10 @@ class RepositoryImplementation(object):
     def refresh_commit(self, ci, native_ci): # pragma no cover
         '''Refresh the data in the commit object 'ci' with data from the repo'''
         raise NotImplementedError, 'refresh_commit'
+
+    def refresh_commit_info(self, oid): # pragma no cover
+        '''Refresh the data in the commit with id oid'''
+        raise NotImplementedError, 'refresh_commit_info'
 
     def refresh_tree(self, tree): # pragma no cover
         '''Refresh the data in the tree object 'tree' with data from the repo'''
@@ -105,8 +112,8 @@ class RepositoryImplementation(object):
         '''Return a file-like object that contains the contents of the blob'''
         raise NotImplementedError, 'open_blob'
 
-    def shorthand_for_commit(self, commit):
-        return '[%s]' % commit.object_id[:6]
+    def shorthand_for_commit(self, oid):
+        return '[%s]' % oid
 
     def symbolics_for_commit(self, commit):
         '''Return symbolic branch and tag names for a commit.
@@ -188,6 +195,10 @@ class Repository(Artifact):
         return self._impl.init()
     def commit(self, rev):
         return self._impl.commit(rev)
+    def all_commit_ids(self):
+        return self._impl.all_commit_ids()
+    def refresh_commit_info(self, oid, seen):
+        return self._impl.refresh_commit_info(oid, seen)
     def commit_context(self, commit):
         return self._impl.commit_context(commit)
     def open_blob(self, blob):
