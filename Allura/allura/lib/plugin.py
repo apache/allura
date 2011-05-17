@@ -328,7 +328,7 @@ class ProjectRegistrationProvider(object):
             state(p).soil()
         return p
 
-    def register_project(self, neighborhood, shortname, user, user_project):
+    def register_project(self, neighborhood, shortname, user, user_project, private_project):
         '''Register a new project in the neighborhood.  The given user will
         become the project's superuser.  If no user is specified, c.user is used.
         '''
@@ -349,7 +349,8 @@ class ProjectRegistrationProvider(object):
                         is_root=True)
             p.configure_project(
                 users=[user],
-                is_user_project=user_project)
+                is_user_project=user_project,
+                is_private_project=private_project)
         except forge_exc.ProjectConflict:
             raise
         except:

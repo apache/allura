@@ -1,9 +1,7 @@
 import logging
-import re
-import  ming.orm.ormsession
+import warnings
 from pylons import g
 from allura.lib import helpers as h
-from allura.lib import exceptions as forge_exc
 from allura.lib import plugin
 from allura import model as M
 
@@ -14,6 +12,15 @@ import ew as ew_core
 import ew.jinja2_ew as ew
 
 log = logging.getLogger(__name__)
+
+class NeighborhoodProjectTakenValidator(fev.FancyValidator):
+
+    def _to_python(self, value, state):
+        value = h.really_unicode(value or '').encode('utf-8').lower()
+        message = plugin.ProjectRegistrationProvider.get().name_taken(value)
+        if message:
+            raise formencode.Invalid(message, value, state)
+        return value
 
 class ForgeForm(ew.SimpleForm):
     antispam=False
@@ -31,7 +38,18 @@ class ForgeForm(ew.SimpleForm):
             ctx['rendered_name'] = g.antispam.enc(ctx['name'])
         return ctx
 
+    def display_field(self, field, ignore_errors=False):
+        ctx = self.context_for(field)
+        display = field.display(**ctx)
+        if ctx['errors'] and field.show_errors and not ignore_errors:
+            display = "%s<div class='error'>%s</div>" % (display, ctx['errors'])
+        return h.html.literal(display)
+
     def display_field_by_idx(self, idx, ignore_errors=False):
+        import pdb; pdb.set_trace()
+        warnings.warn(
+            'ForgeForm.display_field_by_idx is deprecated; use '
+            'ForgeForm.display_field() instead', DeprecationWarning)
         field = self.fields[idx]
         ctx = self.context_for(field)
         display = field.display(**ctx)
@@ -105,29 +123,29 @@ class NeighborhoodAddProjectForm(ForgeForm):
         submit_text='Start',
         neighborhood=None)
 
-    @property
-    def fields(self):
-        fields = [
-            ew.InputField(name='project_name', label='Project Name', field_type='text'),
-            ew.InputField(name='project_unixname', label='Short Name', field_type='text',
-                          validator=formencode.All(
-                            fev.String(not_empty=True),
-                            fev.MinLength(3),
-                            fev.MaxLength(15),
-                            fev.Regex(r'^[A-z][-A-z0-9]{2,}$', messages={'invalid':'Please use only letters, numbers, and dashes 3-15 characters long.'}),
-                            NeighborhoodProjectTakenValidator())),
-            ew.HiddenField(name='project_description', label='Public Description'),
-            ew.HiddenField(name='neighborhood', label='Neighborhood'),
-            ew.Checkbox(name="Wiki", label="", attrs={'class':'unlabeled'}),
-            ew.Checkbox(name="Git", label="", attrs={'class':'labeled scm'}),
-            ew.Checkbox(name="Hg", label="", attrs={'class':'labeled scm'}),
-            ew.Checkbox(name="SVN", label="", attrs={'class':'labeled scm'}),
-            ew.Checkbox(name="Tickets", label="", attrs={'class':'unlabeled'}),
-            ew.Checkbox(name="Downloads", label="", attrs={'class':'unlabeled'}),
-            # ew.Checkbox(name="Stats", label="", attrs={'class':'unlabeled'}),
-            ew.Checkbox(name="Discussion", label="", attrs={'class':'unlabeled'})
-        ]
-        return fields
+    class fields(ew_core.NameList):
+        project_description = ew.HiddenField(label='Public Description')
+        neighborhood = ew.HiddenField(label='Neighborhood')
+        private_project = ew.Checkbox(label="", attrs={'class':'unlabeled'})
+        project_name = ew.InputField(label='Project Name', field_type='text')
+        project_unixname = ew.InputField(
+            label='Short Name', field_type='text',
+            validator=formencode.All(
+                fev.String(not_empty=True),
+                fev.MinLength(3),
+                fev.MaxLength(15),
+                fev.Regex(
+                    r'^[A-z][-A-z0-9]{2,}$',
+                    messages={'invalid':'Please use only letters, numbers, and dashes 3-15 characters long.'}),
+                NeighborhoodProjectTakenValidator()))
+        Wiki = ew.Checkbox(label="", attrs={'class':'unlabeled'})
+        Git = ew.Checkbox(label="", attrs={'class':'labeled scm'})
+        Hg = ew.Checkbox(label="", attrs={'class':'labeled scm'})
+        SVN = ew.Checkbox(label="", attrs={'class':'labeled scm'})
+        Tickets = ew.Checkbox(label="", attrs={'class':'unlabeled'})
+        Downloads = ew.Checkbox(label="", attrs={'class':'unlabeled'})
+        # Stats = ew.Checkbox(name="Stats", label="", attrs={'class':'unlabeled'})
+        Discussion = ew.Checkbox(label="", attrs={'class':'unlabeled'})
 
     def resources(self):
         for r in super(NeighborhoodAddProjectForm, self).resources(): yield r
@@ -180,13 +198,4 @@ class NeighborhoodAddProjectForm(ForgeForm):
             });
         ''' % dict(project_name=project_name, project_unixname=project_unixname))
 
-
-class NeighborhoodProjectTakenValidator(fev.FancyValidator):
-
-    def _to_python(self, value, state):
-        value = h.really_unicode(value or '').encode('utf-8').lower()
-        message = plugin.ProjectRegistrationProvider.get().name_taken(value)
-        if message:
-            raise formencode.Invalid(message, value, state)
-        return value
 

@@ -1,9 +1,13 @@
-from pylons import g, c
 import os
-import allura
+from cStringIO import StringIO
+
+import Image
+from tg import config
+from pylons import g, c
 
 from ming.orm.ormsession import ThreadLocalORMSession
-import Image, StringIO
+
+import allura
 
 from allura.tests import TestController
 
@@ -47,7 +51,7 @@ class TestNeighborhood(TestController):
                           params=dict(name='Mozq1', css='', homepage='# MozQ1'),
                           extra_environ=dict(username='root'), upload_files=[upload])
         r = self.app.get('/adobe/icon')
-        image = Image.open(StringIO.StringIO(r.body))
+        image = Image.open(StringIO(r.body))
         assert image.size == (48,48)
 
     def test_invite(self):
@@ -134,6 +138,60 @@ class TestNeighborhood(TestController):
                           antispam=True,
                           extra_environ=dict(username='root'))
 
+    def test_register_private_fails_for_anon(self):
+        r = self.app.post(
+            '/p/register',
+            params=dict(
+                project_unixname='mymoz',
+                project_name='My Moz',
+                project_description='',
+                neighborhood='Projects',
+                private_project='on'),
+            antispam=True,
+            extra_environ=dict(username='*anonymous'),
+            status=302)
+        assert config.get('auth.login_url', '/auth/') in r.location, r.location
+
+    def test_register_private_fails_for_non_admin(self):
+        self.app.post(
+            '/p/register',
+            params=dict(
+                project_unixname='mymoz',
+                project_name='My Moz',
+                project_description='',
+                neighborhood='Projects',
+                private_project='on'),
+            antispam=True,
+            extra_environ=dict(username='test-user'),
+            status=403)
+
+    def test_register_private_ok(self):
+        r = self.app.post(
+            '/p/register',
+            params=dict(
+                project_unixname='mymoz',
+                project_name='My Moz',
+                project_description='',
+                neighborhood='Projects',
+                private_project='on'),
+            antispam=True,
+            extra_environ=dict(username='root'),
+            status=302)
+        assert config.get('auth.login_url', '/auth/') not in r.location, r.location
+        self.app.get(
+            '/p/mymoz/home/',
+            extra_environ=dict(username='root'),
+            status=200)
+        r = self.app.get(
+            '/p/mymoz/home/',
+            extra_environ=dict(username='*anonymous'),
+            status=302)
+        assert config.get('auth.login_url', '/auth/') in r.location, r.location
+        self.app.get(
+            '/p/mymoz/home/',
+            extra_environ=dict(username='test-user'),
+            status=403)
+
     def test_name_suggest(self):
         r = self.app.get('/p/suggest_name?project_name=My+Moz')
         assert r.json['suggested_name'] == 'mymoz'
@@ -171,7 +229,7 @@ class TestNeighborhood(TestController):
                           extra_environ=dict(username='root'), upload_files=[upload])
         r = self.app.get('/adobe/_admin/awards/FOO', extra_environ=dict(username='root'))
         r = self.app.get('/adobe/_admin/awards/FOO/icon', extra_environ=dict(username='root'))
-        image = Image.open(StringIO.StringIO(r.body))
+        image = Image.open(StringIO(r.body))
         assert image.size == (48,48)
         r = self.app.post('/adobe/_admin/awards/grant',
                           params=dict(grant='FOO', recipient='adobe-1'),

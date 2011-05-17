@@ -398,7 +398,9 @@ class Project(MappedClass):
 
     def configure_project(
         self,
-        users=None, apps=None, is_user_project=False):
+        users=None, apps=None,
+        is_user_project=False,
+        is_private_project=False):
         from allura import model as M
         if users is None: users = [ c.user ]
         if apps is None:
@@ -423,8 +425,9 @@ class Project(MappedClass):
             role_developer.roles = [ role_member._id ]
             self.acl = [
                 ACE.allow(role_developer._id, 'read'),
-                ACE.allow(role_member._id, 'read'),
-                ACE.allow(role_anon._id, 'read')]
+                ACE.allow(role_member._id, 'read') ]
+            if not is_private_project:
+                self.acl.append(ACE.allow(role_anon._id, 'read'))
             self.acl += [
                 M.ACE.allow(role_admin._id, perm)
                 for perm in self.permissions ]

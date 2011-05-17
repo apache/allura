@@ -2,25 +2,37 @@
 
     <div class="welcome">
         <div class="grid-9" style="text-align: right">
-            <label for="{{ widget.context_for(widget.fields[0])['id'] }}">
+            <label for="{{ widget.context_for(widget.fields.project_name)['id'] }}">
                 Project Name:
             </label>
         </div>
-        <div class="grid-8">{{widget.display_field_by_idx(0)|safe}}</div>
+        <div class="grid-8">{{widget.display_field(widget.fields.project_name)}}</div>
         <div class="grid-6">&nbsp;</div>
         <div class="grid-9" style="text-align: right">
-            <label for="{{ widget.context_for(widget.fields[1])['id'] }}">
+            <label for="{{ widget.context_for(widget.fields.project_unixname)['id'] }}">
                 URL: http://{{c.environ['HTTP_HOST']}}{{neighborhood.url()}}
             </label>
         </div>
-        <div class="grid-8">{{widget.display_field_by_idx(1)|safe}}<br><div id="name_availablity" style="display:none"></div></div>
+        <div class="grid-8">{{widget.display_field(widget.fields.project_unixname)}}<br>
+          <div id="name_availablity" style="display:none"></div></div>
         <div class="grid-3"><input type="button" value="Suggest" id="suggest_project_name"></div>
-        {{widget.display_field_by_idx(3)|safe}}
+        {{widget.display_field(widget.fields.neighborhood)}}
     </div>
+    {% if h.has_access(neighborhood, 'admin') %}
+    <div class="inner-row">
+      <h1>Private Project?</h1>
+      {{widget.display_field(widget.fields.private_project)}}
+      <p>
+        Neighborhood administrators can mark a project as being private. Private
+        projects will be unreadable to non-project members and will not show up in
+        search results.
+      </p>
+    </div>
+    {% endif %}
     <div class="inner-row">
         <div class="tool">
           <div class="big_icon ui-icon-tool-Wiki"></div>
-            {{widget.display_field_by_idx(4)|safe}}
+            {{widget.display_field(widget.fields.Wiki)}}
             <h1>Wikis</h1>
             <p>
                 Documentation is key to your project and the wiki tool helps make it easy for anyone to contribute.
@@ -33,14 +45,14 @@
                 SVN, Git and Mercurial will help you keep track of your changes.
             </p>
             <div class="checkbox-wrapper">
-            <span>{{widget.display_field_by_idx(5)|safe}} Git</span>
-            <span>{{widget.display_field_by_idx(6)|safe}} Mercurial</span>
-            <span>{{widget.display_field_by_idx(7)|safe}} SVN</span>
+            <span>{{widget.display_field(widget.fields.Git)}} Git</span>
+            <span>{{widget.display_field(widget.fields.Hg)}} Mercurial</span>
+            <span>{{widget.display_field(widget.fields.SVN)}} SVN</span>
             </div>
         </div>
         <div class="tool">
           <div class="big_icon ui-icon-tool-Tickets"></div>
-            {{widget.display_field_by_idx(8)|safe}}
+            {{widget.display_field(widget.fields.Tickets)}}
             <h1>Tickets</h1>
             <p>
                 Bugs, enhancements, tasks, etc., will help you plan and manage your development.
@@ -50,7 +62,7 @@
     <div class="inner-row">
         <div class="tool">
           <div class="big_icon ui-icon-tool-Downloads"></div>
-            {{widget.display_field_by_idx(9)|safe}}
+            {{widget.display_field(widget.fields.Downloads)}}
             <h1>Downloads</h1>
             <p>
                 Use the largest free, managed, global mirror network to distribute your files.
@@ -66,7 +78,7 @@
         </div>
         <div class="tool">
           <div class="big_icon ui-icon-tool-Discussion"></div>
-            {{widget.display_field_by_idx(10)|safe}}
+            {{widget.display_field(widget.fields.Discussion)}}
             <h1>Forums</h1>
             <p>
                 Collaborate with your community in your forums.

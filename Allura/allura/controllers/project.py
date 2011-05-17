@@ -156,13 +156,16 @@ class NeighborhoodController(object):
     @validate(W.add_project, error_handler=add_project)
     @utils.AntiSpam.validate('Spambot protection engaged')
     @require_post()
-    def register(self, project_unixname=None, project_description=None, project_name=None, neighborhood=None, **kw):
+    def register(self, project_unixname=None, project_description=None, project_name=None, neighborhood=None,
+                 private_project=None, **kw):
         require_access(self.neighborhood, 'register')
+        if private_project:
+            require_access(self.neighborhood, 'admin')
         project_description = h.really_unicode(project_description or '').encode('utf-8')
         project_name = h.really_unicode(project_name or '').encode('utf-8')
         project_unixname = h.really_unicode(project_unixname or '').encode('utf-8').lower()
         neighborhood = M.Neighborhood.query.get(name=neighborhood)
-        c.project = neighborhood.register_project(project_unixname)
+        c.project = neighborhood.register_project(project_unixname, private_project=private_project)
         if project_name:
             c.project.name = project_name
         if project_description:
