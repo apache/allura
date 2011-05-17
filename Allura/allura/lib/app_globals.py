@@ -29,6 +29,7 @@ from pypeline.markup import markup as pypeline_markup
 
 import ew as ew_core
 import ew.jinja2_ew as ew
+from ming.utils import LazyProperty
 
 import allura.tasks.event_tasks
 from allura import model as M
@@ -100,9 +101,6 @@ class Globals(object):
         # Setup analytics
         self.analytics = analytics.GoogleAnalytics(account=config.get('ga.account', 'UA-32013-57'))
 
-        # Setup theme
-        self.theme = plugin.ThemeProvider.get()
-
         self.icons = dict(
             admin = Icon('x', 'ico-admin'),
             pencil = Icon('p', 'ico-pencil'),
@@ -137,11 +135,28 @@ class Globals(object):
             perm_admin = Icon('(', 'ico-lock'),
         )
 
-        self.tool_entry_points = dict(
-            (ep.name, ep.load()) for ep in pkg_resources.iter_entry_points('allura'))
+        # Cache some loaded entry points
+        self.entry_points = dict(
+            tool=self._cache_eps('allura'),
+            auth=self._cache_eps('allura.auth'),
+            registration=self._cache_eps('allura.project_registration'),
+            theme=self._cache_eps('allura.theme'),
+            user_prefs=self._cache_eps('allura.user_prefs'),
+            )
+
+    def _cache_eps(self, section_name):
+        d = {}
+        for ep in pkg_resources.iter_entry_points(section_name):
+            value = ep.load()
+            d[ep.name] = d[ep.name.lower()] = value
+        return d
 
     def post_event(self, topic, *args, **kwargs):
         allura.tasks.event_tasks.event.post(topic, *args, **kwargs)
+
+    @LazyProperty
+    def theme(self):
+        return plugin.ThemeProvider.get()
 
     @property
     def antispam(self):

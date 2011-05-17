@@ -50,12 +50,7 @@ class AuthenticationProvider(object):
             result = cls._loaded_ep
         except AttributeError:
             method = config.get('auth.method', 'local')
-            for ep in pkg_resources.iter_entry_points(
-                'allura.auth', method):
-                break
-            else:
-                return None
-            result = cls._loaded_ep = ep.load()
+            result = cls._loaded_ep = g.entry_points['auth'][method]
         return result(request)
 
     @LazyProperty
@@ -271,8 +266,7 @@ class ProjectRegistrationProvider(object):
     @classmethod
     def get(cls):
         method = config.get('registration.method', 'local')
-        for ep in pkg_resources.iter_entry_points('allura.project_registration', method):
-            return ep.load()()
+        return g.entry_points['registration'][method]()
 
     def name_taken(self, project_name):
         from allura import model as M
@@ -466,10 +460,7 @@ class ThemeProvider(object):
     @classmethod
     def get(cls):
         name = config.get('theme', 'allura')
-        for ep in pkg_resources.iter_entry_points('allura.theme', name):
-            log.info("Loading theme '%s'", name)
-            return ep.load()()
-        log.critical("Could not find theme '%s'", name)
+        return g.entry_points['theme'][name]()
 
     def app_icon_url(self, app, size):
         """returns the default icon for the given app (or non-app thing like 'subproject').
@@ -480,9 +471,7 @@ class ThemeProvider(object):
             if app in self.icons and size in self.icons[app]:
                 return g.theme_href(self.icons[app][size])
             else:
-                for ep in pkg_resources.iter_entry_points('allura', app):
-                    app_class = ep.load()
-                    return app_class.icon_url(size)
+                return g.entry_points['tool'][app].icon_url(size)
         else:
             return app.icon_url(size)
 
@@ -504,8 +493,7 @@ class UserPreferencesProvider(object):
     @classmethod
     def get(cls):
         method = config.get('user_prefs_storage.method', 'local')
-        for ep in pkg_resources.iter_entry_points('allura.user_prefs', method):
-            return ep.load()()
+        return g.entry_points['user_prefs'][method]()
 
     def get_pref(self, user, pref_name):
         '''

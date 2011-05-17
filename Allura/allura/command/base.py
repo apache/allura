@@ -61,12 +61,7 @@ class Command(command.Command):
             # Probably being called from another script (websetup, perhaps?)
             log = logging.getLogger('allura.command')
             conf = pylons.config
-        self.tools = []
-        for ep in iter_entry_points('allura'):
-            try:
-                self.tools.append((ep.name, ep.load()))
-            except ImportError:
-                log.warning('Canot load entry point %s', ep)
+        self.tools = pylons.g.tool_entry_points.values()
         for ep in iter_entry_points('allura.command_init'):
             log.info('Running command_init for %s', ep.name)
             ep.load()(conf)
