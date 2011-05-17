@@ -121,7 +121,7 @@ class EditPost(ff.ForgeForm):
 
     @property
     def fields(self):
-        fields = []
+        fields = ew_core.NameList()
         fields.append(ffw.MarkdownEdit(
             name='text',
             attrs={'style':'height:7em; width:97%'}))

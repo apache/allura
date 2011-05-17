@@ -5,7 +5,7 @@
     <input name="subject" style="width:97%"
            value="{{value and (value.subject or '(no subject)')}}"/>
     {% endif %}
-    {{widget.display_field_by_idx(0)}}
+    {{widget.display_field(widget.fields.text)}}
     <input type="hidden" class="original_value" value="{{value.text}}">
     <span class="arw"><span></span></span><br/>
     <div class="attachment_form_fields" style="display:none; padding: 5px 0;">
