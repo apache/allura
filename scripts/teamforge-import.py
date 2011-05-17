@@ -6,14 +6,19 @@ import os
 import os.path
 from time import mktime
 import json
-
 from urlparse import urlparse
 from urllib import FancyURLopener
+from pprint import pprint
+from datetime import datetime
 
 from suds.client import Client
 from suds import WebFault
+from ming.orm.ormsession import ThreadLocalORMSession
+from ming.base import Object
 
-log = logging.getLogger(__file__)
+from allura import model as M
+
+log = logging.getLogger('teamforge-import')
 
 '''
 
@@ -25,6 +30,7 @@ http://www.open.collab.net/nonav/community/cif/csfe/50/javadoc/index.html?com/co
 
 options = None
 s = None # security token
+users = set()
 
 def make_client(api_url, app):
     return Client(api_url + app + '?wsdl', location=api_url + app)
@@ -39,22 +45,44 @@ def main():
     optparser.add_option('-p', '--password', dest='password')
     optparser.add_option('-o', '--output-dir', dest='output_dir', default='teamforge-export/')
     optparser.add_option('--list-project-ids', action='store_true', dest='list_project_ids')
+    optparser.add_option('--extract-only', action='store_true', dest='extract', help='Store data from the TeamForge API on the local filesystem; not load into Allura')
+    optparser.add_option('--load-only', action='store_true', dest='load', help='Load into Allura previously-extracted data')
+    optparser.add_option('-n', '--neighborhood', dest='neighborhood')
     options, project_ids = optparser.parse_args()
 
+    # neither specified, so do both
+    if not options.extract and not options.load:
+        options.extract = True
+        options.load = True
 
-    c = make_client(options.api_url, 'CollabNet')
-    api_v = c.service.getApiVersion()
-    if not api_v.startswith('5.4.'):
-        log.warning('Unexpected API Version %s.  May not work correctly.' % api_v)
 
+    if options.extract:
+        c = make_client(options.api_url, 'CollabNet')
+        api_v = c.service.getApiVersion()
+        if not api_v.startswith('5.4.'):
+            log.warning('Unexpected API Version %s.  May not work correctly.' % api_v)
 
-    s = c.service.login(options.username, options.password or getpass('Password: '))
-    teamforge_v = c.service.getVersion(s)
-    if not teamforge_v.startswith('5.4.'):
-        log.warning('Unexpected TeamForge Version %s.  May not work correctly.' % teamforge_v)
+        s = c.service.login(options.username, options.password or getpass('Password: '))
+        teamforge_v = c.service.getVersion(s)
+        if not teamforge_v.startswith('5.4.'):
+            log.warning('Unexpected TeamForge Version %s.  May not work correctly.' % teamforge_v)
 
+    if options.load:
+        if not options.neighborhood:
+            log.error('You must specify a neighborhood when loading')
+            return
+        try:
+            nbhd = M.Neighborhood.query.get(name=options.neighborhood)
+        except:
+            log.exception('error querying mongo')
+            log.error('This should be run as "paster script production.ini ../scripts/teamforge-import.py -- ...options.."')
+            return
+        assert nbhd
 
     if not project_ids:
+        if not options.extract:
+            log.error('You must specify project ids')
+            return
         projects = c.service.getProjectList(s)
         project_ids = [p.id for p in projects.dataRows]
 
@@ -65,17 +93,142 @@ def main():
     if not os.path.exists(options.output_dir):
         os.makedirs(options.output_dir)
     for pid in project_ids:
-        project = c.service.getProjectData(s, pid)
-        project.shortname = project.path.split('.')[-1]
-        log.info('Project: %s %s %s' % (project.id, project.title, project.path))
+        if options.extract:
+            try:
+                project = c.service.getProjectData(s, pid)
+                log.info('Project: %s %s %s' % (project.id, project.title, project.path))
+                out_dir = os.path.join(options.output_dir, project.id)
+                if not os.path.exists(out_dir):
+                    os.mkdir(out_dir)
 
-        out_dir = os.path.join(options.output_dir, project.id)
-        if not os.path.exists(out_dir):
-            os.mkdir(out_dir)
+                get_project(project, c)
+                get_files(project)
+                get_homepage_wiki(project)
+                check_unsupported_tools(project)
+            except:
+                log.exception('Error extracting %s' % pid)
 
-        get_files(project)
-        get_homepage_wiki(project)
-        check_unsupported_tools(project)
+        if options.load:
+            try:
+                project = create_project(pid, nbhd)
+            except:
+                log.exception('Error creating %s' % pid)
+
+    if options.extract:
+        log.info('Users encountered: %s', len(users))
+        with open(os.path.join(options.output_dir, 'usernames.json'), 'w') as out:
+            out.write(json.dumps(list(users)))
+
+def get_project(project, c):
+    cats = make_client(options.api_url, 'CategorizationApp')
+
+    data = c.service.getProjectData(s, project.id)
+    access_level = { 1: 'public', 4: 'private', 3: 'gated community'}[
+        c.service.getProjectAccessLevel(s, project.id)
+    ]
+    admins = c.service.listProjectAdmins(s, project.id).dataRows
+    members = c.service.getProjectMemberList(s, project.id).dataRows
+    groups = c.service.getProjectGroupList(s, project.id).dataRows
+    categories = cats.service.getProjectCategories(s, project.id).dataRows
+    save(json.dumps(dict(
+            data = dict(data),
+            access_level = access_level,
+            admins = map(dict, admins),
+            members = map(dict, members),
+            groups = map(dict, groups),
+            categories = map(dict, categories),
+        ), default=str),
+        project, project.id+'.json')
+
+    if len(groups):
+        log.warn('Project has groups %s' % groups)
+    for u in admins:
+        if not u.status != 'active':
+            log.warn('inactive admin %s' % u)
+        if u.superUser:
+            log.warn('super user admin %s' % u)
+
+    global users
+    users |= set(u.userName for u in admins)
+    users |= set(u.userName for u in members)
+
+def get_user(orig_username):
+    'returns an allura User object'
+    # FIXME username translation is hardcoded
+
+    #u = M.User.by_username(orig_username+'-mmi')
+
+    # FIXME: temporary:
+    import random
+    bogus = 'user%02d' % random.randrange(1,20)
+    u = M.User.by_username(bogus)
+
+    assert u
+    return u
+
+def convert_project_shortname(teamforge_path):
+    'convert from TeamForge to SF, and validate early'
+    tf_shortname = teamforge_path.split('.')[-1]
+    sf_shortname = tf_shortname.replace('_','-')
+
+    # FIXME hardcoded translations
+    sf_shortname = {
+        'i1': 'motorola-i1',
+        'i9': 'motorola-i9',
+        'devplatformforocap': 'ocap-dev-pltfrm',
+    }.get(sf_shortname, sf_shortname)
+
+    if not 3 <= len(sf_shortname) <= 15:
+        raise ValueError('Project name length must be between 3 & 15, inclusive: %s (%s)' %
+                         (sf_shortname, len(sf_shortname)))
+    return sf_shortname
+
+
+def create_project(pid, nbhd):
+    data = loadjson(pid, pid+'.json')
+    #pprint(data)
+    log.info('Loading: %s %s %s' % (pid, data.data.title, data.data.path))
+    shortname = convert_project_shortname(data.data.path)
+
+    project = M.Project.query.get(shortname=shortname)
+    if not project:
+        private = (data.access_level == 'private')
+        log.debug('Creating %s private=%s' % (shortname, private))
+        project = nbhd.register_project(shortname,
+                                        get_user(data.data.createdBy),
+                                        private_project=private)
+    project.name = data.data.title
+    project.short_description = data.data.description
+    #project.description = data.data.description
+    project.last_updated = datetime.strptime(data.data.lastModifiedDate, '%Y-%m-%d %H:%M:%S')
+    # TODO: push last_updated to gutenberg?
+    # TODO: try to set createdDate?
+
+    role_admin = M.ProjectRole.by_name('Admin', project)
+    admin_usernames = set()
+    for admin in data.admins:
+        admin_usernames.add(admin.userName)
+        user = get_user(admin.userName)
+        pr = user.project_role(project)
+        pr.roles = [ role_admin._id ]
+
+    role_developer = M.ProjectRole.by_name('Developer', project)
+    for member in data.members:
+        if member.userName in admin_usernames:
+            continue
+        user = get_user(member.userName)
+        pr = user.project_role(project)
+        pr.roles = [ role_developer._id ]
+
+    # TODO: categories as labels
+
+    ThreadLocalORMSession.flush_all()
+    return project
+    '''
+    for i, tool in enumerate(kw):
+        if kw[tool]:
+            c.project.install_app(tool, ordinal=i)
+    '''
 
 def check_unsupported_tools(project):
     docs = make_client(options.api_url, 'DocumentApp')
@@ -101,6 +254,16 @@ def check_unsupported_tools(project):
     if tracker_count:
         log.warn('Migrating trackers is not supported, but found %s tracker artifacts' % task_count)
 
+
+def load(project_id, *paths):
+    in_file = os.path.join(options.output_dir, project_id, *paths)
+    with open(in_file) as input:
+        content = input.read()
+    return content
+
+def loadjson(*args):
+    # Object for attribute access
+    return json.loads(load(*args), object_hook=Object)
 
 def save(content, project, *paths):
     out_file = os.path.join(options.output_dir, project.id, *paths)
@@ -216,7 +379,7 @@ def get_homepage_wiki(project):
 def get_files(project):
     frs = make_client(options.api_url, 'FrsApp')
     valid_pfs_filename = re.compile(r'(?![. ])[-_ +.,=#~@!()\[\]a-zA-Z0-9]+(?<! )$')
-    pfs_output_dir = os.path.join(os.path.abspath(options.output_dir), 'PFS', project.shortname)
+    pfs_output_dir = os.path.join(os.path.abspath(options.output_dir), 'PFS', convert_project_shortname(project.path))
 
     def handle_path(obj, prev_path):
         path_component = obj.title.strip().replace('/', ' ').replace('&','').replace(':','')
@@ -269,9 +432,6 @@ def get_files(project):
                 #'''
 
 '''
-print c.service.getProjectData(s, p.id)
-print c.service.getProjectAccessLevel(s, p.id)
-print c.service.listProjectAdmins(s, p.id)
 
 for forum in discussion.service.getForumList(s, p.id).dataRows:
     print forum.title
