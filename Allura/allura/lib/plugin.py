@@ -325,8 +325,8 @@ class ProjectRegistrationProvider(object):
         become the project's superuser.  If no user is specified, c.user is used.
         '''
         from allura import model as M
-        assert h.re_path_portion.match(shortname.replace('/', '')), \
-            'Invalid project shortname'
+        if not h.re_path_portion.match(shortname.replace('/', '')):
+            raise ValueError('Invalid project shortname: %s' % shortname)
         try:
             p = M.Project.query.get(shortname=shortname)
             if p: raise forge_exc.ProjectConflict()
