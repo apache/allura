@@ -167,7 +167,7 @@ class RepoAdminController(DefaultAdminController):
 
     @LazyProperty
     def repo(self):
-        return app.repo
+        return self.app.repo
 
     def _check_security(self):
         security.require_access(self.app, 'configure')

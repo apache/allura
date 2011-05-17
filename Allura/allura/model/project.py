@@ -343,7 +343,7 @@ class Project(MappedClass):
         return roles
 
     def install_app(self, ep_name, mount_point=None, mount_label=None, ordinal=0, **override_options):
-        App = g.entry_points['tool'][self.tool_name]
+        App = g.entry_points['tool'][ep_name]
         if not mount_point:
             base_mount_point = mount_point = App.default_mount_point
             for x in range(10):
@@ -365,7 +365,7 @@ class Project(MappedClass):
             meta=dict(tool_type=ep_name, mount_point=options['mount_point'], mount_label=options['mount_label']))
         cfg = AppConfig(
             project_id=self._id,
-            tool_name=self.tool_name,
+            tool_name=ep_name,
             options=options)
         app = App(self, cfg)
         with h.push_config(c, project=self, app=app):
