@@ -538,12 +538,7 @@ class AppConfig(MappedClass):
         try:
             result = self._loaded_ep
         except AttributeError:
-            for ep in pkg_resources.iter_entry_points(
-                'allura', self.tool_name):
-                break
-            else:
-                return None
-            result = self._loaded_ep = ep.load()
+            result = self._loaded_ep = g.tool_entry_points[self.tool_name]
         return result
 
     def script_name(self):

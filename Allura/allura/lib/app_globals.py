@@ -137,6 +137,9 @@ class Globals(object):
             perm_admin = Icon('(', 'ico-lock'),
         )
 
+        self.tool_entry_points = dict(
+            (ep.name, ep.load()) for ep in pkg_resources.iter_entry_points('allura'))
+
     def post_event(self, topic, *args, **kwargs):
         allura.tasks.event_tasks.event.post(topic, *args, **kwargs)
 
