@@ -296,9 +296,7 @@ class ProjectRegistrationProvider(object):
     def register_neighborhood_project(self, neighborhood, users, allow_register=False):
         from allura import model as M
         shortname='--init--'
-        p = M.Project.query.get(
-            neighborhood_id=neighborhood._id,
-            shortname=shortname)
+        p = neighborhood.neighborhood_project
         if p: raise forge_exc.ProjectConflict()
         name = 'Home Project for %s' % neighborhood.name
         database_uri = M.Project.default_database_uri(shortname)

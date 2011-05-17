@@ -7,6 +7,8 @@ from tg import expose, redirect, url
 from tg.decorators import with_trailing_slash, without_trailing_slash
 from bson import ObjectId
 
+from ming.utils import LazyProperty
+
 import allura.tasks
 from allura import version
 from allura.lib import helpers as h
@@ -46,6 +48,14 @@ class RepositoryApp(Application):
     def __init__(self, project, config):
         Application.__init__(self, project, config)
         self.admin = RepoAdminController(self)
+
+    def main_menu(self):
+        '''Apps should provide their entries to be added to the main nav
+        :return: a list of :class:`SitemapEntries <allura.app.SitemapEntry>`
+        '''
+        return [ SitemapEntry(
+                self.config.options.mount_label.title(),
+                '.')]
 
     @property
     @h.exceptionless([], log)
@@ -154,7 +164,10 @@ class RepoAdminController(DefaultAdminController):
 
     def __init__(self, app):
         self.app = app
-        self.repo = app.repo
+
+    @LazyProperty
+    def repo(self):
+        return app.repo
 
     def _check_security(self):
         security.require_access(self.app, 'configure')

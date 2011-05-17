@@ -110,6 +110,14 @@ class AdminApp(Application):
         return [ t for t in cls._installable_tools
             if t['app'].status in project.allowed_tool_status ]
 
+    def main_menu(self):
+        '''Apps should provide their entries to be added to the main nav
+        :return: a list of :class:`SitemapEntries <allura.app.SitemapEntry>`
+        '''
+        return [ SitemapEntry(
+                self.config.options.mount_label.title(),
+                '.')]
+
     @h.exceptionless([], log)
     def sidebar_menu(self):
         links = []

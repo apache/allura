@@ -1,8 +1,9 @@
 import logging
 
 from ming import schema as S
-from ming.orm import FieldProperty, RelationProperty
+from ming.orm import FieldProperty, RelationProperty, ForeignIdProperty
 from ming.orm.declarative import MappedClass
+from ming.utils import LazyProperty
 
 from pylons import request, c
 
@@ -42,13 +43,16 @@ class Neighborhood(MappedClass):
     def parent_security_context(self):
         return None
 
-    @property
-    def acl(self):
+    @LazyProperty
+    def neighborhood_project(self):
         from .project import Project
-        nbhd_project = Project.query.get(
+        return Project.query.get(
             neighborhood_id=self._id,
             shortname='--init--')
-        return nbhd_project.acl
+
+    @property
+    def acl(self):
+        return self.neighborhood_project.acl
 
     def url(self):
         url = self.url_prefix

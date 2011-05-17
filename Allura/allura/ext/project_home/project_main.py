@@ -55,6 +55,15 @@ class ProjectHomeApp(Application):
         '''Whether the user can view the app.'''
         return True
 
+    def main_menu(self):
+        '''Apps should provide their entries to be added to the main nav
+        :return: a list of :class:`SitemapEntries <allura.app.SitemapEntry>`
+        '''
+        return [ SitemapEntry(
+                self.config.options.mount_label.title(),
+                '.')]
+
+
     @property
     @h.exceptionless([], log)
     def sitemap(self):

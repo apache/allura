@@ -32,15 +32,52 @@ class Credentials(object):
         self.users = {}
         self.projects = {}
 
+    def load_user_roles(self, user_id, *project_ids):
+        '''Load the credentials with all user roles for a set of projects'''
+        from allura import model as M
+        # Don't reload roles
+        project_ids = [ pid for pid in project_ids if self.users.get((user_id, pid)) is None ]
+        if not project_ids: return 
+        if user_id is None:
+            q = M.ProjectRole.query.find(
+                dict(
+                    project_id={'$in': project_ids},
+                    name='*anonymous'))
+        else:
+            q0 = M.ProjectRole.query.find(
+                dict(project_id={'$in': list(project_ids)},
+                     name={'$in':['*anonymous', '*authenticated']}))
+            q1 = M.ProjectRole.query.find(
+                        dict(project_id={'$in': list(project_ids)},user_id=user_id))
+            q = chain(q0, q1)
+        roles_by_project = dict((pid, []) for pid in project_ids)
+        for role in q:
+            roles_by_project[role.project_id].append(role)
+        for pid, roles in roles_by_project.iteritems():
+            self.users[user_id, pid] = RoleCache(self, roles)
+
+    def load_project_roles(self, *project_ids):
+        '''Load the credentials with all user roles for a set of projects'''
+        from allura import model as M
+        # Don't reload roles
+        project_ids = [ pid for pid in project_ids if self.projects.get(pid) is None ]
+        if not project_ids: return 
+        q = M.ProjectRole.query.find(dict(
+                project_id={'$in': project_ids}))
+        roles_by_project = dict((pid, []) for pid in project_ids)
+        for role in q:
+            roles_by_project[role.project_id].append(role)
+        for pid, roles in roles_by_project.iteritems():
+            self.projects[pid] = RoleCache(self, roles)
+
     def project_roles(self, project_id):
         '''
         :returns: a RoleCache of ProjectRoles for project_id
         '''
-        from allura import model as M
         roles = self.projects.get(project_id)
         if roles is None:
-            roles = self.projects[project_id] = RoleCache(
-                self,  M.ProjectRole.query.find(dict(project_id=project_id)))
+            self.load_project_roles(project_id)
+            roles = self.projects[project_id]
         return roles
 
     def user_roles(self, user_id, project_id=None):
@@ -55,18 +92,11 @@ class Credentials(object):
                     q = []
                 else:
                     q = M.ProjectRole.query.find(dict(user_id=user_id))
+                roles = RoleCache(self, q)
             else:
-                if user_id is None:
-                    q = M.ProjectRole.query.find(
-                        dict(project_id=project_id,name='*anonymous'))
-                else:
-                    q0 = M.ProjectRole.query.find(
-                        dict(project_id=project_id,
-                             name={'$in':['*anonymous', '*authenticated']}))
-                    q1 = M.ProjectRole.query.find(
-                        dict(project_id=project_id, user_id=user_id))
-                    q = chain(q0, q1)
-            self.users[user_id, project_id] = roles = RoleCache(self, q)
+                self.load_user_roles(user_id, project_id)
+                roles = self.users.get((user_id, project_id))
+            self.users[user_id, project_id] = roles
         return roles
 
     def user_has_any_role(self, user_id, project_id, role_ids):
@@ -210,9 +240,7 @@ def has_access(obj, permission, user=None, project=None):
             cred = Credentials.get()
             if project is None:
                 if isinstance(obj, M.Neighborhood):
-                    project = M.Project.query.get(
-                        neighborhood_id=obj._id,
-                        shortname='--init--')
+                    project = obj.neighborhood_project
                     if project is None:
                         log.error('Neighborhood project missing for %s', obj)
                         return False

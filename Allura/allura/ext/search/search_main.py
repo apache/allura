@@ -26,6 +26,9 @@ class SearchApp(Application):
         self.root = SearchController()
         self.templates = pkg_resources.resource_filename('allura.ext.search', 'templates')
 
+    def main_menu(self): # pragma no cover
+        return []
+
     def sidebar_menu(self): # pragma no cover
         return [ ]
 

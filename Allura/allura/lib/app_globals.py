@@ -272,8 +272,16 @@ class Globals(object):
             base = request.scheme + base
         return (base + app.config.tool_name + '/' + resource)
 
-    def set_project(self, pid):
-        c.project = M.Project.query.get(shortname=pid, deleted=False)
+    def set_project(self, pid_or_project):
+        if isinstance(pid_or_project, M.Project):
+            c.project = pid_or_project
+        elif isinstance(pid_or_project, basestring):
+            c.project = M.Project.query.get(shortname=pid_or_project, deleted=False)
+        elif pid_or_project is None:
+            c.project = None
+        else:
+            c.project = None
+            log.error('Trying g.set_project(%r)', pid_or_project)
 
     def set_app(self, name):
         c.app = c.project.app_instance(name)

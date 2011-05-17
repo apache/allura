@@ -15,6 +15,7 @@ from bson import ObjectId
 from webhelpers import feedgenerator as FG
 
 from ming.orm.ormsession import ThreadLocalORMSession
+from ming.utils import LazyProperty
 
 # Pyforge-specific imports
 from allura import model as M
@@ -89,10 +90,13 @@ class ForgeTrackerApp(Application):
 
     def __init__(self, project, config):
         Application.__init__(self, project, config)
-        self.globals = TM.Globals.query.get(app_config_id=config._id)
         self.root = RootController()
         self.api_root = RootRestController()
         self.admin = TrackerAdminController(self)
+
+    @LazyProperty
+    def globals(self):
+        return TM.Globals.query.get(app_config_id=self.config._id)
 
     def has_access(self, user, topic):
         return has_access(c.app, 'post')(user=user)
@@ -108,6 +112,14 @@ class ForgeTrackerApp(Application):
         except:
             log.exception('Error getting ticket %s', topic)
         self.handle_artifact_message(ticket, message)
+
+    def main_menu(self):
+        '''Apps should provide their entries to be added to the main nav
+        :return: a list of :class:`SitemapEntries <allura.app.SitemapEntry>`
+        '''
+        return [ SitemapEntry(
+                self.config.options.mount_label.title(),
+                '.')]
 
     @property
     @h.exceptionless([], log)

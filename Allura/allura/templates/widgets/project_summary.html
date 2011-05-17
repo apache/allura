@@ -1,18 +1,18 @@
 <div class="border card">
-  {% if value.accolades %}
+  {% if accolades %}
     <div class="box notch sponsor">
-      <div class="feature">{{value.accolades[0].award.short}}</div>
-      <img src="{{value.icon and value.url()+'icon' or g.forge_static('images/project_default.png')}}" alt="{{value.name}} Logo"/>
+      <div class="feature">{{accolades[0].award.short}}</div>
+      <img src="{{icon_url}}" alt="{{value.name}} Logo"/>
     </div>
   {% else %}
     <div class="box">
-      <img src="{{value.icon and value.url()+'icon' or g.forge_static('images/project_default.png')}}" alt="{{value.name}} Logo"/>
+      <img src="{{icon_url}}" alt="{{value.name}} Logo"/>
     </div>
   {% endif %}
   <h2><a href="{{value.url()}}">{{value.name}}</a></h2>
   <p class="desc">{{h.text.truncate(value.short_description, 50)}}</p>
   <div class="quik">
-    {% for s in value.sitemap() if s.url %}
+    {% for s in sitemap %}
       <a href="{{s.url}}" class="ui-icon-{{s.ui_icon or 'admin'}}" title="{{s.label}}"><span>{{s.label}}</span></a>
     {% endfor %}
   </div>

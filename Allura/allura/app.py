@@ -209,6 +209,12 @@ class Application(object):
             d.delete()
         self.config.delete()
 
+    def main_menu(self):
+        '''Apps should provide their entries to be added to the main nav
+        :return: a list of :class:`SitemapEntries <allura.app.SitemapEntry>`
+        '''
+        return self.sitemap
+
     def sidebar_menu(self):
         """
         Apps should override this to provide their menu

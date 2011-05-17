@@ -69,9 +69,7 @@ class NeighborhoodController(object):
             raise exc.HTTPNotFound, pname
         project = M.Project.query.get(shortname=self.prefix + pname)
         if project is None:
-            project = M.Project.query.get(
-                shortname='--init--',
-                neighborhood_id=self.neighborhood._id)
+            project = self.neighborhood.neighborhood_project
             c.project = project
             return ProjectController()._lookup(pname, *remainder)
         if project.database_configured == False:
@@ -383,7 +381,7 @@ class NeighborhoodAdminController(object):
         require_access(self.neighborhood, 'admin')
 
     def set_nav(self):
-        project = M.Project.query.find({'shortname':'--init--','neighborhood_id':self.neighborhood._id}).first()
+        project = self.neighborhood.neighborhood_project
         if project:
             c.project = project
             g.set_app('admin')

@@ -5,12 +5,16 @@
   <div class="list">
     {% set old_project = c.project %}
     {% for project in projects %}
-      {% do g.set_project(project.shortname) %}
+      {% do g.set_project(project) %}
       {% if h.has_access(project, 'read')() %}
-        {{project_summary.display(value=project)}}
+        {{project_summary.display(
+            value=project, 
+            icon_url=icon_urls[project._id], 
+            accolades=accolades_index[project._id],
+            sitemap=sitemaps[project._id])}}
       {% endif %}
     {% endfor %}
-    {% do g.set_project(old_project and old_project.shortname or '') %}
+    {% do g.set_project(old_project) %}
   </div>
   {% endif %}
 </div>

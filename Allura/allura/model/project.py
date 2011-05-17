@@ -234,6 +234,61 @@ class Project(MappedClass):
                     roles.add(ace.role_id)
         return list(roles)
 
+    @classmethod
+    def menus(cls, projects):
+        '''Return a dict[project_id] = sitemap of sitemaps, efficiently'''
+        from allura.app import SitemapEntry
+        pids = [ p._id for p in projects ]
+        project_index = dict((p._id, p) for p in projects)
+        entry_index = dict((pid, []) for pid in pids)
+        q_subprojects = cls.query.find(dict(
+                parent_id={'$in': pids},
+                deleted=False))
+        for sub in q_subprojects:
+            entry_index[sub.parent_id].append(
+                dict(ordinal=sub.ordinal, entry=SitemapEntry(sub.name, sub.url())))
+        q_app_configs = AppConfig.query.find(dict(
+                project_id={'$in': pids}))
+        for ac in q_app_configs:
+            App = ac.load()
+            project = project_index[ac.project_id]
+            app = App(project, ac)
+            if app.is_visible_to(c.user):
+                for sm in app.main_menu():
+                    entry = sm.bind_app(app)
+                    entry.ui_icon='tool-%s' % ac.tool_name
+                    ordinal = 'ordinal' in ac.options and ac.options['ordinal'] or 0
+                    entry_index[ac.project_id].append({'ordinal':ordinal,'entry':entry})
+
+        sitemaps = dict((pid, SitemapEntry('root').children) for pid in pids)
+        for pid, entries in entry_index.iteritems():
+            entries.sort(key=lambda e:e['ordinal'])
+            sitemap = sitemaps[pid]
+            for e in entries:
+                sitemap.append(e['entry'])
+        return sitemaps
+
+    @classmethod
+    def icon_urls(cls, projects):
+        '''Return a dict[project_id] = icon_url, efficiently'''
+        project_index = dict((p._id, p) for p in projects)
+        result = dict((p._id, g.forge_static('images/project_default.png')) for p in projects)
+        for icon in ProjectFile.query.find(dict(
+                project_id={'$in': result.keys()},
+                category='icon')):
+            result[icon.project_id] = project_index[icon.project_id].url() + 'icon'
+        return result
+
+    @classmethod
+    def accolades_index(cls, projects):
+        '''Return a dict[project_id] = list of accolades, efficiently'''
+        from .artifact import AwardGrant
+        result = dict((p._id, []) for p in projects)
+        for award in AwardGrant.query.find(dict(
+                granted_to_project_id={'$in': result.keys()})):
+            result[award.granted_to_project_id].append(award)
+        return result
+
     def sitemap(self):
         from allura.app import SitemapEntry
         sitemap = SitemapEntry('root')
