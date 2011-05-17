@@ -161,7 +161,8 @@ class TestRepo(_TestWithRepo):
         self.repo.init_as_clone('srcpath', 'srcname', '/p/test/svn/')
         old_app_instance = M.Project.app_instance
         try:
-            M.Project.app_instance = mock.Mock()
+            M.Project.app_instance = mock.Mock(return_value=ming.base.Object(
+                    config=ming.base.Object(_id=None)))
             with self.repo.push_upstream_context():
                 assert c.project.shortname == 'test'
         finally:
@@ -171,7 +172,8 @@ class TestRepo(_TestWithRepo):
         self.repo.init_as_clone('srcpath', 'srcname', '/p/test/svn/')
         old_app_instance = M.Project.app_instance
         try:
-            M.Project.app_instance = mock.Mock()
+            M.Project.app_instance = mock.Mock(return_value=ming.base.Object(
+                    config=ming.base.Object(_id=None)))
             self.repo.pending_upstream_merges()
         finally:
             M.Project.app_instance = old_app_instance
