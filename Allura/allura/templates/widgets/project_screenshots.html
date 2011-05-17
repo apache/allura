@@ -1,6 +1,6 @@
 {% for ss in project.get_screenshots() %}
   <div class="grid-6" style="text-align: center">
-    <a href="{{project.url()}}screenshot/{{ss.filename}}"><img src="{{project.url()}}screenshot/{{ss.filename}}/thumb"></a>
+    <a href="{{project.url()}}screenshot/{{ss.filename}}"><img src="{{project.url()}}screenshot/{{ss.filename}}/thumb" alt="Screenshot thumbnail"/></a>
     {% if not edit %}
     <br>
     {{ss.caption}}

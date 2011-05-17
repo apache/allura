@@ -41,7 +41,7 @@
           {% for att in value.attachments %}
             <div class="attachment_thumb" style="min-height: 130px;">
               {% if att.is_image() %}
-                <a href="{{att.url()}}"><img src="{{att.url()}}/thumb"/></a>
+                <a href="{{att.url()}}"><img src="{{att.url()}}/thumb" alt="Thumbnail"/></a>
                 <br/>
                 <a href="{{att.url()}}">{{att.filename}}</a>
               {% else %}

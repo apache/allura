@@ -6,8 +6,8 @@
     <div id="nav_menu_missing" py:if="not neighborhood"/>
     <py:if test="neighborhood">
 	<div class="column grid_1">
-        <img py:if="neighborhood.icon" src="${neighborhood.url()}/icon" class="project_icon"/>
-        <img py:if="not neighborhood.icon" src="${g.forge_static('images/project_default.png')}" class="project_icon"/>
+        <img py:if="neighborhood.icon" src="${neighborhood.url()}/icon" class="project_icon" alt=""/>
+        <img py:if="not neighborhood.icon" src="${g.forge_static('images/project_default.png')}" class="project_icon" alt=""/>
 	</div>
 	<div class="column grid_9">
 		<h1>

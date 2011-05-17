@@ -36,7 +36,7 @@
   </p>
   {% endif %}
 
-  {% if blob.has_image_view %}<img src="?format=raw"/>{% endif %}
+  {% if blob.has_image_view %}<img src="?format=raw" alt=""/>{% endif %}
   {% if not blob.has_html_view and not blob.has_image_view and not force_display %}
     <p>{{h.really_unicode(blob.name)}} is not known to be viewable in your browser.
     Try to <a href="?force=True">display it</a> anyway or

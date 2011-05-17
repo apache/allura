@@ -27,7 +27,7 @@
     <label class="grid-4">Icon</label>
     <div class="grid-14">
       {% if neighborhood.icon %}
-        <img src="{{neighborhood.url()}}/icon" style="vertical-align: middle">
+        <img src="{{neighborhood.url()}}/icon" style="vertical-align: middle" alt=""/>
       {% endif %}
       {{lib.file_field('icon', '')}}
     </div>

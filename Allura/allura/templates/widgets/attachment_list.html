@@ -6,7 +6,7 @@
       {% for att in attachments if att.is_image() %}
           <div class="attachment_thumb">
             <a href="{{att.url()}}">
-              <img src="{{att.url()}}/thumb"/>
+              <img src="{{att.url()}}/thumb" alt="Thumbnail"/>
             </a><br/>
             {{att.filename}}
             {% if edit_mode %}

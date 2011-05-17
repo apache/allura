@@ -14,14 +14,14 @@
       <span class="tcenter grid-4 installable_tool">
         <a class="install_trig" data-tool="{{ tool['name'] }}">
           <span class="tool_title">{{ tool['app'].tool_label }}{{' (%s)' % tool.app.status if tool.app.status != 'production' else ''}}</span><br />
-          <img src="{{ g.theme.app_icon_url(tool['app'], 32) or 'unk.png' }}">
+          <img src="{{ g.theme.app_icon_url(tool['app'], 32) or 'unk.png' }}" alt="">
         </a>
       </span>
     {% endfor %}
     <span class="tcenter grid-4 installable_tool">
       <a class="install_trig" data-tool="">
         <span class="tool_title">Subproject</span><br />
-        <img src="{{ g.theme.app_icon_url('subproject', 32) }}">
+        <img src="{{ g.theme.app_icon_url('subproject', 32) }}" alt="">
       </a>
     </span>
   </div>
@@ -55,7 +55,7 @@
                 <ul class="deck">
                     <li class="tcenter">
                         <span class="tool_title">{{ label }}</span><br />
-                        <img src="{{ g.theme.app_icon_url(app, 48) }}">
+                        <img src="{{ g.theme.app_icon_url(app, 48) }}" alt="">
                     </li>
                     {% for link in links %}
                     <li>
@@ -86,7 +86,7 @@
                 <ul class="deck">
                     <li class="tcenter">
                         <span class="tool_name">{{ mount['sub'].name }}</span><br />
-                        <img src="{{ g.theme.app_icon_url('subproject', 48) }}">
+                        <img src="{{ g.theme.app_icon_url('subproject', 48) }}" alt="">
                     </li>
                     <li>
                       <form method="post" action="update_mounts" id="mounts_edit_2-{{loop.index0}}">

@@ -72,21 +72,21 @@ div.tool p {
 </div>
 <div class="inner-row">
     <div class="tool">
-        <img src="/nf/allura/images/wiki_48.png">
+        <img src="/nf/allura/images/wiki_48.png" alt=""/>
         <h1>Wikis</h1>
         <p>
             Documentation is key to your project and the wiki tool helps make it easy for anyone to contribute.
         </p>
     </div>
     <div class="tool">
-        <img src="/nf/allura/images/code_48.png">
+        <img src="/nf/allura/images/code_48.png" alt=""/>
         <h1>Code</h1>
         <p>
             SVN, Git and Mercurial will help you keep track of your changes.
         </p>
     </div>
     <div class="tool">
-        <img src="/nf/allura/images/tickets_48.png">
+        <img src="/nf/allura/images/tickets_48.png" alt=""/>
         <h1>Tickets</h1>
         <p>
             Bugs, enhancements, tasks, etc., will help you plan and manage your development.
@@ -95,21 +95,21 @@ div.tool p {
 </div>
 <div class="inner-row">
     <div class="tool">
-        <img src="/nf/allura/images/downloads_48.png">
+        <img src="/nf/allura/images/downloads_48.png" alt=""/>
         <h1>Downloads</h1>
         <p>
             Use the largest free, managed, global mirror network to distribute your files.
         </p>
     </div>
     <div class="tool">
-        <img src="/nf/allura/images/stats_48.png">
+        <img src="/nf/allura/images/stats_48.png" alt=""/>
         <h1>Stats</h1>
         <p>
             Follow the download trends that enable you to develop better software.
         </p>
     </div>
     <div class="tool">
-        <img src="/nf/allura/images/forums_48.png">
+        <img src="/nf/allura/images/forums_48.png" alt=""/>
         <h1>Forums</h1>
         <p>
             Collaborate with your community in your forums.

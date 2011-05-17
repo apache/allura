@@ -104,7 +104,7 @@
         <div class="attachment_thumb">
           {% if att.is_image() and not att.is_embedded() %}
             <a href="{{att.url()}}" class="file_type">
-              <img src="{{att.url()}}/thumb">
+              <img src="{{att.url()}}/thumb" alt="">
             </a>
           {% else %}
             <a href="{{att.url()}}" class="file_type">

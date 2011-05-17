@@ -2,7 +2,7 @@
   <hr/>
   {% if value.is_image() %}
   <div class="attachment_thumb">
-    <a href="{{value.url()}}"><img src="{{value.url()}}/thumb"/></a>
+    <a href="{{value.url()}}"><img src="{{value.url()}}/thumb" alt="Thumbnail"/></a>
     <br/>
     <a href="{{value.url()}}">{{value.filename}}</a>
     ({{value.length}} bytes)
