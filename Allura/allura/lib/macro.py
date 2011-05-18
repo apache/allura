@@ -11,33 +11,50 @@ log = logging.getLogger(__name__)
 
 _macros = {}
 
-def macro(func):
-    _macros[func.__name__] = func
-    return func
+class macro(object):
 
-def parse(s):
-    try:
-        if s.startswith('quote '):
-            return '[[' + s[len('quote '):] + ']]'
+    def __init__(self, context=None):
+        self._context = context
+
+    def __call__(self, func):
+        _macros[func.__name__] = (func, self._context)
+        return func
+
+class parse(object):
+
+    def __init__(self, context):
+        self._context = context
+
+    def __call__(self, s):
         try:
-            parts = [ unicode(x, 'utf-8') for x in shlex.split(s.encode('utf-8')) ]
-            if not parts: return None
-            macro = _macros.get(parts[0], None)
-            if not macro: return None
-            for t in parts[1:]:
-                if '=' not in t:
-                    return '[-%s: missing =-]' % ' '.join(parts)
-            args = dict(t.split('=', 1) for t in parts[1:])
-            response = macro(**h.encode_keys(args))
-            return response
-        except (ValueError, TypeError), ex:
-            msg = cgi.escape(u'[[%s]] (%s)' % (s, repr(ex)))
-            return '\n<div class="error"><pre><code>%s</code></pre></div>' % msg
-    except Exception, ex:
-        raise
-        return '[[Error parsing %s: %s]]' % (s, ex)
+            if s.startswith('quote '):
+                return '[[' + s[len('quote '):] + ']]'
+            try:
+                parts = [ unicode(x, 'utf-8') for x in shlex.split(s.encode('utf-8')) ]
+                if not parts: return '[[' + s + ']]'
+                macro = self._lookup_macro(parts[0])
+                if not macro: return  '[[' + s + ']]'
+                for t in parts[1:]:
+                    if '=' not in t:
+                        return '[-%s: missing =-]' % ' '.join(parts)
+                args = dict(t.split('=', 1) for t in parts[1:])
+                response = macro(**h.encode_keys(args))
+                return response
+            except (ValueError, TypeError), ex:
+                msg = cgi.escape(u'[[%s]] (%s)' % (s, repr(ex)))
+                return '\n<div class="error"><pre><code>%s</code></pre></div>' % msg
+        except Exception, ex:
+            raise
+            return '[[Error parsing %s: %s]]' % (s, ex)
 
-@macro
+    def _lookup_macro(self, s):
+        macro, context = _macros.get(s, None)
+        if context is None or context == self._context:
+            return macro
+        else:
+            return None
+
+@macro('neighborhood-wiki')
 def projects(category=None, display_mode='grid', sort='last_updated'):
     from allura.lib.widgets.project_list import ProjectList
     from allura import model as M
@@ -60,7 +77,7 @@ def projects(category=None, display_mode='grid', sort='last_updated'):
     response = pl.display(projects=pq.all(), display_mode=display_mode)
     return response
 
-@macro
+@macro()
 def include(ref=None, **kw):
     from allura import model as M
     from allura.lib.widgets.macros import Include
@@ -82,7 +99,7 @@ def include(ref=None, **kw):
     response = sb.display(artifact=artifact, attrs=kw)
     return response
 
-@macro
+@macro()
 def img(src=None, **kw):
     attrs = ('%s="%s"' % t for t in kw.iteritems())
     included = request.environ.setdefault('allura.macro.att_embedded', set())

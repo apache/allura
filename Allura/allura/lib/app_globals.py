@@ -229,7 +229,10 @@ class Globals(object):
 
     @property
     def markdown_wiki(self):
-        return self.forge_markdown(wiki=True)
+        if c.project.shortname == '--init--':
+            return self.forge_markdown(wiki=True, macro_context='neighborhood-wiki')
+        else:
+            return self.forge_markdown(wiki=True)
 
     @property
     def production_mode(self):

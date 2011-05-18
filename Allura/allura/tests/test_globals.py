@@ -11,6 +11,9 @@ from pylons import c, g, session, request
 
 from alluratest.controller import setup_basic_test, setup_global_objects
 
+from allura import model as M
+from allura.lib import helpers as h
+
 
 def setUp():
     """Method called by nose before running each test"""
@@ -44,7 +47,10 @@ def test_markdown():
     assert '<br' in g.markdown.convert('Multi\nLine'), g.markdown.convert('Multi\nLine')
     assert '<br' not in g.markdown.convert('Multi\n\nLine')
     r = g.markdown.convert('[[projects]]')
-    assert '<div class="border card">' in r, r
+    assert '[[projects]]' in r, r
+    with h.push_context(M.Neighborhood.query.get(name='Projects').neighborhood_project()._id):
+        r = g.markdown_wiki.convert('[[projects]]')
+        assert '<div class="border card">' in r, r
     r = g.markdown.convert('[[include ref=Home id=foo]]')
     assert '<div id="foo">' in r, r
     assert 'href="../foo"' in g.markdown.convert('[My foo](foo)')

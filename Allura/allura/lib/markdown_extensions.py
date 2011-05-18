@@ -22,14 +22,15 @@ log = logging.getLogger(__name__)
 
 class ForgeExtension(markdown.Extension):
 
-    def __init__(self, wiki=False, email=False):
+    def __init__(self, wiki=False, email=False, macro_context=None):
         markdown.Extension.__init__(self)
         self._use_wiki = wiki
         self._is_email = email
+        self._macro_context = macro_context
 
     def extendMarkdown(self, md, md_globals):
         md.registerExtension(self)
-        self.forge_processor = ForgeProcessor(self._use_wiki, md)
+        self.forge_processor = ForgeProcessor(self._use_wiki, md, macro_context=self._macro_context)
         self.forge_processor.install()
         md.preprocessors['fenced-code'] = FencedCodeProcessor()
         md.inlinePatterns['autolink_1'] = AutolinkPattern(r'(http(?:s?)://[a-zA-Z0-9./\-_0%?&=+#;~]+)')
@@ -69,9 +70,10 @@ class ForgeProcessor(object):
     placeholder = '%s:%%s:%%.4d#khjhhj' % placeholder_prefix
     placeholder_re = re.compile('%s:(\\w+):(\\d+)#khjhhj' % placeholder_prefix)
 
-    def __init__(self, use_wiki = False, markdown=None):
+    def __init__(self, use_wiki = False, markdown=None, macro_context=None):
         self.markdown = markdown
         self._use_wiki = use_wiki
+        self._macro_context = macro_context
         self.inline_patterns = {
             'forge.alink' : ForgeInlinePattern(self, self.alink_pattern),
             'forge.macro' : ForgeInlinePattern(self, self.macro_pattern)}
@@ -116,7 +118,7 @@ class ForgeProcessor(object):
                 self.alinks = {}
         self.stash['artifact'] = map(self._expand_alink, self.stash['artifact'])
         self.stash['link'] = map(self._expand_link, self.stash['link'])
-        self.stash['macro'] = map(macro.parse, self.stash['macro'])
+        self.stash['macro'] = map(macro.parse(self._macro_context), self.stash['macro'])
 
     def reset(self):
         self.stash = dict(
