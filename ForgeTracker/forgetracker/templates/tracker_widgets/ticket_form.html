@@ -30,7 +30,7 @@
     {{widget.display_field_by_name('labels')|safe}}
   </div>
   <div class="grid-6">
-  	{{widget.display_field_by_name('private')}}
+    {{widget.display_field_by_name('private')}}
   </div>  
   <div style="clear:both">&nbsp;</div>
   <div class="grid-6">
@@ -93,13 +93,13 @@
   </div>
   <div style="clear:both">&nbsp;</div>
   <div class="reply discussion-post" style="position:relative;{% if not show_comment %} display:none{% endif %}">
-	<div class="grid-2 tcenter">
+    <div class="grid-2 tcenter">
       <p class="gravatar">
       {{lib.gravatar(c.user, size=48)}}<br>
       <small><a href="{{c.user.url()}}">{{c.user.display_name}}</a></small>
       </p>
-	</div>
-	<div class="grid-16">
+    </div>
+    <div class="grid-16">
       {{widget.display_field_by_name('comment')|safe}}
       <span class="arw"><span></span></span>
     </div>
