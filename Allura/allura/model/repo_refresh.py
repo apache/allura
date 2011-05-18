@@ -94,7 +94,7 @@ def refresh_commit_repos(all_commit_ids, repo):
                     app_config_id=repo.app.config._id,
                         artifact_id=oid),
                     references=[]))
-            link = ShortlinkDoc(dict(
+            link0 = ShortlinkDoc(dict(
                     _id=bson.ObjectId(),
                     ref_id=index_id,
                     project_id=repo.app.config.project_id,
@@ -102,7 +102,7 @@ def refresh_commit_repos(all_commit_ids, repo):
                     link=repo.shorthand_for_commit(oid)[1:-1],
                     url=repo.url() + 'ci/' + oid + '/'))
             # Always create a link for the full commit ID
-            link = ShortlinkDoc(dict(
+            link1 = ShortlinkDoc(dict(
                     _id=bson.ObjectId(),
                     ref_id=index_id,
                     project_id=repo.app.config.project_id,
@@ -110,7 +110,8 @@ def refresh_commit_repos(all_commit_ids, repo):
                     link=oid,
                     url=repo.url() + 'ci/' + oid + '/'))
             ref.m.save(safe=False, validate=False)
-            link.m.save(safe=False, validate=False)
+            link0.m.save(safe=False, validate=False)
+            link1.m.save(safe=False, validate=False)
 
 def refresh_children(ci):
     '''Refresh the list of children of the given commit'''
