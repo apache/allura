@@ -34,24 +34,11 @@ def refresh_repo(repo, all_commits=False, notify=True):
     refresh_commit_repos(all_commit_ids, repo)
 
     # Refresh child references
-    seen = set()
-    parents = set()
-
     for i, oid in enumerate(commit_ids):
         ci = CommitDoc.m.find(dict(_id=oid), validate=False).next()
         refresh_children(ci)
-        seen.add(ci._id)
-        parents.update(ci.parent_ids)
         if (i+1) % 100 == 0:
-            log.info('Refresh child (a) info %d: %s', (i+1), ci._id)
-    for j, oid in enumerate(parents-seen):
-        try:
-            ci = CommitDoc.m.find(dict(_id=oid), validate=False).next()
-        except StopIteration:
-            continue
-        refresh_children(ci)
-        if (i + j + 1) % 100 == 0:
-            log.info('Refresh child (b) info %d: %s', (i + j + 1), ci._id)
+            log.info('Refresh child info %d for parents of %s', (i+1), ci._id)
 
     # Refresh commit runs
     rb = CommitRunBuilder(commit_ids)
