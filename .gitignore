@@ -18,10 +18,12 @@ download/*
 install/*
 */.test-data/*
 */.coverage
-allura/allura/templates/home/
 solr_config/core0/data/
 solr_config/core1/data/
 var/
 .nose-stopwatch-times
 .noseids
 env
+Allura/allura/templates/home
+Allura/allura/templates/var
+Allura/production.ini
