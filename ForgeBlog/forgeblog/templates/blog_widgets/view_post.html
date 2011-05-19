@@ -1,14 +1,20 @@
 {% import 'allura:templates/jinja_master/lib.html' as lib with context %}
-<em class="grid-19">Posted by <a href="{{base_post.author().url()}}">{{lib.gravatar(base_post.author(), size=16)}}</a> {{lib.abbr_date(value.timestamp)}}</em>
-{% if value.state != 'published' %}
-  <em class="grid-19">State: {{value.state}}</em>
-{% endif %}
+
+{{value.html_text|safe}}
+<em class="grid-19">
+  Posted by <a href="{{base_post.author().url()}}">{{lib.gravatar_or_name(base_post.author(), size=16)}}</a> {{lib.abbr_date(value.timestamp)}}
+  {% if value.state != 'published' %}
+	<span>| {{value.state.capitalize()}}</span>
+  {% endif %}
+  {% if h.has_access(value, 'write')() %}
+	<span>| <a href="{{value.url()}}edit">Edit</a></span>
+  {% endif %}
+</em>
 {% if value.labels %}
-<div class="grid-19">
+<em class="grid-19">
   <strong>Labels:</strong>
   {% for l in value.labels %}
     <span><a href="{{c.app.url}}search?q=labels_t:{{l}}">{{l}}</a> </span>
   {% endfor %}
-</div>
+</em>
 {% endif %}
-{{value.html_text|safe}}

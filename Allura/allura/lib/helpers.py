@@ -498,3 +498,15 @@ class log_action(object):
         except:
             self._logger.warning('Error logging to rtstats, some info may be missing', exc_info=True)
             return result
+
+def paging_sanitizer(limit, page, total_count, zero_based_pages=True):
+    """Return limit, page - both converted to int and constrained to
+    valid ranges based on total_count.
+
+    Useful for sanitizing limit and page query params.
+    """
+    limit = max(int(limit), 1)
+    max_page = (total_count / limit) + (1 if total_count % limit else 0)
+    max_page = max(0, max_page - (1 if zero_based_pages else 0))
+    page = min(max(int(page), (0 if zero_based_pages else 1)), max_page)
+    return limit, page

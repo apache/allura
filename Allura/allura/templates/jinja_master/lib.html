@@ -22,6 +22,12 @@
   {% endif %}
 {%- endmacro %}
 
+{% macro gravatar_or_name(user, size, className) -%}
+  {% if user.icon_url() %}
+	gravatar(user, size, className)
+  {% else %}<span>{{ h.really_unicode(user.display_name) }}</span>{% endif %}
+{%- endmacro %}
+
 {% macro email_gravatar(email, title=None, size=None) -%}
   {% set title=h.really_unicode(title) %}
   {% if email %}

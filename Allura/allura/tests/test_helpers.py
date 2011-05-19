@@ -100,3 +100,18 @@ def test_urlquote_unicode():
 
 def test_sharded_path():
     assert_equals(h.sharded_path('foobar'), 'f/fo')
+
+def test_paging_sanitizer():
+    test_data = {
+        # input (limit, page, total, zero-based): output (limit, page)
+        (0, 0, 0): (1, 0),
+        ('1', '1', 1): (1, 0),
+        (5, '10', 25): (5, 4),
+        ('5', 10, 25, False): (5, 5),
+        (5, '-1', 25): (5, 0),
+        ('5', -1, 25, False): (5, 1),
+        (5, '3', 25): (5, 3),
+        ('5', 3, 25, False): (5, 3)
+    }
+    for input, output in test_data.iteritems():
+        assert (h.paging_sanitizer(*input)) == output

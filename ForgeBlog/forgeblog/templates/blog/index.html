@@ -2,7 +2,7 @@
 
 {% block title %}{{c.project.name}} / {{c.app.config.options.mount_label}}{% endblock %}
 
-{% block header %}{{c.project.name}} / {{c.app.config.options.mount_label}} Recent posts{% endblock %}
+{% block header %}{{c.project.name}} / {{c.app.config.options.mount_label}}: Recent posts{% endblock %}
 
 {% block extra_css %}
     <link rel="alternate" type="application/rss+xml" title="RSS" href="feed.rss"/>
@@ -16,4 +16,5 @@
     {% endif %}
     {{c.form.display(value=post)}}
   {% endfor %}
+  {{c.pager.display(limit=limit, page=page, count=count)}}
 {% endblock %}

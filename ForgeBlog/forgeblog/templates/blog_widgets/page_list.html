@@ -1,0 +1,10 @@
+<div style="margin: 10px">
+  {% set paginator = widget.paginator(count, page, limit) %}
+  <div style="float: right">
+    {{paginator.pager('$link_previous', symbol_previous='Newer Entries >>')}}
+  </div>
+  <div style="float: left">
+    {{paginator.pager('$link_next', symbol_next='<< Older Entries')}}
+  </div>
+  <div style="clear: both"></div>
+</div>

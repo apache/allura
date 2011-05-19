@@ -84,7 +84,10 @@ class BlogPost(M.VersionedArtifact):
 
     @property
     def html_text_preview(self):
-        return g.markdown.convert(h.text.truncate(self.text, 200))
+        indicator = '...[read more](%s)' % self.url()
+        return g.markdown.convert(h.text.truncate(self.text, length=200,
+                                                  indicator=indicator,
+                                                  whole_word=True))
 
     @property
     def email_address(self):

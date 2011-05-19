@@ -1,9 +1,10 @@
 {% extends g.theme.master %}
 
-{% block title %}{{c.project.name}} / {{c.app.config.options.mount_label}}: Edit{% endblock %}
+{% block title %}{{c.project.name}} / {{c.app.config.options.mount_label}}:
+      {{'Edit' if post.title else 'New'}}{% endblock %}
 
 {% block header %}{{c.project.name}} / {{c.app.config.options.mount_label}}:
-      Edit {{post.title}}{% endblock %}
+      {{'Editing "%s"' % post.title if post.title else 'New Post'}}{% endblock %}
 
 {% block content %}
     <div class="content">

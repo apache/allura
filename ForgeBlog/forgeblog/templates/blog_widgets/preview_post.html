@@ -1,18 +1,25 @@
-{% from 'allura:templates/jinja_master/lib.html' import abbr_date with context %}
-<div>
-  <h3><a href="{{value.url()}}">{{value.title}}</a></h3>
-  <em class="grid-19">Posted {{abbr_date(value.timestamp)}}</em>
-  {% if value.state != 'published' %}
-    <em class="grid-19">({{value.state}})</em>
-  {% endif %}
-  {% if h.has_access(value, 'write')() %}
-    <div class="grid-19"><a href="{{value.url()}}edit">Edit</a></div>
-  {% endif %}
-  <div class="grid-19">
+{% import 'allura:templates/jinja_master/lib.html' as lib with context %}
+<div style="margin-bottom: 10px">
+  <h3>
+    <a href="{{value.url()}}">{{value.title}}</a>
+  </h3>
+  {{value.html_text_preview|safe}}
+  <em class="grid-19">
+    Posted by <a href="{{value.author().url()}}">{{lib.gravatar_or_name(value.author(), size=16)}}</a> {{lib.abbr_date(value.timestamp)}}
+    {% if value.state != 'published' %}
+      <span>| {{value.state.capitalize()}}</span>
+    {% endif %}
+    {% if h.has_access(value, 'write')() %}
+      <span>| <a href="{{value.url()}}edit">Edit</a></span>
+    {% endif %}
+  </em>
+  {% if value.labels: %}
+  <em class="grid-19">
     <strong>Labels:</strong>
     {% for l in value.labels %}
       <span><a href="{{c.app.url}}search?q=labels_t:{{l}}">{{l}}</a> </span>
     {% endfor %}
-  </div>
-  {{value.html_text_preview|safe}}
+  </em>
+  {% endif %}
+  <div style="clear: both"></div>
 </div>

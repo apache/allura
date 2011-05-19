@@ -46,7 +46,6 @@ class ForgeForm(ew.SimpleForm):
         return h.html.literal(display)
 
     def display_field_by_idx(self, idx, ignore_errors=False):
-        import pdb; pdb.set_trace()
         warnings.warn(
             'ForgeForm.display_field_by_idx is deprecated; use '
             'ForgeForm.display_field() instead', DeprecationWarning)

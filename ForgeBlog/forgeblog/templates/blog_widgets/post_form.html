@@ -1,0 +1,36 @@
+<div class="editbox">
+<form method="{{method}}"
+      {% if enctype %}enctype="{{enctype}}"{% endif %}
+      action="{{action}}">
+  <div class="grid-19">
+    <label class="cr">Title:</label>
+    {{widget.display_field(widget.fields.title)}}
+  </div>
+  <div class="grid-19">
+    {{widget.display_field(widget.fields.text)}}
+  </div>
+  <div class="grid-6">
+    <label class="cr">State:</label>
+    {{widget.display_field(widget.fields.state)}}
+  </div>
+  <div class="grid-13">
+    <label class="cr">Labels:</label>
+    {{widget.display_field(widget.fields.labels)}}
+  </div>
+  {% for field in widget.fields %}
+    {% if field.field_type == 'hidden' %}
+      {% set ctx=widget.context_for(field) %}
+      {{field.display(**ctx)}}
+    {% endif %}
+  {% endfor %}
+  <hr/>
+  <div class="grid-19">
+    {% for b in buttons %}
+      {{b.display()}}
+    {% endfor %}
+    <a href="{{c.app.url}}" class="btn link cancel_form">Cancel</a>
+  </div>
+  {% if widget.antispam %}{% for fld in g.antispam.extra_fields() %}
+  {{fld}}{% endfor %}{% endif %}
+</form>
+</div>

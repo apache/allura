@@ -4,6 +4,7 @@ from datetime import datetime
 
 # Non-stdlib imports
 import pkg_resources
+import pymongo
 from tg import expose, validate, redirect, flash
 from tg.decorators import with_trailing_slash, without_trailing_slash
 from pylons import g, c, request, response
@@ -12,6 +13,7 @@ from webob import exc
 
 # Pyforge-specific imports
 from allura.app import Application, ConfigOption, SitemapEntry
+from allura.app import DefaultAdminController
 from allura.lib import helpers as h
 from allura.lib.search import search
 from allura.lib.decorators import require_post
@@ -33,6 +35,7 @@ class W:
     thread=w.Thread(
         page=None, limit=None, page_size=None, count=None,
         style='linear')
+    pager = widgets.BlogPager()
     new_post_form = widgets.NewPostForm()
     edit_post_form = widgets.EditPostForm()
     view_post_form = widgets.ViewPostForm()
@@ -53,7 +56,6 @@ class ForgeBlogApp(Application):
     ordinal=14
     installable=True
     config_options = Application.config_options
-    show_discussion=True
     icons={
         24:'images/blog_24.png',
         32:'images/blog_32.png',
@@ -63,6 +65,7 @@ class ForgeBlogApp(Application):
     def __init__(self, project, config):
         Application.__init__(self, project, config)
         self.root = RootController()
+        self.admin = BlogAdminController(self)
 
     @property
     @h.exceptionless([], log)
@@ -71,6 +74,13 @@ class ForgeBlogApp(Application):
         with h.push_config(c, app=self):
             return [
                 SitemapEntry(menu_id, '.')[self.sidebar_menu()] ]
+
+    @property
+    def show_discussion(self):
+        if 'show_discussion' in self.config.options:
+            return self.config.options['show_discussion']
+        else:
+            return True
 
     @h.exceptionless([], log)
     def sidebar_menu(self):
@@ -85,7 +95,7 @@ class ForgeBlogApp(Application):
 
     def admin_menu(self):
         admin_url = c.project.url()+'admin/'+self.config.options.mount_point+'/'
-        links = []
+        links = [SitemapEntry('Options', admin_url + 'options', className='admin_modal')]
         if self.permissions and has_access(self, 'configure')():
             links.append(SitemapEntry('Permissions', admin_url + 'permissions', className='nav_child'))
         return links
@@ -125,16 +135,18 @@ class RootController(BaseController):
 
     @expose('jinja:forgeblog:templates/blog/index.html')
     @with_trailing_slash
-    def index(self, **kw):
-        if has_access(c.app, 'write')():
-            posts = BM.BlogPost.query.find(dict(
-                    app_config_id=c.app.config._id)).sort('-timestamp')
-        else:
-            posts = BM.BlogPost.query.find(dict(
-                        state='published',
-                        app_config_id=c.app.config._id)).sort('-timestamp')
+    def index(self, page=0, limit=10, **kw):
+        query_filter = dict(app_config_id=c.app.config._id)
+        if not has_access(c.app, 'write')():
+            query_filter['state'] = 'published'
+        q = BM.BlogPost.query.find(query_filter)
+        post_count = q.count()
+        limit, page = h.paging_sanitizer(limit, page, post_count)
+        posts = q.sort('timestamp', pymongo.DESCENDING) \
+                 .skip(page * limit).limit(limit)
         c.form = W.preview_post_form
-        return dict(posts=posts)
+        c.pager = W.pager
+        return dict(posts=posts, page=page, limit=limit, count=post_count)
 
     @expose('jinja:forgeblog:templates/blog/search.html')
     @validate(dict(q=validators.UnicodeString(if_empty=None),
@@ -162,10 +174,6 @@ class RootController(BaseController):
         require_access(c.app, 'write')
         now = datetime.utcnow()
         post = dict(
-            title='Please enter a title',
-            text='Type your text here',
-            date=now.date(),
-            time=now.time(),
             state='draft')
         c.form = W.new_post_form
         return dict(post=post)
@@ -231,6 +239,8 @@ class PostController(BaseController):
     @expose('jinja:forgeblog:templates/blog/post.html')
     @with_trailing_slash
     def index(self, **kw):
+        if self.post.state == 'draft':
+            require_access(self.post, 'write')
         c.form = W.view_post_form
         c.subscribe_form = W.subscribe_form
         c.thread = W.thread
@@ -327,3 +337,21 @@ class PostController(BaseController):
             return self.post.get_version(version)
         except ValueError:
             raise exc.HTTPNotFound()
+
+class BlogAdminController(DefaultAdminController):
+    def __init__(self, app):
+        self.app = app
+
+    @without_trailing_slash
+    @expose('jinja:forgeblog:templates/blog/admin_options.html')
+    def options(self):
+        return dict(app=self.app,
+                    allow_config=has_access(self.app, 'configure')())
+
+    @without_trailing_slash
+    @expose()
+    @require_post()
+    def set_options(self, show_discussion=False):
+        self.app.config.options['show_discussion'] = show_discussion and True or False
+        flash('Blog options updated')
+        redirect(c.project.url()+'admin/tools')

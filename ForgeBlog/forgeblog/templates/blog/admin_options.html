@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<form action="{{c.project.url()}}admin/{{app.config.options.mount_point}}/set_options" method="post">
+    <label class="grid-7">Allow discussion/commenting on posts :</label>
+    <div class="grid-6">
+      {% if allow_config %}
+        <input type="checkbox" name="show_discussion" id="show_discussion"{% if app.show_discussion %} checked="checked"{% endif %}/>
+      {% else %}
+        <span>{{app.show_discussion}}</span>
+      {% endif %}
+    </div>
+    <div class="grid-13">&nbsp;</div>
+    <hr/>
+    <div class="grid-13">&nbsp;</div>
+    <div class="grid-13">
+      {% if allow_config %}<input type="submit" value="Save"/>{% endif %}
+    </div>
+</form>
