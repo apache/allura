@@ -48,7 +48,7 @@ def test_markdown():
     assert '<br' not in g.markdown.convert('Multi\n\nLine')
     r = g.markdown.convert('[[projects]]')
     assert '[[projects]]' in r, r
-    with h.push_context(M.Neighborhood.query.get(name='Projects').neighborhood_project()._id):
+    with h.push_context(M.Neighborhood.query.get(name='Projects').neighborhood_project._id):
         r = g.markdown_wiki.convert('[[projects]]')
         assert '<div class="border card">' in r, r
     r = g.markdown.convert('[[include ref=Home id=foo]]')

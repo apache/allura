@@ -40,12 +40,6 @@ class Neighborhood(MappedClass):
     allow_browse = FieldProperty(bool, if_missing=True)
     site_specific_html = FieldProperty(str, if_missing='')
 
-    def neighborhood_project(self):
-        from .project import Project
-        return Project.query.get(
-            neighborhood_id=self._id,
-            shortname='--init--')
-
     def parent_security_context(self):
         return None
 
