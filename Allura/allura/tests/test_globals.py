@@ -55,7 +55,9 @@ def test_markdown():
     assert '<div id="foo">' in r, r
     assert 'href="../foo"' in g.markdown.convert('[My foo](foo)')
     assert 'href="..' not in g.markdown.convert('[My foo](./foo)')
-    r = g.markdown.convert('[[neighborhood_feeds tool_name=Wiki]]')
+    g.set_project(M.Project.query.get(name='Home Project for Projects'))
+    g.set_app('wiki')
+    r = g.markdown_wiki.convert('[[neighborhood_feeds tool_name=Wiki]]')
     assert '[test:wiki] test-admin created page Home' in r, r
     g.markdown.convert("<class 'foo'>") # should not raise an exception
     assert '<br>' not in g.markdown.convert('''# Header

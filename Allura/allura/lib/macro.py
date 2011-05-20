@@ -54,7 +54,7 @@ class parse(object):
         else:
             return None
 
-@macro
+@macro('neighborhood-wiki')
 def neighborhood_feeds(tool_name, max_number=5, sort='pubdate'):
     from allura import model as M
     feed = M.Notification.query.find(dict(tool_name=tool_name,neighborhood_id=c.project.neighborhood._id)).sort(sort, pymongo.DESCENDING).limit(int(max_number)).all()
