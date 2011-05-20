@@ -18,6 +18,7 @@ from allura.lib import helpers as h
 from allura.lib import plugin
 from allura.lib import exceptions
 from allura.lib import security
+from allura.lib.security import has_access
 
 from .session import main_orm_session
 from .session import project_doc_session, project_orm_session
@@ -437,6 +438,35 @@ class Project(MappedClass):
             raise exceptions.ToolError, 'Mount point "%s" is invalid' % name
         provider = plugin.ProjectRegistrationProvider.get()
         return provider.register_subproject(self, name, user or c.user, install_apps)
+
+    def ordered_mounts(self):
+        '''Returns an array of a projects mounts (tools and sub-projects) in
+        toolbar order.'''
+        result = []
+        for sub in self.direct_subprojects:
+            result.append({'ordinal':sub.ordinal, 'sub':sub})
+        for ac in self.app_configs:
+            if ac.tool_name != 'search':
+                ordinal = ac.options['ordinal'] if 'ordinal' in ac.options else 0
+                result.append({'ordinal':ordinal, 'ac':ac})
+        return sorted(result, key=lambda e: e['ordinal'])
+
+    def first_mount(self, required_access=None):
+        '''Returns the first (toolbar order) mount, or the first mount to
+        which the user has the required access.'''
+        mounts = self.ordered_mounts()
+        if mounts and required_access is None:
+            return mounts[0]
+        for mount in mounts:
+            if 'sub' in mount:
+                obj = mount['sub']
+            elif 'ac' in mount:
+                obj = self.app_instance(mount['ac'])
+            else:
+                continue
+            if has_access(obj, required_access):
+                return mount
+        return None
 
     def delete(self):
         # Cascade to subprojects

@@ -206,14 +206,7 @@ class ProjectAdminController(BaseController):
         c.mount_delete = W.mount_delete
         c.admin_modal = W.admin_modal
         c.install_modal = W.install_modal
-        mounts = []
-        for sub in c.project.direct_subprojects:
-            mounts.append({'ordinal':sub.ordinal,'sub':sub})
-        for ac in c.project.app_configs:
-            if ac.tool_name != 'search':
-                ordinal = 'ordinal' in ac.options and ac.options['ordinal'] or 0
-                mounts.append({'ordinal':ordinal,'ac':ac})
-        mounts = sorted(mounts, key=lambda e: e['ordinal'])
+        mounts = c.project.ordered_mounts()
         return dict(
             mounts=mounts,
             installable_tools=AdminApp.installable_tools_for(c.project),

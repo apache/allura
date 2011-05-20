@@ -257,8 +257,12 @@ class ProjectController(object):
     @expose()
     @with_trailing_slash
     def index(self, **kw):
-        if c.project.app_instance('home'):
-            redirect('home/')
+        mount = c.project.first_mount('read')
+        if mount is not None:
+            if 'ac' in mount:
+                redirect(mount['ac'].options.mount_point + '/')
+            elif 'sub' in mount:
+                redirect(mount['sub'].url())
         elif c.project.app_instance('profile'):
             redirect('profile/')
         else:
