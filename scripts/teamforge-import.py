@@ -17,6 +17,8 @@ from ming.orm.ormsession import ThreadLocalORMSession
 from ming.base import Object
 
 from allura import model as M
+from allura.lib import helpers as h
+from allura.lib import utils
 
 log = logging.getLogger('teamforge-import')
 
@@ -220,6 +222,38 @@ def create_project(pid, nbhd):
         pr = user.project_role(project)
         pr.roles = [ role_developer._id ]
 
+    # populate wiki data
+    dirs = os.listdir(os.path.join(options.output_dir, pid))
+    if 'wiki' in dirs:
+        from forgewiki import model as WM
+        wiki_app = project.app_instance('wiki')
+        h.set_context(project.shortname, 'wiki')
+        if not wiki_app:
+            wiki_app = project.install_app('Wiki', 'wiki')
+        pages = os.listdir(os.path.join(options.output_dir, pid, 'wiki'))
+        # handle the homepage content
+        if 'homepage_text.markdown' in pages:
+            project.description = wiki2markdown(load(pid, 'wiki', 'homepage_text.markdown'))
+        # make all the wiki pages
+        for page in pages:
+            ending = page[-5:]
+            beginning = page[:-5]
+            markdown_file = '%s.markdown' % beginning
+            if '.json' == ending and markdown_file in pages:
+                page_data = loadjson(pid, 'wiki', page)
+                content = load(pid, 'wiki', markdown_file)
+                if page == 'HomePage.json':
+                    WM.Globals.query.get(app_config_id=wiki_app.config._id).root = page_data.title
+                p = WM.Page.upsert(page_data.title)
+                p.viewable_by = ['all']
+                p.text = wiki2markdown(content)
+                # upload attachments
+                if beginning in pages:
+                    files = os.listdir(os.path.join(options.output_dir, pid, 'wiki', beginning))
+                    for f in files:
+                        with open(os.path.join(options.output_dir, pid, 'wiki', beginning, f)) as fp:
+                            p.attach(f, fp, content_type=utils.guess_mime_type(f))
+
     # TODO: categories as labels
 
     ThreadLocalORMSession.flush_all()
@@ -365,16 +399,19 @@ def get_homepage_wiki(project):
         log.warn('did not find homepage')
 
     if homepage:
-        save(homepage, project, 'wiki', 'homepage.markdown')
+        save(homepage, project, 'wiki', 'homepage_text.markdown')
         for img_ref in find_image_references(homepage):
             filename = img_ref.split('/')[-1]
-            download_file('wiki', project.path + '/wiki/' + img_ref, project.id, 'homepage', filename)
+            download_file('wiki', project.path + '/wiki/' + img_ref, project.id, 'wiki', 'homepage', filename)
 
     for path, text in pages.iteritems():
         if options.default_wiki_text in text:
             log.debug('skipping default wiki page %s' % path)
         else:
             save(text, project, 'wiki', path+'.markdown')
+            for img_ref in find_image_references(text):
+                filename = img_ref.split('/')[-1]
+                download_file('wiki', project.path + '/wiki/' + img_ref, project.id, 'wiki', path, filename)
 
 def get_files(project):
     frs = make_client(options.api_url, 'FrsApp')
