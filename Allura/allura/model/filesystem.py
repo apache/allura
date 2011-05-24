@@ -16,7 +16,9 @@ from allura.lib import utils
 SUPPORTED_BY_PIL=set([
         'image/jpg',
         'image/jpeg',
+        'image/pjpeg',
         'image/png',
+        'image/x-png',
         'image/gif'])
 
 class File(MappedClass):
