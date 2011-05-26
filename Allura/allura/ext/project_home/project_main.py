@@ -85,9 +85,6 @@ class ProjectHomeApp(Application):
                 model.ACE.allow(pr._id, perm)
                 for perm in self.permissions ]
 
-    def uninstall(self, project): # pragma no cover
-        raise NotImplementedError, "uninstall"
-
 class ProjectHomeController(BaseController):
 
     def _check_security(self):

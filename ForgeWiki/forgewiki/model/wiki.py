@@ -2,7 +2,7 @@ from pylons import g #g is a namespace for globally accessable app helpers
 from pylons import c as context
 
 from ming import schema
-from ming.orm import FieldProperty, ForeignIdProperty, Mapper
+from ming.orm import FieldProperty, ForeignIdProperty, Mapper, session
 from ming.orm.declarative import MappedClass
 
 from allura.model import VersionedArtifact, Snapshot, Feed, Thread, Post, User, BaseAttachment
@@ -79,6 +79,7 @@ class Page(VersionedArtifact):
     def commit(self):
         self.subscribe()
         VersionedArtifact.commit(self)
+        session(self).flush()
         if self.version > 1:
             v1 = self.get_version(self.version-1)
             v2 = self

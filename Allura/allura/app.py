@@ -208,6 +208,7 @@ class Application(object):
                 'app_config_id':self.config._id}):
             d.delete()
         self.config.delete()
+        session(self.config).flush()
 
     def main_menu(self):
         '''Apps should provide their entries to be added to the main nav
