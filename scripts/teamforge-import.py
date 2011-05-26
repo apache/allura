@@ -106,6 +106,7 @@ def main():
                 get_project(project, c)
                 get_files(project)
                 get_homepage_wiki(project)
+                get_discussion(project)
                 check_unsupported_tools(project)
             except:
                 log.exception('Error extracting %s' % pid)
@@ -213,7 +214,7 @@ def create_project(pid, nbhd):
         user = get_user(admin.userName)
         pr = user.project_role(project)
         pr.roles = [ role_admin._id ]
-
+    
     role_developer = M.ProjectRole.by_name('Developer', project)
     for member in data.members:
         if member.userName in admin_usernames:
@@ -221,38 +222,121 @@ def create_project(pid, nbhd):
         user = get_user(member.userName)
         pr = user.project_role(project)
         pr.roles = [ role_developer._id ]
+    ThreadLocalORMSession.flush_all()
 
     # populate wiki data
     dirs = os.listdir(os.path.join(options.output_dir, pid))
     if 'wiki' in dirs:
         from forgewiki import model as WM
-        wiki_app = project.app_instance('wiki')
-        h.set_context(project.shortname, 'wiki')
-        if not wiki_app:
-            wiki_app = project.install_app('Wiki', 'wiki')
         pages = os.listdir(os.path.join(options.output_dir, pid, 'wiki'))
         # handle the homepage content
         if 'homepage_text.markdown' in pages:
             project.description = wiki2markdown(load(pid, 'wiki', 'homepage_text.markdown'))
-        # make all the wiki pages
-        for page in pages:
-            ending = page[-5:]
-            beginning = page[:-5]
-            markdown_file = '%s.markdown' % beginning
-            if '.json' == ending and markdown_file in pages:
-                page_data = loadjson(pid, 'wiki', page)
-                content = load(pid, 'wiki', markdown_file)
-                if page == 'HomePage.json':
-                    WM.Globals.query.get(app_config_id=wiki_app.config._id).root = page_data.title
-                p = WM.Page.upsert(page_data.title)
-                p.viewable_by = ['all']
-                p.text = wiki2markdown(content)
-                # upload attachments
-                if beginning in pages:
-                    files = os.listdir(os.path.join(options.output_dir, pid, 'wiki', beginning))
-                    for f in files:
-                        with open(os.path.join(options.output_dir, pid, 'wiki', beginning, f)) as fp:
-                            p.attach(f, fp, content_type=utils.guess_mime_type(f))
+        if 'HomePage.json' in pages and 'HomePage.markdown' in pages:
+            wiki_app = project.app_instance('wiki')
+            if not wiki_app:
+                wiki_app = project.install_app('Wiki', 'wiki')
+            h.set_context(project.shortname, 'wiki')
+            # make all the wiki pages
+            for page in pages:
+                ending = page[-5:]
+                beginning = page[:-5]
+                markdown_file = '%s.markdown' % beginning
+                if '.json' == ending and markdown_file in pages:
+                    page_data = loadjson(pid, 'wiki', page)
+                    content = load(pid, 'wiki', markdown_file)
+                    if page == 'HomePage.json':
+                        WM.Globals.query.get(app_config_id=wiki_app.config._id).root = page_data.title
+                    p = WM.Page.upsert(page_data.title)
+                    p.viewable_by = ['all']
+                    p.text = wiki2markdown(content)
+                    # upload attachments
+                    if beginning in pages:
+                        files = os.listdir(os.path.join(options.output_dir, pid, 'wiki', beginning))
+                        for f in files:
+                            with open(os.path.join(options.output_dir, pid, 'wiki', beginning, f)) as fp:
+                                p.attach(f, fp, content_type=utils.guess_mime_type(f))
+    ThreadLocalORMSession.flush_all()
+
+    # populate discussion data
+    if 'forum' in dirs:
+        from forgediscussion import model as DM
+        discuss_app = project.app_instance('discussion')
+        if not discuss_app:
+            discuss_app = project.install_app('Discussion', 'discussion')
+        h.set_context(project.shortname, 'discussion')
+        forums = os.listdir(os.path.join(options.output_dir, pid, 'forum'))
+        for forum in forums:
+            ending = forum[-5:]
+            forum_name = forum[:-5]
+            if '.json' == ending and forum_name in forums:
+                forum_data = loadjson(pid, 'forum', forum)
+                fo = DM.Forum.query.get(shortname=forum_name, app_config_id=discuss_app.config._id)
+                if not fo:
+                    fo = DM.Forum(app_config_id=discuss_app.config._id, shortname=forum_name)
+                fo.name = forum_data.title
+                fo.description = forum_data.description
+                fo_num_topics = 0
+                fo_num_posts = 0
+    
+                topics = os.listdir(os.path.join(options.output_dir, pid, 'forum', forum_name))
+                for topic in topics:
+                    ending = topic[-5:]
+                    topic_name = topic[:-5]
+                    if '.json' == ending and topic_name in topics:
+                        fo_num_topics += 1
+                        topic_data = loadjson(pid, 'forum', forum_name, topic)
+                        to = DM.ForumThread.query.get(
+                            subject=topic_data.title,
+                            discussion_id=fo._id,
+                            app_config_id=discuss_app.config._id)
+                        if not to:
+                            to = DM.ForumThread(
+                                subject=topic_data.title,
+                                discussion_id=fo._id,
+                                app_config_id=discuss_app.config._id)
+                        to_num_replies = 0
+                        oldest_post = None
+                        newest_post = None
+    
+                        posts = sorted(os.listdir(os.path.join(options.output_dir, pid, 'forum', forum_name, topic_name)))
+                        for post in posts:
+                            ending = post[-5:]
+                            post_name = post[:-5]
+                            if '.json' == ending:
+                                to_num_replies += 1
+                                post_data = loadjson(pid, 'forum', forum_name, topic_name, post)
+                                p = DM.ForumPost.query.get(
+                                    _id='%s@import' % post_name,
+                                    thread_id=to._id,
+                                    discussion_id=fo._id)
+                                if not p:
+                                    p = DM.ForumPost(
+                                        _id='%s@import' % post_name,
+                                        thread_id=to._id,
+                                        discussion_id=fo._id)
+                                create_date = datetime.strptime(post_data.createdDate, '%Y-%m-%d %H:%M:%S')
+                                p.timestamp = create_date
+                                p.author_id = str(get_user(post_data.createdByUserName)._id)
+                                p.text = post_data.content
+                                p.status = 'ok'
+                                if post_data.replyToId:
+                                    p.parent_id = '%s@import' % post_data.replyToId
+                                slug, full_slug = p.make_slugs(parent = p.parent, timestamp = create_date)
+                                p.slug = slug
+                                p.full_slug = full_slug
+                                if oldest_post == None or oldest_post.timestamp > create_date:
+                                    oldest_post = p
+                                if newest_post == None or newest_post.timestamp < create_date:
+                                    newest_post = p
+                        to.num_replies = to_num_replies
+                        to.first_post_id = oldest_post._id
+                        to.last_post_date = newest_post.timestamp
+                        to.mod_date = newest_post.timestamp
+                        fo_num_posts += to_num_replies
+                fo.num_topics = fo_num_topics
+                fo.num_posts = fo_num_posts
+                ThreadLocalORMSession.flush_all()
 
     # TODO: categories as labels
 
@@ -366,6 +450,28 @@ def find_image_references(markup):
         snippet = matchobj.group(1)
         if snippet.endswith('.jpg') or snippet.endswith('.gif') or snippet.endswith('.png'):
             yield snippet
+
+def get_discussion(project):
+    '''
+    Extracts discussion forums and posts
+    '''
+    app = make_client(options.api_url, 'DiscussionApp')
+
+    # find the forums
+    forums = app.service.getForumList(s, project.id)
+    for forum in forums.dataRows:
+        forumname = forum.path.split('.')[-1]
+        log.info('Retrieving data for forum: %s' % forumname)
+        save(json.dumps(dict(forum), default=str), project, 'forum', forumname+'.json')
+        # topic in this forum
+        topics = app.service.getTopicList(s, forum.id)
+        for topic in topics.dataRows:
+            save(json.dumps(dict(topic), default=str), project, 'forum', forumname, topic.id+'.json')
+            # posts in this topic
+            posts = app.service.getPostList(s, topic.id)
+            for post in posts.dataRows:
+                save(json.dumps(dict(post), default=str), project, 'forum', forumname, topic.id, post.id+'.json')
+        
 
 def get_homepage_wiki(project):
     '''
