@@ -1,12 +1,15 @@
 from pylons import c
 from tg import request, url
 import json
+import logging
 
 from formencode import validators as fev
 from webhelpers import paginate
 
 import ew as ew_core
 import ew.jinja2_ew as ew
+
+log = logging.getLogger(__name__)
 
 def onready(text):
     return ew.JSScript('$(function () {%s});' % text);
@@ -31,14 +34,13 @@ class LabelEdit(ew.InputField):
         value=None,
         className='',
         show_label=True,
-        placeholder=None,
-        _value_is_list=None)
+        placeholder=None)
 
     def from_python(self, value, state=None):
-        return value
-
-    def _value_is_list(self,value):
-        return isinstance(value,list)
+        if isinstance(value, basestring):
+            return value
+        else:
+            return ','.join(value)
 
     def resources(self):
         yield ew.JSLink('js/jquery.tag.editor.js')
@@ -167,7 +169,7 @@ class PageList(ew_core.Widget):
             return url(request.path, params)
         return paginate.Page(range(count), page + page_offset, int(limit),
                              url=page_url)
-    
+
     def resources(self):
         yield ew.CSSLink('css/page_list.css')
 
@@ -187,7 +189,7 @@ class PageSize(ew_core.Widget):
         name=None,
         count=0,
         show_label=False)
-    
+
     @property
     def url_params(self, **kw):
         url_params = dict()
