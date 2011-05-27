@@ -347,7 +347,7 @@ class ProjectAdminController(BaseController):
 
     @expose('json:')
     def get_trove_children(self, trove_id, **kw):
-        cats = M.TroveCategory.query.find(dict(trove_parent_id=int(trove_id))).all()
+        cats = M.TroveCategory.query.find(dict(trove_parent_id=int(trove_id))).sort('fullname').all()
         return dict(cats = [dict(id=c.trove_cat_id,label=c.fullname) for c in cats])
 
     def _add_trove(self, type, new_trove):
