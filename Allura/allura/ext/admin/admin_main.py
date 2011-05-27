@@ -127,7 +127,6 @@ class AdminApp(Application):
             links.append(SitemapEntry('Project'))
         links += [
             SitemapEntry('Metadata', admin_url+'overview', className='nav_child'),
-            SitemapEntry('Homepage', admin_url+'homepage', className='nav_child'),
             SitemapEntry('Screenshots', admin_url+'screenshots', className='nav_child'),
             SitemapEntry('Categorization', admin_url+'trove', className='nav_child')
             ]
@@ -176,12 +175,6 @@ class ProjectAdminController(BaseController):
         categories = M.ProjectCategory.query.find(dict(parent_id=None)).sort('label').all()
         show_export_control = asbool(config.get('show_export_control', False))
         return dict(categories=categories,show_export_control=show_export_control)
-
-    @without_trailing_slash
-    @expose('jinja:allura.ext.admin:templates/project_homepage.html')
-    def homepage(self, **kw):
-        c.markdown_editor = W.markdown_editor
-        return dict()
 
     @without_trailing_slash
     @expose('jinja:allura.ext.admin:templates/project_screenshots.html')
@@ -323,20 +316,6 @@ class ProjectAdminController(BaseController):
                 thumbnail_meta=dict(project_id=c.project._id,category='icon'))
         g.post_event('project_updated')
         redirect('overview')
-
-    @expose()
-    @require_post()
-    @validate(validators=dict(description=UnicodeString()))
-    def update_homepage(self, description=None, homepage_title=None, **kw):
-        require_access(c.project, 'update')
-        if description != c.project.description:
-            h.log_action(log, 'change project description').info('')
-            c.project.description = description
-        if homepage_title != c.project.homepage_title:
-            h.log_action(log, 'change project homepage title').info('')
-            c.project.homepage_title = homepage_title
-        g.post_event('project_updated')
-        redirect('homepage')
 
     @expose('json:')
     def get_trove_children(self, trove_id, **kw):
