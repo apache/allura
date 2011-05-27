@@ -20,6 +20,11 @@ from allura.lib import exceptions
 from allura.lib import security
 from allura.lib.security import has_access
 
+try:
+    from forgewiki import ForgeWikiApp
+except ImportError:
+    ForgeWikiApp = None
+
 from .session import main_orm_session
 from .session import project_doc_session, project_orm_session
 from .neighborhood import Neighborhood
@@ -513,13 +518,13 @@ class Project(MappedClass):
         if users is None: users = [ c.user ]
         if apps is None:
             if is_user_project:
-                apps = [('profile', 'profile'),
-                        ('admin', 'admin'),
-                        ('search', 'search')]
+                apps = [('profile', 'profile', 'Profile'),
+                        ('admin', 'admin', 'Admin'),
+                        ('search', 'search', 'Search')]
             else:
-                apps = [('home', 'home'),
-                        ('admin', 'admin'),
-                        ('search', 'search')]
+                apps = [('Wiki', 'home', 'Home'),
+                        ('admin', 'admin', 'Admin'),
+                        ('search', 'search', 'Search')]
         with h.push_config(c, project=self, user=users[0]):
             # Install default named roles (#78)
             root_project_id=self.root_project._id
@@ -543,8 +548,13 @@ class Project(MappedClass):
                 pr = user.project_role()
                 pr.roles = [ role_admin._id, role_developer._id, role_member._id ]
             # Setup apps
-            for ep_name, mount_point in apps:
-                self.install_app(ep_name, mount_point)
+            for ep_name, mount_point, label in apps:
+                self.install_app(ep_name, mount_point, label)
+            if ForgeWikiApp is not None:
+                home_app = self.app_instance('home')
+                if isinstance(home_app, ForgeWikiApp):
+                    home_app.show_discussion = False
+                    home_app.show_left_bar = False
             self.database_configured = True
             ThreadLocalORMSession.flush_all()
 

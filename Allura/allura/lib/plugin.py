@@ -308,8 +308,8 @@ class ProjectRegistrationProvider(object):
                 users=users,
                 is_user_project=False,
                 apps=[
-                    ('wiki', 'home'),
-                    ('admin', 'admin')])
+                    ('Wiki', 'home', 'Home'),
+                    ('admin', 'admin', 'Admin')])
         except:
             ThreadLocalORMSession.close_all()
             log.exception('Error registering project %s' % p)
@@ -371,7 +371,10 @@ class ProjectRegistrationProvider(object):
         with h.push_config(c, project=sp):
             M.AppConfig.query.remove(dict(project_id=c.project._id))
             if install_apps:
-                sp.install_app('home', 'home')
+                home_app = sp.install_app('Wiki', 'home', 'Home')
+                if home_app:
+                    home_app.show_discussion = False
+                    home_app.show_left_bar = False
                 sp.install_app('admin', 'admin')
                 sp.install_app('search', 'search')
             g.post_event('project_created')
