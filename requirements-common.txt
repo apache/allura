@@ -56,6 +56,8 @@ Routes==1.12.1
 simplejson==2.1.1
 SQLAlchemy==0.6beta3
 sqlalchemy-migrate==0.5.4
+# suds needed for teamforge import script
+suds==0.4
 Tempita==0.4
 textile==2.1.4
 ToscaWidgets==0.9.9
