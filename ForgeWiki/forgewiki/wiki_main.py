@@ -5,20 +5,20 @@ from urllib import urlencode, unquote
 from datetime import datetime
 
 # Non-stdlib imports
-import pkg_resources
 from tg import expose, validate, redirect, response, flash
 from tg.decorators import with_trailing_slash, without_trailing_slash
 from tg.controllers import RestController
 from pylons import g, c, request
 from formencode import validators
 from webob import exc
+from ming.orm import session
 
 # Pyforge-specific imports
 from allura import model as M
 from allura.lib import helpers as h
 from allura.app import Application, SitemapEntry, DefaultAdminController
 from allura.lib.search import search
-from allura.lib.decorators import require_post
+from allura.lib.decorators import require_post, Property
 from allura.lib.security import require_access, has_access
 from allura.controllers import AppDiscussionController, BaseController
 from allura.controllers import attachments as ac
@@ -86,35 +86,44 @@ class ForgeWikiApp(Application):
             log.exception('Error getting artifact %s', topic)
         self.handle_artifact_message(page, message)
 
-    @property
-    def root_page_name(self):
-        globals = WM.Globals.query.get(app_config_id=self.config._id)
-        if globals is not None:
-            page_name = globals.root
-        else:
-            page_name = self.default_root_page_name
-        return page_name
+    @Property
+    def root_page_name():
+        def fget(self):
+            globals = WM.Globals.query.get(app_config_id=self.config._id)
+            if globals is not None:
+                page_name = globals.root
+            else:
+                page_name = self.default_root_page_name
+            return page_name
+        def fset(self, new_root_page_name):
+            globals = WM.Globals.query.get(app_config_id=self.config._id)
+            if globals is not None:
+                globals.root = new_root_page_name
+            elif new_root_page_name != self.default_root_page_name:
+                globals = WM.Globals(app_config_id=self.config._id, root=new_root_page_name)
+            if globals is not None:
+                session(globals).flush()
 
-    @property
-    def show_discussion(self):
-        if 'show_discussion' in self.config.options:
-            return self.config.options['show_discussion']
-        else:
-            return True
+    @Property
+    def show_discussion():
+        def fget(self):
+            return self.config.options.get('show_discussion', True)
+        def fset(self, show):
+            self.config.options['show_discussion'] = bool(show)
 
-    @property
-    def show_left_bar(self):
-        if 'show_left_bar' in self.config.options:
-            return self.config.options['show_left_bar']
-        else:
-            return True
+    @Property
+    def show_left_bar():
+        def fget(self):
+            return self.config.options.get('show_left_bar', True)
+        def fset(self, show):
+            self.config.options['show_left_bar'] = bool(show)
 
-    @property
-    def show_right_bar(self):
-        if 'show_right_bar' in self.config.options:
-            return self.config.options['show_right_bar']
-        else:
-            return True
+    @Property
+    def show_right_bar():
+        def fget(self):
+            return self.config.options.get('show_right_bar', True)
+        def fset(self, show):
+            self.config.options['show_right_bar'] = bool(show)
 
     def main_menu(self):
         '''Apps should provide their entries to be added to the main nav
@@ -159,7 +168,7 @@ class ForgeWikiApp(Application):
             SitemapEntry('Browse Pages',c.app.url+'browse_pages/'),
             SitemapEntry('Browse Labels',c.app.url+'browse_tags/')]
         discussion = c.app.config.discussion
-        pending_mod_count = M.Post.query.find({'discussion_id':discussion._id, 'status':'pending'}).count()
+        pending_mod_count = M.Post.query.find({'discussion_id':discussion._id, 'status':'pending'}).count() if discussion else 0
         if pending_mod_count and h.has_access(discussion, 'moderate')():
             links.append(SitemapEntry('Moderate', discussion.url() + 'moderate', ui_icon=g.icons['pencil'],
                 small = pending_mod_count))
@@ -697,11 +706,7 @@ class WikiAdminController(DefaultAdminController):
     @expose()
     @require_post()
     def set_home(self, new_home):
-        globals = WM.Globals.query.get(app_config_id=self.app.config._id)
-        if globals is not None:
-            globals.root = new_home
-        else:
-            globals = WM.Globals(app_config_id=self.app.config._id, root=new_home)
+        self.app.root_page_name = new_home
         self.app.upsert_root(new_home)
         flash('Home updated')
         redirect(c.project.url()+self.app.config.options.mount_point+'/'+new_home+'/')
@@ -710,14 +715,8 @@ class WikiAdminController(DefaultAdminController):
     @expose()
     @require_post()
     def set_options(self, show_discussion=False, show_left_bar=False, show_right_bar=False):
-        if show_discussion:
-            show_discussion = True
-        if show_left_bar:
-            show_left_bar = True
-        if show_right_bar:
-            show_right_bar = True
-        self.app.config.options['show_discussion'] = show_discussion
-        self.app.config.options['show_left_bar'] = show_left_bar
-        self.app.config.options['show_right_bar'] = show_right_bar
+        self.app.show_discussion = show_discussion
+        self.app.show_left_bar = show_left_bar
+        self.app.show_right_bar = show_right_bar
         flash('Wiki options updated')
         redirect(c.project.url()+'admin/tools')
