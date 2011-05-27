@@ -10,7 +10,7 @@ Creoleparser==0.7.3
 datadiff==1.1.2
 decorator==3.3.1
 docutils==0.6
-EasyWidgets==0.2dev-20110509
+EasyWidgets==0.2dev-20110527
 feedparser==5.0.1
 FormEncode==1.2.2
 Genshi==0.5.1
