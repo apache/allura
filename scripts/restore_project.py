@@ -3,8 +3,8 @@ import sys
 import struct
 import logging
 
-from ming.schema import Invalid
-from ming.orm import state, session, mapper, MappedClass
+from ming.orm import state, session
+from ming.orm.declarative import MappedClass
 from ming.orm.base import instrument, DocumentTracker
 
 from pylons import c
