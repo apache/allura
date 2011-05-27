@@ -231,14 +231,14 @@ class TestProjectAdmin(TestController):
         assert 'No Database Environment categories have been selected.' in r
         assert '<span class="trove_fullpath">Database Environment :: Database API</span>' not in r
         # add a cat
-        form = r.forms[0]
+        form = r.forms[2]
         form['new_trove'].value = '499'
         r = form.submit().follow()
         # make sure it worked
         assert 'No Database Environment categories have been selected.' not in r
         assert '<span class="trove_fullpath">Database Environment :: Database API</span>' in r
         # delete the cat
-        r = r.forms[0].submit().follow()
+        r = r.forms[2].submit().follow()
         # make sure it worked
         assert 'No Database Environment categories have been selected.' in r
         assert '<span class="trove_fullpath">Database Environment :: Database API</span>' not in r
