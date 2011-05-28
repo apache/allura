@@ -137,18 +137,18 @@ class Globals(object):
 
         # Cache some loaded entry points
         self.entry_points = dict(
-            tool=self._cache_eps('allura'),
+            tool=self._cache_eps('allura', dict_cls=utils.CaseInsensitiveDict),
             auth=self._cache_eps('allura.auth'),
             registration=self._cache_eps('allura.project_registration'),
             theme=self._cache_eps('allura.theme'),
             user_prefs=self._cache_eps('allura.user_prefs'),
             )
 
-    def _cache_eps(self, section_name):
-        d = {}
+    def _cache_eps(self, section_name, dict_cls=dict):
+        d = dict_cls()
         for ep in pkg_resources.iter_entry_points(section_name):
             value = ep.load()
-            d[ep.name] = d[ep.name.lower()] = value
+            d[ep.name] = value
         return d
 
     def post_event(self, topic, *args, **kwargs):

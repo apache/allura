@@ -285,3 +285,40 @@ class TruthyCallable(object):
         return self.callable(*args, **kw)
     def __nonzero__(self):
         return self.callable()
+
+class CaseInsensitiveDict(dict):
+
+    def __init__(self, *args, **kwargs):
+        super(CaseInsensitiveDict, self).__init__(*args, **kwargs)
+        self._reindex()
+
+    def _reindex(self):
+        items = self.items()
+        self.clear()
+        self._index = {}
+        for k,v in items:
+            self[k] = v
+        assert len(self) == len(items), 'Duplicate (case-insensitive) key'
+
+    def __getitem__(self, name):
+        return super(CaseInsensitiveDict, self).__getitem__(name.lower())
+
+    def __setitem__(self, name, value):
+        lname = name.lower()
+        super(CaseInsensitiveDict, self).__setitem__(lname, value)
+        self._index[lname] = name
+
+    def __delitem__(self, name):
+        super(CaseInsensitiveDict, self).__delitem__(name.lower())
+
+    def pop(self, k, *args):
+        return super(CaseInsensitiveDict, self).pop(k.lower(), *args)
+
+    def popitem(self):
+        k,v = super(CaseInsensitiveDict, self).popitem()
+        return self._index[k], v
+
+    def update(self, *args, **kwargs):
+        super(CaseInsensitiveDict, self).update(*args, **kwargs)
+        self._reindex()
+

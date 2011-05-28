@@ -97,3 +97,23 @@ class TestTruthyCallable(unittest.TestCase):
         assert false_predicate() == False
         assert bool(true_predicate) == True
         assert bool(false_predicate) == False
+
+class TestCaseInsensitiveDict(unittest.TestCase):
+
+    def test_everything(self):
+        d = utils.CaseInsensitiveDict(Foo=5)
+        assert d['foo'] == d['Foo'] == d['FOO'] == 5
+        d['bAr'] = 6
+        assert d['bar'] == d['Bar'] == 6
+        d['bar'] = 7
+        assert d['bar'] == d['bAr'] == 7
+        self.assertRaises(AssertionError, utils.CaseInsensitiveDict, foo=1, Foo=2)
+        del d['bar']
+        assert len(d) == 1, d
+        assert d.popitem() == ('Foo', 5)
+        self.assertRaises(AssertionError, d.update, foo=1, Foo=2)
+        d.update(foo=1, Bar=2)
+        assert d == dict(foo=1, bar=2)
+        assert d != dict(Foo=1, bar=2)
+        assert d == utils.CaseInsensitiveDict(Foo=1, bar=2)
+
