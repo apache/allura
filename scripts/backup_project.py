@@ -50,7 +50,7 @@ def dump_project(project, dirname):
     visited_collections = {}
     for m in Mapper.all_mappers():
         cls = m.mapped_class
-        cname = cls.name
+        cname = cls.__module__ + '.' + cls.__name__
         sess = m.session
         if sess is None:
             log.info('Skipping %s which has no session', cls)
@@ -80,7 +80,7 @@ def dump_project(project, dirname):
             dbname,
             '%s.bson' % (cls.__mongometa__.name))
         log.info('%s: dumping %s objects to %s',
-                 name, num_objs, fname)
+                 cname, num_objs, fname)
         with open(os.path.join(dirname, fname), 'w') as fp:
             for obj in oq.ming_cursor: _write_bson(fp, obj)
 
