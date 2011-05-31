@@ -591,6 +591,8 @@ class GroupsController(BaseController):
                 if not user:
                     flash('User %s not found' % username, 'error')
                     redirect('.')
+                if not user._id:
+                    continue # never add anon users to groups
                 user.project_role().roles.append(group._id)
             # Handle users removed from groups
             user_ids = set(map(ObjectId, user_ids))
