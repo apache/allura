@@ -1,6 +1,7 @@
 import logging
 from getpass import getpass
 from optparse import OptionParser
+from pylons import c
 import re
 import os
 import os.path
@@ -107,6 +108,7 @@ def main():
                 get_files(project)
                 get_homepage_wiki(project)
                 get_discussion(project)
+                get_news(project)
                 check_unsupported_tools(project)
             except:
                 log.exception('Error extracting %s' % pid)
@@ -212,6 +214,7 @@ def create_project(pid, nbhd):
     for admin in data.admins:
         admin_usernames.add(admin.userName)
         user = get_user(admin.userName)
+        c.user = user
         pr = user.project_role(project)
         pr.roles = [ role_admin._id ]
     
@@ -338,6 +341,41 @@ def create_project(pid, nbhd):
                 fo.num_posts = fo_num_posts
                 ThreadLocalORMSession.flush_all()
 
+    if 'news' in dirs:
+        from forgeblog import model as BM
+        posts = os.listdir(os.path.join(options.output_dir, pid, 'news'))
+        if len(posts):
+            news_app = project.app_instance('news')
+            if not news_app:
+                news_app = project.install_app('blog', 'news', mount_label='News')
+            h.set_context(project.shortname, 'news')
+            # make all the blog posts
+            for post in posts:
+                if '.json' == post[-5:]:
+                    post_data = loadjson(pid, 'news', post)
+                    p = BM.BlogPost.query.get(title=post_data.title)
+                    if not p:
+                        p = BM.BlogPost(title=post_data.title)
+                    p.text = post_data.body
+                    create_date = datetime.strptime(post_data.createdOn, '%Y-%m-%d %H:%M:%S')
+                    p.timestamp = create_date
+                    p.mod_date = create_date
+                    p.state = 'published'
+                    if not p.slug:
+                        p.make_slug()
+                    if not p.history().first():
+                        p.commit()
+                        ThreadLocalORMSession.flush_all()
+                        M.Thread(discussion_id=p.app_config.discussion_id,
+                               ref_id=p.index_id(),
+                               subject='%s discussion' % p.title)
+                    user = get_user(post_data.createdByUsername)
+                    p.history().first().author=dict(
+                        id=user._id,
+                        username=user.username,
+                        display_name=user.get_pref('display_name'))
+                    ThreadLocalORMSession.flush_all()
+
     # TODO: categories as labels
 
     ThreadLocalORMSession.flush_all()
@@ -450,6 +488,17 @@ def find_image_references(markup):
         snippet = matchobj.group(1)
         if snippet.endswith('.jpg') or snippet.endswith('.gif') or snippet.endswith('.png'):
             yield snippet
+
+def get_news(project):
+    '''
+    Extracts news posts
+    '''
+    app = make_client(options.api_url, 'NewsApp')
+
+    # find the forums
+    posts = app.service.getNewsPostList(s, project.id)
+    for post in posts.dataRows:
+        save(json.dumps(dict(post), default=str), project, 'news', post.id+'.json')
 
 def get_discussion(project):
     '''
