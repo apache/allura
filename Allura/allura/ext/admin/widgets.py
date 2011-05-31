@@ -8,7 +8,7 @@ from allura.lib import validators as V
 from allura.lib import security
 from allura.lib.widgets import forms as ff
 
-class CardField(ew_core.Widget):
+class CardField(ew._Jinja2Widget):
     template = 'jinja:allura.ext.admin:templates/admin_widgets/card_field.html'
     defaults = dict(
         ew_core.Widget.defaults,

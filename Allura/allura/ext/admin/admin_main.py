@@ -595,9 +595,10 @@ class GroupsController(BaseController):
                     continue # never add anon users to groups
                 user.project_role().roles.append(group._id)
             # Handle users removed from groups
-            user_ids = set(map(ObjectId, user_ids))
-            for role in M.ProjectRole.query.find(
-                dict(user_id={'$ne':None}, roles=group._id)):
+            user_ids = set(
+                uid and ObjectId(uid)
+                for uid in user_ids)
+            for role in M.ProjectRole.query.find(dict(roles=group._id)):
                 if role.user_id not in user_ids:
                     role.roles = [ rid for rid in role.roles if rid != group._id ]
         g.post_event('project_updated')

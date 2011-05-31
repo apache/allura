@@ -176,12 +176,12 @@ class RoleCache(object):
     @LazyProperty
     def users_that_reach(self):
         return [
-            r.user for r in self.roles_that_reach if r.user_id is not None ]
+            r.user for r in self.roles_that_reach if r.user ]
 
     @LazyProperty
     def userids_that_reach(self):
         return [
-            r.user_id for r in self.roles_that_reach if r.user_id is not None ]
+            r.user_id for r in self.roles_that_reach ]
 
     @LazyProperty
     def reaching_roles(self):

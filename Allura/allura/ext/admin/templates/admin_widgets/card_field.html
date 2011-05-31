@@ -18,7 +18,8 @@
     <li>
         <a href="#" class="deleter">
           {{ widget.item_display(item) }}
-          <input type="hidden" name="card-{{index}}.value" value="{{widget.item_id(item)}}"/>
+          <input type="hidden" name="card-{{index}}.value" 
+                 {{ widget.j2_attrs(dict(value=widget.item_id(item))) }} />
           <small data-icon="{{g.icons['perm_delete'].char}}"
                  class="ico-r {{g.icons['perm_delete'].css}}"
                  title="Remove"></small>

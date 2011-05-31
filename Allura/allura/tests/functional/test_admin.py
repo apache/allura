@@ -282,6 +282,16 @@ class TestProjectAdmin(TestController):
         # Make sure we can open role page for builtin role
         r = self.app.get('/admin/groups/' + developer_id + '/', validate_chunk=True)
 
+    def test_cannot_add_anon_to_group(self):
+        r = self.app.get('/admin/groups/')
+        developer_id = r.html.find('input', {'name': 'card-1.id'})['value']
+        r = self.app.post('/admin/groups/update', params={
+                'card-1.id': developer_id,
+                'card-1.new': ''})
+        r = self.app.get('/admin/groups/')
+        users = [t.previous.strip() for t in r.html.findAll('input', {'name': 'card-1.value'})]
+        assert len(users) == 0
+
     def test_project_multi_groups(self):
         r = self.app.get('/admin/groups/')
         user_id = M.User.by_username('test-admin')._id
