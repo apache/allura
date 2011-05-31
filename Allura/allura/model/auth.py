@@ -534,7 +534,10 @@ class ProjectRole(MappedClass):
 
     @property
     def user(self):
-        if self.user_id is None: return None
+        if (self.user_id is None
+            and self.name 
+            and not self.name.startswith('*')):
+            return None
         return User.query.get(_id=self.user_id)
 
     @property
