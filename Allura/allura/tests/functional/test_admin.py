@@ -144,7 +144,7 @@ class TestProjectAdmin(TestController):
             'Tickets',
             'Discussion',
             'Chat (alpha)',
-            'Blog (alpha)',
+            'Blog',
             'Subproject']
         # check using sets, because their may be more tools installed by default
         # that we don't know about
