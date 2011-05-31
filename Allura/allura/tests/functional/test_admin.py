@@ -291,6 +291,9 @@ class TestProjectAdmin(TestController):
         r = self.app.get('/admin/groups/')
         users = [t.previous.strip() for t in r.html.findAll('input', {'name': 'card-1.value'})]
         assert len(users) == 0
+        assert M.ProjectRole.query.find(dict(
+                name='*anonymous', user_id=None,
+                roles={'$ne': []})).count() == 0
 
     def test_project_multi_groups(self):
         r = self.app.get('/admin/groups/')
