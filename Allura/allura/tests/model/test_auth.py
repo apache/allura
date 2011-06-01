@@ -90,7 +90,7 @@ def test_project_role():
         c.user._id, project_id=c.project.root_project._id):
         assert pr.display()
         pr.special
-        assert pr.user in (c.user, None)
+        assert pr.user in (c.user, None, M.User.anonymous())
 
 @with_setup(setUp)
 def test_default_project_roles():

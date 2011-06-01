@@ -536,7 +536,7 @@ class ProjectRole(MappedClass):
     def user(self):
         if (self.user_id is None
             and self.name 
-            and not self.name.startswith('*')):
+            and self.name != '*anonymous'):
             return None
         return User.query.get(_id=self.user_id)
 
