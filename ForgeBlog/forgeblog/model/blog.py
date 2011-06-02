@@ -109,6 +109,7 @@ class BlogPost(M.VersionedArtifact):
                 return self.slug
             except DuplicateKeyError:
                 self.slug = base + '-%.3d' % randint(0,999)
+                return self.slug
 
     def url(self):
         return self.app.url + self.slug + '/'
