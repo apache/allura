@@ -217,7 +217,6 @@ def create_project(pid, nbhd):
         c.user = user
         pr = user.project_role(project)
         pr.roles = [ role_admin._id ]
-    
     role_developer = M.ProjectRole.by_name('Developer', project)
     for member in data.members:
         if member.userName in admin_usernames:
@@ -568,10 +567,27 @@ def get_homepage_wiki(project):
                 filename = img_ref.split('/')[-1]
                 download_file('wiki', project.path + '/wiki/' + img_ref, project.id, 'wiki', path, filename)
 
+def _dir_sql(created_on, project, dir_name, rel_path):
+    if not rel_path:
+        parent_directory = "'1'"
+    else:
+        parent_directory = "(SELECT pfs_path FROM pfs_path WHERE path_name = '%s/')" % rel_path
+    sql = """
+    UPDATE pfs
+      SET file_crtime = '%s'
+      WHERE source_pk = (SELECT project.project FROM project WHERE project.project_name = '%s')
+      AND source_table = 'project'
+      AND pfs_type = 'd'
+      AND pfs_name = '%s'
+      AND parent_directory = %s;
+    """ % (created_on, convert_project_shortname(project.path), dir_name, parent_directory)
+    return sql
+
 def get_files(project):
     frs = make_client(options.api_url, 'FrsApp')
     valid_pfs_filename = re.compile(r'(?![. ])[-_ +.,=#~@!()\[\]a-zA-Z0-9]+(?<! )$')
     pfs_output_dir = os.path.join(os.path.abspath(options.output_dir), 'PFS', convert_project_shortname(project.path))
+    sql_updates = ''
 
     def handle_path(obj, prev_path):
         path_component = obj.title.strip().replace('/', ' ').replace('&','').replace(':','')
@@ -597,7 +613,7 @@ def get_files(project):
             for file in frs.service.getFrsFileList(s, rel.id).dataRows:
                 details = frs.service.getFrsFileData(s, file.id)
 
-                file_path = os.path.join(rel_path, file.title.strip())
+                file_path = handle_path(file, rel_path)
                 save(json.dumps(dict(file,
                                      lastModifiedBy=details.lastModifiedBy,
                                      lastModifiedDate=details.lastModifiedDate,
@@ -607,24 +623,25 @@ def get_files(project):
                      'frs',
                      file_path+'.json'
                      )
-                #'''
                 download_file('frs', rel.path + '/' + file.id, pfs_output_dir, file_path)
-                # TODO: createdOn
                 mtime = int(mktime(details.lastModifiedDate.timetuple()))
                 os.utime(os.path.join(pfs_output_dir, file_path), (mtime, mtime))
-
-                # now set mtime on the way back up the tree (so it isn't clobbered):
-
-            # TODO: createdOn
+            # PFS update sql for rel
+            created_on = int(mktime(rel.createdOn.timetuple()))
             mtime = int(mktime(rel.lastModifiedOn.timetuple()))
             os.utime(os.path.join(pfs_output_dir, rel_path), (mtime, mtime))
-        # TODO: createdOn
+            sql_updates += _dir_sql(created_on, project, rel.title.strip(), pkg_path)
+        # PFS update sql for pkg
+        created_on = int(mktime(pkg.createdOn.timetuple()))
         mtime = int(mktime(pkg.lastModifiedOn.timetuple()))
         os.utime(os.path.join(pfs_output_dir, pkg_path), (mtime, mtime))
-                #'''
+        sql_updates += _dir_sql(created_on, project, pkg.title.strip(), '')
+    # save pfs update sql for this project
+    with open(os.path.join(options.output_dir, 'pfs_updates.sql'), 'a') as out:
+        out.write('/* %s */' % project.id)
+        out.write(sql_updates)
 
 '''
-
 for forum in discussion.service.getForumList(s, p.id).dataRows:
     print forum.title
     for topic in discussion.service.getTopicList(s, forum.id).dataRows:
