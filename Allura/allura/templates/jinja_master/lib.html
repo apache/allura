@@ -24,7 +24,7 @@
 
 {% macro gravatar_or_name(user, size, className) -%}
   {% if user.icon_url() %}
-	gravatar(user, size, className)
+    {{gravatar(user, size, className)}}
   {% else %}<span>{{ h.really_unicode(user.display_name) }}</span>{% endif %}
 {%- endmacro %}
 
