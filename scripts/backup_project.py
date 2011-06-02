@@ -6,7 +6,7 @@ import logging
 from pylons import c
 from bson import BSON
 
-from ming.orm import Mapper, state, mapper
+from ming.orm import Mapper, state
 
 from allura import model as M
 
@@ -50,7 +50,7 @@ def dump_project(project, dirname):
     visited_collections = {}
     for m in Mapper.all_mappers():
         cls = m.mapped_class
-        cname = cls.name
+        cname = cls.__module__ + '.' + cls.__name__
         sess = m.session
         if sess is None:
             log.info('Skipping %s which has no session', cls)
@@ -62,10 +62,10 @@ def dump_project(project, dirname):
                      cls, fqname, visited_collections[fqname])
             continue
         visited_collections[fqname] = cls
-        if 'project_id' in mapper(cls).property_index:
+        if 'project_id' in m.property_index:
             # Dump the things directly related to the project
             oq = cls.query.find(dict(project_id=project._id))
-        elif 'app_config_id' in mapper(cls).property_index:
+        elif 'app_config_id' in m.property_index:
             # ... and the things related to its apps
             oq = cls.query.find(dict(app_config_id={'$in':app_config_ids}))
         else:
@@ -80,7 +80,7 @@ def dump_project(project, dirname):
             dbname,
             '%s.bson' % (cls.__mongometa__.name))
         log.info('%s: dumping %s objects to %s',
-                 name, num_objs, fname)
+                 cname, num_objs, fname)
         with open(os.path.join(dirname, fname), 'w') as fp:
             for obj in oq.ming_cursor: _write_bson(fp, obj)
 

@@ -23,7 +23,7 @@ Mako==0.3.2
 Markdown==2.0.3
 MarkupSafe==0.11
 mercurial==1.4.1
-Ming==0.2.1dev-20110519
+Ming==0.2.1dev-20110531
 mock==0.6.0
 nose==0.11.3
 oauth2==1.2.0
@@ -33,7 +33,7 @@ PasteScript==1.7.3
 PIL==1.1.7
 poster==0.5
 pyflakes==0.4.0
-Pygments==1.3.1
+Pygments==1.4sf1-20110601
 Pylons==0.9.7
 pymongo==1.9
 Pypeline==0.1dev

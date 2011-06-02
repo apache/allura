@@ -3,9 +3,7 @@ import sys
 import struct
 import logging
 
-from ming.schema import Invalid
-from ming.orm import state, session, mapper, MappedClass
-from ming.orm.base import instrument, DocumentTracker
+from ming.orm import state, session, Mapper
 
 from pylons import c
 from bson import BSON
@@ -29,7 +27,7 @@ def restore_project(dirname, new_shortname, new_unix_group_name):
         project_doc = _read_bson(fp)
     project = M.Project.query.get(_id=project_doc['_id'])
     st = state(project)
-    st.document = instrument(project_doc, DocumentTracker(st))
+    st.document = project_doc
     if project is None:
         log.fatal('Project not found')
         return 2
@@ -64,7 +62,8 @@ def restore_project(dirname, new_shortname, new_unix_group_name):
 
 def get_repo_collections():
     res = {}
-    for name, cls in MappedClass._registry.iteritems():
+    for m in Mapper.all_mappers():
+        cls = m.mapped_class
         cname = cls.__mongometa__.name
         if issubclass(cls, M.Repository): res[cname] = cls
     return res

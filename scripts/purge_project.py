@@ -3,7 +3,7 @@ import logging
 
 from pylons import g, c
 
-from ming.orm import session, mapper, MappedClass
+from ming.orm import session, Mapper
 
 from allura import model as M
 
@@ -39,13 +39,14 @@ def purge_project(project):
     c.project = project
     app_config_ids = [
         ac._id for ac in M.AppConfig.query.find(dict(project_id=c.project._id)) ]
-    for name, cls in MappedClass._registry.iteritems():
-        if 'project_id' in mapper(cls).property_index:
+    for m in Mapper.all_mappers():
+        cls = m.mapped_class
+        if 'project_id' in m.property_index:
             # Purge the things directly related to the project
             cls.query.remove(
                 dict(project_id=project._id),
             )
-        elif 'app_config_id' in mapper(cls).property_index:
+        elif 'app_config_id' in m.property_index:
             # ... and the things related to its apps
             cls.query.remove(
                 dict(app_config_id={'$in':app_config_ids}),
