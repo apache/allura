@@ -166,7 +166,11 @@ def get_user(orig_username):
     # FIXME: temporary:
     import random
     bogus = 'user%02d' % random.randrange(1,20)
-    u = M.User.by_username(bogus)
+    try:
+        u = M.User.by_username(bogus)
+    except:
+        # try again
+        return get_user(orig_username)
 
     assert u
     return u
