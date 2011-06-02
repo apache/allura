@@ -284,7 +284,7 @@ def create_project(pid, nbhd):
                 fo.description = forum_data.description
                 fo_num_topics = 0
                 fo_num_posts = 0
-    
+
                 topics = os.listdir(os.path.join(options.output_dir, pid, 'forum', forum_name))
                 for topic in topics:
                     ending = topic[-5:]
@@ -304,7 +304,7 @@ def create_project(pid, nbhd):
                         to_num_replies = 0
                         oldest_post = None
                         newest_post = None
-    
+
                         posts = sorted(os.listdir(os.path.join(options.output_dir, pid, 'forum', forum_name, topic_name)))
                         for post in posts:
                             ending = post[-5:]
@@ -496,17 +496,20 @@ def get_news(project):
     '''
     Extracts news posts
     '''
+    global users
     app = make_client(options.api_url, 'NewsApp')
 
     # find the forums
     posts = app.service.getNewsPostList(s, project.id)
     for post in posts.dataRows:
         save(json.dumps(dict(post), default=str), project, 'news', post.id+'.json')
+        users.add(post.createdByUsername)
 
 def get_discussion(project):
     '''
     Extracts discussion forums and posts
     '''
+    global users
     app = make_client(options.api_url, 'DiscussionApp')
 
     # find the forums
@@ -523,7 +526,8 @@ def get_discussion(project):
             posts = app.service.getPostList(s, topic.id)
             for post in posts.dataRows:
                 save(json.dumps(dict(post), default=str), project, 'forum', forumname, topic.id, post.id+'.json')
-        
+                users.add(post.createdByUserName)
+
 
 def get_homepage_wiki(project):
     '''
