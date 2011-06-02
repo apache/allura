@@ -55,11 +55,10 @@ class ForgeGitApp(RepositoryApp):
         if cloned_from_project_id is not None:
             with h.push_config(c, project=M.Project.query.get(_id=cloned_from_project_id)):
                 cloned_from = GM.Repository.query.get(_id=cloned_from_repo_id)
-                msg = dict(
+                allura.tasks.repo_tasks.clone.post(
                     cloned_from_path=cloned_from.full_fs_path,
                     cloned_from_name=cloned_from.app.config.script_name(),
                     cloned_from_url=cloned_from.full_fs_path)
-            allura.tasks.repo_tasks.clone.post(msg)
         elif init_from_url:
             allura.tasks.repo_tasks.clone.post(
                 cloned_from_path=None,

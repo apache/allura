@@ -7,7 +7,7 @@
 {% macro show_trove_base_cat(base) %}
   <h3>{{base.fullname}}</h3>
   <div id="trove_existing_{{base.shortname}}" class="trove_existing grid-19">
-  {% for cat in c.project.troves_by_type(base.shortname) %}
+    {% for cat in c.project.troves_by_type(base.shortname) %}
     <div style="clear: both">
       <span class="trove_fullpath">{{cat.fullpath}}</span>
       <form id="delete_trove_{{base.shortname}}_{{cat.trove_cat_id}}"
