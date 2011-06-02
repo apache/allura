@@ -649,22 +649,6 @@ def get_files(project):
         out.write('/* %s */' % project.id)
         out.write(sql_updates)
 
-'''
-for forum in discussion.service.getForumList(s, p.id).dataRows:
-    print forum.title
-    for topic in discussion.service.getTopicList(s, forum.id).dataRows:
-        print '  ', topic.title
-        for post in discussion.service.getPostList(s, topic.id).dataRows:
-            print '    ', post.title, post.createdDate, post.createdByUserName
-            print post.content
-            print
-            break
-        break
-    break
-
-print news.service.getNewsPostList(s, p.id)
-break
-'''
 
 if __name__ == '__main__':
     logging.basicConfig(level=logging.WARN)
