@@ -243,6 +243,20 @@ def create_project(pid, nbhd):
             if not wiki_app:
                 wiki_app = project.install_app('Wiki', 'wiki')
             h.set_context(project.shortname, 'wiki')
+            # set permissions and config options
+            role_admin = M.ProjectRole.by_name('Admin')._id
+            role_anon = M.ProjectRole.by_name('*anonymous')._id
+            wiki_app.config.options['show_discussion'] = False
+            wiki_app.config.options['show_left_bar'] = False
+            wiki_app.config.options['show_right_bar'] = False
+            wiki_app.config.acl = [
+                M.ACE.allow(role_anon, 'read'),
+                M.ACE.allow(role_admin, 'create'),
+                M.ACE.allow(role_admin, 'edit'),
+                M.ACE.allow(role_admin, 'delete'),
+                M.ACE.allow(role_admin, 'moderate'),
+                M.ACE.allow(role_admin, 'configure'),
+                M.ACE.allow(role_admin, 'admin')]
             # make all the wiki pages
             for page in pages:
                 ending = page[-5:]
@@ -252,7 +266,11 @@ def create_project(pid, nbhd):
                     page_data = loadjson(pid, 'wiki', page)
                     content = load(pid, 'wiki', markdown_file)
                     if page == 'HomePage.json':
-                        WM.Globals.query.get(app_config_id=wiki_app.config._id).root = page_data.title
+                        globals = WM.Globals.query.get(app_config_id=wiki_app.config._id)
+                        if globals is not None:
+                            globals.root = page_data.title
+                        else:
+                            globals = WM.Globals(app_config_id=wiki_app.config._id, root=page_data.title)
                     p = WM.Page.upsert(page_data.title)
                     p.viewable_by = ['all']
                     p.text = wiki2markdown(content)
@@ -262,6 +280,8 @@ def create_project(pid, nbhd):
                         for f in files:
                             with open(os.path.join(options.output_dir, pid, 'wiki', beginning, f)) as fp:
                                 p.attach(f, fp, content_type=utils.guess_mime_type(f))
+                    if not p.history().first():
+                        p.commit()
     ThreadLocalORMSession.flush_all()
 
     # populate discussion data
