@@ -50,7 +50,8 @@ def main():
     optparser.add_option('--list-project-ids', action='store_true', dest='list_project_ids')
     optparser.add_option('--extract-only', action='store_true', dest='extract', help='Store data from the TeamForge API on the local filesystem; not load into Allura')
     optparser.add_option('--load-only', action='store_true', dest='load', help='Load into Allura previously-extracted data')
-    optparser.add_option('-n', '--neighborhood', dest='neighborhood')
+    optparser.add_option('-n', '--neighborhood', dest='neighborhood', help='Neighborhood full name, to load in to')
+    optparser.add_option('--n-shortname', dest='neighborhood_shortname', help='Neighborhood shortname, for PFS extract SQL')
     optparser.add_option('--skip-frs-download', action='store_true', dest='skip_frs_download')
     optparser.add_option('--skip-unsupported-check', action='store_true', dest='skip_unsupported_check')
     options, project_ids = optparser.parse_args()
@@ -700,6 +701,7 @@ def get_homepage_wiki(project):
                 download_file('wiki', project.path + '/wiki/' + img_ref, project.id, 'wiki', path, filename)
 
 def _dir_sql(created_on, project, dir_name, rel_path):
+    assert options.neighborhood_shortname
     if not rel_path:
         parent_directory = "'1'"
     else:
@@ -707,12 +709,12 @@ def _dir_sql(created_on, project, dir_name, rel_path):
     sql = """
     UPDATE pfs
       SET file_crtime = '%s'
-      WHERE source_pk = (SELECT project.project FROM project WHERE project.project_name = '%s')
+      WHERE source_pk = (SELECT project.project FROM project WHERE project.project_name = '%s.%s')
       AND source_table = 'project'
       AND pfs_type = 'd'
       AND pfs_name = '%s'
       AND parent_directory = %s;
-    """ % (created_on, convert_project_shortname(project.path), dir_name, parent_directory)
+    """ % (created_on, convert_project_shortname(project.path), options.neighborhood_shortname, dir_name, parent_directory)
     return sql
 
 def get_files(project):
