@@ -64,10 +64,10 @@ def dump_project(project, dirname):
         visited_collections[fqname] = cls
         if 'project_id' in m.property_index:
             # Dump the things directly related to the project
-            oq = cls.query.find(dict(project_id=project._id))
+            oq = cls.query.find(dict(project_id=project._id), validate=False)
         elif 'app_config_id' in m.property_index:
             # ... and the things related to its apps
-            oq = cls.query.find(dict(app_config_id={'$in':app_config_ids}))
+            oq = cls.query.find(dict(app_config_id={'$in':app_config_ids}), validate=False)
         else:
             # Don't dump other things
             continue
