@@ -447,7 +447,7 @@ class Project(MappedClass):
             result.append({'ordinal':sub.ordinal, 'sub':sub})
         for ac in self.app_configs:
             if ac.tool_name != 'search':
-                ordinal = ac.options['ordinal'] if 'ordinal' in ac.options else 0
+                ordinal = ac.options.get('ordinal', 0)
                 result.append({'ordinal':ordinal, 'ac':ac})
         return sorted(result, key=lambda e: e['ordinal'])
 
