@@ -444,14 +444,14 @@ class Project(MappedClass):
         provider = plugin.ProjectRegistrationProvider.get()
         return provider.register_subproject(self, name, user or c.user, install_apps)
 
-    def ordered_mounts(self):
+    def ordered_mounts(self, include_search=False):
         '''Returns an array of a projects mounts (tools and sub-projects) in
         toolbar order.'''
         result = []
         for sub in self.direct_subprojects:
             result.append({'ordinal':sub.ordinal, 'sub':sub})
         for ac in self.app_configs:
-            if ac.tool_name != 'search':
+            if include_search or ac.tool_name != 'search':
                 ordinal = ac.options.get('ordinal', 0)
                 result.append({'ordinal':ordinal, 'ac':ac})
         return sorted(result, key=lambda e: e['ordinal'])
@@ -548,8 +548,8 @@ class Project(MappedClass):
                 pr = user.project_role()
                 pr.roles = [ role_admin._id, role_developer._id, role_member._id ]
             # Setup apps
-            for ep_name, mount_point, label in apps:
-                self.install_app(ep_name, mount_point, label)
+            for i, (ep_name, mount_point, label) in enumerate(apps):
+                self.install_app(ep_name, mount_point, label, ordinal=i)
             if ForgeWikiApp is not None:
                 home_app = self.app_instance('home')
                 if isinstance(home_app, ForgeWikiApp):

@@ -371,12 +371,12 @@ class ProjectRegistrationProvider(object):
         with h.push_config(c, project=sp):
             M.AppConfig.query.remove(dict(project_id=c.project._id))
             if install_apps:
-                home_app = sp.install_app('Wiki', 'home', 'Home')
+                home_app = sp.install_app('Wiki', 'home', 'Home', ordinal=0)
                 if home_app:
                     home_app.show_discussion = False
                     home_app.show_left_bar = False
-                sp.install_app('admin', 'admin')
-                sp.install_app('search', 'search')
+                sp.install_app('admin', 'admin', ordinal=1)
+                sp.install_app('search', 'search', ordinal=2)
             g.post_event('project_created')
         return sp
 
