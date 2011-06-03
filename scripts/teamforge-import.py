@@ -269,6 +269,9 @@ def create_project(pid, nbhd):
     project.labels = [cat.path.lstrip('projects/categorization.root.') for cat in data.categories]
     ThreadLocalORMSession.flush_all()
 
+    if not project.app_instance('downloads'):
+        project.install_app('Downloads', 'downloads')
+
     # populate wiki data
     dirs = os.listdir(os.path.join(options.output_dir, pid))
     if 'wiki' in dirs:
