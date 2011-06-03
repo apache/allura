@@ -273,18 +273,15 @@ def create_project(pid, nbhd):
     project.labels = [cat.path.lstrip('projects/categorization.root.') for cat in data.categories]
     ThreadLocalORMSession.flush_all()
 
-    if not project.app_instance('downloads'):
-        project.install_app('Downloads', 'downloads')
-
     dirs = os.listdir(os.path.join(options.output_dir, pid))
     if 'wiki' in dirs:
         import_wiki(project,pid)
+    if not project.app_instance('downloads'):
+        project.install_app('Downloads', 'downloads')
     if 'forum' in dirs:
         import_discussion(project,pid)
     if 'news' in dirs:
         import_news(project,pid)
-
-    # TODO: categories as labels
 
     ThreadLocalORMSession.flush_all()
     return project
