@@ -221,6 +221,7 @@ def create_project(pid, nbhd):
         c.user = user
         pr = user.project_role(project)
         pr.roles = [ role_admin._id ]
+        ThreadLocalORMSession.flush_all()
     role_developer = M.ProjectRole.by_name('Developer', project)
     for member in data.members:
         if member.userName in admin_usernames:
@@ -228,7 +229,7 @@ def create_project(pid, nbhd):
         user = get_user(member.userName)
         pr = user.project_role(project)
         pr.roles = [ role_developer._id ]
-    ThreadLocalORMSession.flush_all()
+        ThreadLocalORMSession.flush_all()
 
     # populate wiki data
     dirs = os.listdir(os.path.join(options.output_dir, pid))
@@ -333,21 +334,23 @@ def create_project(pid, nbhd):
                                 to_num_replies += 1
                                 post_data = loadjson(pid, 'forum', forum_name, topic_name, post)
                                 p = DM.ForumPost.query.get(
-                                    _id='%s@import' % post_name,
+                                    _id='%s%s@import' % (post_name,str(discuss_app.config._id)),
                                     thread_id=to._id,
-                                    discussion_id=fo._id)
+                                    discussion_id=fo._id,
+                                    app_config_id=discuss_app.config._id)
                                 if not p:
                                     p = DM.ForumPost(
-                                        _id='%s@import' % post_name,
+                                        _id='%s%s@import' % (post_name,str(discuss_app.config._id)),
                                         thread_id=to._id,
-                                        discussion_id=fo._id)
+                                        discussion_id=fo._id,
+                                        app_config_id=discuss_app.config._id)
                                 create_date = datetime.strptime(post_data.createdDate, '%Y-%m-%d %H:%M:%S')
                                 p.timestamp = create_date
                                 p.author_id = str(get_user(post_data.createdByUserName)._id)
                                 p.text = post_data.content
                                 p.status = 'ok'
                                 if post_data.replyToId:
-                                    p.parent_id = '%s@import' % post_data.replyToId
+                                    p.parent_id = '%s%s@import' % (post_data.replyToId,str(discuss_app.config._id))
                                 slug, full_slug = p.make_slugs(parent = p.parent, timestamp = create_date)
                                 p.slug = slug
                                 p.full_slug = full_slug
@@ -355,6 +358,7 @@ def create_project(pid, nbhd):
                                     oldest_post = p
                                 if newest_post == None or newest_post.timestamp < create_date:
                                     newest_post = p
+                                ThreadLocalORMSession.flush_all()
                         to.num_replies = to_num_replies
                         to.first_post_id = oldest_post._id
                         to.last_post_date = newest_post.timestamp
@@ -376,9 +380,9 @@ def create_project(pid, nbhd):
             for post in posts:
                 if '.json' == post[-5:]:
                     post_data = loadjson(pid, 'news', post)
-                    p = BM.BlogPost.query.get(title=post_data.title)
+                    p = BM.BlogPost.query.get(title=post_data.title,app_config_id=news_app.config._id)
                     if not p:
-                        p = BM.BlogPost(title=post_data.title)
+                        p = BM.BlogPost(title=post_data.title,app_config_id=news_app.config._id)
                     p.text = post_data.body
                     create_date = datetime.strptime(post_data.createdOn, '%Y-%m-%d %H:%M:%S')
                     p.timestamp = create_date
