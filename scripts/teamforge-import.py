@@ -210,6 +210,22 @@ def convert_project_shortname(teamforge_path):
     return sf_shortname
 
 
+# FIXME hardcoded
+skip_perms_usernames = set([
+    'faisal_saeed','dsarkisian','debonairamit','nishanthiremath','Bhuvnesh','bluetooth','cnkurzke','makow2','jannes1','Joel_Hegberg','Farroc','brian_chen','eirikur',
+    'dmitry_flyorov','bipingm','MornayJo','ibv','b_weisshaar','k9srb','johnmmills','a_gomolitsky','filim','kapoor','ljzegers','jrukes','dwilson9','jlin','quickie',
+    'johnbell','nnikolenko','Gaetan','Giannetta','Katia','jackhan','jacobwangus','adwankar','dinobrusco','qbarnes','ilmojung','clifford_chan','nbaig','fhutchi1',
+    'rinofarina','baiyanbin','muralidhar','duanyiruo','bredding','mkolkey','manvith','nanduk','engyihan','deepsie','dabon','dino_jiang','mattrose','peter_j_wilhelm',
+    'emx2500','jmcguire','lfilimowski','guruppandit','abhilashisme','edwinhm','rabbi','ferrans','guna','kevin_robinson','adathiruthi','kochen','onehap','kalanithi',
+    'jamesn','obu001','chetanv','Avinash','HugoBoss','Han_Wei','mhooper','g16872','mfcarignano','jim_burke','kevin','arunkarra','adam_feng','pavan_scm','kostya_katz',
+    'ppazderka','eileenzhuang','pyammine','judyho','ashoykh','rdemento','ibrahim','min_wang','arvind_setlur','moorthy_karthik','daniel_nelson','dms','esnmurthy',
+    'rasa_bonyadlou','prashantjoshi','edkeating','billsaez','cambalindo','jims','bozkoyun','andry_deltsov','bpowers','manuel_milli','maryparsons','spriporov','yutianli',
+    'xiebin','tnemeth1','udayaps','zzzzuser','timberger','sbarve1','zarman','rwallace67','thangavelu_arum','yuhuaixie','tingup','sekchai','sasanplus','rupal','sebastien_hertz',
+    'sab8123','rony_lim','slava_kirillin','smwest','wendydu_yq','sco002','RonFred','spatnala','vd','Sunny','tthompson','sunijams','slaw','rodovich','zhangqingqi82','venki',
+    'yuntaom','xiaojin','walterciocosta','straus','Thomas','stupka','wangyu','yaowang','wisekb','tyler_louie','smartgarfield','shekar_mahalingam',
+    'venkata_akella','v_yellapragada','vavasthi','rpatel','zhengfang','sweetybala','vap','sergey','ymhuang','spatel78745'
+])
+
 def create_project(pid, nbhd):
     data = loadjson(pid, pid+'.json')
     #pprint(data)
@@ -232,6 +248,8 @@ def create_project(pid, nbhd):
     role_admin = M.ProjectRole.by_name('Admin', project)
     admin_usernames = set()
     for admin in data.admins:
+        if admin.userName in skip_perms_usernames:
+            continue
         admin_usernames.add(admin.userName)
         user = get_user(admin.userName)
         c.user = user
@@ -240,6 +258,8 @@ def create_project(pid, nbhd):
         ThreadLocalORMSession.flush_all()
     role_developer = M.ProjectRole.by_name('Developer', project)
     for member in data.members:
+        if member.userName in skip_perms_usernames:
+            continue
         if member.userName in admin_usernames:
             continue
         user = get_user(member.userName)
