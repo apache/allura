@@ -274,14 +274,17 @@ def create_project(pid, nbhd):
     ThreadLocalORMSession.flush_all()
 
     dirs = os.listdir(os.path.join(options.output_dir, pid))
+
+    frs_mapping = loadjson(pid, 'frs_mapping.json')
+
     if 'wiki' in dirs:
         import_wiki(project,pid)
     if not project.app_instance('downloads'):
         project.install_app('Downloads', 'downloads')
     if 'forum' in dirs:
-        import_discussion(project,pid)
+        import_discussion(project, pid, frs_mapping, shortname)
     if 'news' in dirs:
-        import_news(project,pid)
+        import_news(project, pid, frs_mapping, shortname)
 
     ThreadLocalORMSession.flush_all()
     return project
@@ -355,7 +358,7 @@ def import_wiki(project, pid):
                     p.commit()
     ThreadLocalORMSession.flush_all()
 
-def import_discussion(project, pid):
+def import_discussion(project, pid, frs_mapping, sf_project_shortname):
     from forgediscussion import model as DM
     discuss_app = project.app_instance('discussion')
     if not discuss_app:
@@ -428,7 +431,7 @@ def import_discussion(project, pid):
                             create_date = datetime.strptime(post_data.createdDate, '%Y-%m-%d %H:%M:%S')
                             p.timestamp = create_date
                             p.author_id = str(get_user(post_data.createdByUserName)._id)
-                            p.text = post_data.content
+                            p.text = convert_post_content(frs_mapping, sf_project_shortname, post_data.content)
                             p.status = 'ok'
                             if post_data.replyToId:
                                 p.parent_id = '%s%s@import' % (post_data.replyToId,str(discuss_app.config._id))
@@ -449,7 +452,7 @@ def import_discussion(project, pid):
             fo.num_posts = fo_num_posts
             ThreadLocalORMSession.flush_all()
 
-def import_news(project, pid):
+def import_news(project, pid, frs_mapping, sf_project_shortname):
     from forgeblog import model as BM
     posts = os.listdir(os.path.join(options.output_dir, pid, 'news'))
     if len(posts):
@@ -464,7 +467,7 @@ def import_news(project, pid):
                 p = BM.BlogPost.query.get(title=post_data.title,app_config_id=news_app.config._id)
                 if not p:
                     p = BM.BlogPost(title=post_data.title,app_config_id=news_app.config._id)
-                p.text = post_data.body
+                p.text = convert_post_content(frs_mapping, sf_project_shortname, post_data.body)
                 create_date = datetime.strptime(post_data.createdOn, '%Y-%m-%d %H:%M:%S')
                 p.timestamp = create_date
                 p.mod_date = create_date
@@ -581,6 +584,20 @@ def wiki2markdown(markup):
     markup = h3.sub('###', markup)
     markup = re_stats.sub('', markup)
     return markup
+
+re_rel = re.compile(r'\b(rel\d+)\b')
+def convert_post_content(frs_mapping, sf_project_shortname, text):
+    def rel_handler(matchobj):
+        relno = matchobj.group(1)
+        path = frs_mapping.get(relno)
+        if path:
+            return '<a href="/projects/%s/files/%s">%s</a>' % (
+                sf_project_shortname, path, path)
+        else:
+            return relno
+    text = re_rel.sub(rel_handler, text)
+    return text
+
 
 def find_image_references(markup):
     'yields filenames'
@@ -703,6 +720,8 @@ def get_files(project):
             project, 'frs', path+'.json')
         return path
 
+    frs_mapping = {}
+
     for pkg in frs.service.getPackageList(s, project.id).dataRows:
         pkg_path = handle_path(pkg, '')
         pkg_details = frs.service.getPackageData(s, pkg.id) # download count
@@ -711,6 +730,7 @@ def get_files(project):
 
         for rel in frs.service.getReleaseList(s, pkg.id).dataRows:
             rel_path = handle_path(rel, pkg_path)
+            frs_mapping[rel['id']] = rel_path
             rel_details = frs.service.getReleaseData(s, rel.id) # download count
             save(json.dumps(dict(rel_details), default=str),
                  project, 'frs', rel_path+'_details.json')
@@ -749,6 +769,7 @@ def get_files(project):
     with open(os.path.join(options.output_dir, 'pfs_updates.sql'), 'a') as out:
         out.write('/* %s */' % project.id)
         out.write(sql_updates)
+    save(json.dumps(frs_mapping), project, 'frs_mapping.json')
 
 
 if __name__ == '__main__':
@@ -756,6 +777,21 @@ if __name__ == '__main__':
     log.setLevel(logging.DEBUG)
     main()
 
+
+def test_convert_post_content():
+    text = '''rel100? or ?rel101 or rel102 or rel103a or rel104'''
+    mapping = dict(
+        rel100='rel/100/',
+        rel101='rel/101/',
+        rel102='rel/102/',
+        rel103='rel/103/',
+        rel104='rel/104/')
+    converted = convert_post_content(mapping, 'foo.bar', text)
+    assert 'href="/projects/foo.bar/files/rel/100' in converted, converted
+    assert 'href="/projects/foo.bar/files/rel/101' in converted, converted
+    assert 'href="/projects/foo.bar/files/rel/102' in converted, converted
+    assert 'href="/projects/foo.bar/files/rel/103' not in converted, converted
+    assert 'href="/projects/foo.bar/files/rel/104' in converted, converted
 
 def test_convert_markup():
 
