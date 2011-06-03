@@ -555,6 +555,7 @@ bracket_macro = re.compile(r'\[(.*?)\]')
 h1 = re.compile(r'^!!!', re.MULTILINE)
 h2 = re.compile(r'^!!', re.MULTILINE)
 h3 = re.compile(r'^!', re.MULTILINE)
+re_stats = re.compile(r'#+ .* [Ss]tatistics\n+(.*\[sf:.*?Statistics\].*)+\n')
 def wiki2markdown(markup):
     '''
     Partial implementation of http://help.collab.net/index.jsp?topic=/teamforge520/reference/wiki-wikisyntax.html
@@ -578,6 +579,7 @@ def wiki2markdown(markup):
     markup = h1.sub('#', markup)
     markup = h2.sub('##', markup)
     markup = h3.sub('###', markup)
+    markup = re_stats.sub('', markup)
     return markup
 
 def find_image_references(markup):
@@ -776,7 +778,7 @@ Please note that this project is for distributing, discussing, and supporting th
     new_markup = wiki2markdown(markup)
     assert '\n[[img src=myimage.jpg]]\n[[img src=anotherimage.jpg]]\n' in new_markup
     assert '\n###this is the first' in new_markup
-    assert '\n# Project Statistics' in new_markup
     assert '<http://www.google.com>' in new_markup
     assert '[SourceForge ](http://www.sf.net)' in new_markup
-    assert '[sf:frsStatistics]' in new_markup
+    assert '\n# Project Statistics' not in new_markup
+    assert '[sf:frsStatistics]' not in new_markup
