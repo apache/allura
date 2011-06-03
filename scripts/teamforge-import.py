@@ -208,7 +208,6 @@ def create_project(pid, nbhd):
                                         private_project=private)
     project.name = data.data.title
     project.short_description = data.data.description
-    #project.description = data.data.description
     project.last_updated = datetime.strptime(data.data.lastModifiedDate, '%Y-%m-%d %H:%M:%S')
     # TODO: push last_updated to gutenberg?
     # TODO: try to set createdDate?
@@ -230,6 +229,8 @@ def create_project(pid, nbhd):
         pr = user.project_role(project)
         pr.roles = [ role_developer._id ]
         ThreadLocalORMSession.flush_all()
+    project.labels = [cat.path.lstrip('projects/categorization.root.') for cat in data.categories]
+    ThreadLocalORMSession.flush_all()
 
     # populate wiki data
     dirs = os.listdir(os.path.join(options.output_dir, pid))
