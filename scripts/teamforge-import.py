@@ -51,6 +51,8 @@ def main():
     optparser.add_option('--extract-only', action='store_true', dest='extract', help='Store data from the TeamForge API on the local filesystem; not load into Allura')
     optparser.add_option('--load-only', action='store_true', dest='load', help='Load into Allura previously-extracted data')
     optparser.add_option('-n', '--neighborhood', dest='neighborhood')
+    optparser.add_option('--skip-frs-download', action='store_true', dest='skip_frs_download')
+    optparser.add_option('--skip-unsupported-check', action='store_true', dest='skip_unsupported_check')
     options, project_ids = optparser.parse_args()
 
     # neither specified, so do both
@@ -109,7 +111,8 @@ def main():
                 get_homepage_wiki(project)
                 get_discussion(project)
                 get_news(project)
-                check_unsupported_tools(project)
+                if not options.skip_unsupported_check:
+                    check_unsupported_tools(project)
             except:
                 log.exception('Error extracting %s' % pid)
 
@@ -709,18 +712,22 @@ def get_files(project):
                      'frs',
                      file_path+'.json'
                      )
-                download_file('frs', rel.path + '/' + file.id, pfs_output_dir, file_path)
-                mtime = int(mktime(details.lastModifiedDate.timetuple()))
-                os.utime(os.path.join(pfs_output_dir, file_path), (mtime, mtime))
-            # PFS update sql for rel
+                if not options.skip_frs_download:
+                    download_file('frs', rel.path + '/' + file.id, pfs_output_dir, file_path)
+                    mtime = int(mktime(details.lastModifiedDate.timetuple()))
+                    os.utime(os.path.join(pfs_output_dir, file_path), (mtime, mtime))
+
+            # releases
             created_on = int(mktime(rel.createdOn.timetuple()))
             mtime = int(mktime(rel.lastModifiedOn.timetuple()))
-            os.utime(os.path.join(pfs_output_dir, rel_path), (mtime, mtime))
+            if not options.skip_frs_download:
+                os.utime(os.path.join(pfs_output_dir, rel_path), (mtime, mtime))
             sql_updates += _dir_sql(created_on, project, rel.title.strip(), pkg_path)
-        # PFS update sql for pkg
+        # packages
         created_on = int(mktime(pkg.createdOn.timetuple()))
         mtime = int(mktime(pkg.lastModifiedOn.timetuple()))
-        os.utime(os.path.join(pfs_output_dir, pkg_path), (mtime, mtime))
+        if not options.skip_frs_download:
+            os.utime(os.path.join(pfs_output_dir, pkg_path), (mtime, mtime))
         sql_updates += _dir_sql(created_on, project, pkg.title.strip(), '')
     # save pfs update sql for this project
     with open(os.path.join(options.output_dir, 'pfs_updates.sql'), 'a') as out:
