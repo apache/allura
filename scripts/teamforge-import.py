@@ -227,6 +227,7 @@ skip_perms_usernames = set([
 ])
 
 def create_project(pid, nbhd):
+    M.session.artifact_orm_session._get().skip_mod_date = True
     data = loadjson(pid, pid+'.json')
     #pprint(data)
     log.info('Loading: %s %s %s' % (pid, data.data.title, data.data.path))
@@ -333,6 +334,17 @@ def create_project(pid, nbhd):
         if not discuss_app:
             discuss_app = project.install_app('Discussion', 'discussion')
         h.set_context(project.shortname, 'discussion')
+        # set permissions and config options
+        role_admin = M.ProjectRole.by_name('Admin')._id
+        role_developer = M.ProjectRole.by_name('Developer')._id
+        role_auth = M.ProjectRole.by_name('*authenticated')._id
+        role_anon = M.ProjectRole.by_name('*anonymous')._id
+        discuss_app.config.acl = [
+            M.ACE.allow(role_anon, 'read'),
+            M.ACE.allow(role_auth, 'unmoderated_post'),
+            M.ACE.allow(role_developer, 'moderate'),
+            M.ACE.allow(role_admin, 'configure'),
+            M.ACE.allow(role_admin, 'admin')]
         forums = os.listdir(os.path.join(options.output_dir, pid, 'forum'))
         for forum in forums:
             ending = forum[-5:]
@@ -408,6 +420,7 @@ def create_project(pid, nbhd):
                 fo.num_topics = fo_num_topics
                 fo.num_posts = fo_num_posts
                 ThreadLocalORMSession.flush_all()
+        DM.Forum.query.remove(dict(app_config_id=discuss_app.config._id,shortname='general'))
 
     if 'news' in dirs:
         from forgeblog import model as BM
