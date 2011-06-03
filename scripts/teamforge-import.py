@@ -354,10 +354,13 @@ def import_discussion(project, pid):
     role_anon = M.ProjectRole.by_name('*anonymous')._id
     discuss_app.config.acl = [
         M.ACE.allow(role_anon, 'read'),
+        M.ACE.allow(role_auth, 'post'),
         M.ACE.allow(role_auth, 'unmoderated_post'),
         M.ACE.allow(role_developer, 'moderate'),
         M.ACE.allow(role_admin, 'configure'),
         M.ACE.allow(role_admin, 'admin')]
+    ThreadLocalORMSession.flush_all()
+    DM.Forum.query.remove(dict(app_config_id=discuss_app.config._id,shortname='general'))
     forums = os.listdir(os.path.join(options.output_dir, pid, 'forum'))
     for forum in forums:
         ending = forum[-5:]
@@ -431,7 +434,6 @@ def import_discussion(project, pid):
             fo.num_topics = fo_num_topics
             fo.num_posts = fo_num_posts
             ThreadLocalORMSession.flush_all()
-    DM.Forum.query.remove(dict(app_config_id=discuss_app.config._id,shortname='general'))
 
 def import_news(project, pid):
     from forgeblog import model as BM
