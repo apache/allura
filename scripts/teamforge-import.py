@@ -276,192 +276,197 @@ def create_project(pid, nbhd):
     if not project.app_instance('downloads'):
         project.install_app('Downloads', 'downloads')
 
-    # populate wiki data
     dirs = os.listdir(os.path.join(options.output_dir, pid))
     if 'wiki' in dirs:
-        from forgewiki import model as WM
-        pages = os.listdir(os.path.join(options.output_dir, pid, 'wiki'))
-        # handle the homepage content
-        if 'homepage_text.markdown' in pages:
-            project.description = wiki2markdown(load(pid, 'wiki', 'homepage_text.markdown'))
-        if 'HomePage.json' in pages and 'HomePage.markdown' in pages:
-            wiki_app = project.app_instance('wiki')
-            if not wiki_app:
-                wiki_app = project.install_app('Wiki', 'wiki')
-            h.set_context(project.shortname, 'wiki')
-            # set permissions and config options
-            role_admin = M.ProjectRole.by_name('Admin')._id
-            role_anon = M.ProjectRole.by_name('*anonymous')._id
-            wiki_app.config.options['show_discussion'] = False
-            wiki_app.config.options['show_left_bar'] = False
-            wiki_app.config.options['show_right_bar'] = False
-            wiki_app.config.acl = [
-                M.ACE.allow(role_anon, 'read'),
-                M.ACE.allow(role_admin, 'create'),
-                M.ACE.allow(role_admin, 'edit'),
-                M.ACE.allow(role_admin, 'delete'),
-                M.ACE.allow(role_admin, 'moderate'),
-                M.ACE.allow(role_admin, 'configure'),
-                M.ACE.allow(role_admin, 'admin')]
-            # make all the wiki pages
-            for page in pages:
-                ending = page[-5:]
-                beginning = page[:-5]
-                markdown_file = '%s.markdown' % beginning
-                if '.json' == ending and markdown_file in pages:
-                    page_data = loadjson(pid, 'wiki', page)
-                    content = load(pid, 'wiki', markdown_file)
-                    if page == 'HomePage.json':
-                        globals = WM.Globals.query.get(app_config_id=wiki_app.config._id)
-                        if globals is not None:
-                            globals.root = page_data.title
-                        else:
-                            globals = WM.Globals(app_config_id=wiki_app.config._id, root=page_data.title)
-                    p = WM.Page.upsert(page_data.title)
-                    p.viewable_by = ['all']
-                    p.text = wiki2markdown(content)
-                    # upload attachments
-                    if beginning in pages:
-                        files = os.listdir(os.path.join(options.output_dir, pid, 'wiki', beginning))
-                        for f in files:
-                            with open(os.path.join(options.output_dir, pid, 'wiki', beginning, f)) as fp:
-                                p.attach(f, fp, content_type=utils.guess_mime_type(f))
-                    if not p.history().first():
-                        p.commit()
-    ThreadLocalORMSession.flush_all()
-
-    # populate discussion data
+        import_wiki(project,pid)
     if 'forum' in dirs:
-        from forgediscussion import model as DM
-        discuss_app = project.app_instance('discussion')
-        if not discuss_app:
-            discuss_app = project.install_app('Discussion', 'discussion')
-        h.set_context(project.shortname, 'discussion')
+        import_discussion(project,pid)
+    if 'news' in dirs:
+        import_news(project,pid)
+
+    # TODO: categories as labels
+
+    ThreadLocalORMSession.flush_all()
+    return project
+
+def import_wiki(project, pid):
+    from forgewiki import model as WM
+    pages = os.listdir(os.path.join(options.output_dir, pid, 'wiki'))
+    # handle the homepage content
+    if 'homepage_text.markdown' in pages:
+        project.description = wiki2markdown(load(pid, 'wiki', 'homepage_text.markdown'))
+    if 'HomePage.json' in pages and 'HomePage.markdown' in pages:
+        wiki_app = project.app_instance('wiki')
+        if not wiki_app:
+            wiki_app = project.install_app('Wiki', 'wiki')
+        h.set_context(project.shortname, 'wiki')
         # set permissions and config options
         role_admin = M.ProjectRole.by_name('Admin')._id
-        role_developer = M.ProjectRole.by_name('Developer')._id
-        role_auth = M.ProjectRole.by_name('*authenticated')._id
         role_anon = M.ProjectRole.by_name('*anonymous')._id
-        discuss_app.config.acl = [
+        wiki_app.config.options['show_discussion'] = False
+        wiki_app.config.options['show_left_bar'] = False
+        wiki_app.config.options['show_right_bar'] = False
+        wiki_app.config.acl = [
             M.ACE.allow(role_anon, 'read'),
-            M.ACE.allow(role_auth, 'unmoderated_post'),
-            M.ACE.allow(role_developer, 'moderate'),
+            M.ACE.allow(role_admin, 'create'),
+            M.ACE.allow(role_admin, 'edit'),
+            M.ACE.allow(role_admin, 'delete'),
+            M.ACE.allow(role_admin, 'moderate'),
             M.ACE.allow(role_admin, 'configure'),
             M.ACE.allow(role_admin, 'admin')]
-        forums = os.listdir(os.path.join(options.output_dir, pid, 'forum'))
-        for forum in forums:
-            ending = forum[-5:]
-            forum_name = forum[:-5]
-            if '.json' == ending and forum_name in forums:
-                forum_data = loadjson(pid, 'forum', forum)
-                fo = DM.Forum.query.get(shortname=forum_name, app_config_id=discuss_app.config._id)
-                if not fo:
-                    fo = DM.Forum(app_config_id=discuss_app.config._id, shortname=forum_name)
-                fo.name = forum_data.title
-                fo.description = forum_data.description
-                fo_num_topics = 0
-                fo_num_posts = 0
+        # make all the wiki pages
+        for page in pages:
+            ending = page[-5:]
+            beginning = page[:-5]
+            markdown_file = '%s.markdown' % beginning
+            if '.json' == ending and markdown_file in pages:
+                page_data = loadjson(pid, 'wiki', page)
+                content = load(pid, 'wiki', markdown_file)
+                if page == 'HomePage.json':
+                    globals = WM.Globals.query.get(app_config_id=wiki_app.config._id)
+                    if globals is not None:
+                        globals.root = page_data.title
+                    else:
+                        globals = WM.Globals(app_config_id=wiki_app.config._id, root=page_data.title)
+                p = WM.Page.upsert(page_data.title)
+                p.viewable_by = ['all']
+                p.text = wiki2markdown(content)
+                # upload attachments
+                if beginning in pages:
+                    files = os.listdir(os.path.join(options.output_dir, pid, 'wiki', beginning))
+                    for f in files:
+                        with open(os.path.join(options.output_dir, pid, 'wiki', beginning, f)) as fp:
+                            p.attach(f, fp, content_type=utils.guess_mime_type(f))
+                if not p.history().first():
+                    p.commit()
+    ThreadLocalORMSession.flush_all()
 
-                topics = os.listdir(os.path.join(options.output_dir, pid, 'forum', forum_name))
-                for topic in topics:
-                    ending = topic[-5:]
-                    topic_name = topic[:-5]
-                    if '.json' == ending and topic_name in topics:
-                        fo_num_topics += 1
-                        topic_data = loadjson(pid, 'forum', forum_name, topic)
-                        to = DM.ForumThread.query.get(
+def import_discussion(project, pid):
+    from forgediscussion import model as DM
+    discuss_app = project.app_instance('discussion')
+    if not discuss_app:
+        discuss_app = project.install_app('Discussion', 'discussion')
+    h.set_context(project.shortname, 'discussion')
+    # set permissions and config options
+    role_admin = M.ProjectRole.by_name('Admin')._id
+    role_developer = M.ProjectRole.by_name('Developer')._id
+    role_auth = M.ProjectRole.by_name('*authenticated')._id
+    role_anon = M.ProjectRole.by_name('*anonymous')._id
+    discuss_app.config.acl = [
+        M.ACE.allow(role_anon, 'read'),
+        M.ACE.allow(role_auth, 'unmoderated_post'),
+        M.ACE.allow(role_developer, 'moderate'),
+        M.ACE.allow(role_admin, 'configure'),
+        M.ACE.allow(role_admin, 'admin')]
+    forums = os.listdir(os.path.join(options.output_dir, pid, 'forum'))
+    for forum in forums:
+        ending = forum[-5:]
+        forum_name = forum[:-5]
+        if '.json' == ending and forum_name in forums:
+            forum_data = loadjson(pid, 'forum', forum)
+            fo = DM.Forum.query.get(shortname=forum_name, app_config_id=discuss_app.config._id)
+            if not fo:
+                fo = DM.Forum(app_config_id=discuss_app.config._id, shortname=forum_name)
+            fo.name = forum_data.title
+            fo.description = forum_data.description
+            fo_num_topics = 0
+            fo_num_posts = 0
+            topics = os.listdir(os.path.join(options.output_dir, pid, 'forum', forum_name))
+            for topic in topics:
+                ending = topic[-5:]
+                topic_name = topic[:-5]
+                if '.json' == ending and topic_name in topics:
+                    fo_num_topics += 1
+                    topic_data = loadjson(pid, 'forum', forum_name, topic)
+                    to = DM.ForumThread.query.get(
+                        subject=topic_data.title,
+                        discussion_id=fo._id,
+                        app_config_id=discuss_app.config._id)
+                    if not to:
+                        to = DM.ForumThread(
                             subject=topic_data.title,
                             discussion_id=fo._id,
                             app_config_id=discuss_app.config._id)
-                        if not to:
-                            to = DM.ForumThread(
-                                subject=topic_data.title,
+                    to_num_replies = 0
+                    oldest_post = None
+                    newest_post = None
+                    posts = sorted(os.listdir(os.path.join(options.output_dir, pid, 'forum', forum_name, topic_name)))
+                    for post in posts:
+                        ending = post[-5:]
+                        post_name = post[:-5]
+                        if '.json' == ending:
+                            to_num_replies += 1
+                            post_data = loadjson(pid, 'forum', forum_name, topic_name, post)
+                            p = DM.ForumPost.query.get(
+                                _id='%s%s@import' % (post_name,str(discuss_app.config._id)),
+                                thread_id=to._id,
                                 discussion_id=fo._id,
                                 app_config_id=discuss_app.config._id)
-                        to_num_replies = 0
-                        oldest_post = None
-                        newest_post = None
-
-                        posts = sorted(os.listdir(os.path.join(options.output_dir, pid, 'forum', forum_name, topic_name)))
-                        for post in posts:
-                            ending = post[-5:]
-                            post_name = post[:-5]
-                            if '.json' == ending:
-                                to_num_replies += 1
-                                post_data = loadjson(pid, 'forum', forum_name, topic_name, post)
-                                p = DM.ForumPost.query.get(
+                            if not p:
+                                p = DM.ForumPost(
                                     _id='%s%s@import' % (post_name,str(discuss_app.config._id)),
                                     thread_id=to._id,
                                     discussion_id=fo._id,
                                     app_config_id=discuss_app.config._id)
-                                if not p:
-                                    p = DM.ForumPost(
-                                        _id='%s%s@import' % (post_name,str(discuss_app.config._id)),
-                                        thread_id=to._id,
-                                        discussion_id=fo._id,
-                                        app_config_id=discuss_app.config._id)
-                                create_date = datetime.strptime(post_data.createdDate, '%Y-%m-%d %H:%M:%S')
-                                p.timestamp = create_date
-                                p.author_id = str(get_user(post_data.createdByUserName)._id)
-                                p.text = post_data.content
-                                p.status = 'ok'
-                                if post_data.replyToId:
-                                    p.parent_id = '%s%s@import' % (post_data.replyToId,str(discuss_app.config._id))
-                                slug, full_slug = p.make_slugs(parent = p.parent, timestamp = create_date)
-                                p.slug = slug
-                                p.full_slug = full_slug
-                                if oldest_post == None or oldest_post.timestamp > create_date:
-                                    oldest_post = p
-                                if newest_post == None or newest_post.timestamp < create_date:
-                                    newest_post = p
-                                ThreadLocalORMSession.flush_all()
-                        to.num_replies = to_num_replies
-                        to.first_post_id = oldest_post._id
-                        to.last_post_date = newest_post.timestamp
-                        to.mod_date = newest_post.timestamp
-                        fo_num_posts += to_num_replies
-                fo.num_topics = fo_num_topics
-                fo.num_posts = fo_num_posts
-                ThreadLocalORMSession.flush_all()
-        DM.Forum.query.remove(dict(app_config_id=discuss_app.config._id,shortname='general'))
+                            create_date = datetime.strptime(post_data.createdDate, '%Y-%m-%d %H:%M:%S')
+                            p.timestamp = create_date
+                            p.author_id = str(get_user(post_data.createdByUserName)._id)
+                            p.text = post_data.content
+                            p.status = 'ok'
+                            if post_data.replyToId:
+                                p.parent_id = '%s%s@import' % (post_data.replyToId,str(discuss_app.config._id))
+                            slug, full_slug = p.make_slugs(parent = p.parent, timestamp = create_date)
+                            p.slug = slug
+                            p.full_slug = full_slug
+                            if oldest_post == None or oldest_post.timestamp > create_date:
+                                oldest_post = p
+                            if newest_post == None or newest_post.timestamp < create_date:
+                                newest_post = p
+                            ThreadLocalORMSession.flush_all()
+                    to.num_replies = to_num_replies
+                    to.first_post_id = oldest_post._id
+                    to.last_post_date = newest_post.timestamp
+                    to.mod_date = newest_post.timestamp
+                    fo_num_posts += to_num_replies
+            fo.num_topics = fo_num_topics
+            fo.num_posts = fo_num_posts
+            ThreadLocalORMSession.flush_all()
+    DM.Forum.query.remove(dict(app_config_id=discuss_app.config._id,shortname='general'))
 
-    if 'news' in dirs:
-        from forgeblog import model as BM
-        posts = os.listdir(os.path.join(options.output_dir, pid, 'news'))
-        if len(posts):
-            news_app = project.app_instance('news')
-            if not news_app:
-                news_app = project.install_app('blog', 'news', mount_label='News')
-            h.set_context(project.shortname, 'news')
-            # make all the blog posts
-            for post in posts:
-                if '.json' == post[-5:]:
-                    post_data = loadjson(pid, 'news', post)
-                    p = BM.BlogPost.query.get(title=post_data.title,app_config_id=news_app.config._id)
-                    if not p:
-                        p = BM.BlogPost(title=post_data.title,app_config_id=news_app.config._id)
-                    p.text = post_data.body
-                    create_date = datetime.strptime(post_data.createdOn, '%Y-%m-%d %H:%M:%S')
-                    p.timestamp = create_date
-                    p.mod_date = create_date
-                    p.state = 'published'
-                    if not p.slug:
-                        p.make_slug()
-                    if not p.history().first():
-                        p.commit()
-                        ThreadLocalORMSession.flush_all()
-                        M.Thread(discussion_id=p.app_config.discussion_id,
-                               ref_id=p.index_id(),
-                               subject='%s discussion' % p.title)
-                    user = get_user(post_data.createdByUsername)
-                    p.history().first().author=dict(
-                        id=user._id,
-                        username=user.username,
-                        display_name=user.get_pref('display_name'))
+def import_news(project, pid):
+    from forgeblog import model as BM
+    posts = os.listdir(os.path.join(options.output_dir, pid, 'news'))
+    if len(posts):
+        news_app = project.app_instance('news')
+        if not news_app:
+            news_app = project.install_app('blog', 'news', mount_label='News')
+        h.set_context(project.shortname, 'news')
+        # make all the blog posts
+        for post in posts:
+            if '.json' == post[-5:]:
+                post_data = loadjson(pid, 'news', post)
+                p = BM.BlogPost.query.get(title=post_data.title,app_config_id=news_app.config._id)
+                if not p:
+                    p = BM.BlogPost(title=post_data.title,app_config_id=news_app.config._id)
+                p.text = post_data.body
+                create_date = datetime.strptime(post_data.createdOn, '%Y-%m-%d %H:%M:%S')
+                p.timestamp = create_date
+                p.mod_date = create_date
+                p.state = 'published'
+                if not p.slug:
+                    p.make_slug()
+                if not p.history().first():
+                    p.commit()
                     ThreadLocalORMSession.flush_all()
-
-    ThreadLocalORMSession.flush_all()
-    return project
+                    M.Thread(discussion_id=p.app_config.discussion_id,
+                           ref_id=p.index_id(),
+                           subject='%s discussion' % p.title)
+                user = get_user(post_data.createdByUsername)
+                p.history().first().author=dict(
+                    id=user._id,
+                    username=user.username,
+                    display_name=user.get_pref('display_name'))
+                ThreadLocalORMSession.flush_all()
 
 def check_unsupported_tools(project):
     docs = make_client(options.api_url, 'DocumentApp')
