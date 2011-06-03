@@ -291,7 +291,24 @@ def import_wiki(project, pid):
     pages = os.listdir(os.path.join(options.output_dir, pid, 'wiki'))
     # handle the homepage content
     if 'homepage_text.markdown' in pages:
-        project.description = wiki2markdown(load(pid, 'wiki', 'homepage_text.markdown'))
+        home_app = project.app_instance('home')
+        h.set_context(project.shortname, 'home')
+        # set permissions and config options
+        role_admin = M.ProjectRole.by_name('Admin')._id
+        role_anon = M.ProjectRole.by_name('*anonymous')._id
+        home_app.config.options['show_discussion'] = False
+        home_app.config.options['show_left_bar'] = False
+        home_app.config.options['show_right_bar'] = False
+        home_app.config.acl = [
+            M.ACE.allow(role_anon, 'read'),
+            M.ACE.allow(role_admin, 'create'),
+            M.ACE.allow(role_admin, 'edit'),
+            M.ACE.allow(role_admin, 'delete'),
+            M.ACE.allow(role_admin, 'moderate'),
+            M.ACE.allow(role_admin, 'configure'),
+            M.ACE.allow(role_admin, 'admin')]
+        p = WM.Page.upsert('Home')
+        p.text = wiki2markdown(load(pid, 'wiki', 'homepage_text.markdown'))
     if 'HomePage.json' in pages and 'HomePage.markdown' in pages:
         wiki_app = project.app_instance('wiki')
         if not wiki_app:
