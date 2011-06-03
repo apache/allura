@@ -270,7 +270,17 @@ def create_project(pid, nbhd):
         pr = user.project_role(project)
         pr.roles = [ role_developer._id ]
         ThreadLocalORMSession.flush_all()
-    project.labels = [cat.path.lstrip('projects/categorization.root.') for cat in data.categories]
+    project.labels = [cat.path.split('projects/categorization.root.')[1] for cat in data.categories]
+    icon_file = 'emsignia-MOBILITY-red.png'
+    if 'nsn' in project.labels or 'msi' in project.labels:
+        icon_file = 'emsignia-SOLUTIONS-blue.gif'
+    if project.icon:
+        M.ProjectFile.remove(dict(project_id=project._id, category='icon'))
+    with open(os.path.join('..','scripts',icon_file)) as fp:
+        M.ProjectFile.save_image(
+            icon_file, fp, content_type=utils.guess_mime_type(icon_file),
+            square=True, thumbnail_size=(48,48),
+            thumbnail_meta=dict(project_id=project._id,category='icon'))
     ThreadLocalORMSession.flush_all()
 
     dirs = os.listdir(os.path.join(options.output_dir, pid))
