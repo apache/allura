@@ -460,15 +460,8 @@ def create_project(pid, nbhd):
                         display_name=user.get_pref('display_name'))
                     ThreadLocalORMSession.flush_all()
 
-    # TODO: categories as labels
-
     ThreadLocalORMSession.flush_all()
     return project
-    '''
-    for i, tool in enumerate(kw):
-        if kw[tool]:
-            c.project.install_app(tool, ordinal=i)
-    '''
 
 def check_unsupported_tools(project):
     docs = make_client(options.api_url, 'DocumentApp')
