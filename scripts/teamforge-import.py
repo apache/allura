@@ -159,7 +159,9 @@ def get_project(project, c):
 
 def get_user(orig_username):
     'returns an allura User object'
-    # FIXME username translation is hardcoded
+    sf_username = orig_username.replace('_','-').lower()
+
+    # FIXME username translation is hardcoded here:
     sf_username = dict(
         rlevy = 'ramilevy',
         mkeisler = 'mkeisler',
@@ -174,7 +176,7 @@ def get_user(orig_username):
         okruse = 'ottokruse',
         jvp = 'jvpmoto',
         dmorelli = 'dmorelli',
-    ).get(orig_username, orig_username.replace('_','-') + '-mmi')
+    ).get(sf_username, sf_username + '-mmi')
 
     #u = M.User.by_username(sf_username)
 
