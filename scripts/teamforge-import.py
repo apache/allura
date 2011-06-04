@@ -34,7 +34,6 @@ http://www.open.collab.net/nonav/community/cif/csfe/50/javadoc/index.html?com/co
 options = None
 s = None # security token
 users = set()
-CONFIG_FILENAME='teamforge-import.cfg'
 
 def make_client(api_url, app):
     return Client(api_url + app + '?wsdl', location=api_url + app)
@@ -56,7 +55,7 @@ def main():
         skip_unsupported_check=False)
     optparser = get_parser(defaults)
     options, project_ids = optparser.parse_args()
-    if options.config_file and os.path.exists(options.config_file):
+    if options.config_file:
         config = ConfigParser()
         config.read(options.config_file)
         defaults.update(
@@ -621,7 +620,8 @@ def find_image_references(markup):
     'yields filenames'
     for matchobj in bracket_macro.finditer(markup):
         snippet = matchobj.group(1)
-        if snippet.endswith('.jpg') or snippet.endswith('.gif') or snippet.endswith('.png'):
+        ext = snippet.rsplit('.')[-1].lower()
+        if ext in ('jpg', 'gif', 'png'):
             yield snippet
 
 def get_news(project):
