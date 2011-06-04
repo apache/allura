@@ -308,6 +308,11 @@ def create_project(pid, nbhd):
 
 def import_wiki(project, pid):
     from forgewiki import model as WM
+    def upload_attachments(page, pid, beginning):
+        files = os.listdir(os.path.join(options.output_dir, pid, 'wiki', beginning))
+        for f in files:
+            with open(os.path.join(options.output_dir, pid, 'wiki', beginning, f)) as fp:
+                page.attach(f, fp, content_type=utils.guess_mime_type(f))
     pages = os.listdir(os.path.join(options.output_dir, pid, 'wiki'))
     # handle the homepage content
     if 'homepage_text.markdown' in pages:
@@ -329,6 +334,7 @@ def import_wiki(project, pid):
             M.ACE.allow(role_admin, 'admin')]
         p = WM.Page.upsert('Home')
         p.text = wiki2markdown(load(pid, 'wiki', 'homepage_text.markdown'))
+        upload_attachments(p, pid, 'homepage')
     if 'HomePage.json' in pages and 'HomePage.markdown' in pages:
         wiki_app = project.app_instance('wiki')
         if not wiki_app:
@@ -366,11 +372,7 @@ def import_wiki(project, pid):
                 p.viewable_by = ['all']
                 p.text = wiki2markdown(content)
                 # upload attachments
-                if beginning in pages:
-                    files = os.listdir(os.path.join(options.output_dir, pid, 'wiki', beginning))
-                    for f in files:
-                        with open(os.path.join(options.output_dir, pid, 'wiki', beginning, f)) as fp:
-                            p.attach(f, fp, content_type=utils.guess_mime_type(f))
+                upload_attachments(p, pid, beginning)
                 if not p.history().first():
                     p.commit()
     ThreadLocalORMSession.flush_all()
@@ -575,18 +577,19 @@ bracket_macro = re.compile(r'\[(.*?)\]')
 h1 = re.compile(r'^!!!', re.MULTILINE)
 h2 = re.compile(r'^!!', re.MULTILINE)
 h3 = re.compile(r'^!', re.MULTILINE)
-re_stats = re.compile(r'#+ .* [Ss]tatistics\n+(.*\[sf:.*?Statistics\].*)+\n')
+re_stats = re.compile(r'#+ .* [Ss]tatistics\n+(.*\[sf:.*?Statistics\].*)+')
 def wiki2markdown(markup):
     '''
     Partial implementation of http://help.collab.net/index.jsp?topic=/teamforge520/reference/wiki-wikisyntax.html
     '''
     def bracket_handler(matchobj):
         snippet = matchobj.group(1)
+        ext = snippet.rsplit('.')[-1].lower()
         # TODO: support [foo|bar.jpg]
         if snippet.startswith('sf:'):
             # can't handle these macros
             return matchobj.group(0)
-        elif snippet.endswith('.jpg') or snippet.endswith('.gif') or snippet.endswith('.png'):
+        elif ext in ('jpg', 'gif', 'png'):
             filename = snippet.split('/')[-1]
             return '[[img src=%s]]' % filename
         elif '|' in snippet:
@@ -599,6 +602,7 @@ def wiki2markdown(markup):
     markup = h1.sub('#', markup)
     markup = h2.sub('##', markup)
     markup = h3.sub('###', markup)
+    
     markup = re_stats.sub('', markup)
     return markup
 
