@@ -9,8 +9,8 @@ from time import mktime
 import json
 from urlparse import urlparse
 from urllib import FancyURLopener
-from pprint import pprint
 from datetime import datetime
+from ConfigParser import ConfigParser
 
 from suds.client import Client
 from suds import WebFault
@@ -34,26 +34,78 @@ http://www.open.collab.net/nonav/community/cif/csfe/50/javadoc/index.html?com/co
 options = None
 s = None # security token
 users = set()
+CONFIG_FILENAME='teamforge-import.cfg'
 
 def make_client(api_url, app):
     return Client(api_url + app + '?wsdl', location=api_url + app)
 
 def main():
     global options, s
-    optparser = OptionParser(usage='''%prog [--options] [projID projID projID]\nIf no project ids are given, all projects will be migrated''')
-    optparser.add_option('--api-url', dest='api_url', help='e.g. https://hostname/ce-soap50/services/')
-    optparser.add_option('--attachment-url', dest='attachment_url', default='/sf/%s/do/%s/')
-    optparser.add_option('--default-wiki-text', dest='default_wiki_text', default='PRODUCT NAME HERE', help='used in determining if a wiki page text is default or changed')
-    optparser.add_option('-u', '--username', dest='username')
-    optparser.add_option('-p', '--password', dest='password')
-    optparser.add_option('-o', '--output-dir', dest='output_dir', default='teamforge-export/')
-    optparser.add_option('--list-project-ids', action='store_true', dest='list_project_ids')
-    optparser.add_option('--extract-only', action='store_true', dest='extract', help='Store data from the TeamForge API on the local filesystem; not load into Allura')
-    optparser.add_option('--load-only', action='store_true', dest='load', help='Load into Allura previously-extracted data')
-    optparser.add_option('-n', '--neighborhood', dest='neighborhood', help='Neighborhood full name, to load in to')
-    optparser.add_option('--n-shortname', dest='neighborhood_shortname', help='Neighborhood shortname, for PFS extract SQL')
-    optparser.add_option('--skip-frs-download', action='store_true', dest='skip_frs_download')
-    optparser.add_option('--skip-unsupported-check', action='store_true', dest='skip_unsupported_check')
+    config = ConfigParser({
+            'api-url':None,
+            'attachment-url':'/sf/%s/do/%s/',
+            'default-wiki-text':'PRODUCT NAME HERE',
+            'username':None,
+            'password':None,
+            'output-dir':'teamforge-export/',
+            'list-project-ids':'false',
+            'neighborhood':None,
+            'neighborhood-shortname':None,
+            'skip-frs-download':'false',
+            'skip-unsupported-check':'false'
+            })
+    if os.path.exists('teamforge-import.cfg'):
+        config.read(CONFIG_FILENAME)
+
+    optparser = OptionParser(
+        usage=('%prog [--options] [projID projID projID]\n'
+               'If no project ids are given, all projects will be migrated'))
+
+    # Command-line-only options
+    optparser.add_option(
+        '--extract-only', action='store_true', dest='extract',
+        help='Store data from the TeamForge API on the local filesystem; not load into Allura')
+    optparser.add_option(
+        '--load-only', action='store_true', dest='load',
+        help='Load into Allura previously-extracted data')
+
+    # Command-line options with defaults in config file
+    optparser.add_option(
+        '--api-url', dest='api_url', help='e.g. https://hostname/ce-soap50/services/',
+        default=config.get('Extract', 'api-url'))
+    optparser.add_option(
+            '--attachment-url', dest='attachment_url',
+            default=config.get('Load', 'attachment-url'))
+    optparser.add_option(
+            '--default-wiki-text', dest='default_wiki_text',
+            help='used in determining if a wiki page text is default or changed',
+            default=config.get('Extract', 'default-wiki-text'))
+    optparser.add_option(
+        '-u', '--username', dest='username',
+        default=config.get('Extract', 'username'))
+    optparser.add_option(
+        '-p', '--password', dest='password',
+        default=config.get('Extract', 'password'))
+    optparser.add_option(
+        '-o', '--output-dir', dest='output_dir',
+        default=config.get('Extract', 'output-dir'))
+    optparser.add_option(
+        '--list-project-ids', action='store_true', dest='list_project_ids',
+        default=config.getboolean('Extract', 'list-project-ids'))
+    optparser.add_option(
+        '-n', '--neighborhood', dest='neighborhood',
+        help='Neighborhood full name, to load in to',
+        default=config.get('Load', 'neighborhood'))
+    optparser.add_option(
+        '--n-shortname', dest='neighborhood_shortname',
+        help='Neighborhood shortname, for PFS extract SQL',
+        default=config.get('Load', 'neighborhood-shortname'))
+    optparser.add_option(
+        '--skip-frs-download', action='store_true', dest='skip_frs_download',
+        default=config.getboolean('Extract', 'skip-frs-download'))
+    optparser.add_option(
+        '--skip-unsupported-check', action='store_true', dest='skip_unsupported_check',
+        default=config.getboolean('Extract', 'skip-unsupported-check'))
     options, project_ids = optparser.parse_args()
 
     # neither specified, so do both
@@ -61,15 +113,14 @@ def main():
         options.extract = True
         options.load = True
 
-
     if options.extract:
-        c = make_client(options.api_url, 'CollabNet')
-        api_v = c.service.getApiVersion()
+        client = make_client(options.api_url, 'CollabNet')
+        api_v = client.service.getApiVersion()
         if not api_v.startswith('5.4.'):
             log.warning('Unexpected API Version %s.  May not work correctly.' % api_v)
 
-        s = c.service.login(options.username, options.password or getpass('Password: '))
-        teamforge_v = c.service.getVersion(s)
+        s = client.service.login(options.username, options.password or getpass('Password: '))
+        teamforge_v = client.service.getVersion(s)
         if not teamforge_v.startswith('5.4.'):
             log.warning('Unexpected TeamForge Version %s.  May not work correctly.' % teamforge_v)
 
@@ -89,7 +140,7 @@ def main():
         if not options.extract:
             log.error('You must specify project ids')
             return
-        projects = c.service.getProjectList(s)
+        projects = client.service.getProjectList(s)
         project_ids = [p.id for p in projects.dataRows]
 
     if options.list_project_ids:
@@ -101,13 +152,13 @@ def main():
     for pid in project_ids:
         if options.extract:
             try:
-                project = c.service.getProjectData(s, pid)
+                project = client.service.getProjectData(s, pid)
                 log.info('Project: %s %s %s' % (project.id, project.title, project.path))
                 out_dir = os.path.join(options.output_dir, project.id)
                 if not os.path.exists(out_dir):
                     os.mkdir(out_dir)
 
-                get_project(project, c)
+                get_project(project, client)
                 get_files(project)
                 get_homepage_wiki(project)
                 get_discussion(project)
@@ -128,16 +179,16 @@ def main():
         with open(os.path.join(options.output_dir, 'usernames.json'), 'w') as out:
             out.write(json.dumps(list(users)))
 
-def get_project(project, c):
+def get_project(project, client):
     cats = make_client(options.api_url, 'CategorizationApp')
 
-    data = c.service.getProjectData(s, project.id)
+    data = client.service.getProjectData(s, project.id)
     access_level = { 1: 'public', 4: 'private', 3: 'gated community'}[
-        c.service.getProjectAccessLevel(s, project.id)
+        client.service.getProjectAccessLevel(s, project.id)
     ]
-    admins = c.service.listProjectAdmins(s, project.id).dataRows
-    members = c.service.getProjectMemberList(s, project.id).dataRows
-    groups = c.service.getProjectGroupList(s, project.id).dataRows
+    admins = client.service.listProjectAdmins(s, project.id).dataRows
+    members = client.service.getProjectMemberList(s, project.id).dataRows
+    groups = client.service.getProjectGroupList(s, project.id).dataRows
     categories = cats.service.getProjectCategories(s, project.id).dataRows
     save(json.dumps(dict(
             data = dict(data),
