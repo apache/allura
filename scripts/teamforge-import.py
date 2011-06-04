@@ -375,7 +375,9 @@ def create_project(pid, nbhd):
 def import_wiki(project, pid):
     from forgewiki import model as WM
     def upload_attachments(page, pid, beginning):
-        files = os.listdir(os.path.join(options.output_dir, pid, 'wiki', beginning))
+        dirpath = os.path.join(options.output_dir, pid, 'wiki', beginning)
+        if not os.path.exists(dirpath): return
+        files = os.listdir(dirpath)
         for f in files:
             with open(os.path.join(options.output_dir, pid, 'wiki', beginning, f)) as fp:
                 page.attach(f, fp, content_type=utils.guess_mime_type(f))
