@@ -6,12 +6,16 @@ import re
 import os
 import os.path
 from time import mktime
+import time
 import json
 from urlparse import urlparse
 from urllib import FancyURLopener
 from datetime import datetime
 from ConfigParser import ConfigParser
+import random
+import string
 
+import sqlalchemy
 from suds.client import Client
 from suds import WebFault
 from ming.orm.ormsession import ThreadLocalORMSession
@@ -132,16 +136,20 @@ def main():
             except:
                 log.exception('Error creating %s' % pid)
 
-def save_user(usernames):
-    if isinstance(usernames, basestring):
-        usernames = [usernames]
-
-    # load data from last runs
+def load_users():
+    ''' load the users data from file, if it hasn't been already '''
     global users
     user_filename = os.path.join(options.output_dir, 'users.json')
     if not users and os.path.exists(user_filename):
         with open(user_filename) as user_file:
-            users = json.load(user_file)
+            users = json.load(user_file, object_hook=Object) # Object for attribute access
+
+
+def save_user(usernames):
+    if isinstance(usernames, basestring):
+        usernames = [usernames]
+
+    load_users()
 
     for username in usernames:
         if username not in users:
@@ -205,30 +213,55 @@ def get_user(orig_username):
         jvp = 'jvpmoto',
         dmorelli = 'dmorelli',
     ).get(sf_username, sf_username + '-mmi')
+    if len(sf_username) > 15:
+        adjusted_username = sf_username[0:15-4] + '-mmi'
+        log.error('invalid sf_username length: %s   Changing it to %s' % (sf_username, adjusted_username))
+        sf_username = adjusted_username
 
     u = M.User.by_username(sf_username)
 
     if not u:
-        # FIXME: temporary:
-        import random
-        bogus = 'user%02d' % random.randrange(1,20)
-        try:
-            u = M.User.by_username(bogus)
-        except:
-            # try again
-            return get_user(orig_username)
-        """
+        load_users()
         user = users[orig_username]
         if user.status != 'Active':
             log.warn('Inactive user %s %s' % (orig_username, user.status))
+
+        if not 3 <= len(user.fullName) <= 32:
+            raise Exception('invalid fullName length: %s' % user.fullName)
+        if '@' not in user.email:
+            raise Exception('invalid email: %s' % user.email)
         # FIXME: hardcoded SFX integration
         from sfx.model import tables as T
         nu = T.users.insert()
         nu.execute(user_name=sf_username,
-                   email=user.email,
+                   email=user.email.lower(),
                    realname=user.fullName,
-                   status='A')
-        """
+                   status='A' if user.status == 'Active' else 'D',
+                   language=275, # english trove id
+                   timezone=user.timeZone,
+                   user_pw=''.join(random.sample(string.printable, 32)),
+                   unix_pw=''.join(random.sample(string.printable, 32)),
+                   user_pw_modtime=int(time.time()),
+                   mail_siteupdates=0,
+                   add_date=int(time.time()),
+                   )
+        user_id = sqlalchemy.select([T.users.c.user_id], T.users.c.user_name==sf_username).execute().fetchone().user_id
+        npref = T.user_preferences.insert()
+        npref.execute(user_id=user_id, preference_name='country', preference_value='US')
+        npref.execute(user_id=user_id, preference_name='opt_research', preference_value=0)
+        npref.execute(user_id=user_id, preference_name='opt_thirdparty', preference_value=0)
+
+        new_audit = T.audit_trail_user.insert()
+        new_audit.execute(
+            date=int(time.time()),
+            username='nobody',
+            ip_address='(imported)',
+            operation_resource=user_id,
+            operation='%s user account created by TeamForge import script' % user.status,
+            operation_target='',
+        )
+
+        u = M.User.by_username(sf_username)
     assert u
     return u
 
