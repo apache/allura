@@ -768,13 +768,13 @@ def get_files(project):
             # releases
             created_on = int(mktime(rel.createdOn.timetuple()))
             mtime = int(mktime(rel.lastModifiedOn.timetuple()))
-            if not options.skip_frs_download:
+            if os.path.exists(os.path.join(pfs_output_dir, rel_path)):
                 os.utime(os.path.join(pfs_output_dir, rel_path), (mtime, mtime))
             sql_updates += _dir_sql(created_on, project, rel.title.strip(), pkg_path)
         # packages
         created_on = int(mktime(pkg.createdOn.timetuple()))
         mtime = int(mktime(pkg.lastModifiedOn.timetuple()))
-        if not options.skip_frs_download:
+        if os.path.exists(os.path.join(pfs_output_dir, pkg_path)):
             os.utime(os.path.join(pfs_output_dir, pkg_path), (mtime, mtime))
         sql_updates += _dir_sql(created_on, project, pkg.title.strip(), '')
     # save pfs update sql for this project
