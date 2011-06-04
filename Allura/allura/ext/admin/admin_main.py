@@ -210,7 +210,7 @@ class ProjectAdminController(BaseController):
     @require_post()
     def update_labels(self, labels=None, labels_old=None, **kw):
         c.project.labels = labels.split(',')
-        redirect(request.referer)
+        redirect('trove')
  
     @without_trailing_slash
     @expose()

@@ -10,7 +10,8 @@
   {% for cat in c.project.troves_by_type(base.shortname) %}
     <div style="clear: both">
       <span class="trove_fullpath">{{cat.fullpath}}</span>
-      <form action="delete_trove" method="post" class="trove_deleter">
+      <form id="delete_trove_{{base.shortname}}_{{cat.trove_cat_id}}"
+            action="delete_trove" method="post" class="trove_deleter">
         <input type="hidden" name="type" value="{{base.shortname}}">
         <input type="hidden" name="trove" value="{{cat.trove_cat_id}}">
         <input type="submit" value="Delete">
@@ -21,7 +22,8 @@
   {% endfor %}
   </div>
   <div class="grid-19 trove_add_container">
-    <form action="add_trove" method="post" class="trove_adder">
+    <form id="add_trove_{{base.shortname}}"
+          action="add_trove" method="post" class="trove_adder">
       <input type="hidden" name="type" value="{{base.shortname}}">
       <label for="new_trove_{{base.shortname}}">Add a new {{base.fullname}} category:</label>
       <br>

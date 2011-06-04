@@ -231,17 +231,34 @@ class TestProjectAdmin(TestController):
         assert 'No Database Environment categories have been selected.' in r
         assert '<span class="trove_fullpath">Database Environment :: Database API</span>' not in r
         # add a cat
-        form = r.forms[2]
+        form = r.forms['add_trove_root_database']
         form['new_trove'].value = '499'
         r = form.submit().follow()
         # make sure it worked
         assert 'No Database Environment categories have been selected.' not in r
         assert '<span class="trove_fullpath">Database Environment :: Database API</span>' in r
         # delete the cat
-        r = r.forms[2].submit().follow()
+        r = r.forms['delete_trove_root_database_499'].submit().follow()
         # make sure it worked
         assert 'No Database Environment categories have been selected.' in r
         assert '<span class="trove_fullpath">Database Environment :: Database API</span>' not in r
+
+    def test_add_remove_label(self):
+        r = self.app.get('/admin/trove')
+        form = r.forms['label_edit_form']
+        form['labels'].value = 'foo,bar,baz'
+        r = form.submit()
+        r = r.follow()
+        assert M.Project.query.get(shortname='test').labels == ['foo', 'bar', 'baz']
+        assert form['labels'].value == 'foo,bar,baz'
+        ThreadLocalORMSession.close_all()
+        form['labels'].value = 'asdf'
+        r = form.submit()
+        r = r.follow()
+        assert M.Project.query.get(shortname='test').labels == ['asdf']
+        assert form['labels'].value == 'asdf'
+
+
 
     def test_project_homepage(self):
         r = self.app.get('/admin/homepage')
