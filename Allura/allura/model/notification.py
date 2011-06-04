@@ -83,8 +83,9 @@ class Notification(MappedClass):
         '''Create a notification and  send the notify message'''
         import allura.tasks.notification_tasks
         n = cls._make_notification(artifact, topic, **kw)
-        allura.tasks.notification_tasks.notify.post(
-            n._id, artifact.index_id(), topic)
+        if n:
+            allura.tasks.notification_tasks.notify.post(
+                n._id, artifact.index_id(), topic)
         return n
 
     @classmethod
@@ -100,11 +101,13 @@ class Notification(MappedClass):
             session(mbox).expunge(mbox)
             mbox = Mailbox.query.get(user_id=user._id, is_flash=True)
         n = cls._make_notification(artifact, topic, **kw)
-        mbox.queue.append(n._id)
+        if n:
+            mbox.queue.append(n._id)
         return n
 
     @classmethod
     def _make_notification(cls, artifact, topic, **kwargs):
+        from allura.model import Project
         idx = artifact.index()
         subject_prefix = '[%s:%s] ' % (
             c.project.shortname, c.app.config.options.mount_point)
@@ -156,6 +159,11 @@ class Notification(MappedClass):
             log.debug('Error rendering notification template %s: %s' % (artifact.type_s, e))
 
         assert d['reply_to_address'] is not None
+        project = Project.query.get(_id=d.get('project_id', c.project._id))
+        if project.notifications_disabled:
+            log.info('Notifications disabled for project %s, not sending %s(%r)',
+                     project.shortname, topic, artifact)
+            return None
         n = cls(ref_id=artifact.index_id(),
                 topic=topic,
                 link=kwargs.pop('link', artifact.url()),

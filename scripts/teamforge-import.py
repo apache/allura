@@ -280,9 +280,11 @@ def create_project(pid, nbhd):
         project = nbhd.register_project(shortname,
                                         get_user(data.data.createdBy),
                                         private_project=private)
+    project.notifications_disabled = True
     project.name = data.data.title
     project.short_description = data.data.description
     project.last_updated = datetime.strptime(data.data.lastModifiedDate, '%Y-%m-%d %H:%M:%S')
+    M.main_orm_session.flush(project)
     # TODO: push last_updated to gutenberg?
     # TODO: try to set createdDate?
 
@@ -333,6 +335,7 @@ def create_project(pid, nbhd):
     if 'news' in dirs:
         import_news(project, pid, frs_mapping, shortname)
 
+    project.notifications_disabled = False
     ThreadLocalORMSession.flush_all()
     return project
 
