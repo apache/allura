@@ -178,10 +178,9 @@ class TestNeighborhood(TestController):
             extra_environ=dict(username='root'),
             status=302)
         assert config.get('auth.login_url', '/auth/') not in r.location, r.location
-        self.app.get(
+        r = self.app.get(
             '/p/mymoz/home/',
-            extra_environ=dict(username='root'),
-            status=200)
+            extra_environ=dict(username='root')).follow(extra_environ=dict(username='root'), status=200)
         r = self.app.get(
             '/p/mymoz/home/',
             extra_environ=dict(username='*anonymous'),
@@ -212,7 +211,7 @@ class TestNeighborhood(TestController):
 
     def test_neighborhood_project(self):
         r = self.app.get('/adobe/test/home/', status=302)
-        r = self.app.get('/adobe/adobe-1/home/', status=200)
+        r = self.app.get('/adobe/adobe-1/home/').follow(status=200)
         r = self.app.get('/p/test/sub1/home/')
         r = self.app.get('/p/test/sub1/', status=302)
         r = self.app.get('/p/test/no-such-app/', status=404)

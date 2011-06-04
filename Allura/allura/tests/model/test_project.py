@@ -51,9 +51,6 @@ def test_project():
     app_inst = c.project.app_instance(app_config)
     app_inst = c.project.app_instance('hello')
     app_inst = c.project.app_instance('hello2123')
-    c.project.render_widget(dict(
-            mount_point='home',
-            widget_name='welcome'))
     c.project.breadcrumbs()
     c.app.config.breadcrumbs()
 

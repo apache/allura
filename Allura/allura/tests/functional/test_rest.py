@@ -37,11 +37,11 @@ class TestRestHome(TestRestApiBase):
         assert r.status_int == 404
 
     def test_project_ping(self):
-        r = self.api_post('/rest/p/test/home/')
+        r = self.api_get('/rest/p/test/home/Home/')
         assert r.status_int == 200
-        assert r.json['shortname'] == 'test'
+        assert r.json['title'] == 'Home', r.json
 
     def test_subproject_ping(self):
-        r = self.api_post('/rest/p/test/sub1/home/')
+        r = self.api_get('/rest/p/test/sub1/home/Home/')
         assert r.status_int == 200
-        assert r.json['shortname'] == 'test/sub1'
+        assert r.json['title'] == 'Home', r.json

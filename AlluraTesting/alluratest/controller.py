@@ -117,7 +117,7 @@ class TestRestApiBase(TestController):
     def set_api_token(self, token):
         self.token = token
 
-    def api_post(self, path, api_key=None, api_timestamp=None, api_signature=None,
+    def _api_getpost(self, method, path, api_key=None, api_timestamp=None, api_signature=None,
                  wrap_args=None, **params):
         if wrap_args:
             params = {wrap_args: params}
@@ -126,7 +126,10 @@ class TestRestApiBase(TestController):
         if api_timestamp: params['api_timestamp'] = api_timestamp
         if api_signature: params['api_signature'] = api_signature
         params = self.token.sign_request(path, params)
-        response = self.app.post(
+
+        fn = self.app.post if method=='POST' else self.app.get
+
+        response = fn(
             str(path),
             params=params,
             status=[200, 302, 400, 403, 404])
@@ -134,3 +137,11 @@ class TestRestApiBase(TestController):
             return response.follow()
         else:
             return response
+
+    def api_get(self, path, api_key=None, api_timestamp=None, api_signature=None,
+                 wrap_args=None, **params):
+        return self._api_getpost('GET', path, api_key, api_timestamp, api_signature, wrap_args, **params)
+
+    def api_post(self, path, api_key=None, api_timestamp=None, api_signature=None,
+                 wrap_args=None, **params):
+        return self._api_getpost('POST', path, api_key, api_timestamp, api_signature, wrap_args, **params)

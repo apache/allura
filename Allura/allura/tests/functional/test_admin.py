@@ -21,7 +21,6 @@ class TestProjectAdmin(TestController):
 
     def test_admin_controller(self):
         self.app.get('/admin/')
-        self.app.post('/admin/update_homepage', {'description': 'A long description ?'})
         self.app.post('/admin/update', params=dict(
                 name='Test Project',
                 shortname='test',
@@ -30,9 +29,6 @@ class TestProjectAdmin(TestController):
         r = self.app.get('/admin/overview')
         assert 'A Test Project ?' in r
         assert 'Test Subproject' not in r
-
-        r = self.app.get('/home/')
-        assert 'A long description ?' in r
 
         # Add a subproject
         self.app.post('/admin/update_mounts', params={
@@ -185,20 +181,22 @@ class TestProjectAdmin(TestController):
         r = self.app.get('/p/test/screenshot/'+filename+'/thumb')
         thumb = Image.open(StringIO.StringIO(r.body))
         assert thumb.size == (150,150)
-        r = self.app.get('/p/test/home/')
-        assert '/p/test/screenshot/'+filename in r
-        assert 'test me' in r
+        #FIX: home pages don't currently support screenshots (now that they're a wiki);
+        # reinstate this code (or appropriate) when we have a macro for that
+        #r = self.app.get('/p/test/home/')
+        #assert '/p/test/screenshot/'+filename in r
+        #assert 'test me' in r
         # test edit
         req = self.app.get('/admin/screenshots')
         req.forms[0]['caption'].value = 'aaa'
         req.forms[0].submit()
-        r = self.app.get('/p/test/home/')
-        assert 'aaa' in r
+        #r = self.app.get('/p/test/home/')
+        #assert 'aaa' in r
         # test delete
         req = self.app.get('/admin/screenshots')
         req.forms[1].submit()
-        r = self.app.get('/p/test/home/')
-        assert 'aaa' not in r
+        #r = self.app.get('/p/test/home/')
+        #assert 'aaa' not in r
 
     def test_project_delete_undelete(self):
         r = self.app.get('/p/test/admin/overview')
@@ -257,17 +255,6 @@ class TestProjectAdmin(TestController):
         r = r.follow()
         assert M.Project.query.get(shortname='test').labels == ['asdf']
         assert form['labels'].value == 'asdf'
-
-
-
-    def test_project_homepage(self):
-        r = self.app.get('/admin/homepage')
-        assert 'Awesome description' not in r
-        self.app.post('/admin/update_homepage', {'description': 'Awesome description'})
-        r = self.app.get('/admin/homepage')
-        assert 'Awesome description' in r
-        r = self.app.get('/p/test/home/')
-        assert 'Awesome description' in r, r
 
     def test_project_permissions(self):
         r = self.app.get('/admin/permissions/')
@@ -361,4 +348,5 @@ class TestProjectAdmin(TestController):
         assert 'rleNew2' not in roles
 
         # make sure can still access homepage after one of user's roles were deleted
-        self.app.get('/p/test/home/', extra_environ=dict(username='test-user'), status=200)
+        r = self.app.get('/p/test/home/', extra_environ=dict(username='test-user')).follow()
+        assert r.status == '200 OK'
