@@ -33,14 +33,15 @@ http://www.open.collab.net/nonav/community/cif/csfe/50/javadoc/index.html?com/co
 
 options = None
 s = None # security token
-users = set()
+client = None # main api client
+users = {}
 
 def make_client(api_url, app):
     return Client(api_url + app + '?wsdl', location=api_url + app)
 
 
 def main():
-    global options, s
+    global options, s, client, users
     defaults=dict(
         api_url=None,
         attachment_url='/sf/%s/do/%s/',
@@ -113,13 +114,15 @@ def main():
                 if not os.path.exists(out_dir):
                     os.mkdir(out_dir)
 
-                get_project(project, client)
+                get_project(project)
                 get_files(project)
                 get_homepage_wiki(project)
                 get_discussion(project)
                 get_news(project)
                 if not options.skip_unsupported_check:
                     check_unsupported_tools(project)
+                with open(os.path.join(options.output_dir, 'users.json'), 'w') as user_file:
+                    json.dump(users, user_file, default=str)
             except:
                 log.exception('Error extracting %s' % pid)
 
@@ -129,12 +132,27 @@ def main():
             except:
                 log.exception('Error creating %s' % pid)
 
-    if options.extract:
-        log.info('Users encountered: %s', len(users))
-        with open(os.path.join(options.output_dir, 'usernames.json'), 'w') as out:
-            out.write(json.dumps(list(users)))
+def save_user(usernames):
+    if isinstance(usernames, basestring):
+        usernames = [usernames]
 
-def get_project(project, client):
+    # load data from last runs
+    global users
+    user_filename = os.path.join(options.output_dir, 'users.json')
+    if not users and os.path.exists(user_filename):
+        with open(user_filename) as user_file:
+            users = json.load(user_file)
+
+    for username in usernames:
+        if username not in users:
+            user_data = client.service.getUserData(s, username)
+            users[username] = Object(user_data)
+            if users[username].status != 'Active':
+                log.warn('user: %s status: %s' % (username, users[username].status))
+
+
+def get_project(project):
+    global client
     cats = make_client(options.api_url, 'CategorizationApp')
 
     data = client.service.getProjectData(s, project.id)
@@ -163,9 +181,9 @@ def get_project(project, client):
         if u.superUser:
             log.warn('super user admin %s' % u)
 
-    global users
-    users |= set(u.userName for u in admins)
-    users |= set(u.userName for u in members)
+    save_user(data.createdBy)
+    save_user(u.userName for u in admins)
+    save_user(u.userName for u in members)
 
 def get_user(orig_username):
     'returns an allura User object'
@@ -188,17 +206,29 @@ def get_user(orig_username):
         dmorelli = 'dmorelli',
     ).get(sf_username, sf_username + '-mmi')
 
-    #u = M.User.by_username(sf_username)
+    u = M.User.by_username(sf_username)
 
-    # FIXME: temporary:
-    import random
-    bogus = 'user%02d' % random.randrange(1,20)
-    try:
-        u = M.User.by_username(bogus)
-    except:
-        # try again
-        return get_user(orig_username)
-
+    if not u:
+        # FIXME: temporary:
+        import random
+        bogus = 'user%02d' % random.randrange(1,20)
+        try:
+            u = M.User.by_username(bogus)
+        except:
+            # try again
+            return get_user(orig_username)
+        """
+        user = users[orig_username]
+        if user.status != 'Active':
+            log.warn('Inactive user %s %s' % (orig_username, user.status))
+        # FIXME: hardcoded SFX integration
+        from sfx.model import tables as T
+        nu = T.users.insert()
+        nu.execute(user_name=sf_username,
+                   email=user.email,
+                   realname=user.fullName,
+                   status='A')
+        """
     assert u
     return u
 
@@ -602,7 +632,7 @@ def wiki2markdown(markup):
     markup = h1.sub('#', markup)
     markup = h2.sub('##', markup)
     markup = h3.sub('###', markup)
-    
+
     markup = re_stats.sub('', markup)
     return markup
 
@@ -632,20 +662,18 @@ def get_news(project):
     '''
     Extracts news posts
     '''
-    global users
     app = make_client(options.api_url, 'NewsApp')
 
     # find the forums
     posts = app.service.getNewsPostList(s, project.id)
     for post in posts.dataRows:
         save(json.dumps(dict(post), default=str), project, 'news', post.id+'.json')
-        users.add(post.createdByUsername)
+        save_user(post.createdByUsername)
 
 def get_discussion(project):
     '''
     Extracts discussion forums and posts
     '''
-    global users
     app = make_client(options.api_url, 'DiscussionApp')
 
     # find the forums
@@ -662,7 +690,7 @@ def get_discussion(project):
             posts = app.service.getPostList(s, topic.id)
             for post in posts.dataRows:
                 save(json.dumps(dict(post), default=str), project, 'forum', forumname, topic.id, post.id+'.json')
-                users.add(post.createdByUserName)
+                save_user(post.createdByUserName)
 
 
 def get_homepage_wiki(project):
@@ -840,7 +868,7 @@ def get_parser(defaults):
         '--skip-unsupported-check', action='store_true', dest='skip_unsupported_check')
 
     return optparser
-    
+
 if __name__ == '__main__':
     logging.basicConfig(level=logging.WARN)
     log.setLevel(logging.DEBUG)
