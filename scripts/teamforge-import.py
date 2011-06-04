@@ -39,74 +39,30 @@ CONFIG_FILENAME='teamforge-import.cfg'
 def make_client(api_url, app):
     return Client(api_url + app + '?wsdl', location=api_url + app)
 
+
 def main():
     global options, s
-    config = ConfigParser({
-            'api-url':None,
-            'attachment-url':'/sf/%s/do/%s/',
-            'default-wiki-text':'PRODUCT NAME HERE',
-            'username':None,
-            'password':None,
-            'output-dir':'teamforge-export/',
-            'list-project-ids':'false',
-            'neighborhood':None,
-            'neighborhood-shortname':None,
-            'skip-frs-download':'false',
-            'skip-unsupported-check':'false'
-            })
-    if os.path.exists('teamforge-import.cfg'):
-        config.read(CONFIG_FILENAME)
-
-    optparser = OptionParser(
-        usage=('%prog [--options] [projID projID projID]\n'
-               'If no project ids are given, all projects will be migrated'))
-
-    # Command-line-only options
-    optparser.add_option(
-        '--extract-only', action='store_true', dest='extract',
-        help='Store data from the TeamForge API on the local filesystem; not load into Allura')
-    optparser.add_option(
-        '--load-only', action='store_true', dest='load',
-        help='Load into Allura previously-extracted data')
-
-    # Command-line options with defaults in config file
-    optparser.add_option(
-        '--api-url', dest='api_url', help='e.g. https://hostname/ce-soap50/services/',
-        default=config.get('Extract', 'api-url'))
-    optparser.add_option(
-            '--attachment-url', dest='attachment_url',
-            default=config.get('Load', 'attachment-url'))
-    optparser.add_option(
-            '--default-wiki-text', dest='default_wiki_text',
-            help='used in determining if a wiki page text is default or changed',
-            default=config.get('Extract', 'default-wiki-text'))
-    optparser.add_option(
-        '-u', '--username', dest='username',
-        default=config.get('Extract', 'username'))
-    optparser.add_option(
-        '-p', '--password', dest='password',
-        default=config.get('Extract', 'password'))
-    optparser.add_option(
-        '-o', '--output-dir', dest='output_dir',
-        default=config.get('Extract', 'output-dir'))
-    optparser.add_option(
-        '--list-project-ids', action='store_true', dest='list_project_ids',
-        default=config.getboolean('Extract', 'list-project-ids'))
-    optparser.add_option(
-        '-n', '--neighborhood', dest='neighborhood',
-        help='Neighborhood full name, to load in to',
-        default=config.get('Load', 'neighborhood'))
-    optparser.add_option(
-        '--n-shortname', dest='neighborhood_shortname',
-        help='Neighborhood shortname, for PFS extract SQL',
-        default=config.get('Load', 'neighborhood-shortname'))
-    optparser.add_option(
-        '--skip-frs-download', action='store_true', dest='skip_frs_download',
-        default=config.getboolean('Extract', 'skip-frs-download'))
-    optparser.add_option(
-        '--skip-unsupported-check', action='store_true', dest='skip_unsupported_check',
-        default=config.getboolean('Extract', 'skip-unsupported-check'))
+    defaults=dict(
+        api_url=None,
+        attachment_url='/sf/%s/do/%s/',
+        default_wiki_text='PRODUCT NAME HERE',
+        username=None,
+        password=None,
+        output_dir='teamforge-export/',
+        list_project_ids=False,
+        neighborhood=None,
+        neighborhood_shortname=None,
+        skip_frs_download=False,
+        skip_unsupported_check=False)
+    optparser = get_parser(defaults)
     options, project_ids = optparser.parse_args()
+    if options.config_file and os.path.exists(options.config_file):
+        config = ConfigParser()
+        config.read(options.config_file)
+        defaults.update(
+            (k, eval(v)) for k,v in config.items('teamforge-import'))
+        optparser = get_parser(defaults)
+        options, project_ids = optparser.parse_args()
 
     # neither specified, so do both
     if not options.extract and not options.load:
@@ -835,6 +791,52 @@ def get_files(project):
     save(json.dumps(frs_mapping), project, 'frs_mapping.json')
 
 
+def get_parser(defaults):
+    optparser = OptionParser(
+        usage=('%prog [--options] [projID projID projID]\n'
+               'If no project ids are given, all projects will be migrated'))
+    optparser.set_defaults(**defaults)
+
+    # Command-line-only options
+    optparser.add_option(
+        '--extract-only', action='store_true', dest='extract',
+        help='Store data from the TeamForge API on the local filesystem; not load into Allura')
+    optparser.add_option(
+        '--load-only', action='store_true', dest='load',
+        help='Load into Allura previously-extracted data')
+    optparser.add_option(
+        '--config-file', dest='config_file',
+        help='Load options from config file')
+
+    # Command-line options with defaults in config file
+    optparser.add_option(
+        '--api-url', dest='api_url', help='e.g. https://hostname/ce-soap50/services/')
+    optparser.add_option(
+            '--attachment-url', dest='attachment_url')
+    optparser.add_option(
+            '--default-wiki-text', dest='default_wiki_text',
+            help='used in determining if a wiki page text is default or changed')
+    optparser.add_option(
+        '-u', '--username', dest='username')
+    optparser.add_option(
+        '-p', '--password', dest='password')
+    optparser.add_option(
+        '-o', '--output-dir', dest='output_dir')
+    optparser.add_option(
+        '--list-project-ids', action='store_true', dest='list_project_ids')
+    optparser.add_option(
+        '-n', '--neighborhood', dest='neighborhood',
+        help='Neighborhood full name, to load in to')
+    optparser.add_option(
+        '--n-shortname', dest='neighborhood_shortname',
+        help='Neighborhood shortname, for PFS extract SQL')
+    optparser.add_option(
+        '--skip-frs-download', action='store_true', dest='skip_frs_download')
+    optparser.add_option(
+        '--skip-unsupported-check', action='store_true', dest='skip_unsupported_check')
+
+    return optparser
+    
 if __name__ == '__main__':
     logging.basicConfig(level=logging.WARN)
     log.setLevel(logging.DEBUG)
