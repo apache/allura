@@ -40,6 +40,15 @@
   {% if c.project.deleted %}
     <div class="notice">This project has been deleted and is not visible to non-admin users</div>
   {% endif %}
+    
+    <h3>Project Labels</h3>
+    <div class="grid-19 trove_add_container">
+      <form method="POST" class="can-retry" action="update_labels" id="label_edit_form">
+        {{ c.label_edit.display(id='labels', name='labels', value=c.project.labels) }}
+        <br style="clear:both">
+        <input type="submit" value="Save">
+      </form>
+    </div>
   {{show_trove_base_cat(topic_trove)}}
   {{show_trove_base_cat(license_trove)}}
   {% for base in base_troves if base.shortname != 'topic' and base.shortname != 'license' %}

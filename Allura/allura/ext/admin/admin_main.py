@@ -171,7 +171,6 @@ class ProjectAdminController(BaseController):
     @expose('jinja:allura.ext.admin:templates/project_overview.html')
     def overview(self, **kw):
         c.markdown_editor = W.markdown_editor
-        c.label_edit = W.label_edit
         categories = M.ProjectCategory.query.find(dict(parent_id=None)).sort('label').all()
         show_export_control = asbool(config.get('show_export_control', False))
         return dict(categories=categories,show_export_control=show_export_control)
@@ -186,6 +185,7 @@ class ProjectAdminController(BaseController):
     @without_trailing_slash
     @expose('jinja:allura.ext.admin:templates/project_trove.html')
     def trove(self):
+        c.label_edit = W.label_edit
         base_troves = M.TroveCategory.query.find(dict(trove_parent_id=0)).sort('fullname').all()
         topic_trove = M.TroveCategory.query.get(trove_parent_id=0,shortname='topic')
         license_trove = M.TroveCategory.query.get(trove_parent_id=0,shortname='license')
@@ -206,6 +206,12 @@ class ProjectAdminController(BaseController):
             roles=M.ProjectRole.query.find(dict(project_id=c.project.root_project._id)).sort('_id').all(),
             categories=M.ProjectCategory.query.find(dict(parent_id=None)).sort('label').all())
 
+    @expose()
+    @require_post()
+    def update_labels(self, labels=None, labels_old=None, **kw):
+        c.project.labels = labels.split(',')
+        redirect(request.referer)
+ 
     @without_trailing_slash
     @expose()
     def clone(self,
