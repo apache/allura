@@ -768,8 +768,12 @@ def get_homepage_wiki(project):
     if homepage:
         save(homepage, project, 'wiki', 'homepage_text.markdown')
         for img_ref in find_image_references(homepage):
-            filename = img_ref.split('/')[-1]
-            download_file('wiki', project.path + '/wiki/' + img_ref, project.id, 'wiki', 'homepage', filename)
+            if '://' in img_ref:
+                img_url = img_ref
+            else:
+                filename = img_ref.split('/')[-1]
+                img_url = project.path + '/wiki/' + img_ref
+            download_file('wiki', img_url, project.id, 'wiki', 'homepage', filename)
 
     for path, text in pages.iteritems():
         if options.default_wiki_text in text:
@@ -777,8 +781,12 @@ def get_homepage_wiki(project):
         else:
             save(text, project, 'wiki', path+'.markdown')
             for img_ref in find_image_references(text):
-                filename = img_ref.split('/')[-1]
-                download_file('wiki', project.path + '/wiki/' + img_ref, project.id, 'wiki', path, filename)
+                if '://' in img_ref:
+                    img_url = img_ref
+                else:
+                    filename = img_ref.split('/')[-1]
+                    img_url = project.path + '/wiki/' + img_ref
+                download_file('wiki', img_url, project.id, 'wiki', path, filename)
 
 def _dir_sql(created_on, project, dir_name, rel_path):
     assert options.neighborhood_shortname
