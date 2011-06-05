@@ -233,9 +233,9 @@ def get_user(orig_username):
         # FIXME: hardcoded SFX integration
         from sfx.model import tables as T
         nu = T.users.insert()
-        nu.execute(user_name=sf_username,
-                   email=user.email.lower(),
-                   realname=user.fullName,
+        nu.execute(user_name=sf_username.encode('utf-8'),
+                   email=user.email.lower().encode('utf-8'),
+                   realname=user.fullName.encode('utf-8'),
                    status='A' if user.status == 'Active' else 'D',
                    language=275, # english trove id
                    timezone=user.timeZone,
