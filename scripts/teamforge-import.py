@@ -634,9 +634,12 @@ def download_file(tool, url_path, *filepaths):
     if not os.path.exists(os.path.dirname(out_file)):
         os.makedirs(os.path.dirname(out_file))
 
-    hostname = urlparse(options.api_url).hostname
-    scheme = urlparse(options.api_url).scheme
-    url = scheme + '://' + hostname + action_url + url_path
+    if '://' in url_path:
+        url = url_path
+    else:
+        hostname = urlparse(options.api_url).hostname
+        scheme = urlparse(options.api_url).scheme
+        url = scheme + '://' + hostname + action_url + url_path
     log.debug('fetching %s' % url)
     statusCheckingURLopener.retrieve(url, out_file)
     return out_file
