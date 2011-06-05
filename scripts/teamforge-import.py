@@ -768,10 +768,10 @@ def get_homepage_wiki(project):
     if homepage:
         save(homepage, project, 'wiki', 'homepage_text.markdown')
         for img_ref in find_image_references(homepage):
+            filename = img_ref.split('/')[-1]
             if '://' in img_ref:
                 img_url = img_ref
             else:
-                filename = img_ref.split('/')[-1]
                 img_url = project.path + '/wiki/' + img_ref
             download_file('wiki', img_url, project.id, 'wiki', 'homepage', filename)
 
@@ -781,10 +781,10 @@ def get_homepage_wiki(project):
         else:
             save(text, project, 'wiki', path+'.markdown')
             for img_ref in find_image_references(text):
+                filename = img_ref.split('/')[-1]
                 if '://' in img_ref:
                     img_url = img_ref
                 else:
-                    filename = img_ref.split('/')[-1]
                     img_url = project.path + '/wiki/' + img_ref
                 download_file('wiki', img_url, project.id, 'wiki', path, filename)
 
