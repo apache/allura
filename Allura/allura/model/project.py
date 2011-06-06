@@ -1,3 +1,4 @@
+
 import logging
 from datetime import datetime, timedelta
 
@@ -516,6 +517,8 @@ class Project(MappedClass):
         is_user_project=False,
         is_private_project=False):
         from allura import model as M
+        self.notifications_disabled = True
+        session(self).flush(self)
         if users is None: users = [ c.user ]
         if apps is None:
             if is_user_project:
@@ -557,6 +560,7 @@ class Project(MappedClass):
                     home_app.show_discussion = False
                     home_app.show_left_bar = False
             self.database_configured = True
+            self.notifications_disabled = False
             ThreadLocalORMSession.flush_all()
 
     def add_user(self, user, role_names):
