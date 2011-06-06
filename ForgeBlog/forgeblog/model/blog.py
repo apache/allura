@@ -8,8 +8,7 @@ from ming import schema
 from ming.orm import FieldProperty, Mapper, session, state
 from allura import model as M
 from allura.lib import helpers as h
-from allura.lib import utils
-from allura.lib import patience
+from allura.lib import utils, patience, htmltruncate
 
 config = utils.ConfigProxy(
     common_suffix='forgemail.domain')
@@ -84,10 +83,8 @@ class BlogPost(M.VersionedArtifact):
 
     @property
     def html_text_preview(self):
-        indicator = '...[read more](%s)' % self.url()
-        return g.markdown.convert(h.text.truncate(self.text, length=200,
-                                                  indicator=indicator,
-                                                  whole_word=True))
+        indicator = '... [read more](%s)' % self.url()
+        return g.markdown.convert(htmltruncate.truncate(self.text, 200, ellipsis=indicator))
 
     @property
     def email_address(self):
