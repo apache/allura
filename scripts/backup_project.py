@@ -64,14 +64,14 @@ def dump_project(project, dirname):
         visited_collections[fqname] = cls
         if 'project_id' in m.property_index:
             # Dump the things directly related to the project
-            oq = cls.query.find(dict(project_id=project._id), validate=False)
+            oq = dict(project_id=project._id)
         elif 'app_config_id' in m.property_index:
             # ... and the things related to its apps
-            oq = cls.query.find(dict(app_config_id={'$in':app_config_ids}), validate=False)
+            oq = dict(app_config_id={'$in':app_config_ids})
         else:
             # Don't dump other things
             continue
-        num_objs = oq.count()
+        num_objs = cls.query.find(oq).count()
         if num_objs == 0: continue
         if not os.path.exists(os.path.join(dirname, dbname)):
             os.mkdir(os.path.join(dirname, dbname))
@@ -82,7 +82,7 @@ def dump_project(project, dirname):
         log.info('%s: dumping %s objects to %s',
                  cname, num_objs, fname)
         with open(os.path.join(dirname, fname), 'w') as fp:
-            for obj in oq.ming_cursor: _write_bson(fp, obj)
+            for obj in cls.query.find(oq, validate=False).ming_cursor: _write_bson(fp, obj)
 
 if __name__ == '__main__':
     sys.exit(main())

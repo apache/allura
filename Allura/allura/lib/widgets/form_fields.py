@@ -359,11 +359,12 @@ class Lightbox(ew_core.Widget):
         yield onready('''
             var $lightbox = $('#lightbox_%s');
             var $trigger = $('%s');
-            $trigger.bind('click', function() {
+            $trigger.bind('click', function(e) {
                 $lightbox.lightbox_me();
                 return false;
             });
-            $('.close', $lightbox).bind('click', function() {
-                $lightbox.hide();
+            $($lightbox).delegate('.close', 'click', function(e) {
+                $lightbox.trigger('close');
+                return false;
             });
         ''' % (self.name, self.trigger))
