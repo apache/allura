@@ -17,7 +17,6 @@ import string
 
 import sqlalchemy
 from suds.client import Client
-from suds import WebFault
 from ming.orm.ormsession import ThreadLocalORMSession
 from ming.base import Object
 
@@ -195,7 +194,7 @@ def get_project(project):
 
 def get_user(orig_username):
     'returns an allura User object'
-    sf_username = make_valid_sf_username(username)
+    sf_username = make_valid_sf_username(orig_username)
 
     u = M.User.by_username(sf_username)
 
@@ -942,7 +941,7 @@ def test_make_valid_sf_username():
         # basic
         'foo':'foo-mmi',
         # lookup
-        'rlevy':'ramilevy', 
+        'rlevy':'ramilevy',
         # too long
         'u012345678901234567890': 'u0123456789-mmi',
         'foo^213': 'foo213-mmi'
