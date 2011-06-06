@@ -195,28 +195,7 @@ def get_project(project):
 
 def get_user(orig_username):
     'returns an allura User object'
-    sf_username = orig_username.replace('_','-').lower()
-
-    # FIXME username translation is hardcoded here:
-    sf_username = dict(
-        rlevy = 'ramilevy',
-        mkeisler = 'mkeisler',
-        bthale = 'bthale',
-        mmuller = 'mattjustmull',
-        MalcolmDwyer = 'slagheap',
-        tjyang = 'tjyang',
-        manaic = 'maniac76',
-        srinid = 'cnudav',
-        es = 'est016',
-        david_peyer = 'david-mmi',
-        okruse = 'ottokruse',
-        jvp = 'jvpmoto',
-        dmorelli = 'dmorelli',
-    ).get(sf_username, sf_username + '-mmi')
-    if len(sf_username) > 15:
-        adjusted_username = sf_username[0:15-4] + '-mmi'
-        log.error('invalid sf_username length: %s   Changing it to %s' % (sf_username, adjusted_username))
-        sf_username = adjusted_username
+    sf_username = make_valid_sf_username(username)
 
     u = M.User.by_username(sf_username)
 
@@ -918,11 +897,58 @@ def get_parser(defaults):
 
     return optparser
 
+re_username = re.compile(r"^[a-z\-0-9]+$")
+def make_valid_sf_username(orig_username):
+    sf_username = orig_username.replace('_','-').lower()
+
+    # FIXME username translation is hardcoded here:
+    sf_username = dict(
+        rlevy = 'ramilevy',
+        mkeisler = 'mkeisler',
+        bthale = 'bthale',
+        mmuller = 'mattjustmull',
+        MalcolmDwyer = 'slagheap',
+        tjyang = 'tjyang',
+        manaic = 'maniac76',
+        srinid = 'cnudav',
+        es = 'est016',
+        david_peyer = 'david-mmi',
+        okruse = 'ottokruse',
+        jvp = 'jvpmoto',
+        dmorelli = 'dmorelli',
+    ).get(sf_username, sf_username + '-mmi')
+
+    if not re_username.match(sf_username):
+        adjusted_username = ''.join(
+            ch for ch in sf_username[:-4]
+            if ch.isalnum() or ch == '-') + '-mmi'
+        log.error('invalid sf_username characters: %s Changing it to %s',
+                  sf_username, adjusted_username)
+        sf_username = adjusted_username
+    if len(sf_username) > 15:
+        adjusted_username = sf_username[0:15-4] + '-mmi'
+        log.error('invalid sf_username length: %s   Changing it to %s',
+                  sf_username, adjusted_username)
+        sf_username = adjusted_username
+    return sf_username
+
 if __name__ == '__main__':
     logging.basicConfig(level=logging.WARN)
     log.setLevel(logging.DEBUG)
     main()
 
+def test_make_valid_sf_username():
+    tests = {
+        # basic
+        'foo':'foo-mmi',
+        # lookup
+        'rlevy':'ramilevy', 
+        # too long
+        'u012345678901234567890': 'u0123456789-mmi',
+        'foo^213': 'foo213-mmi'
+        }
+    for k,v in tests.iteritems():
+        assert make_valid_sf_username(k) == v
 
 def test_convert_post_content():
     text = '''rel100? or ?rel101 or rel102 or rel103a or rel104'''
