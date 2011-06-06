@@ -3,6 +3,7 @@
 import os, re, sys, subprocess
 
 signoff = re.compile('^Signed-off-by: ', flags=re.MULTILINE)
+parent = re.compile('^parent ', flags=re.MULTILINE)
 no_commit = '0' * 40
 
 
@@ -16,7 +17,7 @@ def git_user():
     if 'GITOSIS_USER' in os.environ:
         user = os.environ['GITOSIS_USER']
     else:
-        user = run('id', '-u', '-n')
+        user = run('id', '-u', '-n')[0][:-1]
     if user == 'scollins':
         user = 'wolf'
     if user == 'jwh':
@@ -33,8 +34,10 @@ def unwrap_commit_ids(git_output):
 def all_commits_signed_off(from_rev, to_rev):
     commits = unwrap_commit_ids(run('git', 'rev-list', '%s..%s' % (from_rev, to_rev)))
     for commit in commits:
-        body = ''.join(run('git', 'log', '-1', '--format=format:%b', commit))
-        if not signoff.search(body):
+        raw_commit = ''.join(run('git', 'cat-file', '-p', commit))
+        headers, body = raw_commit.split('\n\n', 1)
+        num_parents = len(parent.findall(headers))
+        if num_parents<2 and not signoff.search(body):
             return False
     return True
 
@@ -53,8 +56,8 @@ def main():
 
     if old_rev == no_commit:
         action = 'create'
-        merge_base = '%s^' % new_rev # not ideal, we don't know how many commits your new branch contains
-            # so you could squeeze unsigned commits into the repo; but you couldn't get them onto master or dev
+        merge_base = unwrap_commit_ids(run('git', 'merge-base', 'master', new_rev))[0]
+            # not ideal, since you probably branched off something more specific than master
     elif new_rev == no_commit:
         action = 'destroy'
     else:
