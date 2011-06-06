@@ -2502,7 +2502,7 @@ div.attachment_thumb .file_type span {
   overflow: hidden;
   *zoom: 1;
   margin: 0 10px;
-  height: 230px;
+  height: 250px;
   overflow: hidden;
   -moz-box-shadow: #666666 0 2px 4px 0;
   -webkit-box-shadow: #666666 0 2px 4px 0;
@@ -2531,6 +2531,7 @@ div.attachment_thumb .file_type span {
 
 .card h2 {
   margin-top: 15px !important;
+  line-height: 1.2em;
 }
 
 .card .desc {
