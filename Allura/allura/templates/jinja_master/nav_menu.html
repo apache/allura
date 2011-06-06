@@ -3,7 +3,8 @@
   <div id="nav_menu_missing"></div>
 {% else %}
   {% if c.project.neighborhood.icon %}
-    <a href="{{c.project.neighborhood.url()}}"><img src="{{c.project.neighborhood.url()}}/icon" class="neighborhood_icon" alt="Neighborhood Logo"></a>
+    <a href="{{c.project.neighborhood.url()}}"><img src="{{c.project.neighborhood.url()}}/icon" class="neighborhood_icon"
+       alt="Return to {{c.project.neighborhood.name}} Neighborhood" title="Return to {{c.project.neighborhood.name}} Neighborhood"></a>
   {% endif %}
   <a href="{{c.project.url()}}">
     {% if c.project.private_project_of() %}
