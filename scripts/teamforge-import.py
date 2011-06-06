@@ -529,12 +529,15 @@ def import_news(project, pid, frs_mapping, sf_project_shortname):
         for post in posts:
             if '.json' == post[-5:]:
                 post_data = loadjson(pid, 'news', post)
-                p = BM.BlogPost.query.get(title=post_data.title,app_config_id=news_app.config._id)
-                if not p:
-                    p = BM.BlogPost(title=post_data.title,app_config_id=news_app.config._id)
-                p.text = convert_post_content(frs_mapping, sf_project_shortname, post_data.body)
                 create_date = datetime.strptime(post_data.createdOn, '%Y-%m-%d %H:%M:%S')
-                p.timestamp = create_date
+                p = BM.BlogPost.query.get(title=post_data.title,
+                                          timestamp=create_date,
+                                          app_config_id=news_app.config._id)
+                if not p:
+                    p = BM.BlogPost(title=post_data.title,
+                                    timestamp=create_date,
+                                    app_config_id=news_app.config._id)
+                p.text = convert_post_content(frs_mapping, sf_project_shortname, post_data.body)
                 p.mod_date = create_date
                 p.state = 'published'
                 if not p.slug:
