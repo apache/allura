@@ -581,7 +581,7 @@ def load(project_id, *paths):
     in_file = os.path.join(options.output_dir, project_id, *paths)
     with open(in_file) as input:
         content = input.read()
-    return content
+    return unicode(content, 'utf-8')
 
 def loadjson(*args):
     # Object for attribute access
@@ -592,7 +592,7 @@ def save(content, project, *paths):
     if not os.path.exists(os.path.dirname(out_file)):
         os.makedirs(os.path.dirname(out_file))
     with open(out_file, 'w') as out:
-        out.write(content)
+        out.write(content.encode('utf-8'))
 
 class StatusCheckingURLopener(FancyURLopener):
   def http_error_default(self, url, fp, errcode, errmsg, headers):
