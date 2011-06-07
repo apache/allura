@@ -10,6 +10,9 @@ import time
 import json
 from urlparse import urlparse
 from urllib import FancyURLopener
+import urllib2
+import urllib
+from cookielib import CookieJar
 from datetime import datetime
 from ConfigParser import ConfigParser
 import random
@@ -38,6 +41,9 @@ options = None
 s = None # security token
 client = None # main api client
 users = {}
+
+cj = CookieJar()
+loggedInOpener = urllib2.build_opener(urllib2.HTTPCookieProcessor(cj))
 
 def make_client(api_url, app):
     return Client(api_url + app + '?wsdl', location=api_url + app)
@@ -597,11 +603,6 @@ def save(content, project, *paths):
     with open(out_file, 'w') as out:
         out.write(content.encode('utf-8'))
 
-class StatusCheckingURLopener(FancyURLopener):
-  def http_error_default(self, url, fp, errcode, errmsg, headers):
-        raise Exception(errcode)
-statusCheckingURLopener = StatusCheckingURLopener()
-
 def download_file(tool, url_path, *filepaths):
     if tool == 'wiki':
         action = 'viewAttachment'
@@ -622,7 +623,20 @@ def download_file(tool, url_path, *filepaths):
         scheme = urlparse(options.api_url).scheme
         url = scheme + '://' + hostname + action_url + url_path
     log.debug('fetching %s' % url)
-    statusCheckingURLopener.retrieve(url, out_file)
+
+    resp = loggedInOpener.open(url)
+    # if not logged in and this is private, you will get an html response instead of the file
+    # log in to make sure the file should really be html
+    if resp.headers.type == 'text/html':
+        # log in and save the file
+        resp = loggedInOpener.open(scheme + '://' + hostname + "/sf/sfmain/do/login", urllib.urlencode({
+            'username': options.username,
+            'password': options.password,
+            'returnToUrl': url,
+            'sfsubmit': 'submit'
+        }))
+    with open(out_file, 'w') as out:
+        out.write(resp.fp.read())
     return out_file
 
 bracket_macro = re.compile(r'\[(.*?)\]')
