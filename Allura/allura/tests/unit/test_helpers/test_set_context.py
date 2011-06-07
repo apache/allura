@@ -2,11 +2,12 @@ from nose.tools import assert_raises
 from pylons import c
 
 from allura.lib.helpers import set_context
-from allura.lib.exceptions import NoSuchProjectError
+from allura.lib.exceptions import NoSuchProjectError, NoSuchNeighborhoodError
 from allura.tests.unit import WithDatabase
 from allura.tests.unit import patches
 from allura.tests.unit.factories import (create_project,
                                           create_app_config)
+from allura.model.project import Neighborhood
 
 
 class TestWhenProjectIsFoundAndAppIsNot(WithDatabase):
@@ -14,6 +15,19 @@ class TestWhenProjectIsFoundAndAppIsNot(WithDatabase):
         super(TestWhenProjectIsFoundAndAppIsNot, self).setUp()
         self.myproject = create_project('myproject')
         set_context('myproject')
+
+    def test_that_it_sets_the_project(self):
+        assert c.project is self.myproject
+
+    def test_that_it_sets_the_app_to_none(self):
+        assert c.app is None
+
+
+class TestWhenProjectIsFoundInNeighborhood(WithDatabase):
+    def setUp(self):
+        super(TestWhenProjectIsFoundInNeighborhood, self).setUp()
+        self.myproject = create_project('myproject')
+        set_context('myproject', neighborhood=str(self.myproject.neighborhood_id))
 
     def test_that_it_sets_the_project(self):
         assert c.project is self.myproject
@@ -63,3 +77,11 @@ class TestWhenProjectIsNotFound(WithDatabase):
                       set_context,
                       'myproject')
 
+class TestWhenNeighborhoodIsNotFound(WithDatabase):
+    patches = [patches.project_app_loading_patch]
+
+    def test_that_it_raises_an_exception(self):
+        assert_raises(NoSuchNeighborhoodError,
+                      set_context,
+                      'myproject',
+                      neighborhood='myneighborhood')

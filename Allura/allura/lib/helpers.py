@@ -152,12 +152,30 @@ def sharded_path(name, num_parts=2):
         for i in range(num_parts) ]
     return '/'.join(parts)
 
-def set_context(project_shortname, mount_point=None, app_config_id=None):
+def set_context(project_shortname, mount_point=None, app_config_id=None, neighborhood=None):
     from allura import model
-    p = model.Project.query.get(shortname=project_shortname)
+    if not isinstance(neighborhood, model.Neighborhood):
+        if neighborhood is not None:
+            n = model.Neighborhood.query.get(name=neighborhood)
+            if n is None:
+                try:
+                    n = model.Neighborhood.query.get(_id=ObjectId(str(neighborhood)))
+                except InvalidId:
+                    pass
+            if n is None:
+                raise exc.NoSuchNeighborhoodError("Couldn't find neighborhood %s" %
+                                      repr(neighborhood))
+            neighborhood = n
+
+    query = dict(shortname=project_shortname)
+    if neighborhood is not None:
+        query['neighborhood_id'] = neighborhood._id
+    p = model.Project.query.get(**query)
     if p is None:
         try:
-            p = model.Project.query.get(_id=ObjectId(str(project_shortname)))
+            del query['shortname']
+            query['_id'] = ObjectId(str(project_shortname))
+            p = model.Project.query.get(**query)
         except InvalidId:
             pass
 
