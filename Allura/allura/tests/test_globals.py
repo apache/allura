@@ -58,7 +58,7 @@ def test_markdown():
     g.set_project(M.Project.query.get(name='Home Project for Projects'))
     g.set_app('wiki')
     r = g.markdown_wiki.convert('[[neighborhood_feeds tool_name=Wiki]]')
-    assert '[test:wiki] test-admin created page Home' in r, r
+    assert 'WikiPage Home modified by Test Admin' in r, r
     g.markdown.convert("<class 'foo'>") # should not raise an exception
     assert '<br>' not in g.markdown.convert('''# Header
 
