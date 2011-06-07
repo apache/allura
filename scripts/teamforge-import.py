@@ -345,19 +345,19 @@ def create_project(pid, nbhd):
     frs_mapping = loadjson(pid, 'frs_mapping.json')
 
     if 'wiki' in dirs:
-        import_wiki(project,pid)
+        import_wiki(project, pid, nbhd)
     if not project.app_instance('downloads'):
         project.install_app('Downloads', 'downloads')
     if 'forum' in dirs:
-        import_discussion(project, pid, frs_mapping, shortname)
+        import_discussion(project, pid, frs_mapping, shortname, nbhd)
     if 'news' in dirs:
-        import_news(project, pid, frs_mapping, shortname)
+        import_news(project, pid, frs_mapping, shortname, nbhd)
 
     project.notifications_disabled = False
     ThreadLocalORMSession.flush_all()
     return project
 
-def import_wiki(project, pid):
+def import_wiki(project, pid, nbhd):
     from forgewiki import model as WM
     def upload_attachments(page, pid, beginning):
         dirpath = os.path.join(options.output_dir, pid, 'wiki', beginning)
@@ -370,7 +370,7 @@ def import_wiki(project, pid):
     # handle the homepage content
     if 'homepage_text.markdown' in pages:
         home_app = project.app_instance('home')
-        h.set_context(project.shortname, 'home')
+        h.set_context(project.shortname, 'home', neighborhood=nbhd)
         # set permissions and config options
         role_admin = M.ProjectRole.by_name('Admin')._id
         role_anon = M.ProjectRole.by_name('*anonymous')._id
@@ -392,7 +392,7 @@ def import_wiki(project, pid):
         wiki_app = project.app_instance('wiki')
         if not wiki_app:
             wiki_app = project.install_app('Wiki', 'wiki')
-        h.set_context(project.shortname, 'wiki')
+        h.set_context(project.shortname, 'wiki', neighborhood=nbhd)
         # set permissions and config options
         role_admin = M.ProjectRole.by_name('Admin')._id
         role_anon = M.ProjectRole.by_name('*anonymous')._id
@@ -430,12 +430,12 @@ def import_wiki(project, pid):
                     p.commit()
     ThreadLocalORMSession.flush_all()
 
-def import_discussion(project, pid, frs_mapping, sf_project_shortname):
+def import_discussion(project, pid, frs_mapping, sf_project_shortname, nbhd):
     from forgediscussion import model as DM
     discuss_app = project.app_instance('discussion')
     if not discuss_app:
         discuss_app = project.install_app('Discussion', 'discussion')
-    h.set_context(project.shortname, 'discussion')
+    h.set_context(project.shortname, 'discussion', neighborhood=nbhd)
     # set permissions and config options
     role_admin = M.ProjectRole.by_name('Admin')._id
     role_developer = M.ProjectRole.by_name('Developer')._id
@@ -524,14 +524,14 @@ def import_discussion(project, pid, frs_mapping, sf_project_shortname):
             fo.num_posts = fo_num_posts
             ThreadLocalORMSession.flush_all()
 
-def import_news(project, pid, frs_mapping, sf_project_shortname):
+def import_news(project, pid, frs_mapping, sf_project_shortname, nbhd):
     from forgeblog import model as BM
     posts = os.listdir(os.path.join(options.output_dir, pid, 'news'))
     if len(posts):
         news_app = project.app_instance('news')
         if not news_app:
             news_app = project.install_app('blog', 'news', mount_label='News')
-        h.set_context(project.shortname, 'news')
+        h.set_context(project.shortname, 'news', neighborhood=nbhd)
         # make all the blog posts
         for post in posts:
             if '.json' == post[-5:]:
