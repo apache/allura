@@ -259,6 +259,7 @@ def convert_project_shortname(teamforge_path):
         'i1': 'motorola-i1',
         'i9': 'motorola-i9',
         'devplatformforocap': 'ocap-dev-pltfrm',
+        'sitewide': '--init--',
     }.get(sf_shortname, sf_shortname)
 
     if not 3 <= len(sf_shortname) <= 15:
