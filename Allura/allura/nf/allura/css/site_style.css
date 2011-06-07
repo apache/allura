@@ -2244,6 +2244,23 @@ nav .ico {
   font-size: 100%;
 }
 
+.markdown_content p, .markdown_content ul, .markdown_content ol {
+    margin-bottom: 20px;
+}
+
+.markdown_content li p {
+    margin-bottom: 0;
+    padding: 0;
+}
+
+.markdown_content hr {
+    width: auto;
+    margin-left: 0;
+    padding: 0;
+    background-color: transparent;
+    border: none;
+    border-top: 1px solid #ccc;
+}
 
 .media a {
   float: left;
