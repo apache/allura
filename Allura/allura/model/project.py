@@ -343,7 +343,7 @@ class Project(MappedClass):
             if app.is_visible_to(c.user):
                 for sm in app.sitemap:
                     entry = sm.bind_app(app)
-                    entry.ui_icon='tool-%s' % ac.tool_name
+                    entry.ui_icon='tool-%s' % ac.tool_name.lower()
                     ordinal = 'ordinal' in ac.options and ac.options['ordinal'] or 0
                     entries.append({'ordinal':ordinal,'entry':entry})
         entries = sorted(entries, key=lambda e: e['ordinal'])

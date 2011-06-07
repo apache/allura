@@ -2426,17 +2426,17 @@ div.attachment_thumb .file_type span {
 }
 
 
-.ui-icon-tool-Wiki {
+.ui-icon-tool-wiki {
   background-repeat: no-repeat;
 }
 
 
-.ui-icon-tool-Git, .ui-icon-tool-SVN, .ui-icon-tool-Hg {
+.ui-icon-tool-git, .ui-icon-tool-svn, .ui-icon-tool-hg {
   background-repeat: no-repeat;
 }
 
 
-.ui-icon-tool-Stats {
+.ui-icon-tool-stats {
   background-repeat: no-repeat;
 }
 
@@ -2446,22 +2446,22 @@ div.attachment_thumb .file_type span {
 }
 
 
-.ui-icon-tool-Discussion {
+.ui-icon-tool-discussion {
   background-repeat: no-repeat;
 }
 
 
-.ui-icon-tool-Tickets {
+.ui-icon-tool-tickets {
   background-repeat: no-repeat;
 }
 
 
-.ui-icon-tool-Downloads {
+.ui-icon-tool-downloads {
   background-repeat: no-repeat;
 }
 
 
-.ui-icon-tool-Link {
+.ui-icon-tool-link {
   background-repeat: no-repeat;
 }
 
@@ -2471,7 +2471,7 @@ div.attachment_thumb .file_type span {
 }
 
 
-.ui-icon-tool-Chat {
+.ui-icon-tool-chat {
   background-repeat: no-repeat;
 }
 

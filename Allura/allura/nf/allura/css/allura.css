@@ -37,17 +37,17 @@ b.ico.ico-feed { background-position: -16px -176px; }
   background-repeat: no-repeat;
 }
 
-.ui-icon-tool-Wiki {
+.ui-icon-tool-wiki {
   background-image: url("../images/wiki_24.png");
   background-repeat: no-repeat;
 }
 
-.ui-icon-tool-Git, .ui-icon-tool-SVN, .ui-icon-tool-Hg {
+.ui-icon-tool-git, .ui-icon-tool-svn, .ui-icon-tool-hg {
   background-image: url("../images/code_24.png");
   background-repeat: no-repeat;
 }
 
-.ui-icon-tool-Stats {
+.ui-icon-tool-stats {
   background-image: url("../images/stats_24.png");
   background-repeat: no-repeat;
 }
@@ -57,29 +57,29 @@ b.ico.ico-feed { background-position: -16px -176px; }
   background-repeat: no-repeat;
 }
 
-.ui-icon-tool-Discussion {
+.ui-icon-tool-discussion {
   background-image: url("../images/forums_24.png");
   background-repeat: no-repeat;
 }
 
-.ui-icon-tool-Tickets {
+.ui-icon-tool-tickets {
   background-image: url("../images/tickets_24.png");
   background-repeat: no-repeat;
 }
 
 /* TODO: Move to forge-classic per PT#53 */
-.ui-icon-tool-Downloads {
+.ui-icon-tool-downloads {
   background-image: url("../images/downloads_24.png");
   background-repeat: no-repeat;
 }
 
 /* TODO: Move to forge-classic per PT#53 */
-.ui-icon-tool-Summary {
+.ui-icon-tool-summary {
   background-image: url("../images/blog_24.png");
   background-repeat: no-repeat;
 }
 
-.ui-icon-tool-Link {
+.ui-icon-tool-link {
   background-image: url("../images/ext_24.png");
   background-repeat: no-repeat;
 }
@@ -89,7 +89,7 @@ b.ico.ico-feed { background-position: -16px -176px; }
   background-repeat: no-repeat;
 }
 
-.ui-icon-tool-Chat {
+.ui-icon-tool-chat {
   background-image: url("../images/chat_24.png");
   background-repeat: no-repeat;
 }
@@ -102,28 +102,28 @@ b.ico.ico-feed { background-position: -16px -176px; }
 #top_nav .ui-icon-tool-home {
   background-image: url("../images/home_32.png");
 }
-#top_nav .ui-icon-tool-Wiki {
+#top_nav .ui-icon-tool-wiki {
   background-image: url("../images/wiki_32.png");
 }
-#top_nav .ui-icon-tool-Git, #top_nav .ui-icon-tool-SVN, #top_nav .ui-icon-tool-Hg {
+#top_nav .ui-icon-tool-git, #top_nav .ui-icon-tool-svn, #top_nav .ui-icon-tool-hg {
   background-image: url("../images/code_32.png");
 }
-#top_nav .ui-icon-tool-Stats {
+#top_nav .ui-icon-tool-stats {
   background-image: url("../images/stats_32.png");
 }
 #top_nav .ui-icon-tool-admin, #top_nav .ui-icon-admin {
   background-image: url("../images/admin_32.png");
 }
-#top_nav .ui-icon-tool-Discussion {
+#top_nav .ui-icon-tool-discussion {
   background-image: url("../images/forums_32.png");
 }
-#top_nav .ui-icon-tool-Tickets {
+#top_nav .ui-icon-tool-tickets {
   background-image: url("../images/tickets_32.png");
 }
-#top_nav .ui-icon-tool-Downloads {
+#top_nav .ui-icon-tool-downloads {
   background-image: url("../images/downloads_32.png");
 }
-#top_nav .ui-icon-tool-Link {
+#top_nav .ui-icon-tool-link {
   background-image: url("../images/ext_32.png");
 }
 #top_nav .ui-icon-tool-blog {
@@ -136,28 +136,28 @@ b.ico.ico-feed { background-position: -16px -176px; }
 .big_icon.ui-icon-tool-home {
   background-image: url("../images/home_48.png");
 }
-.big_icon.ui-icon-tool-Wiki {
+.big_icon.ui-icon-tool-wiki {
   background-image: url("../images/wiki_48.png");
 }
-.big_icon.ui-icon-tool-Git, .big_icon.ui-icon-tool-SVN, .big_icon.ui-icon-tool-Hg {
+.big_icon.ui-icon-tool-git, .big_icon.ui-icon-tool-svn, .big_icon.ui-icon-tool-hg {
   background-image: url("../images/code_48.png");
 }
-.big_icon.ui-icon-tool-Stats {
+.big_icon.ui-icon-tool-stats {
   background-image: url("../images/stats_48.png");
 }
 .big_icon.ui-icon-tool-admin, .big_icon.ui-icon-admin {
   background-image: url("../images/admin_48.png");
 }
-.big_icon.ui-icon-tool-Discussion {
+.big_icon.ui-icon-tool-discussion {
   background-image: url("../images/forums_48.png");
 }
-.big_icon.ui-icon-tool-Tickets {
+.big_icon.ui-icon-tool-tickets {
   background-image: url("../images/tickets_48.png");
 }
-.big_icon.ui-icon-tool-Downloads {
+.big_icon.ui-icon-tool-downloads {
   background-image: url("../images/downloads_48.png");
 }
-.big_icon.ui-icon-tool-Link {
+.big_icon.ui-icon-tool-link {
   background-image: url("../images/ext_48.png");
 }
 .big_icon.ui-icon-tool-blog {
