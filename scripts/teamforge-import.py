@@ -650,7 +650,7 @@ def wiki2markdown(markup):
         else:
             # regular link
             return '<%s>' % snippet
-    markup = bracket_macro.sub(bracket_handler, markup)
+    markup = bracket_macro.sub(bracket_handler, markup or '')
     markup = h1.sub('#', markup)
     markup = h2.sub('##', markup)
     markup = h3.sub('###', markup)
@@ -668,7 +668,7 @@ def convert_post_content(frs_mapping, sf_project_shortname, text):
                 sf_project_shortname, path, path)
         else:
             return relno
-    text = re_rel.sub(rel_handler, text)
+    text = re_rel.sub(rel_handler, text or '')
     return text
 
 
