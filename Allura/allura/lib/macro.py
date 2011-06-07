@@ -1,5 +1,6 @@
 import cgi
 import shlex
+import string
 import logging
 
 import pymongo
@@ -54,13 +55,32 @@ class parse(object):
         else:
             return None
 
+template_neighborhood_feeds = string.Template('''
+<div class="neighborhood_feed_entry">
+<h3><a href="$href">$title</a></h3>
+<p>
+by <em>$author</em><br>
+<small>$ago</small>
+</p>
+<p>$description</p>
+</div>
+''')
 @macro('neighborhood-wiki')
 def neighborhood_feeds(tool_name, max_number=5, sort='pubdate'):
     from allura import model as M
-    feed = M.Notification.query.find(dict(tool_name=tool_name,neighborhood_id=c.project.neighborhood._id)).sort(sort, pymongo.DESCENDING).limit(int(max_number)).all()
-    output = ''
-    for item in feed:
-        output += '<div class="neighborhood_feed_entry"><h3><a href="%s">%s</a> %s</h3><p>%s</p></div>' % (item.link,item.subject,h.ago(item.pubdate),item.text)
+    feed = M.Feed.query.find(
+        dict(
+            tool_name=tool_name,
+            neighborhood_id=c.project.neighborhood._id))
+    feed = feed.sort(sort, pymongo.DESCENDING).limit(int(max_number)).all()
+    output = '\n'.join(
+        template_neighborhood_feeds.substitute(dict(
+                href=item.link,
+                title=item.title,
+                author=item.author_name,
+                ago=h.ago(item.pubdate),
+                description=item.description))
+        for item in feed)
     return output
 
 @macro('neighborhood-wiki')

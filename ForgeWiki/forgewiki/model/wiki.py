@@ -100,7 +100,7 @@ class Page(VersionedArtifact):
             description = self.text
             subject = '%s created page %s' % (
                 context.user.username, self.title)
-        Feed.post(self, description)
+        Feed.post(self, title=None, description=description)
         Notification.post(
             artifact=self, topic='metadata', text=description, subject=subject)
 

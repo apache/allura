@@ -558,8 +558,10 @@ class Feed(MappedClass):
 
     _id = FieldProperty(S.ObjectId)
     ref_id = ForeignIdProperty('ArtifactReference')
+    neighborhood_id = ForeignIdProperty('Neighborhood')
     project_id = ForeignIdProperty('Project')
     app_config_id = ForeignIdProperty('AppConfig')
+    tool_name=FieldProperty(str)
     title=FieldProperty(str)
     link=FieldProperty(str)
     pubdate = FieldProperty(datetime, if_missing=datetime.utcnow)
@@ -579,8 +581,10 @@ class Feed(MappedClass):
         if description is None: description = title
         item = cls(
             ref_id=artifact.index_id(),
+            neighborhood_id=artifact.app_config.project.neighborhood_id,
             project_id=artifact.app_config.project_id,
             app_config_id=artifact.app_config_id,
+            tool_name=artifact.app_config.tool_name,
             title=title,
             description=description,
             link=artifact.url())
