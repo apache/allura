@@ -294,8 +294,9 @@ def create_project(pid, nbhd):
     if not project:
         private = (data.access_level == 'private')
         log.debug('Creating %s private=%s' % (shortname, private))
+        one_admin = [u.userName for u in data.admins if u.status == 'Active'][0]
         project = nbhd.register_project(shortname,
-                                        get_user(data.data.createdBy),
+                                        get_user(one_admin),
                                         private_project=private)
     project.notifications_disabled = True
     project.name = data.data.title
