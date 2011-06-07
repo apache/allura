@@ -11,7 +11,6 @@ from . import helpers as h
 log = logging.getLogger(__name__)
 
 _macros = {}
-
 class macro(object):
 
     def __init__(self, context=None):
@@ -84,13 +83,19 @@ def neighborhood_feeds(tool_name, max_number=5, sort='pubdate'):
     return output
 
 @macro('neighborhood-wiki')
-def projects(category=None, display_mode='grid', sort='last_updated'):
+def projects(
+    category=None,
+    display_mode='grid',
+    sort='last_updated',
+    labels=''):
     from allura.lib.widgets.project_list import ProjectList
     from allura import model as M
     q = dict(
         neighborhood_id=c.project.neighborhood_id,
         deleted=False,
         shortname={'$ne':'--init--'})
+    if labels:
+        q['labels'] = {'$all':labels.split(',')}
     if category is not None:
         category = M.ProjectCategory.query.get(name=category)
     if category is not None:

@@ -1,14 +1,9 @@
-from os import path, environ
+from urllib import quote
 
 from nose.tools import with_setup
+from pylons import g
 
-import webob
-from urllib import quote
-from tg import config
-from paste.deploy import loadapp
-from paste.script.appinstall import SetupCommand
-from pylons import c, g, session, request
-
+from ming.orm import session
 from alluratest.controller import setup_basic_test, setup_global_objects
 
 from allura import model as M
@@ -28,6 +23,33 @@ def test_app_globals():
     assert g.app_static('css/wiki.css') == '/nf/_static_/Wiki/css/wiki.css', g.app_static('css/wiki.css')
     assert g.url('/foo', a='foo bar') == 'http://localhost:80/foo?a=foo+bar', g.url('/foo', a='foo bar')
     assert g.url('/foo') == 'http://localhost:80/foo', g.url('/foo')
+
+@with_setup(setUp)
+def test_macros():
+    p_test = M.Project.query.get(shortname='test')
+    p_sub1 =  M.Project.query.get(shortname='test/sub1')
+    p_test.labels = [ 'test', 'root' ]
+    p_sub1.labels = [ 'test', 'sub1' ]
+    session(p_test).flush()
+    with h.push_context(M.Neighborhood.query.get(name='Projects').neighborhood_project._id):
+        r = g.markdown_wiki.convert('[[projects]]')
+        assert '<img alt="test Logo"' in r, r
+        assert '<img alt="sub1 Logo"' in r, r
+        r = g.markdown_wiki.convert('[[projects labels=root]]')
+        assert '<img alt="test Logo"' in r, r
+        assert '<img alt="sub1 Logo"' not in r, r
+        r = g.markdown_wiki.convert('[[projects labels=sub1]]')
+        assert '<img alt="test Logo"' not in r, r
+        assert '<img alt="sub1 Logo"' in r, r
+        r = g.markdown_wiki.convert('[[projects labels=test]]')
+        assert '<img alt="test Logo"' in r, r
+        assert '<img alt="sub1 Logo"' in r, r
+        r = g.markdown_wiki.convert('[[projects labels=test,root]]')
+        assert '<img alt="test Logo"' in r, r
+        assert '<img alt="sub1 Logo"' not in r, r
+        r = g.markdown_wiki.convert('[[projects labels=test,sub1]]')
+        assert '<img alt="test Logo"' not in r, r
+        assert '<img alt="sub1 Logo"' in r, r
 
 @with_setup(setUp)
 def test_markdown():
