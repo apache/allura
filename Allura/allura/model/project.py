@@ -451,12 +451,13 @@ class Project(MappedClass):
         toolbar order.'''
         result = []
         for sub in self.direct_subprojects:
-            result.append({'ordinal':sub.ordinal, 'sub':sub})
+            result.append({'ordinal':sub.ordinal, 'sub':sub, 'rank':1})
         for ac in self.app_configs:
             if include_search or ac.tool_name != 'search':
                 ordinal = ac.options.get('ordinal', 0)
-                result.append({'ordinal':ordinal, 'ac':ac})
-        return sorted(result, key=lambda e: e['ordinal'])
+                rank = 0 if ac.options.get('mount_point', None) == 'home' else 1
+                result.append({'ordinal':ordinal, 'ac':ac, 'rank':rank})
+        return sorted(result, key=lambda e: (e['ordinal'], e['rank']))
 
     def first_mount(self, required_access=None):
         '''Returns the first (toolbar order) mount, or the first mount to
