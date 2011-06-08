@@ -89,6 +89,12 @@ class RootController(BaseController):
     def __init__(self):
         setattr(self, 'nav.json', self.nav)
 
+    @expose()
+    @with_trailing_slash
+    def index(self, **kw):
+        url='/projects/' + c.project.get_tool_data('sfx', 'unix_group_name') + '/files/'
+        redirect(url)
+
     @expose('json:')
     def nav(self):
         if c.app.sitemap:
