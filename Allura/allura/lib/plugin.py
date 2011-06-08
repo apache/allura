@@ -11,8 +11,11 @@ from hashlib import sha256
 from base64 import b64encode
 from datetime import datetime
 
-import ldap
-from ldap import modlist
+try:
+    import ldap
+    from ldap import modlist
+except ImportError:
+    ldap = modlist = None
 import pkg_resources
 from tg import config, flash
 from pylons import g, c
