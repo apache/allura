@@ -383,7 +383,7 @@ class Project(MappedClass):
             key=lambda r:r.name.lower())
         return roles
 
-    def install_app(self, ep_name, mount_point=None, mount_label=None, ordinal=0, **override_options):
+    def install_app(self, ep_name, mount_point=None, mount_label=None, ordinal=None, **override_options):
         App = g.entry_points['tool'][ep_name]
         if not mount_point:
             base_mount_point = mount_point = App.default_mount_point
@@ -396,6 +396,8 @@ class Project(MappedClass):
             raise exceptions.ToolError, (
                 'Mount point "%s" is already in use' % mount_point)
         assert self.app_instance(mount_point) is None
+        if ordinal is None:
+            ordinal = self.ordered_mounts(include_search=True)[-1]['ordinal'] + 1
         options = App.default_options()
         options['mount_point'] = mount_point
         options['mount_label'] = mount_label or App.default_mount_label or mount_point
