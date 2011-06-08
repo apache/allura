@@ -49,7 +49,6 @@ setup(
         "Pygments >= 1.1.1",
         "PyYAML >= 3.09",
         "python-openid >= 2.2.4",
-        "python-ldap == 2.3.9",
         "python-dateutil >= 1.4.1",
         "WebOb == 0.9.8",
         "WebTest == 1.2",
