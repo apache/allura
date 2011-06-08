@@ -131,11 +131,4 @@ def truncate(str, target_len, ellipsis = ''):
     if length == target_len:
         return ''.join(retval) + ellipsis
     else:
-        return ''.join(retval)        
-
-if __name__ == "__main__":
-    try:
-        while True:
-            print truncate(raw_input("> "), int(sys.argv[1]))
-    except EOFError:
-        sys.exit(0)
+        return ''.join(retval)
