@@ -58,7 +58,7 @@ template_neighborhood_feeds = string.Template('''
 <div class="neighborhood_feed_entry">
 <h3><a href="$href">$title</a></h3>
 <p>
-by <em>$author</em><br>
+by <em>$author</em>
 <small>$ago</small>
 </p>
 <p>$description</p>
