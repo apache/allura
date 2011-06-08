@@ -33,13 +33,11 @@ PasteScript==1.7.3
 PIL==1.1.7
 poster==0.5
 pyflakes==0.4.0
-Pygments==1.4sf1-20110601
 Pylons==0.9.7
 pymongo==1.9
 Pypeline==0.1dev
 pysolr==2.0.13
 python-dateutil==1.5
-python-ldap==2.3.9
 python-openid==2.2.4
 pytidylib==0.1.2
 PyYAML==3.09
