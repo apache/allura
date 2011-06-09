@@ -575,6 +575,13 @@ class Feed(MappedClass):
     @classmethod
     def post(cls, artifact, title=None, description=None):
         "Create a Feed item"
+        # TODO: fix security system so we can do this correctly and fast
+        from allura import model as M
+        anon = M.User.anonymous()
+        if not security.has_access(artifact, 'read', user=anon):
+            return
+        if not security.has_access(c.project, 'read', user=anon):
+            return
         idx = artifact.index()
         if title is None:
             title='%s modified by %s' % (idx['title_s'], c.user.get_pref('display_name'))

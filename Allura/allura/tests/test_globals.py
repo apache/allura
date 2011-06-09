@@ -1,13 +1,15 @@
 from urllib import quote
 
 from nose.tools import with_setup
-from pylons import g
+from pylons import g, c
 
-from ming.orm import session
+from ming.orm import session, ThreadLocalORMSession
 from alluratest.controller import setup_basic_test, setup_global_objects
 
 from allura import model as M
 from allura.lib import helpers as h
+
+from forgewiki import model as WM
 
 
 def setUp():
@@ -45,11 +47,28 @@ def test_macros():
         assert '<img alt="test Logo"' in r, r
         assert '<img alt="sub1 Logo"' in r, r
         r = g.markdown_wiki.convert('[[projects labels=test,root]]')
-        assert '<img alt="test Logo"' in r, r
+        assert '<img alt="test Logo"' in r, rp 
         assert '<img alt="sub1 Logo"' not in r, r
         r = g.markdown_wiki.convert('[[projects labels=test,sub1]]')
         assert '<img alt="test Logo"' not in r, r
         assert '<img alt="sub1 Logo"' in r, r
+    g.set_project(M.Project.query.get(name='Home Project for Projects'))
+    g.set_app('home')
+    r = g.markdown_wiki.convert('[[neighborhood_feeds tool_name=Wiki]]')
+    assert 'WikiPage Home modified by' in r, r
+    orig_len = len(r)
+    # Make project private & verify we don't see its new feed items
+    proj = M.Project.query.get(shortname='test')
+    c.user = M.User.anonymous()
+    proj.acl.insert(0, M.ACE.deny(
+            c.user.project_role(proj)._id, 'read'))
+    ThreadLocalORMSession.flush_all()
+    pg = WM.Page.query.get(title='Home', app_config_id=c.app.config._id)
+    pg.text = 'Change'
+    pg.commit()
+    r = g.markdown_wiki.convert('[[neighborhood_feeds tool_name=Wiki]]')
+    new_len = len(r)
+    assert new_len == orig_len
 
 @with_setup(setUp)
 def test_markdown():

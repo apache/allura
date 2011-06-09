@@ -84,6 +84,9 @@ class TestFunctionalController(TestController):
         # ...and can't get to the private ticket directly.
         r = self.app.get(ticket_view.request.url, extra_environ=env)
         assert 'Private Ticket' not in r
+        # ... and it doesn't appear in the feed
+        r = self.app.get('/p/test/bugs/feed.atom')
+        assert 'Private Ticket' not in r
 
     def test_two_trackers(self):
         summary = 'test two trackers'
