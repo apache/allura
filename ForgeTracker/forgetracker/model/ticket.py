@@ -344,11 +344,9 @@ class Ticket(VersionedArtifact):
         if self.version > 1:
             hist = TicketHistory.query.get(artifact_id=self._id, version=self.version-1)
             old = hist.data
-            summary = 'Ticket %s has been modified: %s' % (
-                self.ticket_num, self.summary)
-            changes = [
-                summary,
-                'Edited By: %s (%s)' % (c.user.get_pref('display_name'), c.user.username)]
+            changes = ['Ticket %s has been modified: %s' % (
+                    self.ticket_num, self.summary),
+                       'Edited By: %s (%s)' % (c.user.get_pref('display_name'), c.user.username)]
             fields = [
                 ('Summary', old.summary, self.summary),
                 ('Status', old.status, self.status) ]
@@ -374,8 +372,6 @@ class Ticket(VersionedArtifact):
                             tofile='description-new')))
             description = '\n'.join(changes)
         else:
-            summary = 'Ticket %s has been created: %s' % (
-                self.ticket_num, self.summary)
             self.subscribe()
             if self.assigned_to_id:
                 self.subscribe(user=User.query.get(_id=self.assigned_to_id))
@@ -384,7 +380,7 @@ class Ticket(VersionedArtifact):
             Thread(discussion_id=self.app_config.discussion_id,
                    ref_id=self.index_id())
             Notification.post(artifact=self, topic='metadata', text=description, subject=subject)
-        Feed.post(self, summary, description)
+        Feed.post(self, description)
 
     def url(self):
         return self.app_config.url() + str(self.ticket_num) + '/'

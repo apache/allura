@@ -15,7 +15,6 @@ from webhelpers import feedgenerator as FG
 
 from allura.lib import helpers as h
 from allura.lib import security
-from allura.lib import utils
 from .session import main_doc_session, main_orm_session
 from .session import project_doc_session, project_orm_session
 from .session import artifact_orm_session
@@ -572,13 +571,6 @@ class Feed(MappedClass):
     author_link = FieldProperty(str, if_missing=lambda:c.user.url() if hasattr(c, 'user') else None)
     artifact_reference = FieldProperty(S.Deprecated)
 
-    project = RelationProperty('Project')
-    app_config = RelationProperty('AppConfig')
-
-    @property
-    def artifact(self):
-        ref = ArtifactReference.query.get(_id=self.ref_id)
-        return ref.artifact
 
     @classmethod
     def post(cls, artifact, title=None, description=None):
@@ -599,42 +591,6 @@ class Feed(MappedClass):
         return item
 
     @classmethod
-    def items_with_access(
-        cls, q, offset=0, limit=10, sort=None):
-        from allura import model as M
-        for chunk in utils.chunked_find(cls, query=q, sort=sort):
-            project_ids = [ item.project_id for item in chunk ]
-            app_config_ids = [ item.app_config_id for item in chunk ]
-            ref_ids = [ item.ref_id for item in chunk ]
-            projects = dict(
-                (p._id, p.root_project)
-                for p in M.Project.query.find(dict(_id={'$in':project_ids})))
-            app_configs = dict(
-                (ac._id, ac)
-                for ac in M.AppConfig.query.find(dict(_id={'$in':app_config_ids})))
-            artifact_refs = dict(
-                (ref._id, ref.artifact)
-                for ref in ArtifactReference.query.find(dict(_id={'$in':ref_ids})))
-            for item in chunk:
-                project = projects.get(item.project_id)
-                app_config = app_configs.get(item.app_config_id)
-                artifact = artifact_refs.get(item.ref_id)
-                if not security.has_access(project, 'read', c.user, project.root_project):
-                    continue
-                if not security.has_access(app_config, 'read', c.user, project.root_project):
-                    continue
-                if not security.has_access(artifact, 'read', c.user, project.root_project):
-                    continue
-                if offset:
-                    offset -= 1
-                    continue
-                if limit:
-                    limit -= 1
-                elif limit is not None:
-                    break
-                yield item
-
-    @classmethod
     def feed(cls, q, feed_type, title, link, description,
              since=None, until=None, offset=None, limit=None):
         "Produces webhelper.feedgenerator Feed"
@@ -643,22 +599,19 @@ class Feed(MappedClass):
             feed = FG.Atom1Feed(**d)
         elif feed_type == 'rss':
             feed = FG.Rss201rev2Feed(**d)
-        if offset:
-            offset = int(offset)
-        else:
-            offset = 0
-        if limit:
-            limit = int(limit)
-        else:
-            limit = None
         query = defaultdict(dict)
         query.update(q)
         if since is not None:
             query['pubdate']['$gte'] = since
         if until is not None:
             query['pubdate']['$lte'] = until
-        for r in cls.items_with_access(query, offset, limit):
-             feed.add_item(title=r.title,
+        cur = cls.query.find(query)
+        cur = cur.sort('pubdate', pymongo.DESCENDING)
+        if limit is None: limit = 10
+        query = cur.limit(limit)
+        if offset is not None: query = cur.offset(offset)
+        for r in cur:
+            feed.add_item(title=r.title,
                           link=h.absurl(r.link.encode('utf-8')),
                           pubdate=r.pubdate,
                           description=r.description,
