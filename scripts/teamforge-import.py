@@ -59,6 +59,7 @@ def main():
         list_project_ids=False,
         neighborhood=None,
         neighborhood_shortname=None,
+        skip_wiki=False,
         skip_frs_download=False,
         skip_unsupported_check=False)
     optparser = get_parser(defaults)
@@ -123,7 +124,8 @@ def main():
 
                 get_project(project)
                 get_files(project)
-                get_homepage_wiki(project)
+                if not options.skip_wiki:
+                    get_homepage_wiki(project)
                 get_discussion(project)
                 get_news(project)
                 if not options.skip_unsupported_check:
@@ -343,7 +345,7 @@ def create_project(pid, nbhd):
 
     frs_mapping = loadjson(pid, 'frs_mapping.json')
 
-    if 'wiki' in dirs:
+    if not options.skip_wiki and 'wiki' in dirs:
         import_wiki(project, pid, nbhd)
     if not project.app_instance('downloads'):
         project.install_app('Downloads', 'downloads')
@@ -908,6 +910,8 @@ def get_parser(defaults):
         help='Neighborhood shortname, for PFS extract SQL')
     optparser.add_option(
         '--skip-frs-download', action='store_true', dest='skip_frs_download')
+    optparser.add_option(
+        '--skip-wiki', action='store_true', dest='skip_wiki')
     optparser.add_option(
         '--skip-unsupported-check', action='store_true', dest='skip_unsupported_check')
 
