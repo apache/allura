@@ -26,11 +26,6 @@ try:
 except ImportError:
     ForgeWikiApp = None
 
-try:
-    from allura.ext.project_home import ProjectHomeApp
-except ImportError:
-    ProjectHomeApp = None
-
 from .session import main_orm_session
 from .session import project_doc_session, project_orm_session
 from .neighborhood import Neighborhood
@@ -469,6 +464,7 @@ class Project(MappedClass):
     def first_mount(self, required_access=None):
         '''Returns the first (toolbar order) mount, or the first mount to
         which the user has the required access.'''
+        from allura.ext.project_home import ProjectHomeApp
         mounts = self.ordered_mounts()
         if mounts and required_access is None:
             return mounts[0]
@@ -479,7 +475,7 @@ class Project(MappedClass):
                 obj = self.app_instance(mount['ac'])
             else:
                 continue
-            if has_access(obj, required_access) or (ProjectHomeApp and isinstance(obj, ProjectHomeApp)):
+            if has_access(obj, required_access) or isinstance(obj, ProjectHomeApp):
                 return mount
         return None
 
