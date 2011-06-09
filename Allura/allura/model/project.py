@@ -26,6 +26,11 @@ try:
 except ImportError:
     ForgeWikiApp = None
 
+try:
+    from allura.ext.project_home import ProjectHomeApp
+except ImportError:
+    ProjectHomeApp = None
+
 from .session import main_orm_session
 from .session import project_doc_session, project_orm_session
 from .neighborhood import Neighborhood
@@ -474,7 +479,7 @@ class Project(MappedClass):
                 obj = self.app_instance(mount['ac'])
             else:
                 continue
-            if has_access(obj, required_access):
+            if has_access(obj, required_access) or (ProjectHomeApp and isinstance(obj, ProjectHomeApp)):
                 return mount
         return None
 
