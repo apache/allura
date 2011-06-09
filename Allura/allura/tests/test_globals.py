@@ -1,13 +1,14 @@
 from urllib import quote
 
 from nose.tools import with_setup
-from pylons import g
+from pylons import g, c
 
 from ming.orm import session
 from alluratest.controller import setup_basic_test, setup_global_objects
 
 from allura import model as M
 from allura.lib import helpers as h
+from allura.lib import security
 
 
 def setUp():
@@ -50,6 +51,20 @@ def test_macros():
         r = g.markdown_wiki.convert('[[projects labels=test,sub1]]')
         assert '<img alt="test Logo"' not in r, r
         assert '<img alt="sub1 Logo"' in r, r
+    g.set_project(M.Project.query.get(name='Home Project for Projects'))
+    g.set_app('wiki')
+    r = g.markdown_wiki.convert('[[neighborhood_feeds tool_name=Wiki]]')
+    orig_len = len(r)
+    assert 'WikiPage Home modified by' in r, r
+    # Make project private & verify we don't see its feeds
+    proj = M.Project.query.get(shortname='test')
+    c.user = M.User.anonymous()
+    proj.acl.insert(0, M.ACE.deny(
+            c.user.project_role(proj)._id, 'read'))
+    session(proj).flush(proj)
+    r = g.markdown_wiki.convert('[[neighborhood_feeds tool_name=Wiki]]')
+    new_len = len(r)
+    assert new_len < orig_len
 
 @with_setup(setUp)
 def test_markdown():
@@ -79,8 +94,6 @@ def test_markdown():
     assert 'href="..' not in g.markdown.convert('[My foo](./foo)')
     g.set_project(M.Project.query.get(name='Home Project for Projects'))
     g.set_app('wiki')
-    r = g.markdown_wiki.convert('[[neighborhood_feeds tool_name=Wiki]]')
-    assert 'WikiPage Home modified by Test Admin' in r, r
     g.markdown.convert("<class 'foo'>") # should not raise an exception
     assert '<br>' not in g.markdown.convert('''# Header
 

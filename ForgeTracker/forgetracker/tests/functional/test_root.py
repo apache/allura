@@ -68,6 +68,9 @@ class TestFunctionalController(TestController):
         assert '2 results' in index_response
         assert 'Public Ticket' in index_response
         assert 'Private Ticket' in index_response
+        # Creator sees ticket in feed
+        r = self.app.get('/p/test/bugs/feed.atom')
+        assert 'Private Ticket' in r
         # ...and in search results.
         search_response = self.app.get('/p/test/bugs/search/?q=ticket')
         assert '2 results' in search_response
@@ -81,6 +84,10 @@ class TestFunctionalController(TestController):
         r = self.app.get('/p/test/bugs/search/?q=ticket', extra_environ=env)
         assert '1 results' in r
         assert 'Private Ticket' not in r
+        # ...or in feeds
+        r = self.app.get('/p/test/bugs/feed.atom', extra_environ=env)
+        assert 'Private Ticket' not in r
+
         # ...and can't get to the private ticket directly.
         r = self.app.get(ticket_view.request.url, extra_environ=env)
         assert 'Private Ticket' not in r

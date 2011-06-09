@@ -321,3 +321,14 @@ def simple_revoke(acl, role_id, permission):
             remove.append(i)
     for i in reversed(remove):
         acl.pop(i)
+
+def chained_acl(*objs):
+    '''Return an acl which consists of the chained acls of all
+    listed objects and their parent security contexs'''
+    for obj in objs:
+        for ace in obj.acl:
+            yield ace
+        psc = obj.parent_security_context()
+        if psc is None: continue
+        for ace in chained_acl(psc):
+            yield ace

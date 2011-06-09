@@ -67,20 +67,23 @@ by <em>$author</em><br>
 @macro('neighborhood-wiki')
 def neighborhood_feeds(tool_name, max_number=5, sort='pubdate'):
     from allura import model as M
-    feed = M.Feed.query.find(
+    if not h.has_access(c.project.neighborhood, 'read'): return ''
+    max_number = int(max_number)
+    feed = M.Feed.items_with_access(
         dict(
             tool_name=tool_name,
-            neighborhood_id=c.project.neighborhood._id))
-    feed = feed.sort(sort, pymongo.DESCENDING).limit(int(max_number)).all()
-    output = '\n'.join(
+            neighborhood_id=c.project.neighborhood._id),
+        limit=max_number,
+        sort=(sort, pymongo.DESCENDING))
+    items = [
         template_neighborhood_feeds.substitute(dict(
                 href=item.link,
                 title=item.title,
                 author=item.author_name,
                 ago=h.ago(item.pubdate),
                 description=item.description))
-        for item in feed)
-    return output
+        for item in feed]
+    return '\n'.join(items)
 
 @macro('neighborhood-wiki')
 def projects(
