@@ -4,12 +4,10 @@ from optparse import OptionParser
 from pylons import c
 import re
 import os
-import os.path
 from time import mktime
 import time
 import json
 from urlparse import urlparse
-from urllib import FancyURLopener
 import urllib2
 import urllib
 from cookielib import CookieJar
@@ -679,9 +677,10 @@ def convert_post_content(frs_mapping, sf_project_shortname, text):
     def rel_handler(matchobj):
         relno = matchobj.group(1)
         path = frs_mapping.get(relno)
+        n = 'motorola'
         if path:
-            return '<a href="/projects/%s/files/%s">%s</a>' % (
-                sf_project_shortname, path, path)
+            return '<a href="/projects/%s.%s/files/%s">%s</a>' % (
+                sf_project_shortname, n, path, path)
         else:
             return relno
     text = re_rel.sub(rel_handler, text or '')
@@ -976,12 +975,12 @@ def test_convert_post_content():
         rel102='rel/102/',
         rel103='rel/103/',
         rel104='rel/104/')
-    converted = convert_post_content(mapping, 'foo.bar', text)
-    assert 'href="/projects/foo.bar/files/rel/100' in converted, converted
-    assert 'href="/projects/foo.bar/files/rel/101' in converted, converted
-    assert 'href="/projects/foo.bar/files/rel/102' in converted, converted
-    assert 'href="/projects/foo.bar/files/rel/103' not in converted, converted
-    assert 'href="/projects/foo.bar/files/rel/104' in converted, converted
+    converted = convert_post_content(mapping, 'foo', text)
+    assert 'href="/projects/foo.motorola/files/rel/100' in converted, converted
+    assert 'href="/projects/foo.motorola/files/rel/101' in converted, converted
+    assert 'href="/projects/foo.motorola/files/rel/102' in converted, converted
+    assert 'href="/projects/foo.motorola/files/rel/103' not in converted, converted
+    assert 'href="/projects/foo.motorola/files/rel/104' in converted, converted
 
 def test_convert_markup():
 
