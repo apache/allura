@@ -634,7 +634,7 @@ def download_file(tool, url_path, *filepaths):
     else:
         hostname = urlparse(options.api_url).hostname
         scheme = urlparse(options.api_url).scheme
-        url = scheme + '://' + hostname + action_url + url_path
+        url = scheme + '://' + hostname + action_url + urllib.quote(url_path)
     log.debug('fetching %s' % url)
 
     resp = loggedInOpener.open(url)
