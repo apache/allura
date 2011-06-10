@@ -59,6 +59,7 @@ def main():
         list_project_ids=False,
         neighborhood=None,
         neighborhood_shortname=None,
+        use_thread_import_id_when_reloading=False,
         skip_wiki=False,
         skip_frs_download=False,
         skip_unsupported_check=False)
@@ -291,7 +292,7 @@ def create_project(pid, nbhd):
     log.info('Loading: %s %s %s' % (pid, data.data.title, data.data.path))
     shortname = convert_project_shortname(data.data.path)
 
-    project = M.Project.query.get(shortname=shortname)
+    project = M.Project.query.get(shortname=shortname, neighborhood_id=nbhd._id)
     if not project:
         private = (data.access_level == 'private')
         log.debug('Creating %s private=%s' % (shortname, private))
@@ -347,7 +348,7 @@ def create_project(pid, nbhd):
 
     if not options.skip_wiki and 'wiki' in dirs:
         import_wiki(project, pid, nbhd)
-    if not project.app_instance('downloads'):
+    if not options.skip_frs_download and not project.app_instance('downloads'):
         project.install_app('Downloads', 'downloads')
     if 'forum' in dirs:
         import_discussion(project, pid, frs_mapping, shortname, nbhd)
@@ -437,6 +438,7 @@ def import_discussion(project, pid, frs_mapping, sf_project_shortname, nbhd):
     if not discuss_app:
         discuss_app = project.install_app('Discussion', 'discussion')
     h.set_context(project.shortname, 'discussion', neighborhood=nbhd)
+    assert c.app
     # set permissions and config options
     role_admin = M.ProjectRole.by_name('Admin')._id
     role_developer = M.ProjectRole.by_name('Developer')._id
@@ -471,15 +473,23 @@ def import_discussion(project, pid, frs_mapping, sf_project_shortname, nbhd):
                 if '.json' == ending and topic_name in topics:
                     fo_num_topics += 1
                     topic_data = loadjson(pid, 'forum', forum_name, topic)
-                    to = DM.ForumThread.query.get(
+                    thread_query = dict(
                         subject=topic_data.title,
                         discussion_id=fo._id,
                         app_config_id=discuss_app.config._id)
+                    if not options.skip_thread_import_id_when_reloading:
+                        # temporary/transitional.  Just needed the first time
+                        # running with this new code against an existing import
+                        # that didn't have import_ids
+                        thread_query['import_id'] = topic_data.id
+                    to = DM.ForumThread.query.get(**thread_query)
                     if not to:
                         to = DM.ForumThread(
                             subject=topic_data.title,
                             discussion_id=fo._id,
+                            import_id=topic_data.id,
                             app_config_id=discuss_app.config._id)
+                    to.import_id=topic_data.id
                     to_num_replies = 0
                     oldest_post = None
                     newest_post = None
@@ -495,6 +505,7 @@ def import_discussion(project, pid, frs_mapping, sf_project_shortname, nbhd):
                                 thread_id=to._id,
                                 discussion_id=fo._id,
                                 app_config_id=discuss_app.config._id)
+
                             if not p:
                                 p = DM.ForumPost(
                                     _id='%s%s@import' % (post_name,str(discuss_app.config._id)),
@@ -908,6 +919,10 @@ def get_parser(defaults):
     optparser.add_option(
         '--n-shortname', dest='neighborhood_shortname',
         help='Neighborhood shortname, for PFS extract SQL')
+    optparser.add_option(
+        '--skip-thread-import-id-when-reloading', action='store_true',
+        dest='skip_thread_import_id_when_reloading'
+    )
     optparser.add_option(
         '--skip-frs-download', action='store_true', dest='skip_frs_download')
     optparser.add_option(
