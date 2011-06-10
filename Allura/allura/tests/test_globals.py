@@ -47,7 +47,7 @@ def test_macros():
         assert '<img alt="test Logo"' in r, r
         assert '<img alt="sub1 Logo"' in r, r
         r = g.markdown_wiki.convert('[[projects labels=test,root]]')
-        assert '<img alt="test Logo"' in r, rp 
+        assert '<img alt="test Logo"' in r, r
         assert '<img alt="sub1 Logo"' not in r, r
         r = g.markdown_wiki.convert('[[projects labels=test,sub1]]')
         assert '<img alt="test Logo"' not in r, r

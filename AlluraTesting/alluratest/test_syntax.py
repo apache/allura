@@ -40,11 +40,11 @@ def test_pyflakes():
                  if '/migrations/' not in f and f.strip()]
     for files in grouper(20, all_files, fillvalue=''):
         cmd = "pyflakes " + ' '.join(files) + " | grep -v '" + "' | grep -v '".join(skips) + "'"
-        print 'Command was: %s' % cmd
+        #print 'Command was: %s' % cmd
         retval = run(cmd)
         if retval != 1:
             print
-            print 'Command was: %s' % cmd
+            #print 'Command was: %s' % cmd
             print 'Returned %s' % retval
             error = True
 
