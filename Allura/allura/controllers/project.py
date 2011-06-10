@@ -169,7 +169,7 @@ class NeighborhoodController(object):
         if project_description:
             c.project.short_description = project_description
         ming.orm.ormsession.ThreadLocalORMSession.flush_all()
-        offset = c.project.ordered_mounts(include_search=True)[-1]['ordinal'] + 1
+        offset = int(c.project.ordered_mounts(include_search=True)[-1]['ordinal']) + 1
         for i, tool in enumerate(kw):
             if kw[tool]:
                 c.project.install_app(tool, ordinal=i+offset)

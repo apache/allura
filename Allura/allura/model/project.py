@@ -298,7 +298,7 @@ class Project(MappedClass):
                 for sm in app.main_menu():
                     entry = sm.bind_app(app)
                     entry.ui_icon='tool-%s' % ac.tool_name
-                    ordinal = 'ordinal' in ac.options and ac.options['ordinal'] or 0
+                    ordinal = ac.options.get('ordinal', 0)
                     entry_index[ac.project_id].append({'ordinal':ordinal,'entry':entry})
 
         sitemaps = dict((pid, SitemapEntry('root').children) for pid in pids)
@@ -344,7 +344,7 @@ class Project(MappedClass):
                 for sm in app.sitemap:
                     entry = sm.bind_app(app)
                     entry.ui_icon='tool-%s' % ac.tool_name.lower()
-                    ordinal = 'ordinal' in ac.options and ac.options['ordinal'] or 0
+                    ordinal = ac.options.get('ordinal', 0)
                     entries.append({'ordinal':ordinal,'entry':entry})
         entries = sorted(entries, key=lambda e: e['ordinal'])
         for e in entries:
@@ -397,11 +397,11 @@ class Project(MappedClass):
                 'Mount point "%s" is already in use' % mount_point)
         assert self.app_instance(mount_point) is None
         if ordinal is None:
-            ordinal = self.ordered_mounts(include_search=True)[-1]['ordinal'] + 1
+            ordinal = int(self.ordered_mounts(include_search=True)[-1]['ordinal']) + 1
         options = App.default_options()
         options['mount_point'] = mount_point
         options['mount_label'] = mount_label or App.default_mount_label or mount_point
-        options['ordinal'] = ordinal
+        options['ordinal'] = int(ordinal)
         options.update(override_options)
         h.log_action(log, 'install tool').info(
             'install tool %s', ep_name,
@@ -453,12 +453,12 @@ class Project(MappedClass):
         toolbar order.'''
         result = []
         for sub in self.direct_subprojects:
-            result.append({'ordinal':sub.ordinal, 'sub':sub, 'rank':1})
+            result.append({'ordinal':int(sub.ordinal), 'sub':sub, 'rank':1})
         for ac in self.app_configs:
             if include_search or ac.tool_name != 'search':
                 ordinal = ac.options.get('ordinal', 0)
                 rank = 0 if ac.options.get('mount_point', None) == 'home' else 1
-                result.append({'ordinal':ordinal, 'ac':ac, 'rank':rank})
+                result.append({'ordinal':int(ordinal), 'ac':ac, 'rank':rank})
         return sorted(result, key=lambda e: (e['ordinal'], e['rank']))
 
     def first_mount(self, required_access=None):
