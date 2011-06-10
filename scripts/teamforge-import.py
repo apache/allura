@@ -502,7 +502,7 @@ def import_discussion(project, pid, frs_mapping, sf_project_shortname, nbhd):
                             create_date = datetime.strptime(post_data.createdDate, '%Y-%m-%d %H:%M:%S')
                             p.timestamp = create_date
                             p.author_id = str(get_user(post_data.createdByUserName)._id)
-                            p.text = convert_post_content(frs_mapping, sf_project_shortname, post_data.content)
+                            p.text = convert_post_content(frs_mapping, sf_project_shortname, post_data.content, nbhd)
                             p.status = 'ok'
                             if post_data.replyToId:
                                 p.parent_id = '%s%s@import' % (post_data.replyToId,str(discuss_app.config._id))
@@ -543,7 +543,7 @@ def import_news(project, pid, frs_mapping, sf_project_shortname, nbhd):
                     p = BM.BlogPost(title=post_data.title,
                                     timestamp=create_date,
                                     app_config_id=news_app.config._id)
-                p.text = convert_post_content(frs_mapping, sf_project_shortname, post_data.body)
+                p.text = convert_post_content(frs_mapping, sf_project_shortname, post_data.body, nbhd)
                 p.mod_date = create_date
                 p.state = 'published'
                 if not p.slug:
@@ -673,14 +673,13 @@ def wiki2markdown(markup):
     return markup
 
 re_rel = re.compile(r'\b(rel\d+)\b')
-def convert_post_content(frs_mapping, sf_project_shortname, text):
+def convert_post_content(frs_mapping, sf_project_shortname, text, nbhd):
     def rel_handler(matchobj):
         relno = matchobj.group(1)
         path = frs_mapping.get(relno)
-        n = 'motorola'
         if path:
             return '<a href="/projects/%s.%s/files/%s">%s</a>' % (
-                sf_project_shortname, n, path, path)
+                sf_project_shortname, nbhd.url_prefix.strip('/'), path, path)
         else:
             return relno
     text = re_rel.sub(rel_handler, text or '')
@@ -968,6 +967,8 @@ def test_make_valid_sf_username():
         assert make_valid_sf_username(k) == v
 
 def test_convert_post_content():
+    nbhd = Object()
+    nbhd.url_prefix = '/motorola/'
     text = '''rel100? or ?rel101 or rel102 or rel103a or rel104'''
     mapping = dict(
         rel100='rel/100/',
@@ -975,12 +976,13 @@ def test_convert_post_content():
         rel102='rel/102/',
         rel103='rel/103/',
         rel104='rel/104/')
-    converted = convert_post_content(mapping, 'foo', text)
+    converted = convert_post_content(mapping, 'foo', text, nbhd)
     assert 'href="/projects/foo.motorola/files/rel/100' in converted, converted
     assert 'href="/projects/foo.motorola/files/rel/101' in converted, converted
     assert 'href="/projects/foo.motorola/files/rel/102' in converted, converted
     assert 'href="/projects/foo.motorola/files/rel/103' not in converted, converted
     assert 'href="/projects/foo.motorola/files/rel/104' in converted, converted
+
 
 def test_convert_markup():
 
