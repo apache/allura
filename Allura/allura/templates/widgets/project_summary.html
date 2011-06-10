@@ -13,7 +13,7 @@
   <p class="desc">{{h.text.truncate(value.short_description, 50)}}</p>
   <div class="quik">
     {% for s in sitemap %}
-      <a href="{{s.url}}" class="ui-icon-{{s.ui_icon or 'admin'}}" title="{{s.label}}"><span>{{s.label}}</span></a>
+      <a href="{{s.url}}" class="ui-icon-{{(s.ui_icon or 'admin').lower()}}" title="{{s.label}}"><span>{{s.label}}</span></a>
     {% endfor %}
   </div>
 </div>
