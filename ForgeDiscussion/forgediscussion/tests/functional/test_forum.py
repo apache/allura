@@ -410,6 +410,22 @@ class TestForum(TestController):
         thread_sidebarmenu = str(thread.html.find('div',{'id':'sidebar'}))
         assert '<a href="flag_as_spam" class="sidebar_thread_spam"><b data-icon="^" class="ico ico-flag"></b> <span>Mark as Spam</span></a>' in thread_sidebarmenu
 
+    def test_sidebar_menu_anon(self):
+        r = self.app.get('/discussion/')
+        sidebarmenu = str(r.html.find('div',{'id':'sidebar'}))
+        assert '<a href="/p/test/discussion/create_topic"><b data-icon="+" class="ico ico-plus"></b> <span>Create Topic</span></a>' in sidebarmenu
+        assert '<a href="/p/test/discussion/?new_forum=True"><b data-icon="q" class="ico ico-conversation"></b> <span>Add Forum</span></a>' in sidebarmenu
+        assert '<h3 class="">Help</h3>' in sidebarmenu
+        assert '<a href="/p/test/discussion/help" class="nav_child"><span>Forum Help</span></a>' in sidebarmenu
+        assert '<a href="/p/test/discussion/markdown_syntax" class="nav_child"><span>Markdown Syntax</span></a>' in sidebarmenu
+        assert '<a href="flag_as_spam" class="sidebar_thread_spam"><b data-icon="^" class="ico ico-flag"></b> <span>Mark as Spam</span></a>' not in sidebarmenu
+        thread = self.app.post('/discussion/save_new_topic', params=dict(
+                forum='testforum',
+                subject='AAA',
+                text='aaa')).follow(extra_environ=dict(username='*anonymous'))
+        thread_sidebarmenu = str(thread.html.find('div',{'id':'sidebar'}))
+        assert '<a href="flag_as_spam" class="sidebar_thread_spam"><b data-icon="^" class="ico ico-flag"></b> <span>Mark as Spam</span></a>' not in thread_sidebarmenu
+
     def test_recent_topics_truncated(self):
         r = self.app.post('/discussion/save_new_topic', params=dict(
                 forum='testforum',

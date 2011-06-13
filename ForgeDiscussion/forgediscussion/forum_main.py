@@ -138,8 +138,8 @@ class ForgeDiscussionApp(Application):
                 l.append(SitemapEntry('Admin Forums', c.project.url()+'admin/'+self.config.options.mount_point+'/forums', ui_icon=g.icons['pencil']))
             if moderate_link:
                 l.append(moderate_link)
-            # if we are in a thread, provide placeholder links to use in js
-            if '/thread/' in request.url:
+            # if we are in a thread and not anonymous, provide placeholder links to use in js
+            if '/thread/' in request.url and c.user not in (None, M.User.anonymous()):
                 l.append(SitemapEntry(
                         'Mark as Spam', 'flag_as_spam',
                         ui_icon=g.icons['flag'], className='sidebar_thread_spam'))
