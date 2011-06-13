@@ -296,10 +296,10 @@ class PreferencesController(BaseController):
                preferences=None,
                **kw):
         require_authenticated()
-        if display_name is None:
-            flash("Display Name cannot be empty.",'error')
-            redirect('.')
         if config.get('auth.method', 'local') == 'local':
+            if display_name is None:
+                flash("Display Name cannot be empty.",'error')
+                redirect('.')
             c.user.set_pref('display_name', display_name)
             for i, (old_a, data) in enumerate(zip(c.user.email_addresses, addr or [])):
                 obj = c.user.address_object(old_a)
@@ -324,6 +324,8 @@ class PreferencesController(BaseController):
                 if k == 'results_per_page':
                     v = int(v)
                 c.user.set_pref(k, v)
+        if 'email_format' in preferences:
+            c.user.set_pref('email_format', preferences['email_format'])
         redirect('.')
         
     @h.vardec
