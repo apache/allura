@@ -311,6 +311,7 @@ def create_project(pid, nbhd):
     role_admin = M.ProjectRole.by_name('Admin', project)
     admin_usernames = set()
     for admin in data.admins:
+        # FIXME: skip non-active users
         if admin.userName in skip_perms_usernames:
             continue
         admin_usernames.add(admin.userName)
@@ -321,6 +322,7 @@ def create_project(pid, nbhd):
         ThreadLocalORMSession.flush_all()
     role_developer = M.ProjectRole.by_name('Developer', project)
     for member in data.members:
+        # FIXME: skip non-active users
         if member.userName in skip_perms_usernames:
             continue
         if member.userName in admin_usernames:
@@ -660,6 +662,8 @@ re_stats = re.compile(r'#+ .* [Ss]tatistics\n+(.*\[sf:.*?Statistics\].*)+')
 def wiki2markdown(markup):
     '''
     Partial implementation of http://help.collab.net/index.jsp?topic=/teamforge520/reference/wiki-wikisyntax.html
+    TODO: __ for bold
+    TODO: quote filenames with spaces, e.g. [[img src="foo bar.jpg"]]
     '''
     def bracket_handler(matchobj):
         snippet = matchobj.group(1)
