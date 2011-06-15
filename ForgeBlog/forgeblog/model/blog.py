@@ -63,7 +63,8 @@ class BlogPost(M.VersionedArtifact):
     state = FieldProperty(schema.OneOf('draft', 'published'), if_missing='draft')
 
     def author(self):
-        return M.User.query.get(_id=self.history().first().author.id) or M.User.anonymous
+        '''The author of the first snapshot of this BlogPost'''
+        return M.User.query.get(_id=self.get_version(1).author.id) or M.User.anonymous
 
     def _get_date(self):
         return self.timestamp.date()
@@ -142,7 +143,7 @@ class BlogPost(M.VersionedArtifact):
                     'v%d' % v2.version))
             description = diff
             if v1.state != 'published' and v2.state == 'published':
-                M.Feed.post(self, self.title, self.text)
+                M.Feed.post(self, self.title, self.text, author=self.author())
                 description = self.text
                 subject = '%s created post %s' % (
                     c.user.username, self.title)
@@ -157,7 +158,7 @@ class BlogPost(M.VersionedArtifact):
             subject = '%s created post %s' % (
                 c.user.username, self.title)
             if self.state == 'published':
-                M.Feed.post(self, self.title, self.text)
+                M.Feed.post(self, self.title, self.text, author=self.author())
         if self.state == 'published':
             M.Notification.post(
                 artifact=self, topic='metadata', text=description, subject=subject)

@@ -573,7 +573,7 @@ class Feed(MappedClass):
 
 
     @classmethod
-    def post(cls, artifact, title=None, description=None):
+    def post(cls, artifact, title=None, description=None, author=None):
         "Create a Feed item"
         # TODO: fix security system so we can do this correctly and fast
         from allura import model as M
@@ -586,6 +586,7 @@ class Feed(MappedClass):
         if title is None:
             title='%s modified by %s' % (idx['title_s'], c.user.get_pref('display_name'))
         if description is None: description = title
+        if author is None: author = c.user
         item = cls(
             ref_id=artifact.index_id(),
             neighborhood_id=artifact.app_config.project.neighborhood_id,
@@ -594,7 +595,9 @@ class Feed(MappedClass):
             tool_name=artifact.app_config.tool_name,
             title=title,
             description=description,
-            link=artifact.url())
+            link=artifact.url(),
+            author_name=author.get_pref('display_name'),
+            author_link=author.url())
         return item
 
     @classmethod
