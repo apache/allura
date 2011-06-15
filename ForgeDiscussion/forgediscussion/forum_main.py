@@ -170,7 +170,6 @@ class ForgeDiscussionApp(Application):
                 l.append(SitemapEntry('Forums'))
                 l = l + forum_links
             l.append(SitemapEntry('Help'))
-            l.append(SitemapEntry('Forum Help', c.app.url + 'help', className='nav_child'))
             l.append(SitemapEntry('Markdown Syntax', c.app.url + 'markdown_syntax', className='nav_child'))
             return l
         except: # pragma no cover

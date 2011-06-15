@@ -253,11 +253,6 @@ class TestForum(TestController):
         r = self.app.get('/discussion/search')
         r = self.app.get('/discussion/search', params=dict(q='foo'))
 
-    def test_render_help(self):
-        summary = 'test render help'
-        r = self.app.get('/discussion/help')
-        assert 'Forum Help' in r
-
     def test_render_markdown_syntax(self):
         summary = 'test render markdown syntax'
         r = self.app.get('/discussion/markdown_syntax')
@@ -400,7 +395,6 @@ class TestForum(TestController):
         assert '<a href="/p/test/discussion/create_topic"><b data-icon="+" class="ico ico-plus"></b> <span>Create Topic</span></a>' in sidebarmenu
         assert '<a href="/p/test/discussion/?new_forum=True"><b data-icon="q" class="ico ico-conversation"></b> <span>Add Forum</span></a>' in sidebarmenu
         assert '<h3 class="">Help</h3>' in sidebarmenu
-        assert '<a href="/p/test/discussion/help" class="nav_child"><span>Forum Help</span></a>' in sidebarmenu
         assert '<a href="/p/test/discussion/markdown_syntax" class="nav_child"><span>Markdown Syntax</span></a>' in sidebarmenu
         assert '<a href="flag_as_spam" class="sidebar_thread_spam"><b data-icon="^" class="ico ico-flag"></b> <span>Mark as Spam</span></a>' not in sidebarmenu
         thread = self.app.post('/discussion/save_new_topic', params=dict(
@@ -416,7 +410,6 @@ class TestForum(TestController):
         assert '<a href="/p/test/discussion/create_topic"><b data-icon="+" class="ico ico-plus"></b> <span>Create Topic</span></a>' in sidebarmenu
         assert '<a href="/p/test/discussion/?new_forum=True"><b data-icon="q" class="ico ico-conversation"></b> <span>Add Forum</span></a>' in sidebarmenu
         assert '<h3 class="">Help</h3>' in sidebarmenu
-        assert '<a href="/p/test/discussion/help" class="nav_child"><span>Forum Help</span></a>' in sidebarmenu
         assert '<a href="/p/test/discussion/markdown_syntax" class="nav_child"><span>Markdown Syntax</span></a>' in sidebarmenu
         assert '<a href="flag_as_spam" class="sidebar_thread_spam"><b data-icon="^" class="ico ico-flag"></b> <span>Mark as Spam</span></a>' not in sidebarmenu
         thread = self.app.post('/discussion/save_new_topic', params=dict(

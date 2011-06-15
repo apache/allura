@@ -125,11 +125,6 @@ class RootController(BaseController):
         'Static page explaining markdown.'
         return dict()
 
-    @expose('jinja:forgediscussion:templates/discussionforums/help.html')
-    def help(self):
-        'Static help page.'
-        return dict()
-
     @expose()
     def _lookup(self, id=None, *remainder):
         if id:
