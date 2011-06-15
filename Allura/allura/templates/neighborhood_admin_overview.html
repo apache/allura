@@ -19,11 +19,11 @@
     <label class="grid-4">Redirect</label>
     <div class="grid-14"><input type="text" name="redirect" value="{{neighborhood.redirect}}"/></div>
     <label class="grid-4">Home Content (HTML)</label>
-    <div class="grid-14">{{c.markdown_editor.display(name='homepage', value=neighborhood.homepage)}}</div>
+    <div class="grid-14">{{c.resize_editor.display(name='homepage', value=neighborhood.homepage)}}</div>
     <label class="grid-4">Allow Browsing</label>
     <div class="grid-14"><input type="checkbox" name="allow_browse" {% if neighborhood.allow_browse %}checked="checked"{% endif %}/></div>
     <label class="grid-4">Custom CSS</label>
-    <div class="grid-14"><textarea name="css">{{neighborhood.css}}</textarea></div>
+    <div class="grid-14">{{c.resize_editor.display(name='css', value=neighborhood.css)}}</textarea></div>
     <label class="grid-4">Icon</label>
     <div class="grid-14">
       {% if neighborhood.icon %}
@@ -36,15 +36,10 @@
   </form>
 {% endblock %}
 
-{% block extra_js %}
-  <script type="text/javascript">
-    $('div.editable').each(function () {
-      var $editable = $(this);
-      $('div.viewer', $editable).click(function () {
-        if ($('textarea.auto_resize', $editable)) {
-          $('textarea.auto_resize', $editable)[1].style.height = "200px";
-        }
-      });
-    });
-  </script>
+{% block extra_css %}
+  <style type="text/css">
+    .grid-14 input[type="text"], .grid-14 select, .grid-14 textarea{
+      width: 95%
+    }
+  </style>
 {% endblock %}

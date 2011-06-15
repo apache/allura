@@ -41,7 +41,7 @@ from allura.model.session import main_orm_session
 log = logging.getLogger(__name__)
 
 class W:
-    markdown_editor = ffw.MarkdownEdit()
+    resize_editor = ffw.AutoResizeTextarea()
     project_summary = plw.ProjectSummary()
     add_project = forms.NeighborhoodAddProjectForm(antispam=True)
     page_list = ffw.PageList()
@@ -405,7 +405,7 @@ class NeighborhoodAdminController(object):
     @expose('jinja:allura:templates/neighborhood_admin_overview.html')
     def overview(self):
         self.set_nav()
-        c.markdown_editor = W.markdown_editor
+        c.resize_editor = W.resize_editor
         return dict(neighborhood=self.neighborhood)
 
     @without_trailing_slash
