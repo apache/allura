@@ -32,7 +32,7 @@ class ArtifactSessionExtension(SessionExtension):
         "Update artifact references, and add/update this artifact to solr"
         import allura.tasks.index_tasks
         if not getattr(self.session, 'disable_artifact_index', False):
-            from .stats import CPA
+            from pylons import g
             from .index import ArtifactReference, Shortlink
             from .session import main_orm_session
             # Ensure artifact references & shortlinks exist for new objects
@@ -50,11 +50,11 @@ class ArtifactSessionExtension(SessionExtension):
             if arefs:
                 allura.tasks.index_tasks.add_artifacts.post([ aref._id for aref in arefs ])
             for obj in self.objects_added:
-                CPA.post('create', obj)
+                g.zarkov_event('create', extra=obj.index_id())
             for obj in self.objects_modified:
-                CPA.post('modify', obj)
+                g.zarkov_event('modify', extra=obj.index_id())
             for obj in self.objects_deleted:
-                CPA.post('delete', obj)
+                g.zarkov_event('delete', extra=obj.index_id())
         self.objects_added = []
         self.objects_modified = []
         self.objects_deleted = []

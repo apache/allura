@@ -30,6 +30,7 @@ from pypeline.markup import markup as pypeline_markup
 import ew as ew_core
 import ew.jinja2_ew as ew
 from ming.utils import LazyProperty
+from zarkov import client as zclient
 
 import allura.tasks.event_tasks
 from allura import model as M
@@ -144,6 +145,9 @@ class Globals(object):
             user_prefs=self._cache_eps('allura.user_prefs'),
             )
 
+        # Zarkov logger
+        self._zarkov = None
+
     def _cache_eps(self, section_name, dict_cls=dict):
         d = dict_cls()
         for ep in pkg_resources.iter_entry_points(section_name):
@@ -153,6 +157,40 @@ class Globals(object):
 
     def post_event(self, topic, *args, **kwargs):
         allura.tasks.event_tasks.event.post(topic, *args, **kwargs)
+
+    def zarkov_event(
+        self, event_type,
+        user=None, neighborhood=None, project=None, app=None,
+        extra=None):
+        context = dict(user=None,
+                   neighborhood=None, project=None, tool=None,
+                   mount_point=None)
+        user = user or getattr(c, 'user', None)
+        project = project or getattr(c, 'project', None)
+        app = app or getattr(c, 'app', None)
+        if user: context['user'] = user.username
+        if project:
+            context.update(
+                project=project.shortname,
+                neighborhood=project.neighborhood.name)
+        if app:
+            context.update(
+                tool=app.config.tool_name,
+                mount_point=app.config.options.mount_point)
+        try:
+            if self._zarkov is None:
+                self._zarkov = zclient.ZarkovClient(
+                    config.get('zarkov.host', '127.0.0.1'),
+                    asint(config.get('zarkov.port', '6543')),
+                    password=config.get('zarkov.password'),
+                    mode=config.get('zarkov.mode', 'bson'))
+            self._zarkov.event(event_type, context, extra)
+        except Exception, ex:
+            log.error('Error sending zarkov event(%r): %r', ex, dict(
+                    type=event_type, context=context, extra=extra))
+
+
+
 
     @LazyProperty
     def theme(self):
