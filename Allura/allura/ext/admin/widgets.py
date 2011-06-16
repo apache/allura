@@ -8,6 +8,8 @@ from allura.lib import validators as V
 from allura.lib import security
 from allura.lib.widgets import forms as ff
 
+from bson import ObjectId
+
 class CardField(ew._Jinja2Widget):
     template = 'jinja:allura.ext.admin:templates/admin_widgets/card_field.html'
     defaults = dict(
@@ -16,6 +18,7 @@ class CardField(ew._Jinja2Widget):
         name='Deck',
         icon_name='group',
         items=None,
+        roles=[],
         settings_href=None)
 
     def item_display(self, item):
@@ -58,6 +61,9 @@ class GroupCard(CardField):
 
     def item_id(self, user):
         return user._id
+
+    def role_name(self, role_id):
+        return M.ProjectRole.query.get(_id=ObjectId(role_id)).name
 
 class _GroupSelect(ew.SingleSelectField):
 

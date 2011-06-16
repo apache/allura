@@ -576,8 +576,8 @@ class GroupsController(BaseController):
             user_ids = set(
                 uid and ObjectId(uid)
                 for uid in user_ids)
-            for role in M.ProjectRole.query.find(dict(roles=group._id)):
-                if role.user_id not in user_ids:
+            for role in M.ProjectRole.query.find(dict(user_id={'$ne':None}, roles=group._id)):
+                if role.user_id and role.user_id not in user_ids:
                     role.roles = [ rid for rid in role.roles if rid != group._id ]
         g.post_event('project_updated')
         redirect('.')

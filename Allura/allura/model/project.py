@@ -554,7 +554,7 @@ class Project(MappedClass):
                 for perm in self.permissions ]
             for user in users:
                 pr = user.project_role()
-                pr.roles = [ role_admin._id, role_developer._id, role_member._id ]
+                pr.roles = [ role_admin._id ]
             # Setup apps
             for i, (ep_name, mount_point, label) in enumerate(apps):
                 self.install_app(ep_name, mount_point, label, ordinal=i)

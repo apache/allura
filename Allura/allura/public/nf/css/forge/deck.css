@@ -65,3 +65,12 @@ a:hover {
     color: #0099CC !important;
     text-decoration: underline;
 }
+
+ul.deck ul.subroles {
+    padding-bottom: 1em;
+}
+
+ul.deck ul.subroles li {
+    font-size: 85%;
+    border: none;
+}

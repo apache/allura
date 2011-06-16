@@ -286,6 +286,36 @@ class TestProjectAdmin(TestController):
         # Make sure we can open role page for builtin role
         r = self.app.get('/admin/groups/' + developer_id + '/', validate_chunk=True)
 
+    def test_subroles(self):
+        """Make sure subroles are preserved during group updates."""
+        def check_roles(r):
+            assert r.html.find('input', {'name': 'card-0.id'}).parent \
+                         .find(text='also has the Developer role')
+            assert r.html.find('input', {'name': 'card-1.id'}).parent \
+                         .find(text='also has the Member role')
+
+        r = self.app.get('/admin/groups/')
+        admin_card_id = r.html.find('input', {'name': 'card-0.id'})['value']
+        dev_card_id = r.html.find('input', {'name': 'card-1.id'})['value']
+        member_card_id = r.html.find('input', {'name': 'card-2.id'})['value']
+        admin_id = M.User.by_username('test-admin')._id
+        params = {
+            'card-0.id': admin_card_id,
+            'card-0.value': str(admin_id),
+            'card-0.new': 'test-user',
+            'card-1.id': dev_card_id,
+            'card-1.value': str(admin_id),
+            'card-2.id': member_card_id,
+            'card-2.value': str(admin_id)
+        }
+        # test that subroles are intact after user added
+        r = self.app.post('/admin/groups/update', params=params).follow()
+        check_roles(r)
+        # test that subroles are intact after user deleted
+        del params['card-0.new']
+        r = self.app.post('/admin/groups/update', params=params).follow()
+        check_roles(r)
+
     def test_cannot_add_anon_to_group(self):
         r = self.app.get('/admin/groups/')
         developer_id = r.html.find('input', {'name': 'card-1.id'})['value']
@@ -294,7 +324,8 @@ class TestProjectAdmin(TestController):
                 'card-1.new': ''})
         r = self.app.get('/admin/groups/')
         users = [t.previous.strip() for t in r.html.findAll('input', {'name': 'card-1.value'})]
-        assert len(users) == 0
+        # should still only be 1 user in the dev group (test-admin)
+        assert len(users) == 1
         assert M.ProjectRole.query.find(dict(
                 name='*anonymous', user_id=None,
                 roles={'$ne': []})).count() == 0
@@ -314,7 +345,6 @@ class TestProjectAdmin(TestController):
                 'card-0.value':str(user_id)})
         r = self.app.get('/admin/groups/')
         assert 'test-user' not in str(r), r.showbrowser()
-
 
     def test_new_group(self):
         r = self.app.get('/admin/groups/new', validate_chunk=True)

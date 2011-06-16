@@ -10,9 +10,15 @@
            class="ico-r admin_modal {{g.icons.perm_tool.css}}"></small>
       </a>
       {% endif %}
-      <p><b
+      <p style="padding-bottom: 0"><b
             data-icon="{{g.icons[icon_name].char}}"
-            class="ico x48 {{g.icons[icon_name].css}}"></b></p>
+            class="ico x48 {{g.icons[icon_name].css}}"></b>
+      </p>
+      <ul class="subroles">
+        {% for role_id in roles %}
+        <li class="deboss">also has the {{ widget.role_name(role_id) }} role</li>
+        {% endfor %}
+      </ul>
     </li>
     {% for item in items %}
     <li>
