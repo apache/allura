@@ -317,6 +317,9 @@ class User(MappedClass):
     def by_username(cls, name):
         if not name:
             return cls.anonymous()
+        user = cls.query.get(username=name)
+        if user:
+            return user
         return plugin.AuthenticationProvider.get(request).by_username(name)
 
     @classmethod
