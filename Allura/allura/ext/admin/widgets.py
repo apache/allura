@@ -58,11 +58,11 @@ width: 148px;
 class GroupCard(CardField):
     new_item=ew.InputField(field_type='text', attrs=dict(placeholder='type a username'))
 
-    def item_display(self, user):
-        return user.username
+    def item_display(self, item):
+        return item.user.username
 
-    def item_id(self, user):
-        return user._id
+    def item_id(self, item):
+        return item.user._id
 
     def role_name(self, role_id):
         return M.ProjectRole.query.get(_id=ObjectId(role_id)).name

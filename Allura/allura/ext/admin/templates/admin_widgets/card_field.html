@@ -15,8 +15,10 @@
             class="ico x48 {{g.icons[icon_name].css}}"></b>
       </p>
       <ul class="subroles">
-        {% for role_id in roles %}
-        <li class="deboss">also has the {{ widget.role_name(role_id) }} role</li>
+        {% for role in roles %}
+          {% if role.name %}
+            <li>includes the {{ widget.role_name(role._id) }} group</li>
+          {% endif %}
         {% endfor %}
       </ul>
     </li>

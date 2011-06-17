@@ -289,10 +289,10 @@ class TestProjectAdmin(TestController):
     def test_subroles(self):
         """Make sure subroles are preserved during group updates."""
         def check_roles(r):
-            assert r.html.find('input', {'name': 'card-0.id'}).parent \
-                         .find(text='also has the Developer role')
             assert r.html.find('input', {'name': 'card-1.id'}).parent \
-                         .find(text='also has the Member role')
+                         .find(text='includes the Admin group')
+            assert r.html.find('input', {'name': 'card-2.id'}).parent \
+                         .find(text='includes the Developer group')
 
         r = self.app.get('/admin/groups/')
         admin_card_id = r.html.find('input', {'name': 'card-0.id'})['value']
@@ -324,8 +324,8 @@ class TestProjectAdmin(TestController):
                 'card-1.new': ''})
         r = self.app.get('/admin/groups/')
         users = [t.previous.strip() for t in r.html.findAll('input', {'name': 'card-1.value'})]
-        # should still only be 1 user in the dev group (test-admin)
-        assert len(users) == 1
+        # no user was added
+        assert len(users) == 0
         assert M.ProjectRole.query.find(dict(
                 name='*anonymous', user_id=None,
                 roles={'$ne': []})).count() == 0

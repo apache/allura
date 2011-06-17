@@ -452,7 +452,8 @@ class ProjectRole(MappedClass):
         unique_indexes = [ ('user_id', 'project_id', 'name') ]
         indexes = [
             ('user_id',),
-            ('project_id',)
+            ('project_id',),
+            ('roles',)
             ]
 
     _id = FieldProperty(S.ObjectId)
@@ -548,3 +549,9 @@ class ProjectRole(MappedClass):
         if self.name in ('Admin', 'Developer', 'Member'):
             return None
         return self.project.url() + 'admin/groups/' + str(self._id) + '/'
+
+    def parent_roles(self):
+        return self.query.find({'roles': self._id}).all()
+
+    def users_with_role(self):
+        return self.query.find(dict(project_id=c.project._id,user_id={'$ne':None},roles=self._id)).all()
