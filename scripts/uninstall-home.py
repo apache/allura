@@ -4,6 +4,7 @@ import logging
 from pylons import c
 from ming.orm import session
 from bson import ObjectId
+from mock import Mock, patch
 
 from allura.lib import helpers as h
 from allura import model as M
@@ -17,18 +18,30 @@ log.addHandler(handler)
 def main():
     test = sys.argv[-1] == 'test'
     log.info('Removing "home" tools')
+    affected_projects = 0
+    possibly_orphaned_projects = 0
+    solr_delete = Mock()
     for some_projects in chunked_project_iterator({'neighborhood_id': {'$ne': ObjectId("4be2faf8898e33156f00003e")}}):
         for project in some_projects:
             c.project = project
             old_home_app = project.app_instance('home')
             if isinstance(old_home_app, ProjectHomeApp):
 
+                # would we actually be able to install a wiki?
+                if M.ProjectRole.by_name('Admin') is None:
+                    log.warning('project %s may be orphaned' % project.shortname)
+                    possibly_orphaned_projects += 1
+                    continue
+
+                affected_projects += 1
+
                 # remove the existing home tool
                 if test:
                     log.info('would remove "home" tool from project ' + project.shortname)
                 else:
                     log.info('removing "home" tool from project ' + project.shortname)
-                    project.uninstall_app('home')
+                    with patch('allura.app.g.solr.delete', solr_delete):
+                        project.uninstall_app('home')
 
                 # ...and put a Wiki in its place (note we only create a Wiki if we deleted the old home)
                 if test:
@@ -77,6 +90,14 @@ def main():
 
                 session(project).flush()
             session(project).clear()
+    if test:
+        log.info('%s projects would be updated' % affected_projects)
+    else:
+        log.info('%s projects were updated' % affected_projects)
+    if possibly_orphaned_projects:
+        log.warning('%n possibly orphaned projects found' % possibly_orphaned_projects)
+    if not test:
+        assert solr_delete.call_count == affected_projects, solr_delete.call_count
 
 PAGESIZE=1024
 
