@@ -189,9 +189,6 @@ class Globals(object):
             log.error('Error sending zarkov event(%r): %r', ex, dict(
                     type=event_type, context=context, extra=extra))
 
-
-
-
     @LazyProperty
     def theme(self):
         return plugin.ThemeProvider.get()

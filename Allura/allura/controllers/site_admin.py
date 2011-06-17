@@ -61,15 +61,6 @@ class SiteAdminController(object):
             agg_timings=agg_timings,
             stats=stats[:int(limit)])
 
-    @expose('jinja:allura:templates/site_admin_cpa_stats.html')
-    @without_trailing_slash
-    @validate(dict(since=fev.DateConverter(if_empty=datetime(2011,1,1))))
-    def cpa_stats(self, since=None, **kw):
-        stats = M.CPA.stats(since)
-        if getattr(c, 'validation_exception', None):
-            flash(str(c.validation_exception), 'error')
-        return dict(stats=stats, since=since)
-
     @expose('jinja:allura:templates/site_admin_api_tickets.html')
     def api_tickets(self, **data):
         import json
