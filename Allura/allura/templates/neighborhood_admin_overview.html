@@ -23,7 +23,7 @@
     <label class="grid-4">Allow Browsing</label>
     <div class="grid-14"><input type="checkbox" name="allow_browse" {% if neighborhood.allow_browse %}checked="checked"{% endif %}/></div>
     <label class="grid-4">Custom CSS</label>
-    <div class="grid-14">{{c.resize_editor.display(name='css', value=neighborhood.css)}}</textarea></div>
+    <div class="grid-14">{{c.resize_editor.display(name='css', value=neighborhood.css)}}</div>
     <label class="grid-4">Icon</label>
     <div class="grid-14">
       {% if neighborhood.icon %}
