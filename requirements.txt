@@ -12,7 +12,7 @@ Pygments==1.4sf1-20110601
 sf.phpsession==0.1
 tg.devtools==2.0.2dev-20100628
 TurboGears2==2.1b2dev-20100628
-Zarkov==0.1dev-20110616
+Zarkov==0.1dev-20110617
 gevent==0.13.6
 greenlet==0.3.1
 
