@@ -11,9 +11,8 @@ from allura import model as M
 from forgewiki import model as WM
 from allura.ext.project_home import ProjectHomeApp
 
-log = logging.getLogger(__name__)
-handler = logging.StreamHandler(sys.stdout)
-log.addHandler(handler)
+log = logging.getLogger('uninstall-home')
+log.addHandler(logging.StreamHandler(sys.stdout))
 
 def main():
     test = sys.argv[-1] == 'test'
@@ -21,6 +20,7 @@ def main():
     affected_projects = 0
     possibly_orphaned_projects = 0
     solr_delete = Mock()
+    notification_post = Mock()
     for some_projects in chunked_project_iterator({'neighborhood_id': {'$ne': ObjectId("4be2faf8898e33156f00003e")}}):
         for project in some_projects:
             c.project = project
@@ -55,7 +55,8 @@ def main():
 
                     # re-number all the mounts so the new Wiki comes first
                     mounts = project.ordered_mounts()
-                    new_home_app = project.install_app('Wiki', 'home', 'Home')
+                    with patch('forgewiki.model.wiki.Notification.post', notification_post):
+                        new_home_app = project.install_app('Wiki', 'home', 'Home')
                     mounts = [{'ordinal':0, 'ac':new_home_app.config}] + mounts
                     for i, mount in enumerate(mounts):
                         if 'ac' in mount:
@@ -80,7 +81,8 @@ def main():
                             new_home_page.viewable_by = ['all']
                         new_home_page.title = home_title
                         new_home_page.text = home_text
-                        new_home_page.commit()
+                        with patch('forgewiki.model.wiki.Notification.post', notification_post):
+                            new_home_page.commit()
                     assert new_home_page is not None
                     assert new_home_page.title == home_title
                     assert new_home_page.version == 2
@@ -95,9 +97,10 @@ def main():
     else:
         log.info('%s projects were updated' % affected_projects)
     if possibly_orphaned_projects:
-        log.warning('%n possibly orphaned projects found' % possibly_orphaned_projects)
+        log.warning('%s possibly orphaned projects found' % possibly_orphaned_projects)
     if not test:
         assert solr_delete.call_count == affected_projects, solr_delete.call_count
+        assert notification_post.call_count == 2 * affected_projects, notification_post.call_count
 
 PAGESIZE=1024
 
