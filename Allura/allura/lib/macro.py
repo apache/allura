@@ -95,7 +95,8 @@ def projects(
         deleted=False,
         shortname={'$ne':'--init--'})
     if labels:
-        q['labels'] = {'$all':labels.split(',')}
+        or_labels = labels.split('|')
+        q['$or'] = [{'labels': {'$all': l.split(',')}} for l in or_labels]
     if category is not None:
         category = M.ProjectCategory.query.get(name=category)
     if category is not None:

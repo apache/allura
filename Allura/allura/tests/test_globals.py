@@ -32,8 +32,10 @@ def test_macros():
     p_sub1 =  M.Project.query.get(shortname='test/sub1')
     p_test.labels = [ 'test', 'root' ]
     p_sub1.labels = [ 'test', 'sub1' ]
-    session(p_test).flush()
-    with h.push_context(M.Neighborhood.query.get(name='Projects').neighborhood_project._id):
+    
+    ThreadLocalORMSession.flush_all()
+    
+    with h.push_context(M.Neighborhood.query.get(name='Projects').neighborhood_project._id):      
         r = g.markdown_wiki.convert('[[projects]]')
         assert '<img alt="test Logo"' in r, r
         assert '<img alt="sub1 Logo"' in r, r
@@ -52,6 +54,16 @@ def test_macros():
         r = g.markdown_wiki.convert('[[projects labels=test,sub1]]')
         assert '<img alt="test Logo"' not in r, r
         assert '<img alt="sub1 Logo"' in r, r
+        r = g.markdown_wiki.convert('[[projects labels=root|sub1]]')
+        assert '<img alt="test Logo"' in r, r
+        assert '<img alt="sub1 Logo"' in r, r
+        r = g.markdown_wiki.convert('[[projects labels=test,root|root,sub1]]')
+        assert '<img alt="test Logo"' in r, r
+        assert '<img alt="sub1 Logo"' not in r, r
+        r = g.markdown_wiki.convert('[[projects labels=test,root|test,sub1]]')
+        assert '<img alt="test Logo"' in r, r
+        assert '<img alt="sub1 Logo"' in r, r
+        
     g.set_project(M.Project.query.get(name='Home Project for Projects'))
     g.set_app('home')
     r = g.markdown_wiki.convert('[[neighborhood_feeds tool_name=Wiki]]')
