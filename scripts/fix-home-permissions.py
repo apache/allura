@@ -47,7 +47,7 @@ def main():
                     log.info('...would update acl for home app in project "%s".' % project.shortname)
                 else:
                     log.info('...updating acl for home app in project "%s".' % project.shortname)
-                    home_app.config.acl = new_acl
+                    home_app.config.acl = map(dict, new_acl)
                     session(home_app.config).flush()
 
 PAGESIZE=1024
