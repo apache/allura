@@ -259,24 +259,34 @@ class PreferencesController(BaseController):
         c.form = F.subscription_form
         c.revoke_access = F.oauth_revocation_form
         subscriptions = []
-        for mb in M.Mailbox.query.find(dict(user_id=c.user._id)):
-            try:
-                with h.push_context(mb.project_id):
-                    if mb.app_config:
-                        title = mb.artifact_title
-                        if mb.artifact_url:
-                            title = '<a href="%s">%s</a>' % (mb.artifact_url,title)
-                        subscriptions.append(dict(
-                                _id=mb._id,
-                                project_name=mb.project.name,
-                                mount_point=mb.app_config.options.mount_point,
-                                artifact_title=title,
-                                topic=mb.topic,
-                                type=mb.type,
-                                frequency=mb.frequency.unit,
-                                artifact=mb.artifact_index_id))
-            except exc.NoSuchProjectError:
-                mb.delete() # project went away
+        mailboxes = M.Mailbox.query.find(dict(user_id=c.user._id)).all()
+        projects = dict(
+            (p._id, p) for p in M.Project.query.find(dict(
+                    _id={'$in': [mb.project_id for mb in mailboxes ]})))
+        app_index = dict(
+            (ac._id, ac) for ac in M.AppConfig.query.find(dict(
+                    _id={'$in': [ mb.app_config_id for mb in mailboxes ] })))
+        
+        for mb in mailboxes:
+            project = projects.get(mb.project_id, None)
+            app_config = app_index.get(mb.app_config_id, None)
+            if project is None:
+                mb.delete()
+                continue
+            if app_config is None:
+                continue
+            title = mb.artifact_title
+            if mb.artifact_url:
+                title = '<a href="%s">%s</a>' % (mb.artifact_url,title)
+            subscriptions.append(dict(
+                    _id=mb._id,
+                    project_name=project.name,
+                    mount_point=app_config.options.mount_point,
+                    artifact_title=title,
+                    topic=mb.topic,
+                    type=mb.type,
+                    frequency=mb.frequency.unit,
+                    artifact=mb.artifact_index_id))
         api_token = M.ApiToken.query.get(user_id=c.user._id)
         return dict(
             subscriptions=subscriptions,
