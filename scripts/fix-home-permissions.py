@@ -12,10 +12,11 @@ log = logging.getLogger('fix-home-permissions')
 handler = logging.StreamHandler(sys.stdout)
 log.addHandler(handler)
 
-def main():
-    test = sys.argv[-1] == 'test'
+TEST = sys.argv[-1].lower() == 'test'
 
-    if test:
+def main():
+
+    if TEST:
         log.info('Examining permissions for all Home Wikis')
     else:
         log.info('Fixing permissions for all Home Wikis')
@@ -32,23 +33,21 @@ def main():
                 acl = home_app.acl
 
                 # remove *authenticated create/update permissions
-                for i, ace in enumerate(acl):
-                    if ace.role_id==authenticated_role._id and ace.access==M.ACE.ALLOW and ace.permission in ('create', 'edit', 'delete'):
-                        if test:
-                            log.info('...would delete %s permission for role %s' % (ace.permission, authenticated_role.name))
-                        else:
-                            log.info('...deleting %s permission for role %s' % (ace.permission, authenticated_role.name))
-                            del ace[i]
-
+                new_acl = [ ace
+                    for ace in acl
+                    if not (
+                        ace.role_id==authenticated_role._id and ace.access==M.ACE.ALLOW and ace.permission in ('create', 'edit', 'delete')
+                    )
+                ]
                 # add member create/edit permissions
-                if test:
-                    log.info('...would add create permission for role %s' % member_role.name)
-                    log.info('...would add update permission for role %s' % member_role.name)
+                new_acl.append(M.ACE.allow(member_role._id, 'create'))
+                new_acl.append(M.ACE.allow(member_role._id, 'update'))
+
+                if TEST:
+                    log.info('...would update acl for home app in project "%s".' % project.shortname)
                 else:
-                    log.info('...adding create permission for role %s' % member_role.name)
-                    acl.append(M.ACE.allow(member_role._id, 'create'))
-                    log.info('...adding update permission for role %s' % member_role.name)
-                    acl.append(M.ACE.allow(member_role._id, 'update'))
+                    log.info('...updating acl for home app in project "%s".' % project.shortname)
+                    home_app.config.acl = new_acl
                     session(home_app.config).flush()
 
 PAGESIZE=1024
