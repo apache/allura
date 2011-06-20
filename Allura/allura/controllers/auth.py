@@ -259,13 +259,14 @@ class PreferencesController(BaseController):
         c.form = F.subscription_form
         c.revoke_access = F.oauth_revocation_form
         subscriptions = []
-        mailboxes = M.Mailbox.query.find(dict(user_id=c.user._id)).all()
+        mailboxes = M.Mailbox.query.find(dict(user_id=c.user._id))
+        mailboxes = list(mailboxes.ming_cursor)
         projects = dict(
             (p._id, p) for p in M.Project.query.find(dict(
-                    _id={'$in': [mb.project_id for mb in mailboxes ]})))
+                    _id={'$in': [mb.project_id for mb in mailboxes ]})).ming_cursor)
         app_index = dict(
             (ac._id, ac) for ac in M.AppConfig.query.find(dict(
-                    _id={'$in': [ mb.app_config_id for mb in mailboxes ] })))
+                    _id={'$in': [ mb.app_config_id for mb in mailboxes ] })).ming_cursor)
         
         for mb in mailboxes:
             project = projects.get(mb.project_id, None)
