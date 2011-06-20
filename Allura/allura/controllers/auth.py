@@ -259,7 +259,7 @@ class PreferencesController(BaseController):
         c.form = F.subscription_form
         c.revoke_access = F.oauth_revocation_form
         subscriptions = []
-        mailboxes = M.Mailbox.query.find(dict(user_id=c.user._id))
+        mailboxes = M.Mailbox.query.find(dict(user_id=c.user._id, is_flash=False))
         mailboxes = list(mailboxes.ming_cursor)
         projects = dict(
             (p._id, p) for p in M.Project.query.find(dict(
@@ -272,7 +272,7 @@ class PreferencesController(BaseController):
             project = projects.get(mb.project_id, None)
             app_config = app_index.get(mb.app_config_id, None)
             if project is None:
-                mb.delete()
+                mb.m.delete()
                 continue
             if app_config is None:
                 continue
