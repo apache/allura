@@ -133,6 +133,16 @@ def chunked_find(cls, query=None, pagesize=1024):
         yield results
         page += 1
 
+def lsub_utf8(s, n):
+    '''Useful for returning n bytes of a UTF-8 string, rather than characters'''
+    while len(s) > n:
+        k = n
+        while (ord(s[k]) & 0xc0) == 0x80:
+            k -= 1
+        return s[:k]
+    return s
+
+
 class AntiSpam(object):
     '''Helper class for bot-protecting forms'''
     honey_field_template=string.Template('''<p class="$honey_class">
