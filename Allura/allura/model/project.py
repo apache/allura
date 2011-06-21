@@ -22,7 +22,7 @@ from allura.lib import security
 from allura.lib.security import has_access
 
 try:
-    from forgewiki import ForgeWikiApp
+    from forgewiki.wiki_main import ForgeWikiApp
 except ImportError:
     ForgeWikiApp = None
 
@@ -563,6 +563,15 @@ class Project(MappedClass):
                 if isinstance(home_app, ForgeWikiApp):
                     home_app.show_discussion = False
                     home_app.show_left_bar = False
+                    new_acl = [ ace
+                        for ace in home_app.config.acl
+                        if not (
+                            ace.role_id==role_auth._id and ace.access==M.ACE.ALLOW and ace.permission in ('create', 'edit', 'delete')
+                        )
+                    ]
+                    new_acl.append(M.ACE.allow(role_member._id, 'create'))
+                    new_acl.append(M.ACE.allow(role_member._id, 'update'))
+                    home_app.config.acl = map(dict, new_acl)
             self.database_configured = True
             self.notifications_disabled = False
             ThreadLocalORMSession.flush_all()
