@@ -1,12 +1,12 @@
 import sys
 import logging
-from collections import OrderedDict
 
 from pylons import c
 from ming.orm import session
 from bson import ObjectId
 
 from allura import model as M
+from allura.lib.ordereddict import OrderedDict
 from forgewiki.wiki_main import ForgeWikiApp
 
 log = logging.getLogger('fix-home-permissions')
