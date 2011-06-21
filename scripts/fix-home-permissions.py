@@ -1,5 +1,6 @@
 import sys
 import logging
+from collections import OrderedDict
 
 from pylons import c
 from ming.orm import session
@@ -30,24 +31,24 @@ def main():
                 root_project = project.root_project or project
                 authenticated_role = project_role(root_project, '*authenticated')
                 member_role = project_role(root_project, 'Member')
-                acl = home_app.acl
 
                 # remove *authenticated create/update permissions
-                new_acl = [ ace
-                    for ace in acl
+                new_acl = OrderedDict(
+                    ((ace.role_id, ace.access, ace.permission), ace)
+                    for ace in home_app.acl
                     if not (
                         ace.role_id==authenticated_role._id and ace.access==M.ACE.ALLOW and ace.permission in ('create', 'edit', 'delete')
                     )
-                ]
+                )
                 # add member create/edit permissions
-                new_acl.append(M.ACE.allow(member_role._id, 'create'))
-                new_acl.append(M.ACE.allow(member_role._id, 'update'))
+                new_acl[(member_role._id, M.ACE.ALLOW, 'create')] = M.ACE.allow(member_role._id, 'create')
+                new_acl[(member_role._id, M.ACE.ALLOW, 'update')] = M.ACE.allow(member_role._id, 'update')
 
                 if TEST:
                     log.info('...would update acl for home app in project "%s".' % project.shortname)
                 else:
                     log.info('...updating acl for home app in project "%s".' % project.shortname)
-                    home_app.config.acl = map(dict, new_acl)
+                    home_app.config.acl = map(dict, new_acl.values())
                     session(home_app.config).flush()
 
 PAGESIZE=1024
