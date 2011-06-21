@@ -21,11 +21,6 @@ from allura.lib import exceptions
 from allura.lib import security
 from allura.lib.security import has_access
 
-try:
-    from forgewiki.wiki_main import ForgeWikiApp
-except ImportError:
-    ForgeWikiApp = None
-
 from .session import main_orm_session
 from .session import project_doc_session, project_orm_session
 from .neighborhood import Neighborhood
@@ -521,6 +516,11 @@ class Project(MappedClass):
         is_user_project=False,
         is_private_project=False):
         from allura import model as M
+        try:
+            from forgewiki.wiki_main import ForgeWikiApp
+        except ImportError:
+            ForgeWikiApp = None
+
         self.notifications_disabled = True
         session(self).flush(self)
         if users is None: users = [ c.user ]
@@ -558,6 +558,7 @@ class Project(MappedClass):
             # Setup apps
             for i, (ep_name, mount_point, label) in enumerate(apps):
                 self.install_app(ep_name, mount_point, label, ordinal=i)
+            import pdb; pdb.set_trace()
             if ForgeWikiApp is not None:
                 home_app = self.app_instance('home')
                 if isinstance(home_app, ForgeWikiApp):
