@@ -64,7 +64,7 @@ def main():
         action = 'update'
         merge_base = unwrap_commit_ids(run('git', 'merge-base', old_rev, new_rev))[0]
 
-    if ref_name.startswith('refs/heads/%s/' % user_prefix) or ref_name.startswith('refs/heads/ffa/') or user_name == 'wolf':
+    if ref_name.startswith('refs/heads/%s/' % user_prefix) or ref_name.startswith('refs/heads/ffa/') or user_name == 'wolf' or user_name == 'dbrondsema':
         pass # no restrictions
     elif ref_name.startswith('refs/heads/'):
         substitutions = (user_name, ref_name, 'refs/heads/%s/*' % user_prefix)
