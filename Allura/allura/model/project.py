@@ -558,7 +558,6 @@ class Project(MappedClass):
             # Setup apps
             for i, (ep_name, mount_point, label) in enumerate(apps):
                 self.install_app(ep_name, mount_point, label, ordinal=i)
-            import pdb; pdb.set_trace()
             if ForgeWikiApp is not None:
                 home_app = self.app_instance('home')
                 if isinstance(home_app, ForgeWikiApp):
