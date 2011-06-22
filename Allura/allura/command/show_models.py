@@ -3,7 +3,7 @@ from collections import defaultdict
 
 from pylons import c, g
 
-from ming.orm import mapper, Mapper
+from ming.orm import mapper, session, Mapper
 from ming.orm.declarative import MappedClass
 
 import allura.tasks.index_tasks
@@ -121,7 +121,7 @@ class EnsureIndexCommand(base.Command):
                 base.log.info('... skipping abstract class %s', cls)
                 continue
             base.log.info('... for class %s', cls)
-            if cls.__mongometa__.session in (
+            if session(cls) in (
                 M.main_orm_session, M.repository_orm_session):
                 idx = main_indexes[cname]
             else:

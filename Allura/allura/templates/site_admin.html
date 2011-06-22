@@ -1,0 +1,29 @@
+{% set hide_left_bar=False %}
+{% extends g.theme.master %}
+
+{% block title %}Forge Site Admin{% endblock %}
+{% block header %}Forge Site Admin{% endblock %}
+
+{% block nav_menu %}
+<div class="column grid_1">
+  <img src="{{g.forge_static('images/project_default.png')}}" class="project_icon" alt=""/>
+</div>
+<div class="column grid_9">
+  <h1 class="project_title">Site Admin</h1>
+</div>
+<div class="column grid_2">&nbsp;</div>
+{% endblock %}
+
+{% block sidebar_menu %}
+<div id="sidebar">
+  <div>&nbsp;</div>
+  <ul>
+    <li class="{{page=='index' and 'active' or ''}}"><a href="."><b data-icon="{{g.icons['admin'].char}}" class="ico {{g.icons['admin'].css}}"></b>Home</a></li>
+    <li class="{{page=='stats' and 'active' or ''}}"><a href="stats"><b data-icon="{{g.icons['stats'].char}}" class="ico {{g.icons['stats'].css}}"></b>Stats</a></li>
+    <li class="{{page=='cpa_stats' and 'active' or ''}}"><a href="cpa_stats"><b data-icon="{{g.icons['stats'].char}}" class="ico {{g.icons['stats'].css}}"></b>CPA Stats</a></li>
+    <li class="{{page=='api_tickets' and 'active' or ''}}"><a href="api_tickets"><b data-icon="{{g.icons['admin'].char}}" class="ico {{g.icons['admin'].css}}"></b>API Tickets</a></li>
+  </ul>
+</div>
+{% endblock %}
+
+{% block inner_grid %}{% endblock %}

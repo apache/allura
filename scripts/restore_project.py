@@ -64,7 +64,7 @@ def get_repo_collections():
     res = {}
     for m in Mapper.all_mappers():
         cls = m.mapped_class
-        cname = cls.__mongometa__.name
+        cname = m.collection.m.collection_name
         if issubclass(cls, M.Repository): res[cname] = cls
     return res
 
