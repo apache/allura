@@ -18,7 +18,8 @@ from ming.orm.ormsession import ThreadLocalORMSession
 
 from allura import model as M
 
-log = logging.getLogger(__name__)
+log = logging.getLogger('fix-subroles')
+log.addHandler(logging.StreamHandler(sys.stdout))
 
 def main():
     test = sys.argv[-1] == 'test'
@@ -35,6 +36,8 @@ def main():
                 child_role = M.ProjectRole.by_name(child, project=project)
                 project_roles[parent] = parent_role
                 project_roles[child] = child_role
+                if not (parent_role and child_role):
+                    break
                 if len(parent_role.roles) != 1 or parent_role.roles[0] != child_role._id:
                     if test:
                         log.info('Would reset %s subroles for project "%s".' % (parent, project_name))
@@ -43,6 +46,10 @@ def main():
                         log.info('Resetting %s subroles for project "%s".' % (parent, project_name))
                         parent_role.roles = [child_role._id]
                         ThreadLocalORMSession.flush_all()
+            if not (project_roles['Admin'] and project_roles['Developer'] \
+                and project_roles['Member']):
+                log.info('Skipping "%s": missing Admin, Developer, or Member roles' % project_name)
+                continue
             for user in project.users():
                 pr = user.project_role(project=project)
                 if not pr.roles: continue
