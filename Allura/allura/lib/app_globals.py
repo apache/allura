@@ -186,6 +186,7 @@ class Globals(object):
                     mode=config.get('zarkov.mode', 'bson'))
             self._zarkov.event(event_type, context, extra)
         except Exception, ex:
+            self._zarkov = None
             log.error('Error sending zarkov event(%r): %r', ex, dict(
                     type=event_type, context=context, extra=extra))
 
