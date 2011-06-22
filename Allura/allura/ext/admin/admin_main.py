@@ -43,6 +43,7 @@ class W:
     new_group_settings = aw.NewGroupSettings()
     screenshot_admin = aw.ScreenshotAdmin()
     screenshot_list = ProjectScreenshots()
+    metadata_admin = aw.MetadataAdmin()
 
 class AdminWidgets(WidgetController):
     widgets=['users', 'tool_status']
@@ -171,9 +172,9 @@ class ProjectAdminController(BaseController):
     @expose('jinja:allura.ext.admin:templates/project_overview.html')
     def overview(self, **kw):
         c.markdown_editor = W.markdown_editor
-        categories = M.ProjectCategory.query.find(dict(parent_id=None)).sort('label').all()
+        c.metadata_admin = W.metadata_admin
         show_export_control = asbool(config.get('show_export_control', False))
-        return dict(categories=categories,show_export_control=show_export_control)
+        return dict(show_export_control=show_export_control)
 
     @without_trailing_slash
     @expose('jinja:allura.ext.admin:templates/project_screenshots.html')
@@ -254,9 +255,7 @@ class ProjectAdminController(BaseController):
 
     @expose()
     @require_post()
-    @validate(validators=dict(
-            name=UnicodeString(),
-            short_description=UnicodeString()))
+    @validate(W.metadata_admin, error_handler=overview)
     def update(self, name=None,
                short_description=None,
                icon=None,

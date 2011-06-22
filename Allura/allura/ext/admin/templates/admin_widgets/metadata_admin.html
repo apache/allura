@@ -1,0 +1,89 @@
+<form method="POST" action="update" enctype="multipart/form-data" id="metadata_form">
+  <div class="grid-9">
+    <label for="name">Name:</label>
+    <br>
+    {{widget.display_field(widget.fields.name)}}
+
+    <label>Unixname:</label>
+    <br>
+    <input type="text" disabled="disabled" value="{{value.shortname}}">
+
+    <label for="external_homepage">Homepage:</label>
+    <br>
+    {{widget.display_field(widget.fields.external_homepage)}}
+
+    <label for="short_description_textarea">Summary:</label>
+    <br>
+    {{widget.display_field(widget.fields.short_description)}}
+
+    <div style="clear:both">&nbsp;</div>
+    Support Page:
+    <br>
+    <input name="support_page" type="radio" value=""{% if value.support_page == '' %} checked{% endif %} id="support_page_none">
+    <label for="support_page_none">None</label><br>
+    {% for ac in value.app_configs %}
+      {% if ac.tool_name in ['Wiki', 'Tickets', 'Discussion'] %}
+        <input name="support_page" type="radio" value="{{ac.options.mount_point}}" id="support_page_{{ac.options.mount_point}}"
+               {% if value.support_page == ac.options.mount_point %} checked{% endif %}>
+        <label for="support_page_{{ac.options.mount_point}}">{{ac.options.mount_label}}</label><br>
+      {% endif %}
+    {% endfor %}
+    <input name="support_page" type="radio" value="_url" id="support_page_url_cb"
+           {% if value.support_page == '_url' %} checked{% endif %}>
+    <label for="support_page_url_cb">URL: </label>
+    <input type="text" name="support_page_url" value="{{value.support_page_url}}" style="width: 70%">
+  </div>
+  <div class="grid-9">
+
+    <label for="icon">Icon:</label>
+    <br>
+    <div class="editable viewing">
+      {% if value.icon %}
+        <div class="viewer" style="overflow: auto">
+          <img src="{{value.url()}}/icon" style="float:left; margin-right: 1em;" alt="">
+          <input type="submit" name="delete_icon" value="Delete Icon" style="margin-top: 10px;">
+        </div>
+      {% else %}
+        <div class="viewer">
+          No icon has been created.{% if c.project.private_project_of() %} A gravatar image associated with your primary email
+          address will be used instead if you have created one at <a href="http://gravatar.com/">gravatar.com</a>.{% endif %}
+        </div>
+      {% endif %}
+      <div class="editor">{{widget.display_field(widget.fields.icon)}}</div>
+    </div>
+    <div style="clear:both">&nbsp;</div>
+
+    Removal:
+    <br>
+    <input name="removal" type="radio" value="" id="removal_active_cb"
+           {% if value.removal == '' %} checked{% endif %}>
+    <label for="removal_active_cb">Active Project</label>
+    <br>
+    <input name="removal" type="radio" value="moved" id="removal_moved_cb"
+           {% if value.removal == 'moved' %} checked{% endif %}>
+    <label for="removal_moved_cb">Moved Project to: </label>
+    <input type="text" name="moved_to_url" value="{{value.moved_to_url}}" style="width: 50%">
+    <br>
+    <input name="removal" type="radio" value="abandoned" id="removal_abandoned_cb"
+           {% if value.removal == 'abandoned' %} checked{% endif %}>
+    <label for="removal_abandoned_cb">Abandoned Project</label>
+    <br>
+    <input name="removal" type="radio" value="deleted" id="removal_delete_cb"
+           {% if value.removal == 'deleted' %} checked{% endif %}>
+    <label for="removal_delete_cb">Delete{% if value.removal == 'deleted' %}d{% endif %} Project</label>
+
+    {% if show_export_control %}
+      <div style="clear:both">&nbsp;</div>
+      <label for="export_controlled">Export Control:</label>
+      <br>
+      <input name="export_controlled" type="radio" value=""
+             {% if value.export_controlled == False %} checked{% endif %}> This project does NOT incorporate, access, call upon, or otherwise use encryption of any kind, including, but not limited to, open source algorithms and/or calls to encryption in the operating system or underlying platform.<br>
+      <input name="export_controlled" type="radio" value="True"
+             {% if value.export_controlled == True %} checked{% endif %}> This project DOES incorporate, access, call upon or otherwise use encryption. Posting of open source encryption is controlled under U.S. Export Control Classification Number "ECCN" 5D002 and must be simultaneously reported by email to the U.S. government. You are responsible for submitting this email report to the U.S. government in accordance with procedures described in: <a href="http://www.bis.doc.gov/encryption/PubAvailEncSourceCodeNotify.html" target="_blank">http://www.bis.doc.gov/encryption/PubAvailEncSourceCodeNotify.html</a> and Section 740.13(e) of the Export Administration Regulations ("EAR") 15 C.F.R. Parts 730-772.
+    {% endif %}
+  </div>
+  <hr class="grid-19" style="margin-top: 1em; margin-bottom: 1em;">
+  <div class="grid-15">
+    <input type="submit" value="Save">
+  </div>
+</form>

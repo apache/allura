@@ -2,6 +2,8 @@ from pylons import g, c
 
 import ew as ew_core
 from ew import jinja2_ew as ew
+import formencode
+from formencode import validators as fev
 
 from allura import model as M
 from allura.lib import validators as V
@@ -118,3 +120,31 @@ class ScreenshotAdmin(ff.AdminForm):
             ew.InputField(name='caption', field_type="text", label='Caption')
         ]
         return fields
+
+class MetadataAdmin(ff.AdminForm):
+    template = 'jinja:allura.ext.admin:templates/admin_widgets/metadata_admin.html'
+    defaults=dict(
+        ff.AdminForm.defaults,
+        show_export_control=False,
+        enctype='multipart/form-data')
+
+    class fields(ew_core.NameList):
+        name = ew.InputField(field_type='text',
+                             label='Name',
+                             validator=formencode.All(
+                                fev.UnicodeString(not_empty=True, max=40),
+                                V.MaxBytesValidator(max=40)),
+                             attrs=dict(maxlength=40,
+                                        title="This is the publicly viewable name of the project, and will appear on project listings. It should be what you want to see as the project title in search listing."))
+        short_description = ew.TextArea(label='Summary'                                ,
+                                        validator=formencode.All(
+                                            fev.UnicodeString(not_empty=True, max=255),
+                                            V.MaxBytesValidator(max=255)),
+                                        attrs=dict(title="Add a short one or two sentence summary for your project."))
+        icon = ew.InputField(field_type="file", label='Icon')
+        external_homepage = ew.InputField(field_type="text", label='Homepage')
+        support_page = ew.InputField(field_type="text", label='Support Page')
+        support_page_url = ew.InputField(field_type="text", label='Support Page URL')
+        removal = ew.InputField(field_type="text", label='Removal')
+        moved_to_url = ew.InputField(field_type="text", label='Moved Project to URL')
+        export_controlled = ew.InputField(field_type="text", label='Export Control')

@@ -1,6 +1,7 @@
 import logging
 import warnings
 from pylons import g
+from allura.lib import validators as V
 from allura.lib import helpers as h
 from allura.lib import plugin
 from allura import model as M
@@ -126,7 +127,10 @@ class NeighborhoodAddProjectForm(ForgeForm):
         project_description = ew.HiddenField(label='Public Description')
         neighborhood = ew.HiddenField(label='Neighborhood')
         private_project = ew.Checkbox(label="", attrs={'class':'unlabeled'})
-        project_name = ew.InputField(label='Project Name', field_type='text')
+        project_name = ew.InputField(label='Project Name', field_type='text',
+            validator=formencode.All(
+                fev.UnicodeString(not_empty=True, max=40),
+                V.MaxBytesValidator(max=40)))
         project_unixname = ew.InputField(
             label='Short Name', field_type='text',
             validator=formencode.All(

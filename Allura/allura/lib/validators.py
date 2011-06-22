@@ -1,6 +1,7 @@
 from bson import ObjectId
 import formencode as fe
 from formencode import validators as fev
+from . import helpers as h
 
 class Ming(fev.FancyValidator):
 
@@ -39,3 +40,15 @@ class NullValidator(fev.Validator):
 
     def validate(self, value, state):
         return value
+
+class MaxBytesValidator(fev.FancyValidator):
+    max=255
+
+    def _to_python(self, value, state):
+        value = h.really_unicode(value or '').encode('utf-8')
+        if len(value) > self.max:
+            raise fe.Invalid("Please enter a value less than %s bytes long." % self.max, value, state)
+        return value
+
+    def from_python(self, value, state):
+        return h.really_unicode(value or '')
