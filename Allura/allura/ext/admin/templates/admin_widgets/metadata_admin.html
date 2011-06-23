@@ -1,18 +1,19 @@
 <form method="POST" action="update" enctype="multipart/form-data" id="metadata_form">
   <div class="grid-9">
-    <label for="name">Name:</label>
+    {{ widget.display_label(widget.fields.name) }}
     <br>
     {{widget.display_field(widget.fields.name)}}
 
-    <label>Unixname:</label>
+    <label for="shortname">Unixname</label>
     <br>
-    <input type="text" disabled="disabled" value="{{value.shortname}}">
+    <input id="shortname" type="text" disabled="disabled"
+           value="{{value.shortname}}">
 
-    <label for="external_homepage">Homepage:</label>
+    {{ widget.display_label(widget.fields.external_homepage) }}
     <br>
     {{widget.display_field(widget.fields.external_homepage)}}
 
-    <label for="short_description_textarea">Summary:</label>
+    {{ widget.display_label(widget.fields.short_description) }}
     <br>
     {{widget.display_field(widget.fields.short_description)}}
 
@@ -35,7 +36,7 @@
   </div>
   <div class="grid-9">
 
-    <label for="icon">Icon:</label>
+    <label>Icon:</label>
     <br>
     <div class="editable viewing">
       {% if value.icon %}

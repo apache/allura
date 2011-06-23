@@ -33,6 +33,17 @@ class ForgeForm(ew.SimpleForm):
         method='post',
         enctype=None)
 
+    def display_label(self, field, label_text=None):
+        ctx = super(ForgeForm, self).context_for(field)
+        label_text = (
+            label_text
+            or ctx.get('label')
+            or getattr(field, 'label', None)
+            or ctx['name'])
+        html = '<label for="%s">%s</label>' % (
+            ctx['id'], label_text)
+        return h.html.literal(html)
+
     def context_for(self, field):
         ctx = super(ForgeForm, self).context_for(field)
         if self.antispam:
