@@ -7,9 +7,8 @@ from ming.orm.ormsession import ThreadLocalORMSession
 
 from allura import model as M
 
-log = logging.getLogger(__name__)
-handler = logging.StreamHandler(sys.stdout)
-log.addHandler(handler)
+log = logging.getLogger('update-ordinals')
+log.addHandler(logging.StreamHandler(sys.stdout))
 
 def main():
     test = sys.argv[-1] == 'test'
