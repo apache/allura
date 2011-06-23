@@ -566,11 +566,12 @@ class Project(MappedClass):
                     new_acl = [ ace
                         for ace in home_app.config.acl
                         if not (
-                            ace.role_id==role_auth._id and ace.access==M.ACE.ALLOW and ace.permission in ('create', 'edit', 'delete')
+                            ace.role_id==role_auth._id and ace.access==M.ACE.ALLOW and ace.permission in ('create', 'edit', 'delete', 'unmoderated_post')
                         )
                     ]
                     new_acl.append(M.ACE.allow(role_member._id, 'create'))
                     new_acl.append(M.ACE.allow(role_member._id, 'update'))
+                    new_acl.append(M.ACE.allow(role_member._id, 'unmoderated_post'))
                     home_app.config.acl = map(dict, new_acl)
             self.database_configured = True
             self.notifications_disabled = False
