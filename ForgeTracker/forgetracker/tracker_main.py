@@ -155,8 +155,7 @@ class ForgeTrackerApp(Application):
                         h.text.truncate(m.name, 72),
                         self.url + fld.name[1:] + '/' + m.name + '/',
                         className='nav_child',
-                        small=c.app.globals.milestone_count(
-                            '%s:%s' % (fld.name, m.name))['hits']))
+                        small=TM.Ticket.query.find({"custom_fields._milestone": m.name}).count()))
         if ticket.isdigit():
             ticket = TM.Ticket.query.find(dict(app_config_id=self.config._id,ticket_num=int(ticket))).first()
         else:

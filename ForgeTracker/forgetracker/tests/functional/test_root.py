@@ -48,6 +48,11 @@ class TestFunctionalController(TestController):
         assert 'Milestone' in ticket_view
         assert '1.0' in ticket_view
 
+    def test_milestone_count(self):
+        self.new_ticket(summary='test new with milestone', **{'_milestone':'1.0'})
+        ticket_view = self.new_ticket(summary='test new with milestone', **{'_milestone':'1.0'}).follow()
+        assert '<small>2</small>' in ticket_view
+        
     def test_new_ticket_form(self):
         response = self.app.get('/bugs/new/')
         form = response.forms[1]
