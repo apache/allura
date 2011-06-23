@@ -37,12 +37,13 @@ def main():
                     ((ace.role_id, ace.access, ace.permission), ace)
                     for ace in home_app.acl
                     if not (
-                        ace.role_id==authenticated_role._id and ace.access==M.ACE.ALLOW and ace.permission in ('create', 'edit', 'delete')
+                        ace.role_id==authenticated_role._id and ace.access==M.ACE.ALLOW and ace.permission in ('create', 'edit', 'delete', 'unmoderated_post')
                     )
                 )
                 # add member create/edit permissions
                 new_acl[(member_role._id, M.ACE.ALLOW, 'create')] = M.ACE.allow(member_role._id, 'create')
                 new_acl[(member_role._id, M.ACE.ALLOW, 'update')] = M.ACE.allow(member_role._id, 'update')
+                new_acl[(member_role._id, M.ACE.ALLOW, 'unmoderated_post')] = M.ACE.allow(member_role._id, 'unmoderated_post')
 
                 if TEST:
                     log.info('...would update acl for home app in project "%s".' % project.shortname)
