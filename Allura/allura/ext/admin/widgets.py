@@ -148,3 +148,6 @@ class MetadataAdmin(ff.AdminForm):
         removal = ew.InputField(field_type="text", label='Removal')
         moved_to_url = ew.InputField(field_type="text", label='Moved Project to URL')
         export_controlled = ew.InputField(field_type="text", label='Export Control')
+        delete =  ew.InputField(field_type="hidden", label='Delete')
+        delete_icon =  ew.InputField(field_type="hidden", label='Delete Icon')
+        undelete =  ew.InputField(field_type="hidden", label='Undelete')
