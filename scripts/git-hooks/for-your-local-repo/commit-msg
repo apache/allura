@@ -1,6 +1,40 @@
-#!/bin/bash
+#!/usr/bin/python
 
-grep '^Signed-off-by: ' $1 || {
-    echo >&2 No Sign-off.
-    exit 1
-}
+import re, sys
+
+signoff = re.compile('^Signed-off-by: (.*)$', flags=re.MULTILINE)
+bug = re.compile('\[(?:.*:)?#\d+\]')
+
+def deny_commit(message):
+    print message
+    sys.exit(1)
+
+def main():
+    # argv[1] is the name of the file holding the commit message.
+    # It is _not_ a commit, it has no headers.  The first line is
+    # the subject.
+    with open(sys.argv[1]) as commit_msg:
+        subject = commit_msg.readline()
+
+        if not bug.search(subject):
+            deny_commit('Commit subject must reference a ticket.')
+
+        number_of_signoffs = 0
+        signoffs = set()
+        for line in commit_msg.readlines():
+            match = signoff.match(line)
+            # comment lines won't match signoff, so we effectively ignore them
+            if match:
+                number_of_signoffs += 1
+                signoffs.add(match.group(1))
+
+    # must be at least one sign-off
+    if not len(signoffs):
+        deny_commit('Commit must be signed-off.')
+
+    # and every sign-off must be different
+    if len(signoffs) < number_of_signoffs:
+        deny_commit('Duplicate sign-offs found.')
+
+if __name__ == '__main__':
+    main()
