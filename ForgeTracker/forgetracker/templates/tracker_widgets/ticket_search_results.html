@@ -1,4 +1,4 @@
-<div>
+<div id="ticket_search_results_holder">
   {% if solr_error %}<p>{{solr_error}}</p>{% endif %}
   {{widget.fields['page_size'].display(page=page, count=count, limit=limit)}}
   {% if count %}

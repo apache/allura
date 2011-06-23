@@ -166,3 +166,6 @@ b.ico.ico-feed { background-position: -16px -176px; }
 .big_icon.ui-icon-tool-chat {
   background-image: url("../images/chat_48.png");
 }
+#ticket_search_results_holder{
+    overflow: auto;
+}
