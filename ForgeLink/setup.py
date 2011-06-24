@@ -25,8 +25,5 @@ setup(name='ForgeLink',
       # -*- Entry points: -*-
       [allura]
       Link=forgelink.link_main:ForgeLinkApp
-
-      [flyway.migrations]
-      ForgeLink=forgelink.model.migrations
       """,
       )

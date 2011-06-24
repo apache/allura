@@ -27,9 +27,6 @@ setup(name='ForgeTracker',
       [allura]
       Tickets=forgetracker.tracker_main:ForgeTrackerApp
 
-      [flyway.migrations]
-      ForgeTracker=forgetracker.model.migrations
-
       [easy_widgets.resources]
       ew_resources=forgetracker.config.resources:register_ew_resources
       """,

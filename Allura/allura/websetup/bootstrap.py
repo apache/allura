@@ -11,8 +11,6 @@ import tg
 from pylons import c, g
 from paste.deploy.converters import asbool
 
-from flyway.command import MigrateCommand
-from flyway.model import MigrationInfo
 from ming import Session, mim
 from ming.orm import state, session
 from ming.orm.ormsession import ThreadLocalORMSession
@@ -25,18 +23,6 @@ from allura.command import EnsureIndexCommand
 from allura.command import CreateTroveCategoriesCommand
 
 log = logging.getLogger(__name__)
-
-def set_flyway_info():
-    versions = dict(
-        allura=1,
-        ForgeTracker=0,
-        ForgeWiki=0)
-    mi = MigrationInfo.make(dict(versions=versions))
-    conn = M.main_doc_session.bind.conn
-    for database in conn.database_names():
-        log.info('Initialize Flyway for %s', database)
-        session = DBSession(conn[database])
-        session.insert(mi)
 
 def cache_test_data():
     log.info('Saving data to cache in .test-data')
@@ -186,14 +172,12 @@ def bootstrap(command, conf, vars):
 
 def wipe_database():
     conn = M.main_doc_session.bind.conn
-    flyway = MigrateCommand('flyway')
     create_trove_categories = CreateTroveCategoriesCommand('create_trove_categories')
     index = EnsureIndexCommand('ensure_index')
     if isinstance(conn, mim.Connection):
         clear_all_database_tables()
         for db in conn.database_names():
             db = conn[db]
-            flyway.run(['--force', '-u', 'mim:///'+db.name])
     else:
         for database in conn.database_names():
             log.info('Wiping database %s', database)
@@ -205,8 +189,6 @@ def wipe_database():
                     db.drop_collection(coll)
                 except:
                     pass
-        # Run flyway
-        flyway.run(['--force', '-u', 'mongodb://%s:%s/' % (conn.host, conn.port)])
     create_trove_categories.run([])
     index.run([])
 

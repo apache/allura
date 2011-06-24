@@ -103,9 +103,6 @@ setup(
     [allura.theme]
     allura = allura.lib.plugin:ThemeProvider
 
-    [flyway.migrations]
-    pyforge = allura.migrations
-
     [paste.paster_command]
     taskd = allura.command.taskd:TaskdCommand
     task = allura.command.taskd:TaskCommand
