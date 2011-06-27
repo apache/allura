@@ -22,7 +22,8 @@ def main():
     else:
         log.info('Fixing permissions for all Home Wikis')
 
-    for some_projects in chunked_project_iterator({'neighborhood_id': {'$ne': ObjectId("4be2faf8898e33156f00003e")}}):
+    for some_projects in chunked_project_iterator({'neighborhood_id': {'$nin': [ObjectId('4be2faf8898e33156f00003e'),       # /u
+                                                                                ObjectId('4dbf2563bfc09e6362000005')]}}):   # /motorola
         for project in some_projects:
             c.project = project
             home_app = project.app_instance('home')
@@ -40,9 +41,12 @@ def main():
                         ace.role_id==authenticated_role._id and ace.access==M.ACE.ALLOW and ace.permission in ('create', 'edit', 'delete', 'unmoderated_post')
                     )
                 )
+                if (member_role._id, M.ACE.ALLOW, 'update') in new_acl:
+                    del new_acl[(member_role._id, M.ACE.ALLOW, 'update')]
+
                 # add member create/edit permissions
                 new_acl[(member_role._id, M.ACE.ALLOW, 'create')] = M.ACE.allow(member_role._id, 'create')
-                new_acl[(member_role._id, M.ACE.ALLOW, 'update')] = M.ACE.allow(member_role._id, 'update')
+                new_acl[(member_role._id, M.ACE.ALLOW, 'edit')] = M.ACE.allow(member_role._id, 'edit')
                 new_acl[(member_role._id, M.ACE.ALLOW, 'unmoderated_post')] = M.ACE.allow(member_role._id, 'unmoderated_post')
 
                 if TEST:
