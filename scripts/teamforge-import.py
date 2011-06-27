@@ -299,9 +299,9 @@ def create_project(pid, nbhd):
         one_admin = [u.userName for u in data.admins if u.status == 'Active'][0]
         project = nbhd.register_project(shortname,
                                         get_user(one_admin),
+                                        project_name=data.data.title,
                                         private_project=private)
     project.notifications_disabled = True
-    project.name = data.data.title
     project.short_description = data.data.description
     project.last_updated = datetime.strptime(data.data.lastModifiedDate, '%Y-%m-%d %H:%M:%S')
     M.main_orm_session.flush(project)

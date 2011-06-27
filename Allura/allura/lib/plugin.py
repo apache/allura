@@ -323,7 +323,7 @@ class ProjectRegistrationProvider(object):
             state(p).soil()
         return p
 
-    def register_project(self, neighborhood, shortname, user, user_project, private_project):
+    def register_project(self, neighborhood, shortname, project_name, user, user_project, private_project):
         '''Register a new project in the neighborhood.  The given user will
         become the project's superuser.  If no user is specified, c.user is used.
         '''
@@ -335,7 +335,7 @@ class ProjectRegistrationProvider(object):
             if p: raise forge_exc.ProjectConflict()
             p = M.Project(neighborhood_id=neighborhood._id,
                         shortname=shortname,
-                        name=shortname,
+                        name=project_name,
                         short_description='',
                         description=('You can edit this description in the admin page'),
                         homepage_title=shortname,
