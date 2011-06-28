@@ -44,6 +44,8 @@ def main():
             session(project).clear()
 
         log.info('%s projects examined.' % num_projects_examined)
+        ThreadLocalORMSession.flush_all()
+        ThreadLocalORMSession.close_all()
 
 
 PAGESIZE=1024
