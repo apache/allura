@@ -113,8 +113,6 @@ class ForgeDiscussionApp(Application):
         links = super(ForgeDiscussionApp, self).admin_menu()
         if has_access(self, 'configure')():
             links.append(SitemapEntry('Forums', admin_url + 'forums'))
-        if self.permissions and has_access(self, 'configure')():
-            links.append(SitemapEntry('Permissions', admin_url + 'permissions', className='nav_child'))
         return links
 
     def sidebar_menu(self):
