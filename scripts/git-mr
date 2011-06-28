@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+import re
 import shlex
 import subprocess
 import sys
@@ -15,7 +16,7 @@ except ImportError:
     def colorize(color, message):
         return message
 
-usage = "git mr [-a|-r] [upstream]"
+usage = "git mr [-a|-r] [--grep PATTERN] [upstream]"
 
 
 def main():
@@ -26,8 +27,10 @@ def main():
     parser.add_argument('-a', action='store_true',
                         dest='examine_all_branches', default=False,
                         help='examine all branches')
+    parser.add_argument('--grep', nargs=1, metavar='PATTERN', default=None,
+                        help='only examine branches matching PATTERN')
     parser.add_argument('upstream', nargs='?', default='HEAD',
-                        help='the branch to which everything else is compared')
+                        help='the branch to which everything else is compared, defaults to HEAD')
     args = parser.parse_args()
 
     if args.examine_all_branches:
@@ -43,6 +46,11 @@ def main():
     merged_branches = [ line[2:] for line in merged_branches ]
     unmerged_branches = [ line[2:] for line in unmerged_branches ]
     really_unmerged_branches = []
+
+    if args.grep:
+        filter = re.compile(args.grep[0])
+        merged_branches = [ b for b in merged_branches if filter.search(b) ]
+        unmerged_branches = [ b for b in unmerged_branches if filter.search(b) ]
 
     if merged_branches:
         print('Branches contained by %s:' % args.upstream)
