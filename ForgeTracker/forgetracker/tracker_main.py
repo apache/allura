@@ -301,7 +301,8 @@ class RootController(BaseController):
         except ValueError, e:
             solr_error = e.args[0]
             matches = []
-        if matches:
+        if matches:    
+            count = matches.hits
             # ticket_numbers is in sorted order
             ticket_numbers = [match['ticket_num_i'] for match in matches.docs]
             # but query, unfortunately, returns results in arbitrary order
@@ -311,10 +312,13 @@ class RootController(BaseController):
             for t in query:
                 ticket_for_num[t.ticket_num] = t
             # and pull them out in the order given by ticket_numbers
-            tickets = [ticket_for_num[tn] for tn in ticket_numbers \
-                       if tn in ticket_for_num \
-                       and has_access(ticket_for_num[tn], 'read')]
-            count = len(tickets)
+            tickets = []
+            for tn in ticket_numbers:
+                if tn in ticket_for_num:
+                    if has_access(ticket_for_num[tn], 'read'):
+                        tickets.append(ticket_for_num[tn])
+                    else:
+                        count = count -1
         sortable_custom_fields=c.app.globals.sortable_custom_fields_shown_in_search()
         if not columns:
             columns = [dict(name='ticket_num', sort_name='ticket_num_i', label='Ticket Number', active=True),

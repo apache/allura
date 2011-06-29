@@ -168,7 +168,7 @@ class PageList(ew_core.Widget):
             params['page'] = page - page_offset
             return url(request.path, params)
         return paginate.Page(range(count), page + page_offset, int(limit),
-                             url=page_url)
+        url=page_url)
 
     def resources(self):
         yield ew.CSSLink('css/page_list.css')
