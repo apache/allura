@@ -162,9 +162,11 @@ class Globals(object):
         self, event_type,
         user=None, neighborhood=None, project=None, app=None,
         extra=None):
-        context = dict(user=None,
-                   neighborhood=None, project=None, tool=None,
-                   mount_point=None)
+        context = dict(
+            user=None,
+            neighborhood=None, project=None, tool=None,
+            mount_point=None,
+            is_project_member=False)
         user = user or getattr(c, 'user', None)
         project = project or getattr(c, 'project', None)
         app = app or getattr(c, 'app', None)
@@ -173,6 +175,11 @@ class Globals(object):
             context.update(
                 project=project.shortname,
                 neighborhood=project.neighborhood.name)
+            if user:
+                cred = Credentials.get()
+                for pr in cred.user_roles(user._id, app.project_id).reaching_roles:
+                    if pr.name and pr.name[0] != '*':
+                        context['is_project_member'] = True
         if app:
             context.update(
                 tool=app.config.tool_name,
