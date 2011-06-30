@@ -14,6 +14,17 @@ re_ticket_branch = re.compile('^\s*origin/.*/(\d+)$')
 
 
 def main():
+    target_dir = None
+    if len(sys.argv) > 1:
+        target_dir = sys.argv[1]
+    match_ticket_branches(target_dir)
+
+
+def match_ticket_branches(target_dir=None):
+    here = os.getcwd()
+    if target_dir:
+        os.chdir(target_dir)
+
     git('remote prune origin')
 
     branches_for_tickets = dict() # maps ticket numbers to the actual branch e.g., int(42) -> 'origin/rc/42'
@@ -32,7 +43,16 @@ def main():
         commits = ''.join(git('cherry', 'dev', branch, strip_eol=False))
         tn = int(re_ticket_branch.match(branch).group(1))
         branches_for_tickets[tn] = branch
-        ticket_nums[tn] = 'merged' if commits.find('+')==-1 else 'unmerged'
+        if commits.find('+') == -1:
+            ticket_nums[tn] = 'merged'
+        else:
+            # count the number of commits on this branch
+            branch_commits = len(git('log --oneline dev..%s' % branch))
+            # count the number of commits on dev since this branch that contain the ticket #
+            merge_base = git('merge-base', 'dev', branch)[0]
+            matching_dev_commits = len(git('log --oneline --grep="\[#%s\]" %s..dev' % (tn, merge_base)))
+
+            ticket_nums[tn] = 'merged' if matching_dev_commits >= branch_commits else 'unmerged'
 
     failure = False
 
@@ -54,6 +74,7 @@ def main():
             print('<http://sourceforge.net/p/allura/tickets/%s/> is status:"%s", but the branch "%s" is %s' % (tn, ticket['status'], branches_for_tickets[tn], ticket_nums[tn]))
             failure = True
 
+    os.chdir(here)
     if failure:
         sys.exit(1)
 
