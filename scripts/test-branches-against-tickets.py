@@ -29,6 +29,7 @@ def match_ticket_branches(target_dir=None):
 
     branches_for_tickets = dict() # maps ticket numbers to the actual branch e.g., int(42) -> 'origin/rc/42'
     ticket_nums = dict() # maps ticket numbers to 'merged' or 'unmerged' according to the matching branch
+    commit_diffs = dict() # maps ticket numbers to differences in (number of) commit messages
 
     merged_branches = [ branch[2:] for branch in git('branch -r --merged dev') if re_ticket_branch.match(branch) ]
     unmerged_branches = [ branch[2:] for branch in git('branch -r --no-merged dev') if re_ticket_branch.match(branch) ]
@@ -46,13 +47,17 @@ def match_ticket_branches(target_dir=None):
         if commits.find('+') == -1:
             ticket_nums[tn] = 'merged'
         else:
-            # count the number of commits on this branch
-            branch_commits = len(git('log --oneline dev..%s' % branch))
+            branch_commits = git('log --oneline dev..%s' % branch)
             # count the number of commits on dev since this branch that contain the ticket #
             merge_base = git('merge-base', 'dev', branch)[0]
-            matching_dev_commits = len(git('log --oneline --grep="\[#%s\]" %s..dev' % (tn, merge_base)))
+            matching_dev_commits = git('log --oneline --grep="\[#%s\]" %s..dev' % (tn, merge_base))
 
-            ticket_nums[tn] = 'merged' if matching_dev_commits >= branch_commits else 'unmerged'
+            if len(matching_dev_commits) >= len(branch_commits):
+                ticket_nums[tn] = 'merged'
+            else:
+                ticket_nums[tn] = 'unmerged'
+                commit_diffs[tn] = '\t' + '\n\t'.join(['Branch has:'] + branch_commits +
+                                                 ['Dev has:'] + matching_dev_commits)
 
     failure = False
 
@@ -67,11 +72,13 @@ def match_ticket_branches(target_dir=None):
         ticket = json.loads(resp[1])['ticket']
         if ticket is None:
             continue
-        is_closed = ticket['status'] in ('closed', 'validation')
+        is_closed = ticket['status'] in ('closed', 'validation', 'wont-fix', 'invalid')
         is_merged = ticket_nums[tn] == 'merged'
 
         if is_closed != is_merged:
             print('<http://sourceforge.net/p/allura/tickets/%s/> is status:"%s", but the branch "%s" is %s' % (tn, ticket['status'], branches_for_tickets[tn], ticket_nums[tn]))
+            if tn in commit_diffs:
+                print(commit_diffs[tn])
             failure = True
 
     os.chdir(here)
