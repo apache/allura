@@ -90,6 +90,7 @@ class AuthenticationProvider(object):
             if user is None: user = self._login()
             self.session['userid'] = user._id
             self.session.save()
+            g.zarkov_event('login', user=user)
             return user
         except exc.HTTPUnauthorized:
             self.logout()
