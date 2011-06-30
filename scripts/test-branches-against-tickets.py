@@ -54,8 +54,8 @@ def main():
             print('<http://sourceforge.net/p/allura/tickets/%s/> is status:"%s", but the branch "%s" is %s' % (tn, ticket['status'], branches_for_tickets[tn], ticket_nums[tn]))
             failure = True
 
-        if failure:
-            sys.exit(1)
+    if failure:
+        sys.exit(1)
 
 
 def make_oauth_client():
