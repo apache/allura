@@ -15,7 +15,7 @@ feedparser==5.0.1
 FormEncode==1.2.2
 Genshi==0.5.1
 gevent==0.13.6
-gevent_zeromq==0.2.0
+gevent-zeromq==0.2.0
 gitdb==0.5.1
 greenlet==0.3.1
 httplib2==0.6.0
