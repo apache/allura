@@ -34,7 +34,7 @@ PIL==1.1.7
 poster==0.5
 pyflakes==0.4.0
 Pylons==0.9.7
-pymongo==1.9
+pymongo==1.11
 Pypeline==0.1dev
 pysolr==2.0.13
 python-dateutil==1.5
