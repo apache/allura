@@ -177,9 +177,10 @@ class Globals(object):
                 neighborhood=project.neighborhood.name)
             if user:
                 cred = Credentials.get()
-                for pr in cred.user_roles(user._id, app.project_id).reaching_roles:
-                    if pr.name and pr.name[0] != '*':
-                        context['is_project_member'] = True
+                if cred is not None:
+                    for pr in cred.user_roles(user._id, project._id).reaching_roles:
+                        if pr.name and pr.name[0] != '*':
+                            context['is_project_member'] = True
         if app:
             context.update(
                 tool=app.config.tool_name,
@@ -187,10 +188,7 @@ class Globals(object):
         try:
             if self._zarkov is None:
                 self._zarkov = zclient.ZarkovClient(
-                    config.get('zarkov.host', '127.0.0.1'),
-                    asint(config.get('zarkov.port', '6543')),
-                    password=config.get('zarkov.password'),
-                    mode=config.get('zarkov.mode', 'bson'))
+                    config.get('zarkov.host', 'tcp://127.0.0.1:6543'))
             self._zarkov.event(event_type, context, extra)
         except Exception, ex:
             self._zarkov = None
