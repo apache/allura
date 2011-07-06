@@ -267,6 +267,10 @@ class ProjectRegistrationProvider(object):
     Then in your .ini file, set registration.method=myprovider
     '''
 
+    def __init__(self):
+        from allura.lib.widgets import forms as forms
+        self.add_project_widget = forms.NeighborhoodAddProjectForm
+
     @classmethod
     def get(cls):
         method = config.get('registration.method', 'local')

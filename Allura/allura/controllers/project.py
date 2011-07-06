@@ -28,7 +28,6 @@ from allura.controllers.error import ErrorController
 from allura.lib.security import require_access, has_access
 from allura.lib.security import RoleCache
 from allura.lib.widgets import form_fields as ffw
-from allura.lib.widgets import forms as forms
 from allura.lib.widgets import project_list as plw
 from allura.lib import plugin
 from allura.lib import exceptions as forge_exc
@@ -43,7 +42,7 @@ log = logging.getLogger(__name__)
 class W:
     resize_editor = ffw.AutoResizeTextarea()
     project_summary = plw.ProjectSummary()
-    add_project = forms.NeighborhoodAddProjectForm(antispam=True)
+    add_project = plugin.ProjectRegistrationProvider.get().add_project_widget(antispam=True)
     page_list = ffw.PageList()
     page_size = ffw.PageSize()
 
