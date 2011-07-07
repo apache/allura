@@ -22,6 +22,7 @@ from allura.controllers import BaseController
 from .forum import ForumController
 from forgediscussion import import_support
 from forgediscussion import model
+from forgediscussion import utils
 from forgediscussion import widgets as FW
 from allura.lib.widgets import discuss as DW
 from allura.lib.widgets.search import SearchResults
@@ -64,6 +65,18 @@ class RootController(BaseController):
                     threads=threads,
                     announcements=announcements,
                     hide_forum=(not new_forum))
+
+    @expose('jinja:forgediscussion:templates/discussionforums/index.html')
+    def new_forum(self, **kw):
+        return self.index(new_forum=True, **kw)
+
+    @h.vardec
+    @expose()
+    @require_post()
+    @validate(form=W.add_forum, error_handler=index)
+    def add_forum_short(self, add_forum=None, **kw):
+        f = utils.create_forum(c.app, add_forum)
+        redirect(f.url())
 
     @with_trailing_slash
     @expose('jinja:forgediscussion:templates/discussionforums/create_topic.html')

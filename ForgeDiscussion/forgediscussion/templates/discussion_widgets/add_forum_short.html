@@ -18,3 +18,14 @@
     <a id="add_forum_cancel" class="btn link">Cancel</a>
   </div>
 </form>
+<script type="text/javascript">
+  {% for field in widget.fields %}
+    {% set ctx=widget.context_for(field) %}
+    {% if ctx.errors and field.show_errors -%}
+      window.onload = function(){$('#messages').notify("{{ctx.errors}}", {
+        title: 'Error',
+        status: 'error'
+      });};
+    {%- endif %}
+  {% endfor %}
+</script>

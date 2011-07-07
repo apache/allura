@@ -20,6 +20,7 @@ from allura.lib.security import require_access, has_access
 
 # Local imports
 from forgediscussion import model as DM
+from forgediscussion import utils
 from forgediscussion import version
 from .controllers import RootController, RootRestController
 
@@ -132,7 +133,7 @@ class ForgeDiscussionApp(Application):
             if has_access(c.app, 'post')():
                 l.append(SitemapEntry('Create Topic', c.app.url + 'create_topic', ui_icon=g.icons['plus']))
             if has_access(c.app, 'configure')():
-                l.append(SitemapEntry('Add Forum', url(c.app.url,dict(new_forum=True)), ui_icon=g.icons['conversation']))
+                l.append(SitemapEntry('Add Forum', c.app.url + 'new_forum', ui_icon=g.icons['conversation']))
                 l.append(SitemapEntry('Admin Forums', c.project.url()+'admin/'+self.config.options.mount_point+'/forums', ui_icon=g.icons['pencil']))
             if moderate_link:
                 l.append(moderate_link)
@@ -192,7 +193,7 @@ class ForgeDiscussionApp(Application):
             M.ACE.allow(role_admin, 'admin'),
             ]
 
-        self.admin.create_forum(new_forum=dict(
+        utils.create_forum(self, new_forum=dict(
             shortname='general',
             create='on',
             name='General Discussion',
@@ -229,33 +230,6 @@ class ForumAdminController(DefaultAdminController):
         return dict(app=self.app,
                     allow_config=has_access(self.app, 'configure')())
 
-    def save_forum_icon(self, forum, icon):
-        if forum.icon: forum.icon.delete()
-        DM.ForumFile.save_image(
-            icon.filename, icon.file, content_type=icon.type,
-            square=True, thumbnail_size=(48, 48),
-            thumbnail_meta=dict(forum_id=forum._id))
-
-    def create_forum(self, new_forum):
-        if 'parent' in new_forum and new_forum['parent']:
-            parent_id = ObjectId(str(new_forum['parent']))
-            shortname = (DM.Forum.query.get(_id=parent_id).shortname + '/'
-                         + new_forum['shortname'])
-        else:
-            parent_id=None
-            shortname = new_forum['shortname']
-        description = ''
-        if 'description' in new_forum:
-            description=new_forum['description']
-        f = DM.Forum(app_config_id=self.app.config._id,
-                        parent_id=parent_id,
-                        name=h.really_unicode(new_forum['name']).encode('utf-8'),
-                        shortname=h.really_unicode(shortname).encode('utf-8'),
-                        description=h.really_unicode(description).encode('utf-8'))
-        if 'icon' in new_forum and new_forum['icon'] is not None and new_forum['icon'] != '':
-            self.save_forum_icon(f, new_forum['icon'])
-        return f
-
     @h.vardec
     @expose()
     @require_post()
@@ -284,5 +258,6 @@ class ForumAdminController(DefaultAdminController):
     @require_post()
     @validate(form=W.add_forum, error_handler=forums)
     def add_forum(self, add_forum=None, **kw):
-        f = self.create_forum(add_forum)
+        f = utils.create_forum(self.app, add_forum)
         redirect(f.url())
+
