@@ -199,6 +199,13 @@ class TestProjectAdmin(TestController):
         #assert 'aaa' not in r
 
     def test_project_delete_undelete(self):
+        # create a subproject
+        self.app.post('/admin/update_mounts', params={
+                'new.install':'install',
+                'new.ep_name':'',
+                'new.ordinal':1,
+                'new.mount_point':'sub1',
+                'new.mount_label':'sub1'})
         r = self.app.get('/p/test/admin/overview')
         assert 'This project has been deleted and is not visible to non-admin users' not in r
         assert r.html.find('input',{'name':'removal','value':''}).has_key('checked')
@@ -213,6 +220,9 @@ class TestProjectAdmin(TestController):
         assert 'This project has been deleted and is not visible to non-admin users' in r
         assert not r.html.find('input',{'name':'removal','value':''}).has_key('checked')
         assert r.html.find('input',{'name':'removal','value':'deleted'}).has_key('checked')
+        # make sure subprojects get deleted too
+        r = self.app.get('/p/test/sub1/admin/overview')
+        assert 'This project has been deleted and is not visible to non-admin users' in r
         self.app.post('/admin/update', params=dict(
                 name='Test Project',
                 shortname='test',

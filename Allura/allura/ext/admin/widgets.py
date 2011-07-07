@@ -141,7 +141,7 @@ class MetadataAdmin(ff.AdminForm):
                                         title="This is the publicly viewable name of the project, and will appear on project listings. It should be what you want to see as the project title in search listing."))
         short_description = ew.TextArea(label='Summary'                                ,
                                         validator=formencode.All(
-                                            fev.UnicodeString(not_empty=True, max=255),
+                                            fev.UnicodeString(max=255),
                                             V.MaxBytesValidator(max=255)),
                                         attrs=dict(title="Add a short one or two sentence summary for your project."))
         icon = ew.FileField(label='Icon')

@@ -281,7 +281,7 @@ class ProjectController(object):
         name=unquote(name)
         if not h.re_path_portion.match(name):
             raise exc.HTTPNotFound, name
-        subproject = M.Project.query.get(shortname=c.project.shortname + '/' + name, deleted=False)
+        subproject = M.Project.query.get(shortname=c.project.shortname + '/' + name)
         if subproject:
             c.project = subproject
             c.app = None

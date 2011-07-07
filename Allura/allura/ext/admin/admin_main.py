@@ -485,7 +485,7 @@ class ProjectAdminController(BaseController):
                         'install tool %s', mount_point,
                         meta=dict(tool_type=ep_name, mount_point=mount_point, mount_label=new['mount_label']))
                     c.project.install_app(ep_name, mount_point, mount_label=new['mount_label'], ordinal=new['ordinal'])
-        except forge_exc.ToolError, exc:
+        except forge_exc.ForgeError, exc:
             flash('%s: %s' % (exc.__class__.__name__, exc.args[0]),
                   'error')
         g.post_event('project_updated')
