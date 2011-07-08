@@ -30,7 +30,11 @@ from pypeline.markup import markup as pypeline_markup
 import ew as ew_core
 import ew.jinja2_ew as ew
 from ming.utils import LazyProperty
-from zarkov import client as zclient
+
+try:
+    from zarkov import client as zclient
+except ImportError:
+    zclient = None
 
 import allura.tasks.event_tasks
 from allura import model as M
@@ -168,6 +172,10 @@ class Globals(object):
             neighborhood=None, project=None, tool=None,
             mount_point=None,
             is_project_member=False)
+
+        if not zclient:
+            return
+
         user = user or getattr(c, 'user', None)
         project = project or getattr(c, 'project', None)
         app = app or getattr(c, 'app', None)
@@ -186,6 +194,7 @@ class Globals(object):
             context.update(
                 tool=app.config.tool_name,
                 mount_point=app.config.options.mount_point)
+
         try:
             if self._zarkov is None:
                 self._zarkov = zclient.ZarkovClient(

@@ -80,6 +80,14 @@ def _make_core_app(root, global_conf, full_stack=True, **app_conf):
     # Configure the Pylons environment
     load_environment(global_conf, app_conf)
 
+    if config.get('zarkov.host'):
+        try:    
+            from zarkov import client as zclient
+        except ImportError, e:
+            raise ImportError, "Unable to import the zarkov library. Please"\
+                               " check that zarkov is installed or comment out"\
+                               " the zarkov.host setting in your ini file."
+
     app = tg.TGApp()
     if asbool(config.get('auth.method', 'local')=='sfx'):
         import sfx.middleware
