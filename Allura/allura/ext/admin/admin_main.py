@@ -450,6 +450,7 @@ class ProjectAdminController(BaseController):
                     'delete subproject %s', sp['shortname'],
                     meta=dict(name=sp['shortname']))
                 p = M.Project.query.get(shortname=sp['shortname'])
+                p.removal = 'deleted'
                 plugin.ProjectRegistrationProvider.get().delete_project(p, c.user)
             elif not new:
                 p = M.Project.query.get(shortname=sp['shortname'])
