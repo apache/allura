@@ -553,8 +553,13 @@ class Ticket(VersionedArtifact):
             q = q.sort(field, direction)
         q = q.skip(start)
         q = q.limit(limit)
-        tickets = [ t for t in q if security.has_access(t, 'read')() ]
-        count = len(tickets)
+        tickets = []
+        count = q.count()
+        for t in q:
+            if security.has_access(t, 'read'):
+                tickets.append(t)
+            else:
+                count = count -1
         sortable_custom_fields=c.app.globals.sortable_custom_fields_shown_in_search()
         if not columns:
             columns = [dict(name='ticket_num', sort_name='ticket_num', label='Ticket Number', active=True),
