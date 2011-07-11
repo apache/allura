@@ -414,10 +414,14 @@ class RootController(BaseController):
         if query and not q:
             q = query
         c.bin_form = W.bin_form
+        bin = None
+        if q:
+            bin = TM.Bin.query.find(dict(app_config_id=c.app.config._id,terms=q)).first()
         if project:
             redirect(c.project.url() + 'search?' + urlencode(dict(q=q, history=kw.get('history'))))
         result = self.paged_query(q, page=page, sort=sort, columns=columns, **kw)
         result['allow_edit'] = has_access(c.app, 'write')()
+        result['bin'] = bin
         c.ticket_search_results = W.ticket_search_results
         return result
 

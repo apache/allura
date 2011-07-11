@@ -21,7 +21,7 @@
   {% block edit_box %}
     <div class="editbox" style="display:none">
       {{c.bin_form.display(
-        value=dict(summary=q,terms=q,sort=sort),
+        value=dict(summary=q,terms=q,sort=sort,_id=bin and bin._id or None),
         action=c.project.url()+'admin/'+c.app.config.options.mount_point+'/bins/save_bin'
       )}}
     </div>
@@ -30,12 +30,15 @@
 
 {% block content %}
 <div class="grid-19">
+{% if bin %}
+  <input type="text" id="bin_summary" value="{{bin.summary}}" style="width: 150px; float: left; margin-right: .5em">
+{% endif %}
 <form method="GET" action=".">
-  <input type="text" name="q" value="{{q}}" style="width: 525px; float: left; margin-right: .5em">
+  <input type="text" name="q" value="{{q}}" style="width: 300px; float: left; margin-right: .5em" id="bin_terms">
   <input type="submit" value="Search"/>
 </form>
-{% if q and h.has_access(c.app, 'save_searches')() %}
-  <input type="button" value="Save Search" id="save_search"/>
+{% if bin and h.has_access(c.app, 'save_searches')() %}
+  <input type="button" value="Update Search" id="save_search"/>
 {% endif %}
 </div>
 <div style="clear:both"></div>
@@ -54,7 +57,9 @@
   {% if q and h.has_access(c.app, 'save_searches')() %}
     <script type="text/javascript">
       $('#save_search').click(function(){
-        $('div.editbox').show();
+        $('div.editbox input[name=summary]').val($('#bin_summary').val());
+        $('div.editbox input[name=terms]').val($('#bin_terms').val());
+        $('div.editbox form').submit();
       });
       $('#cancel_new_bin').click(function(){
         $('div.editbox').hide();
