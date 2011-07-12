@@ -1,7 +1,9 @@
 import sys
 from collections import defaultdict
+from itertools import groupby
 
 from pylons import c, g
+from pymongo.errors import DuplicateKeyError
 
 from ming.orm import mapper, session, Mapper
 from ming.orm.declarative import MappedClass
@@ -173,10 +175,31 @@ class EnsureIndexCommand(base.Command):
         # Ensure all indexes
         for name, idx in uindexes.iteritems():
             base.log.info('...... ensure %s:%s', collection.name, idx)
-            collection.ensure_index(idx.index_spec, background=True, unique=True)
+            while True:
+                try:
+                    collection.ensure_index(idx.index_spec, unique=True)
+                    break
+                except DuplicateKeyError, err:
+                    base.log.info('Found dupe key(%s), eliminating dupes', err)
+                    self._remove_dupes(collection, idx.index_spec)
         for name, idx in indexes.iteritems():
             base.log.info('...... ensure %s:%s', collection.name, idx)
             collection.ensure_index(idx.index_spec, background=True)
+
+    def _remove_dupes(self, collection, spec):
+        iname = collection.create_index(spec)
+        fields = [ f[0] for f in spec ]
+        q = collection.find({}, fields=fields).sort(spec)
+        def keyfunc(doc):
+            return tuple(doc.get(f, None) for f in fields)
+        dupes = []
+        for key, doc_iter in groupby(q, key=keyfunc):
+            docs = list(doc_iter)
+            if len(docs) > 1:
+                base.log.info('Found dupes with %s', key)
+                dupes += [ doc['_id'] for doc in docs[1:] ]
+        collection.drop_index(iname)
+        collection.remove(dict(_id={'$in':dupes}))
 
 def build_model_inheritance_graph():
     graph = dict((m.mapped_class, ([], [])) for m in Mapper.all_mappers())
