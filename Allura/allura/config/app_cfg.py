@@ -17,6 +17,7 @@ import pkg_resources
 
 import tg
 import jinja2
+import pylons
 from tg.configuration import AppConfig, config
 from routes import Mapper
 from webhelpers.html import literal
@@ -55,11 +56,13 @@ class ForgeConfig(AppConfig):
         config['routes.map'] = map
 
     def setup_jinja_renderer(self):
-        config['pylons.app_globals'].jinja2_env = jinja2.Environment(
+        jinja2_env = jinja2.Environment(
             loader=PackagePathLoader(),
             auto_reload=self.auto_reload_templates,
             autoescape=True,
-            extensions=['jinja2.ext.do'])
+            extensions=['jinja2.ext.do', 'jinja2.ext.i18n'])
+        jinja2_env.install_gettext_translations(pylons.i18n)
+        config['pylons.app_globals'].jinja2_env = jinja2_env
         # Jinja's unable to request c's attributes without strict_c
         config['pylons.strict_c'] = True
         self.render_functions.jinja = tg.render.render_jinja
