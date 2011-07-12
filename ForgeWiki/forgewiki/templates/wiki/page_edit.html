@@ -56,6 +56,13 @@
       e.target.parentNode.removeChild(e.target);
     });
   });
+  $('#page_edit_form input[type=reset]').click(function(){
+    {% if page_exists %}
+      window.location.href = "{{page.url()}}";
+    {% else %}
+      window.location.href = "{{c.app.url}}";
+    {% endif %}
+  });
   /*]]>*/
 </script>
 {% endblock %}
