@@ -283,7 +283,7 @@ class RootController(BaseController):
                    show_deleted=validators.StringBool(if_empty=False),
                    page=validators.Int(if_empty=0),
                    limit=validators.Int(if_empty=None)))
-    def browse_pages(self, sort='alpha', show_deleted=False, page=0, limit=None):
+    def browse_pages(self, sort='alpha', show_deleted=False, page=0, limit=None, **kw):
         'list of all pages in the wiki'
         c.page_list = W.page_list
         c.page_size = W.page_size
