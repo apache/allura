@@ -411,7 +411,7 @@ class Message(Artifact):
 
     def author(self):
         from .auth import User
-        return User.query.get(_id=self.author_id) or User.anonymous
+        return User.query.get(_id=self.author_id) or User.anonymous()
 
     def reply(self):
         new_id = h.gen_message_id()

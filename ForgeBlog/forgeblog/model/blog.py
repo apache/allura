@@ -64,7 +64,7 @@ class BlogPost(M.VersionedArtifact):
 
     def author(self):
         '''The author of the first snapshot of this BlogPost'''
-        return M.User.query.get(_id=self.get_version(1).author.id) or M.User.anonymous
+        return M.User.query.get(_id=self.get_version(1).author.id) or M.User.anonymous()
 
     def _get_date(self):
         return self.timestamp.date()

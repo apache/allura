@@ -48,7 +48,7 @@ class TestAppDefaults(WithDatabase):
         assert self.app.sidebar_menu() == []
 
     def test_that_it_denies_access_for_everything(self):
-        assert not self.app.has_access(model.User.anonymous, 'any.topic')
+        assert not self.app.has_access(model.User.anonymous(), 'any.topic')
 
 
 def install_app():
