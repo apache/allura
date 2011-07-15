@@ -148,7 +148,7 @@ class RepositoryApp(Application):
         role_anon = M.ProjectRole.anonymous()._id
         self.config.acl = [
             M.ACE.allow(role_anon, 'read'),
-            M.ACE.allow(role_anon, 'post'),
+            M.ACE.allow(role_auth, 'post'),
             M.ACE.allow(role_auth, 'unmoderated_post'),
             M.ACE.allow(role_developer, 'create'),
             M.ACE.allow(role_developer, 'write'),

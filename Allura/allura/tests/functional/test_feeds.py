@@ -68,7 +68,7 @@ class TestFeeds(TestController):
                 summary='This is a new ticket',
                 status='unread',
                 milestone='',
-                description='This is another description'))
+                description='This is another description'), extra_environ=dict(username='root'))
         r = self.app.get('/bugs/1/feed.atom')
         assert '=&gt;' in r
         assert '\n+' in r

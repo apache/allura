@@ -22,6 +22,6 @@ def test_role_assignments():
     assert check_access('read') == (True, True, True)
     assert check_access('write') == (True, False, False)
     assert check_access('unmoderated_post') == (True, True, False)
-    assert check_access('post') == (True, True, True)
+    assert check_access('post') == (True, True, False)
     assert check_access('moderate') == (True, False, False)
     assert check_access('admin') == (True, False, False)

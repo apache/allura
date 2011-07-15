@@ -122,7 +122,7 @@ class TestForumAsync(TestController):
         self.user_id = M.User.query.get(username='root')._id
 
     def test_has_access(self):
-        assert True == c.app.has_access(M.User.anonymous(), 'testforum')
+        assert False == c.app.has_access(M.User.anonymous(), 'testforum')
         assert True == c.app.has_access(M.User.query.get(username='root'), 'testforum')
 
     def test_post(self):

@@ -211,7 +211,7 @@ class ForgeTrackerApp(Application):
         role_anon = M.ProjectRole.by_name('*anonymous')._id
         self.config.acl = [
             M.ACE.allow(role_anon, 'read'),
-            M.ACE.allow(role_anon, 'post'),
+            M.ACE.allow(role_auth, 'post'),
             M.ACE.allow(role_auth, 'unmoderated_post'),
             M.ACE.allow(role_developer, 'write'),
             M.ACE.allow(role_developer, 'moderate'),

@@ -45,7 +45,8 @@ class TestDiscuss(TestController):
                 break
         params = dict(text=text)
         r = self.app.post(f['action'].encode('utf-8'), params=params,
-                          headers={'Referer':thread_link.encode("utf-8")})
+                          headers={'Referer':thread_link.encode("utf-8")},
+                          extra_environ=dict(username='root'))
         r = r.follow()
         return r
 

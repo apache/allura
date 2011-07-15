@@ -186,7 +186,7 @@ class ForgeDiscussionApp(Application):
         role_anon = M.ProjectRole.by_name('*anonymous')._id
         self.config.acl = [
             M.ACE.allow(role_anon, 'read'),
-            M.ACE.allow(role_anon, 'post'),
+            M.ACE.allow(role_auth, 'post'),
             M.ACE.allow(role_auth, 'unmoderated_post'),
             M.ACE.allow(role_developer, 'moderate'),
             M.ACE.allow(role_admin, 'configure'),
