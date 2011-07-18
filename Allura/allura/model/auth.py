@@ -308,6 +308,18 @@ class User(MappedClass):
         return icon_url
 
     @classmethod
+    def upsert(cls, username):
+        u = cls.query.get(username=username)
+        if u is not None: return u
+        try:
+            u = cls(username=username)
+            session(u).flush(u)
+        except pymongo.errors.DuplicateKeyError:
+            session(u).expunge(u)
+            u = cls.query.get(username=username)
+        return u
+
+    @classmethod
     def by_email_address(cls, addr):
         ea = EmailAddress.query.get(_id=addr)
         if ea is None: return None

@@ -330,7 +330,7 @@ class ProjectRegistrationProvider(object):
 
     def register_project(self, neighborhood, shortname, project_name, user, user_project, private_project):
         '''Register a new project in the neighborhood.  The given user will
-        become the project's superuser.  If no user is specified, c.user is used.
+        become the project's superuser.
         '''
         from allura import model as M
         if not h.re_path_portion.match(shortname.replace('/', '')):
