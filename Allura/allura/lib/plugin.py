@@ -273,8 +273,9 @@ class ProjectRegistrationProvider(object):
 
     @classmethod
     def get(cls):
+        from allura.lib import app_globals
         method = config.get('registration.method', 'local')
-        return g.entry_points['registration'][method]()
+        return app_globals.Globals().entry_points['registration'][method]()
 
     def name_taken(self, project_name):
         from allura import model as M
