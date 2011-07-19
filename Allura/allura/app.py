@@ -360,4 +360,5 @@ class DefaultAdminController(BaseController):
 
 @event_handler('project_updated')
 def subscribe_admins(topic):
-    c.app.subscribe_admins()
+    for ac in c.project.app_configs:
+        c.project.app_instance(ac).subscribe_admins()
