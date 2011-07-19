@@ -72,20 +72,6 @@ class Globals(object):
         self.login_url = config.get('auth.login_url', '/auth/')
         self.logout_url = config.get('auth.logout_url', '/auth/logout')
 
-        # Setup RabbitMQ
-        if asbool(config.get('amqp.enabled', 'true')):
-            if asbool(config.get('amqp.mock')):
-                self.amq_conn = self.mock_amq = MockAMQ(self)
-            else:
-                self.amq_conn = Connection(
-                    hostname=config.get('amqp.hostname', 'localhost'),
-                    port=asint(config.get('amqp.port', 5672)),
-                    userid=config.get('amqp.userid', 'testuser'),
-                    password=config.get('amqp.password', 'testpw'),
-                    vhost=config.get('amqp.vhost', 'testvhost'))
-        else:
-            self.amq_conn = None
-
         # Setup Gravatar
         self.gravatar = gravatar.url
 
@@ -147,6 +133,21 @@ class Globals(object):
 
         # Zarkov logger
         self._zarkov = None
+
+    @LazyProperty
+    def amq_conn(self):
+        if asbool(config.get('amqp.enabled', 'true')):
+            if asbool(config.get('amqp.mock')):
+                return MockAMQ(self)
+            else:
+                return Connection(
+                    hostname=config.get('amqp.hostname', 'localhost'),
+                    port=asint(config.get('amqp.port', 5672)),
+                    userid=config.get('amqp.userid', 'testuser'),
+                    password=config.get('amqp.password', 'testpw'),
+                    vhost=config.get('amqp.vhost', 'testvhost'))
+        else:
+            return None
 
     def _cache_eps(self, section_name, dict_cls=dict):
         d = dict_cls()
