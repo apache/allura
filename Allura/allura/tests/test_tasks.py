@@ -126,17 +126,6 @@ class TestMailTasks(unittest.TestCase):
             assert args[0] == 'Page'
             assert len(args) == 2
 
-    def test_receive_email_anon(self):
-        import forgewiki
-        with mock.patch_object(forgewiki.wiki_main.ForgeWikiApp, 'handle_message') as f:
-            mail_tasks.route_email(
-                '0.0.0.0', 'nobody@nowhere.com',
-                ['Page@wiki.test.p.in.sf.net'],
-                'This is a mail message')
-            args, kwargs = f.call_args
-            assert args[0] == 'Page'
-            assert len(args) == 2
-
 class TestNotificationTasks(unittest.TestCase):
 
     def setUp(self):
