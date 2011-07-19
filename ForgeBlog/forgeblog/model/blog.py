@@ -5,7 +5,7 @@ from pylons import c, g
 from pymongo.errors import DuplicateKeyError
 
 from ming import schema
-from ming.orm import FieldProperty, Mapper, session, state
+from ming.orm import FieldProperty, ForeignIdProperty, Mapper, session, state
 from allura import model as M
 from allura.lib import helpers as h
 from allura.lib import utils, patience, htmltruncate
@@ -61,6 +61,7 @@ class BlogPost(M.VersionedArtifact):
     timestamp = FieldProperty(datetime, if_missing=datetime.utcnow)
     slug = FieldProperty(str)
     state = FieldProperty(schema.OneOf('draft', 'published'), if_missing='draft')
+    neighborhood_id = ForeignIdProperty('Neighborhood', if_missing=None)
 
     def author(self):
         '''The author of the first snapshot of this BlogPost'''

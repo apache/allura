@@ -10,6 +10,7 @@ from allura import model as M
 from allura.lib import helpers as h
 
 from forgewiki import model as WM
+from forgeblog import model as BM
 
 
 def setUp():
@@ -81,6 +82,14 @@ def test_macros():
     r = g.markdown_wiki.convert('[[neighborhood_feeds tool_name=Wiki]]')
     new_len = len(r)
     assert new_len == orig_len
+    p = BM.BlogPost(title='test me', neighborhood_id=p_test.neighborhood_id)
+    p.text = 'test content'
+    p.state = 'published'
+    p.make_slug()
+    p.commit()
+    ThreadLocalORMSession.flush_all()
+    r = g.markdown_wiki.convert('[[neighborhood_blog_posts]]')
+    assert 'test content' in r
 
 @with_setup(setUp)
 def test_markdown():

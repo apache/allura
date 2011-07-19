@@ -7,6 +7,7 @@ import pymongo
 from pylons import c, g, request
 
 from . import helpers as h
+from . import security
 
 log = logging.getLogger(__name__)
 
@@ -80,6 +81,34 @@ def neighborhood_feeds(tool_name, max_number=5, sort='pubdate'):
                 ago=h.ago(item.pubdate),
                 description=item.description))
         for item in feed)
+    return output
+
+template_neighborhood_blog_posts = string.Template('''
+<div class="neighborhood_feed_entry">
+<h3><a href="$href">$title</a></h3>
+<p>
+by <em>$author</em>
+<small>$ago</small>
+</p>
+<p>$description</p>
+</div>
+''')
+@macro('neighborhood-wiki')
+def neighborhood_blog_posts(max_number=5, sort='timestamp', summary=False):
+    from forgeblog import model as BM
+    posts = BM.BlogPost.query.find(dict(
+        neighborhood_id=c.project.neighborhood._id,
+        state='published'))
+    posts = posts.sort(sort, pymongo.DESCENDING).limit(int(max_number)).all()
+    output = '\n'.join(
+        template_neighborhood_blog_posts.substitute(dict(
+                href=post.url(),
+                title=post.title,
+                author=post.author().display_name,
+                ago=h.ago(post.timestamp),
+                description=summary and '&nbsp;' or g.markdown.convert(post.text)))
+        for post in posts if security.has_access(post, 'read', project=post.app.project)() and
+                             security.has_access(post.app.project, 'read', project=post.app.project)())
     return output
 
 @macro('neighborhood-wiki')

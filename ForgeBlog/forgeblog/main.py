@@ -186,6 +186,7 @@ class RootController(BaseController):
         post = BM.BlogPost()
         for k,v in kw.iteritems():
             setattr(post, k, v)
+        post.neighborhood_id=c.project.neighborhood_id
         post.make_slug()
         post.commit()
         M.Thread(discussion_id=post.app_config.discussion_id,
