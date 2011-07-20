@@ -239,7 +239,7 @@ class RootController(BaseController):
     @with_trailing_slash
     @expose()
     def index(self, **kw):
-        redirect(c.app.root_page_name+'/')
+        redirect(h.really_unicode(c.app.root_page_name).encode('utf-8')+'/')
 
     #Instantiate a Page object, and continue dispatch there
     @expose()
@@ -249,7 +249,7 @@ class RootController(BaseController):
 
     @expose()
     def new_page(self, title):
-        redirect(title + '/')
+        redirect(h.really_unicode(title).encode('utf-8') + '/')
 
     @with_trailing_slash
     @expose('jinja:forgewiki:templates/wiki/search.html')
@@ -418,7 +418,7 @@ class PageController(BaseController):
     @validate(dict(version=validators.Int(if_empty=None)))
     def index(self, version=None, **kw):
         if not self.page:
-            redirect(c.app.url+self.title+'/edit')
+            redirect(c.app.url+h.really_unicode(self.title).encode('utf-8')+'/edit')
         c.thread = W.thread
         c.attachment_list = W.attachment_list
         c.subscribe_form = W.page_subscribe_form
@@ -599,7 +599,7 @@ class PageController(BaseController):
                         user = M.User.by_username(str(u['id']))
                         if user:
                             self.page.viewable_by.remove(user.username)
-        redirect('../' + self.page.title + ('/' if not name_conflict else '/edit'))
+        redirect('../' + h.really_unicode(self.page.title).encode('utf-8') + ('/' if not name_conflict else '/edit'))
 
     @without_trailing_slash
     @expose()
@@ -709,7 +709,9 @@ class WikiAdminController(DefaultAdminController):
         self.app.root_page_name = new_home
         self.app.upsert_root(new_home)
         flash('Home updated')
-        redirect(c.project.url()+self.app.config.options.mount_point+'/'+new_home+'/')
+        mount_base = c.project.url()+self.app.config.options.mount_point+'/'
+        url = h.really_unicode(mount_base).encode('utf-8') + h.really_unicode(new_home).encode('utf-8')+'/'
+        redirect(url)
 
     @without_trailing_slash
     @expose()

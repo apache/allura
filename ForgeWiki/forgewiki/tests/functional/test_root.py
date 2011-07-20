@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import os
 import Image, StringIO
 import allura
@@ -22,8 +23,8 @@ from forgewiki import model
 
 class TestRootController(TestController):
     def test_root_index(self):
-        response = self.app.get('/wiki/TEST/')
-        assert 'TEST' in response
+        response = self.app.get('/wiki/tést/')
+        assert 'tést' in response.follow()
 
     def test_root_markdown_syntax(self):
         response = self.app.get('/wiki/markdown_syntax/')
@@ -38,50 +39,50 @@ class TestRootController(TestController):
         assert 'Browse Pages' in response
 
     def test_root_new_page(self):
-        response = self.app.get('/wiki/new_page?title=TEST')
-        assert 'TEST' in response
+        response = self.app.get('/wiki/new_page?title=tést')
+        assert 'tést' in response
 
     def test_root_new_search(self):
-        self.app.get('/wiki/TEST/')
-        response = self.app.get('/wiki/search?q=TEST')
-        assert 'Search wiki: TEST' in response
+        self.app.get('/wiki/tést/')
+        response = self.app.get('/wiki/search?q=tést')
+        assert 'Search wiki: tést' in response
 
     def test_page_index(self):
-        response = self.app.get('/wiki/TEST/')
-        assert 'TEST' in response
+        response = self.app.get('/wiki/tést/')
+        assert 'tést' in response.follow()
 
     def test_page_edit(self):
-        self.app.get('/wiki/TEST/index')
-        response = self.app.post('/wiki/TEST/edit')
-        assert 'TEST' in response
+        self.app.get('/wiki/tést/index')
+        response = self.app.post('/wiki/tést/edit')
+        assert 'tést' in response
 
     def test_page_history(self):
-        self.app.get('/wiki/TEST/')
+        self.app.get('/wiki/tést/')
         self.app.post(
-            '/wiki/TEST/update',
+            '/wiki/tést/update',
             params={
-                'title':'TEST',
+                'title':'tést',
                 'text':'text1',
                 'labels':'',
                 'labels_old':'',
                 'viewable_by-0.id':'all'})
         self.app.post(
-            '/wiki/TEST/update',
+            '/wiki/tést/update',
             params={
-                'title':'TEST',
+                'title':'tést',
                 'text':'text2',
                 'labels':'',
                 'labels_old':'',
                 'viewable_by-0.id':'all'})
-        response = self.app.get('/wiki/TEST/history')
-        assert 'TEST' in response
+        response = self.app.get('/wiki/tést/history')
+        assert 'tést' in response
         # two revisions are shown
         assert '2 by Test Admin' in response
         assert '1 by Test Admin' in response
         # you can revert to an old revison, but not the current one
         assert response.html.find('a',{'href':'./revert?version=1'})
         assert not response.html.find('a',{'href':'./revert?version=2'})
-        response = self.app.get('/wiki/TEST/history', extra_environ=dict(username='*anonymous'))
+        response = self.app.get('/wiki/tést/history', extra_environ=dict(username='*anonymous'))
         # two revisions are shown
         assert '2 by Test Admin' in response
         assert '1 by Test Admin' in response
@@ -91,18 +92,18 @@ class TestRootController(TestController):
 
     def test_page_diff(self):
         self.app.post(
-            '/wiki/TEST/update',
+            '/wiki/tést/update',
             params={
-                'title':'TEST',
+                'title':'tést',
                 'text':'sometext',
                 'labels':'',
                 'labels_old':'',
                 'viewable_by-0.id':'all'})
-        self.app.post('/wiki/TEST/revert', params=dict(version='1'))
-        response = self.app.get('/wiki/TEST/')
+        self.app.post('/wiki/tést/revert', params=dict(version='1'))
+        response = self.app.get('/wiki/tést/')
         assert 'Subscribe' in response
-        response = self.app.get('/wiki/TEST/diff?v1=0&v2=0')
-        assert 'TEST' in response
+        response = self.app.get('/wiki/tést/diff?v1=0&v2=0')
+        assert 'tést' in response
 
     def test_page_raw(self):
         self.app.post(
@@ -118,85 +119,85 @@ class TestRootController(TestController):
 
     def test_page_revert_no_text(self):
         self.app.post(
-            '/wiki/TEST/update',
+            '/wiki/tést/update',
             params={
-                'title':'TEST',
+                'title':'tést',
                 'text':'',
                 'labels':'',
                 'labels_old':'',
                 'viewable_by-0.id':'all'})
-        response = self.app.post('/wiki/TEST/revert', params=dict(version='1'))
+        response = self.app.post('/wiki/tést/revert', params=dict(version='1'))
         assert '.' in response.json['location']
-        response = self.app.get('/wiki/TEST/')
-        assert 'TEST' in response
+        response = self.app.get('/wiki/tést/')
+        assert 'tést' in response
 
     def test_page_revert_with_text(self):
-        self.app.get('/wiki/TEST/')
+        self.app.get('/wiki/tést/')
         self.app.post(
-            '/wiki/TEST/update',
+            '/wiki/tést/update',
             params={
-                'title':'TEST',
+                'title':'tést',
                 'text':'sometext',
                 'labels':'',
                 'labels_old':'',
                 'viewable_by-0.id':'all'})
-        response = self.app.post('/wiki/TEST/revert', params=dict(version='1'))
+        response = self.app.post('/wiki/tést/revert', params=dict(version='1'))
         assert '.' in response.json['location']
-        response = self.app.get('/wiki/TEST/')
-        assert 'TEST' in response
+        response = self.app.get('/wiki/tést/')
+        assert 'tést' in response
 
     def test_page_update(self):
-        self.app.get('/wiki/TEST/')
+        self.app.get('/wiki/tést/')
         response = self.app.post(
-            '/wiki/TEST/update',
+            '/wiki/tést/update',
             params={
-                'title':'TEST',
+                'title':'tést',
                 'text':'sometext',
                 'labels':'',
                 'labels_old':'',
                 'viewable_by-0.id':'all'})
-        assert 'TEST' in response
+        assert 'tést' in response
 
     def test_page_label_unlabel(self):
-        self.app.get('/wiki/TEST/')
+        self.app.get('/wiki/tést/')
         response = self.app.post(
-            '/wiki/TEST/update',
+            '/wiki/tést/update',
             params={
-                'title':'TEST',
+                'title':'tést',
                 'text':'sometext',
                 'labels':'yellow,green',
                 'labels_old':'yellow,green',
                 'viewable_by-0.id':'all'})
-        assert 'TEST' in response
+        assert 'tést' in response
         response = self.app.post(
-            '/wiki/TEST/update',
+            '/wiki/tést/update',
             params={
-                'title':'TEST',
+                'title':'tést',
                 'text':'sometext',
                 'labels':'yellow',
                 'labels_old':'yellow',
                 'viewable_by-0.id':'all'})
-        assert 'TEST' in response
+        assert 'tést' in response
 
     def test_new_attachment(self):
         self.app.post(
-            '/wiki/TEST/update',
+            '/wiki/tést/update',
             params={
-                'title':'TEST',
+                'title':'tést',
                 'text':'sometext',
                 'labels':'',
                 'labels_old':'',
                 'viewable_by-0.id':'all'})
         content = file(__file__).read()
-        self.app.post('/wiki/TEST/attach', upload_files=[('file_info', 'test_root.py', content)])
-        response = self.app.get('/wiki/TEST/')
+        self.app.post('/wiki/tést/attach', upload_files=[('file_info', 'test_root.py', content)])
+        response = self.app.get('/wiki/tést/')
         assert 'test_root.py' in response
 
     def test_new_text_attachment_content(self):
         self.app.post(
-            '/wiki/TEST/update',
+            '/wiki/tést/update',
             params={
-                'title':'TEST',
+                'title':'tést',
                 'text':'sometext',
                 'labels':'',
                 'labels_old':'',
@@ -204,8 +205,8 @@ class TestRootController(TestController):
         file_name = 'test_root.py'
         file_data = file(__file__).read()
         upload = ('file_info', file_name, file_data)
-        self.app.post('/wiki/TEST/attach', upload_files=[upload])
-        page_editor = self.app.get('/wiki/TEST/edit')
+        self.app.post('/wiki/tést/attach', upload_files=[upload])
+        page_editor = self.app.get('/wiki/tést/edit')
         download = page_editor.click(description=file_name)
         assert_true(download.body == file_data)
 
@@ -248,7 +249,7 @@ class TestRootController(TestController):
         assert ('./attachment/' + file_name) in img_srcs, img_srcs
 
     def test_sidebar_static_page(self):
-        response = self.app.get('/wiki/TEST/')
+        response = self.app.get('/wiki/tést/')
         assert 'Edit this page' not in response
         assert 'Related Pages' not in response
 
@@ -291,13 +292,13 @@ class TestRootController(TestController):
         assert 'bbb' in response
 
     def test_show_discussion(self):
-        self.app.post('/wiki/TEST/update', params={
-                'title':'TEST',
+        self.app.post('/wiki/tést/update', params={
+                'title':'tést',
                 'text':'sometext',
                 'labels':'',
                 'labels_old':'',
                 'viewable_by-0.id':'all'})
-        wiki_page = self.app.get('/wiki/TEST/')
+        wiki_page = self.app.get('/wiki/tést/')
         assert wiki_page.html.find('div',{'id':'new_post_holder'})
         options_admin = self.app.get('/admin/wiki/options', validate_chunk=True)
         assert options_admin.form['show_discussion'].checked
@@ -305,17 +306,17 @@ class TestRootController(TestController):
         options_admin.form.submit()
         options_admin2 = self.app.get('/admin/wiki/options', validate_chunk=True)
         assert not options_admin2.form['show_discussion'].checked
-        wiki_page2 = self.app.get('/wiki/TEST/')
+        wiki_page2 = self.app.get('/wiki/tést/')
         assert not wiki_page2.html.find('div',{'id':'new_post_holder'})
 
     def test_show_left_bar(self):
-        self.app.post('/wiki/TEST/update', params={
-                'title':'TEST',
+        self.app.post('/wiki/tést/update', params={
+                'title':'tést',
                 'text':'sometext',
                 'labels':'',
                 'labels_old':'',
                 'viewable_by-0.id':'all'})
-        wiki_page = self.app.get('/wiki/TEST/')
+        wiki_page = self.app.get('/wiki/tést/')
         assert wiki_page.html.find('ul',{'class':'sidebarmenu'})
         options_admin = self.app.get('/admin/wiki/options', validate_chunk=True)
         assert options_admin.form['show_left_bar'].checked
@@ -323,19 +324,19 @@ class TestRootController(TestController):
         options_admin.form.submit()
         options_admin2 = self.app.get('/admin/wiki/options', validate_chunk=True)
         assert not options_admin2.form['show_left_bar'].checked
-        wiki_page2 = self.app.get('/wiki/TEST/',extra_environ=dict(username='*anonymous'))
+        wiki_page2 = self.app.get('/wiki/tést/',extra_environ=dict(username='*anonymous'))
         assert not wiki_page2.html.find('ul',{'class':'sidebarmenu'})
-        wiki_page3 = self.app.get('/wiki/TEST/')
+        wiki_page3 = self.app.get('/wiki/tést/')
         assert wiki_page3.html.find('ul',{'class':'sidebarmenu'})
 
     def test_show_metadata(self):
-        self.app.post('/wiki/TEST/update', params={
-                'title':'TEST',
+        self.app.post('/wiki/tést/update', params={
+                'title':'tést',
                 'text':'sometext',
                 'labels':'',
                 'labels_old':'',
                 'viewable_by-0.id':'all'})
-        wiki_page = self.app.get('/wiki/TEST/')
+        wiki_page = self.app.get('/wiki/tést/')
         assert wiki_page.html.find('div',{'class':'editbox'})
         options_admin = self.app.get('/admin/wiki/options', validate_chunk=True)
         assert options_admin.form['show_right_bar'].checked
@@ -343,7 +344,7 @@ class TestRootController(TestController):
         options_admin.form.submit()
         options_admin2 = self.app.get('/admin/wiki/options', validate_chunk=True)
         assert not options_admin2.form['show_right_bar'].checked
-        wiki_page2 = self.app.get('/wiki/TEST/')
+        wiki_page2 = self.app.get('/wiki/tést/')
         assert not wiki_page2.html.find('div',{'class':'editbox'})
 
     def test_page_links_are_colored(self):
