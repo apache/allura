@@ -185,14 +185,15 @@ class ForgeWikiApp(Application):
         # Setup permissions
         role_admin = M.ProjectRole.by_name('Admin')._id
         role_developer = M.ProjectRole.by_name('Developer')._id
+        role_member = M.ProjectRole.by_name('Member')._id
         role_auth = M.ProjectRole.by_name('*authenticated')._id
         role_anon = M.ProjectRole.by_name('*anonymous')._id
         self.config.acl = [
             M.ACE.allow(role_anon, 'read'),
             M.ACE.allow(role_auth, 'post'),
             M.ACE.allow(role_auth, 'unmoderated_post'),
-            M.ACE.allow(role_auth, 'create'),
-            M.ACE.allow(role_auth, 'edit'),
+            M.ACE.allow(role_member, 'create'),
+            M.ACE.allow(role_member, 'edit'),
             M.ACE.allow(role_developer, 'delete'),
             M.ACE.allow(role_developer, 'moderate'),
             M.ACE.allow(role_admin, 'configure'),
