@@ -23,7 +23,6 @@ from ming.orm.declarative import MappedClass
 from allura.lib.patience import SequenceMatcher
 from allura.lib import helpers as h
 from allura.lib import utils
-from allura.lib.cache import LRUCache
 
 from .artifact import Artifact, VersionedArtifact, Feed
 from .auth import User
