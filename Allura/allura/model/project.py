@@ -570,9 +570,9 @@ class Project(MappedClass):
                         )
                     ]
                     new_acl.append(M.ACE.allow(role_member._id, 'create'))
-                    new_acl.append(M.ACE.allow(role_member._id, 'update'))
+                    new_acl.append(M.ACE.allow(role_member._id, 'edit'))
                     new_acl.append(M.ACE.allow(role_member._id, 'unmoderated_post'))
-                    home_app.config.acl = map(dict, new_acl)
+                    home_app.config.acl = new_acl
             self.database_configured = True
             self.notifications_disabled = False
             ThreadLocalORMSession.flush_all()
