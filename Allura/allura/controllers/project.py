@@ -1,7 +1,10 @@
 import os, re
 import logging
+import json
 from urllib import unquote, quote
+from urllib2 import urlopen
 from itertools import chain, islice
+from cStringIO import StringIO
 
 import pkg_resources
 import Image
@@ -158,18 +161,58 @@ class NeighborhoodController(object):
         require_access(self.neighborhood, 'register')
         if private_project:
             require_access(self.neighborhood, 'admin')
+        neighborhood = M.Neighborhood.query.get(name=neighborhood)
+        project_template = {}
+        if neighborhood.project_template:
+            project_template = json.loads(neighborhood.project_template)
+            if 'private' in project_template:
+                private_project = project_template['private']
         project_description = h.really_unicode(project_description or '').encode('utf-8')
         project_name = h.really_unicode(project_name or '').encode('utf-8')
         project_unixname = h.really_unicode(project_unixname or '').encode('utf-8').lower()
-        neighborhood = M.Neighborhood.query.get(name=neighborhood)
         c.project = neighborhood.register_project(project_unixname, project_name=project_name, private_project=private_project)
         if project_description:
             c.project.short_description = project_description
         ming.orm.ormsession.ThreadLocalORMSession.flush_all()
         offset = int(c.project.ordered_mounts(include_search=True)[-1]['ordinal']) + 1
-        for i, tool in enumerate(kw):
-            if kw[tool]:
-                c.project.install_app(tool, ordinal=i+offset)
+        if 'tools' in project_template:
+            for i, tool in enumerate(project_template['tools'].keys()):
+                tool_config = project_template['tools'][tool]
+                app = c.project.install_app(tool,
+                    mount_label=tool_config['label'],
+                    mount_point=tool_config['mount_point'],
+                    ordinal=i+offset)
+                if 'options' in tool_config:
+                    for option in tool_config['options']:
+                        app.config.options[option] = tool_config['options'][option]
+        else:
+            for i, tool in enumerate(kw):
+                if kw[tool]:
+                    c.project.install_app(tool, ordinal=i+offset)
+        if 'tool_order' in project_template:
+            for i, tool in enumerate(project_template['tool_order']):
+                c.project.app_config(tool).options.ordinal = i
+        if 'labels' in project_template:
+            c.project.labels = project_template['labels']
+        if 'trove_cats' in project_template:
+            for trove_type in project_template['trove_cats'].keys():
+                troves = getattr(c.project,'trove_%s'%trove_type)
+                for trove_id in project_template['trove_cats'][trove_type]:
+                    troves.append(M.TroveCategory.query.get(trove_cat_id=trove_id)._id)
+        if 'home_options' in project_template:
+            options = c.project.app_config('home').options
+            for option in project_template['home_options'].keys():
+                options[option] = project_template['home_options'][option]
+        if 'home_text' in project_template:
+            from forgewiki import model as WM
+            app = c.project.app_instance('home')
+            WM.Page.query.get(app_config_id=app.config._id).text = project_template['home_text']
+        if 'icon' in project_template:
+            icon_file = StringIO(urlopen(project_template['icon']['url']).read())
+            M.ProjectFile.save_image(
+                project_template['icon']['filename'], icon_file,
+                square=True, thumbnail_size=(48,48),
+                thumbnail_meta=dict(project_id=c.project._id,category='icon'))
         flash('Welcome to the SourceForge Beta System! '
               'To get started, fill out some information about your project.')
         redirect(c.project.script_name + 'admin/overview')
@@ -435,11 +478,12 @@ class NeighborhoodAdminController(object):
 
     @expose()
     @require_post()
-    def update(self, name=None, css=None, homepage=None, icon=None, **kw):
+    def update(self, name=None, css=None, homepage=None, project_template=None, icon=None, **kw):
         self.neighborhood.name = name
         self.neighborhood.redirect = kw.pop('redirect', '')
         self.neighborhood.homepage = homepage
         self.neighborhood.css = css
+        self.neighborhood.project_template = project_template
         self.neighborhood.allow_browse = 'allow_browse' in kw
         if icon is not None and icon != '':
             if self.neighborhood.icon:

@@ -17,7 +17,8 @@
           <div id="name_availablity" style="display:none"></div></div>
         <div class="grid-3"><input type="button" value="Suggest" id="suggest_project_name"></div>
         {{widget.display_field(widget.fields.neighborhood)}}
-        {% if h.has_access(neighborhood, 'admin') %}
+        
+        {% if h.has_access(neighborhood, 'admin') and not neighborhood.project_template %}
         <div class="grid-9" style="text-align: right">
             <label for="{{ widget.context_for(widget.fields.private_project)['id'] }}">
                 Private Project?
@@ -35,6 +36,7 @@
         <div style="clear:both"></div>
         {% endif %}
     </div>
+    {% if not neighborhood.project_template %}
     <div class="inner-row">
         <div class="tool">
           <div class="big_icon ui-icon-tool-wiki"></div>
@@ -91,6 +93,7 @@
             </p>
         </div>
     </div>
+    {% endif %}
     <div class="inner-row">
       <span id="start">
         <input type="submit" value="Start">

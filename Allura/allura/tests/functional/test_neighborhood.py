@@ -191,6 +191,66 @@ class TestNeighborhood(TestController):
             extra_environ=dict(username='test-user'),
             status=403)
 
+    def test_project_template(self):
+        r = self.app.post('/adobe/_admin/update',
+                          params=dict(name='Mozq1', css='', homepage='# MozQ1!\n[Root]', project_template="""{
+  "private":true,
+  "tools":{
+    "discussion":{"label":"Discussion","mount_point":"discussion"},
+    "blog":{"label":"News","mount_point":"news"},
+    "downloads":{"label":"Downloads","mount_point":"downloads"}
+  },
+  "tool_order":["home","discussion","news","downloads","admin"],
+  "labels":["mmi"],
+  "trove_cats":{
+    "topic":[247],
+    "developmentstatus":[11]
+  },
+  "home_options":{
+    "show_right_bar":false,
+    "show_discussion":false
+  },
+  "home_text":"My home text!"
+}"""),
+                          extra_environ=dict(username='root'))
+        r = self.app.post(
+            '/adobe/register',
+            params=dict(
+                project_unixname='testtemp',
+                project_name='Test Template',
+                project_description='',
+                neighborhood='Mozq1',
+                private_project='off'),
+            antispam=True,
+            extra_environ=dict(username='root'),
+            status=302).follow()
+        # make sure the correct tools got installed in the right order
+        top_nav = r.html.find('div',{'id':'top_nav'})
+        assert top_nav.contents[1]['href'] == '/adobe/testtemp/home/'
+        assert 'Home' in top_nav.contents[1].contents[0]
+        assert top_nav.contents[3]['href'] == '/adobe/testtemp/discussion/'
+        assert 'Discussion' in top_nav.contents[3].contents[0]
+        assert top_nav.contents[5]['href'] == '/adobe/testtemp/news/'
+        assert 'News' in top_nav.contents[5].contents[0]
+        assert top_nav.contents[7]['href'] == '/adobe/testtemp/admin/'
+        assert 'Admin' in top_nav.contents[7].contents[0]
+        # make sure project is private
+        r = self.app.get(
+            '/adobe/testtemp/home/',
+            extra_environ=dict(username='root')).follow(extra_environ=dict(username='root'), status=200)
+        r = self.app.get(
+            '/adobe/testtemp/home/',
+            extra_environ=dict(username='*anonymous'),
+            status=302)
+        # check the labels and trove cats
+        r = self.app.get('/adobe/testtemp/admin/trove')
+        assert 'mmi' in r
+        assert 'Topic :: Communications :: Telephony' in r
+        assert 'Development Status :: 5 - Production/Stable' in r
+        # check the wiki text
+        r = self.app.get('/adobe/testtemp/home/').follow()
+        assert "My home text!" in r
+
     def test_name_suggest(self):
         r = self.app.get('/p/suggest_name?project_name=My+Moz')
         assert r.json['suggested_name'] == 'mymoz'
