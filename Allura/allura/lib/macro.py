@@ -90,7 +90,7 @@ template_neighborhood_blog_posts = string.Template('''
 by <em>$author</em>
 <small>$ago</small>
 </p>
-<p>$description</p>
+$description
 </div>
 ''')
 @macro('neighborhood-wiki')
