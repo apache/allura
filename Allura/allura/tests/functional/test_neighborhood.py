@@ -192,12 +192,20 @@ class TestNeighborhood(TestController):
             status=403)
 
     def test_project_template(self):
+        icon_url = 'file://' + os.path.join(allura.__path__[0],'nf','allura','images','neo-icon-set-454545-256x350.png')
+
         r = self.app.post('/adobe/_admin/update',
                           params=dict(name='Mozq1', css='', homepage='# MozQ1!\n[Root]', project_template="""{
   "private":true,
+  "icon":{
+    "url":"%s",
+    "filename":"icon.png"
+  },
   "tools":{
     "discussion":{"label":"Discussion","mount_point":"discussion"},
-    "blog":{"label":"News","mount_point":"news"},
+    "blog":{"label":"News","mount_point":"news","options":{
+      "show_discussion":false
+    }},
     "downloads":{"label":"Downloads","mount_point":"downloads"}
   },
   "tool_order":["home","discussion","news","downloads","admin"],
@@ -211,7 +219,7 @@ class TestNeighborhood(TestController):
     "show_discussion":false
   },
   "home_text":"My home text!"
-}"""),
+}""" % icon_url),
                           extra_environ=dict(username='root'))
         r = self.app.post(
             '/adobe/register',
