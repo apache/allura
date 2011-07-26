@@ -175,7 +175,7 @@ class Globals(object):
         if project:
             context.update(
                 project=project.shortname,
-                neighborhood=project.neighborhood.name)
+                neighborhood=project.neighborhood.url_prefix.strip('/'))
             if user:
                 cred = Credentials.get()
                 if cred is not None:
