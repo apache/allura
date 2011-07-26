@@ -141,7 +141,7 @@ class MetadataAdmin(ff.AdminForm):
                                             fev.UnicodeString(not_empty=True, max=255),
                                             V.MaxBytesValidator(max=255)),
                                         attrs=dict(title="Add a short one or two sentence summary for your project."))
-        icon = ew.InputField(field_type="file", label='Icon')
+        icon = ew.FileField(label='Icon')
         external_homepage = ew.InputField(field_type="text", label='Homepage')
         support_page = ew.InputField(field_type="text", label='Support Page')
         support_page_url = ew.InputField(field_type="text", label='Support Page URL')
