@@ -1,6 +1,7 @@
 #-*- python -*-
 import logging
 from datetime import datetime
+import urllib2
 
 # Non-stdlib imports
 import pkg_resources
@@ -192,7 +193,7 @@ class RootController(BaseController):
         M.Thread(discussion_id=post.app_config.discussion_id,
                ref_id=post.index_id(),
                subject='%s discussion' % post.title)
-        redirect(post.url())
+        redirect(h.really_unicode(post.url()).encode('utf-8'))
 
 
     @without_trailing_slash
@@ -220,7 +221,7 @@ class RootController(BaseController):
         return feed.writeString('utf-8')
     @expose()
     def _lookup(self, year, month, name, *rest):
-        slug = '/'.join((year, month, name))
+        slug = '/'.join((year, month, urllib2.unquote(name).decode('utf-8')))
         post = BM.BlogPost.query.get(slug=slug)
         if post is None:
             raise exc.HTTPNotFound()
@@ -282,7 +283,7 @@ class PostController(BaseController):
         if delete:
             self.post.delete()
             flash('Post deleted', 'info')
-            redirect(c.app.url)
+            redirect(h.really_unicode(c.app.url).encode('utf-8'))
         for k,v in kw.iteritems():
             setattr(self.post, k, v)
         self.post.commit()
@@ -306,7 +307,7 @@ class PostController(BaseController):
             self.post.subscribe(type='direct')
         elif unsubscribe:
             self.post.unsubscribe()
-        redirect(request.referer)
+        redirect(h.really_unicode(request.referer).encode('utf-8'))
 
     @without_trailing_slash
     @expose()
@@ -354,4 +355,4 @@ class BlogAdminController(DefaultAdminController):
     def set_options(self, show_discussion=False):
         self.app.config.options['show_discussion'] = show_discussion and True or False
         flash('Blog options updated')
-        redirect(c.project.url()+'admin/tools')
+        redirect(h.really_unicode(c.project.url()+'admin/tools').encode('utf-8'))
