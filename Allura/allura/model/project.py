@@ -89,7 +89,8 @@ class Project(MappedClass):
             'name',
             'neighborhood_id',
             ('neighborhood_id', 'name'),
-            'shortname' ]
+            'shortname',
+            'parent_id']
 
     # Project schema
     _id=FieldProperty(S.ObjectId)
