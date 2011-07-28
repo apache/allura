@@ -391,12 +391,6 @@ class Thread(HierWidget):
                 if (allow_moderate.length) {
                     var cval = $.cookie('_session_id');
                     thread_spam[0].style.display='block';
-                    thread_spam.click(function(evt){
-                        evt.preventDefault();
-                        $.post(thread_spam.attr('href'), {_session_id: cval}, function () {
-                            window.location.reload();
-                        });
-                    });
                 }
             }
         });

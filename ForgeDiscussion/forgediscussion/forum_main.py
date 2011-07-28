@@ -146,7 +146,7 @@ class ForgeDiscussionApp(Application):
             recent_threads = (
                 thread for thread in (
                     DM.ForumThread.query.find(
-                        dict(app_config_id=self.config._id))
+                        dict(app_config_id=self.config._id, num_replies={'$gt': 0}))
                     .sort([
                             ('last_post_date', pymongo.DESCENDING),
                             ('mod_date', pymongo.DESCENDING)])

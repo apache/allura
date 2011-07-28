@@ -76,7 +76,7 @@ class ForumController(DiscussionController):
         if self.discussion.deleted and not has_access(c.app, 'configure')():
             redirect(self.discussion.url()+'deleted')
         limit, page, start = g.handle_paging(limit, page)
-        threads = DM.ForumThread.query.find(dict(discussion_id=self.discussion._id)) \
+        threads = DM.ForumThread.query.find(dict(discussion_id=self.discussion._id, num_replies={'$gt': 0})) \
                                       .sort([('flags', pymongo.DESCENDING), ('mod_date', pymongo.DESCENDING)])
         return super(ForumController, self).index(threads=threads.skip(start).limit(int(limit)).all(), limit=limit, page=page, count=threads.count(), **kw)
 

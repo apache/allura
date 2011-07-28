@@ -89,6 +89,12 @@ def test_thread_methods():
     jsn = t.__json__()
     assert '_id' in jsn
     assert_equals(len(jsn['posts']), 3)
+    (p.approve() for p in (p0, p1))
+    assert t.num_replies == 2
+    t.spam()
+    assert t.num_replies == 0
+    ThreadLocalORMSession.flush_all()
+    assert len(t.find_posts()) == 0
     t.delete()
 
 @with_setup(setUp, tearDown)
@@ -96,6 +102,7 @@ def test_post_methods():
     d = M.Discussion(shortname='test', name='test')
     t = M.Thread(discussion_id=d._id, subject='Test Thread')
     p = t.post('This is a post')
+    p2 = t.post('This is another post')
     assert p.discussion_class() == M.Discussion
     assert p.thread_class() == M.Thread
     assert p.attachment_class() == M.DiscussionAttachment
@@ -115,8 +122,14 @@ def test_post_methods():
     jsn = p.__json__()
     assert jsn["thread_id"] == t._id
 
+    (p.approve() for p in (p, p2))
+    assert t.num_replies == 1
+    p2.spam()
+    assert t.num_replies == 0
     p.spam()
+    assert t.num_replies == 0
     p.delete()
+    assert t.num_replies == 0
 
 @with_setup(setUp, tearDown)
 def test_attachment_methods():

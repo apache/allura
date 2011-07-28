@@ -272,6 +272,54 @@ class TestForum(TestController):
         r = self.app.get('/discussion/testforum/')
         r = self.app.get('/discussion/testforum/childforum/')
 
+    def test_post_count(self):
+        # Make sure post counts don't get skewed during moderation
+        r = self.app.post('/discussion/save_new_topic', params=dict(
+                subject='Test Post Count',
+                text='1st post in Test Post Count thread',
+                forum='testforum'))
+        for i in range(2):
+            r = self.app.get('/discussion/testforum/moderate')
+            slug = r.html.find('checkbox', {'name': 'post-0.full_slug'})
+            r = self.app.post('/discussion/testforum/moderate/save_moderation', params={
+                    'post-0.full_slug': slug,
+                    'post-0.checked': 'on',
+                    'approve': 'Approve Marked'})
+        r = self.app.get('/discussion/')
+        assert '1 post' in r
+
+    def test_threads_with_zero_posts(self):
+        # Make sure that threads with zero posts (b/c all posts have been
+        # deleted or marked as spam) don't show in the UI.
+        def _post():
+            r = self.app.post('/discussion/save_new_topic', params=dict(
+                    subject='Test Zero Posts',
+                    text='1st post in Zero Posts thread',
+                    forum='testforum'))
+        def _check():
+            r = self.app.get('/discussion/')
+            assert 'Test Zero Posts' in r
+            r = self.app.get('/discussion/testforum/')
+            assert 'Test Zero Posts' in r
+        # test posts marked as spam
+        _post()
+        r = self.app.get('/discussion/testforum/moderate')
+        slug = r.html.find('checkbox', {'name': 'post-0.full_slug'})
+        r = self.app.post('/discussion/testforum/moderate/save_moderation', params={
+                'post-0.full_slug': slug,
+                'post-0.checked': 'on',
+                'spam': 'Spam Marked'})
+        _check()
+        # test posts deleted
+        _post()
+        r = self.app.get('/discussion/testforum/moderate')
+        slug = r.html.find('checkbox', {'name': 'post-0.full_slug'})
+        r = self.app.post('/discussion/testforum/moderate/save_moderation', params={
+                'post-0.full_slug': slug,
+                'post-0.checked': 'on',
+                'delete': 'Delete Marked'})
+        _check()
+
     def test_posting(self):
         r = self.app.post('/discussion/save_new_topic', params=dict(
                 subject='Test Thread',
@@ -283,6 +331,27 @@ class TestForum(TestController):
         n = M.Notification.query.get(text='This is a *test thread*')
         assert 'noreply' not in n.reply_to_address, n
         assert 'testforum@discussion.test.p' in n.reply_to_address, n
+
+    def test_anonymous_post(self):
+        r = self.app.get('/admin/discussion/permissions')
+        select = r.html.find('select', {'name': 'card-3.new'})
+        opt_anon = select.find(text='*anonymous').parent
+        opt_auth = select.find(text='*authenticated').parent
+        opt_admin = select.find(text='Admin').parent
+        r = self.app.post('/admin/discussion/update', params={
+                'card-0.value': opt_admin['value'],
+                'card-0.id': 'admin',
+                'card-4.id': 'read',
+                'card-4.value': opt_anon['value'],
+                'card-3.value': opt_auth['value'],
+                'card-3.new': opt_anon['value'],
+                'card-3.id': 'post'})
+        r = self.app.post('/discussion/save_new_topic', params=dict(
+                subject='Test Thread',
+                text='Post content',
+                forum='testforum'),
+                extra_environ=dict(username='*anonymous')).follow()
+        assert 'Post awaiting moderation' in r
 
     def test_thread(self):
         thread = self.app.post('/discussion/save_new_topic', params=dict(

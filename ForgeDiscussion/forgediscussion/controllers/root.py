@@ -60,7 +60,7 @@ class RootController(BaseController):
         threads = dict()
         for forum in forums:
             threads[forum._id] = model.ForumThread.query.find(dict(
-                            discussion_id=forum._id)).sort('mod_date', pymongo.DESCENDING).limit(6).all()
+                discussion_id=forum._id, num_replies={'$gt': 0})).sort('mod_date', pymongo.DESCENDING).limit(6).all()
         return dict(forums=forums,
                     threads=threads,
                     announcements=announcements,

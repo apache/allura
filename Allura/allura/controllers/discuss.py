@@ -201,12 +201,11 @@ class ThreadController(BaseController):
         redirect(request.referer)
 
     @expose()
-    @require_post()
     def flag_as_spam(self, **kw):
         require_access(self.thread, 'moderate')
-        self.thread.first_post.status='spam'
+        self.thread.spam()
         flash('Thread flagged as spam.')
-        redirect(request.referer)
+        redirect(self.discussion.url())
 
     @without_trailing_slash
     @expose()
@@ -380,7 +379,6 @@ class ModerationController(BaseController):
     PostController=h.attrproxy('_discussion_controller', 'PostController')
     AttachmentController=h.attrproxy('_discussion_controller', 'AttachmentController')
 
-
     def _check_security(self):
         require_access(self.discussion, 'moderate')
 
@@ -426,19 +424,22 @@ class ModerationController(BaseController):
     @h.vardec
     @expose()
     @require_post()
-    def save_moderation(self, post=None, delete=None, spam=None, approve=None, **kw):
+    def save_moderation(self, post=[], delete=None, spam=None, approve=None, **kw):
         for p in post:
             if 'checked' in p:
                 posted = self.PostModel.query.get(full_slug=p['full_slug'])
-                if delete:
-                    posted.delete()
-                    posted.thread.num_replies -= 1
-                elif spam:
-                    posted.status = 'spam'
-                    posted.thread.num_replies -= 1
-                elif approve:
-                    posted.status = 'ok'
-                    posted.thread.num_replies += 1
+                if posted:
+                    if delete:
+                        posted.delete()
+                        # If we just deleted the last post in the
+                        # thread, delete the thread.
+                        if posted.thread and posted.thread.num_replies == 0:
+                            posted.thread.delete()
+                    elif spam and posted.status != 'spam':
+                        posted.spam()
+                    elif approve and posted.status != 'ok':
+                        posted.status = 'ok'
+                        posted.thread.num_replies += 1
         redirect(request.referer)
 
 class PostRestController(PostController):

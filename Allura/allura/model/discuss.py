@@ -220,10 +220,10 @@ class Thread(Artifact):
         limit = int(limit)
         if timestamp:
             terms = dict(discussion_id=self.discussion_id, thread_id=self._id,
-                    status='ok', timestamp=timestamp)
+                    status={'$in': ['ok', 'pending']}, timestamp=timestamp)
         else:
             terms = dict(discussion_id=self.discussion_id, thread_id=self._id,
-                    status='ok')
+                    status={'$in': ['ok', 'pending']})
         q = self.post_class().query.find(terms)
         if style == 'threaded':
             q = q.sort('full_slug')
@@ -271,9 +271,15 @@ class Thread(Artifact):
     subscription=property(_get_subscription, _set_subscription)
 
     def delete(self):
-        self.post_class().query.remove(dict(thread_id=self._id))
+        for p in self.post_class().query.find(dict(thread_id=self._id)):
+            p.delete()
         self.attachment_class().remove(dict(thread_id=self._id))
         super(Thread, self).delete()
+
+    def spam(self):
+        """Mark this thread as spam."""
+        for p in self.post_class().query.find(dict(thread_id=self._id)):
+            p.spam()
 
 class PostHistory(Snapshot):
     class __mongometa__:
@@ -417,6 +423,7 @@ class Post(Message, VersionedArtifact):
     def delete(self):
         self.attachment_class().remove(dict(post_id=self._id))
         super(Post, self).delete()
+        self.thread.num_replies = max(0, self.thread.num_replies - 1)
 
     def approve(self):
         from allura.model.notification import Notification
@@ -445,6 +452,7 @@ class Post(Message, VersionedArtifact):
 
     def spam(self):
         self.status = 'spam'
+        self.thread.num_replies = max(0, self.thread.num_replies - 1)
         g.post_event('spam', self.index_id())
 
 class DiscussionAttachment(BaseAttachment):

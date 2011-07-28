@@ -15,13 +15,17 @@
 
       <div class="grid-14" style="width: {{indent == 0 and 525 or (indent <= 40 and 515-indent*10 or 65)}}px">
         <div class="display_post">
-          {% if show_subject %}
-            <b>{{value.subject or '(no subject)'}}<br/></b>
-          {% endif %}
-          {{g.markdown.convert(value.text)|safe}}&nbsp;
-          {{lib.related_artifacts(value)}}
-          {% if value.edit_count %}
-            <br><small>Last edit: {{value.last_edit_by().display_name}} {{h.ago(value.last_edit_date)}}</small>
+          {% if value.status == 'pending' %}
+            <b>Post awaiting moderation.</b>
+          {% else %}
+            {% if show_subject %}
+                <b>{{value.subject or '(no subject)'}}<br/></b>
+            {% endif %}
+            {{g.markdown.convert(value.text)|safe}}&nbsp;
+            {{lib.related_artifacts(value)}}
+            {% if value.edit_count %}
+                <br><small>Last edit: {{value.last_edit_by().display_name}} {{h.ago(value.last_edit_date)}}</small>
+            {% endif %}
           {% endif %}
         </div>
         {% if h.has_access(value.thread, 'post')() %}
@@ -58,8 +62,8 @@
         </div>
         {% endif %}
         </div>
-        
         <div class="options grid-3">
+        {% if value.status == 'ok' %}
         <a href="" class="reply_post btn"><b data-icon="{{g.icons['reply'].char}}" class="ico {{g.icons['reply'].css}}"></b>Reply</a>
         <div style="clear:both">
           <a href="{{tg.url(url.current(),dict(page=page,limit=limit))}}#{{value.slug}}" class="little_link shortlink"><span>Link</span></a><br/>
@@ -70,6 +74,7 @@
           {% if h.has_access(value.thread, 'post')() %}
             <a href="#" class="add_attachment little_link"><span>Attach</span></a>
           {% endif %}
+        {% endif %}
         </div>
       </div>
       <div class="shortlink_popup modal" style="display: none">
