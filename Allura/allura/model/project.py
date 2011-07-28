@@ -90,7 +90,8 @@ class Project(MappedClass):
             'neighborhood_id',
             ('neighborhood_id', 'name'),
             'shortname',
-            'parent_id']
+            'parent_id',
+            ('deleted', 'shortname', 'neighborhood_id')]
 
     # Project schema
     _id=FieldProperty(S.ObjectId)
@@ -597,6 +598,9 @@ class AppConfig(MappedClass):
     class __mongometa__:
         session = project_orm_session
         name='config'
+        indexes = [
+            'project_id',
+            ('options.mount_point', 'project_id')]
 
     # AppConfig schema
     _id=FieldProperty(S.ObjectId)
