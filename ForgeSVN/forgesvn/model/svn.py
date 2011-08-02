@@ -240,7 +240,7 @@ class SVNImplementation(M.RepositoryImplementation):
             lst[path.action].append(h.really_unicode(path.path))
 
     def refresh_commit_info(self, oid, seen_object_ids):
-        from alllura.model.repo import CommitDoc
+        from allura.model.repo import CommitDoc
         if CommitDoc.m.find(dict(_id=oid)).count():
             return False
         try:
@@ -265,7 +265,7 @@ class SVNImplementation(M.RepositoryImplementation):
                     tree_id=None,
                     committed=user,
                     authored=user,
-                    message=log.entry.message,
+                    message=log_entry.message,
                     parent_ids=[],
                     child_ids=[]))
             if revno > 1:

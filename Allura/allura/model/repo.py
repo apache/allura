@@ -113,6 +113,10 @@ class RepoObject(object):
     def legacy(self):
         return Object(object_id=self._id)
 
+    @property
+    def object_id(self):
+        return self._id
+
 class Commit(RepoObject):
     # Ephemeral attrs
     repo=None
@@ -229,7 +233,12 @@ class Tree(RepoObject):
         for x in self.blob_ids:
             if README_RE.match(x.name):
                 name = x.name
-                text = self.repo.open_blob(Object(object_id=x.id)).read()
+                obj = Object(
+                    object_id=x.id,
+                    path=lambda:self.path() + x['name'],
+                    commit=Object(
+                        object_id=self.commit._id))
+                text = self.repo.open_blob(obj).read()
                 text = h.really_unicode(text)
                 break
         if text == '':
