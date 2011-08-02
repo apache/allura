@@ -303,9 +303,9 @@ class Repository(Artifact):
 
     def refresh(self, all_commits=False, notify=True):
         '''Find any new commits in the repository and update'''
+        self._impl.refresh_heads()
         if asbool(tg.config.get('scm.new_refresh')):
             refresh_repo(self, all_commits, notify)
-        self._impl.refresh_heads()
         self.status = 'analyzing'
         session(self).flush()
         sess = session(Commit)
