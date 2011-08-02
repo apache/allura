@@ -35,6 +35,7 @@ class TestNewRepo(unittest.TestCase):
         assert self.rev.index_id().startswith('allura/model/repo/Commit#')
         self.rev.author_url
         self.rev.committer_url
+        assert self.rev.tree._id == self.rev.tree_id
         assert self.rev.summary == self.rev.message.splitlines()[0]
         assert self.rev.shorthand_id() == '[r5]'
         assert self.rev.symbolic_ids == ([], [])
