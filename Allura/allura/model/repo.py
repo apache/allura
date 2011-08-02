@@ -10,6 +10,7 @@ from pylons import g
 
 from ming import Field, Index, collection
 from ming import schema as S
+from ming.base import Object
 from ming.utils import LazyProperty
 from ming.orm import mapper
 
@@ -22,8 +23,11 @@ from .session import repository_orm_session
 
 log = logging.getLogger(__name__)
 
+# Some schema types
 SUser = dict(name=str, email=str, date=datetime)
 SObjType=S.OneOf('blob', 'tree', 'submodule')
+
+# Used for when we're going to batch queries using $in
 QSIZE = 100
 README_RE = re.compile('^README(\.[^.]*)?$', re.IGNORECASE)
 
@@ -88,7 +92,7 @@ CommitRunDoc = collection(
 
 class RepoObject(object):
 
-    def __repr__(self):
+    def __repr__(self): # pragma no cover
         return '<%s %s>' % (
             self.__class__.__name__, self._id)
 
@@ -105,9 +109,16 @@ class RepoObject(object):
             self._id)
         return id.replace('.', '/')
 
+    @LazyProperty
+    def legacy(self):
+        return Object(object_id=self._id)
+
 class Commit(RepoObject):
     # Ephemeral attrs
     repo=None
+
+    def set_context(self, repo):
+        self.repo = repo
 
     @LazyProperty
     def author_url(self):
@@ -125,10 +136,10 @@ class Commit(RepoObject):
             self.tree_id = self.repo.compute_tree(self)
         if self.tree_id is None:
             return None
-        t = Tree.query.get(object_id=self.tree_id)
+        t = Tree.query.get(_id=self.tree_id)
         if t is None:
             self.tree_id = self.repo.compute_tree(self)
-            t = Tree.query.get(object_id=self.tree_id)
+            t = Tree.query.get(_id=self.tree_id)
         if t is not None: t.set_context(self)
         return t
 
@@ -138,21 +149,15 @@ class Commit(RepoObject):
         first_line = message.split('\n')[0]
         return h.text.truncate(first_line, 50)
 
-    def get_path(self, path):
-        '''Return the blob on the given path'''
-        if path.startswith('/'): path = path[1:]
-        path_parts = path.split('/')
-        return self.tree.get_blob(path_parts[-1], path_parts[:-1])
-
     def shorthand_id(self):
-        return self.repo.shorthand_for_commit(self)
+        return self.repo.shorthand_for_commit(self._id)
 
     @LazyProperty
     def symbolic_ids(self):
-        return self.repo.symbolics_for_commit(self)
+        return self.repo.symbolics_for_commit(self.legacy)
 
     def url(self):
-        return self.repo.url_for_commit(self)
+        return self.repo.url_for_commit(self.legacy)
 
     def log_iter(self, skip, count):
         for oids in utils.chunked_iter(commitlog(self._id), QSIZE):
@@ -161,16 +166,23 @@ class Commit(RepoObject):
                 (ci._id, ci) for ci in self.query.find(dict(
                         _id={'$in': oids})))
             for oid in oids:
-                ci = commits[oid]
-                ci.set_context(self.repo)
-                yield ci
+                if skip:
+                    skip -= 1
+                    continue
+                if count:
+                    count -= 1
+                    ci = commits[oid]
+                    ci.set_context(self.repo)
+                    yield ci
+                else:
+                    break
 
     def log(self, skip, count):
         return list(self.log_iter(skip, count))
 
     def count_revisions(self):
         result = 0
-        for oid in commitlog(self): result += 1
+        for oid in commitlog(self._id): result += 1
         return result
 
     def context(self):
@@ -217,7 +229,8 @@ class Tree(RepoObject):
         for x in self.blob_ids:
             if README_RE.match(x.name):
                 name = x.name
-                text = h.really_unicode(self.repo.blob_text(x.id))
+                text = self.repo.open_blob(Object(object_id=x.id)).read()
+                text = h.really_unicode(text)
                 break
         if text == '':
             text = '<p><em>Empty File</em></p>'
@@ -231,9 +244,9 @@ class Tree(RepoObject):
 
     def ls(self):
         # Load last commit info
-        oids = [ x.id for x in chain(self.tree_ids, self.object_ids, self.other_ids) ]
+        oids = [ x.id for x in chain(self.tree_ids, self.blob_ids, self.other_ids) ]
         lc_index = dict(
-            (lc.object_id, lc.commit)
+            (lc.object_id, lc.commit_info)
             for lc in LastCommitDoc.m.find(dict(
                     repo_id=self.repo._id,
                     object_id={'$in': oids})))
@@ -293,7 +306,7 @@ class Tree(RepoObject):
         return d
 
     def is_blob(self, name):
-        return self.by_name[name].type == 'blob'
+        return self.by_name[name]['type'] == 'blob'
 
 mapper(Commit, CommitDoc, repository_orm_session)
 mapper(Tree, TreeDoc, repository_orm_session)

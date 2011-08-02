@@ -3,7 +3,6 @@ from itertools import chain
 from cPickle import dumps
 
 import bson
-from tg import config
 
 from ming.base import Object
 
@@ -63,7 +62,7 @@ def refresh_repo(repo, all_commits=False, notify=True):
 
     # Send notifications
     if notify:
-        send_notifications(commit_ids)
+        send_notifications(repo, commit_ids)
 
 def refresh_commit_trees(ci, cache):
     '''Refresh the list of trees included withn a commit'''
@@ -221,7 +220,8 @@ def unknown_commit_ids(all_commit_ids):
     '''filter out all commit ids that have already been cached'''
     result = []
     for chunk in utils.chunked_iter(all_commit_ids, QSIZE):
-        q = CommitDoc.m.find(_id={'$in':chunk})
+        chunk = list(chunk)
+        q = CommitDoc.m.find(dict(_id={'$in':chunk}))
         known_commit_ids = set(ci._id for ci in q)
         result += [ oid for oid in chunk if oid not in known_commit_ids ]
     return result
@@ -280,12 +280,13 @@ def compute_diffs(repo_id, tree_cache, rhs_ci):
 def send_notifications(repo, commit_ids):
     '''Create appropriate notification and feed objects for a refresh'''
     from allura.model import Feed, Notification
+    from allura.model.repository import config
     commit_msgs = []
     for oids in utils.chunked_iter(commit_ids, QSIZE):
         chunk = list(oids)
         index = dict(
             (doc._id, doc)
-            for doc in CommitDoc.m.find(dict(_id={'$in':chunk})))
+            for doc in Commit.query.find(dict(_id={'$in':chunk})))
         for oid in chunk:
             ci = index[oid]
             href = '%s%sci/%s/' % (

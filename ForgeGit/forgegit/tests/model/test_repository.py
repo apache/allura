@@ -7,7 +7,58 @@ from ming.orm import ThreadLocalORMSession
 
 from alluratest.controller import setup_basic_test, setup_global_objects
 from allura.lib import helpers as h
+from allura import model as M
 from forgegit import model as GM
+
+class TestNewGit(unittest.TestCase):
+
+    def setUp(self):
+        setup_basic_test()
+        setup_global_objects()
+        h.set_context('test', 'src')
+        repo_dir = pkg_resources.resource_filename(
+            'forgegit', 'tests/data')
+        self.repo = GM.Repository(
+            name='testgit.git',
+            fs_path=repo_dir,
+            url_path = '/test/',
+            tool = 'git',
+            status = 'creating')
+        self.repo.refresh()
+        self.rev = M.repo.Commit.query.get(_id=self.repo.heads[0]['object_id'])
+        self.rev.repo = self.repo
+        ThreadLocalORMSession.flush_all()
+        ThreadLocalORMSession.close_all()
+
+    def test_commit(self):
+        assert self.rev.primary() is self.rev
+        assert self.rev.index_id().startswith('allura/model/repo/Commit#')
+        self.rev.author_url
+        self.rev.committer_url
+        assert self.rev.tree._id == self.rev.tree_id
+        assert self.rev.summary == self.rev.message.splitlines()[0]
+        assert self.rev.shorthand_id() == '[1e146e]'
+        assert self.rev.symbolic_ids == (['master'], [])
+        assert self.rev.url() == (
+            '/p/test/src/ci/'
+            '1e146e67985dcd71c74de79613719bef7bddca4a/')
+        all_cis = self.rev.log(0, 1000)
+        assert len(all_cis) == 4
+        assert self.rev.log(1,1000) == all_cis[1:]
+        assert self.rev.log(0,3) == all_cis[:3]
+        assert self.rev.log(1,2) == all_cis[1:3]
+        for ci in all_cis:
+            ci.count_revisions()
+            ci.context()
+        self.rev.tree.ls()
+        print self.rev.tree.readme()
+        assert self.rev.tree.path() == '/'
+        assert self.rev.tree.url() == (
+            '/p/test/src/ci/'
+            '1e146e67985dcd71c74de79613719bef7bddca4a/'
+            'tree/')
+        self.rev.tree.by_name['README']
+        assert self.rev.tree.is_blob('README') == True
 
 class TestGitRepo(unittest.TestCase):
 
