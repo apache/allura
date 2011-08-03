@@ -14,7 +14,6 @@ from alluratest.controller import setup_basic_test, setup_global_objects
 from allura import model as M
 from allura.lib import helpers as h
 
-
 class _Test(unittest.TestCase):
     idgen = ( 'obj_%d' % i for i in count())
 
@@ -47,6 +46,7 @@ class _TestWithRepo(_Test):
         self.repo._impl = mock.Mock(spec=M.RepositoryImplementation())
         self.repo._impl.log = lambda *a,**kw:(['foo'], [])
         self.repo._impl._repo = self.repo
+        self.repo._impl.all_commit_ids = lambda *a,**kw: []
         ThreadLocalORMSession.flush_all()
         ThreadLocalORMSession.close_all()
 
