@@ -57,6 +57,8 @@ class TestNewRepo(unittest.TestCase):
             '/p/test/src/5/tree/')
         self.rev.tree.by_name['README']
         assert self.rev.tree.is_blob('README') == True
+        assert self.rev.tree['a']['b']['c'].ls() == []
+        self.assertRaises(KeyError, lambda:self.rev.tree['a']['b']['d'])
 
 class TestSVNRepo(unittest.TestCase):
 
