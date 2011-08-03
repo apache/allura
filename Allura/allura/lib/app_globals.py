@@ -86,7 +86,7 @@ class Globals(object):
         self.pypeline_markup = pypeline_markup
 
         # Setup analytics
-        self.analytics = analytics.GoogleAnalytics(account=config.get('ga.account', 'UA-32013-57'))
+        self.analytics = analytics.GoogleAnalytics(account=config.get('ga.account', 'UA-XXXXX-X'))
 
         self.icons = dict(
             admin = Icon('x', 'ico-admin'),

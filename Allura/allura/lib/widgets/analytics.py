@@ -5,5 +5,3 @@ class GoogleAnalytics(ew.Widget):
     defaults=dict(
         ew.Widget.defaults,
         account='UA-XXXXX-X')
-    
-    
