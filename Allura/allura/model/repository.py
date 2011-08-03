@@ -97,6 +97,10 @@ class RepositoryImplementation(object):
         '''Used in hg and svn to compute a git-like-tree lazily'''
         raise NotImplementedError, 'compute_tree'
 
+    def compute_tree_new(self, commit, path='/'):
+        '''Used in hg and svn to compute a git-like-tree lazily with the new models'''
+        raise NotImplementedError, 'compute_tree'
+
     def open_blob(self, blob): # pragma no cover
         '''Return a file-like object that contains the contents of the blob'''
         raise NotImplementedError, 'open_blob'
@@ -199,6 +203,8 @@ class Repository(Artifact):
         return self._impl.url_for_commit(commit)
     def compute_tree(self, commit, path='/'):
         return self._impl.compute_tree(commit, path)
+    def compute_tree_new(self, commit, path='/'):
+        return self._impl.compute_tree_new(commit, path)
 
     def _log(self, rev, skip, max_count):
         ci = self.commit(rev)

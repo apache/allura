@@ -7,12 +7,13 @@ from datetime import datetime
 from collections import defaultdict
 
 from pylons import g
+import pymongo.errors
 
 from ming import Field, Index, collection
 from ming import schema as S
 from ming.base import Object
 from ming.utils import LazyProperty
-from ming.orm import mapper
+from ming.orm import mapper, session
 
 from allura.lib import utils
 from allura.lib import helpers as h
@@ -117,6 +118,20 @@ class RepoObject(object):
     def object_id(self):
         return self._id
 
+    @classmethod
+    def upsert(cls, id):
+        isnew = False
+        r = cls.query.get(_id=id)
+        if r is not None: return r, isnew
+        try:
+            r = cls(_id=id)
+            session(r).flush(r)
+            isnew = True
+        except pymongo.errors.DuplicateKeyError: # pragma no cover
+            session(r).expunge(r)
+            r = cls.query.get(_id=id)
+        return r, isnew
+
 class Commit(RepoObject):
     # Ephemeral attrs
     repo=None
@@ -137,12 +152,12 @@ class Commit(RepoObject):
     @LazyProperty
     def tree(self):
         if self.tree_id is None:
-            self.tree_id = self.repo.compute_tree(self)
+            self.tree_id = self.repo.compute_tree_new(self)
         if self.tree_id is None:
             return None
         t = Tree.query.get(_id=self.tree_id)
         if t is None:
-            self.tree_id = self.repo.compute_tree(self)
+            self.tree_id = self.repo.compute_tree_new(self)
             t = Tree.query.get(_id=self.tree_id)
         if t is not None: t.set_context(self)
         return t
