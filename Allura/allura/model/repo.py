@@ -232,6 +232,17 @@ class Tree(RepoObject):
             sha_obj.update(line)
         return sha_obj.hexdigest()
 
+    def __getitem__(self, name):
+        obj = self.by_name[name]
+        if obj['type'] == 'blob': return obj
+        obj = self.query.get(_id=obj['id'])
+        if obj is None:
+            oid = self.repo.compute_tree_new(self.commit, self.path() + name + '/')
+            obj = self.query.get(_id=oid)
+        if obj is None: raise KeyError, name
+        obj.set_context(self, name)
+        return obj
+
     def set_context(self, commit_or_tree, name=None):
         assert commit_or_tree is not self
         self.repo = commit_or_tree.repo
