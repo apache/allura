@@ -51,12 +51,10 @@ class TestNewRepo(unittest.TestCase):
             ci.context()
         self.rev.tree.ls()
         assert self.rev.tree.readme() == (
-            'README', '<pre>This is readme\nAnother line\n</pre>')
+            'README', '<pre>This is readme\nAnother Line\n</pre>')
         assert self.rev.tree.path() == '/'
         assert self.rev.tree.url() == (
-            '/p/test/src/ci/'
-            '1c7eb55bbd66ff45906b4a25d4b403899e0ffff1/'
-            'tree/')
+            '/p/test/src/5/tree/')
         self.rev.tree.by_name['README']
         assert self.rev.tree.is_blob('README') == True
 

@@ -310,6 +310,40 @@ class SVNImplementation(M.RepositoryImplementation):
         session(tree).flush(tree)
         return tree_id
 
+    def compute_tree_new(self, commit, tree_path='/'):
+        from allura.model import repo as RM
+        tree_path = tree_path[:-1]
+        tree_id = self._tree_oid(commit.object_id, tree_path)
+        tree, isnew = RM.Tree.upsert(tree_id)
+        if not isnew: return tree_id
+        log.debug('Computing tree for %s: %s',
+                 self._revno(commit.object_id), tree_path)
+        rev = self._revision(commit.object_id)
+        try:
+            infos = self._svn.info2(
+                self._url + tree_path,
+                revision=rev,
+                depth=pysvn.depth.immediates)
+        except pysvn.ClientError:
+            log.exception('Error computing tree for %s: %s(%s)',
+                          self._repo, commit, tree_path)
+            tree.delete()
+            return None
+        log.debug('Compute tree for %d paths', len(infos))
+        for path, info in infos[1:]:
+            if info.kind == pysvn.node_kind.dir:
+                tree.tree_ids.append(Object(
+                        id=self._tree_oid(commit.object_id, path),
+                        name=path))
+            elif info.kind == pysvn.node_kind.file:
+                tree.blob_ids.append(Object(
+                        id=self._tree_oid(commit.object_id, path),
+                        name=path))
+            else:
+                assert False
+        session(tree).flush(tree)
+        return tree_id
+
     def _tree_oid(self, commit_id, path):
         data = 'tree\n%s\n%s' % (commit_id, h.really_unicode(path))
         return sha1(data.encode('utf-8')).hexdigest()
