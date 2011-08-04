@@ -158,8 +158,8 @@ class NeighborhoodAddProjectForm(ForgeForm):
         SVN = ew.Checkbox(label="", attrs={'class':'labeled scm'})
         Tickets = ew.Checkbox(label="", attrs={'class':'unlabeled'})
         Downloads = ew.Checkbox(label="", attrs={'class':'unlabeled'})
-        # Stats = ew.Checkbox(name="Stats", label="", attrs={'class':'unlabeled'})
         Discussion = ew.Checkbox(label="", attrs={'class':'unlabeled'})
+        Blog = ew.Checkbox(label="", attrs={'class':'unlabeled'})
 
     def resources(self):
         for r in super(NeighborhoodAddProjectForm, self).resources(): yield r
@@ -170,17 +170,24 @@ class NeighborhoodAddProjectForm(ForgeForm):
         yield ew.JSScript('''
             $(function(){
                 var $scms = $('input[type=checkbox].scm');
-                var $suggest_btn = $('#suggest_project_name');
-                var $name_avail_message = $('#name_availablity');
+                var $name_avail_message = $('#name_availability');
                 var $name_input = $('input[name="%(project_name)s"]');
                 var $unixname_input = $('input[name="%(project_unixname)s"]');
+                var $url_fragment = $('#url_fragment');
+                var $error_icon = $('#error_icon');
+                var $success_icon = $('#success_icon');
+                $name_input.focus();
                 var handle_name_taken = function(message){
                     if(message){
+                        $success_icon.hide();
+                        $error_icon.show();
                         $name_avail_message.html(message);
                         $name_avail_message.removeClass('success');
                         $name_avail_message.addClass('error');
                     }
                     else{
+                        $error_icon.hide();
+                        $success_icon.show();
                         $name_avail_message.html('This name is available.');
                         $name_avail_message.removeClass('error');
                         $name_avail_message.addClass('success');
@@ -198,13 +205,20 @@ class NeighborhoodAddProjectForm(ForgeForm):
                         });
                     }
                 });
-                $suggest_btn.click(function(){
-                    $.getJSON('suggest_name',{'project_name':$name_input.val()},function(result){
-                        $unixname_input.val(result.suggested_name);
-                        handle_name_taken(result.message);
-                    });
+                $name_input.blur(function(){
+                    if ($unixname_input.val() === "" || $name_avail_message.hasClass('error')) {
+                        $.getJSON('suggest_name',{'project_name':$name_input.val()},function(result){
+                            $unixname_input.val(result.suggested_name);
+                            $url_fragment.html(result.suggested_name);
+                            handle_name_taken(result.message);
+                        });
+                    }
+                });
+                $unixname_input.keyup(function(){
+                    $url_fragment.html($unixname_input.val());
                 });
                 $unixname_input.change(function(){
+                    $url_fragment.html($unixname_input.val());
                     $.getJSON('check_name',{'project_name':$unixname_input.val()},function(result){
                         handle_name_taken(result.message);
                     });

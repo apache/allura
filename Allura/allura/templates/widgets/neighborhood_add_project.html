@@ -1,103 +1,118 @@
 <form action="{{action}}" method="POST">
 
     <div class="welcome">
-        <div class="grid-9" style="text-align: right">
+        <div class="grid-4" style="text-align: right; padding-top: 7px;">
             <label for="{{ widget.context_for(widget.fields.project_name)['id'] }}">
-                Project Name:
+                Project Name
             </label>
         </div>
-        <div class="grid-8">{{widget.display_field(widget.fields.project_name)}}</div>
-        <div class="grid-6">&nbsp;</div>
-        <div class="grid-9" style="text-align: right">
+        <div class="grid-10">{{widget.display_field(widget.fields.project_name)}}</div>
+        <div class="grid-9">&nbsp;</div>
+        <div style="clear:both">&nbsp;</div>
+        <div class="grid-4" style="text-align: right; padding-top: 7px;">
             <label for="{{ widget.context_for(widget.fields.project_unixname)['id'] }}">
-                URL: http://{{c.environ['HTTP_HOST']}}{{neighborhood.url()}}
+                URL Name
             </label>
         </div>
-        <div class="grid-8">{{widget.display_field(widget.fields.project_unixname)}}<br>
-          <div id="name_availablity" style="display:none"></div></div>
-        <div class="grid-3"><input type="button" value="Suggest" id="suggest_project_name"></div>
+        <div class="grid-10">{{widget.display_field(widget.fields.project_unixname)}}
+            <br/><div id="project_url">http://{{c.environ['HTTP_HOST']}}{{neighborhood.url()}}<span id="url_fragment"></span></div>
+        </div>
+        <div class="grid-9" style="position:relative; overflow:visible">
+            <b id="error_icon" data-icon="!" class="allura" title="Caution">!</b>
+            <b id="success_icon" data-icon="2" class="allura" title="Check">&#x2713;</b>
+            <div id="name_availability" style="display:none"></div>
+        </div>
         {{widget.display_field(widget.fields.neighborhood)}}
-        
-        {% if h.has_access(neighborhood, 'admin') and not neighborhood.project_template %}
-        <div class="grid-9" style="text-align: right">
-            <label for="{{ widget.context_for(widget.fields.private_project)['id'] }}">
-                Private Project?
-            </label>
-        </div>
-        <div class="grid-1">
-          {{widget.display_field(widget.fields.private_project)}}
-        </div>
-        <div class="grid-7">
-          Neighborhood administrators can mark a project as being private. Private
-          projects will be unreadable to non-project members and will not show up in
-          search results.
-        </div>
-        <div class="grid-6">&nbsp;</div>
-        <div style="clear:both"></div>
-        {% endif %}
+        <div style="clear:both">&nbsp;</div>
     </div>
+
     {% if not neighborhood.project_template %}
     <div class="inner-row">
         <div class="tool">
-          <div class="big_icon ui-icon-tool-wiki"></div>
-            {{widget.display_field(widget.fields.Wiki)}}
-            <h1>Wikis</h1>
-            <p>
-                Documentation is key to your project and the wiki tool helps make it easy for anyone to contribute.
-            </p>
+            <div class="big_icon ui-icon-tool-git"></div>
+                {{widget.display_field(widget.fields.Git)}}
+                <h1><label for="{{ widget.context_for(widget.fields.Git)['id'] }}">Git</label></h1>
+                <p>Git is a distributed version control system designed to
+                handle everything from small to very large projects with speed
+                and efficiency.</p>
         </div>
         <div class="tool">
-          <div class="big_icon ui-icon-tool-git"></div>
-            <h1>Code</h1>
-            <p>
-                SVN, Git and Mercurial will help you keep track of your changes.
-            </p>
-            <div class="checkbox-wrapper">
-            <span>{{widget.display_field(widget.fields.Git)}} Git</span>
-            <span>{{widget.display_field(widget.fields.Hg)}} Mercurial</span>
-            <span>{{widget.display_field(widget.fields.SVN)}} SVN</span>
-            </div>
+            <div class="big_icon ui-icon-tool-downloads"></div>
+                {{widget.display_field(widget.fields.Downloads)}}
+                <h1><label for="{{ widget.context_for(widget.fields.Downloads)['id'] }}">Downloads &amp; Stats</label></h1>
+                <p>Use the largest free, managed, global mirror network to
+                distribute your files, and follow the download trends that
+                enable you to develop better software.</p>
         </div>
-        <div class="tool">
-          <div class="big_icon ui-icon-tool-tickets"></div>
-            {{widget.display_field(widget.fields.Tickets)}}
-            <h1>Tickets</h1>
-            <p>
-                Bugs, enhancements, tasks, etc., will help you plan and manage your development.
-            </p>
-        </div>
+        <div style="clear:both"></div>
     </div>
     <div class="inner-row">
         <div class="tool">
-          <div class="big_icon ui-icon-tool-downloads"></div>
-            {{widget.display_field(widget.fields.Downloads)}}
-            <h1>Downloads</h1>
-            <p>
-                Use the largest free, managed, global mirror network to distribute your files.
-            </p>
+            <div class="big_icon ui-icon-tool-git"></div>
+                {{widget.display_field(widget.fields.SVN)}}
+                <h1><label for="{{ widget.context_for(widget.fields.SVN)['id'] }}">SVN</label></h1>
+                <p>Enterprise-class centralized version control for the masses.</p>
         </div>
         <div class="tool">
-          <div class="big_icon ui-icon-tool-stats"></div>
-            <h1>Stats</h1>
-            <p>
-                Follow the download trends that enable you to develop better software.
-                (Comes with Downloads)
-            </p>
+            <div class="big_icon ui-icon-tool-wiki"></div>
+                {{widget.display_field(widget.fields.Wiki)}}
+                <h1><label for="{{ widget.context_for(widget.fields.Wiki)['id'] }}">Wiki</label></h1>
+                <p>Documentation is key to your project and the wiki tool
+                helps make it easy for anyone to contribute.</p>
+        </div>
+        <div style="clear:both"></div>
+    </div>
+    <div class="inner-row">
+        <div class="tool">
+            <div class="big_icon ui-icon-tool-git"></div>
+                {{widget.display_field(widget.fields.Hg)}}
+                <h1><label for="{{ widget.context_for(widget.fields.Hg)['id'] }}">Mercurial</label></h1>
+                <p>Mercurial is a distributed source control management tool that efficiently
+                handles projects of any size and offers an easy and intuitive
+                interface.</p>
         </div>
         <div class="tool">
-          <div class="big_icon ui-icon-tool-discussion"></div>
-            {{widget.display_field(widget.fields.Discussion)}}
-            <h1>Forums</h1>
-            <p>
-                Collaborate with your community in your forums.
-            </p>
+            <div class="big_icon ui-icon-tool-tickets"></div>
+                {{widget.display_field(widget.fields.Tickets)}}
+                <h1><label for="{{ widget.context_for(widget.fields.Tickets)['id'] }}">Tickets</label></h1>
+                <p>Bugs, enhancements, tasks, etc., will help you plan and
+                manage your development.</p>
         </div>
+        <div style="clear:both"></div>
+    </div>
+    <div class="inner-row">
+        <div class="tool">
+            <div class="big_icon ui-icon-tool-blog"></div>
+                {{widget.display_field(widget.fields.Blog)}}
+                <h1><label for="{{ widget.context_for(widget.fields.Blog)['id'] }}">Blog</label></h1>
+                <p>Share exciting news and progress updates with your
+                community.</p>
+        </div>
+        <div class="tool">
+            <div class="big_icon ui-icon-tool-discussion"></div>
+                {{widget.display_field(widget.fields.Discussion)}}
+                <h1><label for="{{ widget.context_for(widget.fields.Discussion)['id'] }}">Forums</label></h1>
+                <p>Collaborate with your community in your forum.</p>
+        </div>
+        <div style="clear:both"></div>
     </div>
     {% endif %}
-    <div class="inner-row">
-      <span id="start">
-        <input type="submit" value="Start">
-      </span>
+    {% if h.has_access(neighborhood, 'admin') and not neighborhood.project_template %}
+    <div style="margin-top:20px">
+        <div class="grid-1" style="text-align: right">
+          {{widget.display_field(widget.fields.private_project)}}
+        </div>
+        <div class="grid-16">
+            <label for="{{ widget.context_for(widget.fields.private_project)['id'] }}">
+            Private? Private projects will be unreadable to non-project members and will
+            not show up in search results.
+            </label>
+        </div>
+        <div style="clear:both"></div>
+    </div>
+    {% endif %}
+    <div class="button-row">
+        <input type="submit" id="start" value="Create"> or <a href="/register-classic">Start a Classic Project</a>
     </div>
   {% if widget.antispam %}{% for fld in g.antispam.extra_fields() %}
   {{fld}}{% endfor %}{% endif %}
