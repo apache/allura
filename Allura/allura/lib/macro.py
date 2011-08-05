@@ -172,3 +172,18 @@ def img(src=None, **kw):
         return '<img src="%s" %s/>' % (src, ' '.join(attrs))
     else:
         return '<img src="./attachment/%s" %s/>' % (src, ' '.join(attrs))
+
+
+template_project_admins = string.Template('<a href="$url">$name</a><br>')
+@macro()
+def project_admins():
+    from allura import model as M
+    output = ''
+    admin_role = M.ProjectRole.query.get(project_id=c.project._id,name='Admin')
+    if admin_role:
+        output = '\n'.join(
+            template_project_admins.substitute(dict(
+                url=user_role.user.url(),
+                name=user_role.user.display_name))
+            for user_role in admin_role.users_with_role())
+    return output

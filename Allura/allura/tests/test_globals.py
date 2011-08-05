@@ -65,6 +65,8 @@ def test_macros():
         assert '<img alt="test Logo"' in r, r
         assert '<img alt="sub1 Logo"' in r, r
         
+    r = g.markdown_wiki.convert('[[project_admins]]')
+    assert r == '<div class="markdown_content"><p><a href="/u/test-admin/">Test Admin</a><br /></p></div>'
     g.set_project(M.Project.query.get(name='Home Project for Projects'))
     g.set_app('home')
     r = g.markdown_wiki.convert('[[neighborhood_feeds tool_name=Wiki]]')
