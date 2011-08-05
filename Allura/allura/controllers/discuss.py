@@ -149,6 +149,8 @@ class ThreadController(BaseController):
         self._discussion_controller = discussion_controller
         self.discussion = discussion_controller.discussion
         self.thread = self.M.Thread.query.get(_id=thread_id)
+        if not self.thread:
+            raise exc.HTTPNotFound
 
     @expose()
     def _lookup(self, id, *remainder):
