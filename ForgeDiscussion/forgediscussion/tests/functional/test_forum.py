@@ -162,6 +162,8 @@ class TestForumAsync(TestController):
         thd = FM.ForumThread.query.find().first()
         url = str('/discussion/testforum/thread/%s/' % thd._id)
         self.app.get(url)
+        # accessing a non-existent thread should return a 404
+        self.app.get('/discussion/testforum/thread/foobar/', status=404)
 
     def test_posts(self):
         self._post('testforum', 'Test', 'test')
