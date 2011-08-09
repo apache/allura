@@ -52,7 +52,7 @@ class TestFunctionalController(TestController):
         self.new_ticket(summary='test new with milestone', **{'_milestone':'1.0'})
         ticket_view = self.new_ticket(summary='test new with milestone', **{'_milestone':'1.0'}).follow()
         assert '<small>2</small>' in ticket_view
-        
+
     def test_new_ticket_form(self):
         response = self.app.get('/bugs/new/')
         form = response.forms[1]
@@ -95,14 +95,16 @@ class TestFunctionalController(TestController):
 
     def test_two_trackers(self):
         summary = 'test two trackers'
-        ticket_view = self.new_ticket('/doc-bugs/', summary=summary).follow()
+        ticket_view = self.new_ticket('/doc-bugs/', summary=summary, _milestone='1.0').follow()
         ThreadLocalORMSession.flush_all()
         M.MonQTask.run_ready()
         ThreadLocalORMSession.flush_all()
         assert_true(summary in ticket_view)
         index_view = self.app.get('/doc-bugs/')
         assert_true(summary in index_view)
+        assert_true(sidebar_contains(index_view, '<span class="has_small">1.0</span><small>1</small>'))
         index_view = self.app.get('/bugs/')
+        assert_false(sidebar_contains(index_view, '<span class="has_small">1.0</span><small>1</small>'))
         assert_false(summary in index_view)
 
     def test_render_ticket(self):
