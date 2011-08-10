@@ -463,6 +463,10 @@ class Project(MappedClass):
         which the user has the required access.'''
         from allura.ext.project_home import ProjectHomeApp
         mounts = self.ordered_mounts()
+        if self.private_project_of():
+            for mount in mounts:
+                if 'ac' in mount and mount['ac'].tool_name == 'profile':
+                    return mount
         if mounts and required_access is None:
             return mounts[0]
         for mount in mounts:
