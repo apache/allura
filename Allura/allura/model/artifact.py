@@ -573,8 +573,11 @@ class Feed(MappedClass):
 
 
     @classmethod
-    def post(cls, artifact, title=None, description=None, author=None):
-        "Create a Feed item"
+    def post(cls, artifact, title=None, description=None, author=None, author_link=None, author_name=None):
+        """
+        Create a Feed item.  Returns the item.
+        But if anon doesn't have read access, create does not happen and None is returned
+        """
         # TODO: fix security system so we can do this correctly and fast
         from allura import model as M
         anon = M.User.anonymous()
@@ -583,10 +586,13 @@ class Feed(MappedClass):
         if not security.has_access(c.project, 'read', user=anon):
             return
         idx = artifact.index()
+        if author is None:
+            author = c.user
+        if author_name is None:
+            author_name = author.get_pref('display_name')
         if title is None:
-            title='%s modified by %s' % (idx['title_s'], c.user.get_pref('display_name'))
+            title='%s modified by %s' % (idx['title_s'], author_name)
         if description is None: description = title
-        if author is None: author = c.user
         item = cls(
             ref_id=artifact.index_id(),
             neighborhood_id=artifact.app_config.project.neighborhood_id,
@@ -596,8 +602,8 @@ class Feed(MappedClass):
             title=title,
             description=description,
             link=artifact.url(),
-            author_name=author.get_pref('display_name'),
-            author_link=author.url())
+            author_name=author_name,
+            author_link=author_link or author.url())
         return item
 
     @classmethod

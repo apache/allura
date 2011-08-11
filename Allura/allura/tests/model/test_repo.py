@@ -139,11 +139,15 @@ class TestRepo(_TestWithRepo):
         assert self.repo.guess_type('foo.html') == ('text/html', None)
         assert self.repo.guess_type('.gitignore') == ('text/plain', None)
 
-    def test_refresh(self):
+    @mock.patch('allura.model.repository.Commit.upsert')
+    def test_refresh(self, Commit_upsert):
         ci = mock.Mock()
         ci.count_revisions=mock.Mock(return_value=100)
         ci.diffs_computed = False
+        ci.authored.name = 'Test Committer'
+        ci.author_url = '/u/test-committer/'
         self.repo._impl.commit = mock.Mock(return_value=ci)
+        Commit_upsert.return_value=(ci,True)
         self.repo._impl.new_commits = mock.Mock(return_value=['foo%d' % i for i in range(100) ])
         def set_heads():
             self.repo.heads = [ ming.base.Object(name='head', object_id='foo0', count=100) ]
@@ -156,6 +160,29 @@ class TestRepo(_TestWithRepo):
             if '100 new commits' in n.subject: break
         else:
             assert False, 'Did not find notification'
+        assert M.Feed.query.find(dict(
+            title='New commit',
+            author_name='Test Committer',
+            author_link='/u/test-committer/',
+        )).count()
+
+    @mock.patch('allura.model.repository.Commit.upsert')
+    def test_refresh_private(self, Commit_upsert):
+        ci = mock.Mock()
+        ci.count_revisions=mock.Mock(return_value=100)
+        ci.diffs_computed = False
+        self.repo._impl.commit = mock.Mock(return_value=ci)
+        Commit_upsert.return_value=(ci,True)
+        self.repo._impl.new_commits = mock.Mock(return_value=['foo%d' % i for i in range(100) ])
+        def set_heads():
+            self.repo.heads = [ ming.base.Object(name='head', object_id='foo0', count=100) ]
+        self.repo._impl.refresh_heads = mock.Mock(side_effect=set_heads)
+
+        # make unreadable by *anonymous, so additional notification logic executes
+        self.repo.acl = []
+        c.project.acl = []
+
+        self.repo.refresh()
 
     def test_push_upstream_context(self):
         self.repo.init_as_clone('srcpath', 'srcname', '/p/test/svn/')

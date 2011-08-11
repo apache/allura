@@ -310,13 +310,14 @@ class Repository(Artifact):
                 sess.flush()
                 sess.clear()
             if notify:
-                item = Feed.post(
+                Feed.post(
                     self,
                     title='New commit',
                     description='%s<br><a href="%s%s">View Changes</a>' % (
-                        ci.summary,config.common_prefix,ci.url()))
-                item.author_link = ci.author_url
-                item.author_name = ci.authored.name
+                        ci.summary,config.common_prefix,ci.url()),
+                    author_link = ci.author_url,
+                    author_name = ci.authored.name,
+                )
                 commit_msgs.append('%s by %s <%s%s>' % (
                         ci.summary, ci.committed.name, config.common_prefix,ci.url()))
         if commit_msgs:
