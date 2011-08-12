@@ -116,6 +116,7 @@ def projects(
     category=None,
     display_mode='grid',
     sort='last_updated',
+    limit=100,
     labels=''):
     from allura.lib.widgets.project_list import ProjectList
     from allura import model as M
@@ -131,7 +132,7 @@ def projects(
     if category is not None:
         q['category_id'] = category._id
     pq = M.Project.query.find(q)
-    pq = pq.limit(100)
+    pq = pq.limit(int(limit))
     if sort == 'alpha':
         pq.sort('name')
     else:
