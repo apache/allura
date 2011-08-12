@@ -163,6 +163,21 @@ def projects(
     return response
 
 @macro()
+def download_button(project=None, **kw):
+    from allura import model as M
+    from allura.lib.widgets.macros import DownloadButton
+    if project is None:
+        p = c.project
+    else:
+        p = M.Project.query.get(shortname=project)
+    if not p:
+        return '[[download_button %s (not found)]]' % project
+    button = DownloadButton(project=p)
+    g.resource_manager.register(button)
+    response = button.display(project=p)
+    return response
+
+@macro()
 def include(ref=None, **kw):
     from allura import model as M
     from allura.lib.widgets.macros import Include
