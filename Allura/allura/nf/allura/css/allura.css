@@ -11,7 +11,7 @@ b.ico {
     background-repeat: no-repeat;
     vertical-align: middle;
 }
-h2.dark b.ico {background-image: url('../images/neo-icon-set-ffffff-256x350.png');}
+h2.dark b.ico, .modal b.ico {background-image: url('../images/neo-icon-set-ffffff-256x350.png');}
 
 b.ico.ico-fork { background-position: -240px -16px; }
 b.ico.ico-merge { background-position: -224px -16px; }
@@ -31,6 +31,9 @@ b.ico.ico-delete { background-position: -80px -128px; }
 b.ico.ico-help { background-position: -48px -144px; }
 b.ico.ico-pin { background-position: -144px -144px; }
 b.ico.ico-feed { background-position: -16px -176px; }
+b.ico.ico-close { background-position: -80px -128px; }
+
+
 
 .ui-icon-tool-home {
   background-image: url("../images/home_24.png");
