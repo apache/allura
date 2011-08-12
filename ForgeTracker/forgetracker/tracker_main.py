@@ -188,7 +188,6 @@ class ForgeTrackerApp(Application):
             links.append(SitemapEntry('Searches'))
             links = links + search_bins
         links.append(SitemapEntry('Help'))
-        links.append(SitemapEntry('Ticket Help', self.config.url() + 'help', className='nav_child'))
         links.append(SitemapEntry('Markdown Syntax', self.config.url() + 'markdown_syntax', className='nav_child'))
         return links
 
@@ -470,11 +469,6 @@ class RootController(BaseController):
     @expose('jinja:allura:templates/markdown_syntax.html')
     def markdown_syntax(self):
         'Static page explaining markdown.'
-        return dict()
-
-    @expose('jinja:forgetracker:templates/tracker/help.html')
-    def help(self):
-        'Static help page.'
         return dict()
 
     @without_trailing_slash

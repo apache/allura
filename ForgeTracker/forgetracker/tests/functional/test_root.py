@@ -116,11 +116,6 @@ class TestFunctionalController(TestController):
         index_view = self.app.get('/bugs/')
         assert 'No tickets found.' in index_view
 
-    def test_render_help(self):
-        summary = 'test render help'
-        r = self.app.get('/bugs/help')
-        assert_true('Tracker Help' in r)
-
     def test_render_markdown_syntax(self):
         summary = 'test render markdown syntax'
         r = self.app.get('/bugs/markdown_syntax')
