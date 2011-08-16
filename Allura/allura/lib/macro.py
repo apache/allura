@@ -111,6 +111,26 @@ def neighborhood_blog_posts(max_number=5, sort='timestamp', summary=False):
                              security.has_access(post.app.project, 'read', project=post.app.project)())
     return output
 
+@macro()
+def project_blog_posts(max_number=5, sort='timestamp', summary=False, mount_point=None):
+    from forgeblog import model as BM
+    app_config_ids = []
+    for conf in c.project.app_configs:
+        if conf.tool_name == 'blog' and (mount_point is None or conf.options.mount_point==mount_point):
+            app_config_ids.append(conf._id)
+    posts = BM.BlogPost.query.find({'state':'published','app_config_id':{'$in':app_config_ids}})
+    posts = posts.sort(sort, pymongo.DESCENDING).limit(int(max_number)).all()
+    output = '\n'.join(
+        template_neighborhood_blog_posts.substitute(dict(
+                href=post.url(),
+                title=post.title,
+                author=post.author().display_name,
+                ago=h.ago(post.timestamp),
+                description=summary and '&nbsp;' or g.markdown.convert(post.text)))
+        for post in posts if security.has_access(post, 'read', project=post.app.project)() and
+                             security.has_access(post.app.project, 'read', project=post.app.project)())
+    return output
+
 @macro('neighborhood-wiki')
 def projects(
     category=None,
