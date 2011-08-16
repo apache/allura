@@ -82,7 +82,7 @@ class Globals(MappedClass):
     def not_closed_mongo_query(self):
         return dict(
             status={'$in': list(self.set_of_open_status_names)})
-    
+
     @property
     def closed_query(self):
         return ' or '.join(['status:'+name for name in self.set_of_closed_status_names])
@@ -217,7 +217,7 @@ class Ticket(VersionedArtifact):
     created_date = FieldProperty(datetime, if_missing=datetime.utcnow)
 
     super_id = FieldProperty(schema.ObjectId, if_missing=None)
-    sub_ids = FieldProperty([schema.ObjectId], if_missing=None)
+    sub_ids = FieldProperty([schema.ObjectId])
     ticket_num = FieldProperty(int, required=True)
     summary = FieldProperty(str)
     description = FieldProperty(str, if_missing='')
