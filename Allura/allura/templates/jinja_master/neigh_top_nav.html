@@ -1,7 +1,8 @@
 {% if neighborhood %}
   <a href="{{neighborhood.url()}}" class="ui-icon-tool-home">
     Home
-    {% if request.url.rfind(neighborhood.url(), - neighborhood.url()|length) != -1 %}
+    {% set url_length = neighborhood.url()|length %}
+    {% if request.url.rfind(neighborhood.url(), -url_length) != -1 %}
       <span class="diamond"></span>
     {% endif %}
   </a>

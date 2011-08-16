@@ -1,23 +1,19 @@
 {% if g.theme.jinja_macros %}
-  {% import g.theme.jinja_macros as theme_macros with context %}
+    {% import g.theme.jinja_macros as theme_macros with context %}
 {% endif %}
 
 <script type="text/javascript">
-
-  var _gaq = _gaq || [];
-  _gaq.push(['_setAccount', '{{account}}']);
-{% if c.app and c.app.config %}
-  _gaq.push(['_setCustomVar', 1, 'Tool', '{{c.app.config.tool_name}}', 3])
-{% endif %}
-  _gaq.push(['_trackPageview']);
-  _gaq.push(['_trackPageLoadTime']);
-{% if c.user and c.user._id %}
-  {{theme_macros.custom_ga_js(c.user)}}
-{% endif %}
-  (function() {
-    var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
-    ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
-    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
-  })();
-
+    var _gaq = _gaq || [];
+    _gaq.push(['_setAccount', '{{account}}']);
+    {% if c.app and c.app.config -%}
+    _gaq.push(['_setCustomVar', 1, 'Page Type', '{{c.app.config.tool_name}}', 3])
+    {%- endif %}
+    _gaq.push(['_trackPageview']);
+    _gaq.push(['_trackPageLoadTime']);
+    {{theme_macros.custom_ga_js(c.user|default, c.project|default)}}
+    (function() {
+        var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+        ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+        var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+    })();
 </script>
