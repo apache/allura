@@ -136,6 +136,7 @@ def projects(
     category=None,
     display_mode='grid',
     sort='last_updated',
+    show_total=False,
     limit=100,
     labels=''):
     from allura.lib.widgets.project_list import ProjectList
@@ -151,8 +152,7 @@ def projects(
         category = M.ProjectCategory.query.get(name=category)
     if category is not None:
         q['category_id'] = category._id
-    pq = M.Project.query.find(q)
-    pq = pq.limit(int(limit))
+    pq = M.Project.query.find(q).limit(int(limit))
     if sort == 'alpha':
         pq.sort('name')
     else:
@@ -160,6 +160,12 @@ def projects(
     pl = ProjectList()
     g.resource_manager.register(pl)
     response = pl.display(projects=pq.all(), display_mode=display_mode)
+    if show_total:
+        total = 0
+        for p in M.Project.query.find(q):
+            if h.has_access(p, 'read')():
+                total = total + 1
+        response = '<p class="macro_projects_total">%s Projects</p>%s' % (total,response)
     return response
 
 @macro()
