@@ -127,6 +127,7 @@ def bootstrap(command, conf, vars):
     p_adobe1 = n_adobe.register_project('adobe-1', u_admin)
     p_adobe.add_user(u_admin, ['Admin'])
     p0 = n_projects.register_project('test', u_admin)
+    p1 = n_projects.register_project('test2', u_admin)
     p0._extra_tool_status = [ 'alpha', 'beta' ]
 
     sess = session(n_adobe) # all the sessions are the same

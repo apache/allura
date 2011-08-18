@@ -382,7 +382,7 @@ class Repository(Artifact):
         sess.clear()
 
     def push_upstream_context(self):
-        project, rest=h.find_project(self.upstream_repo.url)
+        project, rest=h.find_project(self.upstream_repo.name)
         with h.push_context(project._id):
             app = project.app_instance(rest[0])
         return h.push_context(project._id, app_config_id=app.config._id)
@@ -409,6 +409,10 @@ class Repository(Artifact):
                 shortlink=None,
                 summary=None)
         return lc.last_commit
+
+    @property
+    def forks(self):
+        return self.query.find({'upstream_repo.name': self.url()}).all()
 
 class MergeRequest(VersionedArtifact):
     statuses=['open', 'merged', 'rejected']

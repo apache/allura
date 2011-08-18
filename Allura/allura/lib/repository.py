@@ -100,7 +100,7 @@ class RepositoryApp(Application):
         if self.repo.upstream_repo.name:
             links += [
                 SitemapEntry('Clone of'),
-                SitemapEntry(self.repo.upstream_repo.name, self.repo.upstream_repo.url,
+                SitemapEntry(self.repo.upstream_repo.name, self.repo.upstream_repo.name,
                              className='nav_child')
                 ]
             if len(c.app.repo.branches):
@@ -137,6 +137,10 @@ class RepositoryApp(Application):
                             default_branch_url+'tags/',
                             className='nav_child'))
                     break
+        if self.repo.forks:
+            links.append(SitemapEntry('Forks'))
+            for f in self.repo.forks:
+                links.append(SitemapEntry(f.url(), f.url(), className='nav_child'))
         return links
 
     def install(self, project):

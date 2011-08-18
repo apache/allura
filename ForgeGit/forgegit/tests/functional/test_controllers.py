@@ -25,6 +25,21 @@ class TestRootController(TestController):
         ThreadLocalORMSession.flush_all()
         ThreadLocalORMSession.close_all()
 
+    def test_fork(self):
+        r = self.app.post('/src-git/fork', params=dict(
+            project_name='test2',
+            to_name='code'))
+        cloned_from = c.app.repo
+        with h.push_context('test2', 'code'):
+            c.app.repo.init_as_clone(
+                    cloned_from.full_fs_path,
+                    cloned_from.app.config.script_name(),
+                    cloned_from.full_fs_path)
+        r = self.app.get('/p/test2/code').follow().follow().follow()
+        assert 'Clone of' in r
+        r = self.app.get('/src-git/').follow().follow()
+        assert 'Forks' in r
+
     def test_index(self):
         resp = self.app.get('/src-git/').follow().follow()
         assert 'git://' in resp
