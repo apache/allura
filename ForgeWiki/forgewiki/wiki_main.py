@@ -411,8 +411,12 @@ class PageController(BaseController):
 
     @expose()
     def _lookup(self, pname, *remainder):
-        url = '../' + '/'.join((pname,) + remainder)
-        redirect(url)
+        page = WM.Page.query.get(
+            app_config_id=c.app.config._id, title=pname)
+        if page:
+            redirect(page.url())
+        else:
+            raise exc.HTTPNotFound
 
     @with_trailing_slash
     @expose('jinja:forgewiki:templates/wiki/page_view.html')

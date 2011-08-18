@@ -56,6 +56,19 @@ class TestRootController(TestController):
         response = self.app.post('/wiki/tést/edit')
         assert 'tést' in response
 
+    def test_subpage_attempt(self):
+        self.app.get('/wiki/tést/')
+        self.app.post(
+            '/wiki/tést/update',
+            params={
+                'title':'tést',
+                'text':'text1',
+                'labels':'',
+                'labels_old':'',
+                'viewable_by-0.id':'all'})
+        assert '/p/test/wiki/Home/' in self.app.get('/wiki/tést/Home/')
+        self.app.get('/wiki/tést/notthere/', status=404)
+
     def test_page_history(self):
         self.app.get('/wiki/tést/')
         self.app.post(
