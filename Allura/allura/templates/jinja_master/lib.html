@@ -142,26 +142,58 @@
 
 &lt;somebbob@example.com&gt;
 
-To use text for the link, write it [like this](http://someurl).
-
-You can add a *title* (which shows up under the cursor),
-[like this](http://someurl "this title shows up when you hover").
 </pre></div>
+
+<p>Output:</p>
+{{g.markdown.convert('''
+<http://someurl>
+
+<somebbob@example.com>''')}}
+
+<p>To use text for the link, write it:</p>
+<div class="codehilite"><pre>[like this](http://someurl)</pre></div>
+
+<p>Output:</p>
+{{g.markdown.convert('''[like this](http://someurl)''')}}
+
+<p>You can add a *title* (which shows up under the cursor):</p>
+<div class="codehilite"><pre>[like this](http://someurl "this title shows up when you hover")</pre></div>
+
+<p>Output:</p>
+{{g.markdown.convert('''[like this](http://someurl "this title shows up when you hover")''')}}
+</pre></div>
+
+
 <h2 id="md_ex_reflinks{{id}}">Reference Links</h2>
 <div class="codehilite"><pre>You can also put the [link URL][1] below the current paragraph
 like [this][2].
 
    [1]: http://url
    [2]: http://another.url "A funky title"
+</pre></div>
+<p>Output:</p>
+{{g.markdown.convert('''You can also put the [link URL][1] below the current paragraph
+like [this][2].
 
-Here the text "link URL" gets linked to "http://url", and the lines
-showing "[1]: http://url" won't show anything.
+[1]: http://url
+[2]: http://another.url "A funky title"''')}}
 
-Or you can use a [shortcut][] reference, which links the text
+<p>Here the text "link URL" gets linked to "http://url", and the lines
+showing "[1]: http://url" won't show anything.</p>
+
+<p>Or you can use a [shortcut][] reference, which links the text
+"shortcut" to the link named "[shortcut]" on the next paragraph.</p>
+
+<div class="codehilite"><pre>Or you can use a [shortcut][] reference, which links the text
 "shortcut" to the link named "[shortcut]" on the next paragraph.
 
-   [shortcut]: http://goes/with/the/link/name/text
-</pre></div>
+[shortcut]: http://goes/with/the/link/name/text</pre></div>
+<p>Output:</p>
+{{g.markdown.convert('''Or you can use a [shortcut][] reference, which links the text
+"shortcut" to the link named "[shortcut]" on the next paragraph.
+
+[shortcut]: http://goes/with/the/link/name/text''')}}
+
 
 <h2 id="md_ex_artlinks{{id}}">Artifact Links</h2>
 <p>Any existing forge resource can be linked with surrounding square brackets ie [MyPage] or [#123].</p>
@@ -179,19 +211,33 @@ You can even link to tickets in a subproject with `[subproject.tickets:#123]`.</
 [tickets:#123]
 </pre></div>
 
-<h2 id="md_ex_text{{id}}">Text</h2>
-<div class="codehilite"><pre>Use * or _ to emphasize things:
+<p>No example output is available for this one because it only works on real artifacts. Try it in your project!</p>
 
-*this is in italic*  and _so is this_
+<h2 id="md_ex_text{{id}}">Text</h2>
+<p>Use * or _ to emphasize things:</p>
+<div class="codehilite"><pre>*this is in italic*  and _so is this_
 
 **this is in bold**  and __so is this__
 
 ***this is bold and italic***  and ___so is this___
+</pre></div>
 
-You can strike through text using HTML like this:
+<p>Output:</p>
+{{g.markdown.convert("""*this is in italic*  and _so is this_
+
+**this is in bold**  and __so is this__
+
+***this is bold and italic***  and ___so is this___""")}}
+
+<p>You can strike through text using HTML like this:</p>
+<div class="codehilite"><pre>
 &lt;s&gt;this is strike through text&lt;/s&gt;
+</pre></div>
 
-Just write paragraphs like in a text file and they will display how
+<p>Output:</p>
+{{g.markdown.convert("""<s>this is strike through text</s>""")}}
+
+<div class="codehilite"><pre>Just write paragraphs like in a text file and they will display how
 you would expect.  A blank line separates paragraphs.
 
 So this is a new paragraph. But any text on adjacent lines
@@ -199,9 +245,17 @@ will all end up
 in the same paragraph.
 </pre></div>
 
+<p>Output:</p>
+{{g.markdown.convert("""Just write paragraphs like in a text file and they will display how
+you would expect.  A blank line separates paragraphs.
+
+So this is a new paragraph. But any text on adjacent lines
+will all end up
+in the same paragraph.""")}}
+
 <h2 id="md_ex_bq{{id}}">Blockquotes</h2>
-<div class="codehilite"><pre>&gt; Use the &gt; character in front of a line, *just like in email*.
-&gt; Use it if you're quoting a person, a song or whatever.
+<p>Use the &gt; character in front of a line, <i>just like in email</i></p>
+<div class="codehilite"><pre>&gt; Use it if you're quoting a person, a song or whatever.
 
 &gt; You can use *italic* or lists inside them also.
 And just like with other paragraphs,
@@ -211,11 +265,24 @@ part of the blockquote, even without the &gt; character in front.
 To end the blockquote, just put a blank line before the following
 paragraph.
 </pre></div>
-<h2 id="md_ex_pre{{id}}">Preformatted Text</h2>
-<div class="codehilite"><pre>If you want some text to show up exactly as you write it, without
-Markdown doing anything to it, just indent every line by at least 4
-spaces (or 1 tab).
 
+<p>Output:</p>
+{{g.markdown.convert("""> Use it if you're quoting a person, a song or whatever.
+
+> You can use *italic* or lists inside them also.
+And just like with other paragraphs,
+all of these lines are still
+part of the blockquote, even without the &gt; character in front.
+
+To end the blockquote, just put a blank line before the following
+paragraph.""")}}
+
+
+<h2 id="md_ex_pre{{id}}">Preformatted Text</h2>
+<p>If you want some text to show up exactly as you write it, without
+Markdown doing anything to it, just indent every line by at least 4
+spaces (or 1 tab).</p>
+<div class="codehilite"><pre>
     This line won't *have any markdown* formatting applied.
     I can even write &lt;b&gt;HTML&lt;/b&gt; and it will show up as text.
     This is great for showing program source code, or HTML or even
@@ -225,8 +292,21 @@ spaces (or 1 tab).
 As a shortcut you can use backquotes to do the same thing while
 inside a normal pargraph.  `This won't be *italic* or **bold**
 at all.`
-
 </pre></div>
+
+<p>Output:</p>
+{{g.markdown.convert("""
+    This line won't *have any markdown* formatting applied.
+    I can even write <b>HTML</b> and it will show up as text.
+    This is great for showing program source code, or HTML or even
+    Markdown. <b>this won't show up as HTML</b> but
+    exactly <i>as you see it in this text file</i>.
+
+As a shortcut you can use backquotes to do the same thing while
+inside a normal pargraph.  `This won't be *italic* or **bold**
+at all.`""")}}
+
+
 <h2 id="md_ex_lists{{id}}">Lists</h2>
 <div class="codehilite"><pre>* an asterisk starts an unordered list
 * and this is another item in the list
@@ -243,57 +323,119 @@ To start an ordered list, write this:
         1. keep indenting for more sub lists
     * here i'm back to the second level
 </pre></div>
+
+<p>Output:</p>
+{{g.markdown.convert('''* an asterisk starts an unordered list
+* and this is another item in the list
++ or you can also use the + character
+- or the - character
+
+To start an ordered list, write this:
+
+1. this starts a list *with* numbers
++  this will show as number "2"
+*  this will show as number "3."
+9. any number, +, -, or * will keep the list going.
+    * just indent by 4 spaces (or tab) to make a sub-list
+        1. keep indenting for more sub lists
+    * here i\'m back to the second level''')}}
+
+
 <h2 id="md_ex_headers{{id}}">Headers</h2>
+<p>Just put 1 or more dashes or equals signs (--- or ===) below the
+title.</p>
 <div class="codehilite"><pre>This is a huge header
 ==================
 
 this is a smaller header
 ------------------
-
-Just put 1 or more dashes or equals signs (--- or ===) below the
-title.
 </pre></div>
+
+<p>Output:</p>
+{{g.markdown.convert('''This is a huge header
+==================
+
+this is a smaller header
+------------------''')}}
+
+
 <h2 id="md_ex_hr{{id}}">Horizontal Rule</h2>
-<div class="codehilite"><pre>just put three or more *'s or -'s on a line:
-
+<p>Just put three or more *'s or -'s on a line:</p>
+<div class="codehilite"><pre>
 ----------------
+</pre></div>
 
-or you can use single spaces between then, like this:
+<p>Output:</p>
+{{g.markdown.convert('''----------------''')}}
 
+<p>Or, you can use single spaces between then, like this:</p>
+
+<div class="codehilite"><pre>
 * * *
+</pre></div>
 
-or
+<p>Output:</p>
+{{g.markdown.convert('''* * *''')}}
 
+<p>or</p>
+
+<div class="codehilite"><pre>
 - - - - - - -
+</pre></div>
+
+<p>Output:</p>
+{{g.markdown.convert('''- - - - - - -''')}}
 
 Make sure you have a blank line above the dashes, though, or else:
 
+<div class="codehilite"><pre>
 you will get a header
 ---
 </pre></div>
+
+<p>Output:</p>
+{{g.markdown.convert('''you will get a header
+---''')}}
 
 
 <h2 id="md_ex_img{{id}}">Images</h2>
 <p>To include an image, just put a "!" in front of a text link:</p>
 <div class="codehilite"><pre>
-![alternate text](http://someurl/image.gif)
+![alternate text](https://sourceforge.net/images/icon_linux.gif)
 </pre></div>
+
+<p>Output:</p>
+{{g.markdown.convert('''![alternate text](http://sourceforge.net/images/icon_linux.gif)''')}}
+
 <p>The "alternate text" will show up if the browser can't load the
 image.</p>
 <p>You can also use a title if you want, like this:</p>
 <div class="codehilite"><pre>
-![tiny arrow](http://greg.vario.us/img/extlink.png "tiny arrow")
+![tiny arrow](https://sourceforge.net/images/icon_linux.gif "tiny arrow")
 </pre></div>
+
+<p>Output:</p>
+{{g.markdown.convert('''![tiny arrow](http://sourceforge.net/images/icon_linux.gif "tiny arrow")''')}}
+
 <p>To reference an attached image, just use the img macro.  You can add more attributes:</p>
 <div class="codehilite"><pre>
 [[img src=attached-image.jpg alt=foobar width=20%]]
 </pre></div>
+
+<p>Output:</p>
+{{g.markdown.convert('''[[img src=attached-image.jpg alt=foobar width=20%]]''')}}
+
 
 <h2 id="md_ex_escapes{{id}}">Escapes</h2>
 <p>What if you want to just show asterisks, not italics?</p>
 <div class="codehilite"><pre>* this shows up in italics: *a happy day*
 * this shows the asterisks: \*a happy day\*
 </pre></div>
+
+<p>Output:</p>
+{{g.markdown.convert('''* this shows up in italics: *a happy day*
+* this shows the asterisks: \*a happy day\*''')}}
+
 <p>The backslashes will disappear and leave the asterisks.</p>
 <p>You can do the same with any of the characters that have a special meaning<br>for Markdown.</p>
 <p>HTML tags may need to be escaped.  &lt;b&gt; will be interpreted as a bold tag.  Entity codes will be used.
@@ -304,20 +446,34 @@ you should escape &amp;lt;unknown&amp;gt; tags
 &amp;copy; special entities work
 &amp;amp;&amp;copy; if you want to escape it
 </pre></div>
+
+<p>Output:</p>
+{{g.markdown.convert('''<b>this will be bold</b>
+you should escape &lt;unknown&gt; tags
+&copy; special entities work
+&amp;copy; if you want to escape it''')}}
 <p>Individual ampersands (&amp;) and less-than signs (&lt;) are fine, they will be shown as expected.</p>
 
 
 <h2 id="md_ex_moreheaders{{id}}">More Headers</h2>
-<div class="codehilite"><pre>More ways of doing headers:
-
-# this is a huge header #
+<p>More ways of doing headers:</p>
+<div class="codehilite"><pre># this is a huge header #
 ## this is a smaller header ##
 ### this is even smaller ###
 #### more small ####
 ##### even smaller #####
 ###### smallest still: `&lt;h6&gt;` header
 </pre></div>
+
+<p>Output:</p>
+{{g.markdown.convert('''# this is a huge header #
+## this is a smaller header ##
+### this is even smaller ###
+#### more small ####
+##### even smaller #####
+###### smallest still: `<h6>` header''')}}
 <p>You can use up to 6 <code>#</code> characters at the beginning of the line.</p>
+
 
 <h2 id="md_ex_code{{id}}">Code Highlighting</h2>
 <p>The Code highlighting used in the newforge is based on (http://www.freewisdom.org/projects/python-markdown/CodeHilite). It  follows the same syntax as regular Markdown code blocks, except that there are two ways to tell the highlighter what language to use for the code block.</p>
@@ -325,16 +481,26 @@ you should escape &amp;lt;unknown&amp;gt; tags
 <p>If the first line of the codeblock contains a shebang, the language is derived from that and line numbers are used.</p>
 
 <div class="codehilite"><pre>
-#!/usr/bin/python
-# Code goes here ...
+    #!/usr/bin/python
+    # Code goes here ...
 </pre></div>
+
+<p>Output:</p>
+{{g.markdown.convert('''
+    #!/usr/bin/python
+    # Code goes here ...''')}}
 
 <p>If the first line contains a shebang, but the shebang line does not contain a path (a single / or even a space) or If the first line begins with three or more colons, the text following the colons identifies the language. In both cases, the first line is removed from the code block before processing.</p>
 
 <div class="codehilite"><pre>
-:::python
-# Code goes here ...
+    :::python
+    # Code goes here ...
 </pre></div>
+
+<p>Output:</p>
+{{g.markdown.convert('''
+    :::python
+    # Code goes here ...''')}}
 
 <p>You can also designate a code block by surrounding it with lines of tildes. The type of code highlighting to apply will be inferred based on the code within, or you can specify like above.</p>
 
@@ -344,11 +510,21 @@ you should escape &amp;lt;unknown&amp;gt; tags
 ~~~~~~
 </pre></div>
 
+<p>Output:</p>
+{{g.markdown.convert('''
+~~~~~~
+<a href="#">My code</a>
+~~~~~~''')}}
+
+
 <h2 id="md_ex_includes{{id}}">Includes</h2>
 <p>You can embed another wiki page directly:</p>
 <div class="codehilite"><pre>
 [[include ref=SamplePage]]
 </pre></div>
+
+<p>No example output is available for this one because it only works on real wiki pages. Try it in your wiki!</p>
+
 
 <h2 id="md_ex_neighborhood_notes{{id}}">Neighborhood Notifications</h2>
 <p>You can list updates from all projects in a neighborhood by tool type. Max_number (default is 5) and sort (default is pubdate) are optional:</p>
