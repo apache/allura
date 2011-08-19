@@ -1,4 +1,9 @@
 (function(){
+    $('table.ticket-list td a').each(function(){
+      var $this = $(this);
+      $this.html($this.html().replace(/\//gi,'/&#8203;'));
+    });
+
     function requery(){
         window.location = '?q=' + q +
                           '&limit=' + limit +
