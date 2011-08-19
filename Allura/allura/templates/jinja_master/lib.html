@@ -122,6 +122,7 @@
     <li><a href="#md_ex_bq{{id}}">Blockquotes</a></li>
     <li><a href="#md_ex_pre{{id}}">Preformatted Text</a></li>
     <li><a href="#md_ex_lists{{id}}">Lists</a></li>
+    <li><a href="#md_ex_tables{{id}}">Tables</a></li>
     <li><a href="#md_ex_headers{{id}}">Headers</a></li>
     <li><a href="#md_ex_hr{{id}}">Horizontal Rules</a></li>
     <li><a href="#md_ex_img{{id}}">Images</a></li>
@@ -340,6 +341,39 @@ To start an ordered list, write this:
         1. keep indenting for more sub lists
     * here i\'m back to the second level''')}}
 
+<h2 id="md_ex_tables{{id}}">Tables</h2>
+<p>You can create tables using pipes and dashes like this:</p>
+<div class="codehilite"><pre>
+  First Header  | Second Header
+  ------------- | -------------
+  Content Cell  | Content Cell
+  Content Cell  | Content Cell
+</pre></div>
+
+<p>Output:</p>
+{{g.markdown.convert('''
+First Header  | Second Header
+------------- | -------------
+Content Cell  | Content Cell
+Content Cell  | Content Cell''')}}
+
+<p>You can use markdown syntax within table cells for formatting:</p>
+
+<div class="codehilite"><pre>
+  First Header   | Second Header
+  -------------  | -------------
+  *Content Cell* | Content Cell
+  Content Cell   | Content Cell
+</pre></div>
+
+<p>Output:</p>
+{{g.markdown.convert('''
+First Header   | Second Header
+-------------  | -------------
+*Content Cell* | Content Cell
+Content Cell   | Content Cell''')}}
+
+<p>You can also create tables using HTML code.</p>
 
 <h2 id="md_ex_headers{{id}}">Headers</h2>
 <p>Just put 1 or more dashes or equals signs (--- or ===) below the
