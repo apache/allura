@@ -131,8 +131,7 @@ class NeighborhoodController(object):
     def add_project(self, **form_data):
         require_access(self.neighborhood, 'register')
         c.add_project = W.add_project
-        for checkbox in ['Wiki','Git','Tickets','Downloads','Discussion']:
-            form_data.setdefault(checkbox, True)
+        form_data['tools'] = ['Wiki','Git','Tickets','Downloads','Discussion']
         form_data['neighborhood'] = self.neighborhood.name
         return dict(neighborhood=self.neighborhood, form_data=form_data)
 
@@ -157,7 +156,7 @@ class NeighborhoodController(object):
     @utils.AntiSpam.validate('Spambot protection engaged')
     @require_post()
     def register(self, project_unixname=None, project_description=None, project_name=None, neighborhood=None,
-                 private_project=None, **kw):
+                 private_project=None, tools=None, **kw):
         require_access(self.neighborhood, 'register')
         if private_project:
             require_access(self.neighborhood, 'admin')
@@ -186,6 +185,8 @@ class NeighborhoodController(object):
                     for option in tool_config['options']:
                         app.config.options[option] = tool_config['options'][option]
         else:
+            log.info('What tools did I pick?')
+            log.info(tools)
             for i, tool in enumerate(kw):
                 if kw[tool]:
                     c.project.install_app(tool, ordinal=i+offset)

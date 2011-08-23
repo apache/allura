@@ -152,14 +152,17 @@ class NeighborhoodAddProjectForm(ForgeForm):
                     r'^[A-z][-A-z0-9]{2,}$',
                     messages={'invalid':'Please use only letters, numbers, and dashes 3-15 characters long.'}),
                 NeighborhoodProjectTakenValidator()))
-        Wiki = ew.Checkbox(label="", attrs={'class':'unlabeled'})
-        Git = ew.Checkbox(label="", attrs={'class':'labeled scm'})
-        Hg = ew.Checkbox(label="", attrs={'class':'labeled scm'})
-        SVN = ew.Checkbox(label="", attrs={'class':'labeled scm'})
-        Tickets = ew.Checkbox(label="", attrs={'class':'unlabeled'})
-        Downloads = ew.Checkbox(label="", attrs={'class':'unlabeled'})
-        Discussion = ew.Checkbox(label="", attrs={'class':'unlabeled'})
-        Blog = ew.Checkbox(label="", attrs={'class':'unlabeled'})
+
+        tools = ew.CheckboxSet(name='tools', options=[
+            ew.Option(label='Wiki', html_value='Wiki', selected=True),
+            ew.Option(label='Git', html_value='Git', selected=True),
+            ew.Option(label='Hg', html_value='Hg'),
+            ew.Option(label='SVN', html_value='SVN'),
+            ew.Option(label='Tickets', html_value='Tickets', selected=True),
+            ew.Option(label='Downloads', html_value='Downloads', selected=True),
+            ew.Option(label='Discussion', html_value='Discussion', selected=True),
+            ew.Option(label='Blog', html_value='Blog')
+        ])
 
     def resources(self):
         for r in super(NeighborhoodAddProjectForm, self).resources(): yield r

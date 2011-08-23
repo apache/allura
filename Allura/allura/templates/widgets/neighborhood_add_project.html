@@ -30,16 +30,20 @@
     <div class="inner-row">
         <div class="tool">
             <div class="big_icon ui-icon-tool-git"></div>
-                {{widget.display_field(widget.fields.Git)}}
-                <h1><label for="{{ widget.context_for(widget.fields.Git)['id'] }}">Git</label></h1>
+                <input checked type="checkbox" value="Git"
+                       name="{{ widget.context_for(widget.fields.tools)['rendered_name'] }}"
+                       id="{{ widget.context_for(widget.fields.tools)['rendered_name'] }}_Git">
+                <h1><label for="{{ widget.context_for(widget.fields.tools)['rendered_name'] }}_Git">Git</label></h1>
                 <p>Git is a distributed version control system designed to
                 handle everything from small to very large projects with speed
                 and efficiency.</p>
         </div>
         <div class="tool">
             <div class="big_icon ui-icon-tool-downloads"></div>
-                {{widget.display_field(widget.fields.Downloads)}}
-                <h1><label for="{{ widget.context_for(widget.fields.Downloads)['id'] }}">Downloads &amp; Stats</label></h1>
+                <input checked type="checkbox" value="Downloads"
+                       name="{{ widget.context_for(widget.fields.tools)['rendered_name'] }}"
+                       id="{{ widget.context_for(widget.fields.tools)['rendered_name'] }}_Downloads">
+                <h1><label for="{{ widget.context_for(widget.fields.tools)['rendered_name'] }}_Downloads">Downloads &amp; Stats</label></h1>
                 <p>Use the largest free, managed, global mirror network to
                 distribute your files, and follow the download trends that
                 enable you to develop better software.</p>
@@ -49,14 +53,18 @@
     <div class="inner-row">
         <div class="tool">
             <div class="big_icon ui-icon-tool-git"></div>
-                {{widget.display_field(widget.fields.SVN)}}
-                <h1><label for="{{ widget.context_for(widget.fields.SVN)['id'] }}">SVN</label></h1>
+                <input type="checkbox" value="SVN"
+                       name="{{ widget.context_for(widget.fields.tools)['rendered_name'] }}"
+                       id="{{ widget.context_for(widget.fields.tools)['rendered_name'] }}_SVN">
+                <h1><label for="{{ widget.context_for(widget.fields.tools)['rendered_name'] }}_SVN">SVN</label></h1>
                 <p>Enterprise-class centralized version control for the masses.</p>
         </div>
         <div class="tool">
             <div class="big_icon ui-icon-tool-wiki"></div>
-                {{widget.display_field(widget.fields.Wiki)}}
-                <h1><label for="{{ widget.context_for(widget.fields.Wiki)['id'] }}">Wiki</label></h1>
+                <input checked type="checkbox" value="Wiki"
+                       name="{{ widget.context_for(widget.fields.tools)['rendered_name'] }}"
+                       id="{{ widget.context_for(widget.fields.tools)['rendered_name'] }}_Wiki">
+                <h1><label for="{{ widget.context_for(widget.fields.tools)['rendered_name'] }}_Wiki">Wiki</label></h1>
                 <p>Documentation is key to your project and the wiki tool
                 helps make it easy for anyone to contribute.</p>
         </div>
@@ -65,16 +73,20 @@
     <div class="inner-row">
         <div class="tool">
             <div class="big_icon ui-icon-tool-git"></div>
-                {{widget.display_field(widget.fields.Hg)}}
-                <h1><label for="{{ widget.context_for(widget.fields.Hg)['id'] }}">Mercurial</label></h1>
+                <input type="checkbox" value="Hg"
+                       name="{{ widget.context_for(widget.fields.tools)['rendered_name'] }}"
+                       id="{{ widget.context_for(widget.fields.tools)['rendered_name'] }}_Hg">
+                <h1><label for="{{ widget.context_for(widget.fields.tools)['rendered_name'] }}_Hg">Mercurial</label></h1>
                 <p>Mercurial is a distributed source control management tool that efficiently
                 handles projects of any size and offers an easy and intuitive
                 interface.</p>
         </div>
         <div class="tool">
             <div class="big_icon ui-icon-tool-tickets"></div>
-                {{widget.display_field(widget.fields.Tickets)}}
-                <h1><label for="{{ widget.context_for(widget.fields.Tickets)['id'] }}">Tickets</label></h1>
+                <input checked type="checkbox" value="Tickets"
+                       name="{{ widget.context_for(widget.fields.tools)['rendered_name'] }}"
+                       id="{{ widget.context_for(widget.fields.tools)['rendered_name'] }}_Tickets">
+                <h1><label for="{{ widget.context_for(widget.fields.tools)['rendered_name'] }}_Tickets">Tickets</label></h1>
                 <p>Bugs, enhancements, tasks, etc., will help you plan and
                 manage your development.</p>
         </div>
@@ -83,15 +95,19 @@
     <div class="inner-row">
         <div class="tool">
             <div class="big_icon ui-icon-tool-blog"></div>
-                {{widget.display_field(widget.fields.Blog)}}
-                <h1><label for="{{ widget.context_for(widget.fields.Blog)['id'] }}">Blog</label></h1>
+                <input type="checkbox" value="Blog"
+                       name="{{ widget.context_for(widget.fields.tools)['rendered_name'] }}"
+                       id="{{ widget.context_for(widget.fields.tools)['rendered_name'] }}_Blog">
+                <h1><label for="{{ widget.context_for(widget.fields.tools)['rendered_name'] }}_Blog">Blog</label></h1>
                 <p>Share exciting news and progress updates with your
                 community.</p>
         </div>
         <div class="tool">
             <div class="big_icon ui-icon-tool-discussion"></div>
-                {{widget.display_field(widget.fields.Discussion)}}
-                <h1><label for="{{ widget.context_for(widget.fields.Discussion)['id'] }}">Forums</label></h1>
+                <input checked type="checkbox" value="Discussion"
+                       name="{{ widget.context_for(widget.fields.tools)['rendered_name'] }}"
+                       id="{{ widget.context_for(widget.fields.tools)['rendered_name'] }}_Discussion">
+                <h1><label for="{{ widget.context_for(widget.fields.tools)['rendered_name'] }}_Discussion">Forums</label></h1>
                 <p>Collaborate with your community in your forum.</p>
         </div>
         <div style="clear:both"></div>
