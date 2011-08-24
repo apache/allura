@@ -203,10 +203,14 @@ class NeighborhoodController(object):
             options = c.project.app_config('home').options
             for option in project_template['home_options'].keys():
                 options[option] = project_template['home_options'][option]
+        from forgewiki import model as WM
+        home_app = c.project.app_instance('home')
         if 'home_text' in project_template:
-            from forgewiki import model as WM
-            app = c.project.app_instance('home')
-            WM.Page.query.get(app_config_id=app.config._id).text = project_template['home_text']
+            WM.Page.query.get(app_config_id=home_app.config._id).text = project_template['home_text']
+        else:
+            WM.Page.query.get(app_config_id=home_app.config._id).text = """[[project_admins]]
+
+[[download_button]]"""
         if 'icon' in project_template:
             icon_file = StringIO(urlopen(project_template['icon']['url']).read())
             M.ProjectFile.save_image(
