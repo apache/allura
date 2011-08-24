@@ -220,6 +220,10 @@ def has_access(obj, permission, user=None, project=None):
       permission on the current neighborhood, then the function returns True and
       access is allowed.
 
+    - If the obj is not a Project and the given user has the 'admin'
+      permission on the current project, then the function returns True and
+      access is allowed.
+
     - If none of the ACEs on the object ALLOW access, and there are no more roles
       to be considered, then the function returns False and access is denied.
 
@@ -269,6 +273,8 @@ def has_access(obj, permission, user=None, project=None):
                 roles=tuple(chainable_roles))
         elif not isinstance(obj, M.Neighborhood):
             result = has_access(project.neighborhood, 'admin', user=user)()
+            if not (result or isinstance(obj, M.Project)):
+                result = has_access(project, 'admin', user=user)()
         else:
             result = False
         # log.info('%s: %s', txt, result)

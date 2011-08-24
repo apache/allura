@@ -316,6 +316,19 @@ class TestProjectAdmin(TestController):
         r = self.app.post('/admin/groups/update', params=params).follow()
         check_roles(r)
 
+    def test_cannot_remove_all_admins(self):
+        """Must always have at least one user with the Admin role (and anon
+        doesn't count)."""
+        r = self.app.get('/admin/groups/')
+        admin_card_id = r.html.find('input', {'name': 'card-0.id'})['value']
+        r = self.app.post('/admin/groups/update', params={
+                'card-0.id': admin_card_id}).follow()
+        assert 'You must have at least one user with the Admin role.' in r
+        r = self.app.post('/admin/groups/update', params={
+                'card-0.id': admin_card_id,
+                'card-0.new': ''}).follow()
+        assert 'You must have at least one user with the Admin role.' in r
+
     def test_cannot_add_anon_to_group(self):
         r = self.app.get('/admin/groups/')
         developer_id = r.html.find('input', {'name': 'card-1.id'})['value']

@@ -569,6 +569,7 @@ class GroupsController(BaseController):
             if isinstance(new_users, basestring):
                 new_users = [ new_users ]
             # Handle new users in groups
+            user_added = False
             for username in new_users:
                 user = M.User.by_username(username)
                 if not user:
@@ -577,6 +578,12 @@ class GroupsController(BaseController):
                 if not user._id:
                     continue # never add anon users to groups
                 user.project_role().roles.append(group._id)
+                user_added = True
+            # Make sure we aren't removing all users from the Admin group
+            if group.name == u'Admin' and not (user_ids or user_added):
+                flash('You must have at least one user with the Admin role.',
+                      'warning')
+                redirect('.')
             # Handle users removed from groups
             user_ids = set(
                 uid and ObjectId(uid)
