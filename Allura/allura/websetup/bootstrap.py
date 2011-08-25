@@ -199,6 +199,8 @@ def clear_all_database_tables():
     for db in conn.database_names():
         db = conn[db]
         for coll in db.collection_names():
+            if coll == 'system.indexes':
+                continue
             db.drop_collection(coll)
 
 
