@@ -104,11 +104,11 @@ class RepoRootController(BaseController):
     def mr_widget(self):
         source_branches = [
             b.name
-            for b in c.app.repo.branches + c.app.repo.tags]
+            for b in c.app.repo.branches + c.app.repo.repo_tags]
         with c.app.repo.push_upstream_context():
             target_branches = [
                 b.name
-                for b in c.app.repo.branches + c.app.repo.tags]
+                for b in c.app.repo.branches + c.app.repo.repo_tags]
         return SCMMergeRequestWidget(
             source_branches=source_branches,
             target_branches=target_branches)

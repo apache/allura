@@ -106,17 +106,15 @@ class RepositoryApp(Application):
                     self.repo.upstream_repo.name,
                     className='nav_child')
                 ]
-            # TODO: Fix merge request feature and comment this back in.
-            #       Commenting it out for now since Request Merge gives a 500.
-            #if len(c.app.repo.branches):
-            #    links.append(SitemapEntry('Request Merge', c.app.url + 'request_merge',
-            #                 ui_icon=g.icons['merge'],
-            #                 className='nav_child'))
+            if len(c.app.repo.branches):
+                links.append(SitemapEntry('Request Merge', c.app.url + 'request_merge',
+                             ui_icon=g.icons['merge'],
+                             className='nav_child'))
             pending_upstream_merges = self.repo.pending_upstream_merges()
             if pending_upstream_merges:
                 links.append(SitemapEntry(
                         'Pending Merges',
-                        self.repo.upstream_repo.url + 'merge-requests/',
+                        self.repo.upstream_repo.name + 'merge-requests/',
                         className='nav_child',
                         small=pending_upstream_merges))
         if self.repo.branches:
