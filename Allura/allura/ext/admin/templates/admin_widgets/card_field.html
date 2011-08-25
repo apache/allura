@@ -22,7 +22,7 @@
         {% endfor %}
       </ul>
     </li>
-    {% for item in items %}
+    {% for item in items | sort(attribute=widget.sort_key) %}
     <li>
         <a href="#" class="deleter">
           {{ widget.item_display(item) }}

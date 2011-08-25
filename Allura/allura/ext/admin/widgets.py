@@ -14,6 +14,7 @@ from bson import ObjectId
 
 class CardField(ew._Jinja2Widget):
     template = 'jinja:allura.ext.admin:templates/admin_widgets/card_field.html'
+    sort_key = None
     defaults = dict(
         ew_core.Widget.defaults,
         id=None,
@@ -57,6 +58,7 @@ width: 148px;
 
 class GroupCard(CardField):
     new_item=ew.InputField(field_type='text', attrs=dict(placeholder='type a username'))
+    sort_key = 'user.username'
 
     def item_display(self, item):
         return item.user.username
@@ -81,6 +83,7 @@ class _GroupSelect(ew.SingleSelectField):
 
 class PermissionCard(CardField):
     new_item = _GroupSelect()
+    sort_key = 'name'
 
     def item_display(self, role):
         return role.name
