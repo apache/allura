@@ -14,11 +14,10 @@ def setUp():
 
 @with_setup(setUp)
 def test_basic_task():
-    task = M.MonQTask.post(
-        pprint.pformat, (dict(a=5, b=6),))
+    task = M.MonQTask.post(pprint.pformat, ([5,6],))
     ThreadLocalORMSession.flush_all()
     ThreadLocalORMSession.close_all()
     task = M.MonQTask.get()
     assert task
     task()
-    assert task.result == "I{'a': 5, 'b': 6}", task.result
+    assert task.result == 'I[5, 6]', task.result

@@ -3,6 +3,8 @@ import os
 import unittest
 import shutil
 
+from tg import config
+
 from ming.orm import ThreadLocalORMSession
 from alluratest.controller import setup_basic_test
 
@@ -24,11 +26,15 @@ class TestBackupRestore(unittest.TestCase):
         self._command(
             'test.ini', '../scripts/backup_project.py', 'test', self.backup_dir)
         root = os.listdir(self.backup_dir)
-        allura_dir = os.listdir(os.path.join(self.backup_dir, 'allura'))
-        project_dir = os.listdir(os.path.join(self.backup_dir, 'project-data'))
-        assert 'allura' in root
+
+        allura_folder = config.get('ming.main.database', 'allura')
+        project_data_folder = config.get('ming.project.database','project-data')
+
+        allura_dir = os.listdir(os.path.join(self.backup_dir, allura_folder))
+        project_dir = os.listdir(os.path.join(self.backup_dir, project_data_folder))
+        assert allura_folder in root
         assert 'project.bson' in root
-        assert 'project-data' in root
+        assert project_data_folder in root
         assert 'mailbox.bson' in allura_dir
         assert 'notification.bson' in allura_dir
         assert 'project_role.bson' in allura_dir

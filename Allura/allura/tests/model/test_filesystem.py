@@ -22,8 +22,11 @@ class TestFile(TestCase):
         setup_unit_test()
         self.session = session(File)
         self.conn = M.session.main_doc_session.db._connection
-        self.conn.drop_all()
         self.db = M.session.main_doc_session.db
+
+        self.db.fs.remove()
+        self.db.fs.files.remove()
+        self.db.fs.chunks.remove()
 
     def test_from_stream(self):
         f = File.from_stream('test1.txt', StringIO('test1'))
