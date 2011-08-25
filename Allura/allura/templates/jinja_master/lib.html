@@ -130,6 +130,7 @@
     <li><a href="#md_ex_code{{id}}">Code Highlighting</a></li>
     <li><a href="#md_ex_includes{{id}}">Includes</a></li>
     <li><a href="#md_ex_neighborhood_notes{{id}}">Neighborhood Notifications</a></li>
+    <li><a href="#md_ex_download_button{{id}}">Download Button</a></li>
     <li><a href="#md_ex_thanks{{id}}">Thanks</a></li>
 </ul>
 
@@ -541,6 +542,12 @@ you should escape &lt;unknown&gt; tags
 <p>You can view blog posts from all blogs in a project. Max_number (default is 5), mount point (leave empty to view posts from all blog tools in a project), and sort (default is timestamp) are optional:</p>
 <div class="codehilite"><pre>
 [[project_blog_posts max_number=10 sort=timestamp mount_point=news]]
+</pre></div>
+
+<h2 id="md_ex_download_button{{id}}">Download Button</h2>
+<p>You can display a download button that links to the best download available for the active project. Please note that if you use this macro and there is no download associated with your project, the button will not appear.</p>
+<div class="codehilite"><pre>
+[[download_button]]
 </pre></div>
 
 <h2 id="md_ex_thanks{{id}}">Thanks</h2>
