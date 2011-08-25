@@ -123,6 +123,7 @@ class Repository(Artifact):
     BATCH_SIZE=100
     class __mongometa__:
         name='generic-repository'
+        indexes = ['upstream_repo.name']
     _impl = None
     repo_id='repo'
     type_s='Repository'

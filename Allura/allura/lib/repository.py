@@ -98,15 +98,20 @@ class RepositoryApp(Application):
                     className='nav_child',
                     small=merge_request_count) ]
         if self.repo.upstream_repo.name:
+            repo_path_parts = self.repo.upstream_repo.name.strip('/').split('/')
             links += [
                 SitemapEntry('Clone of'),
-                SitemapEntry(self.repo.upstream_repo.name, self.repo.upstream_repo.name,
-                             className='nav_child')
+                SitemapEntry('%s / <span style="font-weight:600">%s</span>' %
+                    (repo_path_parts[1], repo_path_parts[-1]),
+                    self.repo.upstream_repo.name,
+                    className='nav_child')
                 ]
-            if len(c.app.repo.branches):
-                links.append(SitemapEntry('Request Merge', c.app.url + 'request_merge',
-                             ui_icon=g.icons['merge'],
-                             className='nav_child'))
+            # TODO: Fix merge request feature and comment this back in.
+            #       Commenting it out for now since Request Merge gives a 500.
+            #if len(c.app.repo.branches):
+            #    links.append(SitemapEntry('Request Merge', c.app.url + 'request_merge',
+            #                 ui_icon=g.icons['merge'],
+            #                 className='nav_child'))
             pending_upstream_merges = self.repo.pending_upstream_merges()
             if pending_upstream_merges:
                 links.append(SitemapEntry(
@@ -140,7 +145,11 @@ class RepositoryApp(Application):
         if self.repo.forks:
             links.append(SitemapEntry('Forks'))
             for f in self.repo.forks:
-                links.append(SitemapEntry(f.url(), f.url(), className='nav_child'))
+                repo_path_parts = f.url().strip('/').split('/')
+                links.append(SitemapEntry(
+                    '%s / <span style="font-weight:600">%s</span>' %
+                    (repo_path_parts[1], repo_path_parts[-1]),
+                    f.url(), className='nav_child'))
         return links
 
     def install(self, project):
