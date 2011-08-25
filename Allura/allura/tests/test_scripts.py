@@ -63,12 +63,12 @@ class TestBackupRestore(unittest.TestCase):
         self._command(
             'test.ini', '../scripts/purge_project.py', 'test')
         self._command(
-            'test.ini', '../scripts/restore_project.py', self.backup_dir, 'test2', 'test2')
+            'test.ini', '../scripts/restore_project.py', self.backup_dir, 'test3', 'test3')
         assert M.Project.query.find(dict(shortname='test')).count() == 0
-        assert M.Project.query.find(dict(shortname='test2')).count() == 1
+        assert M.Project.query.find(dict(shortname='test3')).count() == 1
         ThreadLocalORMSession.close_all()
         p2= M.Project.query.get(_id=p1._id)
-        assert p2.shortname == 'test2'
+        assert p2.shortname == 'test3'
         assert p2.app_configs
 
 
