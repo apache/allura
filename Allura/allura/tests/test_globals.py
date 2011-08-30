@@ -68,7 +68,7 @@ def test_macros():
     r = g.markdown_wiki.convert('[[project_admins]]')
     assert r == '<div class="markdown_content"><p><a href="/u/test-admin/">Test Admin</a><br /></p></div>'
     r = g.markdown_wiki.convert('[[download_button]]')
-    assert r == '<div class="markdown_content"><p><div class="download-button-test" style="margin-bottom: 1em;"></div></p></div>'
+    assert r == '<div class="markdown_content"><p><span class="download-button-test" style="margin-bottom: 1em; display: block;"></span></p></div>'
     g.set_project(M.Project.query.get(name='Home Project for Projects'))
     g.set_app('home')
     r = g.markdown_wiki.convert('[[neighborhood_feeds tool_name=Wiki]]')

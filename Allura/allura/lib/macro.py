@@ -210,7 +210,7 @@ def img(src=None, **kw):
         return '<img src="./attachment/%s" %s/>' % (src, ' '.join(attrs))
 
 
-template_project_admins = string.Template('<a href="$url">$name</a><br>')
+template_project_admins = string.Template('<a href="$url">$name</a><br/>')
 @macro()
 def project_admins():
     from allura import model as M

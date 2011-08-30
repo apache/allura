@@ -209,7 +209,6 @@ class NeighborhoodController(object):
             WM.Page.query.get(app_config_id=home_app.config._id).text = project_template['home_text']
         else:
             WM.Page.query.get(app_config_id=home_app.config._id).text = """[[project_admins]]
-
 [[download_button]]"""
         if 'icon' in project_template:
             icon_file = StringIO(urlopen(project_template['icon']['url']).read())
