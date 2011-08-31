@@ -89,4 +89,14 @@
             }
         });
     });
+    // fix firefox scroll offset bug
+    var userAgent = navigator.userAgent.toLowerCase();
+    if(userAgent.match(/firefox/)) {
+      $('#sortable').bind( "sortstart", function (event, ui) {
+        ui.helper.css('margin-top', $(window).scrollTop() );
+      });
+      $('#sortable').bind( "sortbeforestop", function (event, ui) {
+        ui.helper.css('margin-top', 0 );
+      });
+    }
 })();
