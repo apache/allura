@@ -50,8 +50,27 @@ class TestFunctionalController(TestController):
 
     def test_milestone_count(self):
         self.new_ticket(summary='test new with milestone', **{'_milestone':'1.0'})
-        ticket_view = self.new_ticket(summary='test new with milestone', **{'_milestone':'1.0'}).follow()
-        assert '<small>2</small>' in ticket_view
+        self.new_ticket(summary='test new with milestone', **{'_milestone':'1.0',
+                                                              'private': '1'})
+        r = self.app.get('/bugs/')
+        assert '<small>2</small>' in r
+        # Private tickets shouldn't be included in counts if user doesn't
+        # have read access to private tickets.
+        r = self.app.get('/bugs/', extra_environ=dict(username='*anonymous'))
+        assert '<small>1</small>' in r
+
+    def test_milestone_progress(self):
+        self.new_ticket(summary='Ticket 1', **{'_milestone':'1.0'})
+        self.new_ticket(summary='Ticket 2', **{'_milestone':'1.0',
+                                               'status': 'closed',
+                                               'private': '1'}).follow()
+        r = self.app.get('/bugs/milestone/1.0/')
+        assert '1 / 2' in r
+        # Private tickets shouldn't be included in counts if user doesn't
+        # have read access to private tickets.
+        r = self.app.get('/bugs/milestone/1.0/',
+                         extra_environ=dict(username='*anonymous'))
+        assert '0 / 1' in r
 
     def test_new_ticket_form(self):
         response = self.app.get('/bugs/new/')
