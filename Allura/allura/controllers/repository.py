@@ -116,6 +116,7 @@ class RepoRootController(BaseController):
     @without_trailing_slash
     @expose('jinja:allura:templates/repo/request_merge.html')
     def request_merge(self, branch=None):
+        security.require(security.has_access(c.app.repo, 'admin'))
         c.form = self.mr_widget
         if branch is None:
             source_branch=c.app.repo.branches[0].name
@@ -239,6 +240,7 @@ class MergeRequestController(object):
 
     def __init__(self, num):
         self.req = M.MergeRequest.query.get(
+            app_config_id=c.app.config._id,
             request_number=int(num))
         if self.req is None: raise exc.HTTPNotFound
 

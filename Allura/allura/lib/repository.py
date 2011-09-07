@@ -15,6 +15,7 @@ from allura.lib import helpers as h
 from allura import model as M
 from allura.lib import security
 from allura.lib.decorators import require_post
+from allura.lib.security import has_access
 from allura.app import Application, SitemapEntry, DefaultAdminController, ConfigOption
 
 log = logging.getLogger(__name__)
@@ -106,7 +107,7 @@ class RepositoryApp(Application):
                     self.repo.upstream_repo.name,
                     className='nav_child')
                 ]
-            if len(c.app.repo.branches):
+            if len(c.app.repo.branches) and has_access(c.app.repo, 'admin'):
                 links.append(SitemapEntry('Request Merge', c.app.url + 'request_merge',
                              ui_icon=g.icons['merge'],
                              className='nav_child'))

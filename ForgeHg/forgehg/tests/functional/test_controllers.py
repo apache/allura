@@ -49,12 +49,27 @@ class TestRootController(TestController):
                     cloned_from.full_fs_path,
                     cloned_from.app.config.script_name(),
                     cloned_from.full_fs_path)
-        r = self.app.get('/p/test2/code').follow().follow().follow()
+        r = self.app.get('/p/test2/code/').follow().follow()
         assert 'Request Merge' in r
+        # Request Merge button only visible to repo admins
+        kw = dict(extra_environ=dict(username='test-user'))
+        r = self.app.get('/p/test2/code/', **kw).follow(**kw).follow(**kw)
+        assert 'Request Merge' not in r, r
+        # Request merge controller action only permitted for repo admins
+        r = self.app.get('/p/test2/code/request_merge', status=403, **kw)
         r = self.app.get('/p/test2/code/request_merge')
         assert 'Request merge' in r
+        # Merge request detail view
         r = r.forms[0].submit().follow()
         assert 'would like you to merge' in r
+        mr_num = r.request.url.split('/')[-2]
+        # Merge request list view
+        r = self.app.get('/p/test/src-hg/merge-requests/')
+        assert 'href="%s/"' % mr_num in r
+        # Merge request status update
+        r = self.app.post('/p/test/src-hg/merge-requests/%s/save' % mr_num,
+                          params=dict(status='rejected')).follow()
+        assert 'Merge Request #%s:  (rejected)' % mr_num in r, r
 
     def test_index(self):
         resp = self.app.get('/src-hg/').follow().follow()
