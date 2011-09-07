@@ -104,7 +104,7 @@ class Globals(MappedClass):
         for fld in self.milestone_fields:
             for m in fld.milestones:
                 if m.name:
-                    k = '%s:%s' % (fld.name, m.name)
+                    k = '%s:"%s"' % (fld.name, m.name)
                     r = search_artifact(Ticket, k, rows=0)
                     hits = r is not None and r.hits or 0
                     q = search_artifact(Ticket, '%s && (%s)' % (k, self.closed_query), rows=0)

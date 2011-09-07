@@ -2,7 +2,7 @@
 import logging
 import re
 from datetime import datetime, timedelta
-from urllib import urlencode
+from urllib import urlencode, unquote
 from webob import exc
 
 # Non-stdlib imports
@@ -153,7 +153,7 @@ class ForgeTrackerApp(Application):
                 milestones.append(
                     SitemapEntry(
                         h.text.truncate(m.name, 72),
-                        self.url + fld.name[1:] + '/' + m.name + '/',
+                        self.url + fld.name[1:] + '/' + h.urlquote(m.name) + '/',
                         className='nav_child',
                         small=sum(1 for t in TM.Ticket.query.find({
                                       "custom_fields._milestone": m.name,
@@ -1104,13 +1104,13 @@ class MilestoneController(BaseController):
         else:
             raise exc.HTTPNotFound()
         for m in fld.milestones:
-            if m.name == milestone: break
+            if m.name == unquote(milestone): break
         else:
             raise exc.HTTPNotFound()
         self.root = root
         self.field = fld
         self.milestone = m
-        self.query = '%s:%s' % (fld.name, m.name)
+        self.query = '%s:"%s"' % (fld.name, m.name)
         self.mongo_query = {
             'custom_fields.%s' % fld.name: m.name }
             
