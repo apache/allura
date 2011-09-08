@@ -31,19 +31,12 @@ Merge Request #{{req.request_number}}: {{req.summary}} ({{req.status}})
      <div class="grid-19">To merge the commits, please execute the following commands in your working
        copy: </div>
      <div class="grid-19"><textarea
-        style="width:80%"
+        style="width:80%; height:60px;"
         readonly
         >{{ c.app.repo.merge_command(req) | safe }}</textarea></div>
     {{ c.mr_dispose_form.display(action="save", value=dict(status=req.status)) }}
      <br style="clear:both">
   {% endif %}
-
-  <div class="title-pane grid-19">
-    <h2 class="title">Commits</h2>
-    <div class="content">
-      {{ c.log_widget.display(value=req.commits) }}
-    </div>
-  </div>
 
 {% endblock %}
 
