@@ -85,8 +85,33 @@ class BlogPost(M.VersionedArtifact):
 
     @property
     def html_text_preview(self):
-        indicator = '... [read more](%s)' % self.url()
-        return g.markdown.convert(htmltruncate.truncate(self.text, 200, ellipsis=indicator))
+        """Return an html preview of the BlogPost text.
+
+        Truncation happens at paragraph boundaries to avoid chopping markdown
+        in inappropriate places.
+
+        If the entire post is one paragraph, the full text is returned.
+        If the entire text is <= 400 chars, the full text is returned.
+        Else, at least 400 chars are returned, rounding up to the nearest
+        whole paragraph.
+
+        If truncation occurs, a hyperlink to the full text is appended.
+
+        """
+        # Splitting on spaces or single lines breaks isn't sufficient as some
+        # markup can span spaces and single line breaks. Converting to HTML
+        # first and *then* truncating doesn't work either, because the
+        # ellipsis tag ends up orphaned from the main text.
+        ellipsis = '... [read more](%s)' % self.url()
+        paragraphs = self.text.replace('\r','').split('\n\n')
+        total_length = 0
+        for i, p in enumerate(paragraphs):
+            total_length += len(p)
+            if total_length >= 400:
+                break
+        text = '\n\n'.join(paragraphs[:i+1])
+        return g.markdown.convert(text + (ellipsis if i + 1 < len(paragraphs)
+                                                   else ''))
 
     @property
     def email_address(self):
