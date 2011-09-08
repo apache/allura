@@ -222,7 +222,7 @@ class RootController(BaseController):
     @expose()
     def _lookup(self, year, month, name, *rest):
         slug = '/'.join((year, month, urllib2.unquote(name).decode('utf-8')))
-        post = BM.BlogPost.query.get(slug=slug)
+        post = BM.BlogPost.query.get(slug=slug, app_config_id=c.app.config._id)
         if post is None:
             raise exc.HTTPNotFound()
         return PostController(post), rest
