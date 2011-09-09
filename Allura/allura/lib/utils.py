@@ -9,6 +9,7 @@ from logging.handlers import WatchedFileHandler
 
 import tg
 import pylons
+import webob.multidict
 from formencode import Invalid
 from tg.decorators import before_validate
 from pylons import response, c
@@ -251,11 +252,12 @@ class AntiSpam(object):
         return hashlib.sha1(plain).digest()
 
     @classmethod
-    def validate_request(cls, request=None, now=None):
+    def validate_request(cls, request=None, now=None, params=None):
         if request is None: request = pylons.request
-        params = dict(request.params)
-        params.pop('timestamp', None)
-        params.pop('spinner', None)
+        if params is None: params = request.params
+        new_params = dict(params)
+        new_params.pop('timestamp', None)
+        new_params.pop('spinner', None)
         obj = cls(request)
         if now is None: now = time.time()
         if obj.timestamp > now + 5:
@@ -264,13 +266,13 @@ class AntiSpam(object):
             raise ValueError, 'Post from the 1hr+ past'
         if obj.spinner != obj.make_spinner(obj.timestamp):
             raise ValueError, 'Bad spinner value'
-        for k in params.keys():
-            params[obj.dec(k)] = params.pop(k)
+        for k in new_params.keys():
+            new_params[obj.dec(k)] = new_params.pop(k)
         for fldno in range(obj.num_honey):
-            value = params.pop('honey%s' % fldno)
+            value = new_params.pop('honey%s' % fldno)
             if value:
                 raise ValueError, 'Value in honeypot field: %s' % value
-        return params
+        return new_params
 
     @classmethod
     def validate(cls, error_msg):
@@ -278,7 +280,8 @@ class AntiSpam(object):
         def antispam_hook(remainder, params):
             '''Converts various errors in validate_request to a single Invalid message'''
             try:
-                params.update(cls.validate_request())
+                new_params = cls.validate_request(params=params)
+                params.update(new_params)
             except (ValueError, TypeError, binascii.Error):
                 raise Invalid(error_msg, params, None)
         return before_validate(antispam_hook)

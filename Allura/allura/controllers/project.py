@@ -157,6 +157,7 @@ class NeighborhoodController(object):
     @require_post()
     def register(self, project_unixname=None, project_description=None, project_name=None, neighborhood=None,
                  private_project=None, tools=None, **kw):
+        import pdb; pdb.set_trace()
         require_access(self.neighborhood, 'register')
         if private_project:
             require_access(self.neighborhood, 'admin')
