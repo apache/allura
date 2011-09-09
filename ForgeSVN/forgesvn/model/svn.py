@@ -118,6 +118,16 @@ class SVNImplementation(M.RepositoryImplementation):
                                  cwd=self._repo.fs_path)
         self._setup_special_files()
         self._repo.status = 'ready'
+        # make first commit with dir structure
+        self._repo._impl._svn.checkout('file://'+fullname, fullname+'/tmp')
+        os.mkdir(fullname+'/tmp/trunk')
+        os.mkdir(fullname+'/tmp/tags')
+        os.mkdir(fullname+'/tmp/branches')
+        self._repo._impl._svn.add(fullname+'/tmp/trunk')
+        self._repo._impl._svn.add(fullname+'/tmp/tags')
+        self._repo._impl._svn.add(fullname+'/tmp/branches')
+        self._repo._impl._svn.checkin([fullname+'/tmp/trunk',fullname+'/tmp/tags',fullname+'/tmp/branches'],'Initial commit')
+        shutil.rmtree(fullname+'/tmp')
 
     def clone_from(self, source_url):
         '''Initialize a repo as a clone of another using svnsync'''
