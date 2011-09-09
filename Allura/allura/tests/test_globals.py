@@ -65,7 +65,7 @@ def test_macros():
         assert '<img alt="test Logo"' in r, r
         assert '<img alt="sub1 Logo"' in r, r
         r = g.markdown_wiki.convert('[[projects show_total=True]]')
-        assert '<p class="macro_projects_total">2 Projects</p>' in r, r
+        assert '<p class="macro_projects_total">3 Projects</p>' in r, r
         
     r = g.markdown_wiki.convert('[[project_admins]]')
     assert r == '<div class="markdown_content"><p><a href="/u/test-admin/">Test Admin</a><br /></p></div>'
