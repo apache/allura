@@ -1,10 +1,11 @@
 # -*- coding: utf-8 -*-
 """Main Controller"""
 import logging, string, os
+from datetime import datetime
 from collections import defaultdict
 
 import pkg_resources
-from tg import expose, flash, redirect, session, config, response, request
+from tg import expose, flash, redirect, session, config, response, request, config
 from tg.decorators import with_trailing_slash, without_trailing_slash
 from tg.flash import TGFlash
 from pylons import c, g, cache
@@ -63,6 +64,7 @@ class RootController(WsgiDispatchController):
             if n.url_prefix.startswith('//'): continue
             n.bind_controller(self)
         self.browse = ProjectBrowseController()
+        self.allura_sitemap = SitemapIndexController()
         super(RootController, self).__init__()
 
     def _setup_request(self):
@@ -91,3 +93,39 @@ class RootController(WsgiDispatchController):
             SitemapEntry(cat.label, '/browse/'+cat.name, className='nav_child') for cat in categories
         ]
         return dict(projects=psort,title="All Projects",text=None)
+
+class SitemapIndexController(object):
+    projects_per_page = 1000
+
+    @expose('jinja:allura:templates/sitemap_index.xml')
+    def index(self, **kw):
+        base_url = config.get('base_url', 'sourceforge.net')
+        num_projects = M.Project.query.find().count()
+        now = datetime.utcnow().date()
+        return dict(
+            now=now,
+            sitemaps = [
+                '%s/sitemap/%d' % (base_url, offset)
+                for offset in range(0, num_projects, self.projects_per_page) ])
+
+    @expose()
+    def _lookup(self, offset, *remainder):
+        return SitemapController(int(offset), self.projects_per_page), remainder
+
+class SitemapController(object):
+
+    def __init__(self, offset, limit):
+        self.offset, self.limit = offset, limit
+
+    @expose('jinja:allura:templates/sitemap.xml')
+    def index(self, **kw):
+        now = datetime.utcnow().date()
+        base_url = config.get('base_url', 'sourceforge.net')
+        locs = []
+        for p in M.Project.query.find().skip(self.offset).limit(self.limit):
+            c.project = p
+            locs += [  base_url + s.url
+                       for s in p.sitemap() ]
+        return dict(
+            now=now,
+            locs=locs)

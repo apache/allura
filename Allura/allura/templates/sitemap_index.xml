@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  {% for sitemap in sitemaps %}
+   <sitemap>
+      <loc>{{ sitemap }}</loc>
+      <lastmod>{{ now }}</lastmod>
+      <changefreq>daily</changefreq>
+   </sitemap>
+   {% endfor %}
+</sitemapindex>
