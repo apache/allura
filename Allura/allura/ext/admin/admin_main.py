@@ -515,7 +515,11 @@ class PermissionsController(BaseController):
             group_ids = args.get('value', [])
             # make sure the admin group has the admin permission
             if perm == 'admin':
-                admin_group_id = str(M.ProjectRole.query.get(project_id=c.project._id, name='Admin')._id)
+                if c.project.is_root:
+                    pid = c.project._id
+                else:
+                    pid = c.project.parent_id
+                admin_group_id = str(M.ProjectRole.query.get(project_id=pid, name='Admin')._id)
                 if admin_group_id not in group_ids:
                     flash('You cannot remove the admin group from the admin permission.','warning')
                     group_ids.append(admin_group_id)

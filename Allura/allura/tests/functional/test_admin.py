@@ -284,6 +284,30 @@ class TestProjectAdmin(TestController):
         assert opt_developer['value'] in assigned_ids
         assert opt_admin['value'] in assigned_ids
 
+    def test_subproject_permissions(self):    
+        self.app.post('/admin/update_mounts', params={
+                'new.install':'install',
+                'new.ep_name':'',
+                'new.ordinal':1,
+                'new.mount_point':'test-subproject',
+                'new.mount_label':'Test Subproject'})
+        r = self.app.get('/test-subproject/admin/permissions/')
+        assert len(r.html.findAll('input', {'name': 'card-0.value'})) == 0
+        select = r.html.find('select', {'name': 'card-0.new'})
+        opt_admin = select.find(text='Admin').parent
+        opt_developer = select.find(text='Developer').parent
+        assert opt_admin.name == 'option'
+        assert opt_developer.name == 'option'
+        r = self.app.post('/test-subproject/admin/permissions/update', params={
+                'card-0.new': opt_developer['value'],
+                'card-0.value': opt_admin['value'],
+                'card-0.id': 'admin'})
+        r = self.app.get('/test-subproject/admin/permissions/')
+        assigned_ids = [t['value'] for t in r.html.findAll('input', {'name': 'card-0.value'})]
+        assert len(assigned_ids) == 2
+        assert opt_developer['value'] in assigned_ids
+        assert opt_admin['value'] in assigned_ids
+
     def test_project_groups(self):
         r = self.app.get('/admin/groups/')
         developer_id = r.html.find('input', {'name': 'card-1.id'})['value']
