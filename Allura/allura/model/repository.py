@@ -315,12 +315,12 @@ class Repository(Artifact):
                     self,
                     title='New commit',
                     description='%s<br><a href="%s%s">View Changes</a>' % (
-                        ci.summary,config.common_prefix,ci.url()),
+                        h.really_unicode(ci.summary),config.common_prefix,ci.url()),
                     author_link = ci.author_url,
                     author_name = ci.authored.name,
                 )
                 commit_msgs.append('%s by %s <%s%s>' % (
-                        ci.summary, ci.committed.name, config.common_prefix,ci.url()))
+                        h.really_unicode(ci.summary), h.really_unicode(ci.committed.name), config.common_prefix,ci.url()))
         if commit_msgs:
             if len(commit_msgs) > 1:
                 subject = '%d new commits to %s %s' % (
@@ -328,11 +328,11 @@ class Repository(Artifact):
                 text='\n\n'.join(commit_msgs)
             else:
                 subject = '%s committed to %s %s: %s' % (
-                    ci.committed.name,
+                    h.really_unicode(ci.committed.name),
                     self.app.project.name,
                     self.app.config.options.mount_label,
-                    ci.summary)
-                text = ci.message
+                    h.really_unicode(ci.summary))
+                text = h.really_unicode(ci.message)
             Notification.post(
                 artifact=self,
                 topic='metadata',
