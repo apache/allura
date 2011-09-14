@@ -157,7 +157,6 @@ class NeighborhoodController(object):
     @require_post()
     def register(self, project_unixname=None, project_description=None, project_name=None, neighborhood=None,
                  private_project=None, tools=None, **kw):
-        import pdb; pdb.set_trace()
         require_access(self.neighborhood, 'register')
         if private_project:
             require_access(self.neighborhood, 'admin')
@@ -186,11 +185,8 @@ class NeighborhoodController(object):
                     for option in tool_config['options']:
                         app.config.options[option] = tool_config['options'][option]
         else:
-            log.info('What tools did I pick?')
-            log.info(tools)
-            for i, tool in enumerate(kw):
-                if kw[tool]:
-                    c.project.install_app(tool, ordinal=i+offset)
+            for i, tool in enumerate(tools):
+                c.project.install_app(tool, ordinal=i+offset)
         if 'tool_order' in project_template:
             for i, tool in enumerate(project_template['tool_order']):
                 c.project.app_config(tool).options.ordinal = i
