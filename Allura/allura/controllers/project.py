@@ -184,7 +184,7 @@ class NeighborhoodController(object):
                 if 'options' in tool_config:
                     for option in tool_config['options']:
                         app.config.options[option] = tool_config['options'][option]
-        else:
+        elif tools:
             for i, tool in enumerate(tools):
                 c.project.install_app(tool, ordinal=i+offset)
         if 'tool_order' in project_template:
