@@ -45,34 +45,30 @@ class LabelEdit(ew.InputField):
     def resources(self):
         yield ew.JSLink('js/jquery.tag.editor.js')
         yield ew.CSSScript('''
-        input.label_edit{ float: left; }
-        .tagEditor
-        {
-        	margin: 4px 0;
-        	padding: 0;
-        	float: left;
-        }
+            input.label_edit{ float: left; }
+            .tagEditor{
+                margin: 4px 0;
+                padding: 0;
+                float: left;
+            }
 
-        .tagEditor li, .removable
-        {
-        	display: inline;
-        	background-image: url('%s');
-        	background-color: #eef;
-        	background-position: right center;
-        	background-repeat: no-repeat;
-        	list-style-type: none;
-        	padding: 0 18px 0 6px;
-        	margin: 0 4px;
-        	cursor: pointer;
-        	-moz-border-radius: 5px;
-        	-webkit-border-radius: 5px;
-        }
+            .tagEditor li, .removable{
+                display: inline;
+                background-image: url('%s');
+                background-color: #eef;
+                background-position: right center;
+                background-repeat: no-repeat;
+                list-style-type: none;
+                padding: 0 18px 0 6px;
+                margin: 0 4px;
+                cursor: pointer;
+                -moz-border-radius: 5px;
+                -webkit-border-radius: 5px;
+            }
 
-        .tagEditor li:hover
-        {
-        	background-color: #ebebeb;
-        }
-        ''' % g.forge_static('images/minus_small.png'))
+            .tagEditor li:hover{
+                background-color: #ebebeb;
+            }''' % g.forge_static('images/minus_small.png'))
         yield onready('''
           $('input.label_edit').tagEditor({
             confirmRemoval: false,
