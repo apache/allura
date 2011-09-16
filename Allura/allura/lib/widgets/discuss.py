@@ -1,4 +1,4 @@
-from pylons import c
+from pylons import c,g
 from formencode import validators as fev
 
 import ew as ew_core
@@ -113,6 +113,7 @@ class TagPost(ff.ForgeForm):
 
 class EditPost(ff.ForgeForm):
     template='jinja:allura:templates/widgets/edit_post.html'
+    antispam=True
     defaults=dict(
         ff.ForgeForm.defaults,
         show_subject=False,
@@ -129,7 +130,7 @@ class EditPost(ff.ForgeForm):
         if ew_core.widget_context.widget:
             # we are being displayed
             if ew_core.widget_context.render_context.get('show_subject', self.show_subject):
-                fields.append(ew.TextField(name='subject'))
+                fields.append(ew.TextField(name='subject',attrs=dict(style="width:97%")))
         else:
             # We are being validated
             validator = fev.UnicodeString(not_empty=True, if_missing='')

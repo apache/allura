@@ -176,8 +176,14 @@ class TestForumAsync(TestController):
         r = self.app.post(url, params=dict(subject='New Subject', text='Asdf'))
         assert 'Asdf' in self.app.get(url)
         r = self.app.get(url, params=dict(version=1))
-        r = self.app.post(url + 'reply',
-                          params=dict(subject='Reply', text='text'))
+        post_form = r.html.find('form',{'action':'/p/test' + url + 'reply'})
+        params = dict()
+        inputs = post_form.findAll('input')
+        for field in inputs:
+            if field.has_key('name'):
+                params[field['name']] = field.has_key('value') and field['value'] or ''
+        params[post_form.find('textarea')['name']] = 'text'
+        r = self.app.post(url + 'reply', params=params)
         self._post('testforum', 'Test Reply', 'Nothing here, either',
                    message_id='test_posts@sf.net',
                    in_reply_to=[ p._id ])
@@ -276,10 +282,17 @@ class TestForum(TestController):
 
     def test_post_count(self):
         # Make sure post counts don't get skewed during moderation
-        r = self.app.post('/discussion/save_new_topic', params=dict(
-                subject='Test Post Count',
-                text='1st post in Test Post Count thread',
-                forum='testforum'))
+        r = self.app.get('/discussion/create_topic/')
+        f = r.html.find('form',{'action':'/p/test/discussion/save_new_topic'})
+        params = dict()
+        inputs = f.findAll('input')
+        for field in inputs:
+            if field.has_key('name'):
+                params[field['name']] = field.has_key('value') and field['value'] or ''
+        params[f.find('textarea')['name']] = '1st post in Test Post Count thread'
+        params[f.find('select')['name']] = 'testforum'
+        params[f.find('input',{'style':'width: 90%'})['name']] = 'Test Post Count'
+        r = self.app.post('/discussion/save_new_topic', params=params)
         for i in range(2):
             r = self.app.get('/discussion/testforum/moderate')
             slug = r.html.find('checkbox', {'name': 'post-0.full_slug'})
@@ -294,10 +307,17 @@ class TestForum(TestController):
         # Make sure that threads with zero posts (b/c all posts have been
         # deleted or marked as spam) don't show in the UI.
         def _post():
-            r = self.app.post('/discussion/save_new_topic', params=dict(
-                    subject='Test Zero Posts',
-                    text='1st post in Zero Posts thread',
-                    forum='testforum'))
+            r = self.app.get('/discussion/create_topic/')
+            f = r.html.find('form',{'action':'/p/test/discussion/save_new_topic'})
+            params = dict()
+            inputs = f.findAll('input')
+            for field in inputs:
+                if field.has_key('name'):
+                    params[field['name']] = field.has_key('value') and field['value'] or ''
+            params[f.find('textarea')['name']] = '1st post in Zero Posts thread'
+            params[f.find('select')['name']] = 'testforum'
+            params[f.find('input',{'style':'width: 90%'})['name']] = 'Test Zero Posts'
+            r = self.app.post('/discussion/save_new_topic', params=params)
         def _check():
             r = self.app.get('/discussion/')
             assert 'Test Zero Posts' in r
@@ -323,10 +343,17 @@ class TestForum(TestController):
         _check()
 
     def test_posting(self):
-        r = self.app.post('/discussion/save_new_topic', params=dict(
-                subject='Test Thread',
-                text='This is a *test thread*',
-                forum='testforum'))
+        r = self.app.get('/discussion/create_topic/')
+        f = r.html.find('form',{'action':'/p/test/discussion/save_new_topic'})
+        params = dict()
+        inputs = f.findAll('input')
+        for field in inputs:
+            if field.has_key('name'):
+                params[field['name']] = field.has_key('value') and field['value'] or ''
+        params[f.find('textarea')['name']] = 'This is a *test thread*'
+        params[f.find('select')['name']] = 'testforum'
+        params[f.find('input',{'style':'width: 90%'})['name']] = 'Test Thread'
+        r = self.app.post('/discussion/save_new_topic', params=params)
         r = self.app.get('/admin/discussion/forums')
         assert 'Message posted' in r
         r = self.app.get('/discussion/testforum/moderate/')
@@ -348,23 +375,42 @@ class TestForum(TestController):
                 'card-3.value': opt_auth['value'],
                 'card-3.new': opt_anon['value'],
                 'card-3.id': 'post'})
-        r = self.app.post('/discussion/save_new_topic', params=dict(
-                subject='Test Thread',
-                text='Post content',
-                forum='testforum'),
+        r = self.app.get('/discussion/create_topic/')
+        f = r.html.find('form',{'action':'/p/test/discussion/save_new_topic'})
+        params = dict()
+        inputs = f.findAll('input')
+        for field in inputs:
+            if field.has_key('name'):
+                params[field['name']] = field.has_key('value') and field['value'] or ''
+        params[f.find('textarea')['name']] = 'Post content'
+        params[f.find('select')['name']] = 'testforum'
+        params[f.find('input',{'style':'width: 90%'})['name']] = 'Test Thread'
+        r = self.app.post('/discussion/save_new_topic', params=params,
                 extra_environ=dict(username='*anonymous')).follow()
         assert 'Post awaiting moderation' in r
 
     def test_thread(self):
-        thread = self.app.post('/discussion/save_new_topic', params=dict(
-                subject='AAA',
-                text='aaa',
-                forum='testforum')).follow()
+        r = self.app.get('/discussion/create_topic/')
+        f = r.html.find('form',{'action':'/p/test/discussion/save_new_topic'})
+        params = dict()
+        inputs = f.findAll('input')
+        for field in inputs:
+            if field.has_key('name'):
+                params[field['name']] = field.has_key('value') and field['value'] or ''
+        params[f.find('textarea')['name']] = 'aaa'
+        params[f.find('select')['name']] = 'testforum'
+        params[f.find('input',{'style':'width: 90%'})['name']] = 'AAA'
+        thread = self.app.post('/discussion/save_new_topic', params=params).follow()
         url = thread.request.url
-        rep_url = thread.html.find('div',{'class':'row reply_post_form'}).find('form').get('action')
-        thread = self.app.post(str(rep_url), params=dict(
-                subject='BBB',
-                text='bbb'))
+        f = thread.html.find('div',{'class':'row reply_post_form'}).find('form')
+        rep_url = f.get('action')
+        params = dict()
+        inputs = f.findAll('input')
+        for field in inputs:
+            if field.has_key('name'):
+                params[field['name']] = field.has_key('value') and field['value'] or ''
+        params[f.find('textarea')['name']] = 'bbb'
+        thread = self.app.post(str(rep_url), params=params)
         thread = self.app.get(url)
         # beautiful soup is getting some unicode error here - test without it
         assert thread.html.findAll('div',{'class':'display_post'})[0].find('p').string == 'aaa'
@@ -386,10 +432,17 @@ class TestForum(TestController):
         assert topic_name in str(cell)
 
     def test_thread_announcement(self):
-        r = self.app.post('/discussion/save_new_topic', params=dict(
-                subject='AAAA',
-                text='aaa aaa',
-                forum='testforum')).follow()
+        r = self.app.get('/discussion/create_topic/')
+        f = r.html.find('form',{'action':'/p/test/discussion/save_new_topic'})
+        params = dict()
+        inputs = f.findAll('input')
+        for field in inputs:
+            if field.has_key('name'):
+                params[field['name']] = field.has_key('value') and field['value'] or ''
+        params[f.find('textarea')['name']] = 'aaa aaa'
+        params[f.find('select')['name']] = 'testforum'
+        params[f.find('input',{'style':'width: 90%'})['name']] = 'AAAA'
+        r = self.app.post('/discussion/save_new_topic', params=params).follow()
         url = r.request.url
         thread_id = url.rstrip('/').rsplit('/', 1)[-1]
         thread = FM.ForumThread.query.get(_id=thread_id)
@@ -409,17 +462,31 @@ class TestForum(TestController):
         self.check_announcement_table(r, 'AAAA')
 
     def test_thread_sticky(self):
-        r = self.app.post('/discussion/save_new_topic', params=dict(
-                subject='topic1',
-                text='aaa aaa',
-                forum='testforum')).follow()
+        r = self.app.get('/discussion/create_topic/')
+        f = r.html.find('form',{'action':'/p/test/discussion/save_new_topic'})
+        params = dict()
+        inputs = f.findAll('input')
+        for field in inputs:
+            if field.has_key('name'):
+                params[field['name']] = field.has_key('value') and field['value'] or ''
+        params[f.find('textarea')['name']] = 'aaa aaa'
+        params[f.find('select')['name']] = 'testforum'
+        params[f.find('input',{'style':'width: 90%'})['name']] = 'topic1'
+        r = self.app.post('/discussion/save_new_topic', params=params).follow()
         url1 = r.request.url
         tid1 = url1.rstrip('/').rsplit('/', 1)[-1]
 
-        r = self.app.post('/discussion/save_new_topic', params=dict(
-                subject='topic2',
-                text='aaa aaa',
-                forum='testforum')).follow()
+        r = self.app.get('/discussion/create_topic/')
+        f = r.html.find('form',{'action':'/p/test/discussion/save_new_topic'})
+        params = dict()
+        inputs = f.findAll('input')
+        for field in inputs:
+            if field.has_key('name'):
+                params[field['name']] = field.has_key('value') and field['value'] or ''
+        params[f.find('textarea')['name']] = 'aaa aaa'
+        params[f.find('select')['name']] = 'testforum'
+        params[f.find('input',{'style':'width: 90%'})['name']] = 'topic2'
+        r = self.app.post('/discussion/save_new_topic', params=params).follow()
         url2 = r.request.url
         tid2 = url2.rstrip('/').rsplit('/', 1)[-1]
 
@@ -468,10 +535,17 @@ class TestForum(TestController):
         assert '<h3 class="">Help</h3>' in sidebarmenu
         assert '<a href="/p/test/discussion/markdown_syntax" class="nav_child"><span>Markdown Syntax</span></a>' in sidebarmenu
         assert '<a href="flag_as_spam" class="sidebar_thread_spam"><b data-icon="^" class="ico ico-flag"></b> <span>Mark as Spam</span></a>' not in sidebarmenu
-        thread = self.app.post('/discussion/save_new_topic', params=dict(
-                forum='testforum',
-                subject='AAA',
-                text='aaa')).follow()
+        r = self.app.get('/discussion/create_topic/')
+        f = r.html.find('form',{'action':'/p/test/discussion/save_new_topic'})
+        params = dict()
+        inputs = f.findAll('input')
+        for field in inputs:
+            if field.has_key('name'):
+                params[field['name']] = field.has_key('value') and field['value'] or ''
+        params[f.find('textarea')['name']] = 'aaa'
+        params[f.find('select')['name']] = 'testforum'
+        params[f.find('input',{'style':'width: 90%'})['name']] = 'AAA'
+        thread = self.app.post('/discussion/save_new_topic', params=params).follow()
         thread_sidebarmenu = str(thread.html.find('div',{'id':'sidebar'}))
         assert '<a href="flag_as_spam" class="sidebar_thread_spam"><b data-icon="^" class="ico ico-flag"></b> <span>Mark as Spam</span></a>' in thread_sidebarmenu
 
@@ -483,24 +557,45 @@ class TestForum(TestController):
         assert '<h3 class="">Help</h3>' in sidebarmenu
         assert '<a href="/p/test/discussion/markdown_syntax" class="nav_child"><span>Markdown Syntax</span></a>' in sidebarmenu
         assert '<a href="flag_as_spam" class="sidebar_thread_spam"><b data-icon="^" class="ico ico-flag"></b> <span>Mark as Spam</span></a>' not in sidebarmenu
-        thread = self.app.post('/discussion/save_new_topic', params=dict(
-                forum='testforum',
-                subject='AAA',
-                text='aaa')).follow(extra_environ=dict(username='*anonymous'))
+        r = self.app.get('/discussion/create_topic/')
+        f = r.html.find('form',{'action':'/p/test/discussion/save_new_topic'})
+        params = dict()
+        inputs = f.findAll('input')
+        for field in inputs:
+            if field.has_key('name'):
+                params[field['name']] = field.has_key('value') and field['value'] or ''
+        params[f.find('textarea')['name']] = 'aaa'
+        params[f.find('select')['name']] = 'testforum'
+        params[f.find('input',{'style':'width: 90%'})['name']] = 'AAA'
+        thread = self.app.post('/discussion/save_new_topic', params=params).follow(extra_environ=dict(username='*anonymous'))
         thread_sidebarmenu = str(thread.html.find('div',{'id':'sidebar'}))
         assert '<a href="flag_as_spam" class="sidebar_thread_spam"><b data-icon="^" class="ico ico-flag"></b> <span>Mark as Spam</span></a>' not in thread_sidebarmenu
 
     def test_recent_topics_truncated(self):
-        r = self.app.post('/discussion/save_new_topic', params=dict(
-                forum='testforum',
-                subject='This is not too long',
-                text='text')).follow()
+        r = self.app.get('/discussion/create_topic/')
+        f = r.html.find('form',{'action':'/p/test/discussion/save_new_topic'})
+        params = dict()
+        inputs = f.findAll('input')
+        for field in inputs:
+            if field.has_key('name'):
+                params[field['name']] = field.has_key('value') and field['value'] or ''
+        params[f.find('textarea')['name']] = 'text'
+        params[f.find('select')['name']] = 'testforum'
+        params[f.find('input',{'style':'width: 90%'})['name']] = 'This is not too long'
+        r = self.app.post('/discussion/save_new_topic', params=params).follow()
         sidebarmenu = str(r.html.find('div',{'id':'sidebar'}))
         assert 'This is not too long' in sidebarmenu
-        r = self.app.post('/discussion/save_new_topic', params=dict(
-                forum='testforum',
-                subject='This will be truncated because it is too long to show in the sidebar without being ridiculous.',
-                text='text')).follow()
+        r = self.app.get('/discussion/create_topic/')
+        f = r.html.find('form',{'action':'/p/test/discussion/save_new_topic'})
+        params = dict()
+        inputs = f.findAll('input')
+        for field in inputs:
+            if field.has_key('name'):
+                params[field['name']] = field.has_key('value') and field['value'] or ''
+        params[f.find('textarea')['name']] = 'text'
+        params[f.find('select')['name']] = 'testforum'
+        params[f.find('input',{'style':'width: 90%'})['name']] = 'This will be truncated because it is too long to show in the sidebar without being ridiculous.'
+        r = self.app.post('/discussion/save_new_topic', params=params).follow()
         sidebarmenu = str(r.html.find('div',{'id':'sidebar'}))
         assert 'This will be truncated because it is too long to show in the sidebar ...' in sidebarmenu
 

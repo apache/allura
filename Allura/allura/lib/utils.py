@@ -153,7 +153,7 @@ class AntiSpam(object):
 
     def __init__(self, request=None, num_honey=2):
         self.num_honey = num_honey
-        if request is None:
+        if request is None or request.method == 'GET':
             self.request = pylons.request
             self.timestamp = int(time.time())
             self.spinner = self.make_spinner()
@@ -256,22 +256,23 @@ class AntiSpam(object):
         if request is None: request = pylons.request
         if params is None: params = request.params
         new_params = dict(params)
-        new_params.pop('timestamp', None)
-        new_params.pop('spinner', None)
-        obj = cls(request)
-        if now is None: now = time.time()
-        if obj.timestamp > now + 5:
-            raise ValueError, 'Post from the future'
-        if now - obj.timestamp > 60*60:
-            raise ValueError, 'Post from the 1hr+ past'
-        if obj.spinner != obj.make_spinner(obj.timestamp):
-            raise ValueError, 'Bad spinner value'
-        for k in new_params.keys():
-            new_params[obj.dec(k)] = new_params.pop(k)
-        for fldno in range(obj.num_honey):
-            value = new_params.pop('honey%s' % fldno)
-            if value:
-                raise ValueError, 'Value in honeypot field: %s' % value
+        if not request.method == 'GET':
+            new_params.pop('timestamp', None)
+            new_params.pop('spinner', None)
+            obj = cls(request)
+            if now is None: now = time.time()
+            if obj.timestamp > now + 5:
+                raise ValueError, 'Post from the future'
+            if now - obj.timestamp > 60*60:
+                raise ValueError, 'Post from the 1hr+ past'
+            if obj.spinner != obj.make_spinner(obj.timestamp):
+                raise ValueError, 'Bad spinner value'
+            for k in new_params.keys():
+                new_params[obj.dec(k)] = new_params.pop(k)
+            for fldno in range(obj.num_honey):
+                value = new_params.pop('honey%s' % fldno)
+                if value:
+                    raise ValueError, 'Value in honeypot field: %s' % value
         return new_params
 
     @classmethod

@@ -43,7 +43,12 @@ class TestDiscuss(TestController):
         for f in thread.html.findAll('form'):
             if f.get('action', '').endswith('/post'):
                 break
-        params = dict(text=text)
+        params = dict()
+        inputs = f.findAll('input')
+        for field in inputs:
+            if field.has_key('name'):
+                params[field['name']] = field.has_key('value') and field['value'] or ''
+        params[f.find('textarea')['name']] = text
         r = self.app.post(f['action'].encode('utf-8'), params=params,
                           headers={'Referer':thread_link.encode("utf-8")},
                           extra_environ=dict(username='root'))
@@ -57,17 +62,31 @@ class TestDiscuss(TestController):
         r = self._make_post('This is a post')
         assert 'This is a post' in r, r
         post_link = str(r.html.find('div',{'class':'edit_post_form reply'}).find('form')['action'])
-        r = self.app.get(post_link)
         r = self.app.get(post_link[:-2], status=302)
+        r = self.app.get(post_link)
+        post_form = r.html.find('form',{'action':post_link})
+        params = dict()
+        inputs = post_form.findAll('input')
+        for field in inputs:
+            if field.has_key('name'):
+                params[field['name']] = field.has_key('value') and field['value'] or ''
+        params[post_form.find('textarea')['name']] = 'This is a new post'
         r = self.app.post(post_link,
-                          params=dict(text='This is a new post'),
+                          params=params,
                           headers={'Referer':thread_link.encode("utf-8")})
         r = r.follow()
         assert 'This is a new post' in r, r
         r = self.app.get(post_link)
         assert str(r).count('This is a new post') == 3
+        post_form = r.html.find('form',{'action':post_link + 'reply'})
+        params = dict()
+        inputs = post_form.findAll('input')
+        for field in inputs:
+            if field.has_key('name'):
+                params[field['name']] = field.has_key('value') and field['value'] or ''
+        params[post_form.find('textarea')['name']] = 'Tis a reply'
         r = self.app.post(post_link + 'reply',
-                          params=dict(text='Tis a reply'),
+                          params=params,
                           headers={'Referer':post_link.encode("utf-8")})
         r = self.app.get(thread_link)
         assert 'Tis a reply' in r, r
@@ -78,10 +97,19 @@ class TestDiscuss(TestController):
 
     def test_edit_post(self):
         r = self._make_post('This is a post')
-        post_link = str(r.html.find('div',{'class':'edit_post_form reply'}).find('form')['action'])
+        thread_url = r.request.url
+        reply_form = r.html.find('div',{'class':'edit_post_form reply'}).find('form')
+        post_link = str(reply_form['action'])
         assert 'This is a post' in str(r.html.find('div',{'class':'display_post'}))
         assert 'Last edit:' not in str(r.html.find('div',{'class':'display_post'}))
-        r = self.app.post(post_link, {'text':'zzz'}).follow()
+        params = dict()
+        inputs = reply_form.findAll('input')
+        for field in inputs:
+            if field.has_key('name'):
+                params[field['name']] = field.has_key('value') and field['value'] or ''
+        params[reply_form.find('textarea')['name']] = 'zzz'
+        self.app.post(post_link, params)
+        r = self.app.get(thread_url)
         assert 'zzz' in str(r.html.find('div',{'class':'display_post'}))
         assert 'Last edit: Test Admin less than 1 minute ago' in str(r.html.find('div',{'class':'display_post'}))
                 
@@ -97,8 +125,14 @@ class TestAttachment(TestController):
         for f in thread.html.findAll('form'):
             if f.get('action', '').endswith('/post'):
                 break
-        self.post_form_link = f['action'].encode('utf-8')
-        r = self.app.post(f['action'].encode('utf-8'), params=dict(text='Test Post'),
+        self.post_form_link = f['action'].encode('utf-8')        
+        params = dict()
+        inputs = f.findAll('input')
+        for field in inputs:
+            if field.has_key('name'):
+                params[field['name']] = field.has_key('value') and field['value'] or ''
+        params[f.find('textarea')['name']] = 'Test Post'
+        r = self.app.post(f['action'].encode('utf-8'), params=params,
                           headers={'Referer':self.thread_link})
         r = r.follow()
         self.post_link = str(r.html.find('div',{'class':'edit_post_form reply'}).find('form')['action'])
@@ -106,7 +140,7 @@ class TestAttachment(TestController):
     def test_attach(self):
         r = self.app.post(self.post_link + 'attach',
                           upload_files=[('file_info', 'test.txt', 'HiThere!')])
-        r = self.app.get(self.post_link)
+        r = self.app.get(self.thread_link)
         for alink in r.html.findAll('a'):
             if 'attachment' in alink['href']:
                 alink = str(alink['href'])

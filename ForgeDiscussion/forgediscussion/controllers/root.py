@@ -16,6 +16,7 @@ from allura.lib.security import require_access, has_access, require_authenticate
 from allura.model import ProjectRole, Feed
 from allura.lib.search import search
 from allura.lib import helpers as h
+from allura.lib.utils import AntiSpam
 from allura.lib.decorators import require_post
 from allura.controllers import BaseController
 
@@ -91,6 +92,7 @@ class RootController(BaseController):
     @expose()
     @require_post()
     @validate(W.new_topic, error_handler=create_topic)
+    @AntiSpam.validate('Spambot protection engaged')
     def save_new_topic(self, subject=None, text=None, forum=None, **kw):
         discussion = model.Forum.query.get(
             app_config_id=c.app.config._id,

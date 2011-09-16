@@ -2,7 +2,7 @@
   <form method="post" action="{{action}}"
         enctype="multipart/form-data">
     {% if show_subject %}
-    <input name="subject" style="width:97%"
+    <input name="{{ widget.context_for(widget.fields.subject)['rendered_name'] }}" style="width:97%"
            value="{{value and (value.subject or '(no subject)')}}"/>
     {% endif %}
     {{widget.display_field(widget.fields.text)}}
@@ -15,5 +15,7 @@
     <input type="submit" value="{{submit_text}}"/>
     <a href="#" class="btn link cancel_edit_post">Cancel</a> &nbsp;
     <a href="#" class="btn link attachment_form_add_button">Add attachment</a>
+  {% if widget.antispam %}{% for fld in g.antispam.extra_fields() %}
+  {{fld}}{% endfor %}{% endif %}
   </form>
 </div>

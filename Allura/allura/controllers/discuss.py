@@ -176,6 +176,7 @@ class ThreadController(BaseController):
     @expose()
     @require_post()
     @validate(pass_validator, error_handler=index)
+    @utils.AntiSpam.validate('Spambot protection engaged')
     def post(self, **kw):
         require_access(self.thread, 'post')
         kw = self.W.edit_post.to_python(kw, None)
@@ -263,6 +264,7 @@ class PostController(BaseController):
     @h.vardec
     @expose('jinja:allura:templates/discussion/post.html')
     @validate(pass_validator)
+    @utils.AntiSpam.validate('Spambot protection engaged')
     def index(self, version=None, **kw):
         c.post = self.W.post
         if request.method == 'POST':
@@ -308,6 +310,7 @@ class PostController(BaseController):
     @expose()
     @require_post()
     @validate(pass_validator, error_handler=index)
+    @utils.AntiSpam.validate('Spambot protection engaged')
     @require_post(redir='.')
     def reply(self, **kw):
         require_access(self.thread, 'post')
@@ -454,6 +457,7 @@ class PostRestController(PostController):
     @expose()
     @require_post()
     @validate(pass_validator, error_handler=h.json_validation_error)
+    @utils.AntiSpam.validate('Spambot protection engaged')
     def reply(self, **kw):
         require_access(self.thread, 'post')
         kw = self.W.edit_post.to_python(kw, None)
@@ -471,6 +475,7 @@ class ThreadRestController(ThreadController):
     @expose()
     @require_post()
     @validate(pass_validator, error_handler=h.json_validation_error)
+    @utils.AntiSpam.validate('Spambot protection engaged')
     def new(self, **kw):
         require_access(self.thread, 'post')
         kw = self.W.edit_post.to_python(kw, None)
