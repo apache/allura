@@ -1128,7 +1128,7 @@ class MilestoneController(BaseController):
             self.mongo_query, page=page, sort=sort, columns=columns, **kw)
         result['allow_edit'] = has_access(c.app, 'write')()
         # get milestone progress from mongo
-        d = TM.Ticket.query.find(self.mongo_query.update(app_config_id=c.app.config._id))
+        d = TM.Ticket.query.find(dict(self.mongo_query, app_config_id=c.app.config._id))
         tickets = [t for t in d if has_access(t, 'read')]
         total = len(tickets)
         closed = sum(1 for t in tickets
