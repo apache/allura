@@ -654,4 +654,5 @@ class CreateTroveCategoriesCommand(base.Command):
         self.create_trove_cat((117,116,"cdplay","CD Playing","Topic :: Multimedia :: Sound/Audio :: CD Audio :: CD Playing"))
         self.create_trove_cat((99,18,"multimedia","Multimedia","Topic :: Multimedia"))
         self.create_trove_cat((670,14,"agpl","Affero GNU Public License ","License :: OSI-Approved Open Source :: Affero GNU Public License"))
+        self.create_trove_cat((862,14,"lppl","LaTeX Project Public License","License :: OSI-Approved Open Source :: LaTeX Project Public License"))
         session(M.TroveCategory).flush()
