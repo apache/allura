@@ -245,7 +245,6 @@ class RootController(BaseController):
     #Instantiate a Page object, and continue dispatch there
     @expose()
     def _lookup(self, pname, *remainder):
-        pname=unquote(pname)
         return PageController(pname), remainder
 
     @expose()
@@ -377,7 +376,7 @@ class RootController(BaseController):
 class PageController(BaseController):
 
     def __init__(self, title):
-        self.title = h.really_unicode(title)
+        self.title = h.really_unicode(unquote(title))
         self.page = WM.Page.query.get(
             app_config_id=c.app.config._id, title=self.title)
         if self.page is not None:
@@ -423,7 +422,7 @@ class PageController(BaseController):
     @validate(dict(version=validators.Int(if_empty=None)))
     def index(self, version=None, **kw):
         if not self.page:
-            redirect(c.app.url+h.really_unicode(self.title).encode('utf-8')+'/edit')
+            redirect(c.app.url+h.urlquote(self.title)+'/edit')
         c.thread = W.thread
         c.attachment_list = W.attachment_list
         c.subscribe_form = W.page_subscribe_form

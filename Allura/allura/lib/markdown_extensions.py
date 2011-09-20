@@ -135,7 +135,7 @@ class ForgeProcessor(object):
                 new_link.url, link)
         elif self._use_wiki and ':' not in link:
             return '<a href="%s" class="notfound">[%s]</a>' % (
-                quote(link), link)
+                h.urlquote(link), link)
         else:
             return link
 
