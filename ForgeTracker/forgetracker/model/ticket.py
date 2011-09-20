@@ -520,12 +520,8 @@ class Ticket(VersionedArtifact):
             self.set_as_subticket_of(bson.ObjectId(super_id))
 
     def __json__(self):
-        return dict(
-            _id=str(self._id),
+        return dict(super(Ticket,self).__json__(),
             created_date=self.created_date,
-            mod_date=self.mod_date,
-            super_id=str(self.super_id),
-            sub_ids=[str(id) for id in self.sub_ids],
             ticket_num=self.ticket_num,
             summary=self.summary,
             description=self.description,
@@ -533,8 +529,8 @@ class Ticket(VersionedArtifact):
             assigned_to=self.assigned_to_username,
             reported_by_id=self.reported_by_id and str(self.reported_by_id) or None,
             assigned_to_id=self.assigned_to_id and str(self.assigned_to_id) or None,
-            milestone=self.milestone,
             status=self.status,
+            private=self.private,
             custom_fields=self.custom_fields)
 
     @classmethod

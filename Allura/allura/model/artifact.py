@@ -69,6 +69,16 @@ class Artifact(MappedClass):
     # Not null if artifact originated from external import, then API ticket id
     import_id = FieldProperty(str, if_missing=None)
 
+    def __json__(self):
+        return dict(
+            _id=str(self._id),
+            mod_date=self.mod_date,
+            labels=self.labels,
+            related_artifacts=[a.url() for a in self.related_artifacts()],
+            discussion_thread=self.discussion_thread,
+            discussion_thread_url=self.discussion_thread.url(),
+        )
+
     def parent_security_context(self):
         '''ACL processing should continue at the  AppConfig object. This lets
         AppConfigs provide a 'default' ACL for all artifacts in the tool.'''
