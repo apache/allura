@@ -36,11 +36,11 @@ class Repository(M.Repository):
 
     def merge_command(self, merge_request):
         '''Return the command to merge a given commit to a given target branch'''
-        return 'git checkout %s;\ngit fetch %s %s;\ngit merge %s' % (
+        return 'git checkout %s\ngit fetch %s\ngit merge %s' % (
             merge_request.target_branch,
             merge_request.downstream_repo_url,
             merge_request.downstream.commit_id,
-            merge_request.downstream.commit_id)
+        )
 
 class GitImplementation(M.RepositoryImplementation):
     post_receive_template = string.Template(

@@ -34,11 +34,11 @@ class Repository(M.Repository):
 
     def merge_command(self, merge_request):
         '''Return the command to merge a given commit into a given target branch'''
-        return 'hg checkout %s;\nhg pull -r %s %s; hg merge %s' % (
+        return 'hg checkout %s\nhg pull -r %s %s' % (
             merge_request.target_branch,
             merge_request.downstream.commit_id,
             merge_request.downstream_repo_url,
-            merge_request.downstream.commit_id)
+        )
 
     def count(self, branch='default'):
         return super(Repository, self).count(branch)
