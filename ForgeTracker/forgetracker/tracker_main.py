@@ -389,7 +389,11 @@ class RootController(BaseController):
                                 m.complete = new['complete'] == 'Closed'
                                 if new['old_name'] != new['new_name']:
                                     q = '%s:%s' % (fld.name, new['old_name'])
-                                    r = search_artifact(TM.Ticket, q)
+                                    # search_artifact() limits results to 10
+                                    # rows by default, so give it a high upper
+                                    # bound to make sure we get all tickets
+                                    # for this milestone
+                                    r = search_artifact(TM.Ticket, q, rows=10000)
                                     ticket_numbers = [match['ticket_num_i'] for match in r.docs]
                                     tickets = TM.Ticket.query.find(dict(
                                         app_config_id=c.app.config._id,
@@ -1113,7 +1117,6 @@ class MilestoneController(BaseController):
         self.query = '%s:"%s"' % (fld.name, m.name)
         self.mongo_query = {
             'custom_fields.%s' % fld.name: m.name }
-            
 
     @with_trailing_slash
     @h.vardec
