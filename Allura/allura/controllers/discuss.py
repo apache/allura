@@ -457,7 +457,6 @@ class PostRestController(PostController):
     @expose()
     @require_post()
     @validate(pass_validator, error_handler=h.json_validation_error)
-    @utils.AntiSpam.validate('Spambot protection engaged')
     def reply(self, **kw):
         require_access(self.thread, 'post')
         kw = self.W.edit_post.to_python(kw, None)
@@ -475,7 +474,6 @@ class ThreadRestController(ThreadController):
     @expose()
     @require_post()
     @validate(pass_validator, error_handler=h.json_validation_error)
-    @utils.AntiSpam.validate('Spambot protection engaged')
     def new(self, **kw):
         require_access(self.thread, 'post')
         kw = self.W.edit_post.to_python(kw, None)

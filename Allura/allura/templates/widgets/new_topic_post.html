@@ -2,15 +2,15 @@
     {% if show_subject %}
     <div class="grid-19">&nbsp;</div>
     <div class="grid-19">
-      <label for="{{ widget.context_for(widget.fields.subject)['rendered_name'] }}" class="cr">Subject:</label>
-      <input name="{{ widget.context_for(widget.fields.subject)['rendered_name'] }}" style="width: 90%"{% if value %} value="{{value.subject or '(no subject)'}}"{% endif %}>
+      <label for="{{ widget.context_for(widget.fields.subject)['id'] }}" class="cr">Subject:</label>
+      <input id="{{ widget.context_for(widget.fields.subject)['id'] }}" name="{{ widget.context_for(widget.fields.subject)['rendered_name'] }}" type="text" style="width: 90%"{% if value %} value="{{value.subject or '(no subject)'}}"{% endif %}>
     </div>
     {% endif %}
     {% if forums %}
     <div class="grid-19">&nbsp;</div>
     <div class="grid-19">
-      <label for="forum" class="cr">Forum:</label>
-      <select name="{{ widget.context_for(widget.fields.forum)['rendered_name'] }}">
+      <label for="{{ widget.context_for(widget.fields.forum)['id'] }}" class="cr">Forum:</label>
+      <select id="{{ widget.context_for(widget.fields.forum)['id'] }}" name="{{ widget.context_for(widget.fields.forum)['rendered_name'] }}">
         {% for forum in forums %}
           <option value="{{forum.shortname}}">{{forum.name}}</option>
         {% endfor %}
@@ -19,7 +19,7 @@
     {% endif %}
     <div class="grid-19">&nbsp;</div>
     <div class="grid-19">
-      <label for="text" class="cr">Description:</label>
+      <label for="{{ widget.context_for(widget.fields.text)['id'] }}" class="cr">Description:</label>
       {{widget.display_field(widget.fields.text)}}
     </div>
     <div class="grid-19">&nbsp;</div>

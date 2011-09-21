@@ -624,7 +624,12 @@ class TestFunctionalController(TestController):
             if f.get('action', '').endswith('/post'):
                 break
         post_content = 'ticket discussion post content'
-        params = dict(text=post_content)
+        params = dict()
+        inputs = f.findAll('input')
+        for field in inputs:
+            if field.has_key('name'):
+                params[field['name']] = field.has_key('value') and field['value'] or ''
+        params[f.find('textarea')['name']] = post_content
         r = self.app.post(f['action'].encode('utf-8'), params=params,
                           headers={'Referer': '/bugs/1/'.encode("utf-8")})
         r = self.app.get('/bugs/1/', dict(page=-1))
