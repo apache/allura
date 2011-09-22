@@ -14,6 +14,7 @@ from allura.lib.security import require, has_access, require_access
 from allura import model
 from allura.controllers import BaseController
 from allura.lib.decorators import require_post, event_handler
+from allura.lib.utils import permanent_redirect
 
 log = logging.getLogger(__name__)
 
@@ -288,7 +289,7 @@ class DefaultAdminController(BaseController):
 
     @expose()
     def index(self, **kw):
-        return redirect('permissions')
+        return permanent_redirect('permissions')
 
     @expose('jinja:allura:templates/app_admin_permissions.html')
     @without_trailing_slash

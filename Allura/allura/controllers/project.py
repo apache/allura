@@ -442,7 +442,7 @@ class NeighborhoodAdminController(object):
     @with_trailing_slash
     @expose()
     def index(self, **kw):
-        redirect('overview')
+        utils.permanent_redirect('overview')
 
     @without_trailing_slash
     @expose('jinja:allura:templates/neighborhood_admin_overview.html')

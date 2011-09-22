@@ -15,9 +15,16 @@ from tg.decorators import before_validate
 from pylons import response, c
 from paste.httpheaders import CACHE_CONTROL, EXPIRES
 from webhelpers.html import literal
+from webob import exc
 
 from ew import jinja2_ew as ew
 from ming.utils import LazyProperty
+
+def permanent_redirect(url):
+    try:
+        tg.redirect(url)
+    except exc.HTTPFound, err:
+        raise exc.HTTPMovedPermanently(location=err.location)
 
 def cache_forever():
     headers = [

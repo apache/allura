@@ -1,5 +1,6 @@
 import webob
 import tg.decorators
+from decorator import decorator
 from pylons import request
 
 from allura.lib import helpers as h
@@ -38,3 +39,19 @@ def apply():
             except AttributeError:
                 override_mapping = request._override_mapping = {}
             override_mapping[controller.im_func] = {content_type: template}
+
+    @h.monkeypatch(tg, tg.decorators)
+    @decorator
+    def without_trailing_slash(func, *args, **kwargs):
+        '''Monkey-patched to use 301 redirects for SEO'''
+        if request.method == 'GET' and request.path.endswith('/') and not(request.response_type) and len(request.params)==0:
+            raise webob.exc.HTTPMovedPermanently(location=request.url[:-1])
+        return func(*args, **kwargs)
+
+    @h.monkeypatch(tg, tg.decorators)
+    @decorator
+    def with_trailing_slash(func, *args, **kwargs):
+        '''Monkey-patched to use 301 redirects for SEO'''
+        if request.method == 'GET' and not(request.path.endswith('/')) and not(request.response_type) and len(request.params)==0:
+            raise webob.exc.HTTPMovedPermanently(location=request.url+'/')
+        return func(*args, **kwargs)
