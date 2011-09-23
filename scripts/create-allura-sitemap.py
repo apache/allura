@@ -1,18 +1,15 @@
 """
 Generate Allura sitemap xml files.
-
-$ paster script production.ini ../scripts/create-allura-sitemap.py
-
-Output files will be created in ./allura_sitemap.
 """
+
 import os, sys
 from datetime import datetime
 from jinja2 import Template
 from pylons import c
 
 from allura import model as M
+from ming.orm import session, ThreadLocalORMSession
 
-OUTPUT_DIR = 'allura_sitemap'
 PROJECTS_PER_FILE = 1000
 BASE_URL = 'http://sourceforge.net'
 
@@ -42,15 +39,14 @@ SITEMAP_TEMPLATE = """\
 </urlset>
 """
 
-def main():
-    cwd = os.getcwd()
-    output_path = os.path.join(cwd, OUTPUT_DIR)
+def main(options, args):
+    output_path = options.output_dir
     if os.path.exists(output_path):
-        sys.exit('%s directory already exists.' % output_path)
+        sys.exit('Error: %s directory already exists.' % output_path)
     try:
         os.mkdir(output_path)
     except OSError, e:
-        sys.exit("Couldn't create %s: %s" % (output_path, e))
+        sys.exit("Error: Couldn't create %s:\n%s" % (output_path, e))
 
     # Count projects and create sitemap index file
     num_projects = M.Project.query.find().count()
@@ -66,15 +62,31 @@ def main():
         f.write(sitemap_index_content)
 
     # Create urlset file for each chunk of PROJECTS_PER_FILE projects
+    sitemap_content_template = Template(SITEMAP_TEMPLATE)
     for offset in offsets:
         locs = []
         for p in M.Project.query.find().skip(offset).limit(PROJECTS_PER_FILE):
             c.project = p
             locs += [BASE_URL + s.url for s in p.sitemap()]
         sitemap_vars = dict(now=now, locs=locs)
-        sitemap_content = Template(SITEMAP_TEMPLATE).render(sitemap_vars)
+        sitemap_content = sitemap_content_template.render(sitemap_vars)
         with open(os.path.join(output_path, 'sitemap-%d.xml' % offset), 'w') as f:
             f.write(sitemap_content)
+        session(p).clear()
+        ThreadLocalORMSession.close_all()
+
+def parse_options():
+    from optparse import OptionParser
+    optparser = OptionParser(
+        usage='allurapaste script /var/local/config/production.ini '
+              '-- %prog [OPTIONS]')
+    optparser.add_option('-o', '--output-dir', dest='output_dir',
+                         default='/tmp/allura_sitemap',
+                         help='Output directory (absolute path).'
+                              'Default is /tmp/allura_sitemap.')
+    options, args = optparser.parse_args()
+    return options, args
 
 if __name__ == '__main__':
-    main()
+    options, args = parse_options()
+    main(options, args)
