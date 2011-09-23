@@ -3,6 +3,7 @@ import shutil
 import unittest
 import pkg_resources
 
+from pylons import c, g
 from ming.orm import ThreadLocalORMSession
 
 from alluratest.controller import setup_basic_test, setup_global_objects
@@ -61,6 +62,10 @@ class TestNewGit(unittest.TestCase):
             'tree/')
         self.rev.tree.by_name['README']
         assert self.rev.tree.is_blob('README') == True
+        ThreadLocalORMSession.close_all()
+        c.app = None
+        r = g.markdown.convert('[1e146e]')
+        print r
 
 class TestGitRepo(unittest.TestCase):
 
@@ -162,5 +167,3 @@ class TestGitCommit(unittest.TestCase):
                  +self.rev.diffs.copied)
         for d in diffs:
             print d
-
-

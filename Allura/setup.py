@@ -50,7 +50,7 @@ setup(
         "PyYAML >= 3.09",
         "python-openid >= 2.2.4",
         "python-dateutil >= 1.4.1",
-        "WebOb == 0.9.8",
+        "WebOb >= 0.9.8",
         "WebTest == 1.2",
         "EasyWidgets >= 0.1.1",
         "PIL >= 1.1.7",
