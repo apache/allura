@@ -653,6 +653,107 @@ class TestFunctionalController(TestController):
         r = self.app.get('/bugs/1/', dict(page=1, limit=2))
         assert_true('Page 2 of 2' in r)
 
+class TestMilestoneAdmin(TestFunctionalController):
+    def _post(self, params, **kw):
+        params['open_status_names'] = 'aa bb'
+        params['closed_status_names'] = 'cc'
+        self.app.post('/admin/bugs/set_custom_fields',
+                      params=variable_encode(params), **kw)
+        return self.app.get('/admin/bugs/fields')
+
+    def _post_milestones(self, milestones):
+        params = {'custom_fields': [
+            dict(label=mf['label'],
+                 show_in_search='on',
+                 type='milestone',
+                 milestones=[
+                    dict((k, v) for k, v in d.iteritems()) for d in mf['milestones']])
+            for mf in milestones]}
+        return self._post(params)
+
+    def test_create_milestone_field(self):
+        r = self._post_milestones([
+            dict(label='releases', milestones=[dict(name='1.0/beta')])
+        ])
+        assert 'Releases' in r
+        assert '1.0-beta' in r
+
+    def test_delete_milestone_field(self):
+        r = self._post_milestones([
+            dict(label='releases', milestones=[dict(name='1.0/beta')])
+        ])
+        self.new_ticket(summary='test new milestone',
+                        **{'custom_fields._releases':'1.0-beta'})
+        assert tm.Ticket.query.find({
+            'custom_fields._releases': '1.0-beta'}).count() == 1
+        r = self._post_milestones([])
+        assert 'Releases' not in r
+        assert '1.0-beta' not in r
+        assert tm.Ticket.query.find({
+            'custom_fields._releases': '1.0-beta'}).count() == 0
+
+    def test_rename_milestone_field(self):
+        r = self._post_milestones([
+            dict(label='releases', milestones=[dict(name='1.0/beta')])
+        ])
+        self.new_ticket(summary='test new milestone',
+                        **{'custom_fields._releases':'1.0-beta'})
+        r = self._post_milestones([
+            dict(label='versions', milestones=[dict(name='1.0/beta')])
+        ])
+        assert 'Releases' not in r
+        assert 'Versions' in r
+        assert '1.0-beta' in r
+        # TODO: This doesn't work - need to make milestone custom fields
+        #       renameable.
+        #assert tm.Ticket.query.find({
+        #    'custom_fields._versions': '1.0-beta'}).count() == 1
+
+    def test_create_milestone(self):
+        r = self._post_milestones([
+            dict(label='releases', milestones=[dict(name='1.0/beta')])
+        ])
+        r = self._post_milestones([
+            dict(label='releases', milestones=[dict(name='1.0/beta'),
+                                               dict(name='2.0')])
+        ])
+        assert '1.0-beta' in r
+        assert '2.0' in r
+
+    def test_delete_milestone(self):
+        r = self._post_milestones([
+            dict(label='releases', milestones=[dict(name='1.0/beta')])
+        ])
+        self.new_ticket(summary='test new milestone',
+                        **{'custom_fields._releases':'1.0-beta'})
+        assert tm.Ticket.query.find({
+            'custom_fields._releases': '1.0-beta'}).count() == 1
+        r = self._post_milestones([
+            dict(label='releases', milestones=[])
+        ])
+        assert 'Releases' in r
+        assert '1.0-beta' not in r
+        assert tm.Ticket.query.find({
+            'custom_fields._releases': '1.0-beta'}).count() == 0
+
+    def test_rename_milestone(self):
+        r = self._post_milestones([
+            dict(label='releases', milestones=[dict(name='1.0')])
+        ])
+        self.new_ticket(summary='test new milestone',
+                        **{'custom_fields._releases':'1.0'})
+        r = self._post_milestones([
+            dict(label='releases', milestones=[
+                dict(name='1.1', old_name='1.0')])
+        ])
+        assert 'Releases'in r
+        assert '1.0' not in r
+        assert '1.1' in r
+        assert tm.Ticket.query.find({
+            'custom_fields._releases': '1.0'}).count() == 0
+        assert tm.Ticket.query.find({
+            'custom_fields._releases': '1.1'}).count() == 1
+
 def sidebar_contains(response, text):
     sidebar_menu = response.html.find('div', attrs={'id': 'sidebar'})
     return text in str(sidebar_menu)

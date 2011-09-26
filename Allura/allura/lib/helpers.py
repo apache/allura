@@ -51,17 +51,17 @@ def monkeypatch(*objs):
             setattr(obj, func.__name__, func)
     return patchem
 
-def urlquote(url):
+def urlquote(url, safe="/"):
     try:
-        return urllib.quote(str(url))
+        return urllib.quote(str(url), safe=safe)
     except UnicodeEncodeError:
-        return urllib.quote(url.encode('utf-8'))
+        return urllib.quote(url.encode('utf-8'), safe=safe)
 
-def urlquoteplus(url):
+def urlquoteplus(url, safe=""):
     try:
-        return urllib.quote_plus(str(url))
+        return urllib.quote_plus(str(url), safe=safe)
     except UnicodeEncodeError:
-        return urllib.quote_plus(url.encode('utf-8'))
+        return urllib.quote_plus(url.encode('utf-8'), safe=safe)
 
 def really_unicode(s):
     if s is None: return u''

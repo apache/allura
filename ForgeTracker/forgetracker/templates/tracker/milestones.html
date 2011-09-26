@@ -25,7 +25,7 @@
       <tr class="{{loop.index0%2 and 'even' or ''}}">
         <td class="view">
           <input type="hidden" name="milestones-{{loop.index0}}.old_name" value="{{m.name}}">
-          <strong><a href="{{c.app.url}}milestone/{{m.name}}/">{{m.name}}</a></strong></td>
+          <strong><a href="{{c.app.url}}milestone/{{h.urlquote(m.name)}}/">{{m.name}}</a></strong></td>
         <td class="view">{{h.text.truncate(m.description,60)}}</td>
         <td class="view {{m.complete and 'closed' or 'open'}}">{{m.complete and 'Closed' or 'Open'}}</td>
         <td class="view">{{m.due_date or 'N/A'}}</td>

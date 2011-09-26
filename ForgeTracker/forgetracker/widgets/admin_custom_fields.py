@@ -18,6 +18,7 @@ class MilestonesAdmin(ffw.SortableTable):
         nonempty_msg='Drag and drop the milestones to reorder.',
         repetitions=0)
     fields = [
+        ew.HiddenField(name='old_name'),
         ew.Checkbox(name='complete', show_label=True, suppress_label=True),
         ew.TextField(name='name',
         attrs={'style':'width: 80px'}),
@@ -33,6 +34,14 @@ class MilestonesAdmin(ffw.SortableTable):
         ]
     button =  ew.InputField(
         css_class='add', field_type='button', value='New Milestone')
+
+    def prepare_context(self, context):
+        response = super(MilestonesAdmin, self).prepare_context(context)
+        if 'value' in response:
+            for milestone_data in response['value']:
+                if 'name' in milestone_data:
+                    milestone_data['old_name'] = milestone_data['name']
+        return response
 
     def resources(self):
         for r in super(MilestonesAdmin, self).resources(): yield r

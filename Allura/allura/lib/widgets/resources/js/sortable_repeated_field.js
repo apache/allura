@@ -45,7 +45,7 @@
         $this
             .map(function() {
                 var data = $(this).data('SortableRepeatedField');
-                return new SortableRepeatedField(this, opts)
+                return new SortableRepeatedField(this, opts);
             })
             .each(function() {
                 this.activate() });
@@ -60,19 +60,20 @@
             $container:$(container),
             opts:opts,
             data:null,
-            fld_name:null,
             activate: function() {
-                self.fld_name = self.$container.attr('data-name');
                 self.data.$add_buttons.one('click', _addField);
                 self.data.$delete_buttons.one('click', _deleteField);
                 self.data.$flist.sortable({stop:_renumberFields});
                 self.data.$stub.hide();
                 _manageMessages();
+            },
+            fld_name: function() {
+                return self.$container.attr('data-name');
             }
         });
         self.data = self.$container.data('SortableRepeatedField');
         function _addField() {
-            var tpl_name = self.fld_name + '#';
+            var tpl_name = self.fld_name() + '#';
             var $new_field = self.data.$stub
                 .clone()
                 .removeClass(self.opts.stub_cls)
@@ -83,14 +84,22 @@
                     var name = $this.attr('name');
                     $this.attr('name', name.replace(
                         tpl_name,
-                        self.fld_name + '-0'));
+                        self.fld_name() + '-0'));
                 }).end();
+            $new_field
+                .find('[data-name*="' + tpl_name + '"]')
+                .each(function() {
+                    var $this = $(this);
+                    $this.attr('data-name',
+                        $this.attr('data-name')
+                        .replace(tpl_name, self.fld_name() + '-0'));
+                });
             $new_field.find('.hasDatepicker').removeClass('hasDatepicker');
             self.data.$flist.prepend($new_field);
             _renumberFields();
             _manageMessages();
             // Trigger event reattachment, etc.
-            self.$container.removeData('SortableRepeatedField')
+            self.$container.removeData('SortableRepeatedField');
             $(document).trigger('clone');
         }
         function _deleteField() {
@@ -106,15 +115,22 @@
             self.data.$msg.html(new_text);
         }
         function _renumberFields() {
-            var prefix = self.fld_name + '-';
+            var prefix = self.fld_name() + '-';
             var regex = new RegExp(prefix + /\d+/.source)
             self.data.$flist.children().each(function(index) {
                 $(this).find(':input[name^='+prefix+']').each(function() {
                     var $this=$(this);
                     var name=$this.attr('name');
-                    var newname = name.replace(regex, prefix+index);
+                    var newname = name.replace(regex, prefix + index);
                     $this.attr('name', newname);
                 });
+                $(this).find('[data-name*="' + prefix + '"]')
+                    .each(function() {
+                        var $this = $(this);
+                        $this.attr('data-name',
+                            $this.attr('data-name')
+                            .replace(regex, prefix + index));
+                    });
             });
         }
     };

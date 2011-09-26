@@ -266,7 +266,8 @@ class JQueryMixin(object):
     js_params = [
         'container_cls'
         ]
-    container_cls = 'container'
+    defaults=dict(
+        container_cls = 'container')
 
     def resources(self):
         for r in super(JQueryMixin, self).resources():

@@ -160,7 +160,7 @@ class ForgeTrackerApp(Application):
                         self.url + fld.name[1:] + '/' + h.urlquote(m.name) + '/',
                         className='nav_child',
                         small=sum(1 for t in TM.Ticket.query.find({
-                                      "custom_fields._milestone": m.name,
+                                      "custom_fields.%s" % fld.name: m.name,
                                       "app_config_id": c.app.config._id})
                                   if has_access(t, 'read'))))
         if ticket.isdigit():
@@ -387,12 +387,12 @@ class RootController(BaseController):
                             if new['new_name'] == '':
                                 flash('You must name the milestone.','error')
                             else:
-                                m.name = new['new_name']
+                                m.name = new['new_name'].replace("/", "-")
                                 m.description = new['description']
                                 m.due_date = new['due_date']
                                 m.complete = new['complete'] == 'Closed'
-                                if new['old_name'] != new['new_name']:
-                                    q = '%s:%s' % (fld.name, new['old_name'])
+                                if new['old_name'] != m.name:
+                                    q = '%s:"%s"' % (fld.name, new['old_name'])
                                     # search_artifact() limits results to 10
                                     # rows by default, so give it a high upper
                                     # bound to make sure we get all tickets
@@ -403,11 +403,11 @@ class RootController(BaseController):
                                         app_config_id=c.app.config._id,
                                         ticket_num={'$in':ticket_numbers})).all()
                                     for t in tickets:
-                                        t.custom_fields[field_name] = new['new_name']
+                                        t.custom_fields[field_name] = m.name
                                     update_counts = True
                     if new['old_name'] == '' and new['new_name'] != '':
                         fld.milestones.append(dict(
-                            name=new['new_name'],
+                            name=new['new_name'].replace("/", "-"),
                             description = new['description'],
                             due_date = new['due_date'],
                             complete = new['complete'] == 'Closed'))
@@ -1011,8 +1011,82 @@ class TrackerAdminController(DefaultAdminController):
         self.app.globals.closed_status_names=post_data['closed_status_names']
         custom_fields = post_data.get('custom_fields', [])
         for field in custom_fields:
-            field['name'] = '_' + '_'.join([w for w in NONALNUM_RE.split(field['label'].lower()) if w])
+            field['name'] = '_' + '_'.join([
+                w for w in NONALNUM_RE.split(field['label'].lower()) if w])
             field['label'] = field['label'].title()
+            if field['type'] == 'milestone':
+                field.setdefault('milestones', [])
+
+        existing_milestone_fld_names = set(
+            mf.name for mf in self.app.globals.milestone_fields)
+        posted_milestone_fld_names = set(
+            cf['name'] for cf in custom_fields if cf['type'] == 'milestone')
+        deleted_milestone_fld_names = existing_milestone_fld_names -\
+                                      posted_milestone_fld_names
+        added_milestone_fld_names = posted_milestone_fld_names -\
+                                    existing_milestone_fld_names
+
+        # TODO: make milestone custom fields renameable
+        for milestone_fld_name in existing_milestone_fld_names |\
+                                  posted_milestone_fld_names:
+            if milestone_fld_name in deleted_milestone_fld_names:
+                # Milestone field deleted, remove it from tickets
+                tickets = TM.Ticket.query.find({
+                    'app_config_id': self.app.config._id,
+                    'custom_fields.%s' % milestone_fld_name:
+                        {'$exists': True}}).all()
+                for t in tickets:
+                    del t.custom_fields[milestone_fld_name]
+            elif milestone_fld_name in added_milestone_fld_names:
+                # Milestone field added, sanitize milestone names
+                milestone_fld = [
+                        cf for cf in custom_fields
+                        if cf['type'] == 'milestone'
+                        and cf['name'] == milestone_fld_name][0]
+                for milestone in milestone_fld.get('milestones', []):
+                    milestone['name'] = milestone['name'].replace("/", "-")
+            else:
+                # Milestone field updated, sanitize milestone names and update
+                # tickets if milestone names have changed
+                existing_milestone_fld = [
+                        mf for mf in self.app.globals.milestone_fields
+                        if mf.name == milestone_fld_name][0]
+                posted_milestone_fld = [
+                        cf for cf in custom_fields
+                        if cf['type'] == 'milestone'
+                        and cf['name'] == milestone_fld_name][0]
+                existing_milestone_names = set(
+                        m.name for m in
+                        existing_milestone_fld.get('milestones', []))
+                old_posted_milestone_names = set(
+                        m['old_name']
+                        for m in posted_milestone_fld.get('milestones', [])
+                        if m.get('old_name', None))
+                deleted_milestone_names = existing_milestone_names -\
+                                          old_posted_milestone_names
+
+                # Milestone deleted, remove it from tickets
+                tickets = TM.Ticket.query.find({
+                    'app_config_id': self.app.config._id,
+                    'custom_fields.%s' % milestone_fld_name:
+                        {'$in': list(deleted_milestone_names)}}).all()
+                for t in tickets:
+                    t.custom_fields[milestone_fld_name] = ''
+
+                for milestone in posted_milestone_fld.get('milestones', []):
+                    milestone['name'] = milestone['name'].replace("/", "-")
+                    old_name = milestone.pop('old_name', None)
+                    if old_name and old_name in existing_milestone_names \
+                                and old_name != milestone['name']:
+                        # Milestone name updated, need to update tickets
+                        tickets = TM.Ticket.query.find({
+                            'app_config_id': self.app.config._id,
+                            'custom_fields.%s' % milestone_fld_name:
+                            old_name}).all()
+                        for t in tickets:
+                            t.custom_fields[milestone_fld_name] = \
+                                    milestone['name']
+
         self.app.globals.custom_fields=custom_fields
         flash('Fields updated')
         redirect(request.referer)
