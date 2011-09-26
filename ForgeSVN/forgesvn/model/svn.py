@@ -10,6 +10,7 @@ from datetime import datetime
 import tg
 import pysvn
 from pymongo.errors import DuplicateKeyError
+from pylons import c
 
 from ming.base import Object
 from ming.orm import Mapper, FieldProperty, session
@@ -18,6 +19,7 @@ from ming.utils import LazyProperty
 from allura import model as M
 from allura.lib import helpers as h
 from allura.model.repository import GitLikeTree
+from allura.model.auth import User
 
 log = logging.getLogger(__name__)
 
@@ -37,6 +39,18 @@ class Repository(M.Repository):
         ci = self.commit(rev)
         if ci is None: return []
         return ci.log(int(skip), int(max_count))
+
+    def clone_command(self, category, username=''):
+        '''Return a string suitable for copy/paste that would clone this repo locally
+           category is one of 'ro' (read-only), 'rw' (read/write), or 'https' (read/write via https)
+        '''
+        if not username and c.user not in (None, User.anonymous()):
+            username = c.user.username
+        tpl = string.Template(tg.config.get('scm.clone.%s.%s' % (category, self.tool)) or
+                              tg.config.get('scm.clone.%s' % self.tool))
+        return tpl.substitute(dict(username=username,
+                                   source_url=self.clone_url(category, username)+c.app.config.options.get('checkout_url'),
+                                   dest_path=self.suggested_clone_dest_path()))
 
     def compute_diffs(self): return
 
@@ -106,7 +120,7 @@ class SVNImplementation(M.RepositoryImplementation):
         return '%s%d/' % (
             self._repo.url(), self._revno(object_id))
 
-    def init(self):
+    def init(self, default_dirs=True):
         fullname = self._setup_paths()
         log.info('svn init %s', fullname)
         if os.path.exists(fullname):
@@ -119,19 +133,20 @@ class SVNImplementation(M.RepositoryImplementation):
         self._setup_special_files()
         self._repo.status = 'ready'
         # make first commit with dir structure
-        self._repo._impl._svn.checkout('file://'+fullname, fullname+'/tmp')
-        os.mkdir(fullname+'/tmp/trunk')
-        os.mkdir(fullname+'/tmp/tags')
-        os.mkdir(fullname+'/tmp/branches')
-        self._repo._impl._svn.add(fullname+'/tmp/trunk')
-        self._repo._impl._svn.add(fullname+'/tmp/tags')
-        self._repo._impl._svn.add(fullname+'/tmp/branches')
-        self._repo._impl._svn.checkin([fullname+'/tmp/trunk',fullname+'/tmp/tags',fullname+'/tmp/branches'],'Initial commit')
-        shutil.rmtree(fullname+'/tmp')
+        if default_dirs:
+            self._repo._impl._svn.checkout('file://'+fullname, fullname+'/tmp')
+            os.mkdir(fullname+'/tmp/trunk')
+            os.mkdir(fullname+'/tmp/tags')
+            os.mkdir(fullname+'/tmp/branches')
+            self._repo._impl._svn.add(fullname+'/tmp/trunk')
+            self._repo._impl._svn.add(fullname+'/tmp/tags')
+            self._repo._impl._svn.add(fullname+'/tmp/branches')
+            self._repo._impl._svn.checkin([fullname+'/tmp/trunk',fullname+'/tmp/tags',fullname+'/tmp/branches'],'Initial commit')
+            shutil.rmtree(fullname+'/tmp')
 
     def clone_from(self, source_url):
         '''Initialize a repo as a clone of another using svnsync'''
-        self.init()
+        self.init(default_dirs=False)
         log.info('Initialize %r as a clone of %s',
                  self._repo, source_url)
         p = subprocess.call(['svnsync', 'init', self._url, source_url],

@@ -1,0 +1,36 @@
+<form>
+  <label class="grid-13" for="checkout_url">Checkout url:</label>
+  <div class="grid-13">
+    {{app.repo.clone_url('ro', app)}}
+    {% if allow_config %}
+      <input type="text" name="checkout_url"
+             id="checkout_url"
+             {% if checkout_url %} value="{{checkout_url}}"{% endif %}/>
+    {% else %}
+      <span>{{checkout_url}}</span>
+    {% endif %}
+  </div>
+
+  {% if allow_config %}
+  <div class="grid-13">&nbsp;</div>
+  <hr>
+  <div class="grid-13">&nbsp;</div>
+  <div class="grid-13">
+    <input type="button" onclick="save_checkout_url()" value="Save">
+  </div>
+  {% endif %}
+</form>
+{% if allow_config %}
+  <script type="text/javascript">
+    function save_checkout_url() {
+        var cval = $.cookie('_session_id');
+        $.post('{{c.project.url()}}admin/{{app.config.options.mount_point}}/set_checkout_url', {
+            checkout_url: $('#checkout_url').val(),
+            _session_id:cval
+        },
+        function () {
+            location.reload();
+        });
+    }
+  </script>
+{% endif %}
