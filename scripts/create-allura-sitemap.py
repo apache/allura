@@ -8,6 +8,7 @@ from jinja2 import Template
 from pylons import c
 
 from allura import model as M
+from allura.lib import security
 from ming.orm import session, ThreadLocalORMSession
 
 PROJECTS_PER_FILE = 1000
@@ -63,11 +64,17 @@ def main(options, args):
 
     # Create urlset file for each chunk of PROJECTS_PER_FILE projects
     sitemap_content_template = Template(SITEMAP_TEMPLATE)
+    creds = security.Credentials.get()
     for offset in offsets:
         locs = []
         for p in M.Project.query.find().skip(offset).limit(PROJECTS_PER_FILE):
             c.project = p
-            locs += [BASE_URL + s.url for s in p.sitemap()]
+            try:
+                locs += [BASE_URL + s.url for s in p.sitemap()]
+            except Exception, e:
+                print "Error creating sitemap for project '%s': %s" %\
+                      (p.shortname, e)
+            creds.clear()
         sitemap_vars = dict(now=now, locs=locs)
         sitemap_content = sitemap_content_template.render(sitemap_vars)
         with open(os.path.join(output_path, 'sitemap-%d.xml' % offset), 'w') as f:
