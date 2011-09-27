@@ -1,10 +1,21 @@
 """
 Generate Allura sitemap xml files.
+
+This takes a while to run on a prod-sized data set. There are a couple of
+things that would make it faster, if we need/want to.
+
+1. Monkeypatch forgetracker.model.ticket.Globals.bin_count to skip the
+   refresh (Solr search) and just return zero for everything, since we don't
+   need bin counts for the sitemap.
+
+2. Use multiprocessing to distribute the offsets to n subprocesses.
 """
 
 import os, sys
 from datetime import datetime
 from jinja2 import Template
+
+import pylons, webob
 from pylons import c
 
 from allura import model as M
@@ -41,6 +52,14 @@ SITEMAP_TEMPLATE = """\
 """
 
 def main(options, args):
+    # This script will indirectly call app.sidebar_menu() for every app in
+    # every project. Some of the sidebar_menu methods expect the
+    # pylons.request threadlocal object to be present. So, we're faking it.
+    #
+    # The fact that this isn't a 'real' request doesn't matter for the
+    # purposes of the sitemap.
+    pylons.request._push_object(webob.Request.blank('/'))
+
     output_path = options.output_dir
     if os.path.exists(output_path):
         sys.exit('Error: %s directory already exists.' % output_path)
