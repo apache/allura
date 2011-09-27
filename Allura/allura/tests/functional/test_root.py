@@ -97,3 +97,7 @@ class TestRootController(TestController):
         r = self.app.get('/nf/redirect/?path=%s' % quote('http://google.com'))
         assert r.status_int == 302
         assert r.location == 'http://google.com'
+
+    def test_slash_redirect(self):
+        r = self.app.get('/p',status=301)
+        r = self.app.get('/p/',status=200)
