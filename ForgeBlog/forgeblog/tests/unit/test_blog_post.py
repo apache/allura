@@ -1,3 +1,6 @@
+from datetime import datetime
+from nose.tools import assert_equal
+
 from forgeblog import model as M
 from forgeblog.tests.unit import BlogTestWithModel
 
@@ -20,14 +23,14 @@ class TestHtmlPreview(BlogTestWithModel):
                 "esse cillum dolore eu fugiat nulla pariatur. Excepteur sint "
                 "occaecat cupidatat non proident, sunt in culpa qui officia "
                 "deserunt mollit anim id est laborum.")
-        assert self._make_post(text).html_text_preview == wrapped(text)
+        assert_equal(self._make_post(text).html_text_preview, wrapped(text))
 
     def test_single_short_paragraph(self):
         text = ("Lorem ipsum dolor sit amet, consectetur adipisicing elit, "
                 "sed do eiusmod tempor incididunt ut labore et dolore magna "
                 "aliqua. Ut enim ad minim veniam, quis nostrud exercitation "
                 "ullamco laboris nisi ut aliquip ex ea commodo consequat.")
-        assert self._make_post(text).html_text_preview == wrapped(text)
+        assert_equal(self._make_post(text).html_text_preview, wrapped(text))
 
     def test_multi_paragraph_short(self):
         text = ("Lorem ipsum dolor sit amet, consectetur adipisicing elit, "
@@ -43,7 +46,7 @@ class TestHtmlPreview(BlogTestWithModel):
                     '<p>Ut enim ad minim veniam, quis nostrud exercitation '
                     'ullamco laboris nisi ut aliquip ex ea commodo '
                     'consequat.</p></div>')
-        assert self._make_post(text).html_text_preview == expected
+        assert_equal(self._make_post(text).html_text_preview, expected)
 
     def test_multi_paragraph_long(self):
         text = ("Lorem ipsum dolor sit amet, consectetur adipisicing elit, "
@@ -62,6 +65,7 @@ class TestHtmlPreview(BlogTestWithModel):
                 "Ut enim ad minim veniam, quis nostrud exercitation "
                 "ullamco laboris nisi ut aliquip ex ea commodo consequat.")
 
+        now = datetime.utcnow()
         expected = ('<div class="markdown_content"><p>Lorem ipsum dolor sit '
                     'amet, consectetur adipisicing elit, sed do eiusmod '
                     'tempor incididunt ut labore et dolore magna aliqua.</p>\n'
@@ -74,6 +78,6 @@ class TestHtmlPreview(BlogTestWithModel):
                     'fugiat nulla pariatur. Excepteur sint occaecat cupidatat '
                     'non proident, sunt in culpa qui officia deserunt mollit '
                     'anim id est laborum.... '
-                    '<a href="/p/test/blog/2011/09/untitled/">read more</a>'
-                    '</p></div>')
-        assert self._make_post(text).html_text_preview == expected
+                    '<a href="/p/test/blog/%s/%s/untitled/">read more</a>'
+                    '</p></div>') % (now.year, now.month)
+        assert_equal(self._make_post(text).html_text_preview, expected)
