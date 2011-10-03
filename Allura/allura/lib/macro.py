@@ -169,6 +169,14 @@ def projects(
     return response
 
 @macro()
+def project_screenshots():
+    from allura.lib.widgets.project_list import ProjectScreenshots
+    ps = ProjectScreenshots()
+    g.resource_manager.register(ps)
+    response = ps.display(project=c.project)
+    return response
+
+@macro()
 def download_button(project=None, **kw):
     from allura import model as M
     from allura.lib.widgets.macros import DownloadButton
