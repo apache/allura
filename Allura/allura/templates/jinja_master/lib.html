@@ -477,15 +477,15 @@ image.</p>
 <div class="codehilite"><pre>
 &lt;b&gt;this will be bold&lt;/b&gt;
 you should escape &amp;lt;unknown&amp;gt; tags
-&amp;copy; special entities work
-&amp;amp;&amp;copy; if you want to escape it
+&amp;lt; special entities work
+&amp;amp;lt; if you want to escape it
 </pre></div>
 
 <p>Output:</p>
 {{g.markdown.convert('''<b>this will be bold</b>
 you should escape &lt;unknown&gt; tags
-&copy; special entities work
-&amp;copy; if you want to escape it''')}}
+&lt; special entities work
+&amp;lt; if you want to escape it''')}}
 <p>Individual ampersands (&amp;) and less-than signs (&lt;) are fine, they will be shown as expected.</p>
 
 
