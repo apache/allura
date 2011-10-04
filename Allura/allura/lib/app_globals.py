@@ -302,12 +302,12 @@ class Globals(object):
     def register_app_css(self, href, **kw):
         app = kw.pop('app', c.app)
         self.resource_manager.register(
-            ew.CSSLink('tool/%s/%s' % (app.config.tool_name, href), **kw))
+            ew.CSSLink('tool/%s/%s' % (app.config.tool_name.lower(), href), **kw))
 
     def register_app_js(self, href, **kw):
         app = kw.pop('app', c.app)
         self.resource_manager.register(
-            ew.JSLink('tool/%s/%s' % (app.config.tool_name, href), **kw))
+            ew.JSLink('tool/%s/%s' % (app.config.tool_name.lower(), href), **kw))
 
     def register_theme_css(self, href, **kw):
         self.resource_manager.register(ew.CSSLink(self.theme_href(href), **kw))
@@ -342,7 +342,7 @@ class Globals(object):
         app = app or c.app
         if base.startswith(':'):
             base = request.scheme + base
-        return (base + app.config.tool_name + '/' + resource)
+        return (base + app.config.tool_name.lower() + '/' + resource)
 
     def set_project(self, pid_or_project):
         if isinstance(pid_or_project, M.Project):

@@ -32,7 +32,7 @@ class StaticFilesMiddleware(object):
         self.app = app
         self.script_name = script_name
         self.directories = [
-            (self.script_name + ep.name + '/', ep)
+            (self.script_name + ep.name.lower() + '/', ep)
             for ep in pkg_resources.iter_entry_points('allura') ]
 
     def __call__(self, environ, start_response):
@@ -53,7 +53,7 @@ class StaticFilesMiddleware(object):
                 file_path = pkg_resources.resource_filename(
                     ep.module_name, os.path.join(
                         'nf',
-                        ep.name,
+                        ep.name.lower(),
                         filename))
                 return fileapp.FileApp(file_path, [
                         ('Access-Control-Allow-Origin', '*')])
