@@ -15,10 +15,10 @@ def register_ew_resources(manager):
     for ep in pkg_resources.iter_entry_points('allura'):
         try:
             manager.register_directory(
-                'tool/%s' % ep.name,
+                'tool/%s' % ep.name.lower(),
                 pkg_resources.resource_filename(
                     ep.module_name,
-                    os.path.join('nf', ep.name)))
+                    os.path.join('nf', ep.name.lower())))
         except ImportError:
             log.warning('Cannot import entry point %s', ep)
             raise
