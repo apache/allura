@@ -23,7 +23,7 @@ def test_app_globals():
     g.oid_session()
     g.set_project('test')
     g.set_app('wiki')
-    assert g.app_static('css/wiki.css') == '/nf/_static_/Wiki/css/wiki.css', g.app_static('css/wiki.css')
+    assert g.app_static('css/wiki.css') == '/nf/_static_/wiki/css/wiki.css', g.app_static('css/wiki.css')
     assert g.url('/foo', a='foo bar') == 'http://localhost:80/foo?a=foo+bar', g.url('/foo', a='foo bar')
     assert g.url('/foo') == 'http://localhost:80/foo', g.url('/foo')
 
