@@ -19,10 +19,10 @@ import pylons, webob
 from pylons import c
 
 from allura import model as M
-from allura.lib import security
+from allura.lib import security, utils
 from ming.orm import session, ThreadLocalORMSession
 
-PROJECTS_PER_FILE = 1000
+MAX_SITEMAP_URLS = 50000
 BASE_URL = 'http://sourceforge.net'
 
 INDEX_TEMPLATE = """\
@@ -32,7 +32,6 @@ INDEX_TEMPLATE = """\
    <sitemap>
       <loc>{{ sitemap }}</loc>
       <lastmod>{{ now }}</lastmod>
-      <changefreq>daily</changefreq>
    </sitemap>
    {%- endfor %}
 </sitemapindex>
@@ -68,40 +67,53 @@ def main(options, args):
     except OSError, e:
         sys.exit("Error: Couldn't create %s:\n%s" % (output_path, e))
 
-    # Count projects and create sitemap index file
-    num_projects = M.Project.query.find().count()
     now = datetime.utcnow().date()
-    offsets = [i for i in range(0, num_projects, PROJECTS_PER_FILE)]
-    sitemap_index_vars = dict(
-        now=now,
-        sitemaps = [
-            '%s/allura_sitemap/sitemap-%d.xml' % (BASE_URL, offset)
-            for offset in offsets])
-    sitemap_index_content = Template(INDEX_TEMPLATE).render(sitemap_index_vars)
-    with open(os.path.join(output_path, 'sitemap.xml'), 'w') as f:
-        f.write(sitemap_index_content)
-
-    # Create urlset file for each chunk of PROJECTS_PER_FILE projects
     sitemap_content_template = Template(SITEMAP_TEMPLATE)
+    def write_sitemap(urls, file_no):
+        sitemap_content = sitemap_content_template.render(dict(
+            now=now, locs=urls))
+        with open(os.path.join(output_path, 'sitemap-%d.xml' % file_no), 'w') as f:
+            f.write(sitemap_content)
+
     creds = security.Credentials.get()
-    for offset in offsets:
-        locs = []
-        for p in M.Project.query.find().skip(offset).limit(PROJECTS_PER_FILE):
+    locs = []
+    file_count = 0
+    # write sitemap files, MAX_SITEMAP_URLS per file
+    for chunk in utils.chunked_find(M.Project):
+        for p in chunk:
             c.project = p
             try:
-                locs += [BASE_URL + s.url for s in p.sitemap()]
+                locs += [BASE_URL + s.url if s.url[0] == '/' else s.url
+                         for s in p.sitemap()]
             except Exception, e:
                 print "Error creating sitemap for project '%s': %s" %\
-                      (p.shortname, e)
+                    (p.shortname, e)
             creds.clear()
-        sitemap_vars = dict(now=now, locs=locs)
-        sitemap_content = sitemap_content_template.render(sitemap_vars)
-        with open(os.path.join(output_path, 'sitemap-%d.xml' % offset), 'w') as f:
-            f.write(sitemap_content)
-        session(p).clear()
+            if len(locs) >= options.urls_per_file:
+                write_sitemap(locs[:options.urls_per_file], file_count)
+                del locs[:options.urls_per_file]
+                file_count += 1
+            session(p).clear()
         ThreadLocalORMSession.close_all()
+    while locs:
+        write_sitemap(locs[:options.urls_per_file], file_count)
+        del locs[:options.urls_per_file]
+        file_count += 1
+    # write sitemap index file
+    if file_count:
+        sitemap_index_vars = dict(
+            now=now,
+            sitemaps = [
+                '%s/allura_sitemap/sitemap-%d.xml' % (BASE_URL, n)
+                for n in range(file_count)])
+        sitemap_index_content = Template(INDEX_TEMPLATE).render(sitemap_index_vars)
+        with open(os.path.join(output_path, 'sitemap.xml'), 'w') as f:
+            f.write(sitemap_index_content)
 
 def parse_options():
+    def validate(option, opt_str, value, parser):
+        parser.values.urls_per_file = min(value, MAX_SITEMAP_URLS)
+
     from optparse import OptionParser
     optparser = OptionParser(
         usage='allurapaste script /var/local/config/production.ini '
@@ -109,7 +121,13 @@ def parse_options():
     optparser.add_option('-o', '--output-dir', dest='output_dir',
                          default='/tmp/allura_sitemap',
                          help='Output directory (absolute path).'
-                              'Default is /tmp/allura_sitemap.')
+                              '[default: %default]')
+    optparser.add_option('-u', '--urls-per-file', dest='urls_per_file',
+                         default=10000, type='int',
+                         help='Number of URLs per sitemap file. '
+                         '[default: %default, max: ' +
+                         str(MAX_SITEMAP_URLS) + ']',
+                         action='callback', callback=validate)
     options, args = optparser.parse_args()
     return options, args
 
