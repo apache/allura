@@ -139,11 +139,16 @@ class MetadataAdmin(ff.AdminForm):
                                 V.MaxBytesValidator(max=40)),
                              attrs=dict(maxlength=40,
                                         title="This is the publicly viewable name of the project, and will appear on project listings. It should be what you want to see as the project title in search listing."))
-        short_description = ew.TextArea(label='Summary'                                ,
+        summary = ew.InputField(field_type="text", label='Summary',
+                                validator=formencode.All(
+                                   fev.UnicodeString(not_empty=True, max=70),
+                                   V.MaxBytesValidator(max=70)),
+                                attrs=dict(maxlength=70))
+        short_description = ew.TextArea(label='Description',
                                         validator=formencode.All(
-                                            fev.UnicodeString(max=255),
-                                            V.MaxBytesValidator(max=255)),
-                                        attrs=dict(title="Add a short one or two sentence summary for your project."))
+                                            fev.UnicodeString(max=1000),
+                                            V.MaxBytesValidator(max=1000)),
+                                        attrs=dict(title="Add a few paragraphs describing your project to new users."))
         icon = ew.FileField(label='Icon')
         external_homepage = ew.InputField(field_type="text", label='Homepage')
         support_page = ew.InputField(field_type="text", label='Support Page')
@@ -151,6 +156,6 @@ class MetadataAdmin(ff.AdminForm):
         removal = ew.InputField(field_type="text", label='Removal')
         moved_to_url = ew.InputField(field_type="text", label='Moved Project to URL')
         export_controlled = ew.InputField(field_type="text", label='Export Control')
-        delete =  ew.InputField(field_type="hidden", label='Delete')
-        delete_icon =  ew.InputField(field_type="hidden", label='Delete Icon')
-        undelete =  ew.InputField(field_type="hidden", label='Undelete')
+        delete = ew.InputField(field_type="hidden", label='Delete')
+        delete_icon = ew.InputField(field_type="hidden", label='Delete Icon')
+        undelete = ew.InputField(field_type="hidden", label='Undelete')

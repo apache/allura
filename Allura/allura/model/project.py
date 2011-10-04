@@ -107,6 +107,7 @@ class Project(MappedClass):
     notifications_disabled = FieldProperty(bool)
     show_download_button=FieldProperty(bool, if_missing=True)
     short_description=FieldProperty(str, if_missing='')
+    summary=FieldProperty(str, if_missing='')
     description=FieldProperty(str, if_missing='')
     homepage_title=FieldProperty(str, if_missing='')
     external_homepage=FieldProperty(str, if_missing='')

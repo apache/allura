@@ -39,7 +39,7 @@
       // manage url input state for support page and removal
       update_url($support_page_url_cb, $support_page_url);
       update_url($removal_moved_cb, $moved_to_url);
-      $('textarea[name=short_description]').maxlength({maxCharacters: 250});
+      $('textarea[name=short_description]').maxlength({maxCharacters: 1000});
       $('input[name=support_page]').change(function(){
         update_url($support_page_url_cb, $support_page_url);
       });

@@ -24,11 +24,13 @@ class TestProjectAdmin(TestController):
         self.app.post('/admin/update', params=dict(
                 name='Test Project',
                 shortname='test',
-                short_description=u'\u00bf A Test Project ?'.encode('utf-8'),
+                summary='Milkshakes are for crazy monkeys',
+                short_description=u'\u00bf A Test Project ?'.encode('utf-8') * 45,
                 labels='aaa,bbb'))
         r = self.app.get('/admin/overview')
-        assert 'A Test Project ?' in r
+        assert 'A Test Project ?\xc2\xbf A' in r
         assert 'Test Subproject' not in r
+        assert 'Milkshakes are for crazy monkeys' in r
 
         # Add a subproject
         self.app.post('/admin/update_mounts', params={
@@ -321,7 +323,7 @@ class TestProjectAdmin(TestController):
         assert opt_developer['value'] in assigned_ids
         assert opt_admin['value'] in assigned_ids
 
-    def test_subproject_permissions(self):    
+    def test_subproject_permissions(self):
         self.app.post('/admin/update_mounts', params={
                 'new.install':'install',
                 'new.ep_name':'',

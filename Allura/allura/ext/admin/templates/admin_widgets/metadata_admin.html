@@ -2,7 +2,7 @@
   <div class="grid-9">
     {{ widget.display_label(widget.fields.name) }}
     <br>
-    {{widget.display_field(widget.fields.name)}}
+    {{widget.display_field(widget.fields.name) }}
 
     <label for="shortname">Unixname</label>
     <br>
@@ -11,11 +11,15 @@
 
     {{ widget.display_label(widget.fields.external_homepage) }}
     <br>
-    {{widget.display_field(widget.fields.external_homepage)}}
+    {{widget.display_field(widget.fields.external_homepage) }}
+
+    {{ widget.display_label(widget.fields.summary) }}
+    <br>
+    {{widget.display_field(widget.fields.summary) }}
 
     {{ widget.display_label(widget.fields.short_description) }}
     <br>
-    {{widget.display_field(widget.fields.short_description)}}
+    {{widget.display_field(widget.fields.short_description) }}
 
     <div style="clear:both">&nbsp;</div>
     Support Page:

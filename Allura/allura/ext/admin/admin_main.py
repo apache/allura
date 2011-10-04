@@ -214,7 +214,7 @@ class ProjectAdminController(BaseController):
     def update_labels(self, labels=None, labels_old=None, **kw):
         c.project.labels = labels.split(',')
         redirect('trove')
- 
+
     @without_trailing_slash
     @expose()
     def clone(self,
@@ -260,6 +260,7 @@ class ProjectAdminController(BaseController):
     @validate(W.metadata_admin, error_handler=overview)
     def update(self, name=None,
                short_description=None,
+               summary='',
                icon=None,
                category=None,
                external_homepage='',
@@ -296,6 +297,9 @@ class ProjectAdminController(BaseController):
         if short_description != c.project.short_description:
             h.log_action(log, 'change project short description').info('')
             c.project.short_description = short_description
+        if summary != c.project.summary:
+            h.log_action(log, 'change project summary').info('')
+            c.project.summary = summary
         category = category and ObjectId(category) or None
         if category != c.project.category_id:
             h.log_action(log, 'change project category').info('')
@@ -437,7 +441,7 @@ class ProjectAdminController(BaseController):
                 p = M.Project.query.get(shortname=sp['shortname'])
                 p.ordinal = int(sp['ordinal'])
         if tools:
-            for p in tools:    
+            for p in tools:
                 c.project.app_config(p['mount_point']).options.ordinal = int(p['ordinal'])
         redirect('tools')
 
