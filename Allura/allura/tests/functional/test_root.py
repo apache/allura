@@ -47,7 +47,7 @@ class TestRootController(TestController):
             'text/html,application/xhtml+xml,application/xml;q=0.9;text/plain;q=0.8,image/png,*/*;q=0.5' ]
         for hdr in hdrs:
             # malformed headers used to return 500, just make sure they don't now
-            self.app.get('/', headers=dict(Accept=hdr))
+            self.app.get('/', headers=dict(Accept=hdr), validate_skip=True)
 
     def test_project_browse(self):
         com_cat = M.ProjectCategory.query.find(dict(label='Communications')).first()
