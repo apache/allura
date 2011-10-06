@@ -15,7 +15,7 @@
             </label>
         </div>
         <div class="grid-10">{{widget.display_field(widget.fields.project_unixname)}}
-            <br/><div id="project_url">http://{{c.environ['HTTP_HOST']}}{{neighborhood.url()}}<span id="url_fragment"></span></div>
+            <br/><div id="project_url">http://{{request.environ['HTTP_HOST']}}{{neighborhood.url()}}<span id="url_fragment"></span></div>
         </div>
         <div class="grid-9" style="position:relative; overflow:visible">
             <b id="error_icon" data-icon="!" class="allura" title="Caution">!</b>

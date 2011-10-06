@@ -13,7 +13,8 @@ import pylons
 import webob.multidict
 from formencode import Invalid
 from tg.decorators import before_validate
-from pylons import response, c
+from pylons import response
+from pylons import tmpl_context as c
 from paste.httpheaders import CACHE_CONTROL, EXPIRES
 from webhelpers.html import literal
 from webob import exc

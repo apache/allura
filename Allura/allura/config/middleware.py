@@ -2,7 +2,12 @@
 """WSGI middleware initialization for the allura application."""
 import mimetypes
 
+import pylons
+import pylons.middleware
 import tg
+import tg.error
+pylons.c = pylons.tmpl_context
+pylons.g = pylons.app_globals
 import pkg_resources
 from tg import config
 from paste.deploy.converters import asbool

@@ -6,7 +6,7 @@ except ImportError:
     use_setuptools()
     from setuptools import setup, find_packages
 
-from allura.version import __version__
+exec open('allura/version.py').read()
 
 PROJECT_DESCRIPTION='''
 Allura is an open source implementation of a software "forge", a web site
@@ -38,10 +38,15 @@ setup(
         'License :: OSI Approved :: Apache Software License',
         ],
     install_requires=[
-        "TurboGears2 >= 2.1a1",
+        "TurboGears2",
+        "tg.devtools",
+        "pypeline",
+        "datadiff",
+        "BeautifulSoup",
         "PasteScript",
         "Babel >= 0.9.4",
-        "pymongo >= 1.7",
+        "pymongo >= 1.9,<2.0",
+        "jinja2",
         "pysolr",
         "repoze.what-quickstart",
         "sqlalchemy-migrate",
@@ -51,20 +56,21 @@ setup(
         "python-openid >= 2.2.4",
         "python-dateutil >= 1.4.1",
         "WebOb >= 0.9.8",
-        "WebTest == 1.2",
+        "WebTest >= 1.2",
         "EasyWidgets >= 0.1.1",
         "PIL >= 1.1.7",
         "iso8601",
-        "chardet == 1.0.1",
+        "chardet >= 1.0.1",
         "feedparser >= 5.0.1",
-        "oauth2 == 1.2.0",
+        "oauth2 >= 1.2.0",
+        "Ming >= 0.2.2dev-20110930",
         ],
     setup_requires=["PasteScript >= 1.7"],
     paster_plugins=['PasteScript', 'Pylons', 'TurboGears2', 'tg.devtools', 'Ming'],
     packages=find_packages(exclude=['ez_setup']),
     include_package_data=True,
     test_suite='nose.collector',
-    tests_require=['WebTest >= 1.2', 'BeautifulSoup', 'pytidylib', 'poster'],
+    tests_require=['WebTest >= 1.2', 'BeautifulSoup', 'pytidylib', 'poster', 'nose'],
     package_data={'allura': ['i18n/*/LC_MESSAGES/*.mo',
                                  'templates/*/*',
                                  'public/*/*']},

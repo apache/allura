@@ -1,7 +1,5 @@
 # requirements for local development, or other deployment instances
 
-GitPython==0.3.0-beta2
-Pygments==1.4
 python-ldap>=2.3.9
 
 # Include our common requirements

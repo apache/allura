@@ -1,6 +1,7 @@
 tags
 *.db
 *.egg-info
+*.egg
 *-py2.6.egg
 *.log
 *.pyc
