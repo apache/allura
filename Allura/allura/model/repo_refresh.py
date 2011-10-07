@@ -109,6 +109,7 @@ def refresh_commit_repos(all_commit_ids, repo):
                     app_config_id=repo.app.config._id,
                     link=oid,
                     url=repo.url() + 'ci/' + oid + '/'))
+            ci.m.save(safe=False, validate=False)
             ref.m.save(safe=False, validate=False)
             link0.m.save(safe=False, validate=False)
             link1.m.save(safe=False, validate=False)

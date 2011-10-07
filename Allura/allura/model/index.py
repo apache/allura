@@ -100,6 +100,7 @@ class Shortlink(object):
                     self.project.shortname,
                     self.link,
                     self.ref_id)
+
     @classmethod
     def lookup(cls, link):
         return cls.from_links(link)[link]

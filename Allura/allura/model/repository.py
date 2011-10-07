@@ -105,7 +105,8 @@ class RepositoryImplementation(object):
         '''Return a file-like object that contains the contents of the blob'''
         raise NotImplementedError, 'open_blob'
 
-    def shorthand_for_commit(self, oid):
+    @classmethod
+    def shorthand_for_commit(cls, oid):
         return '[%s]' % oid[:6]
 
     def symbolics_for_commit(self, commit):

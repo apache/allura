@@ -6,7 +6,7 @@ from itertools import izip, chain
 from datetime import datetime
 from collections import defaultdict
 
-from pylons import g
+from pylons import g, c
 import pymongo.errors
 
 from ming import Field, Index, collection
@@ -133,6 +133,7 @@ class RepoObject(object):
         return r, isnew
 
 class Commit(RepoObject):
+    type_s = 'Commit'
     # Ephemeral attrs
     repo=None
 
@@ -169,6 +170,8 @@ class Commit(RepoObject):
         return h.text.truncate(first_line, 50)
 
     def shorthand_id(self):
+        if self.repo is None: self.repo = self.guess_repo()
+        if self.repo is None: return repr(self)
         return self.repo.shorthand_for_commit(self._id)
 
     @LazyProperty
@@ -176,7 +179,28 @@ class Commit(RepoObject):
         return self.repo.symbolics_for_commit(self.legacy)
 
     def url(self):
+        if self.repo is None: self.repo = self.guess_repo()
+        if self.repo is None: return '#'
         return self.repo.url_for_commit(self.legacy)
+
+    def guess_repo(self):
+        for ac in c.project.app_configs:
+            try:
+                app = c.project.app_instance(ac)
+                if app.repo._id in self.repo_ids:
+                    return app.repo
+            except AttributeError:
+                pass
+        return None
+
+    def link_text(self):
+        '''The link text that will be used when a shortlink to this artifact
+        is expanded into an <a></a> tag.
+
+        By default this method returns shorthand_id(). Subclasses should
+        override this method to provide more descriptive link text.
+        '''
+        return self.shorthand_id()
 
     def log_iter(self, skip, count):
         for oids in utils.chunked_iter(commitlog(self._id), QSIZE):

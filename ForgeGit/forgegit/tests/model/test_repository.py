@@ -3,6 +3,9 @@ import shutil
 import unittest
 import pkg_resources
 
+import pylons
+pylons.c = pylons.tmpl_context
+pylons.g = pylons.app_globals
 from pylons import c, g
 from ming.orm import ThreadLocalORMSession
 
@@ -10,21 +13,25 @@ from alluratest.controller import setup_basic_test, setup_global_objects
 from allura.lib import helpers as h
 from allura import model as M
 from forgegit import model as GM
+from forgewiki import model as WM
 
 class TestNewGit(unittest.TestCase):
 
     def setUp(self):
         setup_basic_test()
         setup_global_objects()
-        h.set_context('test', 'src')
+        h.set_context('test', 'src-git')
         repo_dir = pkg_resources.resource_filename(
             'forgegit', 'tests/data')
-        self.repo = GM.Repository(
-            name='testgit.git',
-            fs_path=repo_dir,
-            url_path = '/test/',
-            tool = 'git',
-            status = 'creating')
+        c.app.repo.fs_path = repo_dir
+        c.app.repo.name = 'testgit.git'
+        self.repo = c.app.repo
+        # self.repo = GM.Repository(
+        #     name='testgit.git',
+        #     fs_path=repo_dir,
+        #     url_path = '/test/',
+        #     tool = 'git',
+        #     status = 'creating')
         self.repo.refresh()
         self.rev = M.repo.Commit.query.get(_id=self.repo.heads[0]['object_id'])
         self.rev.repo = self.repo
@@ -41,7 +48,7 @@ class TestNewGit(unittest.TestCase):
         assert self.rev.shorthand_id() == '[1e146e]'
         assert self.rev.symbolic_ids == (['master'], [])
         assert self.rev.url() == (
-            '/p/test/src/ci/'
+            '/p/test/src-git/ci/'
             '1e146e67985dcd71c74de79613719bef7bddca4a/')
         all_cis = self.rev.log(0, 1000)
         assert len(all_cis) == 4
@@ -57,15 +64,25 @@ class TestNewGit(unittest.TestCase):
             'README', '<pre>This is readme\nAnother Line\n</pre>')
         assert self.rev.tree.path() == '/'
         assert self.rev.tree.url() == (
-            '/p/test/src/ci/'
+            '/p/test/src-git/ci/'
             '1e146e67985dcd71c74de79613719bef7bddca4a/'
             'tree/')
         self.rev.tree.by_name['README']
         assert self.rev.tree.is_blob('README') == True
         ThreadLocalORMSession.close_all()
         c.app = None
-        r = g.markdown.convert('[1e146e]')
-        print r
+        converted = g.markdown.convert('[1e146e]')
+        assert '1e146e' in converted, converted
+        h.set_context('test', 'home')
+        pg = WM.Page(
+            title='Test Page', text='This is a commit reference: [1e146e]')
+        ThreadLocalORMSession.flush_all()
+        M.MonQTask.run_ready()
+        for ci in pg.related_artifacts():
+            assert ci.shorthand_id() == '[1e146e]', ci.shorthand_id()
+            assert ci.url() == (
+                '/p/test/src-git/ci/'
+                '1e146e67985dcd71c74de79613719bef7bddca4a/')
 
 class TestGitRepo(unittest.TestCase):
 
