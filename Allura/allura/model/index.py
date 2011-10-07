@@ -89,12 +89,17 @@ class Shortlink(object):
 
     def __repr__(self):
         with h.push_context(self.project_id):
-            return '[%s:%s:%s] -> %s' % (
-                self.project.shortname,
-                self.app_config.options.mount_point,
-                self.link,
-                self.ref_id)
-
+            if self.app_config:
+                return '[%s:%s:%s] -> %s' % (
+                    self.project.shortname,
+                    self.app_config.options.mount_point,
+                    self.link,
+                    self.ref_id)
+            else:
+                return '[%s:*:%s] -> %s' % (
+                    self.project.shortname,
+                    self.link,
+                    self.ref_id)
     @classmethod
     def lookup(cls, link):
         return cls.from_links(link)[link]
