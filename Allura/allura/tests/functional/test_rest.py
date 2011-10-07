@@ -45,3 +45,8 @@ class TestRestHome(TestRestApiBase):
         r = self.api_get('/rest/p/test/sub1/home/Home/')
         assert r.status_int == 200
         assert r.json['title'] == 'Home', r.json
+
+    def test_project_code(self):
+        r = self.api_get('/rest/p/test/')
+        assert r.status_int == 200
+

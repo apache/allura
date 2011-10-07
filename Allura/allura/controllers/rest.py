@@ -128,7 +128,7 @@ class OAuthNegotiator(object):
         return dict(
             oauth_token=oauth_token,
             consumer=rtok.consumer_token)
-        
+    
     @expose('jinja:allura:templates/oauth_authorize_ok.html')
     def do_authorize(self, yes=None, no=None, oauth_token=None):
         security.require_authenticated()
@@ -205,6 +205,8 @@ class ProjectRestController(object):
 
     @expose()
     def _lookup(self, name, *remainder):
+        if not name:
+            return self, ()
         if not h.re_path_portion.match(name):
             raise exc.HTTPNotFound, name
         subproject = M.Project.query.get(shortname=c.project.shortname + '/' + name, deleted=False)
@@ -222,4 +224,10 @@ class ProjectRestController(object):
                 api_key=request.params.get('api_key')))
         return app.api_root, remainder
 
-
+    @expose('json:')
+    def index(self, **kw):
+        return dict(
+            name=c.project.shortname,
+            tools=[dict(name=t.tool_name, mount_point=t.options.mount_point, label=t.options.mount_label)
+                   for t in c.project.app_configs]
+        )
