@@ -419,6 +419,41 @@ class TestForum(TestController):
         assert thread.response.body.count('<div class="row reply_post_form') == 2
         assert thread.response.body.count('<div class="edit_post_form') == 2
 
+    def test_subscription_controls(self):
+        r = self.app.get('/discussion/create_topic/')
+        f = r.html.find('form',{'action':'/p/test/discussion/save_new_topic'})
+        params = dict()
+        inputs = f.findAll('input')
+        for field in inputs:
+            if field.has_key('name'):
+                params[field['name']] = field.has_key('value') and field['value'] or ''
+        params[f.find('textarea')['name']] = 'Post text'
+        params[f.find('select')['name']] = 'testforum'
+        params[f.find('input',{'style':'width: 90%'})['name']] = 'Post subject'
+        thread = self.app.post('/discussion/save_new_topic', params=params).follow()
+        assert M.Notification.query.find(dict(text='Post text')).count() == 1
+        r = self.app.get('/discussion/testforum/')
+        f = r.html.find('form',{'class':'follow_form'})
+        subscribe_url = f.get('action')
+        params = dict()
+        inputs = f.findAll('input')
+        for field in inputs:
+            if field.has_key('name') and 'subscription' not in field['name']:
+                params[field['name']] = field.has_key('value') and field['value'] or ''
+        self.app.post(str(subscribe_url), params=params)
+        self.app.get('/discussion/general/subscribe_to_forum?subscribe=True')
+        url = thread.request.url
+        f = thread.html.find('div',{'class':'row reply_post_form'}).find('form')
+        rep_url = f.get('action')
+        params = dict()
+        inputs = f.findAll('input')
+        for field in inputs:
+            if field.has_key('name'):
+                params[field['name']] = field.has_key('value') and field['value'] or ''
+        params[f.find('textarea')['name']] = 'Reply 2'
+        thread_reply = self.app.post(str(rep_url), params=params)
+        assert M.Notification.query.find(dict(text='Reply 2')).count() == 1
+
     def get_table_rows(self, response, closest_id):
         tbody = response.html.find('div', {'id': closest_id}).find('tbody')
         rows = tbody.findAll('tr')

@@ -148,7 +148,6 @@ class RootController(BaseController):
         else:
             raise exc.HTTPNotFound()
 
-    # FIXME this code is not used, but it should be so we can do Forum-level subscriptions
     @h.vardec
     @expose()
     @validate(W.forum_subscription_form)

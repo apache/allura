@@ -7,6 +7,7 @@ import ew.jinja2_ew as ew
 from allura.lib import validators as V
 from allura.lib.widgets import discuss as DW
 from allura.lib.widgets import form_fields as ffw
+from allura.lib.widgets.subscriptions import SubscribeForm
 
 from forgediscussion import model as M
 
@@ -129,10 +130,12 @@ class Thread(DW.Thread):
                  post=Post())
 
 class Forum(DW.Discussion):
+    template='jinja:forgediscussion:templates/discussion_widgets/discussion.html'
     allow_create_thread=True
     show_subject = True
     widgets=dict(DW.Discussion.widgets,
                  discussion_header=ForumHeader(),
                  forum_subscription_form=ForumSubscriptionForm(),
+                 whole_forum_subscription_form=SubscribeForm(),
                  subscription_form=ThreadSubscriptionForm()
                  )

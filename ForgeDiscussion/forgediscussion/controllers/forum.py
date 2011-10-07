@@ -12,6 +12,7 @@ from allura.lib.security import has_access, require_access
 from allura.lib.decorators import require_post
 from allura.controllers import DiscussionController, ThreadController, PostController, ModerationController
 from allura.lib.widgets import discuss as DW
+from allura.lib.widgets.subscriptions import SubscribeForm
 
 from forgediscussion import model as DM
 from forgediscussion import widgets as FW
@@ -33,6 +34,7 @@ class ModelConfig(object):
 class WidgetConfig(object):
     # Forms
     subscription_form = DW.SubscriptionForm()
+    subscribe_form=SubscribeForm()
     edit_post = DW.EditPost(show_subject=True)
     moderate_post = FW.ModeratePost()
     moderate_thread = FW.ModerateThread()
@@ -76,6 +78,7 @@ class ForumController(DiscussionController):
         if self.discussion.deleted and not has_access(c.app, 'configure')():
             redirect(self.discussion.url()+'deleted')
         limit, page, start = g.handle_paging(limit, page)
+        c.subscribed=M.Mailbox.subscribed(artifact=self.discussion)
         threads = DM.ForumThread.query.find(dict(discussion_id=self.discussion._id, num_replies={'$gt': 0})) \
                                       .sort([('flags', pymongo.DESCENDING), ('mod_date', pymongo.DESCENDING)])
         return super(ForumController, self).index(threads=threads.skip(start).limit(int(limit)).all(), limit=limit, page=page, count=threads.count(), **kw)
@@ -87,6 +90,15 @@ class ForumController(DiscussionController):
     @expose('jinja:forgediscussion:templates/discussionforums/deleted.html')
     def deleted(self):
         return dict()
+
+    @expose()
+    @validate(W.subscribe_form)
+    def subscribe_to_forum(self, subscribe=None, unsubscribe=None, shortname=None, **kw):
+        if subscribe:
+            self.discussion.subscribe(type='direct')
+        elif unsubscribe:
+            self.discussion.unsubscribe()
+        redirect(h.really_unicode(request.referer).encode('utf-8'))
 
 
 class ForumThreadController(ThreadController):

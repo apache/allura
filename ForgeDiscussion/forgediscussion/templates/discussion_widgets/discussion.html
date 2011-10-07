@@ -1,0 +1,28 @@
+{% extends g.theme.master %}
+
+{% block title %}{{c.project.name}} / {{c.app.config.options.mount_label}} / Discussion{% endblock %}
+
+{% block header %}{{h.really_unicode(value.name)}}{% endblock %}
+
+{% block actions %}
+  {% if value.email_address %}
+    <a href="{{h.really_unicode(value.email_link(subject=None))}}" class="email" title="Send Email to Create a New Topic" ><b data-icon="{{g.icons['pencil'].char}}" class="ico {{g.icons['pencil'].css}}"></b></a>
+    <a href="feed" title="Feed" ><b data-icon="{{g.icons['feed'].char}}" class="ico {{g.icons['feed'].css}}"></b></a>
+  {% endif %}
+  {{widgets.whole_forum_subscription_form.display(value=c.subscribed, action='subscribe_to_forum', style='icon', thing='discussion')}}
+{% endblock %}
+
+{% block edit_box %}
+  <div class="editbox">{{widgets.discussion_header.display(value=value)}}</div>
+{% endblock %}
+
+{% block content %}
+{{widgets.subscription_form.display(value=value,
+                                    threads=threads,
+                                    action=value.url() + 'subscribe',
+                                    allow_create_thread=allow_create_thread,
+                                    show_subject=show_subject,
+                                    limit=limit,
+                                    page=page,
+                                    count=count)}}
+{% endblock %}

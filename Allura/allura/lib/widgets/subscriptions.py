@@ -43,6 +43,7 @@ class SubscribeForm(ew.SimpleForm):
     class fields(ew_core.NameList):
         subscribe=SubmitButton()
         unsubscribe=SubmitButton()
+        shortname=ew.HiddenField()
 
     def from_python(self, value, state):
         return value

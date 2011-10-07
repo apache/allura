@@ -444,6 +444,9 @@ class Post(Message, VersionedArtifact):
         artifact = self.thread.artifact or self.thread
         Notification.post(artifact, 'message', post=self)
         session(self).flush()
+        if artifact != self.discussion:
+            Notification.post(self.discussion, 'message', post=self)
+            session(self).flush()
         self.thread.last_post_date = max(
             self.thread.last_post_date,
             self.mod_date)
