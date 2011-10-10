@@ -99,8 +99,12 @@ class SVNImplementation(M.RepositoryImplementation):
         return '[r%d]' % self._revno(oid)
 
     def url_for_commit(self, commit):
+        if isinstance(commit, basestring):
+            object_id = commit
+        else:
+            object_id = commit.object_id
         return '%s%d/' % (
-            self._repo.url(), self._revno(commit.object_id))
+            self._repo.url(), self._revno(object_id))
 
     def init(self):
         fullname = self._setup_paths()

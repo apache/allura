@@ -118,7 +118,12 @@ class RepositoryImplementation(object):
         return branches, tags
 
     def url_for_commit(self, commit):
-        return '%sci/%s/' % (self._repo.url(), commit.object_id)
+        'return an URL, given either a commit or object id'
+        if isinstance(commit, basestring):
+            object_id = commit
+        else:
+            object_id = commit.object_id
+        return '%sci/%s/' % (self._repo.url(), object_id)
 
     def _setup_paths(self, create_repo_dir=True):
         if not self._repo.fs_path.endswith('/'): self._repo.fs_path += '/'
@@ -313,6 +318,8 @@ class Repository(Artifact):
         self._impl.refresh_heads()
         if asbool(tg.config.get('scm.new_refresh')):
             refresh_repo(self, all_commits, notify)
+            notify = False # don't double notify
+
         self.status = 'analyzing'
         session(self).flush()
         sess = session(Commit)

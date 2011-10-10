@@ -100,7 +100,7 @@ def refresh_commit_repos(all_commit_ids, repo):
                     project_id=repo.app.config.project_id,
                     app_config_id=repo.app.config._id,
                     link=repo.shorthand_for_commit(oid)[1:-1],
-                    url=repo.url() + 'ci/' + oid + '/'))
+                    url=repo.url_for_commit(oid)))
             # Always create a link for the full commit ID
             link1 = ShortlinkDoc(dict(
                     _id=bson.ObjectId(),
@@ -108,7 +108,7 @@ def refresh_commit_repos(all_commit_ids, repo):
                     project_id=repo.app.config.project_id,
                     app_config_id=repo.app.config._id,
                     link=oid,
-                    url=repo.url() + 'ci/' + oid + '/'))
+                    url=repo.url_for_commit(oid)))
             ci.m.save(safe=False, validate=False)
             ref.m.save(safe=False, validate=False)
             link0.m.save(safe=False, validate=False)
@@ -292,14 +292,11 @@ def send_notifications(repo, commit_ids):
             for doc in Commit.query.find(dict(_id={'$in':chunk})))
         for oid in chunk:
             ci = index[oid]
-            href = '%s%sci/%s/' % (
-                config.common_prefix,
-                repo.url(),
-                oid)
+            href = repo.url_for_commit(oid)
             summary = _summarize(ci.message)
             item = Feed.post(
                 repo, title='New commit',
-                description='%s<br><a href="%s/">View Changes</a>' % (
+                description='%s<br><a href="%s">View Changes</a>' % (
                     summary, href))
             item.author_link = ci.author_url
             item.author_name = ci.authored.name
