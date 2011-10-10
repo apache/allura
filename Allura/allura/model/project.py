@@ -11,7 +11,7 @@ from bson import ObjectId
 from ming import schema as S
 from ming.utils import LazyProperty
 from ming.orm import ThreadLocalORMSession
-from ming.orm import session, state
+from ming.orm import session, state, MapperExtension
 from ming.orm import FieldProperty, RelationProperty, ForeignIdProperty
 from ming.orm.declarative import MappedClass
 
@@ -79,6 +79,10 @@ class TroveCategory(MappedClass):
     def subcategories(self):
         return self.query.find(dict(trove_parent_id=self.trove_cat_id)).sort('fullname').all()
 
+class ProjectMapperExtension(MapperExtension):
+    def after_insert(self, obj, st):
+        g.zarkov_event('project_create', user=c.user, project=obj)
+
 class Project(MappedClass):
     _perms_base = [ 'read', 'update', 'admin', 'create']
     _perms_init = _perms_base + [ 'register' ]
@@ -92,6 +96,7 @@ class Project(MappedClass):
             'shortname',
             'parent_id',
             ('deleted', 'shortname', 'neighborhood_id')]
+        extensions = [ ProjectMapperExtension ]
 
     # Project schema
     _id=FieldProperty(S.ObjectId)
