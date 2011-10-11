@@ -23,7 +23,7 @@ Mako==0.3.2
 Markdown==2.0.3
 MarkupSafe==0.11
 mercurial==1.4.1
-Ming==0.2.2dev-20110914
+Ming==0.2.2dev-20110922
 mock==0.6.0
 nose==0.11.3
 oauth2==1.2.0
@@ -65,7 +65,7 @@ tw.forms==0.9.9
 WebError==0.10.2
 WebFlash==0.1a9
 WebHelpers==1.0
-WebOb==1.0.7
+WebOb==0.9.8
 WebTest==1.2
 wsgiref==0.1.2
 zope.interface==3.5.3
