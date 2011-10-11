@@ -62,7 +62,7 @@ def test_thread_methods():
     assert t.attachment_class() == M.DiscussionAttachment
     p0 = t.post('This is a post')
     p1 = t.post('This is another post')
-    time.sleep(1)
+    time.sleep(0.25)
     p2 = t.post('This is a reply', parent_id=p0._id)
     ThreadLocalORMSession.flush_all()
     ThreadLocalORMSession.close_all()
@@ -74,7 +74,9 @@ def test_thread_methods():
     posts0 = t.find_posts(page=0, limit=10, style='threaded')
     posts1 = t.find_posts(page=0, limit=10, style='timestamp')
     assert posts0 != posts1
-    posts2 = t.find_posts(page=0, limit=10, style='threaded', timestamp=p0.timestamp)
+    ts = p0.timestamp.replace(
+        microsecond=int(p0.timestamp.microsecond // 1000) * 1000)
+    posts2 = t.find_posts(page=0, limit=10, style='threaded', timestamp=ts)
     assert len(posts2) > 0
 
     assert 'wiki/_discuss/' in t.url()
