@@ -137,15 +137,19 @@ class ForgeTrackerApp(Application):
             links.append(SitemapEntry('Permissions', admin_url + 'permissions', className='nav_child'))
         return links
 
+    @h.exceptionless([], log)
     def sidebar_menu(self):
         search_bins = []
         milestones = []
         ticket = request.path_info.split(self.url)[-1].split('/')[0]
         for bin in self.bins:
             label = bin.shorthand_id()
-            search_bins.append(SitemapEntry(
-                    h.text.truncate(label, 72), bin.url(), className='nav_child',
-                    small=c.app.globals.bin_count(label)['hits']))
+            try:
+                search_bins.append(SitemapEntry(
+                        h.text.truncate(label, 72), bin.url(), className='nav_child',
+                        small=c.app.globals.bin_count(label)['hits']))
+            except ValueError:
+                log.info('Ticket bin %s search failed for project %s' % (label, c.project.shortname))
         for fld in c.app.globals.milestone_fields:
             milestones.append(SitemapEntry(h.text.truncate(fld.label, 72)))
             for m in getattr(fld, "milestones", []):

@@ -154,6 +154,7 @@ class ForgeWikiApp(Application):
             links.append(SitemapEntry('Permissions', admin_url + 'permissions', className='nav_child'))
         return links
 
+    @h.exceptionless([], log)
     def sidebar_menu(self):
         try:
             page = request.path_info.split(self.url)[-1].split('/')[-2]
