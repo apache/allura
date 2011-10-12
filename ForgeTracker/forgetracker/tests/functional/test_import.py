@@ -4,6 +4,9 @@ from datetime import datetime, timedelta
 from nose.tools import assert_equal
 
 import ming
+import pylons
+pylons.c = pylons.tmpl_context
+pylons.g = pylons.app_globals
 from pylons import c, g
 
 from allura import model as M

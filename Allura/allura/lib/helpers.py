@@ -13,6 +13,9 @@ from datetime import datetime, timedelta
 import tg
 import genshi.template
 import chardet
+import pylons
+pylons.c = pylons.tmpl_context
+pylons.g = pylons.app_globals
 from formencode.validators import FancyValidator
 from dateutil.parser import parse
 from bson import ObjectId

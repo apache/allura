@@ -5,6 +5,9 @@ from datetime import datetime, timedelta
 
 import bson
 import pymongo
+import pylons
+pylons.c = pylons.tmpl_context
+pylons.g = pylons.app_globals
 from pymongo.errors import OperationFailure
 from pylons import c, g
 

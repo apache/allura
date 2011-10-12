@@ -1,3 +1,6 @@
+import pylons
+pylons.c = pylons.tmpl_context
+pylons.g = pylons.app_globals
 from pylons import g #g is a namespace for globally accessable app helpers
 from pylons import c as context
 

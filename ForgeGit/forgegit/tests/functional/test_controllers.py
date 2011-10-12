@@ -1,5 +1,8 @@
 import tg
 import pkg_resources
+import pylons
+pylons.c = pylons.tmpl_context
+pylons.g = pylons.app_globals
 from pylons import c
 from ming.orm import ThreadLocalORMSession
 

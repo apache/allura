@@ -1,6 +1,9 @@
 from datetime import datetime
 from random import randint
 
+import pylons
+pylons.c = pylons.tmpl_context
+pylons.g = pylons.app_globals
 from pylons import c, g
 from pymongo.errors import DuplicateKeyError
 
