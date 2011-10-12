@@ -60,7 +60,7 @@ Users are allowed to register that they want plain text only.
 We will also include some text in the footer of the e-mail message with a
 link to the message online.   We can use this link to guess where in the
 thread the message belongs in the case of a messed up e-mail client that
-does not set the the headers for the reply properly.
+does not set the headers for the reply properly.
 
 The nice thing about this is that it's pretty much already implemented
 for us via the meta tool.
