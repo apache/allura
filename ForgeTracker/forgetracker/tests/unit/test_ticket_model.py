@@ -19,7 +19,7 @@ class TestTicketModel(TrackerTestWithModel):
         Ticket(summary='my ticket')
 
     def test_ticket_num_required2(self):
-        t = Ticket(summary='my ticket', ticket_num=3)
+        t = Ticket(summary='my ticket', ticket_num=12)
         try:
             t.ticket_num = None
         except schema.Invalid:

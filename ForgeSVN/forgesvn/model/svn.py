@@ -9,6 +9,7 @@ from datetime import datetime
 
 import tg
 import pysvn
+from pymongo.errors import DuplicateKeyError
 
 from ming.base import Object
 from ming.orm import Mapper, FieldProperty, session
@@ -94,12 +95,16 @@ class SVNImplementation(M.RepositoryImplementation):
     def _url(self):
         return 'file://%s%s' % (self._repo.fs_path, self._repo.name)
 
-    def shorthand_for_commit(self, commit):
-        return '[r%d]' % self._revno(commit.object_id)
+    def shorthand_for_commit(self, oid):
+        return '[r%d]' % self._revno(oid)
 
     def url_for_commit(self, commit):
+        if isinstance(commit, basestring):
+            object_id = commit
+        else:
+            object_id = commit.object_id
         return '%s%d/' % (
-            self._repo.url(), self._revno(commit.object_id))
+            self._repo.url(), self._revno(object_id))
 
     def init(self):
         fullname = self._setup_paths()
@@ -161,6 +166,10 @@ class SVNImplementation(M.RepositoryImplementation):
         if result is None: return None
         result.set_context(self._repo)
         return result
+
+    def all_commit_ids(self):
+        head_revno = self._revno(self._repo.heads[0].object_id)
+        return map(self._oid, range(1, head_revno+1))
 
     def new_commits(self, all_commits=False):
         head_revno = self._revno(self._repo.heads[0].object_id)
@@ -234,6 +243,41 @@ class SVNImplementation(M.RepositoryImplementation):
                 continue
             lst[path.action].append(h.really_unicode(path.path))
 
+    def refresh_commit_info(self, oid, seen_object_ids):
+        from allura.model.repo import CommitDoc
+        if CommitDoc.m.find(dict(_id=oid)).count():
+            return False
+        try:
+            log.info('Refresh %r %r', oid, self._repo)
+            revno = self._revno(oid)
+            rev = self._revision(oid)
+            try:
+                log_entry = self._svn.log(
+                    self._url,
+                    revision_start=rev,
+                    limit=1,
+                    discover_changed_paths=True)[0]
+            except pysvn.ClientError:
+                log.info('ClientError processing %r %r, treating as empty', oid, self._repo, exc_info=True)
+                log_entry = Object(date='', message='', changed_paths=[])
+            user = Object(
+                name=log_entry.get('author', '--none--'),
+                email='',
+                date=datetime.utcfromtimestamp(log_entry.date))
+            ci_doc = CommitDoc(dict(
+                    _id=oid,
+                    tree_id=None,
+                    committed=user,
+                    authored=user,
+                    message=log_entry.message,
+                    parent_ids=[],
+                    child_ids=[]))
+            if revno > 1:
+                ci_doc.parent_ids = [ self._oid(revno-1) ]
+            ci_doc.m.insert(safe=True)
+        except DuplicateKeyError:
+            return False
+
     def compute_tree(self, commit, tree_path='/'):
         tree_path = tree_path[:-1]
         tree_id = self._tree_oid(commit.object_id, tree_path)
@@ -267,6 +311,40 @@ class SVNImplementation(M.RepositoryImplementation):
         tree.object_ids = [
             Object(object_id=oid, name=name)
             for name, oid in gl_tree.blobs.iteritems() ]
+        session(tree).flush(tree)
+        return tree_id
+
+    def compute_tree_new(self, commit, tree_path='/'):
+        from allura.model import repo as RM
+        tree_path = tree_path[:-1]
+        tree_id = self._tree_oid(commit.object_id, tree_path)
+        tree, isnew = RM.Tree.upsert(tree_id)
+        if not isnew: return tree_id
+        log.debug('Computing tree for %s: %s',
+                 self._revno(commit.object_id), tree_path)
+        rev = self._revision(commit.object_id)
+        try:
+            infos = self._svn.info2(
+                self._url + tree_path,
+                revision=rev,
+                depth=pysvn.depth.immediates)
+        except pysvn.ClientError:
+            log.exception('Error computing tree for %s: %s(%s)',
+                          self._repo, commit, tree_path)
+            tree.delete()
+            return None
+        log.debug('Compute tree for %d paths', len(infos))
+        for path, info in infos[1:]:
+            if info.kind == pysvn.node_kind.dir:
+                tree.tree_ids.append(Object(
+                        id=self._tree_oid(commit.object_id, path),
+                        name=path))
+            elif info.kind == pysvn.node_kind.file:
+                tree.blob_ids.append(Object(
+                        id=self._tree_oid(commit.object_id, path),
+                        name=path))
+            else:
+                assert False
         session(tree).flush(tree)
         return tree_id
 

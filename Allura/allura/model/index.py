@@ -2,43 +2,47 @@ import re
 import logging
 from itertools import groupby
 from cPickle import dumps, loads
-from datetime import datetime
 from collections import defaultdict
 
 import bson
 import pymongo
-from pylons import c, g
+from pylons import c
 
-import ming
+from ming import collection, Field, Index
 from ming import schema as S
 from ming.utils import LazyProperty
-from ming.orm import session
-from ming.orm import FieldProperty, ForeignIdProperty, RelationProperty
-from ming.orm.declarative import MappedClass
+from ming.orm import session, mapper
+from ming.orm import ForeignIdProperty, RelationProperty
 
 from allura.lib import helpers as h
 
-from .session import main_orm_session
+from .session import main_doc_session, main_orm_session
 
 log = logging.getLogger(__name__)
 
-class ArtifactReference(MappedClass):
-    '''ArtifactReference manages the artifact graph.
+# Collection definitions
+ArtifactReferenceDoc = collection(
+    'artifact_reference', main_doc_session,
+    Field('_id', str),
+    Field('artifact_reference', dict(
+            cls=S.Binary(),
+            project_id=S.ObjectId(),
+            app_config_id=S.ObjectId(),
+            artifact_id=S.Anything(if_missing=None))),
+    Field('references', [str], index=True))
 
-    fields are all strs, corresponding to Solr index_ids
-    '''
-    class __mongometa__:
-        session = main_orm_session
-        name = 'artifact_reference'
-        indexes = [ 'references' ]
+ShortlinkDoc = collection(
+    'shortlink', main_doc_session,
+    Field('_id', S.ObjectId()),
+    Field('ref_id', str, index=True),
+    Field('project_id', S.ObjectId()),
+    Field('app_config_id', S.ObjectId()),
+    Field('link', str),
+    Field('url', str),
+    Index('link, project_id', 'app_config_id'))
 
-    _id = FieldProperty(str)
-    artifact_reference = FieldProperty(S.Object(dict(
-            cls=S.Binary,
-            project_id=S.ObjectId,
-            app_config_id=S.ObjectId,
-            artifact_id=S.Anything(if_missing=None))))
-    references = FieldProperty([str])
+# Class definitions
+class ArtifactReference(object):
 
     @classmethod
     def from_artifact(cls, artifact):
@@ -71,28 +75,8 @@ class ArtifactReference(MappedClass):
             log.exception('Error loading artifact for %s: %r',
                           self._id, aref)
 
-class Shortlink(MappedClass):
+class Shortlink(object):
     '''Collection mapping shorthand_ids for artifacts to ArtifactReferences'''
-    class __mongometa__:
-        session = main_orm_session
-        name = 'shortlink'
-        indexes = [
-            ('link', 'project_id', 'app_config_id'),
-            ('ref_id',),
-            ]
-
-    # Stored properties
-    _id = FieldProperty(S.ObjectId)
-    ref_id = ForeignIdProperty(ArtifactReference)
-    project_id = ForeignIdProperty('Project')
-    app_config_id = ForeignIdProperty('AppConfig')
-    link = FieldProperty(str)
-    url = FieldProperty(str)
-
-    # Relation Properties
-    project = RelationProperty('Project')
-    app_config = RelationProperty('AppConfig')
-    ref = RelationProperty('ArtifactReference')
 
     # Regexes used to find shortlinks
     _core_re = r'''(\[
@@ -105,11 +89,17 @@ class Shortlink(MappedClass):
 
     def __repr__(self):
         with h.push_context(self.project_id):
-            return '[%s:%s:%s] -> %s' % (
-                self.project.shortname,
-                self.app_config.options.mount_point,
-                self.link,
-                self.ref_id)
+            if self.app_config:
+                return '[%s:%s:%s] -> %s' % (
+                    self.project.shortname,
+                    self.app_config.options.mount_point,
+                    self.link,
+                    self.ref_id)
+            else:
+                return '[%s:*:%s] -> %s' % (
+                    self.project.shortname,
+                    self.link,
+                    self.ref_id)
 
     @classmethod
     def lookup(cls, link):
@@ -202,3 +192,12 @@ class Shortlink(MappedClass):
         else:
             return None
 
+# Mapper definitions
+mapper(ArtifactReference, ArtifactReferenceDoc, main_orm_session)
+mapper(Shortlink, ShortlinkDoc, main_orm_session, properties=dict(
+    ref_id = ForeignIdProperty(ArtifactReference),
+    project_id = ForeignIdProperty('Project'),
+    app_config_id = ForeignIdProperty('AppConfig'),
+    project = RelationProperty('Project'),
+    app_config = RelationProperty('AppConfig'),
+    ref = RelationProperty(ArtifactReference)))

@@ -5,6 +5,7 @@ import binascii
 import logging
 import random
 import mimetypes
+from itertools import groupby
 from logging.handlers import WatchedFileHandler
 
 import tg
@@ -150,6 +151,13 @@ def lsub_utf8(s, n):
         return s[:k]
     return s
 
+
+def chunked_iter(iterable, max_size):
+    '''return iterable 'chunks' from the iterable of max size max_size'''
+    eiter = enumerate(iterable)
+    keyfunc = lambda (i,x): i//max_size
+    for _, chunk in groupby(eiter, keyfunc):
+        yield (x for i,x in chunk)
 
 class AntiSpam(object):
     '''Helper class for bot-protecting forms'''
@@ -343,3 +351,21 @@ class CaseInsensitiveDict(dict):
         super(CaseInsensitiveDict, self).update(*args, **kwargs)
         self._reindex()
 
+def postmortem_hook(etype, value, tb): # pragma no cover
+    import sys, pdb, traceback
+    try:
+        from IPython.ipapi import make_session; make_session()
+        from IPython.Debugger import Pdb
+        sys.stderr.write('Entering post-mortem IPDB shell\n')
+        p = Pdb(color_scheme='Linux')
+        p.reset()
+        p.setup(None, tb)
+        p.print_stack_trace()
+        sys.stderr.write('%s: %s\n' % ( etype, value))
+        p.cmdloop()
+        p.forget()
+        # p.interaction(None, tb)
+    except ImportError:
+        sys.stderr.write('Entering post-mortem PDB shell\n')
+        traceback.print_exception(etype, value, tb)
+        pdb.post_mortem(tb)

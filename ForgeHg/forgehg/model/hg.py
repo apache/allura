@@ -10,6 +10,7 @@ from ConfigParser import ConfigParser
 import tg
 os.environ['HGRCPATH'] = '' # disable loading .hgrc
 from mercurial import ui, hg
+from pymongo.errors import DuplicateKeyError
 
 from ming.base import Object
 from ming.orm import Mapper, session
@@ -102,9 +103,21 @@ class HgImplementation(M.RepositoryImplementation):
         result.set_context(self._repo)
         return result
 
+    def all_commit_ids(self):
+        graph = {}
+        to_visit = [ self._hg[hd] for hd in self._hg.heads() ]
+        while to_visit:
+            obj = to_visit.pop()
+            if obj.hex() in graph: continue
+            graph[obj.hex()] = set(
+                p.hex() for p in obj.parents()
+                if p.hex() != obj.hex())
+            to_visit += obj.parents()
+        return [ ci for ci in topological_sort(graph) ]
+
     def new_commits(self, all_commits=False):
         graph = {}
-        to_visit = [ self._hg[hd.object_id] for hd in self._repo.heads ]
+        to_visit = [ self._hg[hd] for hd in self._hg.heads() ]
         while to_visit:
             obj = to_visit.pop()
             if obj.hex() in graph: continue
@@ -166,6 +179,55 @@ class HgImplementation(M.RepositoryImplementation):
         if isnew:
             tree.set_context(ci)
             self._refresh_tree(tree, fake_tree)
+
+    def refresh_commit_info(self, oid, seen):
+        from allura.model.repo import CommitDoc
+        if CommitDoc.m.find(dict(_id=oid)).count():
+            return False
+        try:
+            obj = self._hg[oid]
+            # Save commit metadata
+            mo = self.re_hg_user.match(obj.user())
+            if mo:
+                user_name, user_email = mo.groups()
+            else:
+                user_name = user_email = obj.user()
+            user = Object(
+                name=user_name,
+                email=user_email,
+                date=datetime.utcfromtimestamp(sum(obj.date())))
+            fake_tree = self._tree_from_changectx(obj)
+            ci_doc = CommitDoc(dict(
+                    _id=oid,
+                    tree_id=fake_tree.hex(),
+                    committed=user,
+                    authored=user,
+                    message=obj.description() or '',
+                    child_ids=[],
+                    parent_ids=[ p.hex() for p in obj.parents() if p.hex() != obj.hex() ]))
+            ci_doc.m.insert(safe=True)
+        except DuplicateKeyError:
+            return False
+        self.refresh_tree_info(fake_tree, seen)
+        return True
+
+    def refresh_tree_info(self, tree, seen):
+        from allura.model.repo import TreeDoc
+        if tree.hex() in seen: return
+        seen.add(tree.hex())
+        doc = TreeDoc(dict(
+                _id=tree.hex(),
+                tree_ids=[],
+                blob_ids=[],
+                other_ids=[]))
+        for name, t in tree.trees.iteritems():
+            self.refresh_tree_info(t, seen)
+            doc.tree_ids.append(
+                dict(name=name, id=t.hex()))
+        for name, oid in tree.blobs.iteritems():
+            doc.blob_ids.append(
+                dict(name=name, id=oid))
+        doc.m.save(safe=False)
 
     def log(self, object_id, skip, count):
         obj = self._hg[object_id]

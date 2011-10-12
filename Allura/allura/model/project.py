@@ -532,7 +532,8 @@ class Project(MappedClass):
         if users is None: users = [ c.user ]
         if apps is None:
             if is_user_project:
-                apps = [('profile', 'profile', 'Profile'),
+                apps = [('Wiki', 'home', 'Home'),
+                        ('profile', 'profile', 'Profile'),
                         ('admin', 'admin', 'Admin'),
                         ('search', 'search', 'Search')]
             else:

@@ -387,6 +387,7 @@ class User(MappedClass):
     @classmethod
     def register(cls, doc, make_project=True):
         from allura import model as M
+        from forgewiki import model as WM
         user = plugin.AuthenticationProvider.get(request).register_user(doc)
         if user and 'display_name' in doc:
             user.set_pref('display_name', doc['display_name'])
@@ -395,6 +396,13 @@ class User(MappedClass):
             p = n.register_project('u/' + user.username, user=user, user_project=True)
             # Allow for special user-only tools
             p._extra_tool_status = ['user']
+            # add user project informative text to home
+            home_app = p.app_instance('home')
+            home_page = WM.Page.query.get(app_config_id=home_app.config._id)
+            home_page.text = ("This is the personal project of %s."
+            " This project is created automatically during user registration"
+            " as an easy place to store personal data that doesn't need its own"
+            " project such as cloned repositories.") % user.display_name
         return user
 
     def private_project(self):

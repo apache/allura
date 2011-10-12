@@ -2,18 +2,22 @@ import os
 import shutil
 import string
 import logging
+import random
+from collections import namedtuple
 from datetime import datetime
 
 import tg
 import git
+from pymongo.errors import DuplicateKeyError
 
 from ming.base import Object
-from ming.orm import Mapper, session
+from ming.orm import Mapper, session, mapper
 from ming.utils import LazyProperty
 
 from allura.lib import helpers as h
-from allura import model as M
+from allura.lib import utils
 from allura.model.repository import topological_sort
+from allura import model as M
 
 log = logging.getLogger(__name__)
 
@@ -114,6 +118,14 @@ class GitImplementation(M.RepositoryImplementation):
         result.set_context(self._repo)
         return result
 
+    def all_commit_ids(self):
+        seen = set()
+        for head in self._git.heads:
+            for ci in self._git.iter_commits(head, topo_order=True):
+                if ci.binsha in seen: continue
+                seen.add(ci.binsha)
+                yield ci.hexsha
+
     def new_commits(self, all_commits=False):
         graph = {}
 
@@ -177,6 +189,57 @@ class GitImplementation(M.RepositoryImplementation):
             tree.set_context(ci)
             self._refresh_tree(tree, obj.tree, seen_object_ids)
 
+    def refresh_commit_info(self, oid, seen):
+        from allura.model.repo import CommitDoc
+        if CommitDoc.m.find(dict(_id=oid)).count():
+            return False
+        try:
+            ci = self._git.rev_parse(oid)
+            ci_doc = CommitDoc(dict(
+                    _id=ci.hexsha,
+                    tree_id=ci.tree.hexsha,
+                    committed = Object(
+                        name=h.really_unicode(ci.committer.name),
+                        email=h.really_unicode(ci.committer.email),
+                        date=datetime.utcfromtimestamp(
+                            ci.committed_date-ci.committer_tz_offset)),
+                    authored = Object(
+                        name=h.really_unicode(ci.author.name),
+                        email=h.really_unicode(ci.author.email),
+                        date=datetime.utcfromtimestamp(
+                            ci.authored_date-ci.author_tz_offset)),
+                    message=h.really_unicode(ci.message or ''),
+                    child_ids=[],
+                    parent_ids = [ p.hexsha for p in ci.parents ]))
+            ci_doc.m.insert(safe=True)
+        except DuplicateKeyError:
+            return False
+        self.refresh_tree_info(ci.tree, seen)
+        return True
+
+    def refresh_tree_info(self, tree, seen):
+        from allura.model.repo import TreeDoc
+        if tree.binsha in seen: return
+        seen.add(tree.binsha)
+        doc = TreeDoc(dict(
+                _id=tree.hexsha,
+                tree_ids=[],
+                blob_ids=[],
+                other_ids=[]))
+        for o in tree:
+            obj = Object(
+                name=h.really_unicode(o.name),
+                id=o.hexsha)
+            if o.type == 'tree':
+                self.refresh_tree_info(o, seen)
+                doc.tree_ids.append(obj)
+            elif o.type == 'blob':
+                doc.blob_ids.append(obj)
+            else:
+                obj.type = o.type
+                doc.other_ids.append(obj)
+        doc.m.save(safe=False)
+
     def log(self, object_id, skip, count):
         obj = self._git.commit(object_id)
         candidates = [ obj ]
@@ -214,6 +277,17 @@ class GitImplementation(M.RepositoryImplementation):
             Object(object_id=o.hexsha, name=o.name)
             for o in obj
             if o.type in ('blob', 'tree') ] # submodules poorly supported by GitPython
+        for o in obj.trees:
+            if o.binsha in seen_object_ids: continue
+            subtree, isnew = M.Tree.upsert(o.hexsha)
+            seen_object_ids.add(o.binsha)
+            if isnew:
+                subtree.set_context(tree, o.name)
+                self._refresh_tree(subtree, o, seen_object_ids)
+        for o in obj.blobs:
+            if o.binsha in seen_object_ids: continue
+            blob, isnew = M.Blob.upsert(o.hexsha)
+            seen_object_ids.add(o.binsha)
         for o in obj.trees:
             if o.binsha in seen_object_ids: continue
             subtree, isnew = M.Tree.upsert(o.hexsha)

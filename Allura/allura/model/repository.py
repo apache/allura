@@ -10,14 +10,15 @@ from datetime import datetime
 from collections import defaultdict
 
 import tg
-from pylons import c,g
+from paste.deploy.converters import asbool
+from pylons import c,g, request
 import pymongo.errors
 
 from ming import schema as S
+from ming.base import Object
 from ming.utils import LazyProperty
 from ming.orm import FieldProperty, session, Mapper
 from ming.orm.declarative import MappedClass
-
 
 from allura.lib.patience import SequenceMatcher
 from allura.lib import helpers as h
@@ -25,8 +26,9 @@ from allura.lib import utils
 
 from .artifact import Artifact, VersionedArtifact, Feed
 from .auth import User
-from .session import repository_orm_session, project_orm_session
+from .session import repository_orm_session, project_orm_session, main_doc_session
 from .notification import Notification
+from .repo_refresh import refresh_repo
 
 log = logging.getLogger(__name__)
 config = utils.ConfigProxy(
@@ -34,7 +36,6 @@ config = utils.ConfigProxy(
     common_prefix='forgemail.url')
 
 README_RE = re.compile('^README(\.[^.]*)?$', re.IGNORECASE)
-
 
 class RepositoryImplementation(object):
 
@@ -48,10 +49,21 @@ class RepositoryImplementation(object):
     def commit(self, revision): # pragma no cover
         raise NotImplementedError, 'commit'
 
+    def all_commit_ids(self): # pragma no cover
+        raise NotImplementedError, 'all_commit_ids'
+
     def new_commits(self, all_commits=False): # pragma no cover
-        '''Return any commit object_ids in the native repo that are not (yet) stored
-        in the database in topological order (parents first)'''
-        raise NotImplementedError, 'commit'
+        '''Return a list of native commits in topological order (heads first).
+
+        "commit" is a repo-native object, NOT a Commit object.
+        If all_commits is False, only return commits not already indexed.
+        '''
+        raise NotImplementedError, 'new_commits'
+
+    def commit_parents(self, commit):
+        '''Return a list of native commits for the parents of the given (native)
+        commit'''
+        raise NotImplementedError, 'commit_parents'
 
     def commit_context(self, object_id): # pragma no cover
         '''Returns {'prev':Commit, 'next':Commit}'''
@@ -65,28 +77,37 @@ class RepositoryImplementation(object):
         '''Refresh the data in the commit object 'ci' with data from the repo'''
         raise NotImplementedError, 'refresh_commit'
 
+    def refresh_commit_info(self, oid): # pragma no cover
+        '''Refresh the data in the commit with id oid'''
+        raise NotImplementedError, 'refresh_commit_info'
+
     def _setup_hooks(self): # pragma no cover
         '''Install a hook in the repository that will ping the refresh url for
         the repo'''
         raise NotImplementedError, '_setup_hooks'
 
     def log(self, object_id, skip, count): # pragma no cover
-        '''Return a list of object_ids beginning at the given commit ID and continuing
+        '''Return a list of (object_id, ci) beginning at the given commit ID and continuing
         to the parent nodes in a breadth-first traversal.  Also return a list of 'next commit' options
         (these are candidates for he next commit after 'count' commits have been
         exhausted).'''
-        raise NotImplementedError, '_log'
+        raise NotImplementedError, 'log'
 
     def compute_tree(self, commit, path='/'):
         '''Used in hg and svn to compute a git-like-tree lazily'''
+        raise NotImplementedError, 'compute_tree'
+
+    def compute_tree_new(self, commit, path='/'):
+        '''Used in hg and svn to compute a git-like-tree lazily with the new models'''
         raise NotImplementedError, 'compute_tree'
 
     def open_blob(self, blob): # pragma no cover
         '''Return a file-like object that contains the contents of the blob'''
         raise NotImplementedError, 'open_blob'
 
-    def shorthand_for_commit(self, commit):
-        return '[%s]' % commit.object_id[:6]
+    @classmethod
+    def shorthand_for_commit(cls, oid):
+        return '[%s]' % oid[:6]
 
     def symbolics_for_commit(self, commit):
         '''Return symbolic branch and tag names for a commit.
@@ -97,7 +118,12 @@ class RepositoryImplementation(object):
         return branches, tags
 
     def url_for_commit(self, commit):
-        return '%sci/%s/' % (self._repo.url(), commit.object_id)
+        'return an URL, given either a commit or object id'
+        if isinstance(commit, basestring):
+            object_id = commit
+        else:
+            object_id = commit.object_id
+        return '%sci/%s/' % (self._repo.url(), object_id)
 
     def _setup_paths(self, create_repo_dir=True):
         if not self._repo.fs_path.endswith('/'): self._repo.fs_path += '/'
@@ -167,18 +193,24 @@ class Repository(Artifact):
         return self._impl.init()
     def commit(self, rev):
         return self._impl.commit(rev)
+    def all_commit_ids(self):
+        return self._impl.all_commit_ids()
+    def refresh_commit_info(self, oid, seen):
+        return self._impl.refresh_commit_info(oid, seen)
     def commit_context(self, commit):
         return self._impl.commit_context(commit)
     def open_blob(self, blob):
         return self._impl.open_blob(blob)
-    def shorthand_for_commit(self, commit):
-        return self._impl.shorthand_for_commit(commit)
+    def shorthand_for_commit(self, oid):
+        return self._impl.shorthand_for_commit(oid)
     def symbolics_for_commit(self, commit):
         return self._impl.symbolics_for_commit(commit)
     def url_for_commit(self, commit):
         return self._impl.url_for_commit(commit)
     def compute_tree(self, commit, path='/'):
         return self._impl.compute_tree(commit, path)
+    def compute_tree_new(self, commit, path='/'):
+        return self._impl.compute_tree_new(commit, path)
 
     def _log(self, rev, skip, max_count):
         ci = self.commit(rev)
@@ -284,6 +316,10 @@ class Repository(Artifact):
     def refresh(self, all_commits=False, notify=True):
         '''Find any new commits in the repository and update'''
         self._impl.refresh_heads()
+        if asbool(tg.config.get('scm.new_refresh')):
+            refresh_repo(self, all_commits, notify)
+            notify = False # don't double notify
+
         self.status = 'analyzing'
         session(self).flush()
         sess = session(Commit)
@@ -291,16 +327,15 @@ class Repository(Artifact):
         commit_ids = self._impl.new_commits(all_commits)
         log.info('... %d new commits', len(commit_ids))
         # Refresh history
-        i=0
         seen_object_ids = set()
         commit_msgs = []
+        i=0
         for i, oid in enumerate(commit_ids):
             if len(seen_object_ids) > 10000: # pragma no cover
                 log.info('... flushing seen object cache')
                 seen_object_ids = set()
             ci, isnew = Commit.upsert(oid)
             if not isnew and not all_commits:
-                 # race condition, let the other proc handle it
                 sess.expunge(ci)
                 continue
             ci.set_context(self)
@@ -339,7 +374,7 @@ class Repository(Artifact):
                 subject=subject,
                 text=text)
         log.info('...... flushing %d commits (%d total)',
-                 i % self.BATCH_SIZE, i)
+                 (i+1) % self.BATCH_SIZE, i+1)
         sess.flush()
         sess.clear()
         # Mark all commits in this repo as being in this repo
@@ -378,7 +413,7 @@ class Repository(Artifact):
                 sess.flush()
                 sess.clear()
         log.info('...... flushing %d commits (%d total)',
-                 i % self.BATCH_SIZE, i)
+                 (i+1) % self.BATCH_SIZE, i+1)
         sess.flush()
         sess.clear()
 
@@ -700,7 +735,7 @@ class Commit(RepoObject):
         return self.tree.get_blob(path_parts[-1], path_parts[:-1])
 
     def shorthand_id(self):
-        return self.repo.shorthand_for_commit(self)
+        return self.repo.shorthand_for_commit(self.object_id)
 
     @LazyProperty
     def symbolic_ids(self):
@@ -784,7 +819,7 @@ class Tree(RepoObject):
     '''
     A representation of files & directories.  E.g. what is present at a single commit
 
-    :var object_ids: dict(object_id: name)  Set by _refresh_tree in the scm implementation
+    :var object_ids: dict(object_id: name)  Set by refresh_tree in the scm implementation
     '''
     class __mongometa__:
         polymorphic_identity='tree'
