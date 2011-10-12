@@ -34,7 +34,7 @@ robust and open platform.  Some of the services provided by the platform include
 - Tool administration
 
 Tools, on the other hand, provide the actual user interface and logic to
-manipulate forge artifacts.  Some of the tools currently impemented include:
+manipulate forge artifacts.  Some of the tools currently implemented include:
 
 admin
   This tool is installed in all projects, and allows the administration of the
