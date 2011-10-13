@@ -149,9 +149,19 @@ class TestRepo(_TestWithRepo):
         self.repo._impl.commit = mock.Mock(return_value=ci)
         Commit_upsert.return_value=(ci,True)
         self.repo._impl.new_commits = mock.Mock(return_value=['foo%d' % i for i in range(100) ])
+        self.repo._impl.all_commit_ids = mock.Mock(return_value=['foo%d' % i for i in range(100) ])
+        def refresh_commit_info(oid, seen):
+            M.repo.CommitDoc(dict(
+                    authored=dict(
+                        name='Test Committer',
+                        email='test@test.com'),
+                    _id=oid)).m.insert()
         def set_heads():
             self.repo.heads = [ ming.base.Object(name='head', object_id='foo0', count=100) ]
+        self.repo._impl.refresh_commit_info = refresh_commit_info
         self.repo._impl.refresh_heads = mock.Mock(side_effect=set_heads)
+        self.repo.shorthand_for_commit = lambda oid: '[' + str(oid) + ']'
+        self.repo.url_for_commit = lambda oid: '/ci/' + str(oid) + '/'
         self.repo.refresh()
         ci.compute_diffs.assert_called_with()
         ThreadLocalORMSession.flush_all()
@@ -162,9 +172,7 @@ class TestRepo(_TestWithRepo):
             assert False, 'Did not find notification'
         assert M.Feed.query.find(dict(
             title='New commit',
-            author_name='Test Committer',
-            author_link='/u/test-committer/',
-        )).count()
+            author_name='Test Committer')).count()
 
     @mock.patch('allura.model.repository.Commit.upsert')
     def test_refresh_private(self, Commit_upsert):

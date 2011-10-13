@@ -141,7 +141,7 @@ class CommitRunBuilder(object):
                         _id=ci._id,
                         parent_commit_ids=ci.parent_ids,
                         commit_ids=[ci._id],
-                        commit_times=[ci.authored.date]))
+                        commit_times=[ci.authored['date']]))
             self.merge_runs()
         log.info('%d runs', len(self.runs))
         for rid, run in sorted(self.runs.items()):
