@@ -24,9 +24,9 @@ def create_forum(app, new_forum):
         description=new_forum['description']
     f = DM.Forum(app_config_id=app.config._id,
                     parent_id=parent_id,
-                    name=h.really_unicode(new_forum['name']).encode('utf-8'),
-                    shortname=h.really_unicode(shortname).encode('utf-8'),
-                    description=h.really_unicode(description).encode('utf-8'))
+                    name=h.really_unicode(new_forum['name']),
+                    shortname=h.really_unicode(shortname),
+                    description=h.really_unicode(description))
     if 'icon' in new_forum and new_forum['icon'] is not None and new_forum['icon'] != '':
         save_forum_icon(f, new_forum['icon'])
     return f
