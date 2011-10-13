@@ -340,7 +340,7 @@ class DefaultAdminController(BaseController):
                          + self.app.config.options.mount_point
                          + '/')
             else:
-                redirect('../' + self.app.config.options.mount_point + '/')
+                redirect(request.referer)
 
     @without_trailing_slash
     @expose()

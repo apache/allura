@@ -39,7 +39,8 @@ class ForgeDiscussionApp(Application):
     permissions = ['configure', 'read', 'unmoderated_post', 'post', 'moderate', 'admin']
     config_options = Application.config_options + [
         ConfigOption('PostingPolicy',
-                     schema.OneOf('ApproveOnceModerated', 'ModerateAll'), 'ApproveOnceModerated')
+                     schema.OneOf('ApproveOnceModerated', 'ModerateAll'), 'ApproveOnceModerated'),
+        ConfigOption('MonitoringEmail', str, '')
         ]
     PostClass=DM.ForumPost
     AttachmentClass=DM.ForumAttachment
@@ -221,7 +222,8 @@ class ForumAdminController(DefaultAdminController):
         c.options_admin = W.options_admin
         return dict(app=self.app,
                     form_value=dict(
-                        PostingPolicy=self.app.config.options.get('PostingPolicy')
+                        PostingPolicy=self.app.config.options.get('PostingPolicy'),
+                        MonitoringEmail=self.app.config.options.get('MonitoringEmail')
                     ))
 
     @expose('jinja:forgediscussion:templates/discussionforums/admin_forums.html')

@@ -25,7 +25,11 @@ class OptionsAdmin(ff.AdminForm):
                 label='Posting Policy',
                 options=[
                     ew.Option(py_value='ApproveOnceModerated', label='Approve Once Moderated'),
-                    ew.Option(py_value='ApproveAll', label='Approve All')])
+                    ew.Option(py_value='ApproveAll', label='Approve All')]),
+            ew.TextField(
+                name='MonitoringEmail',
+                label='Monitoring Email',
+                validator=fev.Email())
         ]
         return fields
 

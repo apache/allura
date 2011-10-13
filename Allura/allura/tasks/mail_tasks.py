@@ -116,3 +116,26 @@ def sendmail(
     smtp_client.sendmail(
         addrs_html, fromaddr, reply_to, subject, message_id,
         in_reply_to, html_msg)
+
+@task
+def sendsimplemail(
+    fromaddr,
+    toaddr,
+    text,
+    reply_to,
+    subject,
+    message_id,
+    in_reply_to=None):
+    plain_msg = mail_util.encode_email_part(text, 'plain')
+    html_text = g.forge_markdown(email=True).convert(text)
+    html_msg = mail_util.encode_email_part(html_text, 'html')
+    multi_msg = mail_util.make_multipart_message(plain_msg, html_msg)
+    smtp_client.sendmail(
+        [toaddr], fromaddr, reply_to, subject, message_id,
+        in_reply_to, multi_msg)
+    smtp_client.sendmail(
+        [toaddr], fromaddr, reply_to, subject, message_id,
+        in_reply_to, plain_msg)
+    smtp_client.sendmail(
+        [toaddr], fromaddr, reply_to, subject, message_id,
+        in_reply_to, html_msg)

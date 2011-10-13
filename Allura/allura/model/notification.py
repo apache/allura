@@ -208,6 +208,16 @@ class Notification(MappedClass):
             notification=self,
             prefix=config.get('forgemail.url', 'https://sourceforge.net')))
 
+    def send_simple(self, toaddr):
+        allura.tasks.mail_tasks.sendsimplemail.post(
+            toaddr=toaddr,
+            fromaddr=self.from_address,
+            reply_to=self.reply_to_address,
+            subject=self.subject,
+            message_id=self._id,
+            in_reply_to=self.in_reply_to,
+            text=(self.text or '') + self.footer())
+
     def send_direct(self, user_id):
         user = User.query.get(_id=ObjectId(user_id))
         artifact = self.ref.artifact
