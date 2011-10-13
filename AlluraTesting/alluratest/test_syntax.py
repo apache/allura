@@ -28,6 +28,7 @@ def test_pyflakes():
         'imported but unused',
         'redefinition of unused',
         'assigned to but never used',
+        '__version__',
     ]
     proc = Popen(find_py, shell=True, cwd=toplevel_dir, stdout=PIPE, stderr=PIPE)
     (find_stdout, stderr) = proc.communicate()

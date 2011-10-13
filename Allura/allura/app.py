@@ -4,7 +4,7 @@ from cStringIO import StringIO
 
 from tg import expose, redirect, flash
 from tg.decorators import without_trailing_slash
-from pylons import c, g, request
+from pylons import request, app_globals as g, tmpl_context as c
 from bson import ObjectId
 
 from ming.orm import session, state
