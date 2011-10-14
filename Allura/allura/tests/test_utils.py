@@ -16,15 +16,16 @@ class TestChunkedIterator(unittest.TestCase):
         from allura import model as M
         setup_unit_test()
         for i in range(10):
-            p = M.Project(shortname='pp%d' % i)
+            p = M.User()
             M.session.main_orm_session.insert_now(p, state(p))
         M.session.project_orm_session.clear()
 
     def test_can_iterate(self):
         from allura import model as M
         chunks = [
-            chunk for chunk in utils.chunked_find(M.Project, {}, 2) ]
+            chunk for chunk in utils.chunked_find(M.User, {}, 2) ]
         assert len(chunks) > 1, chunks
+        assert len(chunks[0]) == 2, chunks[0]
 
 class TestAntispam(unittest.TestCase):
 
@@ -116,4 +117,3 @@ class TestCaseInsensitiveDict(unittest.TestCase):
         assert d == dict(foo=1, bar=2)
         assert d != dict(Foo=1, bar=2)
         assert d == utils.CaseInsensitiveDict(Foo=1, bar=2)
-
