@@ -16,9 +16,7 @@ class TestChunkedIterator(unittest.TestCase):
         from allura import model as M
         setup_unit_test()
         for i in range(10):
-            p = M.User()
-            M.session.main_orm_session.insert_now(p, state(p))
-        M.session.project_orm_session.clear()
+            p = M.User.upsert('sample-user-%d' % i)
 
     def test_can_iterate(self):
         from allura import model as M
