@@ -333,7 +333,12 @@ class Project(MappedClass):
             result[award.granted_to_project_id].append(award)
         return result
 
-    def sitemap(self):
+    def sitemap(self, excluded_tools=None):
+        """Return the project sitemap.
+
+        :param list excluded_tools: tool names (AppConfig.tool_name) to
+                                    exclude from sitemap
+        """
         from allura.app import SitemapEntry
         sitemap = SitemapEntry('root')
         entries = []
@@ -341,6 +346,8 @@ class Project(MappedClass):
             if sub.deleted: continue
             entries.append({'ordinal':sub.ordinal,'entry':SitemapEntry(sub.name, sub.url())})
         for ac in self.app_configs:
+            if excluded_tools and ac.tool_name in excluded_tools:
+                continue
             App = ac.load()
             app = App(self, ac)
             if app.is_visible_to(c.user):

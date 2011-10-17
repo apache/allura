@@ -84,7 +84,7 @@ def main(options, args):
             c.project = p
             try:
                 locs += [BASE_URL + s.url if s.url[0] == '/' else s.url
-                         for s in p.sitemap()]
+                        for s in p.sitemap(excluded_tools=['git', 'hg', 'svn'])]
             except Exception, e:
                 print "Error creating sitemap for project '%s': %s" %\
                     (p.shortname, e)
