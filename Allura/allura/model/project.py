@@ -81,7 +81,7 @@ class TroveCategory(MappedClass):
 
 class ProjectMapperExtension(MapperExtension):
     def after_insert(self, obj, st):
-        g.zarkov_event('project_create', user=c.user, project=obj)
+        g.zarkov_event('project_create', project=obj)
 
 class Project(MappedClass):
     _perms_base = [ 'read', 'update', 'admin', 'create']
