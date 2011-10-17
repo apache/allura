@@ -8,7 +8,9 @@
   {% if c.project.deleted %}
     <div class="notice">This project has been deleted and is not visible to non-admin users</div>
   {% endif %}
-  {{c.metadata_admin.display(value=c.project,show_export_control=show_export_control)}}
+  {{c.metadata_admin.display(value=c.project,
+                             show_export_control=show_export_control,
+                             allow_project_delete=allow_project_delete)}}
 {% endblock %}
 
 {% block extra_js %}

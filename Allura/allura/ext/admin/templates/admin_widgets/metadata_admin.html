@@ -68,10 +68,12 @@
     <input name="removal" type="radio" value="abandoned" id="removal_abandoned_cb"
            {% if value.removal == 'abandoned' %} checked{% endif %}>
     <label for="removal_abandoned_cb">Abandoned Project</label>
+    {% if allow_project_delete or not value.is_root %}
     <br>
     <input name="removal" type="radio" value="deleted" id="removal_delete_cb"
            {% if value.removal == 'deleted' %} checked{% endif %}>
     <label for="removal_delete_cb">Delete{% if value.removal == 'deleted' %}d{% endif %} Project</label>
+    {% endif %}
 
     {% if show_export_control %}
       <div style="clear:both">&nbsp;</div>

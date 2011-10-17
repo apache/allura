@@ -174,7 +174,9 @@ class ProjectAdminController(BaseController):
         c.markdown_editor = W.markdown_editor
         c.metadata_admin = W.metadata_admin
         show_export_control = asbool(config.get('show_export_control', False))
-        return dict(show_export_control=show_export_control)
+        allow_project_delete = asbool(config.get('allow_project_delete', True))
+        return dict(show_export_control=show_export_control,
+                    allow_project_delete=allow_project_delete)
 
     @without_trailing_slash
     @expose('jinja:allura.ext.admin:templates/project_screenshots.html')
@@ -279,8 +281,10 @@ class ProjectAdminController(BaseController):
             g.post_event('project_updated')
             redirect('overview')
         elif 'delete' in kw:
-            h.log_action(log, 'delete project').info('')
-            plugin.ProjectRegistrationProvider.get().delete_project(c.project, c.user)
+            allow_project_delete = asbool(config.get('allow_project_delete', True))
+            if allow_project_delete or not c.project.is_root:
+                h.log_action(log, 'delete project').info('')
+                plugin.ProjectRegistrationProvider.get().delete_project(c.project, c.user)
             redirect('overview')
         elif 'undelete' in kw:
             h.log_action(log, 'undelete project').info('')
