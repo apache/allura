@@ -147,7 +147,7 @@ class AdminApp(Application):
         pass
 
     def uninstall(self, project): # pragma no cover
-        raise NotImplementedError, "uninstall"
+        pass
 
 class ProjectAdminController(BaseController):
 

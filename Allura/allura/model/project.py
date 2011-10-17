@@ -492,7 +492,7 @@ class Project(MappedClass):
             sp.delete()
         # Cascade to app configs
         for ac in self.app_configs:
-            ac.delete()
+            self.uninstall_app(ac.options.get('mount_point'))
         MappedClass.delete(self)
 
     def render_widget(self, widget):
