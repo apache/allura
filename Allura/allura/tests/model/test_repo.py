@@ -117,11 +117,11 @@ class TestRepo(_TestWithRepo):
     def test_scm_host_url(self):
         assert (
             self.repo.clone_url('rw', 'nobody')
-            == 'svn+ssh://nobody@localhost:8022/scm-repo/p/test/test1/trunk'),\
+            == 'svn+ssh://nobody@localhost:8022/scm-repo/p/test/test1/'),\
             self.repo.clone_url('rw', 'nobody')
         assert (
             self.repo.clone_url('https', 'nobody')
-            == 'https://nobody@localhost:8022/scm-repo/p/test/test1/trunk'),\
+            == 'https://nobody@localhost:8022/scm-repo/p/test/test1/'),\
             self.repo.clone_url('https', 'nobody')
 
     def test_merge_request(self):
@@ -242,7 +242,7 @@ class TestMergeRequest(_TestWithRepoAndCommit):
         assert mr.creator_name == u.get_pref('display_name')
         assert mr.creator_url == u.url()
         assert mr.downstream_url == '/p/test/test2/'
-        assert mr.downstream_repo_url == 'http://svn.localhost/p/test/test2/trunk'
+        assert mr.downstream_repo_url == 'http://svn.localhost/p/test/test2/'
         assert mr.commits == [ self._make_commit('foo')[0] ]
 
 class TestLastCommitFor(_TestWithRepoAndCommit):
