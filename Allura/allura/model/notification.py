@@ -17,6 +17,7 @@ Notifications are also available for use in feeds
 '''
 
 import logging
+from bson import ObjectId
 from datetime import datetime, timedelta
 from collections import defaultdict
 from webhelpers import feedgenerator as FG
@@ -31,6 +32,7 @@ from ming.orm import FieldProperty, ForeignIdProperty, RelationProperty, session
 from ming.orm.declarative import MappedClass
 
 from allura.lib import helpers as h
+from allura.lib import security
 import allura.tasks.mail_tasks
 
 from .session import main_orm_session, project_orm_session
@@ -207,6 +209,14 @@ class Notification(MappedClass):
             prefix=config.get('forgemail.url', 'https://sourceforge.net')))
 
     def send_direct(self, user_id):
+        user = User.query.get(_id=ObjectId(user_id))
+        artifact = self.ref.artifact
+        # Don't send if user doesn't have read perms to the artifact
+        if user and artifact and \
+                not security.has_access(artifact, 'read', user)():
+            log.debug("Skipping notification - User %s doesn't have read "
+                      "access to artifact %s" % (user_id, str(self.ref_id)))
+            return
         allura.tasks.mail_tasks.sendmail.post(
             destinations=[str(user_id)],
             fromaddr=self.from_address,
@@ -220,6 +230,15 @@ class Notification(MappedClass):
     def send_digest(self, user_id, from_address, subject, notifications,
                     reply_to_address=None):
         if not notifications: return
+        # Filter out notifications for which the user doesn't have read
+        # permissions to the artifact.
+        user = User.query.get(_id=ObjectId(user_id))
+        artifact = self.ref.artifact
+        def perm_check(notification):
+            return not (user and artifact) or \
+                    security.has_access(artifact, 'read', user)()
+        notifications = filter(perm_check, notifications)
+
         if reply_to_address is None:
             reply_to_address = from_address
         text = [ 'Digest of %s' % subject ]

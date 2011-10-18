@@ -107,8 +107,36 @@ class TestPostNotifications(unittest.TestCase):
         assert task.kwargs['text'].startswith('WikiPage Home modified by Test Admin')
         assert 'you indicated interest in ' in task.kwargs['text']
 
-    def _subscribe(self):
-        self.pg.subscribe(type='direct')
+    def test_permissions(self):
+        # Notification should only be delivered if user has read perms on the
+        # artifact. The perm check happens just before the mail task is
+        # posted.
+        u = M.User.query.get(username='test-admin')
+        self._subscribe(user=u)
+        # Simulate a permission check failure.
+        def patched_has_access(*args, **kw):
+            def predicate(*args, **kw):
+                return False
+            return predicate
+        from allura.model.notification import security
+        orig = security.has_access
+        security.has_access = patched_has_access
+        try:
+            # this will create a notification task
+            self._post_notification()
+            ThreadLocalORMSession.flush_all()
+            # running the notification task will create a mail task if the
+            # permission check passes...
+            M.MonQTask.run_ready()
+            ThreadLocalORMSession.flush_all()
+            # ...but in this case it doesn't create a mail task since we
+            # forced the perm check to fail
+            assert M.MonQTask.get() == None
+        finally:
+            security.has_access = orig
+
+    def _subscribe(self, **kw):
+        self.pg.subscribe(type='direct', **kw)
         ThreadLocalORMSession.flush_all()
         ThreadLocalORMSession.close_all()
 
