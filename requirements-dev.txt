@@ -4,9 +4,5 @@ GitPython==0.3.0-beta2
 Pygments==1.4
 python-ldap>=2.3.9
 
-# for the migration scripts only
-html2text>=3.02
-postmarkup>=1.1.4
-
 # Include our common requirements
 -r requirements-common.txt
