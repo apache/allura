@@ -30,6 +30,16 @@ class TestNewRepo(unittest.TestCase):
         ThreadLocalORMSession.flush_all()
         ThreadLocalORMSession.close_all()
 
+    def test_redo_trees(self):
+        old_tree = self.rev.tree
+        del self.rev.tree
+        M.repo.Tree.query.remove()
+        ThreadLocalORMSession.close_all()
+        new_tree =  self.rev.tree
+        self.assertEqual(old_tree.tree_ids, new_tree.tree_ids)
+        self.assertEqual(old_tree.blob_ids, new_tree.blob_ids)
+        self.assertEqual(old_tree._id, new_tree._id)
+
     def test_commit(self):
         assert self.rev.primary() is self.rev
         assert self.rev.index_id().startswith('allura/model/repo/Commit#')
@@ -142,6 +152,15 @@ class TestHgCommit(unittest.TestCase):
         self.rev = self.repo.commit('tip')
         ThreadLocalORMSession.flush_all()
         ThreadLocalORMSession.close_all()
+
+    def test_redo_trees(self):
+        old_tree = self.rev.tree
+        del self.rev.tree
+        M.Tree.query.remove(dict(type='tree'))
+        ThreadLocalORMSession.close_all()
+        new_tree =  self.rev.tree
+        self.assertEqual(old_tree.object_ids, new_tree.object_ids)
+        self.assertEqual(old_tree.object_id, new_tree.object_id)
 
     def test_url(self):
         assert self.rev.url().endswith('0ffff1/'), \

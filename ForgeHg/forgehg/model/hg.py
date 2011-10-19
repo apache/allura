@@ -228,6 +228,7 @@ class HgImplementation(M.RepositoryImplementation):
             doc.blob_ids.append(
                 dict(name=name, id=oid))
         doc.m.save(safe=False)
+        return doc
 
     def log(self, object_id, skip, count):
         obj = self._hg[object_id]
@@ -293,5 +294,22 @@ class HgImplementation(M.RepositoryImplementation):
         branch_heads, tags = super(self.__class__, self).symbolics_for_commit(commit)
         ctx = self._hg[commit.object_id]
         return [ctx.branch()], tags
+
+    def compute_tree(self, commit, tree_path='/'):
+        ctx = self._hg[commit.object_id]
+        fake_tree = self._tree_from_changectx(ctx)
+        fake_tree = fake_tree.get_tree(tree_path)
+        tree, isnew = M.Tree.upsert(fake_tree.hex())
+        if isnew:
+            tree.set_context(commit)
+            self._refresh_tree(tree, fake_tree)
+        return tree.object_id
+
+    def compute_tree_new(self, commit, tree_path='/'):
+        ctx = self._hg[commit._id]
+        fake_tree = self._tree_from_changectx(ctx)
+        fake_tree = fake_tree.get_tree(tree_path)
+        tree = self.refresh_tree_info(fake_tree, set())
+        return tree._id
 
 Mapper.compile_all()
