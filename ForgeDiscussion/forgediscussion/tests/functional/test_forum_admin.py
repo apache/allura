@@ -155,3 +155,53 @@ class TestForumAdmin(TestController):
         assert len(r.html.findAll('input',{'value':'Undelete'})) == 0
         r = self.app.get('/discussion/')
         assert 'This forum has been deleted and is not visible to non-admin users' not in r
+
+    def test_members_only(self):
+        # make a forum anyone can see
+        r = self.app.get('/admin/discussion/forums')
+        r.forms[1]['add_forum.shortname'] = 'secret'
+        r.forms[1]['add_forum.name'] = 'Secret'
+        r.forms[1].submit()
+        # forum can be viewed by member and non-member
+        self.app.get('/discussion/secret')
+        self.app.get('/discussion/secret',extra_environ=dict(username='test-user'))
+        # make a post in the forum and confirm it is also viewable by member and non-member
+        r = self.app.get('/discussion/create_topic/')
+        f = r.html.find('form',{'action':'/p/test/discussion/save_new_topic'})
+        params = dict()
+        inputs = f.findAll('input')
+        for field in inputs:
+            if field.has_key('name'):
+                params[field['name']] = field.has_key('value') and field['value'] or ''
+        params[f.find('textarea')['name']] = 'secret text'
+        params[f.find('select')['name']] = 'secret'
+        params[f.find('input',{'style':'width: 90%'})['name']] = 'secret topic'
+        r = self.app.post('/discussion/save_new_topic', params=params).follow()
+        thread_url= r.request.url
+        self.app.get(thread_url)
+        self.app.get(thread_url,extra_environ=dict(username='test-user'))
+        # link shows up in app for member and non-member
+        r = self.app.get('/discussion/')
+        assert '/secret/' in r
+        r = self.app.get('/discussion/',extra_environ=dict(username='test-user'))
+        assert '/secret/' in r
+        # make the forum member only viewable
+        secret = FM.Forum.query.get(shortname='secret')
+        self.app.post('/admin/discussion/update_forums',
+                        params={'forum-0.members_only':'on',
+                                'forum-0.id':str(secret._id),
+                                'forum-0.name':'Secret',
+                                'forum-0.shortname':'secret',
+                                'forum-0.description':''
+                               })
+        # member can see the forum, but non-member gets 403
+        self.app.get('/discussion/secret')
+        self.app.get('/discussion/secret',extra_environ=dict(username='test-user'), status=403)
+        # member can see a thread in the forum, but non-member gets 403
+        self.app.get(thread_url)
+        self.app.get(thread_url,extra_environ=dict(username='test-user'), status=403)
+        # link shows up in app for member but not non-member
+        r = self.app.get('/discussion/')
+        assert '/secret/' in r
+        r = self.app.get('/discussion/',extra_environ=dict(username='test-user'))
+        assert '/secret/' not in r

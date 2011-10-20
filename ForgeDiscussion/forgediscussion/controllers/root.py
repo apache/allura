@@ -61,6 +61,7 @@ class RootController(BaseController):
         forums = model.Forum.query.find(dict(
                         app_config_id=c.app.config._id,
                         parent_id=None)).all()
+        forums = [f for f in forums if h.has_access(f, 'read')()]
         threads = dict()
         for forum in forums:
             threads[forum._id] = model.ForumThread.query.find(dict(

@@ -127,10 +127,11 @@ class ForgeDiscussionApp(Application):
                             parent_id=None)).all()
             if forums:
                 for f in forums:
-                    if f.url() in request.url and h.has_access(f, 'moderate')():
-                        moderate_link = SitemapEntry('Moderate', "%smoderate/" % f.url(), ui_icon=g.icons['pencil'],
-                        small = DM.ForumPost.query.find({'discussion_id':f._id, 'status':{'$ne': 'ok'}}).count())
-                    forum_links.append(SitemapEntry(f.name, f.url(), className='nav_child'))
+                    if has_access(f,'read')():
+                        if f.url() in request.url and h.has_access(f, 'moderate')():
+                            moderate_link = SitemapEntry('Moderate', "%smoderate/" % f.url(), ui_icon=g.icons['pencil'],
+                            small = DM.ForumPost.query.find({'discussion_id':f._id, 'status':{'$ne': 'ok'}}).count())
+                        forum_links.append(SitemapEntry(f.name, f.url(), className='nav_child'))
             if has_access(c.app, 'post')():
                 l.append(SitemapEntry('Create Topic', c.app.url + 'create_topic', ui_icon=g.icons['plus']))
             if has_access(c.app, 'configure')():
@@ -154,7 +155,7 @@ class ForgeDiscussionApp(Application):
                     ))
             recent_threads = (
                 t for t in recent_threads 
-                if (has_access(t, 'configure') or not t.discussion.deleted) )
+                if has_access(t, 'configure')() or (has_access(t, 'read')() and has_access(t.discussion, 'read')() and not t.discussion.deleted))
             recent_threads = ( t for t in recent_threads if t.status == 'ok' )
             # Limit to 3 threads
             recent_threads = list(islice(recent_threads, 3))
@@ -199,7 +200,8 @@ class ForgeDiscussionApp(Application):
             create='on',
             name='General Discussion',
             description='Forum about anything you want to talk about.',
-            parent=''))
+            parent='',
+            members_only=False))
 
     def uninstall(self, project):
         "Remove all the tool's artifacts from the database"
@@ -250,6 +252,15 @@ class ForumAdminController(DefaultAdminController):
                 forum.name = f['name']
                 forum.shortname = f['shortname']
                 forum.description = f['description']
+                if 'members_only' in f:
+                    forum.members_only = True
+                    role_developer = M.ProjectRole.by_name('Developer')._id
+                    forum.acl = [
+                        M.ACE.allow(role_developer, M.ALL_PERMISSIONS),
+                        M.DENY_ALL]
+                else:
+                    forum.members_only = False
+                    forum.acl = []
                 if 'icon' in f and f['icon'] is not None and f['icon'] != '':
                     self.save_forum_icon(forum, f['icon'])
         flash('Forums updated')

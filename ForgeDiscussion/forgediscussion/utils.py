@@ -2,6 +2,7 @@
 
 from bson import ObjectId
 from allura.lib import helpers as h
+from allura.model import ProjectRole, ACE, ALL_PERMISSIONS, DENY_ALL
 from forgediscussion import model as DM
 
 def save_forum_icon(forum, icon):
@@ -22,11 +23,23 @@ def create_forum(app, new_forum):
     description = ''
     if 'description' in new_forum:
         description=new_forum['description']
+    if 'members_only' in new_forum:
+        members_only=new_forum['members_only']
+    else:
+        members_only = False
     f = DM.Forum(app_config_id=app.config._id,
                     parent_id=parent_id,
                     name=h.really_unicode(new_forum['name']),
                     shortname=h.really_unicode(shortname),
-                    description=h.really_unicode(description))
+                    description=h.really_unicode(description),
+                    members_only=members_only)
+    if members_only:
+        role_developer = ProjectRole.by_name('Developer')._id
+        f.acl = [
+            ACE.allow(role_developer, ALL_PERMISSIONS),
+            DENY_ALL]
+    else:
+        f.acl = []
     if 'icon' in new_forum and new_forum['icon'] is not None and new_forum['icon'] != '':
         save_forum_icon(f, new_forum['icon'])
     return f

@@ -21,6 +21,7 @@ class Forum(M.Discussion):
     threads = RelationProperty('ForumThread')
     posts = RelationProperty('ForumPost')
     deleted = FieldProperty(bool, if_missing=False)
+    members_only = FieldProperty(bool, if_missing=False)
 
     @classmethod
     def attachment_class(cls):

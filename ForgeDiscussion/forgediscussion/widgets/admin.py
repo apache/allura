@@ -55,7 +55,8 @@ class AddForum(ff.AdminForm):
                                  UniqueForumShortnameValidator())),
             ew.TextField(name='parent', label='Parent Forum'),
             ew.TextField(name='description', label='Description',validator=fev.UnicodeString()),
-            ffw.FileChooser(name='icon', label='Icon')
+            ffw.FileChooser(name='icon', label='Icon'),
+            ew.Checkbox(name="members_only", label="Members Only")
         ]
         return fields
 

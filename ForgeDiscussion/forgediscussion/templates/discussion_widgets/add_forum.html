@@ -15,6 +15,8 @@
     <div class="grid-15"><textarea name="add_forum.description" style="height:50px;">{{value and value['description']}}</textarea></div>
     <label class="grid-4">Icon:</label>
     <div class="grid-15">{{lib.file_field('add_forum.icon', '')}}</div>
+    <label class="grid-4">Members Only:</label>
+    <div class="grid-15"><input name="add_forum.members_only" type="checkbox"{% if value and value['members_only'] %} checked{% endif %}></div>
     <label class="grid-4">&nbsp;</label>
     <div class="grid-15">
       <input type="submit" name="create" value="Create Forum">
