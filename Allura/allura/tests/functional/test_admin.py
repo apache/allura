@@ -239,39 +239,46 @@ class TestProjectAdmin(TestController):
     def test_project_delete_not_allowed(self):
         # turn off project delete option
         from allura.ext.admin.admin_main import config
+        old_allow_project_delete = config.get('allow_project_delete', ())
         config['allow_project_delete'] = False
-        # create a subproject
-        self.app.post('/admin/update_mounts', params={
-                'new.install':'install',
-                'new.ep_name':'',
-                'new.ordinal':1,
-                'new.mount_point':'sub1',
-                'new.mount_label':'sub1'})
-        # root project doesn't have delete option
-        r = self.app.get('/p/test/admin/overview')
-        assert not r.html.find('input',{'name':'removal','value':'deleted'})
-        # subprojects can still be deleted
-        r = self.app.get('/p/test/sub1/admin/overview')
-        assert r.html.find('input',{'name':'removal','value':'deleted'})
-        # attempt to delete root project won't do anything
-        self.app.post('/admin/update', params=dict(
-                name='Test Project',
-                shortname='test',
-                removal='deleted',
-                short_description='A Test Project',
-                delete='on'))
-        r = self.app.get('/p/test/admin/overview')
-        assert 'This project has been deleted and is not visible to non-admin users' not in r
-        # make sure subproject delete works
-        self.app.post('/p/test/sub1/admin/update', params=dict(
-                name='sub1',
-                shortname='sub1',
-                removal='deleted',
-                short_description='A Test Project',
-                delete='on'))
-        r = self.app.get('/p/test/sub1/admin/overview')
-        assert 'This project has been deleted and is not visible to non-admin users' in r
-        assert r.html.find('input',{'name':'removal','value':'deleted'}).has_key('checked')
+        try:
+            # create a subproject
+            self.app.post('/admin/update_mounts', params={
+                    'new.install':'install',
+                    'new.ep_name':'',
+                    'new.ordinal':1,
+                    'new.mount_point':'sub1',
+                    'new.mount_label':'sub1'})
+            # root project doesn't have delete option
+            r = self.app.get('/p/test/admin/overview')
+            assert not r.html.find('input',{'name':'removal','value':'deleted'})
+            # subprojects can still be deleted
+            r = self.app.get('/p/test/sub1/admin/overview')
+            assert r.html.find('input',{'name':'removal','value':'deleted'})
+            # attempt to delete root project won't do anything
+            self.app.post('/admin/update', params=dict(
+                    name='Test Project',
+                    shortname='test',
+                    removal='deleted',
+                    short_description='A Test Project',
+                    delete='on'))
+            r = self.app.get('/p/test/admin/overview')
+            assert 'This project has been deleted and is not visible to non-admin users' not in r
+            # make sure subproject delete works
+            self.app.post('/p/test/sub1/admin/update', params=dict(
+                    name='sub1',
+                    shortname='sub1',
+                    removal='deleted',
+                    short_description='A Test Project',
+                    delete='on'))
+            r = self.app.get('/p/test/sub1/admin/overview')
+            assert 'This project has been deleted and is not visible to non-admin users' in r
+            assert r.html.find('input',{'name':'removal','value':'deleted'}).has_key('checked')
+        finally:
+            if old_allow_project_delete == ():
+                del config['allow_project_delete']
+            else:
+                config['allow_project_delete'] = old_allow_project_delete
 
     def test_add_remove_trove_cat(self):
         r = self.app.get('/admin/trove')

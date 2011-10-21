@@ -4,9 +4,9 @@
 import pylons
 pylons.c = pylons.tmpl_context
 pylons.g = pylons.app_globals
+import pylons.middleware
 import tg
 import tg.error
-import pylons.middleware
 
 from allura.config.app_cfg import base_config
 
