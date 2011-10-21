@@ -21,7 +21,7 @@ Jinja2==2.6
 Markdown==2.0.3
 MarkupSafe==0.15
 mercurial==1.4.3
-Ming==0.2.2dev-20111006
+Ming==0.2.2dev-20111014
 mock==0.7.2
 nose==1.1.2
 oauth2==1.5.170
