@@ -35,7 +35,7 @@ Pylons==1.0
 pymongo==1.11
 Pypeline==0.1dev
 pysolr==2.1.0-beta
-python-dateutil==2.0
+python-dateutil==1.5
 python-openid==2.2.5
 pytidylib==0.2.1
 PyYAML==3.10
