@@ -2,11 +2,11 @@
 """WSGI environment setup for allura."""
 
 import pylons
-import pylons.middleware
-import tg
-import tg.error
 pylons.c = pylons.tmpl_context
 pylons.g = pylons.app_globals
+import tg
+import tg.error
+import pylons.middleware
 
 from allura.config.app_cfg import base_config
 
