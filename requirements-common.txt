@@ -18,6 +18,8 @@ GitPython==0.3.0-beta2
 httplib2==0.7.1
 iso8601==0.1.4
 Jinja2==2.6
+# Mako is not used directly
+Mako==0.3.2
 Markdown==2.0.3
 MarkupSafe==0.15
 mercurial==1.4.3
@@ -49,6 +51,8 @@ repoze.who.plugins.sa==1.0
 repoze.who-testutil==1.0.1
 Routes==1.12.3
 simplejson==2.2.1
+# used by gitdb
+smmap==0.8.1
 SQLAlchemy==0.7.2
 sqlalchemy-migrate==0.7.1
 # suds needed for teamforge import script
