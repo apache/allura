@@ -374,12 +374,20 @@ class TestFunctionalController(TestController):
         assert '<strong>number</strong>:  --&gt;' in ticket_view
 
     def test_milestone_names(self):
-        self.app.post('/admin/bugs/set_custom_fields', {
-            'milestone_names': 'aaaé  bbb ccc',
+        params = {
             'open_status_names': 'aa bb',
             'closed_status_names': 'cc',
-            'custom_fields': {}
-        })
+            'custom_fields': [dict(
+                    label='Milestone',
+                    show_in_search='on',
+                    type='milestone',
+                    milestones=[
+                        dict(name='aaaé'),
+                        dict(name='bbb'),
+                        dict(name='ccc')])] }
+        self.app.post('/admin/bugs/set_custom_fields',
+                      variable_encode(params),
+                      status=302)
         self.new_ticket(summary='test milestone names')
         self.app.post('/bugs/1/update_ticket',{
             'summary':'zzz',
