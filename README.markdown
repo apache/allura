@@ -1,14 +1,16 @@
 # Sandbox Creation
 
-We'll use [VirtualBox](http://www.virtualbox.org) and [Ubuntu 10.10](http://ubuntu.com) to create a disposable sandbox for Forge development/testing.
+We'll use [VirtualBox](http://www.virtualbox.org) and [Ubuntu 11.10](http://ubuntu.com) to create a disposable sandbox for Forge development/testing.
 
 * Download and install [VirtualBox](http://www.virtualbox.org/wiki/Downloads) for your platform.
 
-* Download a minimal [Ubuntu 10.10](https://help.ubuntu.com/community/Installation/MinimalCD) ISO (~15MB).
+* Download a minimal [Ubuntu 11.10 64-bit ISO](https://help.ubuntu.com/community/Installation/MinimalCD).
 
 * Create a new virtual machine in Virtual Box, selecting Ubuntu (64 bit) as the OS type.  The rest of the wizards' defaults are fine.
 
 * When you launch the virtual machine for the first time, you will be prompted to attach your installation media.  Browse to the `mini.iso` that you downloaded earlier.
+
+* After a text-only installation, you may end up with a blank screen and blinking cursor.  Press Alt-F1 to switch to the first console.
 
 * Consult [available documentation](https://help.ubuntu.com/) for help installing Ubuntu.
 
@@ -17,22 +19,23 @@ We'll use [VirtualBox](http://www.virtualbox.org) and [Ubuntu 10.10](http://ubun
 
 Before we begin, you'll need the following additional packages in order to work with the Forge source code.
 
-    ~$ sudo apt-get install git-core gitweb subversion python-svn libtidy-0.99-0
+    ~$ sudo aptitude install git-core subversion python-svn libtidy-0.99-0
 
-You'll also need additional development packages in order to compile some of the modules.
+You'll also need additional development packages in order to compile some of the modules.  [Use google for additional PIL/jpeg help.](http://www.google.com/search?q=ubuntu+pil+jpeg+virtualenv)
 
-    ~$ sudo apt-get install default-jdk python-dev libssl-dev libldap2-dev libsasl2-dev
+    ~$ sudo aptitude install default-jdk python-dev libssl-dev libldap2-dev libsasl2-dev libjpeg8-dev zlib1g-dev
+    ~$ sudo ln -s /usr/lib/x86_64-linux-gnu/libz.so /usr/lib
 
 And finally our document-oriented database, MongoDB, and our messaging server, RabbitMQ.  Note that RabbitMQ is optional, but will make messages flow faster through our asynchronous processors.  By default, rabbitmq is disabled in development.ini.
 
-    ~$ sudo apt-get install mongodb rabbitmq-server
+    ~$ sudo aptitude install mongodb-server rabbitmq-server
 
 ## Setting up a virtual python environment
 
 The first step to installing the Forge platform is installing a virtual environment via `virtualenv`.  This helps keep our distribution python installation clean.
 
-    ~$ sudo apt-get install python-setuptools
-    ~$ sudo easy_install-2.6 -U virtualenv
+    ~$ sudo aptitude install python-setuptools
+    ~$ sudo easy_install -U virtualenv
 
 Once you have virtualenv installed, you need to create a virtual environment.  We'll call our Forge environment 'anvil'.
 
@@ -41,12 +44,6 @@ Once you have virtualenv installed, you need to create a virtual environment.  W
 This gives us a nice, clean environment into which we can install all the forge dependencies.  In order to use the virtual environment, you'll need to activate it.  You'll need to do this whenever you're working on the Forge codebase so you may want to consider adding it to your `~/.bashrc` file.
 
     ~$ . anvil/bin/activate
-
-Now that that's out of the way, we'll go ahead and install TurboGears.
-
-    (anvil)~$ easy_install pylons==0.9.7
-    (anvil)~$ easy_install -i http://www.turbogears.org/2.1/downloads/2.1b2/index/ tg.devtools==2.1b2 TurboGears2==2.1b2
-
 
 ## Installing the Forge code and dependencies
 
