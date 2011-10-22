@@ -14,9 +14,3 @@ class BranchBrowser(repository.BranchBrowser):
             return dict(allow_fork=False, log=[])
         redirect(latest.url() + 'tree/')
 
-
-class GitRestController(repository.RepoRootController):
-    @expose('json:')
-    def index(self, **kw):
-        all_commits = c.app.repo._impl.new_commits(all_commits=True)
-        return dict(commit_count=len(all_commits))

@@ -12,13 +12,13 @@ import allura.tasks.repo_tasks
 from allura.lib import helpers as h
 from allura import model as M
 from allura.controllers.repository import RepoRootController, RefsController, CommitsController
-from allura.controllers.repository import MergeRequestsController
+from allura.controllers.repository import MergeRequestsController, RepoRestController
 from allura.lib.repository import RepositoryApp
 
 # Local imports
 from . import model as GM
 from . import version
-from .controllers import BranchBrowser, GitRestController
+from .controllers import BranchBrowser
 
 log = logging.getLogger(__name__)
 
@@ -33,7 +33,7 @@ class ForgeGitApp(RepositoryApp):
     def __init__(self, project, config):
         super(ForgeGitApp, self).__init__(project, config)
         self.root = RepoRootController()
-        self.api_root = GitRestController()
+        self.api_root = RepoRestController()
         self.root.ref = RefsController(BranchBrowser)
         self.root.ci = CommitsController()
         setattr(self.root, 'merge-requests', MergeRequestsController())

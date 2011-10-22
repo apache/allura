@@ -13,3 +13,4 @@ class BranchBrowser(repository.BranchBrowser):
         if not latest:
             return dict(allow_fork=False, log=[])
         redirect(latest.url() + 'tree/')
+

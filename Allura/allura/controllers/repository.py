@@ -214,6 +214,40 @@ class RepoRootController(BaseController):
                     max_row=len(all_commits),
                     status='ready')
 
+class RepoRestController(RepoRootController):
+    @expose('json:')
+    def index(self, **kw):
+        all_commits = c.app.repo._impl.new_commits(all_commits=True)
+        return dict(commit_count=len(all_commits))
+
+    @expose('json:')
+    def commits(self, **kw):
+        page_size = 25
+        offset = (int(kw.get('page',1)) * page_size) - page_size
+        revisions = c.app.repo.log(offset=offset, limit=page_size)
+
+        return dict(
+            commits=[
+                dict(
+                    parents=[dict(id=p) for p in commit.parent_ids],
+                    author=dict(
+                        name=commit.authored.name,
+                        email=commit.authored.email,
+                    ),
+                    url=commit.url(),
+                    id=commit.object_id,
+                    committed_date=commit.committed.date,
+                    authored_date=commit.authored.date,
+                    message=commit.message,
+                    tree=commit.tree.object_id,
+                    committer=dict(
+                        name=commit.committed.name,
+                        email=commit.committed.email,
+                    ),
+                )
+            for commit in revisions
+        ])
+
 class MergeRequestsController(object):
     mr_filter=SCMMergeRequestFilterWidget()
 
