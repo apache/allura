@@ -201,7 +201,8 @@ class ForgeDiscussionApp(Application):
             name='General Discussion',
             description='Forum about anything you want to talk about.',
             parent='',
-            members_only=False))
+            members_only=False,
+            anon_posts=False))
 
     def uninstall(self, project):
         "Remove all the tool's artifacts from the database"
@@ -253,13 +254,26 @@ class ForumAdminController(DefaultAdminController):
                 forum.shortname = f['shortname']
                 forum.description = f['description']
                 if 'members_only' in f:
+                    if 'anon_posts' in f:
+                        flash('You cannot have anonymous posts in a members only forum.', 'warning')
+                        forum.anon_posts = False
+                        del f['anon_posts']
                     forum.members_only = True
+                else:
+                    forum.members_only = False
+                if 'anon_posts' in f:
+                    forum.anon_posts = True
+                else:
+                    forum.anon_posts = False
+                role_anon = M.ProjectRole.anonymous()._id
+                if forum.members_only:
                     role_developer = M.ProjectRole.by_name('Developer')._id
                     forum.acl = [
                         M.ACE.allow(role_developer, M.ALL_PERMISSIONS),
                         M.DENY_ALL]
+                elif forum.anon_posts:
+                    forum.acl = [M.ACE.allow(role_anon, 'post')]
                 else:
-                    forum.members_only = False
                     forum.acl = []
                 if 'icon' in f and f['icon'] is not None and f['icon'] != '':
                     self.save_forum_icon(forum, f['icon'])

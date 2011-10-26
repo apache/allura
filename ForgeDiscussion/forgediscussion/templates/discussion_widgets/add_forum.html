@@ -2,23 +2,25 @@
 <form method="{{method}}" action="{{action}}" enctype="multipart/form-data">
   <input type="hidden" name="add_forum.app_id" value="{{app and app.config._id}}">
   <div id="add_forum_form" style="display:none">
-    <label class="grid-4">Name:</label>
-    <div class="grid-15"><input type="text" name="add_forum.name" value="{{value and value['name']}}"></div>
-    <label class="grid-4">Short Name:</label>
-    <div class="grid-15"><input type="text" name="add_forum.shortname" value="{{value and value['shortname']}}"></div>
-    <label class="grid-4">Parent Forum:</label>
-    <div class="grid-15"><select name="add_forum.parent">
+    <label class="grid-5">Name:</label>
+    <div class="grid-14"><input type="text" name="add_forum.name" value="{{value and value['name']}}"></div>
+    <label class="grid-5">Short Name:</label>
+    <div class="grid-14"><input type="text" name="add_forum.shortname" value="{{value and value['shortname']}}"></div>
+    <label class="grid-5">Parent Forum:</label>
+    <div class="grid-14"><select name="add_forum.parent">
     <option value="">None</option>
     {% for f in app.forums %}<option value="{{f._id}}">{{h.really_unicode(f.name)}}</option>{% endfor %}
     </select></div>
-    <label class="grid-4">Description:</label>
-    <div class="grid-15"><textarea name="add_forum.description" style="height:50px;">{{value and value['description']}}</textarea></div>
-    <label class="grid-4">Icon:</label>
-    <div class="grid-15">{{lib.file_field('add_forum.icon', '')}}</div>
-    <label class="grid-4">Members Only:</label>
-    <div class="grid-15"><input name="add_forum.members_only" type="checkbox"{% if value and value['members_only'] %} checked{% endif %}></div>
-    <label class="grid-4">&nbsp;</label>
-    <div class="grid-15">
+    <label class="grid-5">Description:</label>
+    <div class="grid-14"><textarea name="add_forum.description" style="height:50px;">{{value and value['description']}}</textarea></div>
+    <label class="grid-5">Icon:</label>
+    <div class="grid-14">{{lib.file_field('add_forum.icon', '')}}</div>
+    <label class="grid-5">Members Only:</label>
+    <div class="grid-14"><input name="add_forum.members_only" type="checkbox"{% if value and value['members_only'] %} checked{% endif %}></div>
+    <label class="grid-5">Allow anonymous posts:</label>
+    <div class="grid-14"><input name="add_forum.anon_posts" type="checkbox"{% if value and value['anon_posts'] %} checked{% endif %}></div>
+    <label class="grid-5">&nbsp;</label>
+    <div class="grid-14">
       <input type="submit" name="create" value="Create Forum">
       <input type="button" id="add_forum_cancel" value="Cancel">
     </div>

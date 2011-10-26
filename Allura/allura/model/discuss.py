@@ -131,6 +131,9 @@ class Thread(Artifact):
             posts=[dict(slug=p.slug, subject=p.subject)
                    for p in self.posts ])
 
+    def parent_security_context(self):
+        return self.discussion
+
     @classmethod
     def discussion_class(cls):
         return cls.discussion.related

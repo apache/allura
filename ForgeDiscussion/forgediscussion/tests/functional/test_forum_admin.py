@@ -205,3 +205,45 @@ class TestForumAdmin(TestController):
         assert '/secret/' in r
         r = self.app.get('/discussion/',extra_environ=dict(username='test-user'))
         assert '/secret/' not in r
+
+    def test_anon_posts(self):
+        # make a forum anons can't post in
+        r = self.app.get('/admin/discussion/forums')
+        r.forms[1]['add_forum.shortname'] = 'testforum'
+        r.forms[1]['add_forum.name'] = 'Test Forum'
+        r.forms[1].submit()
+        # try to post in the forum and get a 403
+        r = self.app.get('/discussion/create_topic/')
+        f = r.html.find('form',{'action':'/p/test/discussion/save_new_topic'})
+        params = dict()
+        inputs = f.findAll('input')
+        for field in inputs:
+            if field.has_key('name'):
+                params[field['name']] = field.has_key('value') and field['value'] or ''
+        params[f.find('textarea')['name']] = 'post text'
+        params[f.find('select')['name']] = 'testforum'
+        params[f.find('input',{'style':'width: 90%'})['name']] = 'post topic'
+        r = self.app.post('/discussion/save_new_topic', params=params, extra_environ=dict(username='*anonymous'))
+        assert r.location == 'http://localhost/auth/'
+        # allow anon posts in the forum
+        testforum = FM.Forum.query.get(shortname='testforum')
+        self.app.post('/admin/discussion/update_forums',
+                        params={'forum-0.anon_posts':'on',
+                                'forum-0.id':str(testforum._id),
+                                'forum-0.name':'Test Forum',
+                                'forum-0.shortname':'testforum',
+                                'forum-0.description':''
+                               })
+        # successfully post to the forum
+        r = self.app.get('/discussion/create_topic/')
+        f = r.html.find('form',{'action':'/p/test/discussion/save_new_topic'})
+        params = dict()
+        inputs = f.findAll('input')
+        for field in inputs:
+            if field.has_key('name'):
+                params[field['name']] = field.has_key('value') and field['value'] or ''
+        params[f.find('textarea')['name']] = 'post text'
+        params[f.find('select')['name']] = 'testforum'
+        params[f.find('input',{'style':'width: 90%'})['name']] = 'post topic'
+        r = self.app.post('/discussion/save_new_topic', params=params)
+        assert 'http://localhost/p/test/discussion/testforum/thread/' in r.location

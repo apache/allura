@@ -50,6 +50,13 @@
             </span>
           </div>
           <div class="editable viewing">
+            <div class="viewer">{% if forum.anon_posts %}Anonymous posting allowed{% else %}Anonymous posting not allowed{% endif %}</div>
+            <span class="editor multiline">
+              <label for="{{'forum-%s.anon_posts' % loop.index0}}">Allow Anonymous Posts</label>
+              <input type="checkbox" id="{{'forum-%s.anon_posts' % loop.index0}}" name="{{'forum-%s.anon_posts' % loop.index0}}"{% if forum.anon_posts %} checked{% endif %}>
+            </span>
+          </div>
+          <div class="editable viewing">
             <div class="viewer">{{g.markdown.convert(forum.description)|safe}}</div>
             <span class="editor multiline">
               {{lib.text_area('forum-%s.description' % loop.index0, 'Description', h.really_unicode(forum.description))}}

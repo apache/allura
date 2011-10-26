@@ -56,7 +56,8 @@ class AddForum(ff.AdminForm):
             ew.TextField(name='parent', label='Parent Forum'),
             ew.TextField(name='description', label='Description',validator=fev.UnicodeString()),
             ffw.FileChooser(name='icon', label='Icon'),
-            ew.Checkbox(name="members_only", label="Members Only")
+            ew.Checkbox(name="members_only", label="Members Only"),
+            ew.Checkbox(name="anon_posts", label="Allow Anonymous Posts")
         ]
         return fields
 

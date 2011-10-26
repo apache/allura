@@ -22,6 +22,7 @@ class Forum(M.Discussion):
     posts = RelationProperty('ForumPost')
     deleted = FieldProperty(bool, if_missing=False)
     members_only = FieldProperty(bool, if_missing=False)
+    anon_posts = FieldProperty(bool, if_missing=False)
 
     @classmethod
     def attachment_class(cls):
