@@ -86,7 +86,7 @@ def sendmail(
                     log.warning('Cannot find user with ID %s', addr)
                     continue
             except:
-                log.exception('Error looking up user with ID %r')
+                log.exception('Error looking up user with ID %r' % addr)
                 continue
             addr = user.email_address_header()
             if not addr and user.email_addresses:
