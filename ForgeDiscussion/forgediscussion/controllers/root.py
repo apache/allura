@@ -87,9 +87,9 @@ class RootController(BaseController):
     @expose('jinja:forgediscussion:templates/discussionforums/create_topic.html')
     def create_topic(self, new_forum=False, **kw):
         c.new_topic = self.W.new_topic
-        forums = model.Forum.query.find(dict(
-                        app_config_id=c.app.config._id,
-                        parent_id=None)).all()
+        forums = [f for f in model.Forum.query.find(dict(
+                             app_config_id=c.app.config._id,
+                             parent_id=None)).all() if has_access(f, 'post')() and not f.deleted]
         return dict(forums=forums)
 
     @h.vardec

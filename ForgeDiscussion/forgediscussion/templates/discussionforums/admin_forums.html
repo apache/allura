@@ -45,7 +45,7 @@
           <div class="editable viewing">
             <div class="viewer">{% if forum.members_only %}Only viewable by members{% else %}Viewable by anyone{% endif %}</div>
             <span class="editor multiline">
-              <label for="{{'forum-%s.members_only' % loop.index0}}">Members Only</label>
+              <label for="{{'forum-%s.members_only' % loop.index0}}">Developer Only</label>
               <input type="checkbox" id="{{'forum-%s.members_only' % loop.index0}}" name="{{'forum-%s.members_only' % loop.index0}}"{% if forum.members_only %} checked{% endif %}>
             </span>
           </div>

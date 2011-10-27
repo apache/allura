@@ -28,7 +28,7 @@ def create_forum(app, new_forum):
         anon_posts=new_forum['anon_posts']
     else:
         anon_posts = False
-    if 'members_only' in new_forum:
+    if 'members_only' in new_forum and new_forum['members_only']:
         if anon_posts:
             flash('You cannot have anonymous posts in a members only forum.', 'warning')
             anon_posts = False
