@@ -9,6 +9,10 @@
     <link rel="alternate" type="application/atom+xml" title="Atom" href="feed.atom"/>
 {% endblock %}
 
+{% block actions %}
+    <a href="feed" title="RSS"><b data-icon="{{g.icons['feed'].char}}" class="ico {{g.icons['feed'].css}}" title="Feed"></b></a>
+{% endblock %}
+
 {% block content %}
   {% for post in posts %}
     {% if not loop.first %}

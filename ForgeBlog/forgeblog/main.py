@@ -208,7 +208,7 @@ class RootController(BaseController):
             feed_type = 'atom'
         else:
             feed_type = 'rss'
-        title = 'Recent changes to %s' % c.app.config.options.mount_point
+        title = '%s - %s' % (c.project.name, c.app.config.options.mount_label)
         feed = M.Feed.feed(
             dict(project_id=c.project._id, app_config_id=c.app.config._id),
             feed_type,
