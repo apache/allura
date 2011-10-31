@@ -1,7 +1,4 @@
-from pylons import g
 from formencode.variabledecode import variable_encode
-
-from ming.orm.ormsession import ThreadLocalORMSession
 
 from allura.tests import TestController
 
@@ -17,7 +14,7 @@ class TestUserProfile(TestController):
     def test_profile_config(self):
         # Not fully implemented, just do coverage
         response = self.app.post('/u/test-admin/profile/update_configuration', params=variable_encode({
-                                     'layout_class': 'something', 'divs': [{'name': 'foo', 'content': [{'widget': 'lotsa/content'}]}], 
+                                     'layout_class': 'something', 'divs': [{'name': 'foo', 'content': [{'widget': 'lotsa/content'}]}],
                                      'new_div': {'name': 'bar', 'new_widget': 'widg'}}))
 
     def test_wrong_profile(self):
@@ -35,58 +32,4 @@ class TestUserProfile(TestController):
         response = self.app.get('/u/test-admin/profile/feed')
         assert 'Recent posts by Test Admin' in response
         assert '[test:wiki] test-admin created page Home' in response
-
-
-class TestUserPermissions(TestController):
-    allow = dict(allow_read=True, allow_write=True, allow_create=True)
-    read = dict(allow_read=True, allow_write=False, allow_create=False)
-    disallow = dict(allow_read=False, allow_write=False, allow_create=False)
-
-    def test_permissions_page(self):
-        response = self.app.get('/u/test-admin/profile/permissions', params={'repo_path': 'git/test/src'})
-
-    def test_unknown_project(self):
-        r = self._check_repo('/git/foo/bar', status=404)
-
-    def test_unknown_app(self):
-        r = self._check_repo('/git/test/bar')
-        assert r == self.disallow, r
-
-    def test_repo_write(self):
-        r = self._check_repo('/git/test/src.git')
-        assert r == self.allow, r
-        r = self._check_repo('/git/test/src')
-        assert r == self.allow, r
-
-    def test_subdir(self):
-        r = self._check_repo('/git/test/src.git/foo')
-        assert r == self.allow, r
-        r = self._check_repo('/git/test/src/foo')
-        assert r == self.allow, r
-
-    def test_neighborhood(self):
-        r = self._check_repo('/git/test.p/src.git')
-        assert r == self.allow, r
-
-    def test_repo_read(self):
-        r = self._check_repo(
-            '/git/test.p/src.git',
-            username='test-user')
-        assert r == self.read, r
-
-    def test_unknown_user(self):
-        r = self._check_repo(
-            '/git/test.p/src.git',
-            username='test-usera',
-            status=404)
-
-    def _check_repo(self, path, username='test-admin', **kw):
-        url = '/auth/repo_permissions'
-        r = self.app.get(url, params=dict(
-                repo_path=path,
-                username=username), **kw)
-        try:
-            return r.json
-        except:
-            return r
 
