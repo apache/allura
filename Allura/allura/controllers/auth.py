@@ -206,6 +206,31 @@ class AuthController(BaseController):
         allura.tasks.repo_tasks.refresh.post()
         return '%r refresh queued.\n' % c.app.repo
 
+
+    def _auth_repos(self, user):
+        def _unix_group_name(neighborhood, shortname):
+            'shameless copied from sfx_api.py'
+            path = neighborhood.url_prefix + shortname[len(neighborhood.shortname_prefix):]
+            parts = [ p for p in path.split('/') if p ]
+            if len(parts) == 2 and parts[0] == 'p':
+                parts = parts[1:]
+            return '.'.join(reversed(parts))
+
+        repos = []
+        for p in user.my_projects():
+            for app in p.app_configs:
+                if not app.tool_name.lower() in ('git', 'hg', 'svn'):
+                    continue
+                if not has_access(app, 'write', user, p):
+                    continue
+                repos.append('/%s/%s/%s' % (
+                    app.tool_name.lower(),
+                    _unix_group_name(p.neighborhood, p.shortname),
+                    app.options['mount_point']))
+        repos.sort()
+        return repos
+
+
     @expose('json:')
     def repo_permissions(self, repo_path=None, username=None, **kw):
         """Expects repo_path to be a filesystem path like
@@ -216,14 +241,14 @@ class AuthController(BaseController):
         Returns JSON describing this user's permissions on that repo.
         """
         disallow = dict(allow_read=False, allow_write=False, allow_create=False)
-        if not repo_path:
-            response.status=400
-            return dict(disallow, error='no path specified')
         # Find the user
         user = M.User.by_username(username)
         if not user:
             response.status=404
             return dict(disallow, error='unknown user')
+        if not repo_path:
+            return dict(allow_write=self._auth_repos(user))
+
         parts = [p for p in repo_path.split(os.path.sep) if p]
         # strip the tool name
         parts = parts[1:]
@@ -267,7 +292,7 @@ class PreferencesController(BaseController):
         app_index = dict(
             (ac._id, ac) for ac in M.AppConfig.query.find(dict(
                     _id={'$in': [ mb.app_config_id for mb in mailboxes ] })).ming_cursor)
-        
+
         for mb in mailboxes:
             project = projects.get(mb.project_id, None)
             app_config = app_index.get(mb.app_config_id, None)
@@ -338,7 +363,7 @@ class PreferencesController(BaseController):
         if 'email_format' in preferences:
             c.user.set_pref('email_format', preferences['email_format'])
         redirect('.')
-        
+
     @h.vardec
     @expose()
     @require_post()
@@ -358,7 +383,7 @@ class PreferencesController(BaseController):
         else:
             tok.secret_key = h.cryptographic_nonce()
         redirect(request.referer)
-    
+
     @expose()
     @require_post()
     def del_api_token(self):
@@ -366,7 +391,7 @@ class PreferencesController(BaseController):
         if tok is None: return
         tok.delete()
         redirect(request.referer)
-    
+
     @expose()
     @require_post()
     def revoke_oauth(self, _id=None):

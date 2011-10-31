@@ -1,7 +1,10 @@
 import json
 
+from datadiff.tools import assert_equal
+
 from allura.tests import TestController
 from allura import model as M
+from allura.lib import helpers as h
 from ming.orm.ormsession import ThreadLocalORMSession
 
 
@@ -203,3 +206,11 @@ class TestUserPermissions(TestController):
             return r.json
         except:
             return r
+
+    def test_list_repos(self):
+        r = self.app.get('/auth/repo_permissions', params=dict(username='test-admin'), status=200)
+        assert_equal(json.loads(r.body), {"allow_write": [
+            '/git/test/src-git',
+            '/hg/test/src-hg',
+            '/svn/test/src',
+        ]})
