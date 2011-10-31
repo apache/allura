@@ -5,8 +5,12 @@
 {% block header %}Create Topic{% endblock %}
 
 {% block edit_box %}
-<div class="editbox">
-  {{c.new_topic.display(action=c.app.url + 'save_new_topic',show_subject=True,forums=forums)}}
-  <div class="clear"></div>
-</div>
+{% if forums | length == 0 %}
+  <p>You do not have permission to post in any forums.</p>
+{% else %}
+  <div class="editbox">
+    {{c.new_topic.display(action=c.app.url + 'save_new_topic',show_subject=True,forums=forums)}}
+    <div class="clear"></div>
+  </div>
+{% endif %}
 {% endblock %}
