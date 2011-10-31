@@ -159,9 +159,6 @@ class TestUserPermissions(TestController):
     read = dict(allow_read=True, allow_write=False, allow_create=False)
     disallow = dict(allow_read=False, allow_write=False, allow_create=False)
 
-    def test_permissions_page(self):
-        response = self.app.get('/u/test-admin/profile/permissions', params={'repo_path': 'git/test/src'})
-
     def test_unknown_project(self):
         r = self._check_repo('/git/foo/bar', status=404)
 
