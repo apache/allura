@@ -178,6 +178,11 @@ class RepoRootController(BaseController):
         elif c.app.repo.count() == 0:
             return dict(status='no_commits')
         c.commit_browser_widget = self.commit_browser_widget
+        return dict(status='ready')
+
+    @without_trailing_slash
+    @expose('json:')
+    def commit_browser_data(self):
         all_commits = c.app.repo._impl.new_commits(all_commits=True)
         sorted_commits = dict()
         next_column = 0
@@ -209,10 +214,10 @@ class RepoRootController(BaseController):
                 # this parent is the branch point for this column, so make this column available for re-use
                 elif parent in sorted_commits and sorted_commits[parent]['column'] < sorted_commits[commit]['column']:
                     free_cols.add(sorted_commits[commit]['column'])
-        return dict(built_tree=json.dumps(sorted_commits),
+        return dict(built_tree=sorted_commits,
                     next_column=next_column,
                     max_row=len(all_commits),
-                    status='ready')
+                    )
 
 class RepoRestController(RepoRootController):
     @expose('json:')

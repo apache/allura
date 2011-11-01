@@ -39,6 +39,11 @@ if (!Array.prototype.indexOf)
   };
 }
 if($('#commit_graph')){
+$.getJSON(document.location.href+'_data', function(data) {
+  var tree = data['built_tree'];
+  var max_row = data['max_row'];
+  var next_column = data['next_column'];
+
   // graph size settings
   var x_space = 10;
   var y_space = 20;
@@ -208,4 +213,5 @@ if($('#commit_graph')){
     ctx.fillText(commit.message, x_pos, y_pos);
     commit_rows[commit.row]={'url':commit.url,'y_pos':y_pos};
   }
+});
 }

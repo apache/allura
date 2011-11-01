@@ -20,6 +20,6 @@
   {% elif status == 'not_ready' %}
     <p>You must wait for the repository to be fully analyzed.</p>
   {% else %}
-    {{ c.commit_browser_widget.display(built_tree=built_tree,max_row=max_row,next_column=next_column) }}
+    {{ c.commit_browser_widget.display() }}
   {% endif %}
 {% endblock %}
