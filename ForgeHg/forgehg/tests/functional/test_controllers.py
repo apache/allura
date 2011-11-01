@@ -1,8 +1,10 @@
 import os
+import json
 
 import pkg_resources
 from pylons import c
 from ming.orm import ThreadLocalORMSession
+from datadiff.tools import assert_equal
 
 from allura.lib import helpers as h
 from alluratest.controller import TestController
@@ -80,10 +82,17 @@ class TestRootController(TestController):
 
     def test_commit_browser(self):
         resp = self.app.get('/src-hg/commit_browser')
-        commit_script = resp.html.findAll('script')[1].contents[0]
-        assert "var max_row = 5;" in commit_script
-        assert "var next_column = 1;" in commit_script
-        assert '{"column": 0, "series": 0, "url": "/p/test/src-hg/ci/0000000000000000000000000000000000000000/", "parents": [], "message": "", "row": 4}' in commit_script
+
+    def test_commit_browser_data(self):
+        resp = self.app.get('/src-hg/commit_browser_data')
+        data = json.loads(resp.body);
+        assert data['max_row'] == 5
+        assert data['next_column'] == 1
+        assert_equal(data['built_tree']['e5a0b44437be783c41084e7bf0740f9b58b96ecf'],
+                {'column': 0, 'series': 0,
+                 'url': '/p/test/src-hg/ci/e5a0b44437be783c41084e7bf0740f9b58b96ecf/',
+                 'parents': ['773d2f8e3a94d0d5872988b16533d67e1a7f5462'],
+                 'message': 'Modify README', 'row': 2})
 
     def _get_ci(self):
         resp = self.app.get('/src-hg/').follow().follow()
