@@ -1,3 +1,7 @@
+html.canvas #commit_browser_canvas_message {
+    display: none;
+}
+
 #graph_holder{
     height:305px;
     overflow:auto;
