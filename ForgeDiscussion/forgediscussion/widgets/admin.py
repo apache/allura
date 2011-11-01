@@ -25,11 +25,7 @@ class OptionsAdmin(ff.AdminForm):
                 label='Posting Policy',
                 options=[
                     ew.Option(py_value='ApproveOnceModerated', label='Approve Once Moderated'),
-                    ew.Option(py_value='ApproveAll', label='Approve All')]),
-            ew.TextField(
-                name='MonitoringEmail',
-                label='Monitoring Email',
-                validator=fev.Email())
+                    ew.Option(py_value='ApproveAll', label='Approve All')])
         ]
         return fields
 
@@ -55,6 +51,7 @@ class AddForum(ff.AdminForm):
                                  UniqueForumShortnameValidator())),
             ew.TextField(name='parent', label='Parent Forum'),
             ew.TextField(name='description', label='Description',validator=fev.UnicodeString()),
+            ew.TextField(name='monitoring_email', label='Monitoring Email',validator=fev.Email()),
             ffw.FileChooser(name='icon', label='Icon'),
             ew.Checkbox(name="members_only", label="Developer Only"),
             ew.Checkbox(name="anon_posts", label="Allow Anonymous Posts")

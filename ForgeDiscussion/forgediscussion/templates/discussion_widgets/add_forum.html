@@ -13,6 +13,8 @@
     </select></div>
     <label class="grid-5">Description:</label>
     <div class="grid-14"><textarea name="add_forum.description" style="height:50px;">{{value and value['description']}}</textarea></div>
+    <label class="grid-5">Monitoring Email:</label>
+    <div class="grid-14"><input type="text" name="add_forum.monitoring_email" value="{{value and value['monitoring_email']}}"></div>
     <label class="grid-5">Icon:</label>
     <div class="grid-14">{{lib.file_field('add_forum.icon', '')}}</div>
     <label class="grid-5">Developer Only:</label>

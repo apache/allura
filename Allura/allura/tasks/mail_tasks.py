@@ -141,9 +141,3 @@ def sendsimplemail(
     smtp_client.sendmail(
         [toaddr], fromaddr, reply_to, subject, message_id,
         in_reply_to, multi_msg)
-    smtp_client.sendmail(
-        [toaddr], fromaddr, reply_to, subject, message_id,
-        in_reply_to, plain_msg)
-    smtp_client.sendmail(
-        [toaddr], fromaddr, reply_to, subject, message_id,
-        in_reply_to, html_msg)

@@ -23,6 +23,7 @@ class Forum(M.Discussion):
     deleted = FieldProperty(bool, if_missing=False)
     members_only = FieldProperty(bool, if_missing=False)
     anon_posts = FieldProperty(bool, if_missing=False)
+    monitoring_email = FieldProperty(str, if_missing=None)
 
     @classmethod
     def attachment_class(cls):

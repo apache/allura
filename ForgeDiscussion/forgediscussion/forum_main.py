@@ -39,8 +39,7 @@ class ForgeDiscussionApp(Application):
     permissions = ['configure', 'read', 'unmoderated_post', 'post', 'moderate', 'admin']
     config_options = Application.config_options + [
         ConfigOption('PostingPolicy',
-                     schema.OneOf('ApproveOnceModerated', 'ModerateAll'), 'ApproveOnceModerated'),
-        ConfigOption('MonitoringEmail', str, '')
+                     schema.OneOf('ApproveOnceModerated', 'ModerateAll'), 'ApproveOnceModerated')
         ]
     PostClass=DM.ForumPost
     AttachmentClass=DM.ForumAttachment
@@ -201,7 +200,8 @@ class ForgeDiscussionApp(Application):
             description='Forum about anything you want to talk about.',
             parent='',
             members_only=False,
-            anon_posts=False))
+            anon_posts=False,
+            monitoring_email=None))
 
     def uninstall(self, project):
         "Remove all the tool's artifacts from the database"
@@ -224,9 +224,7 @@ class ForumAdminController(DefaultAdminController):
         c.options_admin = W.options_admin
         return dict(app=self.app,
                     form_value=dict(
-                        PostingPolicy=self.app.config.options.get('PostingPolicy'),
-                        MonitoringEmail=self.app.config.options.get('MonitoringEmail')
-                    ))
+                        PostingPolicy=self.app.config.options.get('PostingPolicy')))
 
     @expose('jinja:forgediscussion:templates/discussionforums/admin_forums.html')
     def forums(self, add_forum=None, **kw):
@@ -252,6 +250,7 @@ class ForumAdminController(DefaultAdminController):
                 forum.name = f['name']
                 forum.shortname = f['shortname']
                 forum.description = f['description']
+                forum.monitoring_email = f['monitoring_email']
                 if 'members_only' in f:
                     if 'anon_posts' in f:
                         flash('You cannot have anonymous posts in a members only forum.', 'warning')

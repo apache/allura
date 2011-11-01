@@ -446,9 +446,8 @@ class Post(Message, VersionedArtifact):
         g.post_event('discussion.new_post', self.thread_id, self._id)
         artifact = self.thread.artifact or self.thread
         n = Notification.post(artifact, 'message', post=self)
-        monitoring_email = c.app.config.options.get('MonitoringEmail')
-        if monitoring_email:
-            n.send_simple(monitoring_email)
+        if hasattr(self.discussion,"monitoring_email") and self.discussion.monitoring_email:
+            n.send_simple(self.discussion.monitoring_email)
         session(self).flush()
         self.thread.last_post_date = max(
             self.thread.last_post_date,

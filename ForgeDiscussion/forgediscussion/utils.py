@@ -30,6 +30,7 @@ def create_forum(app, new_forum):
                     description=h.really_unicode(description),
                     members_only=new_forum.get('members_only', False),
                     anon_posts=new_forum.get('anon_posts', False),
+                    monitoring_email=new_forum.get('monitoring_email', None),
                     )
     if f.members_only and f.anon_posts:
         flash('You cannot have anonymous posts in a members only forum.', 'warning')

@@ -43,6 +43,12 @@
             </span>
           </div>
           <div class="editable viewing">
+            <span class="viewer">{% if forum.monitoring_email %}{{h.really_unicode(forum.monitoring_email)}}{% else %}No monitoring email set.{% endif %}</span>
+            <span class="editor">
+              {{lib.text_field('forum-%s.monitoring_email' % loop.index0, 'Monitoring Email', h.really_unicode(forum.monitoring_email))}}
+            </span>
+          </div>
+          <div class="editable viewing">
             <div class="viewer">{% if forum.members_only %}Only viewable by members{% else %}Viewable by anyone{% endif %}</div>
             <span class="editor multiline">
               <label for="{{'forum-%s.members_only' % loop.index0}}">Developer Only</label>
