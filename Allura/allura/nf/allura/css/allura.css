@@ -45,7 +45,10 @@ b.ico.ico-close { background-position: -80px -128px; }
   background-repeat: no-repeat;
 }
 
-.ui-icon-tool-git, .ui-icon-tool-svn, .ui-icon-tool-hg {
+.ui-icon-tool-git,
+.ui-icon-tool-svn,
+.ui-icon-tool-hg,
+.ui-icon-tool-cvs {
   background-image: url("../images/code_24.png");
   background-repeat: no-repeat;
 }
@@ -108,7 +111,11 @@ b.ico.ico-close { background-position: -80px -128px; }
 #top_nav .ui-icon-tool-wiki {
   background-image: url("../images/wiki_32.png");
 }
-#top_nav .ui-icon-tool-git, #top_nav .ui-icon-tool-svn, #top_nav .ui-icon-tool-hg {
+#top_nav .ui-icon-tool-git,
+#top_nav .ui-icon-tool-svn,
+#top_nav .ui-icon-tool-hg,
+#top_nav .ui-icon-tool-cvs
+{
   background-image: url("../images/code_32.png");
 }
 #top_nav .ui-icon-tool-stats {
