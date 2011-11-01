@@ -1,7 +1,10 @@
+import json
+
 import tg
 import pkg_resources
 from pylons import c
 from ming.orm import ThreadLocalORMSession
+from datadiff.tools import assert_equal
 
 from allura import model as M
 from allura.lib import helpers as h
@@ -80,10 +83,17 @@ class TestRootController(TestController):
 
     def test_commit_browser(self):
         resp = self.app.get('/src-git/commit_browser')
-        commit_script = resp.html.findAll('script')[1].contents[0]
-        assert "var max_row = 4;" in commit_script
-        assert "var next_column = 1;" in commit_script
-        assert '{"column": 0, "series": 0, "url": "/p/test/src-git/ci/df30427c488aeab84b2352bdf88a3b19223f9d7a/", "parents": ["6a45885ae7347f1cac5103b0050cc1be6a1496c8"], "message": "Add README", "row": 1}' in commit_script
+
+    def test_commit_browser_data(self):
+        resp = self.app.get('/src-git/commit_browser_data')
+        data = json.loads(resp.body);
+        assert data['max_row'] == 4
+        assert data['next_column'] == 1
+        assert_equal(data['built_tree']['df30427c488aeab84b2352bdf88a3b19223f9d7a'],
+                {'column': 0, 'series': 0,
+                 'url': "/p/test/src-git/ci/df30427c488aeab84b2352bdf88a3b19223f9d7a/",
+                 'parents': ['6a45885ae7347f1cac5103b0050cc1be6a1496c8'],
+                 'message': 'Add README', 'row': 1})
 
     def test_log(self):
         resp = self.app.get('/src-git/ref/master~/log/')

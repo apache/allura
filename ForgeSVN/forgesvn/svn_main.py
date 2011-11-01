@@ -40,6 +40,7 @@ class ForgeSVNApp(RepositoryApp):
         self.root.refresh = default_root.refresh
         self.root.feed = default_root.feed
         self.root.commit_browser = default_root.commit_browser
+        self.root.commit_browser_data = default_root.commit_browser_data
         self.admin = SVNRepoAdminController(self)
 
     @LazyProperty

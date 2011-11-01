@@ -1,8 +1,10 @@
 import os
+import json
 
 import pkg_resources
 from pylons import c
 from ming.orm import ThreadLocalORMSession
+from datadiff.tools import assert_equal
 
 from allura.lib import helpers as h
 from alluratest.controller import TestController
@@ -36,10 +38,18 @@ class TestRootController(TestController):
 
     def test_commit_browser(self):
         resp = self.app.get('/src/commit_browser')
-        commit_script = resp.html.findAll('script')[1].contents[0]
-        assert "var max_row = 5;" in commit_script
-        assert "var next_column = 1;" in commit_script
-        assert '{"column": 0, "series": 0, "url": "/p/test/src/1/", "parents": [], "message": "Create readme", "row": 4}' in commit_script
+
+    def test_commit_browser_data(self):
+        resp = self.app.get('/src/commit_browser_data')
+        data = json.loads(resp.body);
+        assert data['max_row'] == 5
+        assert data['next_column'] == 1
+        assert ({'column': 0, 'series': 0,
+                 'url': "/p/test/src/1/",
+                 'parents': [],
+                 'message': 'Create readme', 'row': 4}
+              in data['built_tree'].values()), data['built_tree']
+
 
     def test_feed(self):
         r = self.app.get('/src/feed.rss')
@@ -68,6 +78,3 @@ class TestRootController(TestController):
         resp = self.app.get('/src/3/tree/README?diff=2')
         assert 'This is readme' in resp, resp.showbrowser()
         assert '+++' in resp, resp.showbrowser()
-
-
-
