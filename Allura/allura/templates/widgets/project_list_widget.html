@@ -11,7 +11,8 @@
             value=project, 
             icon_url=icon_urls[project._id], 
             accolades=accolades_index[project._id],
-            sitemap=sitemaps[project._id])}}
+            sitemap=sitemaps[project._id],
+            display_mode=display_mode)}}
       {% endif %}
     {% endfor %}
     {% do g.set_project(old_project) %}

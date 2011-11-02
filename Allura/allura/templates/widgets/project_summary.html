@@ -1,4 +1,5 @@
-<div class="border card">
+{% if display_mode == 'list' %}
+<div class="list card">
   {% if accolades %}
     <div class="box notch sponsor">
       <div class="feature">{{accolades[0].award.short}}</div>
@@ -11,9 +12,26 @@
   {% endif %}
   <h2><a href="{{value.url()}}">{{value.name}}</a></h2>
   <p class="desc">{% if value.summary %}{{value.summary}}{% else %}{{h.text.truncate(value.short_description, 50)}}{% endif %}</p>
-  <div class="quik">
-    {% for s in sitemap %}
-      <a href="{{s.url}}" class="ui-icon-{{(s.ui_icon or 'admin').lower()}}" title="{{s.label}}"><span>{{s.label}}</span></a>
-    {% endfor %}
-  </div>
+  {{g.markdown_wiki.convert('[[download_button]]')}}
 </div>
+{% else %}
+  <div class="border card">
+    {% if accolades %}
+      <div class="box notch sponsor">
+        <div class="feature">{{accolades[0].award.short}}</div>
+        <img src="{{icon_url}}" alt="{{value.name}} Logo"/>
+      </div>
+    {% else %}
+      <div class="box">
+        <img src="{{icon_url}}" alt="{{value.name}} Logo"/>
+      </div>
+    {% endif %}
+    <h2><a href="{{value.url()}}">{{value.name}}</a></h2>
+    <p class="desc">{% if value.summary %}{{value.summary}}{% else %}{{h.text.truncate(value.short_description, 50)}}{% endif %}</p>
+    <div class="quik">
+      {% for s in sitemap %}
+        <a href="{{s.url}}" class="ui-icon-{{(s.ui_icon or 'admin').lower()}}" title="{{s.label}}"><span>{{s.label}}</span></a>
+      {% endfor %}
+    </div>
+  </div>
+{% endif %}
