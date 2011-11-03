@@ -183,7 +183,7 @@ class Project(MappedClass):
         return TroveCategory.query.find({'_id':{'$in':getattr(self,'trove_%s' % trove_type)}}).all()
 
     def get_tool_data(self, tool, key, default=None):
-        return self.tool_data.get(tool, {}).get(key, None)
+        return self.tool_data.get(tool, {}).get(key, default)
 
     def set_tool_data(self, tool, **kw):
         d = self.tool_data.setdefault(tool, {})
