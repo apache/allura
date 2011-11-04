@@ -608,6 +608,8 @@ class RepoObject(MappedClass):
         repo'''
         if repo is None: repo = c.app.repo
         lc, isnew = LastCommitFor.upsert(repo_id=repo._id, object_id=self.object_id)
+        if not ci.authored.date:
+            repo.refresh_commit(ci)
         if isnew:
             lc.last_commit.author = ci.authored.name
             lc.last_commit.author_email = ci.authored.email
