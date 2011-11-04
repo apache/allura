@@ -164,11 +164,11 @@ class HgImplementation(M.RepositoryImplementation):
         else:
             user_name = user_email = obj.user()
         ci.committed = Object(
-            name=user_name,
-            email=user_email,
+            name=h.really_unicode(user_name),
+            email=h.really_unicode(user_email),
             date=datetime.utcfromtimestamp(sum(obj.date())))
         ci.authored=Object(ci.committed)
-        ci.message=obj.description() or ''
+        ci.message=h.really_unicode(obj.description() or '')
         ci.parent_ids=[
             p.hex() for p in obj.parents()
             if p.hex() != obj.hex() ]
@@ -193,8 +193,8 @@ class HgImplementation(M.RepositoryImplementation):
             else:
                 user_name = user_email = obj.user()
             user = Object(
-                name=user_name,
-                email=user_email,
+                name=h.really_unicode(user_name),
+                email=h.really_unicode(user_email),
                 date=datetime.utcfromtimestamp(sum(obj.date())))
             fake_tree = self._tree_from_changectx(obj)
             ci_doc = CommitDoc(dict(
@@ -202,7 +202,7 @@ class HgImplementation(M.RepositoryImplementation):
                     tree_id=fake_tree.hex(),
                     committed=user,
                     authored=user,
-                    message=obj.description() or '',
+                    message=h.really_unicode(obj.description() or ''),
                     child_ids=[],
                     parent_ids=[ p.hex() for p in obj.parents() if p.hex() != obj.hex() ]))
             ci_doc.m.insert(safe=True)
