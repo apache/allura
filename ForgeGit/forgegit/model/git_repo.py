@@ -93,7 +93,7 @@ class GitImplementation(M.RepositoryImplementation):
         self._repo.status = 'analyzing'
         session(self._repo).flush()
         log.info('... %r cloned, analyzing', self._repo)
-        self._repo.refresh()
+        self._repo.refresh(notify=False)
         self._repo.status = 'ready'
         log.info('... %s ready', self._repo)
         session(self._repo).flush()
