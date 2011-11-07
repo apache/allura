@@ -77,7 +77,7 @@ class CustomFieldAdmin(ew.CompoundField):
     def resources(self):
         for r in super(CustomFieldAdmin, self).resources():
             yield r
-        yield ew.JSLink('tool/Tickets/js/custom-fields.js')
+        yield ew.JSLink('tracker_js/custom-fields.js')
 
     fields = [
         ew.TextField(name='label'),
