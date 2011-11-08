@@ -44,7 +44,7 @@ class GenericTicketForm(ew.SimpleForm):
                 attrs={'style':'width: 425px','placeholder':'Title'},
                 validator=fev.UnicodeString(not_empty=True, messages={'empty':"You must provide a Title"})),
             ffw.MarkdownEdit(label='Description',name='description',
-                    attrs={'style':'width: 100%'}),
+                    attrs={'style':'width: 95%'}),
             ew.SingleSelectField(name='status', label='Status',
                 options=lambda: c.app.globals.all_status_names.split()),
             ffw.ProjectUserSelect(name='assigned_to', label='Assigned To'),

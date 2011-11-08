@@ -21,6 +21,9 @@
 {% endblock %}
 
 {% block content %}
+  {% if help_msg %}
+    <div id="search-ticket-help-msg" class="grid-19 info">{{g.markdown.convert(help_msg)}}</div>
+  {% endif %}
   {% if count %}
     {{c.ticket_search_results.display(solr_error=solr_error,
       count=count,

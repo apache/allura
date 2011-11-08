@@ -29,6 +29,9 @@
 {% endif %}
 
 {% block content %}
+{% if help_msg %}
+  <div id="search-ticket-help-msg" class="grid-19 info">{{g.markdown.convert(help_msg)}}</div>
+{% endif %}
 <div class="grid-19">
 {% if bin %}
   <input type="text" id="bin_summary" value="{{bin.summary}}" style="width: 150px; float: left; margin-right: .5em">

@@ -761,7 +761,7 @@ class TestEmailMonitoring(TestFunctionalController):
         self.test_email = 'mailinglist@example.com'
 
     def _set_options(self, monitoring_type='AllTicketChanges'):
-        r = self.app.post('/admin/bugs/configure', params={
+        r = self.app.post('/admin/bugs/set_options', params={
             'TicketMonitoringEmail': self.test_email,
             'TicketMonitoringType': monitoring_type,
             })
@@ -797,6 +797,37 @@ class TestEmailMonitoring(TestFunctionalController):
         })
         assert send_simple.call_count == 1, send_simple.call_count
         send_simple.assert_called_with(self.test_email)
+
+class TestHelpTextOptions(TestController):
+    def _set_options(self, new_txt='', search_txt=''):
+        r = self.app.post('/admin/bugs/set_options', params={
+            'TicketHelpNew': new_txt,
+            'TicketHelpSearch': search_txt,
+            })
+        return r
+
+    def test_help_text(self):
+        self._set_options(
+                new_txt='**foo**',
+                search_txt='*bar*')
+        r = self.app.get('/bugs/')
+        assert '<em>bar</em>' in r
+        r = self.app.get('/bugs/search', params=dict(q='test'))
+        assert '<em>bar</em>' in r
+        r = self.app.get('/bugs/milestone/1.0/')
+        assert '<em>bar</em>' in r
+        r = self.app.get('/bugs/new/')
+        assert '<strong>foo</strong>' in r
+
+        self._set_options()
+        r = self.app.get('/bugs/')
+        assert len(r.html.findAll(attrs=dict(id='search-ticket-help-msg'))) == 0
+        r = self.app.get('/bugs/search', params=dict(q='test'))
+        assert len(r.html.findAll(attrs=dict(id='search-ticket-help-msg'))) == 0
+        r = self.app.get('/bugs/milestone/1.0/')
+        assert len(r.html.findAll(attrs=dict(id='search-ticket-help-msg'))) == 0
+        r = self.app.get('/bugs/new/')
+        assert len(r.html.findAll(attrs=dict(id='new-ticket-help-msg'))) == 0
 
 def sidebar_contains(response, text):
     sidebar_menu = response.html.find('div', attrs={'id': 'sidebar'})

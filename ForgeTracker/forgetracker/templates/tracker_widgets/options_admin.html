@@ -1,0 +1,29 @@
+<form method="{{method}}"
+       {% if enctype %}enctype="{{enctype}}"{% endif %}
+      action="{{action}}">
+  {% for field in widget.fields %}
+    {% set ctx=widget.context_for(field) %}
+    {% if field.field_type != 'hidden' %}
+      <div class="grid-{{field.grid_width or '19'}}" style="margin-bottom: 20px">
+        {% if field.show_label and field.label %}
+        <label for="{{ctx.id}}">{{field.label}}:</label><br>
+        {% endif %}
+        {{field.display(**ctx)}}
+        {% if ctx.errors and field.show_errors -%}
+        <br><span {{widget.j2_attrs({'class':error_class})}}>{{ctx.errors}}</span>
+        {%- endif %}
+      </div>
+    {% else %}
+      {{field.display(**ctx)}}
+    {% endif %}
+  {% endfor %}
+  <div class="grid-13">&nbsp;</div>
+  <hr>
+  <div class="grid-13">&nbsp;</div>
+  <div class="grid-13">
+    {% for b in buttons %}
+      {{b.display()}}
+    {% endfor %}
+    <a href="#" onclick="window.history.back(); return false;" class="close">Cancel</a>
+  </div>
+</form>

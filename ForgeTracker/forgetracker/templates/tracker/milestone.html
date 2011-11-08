@@ -27,6 +27,9 @@
 {% endblock %}
 
 {% block content %}
+  {% if help_msg %}
+    <div id="search-ticket-help-msg" class="grid-19 info">{{g.markdown.convert(help_msg)}}</div>
+  {% endif %}
   {% if milestone.description %}
     <p>{{milestone.description}}</p>
   {% endif %}

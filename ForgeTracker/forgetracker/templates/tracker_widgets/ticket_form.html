@@ -2,6 +2,9 @@
 <form method="POST" action="{{action}}" enctype="multipart/form-data">
   {{widget.display_field_by_name('ticket_num')|safe}}
   {{widget.display_field_by_name('super_id')|safe}}
+  {% if help_msg %}
+    <div id="new-ticket-help-msg" class="grid-19 info">{{g.markdown.convert(help_msg)}}</div>
+  {% endif %}
   <div class="grid-18">
       {{widget.display_field_by_name('summary')|safe}}
   </div>

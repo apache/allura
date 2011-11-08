@@ -2491,13 +2491,13 @@ div.attachment_thumb .file_type span {
 }
 
 /* Messages */
-.error, .notice, .success, .ok {
+.error, .notice, .success, .ok, .info {
   padding: .8em;
   margin-bottom: 1em;
   border: 2px solid #ddd;
 }
 
-.error p, .notice p, .success p {
+.error p, .notice p, .success p, .info p {
   margin: 0;
 }
 
@@ -2517,6 +2517,17 @@ div.attachment_thumb .file_type span {
   background: #E6EFC2;
   color: #264409;
   border-color: #C6D880;
+}
+
+.info {
+  background: #BDE5F8;
+  color: #003565;
+  border-color: #5C98CD;
+}
+
+.info a {
+  color: #003565;
+  text-decoration: underline;
 }
 
 .error a {

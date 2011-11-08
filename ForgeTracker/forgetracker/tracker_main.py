@@ -141,7 +141,7 @@ class ForgeTrackerApp(Application):
         admin_url = c.project.url()+'admin/'+self.config.options.mount_point+'/'
         links = [SitemapEntry('Field Management', admin_url + 'fields'),
                  SitemapEntry('Edit Searches', admin_url + 'bins/'),
-                 SitemapEntry('Options', admin_url + 'options', className='admin_modal')]
+                 SitemapEntry('Options', admin_url + 'options')]#, className='admin_modal')]
         if self.permissions and has_access(self, 'configure')():
             links.append(SitemapEntry('Permissions', admin_url + 'permissions', className='nav_child'))
         return links
@@ -359,6 +359,7 @@ class RootController(BaseController):
         c.subscribe_form = W.subscribe_form
         result['subscribed'] = M.Mailbox.subscribed()
         result['allow_edit'] = has_access(c.app, 'write')()
+        result['help_msg'] = c.app.config.options.get('TicketHelpSearch')
         c.ticket_search_results = W.ticket_search_results
         return result
 
@@ -441,6 +442,7 @@ class RootController(BaseController):
         result = self.paged_query(q, page=page, sort=sort, columns=columns, **kw)
         result['allow_edit'] = has_access(c.app, 'write')()
         result['bin'] = bin
+        result['help_msg'] = c.app.config.options.get('TicketHelpSearch')
         c.ticket_search_results = W.ticket_search_results
         return result
 
@@ -483,8 +485,9 @@ class RootController(BaseController):
     def new(self, super_id=None, **kw):
         require_access(c.app, 'write')
         c.ticket_form = W.ticket_form
+        help_msg = c.app.config.options.get('TicketHelpNew')
         return dict(action=c.app.config.url()+'save_ticket',
-                    super_id=super_id)
+                    super_id=super_id, help_msg=help_msg)
 
     @expose('jinja:allura:templates/markdown_syntax.html')
     def markdown_syntax(self):
@@ -1017,12 +1020,24 @@ class TrackerAdminController(DefaultAdminController):
         return dict(app=self.app, globals=self.app.globals)
 
     @expose('jinja:forgetracker:templates/tracker/admin_options.html')
-    def options(self):
+    def options(self, **kw):
         c.options_admin = W.options_admin
         return dict(app=self.app, form_value=dict(
             TicketMonitoringType=self.app.config.options.get('TicketMonitoringType'),
-            TicketMonitoringEmail=self.app.config.options.get('TicketMonitoringEmail')
+            TicketMonitoringEmail=self.app.config.options.get('TicketMonitoringEmail'),
+            TicketHelpNew=self.app.config.options.get('TicketHelpNew'),
+            TicketHelpSearch=self.app.config.options.get('TicketHelpSearch'),
         ))
+
+    @expose()
+    @require_post()
+    @validate(W.options_admin, error_handler=options)
+    def set_options(self, **kw):
+        require_access(self.app, 'configure')
+        for k,v in kw.iteritems():
+            self.app.config.options[k] = v
+        flash('Options updated')
+        redirect(c.project.url() + 'admin/tools')
 
     @expose()
     def update_tickets(self, **post_data):
@@ -1234,6 +1249,7 @@ class MilestoneController(BaseController):
         result = TM.Ticket.paged_query(
             self.mongo_query, page=page, sort=sort, columns=columns, **kw)
         result['allow_edit'] = has_access(c.app, 'write')()
+        result['help_msg'] = c.app.config.options.get('TicketHelpSearch')
         # get milestone progress from mongo
         d = TM.Ticket.query.find(dict(self.mongo_query, app_config_id=c.app.config._id))
         tickets = [t for t in d if has_access(t, 'read')]
