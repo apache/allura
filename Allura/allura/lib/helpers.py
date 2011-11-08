@@ -31,8 +31,10 @@ from webhelpers import date, feedgenerator, html, number, misc, text
 from allura.lib import exceptions as exc
 # Reimport to make available to templates
 from allura.lib.decorators import exceptionless
+from allura.lib import AsciiDammit
 from .security import has_access
 
+re_path_portion_fragment = re.compile(r'[a-z][-a-z0-9]{2,}')
 re_path_portion = re.compile(r'^[a-z][-a-z0-9]{2,}$')
 re_clean_vardec_key = re.compile(r'''\A
 ( # first part
@@ -44,6 +46,15 @@ re_clean_vardec_key = re.compile(r'''\A
 (-\d+)?# with optional -digits suffix
 )+
 \Z''', re.VERBOSE)
+
+def make_safe_path_portion(ustr):
+    ustr = really_unicode(ustr)
+    s = ustr.encode('latin-1', 'ignore')
+    s = AsciiDammit.asciiDammit(s)
+    s = s.lower()
+    s = '-'.join(re_path_portion_fragment.findall(s))
+    s = s.replace('--', '-')
+    return s
 
 def monkeypatch(*objs):
     def patchem(func):
