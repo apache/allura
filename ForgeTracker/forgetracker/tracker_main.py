@@ -14,13 +14,14 @@ from formencode import validators
 from bson import ObjectId
 from webhelpers import feedgenerator as FG
 
+from ming import schema
 from ming.orm.ormsession import ThreadLocalORMSession
 from ming.utils import LazyProperty
 
 # Pyforge-specific imports
 from allura import model as M
 from allura.lib import helpers as h
-from allura.app import Application, SitemapEntry, DefaultAdminController
+from allura.app import Application, SitemapEntry, DefaultAdminController, ConfigOption
 from allura.lib.search import search_artifact
 from allura.lib.decorators import require_post
 from allura.lib.security import require_access, has_access, require
@@ -36,6 +37,7 @@ from allura.controllers import BaseController
 from forgetracker import model as TM
 from forgetracker import version
 
+from forgetracker.widgets.admin import OptionsAdmin
 from forgetracker.widgets.ticket_form import TicketForm, TicketCustomField
 from forgetracker.widgets.bin_form import BinForm
 from forgetracker.widgets.ticket_search import TicketSearchResults, MassEdit, MassEditForm
@@ -72,11 +74,17 @@ class W:
     field_admin = TrackerFieldAdmin()
     field_display = TrackerFieldDisplay()
     ticket_custom_field = TicketCustomField
+    options_admin = OptionsAdmin()
 
 class ForgeTrackerApp(Application):
     __version__ = version.__version__
     permissions = ['configure', 'read', 'write', 'save_searches',
                     'unmoderated_post', 'post', 'moderate', 'admin']
+    config_options = Application.config_options + [
+        ConfigOption('TicketMonitoringEmail', str, ''),
+        ConfigOption('TicketMonitoringType',
+            schema.OneOf('NewTicketsOnly', 'AllTicketChanges'), None)
+        ]
     searchable=True
     tool_label='Tickets'
     default_mount_label='Tickets'
@@ -132,7 +140,8 @@ class ForgeTrackerApp(Application):
     def admin_menu(self):
         admin_url = c.project.url()+'admin/'+self.config.options.mount_point+'/'
         links = [SitemapEntry('Field Management', admin_url + 'fields'),
-                 SitemapEntry('Edit Searches', admin_url + 'bins/')]
+                 SitemapEntry('Edit Searches', admin_url + 'bins/'),
+                 SitemapEntry('Options', admin_url + 'options', className='admin_modal')]
         if self.permissions and has_access(self, 'configure')():
             links.append(SitemapEntry('Permissions', admin_url + 'permissions', className='nav_child'))
         return links
@@ -877,7 +886,7 @@ class TicketController(BaseController):
             for k in data['custom_fields']:
                 data['custom_fields.'+k] = data['custom_fields'][k]
         self._update_ticket(data)
-        
+
     @require_post()
     def _update_ticket(self, post_data):
         require_access(self.ticket, 'write')
@@ -950,6 +959,15 @@ class TicketController(BaseController):
             changelist=changes.get_changed())
         if post is None:
             post = thread.add_post(text=change_text)
+            monitoring_email = c.app.config.options.get('TicketMonitoringEmail')
+            monitoring_type = c.app.config.options.get('TicketMonitoringType')
+            if monitoring_email and monitoring_type == 'AllTicketChanges':
+                artifact = post.thread.artifact or post.thread
+                n = M.Notification.query.get(_id=artifact.url() + post._id)
+                if not n:
+                    n = M.Notification._make_notification(artifact, 'message',
+                                                          post=post)
+                n.send_simple(monitoring_email)
         else:
             post.text += '\n\n' + change_text
         self.ticket.commit()
@@ -997,6 +1015,14 @@ class TrackerAdminController(DefaultAdminController):
     def fields(self, **kw):
         c.form = W.field_admin
         return dict(app=self.app, globals=self.app.globals)
+
+    @expose('jinja:forgetracker:templates/tracker/admin_options.html')
+    def options(self):
+        c.options_admin = W.options_admin
+        return dict(app=self.app, form_value=dict(
+            TicketMonitoringType=self.app.config.options.get('TicketMonitoringType'),
+            TicketMonitoringEmail=self.app.config.options.get('TicketMonitoringEmail')
+        ))
 
     @expose()
     def update_tickets(self, **post_data):

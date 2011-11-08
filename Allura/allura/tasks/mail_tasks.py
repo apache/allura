@@ -126,6 +126,14 @@ def sendsimplemail(
     subject,
     message_id,
     in_reply_to=None):
+    from allura import model as M
+    if '@' not in fromaddr:
+        user = M.User.query.get(_id=ObjectId(fromaddr))
+        if not user:
+            log.warning('Cannot find user with ID %s', fromaddr)
+            fromaddr = 'noreply@in.sf.net'
+        else:
+            fromaddr = user.email_address_header()
     plain_msg = mail_util.encode_email_part(text, 'plain')
     html_text = g.forge_markdown(email=True).convert(text)
     html_msg = mail_util.encode_email_part(html_text, 'html')

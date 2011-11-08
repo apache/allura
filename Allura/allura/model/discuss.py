@@ -446,7 +446,7 @@ class Post(Message, VersionedArtifact):
         g.post_event('discussion.new_post', self.thread_id, self._id)
         artifact = self.thread.artifact or self.thread
         n = Notification.post(artifact, 'message', post=self)
-        monitoring_email = self.app.config.options.get('MonitoringEmail')
+        monitoring_email = c.app.config.options.get('MonitoringEmail')
         if monitoring_email:
             n.send_simple(monitoring_email)
         session(self).flush()

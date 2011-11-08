@@ -3,6 +3,7 @@ import os
 import Image, StringIO
 import allura
 
+from mock import patch
 from nose.tools import assert_true, assert_false, eq_, assert_equal
 from formencode.variabledecode import variable_encode
 
@@ -753,6 +754,49 @@ class TestMilestoneAdmin(TestFunctionalController):
             'custom_fields._releases': '1.0'}).count() == 0
         assert tm.Ticket.query.find({
             'custom_fields._releases': '1.1'}).count() == 1
+
+class TestEmailMonitoring(TestFunctionalController):
+    def __init__(self):
+        super(TestEmailMonitoring, self).__init__()
+        self.test_email = 'mailinglist@example.com'
+
+    def _set_options(self, monitoring_type='AllTicketChanges'):
+        r = self.app.post('/admin/bugs/configure', params={
+            'TicketMonitoringEmail': self.test_email,
+            'TicketMonitoringType': monitoring_type,
+            })
+        return r
+
+    def test_set_options(self):
+        r = self._set_options()
+        r = self.app.get('/admin/bugs/options')
+        email = r.html.findAll(attrs=dict(name='TicketMonitoringEmail'))
+        mtype = r.html.findAll('option', attrs=dict(value='AllTicketChanges'))
+        assert email[0]['value'] == self.test_email
+        assert mtype[0]['selected'] == 'selected'
+
+    @patch('forgetracker.model.ticket.Notification.send_simple')
+    def test_notifications_new(self, send_simple):
+        self._set_options('NewTicketsOnly')
+        self.new_ticket(summary='test')
+        self.app.post('/bugs/1/update_ticket',{
+            'summary':'test',
+            'description':'update',
+        })
+        send_simple.assert_called_once_with(self.test_email)
+
+    @patch('forgetracker.tracker_main.M.Notification.send_simple')
+    def test_notifications_all(self, send_simple):
+        self._set_options()
+        self.new_ticket(summary='test')
+        send_simple.assert_called_once_with(self.test_email)
+        send_simple.reset_mock()
+        self.app.post('/bugs/1/update_ticket',{
+            'summary':'test',
+            'description':'update',
+        })
+        assert send_simple.call_count == 1, send_simple.call_count
+        send_simple.assert_called_with(self.test_email)
 
 def sidebar_contains(response, text):
     sidebar_menu = response.html.find('div', attrs={'id': 'sidebar'})

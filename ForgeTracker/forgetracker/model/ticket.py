@@ -344,6 +344,7 @@ class Ticket(VersionedArtifact):
 
     def commit(self):
         VersionedArtifact.commit(self)
+        monitoring_email = self.app.config.options.get('TicketMonitoringEmail')
         if self.version > 1:
             hist = TicketHistory.query.get(artifact_id=self._id, version=self.version-1)
             old = hist.data
@@ -382,7 +383,9 @@ class Ticket(VersionedArtifact):
             subject = self.email_subject
             Thread(discussion_id=self.app_config.discussion_id,
                    ref_id=self.index_id())
-            Notification.post(artifact=self, topic='metadata', text=description, subject=subject)
+            n = Notification.post(artifact=self, topic='metadata', text=description, subject=subject)
+            if monitoring_email:
+                n.send_simple(monitoring_email)
         Feed.post(self, description)
 
     def url(self):
