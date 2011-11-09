@@ -181,6 +181,7 @@ def wipe_database():
             db = conn[db]
     else:
         for database in conn.database_names():
+            if database not in ( 'allura', 'pyforge', 'project-data'): continue
             log.info('Wiping database %s', database)
             db = conn[database]
             for coll in db.collection_names():

@@ -1,0 +1,22 @@
+{% extends 'allura:templates/repo/repo_master.html' %}
+
+{% block title %}
+  {% if c.app.repo %}
+    SVN Repository: {{c.app.repo.name}}
+  {% else %}
+    SVN Repository
+  {% endif %}
+{% endblock %}
+
+{% block header %}{{c.app.config.options.mount_label}}{% endblock %}
+
+{% block content %}
+<div class="message error" style="width:90%">
+  <h1 class="header">Warning</h1>
+  <p class="content">Importing a repository will <strong>overwrite any and all data</strong>
+    in your existing repository.</p>
+</div>
+<br style="clear:both"/>
+<p>If you really, <strong>really</strong> want to do this, enter the URL of the source repository below:</p>
+{{ c.form.display(action='do_import') }}
+{% endblock %}

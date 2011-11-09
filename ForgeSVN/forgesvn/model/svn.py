@@ -123,7 +123,7 @@ class SVNImplementation(M.RepositoryImplementation):
         return '%s%d/' % (
             self._repo.url(), self._revno(object_id))
 
-    def init(self, default_dirs=True):
+    def init(self, default_dirs=True, skip_special_files=False):
         fullname = self._setup_paths()
         log.info('svn init %s', fullname)
         if os.path.exists(fullname):
@@ -133,7 +133,8 @@ class SVNImplementation(M.RepositoryImplementation):
                                  stdout=subprocess.PIPE,
                                  stderr=subprocess.PIPE,
                                  cwd=self._repo.fs_path)
-        self._setup_special_files()
+        if not skip_special_files:
+            self._setup_special_files()
         self._repo.status = 'ready'
         # make first commit with dir structure
         if default_dirs:
@@ -149,19 +150,19 @@ class SVNImplementation(M.RepositoryImplementation):
 
     def clone_from(self, source_url):
         '''Initialize a repo as a clone of another using svnsync'''
-        self.init(default_dirs=False)
+        self.init(default_dirs=False, skip_special_files=True)
+        self._repo.status = 'importing'
+        session(self._repo).flush()
         log.info('Initialize %r as a clone of %s',
                  self._repo, source_url)
-        p = subprocess.call(['svnsync', 'init', self._url, source_url],
-                        stdin=subprocess.PIPE,
-                        stdout=subprocess.PIPE,
-                        stderr=subprocess.PIPE)
-        assert p == 0
-        p = subprocess.call(['svnsync', '--non-interactive', 'sync', self._url],
-                        stdin=subprocess.PIPE,
-                        stdout=subprocess.PIPE,
-                        stderr=subprocess.PIPE)
-        assert p == 0
+        # Need a pre-revprop-change hook for cloning
+        fn = os.path.join(self._repo.fs_path, self._repo.name,
+                          'hooks', 'pre-revprop-change')
+        with open(fn, 'wb') as fp:
+            fp.write('#!/bin/sh\n')
+        os.chmod(fn, 0755)
+        subprocess.check_call(['svnsync', 'init', self._url, source_url])
+        subprocess.check_call(['svnsync', '--non-interactive', 'sync', self._url])
         self._repo.status = 'analyzing'
         session(self._repo).flush()
         log.info('... %r cloned, analyzing', self._repo)
@@ -169,6 +170,7 @@ class SVNImplementation(M.RepositoryImplementation):
         self._repo.status = 'ready'
         log.info('... %s ready', self._repo)
         session(self._repo).flush()
+        self._setup_special_files()
 
     def refresh_heads(self):
         info = self._svn.info2(
