@@ -7,6 +7,7 @@ from pylons import g, c
 from webob import exc
 
 from allura.lib import helpers as h
+from allura.lib import utils
 from allura import model as M
 from allura.lib.security import has_access, require_access
 from allura.lib.decorators import require_post
@@ -132,7 +133,10 @@ class ForumThreadController(ThreadController):
 
 class ForumPostController(PostController):
 
+    @h.vardec
     @expose('jinja:allura:templates/discussion/post.html')
+    @validate(pass_validator)
+    @utils.AntiSpam.validate('Spambot protection engaged')
     def index(self, **kw):
         if self.thread.discussion.deleted and not has_access(c.app, 'configure')():
             redirect(self.thread.discussion.url()+'deleted')

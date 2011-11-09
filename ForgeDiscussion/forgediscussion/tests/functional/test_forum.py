@@ -405,6 +405,8 @@ class TestForum(TestController):
         params[f.find('input',{'style':'width: 90%'})['name']] = 'AAA'
         thread = self.app.post('/discussion/save_new_topic', params=params).follow()
         url = thread.request.url
+
+        # test reply to post
         f = thread.html.find('div',{'class':'row reply_post_form'}).find('form')
         rep_url = f.get('action')
         params = dict()
@@ -421,6 +423,22 @@ class TestForum(TestController):
         assert thread.response.body.count('<div class="promote_to_thread_form') == 1
         assert thread.response.body.count('<div class="row reply_post_form') == 2
         assert thread.response.body.count('<div class="edit_post_form') == 2
+
+        # test edit post
+        thread_url = thread.request.url
+        r = thread
+        reply_form = r.html.find('div',{'class':'edit_post_form reply'}).find('form')
+        post_link = str(reply_form['action'])
+        params = dict()
+        inputs = reply_form.findAll('input')
+        for field in inputs:
+            if field.has_key('name'):
+                params[field['name']] = field.has_key('value') and field['value'] or ''
+        params[reply_form.find('textarea')['name']] = 'zzz'
+        self.app.post(post_link, params)
+        r = self.app.get(thread_url)
+        assert 'zzz' in str(r.html.find('div',{'class':'display_post'}))
+        assert 'Last edit: Test Admin less than 1 minute ago' in str(r.html.find('div',{'class':'display_post'}))
 
     def test_subscription_controls(self):
         r = self.app.get('/discussion/create_topic/')

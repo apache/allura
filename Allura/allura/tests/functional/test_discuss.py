@@ -112,7 +112,7 @@ class TestDiscuss(TestController):
         r = self.app.get(thread_url)
         assert 'zzz' in str(r.html.find('div',{'class':'display_post'}))
         assert 'Last edit: Test Admin less than 1 minute ago' in str(r.html.find('div',{'class':'display_post'}))
-                
+
 class TestAttachment(TestController):
 
     def setUp(self):
