@@ -66,6 +66,7 @@ def test_no_prints():
         'Allura/ldap-userconfig.py',
         'Allura/ez_setup/',
         'Allura/push_re.py',
+        'Allura/allura/lib/AsciiDammit.py',
         'ForgeMail/forgemail/sstress.py',
     ]
     if run(find_py + " | grep -v '" + "' | grep -v '".join(skips) + "' | xargs grep -v '^ *#' | grep 'print ' | grep -E -v '(pprint|#pragma: ?printok)' ") != 1:
