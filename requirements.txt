@@ -15,7 +15,7 @@ greenlet==0.3.1
 gevent-zeromq==0.2.0
 
 # for the migration scripts only
-html2text==3.02
+html2text==3.101
 postmarkup==1.1.4
 
 
