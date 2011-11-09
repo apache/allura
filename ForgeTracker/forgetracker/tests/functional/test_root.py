@@ -15,14 +15,7 @@ from forgetracker import model as tm
 from allura.lib import helpers as h
 from ming.orm.ormsession import ThreadLocalORMSession
 
-class TestMilestones(TestController):
-
-    def test_milestone_list(self):
-        r = self.app.get('/bugs/milestones')
-        assert '1.0' in r, r.showbrowser()
-
-class TestFunctionalController(TestController):
-
+class TrackerTestController(TestController):
     def new_ticket(self, mount_point='/bugs/', **kw):
         response = self.app.get(mount_point + 'new/')
         form = response.forms[1]
@@ -32,6 +25,12 @@ class TestFunctionalController(TestController):
         assert resp.status_int != 200, resp
         return resp
 
+class TestMilestones(TrackerTestController):
+    def test_milestone_list(self):
+        r = self.app.get('/bugs/milestones')
+        assert '1.0' in r, r.showbrowser()
+
+class TestFunctionalController(TrackerTestController):
     def test_bad_ticket_number(self):
         self.app.get('/bugs/input.project_user_select', status=404)
 
@@ -654,7 +653,7 @@ class TestFunctionalController(TestController):
         r = self.app.get('/bugs/1/', dict(page=1, limit=2))
         assert_true('Page 2 of 2' in r)
 
-class TestMilestoneAdmin(TestFunctionalController):
+class TestMilestoneAdmin(TrackerTestController):
     def _post(self, params, **kw):
         params['open_status_names'] = 'aa bb'
         params['closed_status_names'] = 'cc'
@@ -755,7 +754,7 @@ class TestMilestoneAdmin(TestFunctionalController):
         assert tm.Ticket.query.find({
             'custom_fields._releases': '1.1'}).count() == 1
 
-class TestEmailMonitoring(TestFunctionalController):
+class TestEmailMonitoring(TrackerTestController):
     def __init__(self):
         super(TestEmailMonitoring, self).__init__()
         self.test_email = 'mailinglist@example.com'
@@ -798,7 +797,7 @@ class TestEmailMonitoring(TestFunctionalController):
         assert send_simple.call_count == 1, send_simple.call_count
         send_simple.assert_called_with(self.test_email)
 
-class TestHelpTextOptions(TestController):
+class TestHelpTextOptions(TrackerTestController):
     def _set_options(self, new_txt='', search_txt=''):
         r = self.app.post('/admin/bugs/set_options', params={
             'TicketHelpNew': new_txt,
