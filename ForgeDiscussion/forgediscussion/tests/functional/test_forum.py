@@ -176,7 +176,15 @@ class TestForumAsync(TestController):
         p = FM.ForumPost.query.find().first()
         url = str('/discussion/testforum/thread/%s/%s/' % (thd._id, p.slug))
         r = self.app.get(url)
-        r = self.app.post(url, params=dict(subject='New Subject', text='Asdf'))
+        f = r.html.find('form',{'action': '/p/test' + url})
+        params = dict()
+        inputs = f.findAll('input')
+        for field in inputs:
+            if field.has_key('name'):
+                params[field['name']] = field.has_key('value') and field['value'] or ''
+        params['subject'] = 'New Subject'
+        params['text'] = 'Asdf'
+        r = self.app.post(url, params=params)
         assert 'Asdf' in self.app.get(url)
         r = self.app.get(url, params=dict(version=1))
         post_form = r.html.find('form',{'action':'/p/test' + url + 'reply'})
