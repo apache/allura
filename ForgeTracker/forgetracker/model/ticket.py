@@ -102,23 +102,7 @@ class Globals(MappedClass):
             r = search_artifact(Ticket, b.terms, rows=0)
             hits = r is not None and r.hits or 0
             self._bin_counts_data.append(dict(summary=b.summary, hits=hits))
-        # Refresh milestone field counts
-        self._milestone_counts = []
-        for fld in self.milestone_fields:
-            for m in fld.milestones:
-                if m.name:
-                    k = '%s:%s' % (fld.name, m.name)
-                    mongo_query = {'custom_fields.%s' % fld.name: m.name}
-                    d = Ticket.query.find(dict(
-                        mongo_query, app_config_id=c.app.config._id))
-                    tickets = [t for t in d if security.has_access(t, 'read')]
-                    hits = len(tickets)
-                    closed = sum(1 for t in tickets
-                        if t.status in c.app.globals.set_of_closed_status_names)
-                    self._milestone_counts.append({'name': k, 'hits': hits,
-                                                   'closed': closed})
-        self._milestone_counts_expire = \
-            self._bin_counts_expire = \
+        self._bin_counts_expire = \
             datetime.utcnow() + timedelta(minutes=60)
 
     def bin_count(self, name):
@@ -129,20 +113,24 @@ class Globals(MappedClass):
         return dict(summary=name, hits=0)
 
     def milestone_count(self, name):
-        if self._milestone_counts_expire < datetime.utcnow():
-            self._refresh_counts()
-        for d in self._milestone_counts:
-            if d['name'] == name: return d
-        return dict(name=name, hits=0)
+        fld_name, m_name = name.split(':', 1)
+        d = dict(name=name, hits=0, closed=0)
+        if not (fld_name and m_name):
+            return d
+        mongo_query = {'custom_fields.%s' % fld_name: m_name}
+        r = Ticket.query.find(dict(
+            mongo_query, app_config_id=c.app.config._id))
+        tickets = [t for t in r if security.has_access(t, 'read')]
+        d['hits'] = len(tickets)
+        d['closed'] = sum(1 for t in tickets
+                          if t.status in c.app.globals.set_of_closed_status_names)
+        return d
 
     def invalidate_bin_counts(self):
         '''Expire it just a bit in the future to allow data to propagate through
         the search task
         '''
         self._bin_counts_expire = datetime.utcnow() + timedelta(seconds=5)
-        # Don't need to expire these in the future since the counts are now
-        # coming from mongo instead of solr.
-        self._milestone_counts_expire = datetime.utcnow()
 
     def sortable_custom_fields_shown_in_search(self):
         return [dict(sortable_name='%s_s' % field['name'],
