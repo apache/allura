@@ -168,10 +168,7 @@ class ForgeTrackerApp(Application):
                         h.text.truncate(m.name, 72),
                         self.url + fld.name[1:] + '/' + h.urlquote(m.name) + '/',
                         className='nav_child',
-                        small=sum(1 for t in TM.Ticket.query.find({
-                                      "custom_fields.%s" % fld.name: m.name,
-                                      "app_config_id": c.app.config._id})
-                                  if has_access(t, 'read'))))
+                        small=c.app.globals.milestone_count('%s:%s' % (fld.name, m.name))['hits']))
         if ticket.isdigit():
             ticket = TM.Ticket.query.find(dict(app_config_id=self.config._id,ticket_num=int(ticket))).first()
         else:
@@ -1233,7 +1230,7 @@ class MilestoneController(BaseController):
         self.root = root
         self.field = fld
         self.milestone = m
-        self.query = '%s:"%s"' % (fld.name, m.name)
+        self.progress_key = '%s:%s' % (fld.name, m.name)
         self.mongo_query = {
             'custom_fields.%s' % fld.name: m.name }
 
@@ -1250,18 +1247,13 @@ class MilestoneController(BaseController):
             self.mongo_query, page=page, sort=sort, columns=columns, **kw)
         result['allow_edit'] = has_access(c.app, 'write')()
         result['help_msg'] = c.app.config.options.get('TicketHelpSearch')
-        # get milestone progress from mongo
-        d = TM.Ticket.query.find(dict(self.mongo_query, app_config_id=c.app.config._id))
-        tickets = [t for t in d if has_access(t, 'read')]
-        total = len(tickets)
-        closed = sum(1 for t in tickets
-                     if t.status in c.app.globals.set_of_closed_status_names)
+        progress = c.app.globals.milestone_count(self.progress_key)
         result.pop('q')
         result.update(
             field=self.field,
             milestone=self.milestone,
-            total=total,
-            closed=closed)
+            total=progress['hits'],
+            closed=progress['closed'])
         c.ticket_search_results = W.ticket_search_results
         c.auto_resize_textarea = W.auto_resize_textarea
         return result
