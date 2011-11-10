@@ -30,6 +30,12 @@ class TestMilestones(TrackerTestController):
         r = self.app.get('/bugs/milestones')
         assert '1.0' in r, r.showbrowser()
 
+    def test_milestone_list_progress(self):
+        self.new_ticket(summary='foo', _milestone='1.0')
+        self.new_ticket(summary='bar', _milestone='1.0', status='closed')
+        r = self.app.get('/bugs/milestones')
+        assert '1 / 2' in r, r.showbrowser()
+
 class TestFunctionalController(TrackerTestController):
     def test_bad_ticket_number(self):
         self.app.get('/bugs/input.project_user_select', status=404)

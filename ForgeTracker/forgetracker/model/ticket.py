@@ -101,18 +101,22 @@ class Globals(MappedClass):
                 app_config_id=self.app_config_id)):
             r = search_artifact(Ticket, b.terms, rows=0)
             hits = r is not None and r.hits or 0
-            self._bin_counts_data.append(dict(summary=b.summary,hits=hits))
+            self._bin_counts_data.append(dict(summary=b.summary, hits=hits))
         # Refresh milestone field counts
         self._milestone_counts = []
         for fld in self.milestone_fields:
             for m in fld.milestones:
                 if m.name:
-                    k = '%s:"%s"' % (fld.name, m.name)
-                    r = search_artifact(Ticket, k, rows=0)
-                    hits = r is not None and r.hits or 0
-                    q = search_artifact(Ticket, '%s && (%s)' % (k, self.closed_query), rows=0)
-                    closed = q is not None and q.hits or 0
-                    self._milestone_counts.append({'name':k,'hits':hits,'closed':closed})
+                    k = '%s:%s' % (fld.name, m.name)
+                    mongo_query = {'custom_fields.%s' % fld.name: m.name}
+                    d = Ticket.query.find(dict(
+                        mongo_query, app_config_id=c.app.config._id))
+                    tickets = [t for t in d if security.has_access(t, 'read')]
+                    hits = len(tickets)
+                    closed = sum(1 for t in tickets
+                        if t.status in c.app.globals.set_of_closed_status_names)
+                    self._milestone_counts.append({'name': k, 'hits': hits,
+                                                   'closed': closed})
         self._milestone_counts_expire = \
             self._bin_counts_expire = \
             datetime.utcnow() + timedelta(minutes=60)
@@ -136,7 +140,9 @@ class Globals(MappedClass):
         the search task
         '''
         self._bin_counts_expire = datetime.utcnow() + timedelta(seconds=5)
-        self._milestone_counts_expire = datetime.utcnow() + timedelta(seconds=5)
+        # Don't need to expire these in the future since the counts are now
+        # coming from mongo instead of solr.
+        self._milestone_counts_expire = datetime.utcnow()
 
     def sortable_custom_fields_shown_in_search(self):
         return [dict(sortable_name='%s_s' % field['name'],
