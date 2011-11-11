@@ -31,7 +31,8 @@ class TestForumAdmin(TestController):
                                   'forum-0.id':str(frm._id),
                                   'forum-0.name':'New Test Forum',
                                   'forum-0.shortname':'NewTestForum',
-                                  'forum-0.description':'My desc'})
+                                  'forum-0.description':'My desc',
+                                  'forum-0.monitoring_email':''})
         r = self.app.get('/admin/discussion/forums')
         assert 'New Test Forum' in r
         assert 'My desc' in r
@@ -192,7 +193,8 @@ class TestForumAdmin(TestController):
                                 'forum-0.id':str(secret._id),
                                 'forum-0.name':'Secret',
                                 'forum-0.shortname':'secret',
-                                'forum-0.description':''
+                                'forum-0.description':'',
+                                'forum-0.monitoring_email':''
                                })
         # member can see the forum, but non-member gets 403
         self.app.get('/discussion/secret')
@@ -232,7 +234,8 @@ class TestForumAdmin(TestController):
                                 'forum-0.id':str(testforum._id),
                                 'forum-0.name':'Test Forum',
                                 'forum-0.shortname':'testforum',
-                                'forum-0.description':''
+                                'forum-0.description':'',
+                                'forum-0.monitoring_email':''
                                })
         # successfully post to the forum
         r = self.app.get('/discussion/create_topic/')
