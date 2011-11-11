@@ -22,7 +22,7 @@ class TestSVNApp(unittest.TestCase):
         ThreadLocalORMSession.close_all()
 
     def test_admin_menu(self):
-        assert_equals(len(c.app.admin_menu()), 4)
+        assert_equals(len(c.app.admin_menu()), 5)
         assert_equals(c.app.admin_menu()[0].label, 'Viewable Files')
 
     def test_uninstall(self):
