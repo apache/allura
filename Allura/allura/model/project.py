@@ -543,7 +543,6 @@ class Project(MappedClass):
             ForgeWikiApp = None
 
         self.notifications_disabled = True
-        session(self).flush(self)
         if users is None: users = [ c.user ]
         if apps is None:
             if is_user_project:
@@ -577,6 +576,7 @@ class Project(MappedClass):
             for user in users:
                 pr = user.project_role()
                 pr.roles = [ role_admin._id ]
+            session(self).flush(self)
             # Setup apps
             for i, (ep_name, mount_point, label) in enumerate(apps):
                 self.install_app(ep_name, mount_point, label, ordinal=i)
