@@ -129,14 +129,15 @@ class TestNeighborhood(TestController):
                           extra_environ=dict(username='root'))
         assert r.html.find('div',{'class':'error'}).string == 'Please use only letters, numbers, and dashes 3-15 characters long.'
         r = self.app.post('/p/register',
-                          params=dict(project_unixname='test', project_name='Tester', project_description='', neighborhood='Adobe'),
+                          params=dict(project_unixname='test', project_name='Tester', project_description='', neighborhood='Projects'),
                           antispam=True,
                           extra_environ=dict(username='root'))
         assert r.html.find('div',{'class':'error'}).string == 'This project name is taken.'
         r = self.app.post('/adobe/register',
                           params=dict(project_unixname='mymoz', project_name='My Moz', project_description='', neighborhood='Adobe'),
                           antispam=True,
-                          extra_environ=dict(username='root'))
+                          extra_environ=dict(username='root'),
+                          status=302)
 
     def test_register_private_fails_for_anon(self):
         r = self.app.post(
@@ -280,11 +281,20 @@ class TestNeighborhood(TestController):
         assert r.json['message'] == 'This project name is taken.'
 
     def test_neighborhood_project(self):
-        r = self.app.get('/adobe/test/home/', status=302)
         r = self.app.get('/adobe/adobe-1/home/').follow(status=200)
         r = self.app.get('/p/test/sub1/home/')
         r = self.app.get('/p/test/sub1/', status=302)
         r = self.app.get('/p/test/no-such-app/', status=404)
+
+    def test_neighborhood_namespace(self):
+        # p/test exists, so try creating adobe/test
+        r = self.app.get('/adobe/test/home/', status=404)
+        r = self.app.post('/adobe/register',
+                          params=dict(project_unixname='test', project_name='Test again', project_description='', neighborhood='Adobe'),
+                          antispam=True,
+                          extra_environ=dict(username='root'))
+        assert r.status_int==302, r.html.find('div',{'class':'error'}).string
+        r = self.app.get('/adobe/test/home/Home/', status=200)
 
     def test_neighborhood_awards(self):
         file_name = 'adobe_icon.png'

@@ -277,9 +277,9 @@ class ProjectRegistrationProvider(object):
         method = config.get('registration.method', 'local')
         return app_globals.Globals().entry_points['registration'][method]()
 
-    def name_taken(self, project_name):
+    def name_taken(self, project_name, neighborhood):
         from allura import model as M
-        p = M.Project.query.get(shortname=project_name)
+        p = M.Project.query.get(shortname=project_name, neighborhood_id=neighborhood._id)
         if p:
             return 'This project name is taken.'
         for check in self.extra_name_checks():
@@ -337,8 +337,9 @@ class ProjectRegistrationProvider(object):
         if not h.re_path_portion.match(shortname.replace('/', '')):
             raise ValueError('Invalid project shortname: %s' % shortname)
         try:
-            p = M.Project.query.get(shortname=shortname)
-            if p: raise forge_exc.ProjectConflict()
+            p = M.Project.query.get(shortname=shortname, neighborhood_id=neighborhood._id)
+            if p:
+                raise forge_exc.ProjectConflict()
             p = M.Project(neighborhood_id=neighborhood._id,
                         shortname=shortname,
                         name=project_name,
@@ -447,7 +448,7 @@ class ThemeProvider(object):
         manager.register_directory(
             'theme/%s' % name,
             pkg_resources.resource_filename(
-                'allura', 
+                'allura',
                 os.path.join('nf', name)))
 
     @LazyProperty

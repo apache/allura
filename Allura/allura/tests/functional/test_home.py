@@ -20,7 +20,7 @@ class TestProjectHome(TestController):
 
     def test_neighborhood_home(self):
         self.app.get('/p/test/home/', status=302)
-        self.app.get('/adobe/test/home/', status=302)
+        self.app.get('/adobe/test/home/', status=404)
         self.app.get('/adobe/no_such_project/home/', status=404)
 
     def test_user_subproject_home_not_profile(self):

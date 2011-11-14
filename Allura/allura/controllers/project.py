@@ -72,7 +72,7 @@ class NeighborhoodController(object):
         pname = unquote(pname)
         if not h.re_path_portion.match(pname):
             raise exc.HTTPNotFound, pname
-        project = M.Project.query.get(shortname=self.prefix + pname)
+        project = M.Project.query.get(shortname=self.prefix + pname, neighborhood_id=self.neighborhood._id)
         if project is None:
             project = self.neighborhood.neighborhood_project
             c.project = project
@@ -141,14 +141,14 @@ class NeighborhoodController(object):
     @expose('json:')
     def suggest_name(self, project_name=None):
         new_name = re.sub("[^A-Za-z0-9]", "", project_name).lower()
-        name_taken_message = plugin.ProjectRegistrationProvider.get().name_taken(new_name)
+        name_taken_message = plugin.ProjectRegistrationProvider.get().name_taken(new_name, self.neighborhood)
         if len(new_name) < 3 or len(new_name) > 15:
             name_taken_message = "Name must be 3-15 characters long."
         return dict(suggested_name=new_name, message=name_taken_message)
 
     @expose('json:')
     def check_name(self, project_name=None):
-        name_taken_message = plugin.ProjectRegistrationProvider.get().name_taken(project_name)
+        name_taken_message = plugin.ProjectRegistrationProvider.get().name_taken(project_name, self.neighborhood)
         if not name_taken_message and not h.re_path_portion.match(project_name):
             name_taken_message = 'Please use only letters, numbers, and dashes 3-15 characters long.'
         return dict(message=name_taken_message)

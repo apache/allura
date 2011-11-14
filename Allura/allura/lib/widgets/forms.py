@@ -18,7 +18,8 @@ class NeighborhoodProjectTakenValidator(fev.FancyValidator):
 
     def _to_python(self, value, state):
         value = h.really_unicode(value or '').encode('utf-8').lower()
-        message = plugin.ProjectRegistrationProvider.get().name_taken(value)
+        neighborhood = M.Neighborhood.query.get(name=state.full_dict['neighborhood'])
+        message = plugin.ProjectRegistrationProvider.get().name_taken(value, neighborhood)
         if message:
             raise formencode.Invalid(message, value, state)
         return value
@@ -228,5 +229,3 @@ class NeighborhoodAddProjectForm(ForgeForm):
                 });
             });
         ''' % dict(project_name=project_name, project_unixname=project_unixname))
-
-
