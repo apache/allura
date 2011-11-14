@@ -170,11 +170,17 @@ class NeighborhoodController(object):
         project_description = h.really_unicode(project_description or '').encode('utf-8')
         project_name = h.really_unicode(project_name or '').encode('utf-8')
         project_unixname = h.really_unicode(project_unixname or '').encode('utf-8').lower()
-        c.project = neighborhood.register_project(project_unixname, project_name=project_name, private_project=private_project)
+        apps = None
+        if 'tools' in project_template:
+            apps = []
+        c.project = neighborhood.register_project(project_unixname, project_name=project_name, private_project=private_project, apps=apps)
         if project_description:
             c.project.short_description = project_description
         ming.orm.ormsession.ThreadLocalORMSession.flush_all()
-        offset = int(c.project.ordered_mounts(include_search=True)[-1]['ordinal']) + 1
+        ordered_mounts = c.project.ordered_mounts(include_search=True)
+        offset = 0
+        if len(ordered_mounts):
+            offset = int(ordered_mounts[-1]['ordinal']) + 1
         if 'tools' in project_template:
             for i, tool in enumerate(project_template['tools'].keys()):
                 tool_config = project_template['tools'][tool]
@@ -198,16 +204,17 @@ class NeighborhoodController(object):
                 troves = getattr(c.project,'trove_%s'%trove_type)
                 for trove_id in project_template['trove_cats'][trove_type]:
                     troves.append(M.TroveCategory.query.get(trove_cat_id=trove_id)._id)
-        if 'home_options' in project_template:
+        if 'home_options' in project_template and c.project.app_config('home'):
             options = c.project.app_config('home').options
             for option in project_template['home_options'].keys():
                 options[option] = project_template['home_options'][option]
-        from forgewiki import model as WM
         home_app = c.project.app_instance('home')
-        if 'home_text' in project_template:
-            WM.Page.query.get(app_config_id=home_app.config._id).text = project_template['home_text']
-        else:
-            WM.Page.query.get(app_config_id=home_app.config._id).text = """[[project_admins]]
+        if home_app:
+            from forgewiki import model as WM
+            if 'home_text' in project_template:
+                WM.Page.query.get(app_config_id=home_app.config._id).text = project_template['home_text']
+            else:
+                WM.Page.query.get(app_config_id=home_app.config._id).text = """[[project_admins]]
 [[download_button]]"""
         if 'icon' in project_template:
             icon_file = StringIO(urlopen(project_template['icon']['url']).read())

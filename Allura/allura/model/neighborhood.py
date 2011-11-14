@@ -68,7 +68,7 @@ class Neighborhood(MappedClass):
         else:
             return url
 
-    def register_project(self, shortname, user=None, project_name=None, user_project=False, private_project=False):
+    def register_project(self, shortname, user=None, project_name=None, user_project=False, private_project=False, apps=None):
         '''Register a new project in the neighborhood.  The given user will
         become the project's superuser.  If no user is specified, c.user is used.
         '''
@@ -76,7 +76,7 @@ class Neighborhood(MappedClass):
         if project_name is None:
             project_name = shortname
         return provider.register_project(
-            self, shortname, project_name, user or getattr(c,'user',None), user_project, private_project)
+            self, shortname, project_name, user or getattr(c,'user',None), user_project, private_project, apps)
 
     def bind_controller(self, controller):
         from allura.controllers.project import NeighborhoodController

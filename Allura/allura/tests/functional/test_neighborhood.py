@@ -202,11 +202,13 @@ class TestNeighborhood(TestController):
     "filename":"icon.png"
   },
   "tools":{
+    "wiki":{"label":"Home","mount_point":"home"},
     "discussion":{"label":"Discussion","mount_point":"discussion"},
     "blog":{"label":"News","mount_point":"news","options":{
       "show_discussion":false
     }},
-    "downloads":{"label":"Downloads","mount_point":"downloads"}
+    "downloads":{"label":"Downloads","mount_point":"downloads"},
+    "admin":{"label":"Admin","mount_point":"admin"}
   },
   "tool_order":["home","discussion","news","downloads","admin"],
   "labels":["mmi"],
