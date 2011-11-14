@@ -14,7 +14,7 @@ class TestTrackerApiBase(TestRestApiBase):
 
     def setUp(self):
         super(TestTrackerApiBase, self).setUp()
-        h.set_context('test', 'bugs')
+        h.set_context('test', 'bugs', neighborhood='Projects')
         self.tracker_globals = c.app.globals
 
 class TestRestNewTicket(TestTrackerApiBase):

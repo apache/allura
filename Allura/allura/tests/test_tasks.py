@@ -144,7 +144,7 @@ class TestRepoTasks(unittest.TestCase):
     def setUp(self):
         setup_basic_test()
         setup_global_objects()
-        h.set_context('test', 'src')
+        h.set_context('test', 'src', neighborhood='Projects')
 
     def test_init(self):
         ns = M.Notification.query.find().count()

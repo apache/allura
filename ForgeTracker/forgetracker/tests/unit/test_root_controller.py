@@ -13,7 +13,7 @@ class WithUserAndBugsApp(TrackerTestWithModel):
     def setUp(self):
         super(WithUserAndBugsApp, self).setUp()
         c.user = User(username='test-user')
-        h.set_context('test', 'bugs')
+        h.set_context('test', 'bugs', neighborhood='Projects')
 
 
 class TestWhenSearchingWithCustomFields(WithUserAndBugsApp):

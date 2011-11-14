@@ -17,7 +17,7 @@ class TestRootController(TestController):
 
     def setUp(self):
         TestController.setUp(self)
-        h.set_context('test', 'src')
+        h.set_context('test', 'src', neighborhood='Projects')
         repo_dir = pkg_resources.resource_filename(
             'forgesvn', 'tests/data/')
         c.app.repo.fs_path = repo_dir
@@ -25,11 +25,11 @@ class TestRootController(TestController):
         c.app.repo.name = 'testsvn'
         ThreadLocalORMSession.flush_all()
         ThreadLocalORMSession.close_all()
-        h.set_context('test', 'src')
+        h.set_context('test', 'src', neighborhood='Projects')
         c.app.repo.refresh()
         ThreadLocalORMSession.flush_all()
         ThreadLocalORMSession.close_all()
-        h.set_context('test', 'src')
+        h.set_context('test', 'src', neighborhood='Projects')
 
     def test_index(self):
         resp = self.app.get('/src/').follow()

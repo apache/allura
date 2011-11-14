@@ -33,7 +33,7 @@ class TestForumEmail(TestController):
         r = self.app.get('/admin/discussion/forums')
         assert 'testforum' in r
         self.email_address='Beta@wiki.test.projects.sourceforge.net'
-        h.set_context('test', 'discussion')
+        h.set_context('test', 'discussion', neighborhood='Projects')
         self.forum = FM.Forum.query.get(shortname='testforum')
 
     def test_simple_email(self):
@@ -121,7 +121,7 @@ class TestForumAsync(TestController):
         r.forms[1].submit()
         r = self.app.get('/admin/discussion/forums')
         assert 'Test Forum 1' in r
-        h.set_context('test', 'discussion')
+        h.set_context('test', 'discussion', neighborhood='Projects')
         self.user_id = M.User.query.get(username='root')._id
 
     def test_has_access(self):
@@ -250,7 +250,7 @@ class TestForum(TestController):
         r.forms[1].submit()
         r = self.app.get('/admin/discussion/forums')
         assert 'testforum' in r
-        h.set_context('test', 'discussion')
+        h.set_context('test', 'discussion', neighborhood='Projects')
         frm = FM.Forum.query.get(shortname='testforum')
         r = self.app.get('/admin/discussion/forums')
         r.forms[1]['add_forum.shortname'] = 'childforum'

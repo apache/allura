@@ -227,7 +227,7 @@ class TestFunctionalController(TrackerTestController):
         assert_equal(download.body, file_data)
 
     def test_new_image_attachment_content(self):
-        h.set_context('test', 'bugs')
+        h.set_context('test', 'bugs', neighborhood='Projects')
         file_name = 'neo-icon-set-454545-256x350.png'
         file_path = os.path.join(allura.__path__[0],'nf','allura','images',file_name)
         file_data = file(file_path).read()
@@ -269,7 +269,7 @@ class TestFunctionalController(TrackerTestController):
         M.MonQTask.run_ready()
         ThreadLocalORMSession.flush_all()
 
-        h.set_context('test', 'wiki')
+        h.set_context('test', 'wiki', neighborhood='Projects')
         a = wm.Page.query.find(dict(title='aaa')).first()
         a.text = '\n[bugs:#1]\n'
         ThreadLocalORMSession.flush_all()
@@ -462,7 +462,7 @@ class TestFunctionalController(TrackerTestController):
         # create two tickets
         self.new_ticket(summary='test superticket')
         self.new_ticket(summary='test subticket')
-        h.set_context('test', 'bugs')
+        h.set_context('test', 'bugs', neighborhood='Projects')
         ThreadLocalORMSession.flush_all()
         ThreadLocalORMSession.close_all()
         super = tm.Ticket.query.get(ticket_num=1)
@@ -500,7 +500,7 @@ class TestFunctionalController(TrackerTestController):
         self.new_ticket(summary='test subticket-2', **kw)
         ThreadLocalORMSession.flush_all()
         ThreadLocalORMSession.close_all()
-        h.set_context('test', 'bugs')
+        h.set_context('test', 'bugs', neighborhood='Projects')
         super = tm.Ticket.query.get(ticket_num=1)
         sub1 = tm.Ticket.query.get(ticket_num=2)
         sub2 = tm.Ticket.query.get(ticket_num=3)
@@ -591,7 +591,7 @@ class TestFunctionalController(TrackerTestController):
 
     def test_touch(self):
         self.new_ticket(summary='test touch')
-        h.set_context('test', 'bugs')
+        h.set_context('test', 'bugs', neighborhood='Projects')
         ticket = tm.Ticket.query.get(ticket_num=1)
         old_date = ticket.mod_date
         ticket.summary = 'changing the summary'

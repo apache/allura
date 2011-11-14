@@ -41,16 +41,16 @@ class ScriptCommand(base.Command):
 class SetToolAccessCommand(base.Command):
     min_args=3
     max_args=None
-    usage = '<ini file> <project_shortname> <access_level>...'
+    usage = '<ini file> <project_shortname> <neighborhood_name> <access_level>...'
     summary = ('Set the tool statuses that are permitted to be installed on a'
                ' given project')
     parser = base.Command.standard_parser(verbose=True)
 
     def command(self):
         self.basic_setup()
-        h.set_context(self.args[1])
+        h.set_context(self.args[1], neighborhood=self.args[2])
         extra_status = []
-        for s in self.args[2:]:
+        for s in self.args[3:]:
             s = s.lower()
             if s=='production':
                 print ('All projects always have access to prodcution tools,'

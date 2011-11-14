@@ -23,7 +23,8 @@ log = logging.getLogger(__name__)
 class SiteAdminController(object):
 
     def _check_security(self):
-        with h.push_context(config.get('site_admin_project', 'allura')):
+        with h.push_context(config.get('site_admin_project', 'allura'),
+                            neighborhood=config.get('site_admin_project_nbhd', 'Projects')):
             require_access(c.project, 'admin')
 
     @expose('jinja:allura:templates/site_admin_index.html')

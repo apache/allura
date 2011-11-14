@@ -20,7 +20,7 @@ class TestNewGit(unittest.TestCase):
     def setUp(self):
         setup_basic_test()
         setup_global_objects()
-        h.set_context('test', 'src-git')
+        h.set_context('test', 'src-git', neighborhood='Projects')
         repo_dir = pkg_resources.resource_filename(
             'forgegit', 'tests/data')
         c.app.repo.fs_path = repo_dir
@@ -73,7 +73,7 @@ class TestNewGit(unittest.TestCase):
         c.app = None
         converted = g.markdown.convert('[1e146e]')
         assert '1e146e' in converted, converted
-        h.set_context('test', 'home')
+        h.set_context('test', 'home', neighborhood='Projects')
         pg = WM.Page(
             title='Test Page', text='This is a commit reference: [1e146e]')
         ThreadLocalORMSession.flush_all()
@@ -89,7 +89,7 @@ class TestGitRepo(unittest.TestCase):
     def setUp(self):
         setup_basic_test()
         setup_global_objects()
-        h.set_context('test', 'src-git')
+        h.set_context('test', 'src-git', neighborhood='Projects')
         repo_dir = pkg_resources.resource_filename(
             'forgegit', 'tests/data')
         self.repo = GM.Repository(
@@ -151,7 +151,7 @@ class TestGitCommit(unittest.TestCase):
     def setUp(self):
         setup_basic_test()
         setup_global_objects()
-        h.set_context('test', 'src')
+        h.set_context('test', 'src', neighborhood='Projects')
         repo_dir = pkg_resources.resource_filename(
             'forgegit', 'tests/data')
         self.repo = GM.Repository(

@@ -24,7 +24,7 @@ class TestForumAdmin(TestController):
         r.forms[1]['add_forum.name'] = 'Test Forum'
         r = r.forms[1].submit().follow()
         assert 'Test Forum' in r
-        h.set_context('test', 'Forum')
+        h.set_context('test', 'Forum', neighborhood='Projects')
         frm = FM.Forum.query.get(shortname='testforum')
         r = self.app.post('/admin/discussion/update_forums',
                           params={'forum-0.delete':'',
@@ -44,7 +44,7 @@ class TestForumAdmin(TestController):
         r = r.forms[1].submit().follow()
         r = self.app.get('/admin/discussion/forums')
         assert 'testforum' in r
-        h.set_context('test', 'discussion')
+        h.set_context('test', 'discussion', neighborhood='Projects')
         frm = FM.Forum.query.get(shortname='testforum')
         r = self.app.get('/admin/discussion/forums')
         r.forms[1]['add_forum.shortname'] = 'childforum'
@@ -80,7 +80,7 @@ class TestForumAdmin(TestController):
         r.forms[1]['add_forum.shortname'] = 'b'
         r.forms[1]['add_forum.name'] = 'Forum B'
         r = r.forms[1].submit()
-        h.set_context('test', 'Forum')
+        h.set_context('test', 'Forum', neighborhood='Projects')
         forum_a = FM.Forum.query.get(shortname='a')
         self.app.post('/admin/discussion/update_forums',
                         params={'forum-0.delete':'on',
@@ -107,7 +107,7 @@ class TestForumAdmin(TestController):
         file_data = file(file_path).read()
         upload = ('add_forum.icon', file_name, file_data)
 
-        h.set_context('test', 'discussion')
+        h.set_context('test', 'discussion', neighborhood='Projects')
         r = self.app.get('/admin/discussion/forums')
         app_id = r.forms[1]['add_forum.app_id'].value
         r = self.app.post('/admin/discussion/add_forum',
@@ -133,7 +133,7 @@ class TestForumAdmin(TestController):
         assert len(r.html.findAll('input',{'value':'Undelete'})) == 0
         r = self.app.get('/discussion/')
         assert 'This forum has been deleted and is not visible to non-admin users' not in r
-        h.set_context('test', 'Forum')
+        h.set_context('test', 'Forum', neighborhood='Projects')
         frm = FM.Forum.query.get(shortname='testforum')
 
         r = self.app.post('/admin/discussion/update_forums',

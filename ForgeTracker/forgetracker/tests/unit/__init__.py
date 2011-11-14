@@ -22,7 +22,7 @@ class TrackerTestWithModel(object):
         c.project = neighborhood.register_project('test', c.user)
         c.project.install_app('Tickets', 'bugs')
         ThreadLocalORMSession.flush_all()
-        h.set_context('test', 'bugs')
+        h.set_context('test', 'bugs', neighborhood='Projects')
 
     def tearDown(self):
         ThreadLocalORMSession.close_all()

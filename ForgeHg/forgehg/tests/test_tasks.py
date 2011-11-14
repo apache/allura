@@ -13,7 +13,7 @@ class TestHgReactors(unittest.TestCase):
     def setUp(self):
         setup_basic_test()
         setup_global_objects()
-        h.set_context('test', 'src-hg')
+        h.set_context('test', 'src-hg', neighborhood='Projects')
         ThreadLocalORMSession.flush_all()
         ThreadLocalORMSession.close_all()
 

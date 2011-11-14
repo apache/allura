@@ -15,7 +15,7 @@ class TestGlobalsModel(TrackerTestWithModel):
     def test_it_has_current_tracker_globals(self):
         bugs_globals = Globals.query.get(app_config_id=c.app.config._id)
         assert c.app.globals == bugs_globals
-        h.set_context('test', 'doc-bugs')
+        h.set_context('test', 'doc-bugs', neighborhood='Projects')
         assert c.app.globals != bugs_globals
 
     def test_next_ticket_number_increments(self):
@@ -24,7 +24,7 @@ class TestGlobalsModel(TrackerTestWithModel):
 
     def test_ticket_numbers_are_independent(self):
         assert Globals.next_ticket_num() == 1
-        h.set_context('test', 'doc-bugs')
+        h.set_context('test', 'doc-bugs', neighborhood='Projects')
         assert Globals.next_ticket_num() == 1
 
 

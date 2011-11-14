@@ -34,7 +34,7 @@ Mapper.compile_all()
 def setUp():
     setup_basic_test()
     setup_unit_test()
-    h.set_context('test', 'wiki')
+    h.set_context('test', 'wiki', neighborhood='Projects')
     Checkmessage.query.remove({})
     WM.Page.query.remove({})
     WM.PageHistory.query.remove({})

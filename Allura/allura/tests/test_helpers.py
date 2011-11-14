@@ -52,32 +52,32 @@ def test_make_roles():
     assert h.make_roles([pr._id]).next() == pr
 
 def test_context_setters():
-    h.set_context('test', 'wiki')
+    h.set_context('test', 'wiki', neighborhood='Projects')
     assert c.project is not None
     assert c.app is not None
     cfg_id = c.app.config._id
-    h.set_context('test', app_config_id=cfg_id)
+    h.set_context('test', app_config_id=cfg_id, neighborhood='Projects')
     assert c.project is not None
     assert c.app is not None
-    h.set_context('test', app_config_id=str(cfg_id))
+    h.set_context('test', app_config_id=str(cfg_id), neighborhood='Projects')
     assert c.project is not None
     assert c.app is not None
     c.project = c.app = None
-    with h.push_context('test', 'wiki'):
+    with h.push_context('test', 'wiki', neighborhood='Projects'):
         assert c.project is not None
         assert c.app is not None
     assert c.project == c.app == None
-    with h.push_context('test', app_config_id=cfg_id):
+    with h.push_context('test', app_config_id=cfg_id, neighborhood='Projects'):
         assert c.project is not None
         assert c.app is not None
     assert c.project == c.app == None
-    with h.push_context('test', app_config_id=str(cfg_id)):
+    with h.push_context('test', app_config_id=str(cfg_id), neighborhood='Projects'):
         assert c.project is not None
         assert c.app is not None
     assert c.project == c.app == None
     del c.project
     del c.app
-    with h.push_context('test', app_config_id=str(cfg_id)):
+    with h.push_context('test', app_config_id=str(cfg_id), neighborhood='Projects'):
         assert c.project is not None
         assert c.app is not None
     assert not hasattr(c, 'project')

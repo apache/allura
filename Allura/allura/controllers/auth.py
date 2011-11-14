@@ -192,6 +192,7 @@ class AuthController(BaseController):
 
     @expose()
     def refresh_repo(self, *repo_path):
+        # post-commit hooks use this
         if not repo_path:
             return 'No repo specified'
         repo_path = '/' + '/'.join(repo_path)
@@ -200,7 +201,7 @@ class AuthController(BaseController):
             return 'No project at %s' % repo_path
         if not rest:
             return '%s does not include a repo mount point' % repo_path
-        h.set_context(project.shortname, rest[0])
+        h.set_context(project.shortname, rest[0], neighborhood=project.neighborhood)
         if c.app is None or not getattr(c.app, 'repo'):
             return 'Cannot find repo at %s' % repo_path
         allura.tasks.repo_tasks.refresh.post()

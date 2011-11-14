@@ -39,9 +39,9 @@ class _Test(unittest.TestCase):
 class _TestWithRepo(_Test):
     def setUp(self):
         super(_TestWithRepo, self).setUp()
-        h.set_context('test')
+        h.set_context('test', neighborhood='Projects')
         c.project.install_app('svn', 'test1')
-        h.set_context('test', 'test1')
+        h.set_context('test', 'test1', neighborhood='Projects')
         self.repo = M.Repository(name='test1', tool='svn')
         self.repo._impl = mock.Mock(spec=M.RepositoryImplementation())
         self.repo._impl.log = lambda *a,**kw:(['foo'], [])
@@ -218,7 +218,7 @@ class TestMergeRequest(_TestWithRepoAndCommit):
     def setUp(self):
         super(TestMergeRequest, self).setUp()
         c.project.install_app('svn', 'test2')
-        h.set_context('test', 'test2')
+        h.set_context('test', 'test2', neighborhood='Projects')
         self.repo2 = M.Repository(name='test2', tool='svn')
         self.repo2._impl = mock.Mock(spec=M.RepositoryImplementation())
         self.repo2._impl.log = lambda *a,**kw:(['foo'], [])
@@ -228,7 +228,7 @@ class TestMergeRequest(_TestWithRepoAndCommit):
         ThreadLocalORMSession.close_all()
 
     def test_upsert(self):
-        h.set_context('test', 'test1')
+        h.set_context('test', 'test1', neighborhood='Projects')
         mr = M.MergeRequest.upsert(
             downstream=ming.base.Object(
                 project_id=c.project._id,
@@ -248,7 +248,7 @@ class TestMergeRequest(_TestWithRepoAndCommit):
 class TestLastCommitFor(_TestWithRepoAndCommit):
 
     def test_upsert(self):
-        h.set_context('test', 'test1')
+        h.set_context('test', 'test1', neighborhood='Projects')
         lcf, isnew = M.LastCommitFor.upsert(repo_id=c.app.repo._id, object_id=self.ci.object_id)
 
 class TestRepoObject(_TestWithRepoAndCommit):

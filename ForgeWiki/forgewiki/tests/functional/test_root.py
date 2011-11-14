@@ -235,7 +235,7 @@ class TestRootController(TestController):
         file_data = file(file_path).read()
         upload = ('file_info', file_name, file_data)
         self.app.post('/wiki/TEST/attach', upload_files=[upload])
-        h.set_context('test', 'wiki')
+        h.set_context('test', 'wiki', neighborhood='Projects')
         page = model.Page.query.find(dict(title='TEST')).first()
         filename = page.attachments.first().filename
 
@@ -289,7 +289,7 @@ class TestRootController(TestController):
                 'labels_old':'',
                 'viewable_by-0.id':'all'})
         
-        h.set_context('test', 'wiki')
+        h.set_context('test', 'wiki', neighborhood='Projects')
         a = model.Page.query.find(dict(title='aaa')).first()
         a.text = '\n[TEST]\n'
         b = model.Page.query.find(dict(title='TEST')).first()

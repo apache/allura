@@ -166,10 +166,16 @@ def sharded_path(name, num_parts=2):
         for i in range(num_parts) ]
     return '/'.join(parts)
 
-def set_context(project_shortname, mount_point=None, app_config_id=None, neighborhood=None):
+def set_context(project_shortname_or_id, mount_point=None, app_config_id=None, neighborhood=None):
     from allura import model
-    if not isinstance(neighborhood, model.Neighborhood):
-        if neighborhood is not None:
+    try:
+        p = model.Project.query.get(_id=ObjectId(str(project_shortname_or_id)))
+    except InvalidId:
+        p = None
+    if p is None:
+        if neighborhood is None:
+            raise TypeError('neighborhood is required; it must not be None')
+        if not isinstance(neighborhood, model.Neighborhood):
             n = model.Neighborhood.query.get(name=neighborhood)
             if n is None:
                 try:
@@ -181,21 +187,11 @@ def set_context(project_shortname, mount_point=None, app_config_id=None, neighbo
                                       repr(neighborhood))
             neighborhood = n
 
-    query = dict(shortname=project_shortname)
-    if neighborhood is not None:
-        query['neighborhood_id'] = neighborhood._id
-    p = model.Project.query.get(**query)
+        query = dict(shortname=project_shortname_or_id, neighborhood_id=neighborhood._id)
+        p = model.Project.query.get(**query)
     if p is None:
-        try:
-            del query['shortname']
-            query['_id'] = ObjectId(str(project_shortname))
-            p = model.Project.query.get(**query)
-        except InvalidId:
-            pass
-
-    if p is None:
-        raise exc.NoSuchProjectError("Couldn't find project %s" %
-                                 repr(project_shortname))
+        raise exc.NoSuchProjectError("Couldn't find project %s nbhd %s" %
+                                 (project_shortname_or_id, neighborhood))
     c.project = p
 
     if app_config_id is None:
@@ -207,10 +203,10 @@ def set_context(project_shortname, mount_point=None, app_config_id=None, neighbo
         c.app = p.app_instance(app_config)
 
 @contextmanager
-def push_context(project_id, mount_point=None, app_config_id=None):
+def push_context(project_id, mount_point=None, app_config_id=None, neighborhood=None):
     project = getattr(c, 'project', ())
     app = getattr(c, 'app', ())
-    set_context(project_id, mount_point, app_config_id)
+    set_context(project_id, mount_point, app_config_id, neighborhood)
     try:
         yield
     finally:
@@ -399,7 +395,7 @@ def full_url(url):
     """
     global site_url
     if site_url is None:
-        # XXX: add a separate tg option instead of re-using openid.realm 
+        # XXX: add a separate tg option instead of re-using openid.realm
         site_url = tg.config.get('openid.realm', 'https://newforge.sf.geek.net/')
         site_url = site_url.replace('https:', 'http:')
         if not site_url.endswith('/'):
@@ -425,7 +421,7 @@ def pop_user_notifications(user=None):
         notifications = M.Notification.query.find(dict(_id={'$in':mbox.queue}))
         mbox.queue = []
         for n in notifications: yield n
-    
+
 def config_with_prefix(d, prefix):
     '''Return a subdictionary keys with a given prefix,
     with the prefix stripped
@@ -519,7 +515,7 @@ class log_action(object):
             try:
                 result['url'] = request.url
                 ip_address = request.headers.get('X_FORWARDED_FOR', request.remote_addr)
-                if ip_address is not None: 
+                if ip_address is not None:
                     ip_address = ip_address.split(',')[0].strip()
                     result['ip_address'] = ip_address
                 else:

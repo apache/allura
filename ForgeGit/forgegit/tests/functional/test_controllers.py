@@ -17,7 +17,7 @@ class TestRootController(TestController):
 
     def setUp(self):
         TestController.setUp(self)
-        h.set_context('test', 'src-git')
+        h.set_context('test', 'src-git', neighborhood='Projects')
         repo_dir = pkg_resources.resource_filename(
             'forgegit', 'tests/data')
         c.app.repo.fs_path = repo_dir
@@ -25,7 +25,7 @@ class TestRootController(TestController):
         c.app.repo.name = 'testgit.git'
         ThreadLocalORMSession.flush_all()
         ThreadLocalORMSession.close_all()
-        h.set_context('test', 'src-git')
+        h.set_context('test', 'src-git', neighborhood='Projects')
         c.app.repo.refresh()
         ThreadLocalORMSession.flush_all()
         ThreadLocalORMSession.close_all()
@@ -35,7 +35,7 @@ class TestRootController(TestController):
             project_name='test2',
             to_name='code'))
         cloned_from = c.app.repo
-        with h.push_context('test2', 'code'):
+        with h.push_context('test2', 'code', neighborhood='Projects'):
             c.app.repo.init_as_clone(
                     cloned_from.full_fs_path,
                     cloned_from.app.config.script_name(),
@@ -50,7 +50,7 @@ class TestRootController(TestController):
             project_name='test2',
             to_name='code'))
         cloned_from = c.app.repo
-        with h.push_context('test2', 'code'):
+        with h.push_context('test2', 'code', neighborhood='Projects'):
             c.app.repo.init_as_clone(
                     cloned_from.full_fs_path,
                     cloned_from.app.config.script_name(),

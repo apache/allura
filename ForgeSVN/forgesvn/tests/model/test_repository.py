@@ -15,7 +15,7 @@ class TestNewRepo(unittest.TestCase):
     def setUp(self):
         setup_basic_test()
         setup_global_objects()
-        h.set_context('test', 'src')
+        h.set_context('test', 'src', neighborhood='Projects')
         repo_dir = pkg_resources.resource_filename(
             'forgesvn', 'tests/data/')
         self.repo = SM.Repository(
@@ -129,7 +129,7 @@ class TestSVNRev(unittest.TestCase):
     def setUp(self):
         setup_basic_test()
         setup_global_objects()
-        h.set_context('test', 'src')
+        h.set_context('test', 'src', neighborhood='Projects')
         repo_dir = pkg_resources.resource_filename(
             'forgesvn', 'tests/data/')
         self.repo = SM.Repository(

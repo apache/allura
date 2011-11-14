@@ -156,6 +156,21 @@ class TestAuth(TestController):
         # Make sure that default _lookup() throws 404
         self.app.get('/auth/foobar', status=404)
 
+    def test_refresh_repo(self):
+        r = self.app.get('/auth/refresh_repo')
+        assert_equal(r.body, 'No repo specified')
+
+        r = self.app.get('/auth/refresh_repo/p/gbalksdfh')
+        assert_equal(r.body, 'No project at /p/gbalksdfh')
+
+        r = self.app.get('/auth/refresh_repo/p/test')
+        assert_equal(r.body, '/p/test does not include a repo mount point')
+
+        r = self.app.get('/auth/refresh_repo/p/test/blah/')
+        assert_equal(r.body, 'Cannot find repo at /p/test/blah')
+
+        r = self.app.get('/auth/refresh_repo/p/test/src/')
+        assert_equal(r.body, '<Repository /tmp/svn/p/test/src> refresh queued.\n')
 
 class TestUserPermissions(TestController):
     allow = dict(allow_read=True, allow_write=True, allow_create=True)

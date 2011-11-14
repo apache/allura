@@ -17,7 +17,7 @@ class TestSVNApp(unittest.TestCase):
     def setUp(self):
         setup_basic_test()
         setup_global_objects()
-        h.set_context('test', 'src')
+        h.set_context('test', 'src', neighborhood='Projects')
         ThreadLocalORMSession.flush_all()
         ThreadLocalORMSession.close_all()
 

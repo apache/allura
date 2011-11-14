@@ -25,7 +25,7 @@ def setUp():
     controller.app.get('/wiki/Home/')
     setup_global_objects()
     ThreadLocalORMSession.close_all()
-    h.set_context('test', 'wiki')
+    h.set_context('test', 'wiki', neighborhood='Projects')
     ThreadLocalORMSession.flush_all()
     ThreadLocalORMSession.close_all()
 

@@ -21,7 +21,7 @@ class BlogTestWithModel(object):
         c.project = neighborhood.register_project('test', c.user)
         c.project.install_app('Blog', 'blog')
         ThreadLocalORMSession.flush_all()
-        h.set_context('test', 'blog')
+        h.set_context('test', 'blog', neighborhood='Projects')
 
     def tearDown(self):
         ThreadLocalORMSession.close_all()
