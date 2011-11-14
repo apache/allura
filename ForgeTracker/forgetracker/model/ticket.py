@@ -94,6 +94,12 @@ class Globals(MappedClass):
     def milestone_fields(self):
         return [ fld for fld in self.custom_fields if fld['type'] == 'milestone' ]
 
+    def get_custom_field(self, name):
+        for fld in self.custom_fields:
+            if fld['name'] == name:
+                return fld
+        return None
+
     def _refresh_counts(self):
         # Refresh bin counts
         self._bin_counts_data = []
@@ -321,6 +327,25 @@ class Ticket(VersionedArtifact):
     def open_or_closed(self):
         return 'closed' if self.status in c.app.globals.set_of_closed_status_names else 'open'
 
+    def get_custom_user(self, custom_user_field_name):
+        fld = None
+        for f in c.app.globals.custom_fields:
+            if f.name == custom_user_field_name:
+                fld = f
+                break
+        if not fld:
+            raise KeyError, 'Custom field "%s" does not exist.' % custom_user_field_name
+        if fld.type != 'user':
+            raise TypeError, 'Custom field "%s" is of type "%s"; expected ' \
+                             'type "user".' % (custom_user_field_name, fld.type)
+        username = self.custom_fields.get(custom_user_field_name)
+        if not username:
+            return None
+        user = self.app_config.project.user_in_project(username)
+        if user == User.anonymous():
+            return None
+        return user
+
     def _get_private(self):
         return bool(self.acl)
 
@@ -474,9 +499,12 @@ class Ticket(VersionedArtifact):
             labels = []
         self.labels = labels
         custom_sums = set()
+        custom_users = set()
         other_custom_fields = set()
         for cf in self.globals.custom_fields or []:
-            (custom_sums if cf['type'] == 'sum' else other_custom_fields).add(cf['name'])
+            (custom_sums if cf['type'] == 'sum' else
+             custom_users if cf['type'] == 'user' else
+             other_custom_fields).add(cf['name'])
             if cf['type'] == 'boolean' and 'custom_fields.' + cf['name'] not in ticket_form:
                 self.custom_fields[cf['name']] = 'False'
         # this has to happen because the milestone custom field has special layout treatment
@@ -505,6 +533,11 @@ class Ticket(VersionedArtifact):
                         self.custom_fields[k] = float(v)
                     except (TypeError, ValueError):
                         self.custom_fields[k] = 0
+                elif k in custom_users:
+                    # restrict custom user field values to project members
+                    user = self.app_config.project.user_in_project(v)
+                    self.custom_fields[k] = user.username \
+                        if user and user != User.anonymous() else ''
                 elif k in other_custom_fields:
                     # strings are good enough for any other custom fields
                     self.custom_fields[k] = v

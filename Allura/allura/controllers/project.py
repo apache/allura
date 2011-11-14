@@ -368,7 +368,10 @@ class ProjectController(object):
             if u._id in named_roles.userids_that_reach:
                 result[0].append(u)
             else:
-                result[1].append(u)
+                pass
+                # comment this back in if you want non-project-member users
+                # in the search results
+                #result[1].append(u)
         result = list(islice(chain(*result), 10))
         return dict(
             users=[

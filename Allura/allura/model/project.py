@@ -524,6 +524,8 @@ class Project(MappedClass):
     def user_in_project(self, username):
         from .auth import User
         u = User.by_username(username)
+        if not u:
+            return None
         named_roles = g.credentials.project_roles(project_id=self.root_project._id).named
         for r in named_roles.roles_that_reach:
             if r.user_id == u._id: return u

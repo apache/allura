@@ -329,7 +329,8 @@ class TestFunctionalController(TrackerTestController):
                 dict(name='_priority', label='Priority', type='select',
                      options='normal urgent critical'),
                 dict(name='_category', label='Category', type='string',
-                     options='')],
+                     options=''),
+                dict(name='_code_review', label='Code Review', type='user')],
             open_status_names='aa bb',
             closed_status_names='cc',
             )
@@ -337,10 +338,12 @@ class TestFunctionalController(TrackerTestController):
             '/admin/bugs/set_custom_fields',
             params=variable_encode(params))
         kw = {'custom_fields._priority':'normal',
-              'custom_fields._category':'helloworld'}
+              'custom_fields._category':'helloworld',
+              'custom_fields._code_review':'test-admin'}
         ticket_view = self.new_ticket(summary='test custom fields', **kw).follow()
         assert 'Priority:' in ticket_view
         assert 'normal' in ticket_view
+        assert 'Test Admin' in ticket_view
 
     def test_custom_field_update_comments(self):
         params = dict(
@@ -802,6 +805,68 @@ class TestEmailMonitoring(TrackerTestController):
         })
         assert send_simple.call_count == 1, send_simple.call_count
         send_simple.assert_called_with(self.test_email)
+
+class TestCustomUserField(TrackerTestController):
+    def setUp(self):
+        super(TestCustomUserField, self).setUp()
+        params = dict(
+            custom_fields=[
+                dict(name='_code_review', label='Code Review', type='user',
+                     show_in_search='on')],
+            open_status_names='aa bb',
+            closed_status_names='cc',
+            )
+        self.app.post(
+            '/admin/bugs/set_custom_fields',
+            params=variable_encode(params))
+
+    def test_blank_user(self):
+        kw = {'custom_fields._code_review': ''}
+        ticket_view = self.new_ticket(summary='test custom fields', **kw).follow()
+        # summary header shows 'nobody'
+        assert ticket_view.html.findAll('label', 'simple',
+            text='Code Review:')[1].parent.parent.text == 'Code Review:nobody'
+        # form input is blank
+        assert ticket_view.html.find('input',
+            dict(name='ticket_form.custom_fields._code_review'))['value'] == ''
+
+    def test_non_project_member(self):
+        """ Test that you can't put a non-project-member user in a custom
+        user field.
+        """
+        kw = {'custom_fields._code_review': 'test-user-0'}
+        ticket_view = self.new_ticket(summary='test custom fields', **kw).follow()
+        # summary header shows 'nobody'
+        assert ticket_view.html.findAll('label', 'simple',
+            text='Code Review:')[1].parent.parent.text == 'Code Review:nobody'
+        # form input is blank
+        assert ticket_view.html.find('input',
+            dict(name='ticket_form.custom_fields._code_review'))['value'] == ''
+
+    def test_project_member(self):
+        kw = {'custom_fields._code_review': 'test-admin'}
+        ticket_view = self.new_ticket(summary='test custom fields', **kw).follow()
+        # summary header shows 'nobody'
+        assert ticket_view.html.findAll('label', 'simple',
+            text='Code Review:')[1].parent.parent.text == 'Code Review:Test Admin'
+        # form input is blank
+        assert ticket_view.html.find('input',
+            dict(name='ticket_form.custom_fields._code_review'))['value'] == 'test-admin'
+
+    def test_change_user_field(self):
+        kw = {'custom_fields._code_review': ''}
+        r = self.new_ticket(summary='test custom fields', **kw).follow()
+        f = r.forms[1]
+        f['ticket_form.custom_fields._code_review'] = 'test-admin'
+        r = f.submit().follow()
+        assert '<li><strong>code_review</strong>: Test Admin' in r
+
+    def test_search_results(self):
+        kw = {'custom_fields._code_review': 'test-admin'}
+        self.new_ticket(summary='test custom fields', **kw)
+        r = self.app.get('/bugs/')
+        assert r.html.find('table', 'ticket-list').findAll('th')[5].text == 'Code Review'
+        assert r.html.find('table', 'ticket-list').tbody.tr.findAll('td')[5].text == 'Test Admin'
 
 class TestHelpTextOptions(TrackerTestController):
     def _set_options(self, new_txt='', search_txt=''):

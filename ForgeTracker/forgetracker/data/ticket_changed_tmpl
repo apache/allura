@@ -1,4 +1,5 @@
 {% python from allura.lib import patience %}\
+{% python from allura.model import User %}\
 {% for key, values in changelist %}\
 {% choose %}\
 {% when key == 'description' %}\
@@ -21,8 +22,8 @@ ${'\n'.join(patience.unified_diff(
 {% otherwise %}\
 {% with oldv, newv = values %}\
 {% choose %}\
-{% when key == 'assigned_to' %}\
-- **${key}**: {% if oldv %}${oldv.display_name} --> {% end %}{% choose %}{% when newv %}${newv.display_name}{% end %}{% otherwise %} nobody {% end %}{% end %}
+{% when key == 'assigned_to' or isinstance(oldv, User) or isinstance(newv, User) %}\
+- **${key}**: {% if oldv %}${oldv.get_pref('display_name')} --> {% end %}{% choose %}{% when newv %}${newv.get_pref('display_name')}{% end %}{% otherwise %} nobody {% end %}{% end %}
 {% end %}\
 {% when key == 'labels' %}\
 - **${key}**: ${', '.join(oldv)} --> ${', '.join(newv)}

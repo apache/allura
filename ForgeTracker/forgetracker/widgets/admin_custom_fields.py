@@ -59,6 +59,7 @@ class CustomFieldAdminDetail(ffw.StateField):
                     ew.Option(py_value='boolean', label='Boolean'),
                     ew.Option(py_value='select', label='Select'),
                     ew.Option(py_value='milestone', label='Milestone'),
+                    ew.Option(py_value='user', label='User'),
                     ],
                 )),
         states=dict(

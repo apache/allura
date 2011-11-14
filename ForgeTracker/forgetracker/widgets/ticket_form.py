@@ -115,6 +115,9 @@ class TicketCustomField(object):
     def _number(field):
         return ew.NumberField(label=field.label, name=str(field.name))
 
+    def _user(field):
+        return ffw.ProjectUserSelect(label=field.label, name=str(field.name))
+
     @staticmethod
     def _default(field):
         return ew.TextField(label=field.label, name=str(field.name))
@@ -124,7 +127,8 @@ class TicketCustomField(object):
         milestone=_milestone,
         boolean=_boolean,
         sum=_number,
-        number=_number)
+        number=_number,
+        user=_user)
 
     @classmethod
     def make(cls, field):

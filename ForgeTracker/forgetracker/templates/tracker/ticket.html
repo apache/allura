@@ -71,7 +71,16 @@
           {% endif %}
             <div class="grid-4">
               <label class="simple">{{field.label}}:</label>
-              {{ticket.custom_fields[field.name]}}
+              {% if field.type == 'user' %}
+                {% set user = ticket.get_custom_user(field.name) %}
+                {% if user %}
+                  <a href="{{user.url()}}">{{user.get_pref('display_name')}}</a>
+                {% else %}
+                  nobody
+                {% endif %}
+              {% else %}
+                {{ticket.custom_fields[field.name]}}
+              {% endif %}
             </div>
           {% set cf_count=cf_count+1 %}
         {% endif %}

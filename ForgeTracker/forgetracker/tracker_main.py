@@ -913,8 +913,6 @@ class TicketController(BaseController):
             changes['assigned_to'] = self.ticket.assigned_to
         self.ticket.private = post_data.get('private', False)
 
-        # if c.app.globals.milestone_names is None:
-        #     c.app.globals.milestone_names = ''
         if 'attachment' in post_data:
             attachment = post_data['attachment']
             if hasattr(attachment, 'file'):
@@ -922,14 +920,19 @@ class TicketController(BaseController):
                     attachment.filename, attachment.file, content_type=attachment.type)
         any_sums = False
         for cf in c.app.globals.custom_fields or []:
-            if 'custom_fields.'+cf.name in post_data:
-                value = post_data['custom_fields.'+cf.name]
+            if 'custom_fields.' + cf.name in post_data:
+                value = post_data['custom_fields.' + cf.name]
                 if cf.type == 'sum':
                     any_sums = True
                     try:
                         value = float(value)
                     except (TypeError, ValueError):
                         value = 0
+                elif cf.type == 'user':
+                    # restrict custom user field values to project members
+                    user = c.project.user_in_project(value)
+                    value = user.username \
+                            if user and user != M.User.anonymous() else ''
             elif cf.name == '_milestone' and cf.name in post_data:
                 value = post_data[cf.name]
             # unchecked boolean won't be passed in, so make it False here
@@ -939,10 +942,15 @@ class TicketController(BaseController):
                 value = ''
             if cf.type == 'number' and value == '':
                 value = None
+
             if value is not None:
-                changes[cf.name[1:]] =self.ticket.custom_fields.get(cf.name)
+                def cf_val(cf):
+                    return self.ticket.get_custom_user(cf.name) \
+                           if cf.type == 'user' \
+                           else self.ticket.custom_fields.get(cf.name)
+                changes[cf.name[1:]] = cf_val(cf)
                 self.ticket.custom_fields[cf.name] = value
-                changes[cf.name[1:]] =self.ticket.custom_fields.get(cf.name)
+                changes[cf.name[1:]] = cf_val(cf)
         thread = self.ticket.discussion_thread
         latest_post = thread.posts and thread.posts[-1] or None
         post = None

@@ -32,7 +32,13 @@
               {% elif col['name'] == 'assigned_to' %}
                 <td>{% if t.assigned_to_id %}{{t.assigned_to.display_name}}{% endif %}</td>
               {% else %}
-                <td>{{t.custom_fields.get(col['name'])}}</td>
+                {% set fld = c.app.globals.get_custom_field(col['name']) %}
+                {% if fld and fld.type == 'user' %}
+                  {% set user = t.get_custom_user(col['name']) %}
+                  <td>{% if user %}{{user.get_pref('display_name')}}{% endif %}</td>
+                {% else %}
+                  <td>{{t.custom_fields.get(col['name'])}}</td>
+                {% endif %}
               {% endif %}
             {% endfor %}
             <td>&nbsp;</td>
