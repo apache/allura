@@ -12,6 +12,7 @@ from ming.orm.ormsession import ThreadLocalORMSession
 
 from allura import model as M
 from allura.lib.app_globals import Globals
+from allura.lib import helpers as h
 from alluratest.controller import setup_basic_test, setup_global_objects
 
 
@@ -24,11 +25,11 @@ def test_project():
     assert type(c.project.sidebar_menu()) == list
     assert c.project.script_name in c.project.url()
     old_proj = c.project
-    g.set_project('test/sub1')
+    h.set_context('test/sub1', neighborhood='Projects')
     assert type(c.project.sidebar_menu()) == list
     assert type(c.project.sitemap()) == list
     assert old_proj in list(c.project.parent_iter())
-    g.set_project('test')
+    h.set_context('test', 'wiki', neighborhood='Projects')
     p = M.Project.query.get(shortname='adobe-1')
     # assert 'http' in p.url() # We moved adobe into /adobe/, not http://adobe....
     assert p.script_name in p.url()

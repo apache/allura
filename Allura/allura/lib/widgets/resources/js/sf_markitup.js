@@ -16,6 +16,7 @@ $(window).load(function() {
                 $.post('/nf/markdown_to_html', {
                     markdown:$textarea.val(),
                     project:$('input.markdown_project', $container).val(),
+                    neighborhood:$('input.markdown_neighborhood', $container).val(),
                     app:$('input.markdown_app', $container).val(),
                     _session_id:cval
                 },

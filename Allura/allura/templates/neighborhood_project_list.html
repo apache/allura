@@ -41,7 +41,7 @@
         {{c.page_list.display(limit=limit, page=page, count=count)}}
         <div style="clear:both"></div>
         {% for project in projects %}
-          {% do g.set_project(project.shortname) %}
+          {% do g.set_project(project) %}
           {% if h.has_access(project, 'read')() %}
             {{c.project_summary.display(value=project)}}
           {% endif %}

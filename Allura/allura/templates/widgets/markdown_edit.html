@@ -13,5 +13,6 @@
     {{lib.markdown_syntax(id=(id or name))}}
   </div>
   <input type="hidden" class="markdown_project" value="{{c.project.shortname}}">
+  <input type="hidden" class="markdown_neighborhood" value="{{c.project.neighborhood._id}}">
   <input type="hidden" class="markdown_app" value="{{c.app.config.options.mount_point}}">
 </div>

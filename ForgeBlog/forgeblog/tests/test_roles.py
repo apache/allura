@@ -3,11 +3,12 @@ from pylons import c, g
 from alluratest.controller import setup_basic_test, setup_global_objects
 from allura import model as M
 from allura.lib import security
+from allura.lib import helpers as h
 
 def setUp():
     setup_basic_test()
     setup_global_objects()
-    g.set_project('test')
+    h.set_context('test', neighborhood='Projects')
     c.project.install_app('blog', 'blog')
     g.set_app('blog')
 

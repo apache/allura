@@ -21,8 +21,7 @@ def setUp():
 def test_app_globals():
     g.oid_session()
     g.oid_session()
-    g.set_project('test')
-    g.set_app('wiki')
+    h.set_context('test', 'wiki', neighborhood='Projects')
     assert g.app_static('css/wiki.css') == '/nf/_static_/wiki/css/wiki.css', g.app_static('css/wiki.css')
     assert g.url('/foo', a='foo bar') == 'http://localhost:80/foo?a=foo+bar', g.url('/foo', a='foo bar')
     assert g.url('/foo') == 'http://localhost:80/foo', g.url('/foo')
@@ -71,8 +70,7 @@ def test_macros():
     assert r == '<div class="markdown_content"><p><a href="/u/test-admin/">Test Admin</a><br /></p></div>'
     r = g.markdown_wiki.convert('[[download_button]]')
     assert r == '<div class="markdown_content"><p><span class="download-button-test" style="margin-bottom: 1em; display: block;"></span></p></div>'
-    g.set_project(M.Project.query.get(name='Home Project for Projects'))
-    g.set_app('home')
+    h.set_context('--init--', 'home', neighborhood='Projects')
     r = g.markdown_wiki.convert('[[neighborhood_feeds tool_name=Wiki]]')
     assert 'WikiPage Home modified by' in r, r
     orig_len = len(r)
@@ -100,8 +98,7 @@ def test_macros():
 @with_setup(setUp)
 def test_markdown():
     'Just a test to get coverage in our markdown extension'
-    g.set_project('test')
-    g.set_app('wiki')
+    h.set_context('test', 'wiki', neighborhood='Projects')
     assert '<a href=' in g.markdown.convert('# Foo!\n[Home]')
     assert '<a href=' not in g.markdown.convert('# Foo!\n[Rooted]')
     assert '<a href=' in g.markdown.convert('This is http://sf.net')
@@ -123,8 +120,7 @@ def test_markdown():
     assert '<div id="foo">' in r, r
     assert 'href="../foo"' in g.markdown.convert('[My foo](foo)')
     assert 'href="..' not in g.markdown.convert('[My foo](./foo)')
-    g.set_project(M.Project.query.get(name='Home Project for Projects'))
-    g.set_app('wiki')
+    h.set_context('--init--', 'wiki', neighborhood='Projects')
     r = g.markdown_wiki.convert('[[neighborhood_feeds tool_name=Wiki]]')
     assert 'WikiPage Home modified by Test Admin' in r, r
     g.markdown.convert("<class 'foo'>") # should not raise an exception

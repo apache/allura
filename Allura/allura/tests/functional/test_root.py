@@ -90,7 +90,8 @@ class TestRootController(TestController):
         assert len(response.html.findAll('img',{'alt':'adobe-2 Logo'})) == 1
 
     def test_markdown_to_html(self):
-        r = self.app.get('/nf/markdown_to_html?markdown=*aaa*bb[wiki:Home]&project=test&app=bugs', validate_chunk=True)
+        n = M.Neighborhood.query.get(name='Projects')
+        r = self.app.get('/nf/markdown_to_html?markdown=*aaa*bb[wiki:Home]&project=test&app=bugs&neighborhood=%s' % n._id, validate_chunk=True)
         assert '<p><em>aaa</em>bb<a href="/p/test/wiki/Home/">[wiki:Home]</a></p>' in r, r
 
     def test_redirect_external(self):

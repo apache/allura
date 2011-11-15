@@ -438,7 +438,8 @@ class ProjectAdminController(BaseController):
     def update_mount_order(self, subs=None, tools=None, **kw):
         if subs:
             for sp in subs:
-                p = M.Project.query.get(shortname=sp['shortname'])
+                p = M.Project.query.get(shortname=sp['shortname'],
+                                        neighborhood_id=c.project.neighborhood_id)
                 p.ordinal = int(sp['ordinal'])
         if tools:
             for p in tools:
@@ -452,16 +453,16 @@ class ProjectAdminController(BaseController):
         if subproject is None: subproject = []
         if tool is None: tool = []
         for sp in subproject:
+            p = M.Project.query.get(shortname=sp['shortname'],
+                                    neighborhood_id=c.project.neighborhood_id)
             if sp.get('delete'):
                 require_access(c.project, 'admin')
                 h.log_action(log, 'delete subproject').info(
                     'delete subproject %s', sp['shortname'],
                     meta=dict(name=sp['shortname']))
-                p = M.Project.query.get(shortname=sp['shortname'])
                 p.removal = 'deleted'
                 plugin.ProjectRegistrationProvider.get().delete_project(p, c.user)
             elif not new:
-                p = M.Project.query.get(shortname=sp['shortname'])
                 p.name = sp['name']
                 p.ordinal = int(sp['ordinal'])
         for p in tool:
@@ -672,4 +673,3 @@ class GroupController(BaseController):
 class AdminAppAdminController(DefaultAdminController):
     '''Administer the admin app'''
     pass
-

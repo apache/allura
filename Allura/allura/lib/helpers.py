@@ -108,7 +108,8 @@ def find_project(url_path):
     length = len(parts)
     while length:
         shortname = '/'.join(parts[:length])
-        p = M.Project.query.get(shortname=shortname, deleted=False)
+        p = M.Project.query.get(shortname=shortname, deleted=False,
+                                neighborhood_id=n._id)
         if p: return p, parts[length:]
         length -= 1
     return None, url_path.split('/')

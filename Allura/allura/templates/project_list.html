@@ -22,7 +22,7 @@
             <div style="clear:both;"><a href="{{n.url()}}"><h2>{{n.name}}</h2></a></div>
             <div class="list" style="clear:both">
               {% for p in subprojects %}
-                {% do g.set_project(p.shortname) %}
+                {% do g.set_project(p) %}
                 {% if h.has_access(p, 'read')() %}
                   {{c.project_summary.display(value=p)}}
                 {% endif %}
@@ -48,7 +48,7 @@
             {% else %}
               <div class="list">
                 {% for project in projects %}
-                  {% do g.set_project(project.shortname) %}
+                  {% do g.set_project(project) %}
                   {% if h.has_access(project, 'read')() %}
                     {{c.project_summary.display(value=project)}}
                   {% endif %}
@@ -58,5 +58,5 @@
           </div>
           {% endif %}
           
-          {% do g.set_project(old_project and old_project.shortname or '') %}
+          {% do g.set_project(old_project or None) %}
 {% endblock %}

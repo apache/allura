@@ -33,7 +33,8 @@ def test_render_genshi_plaintext():
 
 def test_find_project():
     proj, rest = h.find_project('/p/test/foo')
-    assert proj is not None
+    assert_equals(proj.shortname, 'test')
+    assert_equals(proj.neighborhood.name, 'Projects')
     proj, rest = h.find_project('/p/testable/foo')
     assert proj is None
 
@@ -45,8 +46,7 @@ def test_make_users():
     assert r.username == '*anonymous', r
 
 def test_make_roles():
-    g.set_project('test')
-    g.set_app('wiki')
+    h.set_context('test', 'wiki', neighborhood='Projects')
     u = M.User.anonymous()
     pr = u.project_role()
     assert h.make_roles([pr._id]).next() == pr

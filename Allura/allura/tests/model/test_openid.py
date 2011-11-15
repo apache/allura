@@ -23,12 +23,7 @@ def setUp():
     M.EmailAddress.query.remove({})
     M.OpenIdNonce.query.remove({})
     M.OpenIdAssociation.query.remove({})
-    conn = M.main_doc_session.bind.conn
-    g.set_project('test')
-    g.set_app('hello')
-    c.user = M.User.query.get(username='test-admin')
-    c.user.email_addresses = c.user.open_ids = []
-    c.user.project_role().roles = []
+    #conn = M.main_doc_session.bind.conn
 
 def test_oid_model():
     oid = M.OpenIdAssociation(_id='http://example.com')

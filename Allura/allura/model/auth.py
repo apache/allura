@@ -406,6 +406,9 @@ class User(MappedClass):
         return user
 
     def private_project(self):
+        '''
+        Returns the personal user-project for the user
+        '''
         from .project import Project
         try:
             return Project.query.get(shortname='u/%s' % self.username, deleted=False)
@@ -559,7 +562,7 @@ class ProjectRole(MappedClass):
     @property
     def user(self):
         if (self.user_id is None
-            and self.name 
+            and self.name
             and self.name != '*anonymous'):
             return None
         return User.query.get(_id=self.user_id)

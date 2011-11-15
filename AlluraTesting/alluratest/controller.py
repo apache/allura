@@ -21,6 +21,7 @@ import ming.orm
 from allura import model as M
 import allura.lib.security
 from allura.lib.app_globals import Globals
+from allura.lib import helpers as h
 from allura.websetup.schema import REGISTRY
 #from allura.lib.custom_middleware import environ as ENV, MagicalC
 from .validation import ValidatingTestApp
@@ -82,8 +83,7 @@ def setup_unit_test():
 
 def setup_global_objects():
     setup_unit_test()
-    g.set_project('test')
-    g.set_app('wiki')
+    h.set_context('test', 'wiki', neighborhood='Projects')
     c.user = M.User.query.get(username='test-admin')
 
 

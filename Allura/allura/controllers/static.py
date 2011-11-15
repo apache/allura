@@ -15,13 +15,9 @@ class NewForgeController(object):
     @without_trailing_slash
     def markdown_to_html(self, markdown, neighborhood=None, project=None, app=None):
         """Convert markdown to html."""
-        if project:
-            if neighborhood:
-                n = M.Neighborhood.query.get(name=neighborhood)
-                project = M.Project.query.get(shortname=project, neighborhood_id=n._id)
-            g.set_project(project)
-            if app:
-                g.set_app(app)
+        if neighborhood is None or project is None:
+            raise exc.HTTPBadRequest()
+        h.set_context(project, app, neighborhood=neighborhood)
         html = g.markdown_wiki.convert(markdown)
         return html
 

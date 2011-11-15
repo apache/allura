@@ -345,10 +345,11 @@ class Globals(object):
         return (base + app.config.tool_name.lower() + '/' + resource)
 
     def set_project(self, pid_or_project):
+        'h.set_context() is preferred over this method'
         if isinstance(pid_or_project, M.Project):
             c.project = pid_or_project
         elif isinstance(pid_or_project, basestring):
-            c.project = M.Project.query.get(shortname=pid_or_project, deleted=False)
+            raise TypeError('need a Project instance, got %r' % pid_or_project)
         elif pid_or_project is None:
             c.project = None
         else:
@@ -356,6 +357,7 @@ class Globals(object):
             log.error('Trying g.set_project(%r)', pid_or_project)
 
     def set_app(self, name):
+        'h.set_context() is preferred over this method'
         c.app = c.project.app_instance(name)
 
     def url(self, base, **kw):
