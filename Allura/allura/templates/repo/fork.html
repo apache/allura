@@ -9,10 +9,10 @@
     {% if c.user != c.user.anonymous() %}
       <label class="grid-4">Project:</label>
       <div class="grid-15">
-        <select name="project_name">
-          <option value="{{to_project_name}}" selected="selected">{{to_project_name}}</option>
+        <select name="project_id">
+          <option value="{{user_project._id}}" selected="selected">{{user_project.name}}</option>
         {% for p in c.user.my_projects() %}
-          <option value="{{p.shortname}}">{{p.name}}</option>
+          <option value="{{p._id}}">{{p.name}}</option>
         {% endfor %}
         </select>
       </div>
@@ -26,9 +26,4 @@
       </div>
     {% endif %}
 </form>
-<div id="in-use" style="display:none">
-    {% for used in in_use %}
-      <span>{{used}}</span>
-    {% endfor %}
-</div>
 {% endblock %}

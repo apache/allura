@@ -9,7 +9,7 @@ import tg
 from tg import redirect, expose, flash, url, validate
 from tg.decorators import with_trailing_slash, without_trailing_slash
 from formencode import validators
-
+from bson import ObjectId
 from ming.orm import ThreadLocalORMSession, session
 
 import allura.tasks
@@ -59,32 +59,21 @@ class RepoRootController(BaseController):
 
     @with_trailing_slash
     @expose('jinja:allura:templates/repo/fork.html')
-    def fork(self, to_name=None, project_name=None):
+    def fork(self, to_name=None, project_id=None):
+        # this shows the form and handles the submission
         security.require_authenticated()
         if not c.app.forkable: raise exc.HTTPNotFound
         from_repo = c.app.repo
-        if project_name:
-            to_project_name = project_name
-        else:
-            to_project_name = 'u/' + c.user.username
         ThreadLocalORMSession.flush_all()
         ThreadLocalORMSession.close_all()
         from_project = c.project
-        to_project = M.Project.query.get(shortname=to_project_name)
-        with h.push_config(c, project=to_project):
-            if request.method!='POST' or to_name is None:
-                if to_project is None:
-                    in_use = []
-                    to_project_name = ''
-                else:
-                    prefix_len = len(to_project_name+'/')
-                    in_use = [sp.shortname[prefix_len:] for sp in to_project.direct_subprojects]
-                    in_use += [ac.options['mount_point'] for ac in to_project.app_configs]
-                return dict(from_repo=from_repo,
-                            to_project_name=to_project_name,
-                            in_use=in_use,
-                            to_name=to_name or '')
-            else:
+        to_project = M.Project.query.get(_id=ObjectId(project_id))
+        if request.method != 'POST' or not to_name:
+            return dict(from_repo=from_repo,
+                        user_project=c.user.private_project(),
+                        to_name=to_name or '')
+        else:
+            with h.push_config(c, project=to_project):
                 if not to_project.database_configured:
                     to_project.configure_project(is_user_project=True)
                 security.require(security.has_access(to_project, 'admin'))

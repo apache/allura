@@ -86,7 +86,7 @@ class OAuthNegotiator(object):
             self.server.verify_request(req, consumer, access_token.as_token())
         except:
             log.error('Invalid signature')
-            raise exc.HTTPForbidden 
+            raise exc.HTTPForbidden
         return access_token
 
     @expose()
@@ -128,7 +128,7 @@ class OAuthNegotiator(object):
         return dict(
             oauth_token=oauth_token,
             consumer=rtok.consumer_token)
-    
+
     @expose('jinja:allura:templates/oauth_authorize_ok.html')
     def do_authorize(self, yes=None, no=None, oauth_token=None):
         security.require_authenticated()
@@ -148,7 +148,7 @@ class OAuthNegotiator(object):
         url+='oauth_token=%s&oauth_verifier=%s' % (
             rtok.api_key, rtok.validation_pin)
         redirect(url)
-        
+
     @expose()
     def access_token(self, **kw):
         req = oauth.Request.from_request(
@@ -209,7 +209,9 @@ class ProjectRestController(object):
             return self, ()
         if not h.re_path_portion.match(name):
             raise exc.HTTPNotFound, name
-        subproject = M.Project.query.get(shortname=c.project.shortname + '/' + name, deleted=False)
+        subproject = M.Project.query.get(shortname=c.project.shortname + '/' + name,
+                                         neighborhood_id=c.project.neighborhood_id,
+                                         deleted=False)
         if subproject:
             c.project = subproject
             c.app = None

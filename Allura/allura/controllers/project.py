@@ -292,7 +292,8 @@ class ProjectController(object):
         name=unquote(name)
         if not h.re_path_portion.match(name):
             raise exc.HTTPNotFound, name
-        subproject = M.Project.query.get(shortname=c.project.shortname + '/' + name)
+        subproject = M.Project.query.get(shortname=c.project.shortname + '/' + name,
+                                         neighborhood_id=c.project.neighborhood_id)
         if subproject:
             c.project = subproject
             c.app = None
@@ -537,7 +538,8 @@ class NeighborhoodModerateController(object):
     @expose()
     @require_post()
     def invite(self, pid, invite=None, uninvite=None):
-        p = M.Project.query.get(shortname=pid, deleted=False)
+        p = M.Project.query.get(shortname=pid, deleted=False,
+                                neighborhood_id=self.neighborhood._id)
         if p is None:
             flash("Can't find %s" % pid, 'error')
             redirect('.')

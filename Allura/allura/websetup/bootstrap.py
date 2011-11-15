@@ -58,7 +58,8 @@ def bootstrap(command, conf, vars):
         log.error('Error clearing solr index')
     if asbool(conf.get('cache_test_data')):
         if restore_test_data():
-            c.project = M.Project.query.get(shortname='test')
+            from allura.lib import helpers as h
+            h.set_context('test', neighborhood='Projects')
             return
     log.info('Initializing search')
 
@@ -145,7 +146,7 @@ def bootstrap(command, conf, vars):
     p1 = p0.new_subproject('sub1')
     ThreadLocalORMSession.flush_all()
     if asbool(conf.get('load_test_data')):
-        u_proj = M.Project.query.get(shortname='u/test-admin')
+        u_proj = M.Project.query.get(shortname='u/test-admin', neighborhood_id=n_users._id)
         app = p0.install_app('SVN', 'src', 'SVN')
         app = p0.install_app('Git', 'src-git', 'Git')
         app.config.options['type'] = 'git'

@@ -31,8 +31,9 @@ class TestRootController(TestController):
         ThreadLocalORMSession.close_all()
 
     def test_fork(self):
+        to_project = M.Project.query.get(shortname='test2', neighborhood_id=c.project.neighborhood_id)
         r = self.app.post('/src-git/fork', params=dict(
-            project_name='test2',
+            project_id=str(to_project._id),
             to_name='code'))
         cloned_from = c.app.repo
         with h.push_context('test2', 'code', neighborhood='Projects'):
@@ -46,8 +47,9 @@ class TestRootController(TestController):
         assert 'Forks' in r
 
     def test_merge_request(self):
+        to_project = M.Project.query.get(shortname='test2', neighborhood_id=c.project.neighborhood_id)
         r = self.app.post('/src-git/fork', params=dict(
-            project_name='test2',
+            project_id=str(to_project._id),
             to_name='code'))
         cloned_from = c.app.repo
         with h.push_context('test2', 'code', neighborhood='Projects'):
