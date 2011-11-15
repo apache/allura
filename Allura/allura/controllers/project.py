@@ -48,6 +48,7 @@ class W:
     add_project = plugin.ProjectRegistrationProvider.get().add_project_widget(antispam=True)
     page_list = ffw.PageList()
     page_size = ffw.PageSize()
+    project_select = ffw.NeighborhoodProjectSelect
 
 class NeighborhoodController(object):
     '''Manages a neighborhood of projects.
@@ -422,25 +423,24 @@ class ScreenshotController(object):
         if not f: raise exc.HTTPNotFound
         return f
 
-class NeighborhoodAdminController(object):
+def set_nav(neighborhood):
+    project = neighborhood.neighborhood_project
+    if project:
+        c.project = project
+        g.set_app('admin')
+    else:
+        admin_url = neighborhood.url() + '_admin/'
+        c.custom_sidebar_menu = [
+            SitemapEntry('Overview', admin_url + 'overview', className='nav_child'),
+            SitemapEntry('Awards', admin_url + 'accolades', className='nav_child')]
 
+class NeighborhoodAdminController(object):
     def __init__(self, neighborhood):
         self.neighborhood = neighborhood
         self.awards = NeighborhoodAwardsController(self.neighborhood)
 
     def _check_security(self):
         require_access(self.neighborhood, 'admin')
-
-    def set_nav(self):
-        project = self.neighborhood.neighborhood_project
-        if project:
-            c.project = project
-            g.set_app('admin')
-        else:
-            admin_url = self.neighborhood.url()+'_admin/'
-            c.custom_sidebar_menu = [
-                     SitemapEntry('Overview', admin_url+'overview', className='nav_child'),
-                     SitemapEntry('Awards', admin_url+'accolades', className='nav_child')]
 
     @with_trailing_slash
     @expose()
@@ -450,34 +450,44 @@ class NeighborhoodAdminController(object):
     @without_trailing_slash
     @expose('jinja:allura:templates/neighborhood_admin_overview.html')
     def overview(self):
-        self.set_nav()
+        set_nav(self.neighborhood)
         c.resize_editor = W.resize_editor
         return dict(neighborhood=self.neighborhood)
 
     @without_trailing_slash
     @expose('jinja:allura:templates/neighborhood_admin_permissions.html')
     def permissions(self):
-        self.set_nav()
+        set_nav(self.neighborhood)
         return dict(neighborhood=self.neighborhood)
+
+    @expose('json:')
+    def project_search(self, term=''):
+        if len(term) < 3:
+            raise exc.HTTPBadRequest('"term" param must be at least length 3')
+        project_regex = re.compile('(?i)%s' % re.escape(term))
+        projects = M.Project.query.find(dict(
+            neighborhood_id=self.neighborhood._id, deleted=False,
+            shortname=project_regex)).sort('shortname')
+        return dict(
+            projects=[
+                dict(
+                    label=p.shortname,
+                    value=p.shortname,
+                    id=p.shortname)
+                for p in projects])
 
     @without_trailing_slash
     @expose('jinja:allura:templates/neighborhood_admin_accolades.html')
     def accolades(self):
-        self.set_nav()
-        psort = [(n, M.Project.query.find(dict(neighborhood_id=n._id, deleted=False, shortname={'$ne': '--init--'})).sort('shortname').all())
-                 for n in M.Neighborhood.query.find(dict(name={'$ne': 'Users'})).sort('name')]
-        awards = M.Award.query.find(dict(created_by_neighborhood_id=self.neighborhood._id))
+        set_nav(self.neighborhood)
+        awards = M.Award.query.find(dict(created_by_neighborhood_id=self.neighborhood._id)).all()
         awards_count = len(awards)
-        assigns = M.Award.query.find(dict(created_by_neighborhood_id=self.neighborhood._id))
-        assigns_count = len(assigns)
         grants = M.AwardGrant.query.find(dict(granted_by_neighborhood_id=self.neighborhood._id))
         grants_count = len(grants)
+        c.project_select = W.project_select(self.neighborhood.url() + '_admin/project_search')
         return dict(
-            neigh_projects=psort,
             awards=awards,
             awards_count=awards_count,
-            assigns=assigns,
-            assigns_count=assigns_count,
             grants=grants,
             grants_count=grants_count,
             neighborhood=self.neighborhood)
@@ -573,56 +583,64 @@ class NeighborhoodAwardsController(object):
     @expose('jinja:allura:templates/grants.html')
     def grants(self, **kw):
         grants = M.AwardGrant.query.find(dict(granted_by_neighborhood_id=self.neighborhood._id))
-        count=0
         count = len(grants)
         return dict(grants=grants or [], count=count)
 
     @expose()
     def _lookup(self, short, *remainder):
         short=unquote(short)
-        return AwardController(short), remainder
+        return AwardController(self.neighborhood, short), remainder
 
     @expose()
     @require_post()
     def create(self, icon=None, short=None, full=None):
         app_config_id = ObjectId()
-        tool_version = { 'neighborhood':'0' }
-        if short is not None:
+        tool_version = {'neighborhood': '0'}
+        if short:
             award = M.Award(app_config_id=app_config_id, tool_version=tool_version)
             award.short = short
             award.full = full
             award.created_by_neighborhood_id = self.neighborhood._id
-            M.AwardFile.save_image(
-                icon.filename, icon.file, content_type=icon.type,
-                square=True, thumbnail_size=(48,48),
-                thumbnail_meta=dict(award_id=award._id))
+            if hasattr(icon, 'filename'):
+                M.AwardFile.save_image(
+                    icon.filename, icon.file, content_type=icon.type,
+                    square=True, thumbnail_size=(48,48),
+                    thumbnail_meta=dict(award_id=award._id))
         redirect(request.referer)
 
     @expose()
     @require_post()
     def grant(self, grant=None, recipient=None):
-        grant_q = M.Award.query.find(dict(short=grant)).first()
-        recipient_q = M.Project.query.find(dict(name=recipient, deleted=False)).first()
-        app_config_id = ObjectId()
-        tool_version = { 'neighborhood':'0' }
-        award = M.AwardGrant(app_config_id=app_config_id, tool_version=tool_version)
-        award.award_id = grant_q._id
-        award.granted_to_project_id = recipient_q._id
-        award.granted_by_neighborhood_id = self.neighborhood._id
+        grant_q = M.Award.query.find(dict(short=grant,
+            created_by_neighborhood_id=self.neighborhood._id)).first()
+        recipient_q = M.Project.query.find(dict(
+            neighborhood_id=self.neighborhood._id, shortname=recipient,
+            deleted=False)).first()
+        if grant_q and recipient_q:
+            app_config_id = ObjectId()
+            tool_version = {'neighborhood': '0'}
+            award = M.AwardGrant(app_config_id=app_config_id,
+                                 tool_version=tool_version)
+            award.award_id = grant_q._id
+            award.granted_to_project_id = recipient_q._id
+            award.granted_by_neighborhood_id = self.neighborhood._id
         redirect(request.referer)
 
 class AwardController(object):
 
-    def __init__(self, short=None):
+    def __init__(self, neighborhood=None, short=None):
+        self.neighborhood = neighborhood
         if short is not None:
             self.short = short
-            self.award = M.Award.query.get(short=self.short)
+            self.award = M.Award.query.find(dict(short=self.short,
+                created_by_neighborhood_id=self.neighborhood._id)).first()
 
     @with_trailing_slash
     @expose('jinja:allura:templates/award.html')
     def index(self, **kw):
+        set_nav(self.neighborhood)
         if self.award is not None:
-            return dict(award=self.award)
+            return dict(award=self.award, neighborhood=self.neighborhood)
         else:
             redirect('not_found')
 
@@ -633,7 +651,7 @@ class AwardController(object):
     @expose()
     def _lookup(self, recipient, *remainder):
         recipient=unquote(recipient)
-        return GrantController(self.award, recipient), remainder
+        return GrantController(self.neighborhood, self.award, recipient), remainder
 
     @expose()
     def icon(self):
@@ -645,14 +663,30 @@ class AwardController(object):
     @expose()
     @require_post()
     def grant(self, recipient=None):
-        recipient_q = M.Project.query.find(dict(name=recipient, deleted=False)).first()
+        recipient_q = M.Project.query.find(dict(name=recipient, deleted=False,
+            neighborhood_id=self.neighborhood._id)).first()
         app_config_id = ObjectId()
-        tool_version = { 'neighborhood':'0' }
+        tool_version = {'neighborhood': '0'}
         grant = M.AwardGrant(app_config_id=app_config_id, tool_version=tool_version)
         grant.award_id = self.award._id
         grant.granted_to_project_id = recipient_q._id
         grant.granted_by_neighborhood_id = self.neighborhood._id
         redirect(request.referer)
+
+    @expose()
+    @require_post()
+    def update(self, icon=None, short=None, full=None):
+        self.award.short = short
+        self.award.full = full
+        if hasattr(icon, 'filename'):
+            if self.award.icon:
+                self.award.icon.delete()
+            M.AwardFile.save_image(
+                icon.filename, icon.file, content_type=icon.type,
+                square=True, thumbnail_size=(48,48),
+                thumbnail_meta=dict(award_id=self.award._id))
+        flash('Award updated.')
+        redirect(self.award.longurl())
 
     @expose()
     @require_post()
@@ -663,15 +697,17 @@ class AwardController(object):
                 grant.delete()
             M.AwardFile.query.remove(dict(award_id=self.award._id))
             self.award.delete()
-        redirect('../..')
+        redirect(request.referer)
 
 class GrantController(object):
 
-    def __init__(self, award=None, recipient=None):
+    def __init__(self, neighborhood=None, award=None, recipient=None):
+        self.neighborhood = neighborhood
         if recipient is not None and award is not None:
-            self.recipient = recipient.replace('users_','users/')
+            self.recipient = recipient.replace('_', '/')
             self.award = M.Award.query.get(_id=award._id)
-            self.project = M.Project.query.get(shortname=self.recipient)
+            self.project = M.Project.query.find(dict(shortname=self.recipient,
+                neighborhood_id=self.neighborhood._id)).first()
             self.grant = M.AwardGrant.query.get(award_id=self.award._id,
                 granted_to_project_id=self.project._id)
 

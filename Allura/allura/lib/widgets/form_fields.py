@@ -114,6 +114,44 @@ class ProjectUserSelect(ew.InputField):
             minLength: 2
           });''' % c.project.url())
 
+class NeighborhoodProjectSelect(ew.InputField):
+    template='jinja:allura:templates/widgets/neighborhood_project_select.html'
+    defaults=dict(
+        ew.InputField.defaults,
+        name=None,
+        value=None,
+        show_label=True,
+        className=None)
+
+    def __init__(self, url, **kw):
+        super(NeighborhoodProjectSelect, self).__init__(**kw)
+        if not isinstance(self.value, list):
+            self.value=[self.value]
+        self.url = url
+
+    def from_python(self, value, state=None):
+        return value
+
+    def resources(self):
+        for r in super(NeighborhoodProjectSelect, self).resources(): yield r
+        yield ew.CSSLink('css/autocomplete.css')
+        yield onready('''
+          $('input.neighborhood-project-select').autocomplete({
+            source: function (request, response) {
+              $.ajax({
+                url: "%s",
+                dataType: "json",
+                data: {
+                  term: request.term
+                },
+                success: function (data) {
+                  response(data.projects);
+                }
+              });
+            },
+            minLength: 3
+          });''' % self.url)
+
 class AttachmentList(ew_core.Widget):
     template='jinja:allura:templates/widgets/attachment_list.html'
     defaults=dict(

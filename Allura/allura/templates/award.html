@@ -4,28 +4,42 @@
 
 {% block header %}Award{% endblock %}
 
+{% block nav_menu %}
+{% include 'allura:templates/jinja_master/neigh_nav_menu.html' %}
+{% endblock %}
+
+{% block top_nav %}
+{% include 'allura:templates/jinja_master/neigh_top_nav.html' %}
+{% endblock %}
+
 {% block content %}
+        <form action="{{award.longurl()}}/update" method="post" enctype="multipart/form-data">
           <table>
             <thead>
               <tr>
+                <th></th>
                 <th>Icon</th>
                 <th>Abbreviation</th>
                 <th>Description</th>
-                <th>Delete?</th>
+                <th></th>
               </tr>
             </thead>
             <tbody>
               <tr>
-                <td>
+                <td style="padding-right:0">
                   {% if award.icon %}
                     <img class="award_icon" src="icon" alt=""/>
                   {% endif %}
                 </td>
-                <td><a href="{{award.longurl()}}">{{award.short}}</a></td>
-                <td>{{award.full}}</td>
-                <td><a href="{{award.longurl()}}/delete">[X]</a></td>
+                <td style="padding-left:0">
+                  <input type="file" id="icon" name="icon" class="text" style="width:180px"/>
+                </td>
+                <td><input name="short" value="{{award.short}}" /></td>
+                <td><input name="full" value="{{award.full}}" /></td>
+                <td><input type="submit" value="Save" /></td>
               </tr>
             </tbody>
           </table>
-          <a href="..">&#060;&#060; Back</a>
+        </form>
+        <p><a href="../../accolades">&#060;&#060; Back</a></p>
 {% endblock %}

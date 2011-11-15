@@ -15,7 +15,7 @@
 {% block content %}
           {% if awards_count > 0 %}
           <p>
-          <a href="awards/"><h3>Current Awards</h3></a>
+          <h3>Current Awards</h3>
             <div id="award_list">
               <table>
                 <thead>
@@ -30,13 +30,16 @@
                   {% for award in awards %}
                     <tr>
                       <td>
-                        <py:if test="award.icon">
+                        {% if award.icon %}
                           <img class="award_icon" src="awards/{{award.url()}}/icon" alt=""/>
-                        </py:if>
+                        {% endif %}
                       </td>
                       <td><a href="{{award.longurl()}}">{{award.short}}</a></td>
                       <td>{{award.full}}</td>
-                      <td><a href="{{award.longurl()}}/delete">[X]</a></td>
+                      <td>
+                        <form action="{{award.longurl()}}/delete" method="post">
+                          <input type="submit" value="Delete"/>
+                        </form>
                     </tr>
                   {% endfor %}
                 </tbody>
@@ -75,14 +78,6 @@
             </table>
           </form>
 
-          {% macro neighborhood_project_select(n, projects) %}
-            <optgroup label="{{n.name}}">
-            {% for p in projects %}
-              <option value="{{p.name}}">{{p.name}}</option>
-            {% endfor %}
-            </optgroup>
-          {% endmacro %}
-
           {% if awards_count > 0 %}
           <p>
             <h3>Grant an Award</h3>
@@ -99,17 +94,13 @@
                   <tr>
                     <td>
                       <select name="grant">
-                        {% for assign in assigns %}
-                          <option value="{{assign.short}}">{{assign.short}}</option>
+                        {% for award in awards %}
+                          <option value="{{award.short}}">{{award.short}}</option>
                         {% endfor %}
                       </select>
                     </td>
                     <td>
-                      <select name="recipient">
-                      {% for n, projects in neigh_projects %}
-                        {{neighborhood_project_select(n, projects)}}
-                      {% endfor %}
-                      </select>
+                      {{c.project_select.display(name='recipient')}}
                     </td>
                     <td>
                       <input type="submit" value="Grant"/>
@@ -120,9 +111,9 @@
             </form>
           </p>
           {% endif %}
-          
+
           {% if grants_count > 0 %}
-          <p py:if="">
+          <p>
             <h3>Current Grants</h3>
             <div id="grant_list">
               <table>
@@ -130,15 +121,18 @@
                   <tr>
                     <th>Award</th>
                     <th>Recipient</th>
-                    <th>Delete?</th>
+                    <th>Revoke?</th>
                   </tr>
                 </thead>
                 <tbody>
                   {% for grant in grants %}
                     <tr>
-                      <td><a href="{{grant.longurl()}}">{{grant.award.short}}</a></td>
+                      <td><a href="{{grant.award.longurl()}}">{{grant.award.short}}</a></td>
                       <td><a href="{{grant.granted_to_project.url()}}">{{grant.granted_to_project.shortname}}</a></td>
-                      <td><a href="{{grant.longurl()}}/revoke">[X]</a></td>
+                      <td>
+                        <form action="{{grant.longurl()}}/revoke" method="post">
+                          <input type="submit" value="Revoke"/>
+                        </form>
                     </tr>
                   {% endfor %}
                 </tbody>

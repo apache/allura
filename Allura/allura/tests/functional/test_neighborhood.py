@@ -294,6 +294,14 @@ class TestNeighborhood(TestController):
         r = self.app.post('/adobe/_admin/awards/create',
                           params=dict(short='FOO', full='A basic foo award'),
                           extra_environ=dict(username='root'), upload_files=[upload])
+        r = self.app.post('/adobe/_admin/awards/create',
+                          params=dict(short='BAR', full='A basic bar award with no icon'),
+                          extra_environ=dict(username='root'))
+        r = self.app.post('/adobe/_admin/awards/BAR/update',
+                          params=dict(short='BAR2', full='Updated description.'),
+                          extra_environ=dict(username='root')).follow().follow()
+        assert 'BAR2' in r
+        assert 'Updated description.' in r
         r = self.app.get('/adobe/_admin/awards/FOO', extra_environ=dict(username='root'))
         r = self.app.get('/adobe/_admin/awards/FOO/icon', extra_environ=dict(username='root'))
         image = Image.open(StringIO(r.body))
