@@ -138,7 +138,8 @@ def projects(
     sort='last_updated',
     show_total=False,
     limit=100,
-    labels=''):
+    labels='',
+    award=''):
     from allura.lib.widgets.project_list import ProjectList
     from allura import model as M
     q = dict(
@@ -150,6 +151,12 @@ def projects(
         q['$or'] = [{'labels': {'$all': l.split(',')}} for l in or_labels]
     if category is not None:
         category = M.ProjectCategory.query.get(name=category)
+    if award:
+        aw = M.Award.query.find(dict(created_by_neighborhood_id=c.project.neighborhood_id, short=award)).first()
+        if aw:
+            q['_id'] = {'$in': [grant.granted_to_project_id for grant in M.AwardGrant.query.find(dict(
+                                   granted_by_neighborhood_id=c.project.neighborhood_id,
+                                   award_id=aw._id))]}
     if category is not None:
         q['category_id'] = category._id
     pq = M.Project.query.find(q).limit(int(limit))
