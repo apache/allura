@@ -1,6 +1,8 @@
 import os, re
 import logging
 import json
+
+from bson import ObjectId
 from urllib import unquote, quote
 from urllib2 import urlopen
 from itertools import chain, islice
@@ -446,17 +448,16 @@ class NeighborhoodAdminController(object):
         self.neighborhood = neighborhood
         self.awards = NeighborhoodAwardsController(self.neighborhood)
 
-    def _check_security(self):
-        require_access(self.neighborhood, 'admin')
-
     @with_trailing_slash
     @expose()
     def index(self, **kw):
+        require_access(self.neighborhood, 'admin')
         utils.permanent_redirect('overview')
 
     @without_trailing_slash
     @expose('jinja:allura:templates/neighborhood_admin_overview.html')
     def overview(self):
+        require_access(self.neighborhood, 'admin')
         set_nav(self.neighborhood)
         c.resize_editor = W.resize_editor
         return dict(neighborhood=self.neighborhood)
@@ -464,11 +465,13 @@ class NeighborhoodAdminController(object):
     @without_trailing_slash
     @expose('jinja:allura:templates/neighborhood_admin_permissions.html')
     def permissions(self):
+        require_access(self.neighborhood, 'admin')
         set_nav(self.neighborhood)
         return dict(neighborhood=self.neighborhood)
 
     @expose('json:')
     def project_search(self, term=''):
+        require_access(self.neighborhood, 'admin')
         if len(term) < 3:
             raise exc.HTTPBadRequest('"term" param must be at least length 3')
         project_regex = re.compile('(?i)%s' % re.escape(term))
@@ -486,6 +489,7 @@ class NeighborhoodAdminController(object):
     @without_trailing_slash
     @expose('jinja:allura:templates/neighborhood_admin_accolades.html')
     def accolades(self):
+        require_access(self.neighborhood, 'admin')
         set_nav(self.neighborhood)
         awards = M.Award.query.find(dict(created_by_neighborhood_id=self.neighborhood._id)).all()
         awards_count = len(awards)
@@ -502,6 +506,7 @@ class NeighborhoodAdminController(object):
     @expose()
     @require_post()
     def update(self, name=None, css=None, homepage=None, project_template=None, icon=None, **kw):
+        require_access(self.neighborhood, 'admin')
         self.neighborhood.name = name
         self.neighborhood.redirect = kw.pop('redirect', '')
         self.neighborhood.homepage = homepage
@@ -579,6 +584,7 @@ class NeighborhoodAwardsController(object):
 
     @expose('jinja:allura:templates/awards.html')
     def index(self, **kw):
+        require_access(self.neighborhood, 'admin')
         awards = M.Award.query.find(dict(created_by_neighborhood_id=self.neighborhood._id))
         count = len(awards)
         return dict(awards=awards or [], count=count)
@@ -589,18 +595,19 @@ class NeighborhoodAwardsController(object):
 
     @expose('jinja:allura:templates/grants.html')
     def grants(self, **kw):
+        require_access(self.neighborhood, 'admin')
         grants = M.AwardGrant.query.find(dict(granted_by_neighborhood_id=self.neighborhood._id))
         count = len(grants)
         return dict(grants=grants or [], count=count)
 
     @expose()
-    def _lookup(self, short, *remainder):
-        short=unquote(short)
-        return AwardController(self.neighborhood, short), remainder
+    def _lookup(self, award_id, *remainder):
+        return AwardController(self.neighborhood, award_id), remainder
 
     @expose()
     @require_post()
     def create(self, icon=None, short=None, full=None):
+        require_access(self.neighborhood, 'admin')
         app_config_id = ObjectId()
         tool_version = {'neighborhood': '0'}
         if short:
@@ -618,6 +625,7 @@ class NeighborhoodAwardsController(object):
     @expose()
     @require_post()
     def grant(self, grant=None, recipient=None):
+        require_access(self.neighborhood, 'admin')
         grant_q = M.Award.query.find(dict(short=grant,
             created_by_neighborhood_id=self.neighborhood._id)).first()
         recipient_q = M.Project.query.find(dict(
@@ -631,20 +639,22 @@ class NeighborhoodAwardsController(object):
             award.award_id = grant_q._id
             award.granted_to_project_id = recipient_q._id
             award.granted_by_neighborhood_id = self.neighborhood._id
+            with h.push_context(recipient_q._id):
+                g.post_event('project_updated')
         redirect(request.referer)
 
 class AwardController(object):
 
-    def __init__(self, neighborhood=None, short=None):
+    def __init__(self, neighborhood=None, award_id=None):
         self.neighborhood = neighborhood
-        if short is not None:
-            self.short = short
-            self.award = M.Award.query.find(dict(short=self.short,
+        if award_id:
+            self.award = M.Award.query.find(dict(_id=ObjectId(award_id),
                 created_by_neighborhood_id=self.neighborhood._id)).first()
 
     @with_trailing_slash
     @expose('jinja:allura:templates/award.html')
     def index(self, **kw):
+        require_access(self.neighborhood, 'admin')
         set_nav(self.neighborhood)
         if self.award is not None:
             return dict(award=self.award, neighborhood=self.neighborhood)
@@ -670,6 +680,7 @@ class AwardController(object):
     @expose()
     @require_post()
     def grant(self, recipient=None):
+        require_access(self.neighborhood, 'admin')
         recipient_q = M.Project.query.find(dict(name=recipient, deleted=False,
             neighborhood_id=self.neighborhood._id)).first()
         app_config_id = ObjectId()
@@ -683,6 +694,7 @@ class AwardController(object):
     @expose()
     @require_post()
     def update(self, icon=None, short=None, full=None):
+        require_access(self.neighborhood, 'admin')
         self.award.short = short
         self.award.full = full
         if hasattr(icon, 'filename'):
@@ -692,16 +704,22 @@ class AwardController(object):
                 icon.filename, icon.file, content_type=icon.type,
                 square=True, thumbnail_size=(48,48),
                 thumbnail_meta=dict(award_id=self.award._id))
+        for grant in M.AwardGrant.query.find(dict(award_id=self.award._id)):
+            with h.push_context(grant.granted_to_project_id):
+                g.post_event('project_updated')
         flash('Award updated.')
         redirect(self.award.longurl())
 
     @expose()
     @require_post()
     def delete(self):
+        require_access(self.neighborhood, 'admin')
         if self.award:
             grants = M.AwardGrant.query.find(dict(award_id=self.award._id))
             for grant in grants:
                 grant.delete()
+                with h.push_context(grant.granted_to_project_id):
+                    g.post_event('project_updated')
             M.AwardFile.query.remove(dict(award_id=self.award._id))
             self.award.delete()
         redirect(request.referer)
@@ -721,6 +739,7 @@ class GrantController(object):
     @with_trailing_slash
     @expose('jinja:allura:templates/grant.html')
     def index(self, **kw):
+        require_access(self.neighborhood, 'admin')
         if self.grant is not None:
             return dict(grant=self.grant)
         else:
@@ -740,5 +759,8 @@ class GrantController(object):
     @expose()
     @require_post()
     def revoke(self):
+        require_access(self.neighborhood, 'admin')
         self.grant.delete()
+        with h.push_context(self.project._id):
+            g.post_event('project_updated')
         redirect(request.referer)

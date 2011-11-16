@@ -497,11 +497,10 @@ class Award(Artifact):
         return AwardFile.query.get(award_id=self._id)
 
     def url(self):
-        return h.urlquote(self.short)
+        return str(self._id)
 
     def longurl(self):
-        slug = str(self.created_by_neighborhood.url_prefix + "_admin/awards/" + self.short)
-        return h.urlquote(slug)
+        return self.created_by_neighborhood.url_prefix + "_admin/awards/" + self.url()
 
     def shorthand_id(self):
         return self.short
@@ -544,8 +543,7 @@ class AwardGrant(Artifact):
 
     def longurl(self):
         slug = str(self.granted_to_project.shortname).replace('/','_')
-        slug = str(self.granted_by_neighborhood.url_prefix + "_admin/awards/"
-            + self.award.short + '/' + slug)
+        slug = self.award.longurl() + '/' + slug
         return h.urlquote(slug)
 
     def shorthand_id(self):

@@ -8,7 +8,7 @@ from pylons import g, c
 from ming.orm.ormsession import ThreadLocalORMSession
 
 import allura
-
+from allura import model as M
 from allura.tests import TestController
 
 
@@ -299,22 +299,24 @@ class TestNeighborhood(TestController):
         r = self.app.post('/adobe/_admin/awards/create',
                           params=dict(short='BAR', full='A basic bar award with no icon'),
                           extra_environ=dict(username='root'))
-        r = self.app.post('/adobe/_admin/awards/BAR/update',
+        foo_id = str(M.Award.query.find(dict(short='FOO')).first()._id)
+        bar_id = str(M.Award.query.find(dict(short='BAR')).first()._id)
+        r = self.app.post('/adobe/_admin/awards/%s/update' % bar_id,
                           params=dict(short='BAR2', full='Updated description.'),
                           extra_environ=dict(username='root')).follow().follow()
         assert 'BAR2' in r
         assert 'Updated description.' in r
-        r = self.app.get('/adobe/_admin/awards/FOO', extra_environ=dict(username='root'))
-        r = self.app.get('/adobe/_admin/awards/FOO/icon', extra_environ=dict(username='root'))
+        r = self.app.get('/adobe/_admin/awards/%s' % foo_id, extra_environ=dict(username='root'))
+        r = self.app.get('/adobe/_admin/awards/%s/icon' % foo_id, extra_environ=dict(username='root'))
         image = Image.open(StringIO(r.body))
         assert image.size == (48,48)
         r = self.app.post('/adobe/_admin/awards/grant',
                           params=dict(grant='FOO', recipient='adobe-1'),
                           extra_environ=dict(username='root'))
-        r = self.app.get('/adobe/_admin/awards/FOO/adobe-1', extra_environ=dict(username='root'))
-        r = self.app.post('/adobe/_admin/awards/FOO/adobe-1/revoke',
+        r = self.app.get('/adobe/_admin/awards/%s/adobe-1' % foo_id, extra_environ=dict(username='root'))
+        r = self.app.post('/adobe/_admin/awards/%s/adobe-1/revoke' % foo_id,
                           extra_environ=dict(username='root'))
-        r = self.app.post('/adobe/_admin/awards/FOO/delete',
+        r = self.app.post('/adobe/_admin/awards/%s/delete' % foo_id,
                           extra_environ=dict(username='root'))
 
     def test_add_a_project_link(self):

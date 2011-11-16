@@ -222,7 +222,7 @@ def push_context(project_id, mount_point=None, app_config_id=None):
             del c.app
         else:
             c.app = app
-                      
+
 def encode_keys(d):
     '''Encodes the unicode keys of d, making the result
     a valid kwargs argument'''
