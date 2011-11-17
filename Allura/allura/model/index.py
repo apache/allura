@@ -146,7 +146,7 @@ class Shortlink(object):
             matches = matches_by_artifact.get(d['artifact'], [])
             matches = (
                 m for m in matches
-                if m.project.shortname == d['project'] )
+                if m.project.shortname == d['project'] and m.project.neighborhood_id == d['nbhd'])
             if d['app']:
                 matches = (
                     m for m in matches
@@ -164,7 +164,7 @@ class Shortlink(object):
 
     @classmethod
     def _parse_link(cls, s):
-        '''Parse a shortlink into its project/app/artifact parts'''
+        '''Parse a shortlink into its nbhd/project/app/artifact parts'''
         s = s.strip()
         if s.startswith('['):
             s = s[1:]
@@ -172,20 +172,25 @@ class Shortlink(object):
             s = s[:-1]
         parts = s.split(':')
         p_shortname = None
+        p_nbhd = None
         if hasattr(c, 'project'):
             p_shortname = getattr(c.project, 'shortname', None)
+            p_nbhd = c.project.neighborhood_id
         if len(parts) == 3:
             return dict(
+                nbhd=p_nbhd,
                 project=parts[0],
                 app=parts[1],
                 artifact=parts[2])
         elif len(parts) == 2:
             return dict(
+                nbhd=p_nbhd,
                 project=p_shortname,
                 app=parts[0],
                 artifact=parts[1])
         elif len(parts) == 1:
             return dict(
+                nbhd=p_nbhd,
                 project=p_shortname,
                 app=None,
                 artifact=parts[0])

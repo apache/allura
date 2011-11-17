@@ -370,7 +370,8 @@ class Project(MappedClass):
 
     @property
     def subprojects(self):
-        q = self.query.find(dict(shortname={'$gt':self.shortname})).sort('shortname')
+        q = self.query.find(dict(shortname={'$gt':self.shortname},
+                                 neighborhood_id=self.neighborhood._id)).sort('shortname')
         for project in q:
             if project.shortname.startswith(self.shortname + '/'):
                 yield project

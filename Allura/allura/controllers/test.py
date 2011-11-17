@@ -45,6 +45,7 @@ class TestController(WsgiDispatchController, ProjectController):
         for n in M.Neighborhood.query.find():
             if n.url_prefix.startswith('//'): continue
             n.bind_controller(self)
+        self.p_nbhd = M.Neighborhood.query.get(name='Projects')
         proxy_root = RootController()
         self.dispatch = DispatchTest()
         self.security = SecurityTests()
@@ -56,14 +57,14 @@ class TestController(WsgiDispatchController, ProjectController):
 
     def _setup_request(self):
         # This code fixes a race condition in our tests
-        c.project = M.Project.query.get(shortname='test')
+        c.project = M.Project.query.get(shortname='test', neighborhood_id=self.p_nbhd._id)
         c.memoize_cache = {}
         count = 20
         while c.project is None:
             import sys, time
             time.sleep(0.5)
             log.warning('Project "test" not found, retrying...')
-            c.project = M.Project.query.get(shortname='test')
+            c.project = M.Project.query.get(shortname='test', neighborhood_id=self.p_nbhd._id)
             count -= 1
             assert count > 0, 'Timeout waiting for test project to appear'
 
@@ -74,7 +75,8 @@ class TestController(WsgiDispatchController, ProjectController):
     def _lookup(self, name, *remainder):
         if not h.re_path_portion.match(name):
             raise exc.HTTPNotFound, name
-        subproject = M.Project.query.get(shortname=c.project.shortname + '/' + name)
+        subproject = M.Project.query.get(shortname=c.project.shortname + '/' + name,
+                                         neighborhood_id=self.p_nbhd._id)
         if subproject:
             c.project = subproject
             c.app = None
@@ -94,7 +96,7 @@ class TestController(WsgiDispatchController, ProjectController):
 
     def __call__(self, environ, start_response):
         c.app = None
-        c.project = M.Project.query.get(shortname='test')
+        c.project = M.Project.query.get(shortname='test', neighborhood_id=self.p_nbhd._id)
         c.user = plugin.AuthenticationProvider.get(request).by_username(
             environ.get('username', 'test-admin'))
         return WsgiDispatchController.__call__(self, environ, start_response)
@@ -169,4 +171,3 @@ class SecurityTest(object):
     def needs_artifact_access_ok(self):
         require_access(self.page, 'read')
         return ''
-
