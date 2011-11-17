@@ -517,7 +517,7 @@ class TestFunctionalController(TrackerTestController):
 
         # get a view on the first ticket, check for other ticket listed in sidebar
         ticket_view = self.app.get('/p/test/bugs/1/')
-        assert 'Days' in ticket_view
+        assert 'days' in ticket_view
         assert '6.5' in ticket_view
 
     def test_edit_all_button(self):
@@ -684,7 +684,7 @@ class TestMilestoneAdmin(TrackerTestController):
         r = self._post_milestones([
             dict(label='releases', milestones=[dict(name='1.0/beta')])
         ])
-        assert 'Releases' in r
+        assert 'releases' in r
         assert '1.0-beta' in r
 
     def test_delete_milestone_field(self):
@@ -711,7 +711,7 @@ class TestMilestoneAdmin(TrackerTestController):
             dict(label='versions', milestones=[dict(name='1.0/beta')])
         ])
         assert 'Releases' not in r
-        assert 'Versions' in r
+        assert 'versions' in r
         assert '1.0-beta' in r
         # TODO: This doesn't work - need to make milestone custom fields
         #       renameable.
@@ -740,7 +740,7 @@ class TestMilestoneAdmin(TrackerTestController):
         r = self._post_milestones([
             dict(label='releases', milestones=[])
         ])
-        assert 'Releases' in r
+        assert 'releases' in r
         assert '1.0-beta' not in r
         assert tm.Ticket.query.find({
             'custom_fields._releases': '1.0-beta'}).count() == 0
@@ -755,7 +755,7 @@ class TestMilestoneAdmin(TrackerTestController):
             dict(label='releases', milestones=[
                 dict(name='1.1', old_name='1.0')])
         ])
-        assert 'Releases'in r
+        assert 'releases'in r
         assert '1.0' not in r
         assert '1.1' in r
         assert tm.Ticket.query.find({
