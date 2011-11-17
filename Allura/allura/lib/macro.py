@@ -184,18 +184,12 @@ def project_screenshots():
     return response
 
 @macro()
-def download_button(project=None, **kw):
+def download_button():
     from allura import model as M
     from allura.lib.widgets.macros import DownloadButton
-    if project is None:
-        p = c.project
-    else:
-        p = M.Project.query.get(shortname=project)
-    if not p:
-        return '[[download_button %s (not found)]]' % project
-    button = DownloadButton(project=p)
+    button = DownloadButton(project=c.project)
     g.resource_manager.register(button)
-    response = button.display(project=p)
+    response = button.display(project=c.project)
     return response
 
 @macro()

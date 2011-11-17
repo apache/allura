@@ -16,4 +16,4 @@ class DownloadButton(ew.Widget):
     def resources(self):
         yield ew.jinja2_ew.JSScript('''
             $(function(){$(".download-button-%s").load("%s");
-        });''' % (self.project.shortname,self.project.best_download_url()))
+        });''' % (self.project._id,self.project.best_download_url()))

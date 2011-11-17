@@ -1,6 +1,6 @@
 from urllib import quote
 
-from nose.tools import with_setup
+from nose.tools import with_setup, assert_equal
 from pylons import g, c
 
 from ming.orm import session, ThreadLocalORMSession
@@ -32,10 +32,10 @@ def test_macros():
     p_sub1 =  M.Project.query.get(shortname='test/sub1')
     p_test.labels = [ 'test', 'root' ]
     p_sub1.labels = [ 'test', 'sub1' ]
-    
+
     ThreadLocalORMSession.flush_all()
-    
-    with h.push_context(M.Neighborhood.query.get(name='Projects').neighborhood_project._id):      
+
+    with h.push_context(M.Neighborhood.query.get(name='Projects').neighborhood_project._id):
         r = g.markdown_wiki.convert('[[projects]]')
         assert '<img alt="test Logo"' in r, r
         assert '<img alt="sub1 Logo"' in r, r
@@ -65,11 +65,11 @@ def test_macros():
         assert '<img alt="sub1 Logo"' in r, r
         r = g.markdown_wiki.convert('[[projects show_total=True]]')
         assert '<p class="macro_projects_total">3 Projects</p>' in r, r
-        
+
     r = g.markdown_wiki.convert('[[project_admins]]')
     assert r == '<div class="markdown_content"><p><a href="/u/test-admin/">Test Admin</a><br /></p></div>'
     r = g.markdown_wiki.convert('[[download_button]]')
-    assert r == '<div class="markdown_content"><p><span class="download-button-test" style="margin-bottom: 1em; display: block;"></span></p></div>'
+    assert_equal(r, '<div class="markdown_content"><p><span class="download-button-%s" style="margin-bottom: 1em; display: block;"></span></p></div>' % p_test._id)
     h.set_context('--init--', 'home', neighborhood='Projects')
     r = g.markdown_wiki.convert('[[neighborhood_feeds tool_name=Wiki]]')
     assert 'WikiPage Home modified by' in r, r
@@ -106,7 +106,7 @@ def test_markdown():
     url = '/nf/redirect/?path=%s' % quote(tgt)
     s = g.markdown.convert('This is %s' % tgt)
     assert s == '<div class="markdown_content"><p>This is <a href="%s" rel="nofollow">%s</a></p></div>' % (url, tgt), s
-    assert '<a href=' in g.markdown.convert('This is http://sf.net')    
+    assert '<a href=' in g.markdown.convert('This is http://sf.net')
     # assert '<a href=' in g.markdown_wiki.convert('This is a WikiPage')
     # assert '<a href=' not in g.markdown_wiki.convert('This is a WIKIPAGE')
     assert '<br' in g.markdown.convert('Multi\nLine'), g.markdown.convert('Multi\nLine')
@@ -137,5 +137,3 @@ Some text in a regular paragraph
 ~~~~
 def foo(): pass
 ~~~~''')
-
-
