@@ -1059,7 +1059,6 @@ class TrackerAdminController(DefaultAdminController):
         for field in custom_fields:
             field['name'] = '_' + '_'.join([
                 w for w in NONALNUM_RE.split(field['label'].lower()) if w])
-            field['label'] = field['label'].title()
             if field['type'] == 'milestone':
                 field.setdefault('milestones', [])
 
