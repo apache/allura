@@ -679,20 +679,6 @@ class AwardController(object):
 
     @expose()
     @require_post()
-    def grant(self, recipient=None):
-        require_access(self.neighborhood, 'admin')
-        recipient_q = M.Project.query.find(dict(name=recipient, deleted=False,
-            neighborhood_id=self.neighborhood._id)).first()
-        app_config_id = ObjectId()
-        tool_version = {'neighborhood': '0'}
-        grant = M.AwardGrant(app_config_id=app_config_id, tool_version=tool_version)
-        grant.award_id = self.award._id
-        grant.granted_to_project_id = recipient_q._id
-        grant.granted_by_neighborhood_id = self.neighborhood._id
-        redirect(request.referer)
-
-    @expose()
-    @require_post()
     def update(self, icon=None, short=None, full=None):
         require_access(self.neighborhood, 'admin')
         self.award.short = short
