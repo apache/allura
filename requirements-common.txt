@@ -5,6 +5,7 @@ Babel==0.9.6
 Beaker==1.5.4
 BeautifulSoup==3.2.0
 chardet==1.0.1
+colander==0.9.3
 Creoleparser==0.7.3
 datadiff==1.1.3
 decorator==3.3.2
