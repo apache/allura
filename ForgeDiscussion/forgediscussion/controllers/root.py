@@ -73,6 +73,7 @@ class RootController(BaseController):
 
     @expose('jinja:forgediscussion:templates/discussionforums/index.html')
     def new_forum(self, **kw):
+        require_access(c.app, 'configure')
         return self.index(new_forum=True, **kw)
 
     @h.vardec
@@ -80,6 +81,7 @@ class RootController(BaseController):
     @require_post()
     @validate(form=W.add_forum, error_handler=index)
     def add_forum_short(self, add_forum=None, **kw):
+        require_access(c.app, 'configure')
         f = utils.create_forum(c.app, add_forum)
         redirect(f.url())
 
