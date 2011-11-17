@@ -105,7 +105,7 @@ class Project(MappedClass):
     shortname = FieldProperty(str)
     name=FieldProperty(str)
     notifications_disabled = FieldProperty(bool)
-    show_download_button=FieldProperty(bool, if_missing=True)
+    show_download_button=FieldProperty(S.Deprecated)
     short_description=FieldProperty(str, if_missing='')
     summary=FieldProperty(str, if_missing='')
     description=FieldProperty(str, if_missing='')

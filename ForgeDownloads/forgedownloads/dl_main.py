@@ -40,7 +40,6 @@ class ForgeDownloadsApp(Application):
     def __init__(self, project, config):
         Application.__init__(self, project, config)
         self.root = RootController()
-        self.admin = DownloadAdminController(self)
 
     def main_menu(self):
         '''Apps should provide their entries to be added to the main nav
@@ -61,12 +60,11 @@ class ForgeDownloadsApp(Application):
         return []
 
     def admin_menu(self):
-        return super(ForgeDownloadsApp, self).admin_menu(force_options=True)
+        return super(ForgeDownloadsApp, self).admin_menu()
 
     def install(self, project):
         'Set up any default permissions and roles here'
         super(ForgeDownloadsApp, self).install(project)
-        c.project.show_download_button = True
         # Setup permissions
         role_admin = M.ProjectRole.by_name('Admin')._id
         role_anon = M.ProjectRole.anonymous()._id
@@ -74,11 +72,6 @@ class ForgeDownloadsApp(Application):
             M.ACE.allow(role_anon, 'read'),
             M.ACE.allow(role_admin, 'configure'),
             ]
-
-    def uninstall(self, project):
-        "Remove all the tool's artifacts from the database"
-        c.project.show_download_button = False
-        super(ForgeDownloadsApp, self).uninstall(project)
 
 class RootController(BaseController):
 
@@ -104,27 +97,3 @@ class RootController(BaseController):
             return d
         return dict(menu=[ _entry(s) for s in c.project.sitemap() ] )
 
-class DownloadAdminController(DefaultAdminController):
-
-    def _check_security(self):
-        require_access(self.app, 'configure')
-
-    @with_trailing_slash
-    def index(self, **kw):
-        redirect('options')
-
-    @expose('jinja:forgedownloads:templates/downloads/admin_options.html')
-    def options(self):
-        return dict(app=self.app,
-                    allow_config=has_access(self.app, 'configure')())
-
-    @h.vardec
-    @expose()
-    @require_post()
-    def update_options(self, **kw):
-        show_download_button = kw.pop('show_download_button', '')
-        if bool(show_download_button) != c.project.show_download_button:
-            h.log_action(log, 'update project download button').info('')
-            c.project.show_download_button = bool(show_download_button)
-        flash('Download options updated')
-        redirect(c.project.url()+'admin/tools')
