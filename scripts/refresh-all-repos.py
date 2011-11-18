@@ -12,7 +12,10 @@ log = logging.getLogger(__name__)
 PAGESIZE=1024
 
 def main():
-    parser = optparse.OptionParser(usage="%prog -- [options] [someproject/code [proj/mount ...]]")
+    parser = optparse.OptionParser(usage="""%prog -- [options] [/p/ someproject/optional-subproj mount-point]\n\n
+        Specify a neighborhood url-prefix, project shortname, and mountpoint to run for just one repo.  Omit that
+        to run for all repos.
+    """)
     parser.add_option(
         '--clean', action='store_true', dest='clean', default=False,
         help='remove all RepoObjects before refresh')
@@ -24,11 +27,11 @@ def main():
         help='send email notifications of new commits')
     options, args = parser.parse_args()
     if args:
-        projects = defaultdict(list)
-        for path in args:
-            shortname, mount_point = path.rsplit('/', 1)
-            projects[shortname].append(mount_point)
-        q_project = dict(shortname={'$in': projects.keys()})
+        nbhd = M.Neighborhood.query.get(url_prefix=args[0])
+        shortname = args[1]
+        mount_point = args[2]
+        q_project = {'shortname': shortname, 'neighborhood_id': nbhd._id}
+        projects = {shortname:[mount_point]}
     else:
         projects = {}
         q_project = {}
