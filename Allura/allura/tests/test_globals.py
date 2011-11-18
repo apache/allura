@@ -28,14 +28,15 @@ def test_app_globals():
 
 @with_setup(setUp)
 def test_macros():
-    p_test = M.Project.query.get(shortname='test')
-    p_sub1 =  M.Project.query.get(shortname='test/sub1')
+    p_nbhd = M.Neighborhood.query.get(name='Projects')
+    p_test = M.Project.query.get(shortname='test', neighborhood_id=p_nbhd._id)
+    p_sub1 =  M.Project.query.get(shortname='test/sub1', neighborhood_id=p_nbhd._id)
     p_test.labels = [ 'test', 'root' ]
     p_sub1.labels = [ 'test', 'sub1' ]
 
     ThreadLocalORMSession.flush_all()
 
-    with h.push_context(M.Neighborhood.query.get(name='Projects').neighborhood_project._id):
+    with h.push_context(p_nbhd.neighborhood_project._id):
         r = g.markdown_wiki.convert('[[projects]]')
         assert '<img alt="test Logo"' in r, r
         assert '<img alt="sub1 Logo"' in r, r
@@ -75,7 +76,7 @@ def test_macros():
     assert 'WikiPage Home modified by' in r, r
     orig_len = len(r)
     # Make project private & verify we don't see its new feed items
-    proj = M.Project.query.get(shortname='test')
+    proj = M.Project.query.get(shortname='test', neighborhood_id=p_nbhd._id)
     c.user = M.User.anonymous()
     proj.acl.insert(0, M.ACE.deny(
             c.user.project_role(proj)._id, 'read'))

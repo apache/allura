@@ -141,7 +141,8 @@ class TestAuth(TestController):
         """Make sure when a user goes to a new project only one project role is created.
            There was an issue with extra project roles getting created if a user went directly to
            an admin page."""
-        p = M.Project.query.get(shortname='test')
+        p_nbhd = M.Neighborhood.query.get(name='Projects')
+        p = M.Project.query.get(shortname='test', neighborhood_id=p_nbhd._id)
         self.app.post('/auth/save_new', params=dict(
                 username='aaa',
                 pw='12345678',

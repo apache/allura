@@ -30,7 +30,8 @@ def test_project():
     assert type(c.project.sitemap()) == list
     assert old_proj in list(c.project.parent_iter())
     h.set_context('test', 'wiki', neighborhood='Projects')
-    p = M.Project.query.get(shortname='adobe-1')
+    adobe_nbhd = M.Neighborhood.query.get(name='Adobe')
+    p = M.Project.query.get(shortname='adobe-1', neighborhood_id=adobe_nbhd._id)
     # assert 'http' in p.url() # We moved adobe into /adobe/, not http://adobe....
     assert p.script_name in p.url()
     assert c.project.shortname == 'test'
@@ -61,4 +62,3 @@ def test_subproject():
     ThreadLocalORMSession.flush_all()
     sp.delete()
     ThreadLocalORMSession.flush_all()
-

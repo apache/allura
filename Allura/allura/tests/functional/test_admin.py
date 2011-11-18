@@ -174,7 +174,8 @@ class TestProjectAdmin(TestController):
         self.app.post('/admin/add_screenshot', params=dict(
                 caption='test me'),
                 upload_files=[upload])
-        project = M.Project.query.find({'shortname':'test'}).first()
+        p_nbhd = M.Neighborhood.query.get(name='Projects')
+        project = M.Project.query.get(shortname='test', neighborhood_id=p_nbhd._id)
         filename = project.get_screenshots()[0].filename
         r = self.app.get('/p/test/screenshot/'+filename)
         uploaded = Image.open(file_path)
@@ -303,13 +304,16 @@ class TestProjectAdmin(TestController):
         form['labels'].value = 'foo,bar,baz'
         r = form.submit()
         r = r.follow()
-        assert M.Project.query.get(shortname='test').labels == ['foo', 'bar', 'baz']
+        p_nbhd = M.Neighborhood.query.get(name='Projects')
+        p = M.Project.query.get(shortname='test', neighborhood_id=p_nbhd._id)
+        assert p.labels == ['foo', 'bar', 'baz']
         assert form['labels'].value == 'foo,bar,baz'
         ThreadLocalORMSession.close_all()
         form['labels'].value = 'asdf'
         r = form.submit()
         r = r.follow()
-        assert M.Project.query.get(shortname='test').labels == ['asdf']
+        p = M.Project.query.get(shortname='test', neighborhood_id=p_nbhd._id)
+        assert_equals(p.labels, ['asdf'])
         assert form['labels'].value == 'asdf'
 
     def test_project_permissions(self):
