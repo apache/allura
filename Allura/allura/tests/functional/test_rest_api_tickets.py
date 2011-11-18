@@ -15,7 +15,7 @@ class TestApiTicket(TestRestApiBase):
     def set_api_ticket(self, expire=None):
         if not expire:
             expire = timedelta(days=1)
-        api_ticket = M.ApiTicket(user_id=self.user._id, capabilities={'import': 'test'},
+        api_ticket = M.ApiTicket(user_id=self.user._id, capabilities={'import': ['Projects','test']},
                                  expires=datetime.utcnow() + expire)
         session(api_ticket).flush()
         self.set_api_token(api_ticket)

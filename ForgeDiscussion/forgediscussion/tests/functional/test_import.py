@@ -19,17 +19,17 @@ class TestImportController(TestRestApiBase):#TestController):
         self.json_text = open(here_dir + '/data/sf.json').read()
 
     def test_no_capability(self):
-        self.set_api_ticket({'import2': 'test'})
+        self.set_api_ticket({'import2': ['Projects', 'test']})
         resp = self.api_post('/rest/p/test/discussion/perform_import',
             doc=self.json_text)
         assert resp.status_int == 403
 
-        self.set_api_ticket({'import': 'test2'})
+        self.set_api_ticket({'import': ['Projects', 'test2']})
         resp = self.api_post('/rest/p/test/discussion/perform_import',
             doc=self.json_text)
         assert resp.status_int == 403
 
-        self.set_api_ticket({'import': 'test'})
+        self.set_api_ticket({'import': ['Projects', 'test']})
         resp = self.api_post('/rest/p/test/discussion/perform_import',
             doc=self.json_text)
         assert resp.status_int == 200
@@ -40,7 +40,7 @@ class TestImportController(TestRestApiBase):#TestController):
         assert not r.json['errors']
 
     def test_import_anon(self):
-        api_ticket = M.ApiTicket(user_id=self.user._id, capabilities={'import': 'test'},
+        api_ticket = M.ApiTicket(user_id=self.user._id, capabilities={'import': ['Projects', 'test']},
                                  expires=datetime.utcnow() + timedelta(days=1))
         ming.orm.session(api_ticket).flush()
         self.set_api_token(api_ticket)
@@ -59,7 +59,7 @@ class TestImportController(TestRestApiBase):#TestController):
         assert 'Anonymous Coward' in str(r), r.showbrowser()
 
     def test_import_map(self):
-        api_ticket = M.ApiTicket(user_id=self.user._id, capabilities={'import': 'test'},
+        api_ticket = M.ApiTicket(user_id=self.user._id, capabilities={'import': ['Projects', 'test']},
                                  expires=datetime.utcnow() + timedelta(days=1))
         ming.orm.session(api_ticket).flush()
         self.set_api_token(api_ticket)
@@ -80,7 +80,7 @@ class TestImportController(TestRestApiBase):#TestController):
         assert 'Anonymous Coward' not in str(r), r.showbrowser()
 
     def test_import_create(self):
-        api_ticket = M.ApiTicket(user_id=self.user._id, capabilities={'import': 'test'},
+        api_ticket = M.ApiTicket(user_id=self.user._id, capabilities={'import': ['Projects', 'test']},
                                  expires=datetime.utcnow() + timedelta(days=1))
         ming.orm.session(api_ticket).flush()
         self.set_api_token(api_ticket)
@@ -99,7 +99,7 @@ class TestImportController(TestRestApiBase):#TestController):
         assert 'Anonymous Coward' not in str(r), r.showbrowser()
         assert 'test-rick446' in str(r), r.showbrowser()
 
-    def set_api_ticket(self, caps={'import': 'test'}):
+    def set_api_ticket(self, caps={'import': ['Projects', 'test']}):
         api_ticket = M.ApiTicket(user_id=self.user._id, capabilities=caps,
                                  expires=datetime.utcnow() + timedelta(days=1))
         ming.orm.session(api_ticket).flush()

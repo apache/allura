@@ -26,7 +26,7 @@ class TestImportController(TestRestApiBase):#TestController):
             assert 0, "form error?"
         return resp.follow()
 
-    def set_api_ticket(self, caps={'import': 'test'}):
+    def set_api_ticket(self, caps={'import': ['Projects','test']}):
         api_ticket = M.ApiTicket(user_id=self.user._id, capabilities=caps,
                                  expires=datetime.utcnow() + timedelta(days=1))
         ming.orm.session(api_ticket).flush()
@@ -36,17 +36,17 @@ class TestImportController(TestRestApiBase):#TestController):
     def test_no_capability(self):
         here_dir = os.path.dirname(__file__)
 
-        self.set_api_ticket({'import2': 'test'})
+        self.set_api_ticket({'import2': ['Projects','test']})
         resp = self.api_post('/rest/p/test/bugs/perform_import',
             doc=open(here_dir + '/data/sf.json').read(), options='{}')
         assert resp.status_int == 403
 
-        self.set_api_ticket({'import': 'test2'})
+        self.set_api_ticket({'import': ['Projects', 'test2']})
         resp = self.api_post('/rest/p/test/bugs/perform_import',
             doc=open(here_dir + '/data/sf.json').read(), options='{}')
         assert resp.status_int == 403
 
-        self.set_api_ticket({'import': 'test'})
+        self.set_api_ticket({'import': ['Projects', 'test']})
         resp = self.api_post('/rest/p/test/bugs/perform_import',
             doc=open(here_dir + '/data/sf.json').read(), options='{}')
         assert resp.status_int == 200
@@ -75,7 +75,7 @@ class TestImportController(TestRestApiBase):#TestController):
 
     def test_import(self):
         here_dir = os.path.dirname(__file__)
-        api_ticket = M.ApiTicket(user_id=self.user._id, capabilities={'import': 'test'}, 
+        api_ticket = M.ApiTicket(user_id=self.user._id, capabilities={'import': ['Projects','test']},
                                  expires=datetime.utcnow() + timedelta(days=1))
         ming.orm.session(api_ticket).flush()
         self.set_api_token(api_ticket)

@@ -213,7 +213,7 @@ class ForgeTrackerApp(Application):
             if f['name'] == field:
                 return True
         return False
-        
+
     def install(self, project):
         'Set up any default permissions and roles here'
         super(ForgeTrackerApp, self).install(project)
@@ -312,7 +312,7 @@ class RootController(BaseController):
         except ValueError, e:
             solr_error = e.args[0]
             matches = []
-        if matches:    
+        if matches:
             count = matches.hits
             # ticket_numbers is in sorted order
             ticket_numbers = [match['ticket_num_i'] for match in matches.docs]
@@ -1180,7 +1180,7 @@ class RootRestController(BaseController):
     @expose('json:')
     def perform_import(self, doc=None, options=None, **post_data):
         require_access(c.project, 'admin')
-        if c.api_token.get_capability('import') != c.project.shortname:
+        if c.api_token.get_capability('import') != [c.project.neighborhood.name, c.project.shortname]:
             log.error('Import capability is not enabled for %s', c.project.shortname)
             raise exc.HTTPForbidden(detail='Import is not allowed')
 

@@ -93,8 +93,8 @@ fill in following information:
 
 * Username - all actions performed using the ticket will be tied to this account.
 * Capabilities (JSON) - all API tickets must have capabilities (represented with
-  JSON dictionary) set. For import, this should be ``{"import": <projectname>}``,
-  e.g. ``{"import": "test"}``. For multiple projects, several tickets must be created.
+  JSON dictionary) set. For import, this should be ``{"import": [<nbhd_name>, <project_shortname>}``,
+  e.g. ``{"import": ["Projects", "test"]}``. For multiple projects, several tickets must be created.
 * Expiration date - All API tickets are time-limited, with default active duration
   of 48 hours, all actions using the ticket must be performed within this timeframe.
 
