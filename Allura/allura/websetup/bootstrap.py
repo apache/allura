@@ -161,13 +161,12 @@ def bootstrap(command, conf, vars):
         if asbool(conf.get('cache_test_data')):
             cache_test_data()
     else: # pragma no cover
+        # regular first-time setup
         p0.add_user(u_admin, ['Admin'])
-        p0.install_app('Wiki', 'wiki')
-        p0.install_app('Tickets', 'bugs')
-        p0.install_app('Discussion', 'discussion')
-        # app = p0.install_app('SVN', 'src')
-        # app = p0.install_app('Git', 'src-git')
-        ThreadLocalORMSession.flush_all()
+        for ep_name, app in g.entry_points['tool'].iteritems():
+            if not app.installable:
+                continue
+            p0.install_app(ep_name)
         ThreadLocalORMSession.flush_all()
         ThreadLocalORMSession.close_all()
 
