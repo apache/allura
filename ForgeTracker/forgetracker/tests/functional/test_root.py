@@ -139,7 +139,7 @@ class TestFunctionalController(TrackerTestController):
 
     def test_render_index(self):
         index_view = self.app.get('/bugs/')
-        assert 'No tickets found.' in index_view
+        assert 'No open tickets found.' in index_view
 
     def test_render_markdown_syntax(self):
         summary = 'test render markdown syntax'

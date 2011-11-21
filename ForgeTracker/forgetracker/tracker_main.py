@@ -235,7 +235,6 @@ class ForgeTrackerApp(Application):
             last_ticket_num=0,
             open_status_names='open unread accepted pending',
             closed_status_names='closed wont-fix',
-            # milestone_names='',
             custom_fields=[dict(
                     name='_milestone',
                     label='Milestone',
@@ -244,13 +243,14 @@ class ForgeTrackerApp(Application):
                         dict(name='1.0', complete=False, due_date=None),
                         dict(name='2.0', complete=False, due_date=None)]) ])
         c.app.globals.invalidate_bin_counts()
-        bin = TM.Bin(summary='Open Tickets', terms=self.globals.not_closed_query)
-        bin.app_config_id = self.config._id
-        bin.custom_fields = dict()
-        bin = TM.Bin(summary='Changes', terms=self.globals.not_closed_query, sort='mod_date_dt desc')
-        bin.app_config_id = self.config._id
-        bin.custom_fields = dict()
-
+        # create default search bins
+        TM.Bin(summary='Open Tickets', terms=self.globals.not_closed_query,
+                app_config_id = self.config._id, custom_fields = dict())
+        TM.Bin(summary='Closed Tickets', terms=self.globals.closed_query,
+                app_config_id=self.config._id, custom_fields=dict())
+        TM.Bin(summary='Changes', terms=self.globals.not_closed_query,
+                sort='mod_date_dt desc', app_config_id = self.config._id,
+                custom_fields = dict())
 
     def uninstall(self, project):
         "Remove all the tool's artifacts from the database"
@@ -258,7 +258,6 @@ class ForgeTrackerApp(Application):
         TM.TicketAttachment.query.remove(app_config_id)
         TM.Ticket.query.remove(app_config_id)
         TM.Bin.query.remove(app_config_id)
-        # model.Comment.query.remove(app_config_id)
         TM.Globals.query.remove(app_config_id)
         super(ForgeTrackerApp, self).uninstall(project)
 
