@@ -226,7 +226,7 @@ class Application(object):
         """
         return []
 
-    def admin_menu(self):
+    def admin_menu(self, force_options=False):
         """
         Apps may override this to provide additional admin menu items
         :return: a list of :class:`SitemapEntries <allura.app.SitemapEntry>`
@@ -235,8 +235,9 @@ class Application(object):
         links = []
         if self.permissions and has_access(c.project, 'admin')():
             links.append(SitemapEntry('Permissions', admin_url + 'permissions', className='nav_child'))
-        if len(self.config_options) > 3:
+        if force_options or len(self.config_options) > 3:
             links.append(SitemapEntry('Options', admin_url + 'options', className='admin_modal'))
+        links.append(SitemapEntry('Label', admin_url + 'edit_label', className='admin_modal'))
         return links
 
     def handle_message(self, topic, message):
@@ -310,6 +311,19 @@ class DefaultAdminController(BaseController):
             app=self.app,
             allow_config=has_access(c.project, 'admin')(),
             permissions=permissions)
+
+    @expose('jinja:allura:templates/app_admin_edit_label.html')
+    def edit_label(self):
+        return dict(
+            app=self.app,
+            allow_config=has_access(self.app, 'configure')())
+
+    @expose()
+    @require_post()
+    def update_label(self, mount_label):
+        require_access(self.app, 'configure')
+        self.app.config.options['mount_label'] = mount_label
+        redirect(request.referer)
 
     @expose('jinja:allura:templates/app_admin_options.html')
     def options(self):

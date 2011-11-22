@@ -110,10 +110,11 @@ class ForgeDiscussionApp(Application):
                 )).all()
 
     def admin_menu(self):
-        admin_url = c.project.url()+'admin/'+self.config.options.mount_point+'/'
-        links = super(ForgeDiscussionApp, self).admin_menu()
+        admin_url = c.project.url() + 'admin/' + self.config.options.mount_point + '/'
+        links = []
         if has_access(self, 'configure')():
             links.append(SitemapEntry('Forums', admin_url + 'forums'))
+        links += super(ForgeDiscussionApp, self).admin_menu()
         return links
 
     def sidebar_menu(self):

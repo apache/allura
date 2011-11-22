@@ -360,6 +360,14 @@ class TestRootController(TestController):
         wiki_page2 = self.app.get('/wiki/tést/')
         assert not wiki_page2.html.find('div',{'class':'editbox'})
 
+    def test_edit_mount_label(self):
+        r = self.app.get('/admin/wiki/edit_label', validate_chunk=True)
+        assert r.form['mount_label'].value == 'Wiki'
+        r = self.app.post('/admin/wiki/update_label', params=dict(
+            mount_label='Tricky Wiki'))
+        r = self.app.get('/admin/wiki/edit_label', validate_chunk=True)
+        assert r.form['mount_label'].value == 'Tricky Wiki'
+
     def test_page_links_are_colored(self):
         self.app.get('/wiki/TEST/')
         params = {

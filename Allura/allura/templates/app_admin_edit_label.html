@@ -1,7 +1,6 @@
 <!DOCTYPE html>
-<form method="post" action="{{c.project.url()}}admin/{{app.config.options.mount_point}}/configure">
-  {% for o in app.config_options if o.name not in ['mount_point', 'mount_label', 'ordinal'] %}
-    <label for="{{o.name}}" class="grid-4">{{o.name}}</label>
+<form method="post" action="{{c.project.url()}}admin/{{app.config.options.mount_point}}/update_label">
+  {% for o in app.config_options if o.name in ['mount_label'] %}
     <div class="grid-9">
       {% if not allow_config %}
            {{app.config.options.get(o.name, o.default)}}
@@ -9,8 +8,6 @@
         <input id="{{o.name}}" name="{{o.name}}" value="{{app.config.options.get(o.name, o.default)}}">
       {% endif %}  
     </div>
-  {% else %}
-    <p>No options to administer for {{app.config.options.mount_point}}.</p>
   {% endfor %}
   {% if allow_config %}
     <div class="grid-13">&nbsp;</div>

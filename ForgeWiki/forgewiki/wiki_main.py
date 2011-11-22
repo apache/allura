@@ -147,11 +147,9 @@ class ForgeWikiApp(Application):
                 SitemapEntry(menu_id, '.')[SitemapEntry('Pages')[pages]] ]
 
     def admin_menu(self):
-        admin_url = c.project.url()+'admin/'+self.config.options.mount_point+'/'
-        links = [SitemapEntry('Set Home', admin_url + 'home', className='admin_modal'),
-                 SitemapEntry('Options', admin_url + 'options', className='admin_modal')]
-        if self.permissions and has_access(self, 'configure')():
-            links.append(SitemapEntry('Permissions', admin_url + 'permissions', className='nav_child'))
+        admin_url = c.project.url() + 'admin/' + self.config.options.mount_point + '/'
+        links = [SitemapEntry('Set Home', admin_url + 'home', className='admin_modal')]
+        links += super(ForgeWikiApp, self).admin_menu(force_options=True)
         return links
 
     @h.exceptionless([], log)

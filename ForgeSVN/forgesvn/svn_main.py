@@ -69,7 +69,7 @@ class ForgeSVNApp(RepositoryApp):
             allura.tasks.repo_tasks.init.post()
 
     def admin_menu(self):
-        links = super(ForgeSVNApp, self).admin_menu()
+        links = []
         links.append(SitemapEntry(
                 'Checkout URL',
                 c.project.url()+'admin/'+self.config.options.mount_point+'/' + 'checkout_url',
@@ -77,6 +77,7 @@ class ForgeSVNApp(RepositoryApp):
         links.append(SitemapEntry(
                 'Import Repo',
                 c.project.url()+'admin/'+self.config.options.mount_point+'/' + 'importer/'))
+        links += super(ForgeSVNApp, self).admin_menu()
         return links
 
 class SVNRepoAdminController(RepoAdminController):

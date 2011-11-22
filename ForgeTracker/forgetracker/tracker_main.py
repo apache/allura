@@ -138,12 +138,13 @@ class ForgeTrackerApp(Application):
                 SitemapEntry(menu_id, '.')[self.sidebar_menu()] ]
 
     def admin_menu(self):
-        admin_url = c.project.url()+'admin/'+self.config.options.mount_point+'/'
+        admin_url = c.project.url() + 'admin/' + self.config.options.mount_point + '/'
         links = [SitemapEntry('Field Management', admin_url + 'fields'),
-                 SitemapEntry('Edit Searches', admin_url + 'bins/'),
-                 SitemapEntry('Options', admin_url + 'options')]#, className='admin_modal')]
-        if self.permissions and has_access(self, 'configure')():
-            links.append(SitemapEntry('Permissions', admin_url + 'permissions', className='nav_child'))
+                 SitemapEntry('Edit Searches', admin_url + 'bins/')]
+        links += super(ForgeTrackerApp, self).admin_menu()
+        # make the options link non-modal
+        options_link = [l for l in links if l.label == 'Options'][0]
+        options_link.className = 'nav_child'
         return links
 
     @h.exceptionless([], log)

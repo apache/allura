@@ -66,16 +66,7 @@ class ForgeChatApp(Application):
             ]
 
     def admin_menu(self):
-        admin_url = c.project.url()+'admin/'+self.config.options.mount_point+'/'
-        links = [
-            SitemapEntry('Options',
-                         admin_url + 'options',
-                         className='admin_modal'),
-            SitemapEntry('Permissions',
-                         admin_url + 'permissions/',
-                         className='nav_child'),
-            ]
-        return links
+        return super(ForgeChatApp, self).admin_menu()
 
     def install(self, project):
         'Set up any default permissions and roles here'

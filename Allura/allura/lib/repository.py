@@ -72,8 +72,8 @@ class RepositoryApp(Application):
         links.append(SitemapEntry('Refresh Repository',
                                   c.project.url() + self.config.options.mount_point + '/refresh',
                                   className='nav_child'))
-        if self.permissions and security.has_access(self, 'configure')():
-            links.append(SitemapEntry('Permissions', admin_url + 'permissions', className='nav_child'))
+        links += super(RepositoryApp, self).admin_menu()
+        [links.remove(l) for l in links[:] if l.label == 'Options']
         return links
 
     @h.exceptionless([], log)

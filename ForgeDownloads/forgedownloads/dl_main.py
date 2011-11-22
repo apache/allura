@@ -61,11 +61,7 @@ class ForgeDownloadsApp(Application):
         return []
 
     def admin_menu(self):
-        admin_url = c.project.url()+'admin/'+self.config.options.mount_point+'/'
-        links = super(ForgeDownloadsApp, self).admin_menu()
-        if has_access(self, 'configure')():
-            links.append(SitemapEntry('Options', admin_url + 'options', className='admin_modal'))
-        return links
+        return super(ForgeDownloadsApp, self).admin_menu(force_options=True)
 
     def install(self, project):
         'Set up any default permissions and roles here'

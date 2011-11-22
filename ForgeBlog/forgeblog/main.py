@@ -94,11 +94,7 @@ class ForgeBlogApp(Application):
         return links
 
     def admin_menu(self):
-        admin_url = c.project.url()+'admin/'+self.config.options.mount_point+'/'
-        links = [SitemapEntry('Options', admin_url + 'options', className='admin_modal')]
-        if self.permissions and has_access(self, 'configure')():
-            links.append(SitemapEntry('Permissions', admin_url + 'permissions', className='nav_child'))
-        return links
+        return super(ForgeBlogApp, self).admin_menu(force_options=True)
 
     def install(self, project):
         'Set up any default permissions and roles here'
