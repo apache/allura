@@ -55,41 +55,42 @@ class TestNeighborhood(TestController):
         assert image.size == (48,48)
 
     def test_invite(self):
+        p_nbhd = M.Neighborhood.query.get(name='Projects')
         r = self.app.get('/adobe/_moderate/', extra_environ=dict(username='root'))
         r = self.app.post('/adobe/_moderate/invite',
-                          params=dict(pid='adobe-1', invite='on'),
+                          params=dict(pid='adobe-1', invite='on', neighborhood_id=p_nbhd._id),
                           extra_environ=dict(username='root'))
         r = self.app.get(r.location, extra_environ=dict(username='root'))
         assert 'error' in r
         r = self.app.post('/adobe/_moderate/invite',
-                          params=dict(pid='no_such_user', invite='on'),
+                          params=dict(pid='no_such_user', invite='on', neighborhood_id=p_nbhd._id),
                           extra_environ=dict(username='root'))
         r = self.app.get(r.location, extra_environ=dict(username='root'))
         assert 'error' in r
         r = self.app.post('/adobe/_moderate/invite',
-                          params=dict(pid='test', invite='on'),
+                          params=dict(pid='test', invite='on', neighborhood_id=p_nbhd._id),
                           extra_environ=dict(username='root'))
         r = self.app.get(r.location, extra_environ=dict(username='root'))
-        assert 'invited' in r
+        assert 'invited' in r, r
         assert 'warning' not in r
         r = self.app.post('/adobe/_moderate/invite',
-                          params=dict(pid='test', invite='on'),
+                          params=dict(pid='test', invite='on', neighborhood_id=p_nbhd._id),
                           extra_environ=dict(username='root'))
         r = self.app.get(r.location, extra_environ=dict(username='root'))
         assert 'warning' in r
         r = self.app.post('/adobe/_moderate/invite',
-                          params=dict(pid='test', uninvite='on'),
+                          params=dict(pid='test', uninvite='on', neighborhood_id=p_nbhd._id),
                           extra_environ=dict(username='root'))
         r = self.app.get(r.location, extra_environ=dict(username='root'))
         assert 'uninvited' in r
         assert 'warning' not in r
         r = self.app.post('/adobe/_moderate/invite',
-                          params=dict(pid='test', uninvite='on'),
+                          params=dict(pid='test', uninvite='on', neighborhood_id=p_nbhd._id),
                           extra_environ=dict(username='root'))
         r = self.app.get(r.location, extra_environ=dict(username='root'))
         assert 'warning' in r
         r = self.app.post('/adobe/_moderate/invite',
-                          params=dict(pid='test', invite='on'),
+                          params=dict(pid='test', invite='on', neighborhood_id=p_nbhd._id),
                           extra_environ=dict(username='root'))
         r = self.app.get(r.location, extra_environ=dict(username='root'))
         assert 'invited' in r

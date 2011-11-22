@@ -16,8 +16,16 @@
 {% block content %}
   <h2>Invite Projects?</h2>
   <form method="POST" action="invite" class="grid-10">
+    <p>
+    <select name="neighborhood_id">
+      {% for n in neighborhoods %}
+        <option value="{{n._id}}">
+          {{n.name}}
+        </option>
+      {% endfor %}
     <label for="pid">Project Shortname</label>
     <input type="text" name="pid" id="pid">
+	</p>
     <input type="submit" name="invite" value="Invite!"/>
     <input type="submit" name="uninvite" value="Cancel Invitation!"/>
   </form>

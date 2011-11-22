@@ -533,13 +533,15 @@ class NeighborhoodModerateController(object):
 
     @expose('jinja:allura:templates/neighborhood_moderate.html')
     def index(self, **kw):
-        return dict(neighborhood=self.neighborhood)
+        other_nbhds = list(M.Neighborhood.query.find(dict(_id={'$ne':self.neighborhood._id})).sort('name'))
+        return dict(neighborhood=self.neighborhood,
+                    neighborhoods=other_nbhds)
 
     @expose()
     @require_post()
-    def invite(self, pid, invite=None, uninvite=None):
+    def invite(self, pid, neighborhood_id, invite=None, uninvite=None):
         p = M.Project.query.get(shortname=pid, deleted=False,
-                                neighborhood_id=self.neighborhood._id)
+                                neighborhood_id=ObjectId(neighborhood_id))
         if p is None:
             flash("Can't find %s" % pid, 'error')
             redirect('.')
