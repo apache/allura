@@ -141,11 +141,15 @@ def create_project(p, nbhd, options):
     project.notifications_disabled = True
     project.summary = p.summary
     project.short_description = p.description
-    project.labels = p.labels
     project.external_homepage = p.external_homepage
     project.last_updated = datetime.datetime.utcnow()
-    project.trove_audience = set(a._id for a in p.trove_audiences)
-    project.trove_license = set(l._id for l in p.trove_licenses)
+    # These properties may have been populated by nbhd template defaults in
+    # register_project(). Overwrite if we have data, otherwise keep defaults.
+    project.labels = p.labels or project.labels
+    project.trove_audience = set(a._id for a in p.trove_audiences) or \
+            project.trove_audience
+    project.trove_license = set(l._id for l in p.trove_licenses) or \
+            project.trove_license
     for a in p.awards:
         M.AwardGrant(app_config_id=bson.ObjectId(),
                 tool_version=dict(neighborhood='0'), award_id=a._id,

@@ -1,6 +1,6 @@
 [{
-    "name": "Import Test",
-    "shortname": "import-test",
+    "name": "Template Test 1",
+    "shortname": "template-test-1",
     "summary": "My summary.",
     "description": "My description.",
     "admin": "admin1",
@@ -13,5 +13,5 @@
         "Apache License V2.0",
         "GNU General Public License (GPL)",
         "Public Domain"],
-    "awards": ["What?", "4ec41738810df70e3a00000c"]
+    "awards": ["What?"]
     }]

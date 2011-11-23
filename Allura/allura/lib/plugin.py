@@ -6,6 +6,8 @@ import os
 import logging
 import subprocess
 
+from urllib2 import urlopen
+from cStringIO import StringIO
 from random import randint
 from hashlib import sha256
 from base64 import b64encode
@@ -340,6 +342,7 @@ class ProjectRegistrationProvider(object):
             p = M.Project.query.get(shortname=shortname, neighborhood_id=neighborhood._id)
             if p:
                 raise forge_exc.ProjectConflict()
+            project_template = neighborhood.get_project_template()
             p = M.Project(neighborhood_id=neighborhood._id,
                         shortname=shortname,
                         name=project_name,
@@ -352,8 +355,47 @@ class ProjectRegistrationProvider(object):
             p.configure_project(
                 users=[user],
                 is_user_project=user_project,
-                is_private_project=private_project,
-                apps=apps)
+                is_private_project=private_project or project_template.get('private', False),
+                apps=apps or [] if 'tools' in project_template else None)
+
+            # Setup defaults from neighborhood project template if applicable
+            offset = p.next_mount_point(include_search=True)
+            if 'tools' in project_template:
+                for i, tool in enumerate(project_template['tools'].keys()):
+                    tool_config = project_template['tools'][tool]
+                    app = p.install_app(tool,
+                        mount_label=tool_config['label'],
+                        mount_point=tool_config['mount_point'],
+                        ordinal=i+offset)
+                    if 'options' in tool_config:
+                        for option in tool_config['options']:
+                            app.config.options[option] = tool_config['options'][option]
+            if 'tool_order' in project_template:
+                for i, tool in enumerate(project_template['tool_order']):
+                    p.app_config(tool).options.ordinal = i
+            if 'labels' in project_template:
+                p.labels = project_template['labels']
+            if 'trove_cats' in project_template:
+                for trove_type in project_template['trove_cats'].keys():
+                    troves = getattr(p, 'trove_%s' % trove_type)
+                    for trove_id in project_template['trove_cats'][trove_type]:
+                        troves.append(M.TroveCategory.query.get(trove_cat_id=trove_id)._id)
+            if 'home_options' in project_template and p.app_config('home'):
+                options = p.app_config('home').options
+                for option in project_template['home_options'].keys():
+                    options[option] = project_template['home_options'][option]
+            if 'icon' in project_template:
+                icon_file = StringIO(urlopen(project_template['icon']['url']).read())
+                M.ProjectFile.save_image(
+                    project_template['icon']['filename'], icon_file,
+                    square=True, thumbnail_size=(48, 48),
+                    thumbnail_meta=dict(project_id=p._id, category='icon'))
+            home_app = p.app_instance('home')
+            if home_app:
+                from forgewiki import model as WM
+                text = project_template.get('home_text',
+                        '[[project_admins]]\n[[download_button]]')
+                WM.Page.query.get(app_config_id=home_app.config._id).text = text
         except forge_exc.ProjectConflict:
             raise
         except:

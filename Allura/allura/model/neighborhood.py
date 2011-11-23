@@ -1,3 +1,4 @@
+import json
 import logging
 
 from ming import schema as S
@@ -88,3 +89,7 @@ class Neighborhood(MappedClass):
     def icon(self):
         return NeighborhoodFile.query.get(neighborhood_id=self._id)
 
+    def get_project_template(self):
+        if self.project_template:
+            return json.loads(self.project_template)
+        return {}

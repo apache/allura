@@ -494,6 +494,13 @@ class Project(MappedClass):
                 return mount
         return None
 
+    def next_mount_point(self, include_search=False):
+        '''Return the ordinal of the next open toolbar mount point for this
+        project.'''
+        ordered_mounts = self.ordered_mounts(include_search=include_search)
+        return int(ordered_mounts[-1]['ordinal']) + 1 \
+               if ordered_mounts else 0
+
     def delete(self):
         # Cascade to subprojects
         for sp in self.direct_subprojects:
