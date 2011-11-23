@@ -190,7 +190,7 @@ class AuthController(BaseController):
             redirect(return_to)
         redirect('/')
 
-    @expose()
+    @expose(content_type='text/plain')
     def refresh_repo(self, *repo_path):
         # post-commit hooks use this
         if not repo_path:
