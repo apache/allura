@@ -18,7 +18,7 @@ class TestGitApp(unittest.TestCase):
         ThreadLocalORMSession.close_all()
 
     def test_admin_menu(self):
-        assert_equals(len(c.app.admin_menu()), 3)
+        assert_equals(len(c.app.admin_menu()), 4)
 
     def test_uninstall(self):
         c.app.uninstall(c.project)
