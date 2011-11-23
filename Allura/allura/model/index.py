@@ -135,7 +135,7 @@ class Shortlink(object):
             links_by_artifact[d['artifact']].append(d)
 
         q = cls.query.find(dict(
-                link={'$in': links_by_artifact.keys()}))
+                link={'$in': links_by_artifact.keys()}), validate=False)
         q = q.sort('link')
         result = {}
         matches_by_artifact = dict(
