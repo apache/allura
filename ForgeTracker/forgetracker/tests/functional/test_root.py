@@ -377,7 +377,7 @@ class TestFunctionalController(TrackerTestController):
             'assigned_to':'',
             'labels':'',
             'labels_old':'',
-            'custom_fields._number':4,
+            'custom_fields._number':'4',
             'comment': ''
         }).follow()
         assert '<strong>number</strong>:  --&gt;' in ticket_view
@@ -494,7 +494,7 @@ class TestFunctionalController(TrackerTestController):
             'closed_status_names': 'cc',
             'milestone_names':'' })
         # create three tickets
-        kw = {'custom_fields._days':0}
+        kw = {'custom_fields._days':'0'}
         self.new_ticket(summary='test superticket', **kw)
         self.new_ticket(summary='test subticket-1', **kw)
         self.new_ticket(summary='test subticket-2', **kw)
@@ -506,8 +506,8 @@ class TestFunctionalController(TrackerTestController):
         sub2 = tm.Ticket.query.get(ticket_num=3)
 
         # set values for the custom sum
-        sub1.custom_fields['_days'] = 4.5
-        sub2.custom_fields['_days'] = 2.0
+        sub1.custom_fields['_days'] = '4.5'
+        sub2.custom_fields['_days'] = '2.0'
 
         # make two tickets a subtickets of the other
         sub1.set_as_subticket_of(super._id)

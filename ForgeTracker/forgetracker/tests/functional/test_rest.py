@@ -65,6 +65,7 @@ class TestRestUpdateTicket(TestTrackerApiBase):
                     assigned_to=self.ticket_args['assigned_to_id'] or '')
         for bad_key in ('ticket_num', 'assigned_to_id', 'created_date', 'reported_by', 'reported_by_id', '_id'):
             del args[bad_key]
+        args['private'] = str(args['private'])
         ticket_view = self.api_post('/rest/p/test/bugs/1/save', wrap_args='ticket_form', **h.encode_keys(args))
         assert ticket_view.status_int == 200, ticket_view.showbrowser()
         json = ticket_view.json['ticket']

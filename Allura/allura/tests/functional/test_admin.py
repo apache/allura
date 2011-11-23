@@ -36,7 +36,7 @@ class TestProjectAdmin(TestController):
         self.app.post('/admin/update_mounts', params={
                 'new.install':'install',
                 'new.ep_name':'',
-                'new.ordinal':1,
+                'new.ordinal':'1',
                 'new.mount_point':'test-subproject',
                 'new.mount_label':'Test Subproject'})
         r = self.app.get('/admin/overview')
@@ -45,7 +45,7 @@ class TestProjectAdmin(TestController):
         self.app.post('/admin/update_mounts', params={
                 'subproject-0.shortname':'test/test-subproject',
                 'subproject-0.name':'Tst Sbprj',
-                'subproject-0.ordinal':100,
+                'subproject-0.ordinal':'100',
                 })
         r = self.app.get('/admin/overview')
         assert 'Tst Sbprj' in r
@@ -60,7 +60,7 @@ class TestProjectAdmin(TestController):
         r = self.app.post('/admin/update_mounts', params={
                 'new.install':'install',
                 'new.ep_name':'Wiki',
-                'new.ordinal':1,
+                'new.ordinal':'1',
                 'new.mount_point':'test-tool',
                 'new.mount_label':'Test Tool'})
         assert 'error' not in self.webflash(r)
@@ -72,7 +72,7 @@ class TestProjectAdmin(TestController):
         r = self.app.post('/admin/update_mounts', params={
                 'new.install':'install',
                 'new.ep_name':'Wiki',
-                'new.ordinal':1,
+                'new.ordinal':'1',
                 'new.mount_point':'test-tool2',
                 'new.mount_label':'Test Tool2'})
         assert 'error' not in self.webflash(r)
@@ -89,7 +89,7 @@ class TestProjectAdmin(TestController):
         r = self.app.post('/admin/update_mounts', params={
                 'new.install':'install',
                 'new.ep_name':'Wiki',
-                'new.ordinal':1,
+                'new.ordinal':'1',
                 'new.mount_point':'test-tool',
                 'new.mount_label':'Test Tool'})
         assert 'error' in self.webflash(r)
@@ -97,7 +97,7 @@ class TestProjectAdmin(TestController):
         self.app.post('/admin/update_mounts', params={
                 'tool-0.mount_point':'test-tool',
                 'tool-0.mount_label':'Tst Tuul',
-                'tool-0.ordinal':200,
+                'tool-0.ordinal':'200',
                 })
         r = self.app.get('/admin/overview')
         assert 'Tst Tuul' in r
@@ -117,7 +117,7 @@ class TestProjectAdmin(TestController):
             self.app.post('/admin/update_mounts', params={
                     'new.install':'install',
                     'new.ep_name':tool,
-                    'new.ordinal':i,
+                    'new.ordinal':str(i),
                     'new.mount_point':'test-%d' % i,
                     'new.mount_label':tool })
             r = self.app.get('/admin/test-%d/permissions' % i)
@@ -206,7 +206,7 @@ class TestProjectAdmin(TestController):
         self.app.post('/admin/update_mounts', params={
                 'new.install':'install',
                 'new.ep_name':'',
-                'new.ordinal':1,
+                'new.ordinal':'1',
                 'new.mount_point':'sub1',
                 'new.mount_label':'sub1'})
         r = self.app.get('/p/test/admin/overview')
@@ -247,7 +247,7 @@ class TestProjectAdmin(TestController):
             self.app.post('/admin/update_mounts', params={
                     'new.install':'install',
                     'new.ep_name':'',
-                    'new.ordinal':1,
+                    'new.ordinal':'1',
                     'new.mount_point':'sub1',
                     'new.mount_label':'sub1'})
             # root project doesn't have delete option
@@ -338,7 +338,7 @@ class TestProjectAdmin(TestController):
         self.app.post('/admin/update_mounts', params={
                 'new.install':'install',
                 'new.ep_name':'',
-                'new.ordinal':1,
+                'new.ordinal':'1',
                 'new.mount_point':'test-subproject',
                 'new.mount_label':'Test Subproject'})
         r = self.app.get('/test-subproject/admin/permissions/')

@@ -86,7 +86,7 @@ class TestImportController(TestRestApiBase):#TestController):
         self.set_api_token(api_ticket)
 
         r = self.api_post('/rest/p/test/discussion/perform_import',
-                          doc=self.json_text, create_users=True)
+                          doc=self.json_text, create_users='True')
         assert not r.json['errors'], r.json['errors']
         r = self.app.get('/p/test/discussion/')
         assert 'Open Discussion:' in str(r), r.showbrowser()

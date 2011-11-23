@@ -268,7 +268,6 @@ def validate_page(html_or_response):
     if Config.instance().validation_enabled('inlinejs'):
         validate_js(html_or_response)
 
-
 class AntiSpamTestApp(TestApp):
 
     def post(self, *args, **kwargs):
@@ -285,7 +284,29 @@ class AntiSpamTestApp(TestApp):
             kwargs['params'] = params
         return super(AntiSpamTestApp, self).post(*args, **kwargs)
 
-class ValidatingTestApp(AntiSpamTestApp):
+class PostParamCheckingTestApp(AntiSpamTestApp):
+
+    def _validate_params(self, params, method):
+        if not params:
+            return
+        # params can be a list or a dict
+        if hasattr(params, 'items'):
+            params = params.items()
+        for k, v in params:
+            if not isinstance(k, basestring):
+                raise TypeError('%s key %s is %s, not str' % (method, k, type(k)))
+            if not isinstance(v, basestring):
+                raise TypeError('%s key %s has value %s of type %s, not str. ' % (method, k, v, type(v)))
+
+    def get(self, *args, **kwargs):
+        self._validate_params(kwargs.get('params'), 'get')
+        return super(PostParamCheckingTestApp, self).get(*args, **kwargs)
+
+    def post(self, *args, **kwargs):
+        self._validate_params(kwargs.get('params'), 'post')
+        return super(PostParamCheckingTestApp, self).post(*args, **kwargs)
+
+class ValidatingTestApp(PostParamCheckingTestApp):
 
     # Subclasses may set this to True to skip validation altogether
     validate_skip = False
