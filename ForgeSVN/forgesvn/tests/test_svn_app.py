@@ -23,7 +23,7 @@ class TestSVNApp(unittest.TestCase):
 
     def test_admin_menu(self):
         assert_equals(len(c.app.admin_menu()), 6)
-        assert_equals(c.app.admin_menu()[0].label, 'Viewable Files')
+        assert_equals(c.app.admin_menu()[0].label, 'Checkout URL')
 
     def test_uninstall(self):
         c.app.uninstall(c.project)
