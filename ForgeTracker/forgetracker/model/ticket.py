@@ -24,6 +24,7 @@ from allura.lib import patience
 from allura.lib import security
 from allura.lib.search import search_artifact
 from allura.lib import utils
+from allura.lib import helpers as h
 
 log = logging.getLogger(__name__)
 
@@ -243,6 +244,7 @@ class Ticket(VersionedArtifact):
                 ticket_num=ticket_num)
             try:
                 session(ticket).flush(ticket)
+                h.log_action(log, 'opened').info('')
                 return ticket
             except OperationFailure, err:
                 if 'duplicate' in err.args[0]:
@@ -373,6 +375,8 @@ class Ticket(VersionedArtifact):
             fields = [
                 ('Summary', old.summary, self.summary),
                 ('Status', old.status, self.status) ]
+            if old.status != self.status and self.status in c.app.globals.set_of_closed_status_names:
+                h.log_action(log, 'closed').info('')
             for key in self.custom_fields:
                 fields.append((key, old.custom_fields.get(key, ''), self.custom_fields[key]))
             for title, o, n in fields:
@@ -488,7 +492,7 @@ class Ticket(VersionedArtifact):
         if root is not None:
             root.recalculate_sums()
 
-    def update(self,ticket_form):
+    def update(self, ticket_form):
         self.globals.invalidate_bin_counts()
 
         # update is not allowed to change the ticket_num

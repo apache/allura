@@ -1,4 +1,5 @@
 import re
+import logging
 from itertools import chain
 
 from ming import schema
@@ -11,6 +12,8 @@ from allura.lib import helpers as h
 
 config = utils.ConfigProxy(
     common_suffix='forgemail.domain')
+
+log = logging.getLogger(__name__)
 
 class Forum(M.Discussion):
     class __mongometa__:
@@ -142,6 +145,7 @@ class ForumThread(M.Thread):
         if not self.first_post_id:
             self.first_post_id = post._id
             self.num_replies = 1
+        h.log_action(log, 'posted').info('')
         return post
 
     def set_forum(self, new_forum):
