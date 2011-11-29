@@ -15,7 +15,7 @@
       </tr>
     </thead>
     <tbody>
-      {% for forum in app.forums %}
+      {% for forum in app.forums if not forum.deleted %}
       <tr class="{{loop.index0%2 and ' even' or ''}}">
         <td>
           <div class="editable viewing">
@@ -83,11 +83,7 @@
         <td>{{lib.post_summary(forum.last_post)}}</td>
         <td>
           <input name="{{'forum-%s.id' % loop.index0}}" type="hidden" value="{{forum._id}}"/>
-          {% if forum.deleted %}
-            <input type="submit" name="{{'forum-%s.undelete' % loop.index0}}" value="Undelete"/><br/>
-          {% else %}
-            <input type="submit" name="{{'forum-%s.delete' % loop.index0}}" value="Delete"/><br/>
-          {% endif %}
+          <input type="submit" name="{{'forum-%s.delete' % loop.index0}}" value="Delete" onclick="return confirm('Really delete this forum?');" /><br/>
         </td>
       </tr>
       {% endfor %}

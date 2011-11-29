@@ -23,13 +23,9 @@
   {% endif %}
   {% set visible=0 %}
   {% for forum in forums %}
-    {% if not forum.deleted or h.has_access(c.app, 'configure')() %}
       <div class="discussion_forum grid-9">
         <strong class="forum_name">{{forum.name}}:</strong>
         <br>{{forum.description}}<br>&nbsp;<br>
-        {% if forum.deleted %}
-          <div class="notice">This forum has been deleted and is not visible to non-admin users</div>
-        {% endif %}
         {% for thread in threads[forum._id] %}
           {% if loop.index0 == 5 %}
             <a href="{{forum.url()}}">More</a>
@@ -42,7 +38,6 @@
       {% if visible%2==0 %}
         <div class="clear">&nbsp;</div>
       {% endif %}
-    {% endif %}
   {% endfor %}
 {% endblock %}
 

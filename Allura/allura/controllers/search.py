@@ -27,7 +27,7 @@ class SearchController(BaseController):
             q = ''
         else:
             results = search.search(
-                q, 
+                q,
                 fq='is_history_b:%s' % history)
             if results: count=results.hits
         return dict(q=q, history=history, results=results or [], count=count)
@@ -45,7 +45,7 @@ class ProjectBrowseController(BaseController):
                 raise exc.HTTPNotFound, request.path
         else:
             self.category = None
-    
+
     def _build_title(self):
         title = "All Projects"
         if self.category:
@@ -59,15 +59,15 @@ class ProjectBrowseController(BaseController):
         nav = []
         for cat in categories:
             nav.append(SitemapEntry(
-                cat.label, 
-                self.nav_stub+cat.name, 
+                cat.label,
+                self.nav_stub+cat.name,
                 className='nav_child'))
             if (self.category and self.category._id == cat._id and cat.subcategories) or (
                 self.parent_category and self.parent_category._id == cat._id):
                 for subcat in cat.subcategories:
                     nav.append(SitemapEntry(
-                        subcat.label, 
-                        self.nav_stub+cat.name+'/'+subcat.name, 
+                        subcat.label,
+                        self.nav_stub+cat.name+'/'+subcat.name,
                         className='nav_child2'))
         return nav
 

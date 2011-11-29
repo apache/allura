@@ -6,7 +6,8 @@
 {% block header %}Search Project: {{q}}{% endblock %}
 
 {% block content %}
-  <form method="GET" action="." class="grid-11">
+  <div class="grid-24">
+  <form method="GET" action="search">
     <input type="text" name="q" value="{{q}}" class="title"/><br/>
     Search history? <input type="checkbox" name="history" {% if history %}checked{% endif %}/><br/>
     &nbsp;<br/>
@@ -19,14 +20,19 @@
   {% elif count > 1 and q %}
     <p>{{count}} results.</p>
   {% endif %}
-
-  {% for doc in results %}
-  <div class="grid-11">
-    <a href="{{doc['url_s']}}">{{doc.title_s}}</a><br/>
-    <py:if test="doc.get('snippet')">
-      {{doc['snippet']|safe}}<br/>
-    </py:if>
-    <hr/>
+  <hr/>
   </div>
+
+  <div class="grid-24">
+  <ol>
+  {% for doc in results %}
+  <li>
+    <a href="{{doc['url_s']}}">{{doc.title_s}}</a>
+    {% if doc.get('snippet') %}
+      <p>{{doc['snippet']|safe}}</p>
+    {% endif %}
+  </li>
   {% endfor %}
+  </ol>
+  </div>
 {% endblock %}

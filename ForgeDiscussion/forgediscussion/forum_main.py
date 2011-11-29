@@ -124,14 +124,13 @@ class ForgeDiscussionApp(Application):
             forum_links = []
             forums = DM.Forum.query.find(dict(
                             app_config_id=c.app.config._id,
-                            parent_id=None)).all()
-            if forums:
-                for f in forums:
-                    if has_access(f,'read')():
-                        if f.url() in request.url and h.has_access(f, 'moderate')():
-                            moderate_link = SitemapEntry('Moderate', "%smoderate/" % f.url(), ui_icon=g.icons['pencil'],
-                            small = DM.ForumPost.query.find({'discussion_id':f._id, 'status':{'$ne': 'ok'}}).count())
-                        forum_links.append(SitemapEntry(f.name, f.url(), className='nav_child'))
+                            parent_id=None, deleted=False))
+            for f in forums:
+                if has_access(f,'read')():
+                    if f.url() in request.url and h.has_access(f, 'moderate')():
+                        moderate_link = SitemapEntry('Moderate', "%smoderate/" % f.url(), ui_icon=g.icons['pencil'],
+                        small = DM.ForumPost.query.find({'discussion_id':f._id, 'status':{'$ne': 'ok'}}).count())
+                    forum_links.append(SitemapEntry(f.name, f.url(), className='nav_child'))
             l.append(SitemapEntry('Create Topic', c.app.url + 'create_topic', ui_icon=g.icons['plus']))
             if has_access(c.app, 'configure')():
                 l.append(SitemapEntry('Add Forum', c.app.url + 'new_forum', ui_icon=g.icons['conversation']))
@@ -153,10 +152,11 @@ class ForgeDiscussionApp(Application):
                             ('mod_date', pymongo.DESCENDING)])
                     ))
             recent_threads = (
-                t for t in recent_threads 
-                if has_access(t, 'configure')() or (has_access(t, 'read')() and has_access(t.discussion, 'read')() and not t.discussion.deleted))
-            recent_threads = ( t for t in recent_threads if t.status == 'ok' )
-            # Limit to 3 threads
+                t for t in recent_threads
+                if not t.discussion.deleted and
+                    has_access(t, 'read')() and
+                    has_access(t.discussion, 'read')() and
+                    t.status == 'ok')
             recent_threads = list(islice(recent_threads, 3))
             # Add to sitemap
             if recent_threads:

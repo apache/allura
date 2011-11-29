@@ -76,7 +76,7 @@ class ForumController(DiscussionController):
 
     @expose('jinja:allura:templates/discussion/index.html')
     def index(self, threads=None, limit=None, page=0, count=0, **kw):
-        if self.discussion.deleted and not has_access(c.app, 'configure')():
+        if self.discussion.deleted:
             redirect(self.discussion.url()+'deleted')
         limit, page, start = g.handle_paging(limit, page)
         c.subscribed=M.Mailbox.subscribed(artifact=self.discussion)

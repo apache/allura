@@ -130,9 +130,6 @@ class TestForumAdmin(TestController):
         r = r.forms[1].submit()
         r = self.app.get('/admin/discussion/forums')
         assert len(r.html.findAll('input',{'value':'Delete'})) == 2
-        assert len(r.html.findAll('input',{'value':'Undelete'})) == 0
-        r = self.app.get('/discussion/')
-        assert 'This forum has been deleted and is not visible to non-admin users' not in r
         h.set_context('test', 'Forum', neighborhood='Projects')
         frm = FM.Forum.query.get(shortname='testforum')
 
@@ -143,9 +140,6 @@ class TestForumAdmin(TestController):
                                   'forum-0.description':'My desc'})
         r = self.app.get('/admin/discussion/forums')
         assert len(r.html.findAll('input',{'value':'Delete'})) == 1
-        assert len(r.html.findAll('input',{'value':'Undelete'})) == 1
-        r = self.app.get('/discussion/')
-        assert 'This forum has been deleted and is not visible to non-admin users' in r
         r = self.app.post('/admin/discussion/update_forums',
                           params={'forum-0.undelete':'on',
                                   'forum-0.id':str(frm._id),
@@ -153,9 +147,6 @@ class TestForumAdmin(TestController):
                                   'forum-0.description':'My desc'})
         r = self.app.get('/admin/discussion/forums')
         assert len(r.html.findAll('input',{'value':'Delete'})) == 2
-        assert len(r.html.findAll('input',{'value':'Undelete'})) == 0
-        r = self.app.get('/discussion/')
-        assert 'This forum has been deleted and is not visible to non-admin users' not in r
 
     def test_members_only(self):
         # make a forum anyone can see

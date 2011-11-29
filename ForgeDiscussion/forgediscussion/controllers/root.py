@@ -60,7 +60,7 @@ class RootController(BaseController):
                 )).all()
         forums = model.Forum.query.find(dict(
                         app_config_id=c.app.config._id,
-                        parent_id=None)).all()
+                        parent_id=None, deleted=False)).all()
         forums = [f for f in forums if h.has_access(f, 'read')()]
         threads = dict()
         for forum in forums:
@@ -135,7 +135,8 @@ class RootController(BaseController):
                 fq=[
                     'is_history_b:%s' % history,
                     'project_id_s:%s' % c.project._id,
-                    'mount_point_s:%s'% c.app.config.options.mount_point ])
+                    'mount_point_s:%s'% c.app.config.options.mount_point,
+                    'deleted:false'])
             if results: count=results.hits
         c.search_results = self.W.search_results
         return dict(q=q, history=history, results=results or [],
