@@ -402,8 +402,8 @@ class ProjectRegistrationProvider(object):
             ThreadLocalORMSession.close_all()
             log.exception('Error registering project %s' % p)
             raise
-        ThreadLocalORMSession.flush_all()
         with h.push_config(c, project=p, user=user):
+            ThreadLocalORMSession.flush_all()
             # have to add user to context, since this may occur inside auth code
             # for user-project reg, and c.user isn't set yet
             g.post_event('project_created')
