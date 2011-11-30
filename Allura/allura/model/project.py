@@ -70,6 +70,7 @@ class TroveCategory(MappedClass):
     shortname = FieldProperty(str, if_missing='')
     fullname = FieldProperty(str, if_missing='')
     fullpath = FieldProperty(str, if_missing='')
+    parent_only = FieldProperty(bool, if_missing=False)
 
     @property
     def parent_category(self):
@@ -78,6 +79,16 @@ class TroveCategory(MappedClass):
     @property
     def subcategories(self):
         return self.query.find(dict(trove_parent_id=self.trove_cat_id)).sort('fullname').all()
+
+    @property
+    def children(self):
+        result = []
+        children = self.query.find(dict(trove_parent_id=self.trove_cat_id)).all()
+        for child in children:
+            result.append(child);
+            result.extend(child.children)
+        result.sort(key=lambda x:x.fullpath)
+        return result
 
 class ProjectMapperExtension(MapperExtension):
     def after_insert(self, obj, st):

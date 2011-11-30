@@ -28,8 +28,8 @@
       <label for="new_trove_{{base.shortname}}">Add a new {{base.fullname}} category:</label>
       <br>
       <select name="new_trove" id="new_trove_{{base.shortname}}">
-        {% for cat in base.subcategories %}
-          <option value="{{cat.trove_cat_id}}">{{cat.fullname}}</option>
+        {% for cat in base.children if not cat.parent_only %}
+          <option value="{{cat.trove_cat_id}}">{{cat.fullpath}}</option>
         {% endfor %}
       </select>
       <br>
@@ -42,7 +42,7 @@
   {% if c.project.deleted %}
     <div class="notice">This project has been deleted and is not visible to non-admin users</div>
   {% endif %}
-    
+
     <h3>Project Labels</h3>
     <div class="grid-19 trove_add_container">
       <form method="POST" class="can-retry" action="update_labels" id="label_edit_form">
@@ -63,29 +63,6 @@
     $(document).ready(function () {
       var session_id = $('input[name=_session_id]').val();
       var del_btn = '<a href="#" class="del_btn" title="Delete"><b data-icon="{{g.icons["delete"].char}}" class="ico {{g.icons["delete"].css}}"></b></a>';
-      var find_sub_cats = function(trove_field){
-        var val = trove_field.val();
-        trove_field.nextAll().remove();
-        trove_field.parent().append('<br><input type="submit" value="Add">');
-        if(val){
-          $.get('get_trove_children',{'trove_id':val},function(resp){
-            if(resp.cats && resp.cats.length){
-              var num_subs = trove_field.parent().find('select').length;
-              var new_select = $('<select style="margin-left:'+1*num_subs+'em"></select>');
-              trove_field.after(new_select);
-              new_select.before('<br>');
-              for(var i=0,len=resp.cats.length;i<len;++i){
-                new_select.append('<option value="'+resp.cats[i].id+'">'+resp.cats[i].label+'</option>');
-              }
-              find_sub_cats(new_select);
-            }
-          });
-        }
-      };
-
-      $('form.trove_adder select').each(function(){
-        find_sub_cats($(this));
-      });
       $('form.trove_adder').submit(function(evt){
         evt.preventDefault();
         var $this = $(this);
@@ -106,8 +83,6 @@
               $('#trove_existing_'+type).prepend('<div><span class="trove_fullpath">'+resp.trove_full_path+'</span> <form class="trove_deleter"><input type="hidden" name="type" value="'+type+'"><input type="hidden" name="trove" value="'+new_id+'">'+del_btn+'</form></div>');
             }
         });
-      }).delegate("select", "change", function(){
-        find_sub_cats($(this));
       });
       $('form.trove_deleter').each(function(){
         $(this).find('input[type="submit"]').remove();
@@ -134,6 +109,9 @@
 
 {% block extra_css %}
   <style type="text/css">
+    .trove_adder select {
+        font: 90% sans-serif;
+    }
     .trove_deleter{
       display:inline;
     }
