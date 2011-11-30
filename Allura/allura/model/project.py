@@ -414,9 +414,6 @@ class Project(MappedClass):
         options['mount_label'] = mount_label or App.default_mount_label or mount_point
         options['ordinal'] = int(ordinal)
         options.update(override_options)
-        h.log_action(log, 'install tool').info(
-            'install tool %s', ep_name,
-            meta=dict(tool_type=ep_name, mount_point=options['mount_point'], mount_label=options['mount_label']))
         cfg = AppConfig(
             project_id=self._id,
             tool_name=ep_name,
