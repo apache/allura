@@ -297,7 +297,10 @@ class Mailbox(MappedClass):
              'artifact_index_id', 'topic', 'is_flash'),
             ]
         indexes = [
-            ('project_id', 'artifact_index_id') ]
+            ('project_id', 'artifact_index_id'),
+            ('is_flash', 'user_id'),
+            ('type', 'next_scheduled')]
+
     _id = FieldProperty(S.ObjectId)
     user_id = ForeignIdProperty('User', if_missing=lambda:c.user._id)
     project_id = ForeignIdProperty('Project', if_missing=lambda:c.project._id)
@@ -440,20 +443,20 @@ class Mailbox(MappedClass):
         now = datetime.utcnow()
         # Queries to find all matching subscription objects
         q_direct = dict(
-            type='direct',
-            queue={'$ne':[]})
+            type='direct')
         if MAILBOX_QUIESCENT:
             q_direct['last_modified']={'$lt':now - MAILBOX_QUIESCENT}
         q_digest = dict(
             type={'$in': ['digest', 'summary']},
             next_scheduled={'$lt':now})
         for mbox in cls.query.find(q_direct):
-            mbox = cls.query.find_and_modify(
-                query=dict(_id=mbox._id),
-                update={'$set': dict(
-                        queue=[])},
-                new=False)
-            mbox.fire(now)
+            if mbox.queue:
+                mbox = cls.query.find_and_modify(
+                    query=dict(_id=mbox._id),
+                    update={'$set': dict(
+                            queue=[])},
+                    new=False)
+                mbox.fire(now)
         for mbox in cls.query.find(q_digest):
             next_scheduled = now
             if mbox.frequency.unit == 'day':

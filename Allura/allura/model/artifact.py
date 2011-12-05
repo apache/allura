@@ -562,7 +562,9 @@ class Feed(MappedClass):
         name = 'artifact_feed'
         indexes = [
             'pubdate',
-            ('artifact_ref.project_id', 'artifact_ref.mount_point') ]
+            ('artifact_ref.project_id', 'artifact_ref.mount_point'),
+            (('ref_id', pymongo.ASCENDING),
+             ('pubdate', pymongo.DESCENDING))]
 
     _id = FieldProperty(S.ObjectId)
     ref_id = ForeignIdProperty('ArtifactReference')

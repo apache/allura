@@ -636,6 +636,7 @@ class AppConfig(MappedClass):
         name='config'
         indexes = [
             'project_id',
+            'options.import_id',
             ('options.mount_point', 'project_id')]
 
     # AppConfig schema

@@ -161,6 +161,8 @@ class EmailAddress(MappedClass):
     class __mongometa__:
         name='email_address'
         session = main_orm_session
+        indexes = [
+            'claimed_by_user_id']
 
     _id = FieldProperty(str)
     claimed_by_user_id=FieldProperty(S.ObjectId, if_missing=None)
