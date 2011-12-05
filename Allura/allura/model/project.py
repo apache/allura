@@ -354,7 +354,6 @@ class Project(MappedClass):
         sitemap = SitemapEntry('root')
         entries = []
         for sub in self.direct_subprojects:
-            if sub.deleted: continue
             entries.append({'ordinal':sub.ordinal,'entry':SitemapEntry(sub.name, sub.url())})
         for ac in self.app_configs:
             if excluded_tools and ac.tool_name in excluded_tools:
@@ -391,7 +390,7 @@ class Project(MappedClass):
 
     @property
     def direct_subprojects(self):
-        return self.query.find(dict(parent_id=self._id))
+        return self.query.find(dict(parent_id=self._id, deleted=False))
 
     @property
     def accolades(self):

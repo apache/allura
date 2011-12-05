@@ -219,15 +219,16 @@ class AuthController(BaseController):
 
         repos = []
         for p in user.my_projects():
-            for app in p.app_configs:
-                if not app.tool_name.lower() in ('git', 'hg', 'svn'):
-                    continue
-                if not has_access(app, 'write', user, p):
-                    continue
-                repos.append('/%s/%s/%s' % (
-                    app.tool_name.lower(),
-                    _unix_group_name(p.neighborhood, p.shortname),
-                    app.options['mount_point']))
+            for p in [p] + p.direct_subprojects.all():
+                for app in p.app_configs:
+                    if not app.tool_name.lower() in ('git', 'hg', 'svn'):
+                        continue
+                    if not has_access(app, 'write', user, p):
+                        continue
+                    repos.append('/%s/%s/%s' % (
+                        app.tool_name.lower(),
+                        _unix_group_name(p.neighborhood, p.shortname),
+                        app.options['mount_point']))
         repos.sort()
         return repos
 
